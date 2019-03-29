@@ -1,7 +1,7 @@
-use primitives::{ed25519, Pair};
+use primitives::{ed25519, sr25519, Pair};
 use node_template_runtime::{
 	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig,
-	SudoConfig, IndicesConfig, Erc20Config
+	SudoConfig, IndicesConfig, Erc20Config,
 };
 use substrate_service;
 
@@ -31,7 +31,7 @@ fn authority_key(s: &str) -> AuthorityId {
 }
 
 fn account_key(s: &str) -> AccountId {
-	ed25519::Pair::from_string(&format!("//{}", s), None)
+	sr25519::Pair::from_string(&format!("//{}", s), None)
 		.expect("static values are valid; qed")
 		.public()
 }
@@ -98,7 +98,7 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 		}),
 		system: None,
 		timestamp: Some(TimestampConfig {
-			period: 5,					// 5 second block time.
+			minimum_period: 5, // 10 second block time.
 		}),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts.clone(),
@@ -116,7 +116,7 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 			key: root_key,
 		}),
 		erc20: Some(Erc20Config {
-			owner: authority_key("Alice"),
+			owner: account_key("Alice"),
 			// setting total supply of tokens to 21M because `Satoshi` said so
 			total_supply: 21000000,
 			name: "Evolution Land Global Token".as_bytes().into(),
