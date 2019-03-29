@@ -1,3 +1,7 @@
+[[bin]]
+name = 'land-chain'
+path = 'src/main.rs'
+
 [profile.release]
 panic = 'unwind'
 
@@ -7,10 +11,6 @@ build = 'build.rs'
 edition = '2018'
 name = 'node-template'
 version = '0.9.0'
-
-[[bin]]
-name = 'template-node'
-path = 'src/main.rs'
 
 [build-dependencies]
 vergen = '3'
