@@ -58,6 +58,7 @@ pub type Nonce = u64;
 /// Used for the module template in `./erc20.rs`
 mod erc20;
 mod erc721;
+mod auction;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -199,6 +200,10 @@ impl erc721::Trait for Runtime {
 	type Event = Event;
 }
 
+impl auction::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime with Log(InternalLog: DigestItem<Hash, AuthorityId, AuthoritySignature>) where
 		Block = Block,
@@ -215,6 +220,7 @@ construct_runtime!(
 		// Used for the module template in `./template.rs`
 		Erc721: erc721::{Module, Call, Storage, Event<T>},
 		Erc20: erc20::{Module, Call, Storage, Event<T>, Config<T>},
+		Auction: auction::{Module, Call, Storage, Event<T>},
 	}
 );
 

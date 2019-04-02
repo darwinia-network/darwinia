@@ -14,8 +14,8 @@ pub trait Trait: balances::Trait {
 decl_event!(
     pub enum Event<T>
     where
-        <T as system::Trait>::AccountId,
-        <T as system::Trait>::Hash
+        AccountId = <T as system::Trait>::AccountId,
+        Hash = <T as system::Trait>::Hash
     {
         Transfer(Option<AccountId>, Option<AccountId>, Hash),
         Approval(AccountId, AccountId, Hash),
@@ -142,7 +142,7 @@ impl<T: Trait> Module<T> {
         return approved_as_owner || approved_as_user || approved_as_delegate
     }
 
-    fn _mint(to: T::AccountId, token_id: T::Hash) -> Result {
+    pub fn _mint(to: T::AccountId, token_id: T::Hash) -> Result {
         ensure!(!Self::_exists(token_id), "Token already exists");
 
         let balance_of = Self::balance_of(&to);
@@ -164,7 +164,7 @@ impl<T: Trait> Module<T> {
         Ok(())
     }
 
-    fn _burn(token_id: T::Hash) -> Result {
+    pub fn _burn(token_id: T::Hash) -> Result {
         let owner = match Self::owner_of(token_id) {
             Some(c) => c,
             None => return Err("No owner for this token"),
@@ -192,7 +192,7 @@ impl<T: Trait> Module<T> {
         Ok(())
     }
 
-    fn _transfer_from(from: T::AccountId, to: T::AccountId, token_id: T::Hash) -> Result {
+    pub fn _transfer_from(from: T::AccountId, to: T::AccountId, token_id: T::Hash) -> Result {
         let owner = match Self::owner_of(token_id) {
             Some(c) => c,
             None => return Err("No owner for this token"),

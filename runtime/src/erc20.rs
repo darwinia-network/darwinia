@@ -5,6 +5,7 @@ use parity_codec::Codec;
 use support::{dispatch::Result, StorageMap, Parameter, StorageValue, decl_storage, decl_module, decl_event, ensure};
 use system::{self, ensure_signed};
 use runtime_primitives::traits::{CheckedSub, CheckedAdd, Member, SimpleArithmetic, As};
+use rstd::{result, ops::{Mul, Div}, cmp};
 
 // the module trait
 // contains type definitions
@@ -124,7 +125,7 @@ decl_event!(
 // if marked public, accessible by other modules
 impl<T: Trait> Module<T> {
     // internal transfer function for ERC20 interface
-    fn _transfer(
+     pub fn _transfer(
         from: T::AccountId,
         to: T::AccountId,
         value: T::TokenBalance,
@@ -145,5 +146,9 @@ impl<T: Trait> Module<T> {
 
         Self::deposit_event(RawEvent::Transfer(from, to, value));
         Ok(())
+    }
+
+    pub fn get_balance(who: T::AccountId) -> T::TokenBalance {
+        Self::balance_of(who)
     }
 }
