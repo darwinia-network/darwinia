@@ -1,3 +1,13 @@
 {
-    "TokenBalance": "u128"
+    "TokenBalance": "u128",
+    "Auction": {
+        "seller": "AccountId",
+      "startAt": "Moment",
+      "duration": "u64",
+      "startingPrice": "TokenBalance",
+      "endingPrice": "TokenBalance",
+      "lastRecord": "TokenBalance",
+      "lastBidder": "AccountId",
+      "lastBidStartAt": "Moment"
+    }
 }
