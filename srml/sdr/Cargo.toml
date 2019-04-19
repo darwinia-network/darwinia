@@ -1,0 +1,7 @@
+[package]
+name = "sdr"
+version = "0.1.0"
+authors = ["Evolution Land <contact@evolution.land>"]
+edition = "2018"
+
+[dependencies]
