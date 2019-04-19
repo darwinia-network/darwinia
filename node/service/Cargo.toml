@@ -1,0 +1,35 @@
+[package]
+name = "evo-service"
+version = "0.1.0"
+authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+edition = "2018"
+
+[dependencies]
+parking_lot = "0.7.1"
+error-chain = "0.12"
+lazy_static = "1.0"
+log = "0.4.6"
+slog = "^2"
+tokio = "0.1.7"
+hex-literal = "0.1"
+sr-io = { git = "https://github.com/paritytech/substrate" }
+sr-primitives = { git = "https://github.com/paritytech/substrate" }
+substrate-cli = { git = "https://github.com/paritytech/substrate" }
+substrate-primitives = { git = "https://github.com/paritytech/substrate" }
+substrate-inherents = { git = "https://github.com/paritytech/substrate" }
+substrate-keystore = { git = "https://github.com/paritytech/substrate" }
+substrate-executor = { git = "https://github.com/paritytech/substrate" }
+substrate-service = { git = "https://github.com/paritytech/substrate" }
+substrate-transaction-pool = { git = "https://github.com/paritytech/substrate" }
+substrate-network = { git = "https://github.com/paritytech/substrate" }
+substrate-consensus-aura = { git = "https://github.com/paritytech/substrate" }
+substrate-telemetry = { git = "https://github.com/paritytech/substrate" }
+substrate-client = { git = "https://github.com/paritytech/substrate", default-features = false }
+substrate-finality-grandpa = { git = "https://github.com/paritytech/substrate" }
+substrate-basic-authorship = { git = "https://github.com/paritytech/substrate" }
+evo-primitives = { path = "../primitives" }
+evo-runtime = { path = "../runtime" }
+evo-executor = { path = "../executor" }
+
+[dev-dependencies]
+service-test = { package = "substrate-service-test", git = "https://github.com/paritytech/substrate" }

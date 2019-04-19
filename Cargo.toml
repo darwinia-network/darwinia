@@ -1,84 +1,39 @@
-[[bin]]
-name = 'land-chain'
-path = 'src/main.rs'
-
-[profile.release]
-panic = 'unwind'
-
 [package]
-authors = ['Parity Technologies <admin@parity.io>']
-build = 'build.rs'
-edition = '2018'
-name = 'node-template'
-version = '0.9.0'
+name = "evoland"
+version = "0.2.0"
+authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+build = "build.rs"
 
-[build-dependencies]
-vergen = '3'
+[[bin]]
+name = "evolutionland"
+path = "node/src/main.rs"
 
 [dependencies]
-error-chain = '0.12'
-exit-future = '0.1'
-futures = '0.1'
-hex-literal = '0.1'
-log = '0.4'
-parity-codec = '3.2'
-parking_lot = '0.7.1'
-tokio = '0.1'
-trie-root = '0.12.0'
+error-chain = "0.12"
+evo-cli = { path = "node/cli" }
+futures = "0.1"
+ctrlc = { version = "3.0", features = ["termination"] }
 
-[dependencies.basic-authorship]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-basic-authorship'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
+[build-dependencies]
+vergen = "3"
 
-[dependencies.consensus]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-consensus-aura'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
+[workspace]
+members = [
+	"node/runtime",
+	"node/cli",
+	"node/executor",
+	"node/primitives",
+	"node/service",
+	"evrml/sdr",
+]
+exclude = [ "node/runtime/wasm" ]
 
-[dependencies.ctrlc]
-features = ['termination']
-version = '3.0'
+[badges]
+travis-ci = { repository = "paritytech/substrate", branch = "master" }
+maintenance = { status = "actively-developed" }
+is-it-maintained-issue-resolution = { repository = "paritytech/substrate" }
+is-it-maintained-open-issues = { repository = "paritytech/substrate" }
 
-[dependencies.inherents]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-inherents'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.network]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-network'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.node-template-runtime]
-path = 'runtime'
-
-[dependencies.primitives]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-primitives'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.sr-io]
-git = 'https://github.com/paritytech/substrate.git'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.substrate-cli]
-git = 'https://github.com/paritytech/substrate.git'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.substrate-client]
-git = 'https://github.com/paritytech/substrate.git'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.substrate-executor]
-git = 'https://github.com/paritytech/substrate.git'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.substrate-service]
-git = 'https://github.com/paritytech/substrate.git'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
-
-[dependencies.transaction-pool]
-git = 'https://github.com/paritytech/substrate.git'
-package = 'substrate-transaction-pool'
-rev = 'c767d102545b8507ced4331df89bf5c2640bfb1e'
+[profile.release]
+# Substrate runtime requires unwinding.
+panic = "unwind"

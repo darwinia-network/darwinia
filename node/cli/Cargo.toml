@@ -1,0 +1,15 @@
+[package]
+name = "evo-cli"
+version = "0.1.0"
+authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4.6"
+tokio = "0.1.7"
+futures = "0.1.17"
+exit-future = "0.1"
+substrate-cli = { git = "https://github.com/paritytech/substrate" }
+evo-service = { path = "../service" }
+evo-primitives = { path = "../primitives" }
+evo-runtime = { path = "../runtime" }
