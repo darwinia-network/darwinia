@@ -2,7 +2,7 @@
 
 set -e
 
-PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+PROJECT_ROOT=`echo $(pwd)`
 
 export CARGO_INCREMENTAL=0
 
@@ -12,7 +12,7 @@ normal=$(tput sgr0)
 # Save current directory.
 pushd . >/dev/null
 
-for SRC in runtime/wasm
+for SRC in node/runtime/wasm
 do
   echo "${bold}Building webassembly binary in $SRC...${normal}"
   cd "$PROJECT_ROOT/$SRC"

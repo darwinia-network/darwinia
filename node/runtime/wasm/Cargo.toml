@@ -1,0 +1,24 @@
+[package]
+name = "evo-runtime-wasm"
+version = "0.1.0"
+authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+
+[lib]
+name = "evo_runtime"
+crate-type = ["cdylib"]
+
+[dependencies]
+evo-runtime = { path = "..", default-features = false }
+
+[features]
+default = []
+std = [
+	"evo-runtime/std",
+]
+
+[profile.release]
+panic = "abort"
+lto = true
+
+[workspace]
+members = []
