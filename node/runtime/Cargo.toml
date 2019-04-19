@@ -1,0 +1,78 @@
+[package]
+name = "evo-runtime"
+version = "0.1.0"
+authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+
+[dependencies]
+integer-sqrt = { version = "0.1.2" }
+safe-mix = { version = "1.0", default-features = false }
+parity-codec = { version = "3.2", default-features = false, features = ["derive"] }
+substrate-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
+client = { package = "substrate-client", git = "https://github.com/paritytech/substrate", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/paritytech/substrate", default-features = false }
+runtime_primitives = { package = "sr-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
+offchain-primitives = { package = "substrate-offchain-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
+version = { package = "sr-version", git = "https://github.com/paritytech/substrate", default-features = false }
+support = { package = "srml-support", git = "https://github.com/paritytech/substrate", default-features = false }
+aura = { package = "srml-aura", git = "https://github.com/paritytech/substrate", default-features = false }
+balances = { package = "srml-balances", git = "https://github.com/paritytech/substrate", default-features = false }
+consensus = { package = "srml-consensus", git = "https://github.com/paritytech/substrate", default-features = false }
+contract = { package = "srml-contract", git = "https://github.com/paritytech/substrate", default-features = false }
+council = { package = "srml-council", git = "https://github.com/paritytech/substrate", default-features = false }
+democracy = { package = "srml-democracy", git = "https://github.com/paritytech/substrate", default-features = false }
+executive = { package = "srml-executive", git = "https://github.com/paritytech/substrate", default-features = false }
+finality-tracker = { package = "srml-finality-tracker", git = "https://github.com/paritytech/substrate", default-features = false }
+grandpa = { package = "srml-grandpa", git = "https://github.com/paritytech/substrate", default-features = false }
+indices = { package = "srml-indices", git = "https://github.com/paritytech/substrate", default-features = false }
+session = { package = "srml-session", git = "https://github.com/paritytech/substrate", default-features = false }
+staking = { package = "srml-staking", git = "https://github.com/paritytech/substrate", default-features = false }
+system = { package = "srml-system", git = "https://github.com/paritytech/substrate", default-features = false }
+timestamp = { package = "srml-timestamp", git = "https://github.com/paritytech/substrate", default-features = false }
+treasury = { package = "srml-treasury", git = "https://github.com/paritytech/substrate", default-features = false }
+sudo = { package = "srml-sudo", git = "https://github.com/paritytech/substrate", default-features = false }
+node-primitives = { package = "node-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
+consensus_aura = { package = "substrate-consensus-aura-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
+consensus_authorities = { package = "substrate-consensus-authorities", git = "https://github.com/paritytech/substrate", default-features = false }
+
+rustc-hex = { version = "2.0", optional = true }
+hex-literal = { version = "0.1.0", optional = true }
+serde = { version = "1.0", optional = true }
+substrate-keyring = { git = "https://github.com/paritytech/substrate", optional = true }
+sdr = {path = "../../evrml/sdr", default-features = false}
+
+[features]
+default = ["std"]
+std = [
+	"parity-codec/std",
+	"substrate-primitives/std",
+	"rstd/std",
+	"runtime_primitives/std",
+	"support/std",
+	"balances/std",
+	"consensus/std",
+	"contract/std",
+	"council/std",
+	"democracy/std",
+	"executive/std",
+	"grandpa/std",
+	"indices/std",
+	"session/std",
+	"staking/std",
+	"system/std",
+	"timestamp/std",
+	"treasury/std",
+	"sudo/std",
+	"version/std",
+	"node-primitives/std",
+	"serde",
+	"safe-mix/std",
+	"client/std",
+	"consensus_aura/std",
+	"rustc-hex",
+	"hex-literal",
+	"serde",
+	"substrate-keyring",
+	"consensus_authorities/std",
+	"offchain-primitives/std",
+    "sdr/std",
+]
