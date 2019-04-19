@@ -1,11 +1,11 @@
 [package]
-name = "evoland"
+name = "land-chain"
 version = "0.2.0"
-authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+authors = ["Evolution Land <hello@evolution.land>"]
 build = "build.rs"
 
 [[bin]]
-name = "evolutionland"
+name = "land-chain"
 path = "node/src/main.rs"
 
 [dependencies]
@@ -24,7 +24,7 @@ members = [
 	"node/executor",
 	"node/primitives",
 	"node/service",
-	"evrml/sdr",
+	"srml/sdr",
 ]
 exclude = [ "node/runtime/wasm" ]
 
