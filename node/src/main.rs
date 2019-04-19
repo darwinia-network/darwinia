@@ -54,13 +54,13 @@ error_chain::quick_main!(run);
 
 fn run() -> cli::error::Result<()> {
 	let version = VersionInfo {
-		name: "EvolutionLand",
+		name: "Evolution Land Chain",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
-		executable_name: "evoland",
-		author: "Commonwealth Labs <hello@commonwealth.im>",
-		description: "EvoLand Client Node",
-		support_url: "",
+		executable_name: "land-chain",
+		author: "Evolution Land <hello@evolution.land>",
+		description: "Evolution Land Chain Client Node",
+		support_url: "https://github.com/evolutionlandorg/land-chain",
 	};
 	cli::run(::std::env::args(), Exit, version)
 }
