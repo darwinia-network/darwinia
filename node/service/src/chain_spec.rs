@@ -4,6 +4,7 @@ use evo_primitives::{AccountId, AuthorityId};
 use evo_runtime::{ConsensusConfig, CouncilSeatsConfig, CouncilVotingConfig, DemocracyConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
 	SudoConfig, RingConfig, ContractConfig, GrandpaConfig, IndicesConfig, SDRConfig, Permill, Perbill};
+
 pub use evo_runtime::GenesisConfig;
 use substrate_service;
 use hex_literal::{hex, hex_impl};
@@ -191,6 +192,7 @@ pub fn testnet_genesis(
 			name: "Evolution Land Global Token".as_bytes().into(),
 			ticker: "RING".as_bytes().into(),
 		}),
+
 		ring: Some(RingConfig {
 			transaction_base_fee: 1 * CENTS,
 			transaction_byte_fee: 10 * MILLICENTS,
@@ -203,6 +205,7 @@ pub fn testnet_genesis(
 			creation_fee: 1 * CENTS,
 			vesting: vec![],
 		}),
+
 	}
 }
 
