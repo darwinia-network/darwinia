@@ -39,6 +39,9 @@ hex-literal = { version = "0.1.0", optional = true }
 serde = { version = "1.0", optional = true }
 substrate-keyring = { git = "https://github.com/paritytech/substrate", optional = true }
 sdr = {path = "../../srml/sdr", default-features = false}
+ring = {path = "../../srml/token/ring", default-features = false}
+kton = {path = "../../srml/token/kton", default-features = false}
+
 
 [features]
 default = ["std"]
@@ -75,4 +78,6 @@ std = [
 	"consensus_authorities/std",
 	"offchain-primitives/std",
     "sdr/std",
+    "ring/std",
+    "kton/std",
 ]

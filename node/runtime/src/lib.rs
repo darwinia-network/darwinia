@@ -14,7 +14,6 @@ extern crate parity_codec;
 extern crate substrate_primitives;
 
 extern crate version;
-extern crate sdr;
 extern crate aura;
 extern crate balances;
 extern crate consensus;
@@ -35,6 +34,10 @@ extern crate offchain_primitives;
 
 extern crate node_primitives;
 extern crate consensus_aura;
+
+extern crate sdr;
+extern crate ring;
+extern crate kton;
 
 use rstd::prelude::*;
 use support::construct_runtime;
@@ -215,6 +218,22 @@ impl sdr::Trait for Runtime {
 	type TokenBalance = u128;
 }
 
+impl ring::Trait for Runtime {
+	type Balance = Balance;
+	type OnFreeBalanceZero = ((Staking, Contract), Session);
+	type OnNewAccount = Indices;
+	type Event = Event;
+	type TransactionPayment = ();
+	type DustRemoval = ();
+	type TransferPayment = ();
+}
+
+impl kton::Trait for Runtime {
+	type Balance = Balance;
+	type Currency = Ring;
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime with Log(InternalLog: DigestItem<Hash, AuthorityId, AuthoritySignature>) where
 		Block = Block,
@@ -240,6 +259,8 @@ construct_runtime!(
 		Contract: contract::{Module, Call, Storage, Config<T>, Event<T>},
 		Sudo: sudo,
 		SDR: sdr::{Module, Call, Storage, Config<T>, Event<T>},
+		Ring: ring,
+		Kton: kton::{Module, Call, Storage, Event<T>},
 	}
 );
 

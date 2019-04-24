@@ -3,7 +3,7 @@ use substrate_primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use evo_primitives::{AccountId, AuthorityId};
 use evo_runtime::{ConsensusConfig, CouncilSeatsConfig, CouncilVotingConfig, DemocracyConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
-	SudoConfig, ContractConfig, GrandpaConfig, IndicesConfig, SDRConfig, Permill, Perbill};
+	SudoConfig, RingConfig, ContractConfig, GrandpaConfig, IndicesConfig, SDRConfig, Permill, Perbill};
 pub use evo_runtime::GenesisConfig;
 use substrate_service;
 use hex_literal::{hex, hex_impl};
@@ -190,6 +190,18 @@ pub fn testnet_genesis(
 			total_supply: 21000000,
 			name: "Evolution Land Global Token".as_bytes().into(),
 			ticker: "RING".as_bytes().into(),
+		}),
+		ring: Some(RingConfig {
+			transaction_base_fee: 1 * CENTS,
+			transaction_byte_fee: 10 * MILLICENTS,
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			existential_deposit: 1 * DOLLARS,
+			transfer_fee: 1 * CENTS,
+			creation_fee: 1 * CENTS,
+			vesting: vec![],
 		}),
 	}
 }
