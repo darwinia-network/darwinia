@@ -25,6 +25,8 @@ members = [
 	"node/primitives",
 	"node/service",
 	"srml/sdr",
+	"srml/token/ring",
+	"srml/token/kton",
 ]
 exclude = [ "node/runtime/wasm" ]
 

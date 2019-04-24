@@ -1,7 +1,9 @@
 [package]
 name = "evo-runtime-wasm"
 version = "0.1.0"
-authors = ["Commonwealth Labs <hello@commonwealth.im>"]
+authors = ["Evolution Land <hello@evolution.land>"]
+
+
 
 [lib]
 name = "evo_runtime"
