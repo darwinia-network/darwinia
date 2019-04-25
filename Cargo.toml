@@ -32,6 +32,9 @@ package = 'substrate-network'
 [dependencies.node-template-runtime]
 path = 'runtime'
 
+[dependencies.evo-sdr]
+path = 'srml/sdr'
+
 [dependencies.primitives]
 git = 'https://github.com/paritytech/substrate.git'
 package = 'substrate-primitives'
