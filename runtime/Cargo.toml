@@ -130,6 +130,7 @@ std = [
     'primitives/std',
     'system/std',
     'timestamp/std',
+    "evo-sdr/std",
     'sudo/std',
     'version/std',
     'serde_derive',
