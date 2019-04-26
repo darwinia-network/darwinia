@@ -7,7 +7,6 @@ extern crate parity_codec_derive;
 #[cfg(feature = "std")]
 #[macro_use]
 extern crate serde_derive;
-extern crate sr_io as runtime_io;
 extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
 

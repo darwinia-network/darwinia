@@ -1,5 +1,5 @@
 [package]
-name = "ring"
+name = "evo-ring"
 version = "0.1.0"
 authors = ["Evolution Land <hello@evolution.land>"]
 edition = "2018"
