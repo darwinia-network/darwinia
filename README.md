@@ -1,16 +1,17 @@
+# landchain-template
+
 # Evolution Land Chain
 Land based on Parity Substrate.
 
-## Fresh start
-If your device is clean (such as a fresh cloud VM) you can use this script, otherwise, proceed with the Initial Setup.
+## Start
 
+proceed to the Running instructions or follow the instructions below for the manual setup.
+
+### Initial Setup
 ```bash
-./setup.sh
+./init.sh
 ```
-Then proceed to the Running instructions or follow the instructions below for the manual setup.
-
-
-## Initial Setup
+Or, you can run scripts step by step, like the following:
 ```bash
 curl https://sh.rustup.rs -sSf | sh
 rustup update nightly
@@ -18,6 +19,7 @@ rustup target add wasm32-unknown-unknown --toolchain nightly
 rustup update stable
 cargo install --git https://github.com/alexcrichton/wasm-gc
 ```
+
 You will also need to install the following packages:
 
 Linux:
@@ -30,13 +32,14 @@ Mac:
 brew install cmake pkg-config openssl git llvm
 ```
 
-Building
+
+### Building
 ```bash
 ./build.sh
 cargo build --release
 ```
 
-## Running
+Running
 ```bash
-./target/release/evolutionland --dev
+./target/release/node-template --dev
 ```

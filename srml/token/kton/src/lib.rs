@@ -2,12 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate parity_codec;
-#[macro_use]
 extern crate parity_codec_derive;
-#[cfg(feature = "std")]
-#[macro_use]
-extern crate serde_derive;
-extern crate sr_io as runtime_io;
+
+
 extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
 #[macro_use]
@@ -16,21 +13,19 @@ extern crate srml_system as system;
 extern crate srml_timestamp as timestamp;
 #[cfg(test)]
 extern crate substrate_primitives;
-
+#[cfg(feature = "std")]
+use primitives::{Serialize, Deserialize};
 use parity_codec::{Codec, Decode, Encode, HasCompact};
 use primitives::traits::{
-    As, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
+    As, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, SimpleArithmetic,
     StaticLookup, Zero,
 };
-use rstd::{cmp, result};
-use rstd::prelude::*;
+use rstd::{prelude::*, vec};
 use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
-    Currency, LockableCurrency, LockIdentifier, MakePayment, OnFreeBalanceZero,
-    OnUnbalanced, UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
-};
-use system::{ensure_signed, IsDeadAccount, OnNewAccount};
+    Currency, LockableCurrency, LockIdentifier, WithdrawReasons};
+use system::{ensure_signed};
 
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const Month: u64 = 2592000;

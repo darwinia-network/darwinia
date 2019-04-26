@@ -1,41 +1,81 @@
-[package]
-name = "land-chain"
-version = "0.2.0"
-authors = ["Evolution Land <hello@evolution.land>"]
-build = "build.rs"
-
-[[bin]]
-name = "land-chain"
-path = "node/src/main.rs"
-
 [dependencies]
-error-chain = "0.12"
-evo-cli = { path = "node/cli" }
-futures = "0.1"
-ctrlc = { version = "3.0", features = ["termination"] }
+error-chain = '0.12'
+exit-future = '0.1'
+futures = '0.1'
+hex-literal = '0.1'
+log = '0.4'
+parity-codec = '3.3'
+parking_lot = '0.7.1'
+tokio = '0.1'
+trie-root = '0.12.0'
+
+[dependencies.basic-authorship]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-basic-authorship'
+
+[dependencies.consensus]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-consensus-aura'
+
+[dependencies.ctrlc]
+features = ['termination']
+version = '3.0'
+
+[dependencies.inherents]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-inherents'
+
+[dependencies.network]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-network'
+
+[dependencies.node-template-runtime]
+path = 'runtime'
+
+[dependencies.primitives]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-primitives'
+
+
+[dependencies.substrate-cli]
+git = 'https://github.com/paritytech/substrate.git'
+
+[dependencies.substrate-client]
+git = 'https://github.com/paritytech/substrate.git'
+
+[dependencies.substrate-executor]
+git = 'https://github.com/paritytech/substrate.git'
+
+[dependencies.substrate-service]
+git = 'https://github.com/paritytech/substrate.git'
+
+[dependencies.transaction-pool]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-transaction-pool'
 
 [build-dependencies]
-vergen = "3"
+vergen = '3'
+
+[profile.release]
+panic = 'unwind'
+
+[[bin]]
+name = 'landchain-template'
+path = 'src/main.rs'
 
 [workspace]
 members = [
-	"node/runtime",
-	"node/cli",
-	"node/executor",
-	"node/primitives",
-	"node/service",
-	"srml/sdr",
+	"runtime",
+	"srml/token/sdr",
 	"srml/token/ring",
 	"srml/token/kton",
 ]
-exclude = [ "node/runtime/wasm" ]
+exclude = ["runtime/wasm"]
 
-[badges]
-travis-ci = { repository = "paritytech/substrate", branch = "master" }
-maintenance = { status = "actively-developed" }
-is-it-maintained-issue-resolution = { repository = "paritytech/substrate" }
-is-it-maintained-open-issues = { repository = "paritytech/substrate" }
+[package]
+authors = ['Parity Technologies <admin@parity.io>']
+build = 'build.rs'
+edition = '2018'
+name = 'node-template'
+version = '1.0.0'
 
-[profile.release]
-# Substrate runtime requires unwinding.
-panic = "unwind"

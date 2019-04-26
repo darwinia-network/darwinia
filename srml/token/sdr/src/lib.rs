@@ -1,28 +1,26 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(feature = "std")]
-extern crate serde;
-
 // Needed for deriving `Serialize` and `Deserialize` for various types.
 // We only implement the serde traits for std builds - they're unneeded
 // in the wasm runtime.
 #[cfg(feature = "std")]
+#[macro_use]
+extern crate serde;
+
 
 extern crate parity_codec;
-extern crate substrate_primitives as primitives;
+extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
 #[macro_use]
-extern crate srml_support as runtime_support;
-extern crate sr_primitives as runtime_primitives;
-extern crate sr_io as runtime_io;
+extern crate srml_support;
 extern crate srml_system as system;
 
 
 use rstd::prelude::*;
 use parity_codec::Codec;
 use system::ensure_signed;
-use runtime_support::{dispatch::Result, StorageMap, Parameter, StorageValue, decl_storage};
-use runtime_primitives::traits::{CheckedSub, CheckedAdd, Member, SimpleArithmetic, As};
+use srml_support::{dispatch::Result, StorageMap, Parameter, StorageValue, decl_storage};
+use primitives::traits::{CheckedSub, CheckedAdd, Member, SimpleArithmetic, As};
 
 pub trait Trait: system::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -52,8 +50,8 @@ decl_module! {
       }
 
       // transfer tokens from one account to another
-      fn transfer(_origin, to: T::AccountId, value: T::TokenBalance) -> Result {
-          let sender = ensure_signed(_origin)?;
+      fn transfer(origin, to: T::AccountId, value: T::TokenBalance) -> Result {
+          let sender = ensure_signed(origin)?;
           Self::_transfer(sender, to, value)
       }
 
@@ -99,13 +97,13 @@ decl_module! {
 
 // storage for this runtime module
 decl_storage! {
-  trait Store for Module<T: Trait> as SDR {
+  trait Store for Module<T: Trait> as RING {
     // bool flag to allow init to be called only once
     Init get(is_init): bool;
 
     // owner gets all the tokens when calls initialize
     // setting via genesis config to avoid race condition
-    Owner get(owner) config(): T::AccountId;
+    Owner get(owner) : T::AccountId;
 
     // total supply of the sdr
     // set in the genesis config
@@ -113,8 +111,8 @@ decl_storage! {
     TotalSupply get(total_supply) config(): T::TokenBalance;
 
     // not really needed - name and ticker, but why not?
-    Name get(name) config(): Vec<u8>;
-    Ticker get (ticker) config(): Vec<u8>;
+    Name get(name) : Vec<u8>;
+    Ticker get (ticker) : Vec<u8>;
 
     // standard balances and allowances mappings for ERC20 implementation
     BalanceOf get(balance_of): map T::AccountId => T::TokenBalance;
@@ -124,7 +122,8 @@ decl_storage! {
 
 // events
 decl_event!(
-    pub enum Event<T> where AccountId = <T as system::Trait>::AccountId,
+    pub enum Event<T> where
+      AccountId = <T as system::Trait>::AccountId,
       Balance = <T as self::Trait>::TokenBalance {
         // event for transfer of tokens
         // from, to, value
