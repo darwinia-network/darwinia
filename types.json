@@ -1,0 +1,16 @@
+{
+  "Currency": "Balance",
+  "CurrencyOf": "Balance",
+  "TokenBalance": "Balance",
+  "DepositInfo": {
+    "month": "Moment",
+    "start_at": "Moment",
+    "value": "Balance",
+    "unit_interest": "u64",
+    "claimed": "bool"
+  },
+  "Deposit": {
+    "total_deposit": "Balance",
+    "deposit_list": "Vec<DepositInfo>"
+  }
+}
