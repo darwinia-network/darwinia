@@ -135,7 +135,7 @@ decl_module! {
 			Self::transfer_internal(&transactor, &dest, value)?;
 		}
 
-		fn deposit(origin, value: CurrencyOf<T>, duration: T::Moment) -> Result {
+		fn deposit(origin, #[compact] value: CurrencyOf<T>, duration: T::Moment) -> Result {
             let transactor = ensure_signed(origin)?;
             let free_balance = T::Currency::free_balance(&transactor);
             let value = value.min(free_balance);
@@ -145,7 +145,7 @@ decl_module! {
             Ok(())
 		}
 
-        fn withdraw(origin, months: T::Moment, value: CurrencyOf<T>) -> Result {
+        fn withdraw(origin, months: T::Moment, #[compact] value: CurrencyOf<T>) -> Result {
             let transactor = ensure_signed(origin)?;
             Self::withdraw_deposit(transactor.clone(), months, value);
             Ok(())

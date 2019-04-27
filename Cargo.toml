@@ -60,7 +60,7 @@ vergen = '3'
 panic = 'unwind'
 
 [[bin]]
-name = 'landchain-template'
+name = 'land-chain'
 path = 'src/main.rs'
 
 [workspace]

@@ -25,7 +25,7 @@ use primitives::{ed25519, sr25519, OpaqueMetadata};
 
 use runtime_primitives::{
 	ApplyResult, transaction_validity::TransactionValidity, generic, create_runtime_str,
-	traits::{self, NumberFor, BlakeTwo256, Block as BlockT, StaticLookup, Verify}
+	traits::{self, NumberFor, BlakeTwo256, Block as BlockT, StaticLookup, Verify, AuthorityIdFor}
 };
 use client::{
 	block_builder::api::{CheckInherentsResult, InherentData, self as block_builder_api},
@@ -103,8 +103,8 @@ pub mod opaque {
 
 /// This runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("landchain-template"),
-	impl_name: create_runtime_str!("landchain-template"),
+	spec_name: create_runtime_str!("land-chain"),
+	impl_name: create_runtime_str!("land-chain"),
 	authoring_version: 3,
 	spec_version: 3,
 	impl_version: 0,
@@ -184,12 +184,14 @@ impl balances::Trait for Runtime {
 	type OnFreeBalanceZero = ();
 	/// What to do if a new account is created.
 	type OnNewAccount = Indices;
-	/// The uniquitous event type.
-	type Event = Event;
 
 	type TransactionPayment = ();
-	type DustRemoval = ();
+
 	type TransferPayment = ();
+
+	type DustRemoval = ();
+	/// The uniquitous event type.
+	type Event = Event;
 }
 
 impl sudo::Trait for Runtime {
@@ -215,12 +217,13 @@ impl ring::Trait for Runtime {
 	type OnFreeBalanceZero = ();
 	/// What to do if a new account is created.
 	type OnNewAccount = Indices;
-	/// The uniquitous event type.
-	type Event = Event;
+
 
 	type TransactionPayment = ();
-	type DustRemoval = ();
 	type TransferPayment = ();
+	type DustRemoval = ();
+	/// The uniquitous event type.
+	type Event = Event;
 }
 
 impl kton::Trait for Runtime {
@@ -282,7 +285,7 @@ impl_runtime_apis! {
 			Executive::initialize_block(header)
 		}
 
-		fn authorities() -> Vec<AuthorityId> {
+		fn authorities() -> Vec<AuthorityIdFor<Block>> {
 			panic!("Deprecated, please use `AuthoritiesApi`.")
 		}
 	}
