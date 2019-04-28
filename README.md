@@ -1,4 +1,4 @@
-# landchain-template
+# land-chain
 
 # Evolution Land Chain
 Land based on Parity Substrate.
@@ -41,5 +41,21 @@ cargo build --release
 
 Running
 ```bash
-./target/release/node-template --dev
+./target/release/land-chain --dev
 ```
+
+Play with gui, open
+
+[https://polkadot.js.org/apps/#/settings](https://polkadot.js.org/apps/#/settings)
+
+And select the local node (127.0.0.1), please note that for the current GUI version, custom struct&tpyes must be configured before viewing.
+
+Go to [https://polkadot.js.org/apps/#/settings/developer](https://polkadot.js.org/apps/#/settings/developer)
+
+And copy the content in
+```
+./types.json
+```
+
+to the type definitions text area.
+

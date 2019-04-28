@@ -1,16 +1,26 @@
 {
-  "Currency": "Balance",
-  "CurrencyOf": "Balance",
-  "TokenBalance": "Balance",
+  "TokenBalance": "u128",
+  "Auction": {
+    "seller": "AccountId",
+    "startAt": "Moment",
+    "duration": "u64",
+    "startingPrice": "TokenBalance",
+    "endingPrice": "TokenBalance",
+    "lastRecord": "TokenBalance",
+    "lastBidder": "AccountId",
+    "lastBidStartAt": "Moment"
+  },
+  "Currency": "u128",
+  "CurrencyOf": "u128",
   "DepositInfo": {
     "month": "Moment",
     "start_at": "Moment",
-    "value": "Balance",
+    "value": "CurrencyOf",
     "unit_interest": "u64",
     "claimed": "bool"
   },
   "Deposit": {
-    "total_deposit": "Balance",
+    "total_deposit": "CurrencyOf",
     "deposit_list": "Vec<DepositInfo>"
   }
 }
