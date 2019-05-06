@@ -13,6 +13,7 @@ authors = ['Parity Technologies <admin@parity.io>']
 edition = '2018'
 name = 'node-template-runtime-wasm'
 version = '1.0.0'
+
 [dependencies.node-template-runtime]
 default-features = false
 path = '..'
