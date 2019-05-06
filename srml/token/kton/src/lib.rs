@@ -238,6 +238,7 @@ impl<T: Trait> Module<T> {
 
     // @param months - in month
     fn update_deposit(who: T::AccountId, value: CurrencyOf<T>, months: T::Moment) -> Result {
+
         let now = timestamp::Module::<T>::get();
         let unit_interest = Self::unit_interest();
         let deposit_info = DepositInfo { month: months.clone(), start_at: now, value: value, unit_interest: unit_interest, claimed: false };
