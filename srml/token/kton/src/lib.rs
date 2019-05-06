@@ -13,6 +13,7 @@ extern crate srml_system as system;
 extern crate srml_timestamp as timestamp;
 #[cfg(test)]
 extern crate substrate_primitives;
+extern crate evo_support as esupport;
 #[cfg(feature = "std")]
 use primitives::{Serialize, Deserialize};
 use parity_codec::{Codec, Decode, Encode, HasCompact};
@@ -27,15 +28,21 @@ use srml_support::traits::{
     Currency, LockableCurrency, LockIdentifier, WithdrawReasons};
 use system::{ensure_signed};
 
+// custom module
+
+
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const Month: u64 = 2592000;
 
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct DepositInfo<Currency: Default, Moment: Default> {
+pub struct DepositInfo<Currency: HasCompact, Moment: HasCompact> {
+    #[codec(compact)]
     pub month: Moment,
+    #[codec(compact)]
     pub start_at: Moment,
+    #[codec(compact)]
     pub value: Currency,
     pub unit_interest: u64,
     pub claimed: bool,
@@ -43,14 +50,13 @@ pub struct DepositInfo<Currency: Default, Moment: Default> {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Deposit<Currency: Default, Moment: Default> {
+pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
+    #[codec(compact)]
     pub total_deposit: Currency,
     pub deposit_list: Vec<DepositInfo<Currency, Moment>>,
 }
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
-pub type AccountIdOf<T> = <T as system::Trait>::AccountId;
-
 pub trait Trait: timestamp::Trait {
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug;
@@ -65,6 +71,7 @@ decl_event!(
 		<T as system::Trait>::AccountId,
 		<T as Trait>::Balance,
 		Currency = CurrencyOf<T>,
+		Moment = <T as timestamp::Trait>::Moment,
 	{
 	    /// lock ring for getting kton
 	    /// Balance is for kton
@@ -72,6 +79,8 @@ decl_event!(
 		NewDeposit(u64, AccountId, Balance, Currency),
 		/// Transfer succeeded (from, to, value, fees).
 		TokenTransfer(AccountId, AccountId, Balance),
+
+		WithdrawDeposit(AccountId, Currency, Moment, bool),
 	}
 );
 
@@ -105,19 +114,24 @@ pub struct BalanceLock<Balance, BlockNumber> {
     pub reasons: WithdrawReasons,
 }
 
+
+
 decl_storage! {
 	trait Store for Module<T: Trait> as KtonBalances {
+
+        pub Decimals get(decimals): u32;
+
 	    pub UnitInterest get(unit_interest): u64;
 
-	    pub DepositLedger get(deposit_ledger): map AccountIdOf<T> => Deposit<CurrencyOf<T>, T::Moment>;
+	    pub DepositLedger get(deposit_ledger): map T::AccountId => Deposit<CurrencyOf<T>, T::Moment>;
 		/// The total `units issued in the system.
 		pub TotalIssuance get(total_issuance) : T::Balance;
 
-		pub FreeBalance get(free_balance): map AccountIdOf<T> => T::Balance;
+		pub FreeBalance get(free_balance): map T::AccountId => T::Balance;
 
-		pub ReservedBalance get(reserved_balance): map AccountIdOf<T> => T::Balance;
+		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map AccountIdOf<T> => Vec<BalanceLock<T::Balance, T::Moment>>;
+		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 	}
 }
 
@@ -135,25 +149,29 @@ decl_module! {
 			Self::transfer_internal(&transactor, &dest, value)?;
 		}
 
+        // @param duration - in month
 		fn deposit(origin, #[compact] value: CurrencyOf<T>, duration: T::Moment) -> Result {
             let transactor = ensure_signed(origin)?;
             let free_balance = T::Currency::free_balance(&transactor);
             let value = value.min(free_balance);
 
-            Self::update_deposit(transactor, value, duration);
+            Self::update_deposit(transactor, value, duration)?;
 
             Ok(())
 		}
 
         fn withdraw(origin, months: T::Moment, #[compact] value: CurrencyOf<T>) -> Result {
             let transactor = ensure_signed(origin)?;
-            Self::withdraw_deposit(transactor.clone(), months, value);
+            Self::withdraw_deposit(transactor.clone(), months, value)?;
+
             Ok(())
+
         }
     }
 
 
 }
+
 
 impl<T: Trait> Module<T> {
     fn transfer_internal(transactor: &T::AccountId, dest: &T::AccountId, value: T::Balance) -> Result {
@@ -170,7 +188,8 @@ impl<T: Trait> Module<T> {
             None => return Err("destination balance too high to receive value"),
         };
 
-
+        Self::set_free_balance(transactor, new_from_balance);
+        Self::set_free_balance(dest, new_to_balance);
         Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
 
         Ok(())
@@ -179,7 +198,7 @@ impl<T: Trait> Module<T> {
     // PRIVATE MUTABLES
 
 
-    fn withdraw_deposit(who: AccountIdOf<T>, months: T::Moment, value: CurrencyOf<T>) -> Result {
+    fn withdraw_deposit(who: T::AccountId, months: T::Moment, value: CurrencyOf<T>) -> Result {
         let now = timestamp::Module::<T>::get();
         let mut deposit = Self::deposit_ledger(&who);
         let mut deposit_info : DepositInfo<CurrencyOf<T>, T::Moment> = deposit.deposit_list.into_iter()
@@ -191,9 +210,11 @@ impl<T: Trait> Module<T> {
         let due_time = deposit_info.start_at.clone() + duration;
         let total_deposit = deposit.total_deposit;
 
-        if now >= due_time {
+        let is_claimed =  now >= due_time;
+
+        if is_claimed {
             deposit_info.claimed = true;
-            T::Currency::set_lock(DEPOSIT_ID, &who, total_deposit - value.clone(), T::Moment::sa(u64::max_value()), WithdrawReasons::all());
+            deposit.total_deposit -= value;
         } else {
             let months_left = (now.clone() - due_time.clone()) / T::Moment::sa(Month);
             let kton_penalty = Self::compute_kton_balance(months_left, value.clone()) * T::Balance::sa(3);
@@ -204,23 +225,29 @@ impl<T: Trait> Module<T> {
                 None => return Err("from balance too low to receive value"),
             };
             deposit_info.claimed = true;
+            deposit.total_deposit -= value;
             Self::set_free_balance(&who, new_free_balance.clone());
         }
 
+        T::Currency::remove_lock(DEPOSIT_ID, &who);
+        T::Currency::set_lock(DEPOSIT_ID, &who, total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
+
+        Self::deposit_event(RawEvent::WithdrawDeposit(who, value, months, is_claimed));
         Ok(())
     }
 
-    fn update_deposit(who: AccountIdOf<T>, value: CurrencyOf<T>, months: T::Moment) -> Result {
-        let duration = months.clone() * T::Moment::sa(Month);
+    // @param months - in month
+    fn update_deposit(who: T::AccountId, value: CurrencyOf<T>, months: T::Moment) -> Result {
+
         let now = timestamp::Module::<T>::get();
         let unit_interest = Self::unit_interest();
         let deposit_info = DepositInfo { month: months.clone(), start_at: now, value: value, unit_interest: unit_interest, claimed: false };
-        if <DepositLedger<T>>::exists(who.clone()) {
+        if <DepositLedger<T>>::exists(&who) {
             let mut deposit = Self::deposit_ledger(&who);
             deposit.total_deposit += value;
-            deposit.deposit_list.push(deposit_info.clone());
+            deposit.deposit_list.push(deposit_info);
         } else {
-            <DepositLedger<T>>::insert(&who, Deposit {total_deposit:value, deposit_list: vec![deposit_info] });
+            <DepositLedger<T>>::insert(&who, Deposit {total_deposit:value, deposit_list: vec![deposit_info]});
         }
 
         let new_balance = Self::compute_kton_balance(months.clone(), value.clone());
@@ -231,6 +258,7 @@ impl<T: Trait> Module<T> {
             None => return Err("got overflow after adding a fee to value"),
         };
 
+        T::Currency::remove_lock(DEPOSIT_ID, &who);
         T::Currency::set_lock(DEPOSIT_ID, &who, Self::deposit_ledger(&who).total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
 
         Self::set_free_balance(&who, new_balance);
@@ -245,7 +273,7 @@ impl<T: Trait> Module<T> {
         T::Balance::sa(value)
     }
 
-    fn set_free_balance(who: &AccountIdOf<T>, balance: T::Balance) {
+    fn set_free_balance(who: &T::AccountId, balance: T::Balance) {
         <FreeBalance<T>>::insert(who, balance);
     }
 }
