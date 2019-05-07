@@ -11,13 +11,13 @@ pub use substrate_cli::{VersionInfo, IntoExit, error};
 
 fn run() -> cli::error::Result<()> {
 	let version = VersionInfo {
-		name: "Evolution Land's Land Chain Node",
+		name: "Darwinia AppChain",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
-		executable_name: "land-chain",
+		executable_name: "darwinia-appchain",
 		author: "Evolution Land <hello@evolution.land>",
-		description: "Land Chain Node",
-		support_url: "https://github.com/evolutionlandorg/land-chain/issues/new",
+		description: "Application chain in Darwinia network based on substrate framework",
+		support_url: "https://github.com/evolutionlandorg/darwinia-appchain/issues/new",
 	};
 	cli::run(::std::env::args(), cli::Exit, version)
 }
