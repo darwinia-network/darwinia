@@ -1,7 +1,8 @@
 # Darwinia AppChain
-Application chain in Darwinia network based on substrate framework.
+Application chain in Darwinia network based on substrate framework. For detail introduction, view [RFC for Darwinia Appchain](https://github.com/evolutionlandorg/ELIPs/blob/master/rfcs/zh_CN/0006-dawinia-appchain.md)
 
 The next coming land will use the Darwinia AppChain to build and develop.
+
 
 ## Start
 
