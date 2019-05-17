@@ -97,7 +97,7 @@ decl_module! {
 
 // storage for this runtime module
 decl_storage! {
-  trait Store for Module<T: Trait> as RING {
+  trait Store for Module<T: Trait> as SDR {
     // bool flag to allow init to be called only once
     Init get(is_init): bool;
 

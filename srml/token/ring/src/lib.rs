@@ -1,6 +1,8 @@
 //! RING: system token of evolution land
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// custom module
+extern crate evo_kton as kton;
 extern crate parity_codec;
 #[macro_use]
 extern crate parity_codec_derive;
@@ -9,33 +11,30 @@ extern crate parity_codec_derive;
 extern crate serde_derive;
 extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
-
-#[cfg(test)]
-extern crate substrate_primitives;
 #[macro_use]
 extern crate srml_support;
 extern crate srml_system as system;
 extern crate srml_timestamp as timestamp;
+#[cfg(test)]
+extern crate substrate_primitives;
 
-use rstd::prelude::*;
-use rstd::{cmp, result};
-use parity_codec::{Codec, Encode, Decode};
-use srml_support::{StorageValue, StorageMap, Parameter, decl_event, decl_storage, decl_module};
-use srml_support::traits::{
-    UpdateBalanceOutcome, Currency, OnFreeBalanceZero, MakePayment, OnUnbalanced,
-    WithdrawReason, WithdrawReasons, LockIdentifier, LockableCurrency, ExistenceRequirement,
-    Imbalance, SignedImbalance, ReservableCurrency
-};
-use srml_support::dispatch::Result;
+use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
-    Zero, SimpleArithmetic, As, StaticLookup, Member, CheckedAdd, CheckedSub,
-    MaybeSerializeDebug, Saturating
+    As, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
+    StaticLookup, Zero,
 };
-use system::{IsDeadAccount, OnNewAccount, ensure_signed};
+use rstd::{cmp, result};
+use rstd::prelude::*;
+use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
+use srml_support::dispatch::Result;
+use srml_support::traits::{
+    Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier,
+    MakePayment, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency, SignedImbalance,
+    UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+};
+use system::{ensure_signed, IsDeadAccount, OnNewAccount};
 
-
-
-pub use self::imbalances::{PositiveImbalance, NegativeImbalance};
+pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: timestamp::Trait {
     /// The balance of an account.
@@ -52,7 +51,6 @@ pub trait Subtrait<I: Instance = DefaultInstance>: timestamp::Trait {
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: timestamp::Trait {
-
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug;
 
@@ -131,6 +129,8 @@ pub struct BalanceLock<Balance, BlockNumber> {
 
 decl_storage! {
 	trait Store for Module<T: Trait<I>, I: Instance=DefaultInstance> as RingBalances {
+	     // custom
+	    pub Init get(is_init): bool;
 		/// The total units issued in the system.
 		pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T, I>| {
 			config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
@@ -189,6 +189,16 @@ decl_module! {
 	pub struct Module<T: Trait<I>, I: Instance = DefaultInstance> for enum Call where origin: T::Origin {
 		fn deposit_event<T, I>() = default;
 
+        pub fn init(origin) -> Result {
+            ensure!(Self::is_init() == false, "Token already initialized.");
+
+            let sender = ensure_signed(origin)?;
+
+            <FreeBalance<T, I>>::insert(sender, Self::total_issuance());
+            <Init<T, I>>::put(true);
+
+            Ok(())
+        }
 		/// Transfer some liquid free balance to another account.
 		///
 		/// `transfer` will set the `FreeBalance` of the sender and receiver.
@@ -340,16 +350,17 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 // wrapping these imbalances in a private module is necessary to ensure absolute privacy
 // of the inner member.
 mod imbalances {
-    use super::{
-        result, Subtrait, DefaultInstance, Imbalance, Trait, Zero, Instance, Saturating,
-        StorageValue,
-    };
     use rstd::mem;
 
+    use super::{
+        DefaultInstance, Imbalance, Instance, result, Saturating, StorageValue, Subtrait, Trait,
+        Zero,
+    };
+
     /// Opaque, move-only struct with private fields that serves as a token denoting that
-    /// funds have been created without any equal and opposite accounting.
+        /// funds have been created without any equal and opposite accounting.
     #[must_use]
-    pub struct PositiveImbalance<T: Subtrait<I>, I: Instance=DefaultInstance>(T::Balance);
+    pub struct PositiveImbalance<T: Subtrait<I>, I: Instance = DefaultInstance>(T::Balance);
 
     impl<T: Subtrait<I>, I: Instance> PositiveImbalance<T, I> {
         /// Create a new positive imbalance from a balance.
@@ -361,7 +372,7 @@ mod imbalances {
     /// Opaque, move-only struct with private fields that serves as a token denoting that
     /// funds have been destroyed without any equal and opposite accounting.
     #[must_use]
-    pub struct NegativeImbalance<T: Subtrait<I>, I: Instance=DefaultInstance>(T::Balance);
+    pub struct NegativeImbalance<T: Subtrait<I>, I: Instance = DefaultInstance>(T::Balance);
 
     impl<T: Subtrait<I>, I: Instance> NegativeImbalance<T, I> {
         /// Create a new negative imbalance from a balance.
@@ -492,13 +503,17 @@ mod imbalances {
 // depend on the Imbalance type (TransactionPayment, TransferPayment, DustRemoval)
 // are placed in their own SRML module.
 struct ElevatedTrait<T: Subtrait<I>, I: Instance>(T, I);
+
 impl<T: Subtrait<I>, I: Instance> Clone for ElevatedTrait<T, I> {
     fn clone(&self) -> Self { unimplemented!() }
 }
+
 impl<T: Subtrait<I>, I: Instance> PartialEq for ElevatedTrait<T, I> {
     fn eq(&self, _: &Self) -> bool { unimplemented!() }
 }
+
 impl<T: Subtrait<I>, I: Instance> Eq for ElevatedTrait<T, I> {}
+
 impl<T: Subtrait<I>, I: Instance> system::Trait for ElevatedTrait<T, I> {
     type Origin = T::Origin;
     type Index = T::Index;
@@ -517,6 +532,7 @@ impl<T: Subtrait<I>, I: Instance> timestamp::Trait for ElevatedTrait<T, I> {
     type Moment = T::Moment;
     type OnTimestampSet = T::OnTimestampSet;
 }
+
 impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
     type Balance = T::Balance;
     type OnFreeBalanceZero = T::OnFreeBalanceZero;
@@ -568,7 +584,7 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
         }
         let locks = Self::locks(who);
         if locks.is_empty() {
-            return Ok(())
+            return Ok(());
         }
         let now = <timestamp::Module<T>>::get();
         if Self::locks(who).into_iter()
@@ -627,7 +643,7 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
     ) -> result::Result<Self::NegativeImbalance, &'static str> {
         if let Some(new_balance) = Self::free_balance(who).checked_sub(&value) {
             if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::existential_deposit() {
-                return Err("payment would kill account")
+                return Err("payment would kill account");
             }
             Self::ensure_can_withdraw(who, value, reason, new_balance)?;
             Self::set_free_balance(who, new_balance);
@@ -639,7 +655,7 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
 
     fn slash(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);
@@ -661,7 +677,7 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
 
     fn deposit_into_existing(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> result::Result<Self::PositiveImbalance, &'static str> {
         if Self::total_balance(who).is_zero() {
             return Err("beneficiary account must pre-exist");
@@ -699,7 +715,7 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
             return (
                 SignedImbalance::Positive(Self::PositiveImbalance::zero()),
                 UpdateBalanceOutcome::AccountKilled,
-            )
+            );
         }
         let imbalance = if original <= balance {
             SignedImbalance::Positive(PositiveImbalance::new(balance - original))
@@ -736,7 +752,7 @@ impl<T: Trait<I>, I: Instance> ReservableCurrency<T::AccountId> for Module<T, I>
         Self::free_balance(who)
             .checked_sub(&value)
             .map_or(false, |new_balance|
-                Self::ensure_can_withdraw(who, value, WithdrawReason::Reserve, new_balance).is_ok()
+                Self::ensure_can_withdraw(who, value, WithdrawReason::Reserve, new_balance).is_ok(),
             )
     }
 
@@ -747,7 +763,7 @@ impl<T: Trait<I>, I: Instance> ReservableCurrency<T::AccountId> for Module<T, I>
     fn reserve(who: &T::AccountId, value: Self::Balance) -> result::Result<(), &'static str> {
         let b = Self::free_balance(who);
         if b < value {
-            return Err("not enough free funds")
+            return Err("not enough free funds");
         }
         let new_balance = b - value;
         Self::ensure_can_withdraw(who, value, WithdrawReason::Reserve, new_balance)?;
@@ -766,7 +782,7 @@ impl<T: Trait<I>, I: Instance> ReservableCurrency<T::AccountId> for Module<T, I>
 
     fn slash_reserved(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let b = Self::reserved_balance(who);
         let slash = cmp::min(b, value);
@@ -873,7 +889,7 @@ impl<T: Trait<I>, I: Instance> MakePayment<T::AccountId> for Module<T, I> {
             transactor,
             transaction_fee,
             WithdrawReason::TransactionPayment,
-            ExistenceRequirement::KeepAlive
+            ExistenceRequirement::KeepAlive,
         )?;
         T::TransactionPayment::on_unbalanced(imbalance);
         Ok(())
