@@ -19,6 +19,7 @@ srml-support = { git = "https://github.com/paritytech/substrate", default-featur
 srml-system = { git = "https://github.com/paritytech/substrate", default-features = false }
 srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
+evo-kton = {path = "../kton", default_features = false}
 
 [features]
 default = ["std"]
@@ -35,4 +36,5 @@ std = [
     "sr-primitives/std",
     "srml-system/std",
     "srml-timestamp/std",
+    "evo-kton/std",
 ]

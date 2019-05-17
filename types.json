@@ -22,5 +22,11 @@
   "Deposit": {
     "total_deposit": "CurrencyOf",
     "deposit_list": "Vec<DepositInfo>"
+  },
+  "Revenue": {
+    "team": "TokenBalance",
+    "contribution": "TokenBalance",
+    "ktoner": "TokenBalance",
+    "lottery": "TokenBalance"
   }
 }

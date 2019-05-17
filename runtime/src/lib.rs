@@ -249,7 +249,7 @@ construct_runtime!(
 		TemplateModule: template::{Module, Call, Storage, Event<T>},
 		Sdr: sdr::{Module, Call, Storage, Event<T>},
 		Ring: ring,
-		Kton: kton::{Module, Call, Storage, Event<T>},
+		Kton: kton::{Module, Call, Config<T>, Storage, Event<T>},
 	}
 );
 

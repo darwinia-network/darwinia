@@ -2,7 +2,7 @@
 error-chain = '0.12'
 exit-future = '0.1'
 futures = '0.1'
-hex-literal = '0.1'
+hex-literal = '0.2'
 log = '0.4'
 parity-codec = '3.3'
 parking_lot = '0.7.1'
@@ -70,6 +70,7 @@ members = [
 	"srml/token/sdr",
 	"srml/token/ring",
 	"srml/token/kton",
+	"srml/try",
 ]
 exclude = ["runtime/wasm"]
 

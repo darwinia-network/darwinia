@@ -1,10 +1,10 @@
-use primitives::{ed25519, sr25519, Pair};
+use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_template_runtime::{
 	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig,
-	SudoConfig, IndicesConfig, RingConfig,
+	SudoConfig, IndicesConfig, RingConfig, KtonConfig
 };
 use substrate_service;
-
+use hex_literal::hex;
 use ed25519::Public as AuthorityId;
 
 // Note this is the URL for the telemetry server
@@ -123,6 +123,9 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 			creation_fee: 0,
 			balances: endowed_accounts.iter().cloned().map(|k|(k, 1 << 60)).collect(),
 			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			sys_account: hex!["0000000000000000000000000000000000000000000000000000000000000001"].unchecked_into(),
 		}),
 	}
 }
