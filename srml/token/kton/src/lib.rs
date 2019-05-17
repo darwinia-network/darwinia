@@ -31,8 +31,14 @@ use system::{ensure_signed};
 use core::convert::TryFrom;
 
 use sr_io::print;
+
+mod mock;
+mod tests;
+
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const MONTH: u64 = 2592000;
+
+
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]

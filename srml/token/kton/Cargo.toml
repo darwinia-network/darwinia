@@ -22,6 +22,9 @@ srml-timestamp = { git = "https://github.com/paritytech/substrate", default_feat
 evo-support = {path = "../../support", default_features = false}
 sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
 
+[dev-dependencies]
+ring = { package = "evo-ring", path = "../ring"}
+
 [features]
 default = ["std"]
 std = [
