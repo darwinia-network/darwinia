@@ -36,6 +36,9 @@ use system::{ensure_signed, IsDeadAccount, OnNewAccount};
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 
+mod mock;
+mod tests;
+
 pub trait Subtrait<I: Instance = DefaultInstance>: timestamp::Trait {
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug;
@@ -160,7 +163,7 @@ decl_storage! {
 		///
 		/// `system::AccountNonce` is also deleted if `ReservedBalance` is also zero (it also gets
 		/// collapsed to zero if it ever becomes less than `ExistentialDeposit`.
-		pub FreeBalance get(free_balance) : map T::AccountId => T::Balance;
+		pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T, I>| config.balances.clone()): map T::AccountId => T::Balance;
 
 		/// The amount of the balance of a given account that is externally reserved; this can still get
 		/// slashed, but gets slashed last of all.

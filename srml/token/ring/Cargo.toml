@@ -21,6 +21,10 @@ srml-balances = { git = "https://github.com/paritytech/substrate", default_featu
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
 evo-kton = {path = "../kton", default_features = false}
 
+
+[dev-dependencies]
+runtime_io = { package = "sr-io", git = "https://github.com/paritytech/substrate", default-features = false }
+
 [features]
 default = ["std"]
 std = [

@@ -20,7 +20,7 @@ srml-system = { git = "https://github.com/paritytech/substrate", default-feature
 srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
 evo-support = {path = "../../support", default_features = false}
-sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
+runtime-io = { package = "sr-io", git = "https://github.com/paritytech/substrate", default-features = false }
 
 [dev-dependencies]
 ring = { package = "evo-ring", path = "../ring"}
@@ -35,7 +35,7 @@ std = [
     "parity-codec-derive/std",
     "substrate-primitives/std",
     "sr-std/std",
-    "sr-io/std",
+    "runtime-io/std",
     "srml-support/std",
     "srml-balances/std",
     "sr-primitives/std",

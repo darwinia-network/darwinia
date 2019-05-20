@@ -4,7 +4,6 @@
 extern crate parity_codec;
 extern crate parity_codec_derive;
 
-
 extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
 #[macro_use]
@@ -30,7 +29,7 @@ use srml_support::traits::{
 use system::{ensure_signed};
 use core::convert::TryFrom;
 
-use sr_io::print;
+use runtime_io::print;
 
 mod mock;
 mod tests;
@@ -141,7 +140,7 @@ decl_storage! {
 
 	    pub UnitInterest get(unit_interest): u64;
 
-	    pub DepositLedger get(deposit_ledger): map T::AccountId => Deposit<CurrencyOf<T>, T::Moment>;
+	    pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<CurrencyOf<T>, T::Moment>>;
 		/// The total `units issued in the system.
 		pub TotalIssuance get(total_issuance) : T::Balance;
 
@@ -321,7 +320,7 @@ impl<T: Trait> Module<T> {
 
     fn withdraw_deposit(who: T::AccountId, months: T::Moment, value: CurrencyOf<T>) -> Result {
         let now = timestamp::Module::<T>::get();
-        let mut deposit = Self::deposit_ledger(&who);
+        let mut deposit = Self::deposit_ledger(&who).ok_or("the account has not deposited.")?;
         let mut deposit_info : DepositInfo<CurrencyOf<T>, T::Moment> = deposit.clone().deposit_list.into_iter()
             .find(|d| {d.value == value.clone() && d.month == months.clone() && d.claimed == false})
             .unwrap();
@@ -374,7 +373,7 @@ impl<T: Trait> Module<T> {
         let unit_interest = Self::unit_interest();
         let deposit_info = DepositInfo { month: months.clone(), start_at: now, value: value, unit_interest: unit_interest, claimed: false };
         if <DepositLedger<T>>::exists(&who) {
-            let mut deposit = Self::deposit_ledger(&who);
+            let mut deposit = Self::deposit_ledger(&who).ok_or("the account has not deposited")?;
             deposit.total_deposit += value;
             deposit.deposit_list.push(deposit_info);
             <DepositLedger<T>>::insert(&who, deposit);
@@ -386,7 +385,7 @@ impl<T: Trait> Module<T> {
 
 
         T::Currency::remove_lock(DEPOSIT_ID, &who);
-        T::Currency::set_lock(DEPOSIT_ID, &who, Self::deposit_ledger(&who).total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
+        T::Currency::set_lock(DEPOSIT_ID, &who, Self::deposit_ledger(&who).unwrap().total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
 
         // update total_issuance
         <TotalIssuance<T>>::mutate(|t| *t += delta_balance);

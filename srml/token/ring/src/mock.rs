@@ -33,7 +33,7 @@ impl timestamp::Trait for Test {
 }
 
 
-impl ring::Trait for Test {
+impl Trait for Test {
     type Balance = u64;
     type OnFreeBalanceZero = ();
     type OnNewAccount = ();
@@ -43,11 +43,6 @@ impl ring::Trait for Test {
     type DustRemoval = ();
 }
 
-impl Trait for Test {
-    type Balance = u64;
-    type Currency = ring::Module<Self>;
-    type Event = ();
-}
 
 pub struct ExtBuilder {
     transaction_base_fee: u64,
@@ -55,7 +50,6 @@ pub struct ExtBuilder {
     existential_deposit: u64,
     transfer_fee: u64,
     creation_fee: u64,
-    sys_account: u64,
 }
 
 impl Default for ExtBuilder {
@@ -66,7 +60,6 @@ impl Default for ExtBuilder {
             existential_deposit: 0,
             transfer_fee: 0,
             creation_fee: 0,
-            sys_account: 0
         }
     }
 }
@@ -105,20 +98,20 @@ impl ExtBuilder {
             minimum_period: 5,
         }.assimilate_storage(&mut t, &mut c);
 
-        let _ = ring::GenesisConfig::<Test> {
+        let _ = GenesisConfig::<Test> {
             balances: vec![
                 (1, 10 * balance_factor),
                 (2, 20 * balance_factor),
                 (3, 300 * balance_factor),
                 (4, 400 * balance_factor),
                 (10, balance_factor),
-                (11, balance_factor * 1000), // 1 m
+                (11, balance_factor * 1000), // 1000k
                 (20, balance_factor),
-                (21, balance_factor * 2000), // 2 m
+                (21, balance_factor * 2000), // 2000k
                 (30, balance_factor),
-                (31, balance_factor * 2000), // 2 m
+                (31, balance_factor * 2000), // 2000k
                 (40, balance_factor),
-                (41, balance_factor * 2000), // 2 m
+                (41, balance_factor * 2000), // 2000k
                 (100, 200000 * balance_factor),
                 (101, 200000 * balance_factor),
             ],
@@ -130,16 +123,11 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
-        let _ = GenesisConfig::<Test> {
-            sys_account: 42,
-        }.assimilate_storage(&mut t, &mut c);
-
         t.into()
 
     }
 }
 
 pub type System = system::Module<Test>;
-pub type Ring = ring::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
-pub type Kton = Module<Test>;
+pub type Ring = Module<Test>;
