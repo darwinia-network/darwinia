@@ -243,7 +243,7 @@ impl<T: Trait> Module<T> {
 
         let sys_account = Self::sys_account();
 
-        let delta_reward_per_share = value.clone() /  <CurrencyOf<T>>::sa(total_supply);
+        let delta_reward_per_share = major.clone() /  <CurrencyOf<T>>::sa(total_supply);
 
         // update reward_per_share
         <RewardPerShare<T>>::mutate(|r| *r += delta_reward_per_share);
@@ -401,7 +401,7 @@ impl<T: Trait> Module<T> {
         // update reward_paidout
         let reward_paid_old = Self::reward_paidout(&who); // i128
         let reward_per_share  = i128::from(Self::reward_per_share().as_());
-        let value1  = i128::from(value.as_());
+        let value1  = i128::from(delta_balance.as_());
         <RewardPaidOut<T>>::insert(&who, reward_paid_old + reward_per_share * value1);
 
         Self::deposit_event(RawEvent::NewDeposit(unit_interest, who.clone(), delta_balance, value.clone()));
