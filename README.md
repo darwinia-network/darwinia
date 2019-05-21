@@ -42,7 +42,7 @@ cargo build --release
 
 Running
 ```bash
-./target/release/land-chain --dev
+./target/release/darwinia-appchain --dev
 ```
 
 Play with gui, open

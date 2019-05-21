@@ -1,9 +1,8 @@
 #![cfg(test)]
-extern crate sr_io as runtime_io;
+extern crate runtime_io;
 use primitives::BuildStorage;
 use primitives::{traits::{IdentityLookup}, testing::{Digest, DigestItem, Header}};
 use substrate_primitives::{H256, Blake2Hasher};
-use runtime_io;
 use srml_support::impl_outer_origin;
 use crate::{GenesisConfig, Module, Trait};
 
@@ -21,7 +20,7 @@ impl system::Trait for Test {
     type Hash = H256;
     type Hashing = ::primitives::traits::BlakeTwo256;
     type Digest = Digest;
-    type AccountId = AccountIdType;
+    type AccountId = u64;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type Event = ();
@@ -34,9 +33,9 @@ impl timestamp::Trait for Test {
 }
 
 
-impl ring::Trait for Test {
+impl Trait for Test {
     type Balance = u64;
-    type OnFreeBalanceZero = Staking;
+    type OnFreeBalanceZero = ();
     type OnNewAccount = ();
     type Event = ();
     type TransactionPayment = ();
@@ -44,11 +43,6 @@ impl ring::Trait for Test {
     type DustRemoval = ();
 }
 
-impl Trait for Test {
-    type Balance = u64;
-    type Currency = ring::Module<Self>;
-    type Event = ();
-}
 
 pub struct ExtBuilder {
     transaction_base_fee: u64,
@@ -56,7 +50,6 @@ pub struct ExtBuilder {
     existential_deposit: u64,
     transfer_fee: u64,
     creation_fee: u64,
-    sys_account: u64,
 }
 
 impl Default for ExtBuilder {
@@ -67,7 +60,6 @@ impl Default for ExtBuilder {
             existential_deposit: 0,
             transfer_fee: 0,
             creation_fee: 0,
-            sys_account: 0
         }
     }
 }
@@ -95,8 +87,47 @@ impl ExtBuilder {
 
 
     pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
-        let _ = system::GenesisConfig::<Test>::default().build_storage().unwrap().0;
+        let (mut t, mut c) = system::GenesisConfig::<Test>::default().build_storage().unwrap();
+        let balance_factor = if self.existential_deposit > 0 {
+            1000
+        } else {
+            1
+        };
+
+        let _ = timestamp::GenesisConfig::<Test> {
+            minimum_period: 5,
+        }.assimilate_storage(&mut t, &mut c);
+
+        let _ = GenesisConfig::<Test> {
+            balances: vec![
+                (1, 10 * balance_factor),
+                (2, 20 * balance_factor),
+                (3, 300 * balance_factor),
+                (4, 400 * balance_factor),
+                (10, balance_factor),
+                (11, balance_factor * 1000), // 1000k
+                (20, balance_factor),
+                (21, balance_factor * 2000), // 2000k
+                (30, balance_factor),
+                (31, balance_factor * 2000), // 2000k
+                (40, balance_factor),
+                (41, balance_factor * 2000), // 2000k
+                (100, 200000 * balance_factor),
+                (101, 200000 * balance_factor),
+            ],
+            transaction_base_fee: self.transaction_base_fee,
+            transaction_byte_fee: self.transaction_byte_fee,
+            existential_deposit: self.existential_deposit,
+            transfer_fee: self.transfer_fee,
+            creation_fee: self.creation_fee,
+            vesting: vec![],
+        }.assimilate_storage(&mut t, &mut c);
+
+        t.into()
 
     }
-
 }
+
+pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
+pub type Ring = Module<Test>;
