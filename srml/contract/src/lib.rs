@@ -17,6 +17,9 @@ use evo_support::traits::SystemCurrency;
 use system::{ensure_signed, RawOrigin};
 use rstd::result;
 
+mod mock;
+mod tests;
+
 #[must_use]
 #[derive(Debug, PartialEq, Eq)]
 pub enum GasMeterResult {
@@ -50,6 +53,7 @@ impl<T: Trait> GasMeter<T> {
     fn spent(&self) -> T::Gas {
         self.limit - self.gas_left
     }
+
     fn spend_gas(&mut self, gas_consumed: T::Gas) -> GasMeterResult {
         let new_value = match self.gas_left.checked_sub(&gas_consumed) {
             None => None,

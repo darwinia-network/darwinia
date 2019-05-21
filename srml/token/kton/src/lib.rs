@@ -198,7 +198,7 @@ decl_module! {
 		}
 
         // @param duration - in MONTH
-		fn deposit(origin, #[compact] value: CurrencyOf<T>, months: T::Moment) -> Result {
+		pub fn deposit(origin, #[compact] value: CurrencyOf<T>, months: T::Moment) -> Result {
             let transactor = ensure_signed(origin)?;
             let free_balance = T::Currency::free_balance(&transactor);
             let value = value.min(free_balance);
@@ -216,7 +216,7 @@ decl_module! {
 
         }
 
-        fn transfer_to_system(origin, value: CurrencyOf<T>) -> Result {
+        pub fn transfer_to_system(origin, value: CurrencyOf<T>) -> Result {
             let transactor = ensure_signed(origin)?;
 
             // TODO: extend `WithdrawReason` to match system revenue model
