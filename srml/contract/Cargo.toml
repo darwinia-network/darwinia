@@ -1,5 +1,5 @@
 [package]
-name = "contract"
+name = "evo-contract"
 version = "0.1.0"
 authors = ["hammeWang <dsw0602@foxmail.com>"]
 edition = "2018"
@@ -19,7 +19,8 @@ srml-support = { git = "https://github.com/paritytech/substrate", default-featur
 srml-system = { git = "https://github.com/paritytech/substrate", default-features = false }
 srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
-evo-kton = {path = "../kton", default_features = false}
+evo-kton = {path = "../token/kton", default_features = false}
+evo-support = {path = "../support", default_features = false}
 
 
 [dev-dependencies]

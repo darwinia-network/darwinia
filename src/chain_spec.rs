@@ -1,7 +1,7 @@
 use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_template_runtime::{
 	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig,
-	SudoConfig, IndicesConfig, RingConfig, KtonConfig
+	SudoConfig, IndicesConfig, RingConfig, KtonConfig, ContractConfig,
 };
 use substrate_service;
 use hex_literal::hex;
@@ -126,6 +126,10 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 		}),
 		kton: Some(KtonConfig {
 			sys_account: hex!["0000000000000000000000000000000000000000000000000000000000000001"].unchecked_into(),
+		}),
+		contract: Some(ContractConfig {
+			gas_price: 1,
+			block_gas_limit: 10000000,
 		}),
 	}
 }

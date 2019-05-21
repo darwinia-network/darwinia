@@ -7,7 +7,7 @@ extern crate parity_codec_derive;
 extern crate sr_primitives as primitives;
 extern crate sr_std as rstd;
 #[macro_use]
-extern crate srml_support;
+extern crate srml_support as support;
 extern crate srml_system as system;
 extern crate srml_timestamp as timestamp;
 #[cfg(test)]
@@ -21,15 +21,16 @@ use primitives::traits::{
     As, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, SimpleArithmetic,
     StaticLookup, Zero,
 };
-use rstd::{prelude::*, vec};
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
-use srml_support::dispatch::Result;
-use srml_support::traits::{
-    Currency, LockableCurrency, OnUnbalanced, ExistenceRequirement, LockIdentifier, WithdrawReason, WithdrawReasons};
+use rstd::{prelude::*, vec, result};
+use support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
+use support::dispatch::Result;
+use support::traits::{
+    Imbalance, Currency, LockableCurrency, OnUnbalanced, ExistenceRequirement, LockIdentifier, WithdrawReason, WithdrawReasons};
 use system::{ensure_signed};
 use core::convert::TryFrom;
 
 use runtime_io::print;
+use evo_support::traits::SystemCurrency;
 
 mod mock;
 mod tests;
@@ -72,6 +73,9 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
 
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
+pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+pub type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+
 pub trait Trait: timestamp::Trait {
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug;
@@ -79,6 +83,8 @@ pub trait Trait: timestamp::Trait {
     type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+
+    type SystemPayment: OnUnbalanced<NegativeImbalanceOf<Self>>;
 }
 
 decl_event!(
@@ -234,6 +240,9 @@ decl_module! {
 
 
 impl<T: Trait> Module<T> {
+
+
+    // PUB MUTABLE
 
     pub fn update_revenue(value: CurrencyOf<T>) -> Result {
 
@@ -428,4 +437,59 @@ impl<T: Trait> Module<T> {
     fn set_free_balance(who: &T::AccountId, balance: T::Balance) {
         <FreeBalance<T>>::insert(who, balance);
     }
+}
+
+impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
+    type CurrencyOf = CurrencyOf<T>;
+    type PositiveImbalance = PositiveImbalanceOf<T>;
+    type NegativeImbalance = NegativeImbalanceOf<T>;
+
+    fn reward_can_withdraw(who: &T::AccountId) -> i128 {
+        let kton_balance: u64 = T::Balance::as_(Self::free_balance(who));
+        let paid_out = Self::reward_paidout(who);
+        let reward_per_share = Self::CurrencyOf::as_(Self::reward_per_share());
+        let should_withdraw = i128::from(reward_per_share * kton_balance) - paid_out;
+        should_withdraw
+    }
+
+    fn system_withdraw(
+        who: &T::AccountId,
+        value: Self::CurrencyOf
+    ) -> result::Result<Self::NegativeImbalance, &'static str> {
+        // can_withdraw_value must at least be 0.
+        let can_withdraw_value = u64::try_from(Self::reward_can_withdraw(who)).unwrap_or_else(|_| Zero::zero());
+
+        let withdraw_value = value.min(Self::CurrencyOf::sa(can_withdraw_value));
+        let paidout_new = match Self::reward_paidout(who).checked_add(i128::from(Self::CurrencyOf::as_(withdraw_value.clone()))) {
+            Some(v) => v,
+            None => return Err("wrong with paidout."),
+        };
+
+        <RewardPaidOut<T>>::insert(who, paidout_new);
+
+        let mut imbalance = <Self::NegativeImbalance as Imbalance<Self::CurrencyOf>>::zero();
+        if value > withdraw_value {
+            let new_value = value - withdraw_value;
+            imbalance = T::Currency::withdraw(
+                who,
+                value,
+                WithdrawReason::Fee,
+                ExistenceRequirement::KeepAlive)?;
+        }
+
+       Ok(imbalance)
+    }
+
+    fn system_refund(
+        who: &T::AccountId,
+        value: Self::CurrencyOf,
+        imbalance: Self::NegativeImbalance
+    ) {
+
+        let refund_imbalance = T::Currency::deposit_creating(who, value);
+        if let Ok(imbalance) = imbalance.offset(refund_imbalance) {
+            T::SystemPayment::on_unbalanced(imbalance);
+        }
+    }
+
 }
