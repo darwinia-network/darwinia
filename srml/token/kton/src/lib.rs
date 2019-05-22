@@ -71,6 +71,7 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
     pub deposit_list: Vec<DepositInfo<Currency, Moment>>,
 }
 
+// TODO: try to use `SignedImbalance` instead for Maximizing code reuse
 pub enum ImbalanceResult<T: Trait> {
     Positive(PositiveImbalanceOf<T>),
     Negative(NegativeImbalanceOf<T>),
@@ -474,6 +475,7 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
     ) -> result::Result<Self::NegativeImbalance, &'static str> {
         // can_withdraw_value must at least be 0.
         let can_withdraw_value = u64::try_from(Self::reward_can_withdraw(who)).unwrap_or_else(|_| Zero::zero());
+        let mut imbalance = Self::NegativeImbalance::zero();
 
         let withdraw_value = value.min(Self::CurrencyOf::sa(can_withdraw_value));
         let paidout_new = match Self::reward_paidout(who).checked_add(i128::from(Self::CurrencyOf::as_(withdraw_value.clone()))) {
@@ -482,16 +484,17 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
         };
 
         <RewardPaidOut<T>>::insert(who, paidout_new);
-
-        let mut imbalance = Self::NegativeImbalance::zero();
+        imbalance = T::Currency::slash(&Self::sys_account(), withdraw_value).0;
 
         if value > withdraw_value {
             let new_value = value - withdraw_value;
-            imbalance = T::Currency::withdraw(
+            let new_imbalance = T::Currency::withdraw(
                 who,
                 value,
                 WithdrawReason::Fee,
                 ExistenceRequirement::KeepAlive)?;
+
+            imbalance.subsume(new_imbalance);
         }
 
        Ok(imbalance)

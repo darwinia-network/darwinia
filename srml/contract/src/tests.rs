@@ -26,7 +26,7 @@ fn check_reward_per_share() {
         assert_eq!(Kton::reward_can_withdraw(&11), 2600);
         let new_free_balance = free_balance + 900;
         assert_eq!(Ring::free_balance(&11), new_free_balance);
-        assert_eq!(Ring::total_issuance(), ring_total_issuance + 900);
+        assert_eq!(Ring::total_issuance(), ring_total_issuance - 100);
 
 
     });
