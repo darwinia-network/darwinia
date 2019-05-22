@@ -2,7 +2,7 @@
 
 //DONE: test initial value in Store
 //DONE: test Option value in Store
-
+//TODO: test difference between dispatch::Result & rstd::result::Result
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate parity_codec;
 extern crate parity_codec_derive;

@@ -10,7 +10,7 @@ extern crate rstd;
 extern crate evo_sdr as sdr;
 extern crate evo_ring as ring;
 extern crate evo_kton as kton;
-
+extern crate evo_contract as contract;
 extern crate support;
 
 #[cfg(feature = "std")]
@@ -222,6 +222,14 @@ impl kton::Trait for Runtime {
 	type Balance = u128;
 	type Currency = Ring;
 	type Event = Event;
+	type SystemPayment = ();
+	type SystemRefund = ();
+}
+
+impl contract::Trait for Runtime {
+	type SystemCurrency = Kton;
+	type Event = Event;
+	type Gas = u64;
 }
 
 construct_runtime!(
@@ -240,6 +248,7 @@ construct_runtime!(
 		Sdr: sdr::{Module, Call, Storage, Event<T>},
 		Ring: ring,
 		Kton: kton::{Module, Call, Config<T>, Storage, Event<T>},
+		Contract: contract,
 	}
 );
 

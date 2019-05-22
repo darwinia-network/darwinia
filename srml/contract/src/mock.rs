@@ -1,7 +1,7 @@
 #![cfg(test)]
 extern crate runtime_io;
-use primitives::BuildStorage;
-use primitives::{traits::{IdentityLookup}, testing::{Digest, DigestItem, Header}};
+use runtime_primitives::BuildStorage;
+use runtime_primitives::{traits::{IdentityLookup}, testing::{Digest, DigestItem, Header}};
 use substrate_primitives::{H256, Blake2Hasher};
 use srml_support::impl_outer_origin;
 use crate::{GenesisConfig, Module, Trait};
@@ -18,7 +18,7 @@ impl system::Trait for Test {
     type Index = u64;
     type BlockNumber = u64;
     type Hash = H256;
-    type Hashing = ::primitives::traits::BlakeTwo256;
+    type Hashing = ::runtime_primitives::traits::BlakeTwo256;
     type Digest = Digest;
     type AccountId = u64;
     type Lookup = IdentityLookup<Self::AccountId>;
@@ -43,11 +43,18 @@ impl ring::Trait for Test {
     type DustRemoval = ();
 }
 
-impl Trait for Test {
+impl kton::Trait for Test {
     type Balance = u64;
     type Currency = ring::Module<Self>;
     type Event = ();
     type SystemPayment = ();
+    type SystemRefund = ();
+}
+
+impl Trait for Test {
+    type SystemCurrency = Kton;
+    type Event = ();
+    type Gas = u64;
 }
 
 pub struct ExtBuilder {
@@ -131,8 +138,13 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
-        let _ = GenesisConfig::<Test> {
+        let _ = kton::GenesisConfig::<Test> {
             sys_account: 42,
+        }.assimilate_storage(&mut t, &mut c);
+
+        let _ = GenesisConfig::<Test> {
+            gas_price: 1,
+            block_gas_limit: 10000000,
         }.assimilate_storage(&mut t, &mut c);
 
         t.into()
@@ -143,4 +155,5 @@ impl ExtBuilder {
 pub type System = system::Module<Test>;
 pub type Ring = ring::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
-pub type Kton = Module<Test>;
+pub type Kton = kton::Module<Test>;
+pub type Contract = Module<Test>;

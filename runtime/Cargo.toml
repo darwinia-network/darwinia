@@ -8,6 +8,7 @@ version = '1.0.0'
 evo-sdr = {path = "../srml/token/sdr",  default-features = false}
 evo-ring = {path = "../srml/token/ring",  default-features = false}
 evo-kton = {path = "../srml/token/kton",  default-features = false}
+evo-contract = {path = "../srml/contract",  default-features = false}
 
 [dependencies.aura]
 default_features = false
@@ -135,6 +136,7 @@ std = [
     "evo-sdr/std",
     "evo-ring/std",
     "evo-kton/std",
+    "evo-contract/std",
     'sudo/std',
     'version/std',
     'serde_derive',

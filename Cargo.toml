@@ -70,6 +70,7 @@ members = [
 	"srml/token/sdr",
 	"srml/token/ring",
 	"srml/token/kton",
+	"srml/contract",
 	"srml/try",
 ]
 exclude = ["runtime/wasm"]
