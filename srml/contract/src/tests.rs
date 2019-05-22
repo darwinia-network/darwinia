@@ -23,9 +23,9 @@ fn check_reward_per_share() {
         let ring_total_issuance = Ring::total_issuance();
 
         Contract::operate_with_contact(Origin::signed(11), 1000, 100);
-        assert_eq!(Kton::reward_can_withdraw(&11), 2600);
-        let new_free_balance = free_balance + 900;
-        assert_eq!(Ring::free_balance(&11), new_free_balance);
+        assert_eq!(Kton::reward_can_withdraw(&11), 3500);
+        // acc 11's ring balance untouched
+        assert_eq!(Ring::free_balance(&11), free_balance);
         assert_eq!(Ring::total_issuance(), ring_total_issuance - 100);
 
     });

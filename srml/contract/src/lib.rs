@@ -102,7 +102,7 @@ decl_module! {
 
         fn operate_with_contact(origin, #[compact] gas_limit: T::Gas, gas_consumed: T::Gas) -> Result {
             let origin = ensure_signed(origin)?;
-            let (mut gas_meter, imbalance) = Self::buy_gas(&origin, gas_limit)?;
+            let (mut gas_meter, system_imbalance, acc_imbalance) = Self::buy_gas(&origin, gas_limit)?;
 
             if gas_meter
 			.spend_gas(gas_consumed)
@@ -110,7 +110,7 @@ decl_module! {
 		{
 			return Err("not enough gas to pay base call fee");
 		}
-		    Self::refund_unused_gas(&origin, gas_meter, imbalance);
+		    Self::refund_unused_gas(&origin, gas_meter, system_imbalance, acc_imbalance);
 
              Ok(())
         }
@@ -134,7 +134,7 @@ impl<T: Trait> Module<T> {
     pub fn buy_gas(
         transactor: &T::AccountId,
         gas_limit: T::Gas
-    ) -> result::Result<(GasMeter<T>, NegativeImbalanceOf<T>), &'static str> {
+    ) -> result::Result<(GasMeter<T>, NegativeImbalanceOf<T>,  NegativeImbalanceOf<T>), &'static str> {
         let gas_available = Self::block_gas_limit() - Self::gas_spent();
         if gas_limit > gas_available {
             return Err("block size limit is reached");
@@ -144,7 +144,7 @@ impl<T: Trait> Module<T> {
             .checked_mul(&gas_price)
             .ok_or("overflow multiplying gas limit by price")?;
 
-        let imbalance = T::SystemCurrency::system_withdraw(
+        let(sys_imbalance, acc_imbalance) = T::SystemCurrency::system_withdraw(
             transactor,
             cost
         )?;
@@ -153,21 +153,22 @@ impl<T: Trait> Module<T> {
             limit: gas_limit,
             gas_left: gas_limit,
             gas_price,
-        }, imbalance))
+        }, sys_imbalance, acc_imbalance))
 
     }
 
     pub fn refund_unused_gas (
         transactor: &T::AccountId,
         gas_meter: GasMeter<T>,
-        imbalance: NegativeImbalanceOf<T>,
+        system_imbalance: NegativeImbalanceOf<T>,
+        acc_imbalance: NegativeImbalanceOf<T>,
     ) {
         let gas_spent = gas_meter.spent();
         let gas_left = gas_meter.gas_left();
 
         <GasSpent<T>>::mutate(|block_gas_spent| *block_gas_spent += gas_spent);
         let refund = <T::Gas as As<BalanceOf<T>>>::as_(gas_left) * gas_meter.gas_price;
-        T::SystemCurrency::system_refund(transactor, refund, imbalance);
+        T::SystemCurrency::system_refund(transactor, refund, system_imbalance, acc_imbalance);
     }
 }
 
