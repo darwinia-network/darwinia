@@ -4,7 +4,8 @@ use mock::{ExtBuilder, Kton, Origin, Ring, System, Test, Timestamp};
 use ring::BalanceLock;
 use runtime_io::with_externalities;
 use srml_support::{assert_err, assert_noop, assert_ok};
-use srml_support::traits::Currency;
+use srml_support::traits::{ Currency, Imbalance };
+use evo_support::SystemCurrency;
 
 use super::*;
 
@@ -144,6 +145,17 @@ fn check_reward_per_share() {
         // still belongs to acc 11, not acc 2
         assert_eq!(compute_dividend_of(101), 360_i128);
         assert_eq!(compute_dividend_of(2), 0_i128);
+    });
+}
+
+#[test]
+fn check_system_withdraw_imbalance() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(1).build(), || {
+        let imbalance = <NegativeImbalanceOf<Test>>::zero();
+        imbalance = <Kton as SystemCurrency>::system_withdraw();
+
+
     });
 }
 

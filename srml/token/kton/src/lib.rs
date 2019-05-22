@@ -12,7 +12,7 @@ extern crate srml_system as system;
 extern crate srml_timestamp as timestamp;
 #[cfg(test)]
 extern crate substrate_primitives;
-extern crate evo_support as esupport;
+
 #[cfg(feature = "std")]
 use primitives::{Serialize, Deserialize};
 use substrate_primitives::U256;
@@ -71,6 +71,20 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
     pub deposit_list: Vec<DepositInfo<Currency, Moment>>,
 }
 
+pub enum ImbalanceResult<T: Trait> {
+    Positive(PositiveImbalanceOf<T>),
+    Negative(NegativeImbalanceOf<T>),
+}
+
+impl<T: Trait> ImbalanceResult<T> {
+    fn re_balanced(self) {
+        match self {
+            ImbalanceResult::Negative(n) => T::SystemPayment::on_unbalanced(n),
+            ImbalanceResult::Positive(p) => T::SystemRefund::on_unbalanced(p),
+        }
+    }
+}
+
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
@@ -85,6 +99,8 @@ pub trait Trait: timestamp::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
     type SystemPayment: OnUnbalanced<NegativeImbalanceOf<Self>>;
+
+    type SystemRefund: OnUnbalanced<PositiveImbalanceOf<Self>>;
 }
 
 decl_event!(
@@ -467,7 +483,8 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
 
         <RewardPaidOut<T>>::insert(who, paidout_new);
 
-        let mut imbalance = <Self::NegativeImbalance as Imbalance<Self::CurrencyOf>>::zero();
+        let mut imbalance = Self::NegativeImbalance::zero();
+
         if value > withdraw_value {
             let new_value = value - withdraw_value;
             imbalance = T::Currency::withdraw(
@@ -487,9 +504,13 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
     ) {
 
         let refund_imbalance = T::Currency::deposit_creating(who, value);
-        if let Ok(imbalance) = imbalance.offset(refund_imbalance) {
-            T::SystemPayment::on_unbalanced(imbalance);
-        }
+
+        let imbalance :ImbalanceResult<T> = match imbalance.offset(refund_imbalance) {
+            Ok(negative_imbalance) => ImbalanceResult::Negative(negative_imbalance),
+            Err(positive_imbalance) => ImbalanceResult::Positive(positive_imbalance),
+        };
+
+        imbalance.re_balanced();
     }
 
 }

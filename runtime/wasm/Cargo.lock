@@ -558,7 +558,6 @@ dependencies = [
 name = "evo-contract"
 version = "0.1.0"
 dependencies = [
- "evo-kton 0.1.0",
  "evo-support 0.1.0",
  "hex-literal 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",

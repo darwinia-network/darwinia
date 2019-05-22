@@ -223,6 +223,7 @@ impl kton::Trait for Runtime {
 	type Currency = Ring;
 	type Event = Event;
 	type SystemPayment = ();
+	type SystemRefund = ();
 }
 
 impl contract::Trait for Runtime {

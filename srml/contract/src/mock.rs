@@ -48,6 +48,7 @@ impl kton::Trait for Test {
     type Currency = ring::Module<Self>;
     type Event = ();
     type SystemPayment = ();
+    type SystemRefund = ();
 }
 
 impl Trait for Test {
