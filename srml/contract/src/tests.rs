@@ -28,6 +28,5 @@ fn check_reward_per_share() {
         assert_eq!(Ring::free_balance(&11), new_free_balance);
         assert_eq!(Ring::total_issuance(), ring_total_issuance - 100);
 
-
     });
 }

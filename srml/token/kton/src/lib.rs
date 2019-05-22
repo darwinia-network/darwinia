@@ -25,7 +25,7 @@ use rstd::{prelude::*, vec, result};
 use support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use support::dispatch::Result;
 use support::traits::{
-    Imbalance, Currency, LockableCurrency, OnUnbalanced, ExistenceRequirement, LockIdentifier, WithdrawReason, WithdrawReasons};
+    Imbalance, Currency, LockableCurrency, SignedImbalance, OnUnbalanced, ExistenceRequirement, LockIdentifier, WithdrawReason, WithdrawReasons};
 use system::{ensure_signed};
 use core::convert::TryFrom;
 
@@ -71,21 +71,6 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
     pub deposit_list: Vec<DepositInfo<Currency, Moment>>,
 }
 
-// TODO: try to use `SignedImbalance` instead for Maximizing code reuse
-pub enum ImbalanceResult<T: Trait> {
-    Positive(PositiveImbalanceOf<T>),
-    Negative(NegativeImbalanceOf<T>),
-}
-
-impl<T: Trait> ImbalanceResult<T> {
-    fn re_balanced(self) {
-        match self {
-            ImbalanceResult::Negative(n) => T::SystemPayment::on_unbalanced(n),
-            ImbalanceResult::Positive(p) => T::SystemRefund::on_unbalanced(p),
-        }
-    }
-}
-
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
@@ -101,6 +86,7 @@ pub trait Trait: timestamp::Trait {
 
     type SystemPayment: OnUnbalanced<NegativeImbalanceOf<Self>>;
 
+    // recommend to keep it although unused til now
     type SystemRefund: OnUnbalanced<PositiveImbalanceOf<Self>>;
 }
 
@@ -506,14 +492,31 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
         imbalance: Self::NegativeImbalance
     ) {
 
-        let refund_imbalance = T::Currency::deposit_creating(who, value);
+        let free_balacne_old = T::Currency::free_balance(who);
+        let (signed_imbalance, _) = T::Currency::make_free_balance_be(who, free_balacne_old + value);
 
-        let imbalance :ImbalanceResult<T> = match imbalance.offset(refund_imbalance) {
-            Ok(negative_imbalance) => ImbalanceResult::Negative(negative_imbalance),
-            Err(positive_imbalance) => ImbalanceResult::Positive(positive_imbalance),
+        let imbalance = SignedImbalance::Negative(imbalance);
+
+        let signed_imbalance = signed_imbalance.merge(imbalance);
+
+        let total_imbalance = if let SignedImbalance::Negative(n) = signed_imbalance {
+            n
+        } else {
+            <NegativeImbalanceOf<T>>::zero()
         };
 
-        imbalance.re_balanced();
+        T::SystemPayment::on_unbalanced(total_imbalance)
+
+
+
+//        let refund_imbalance = T::Currency::deposit_creating(who, value);
+//
+//        let imbalance :SignedImbalance<CurrencyOf<T>, PositiveImbalanceOf<T>> = match imbalance.offset(refund_imbalance) {
+//            Ok(negative_imbalance) => SignedImbalance::Negative(negative_imbalance),
+//            Err(positive_imbalance) => SignedImbalance::Positive(positive_imbalance),
+//        };
+
+
     }
 
 }
