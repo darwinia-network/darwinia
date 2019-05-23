@@ -359,7 +359,6 @@ impl<T: Trait> Module<T> {
             <TotalIssuance<T>>::mutate(|t| *t -= kton_penalty);
         }
 
-        T::Currency::remove_lock(DEPOSIT_ID, &who);
         if deposit.total_deposit > <CurrencyOf<T>>::sa(0) {
             T::Currency::set_lock(DEPOSIT_ID, &who, deposit.total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
         }
@@ -388,7 +387,6 @@ impl<T: Trait> Module<T> {
         let delta_balance = Self::compute_kton_balance(months.clone(), value);
 
 
-        T::Currency::remove_lock(DEPOSIT_ID, &who);
         T::Currency::set_lock(DEPOSIT_ID, &who, Self::deposit_ledger(&who).unwrap().total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
 
         // update total_issuance
