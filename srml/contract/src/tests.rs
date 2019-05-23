@@ -9,7 +9,7 @@ use evo_support::traits::SystemCurrency;
 // TODO: test total_issuance of ring before and after paying gas
 
 #[inline]
-fn acc_paying_gas(acc: u64) {
+fn set_reward_per_share_hundred(acc: u64) {
     Kton::deposit(Origin::signed(acc), 100000, 36);
     // now acc has 36 unit kton
     // 360 of 1200 flow into ktoner pool
@@ -45,7 +45,7 @@ fn check_reward_per_share() {
 fn check_paying_gas() {
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(1).build(), || {
-        acc_paying_gas(11);
+        set_reward_per_share_hundred(11);
 
         let free_balance = Ring::free_balance(&11);
         let ring_total_issuance = Ring::total_issuance();

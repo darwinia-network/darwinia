@@ -167,6 +167,8 @@ decl_storage! {
 
 		pub SysAccount get(sys_account) config(): T::AccountId;
 
+		pub ClaimFee get(claim_fee) config(): CurrencyOf<T>;
+
         // only for test
 		pub Test: i128;
 	}
@@ -229,9 +231,30 @@ decl_module! {
 
         }
 
-        fn test(test_value: u64) -> Result {
-            let test_value = i128::from(test_value);
-            <Test<T>>::put(test_value);
+        fn claim_reward(origin) -> Result {
+            let transactor = ensure_signed(origin)?;
+            let value_can_withdraw = u64::try_from(Self::reward_can_withdraw(&transactor)).unwrap_or_else(|_| Zero::zero());
+            let value_can_withdraw = <CurrencyOf<T>>::sa(value_can_withdraw.into());
+
+            let claim_fee = Self::claim_fee();
+
+            if claim_fee == value_can_withdraw.min(claim_fee) {
+                // update value_can_withdraw
+                let value_can_withdraw = value_can_withdraw - claim_fee;
+                Self::update_paidout(&transactor, value_can_withdraw, false);
+                let p_imbalance = T::Currency::deposit_creating(&transactor, value_can_withdraw);
+                let n_imbalance = T::Currency::withdraw(
+                    &Self::sys_account(),
+                    value_can_withdraw,
+                    WithdrawReason::Fee,
+                    ExistenceRequirement::KeepAlive)?;
+
+                if let Ok(imbalance) = n_imbalance.offset(p_imbalance) {
+                    T::SystemPayment::on_unbalanced(imbalance);
+                }
+
+            }
+
             Ok(())
         }
     }
@@ -274,11 +297,6 @@ impl<T: Trait> Module<T> {
     // IMPORTANT: we do not touch kton balance here
     // remember modify kton balance
     fn withdraw_kton_reward(who: &T::AccountId, value: T::Balance, dest: &T::AccountId) -> Result {
-//        let free_balance = Self::free_balance(who);
-//        let new_from_balance = match free_balance.checked_sub(&value) {
-//            Some(b) => b,
-//            None => return Err("from balance too low to receive value"),
-//        };
 
         let reward_per_share = Self::reward_per_share();
         let update_paidout = <CurrencyOf<T> as As<u64>>::as_(reward_per_share) * <T::Balance as As<u64>>::as_(value);

@@ -140,6 +140,7 @@ impl ExtBuilder {
 
         let _ = kton::GenesisConfig::<Test> {
             sys_account: 42,
+            claim_fee: balance_factor,
         }.assimilate_storage(&mut t, &mut c);
 
         let _ = GenesisConfig::<Test> {
