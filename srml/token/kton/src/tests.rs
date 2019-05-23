@@ -5,7 +5,7 @@ use ring::BalanceLock;
 use runtime_io::with_externalities;
 use srml_support::{assert_err, assert_noop, assert_ok};
 use srml_support::traits::{ Currency, Imbalance };
-use evo_support::SystemCurrency;
+use evo_support::traits::SystemCurrency;
 
 use super::*;
 
@@ -17,6 +17,17 @@ fn compute_dividend_of(acc: u64) -> i128 {
     let should_withdraw = i128::from(reward_per_share * kton_balance) - paid_out;
     should_withdraw
 }
+
+#[inline]
+fn set_reward_per_share_hundred(acc: u64) {
+    Kton::deposit(Origin::signed(acc), 100000, 36);
+    // now acc has 36 unit kton
+    // 360 of 1200 flow into ktoner pool
+    Kton::transfer_to_system(Origin::signed(101), 12000);
+    // reward_per_share = 3600 / 36 = 100
+    assert_eq!(Kton::reward_per_share(), 100);
+}
+
 
 #[test]
 fn ext_builer_should_work() {
@@ -149,13 +160,32 @@ fn check_reward_per_share() {
 }
 
 #[test]
-fn check_system_withdraw_imbalance() {
+fn check_acc_claim_reward() {
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(1).build(), || {
-        let imbalance = <NegativeImbalanceOf<Test>>::zero();
-        imbalance = <Kton as SystemCurrency>::system_withdraw();
 
+        let ring_total_issuance = Ring::total_issuance();
+        set_reward_per_share_hundred(11);
+        // now reward_per_share is 100
+        // acc 11 has 1 kton
+        assert_eq!(compute_dividend_of(11), 3600);
+        // no change on total_issuance of ring
+        assert_eq!(Ring::total_issuance(), ring_total_issuance);
+        // air drop 1000 ring to acc 101
+        // note: -1000
+        <RewardPaidOut<Test>>::insert(&101, -1000);
+        let ring_balance_acc_101 = Ring::free_balance(&101);
+        assert_eq!(compute_dividend_of(101), 1000);
 
+        Kton::claim_reward(Origin::signed(101));
+        assert_eq!(Ring::free_balance(&101), ring_balance_acc_101);
+
+        // air drop 10000 ring to acc 12
+        <RewardPaidOut<Test>>::insert(&12, -10000);
+        let ring_balance_acc_12 = Ring::free_balance(&12);
+        assert_eq!(compute_dividend_of(12), 10000);
+        Kton::claim_reward(Origin::signed(12));
+        assert_eq!(Ring::free_balance(&12), ring_balance_acc_12 + 9000);
     });
 }
 

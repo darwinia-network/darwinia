@@ -48,6 +48,7 @@ impl Trait for Test {
     type Currency = ring::Module<Self>;
     type Event = ();
     type SystemPayment = ();
+    type SystemRefund = ();
 }
 
 pub struct ExtBuilder {
@@ -133,6 +134,7 @@ impl ExtBuilder {
 
         let _ = GenesisConfig::<Test> {
             sys_account: 42,
+            claim_fee: balance_factor,
         }.assimilate_storage(&mut t, &mut c);
 
         t.into()
