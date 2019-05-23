@@ -3,6 +3,12 @@ Application chain in Darwinia network based on substrate framework. For detail i
 
 The next coming land will use the Darwinia AppChain to build and develop.
 
+![Darwinia AppChain Logo](https://raw.githubusercontent.com/evolutionlandorg/ELIPs/master/logo/darwinia_appchain.png)
+
+# Road Map
+[Road Map](https://hackmd.io/iofzom6eRe-a7fOQeoZSQQ)
+
+
 
 ## Start
 
