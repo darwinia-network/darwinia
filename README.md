@@ -79,11 +79,12 @@ Alice should run t his command from ${PATH_TO_DARWINIA_APPCHAIN_ROOT}:
 cd {path_to_darwinia_appchain_root}
 ./target/release/darwinia-appchain \
 --base-path /tmp/alice \
---chain=local \ 
+--chain=local \
 --key //Alice \
 --port 30333 \
 --validator \
---name AliceNode
+--name AliceDarwiniaNode \
+--telemetry-url ws://telemetry.polkadot.io:1024
 ```
 
 #### Bob Joins In
@@ -91,13 +92,15 @@ Now that Alice's node is up and running, Bob can join the network by bootstrappi
 ```bash
 ./target/release/darwinia-appchain \
 --base-path /tmp/bob \
---chain=local \ 
+--chain=local \
 --key //Bob \
 --port 30334 \
 --validator \
---name BobNode
--- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID>
+--name BobDarwiniaNode
+-- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID> \
+--telemetry-url ws://telemetry.polkadot.io:1024
 ```
+
 - If these two nodes are running on the same physical machine, Bob MUST specify a different `--base-path` and `--port`.
 - Bob has added the `--bootnodes` flag and specified a single boot node, namely Alice's. He must correctly specify these three pieces of information which Alice can supply for him.
   - Alice's IP Address in the form `192.168.1.1`
@@ -147,3 +150,6 @@ for Bob:
 ```
 The first line shows that Bob has discovered Alice on the network. The second shows that he has peered with her (1 peers), they have produced a block (best: #1 (0xf5d0…5549)), and the block is not finalized (finalized #0 (0xe6fe…6664)).
 
+
+#### View On Telemetry
+then you can find your Node displayed on [Telemetry](https://telemetry.polkadot.io/#/Local%20Testnet)
