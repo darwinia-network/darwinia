@@ -4,6 +4,8 @@
 //DONE: test Option value in Store
 //TODO: test difference between dispatch::Result & rstd::result::Result
 //TODO: test visibility of functions in `decl_module!` and `impl Module` block
+//TODO: check the priority between configs set in chain_spec or in module
+//TODO: try out add_extra_genesis
 
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate parity_codec;

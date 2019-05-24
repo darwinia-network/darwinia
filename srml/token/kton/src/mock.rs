@@ -11,6 +11,7 @@ impl_outer_origin!{
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
+// Runtime
 pub struct Test;
 
 impl system::Trait for Test {
