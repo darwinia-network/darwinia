@@ -1,4 +1,7 @@
-//! RING: system token of evolution land
+//! KTON: only minted through depositing RING.
+// NOTE: calculation in RING is based on timestamp,
+// NOTE: calculation in KTON is based on blockNumber.
+// NOTE: BE CAREFUL!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate parity_codec;
@@ -19,19 +22,22 @@ use parity_codec::{Codec, Decode, Encode, HasCompact};
 use primitives::{Deserialize, Serialize};
 use primitives::traits::{
     As, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, SimpleArithmetic,
-    StaticLookup, Zero,
+    StaticLookup, Zero, Saturating
 };
-use rstd::{prelude::*, result, vec};
+use rstd::{cmp, prelude::*, result, vec};
 use runtime_io::print;
 use substrate_primitives::U256;
 use support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use support::dispatch::Result;
-use support::traits::{
-    Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier, OnUnbalanced, SignedImbalance, WithdrawReason, WithdrawReasons};
+use support::traits::{UpdateBalanceOutcome, Currency, ExistenceRequirement,
+                      Imbalance, LockableCurrency, LockIdentifier, OnUnbalanced, SignedImbalance, WithdrawReason, WithdrawReasons};
 use system::ensure_signed;
 
 mod mock;
 mod tests;
+mod imbalances;
+
+pub use imbalances::{PositiveImbalance, NegativeImbalance};
 
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const MONTH: u64 = 2592000;
@@ -69,13 +75,19 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
 }
 
 
+pub trait Subtrait: timestamp::Trait {
+    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
+    MaybeSerializeDebug + From<Self::BlockNumber>;
+}
+
+
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 pub type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 
 pub trait Trait: timestamp::Trait {
     /// The balance of an account.
-    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug;
+    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug + From<Self::BlockNumber>;
     /// The token which
     type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
     /// The overarching event type.
@@ -85,6 +97,10 @@ pub trait Trait: timestamp::Trait {
 
     // recommend to keep it although unused til now
     type SystemRefund: OnUnbalanced<PositiveImbalanceOf<Self>>;
+}
+
+impl<T: Trait> Subtrait for T {
+    type Balance = T::Balance;
 }
 
 decl_event!(
@@ -140,21 +156,11 @@ pub struct BalanceLock<Balance, BlockNumber> {
 decl_storage! {
 	trait Store for Module<T: Trait> as KtonBalances {
 
-	    pub Init get(is_init): bool;
-
         pub Decimals get(decimals): u32;
 
 	    pub UnitInterest get(unit_interest): u64;
 
 	    pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<CurrencyOf<T>, T::Moment>>;
-		/// The total `units issued in the system.
-		pub TotalIssuance get(total_issuance) : T::Balance;
-
-		pub FreeBalance get(free_balance): map T::AccountId => T::Balance;
-
-		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
-
-		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 
 		// reward you can get per kton
 		pub RewardPerShare get(reward_per_share): CurrencyOf<T>;
@@ -169,25 +175,47 @@ decl_storage! {
 
 		pub ClaimFee get(claim_fee) config(): CurrencyOf<T>;
 
-        // only for test
-		pub Test: i128;
+        /// For Currency and LockableCurrency Trait
+		/// The total `units issued in the system.
+		// like `existential_deposit`, but always set to 0
+		pub MinimumBalance get(minimum_balance): T::Balance = T::Balance::sa(0);
+
+		pub TotalIssuance get(total_issuance) : T::Balance;
+
+		pub FreeBalance get(free_balance): map T::AccountId => T::Balance;
+
+		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
+
+		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+
+		pub Vesting get(vesting) build(|config: &GenesisConfig<T, I>| {
+			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
+				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
+				let length = <T::Balance as From<T::BlockNumber>>::from(length);
+
+				config.balances.iter()
+					.find(|&&(ref w, _)| w == who)
+					.map(|&(_, balance)| {
+						// <= begin it should be >= balance
+						// >= begin+length it should be <= 0
+
+						let per_block = balance / length.max(primitives::traits::One::one());
+						let offset = begin * per_block + balance;
+
+						(who.clone(), VestingSchedule { offset, per_block })
+					})
+			}).collect::<Vec<_>>()
+		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
 	}
+	add_extra_genesis {
+		config(balances): Vec<(T::AccountId, T::Balance)>;
+	}
+	extra_genesis_skip_phantom_data_field;
 }
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		fn deposit_event<T>() = default;
-
-		pub fn init(origin) -> Result {
-            ensure!(Self::is_init() == false, "Token already initialized.");
-
-            let sender = ensure_signed(origin)?;
-
-            <SysRevenue<T>>::insert(Self::sys_account(), Revenue::default());
-            <Init<T>>::put(true);
-
-            Ok(())
-        }
 
 		pub fn transfer(
 			origin,
@@ -264,7 +292,15 @@ decl_module! {
 
 impl<T: Trait> Module<T> {
 
-
+    // PUB IMMUTABLE
+    pub fn vesting_balance(who: &T::AccountId) -> T::Balance {
+        if let Some(v) = Self::vesting(who) {
+            Self::free_balance(who)
+                .min(v.locked_at::<T::BlockNumber>(<system::Module<T>>::block_number()))
+        } else {
+            Zero::zero()
+        }
+    }
     // PUB MUTABLE
 
     pub fn update_revenue(value: CurrencyOf<T>) -> Result {
@@ -293,6 +329,11 @@ impl<T: Trait> Module<T> {
 
 
     // PRIVATE MUTABLES
+
+    fn set_reserved_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+        <ReservedBalance<T>>::insert(who, balance);
+        UpdateBalanceOutcome::Updated
+    }
 
     // IMPORTANT: we do not touch kton balance here
     // remember modify kton balance
@@ -455,8 +496,11 @@ impl<T: Trait> Module<T> {
         }
     }
 
-    fn set_free_balance(who: &T::AccountId, balance: T::Balance) {
+    // NOTE: different from balacnes module
+    fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+        //TODO: check the value of balance, but no ensure!(...)
         <FreeBalance<T>>::insert(who, balance);
+        UpdateBalanceOutcome::Updated
     }
 }
 
@@ -538,20 +582,230 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
             T::SystemPayment::on_unbalanced(imbalance);
         }
 
-
-//        let free_balacne_old = T::Currency::free_balance(who);
-//        let (signed_imbalance, _) = T::Currency::make_free_balance_be(who, free_balacne_old + value);
-//
-//        let imbalance = SignedImbalance::Negative(imbalance);
-//
-//        let signed_imbalance = signed_imbalance.merge(imbalance);
-//
-//        let total_imbalance = if let SignedImbalance::Negative(n) = signed_imbalance {
-//            n
-//        } else {
-//            <NegativeImbalanceOf<T>>::zero()
-//        };
-//
-//        T::SystemPayment::on_unbalanced(total_imbalance)
     }
 }
+
+impl<T: Trait> Currency<T::AccountId> for Module<T> {
+    type Balance = T::Balance;
+    // NOTICE: it must be implemented due to rust rules
+
+    type PositiveImbalance = imbalances::PositiveImbalance<T>;
+    type NegativeImbalance = imbalances::NegativeImbalance<T>;
+
+
+    fn total_balance(who: &T::AccountId) -> Self::Balance {
+        Self::free_balance(who) + Self::reserved_balance(who)
+    }
+
+    fn can_slash(who: &T::AccountId, value: Self::Balance) -> bool {
+        Self::free_balance(who) >= value
+    }
+
+    fn total_issuance() -> Self::Balance {
+        Self::total_issuance()
+    }
+
+    fn minimum_balance() -> Self::Balance {
+        Self::minimum_balance()
+    }
+
+    fn free_balance(who: &T::AccountId) -> Self::Balance {
+        <FreeBalance<T>>::get(who)
+    }
+
+    fn ensure_can_withdraw(
+        who: &T::AccountId,
+        _amount: T::Balance,
+        reason: WithdrawReason,
+        new_balance: T::Balance,
+    ) -> Result {
+        match reason {
+            WithdrawReason::Reserve | WithdrawReason::Transfer if Self::vesting_balance(who) > new_balance =>
+                return Err("vesting balance too high to send value"),
+            _ => {}
+        }
+        let locks = Self::locks(who);
+        if locks.is_empty() {
+            return Ok(())
+        }
+
+        let now = <system::Module<T>>::block_number();
+        if locks.into_iter()
+            .all(|l|
+                now >= l.until
+                    || new_balance >= l.amount
+                    || !l.reasons.contains(reason)
+            )
+        {
+            Ok(())
+        } else {
+            Err("account liquidity restrictions prevent withdrawal")
+        }
+    }
+
+    fn transfer(transactor: &T::AccountId, dest: &T::AccountId, value: Self::Balance) -> Result {
+        Self::transfer_internal(transactor, dest, value)
+    }
+
+    fn withdraw(
+        who: &T::AccountId,
+        value: Self::Balance,
+        reason: WithdrawReason,
+        liveness: ExistenceRequirement,
+    ) -> result::Result<Self::NegativeImbalance, &'static str> {
+        if let Some(new_balance) = Self::free_balance(who).checked_sub(&value) {
+            if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
+                return Err("payment would kill account")
+            }
+            Self::ensure_can_withdraw(who, value, reason, new_balance)?;
+            Self::set_free_balance(who, new_balance);
+            Ok(NegativeImbalance::new(value))
+        } else {
+            Err("too few free funds in account")
+        }
+    }
+
+
+    //TODO: consider if it is necessary to slash related RING too
+    fn slash(
+        who: &T::AccountId,
+        value: Self::Balance
+    ) -> (Self::NegativeImbalance, Self::Balance) {
+        let free_balance = Self::free_balance(who);
+        let free_slash = cmp::min(free_balance, value);
+        Self::set_free_balance(who, free_balance - free_slash);
+        let remaining_slash = value - free_slash;
+        // NOTE: `slash()` prefers free balance, but assumes that reserve balance can be drawn
+        // from in extreme circumstances. `can_slash()` should be used prior to `slash()` to avoid having
+        // to draw from reserved funds, however we err on the side of punishment if things are inconsistent
+        // or `can_slash` wasn't used appropriately.
+        if !remaining_slash.is_zero() {
+            let reserved_balance = Self::reserved_balance(who);
+            let reserved_slash = cmp::min(reserved_balance, remaining_slash);
+            Self::set_reserved_balance(who, reserved_balance - reserved_slash);
+            (NegativeImbalance::new(free_slash + reserved_slash), remaining_slash - reserved_slash)
+        } else {
+            (NegativeImbalance::new(value), Zero::zero())
+        }
+    }
+
+    fn deposit_into_existing(
+        who: &T::AccountId,
+        value: Self::Balance
+    ) -> result::Result<Self::PositiveImbalance, &'static str> {
+        if Self::total_balance(who).is_zero() {
+            return Err("beneficiary account must pre-exist");
+        }
+        Self::set_free_balance(who, Self::free_balance(who) + value);
+        Ok(PositiveImbalance::new(value))
+    }
+
+    fn deposit_creating(
+        who: &T::AccountId,
+        value: Self::Balance,
+    ) -> Self::PositiveImbalance {
+        let (imbalance, _) = Self::make_free_balance_be(who, Self::free_balance(who) + value);
+        if let SignedImbalance::Positive(p) = imbalance {
+            p
+        } else {
+            // Impossible, but be defensive.
+            Self::PositiveImbalance::zero()
+        }
+    }
+
+    fn make_free_balance_be(who: &T::AccountId, balance: T::Balance) -> (
+        SignedImbalance<Self::Balance, Self::PositiveImbalance>,
+        UpdateBalanceOutcome
+    ) {
+        let original = Self::free_balance(who);
+        // difference with ring: even if balance < minimum_balance(),
+        // the account is not reaped.
+        let imbalance = if original <= balance {
+            SignedImbalance::Positive(PositiveImbalance::new(balance - original))
+        } else {
+            SignedImbalance::Negative(NegativeImbalance::new(original - balance))
+        };
+
+        let outcome = {
+            Self::set_free_balance(who, balance);
+            UpdateBalanceOutcome::Updated
+        };
+        (imbalance, outcome)
+    }
+
+}
+
+impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
+    where
+        T::Balance: MaybeSerializeDebug
+{
+    type Moment = T::BlockNumber;
+
+    fn set_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+        amount: T::Balance,
+        until: T::BlockNumber,
+        reasons: WithdrawReasons,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
+        let mut locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.id == id {
+                new_lock.take()
+            } else if l.until > now {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        if let Some(lock) = new_lock {
+            locks.push(lock)
+        }
+        <Locks<T>>::insert(who, locks);
+    }
+
+    fn extend_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+        amount: T::Balance,
+        until: T::BlockNumber,
+        reasons: WithdrawReasons,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
+        let mut locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.id == id {
+                new_lock.take().map(|nl| {
+                    BalanceLock {
+                        id: l.id,
+                        amount: l.amount.max(nl.amount),
+                        until: l.until.max(nl.until),
+                        reasons: l.reasons | nl.reasons,
+                    }
+                })
+            } else if l.until > now {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        if let Some(lock) = new_lock {
+            locks.push(lock)
+        }
+        <Locks<T>>::insert(who, locks);
+    }
+
+    fn remove_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.until > now && l.id != id {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        <Locks<T>>::insert(who, locks);
+    }
+}
+
