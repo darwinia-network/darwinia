@@ -1,26 +1,26 @@
 
 //TODO: move this into lib.rs to be a inner mod
-use super::{result, Imbalance, Trait, Zero, Saturating, StorageValue, Subtrait};
+use super::{result, Imbalance, Trait, Zero, Saturating, StorageValue, Module};
 use rstd::mem;
 
 
-pub struct PositiveImbalance<T: Subtrait>(T::Balance);
+pub struct PositiveImbalance<T: Trait>(T::Balance);
 
-impl<T: Subtrait> PositiveImbalance<T> {
+impl<T: Trait> PositiveImbalance<T> {
     pub fn new(amount: T::Balance) -> Self {
         PositiveImbalance(amount)
     }
 }
 
-pub struct NegativeImbalance<T: Subtrait>(T::Balance);
+pub struct NegativeImbalance<T: Trait>(T::Balance);
 
-impl<T: Subtrait> NegativeImbalance<T> {
+impl<T: Trait> NegativeImbalance<T> {
     pub fn new(amount: T::Balance) -> Self {
         NegativeImbalance(amount)
     }
 }
 
-impl<T: Subtrait> Imbalance<T::Balance> for PositiveImbalance<T> {
+impl<T: Trait> Imbalance<T::Balance> for PositiveImbalance<T> {
     type Opposite = NegativeImbalance<T>;
     fn zero() -> Self {
         Self(Zero::zero())
@@ -65,7 +65,7 @@ impl<T: Subtrait> Imbalance<T::Balance> for PositiveImbalance<T> {
     }
 }
 
-impl<T: Subtrait> Imbalance<T::Balance> for NegativeImbalance<T> {
+impl<T: Trait> Imbalance<T::Balance> for NegativeImbalance<T> {
     type Opposite = PositiveImbalance<T>;
 
     fn zero() -> Self {
@@ -110,3 +110,20 @@ impl<T: Subtrait> Imbalance<T::Balance> for NegativeImbalance<T> {
     }
 }
 
+impl<T: Trait> Drop for PositiveImbalance<T> {
+    /// Basic drop handler will just square up the total issuance.
+    fn drop(&mut self) {
+        <super::TotalIssuance<T>>::mutate(
+            |v| *v = v.saturating_add(self.0)
+        );
+    }
+}
+
+impl<T: Trait> Drop for NegativeImbalance<T> {
+    /// Basic drop handler will just square up the total issuance.
+    fn drop(&mut self) {
+        <super::TotalIssuance<T>>::mutate(
+            |v| *v = v.saturating_sub(self.0)
+        );
+    }
+}

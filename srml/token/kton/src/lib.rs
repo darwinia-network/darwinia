@@ -75,10 +75,10 @@ pub struct Deposit<Currency: HasCompact, Moment: HasCompact> {
 }
 
 
-pub trait Subtrait: timestamp::Trait {
-    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
-    MaybeSerializeDebug + From<Self::BlockNumber>;
-}
+//pub trait Subtrait: timestamp::Trait {
+//    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
+//    MaybeSerializeDebug + From<Self::BlockNumber>;
+//}
 
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
@@ -99,9 +99,9 @@ pub trait Trait: timestamp::Trait {
     type SystemRefund: OnUnbalanced<PositiveImbalanceOf<Self>>;
 }
 
-impl<T: Trait> Subtrait for T {
-    type Balance = T::Balance;
-}
+//impl<T: Trait> Subtrait for T {
+//    type Balance = T::Balance;
+//}
 
 decl_event!(
 	pub enum Event<T> where
