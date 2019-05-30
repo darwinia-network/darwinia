@@ -41,7 +41,7 @@ DEADLINE: 2019-06-30
 ### [POC-2 Testnet] WIP
 2019 Q4
 
-### [Mainet]
+### [Mainnet]
 2020 Q1
 
 ## Darwinia AppChain RoadMap Testnet
