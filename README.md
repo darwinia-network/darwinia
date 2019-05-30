@@ -1,14 +1,21 @@
 
-# Darwinia AppChain
-> The hub relay chain for the land chains, and serving the core economic fuctions for Evolution Land.   
-  The design is working in process, this repository is a place holder for now.
-   
+# Darwinia Relay Chain
+
+![Darwinia Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
 
-![Darwinia AppChain Logo](https://raw.githubusercontent.com/evolutionlandorg/ELIPs/master/logo/darwinia_appchain.png)
+Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
+
+It could have two models, the Solo model and the Polkadot model. For more details, go to [RFC-0007](  https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F 
+)
+
+# Architecture
+
+![Darwinia Architecture](https://github.com/darwinia-network/rfcs/raw/master/zh_CN/images/0007-darwinia-architecture.jpeg)
+
 
 # Road Map
-[Road Map](https://hackmd.io/iofzom6eRe-a7fOQeoZSQQ)
+[Road Map](./roadmap.md)
 
 
 
