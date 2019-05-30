@@ -26,6 +26,12 @@ Or
 
 [Riot.im](https://riot.im/app/#/group/+darwinia:matrix.org)
 
+# Applications and Examples
+
+- [Evolution Land](https://www.evolution.land/) and Project [Github](https://github.com/evolutionlandorg), a virtual management game based on blockchain and autonomy.
+- [Darwinia AppChain](https://github.com/darwinia-network/darwinia-appchain) Application Chain SDK Suite
+- [Darwinia Bridge](https://github.com/darwinia-network/darwinia-bridge) Darwinia Bridge Parachain and Tools to connect to other chains such as Ethereum, TRON and EOS etc.
+- More are coming...
 
 ## Start
 
