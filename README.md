@@ -1,7 +1,8 @@
 # Darwinia AppChain
-Application chain in Darwinia network based on substrate framework. For detail introduction, view [RFC for Darwinia Appchain](https://github.com/evolutionlandorg/ELIPs/blob/master/rfcs/zh_CN/0006-dawinia-appchain.md)
+> The hub relay chain for the land chains, and serving the core economic fuctions for Evolution Land.   
+  The design is working in process, this repository is a place holder for now.
+   
 
-The next coming land will use the Darwinia AppChain to build and develop.
 
 ![Darwinia AppChain Logo](https://raw.githubusercontent.com/evolutionlandorg/ELIPs/master/logo/darwinia_appchain.png)
 
@@ -48,7 +49,7 @@ cargo build --release
 
 Running
 ```bash
-./target/release/darwinia-appchain --dev
+./target/release/darwinia --dev
 ```
 
 Play with gui, open
@@ -77,7 +78,7 @@ cargo build --release
 Alice should run t his command from ${PATH_TO_DARWINIA_APPCHAIN_ROOT}:
 ```bash
 cd {path_to_darwinia_appchain_root}
-./target/release/darwinia-appchain \
+./target/release/darwinia \
 --base-path /tmp/alice \
 --chain=local \
 --key //Alice \
@@ -90,7 +91,7 @@ cd {path_to_darwinia_appchain_root}
 #### Bob Joins In
 Now that Alice's node is up and running, Bob can join the network by bootstrapping from her node. His command will look very similar.
 ```bash
-./target/release/darwinia-appchain \
+./target/release/darwinia \
 --base-path /tmp/bob \
 --chain=local \
 --key //Bob \

@@ -188,7 +188,7 @@ decl_storage! {
 
 		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 
-		pub Vesting get(vesting) build(|config: &GenesisConfig<T, I>| {
+		pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
 			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
 				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
 				let length = <T::Balance as From<T::BlockNumber>>::from(length);
@@ -209,6 +209,7 @@ decl_storage! {
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
+		config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;
 	}
 	extra_genesis_skip_phantom_data_field;
 }

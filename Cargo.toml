@@ -60,7 +60,7 @@ vergen = '3'
 panic = 'unwind'
 
 [[bin]]
-name = 'darwinia-appchain'
+name = 'darwinia'
 path = 'src/main.rs'
 
 [workspace]

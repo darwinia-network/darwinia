@@ -127,6 +127,8 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 		kton: Some(KtonConfig {
 			sys_account: hex!["0000000000000000000000000000000000000000000000000000000000000001"].unchecked_into(),
 			claim_fee: 5000,
+			balances: vec![],
+			vesting: vec![],
 		}),
 		contract: Some(ContractConfig {
 			gas_price: 1,
