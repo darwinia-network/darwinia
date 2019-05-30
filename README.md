@@ -17,6 +17,14 @@ It could have two models, the Solo model and the Polkadot model. For more detail
 # Road Map
 [Road Map](./roadmap.md)
 
+# Community
+Join the community if you have any other questions:
+
+[+darwinia:matrix.org](https://matrix.to/#/+darwinia:matrix.org)
+
+Or
+
+[Riot.im](https://riot.im/app/#/group/+darwinia:matrix.org)
 
 
 ## Start
