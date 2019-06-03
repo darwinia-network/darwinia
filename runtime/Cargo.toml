@@ -112,6 +112,16 @@ default_features = false
 git = 'https://github.com/paritytech/substrate.git'
 package = 'srml-timestamp'
 
+[dependencies.session]
+default_features = false
+git = 'https://github.com/paritytech/substrate.git'
+package = 'srml-session'
+
+[dependencies.staking]
+default_features = false
+path = "../srml/staking"
+package = 'evo-staking'
+
 [dependencies.version]
 default_features = false
 git = 'https://github.com/paritytech/substrate.git'
@@ -143,5 +153,7 @@ std = [
     'serde/std',
     'safe-mix/std',
     'consensus-aura/std',
+    "session/std",
+    "staking/std",
     'offchain-primitives/std',
 ]
