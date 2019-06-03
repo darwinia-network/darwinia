@@ -1,7 +1,8 @@
 use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_template_runtime::{
 	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig,
-	SudoConfig, IndicesConfig, RingConfig, KtonConfig, ContractConfig,
+	SudoConfig, IndicesConfig, RingConfig, KtonConfig, ContractConfig, SessionConfig, StakingConfig,
+	StakerStatus, Permill, Perbill
 };
 use substrate_service;
 use hex_literal::hex;
@@ -44,11 +45,11 @@ impl Alternative {
 				"Development",
 				"dev",
 				|| testnet_genesis(vec![
-					authority_key("Alice")
+					get_authority_keys_from_seed("Alice"),
 				], vec![
 					account_key("Alice")
 				],
-								   account_key("Alice")
+								   get_account_id_from_seed("Alice"),
 				),
 				vec![],
 				None,
@@ -60,17 +61,17 @@ impl Alternative {
 				"Local Testnet",
 				"local_testnet",
 				|| testnet_genesis(vec![
-					authority_key("Alice"),
-					authority_key("Bob"),
+					get_authority_keys_from_seed("Alice"),
+					get_authority_keys_from_seed("Bob"),
 				], vec![
-					account_key("Alice"),
-					account_key("Bob"),
-					account_key("Charlie"),
-					account_key("Dave"),
-					account_key("Eve"),
-					account_key("Ferdie"),
+					get_account_id_from_seed("Alice"),
+					get_account_id_from_seed("Bob"),
+					get_account_id_from_seed("Charlie"),
+					get_account_id_from_seed("Dave"),
+					get_account_id_from_seed("Eve"),
+					get_account_id_from_seed("Ferdie"),
 				],
-								   account_key("Alice"),
+								   get_account_id_from_seed("Alice"),
 				),
 				vec![],
 				None,
@@ -89,12 +90,23 @@ impl Alternative {
 		}
 	}
 }
+const MILLICENTS: u128 = 1_000_000_000;
+const CENTS: u128 = 1_000 * MILLICENTS;    // assume this is worth about a cent.
+const DOLLARS: u128 = 100 * CENTS;
 
-fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<AccountId>, root_key: AccountId) -> GenesisConfig {
+const SECS_PER_BLOCK: u64 = 6;
+const MINUTES: u64 = 60 / SECS_PER_BLOCK;
+const HOURS: u64 = MINUTES * 60;
+const DAYS: u64 = HOURS * 24;
+
+const ENDOWMENT: u128 = 10_000_000 * DOLLARS;
+const STASH: u128 = 100 * DOLLARS;
+
+fn testnet_genesis(initial_authorities: Vec<(AccountId, AccountId, AuthorityId)>, endowed_accounts: Vec<AccountId>, root_key: AccountId) -> GenesisConfig {
 	GenesisConfig {
 		consensus: Some(ConsensusConfig {
 			code: include_bytes!("../runtime/wasm/target/wasm32-unknown-unknown/release/node_template_runtime_wasm.compact.wasm").to_vec(),
-			authorities: initial_authorities.clone(),
+			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
 		}),
 		system: None,
 		timestamp: Some(TimestampConfig {
@@ -114,6 +126,24 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 		}),
 		sudo: Some(SudoConfig {
 			key: root_key,
+		}),
+		session: Some(SessionConfig {
+			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			session_length: 10,
+			keys: initial_authorities.iter().map(|x| (x.1.clone(), x.2.clone())).collect::<Vec<_>>(),
+		}),
+		staking: Some(StakingConfig {
+			current_era: 0,
+			minimum_validator_count: 1,
+			validator_count: 2,
+			sessions_per_era: 5,
+			bonding_duration: 12,
+			offline_slash: Perbill::zero(),
+			session_reward: Perbill::zero(),
+			current_session_reward: 0,
+			offline_slash_grace: 0,
+			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
 		ring: Some(RingConfig {
 			transaction_base_fee: 1,
@@ -135,4 +165,28 @@ fn testnet_genesis(initial_authorities: Vec<AuthorityId>, endowed_accounts: Vec<
 			block_gas_limit: 10000000,
 		}),
 	}
+}
+
+/// Helper function to generate AccountId from seed
+pub fn get_account_id_from_seed(seed: &str) -> AccountId {
+	sr25519::Pair::from_string(&format!("//{}", seed), None)
+		.expect("static values are valid; qed")
+		.public()
+}
+
+/// Helper function to generate AuthorityId from seed
+pub fn get_session_key_from_seed(seed: &str) -> AuthorityId {
+	ed25519::Pair::from_string(&format!("//{}", seed), None)
+		.expect("static values are valid; qed")
+		.public()
+}
+
+
+/// Helper function to generate stash, controller and session key from seed
+pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, AuthorityId) {
+	(
+		get_account_id_from_seed(&format!("{}//stash", seed)),
+		get_account_id_from_seed(seed),
+		get_session_key_from_seed(seed)
+	)
 }

@@ -24,7 +24,7 @@ use primitives::{ed25519, sr25519, OpaqueMetadata};
 
 use runtime_primitives::{
 	ApplyResult, transaction_validity::TransactionValidity, generic, create_runtime_str,
-	traits::{self, NumberFor, BlakeTwo256, Block as BlockT, StaticLookup, Verify, AuthorityIdFor}
+	traits::{self, NumberFor, BlakeTwo256, Block as BlockT, StaticLookup, Verify, AuthorityIdFor, Convert}
 };
 use client::{
 	block_builder::api::{CheckInherentsResult, InherentData, self as block_builder_api},
@@ -33,6 +33,7 @@ use client::{
 use version::RuntimeVersion;
 #[cfg(feature = "std")]
 use version::NativeVersion;
+pub use staking::StakerStatus;
 
 // A few exports that help ease life for downstream crates.
 #[cfg(any(feature = "std", test))]
@@ -116,6 +117,20 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
+pub struct CurrencyToVoteHandler;
+
+impl CurrencyToVoteHandler {
+	fn factor() -> u128 { (Balances::total_issuance() / u64::max_value() as u128).max(1) }
+}
+
+impl Convert<u128, u64> for CurrencyToVoteHandler {
+	fn convert(x: u128) -> u64 { (x / Self::factor()) as u64 }
+}
+
+impl Convert<u128, u128> for CurrencyToVoteHandler {
+	fn convert(x: u128) -> u128 { x * Self::factor() }
+}
+
 impl system::Trait for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
@@ -173,6 +188,13 @@ impl timestamp::Trait for Runtime {
 	type OnTimestampSet = Aura;
 }
 
+impl session::Trait for Runtime {
+	type ConvertAccountIdToSessionKey = ();
+	type OnSessionChange = Staking;
+	type Event = Event;
+}
+
+
 impl balances::Trait for Runtime {
 	/// The type for recording an account's balance.
 	type Balance = u128;
@@ -226,6 +248,15 @@ impl kton::Trait for Runtime {
 	type SystemRefund = ();
 }
 
+impl staking::Trait for Runtime {
+	type Currency = Kton;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type OnRewardMinted = ();
+	type Event = Event;
+	type Slash = ();
+	type Reward = ();
+}
+
 impl contract::Trait for Runtime {
 	type SystemCurrency = Kton;
 	type Event = Event;
@@ -249,6 +280,8 @@ construct_runtime!(
 		Ring: ring,
 		Kton: kton::{Module, Call, Config<T>, Storage, Event<T>},
 		Contract: contract,
+		Session: session,
+		Staking: staking,
 	}
 );
 

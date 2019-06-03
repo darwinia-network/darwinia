@@ -19,7 +19,7 @@ srml-support = { git = "https://github.com/paritytech/substrate", default-featur
 srml-system = { git = "https://github.com/paritytech/substrate", default-features = false }
 srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
-evo-support = {path = "..//support", default_features = false}
+evo-support = {path = "../support", default_features = false}
 sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
 
 
