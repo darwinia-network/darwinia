@@ -20,7 +20,7 @@ use rstd::{prelude::*, vec};
 use primitives::PerU128;
 use primitives::traits::{Zero, Saturating, Convert};
 use parity_codec::{HasCompact, Encode, Decode};
-use crate::{Exposure, BalanceOf, Trait, ValidatorPrefs, IndividualExposure};
+use crate::{Exposure, BalanceOf, Trait, ValidatorPrefs, IndividualExposure, RewardBalanceOf};
 
 type Fraction = PerU128;
 type ExtendedBalance = u128;
@@ -101,7 +101,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 	stash_of: FS,
 	config: ElectionConfig<BalanceOf<T>>,
 ) -> Option<Vec<Candidate<T::AccountId, BalanceOf<T>>>> where
-	FV: Iterator<Item=(T::AccountId, ValidatorPrefs<BalanceOf<T>>)>,
+	FV: Iterator<Item=(T::AccountId, ValidatorPrefs<RewardBalanceOf<T>>)>,
 	FN: Iterator<Item=(T::AccountId, Vec<T::AccountId>)>,
 	for <'r> FS: Fn(&'r T::AccountId) -> BalanceOf<T>,
 {

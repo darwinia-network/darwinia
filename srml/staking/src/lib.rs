@@ -132,7 +132,7 @@
 //! ```
 //! use srml_support::{decl_module, dispatch::Result};
 //! use system::ensure_signed;
-//! use srml_staking::{self as staking};
+//! use evo_staking::{self as staking};
 //!
 //! pub trait Trait: staking::Trait {}
 //!
@@ -278,8 +278,6 @@ pub enum StakerStatus<AccountId> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum RewardDestination {
-	/// Pay into the stash account, increasing the amount at stake accordingly.
-	Staked,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
 	/// Pay into the controller account.
@@ -288,7 +286,7 @@ pub enum RewardDestination {
 
 impl Default for RewardDestination {
 	fn default() -> Self {
-		RewardDestination::Staked
+		RewardDestination::Controller
 	}
 }
 
@@ -390,13 +388,19 @@ pub struct Exposure<AccountId, Balance: HasCompact> {
 	pub others: Vec<IndividualExposure<AccountId, Balance>>,
 }
 
+// for kton
 type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+// for ring
+type RewardBalanceOf<T> = <<T as Trait>::RewardCurrency as Currency<<T as system::Trait>::AccountId>>::Balance;
+// imbalance of ring
+type PositiveImbalanceOf<T> = <<T as Trait>::RewardCurrency as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 pub trait Trait: system::Trait + session::Trait {
 	/// The staking balance.
 	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
+ 	// Customed: for ring
+	type RewardCurrency: Currency<Self::AccountId>;
 
 	/// Convert a balance into a number used for election calculation.
 	/// This must fit into a `u64` but is allowed to be sensibly lossy.
@@ -448,7 +452,7 @@ decl_storage! {
 		pub Payee get(payee): map T::AccountId => RewardDestination;
 
 		/// The map from (wannabe) validator stash key to the preferences of that validator.
-		pub Validators get(validators): linked_map T::AccountId => ValidatorPrefs<BalanceOf<T>>;
+		pub Validators get(validators): linked_map T::AccountId => ValidatorPrefs<RewardBalanceOf<T>>;
 
 		/// The map from nominator stash key to the set of stash keys of all validators to nominate.
 		pub Nominators get(nominators): linked_map T::AccountId => Vec<T::AccountId>;
@@ -474,11 +478,11 @@ decl_storage! {
 		pub CurrentEra get(current_era) config(): T::BlockNumber;
 
 		/// Maximum reward, per validator, that is provided per acceptable session.
-		pub CurrentSessionReward get(current_session_reward) config(): BalanceOf<T>;
+		pub CurrentSessionReward get(current_session_reward) config(): RewardBalanceOf<T>;
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era and
 		/// increased for every successfully finished session.
-		pub CurrentEraReward get(current_era_reward): BalanceOf<T>;
+		pub CurrentEraReward get(current_era_reward): RewardBalanceOf<T>;
 
 		/// The next value of sessions per era.
 		pub NextSessionsPerEra get(next_sessions_per_era): Option<T::BlockNumber>;
@@ -506,7 +510,7 @@ decl_storage! {
 		build(|storage: &mut primitives::StorageOverlay, _: &mut primitives::ChildrenStorageOverlay, config: &GenesisConfig<T>| {
 			with_storage(storage, || {
 				for &(ref stash, ref controller, balance, ref status) in &config.stakers {
-//					assert!(T::Currency::free_balance(&stash) >= balance);
+					assert!(T::Currency::free_balance(&stash) >= balance);
 					let _ = <Module<T>>::bond(
 						T::Origin::from(Some(stash.clone()).into()),
 						T::Lookup::unlookup(controller.clone()),
@@ -638,7 +642,7 @@ decl_module! {
 		/// Effects will be felt at the beginning of the next era.
 		///
 		/// The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-		fn validate(origin, prefs: ValidatorPrefs<BalanceOf<T>>) {
+		fn validate(origin, prefs: ValidatorPrefs<RewardBalanceOf<T>>) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let stash = &ledger.stash;
@@ -743,9 +747,9 @@ decl_module! {
 }
 
 decl_event!(
-	pub enum Event<T> where Balance = BalanceOf<T>, <T as system::Trait>::AccountId {
+	pub enum Event<T> where Balance = BalanceOf<T>, RewardBalance = RewardBalanceOf<T>, <T as system::Trait>::AccountId {
 		/// All validators have been rewarded by the given balance.
-		Reward(Balance),
+		Reward(RewardBalance),
 		/// One validator (and its nominators) has been given an offline-warning (it is still
 		/// within its grace). The accrued number of slashes is recorded, too.
 		OfflineWarning(AccountId, u32),
@@ -811,30 +815,21 @@ impl<T: Trait> Module<T> {
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
 	/// to pay the right payee for the given staker account.
-	fn make_payout(stash: &T::AccountId, amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
+	fn make_payout(stash: &T::AccountId, amount: RewardBalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
 		let dest = Self::payee(stash);
 		match dest {
 			RewardDestination::Controller => Self::bonded(stash)
 				.and_then(|controller|
-					T::Currency::deposit_into_existing(&controller, amount).ok()
+					T::RewardCurrency::deposit_into_existing(&controller, amount).ok()
 				),
 			RewardDestination::Stash =>
-				T::Currency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::Staked => Self::bonded(stash)
-				.and_then(|c| Self::ledger(&c).map(|l| (c, l)))
-				.and_then(|(controller, mut l)| {
-					l.active += amount;
-					l.total += amount;
-					let r = T::Currency::deposit_into_existing(stash, amount).ok();
-					Self::update_ledger(&controller, &l);
-					r
-				}),
+				T::RewardCurrency::deposit_into_existing(stash, amount).ok(),
 		}
 	}
 
 	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its nominators'
 	/// balance, pro-rata based on their exposure, after having removed the validator's pre-payout cut.
-	fn reward_validator(stash: &T::AccountId, reward: BalanceOf<T>) {
+	fn reward_validator(stash: &T::AccountId, reward: RewardBalanceOf<T>) {
 		let off_the_table = reward.min(Self::validators(stash).validator_payment);
 		let reward = reward - off_the_table;
 		let mut imbalance = <PositiveImbalanceOf<T>>::zero();
@@ -843,7 +838,12 @@ impl<T: Trait> Module<T> {
 		} else {
 			let exposure = Self::stakers(stash);
 			let total = exposure.total.max(One::one());
-			let safe_mul_rational = |b| b * reward / total;// FIXME #1572:  avoid overflow
+			let safe_mul_rational = |b| {
+				let b: u64 = <BalanceOf<T>>::as_(b);
+				let total: u64 = <BalanceOf<T>>::as_(total);
+				let reward: u64 = <RewardBalanceOf<T>>::as_(reward);
+				<RewardBalanceOf<T>>::sa(b * reward / total)};
+			// FIXME #1572:  avoid overflow
 			for i in &exposure.others {
 				let nom_payout = safe_mul_rational(i.value);
 				imbalance.maybe_subsume(Self::make_payout(&i.who, nom_payout));
@@ -855,13 +855,13 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// Get the reward for the session, assuming it ends with this block.
-	fn this_session_reward(actual_elapsed: T::Moment) -> BalanceOf<T> {
+	fn this_session_reward(actual_elapsed: T::Moment) -> RewardBalanceOf<T> {
 		let ideal_elapsed = <session::Module<T>>::ideal_session_duration();
 		if ideal_elapsed.is_zero() {
 			return Self::current_session_reward();
 		}
 		let per65536: u64 = (T::Moment::sa(65536u64) * ideal_elapsed.clone() / actual_elapsed.max(ideal_elapsed)).as_();
-		Self::current_session_reward() * <BalanceOf<T>>::sa(per65536) / <BalanceOf<T>>::sa(65536u64)
+		Self::current_session_reward() * <RewardBalanceOf<T>>::sa(per65536) / <RewardBalanceOf<T>>::sa(65536u64)
 	}
 
 	/// Session has just changed. We need to determine whether we pay a reward, slash and/or
@@ -894,9 +894,11 @@ impl<T: Trait> Module<T> {
 				Self::reward_validator(v, reward);
 			}
 			Self::deposit_event(RawEvent::Reward(reward));
-			let total_minted = reward * <BalanceOf<T> as As<usize>>::sa(validators.len());
-			let total_rewarded_stake = Self::slot_stake() * <BalanceOf<T> as As<usize>>::sa(validators.len());
-			T::OnRewardMinted::on_dilution(total_minted, total_rewarded_stake);
+			// TODO: ready for hack
+			// deprecated for now
+//			let total_minted = reward * <BalanceOf<T> as As<usize>>::sa(validators.len());
+//			let total_rewarded_stake = Self::slot_stake() * <BalanceOf<T> as As<usize>>::sa(validators.len());
+//			T::OnRewardMinted::on_dilution(total_minted, total_rewarded_stake);
 		}
 
 		// Increment current era.
@@ -911,10 +913,10 @@ impl<T: Trait> Module<T> {
 		}
 
 		// Reassign all Stakers.
-		let slot_stake = Self::select_validators();
+		let slot_stake: u64 = <BalanceOf<T>>::as_(Self::select_validators());
 
 		// Update the balances for rewarding according to the stakes.
-		<CurrentSessionReward<T>>::put(Self::session_reward() * slot_stake);
+		<CurrentSessionReward<T>>::put(Self::session_reward() * <RewardBalanceOf<T>>::sa(slot_stake));
 	}
 
 	fn slashable_balance_of(stash: &T::AccountId) -> BalanceOf<T> {

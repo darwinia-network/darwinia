@@ -26,3 +26,24 @@ use srml_support::{assert_ok, assert_noop, assert_eq_uvec, EnumerableStorageMap}
 use mock::{Ring, Kton, Session, Staking, System, Timestamp, Test, ExtBuilder, Origin};
 use srml_support::traits::{Currency, ReservableCurrency};
 
+#[inline]
+fn construct_staking_env() {
+	Kton::deposit(Origin::signed(100), 1000000, 12);
+	Kton::deposit(Origin::signed(101), 1000000, 12);
+	Kton::deposit(Origin::signed(102), 1000000, 12);
+	Kton::deposit(Origin::signed(103), 1000000, 12);
+}
+
+#[test]
+fn basic_work() {
+	with_externalities(&mut ExtBuilder::default()
+		.existential_deposit(0).build(), || {
+		construct_staking_env();
+		assert_eq!(Kton::free_balance(&100), 100);
+//		assert_eq!(Staking::stakers(&100).total, 10);
+//		assert_eq!(Staking::bonded(&101), Some(1)); // Account 11 is stashed and locked, and account 10 is the controller
+//		assert_eq!(Staking::validator_count(), 2);
+
+
+	});
+}

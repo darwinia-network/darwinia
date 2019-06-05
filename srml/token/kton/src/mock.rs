@@ -136,6 +136,8 @@ impl ExtBuilder {
         let _ = GenesisConfig::<Test> {
             sys_account: 42,
             claim_fee: balance_factor,
+            balances: vec![],
+            vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
         t.into()
