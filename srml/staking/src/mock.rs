@@ -77,6 +77,7 @@ impl session::Trait for Test {
 
 impl Trait for Test {
 	type Currency = kton::Module<Self>;
+	type RewardCurrency = ring::Module<Self>;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = ();
 	type Event = ();
@@ -149,8 +150,11 @@ impl ExtBuilder {
 				(31, balance_factor * 2000), // 2 m
 				(40, balance_factor),
 				(41, balance_factor * 2000), // 2 m
-				(100, 200000 * balance_factor),
-				(101, 200000 * balance_factor),
+				(100, 2000000 * balance_factor),
+				(101, 2000000 * balance_factor),
+				(102, 2000000 * balance_factor),
+				(103, 2000000 * balance_factor),
+				(104, 2000000 * balance_factor),
 			],
 			transaction_base_fee: 0,
 			transaction_byte_fee: 0,
@@ -163,22 +167,7 @@ impl ExtBuilder {
 		let _ = kton::GenesisConfig::<Test> {
 			sys_account: 42,
 			claim_fee: balance_factor,
-			balances: vec![
-				(1, 10 * balance_factor),
-				(2, 20 * balance_factor),
-				(3, 300 * balance_factor),
-				(4, 400 * balance_factor),
-				(10, balance_factor),
-				(11, balance_factor * 1000), // 1 m
-				(20, balance_factor),
-				(21, balance_factor * 2000), // 2 m
-				(30, balance_factor),
-				(31, balance_factor * 2000), // 2 m
-				(40, balance_factor),
-				(41, balance_factor * 2000), // 2 m
-				(100, 200000 * balance_factor),
-				(101, 200000 * balance_factor),
-			],
+			balances: vec![],
 			vesting: vec![],
 		}.assimilate_storage(&mut t, &mut c);
 
@@ -199,20 +188,19 @@ impl ExtBuilder {
 			current_era: self.current_era,
 			stakers: if self.validator_pool {
 				vec![
-					(11, 10, balance_factor * 1000, StakerStatus::<AccountIdType>::Validator),
-					(21, 20, balance_factor * if self.fair { 1000 } else { 2000 }, StakerStatus::<AccountIdType>::Validator),
-					(31, 30, balance_factor * 2000, if self.validator_pool { StakerStatus::<AccountIdType>::Validator } else { StakerStatus::<AccountIdType>::Idle }),
-					(41, 40, balance_factor * 2000, if self.validator_pool { StakerStatus::<AccountIdType>::Validator } else { StakerStatus::<AccountIdType>::Idle }),
+					(100, 1, balance_factor * 10, StakerStatus::<AccountIdType>::Validator),
+					(101, 2, balance_factor * if self.fair { 10 } else { 20 }, StakerStatus::<AccountIdType>::Validator),
+					(102, 3, balance_factor * 20, if self.validator_pool { StakerStatus::<AccountIdType>::Validator } else { StakerStatus::<AccountIdType>::Idle }),
 					// nominator
-					(101, 100, balance_factor * 200000, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![11, 21]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
+					(103, 4, balance_factor * 20, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![1, 2]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
 				]
 			} else {
 				vec![
-					(11, 10, balance_factor * 1000, StakerStatus::<AccountIdType>::Validator),
-					(21, 20, balance_factor * if self.fair { 1000 } else { 2000 }, StakerStatus::<AccountIdType>::Validator),
-					(31, 30, 1, StakerStatus::<AccountIdType>::Validator),
+					(100, 1, balance_factor * 1000, StakerStatus::<AccountIdType>::Validator),
+					(101, 2, balance_factor * if self.fair { 1000 } else { 2000 }, StakerStatus::<AccountIdType>::Validator),
+					(102, 3, 1, StakerStatus::<AccountIdType>::Validator),
 					// nominator
-					(101, 100, balance_factor * 500, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![11, 21]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
+					(103, 4, balance_factor * 500, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![11, 21]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
 				]
 			},
 			validator_count: self.validator_count,

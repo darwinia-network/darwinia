@@ -480,11 +480,10 @@ impl<T: Trait> Module<T> {
         let no = U256::from(67_u128).pow(U256::from(exp)) * U256::exp10(6);
         let de = U256::from(66_u128).pow(U256::from(exp));
 
-        let res = value * no / de;
-        print(res.as_u64());
+        let res: U256 = value * no / de;
         let value = (res - U256::exp10(6) * value) / (U256::from(197) * U256::exp10(7));
-        print(value.as_u64());
-        T::Balance::sa(value.as_u64())
+        // to avoid arithmetic operation overflow
+        <T::Balance as As<usize>>::sa(value.as_usize())
     }
 
     fn update_paidout(who: &T::AccountId, value: CurrencyOf<T>, is_refund: bool) {
