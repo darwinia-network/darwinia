@@ -250,6 +250,7 @@ impl kton::Trait for Runtime {
 
 impl staking::Trait for Runtime {
 	type Currency = Kton;
+	type RewardCurrency = Ring;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = ();
 	type Event = Event;
