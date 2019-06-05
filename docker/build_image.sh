@@ -40,7 +40,7 @@ usage() {
     exit 1
 }
 
-while getopts 'v:b:s:h' flag
+while getopts 'v:b:sh' flag
 do
     case "${flag}" in
       v) 
