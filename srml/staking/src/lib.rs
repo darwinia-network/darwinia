@@ -251,12 +251,15 @@ use primitives::traits::{Convert, Zero, One, As, StaticLookup, CheckedSub, Satur
 #[cfg(feature = "std")]
 use primitives::{Serialize, Deserialize};
 use system::ensure_signed;
+use evo_support::traits::SystemCurrency;
 
 mod mock;
 mod tests;
 mod phragmen;
+mod minting;
 
 use phragmen::{elect, ElectionConfig};
+
 
 const RECENT_OFFLINE_COUNT: usize = 32;
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
@@ -398,7 +401,7 @@ type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::
 
 pub trait Trait: system::Trait + session::Trait {
 	/// The staking balance.
-	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
+	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber> + SystemCurrency<Self::AccountId>;
  	// Customed: for ring
 	type RewardCurrency: Currency<Self::AccountId>;
 
@@ -407,7 +410,7 @@ pub trait Trait: system::Trait + session::Trait {
 	type CurrencyToVote: Convert<BalanceOf<Self>, u64> + Convert<u128, BalanceOf<Self>>;
 
 	/// Some tokens minted.
-	type OnRewardMinted: OnDilution<BalanceOf<Self>>;
+	type OnRewardMinted: OnDilution<RewardBalanceOf<Self>>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -430,8 +433,10 @@ decl_storage! {
 		pub MinimumValidatorCount get(minimum_validator_count) config(): u32 = DEFAULT_MINIMUM_VALIDATOR_COUNT;
 		/// The length of a staking era in sessions.
 		pub SessionsPerEra get(sessions_per_era) config(): T::BlockNumber = T::BlockNumber::sa(1000);
-		/// Maximum reward, per validator, that is provided per acceptable session.
-		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_billionths(60);
+
+		/// Changed: maximum reward, part of the whole session, which will reward validators & nominators
+		/// for now 40% percent
+		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_billionths(400000000);
 		/// Slash, per validator that is taken for the first time they are found to be offline.
 		pub OfflineSlash get(offline_slash) config(): Perbill = Perbill::from_millionths(1000); // Perbill::from_fraction() is only for std, so use from_millionths().
 		/// Number of instances of offline reports before slashing begins for validators.
@@ -504,13 +509,24 @@ decl_storage! {
 
 		/// Most recent `RECENT_OFFLINE_COUNT` instances. (Who it was, when it was reported, how many instances they were offline for).
 		pub RecentlyOffline get(recently_offline): Vec<(T::AccountId, T::BlockNumber, u32)>;
+
+		/// number of eras per epoch
+		pub EraPerEpoch get(era_per_epoch) config(): T::BlockNumber = T::BlockNumber::sa(5000);
+
+		/// current epoch index
+		pub CurrentEpoch get(current_epoch): T::BlockNumber;
+
+		pub LastEpochChanged get(last_epoch_changed): T::BlockNumber;
 	}
+
 	add_extra_genesis {
 		config(stakers): Vec<(T::AccountId, T::AccountId, BalanceOf<T>, StakerStatus<T::AccountId>)>;
 		build(|storage: &mut primitives::StorageOverlay, _: &mut primitives::ChildrenStorageOverlay, config: &GenesisConfig<T>| {
 			with_storage(storage, || {
 				for &(ref stash, ref controller, balance, ref status) in &config.stakers {
-					assert!(T::Currency::free_balance(&stash) >= balance);
+				// TODO: for now we dont consider it
+				// cuz kton comes from ring depost, so no one has it beforehand
+				//	assert!(T::Currency::free_balance(&stash) >= balance);
 					let _ = <Module<T>>::bond(
 						T::Origin::from(Some(stash.clone()).into()),
 						T::Lookup::unlookup(controller.clone()),
@@ -888,13 +904,21 @@ impl<T: Trait> Module<T> {
 	fn new_era() {
 		// Payout
 		let reward = <CurrentEraReward<T>>::take();
+		// TODO: for now block_reward == ktoner_rewardå
+		let block_reward = Self::session_reward() * reward;
+		let validator_count = <RewardBalanceOf<T>>::sa(<CurrentElected<T>>::get().len() as u64);
+		let reward_per_validator = reward * block_reward.clone() / validator_count;
 		if !reward.is_zero() {
 			let validators = Self::current_elected();
 			for v in validators.iter() {
 				Self::reward_validator(v, reward);
 			}
 			Self::deposit_event(RawEvent::Reward(reward));
-			// TODO: ready for hack
+
+			// reward ktoner
+			<T::Currency as SystemCurrency<T::AccountId>>::reward_ktoner(block_reward.clone());
+
+			// TODO: ready for hacking
 			// deprecated for now
 //			let total_minted = reward * <BalanceOf<T> as As<usize>>::sa(validators.len());
 //			let total_rewarded_stake = Self::slot_stake() * <BalanceOf<T> as As<usize>>::sa(validators.len());
@@ -916,7 +940,20 @@ impl<T: Trait> Module<T> {
 		let slot_stake: u64 = <BalanceOf<T>>::as_(Self::select_validators());
 
 		// Update the balances for rewarding according to the stakes.
-		<CurrentSessionReward<T>>::put(Self::session_reward() * <RewardBalanceOf<T>>::sa(slot_stake));
+//		<CurrentSessionReward<T>>::put(Self::session_reward() * <RewardBalanceOf<T>>::sa(slot_stake));
+
+
+		let era_index = Self::current_era();
+		if ((era_index - Self::last_epoch_changed()) % Self::era_per_epoch()).is_zero() {
+			Self::new_epoch();
+		}
+	}
+
+	// change session reward
+	fn new_epoch() {
+		if let Ok(session_reward) =  minting::compute_next_session_reward::<T>() {
+			<CurrentSessionReward<T>>::put(session_reward);
+		}
 	}
 
 	fn slashable_balance_of(stash: &T::AccountId) -> BalanceOf<T> {

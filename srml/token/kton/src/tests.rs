@@ -9,6 +9,8 @@ use evo_support::traits::SystemCurrency;
 
 use super::*;
 
+// Note: All deprecated!!
+
 #[inline]
 fn compute_dividend_of(acc: u64) -> i128 {
     let kton_balance = Kton::free_balance(&acc) as u64;

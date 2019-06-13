@@ -18,6 +18,8 @@ pub trait SystemCurrency<AccountId> {
     type PositiveImbalance: Imbalance<Self::CurrencyOf, Opposite=Self::NegativeImbalance>;
     type NegativeImbalance: Imbalance<Self::CurrencyOf, Opposite=Self::PositiveImbalance>;
 
+    fn reward_ktoner(value: Self::CurrencyOf) -> Result;
+
     fn reward_can_withdraw(who: &AccountId) -> i128;
 
     fn system_withdraw(who: &AccountId, value: Self::CurrencyOf) -> result::Result<(Self::NegativeImbalance, Self::NegativeImbalance), &'static str>;
