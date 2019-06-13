@@ -144,6 +144,7 @@ fn testnet_genesis(initial_authorities: Vec<(AccountId, AccountId, AuthorityId)>
 			offline_slash_grace: 0,
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			era_per_epoch: 5000,
 		}),
 		ring: Some(RingConfig {
 			transaction_base_fee: 1,

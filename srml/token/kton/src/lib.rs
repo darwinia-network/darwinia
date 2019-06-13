@@ -45,16 +45,6 @@ const MONTH: u64 = 2592000;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Revenue<CurrencyOf> {
-    team: CurrencyOf,
-    contribution: CurrencyOf,
-    ktoner: CurrencyOf,
-    lottery: CurrencyOf,
-}
-
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
 pub struct DepositInfo<Currency: HasCompact, Moment: HasCompact> {
     #[codec(compact)]
     pub month: Moment,
@@ -88,7 +78,7 @@ pub type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as syst
 pub trait Trait: timestamp::Trait {
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug + From<Self::BlockNumber>;
-    /// The token which
+    /// ring
     type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -169,7 +159,7 @@ decl_storage! {
 
 		/// system revenue
 		/// the id for evolution land is 42
-		pub SysRevenue get(system_revenue): map T::AccountId => Revenue<CurrencyOf<T>>;
+		pub SysRevenue get(system_revenue): map T::AccountId => CurrencyOf<T>;
 
 		pub SysAccount get(sys_account) config(): T::AccountId;
 
@@ -249,14 +239,13 @@ decl_module! {
 
         pub fn transfer_to_system(origin, value: CurrencyOf<T>) -> Result {
             let transactor = ensure_signed(origin)?;
-
             // TODO: extend `WithdrawReason` to match system revenue model
             T::Currency::transfer(&transactor, &Self::sys_account(), value.clone())?;
 
             // re-balance
             Self::update_revenue(value)?;
 
-            Ok(())
+        Ok(())
 
         }
 
@@ -306,24 +295,15 @@ impl<T: Trait> Module<T> {
 
     pub fn update_revenue(value: CurrencyOf<T>) -> Result {
         let total_supply: u64 = Self::total_issuance().as_();
-        let major = value.clone() * <CurrencyOf<T>>::sa(3) / <CurrencyOf<T>>::sa(10);
-        let minor = value.clone() / <CurrencyOf<T>>::sa(10);
 
         let sys_account = Self::sys_account();
 
-        let delta_reward_per_share = major.clone() / <CurrencyOf<T>>::sa(total_supply);
+        let delta_reward_per_share = value.clone() / <CurrencyOf<T>>::sa(total_supply);
 
         // update reward_per_share
         <RewardPerShare<T>>::mutate(|r| *r += delta_reward_per_share);
 
-        // update revenue
-        let mut revenue = Self::system_revenue(&sys_account);
-        revenue.contribution = major.clone();
-        revenue.ktoner = major.clone();
-        revenue.lottery = minor.clone();
-        revenue.team = value - <CurrencyOf<T>>::sa(2) * major - minor;
-
-        <SysRevenue<T>>::insert(&sys_account, revenue);
+        <SysRevenue<T>>::insert(&sys_account, Self::system_revenue(&sys_account) + value);
 
         Ok(())
     }
@@ -509,6 +489,13 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
     type PositiveImbalance = PositiveImbalanceOf<T>;
     type NegativeImbalance = NegativeImbalanceOf<T>;
 
+    fn reward_ktoner(value: Self::CurrencyOf) -> Result {
+        let positive = T::Currency::deposit_creating(&Self::sys_account(), value);
+        // re-balance
+        Self::update_revenue(value)?;
+        T::SystemRefund::on_unbalanced(positive);
+        Ok(())
+    }
     fn reward_can_withdraw(who: &T::AccountId) -> i128 {
         let kton_balance: u64 = T::Balance::as_(Self::free_balance(who));
         let paid_out = Self::reward_paidout(who);

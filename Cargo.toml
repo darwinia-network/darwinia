@@ -73,6 +73,8 @@ members = [
 	"srml/contract",
 	"srml/try",
 	"srml/staking",
+	"srml/treasury",
+	"srml/session",
 ]
 exclude = ["runtime/wasm"]
 
