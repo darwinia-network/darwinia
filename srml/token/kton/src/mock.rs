@@ -99,9 +99,9 @@ impl ExtBuilder {
     pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
         let (mut t, mut c) = system::GenesisConfig::<Test>::default().build_storage().unwrap();
         let balance_factor = if self.existential_deposit > 0 {
-            1000
+            1000 * DECIMALS
         } else {
-            1
+            1 * DECIMALS
         };
 
         let _ = timestamp::GenesisConfig::<Test> {

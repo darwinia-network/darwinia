@@ -42,6 +42,7 @@ pub use imbalances::{PositiveImbalance, NegativeImbalance};
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const MONTH: u64 = 2592000;
 
+pub const DECIMALS: u64 = 1000000000;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
@@ -207,6 +208,13 @@ decl_storage! {
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		fn deposit_event<T>() = default;
+
+		// root
+		pub fn set_total_issuance(total_issuance: T::Balance) -> Result {
+		    <TotalIssuance<T>>::put(total_issuance);
+
+		    Ok(())
+		}
 
 		pub fn transfer(
 			origin,

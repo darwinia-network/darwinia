@@ -434,8 +434,8 @@ decl_storage! {
 		/// The length of a staking era in sessions.
 		pub SessionsPerEra get(sessions_per_era) config(): T::BlockNumber = T::BlockNumber::sa(1000);
 
-		/// Changed: maximum reward, part of the whole session, which will reward validators & nominators
-		/// for now 40% percent
+		/// Changed: maximum reward, part of the per validator within a session,
+		/// which will reward validators & nominators, for now 40% percent
 		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_billionths(400000000);
 		/// Slash, per validator that is taken for the first time they are found to be offline.
 		pub OfflineSlash get(offline_slash) config(): Perbill = Perbill::from_millionths(1000); // Perbill::from_fraction() is only for std, so use from_millionths().
@@ -517,6 +517,11 @@ decl_storage! {
 		pub CurrentEpoch get(current_epoch): T::BlockNumber;
 
 		pub LastEpochChanged get(last_epoch_changed): T::BlockNumber;
+
+		/// ktoner cut for block reward, Perbill for calculating portion
+		pub ShareHolderReward get(share_holder_reward): Perbill = Perbill::from_billionths(400000000);
+
+
 	}
 
 	add_extra_genesis {
@@ -904,19 +909,19 @@ impl<T: Trait> Module<T> {
 	fn new_era() {
 		// Payout
 		let reward = <CurrentEraReward<T>>::take();
-		// TODO: for now block_reward == ktoner_rewardå
+		// TODO: for now block_reward is equal to ktoner_reward
 		let block_reward = Self::session_reward() * reward;
-		let validator_count = <RewardBalanceOf<T>>::sa(<CurrentElected<T>>::get().len() as u64);
-		let reward_per_validator = reward * block_reward.clone() / validator_count;
+		let holder_reward: u64 = <RewardBalanceOf<T>>::as_(Self::share_holder_reward() * reward);
+		let holder_reward = <T::Currency as SystemCurrency<T::AccountId>>::CurrencyOf::sa(holder_reward);
 		if !reward.is_zero() {
 			let validators = Self::current_elected();
 			for v in validators.iter() {
-				Self::reward_validator(v, reward);
+				Self::reward_validator(v, block_reward);
 			}
 			Self::deposit_event(RawEvent::Reward(reward));
 
 			// reward ktoner
-			<T::Currency as SystemCurrency<T::AccountId>>::reward_ktoner(block_reward.clone());
+			<T::Currency as SystemCurrency<T::AccountId>>::reward_ktoner(holder_reward);
 
 			// TODO: ready for hacking
 			// deprecated for now
@@ -940,9 +945,6 @@ impl<T: Trait> Module<T> {
 		let slot_stake: u64 = <BalanceOf<T>>::as_(Self::select_validators());
 
 		// Update the balances for rewarding according to the stakes.
-//		<CurrentSessionReward<T>>::put(Self::session_reward() * <RewardBalanceOf<T>>::sa(slot_stake));
-
-
 		let era_index = Self::current_era();
 		if ((era_index - Self::last_epoch_changed()) % Self::era_per_epoch()).is_zero() {
 			Self::new_epoch();
@@ -951,7 +953,8 @@ impl<T: Trait> Module<T> {
 
 	// change session reward
 	fn new_epoch() {
-		if let Ok(session_reward) =  minting::compute_next_session_reward::<T>() {
+		let validator_count = <CurrentElected<T>>::get().len() as u64;
+		if let Ok(session_reward) =  minting::compute_next_session_reward::<T>(validator_count) {
 			<CurrentSessionReward<T>>::put(session_reward);
 		}
 	}

@@ -23,10 +23,11 @@ evo-support = {path = "../support", default_features = false}
 runtime_io = { package = "sr-io", git = "https://github.com/paritytech/substrate", default-features = false }
 session = { package ="srml-session", git = "https://github.com/paritytech/substrate", default-features = false }
 consensus = { package ="srml-consensus", git = "https://github.com/paritytech/substrate", default-features = false }
+kton = { package = "evo-kton", path = "../token/kton", default-features = false}
 
 [dev-dependencies]
 ring = { package = "evo-ring", path = "../token/ring"}
-kton = { package = "evo-kton", path = "../token/kton"}
+
 
 [features]
 default = ["std"]
@@ -45,4 +46,5 @@ std = [
     "timestamp/std",
     "session/std",
     "consensus/std",
+    "kton/std",
 ]
