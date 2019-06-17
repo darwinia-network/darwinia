@@ -6,6 +6,7 @@ use primitives::testing::{ UintAuthorityId, ConvertUintAuthorityId};
 use substrate_primitives::{H256, Blake2Hasher};
 use srml_support::impl_outer_origin;
 use crate::{GenesisConfig, Module, Trait, StakerStatus};
+use kton::DECIMALS;
 
 impl_outer_origin!{
 	pub enum Origin for Test {}
@@ -127,9 +128,9 @@ impl ExtBuilder {
 
 		let (mut t, mut c) = system::GenesisConfig::<Test>::default().build_storage().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
-			1000
+			1000 * DECIMALS
 		} else {
-			1
+			1 * DECIMALS
 		};
 
 		let _ = timestamp::GenesisConfig::<Test> {

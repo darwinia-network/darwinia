@@ -4,7 +4,7 @@ extern crate sr_std as rstd;
 
 use codec::{Codec, Encode, Decode};
 use srml_support::dispatch::Result;
-use srml_support::traits::Imbalance;
+use srml_support::traits::{Imbalance, Currency};
 use sr_primitives::traits::{
 Zero, SimpleArithmetic, As, StaticLookup, Member, CheckedAdd, CheckedSub,
 MaybeSerializeDebug, Saturating
@@ -14,7 +14,7 @@ use rstd::{prelude::*, result};
 // general interface
 pub trait SystemCurrency<AccountId> {
     // ring
-    type CurrencyOf: SimpleArithmetic + Codec + Copy + MaybeSerializeDebug + Default;
+    type CurrencyOf: SimpleArithmetic + Codec + Copy + MaybeSerializeDebug + Default + As<u64>;
     type PositiveImbalance: Imbalance<Self::CurrencyOf, Opposite=Self::NegativeImbalance>;
     type NegativeImbalance: Imbalance<Self::CurrencyOf, Opposite=Self::PositiveImbalance>;
 
