@@ -187,23 +187,24 @@ impl ExtBuilder {
 		let _ = GenesisConfig::<Test>{
 			sessions_per_era: self.sessions_per_era,
 			current_era: self.current_era,
-			stakers: if self.validator_pool {
-				vec![
-					(100, 1, balance_factor * 10, StakerStatus::<AccountIdType>::Validator),
-					(101, 2, balance_factor * if self.fair { 10 } else { 20 }, StakerStatus::<AccountIdType>::Validator),
-					(102, 3, balance_factor * 20, if self.validator_pool { StakerStatus::<AccountIdType>::Validator } else { StakerStatus::<AccountIdType>::Idle }),
-					// nominator
-					(103, 4, balance_factor * 20, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![1, 2]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
-				]
-			} else {
-				vec![
-					(100, 1, balance_factor * 1000, StakerStatus::<AccountIdType>::Validator),
-					(101, 2, balance_factor * if self.fair { 1000 } else { 2000 }, StakerStatus::<AccountIdType>::Validator),
-					(102, 3, 1, StakerStatus::<AccountIdType>::Validator),
-					// nominator
-					(103, 4, balance_factor * 500, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![11, 21]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
-				]
-			},
+			stakers: vec![],
+//			if self.validator_pool {
+//				vec![
+//					(10, 1, balance_factor * 10, StakerStatus::<AccountIdType>::Validator),
+//					(11, 2, balance_factor * if self.fair { 10 } else { 20 }, StakerStatus::<AccountIdType>::Validator),
+//					(102, 3, balance_factor * 20, if self.validator_pool { StakerStatus::<AccountIdType>::Validator } else { StakerStatus::<AccountIdType>::Idle }),
+//					// nominator
+//					(103, 4, balance_factor * 20, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![1, 2]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
+//				]
+//			} else {
+//				vec![
+//					(100, 1, balance_factor * 1000, StakerStatus::<AccountIdType>::Validator),
+//					(101, 2, balance_factor * if self.fair { 1000 } else { 2000 }, StakerStatus::<AccountIdType>::Validator),
+//					(102, 3, 1, StakerStatus::<AccountIdType>::Validator),
+//					// nominator
+//					(103, 4, balance_factor * 500, if self.nominate { StakerStatus::<AccountIdType>::Nominator(vec![11, 21]) } else { StakerStatus::<AccountIdType>::Nominator(vec![]) })
+//				]
+//			},
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			bonding_duration: self.sessions_per_era * self.session_length * 3,
@@ -211,6 +212,7 @@ impl ExtBuilder {
 			offline_slash: Perbill::from_percent(5),
 			current_session_reward: self.reward,
 			offline_slash_grace: 0,
+			era_per_epoch: 10000,
 			invulnerables: vec![],
 		}.assimilate_storage(&mut t, &mut c);
 		let _ = timestamp::GenesisConfig::<Test>{

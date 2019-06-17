@@ -209,13 +209,6 @@ decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		fn deposit_event<T>() = default;
 
-		// root
-		pub fn set_total_issuance(total_issuance: T::Balance) -> Result {
-		    <TotalIssuance<T>>::put(total_issuance);
-
-		    Ok(())
-		}
-
 		pub fn transfer(
 			origin,
 			dest: <T::Lookup as StaticLookup>::Source,

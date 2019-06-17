@@ -192,16 +192,12 @@ decl_module! {
 	pub struct Module<T: Trait<I>, I: Instance = DefaultInstance> for enum Call where origin: T::Origin {
 		fn deposit_event<T, I>() = default;
 
-        pub fn init(origin) -> Result {
-            ensure!(Self::is_init() == false, "Token already initialized.");
+        // root
+		pub fn set_total_issuance(total_issuance: T::Balance) -> Result {
+		    <TotalIssuance<T, I>>::put(total_issuance);
 
-            let sender = ensure_signed(origin)?;
-
-            <FreeBalance<T, I>>::insert(sender, Self::total_issuance());
-            <Init<T, I>>::put(true);
-
-            Ok(())
-        }
+		    Ok(())
+		}
 		/// Transfer some liquid free balance to another account.
 		///
 		/// `transfer` will set the `FreeBalance` of the sender and receiver.
