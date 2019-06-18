@@ -968,8 +968,7 @@ impl<T: Trait> Module<T> {
 
 	// change session reward
 	fn new_epoch() {
-		<CurrentEra<T>>::put(&(<CurrentEpoch<T>>::get() + One::one()));
-		let validator_count = <CurrentElected<T>>::get().len() as u64;
+		<CurrentEpoch<T>>::put(&(<CurrentEpoch<T>>::get() + One::one()));
 		if let Ok(next_era_reward) =  minting::compute_next_era_reward::<T>() {
 			<IdealEraReward<T>>::put(next_era_reward);
 		}

@@ -104,8 +104,8 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			existential_deposit: 0,
-			session_length: 1,
-			sessions_per_era: 1,
+			session_length: 3,
+			sessions_per_era: 2,
 			current_era: 0,
 			reward: 10,
 			validator_pool: false,
@@ -208,11 +208,11 @@ impl ExtBuilder {
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			bonding_duration: self.sessions_per_era * self.session_length * 3,
-			session_reward: Perbill::from_millionths((1000000 * self.reward / balance_factor) as u32),
+			share_bond_reward: Perbill::from_millionths((1000000 * self.reward / balance_factor) as u32),
 			offline_slash: Perbill::from_percent(5),
 			current_session_reward: self.reward,
 			offline_slash_grace: 0,
-			era_per_epoch: 10000,
+			era_per_epoch: 2,
 			invulnerables: vec![],
 		}.assimilate_storage(&mut t, &mut c);
 		let _ = timestamp::GenesisConfig::<Test>{
