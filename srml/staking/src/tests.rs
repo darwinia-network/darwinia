@@ -24,14 +24,20 @@ use phragmen;
 use primitives::PerU128;
 use srml_support::{assert_ok, assert_noop, assert_eq_uvec, EnumerableStorageMap};
 use mock::{Ring, Kton, Session, Staking, System, Timestamp, Test, ExtBuilder, Origin};
-use srml_support::traits::{Currency, ReservableCurrency};
+use srml_support::traits::{Currency, ReservableCurrency, WithdrawReason, WithdrawReasons, LockIdentifier};
+use kton::{ BalanceLock, DECIMALS};
+
 
 #[inline]
 fn construct_staking_env() {
-	Kton::deposit(Origin::signed(100), 1000000, 12);
 	Kton::deposit(Origin::signed(101), 1000000, 12);
 	Kton::deposit(Origin::signed(102), 1000000, 12);
 	Kton::deposit(Origin::signed(103), 1000000, 12);
+
+	Staking::bond(Origin::signed(101), 1, 100, RewardDestination::Stash);
+	Staking::bond(Origin::signed(102), 2, 100, RewardDestination::Stash);
+	Staking::bond(Origin::signed(103), 3, 100, RewardDestination::Controller);
+
 }
 
 #[test]
@@ -39,11 +45,46 @@ fn basic_work() {
 	with_externalities(&mut ExtBuilder::default()
 		.existential_deposit(0).build(), || {
 		construct_staking_env();
-		assert_eq!(Kton::free_balance(&100), 100);
-//		assert_eq!(Staking::stakers(&100).total, 10);
-//		assert_eq!(Staking::bonded(&101), Some(1)); // Account 11 is stashed and locked, and account 10 is the controller
-//		assert_eq!(Staking::validator_count(), 2);
-
+		assert_eq!(Kton::free_balance(&101), 100);
+		assert_eq!(Staking::bonded(&101), Some(1));
+		assert_eq!(Staking::ledger(&1), Some( StakingLedger {stash: 101, total: 100, active: 100, unlocking: vec![]}));
+		assert_eq!(Kton::locks(&101), vec![ BalanceLock{id: STAKING_ID, amount: 100, until: u64::max_value(), reasons: WithdrawReasons::all()}]);
+		Kton::deposit(Origin::signed(101), 1000000, 12);
+		assert_ok!(Staking::bond_extra(Origin::signed(101), 100));
+		assert_eq!(Staking::ledger(&1), Some( StakingLedger {stash: 101, total: 200, active: 200, unlocking: vec![]}));
+		assert_eq!(Kton::locks(&101), vec![ BalanceLock{ id: STAKING_ID, amount: 200, until: u64::max_value(), reasons: WithdrawReasons::all()}]);
 
 	});
 }
+
+#[test]
+fn test_validate() {
+	with_externalities(&mut ExtBuilder::default()
+		.existential_deposit(0).build(), || {
+		construct_staking_env();
+
+		assert_eq!(<Validators<Test>>::enumerate().collect::<Vec<_>>(), vec![]);
+		assert_eq!(Staking::slot_stake(), 0);
+		assert_eq!(System::block_number(), 1);
+		Staking::validate(Origin::signed(1), ValidatorPrefs::default());
+		Staking::validate(Origin::signed(2), ValidatorPrefs::default());
+		assert_eq!(Staking::validator_count(), 2);
+
+		assert_eq!(<Validators<Test>>::enumerate().collect::<Vec<_>>(), vec![
+			(102, ValidatorPrefs::default()),
+			(101, ValidatorPrefs::default()),
+		]);
+
+		// Initial Era and session
+		assert_eq!(Staking::current_era(), 0);
+		assert_eq!(Session::current_index(), 0);
+
+		// initial rewards
+		assert_eq!(Staking::current_session_reward(), 10);
+
+		assert_eq!(Staking::select_validators(), 100);
+		assert_eq!(Staking::slot_stake(), 100);
+
+	});
+}
+

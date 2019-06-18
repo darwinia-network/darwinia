@@ -33,8 +33,12 @@ use srml_support::traits::{
     UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
 };
 use system::{ensure_signed, IsDeadAccount, OnNewAccount};
+use core::convert::TryFrom;
+use sr_primitives::Perbill;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
+
+use evo_support::traits::LockRate;
 
 mod mock;
 mod tests;
@@ -180,6 +184,8 @@ decl_storage! {
 
 		/// Any liquidity locks on some account balances.
 		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
+
+		pub TotalLock get(total_lock): T::Balance;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -192,16 +198,12 @@ decl_module! {
 	pub struct Module<T: Trait<I>, I: Instance = DefaultInstance> for enum Call where origin: T::Origin {
 		fn deposit_event<T, I>() = default;
 
-        pub fn init(origin) -> Result {
-            ensure!(Self::is_init() == false, "Token already initialized.");
+        // root
+		pub fn set_total_issuance(total_issuance: T::Balance) -> Result {
+		    <TotalIssuance<T, I>>::put(total_issuance);
 
-            let sender = ensure_signed(origin)?;
-
-            <FreeBalance<T, I>>::insert(sender, Self::total_issuance());
-            <Init<T, I>>::put(true);
-
-            Ok(())
-        }
+		    Ok(())
+		}
 		/// Transfer some liquid free balance to another account.
 		///
 		/// `transfer` will set the `FreeBalance` of the sender and receiver.
@@ -905,5 +907,27 @@ impl<T: Trait<I>, I: Instance> IsDeadAccount<T::AccountId> for Module<T, I>
 {
     fn is_dead_account(who: &T::AccountId) -> bool {
         Self::total_balance(who).is_zero()
+    }
+}
+
+
+impl<T: Trait<I>, I: Instance> LockRate for Module<T, I> {
+
+    fn bill_lock_rate() -> Perbill {
+        let total_issuance: u64 = T::Balance::as_(Self::total_issuance());
+        let total_lock: u64 = T::Balance::as_(Self::total_lock());
+
+        let rate = u32::try_from(total_lock * 1000000000 / total_issuance).unwrap();
+        Perbill::from_billionths(rate)
+    }
+
+    fn update_total_lock(amount: u64, is_add: bool) -> Result {
+        let amount = T::Balance::sa(amount);
+        if is_add {
+            <TotalLock<T, I>>::mutate(|t| *t += amount);
+        } else {
+            <TotalLock<T, I>>::mutate(|t| *t -= amount);
+        }
+       Ok(())
     }
 }

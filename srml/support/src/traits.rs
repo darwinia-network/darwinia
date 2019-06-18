@@ -10,6 +10,7 @@ Zero, SimpleArithmetic, As, StaticLookup, Member, CheckedAdd, CheckedSub,
 MaybeSerializeDebug, Saturating
 };
 use rstd::{prelude::*, result};
+use sr_primitives::Perbill;
 
 // general interface
 pub trait SystemCurrency<AccountId> {
@@ -25,4 +26,13 @@ pub trait SystemCurrency<AccountId> {
     fn system_withdraw(who: &AccountId, value: Self::CurrencyOf) -> result::Result<(Self::NegativeImbalance, Self::NegativeImbalance), &'static str>;
 
     fn system_refund(who: &AccountId, value: Self::CurrencyOf, system_imbalance: Self::NegativeImbalance, acc_imbalance: Self::NegativeImbalance);
+}
+
+pub trait LockRate {
+    //TODO： ugly to use u64, ready for hacking
+    //    type Balance: SimpleArithmetic + As<usize> + As<u64> + Codec + Copy + MaybeSerializeDebug + Default;
+
+    fn bill_lock_rate() -> Perbill;
+
+    fn update_total_lock(amount: u64, is_add: bool) -> Result;
 }

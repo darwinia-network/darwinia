@@ -20,6 +20,7 @@ srml-system = { git = "https://github.com/paritytech/substrate", default-feature
 srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
 srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
 evo-kton = {path = "../kton", default_features = false}
+evo-support = {path = "../../support", default_features = false}
 
 
 [dev-dependencies]

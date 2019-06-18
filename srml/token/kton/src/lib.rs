@@ -16,7 +16,7 @@ extern crate srml_timestamp as timestamp;
 extern crate substrate_primitives;
 
 use core::convert::TryFrom;
-use evo_support::traits::SystemCurrency;
+use evo_support::traits::{ SystemCurrency, LockRate };
 use parity_codec::{Codec, Decode, Encode, HasCompact};
 #[cfg(feature = "std")]
 use primitives::{Deserialize, Serialize};
@@ -32,12 +32,15 @@ use support::dispatch::Result;
 use support::traits::{UpdateBalanceOutcome, Currency, ExistenceRequirement,
                       Imbalance, LockableCurrency, LockIdentifier, OnUnbalanced, SignedImbalance, WithdrawReason, WithdrawReasons};
 use system::ensure_signed;
+use primitives::Perbill;
+
 
 mod mock;
 mod tests;
 mod imbalances;
 
 pub use imbalances::{PositiveImbalance, NegativeImbalance};
+
 
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
 const MONTH: u64 = 2592000;
@@ -80,7 +83,7 @@ pub trait Trait: timestamp::Trait {
     /// The balance of an account.
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy + As<usize> + As<u64> + MaybeSerializeDebug + From<Self::BlockNumber>;
     /// ring
-    type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
+    type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment> + LockRate;
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -179,6 +182,8 @@ decl_storage! {
 
 		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 
+		pub TotalLock get(total_lock): T::Balance;
+
 		pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
 			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
 				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
@@ -208,13 +213,6 @@ decl_storage! {
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		fn deposit_event<T>() = default;
-
-		// root
-		pub fn set_total_issuance(total_issuance: T::Balance) -> Result {
-		    <TotalIssuance<T>>::put(total_issuance);
-
-		    Ok(())
-		}
 
 		pub fn transfer(
 			origin,
@@ -399,6 +397,7 @@ impl<T: Trait> Module<T> {
 
             deposit_info.claimed = true;
             deposit.total_deposit -= value;
+
             // update reward
             Self::withdraw_kton_reward(&who, kton_penalty.clone(), &T::AccountId::default())?;
             // update kton balance
@@ -408,9 +407,14 @@ impl<T: Trait> Module<T> {
         }
 
         if deposit.total_deposit > <CurrencyOf<T>>::sa(0) {
+            //TODO: check if it is ok to reduce lock
             T::Currency::set_lock(DEPOSIT_ID, &who, deposit.total_deposit, T::Moment::sa(u64::max_value()), WithdrawReasons::all());
+        } else {
+            T::Currency::remove_lock(DEPOSIT_ID, &who);
         }
 
+        // update lock amount
+        T::Currency::update_total_lock(<CurrencyOf<T> as As<u64>>::as_(value), false);
         // update deposit
         <DepositLedger<T>>::insert(&who, deposit);
 
@@ -431,6 +435,8 @@ impl<T: Trait> Module<T> {
         } else {
             <DepositLedger<T>>::insert(&who, Deposit { total_deposit: value, deposit_list: vec![deposit_info] });
         }
+
+        T::Currency::update_total_lock(<CurrencyOf<T> as As<u64>>::as_(value.clone()), true);
 
         let delta_balance = Self::compute_kton_balance(months.clone(), value);
 
@@ -803,4 +809,27 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
         <Locks<T>>::insert(who, locks);
     }
 }
+
+impl<T: Trait> LockRate for Module<T> {
+
+    fn bill_lock_rate() -> Perbill {
+        let total_issuance: u64 = T::Balance::as_(Self::total_issuance());
+        let total_lock: u64 = T::Balance::as_(Self::total_lock());
+
+        let rate = u32::try_from(total_lock * 1000000000 / total_issuance).unwrap();
+        Perbill::from_billionths(rate)
+    }
+
+    fn update_total_lock(amount: u64, is_add: bool) -> Result {
+        let amount = T::Balance::sa(amount);
+        if is_add {
+            <TotalLock<T>>::mutate(|t| *t += amount);
+        } else {
+            <TotalLock<T>>::mutate(|t| *t -= amount);
+        }
+        Ok(())
+    }
+}
+
+
 
