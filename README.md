@@ -119,7 +119,7 @@ Now that Alice's node is up and running, Bob can join the network by bootstrappi
 --key //Bob \
 --port 30334 \
 --validator \
---name BobDarwiniaNode
+--name BobDarwiniaNode \
 -- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID> \
 --telemetry-url ws://telemetry.polkadot.io:1024
 ```
