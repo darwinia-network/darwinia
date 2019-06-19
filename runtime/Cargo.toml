@@ -152,6 +152,8 @@ std = [
     "evo-ring/std",
     "evo-kton/std",
     "evo-contract/std",
+    "staking/std",
+    "treasury/std",
     'sudo/std',
     'version/std',
     'serde_derive',
