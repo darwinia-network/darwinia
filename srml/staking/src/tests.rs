@@ -38,6 +38,9 @@ fn construct_staking_env() {
 	Staking::bond(Origin::signed(102), 2, 100, RewardDestination::Stash);
 	Staking::bond(Origin::signed(103), 3, 100, RewardDestination::Controller);
 
+	assert_eq!(Kton::total_issuance(), 300);
+	assert_eq!(Ring::total_issuance(), 10007734000000000);
+
 }
 
 #[test]
@@ -87,4 +90,51 @@ fn test_validate() {
 
 	});
 }
+
+#[test]
+fn session_era_epoch_should_work_well() {
+	with_externalities(&mut ExtBuilder::default()
+		.existential_deposit(0).build(), || {
+
+		construct_staking_env();
+		// Initial
+		System::set_block_number(1);
+		assert_eq!(System::block_number(), 1);
+		assert_eq!(Session::current_index(), 0);
+		assert_eq!(Session::last_length_change(), 0);
+		assert_eq!(Session::current_start(), 0);
+
+		// block 3
+		System::set_block_number(3);
+		Session::check_rotate_session(System::block_number());
+		assert_eq!(Session::current_index(), 1);
+		assert_eq!(Staking::current_era(), 0);
+		Staking::validate(Origin::signed(1), ValidatorPrefs{ unstake_threshold: 3, validator_payment: 100});
+		Staking::validate(Origin::signed(2), ValidatorPrefs {unstake_threshold: 3, validator_payment: 100});
+
+		System::set_block_number(6);
+		Session::check_rotate_session(System::block_number());
+		assert_eq!(Session::current_index(), 2);
+		assert_eq!(Staking::current_era(), 1);
+		assert_eq!(Session::validators(), vec![2, 1]);
+		assert_eq!(Staking::current_elected(), vec![102, 101]);
+		assert_eq!(Staking::current_epoch(), 0);
+
+		System::set_block_number(9);
+		Session::check_rotate_session(System::block_number());
+		assert_eq!(Session::current_index(), 3);
+		assert_eq!(Staking::current_era(), 1);
+
+
+		System::set_block_number(12);
+		assert_eq!(Staking::current_epoch(), 0);
+		Session::check_rotate_session(System::block_number());
+		assert_eq!(Session::current_index(), 4);
+		assert_eq!(Staking::current_epoch(), 1);
+		// ring total issuance /( 5 * 2)
+		assert_eq!(Staking::ideal_era_reward(), 998999226600000000);
+	});
+}
+
+
 

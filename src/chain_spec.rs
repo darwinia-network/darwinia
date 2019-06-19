@@ -139,7 +139,7 @@ fn testnet_genesis(initial_authorities: Vec<(AccountId, AccountId, AuthorityId)>
 			sessions_per_era: 5,
 			bonding_duration: 12,
 			offline_slash: Perbill::zero(),
-			session_reward: Perbill::zero(),
+			share_bond_reward: Perbill::zero(),
 			current_session_reward: 0,
 			offline_slash_grace: 0,
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),

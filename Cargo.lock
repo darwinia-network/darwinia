@@ -2057,6 +2057,7 @@ dependencies = [
  "evo-ring 0.1.0",
  "evo-sdr 0.1.0",
  "evo-staking 0.1.0",
+ "evo-treasury 0.1.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.90 (registry+https://github.com/rust-lang/crates.io-index)",

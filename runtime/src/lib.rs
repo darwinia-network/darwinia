@@ -252,7 +252,7 @@ impl staking::Trait for Runtime {
 	type Currency = Kton;
 	type RewardCurrency = Ring;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = ();
+	type OnRewardMinted = Treasury;
 	type Event = Event;
 	type Slash = ();
 	type Reward = ();
@@ -262,6 +262,11 @@ impl contract::Trait for Runtime {
 	type SystemCurrency = Kton;
 	type Event = Event;
 	type Gas = u64;
+}
+
+impl treasury::Trait for Runtime {
+	type Currency = Ring;
+	type Event = Event;
 }
 
 construct_runtime!(
@@ -283,6 +288,7 @@ construct_runtime!(
 		Contract: contract,
 		Session: session,
 		Staking: staking,
+		Treasury: treasury::{Module, Call, Storage, Event<T>},
 	}
 );
 
