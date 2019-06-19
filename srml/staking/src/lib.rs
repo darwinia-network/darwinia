@@ -251,7 +251,7 @@ use primitives::traits::{Convert, Zero, One, As, StaticLookup, CheckedSub, Satur
 #[cfg(feature = "std")]
 use primitives::{Serialize, Deserialize};
 use system::ensure_signed;
-use evo_support::traits::{ LockRate, SystemCurrency };
+use evo_support::traits::{ LockRate, SystemCurrency, DarwiniaDilution };
 
 mod mock;
 mod tests;
@@ -410,7 +410,7 @@ pub trait Trait: system::Trait + session::Trait {
 	type CurrencyToVote: Convert<BalanceOf<Self>, u64> + Convert<u128, BalanceOf<Self>>;
 
 	/// Some tokens minted.
-	type OnRewardMinted: OnDilution<RewardBalanceOf<Self>>;
+	type OnRewardMinted: DarwiniaDilution<RewardBalanceOf<Self>>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -524,6 +524,8 @@ decl_storage! {
 		/// total reward per era in next epoch
 		/// it can be calculated when shifting epoch
 		pub IdealEraReward get(ideal_era_reward): RewardBalanceOf<T>;
+
+		pub TreasuryReward get(treasury_reward): Perbill;
 
 
 	}
@@ -770,6 +772,13 @@ decl_module! {
 		fn set_invulnerables(validators: Vec<T::AccountId>) {
 			<Invulnerables<T>>::put(validators);
 		}
+
+		fn set_multi_reward(bond_reward: u32, holder_reward: u32) {
+			let treasury_reward = 1_000_000_000 - bond_reward - holder_reward;
+			<ShareBondReward<T>>::put(Perbill::from_billionths(bond_reward));
+			<ShareHolderReward<T>>::put(Perbill::from_billionths(holder_reward));
+			<TreasuryReward<T>>::put(Perbill::from_billionths(treasury_reward));
+		}
 	}
 }
 
@@ -935,10 +944,8 @@ impl<T: Trait> Module<T> {
 			 T::Currency::reward_ktoner(holder_reward);
 
 			// TODO: ready for hacking
-			// deprecated for now
-//			let total_minted = reward * <BalanceOf<T> as As<usize>>::sa(validators.len());
-//			let total_rewarded_stake = Self::slot_stake() * <BalanceOf<T> as As<usize>>::sa(validators.len());
-//			T::OnRewardMinted::on_dilution(total_minted, total_rewarded_stake);
+			let bill_rest = Self::treasury_reward() * reward;
+			T::OnRewardMinted::on_dilution(bill_rest);
 		}
 
 		// Increment current era.

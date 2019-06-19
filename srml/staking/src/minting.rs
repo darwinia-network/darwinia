@@ -15,9 +15,10 @@ pub fn compute_next_era_reward<T: Trait>() -> Result<RewardBalanceOf<T>, &'stati
         let total_issuance_now = T::RewardCurrency::total_issuance();
         if let Some(surplus) = cap.checked_sub(&total_issuance_now) {
             // mint 20% of the rest
-            Ok(surplus / <RewardBalanceOf<T>>::sa(eras_per_epoch.as_()))
+            Ok(surplus / <RewardBalanceOf<T>>::sa(5 * eras_per_epoch.as_()))
         } else {
             return Err("too large.");
         }
 
 }
+

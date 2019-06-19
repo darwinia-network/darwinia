@@ -122,6 +122,11 @@ default_features = false
 path = "../srml/staking"
 package = 'evo-staking'
 
+[dependencies.treasury]
+default_features = false
+path = "../srml/treasury"
+package = 'evo-treasury'
+
 [dependencies.version]
 default_features = false
 git = 'https://github.com/paritytech/substrate.git'

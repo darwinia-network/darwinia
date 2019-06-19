@@ -38,6 +38,9 @@ fn construct_staking_env() {
 	Staking::bond(Origin::signed(102), 2, 100, RewardDestination::Stash);
 	Staking::bond(Origin::signed(103), 3, 100, RewardDestination::Controller);
 
+	assert_eq!(Kton::total_issuance(), 300);
+	assert_eq!(Ring::total_issuance(), 10007734000000000);
+
 }
 
 #[test]
@@ -128,10 +131,8 @@ fn session_era_epoch_should_work_well() {
 		Session::check_rotate_session(System::block_number());
 		assert_eq!(Session::current_index(), 4);
 		assert_eq!(Staking::current_epoch(), 1);
-
-		assert_eq!(Staking::ideal_era_reward(), 0);
-
-
+		// ring total issuance /( 5 * 2)
+		assert_eq!(Staking::ideal_era_reward(), 998999226600000000);
 	});
 }
 

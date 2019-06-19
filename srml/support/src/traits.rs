@@ -36,3 +36,7 @@ pub trait LockRate {
 
     fn update_total_lock(amount: u64, is_add: bool) -> Result;
 }
+
+pub trait DarwiniaDilution<Balance> {
+    fn on_dilution(treasury_income: Balance);
+}
