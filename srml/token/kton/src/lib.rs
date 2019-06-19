@@ -815,9 +815,13 @@ impl<T: Trait> LockRate for Module<T> {
     fn bill_lock_rate() -> Perbill {
         let total_issuance: u64 = T::Balance::as_(Self::total_issuance());
         let total_lock: u64 = T::Balance::as_(Self::total_lock());
+        if !total_issuance.is_zero() {
+            let rate = u32::try_from(total_lock * 1000000000 / total_issuance).unwrap();
+            Perbill::from_billionths(rate)
+        } else {
+            Perbill::from_billionths(0)
+        }
 
-        let rate = u32::try_from(total_lock * 1000000000 / total_issuance).unwrap();
-        Perbill::from_billionths(rate)
     }
 
     fn update_total_lock(amount: u64, is_add: bool) -> Result {
