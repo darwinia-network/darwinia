@@ -39,13 +39,13 @@ DEADLINE: 2019-06-30
 - 进度优先，代码可以未来重构
 
 ### [POC-2 Testnet] WIP
-2019 Q4
+2019 Q3
 
 ### [Mainnet]
-2020 Q1
+2019 Q1
 
 ## Darwinia AppChain RoadMap Testnet
-2019 Q4
+2020 Q1
 Darwinia AppChain SDK Suite Beta version release.
 
 2020 Q1
