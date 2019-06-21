@@ -27,6 +27,7 @@ kton = { package = "evo-kton", path = "../token/kton", default-features = false}
 
 [dev-dependencies]
 ring = { package = "evo-ring", path = "../token/ring"}
+treasury = { package = "evo-treasury", path = "../treasury"}
 
 
 [features]

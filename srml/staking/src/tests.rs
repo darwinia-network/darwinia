@@ -92,6 +92,30 @@ fn test_validate() {
 }
 
 #[test]
+fn should_not_work_without_rotate() {
+	with_externalities(&mut ExtBuilder::default()
+		.existential_deposit(0).build(), || {
+
+		construct_staking_env();
+		// Initial
+		System::set_block_number(1);
+		assert_eq!(Session::current_index(), 0);
+		assert_eq!(Session::last_length_change(), 0);
+		assert_eq!(Session::current_start(), 0);
+
+		// block 3
+		System::set_block_number(3);
+		assert_ne!(Session::current_index(), 1);
+		assert_eq!(Staking::current_era(), 0);
+
+		System::set_block_number(6);
+		assert_ne!(Session::current_index(), 2);
+		assert_ne!(Staking::current_era(), 1);
+
+	});
+}
+
+#[test]
 fn session_era_epoch_should_work_well() {
 	with_externalities(&mut ExtBuilder::default()
 		.existential_deposit(0).build(), || {
@@ -103,6 +127,8 @@ fn session_era_epoch_should_work_well() {
 		assert_eq!(Session::current_index(), 0);
 		assert_eq!(Session::last_length_change(), 0);
 		assert_eq!(Session::current_start(), 0);
+		// set in mock
+		assert_eq!(Session::validators(), vec![10, 20]);
 
 		// block 3
 		System::set_block_number(3);
@@ -112,6 +138,7 @@ fn session_era_epoch_should_work_well() {
 		Staking::validate(Origin::signed(1), ValidatorPrefs{ unstake_threshold: 3, validator_payment: 100});
 		Staking::validate(Origin::signed(2), ValidatorPrefs {unstake_threshold: 3, validator_payment: 100});
 
+		// block 6
 		System::set_block_number(6);
 		Session::check_rotate_session(System::block_number());
 		assert_eq!(Session::current_index(), 2);
@@ -135,6 +162,7 @@ fn session_era_epoch_should_work_well() {
 		assert_eq!(Staking::ideal_era_reward(), 998999226600000000);
 	});
 }
+
 
 
 

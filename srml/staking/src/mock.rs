@@ -76,11 +76,16 @@ impl session::Trait for Test {
 	type Event = ();
 }
 
+impl treasury::Trait for Test {
+	type Currency = Ring;
+	type Event = ();
+}
+
 impl Trait for Test {
 	type Currency = kton::Module<Self>;
 	type RewardCurrency = ring::Module<Self>;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = ();
+	type OnRewardMinted = Treasury;
 	type Event = ();
 	type Slash = ();
 	type Reward = ();
@@ -232,3 +237,4 @@ pub type Timestamp = timestamp::Module<Test>;
 pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Staking = Module<Test>;
+pub type Treasury = treasury::Module<Test>;

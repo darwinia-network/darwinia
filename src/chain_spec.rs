@@ -23,6 +23,8 @@ pub enum Alternative {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
+	/// Trilobita, Darwinina POC1 Testnet, very similar with Local
+	Trilobita,
 }
 
 fn authority_key(s: &str) -> AuthorityId {
@@ -79,6 +81,30 @@ impl Alternative {
 				None,
 				None
 			),
+			// TODO: ready for hacking
+			// for now it is the same with local testnet
+			Alternative::Trilobita => ChainSpec::from_genesis(
+				"Darwinia POC-1 Testnet",
+				"darwinia_poc-1_testnet",
+				|| testnet_genesis(vec![
+					get_authority_keys_from_seed("Alice"),
+					get_authority_keys_from_seed("Bob"),
+				], vec![
+					get_account_id_from_seed("Alice"),
+					get_account_id_from_seed("Bob"),
+					get_account_id_from_seed("Charlie"),
+					get_account_id_from_seed("Dave"),
+					get_account_id_from_seed("Eve"),
+					get_account_id_from_seed("Ferdie"),
+				],
+								   get_account_id_from_seed("Alice"),
+				),
+				vec![],
+				None,
+				None,
+				None,
+				None
+			),
 		})
 	}
 
@@ -86,6 +112,7 @@ impl Alternative {
 		match s {
 			"dev" => Some(Alternative::Development),
 			"" | "local" => Some(Alternative::LocalTestnet),
+			"trilobita" => Some(Alternative::Trilobita),
 			_ => None,
 		}
 	}

@@ -1,17 +1,9 @@
 {
   "TokenBalance": "u128",
-  "Auction": {
-    "seller": "AccountId",
-    "startAt": "Moment",
-    "duration": "u64",
-    "startingPrice": "TokenBalance",
-    "endingPrice": "TokenBalance",
-    "lastRecord": "TokenBalance",
-    "lastBidder": "AccountId",
-    "lastBidStartAt": "Moment"
-  },
   "Currency": "u128",
   "CurrencyOf": "u128",
+  "RewardBalance": "u128",
+  "RewardBalanceOf": "u128",
   "DepositInfo": {
     "month": "Moment",
     "start_at": "Moment",
@@ -22,11 +14,5 @@
   "Deposit": {
     "total_deposit": "CurrencyOf",
     "deposit_list": "Vec<DepositInfo>"
-  },
-  "Revenue": {
-    "team": "TokenBalance",
-    "contribution": "TokenBalance",
-    "ktoner": "TokenBalance",
-    "lottery": "TokenBalance"
   }
 }
