@@ -1,0 +1,48 @@
+[package]
+name = "node-cli"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+description = "Substrate node implementation in Rust."
+build = "build.rs"
+edition = "2018"
+
+[dependencies]
+log = "0.4"
+tokio = "0.1.7"
+futures = "0.1"
+exit-future = "0.1"
+cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git' }
+parity-codec = { version = "3.3" }
+sr-io = { git = 'https://github.com/paritytech/substrate.git' }
+client = { package = "substrate-client", git = 'https://github.com/paritytech/substrate.git' }
+primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git' }
+inherents = { package = "substrate-inherents", git = 'https://github.com/paritytech/substrate.git' }
+node-runtime = { path = "../runtime" }
+node-primitives = { path = "../primitives" }
+hex-literal = "0.2"
+substrate-basic-authorship = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-service = { git = 'https://github.com/paritytech/substrate.git' }
+transaction_pool = { package = "substrate-transaction-pool", git = 'https://github.com/paritytech/substrate.git' }
+network = { package = "substrate-network", git = 'https://github.com/paritytech/substrate.git' }
+consensus = { package = "substrate-consensus-aura", git = 'https://github.com/paritytech/substrate.git' }
+grandpa = { package = "substrate-finality-grandpa", git = 'https://github.com/paritytech/substrate.git' }
+sr-primitives = { git = 'https://github.com/paritytech/substrate.git' }
+aura_primitives = { package = "substrate-consensus-aura-primitives", git = 'https://github.com/paritytech/substrate.git' }
+node-executor = { path = "../executor" }
+substrate-keystore = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-telemetry = { package = "substrate-telemetry", git = 'https://github.com/paritytech/substrate.git' }
+structopt = "0.2"
+transaction-factory = { git = 'https://github.com/paritytech/substrate.git' }
+keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
+indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+rand = "0.6"
+finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+
+[dev-dependencies]
+consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/paritytech/substrate.git' }
+service-test = { package = "substrate-service-test", git = 'https://github.com/paritytech/substrate.git' }
+
+[build-dependencies]
+cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git'}
+structopt = "0.2"
