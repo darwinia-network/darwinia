@@ -56,10 +56,10 @@ pub use staking::StakerStatus;
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
-	impl_name: create_runtime_str!("substrate-node"),
-	authoring_version: 10,
-	spec_version: 98,
-	impl_version: 100,
+	impl_name: create_runtime_str!("darwinia-node"),
+	authoring_version: 1,
+	spec_version: 1,
+	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 };
 

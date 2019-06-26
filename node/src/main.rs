@@ -45,13 +45,13 @@ impl cli::IntoExit for Exit {
 
 fn main() {
 	let version = VersionInfo {
-		name: "Substrate Node",
+		name: "Darwinia POC-1 Node",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
-		executable_name: "substrate",
-		author: "Parity Technologies <admin@parity.io>",
-		description: "Generic substrate node",
-		support_url: "https://github.com/paritytech/substrate/issues/new",
+		executable_name: "darwinia",
+		author: "Darwinia Network <hello@itering.com>",
+		description: "Darwinia poc-1 node",
+		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 	};
 
 	if let Err(e) = cli::run(::std::env::args(), Exit, version) {
