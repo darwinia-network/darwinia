@@ -12,14 +12,11 @@ safe-mix = { version = "1.0", default-features = false}
 parity-codec = { version = "3.0", default-features = false }
 parity-codec-derive = { version = "3.0", default-features = false }
 substrate-keyring = { git = "https://github.com/paritytech/substrate", optional = true }
-substrate-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
-sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+primitives = { package = "substrate-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/paritytech/substrate", default-features = false }
 sr-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
-srml-support = { git = "https://github.com/paritytech/substrate", default-features = false }
-srml-system = { git = "https://github.com/paritytech/substrate", default-features = false }
-srml-balances = { git = "https://github.com/paritytech/substrate", default_features = false }
-srml-timestamp = { git = "https://github.com/paritytech/substrate", default_features = false }
-#evo-support = {path = "../support", default_features = false}
+support = { package = "srml-support", git = "https://github.com/paritytech/substrate", default-features = false }
+system = { package = "srml-system", git = "https://github.com/paritytech/substrate", default-features = false }
 sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
 
 
@@ -31,13 +28,10 @@ std = [
     "safe-mix/std",
     "parity-codec/std",
     "parity-codec-derive/std",
-    "substrate-primitives/std",
-    "sr-std/std",
+    "primitives/std",
+    "rstd/std",
     "sr-io/std",
-    "srml-support/std",
-    "srml-balances/std",
+    "support/std",
     "sr-primitives/std",
-    "srml-system/std",
-    "srml-timestamp/std",
-#    "evo-support/std",
+    "system/std",
 ]
