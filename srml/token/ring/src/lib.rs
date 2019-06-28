@@ -17,7 +17,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use rstd::prelude::*;
-use rstd::{cmp, result, mem};
+use rstd::{cmp, result, mem, convert::Into};
 use parity_codec::{Codec, Encode, Decode};
 use srml_support::{StorageValue, StorageMap, Parameter, decl_event, decl_storage, decl_module};
 use srml_support::traits::{
@@ -149,24 +149,7 @@ decl_storage! {
 		pub TransactionByteFee get(transaction_byte_fee) config(): T::Balance;
 
 		/// Information regarding the vesting of a given account.
-		pub Vesting get(vesting) build(|config: &GenesisConfig<T, I>| {
-			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
-				let begin = <T::Balance as From<T::Moment>>::from(begin);
-				let length = <T::Balance as From<T::Moment>>::from(length);
-
-				config.balances.iter()
-					.find(|&&(ref w, _)| w == who)
-					.map(|&(_, balance)| {
-						// <= begin it should be >= balance
-						// >= begin+length it should be <= 0
-
-						let per_block = balance / length.max(primitives::traits::One::one());
-						let offset = begin * per_block + balance;
-
-						(who.clone(), VestingSchedule { offset, per_block })
-					})
-			}).collect::<Vec<_>>()
-		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
+		pub Vesting get(vesting) : map T::AccountId => Option<VestingSchedule<T::Balance>>;
 
 		/// The 'free' balance of a given account.
 		///
@@ -199,7 +182,7 @@ decl_storage! {
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
-		config(vesting): Vec<(T::AccountId, T::Moment, T::Moment)>;		// begin, length
+		config(vesting): Vec<(T::AccountId, u64, u64)>;		// begin, length
 	}
 	extra_genesis_skip_phantom_data_field;
 }

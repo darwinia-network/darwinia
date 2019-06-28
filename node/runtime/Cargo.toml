@@ -1,7 +1,7 @@
 [package]
 name = "node-runtime"
-version = "2.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+version = "0.1.0"
+authors = ["Darwinia Network <hello@itering.com>"]
 edition = "2018"
 
 [dependencies]
@@ -38,6 +38,7 @@ substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optio
 # customed
 ring = { package = "evo-ring", path = '../../srml/token/ring', default-features = false}
 kton = { package = "evo-kton", path = '../../srml/token/kton', default-features = false}
+evo-staking = { path = "../../srml/staking", default-features = false}
 
 [features]
 default = ["std"]
@@ -76,4 +77,5 @@ std = [
 	"offchain-primitives/std",
 	"ring/std",
 	"kton/std",
+	"evo-staking/std",
 ]

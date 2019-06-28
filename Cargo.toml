@@ -55,6 +55,7 @@ members = [
     "node/primitives",
     "node/runtime",
     "node/rpc-client",
+    "srml/staking",
     "srml/token/ring",
     "srml/token/kton",
     "srml/support",

@@ -717,6 +717,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "evo-staking"
+version = "0.1.0"
+dependencies = [
+ "evo-kton 0.1.0",
+ "evo-ring 0.1.0",
+ "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.93 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-session 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "substrate-keyring 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+]
+
+[[package]]
 name = "evo-support"
 version = "0.1.0"
 dependencies = [
@@ -2072,7 +2093,7 @@ dependencies = [
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-executor 2.0.0",
  "node-primitives 2.0.0",
- "node-runtime 2.0.0",
+ "node-runtime 0.1.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
@@ -2106,7 +2127,7 @@ name = "node-executor"
 version = "2.0.0"
 dependencies = [
  "node-primitives 2.0.0",
- "node-runtime 2.0.0",
+ "node-runtime 0.1.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
@@ -2170,10 +2191,11 @@ dependencies = [
 
 [[package]]
 name = "node-runtime"
-version = "2.0.0"
+version = "0.1.0"
 dependencies = [
  "evo-kton 0.1.0",
  "evo-ring 0.1.0",
+ "evo-staking 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -1,7 +1,7 @@
 [package]
-name = "evo-kton"
+name = "evo-staking"
 version = "0.1.0"
-authors = ["Darwinia Network <hello@itering.com>"]
+authors = ["hammeWang <dsw0602@foxmail.com>"]
 edition = "2018"
 
 [dependencies]
@@ -10,17 +10,21 @@ safe-mix = { version = "1.0", default-features = false}
 parity-codec = { version = "3.3", default-features = false, features = ["derive"] }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+primitives = { package = "sr-primitives",git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
-runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
+ring = { package = "evo-ring", path = "../token/ring" }
+kton = { package = "evo-kton", path = "../token/kton" }
+rand = "0.6.5"
 
 [features]
+bench = []
 default = ["std"]
 std = [
 	"serde",
@@ -28,9 +32,9 @@ std = [
 	"substrate-keyring",
 	"parity-codec/std",
 	"rstd/std",
+	"runtime_io/std",
 	"srml-support/std",
 	"primitives/std",
+	"session/std",
 	"system/std",
-	"timestamp/std",
-	"substrate-primitives/std",
 ]

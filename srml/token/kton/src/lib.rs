@@ -1,7 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use parity_codec::{Codec, Decode, Encode};
-use sr_primitives::traits::{
+use primitives::traits::{
     CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
     StaticLookup, Zero,
 };
@@ -15,7 +15,7 @@ use srml_support::traits::{
     MakePayment, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency, SignedImbalance,
     UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
 };
-use primitives::U256;
+use substrate_primitives::U256;
 use system::ensure_signed;
 
 mod imbalance;
@@ -80,6 +80,10 @@ pub trait Trait: timestamp::Trait {
     type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
 
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+
+    type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
+
+    type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
 }
 
 decl_event!(
@@ -142,6 +146,7 @@ decl_storage! {
 					.map(|&(_, balance)| {
 						// <= begin it should be >= balance
 						// >= begin+length it should be <= 0
+
 						let per_block = balance / length.max(primitives::traits::One::one());
 						let offset = begin * per_block + balance;
 
@@ -174,27 +179,36 @@ decl_module! {
 
             let now = <timestamp::Module<T>>::now();
 
-            let individual_deposit = IndividualDeposit {month: months, start_at: now, value: value, claimed: false};
+            let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now, value: value, claimed: false};
             let deposit = Deposit {total: value, deposit_list: vec![individual_deposit]};
 
             Self::update_deposit(&transactor, &deposit);
+
+            let kton_return = Self::compute_kton_balance(months, value).unwrap();
+            let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
+            T::OnMinted::on_unbalanced(positive_imbalance);
         }
 
 
         fn deposit_extra(origin, additional_value: CurrencyOf<T>, months: T::Moment) {
              ensure!(!months.is_zero() && months <= 36.into(), "months must be at least 1");
-            let transactor = ensure_signed(origin)?;
-            let mut deposit = Self::deposit_ledger(&transactor).ok_or("Use fn deposit instead.")?;
+             let transactor = ensure_signed(origin)?;
+             let mut deposit = Self::deposit_ledger(&transactor).ok_or("Use fn deposit instead.")?;
 
-            let now = <timestamp::Module<T>>::now();
-            let free_currency = T::Currency::free_balance(&transactor);
+             let now = <timestamp::Module<T>>::now();
+             let free_currency = T::Currency::free_balance(&transactor);
 
-            if let Some(extra) = free_currency.checked_sub(&deposit.total) {
-                let extra = extra.min(additional_value);
-                deposit.total += extra;
-                let individual_deposit = IndividualDeposit {month: months, start_at: now, value: extra, claimed: false};
-                Self::update_deposit(&transactor, &deposit);
-            }
+             if let Some(extra) = free_currency.checked_sub(&deposit.total) {
+                 let extra = extra.min(additional_value);
+                 deposit.total += extra;
+                 let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now, value: extra.clone(), claimed: false};
+                 deposit.deposit_list.push(individual_deposit);
+                 Self::update_deposit(&transactor, &deposit);
+
+                 let kton_return = Self::compute_kton_balance(months, extra).unwrap();
+                 let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
+                 T::OnMinted::on_unbalanced(positive_imbalance);
+             }
         }
 
     }
@@ -204,6 +218,8 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
+
+
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Moment>) {
         T::Currency::set_lock(
             DEPOSIT_ID,
@@ -213,11 +229,14 @@ impl<T: Trait> Module<T> {
             WithdrawReasons::all()
         );
         <DepositLedger<T>>::insert(who, deposit);
-
-
     }
 
 
+    fn convert_to_paid_out(value: T::Balance) -> CurrencyOf<T> {
+        let value: u64 = value.try_into().unwrap_or_default() as u64;
+        let additional_reward_paid_out: CurrencyOf<T> = Self::reward_per_share() *  value.try_into().unwrap_or_default();
+        additional_reward_paid_out
+    }
 
     fn compute_kton_balance(months: T::Moment, value: CurrencyOf<T>) -> Option<T::Balance> {
         let months = months.try_into().unwrap_or_default() as u64;
@@ -245,6 +264,7 @@ impl<T: Trait> Module<T> {
     }
 
 
+    // PRIVATE MUTABLE
     // NOTE: different from balacnes module
     fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
         //TODO: check the value of balance, but no ensure!(...)
@@ -255,6 +275,19 @@ impl<T: Trait> Module<T> {
     fn set_reserved_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
         <ReservedBalance<T>>::insert(who, balance);
         UpdateBalanceOutcome::Updated
+    }
+
+    /// update one's reward_paid_out
+    /// is_refund true -, means giving out reward
+    /// is_refund false +
+    fn update_reward_paid_out(who: &T::AccountId, value: CurrencyOf<T>, is_refund: bool) {
+        let value = i128::from(value.try_into().unwrap_or_default() as u64);
+        let reward_paid_out = Self::reward_paidout(who);
+        if is_refund {
+            <RewardPaidOut<T>>::insert(who, reward_paid_out - value);
+        } else {
+            <RewardPaidOut<T>>::insert(who, reward_paid_out + value);
+        }
     }
 }
 
@@ -320,8 +353,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
         let from_balance = Self::free_balance(transactor);
         let to_balance = Self::free_balance(dest);
-        let would_create = to_balance.is_zero();
-
 
         let new_from_balance = match from_balance.checked_sub(&value) {
             None => return Err("balance too low to send value"),
@@ -340,12 +371,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         if transactor != dest {
             Self::set_free_balance(transactor, new_from_balance);
             Self::set_free_balance(dest, new_to_balance);
+            let additional_reward_paid_out = Self::convert_to_paid_out(value);
+            Self::update_reward_paid_out(dest, additional_reward_paid_out, false);
             Self::deposit_event(RawEvent:: TokenTransfer(transactor.clone(), dest.clone(), value));
         }
 
         Ok(())
-
-        //TODO: 修改分红
     }
 
 
@@ -366,7 +397,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             Err("too few free funds in account")
         }
 
-        //TODO: 修改分红
     }
 
 
@@ -396,6 +426,8 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         if Self::total_balance(who).is_zero() {
             return Err("beneficiary account must pre-exist");
         }
+        let additional_reward_paid_out = Self::convert_to_paid_out(value);
+        Self::update_reward_paid_out(who, additional_reward_paid_out, false);
         Self::set_free_balance(who, Self::free_balance(who) + value);
         Ok(PositiveImbalance::new(value))
     }
@@ -404,7 +436,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         who: &T::AccountId,
         value: Self::Balance,
     ) -> Self::PositiveImbalance {
+
         let (imbalance, _) = Self::make_free_balance_be(who, Self::free_balance(who) + value);
+        // update reward paid out
+        let additional_reward_paid_out = Self::convert_to_paid_out(value);
+        Self::update_reward_paid_out(who, additional_reward_paid_out, false);
+
         if let SignedImbalance::Positive(p) = imbalance {
             p
         } else {
@@ -413,13 +450,17 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         }
     }
 
-    fn make_free_balance_be(who: &T::AccountId, balance: T::Balance) -> (
+    fn make_free_balance_be(who: &T::AccountId, balance: Self::Balance) -> (
         SignedImbalance<Self::Balance, Self::PositiveImbalance>,
         UpdateBalanceOutcome
     ) {
         let original = Self::free_balance(who);
 
         let imbalance = if original <= balance {
+            // update reward paid out
+            let additional_reward_paid_out = Self::convert_to_paid_out(balance);
+            Self::update_reward_paid_out(who, additional_reward_paid_out, false);
+
             SignedImbalance::Positive(PositiveImbalance::new(balance - original))
         } else {
             SignedImbalance::Negative(NegativeImbalance::new(original - balance))
@@ -433,6 +474,80 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         (imbalance, outcome)
     }
 
-
-
 }
+
+
+impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
+    where
+        T::Balance: MaybeSerializeDebug
+{
+    type Moment = T::BlockNumber;
+
+    fn set_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+        amount: T::Balance,
+        until: T::BlockNumber,
+        reasons: WithdrawReasons,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
+        let mut locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.id == id {
+                new_lock.take()
+            } else if l.until > now {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        if let Some(lock) = new_lock {
+            locks.push(lock)
+        }
+        <Locks<T>>::insert(who, locks);
+    }
+
+    fn extend_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+        amount: T::Balance,
+        until: T::BlockNumber,
+        reasons: WithdrawReasons,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
+        let mut locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.id == id {
+                new_lock.take().map(|nl| {
+                    BalanceLock {
+                        id: l.id,
+                        amount: l.amount.max(nl.amount),
+                        until: l.until.max(nl.until),
+                        reasons: l.reasons | nl.reasons,
+                    }
+                })
+            } else if l.until > now {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        if let Some(lock) = new_lock {
+            locks.push(lock)
+        }
+        <Locks<T>>::insert(who, locks);
+    }
+
+    fn remove_lock(
+        id: LockIdentifier,
+        who: &T::AccountId,
+    ) {
+        let now = <system::Module<T>>::block_number();
+        let locks = Self::locks(who).into_iter().filter_map(|l|
+            if l.until > now && l.id != id {
+                Some(l)
+            } else {
+                None
+            }).collect::<Vec<_>>();
+        <Locks<T>>::insert(who, locks);
+    }
+}
+
