@@ -102,30 +102,25 @@ Alice should run t his command from ${PATH_TO_DARWINIA_APPCHAIN_ROOT}:
 cd {path_to_darwinia_appchain_root}
 ./target/release/darwinia \
 --base-path /tmp/alice \
---chain=local \
 --key //Alice \
 --port 30333 \
 --validator \
 --name AliceDarwiniaNode \
---telemetry-url ws://telemetry.polkadot.io:1024 \
 --rpc-external \
 --ws-external
 ```
+`rpc-external` and `ws-external` flags are optional.
 
 #### Bob Joins In
 Now that Alice's node is up and running, Bob can join the network by bootstrapping from her node. His command will look very similar.
 ```bash
 ./target/release/darwinia \
 --base-path /tmp/bob \
---chain=local \
 --key //Bob \
 --port 30334 \
 --validator \
 --name BobDarwiniaNode \
--- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID> \
---telemetry-url ws://telemetry.polkadot.io:1024 \
---rpc-external \
---ws-external
+-- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID>
 ```
 
 - If these two nodes are running on the same physical machine, Bob MUST specify a different `--base-path` and `--port`.

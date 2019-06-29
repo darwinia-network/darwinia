@@ -28,6 +28,7 @@ use substrate_telemetry::TelemetryEndpoints;
 use grandpa::AuthorityId as GrandpaId;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+const TELEMETRY_URL: &str = "ws://telemetry.polkadot.io:1024";
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig>;
@@ -440,7 +441,15 @@ fn local_testnet_genesis() -> GenesisConfig {
 }
 
 pub fn trilobita_testnet_config() -> ChainSpec {
-	ChainSpec::from_genesis("Darwinia POC-1 Testnet", "darwinia_poc_1_testnet", local_testnet_genesis, vec![], None, None, None, None)
+	ChainSpec::from_genesis(
+		"Darwinia POC-1 Testnet",
+		"darwinia_poc_1_testnet",
+		local_testnet_genesis,
+		vec![],
+		Some(TelemetryEndpoints::new(vec![(TELEMETRY_URL.to_string(), 0)])),
+		None,
+		None,
+		None)
 }
 
 /// Local testnet config (multivalidator Alice + Bob)
