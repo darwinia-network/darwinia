@@ -20,7 +20,7 @@ use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_primitives::{AccountId, AuraId};
 use node_runtime::{CouncilSeatsConfig, AuraConfig, DemocracyConfig, SystemConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
-	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, Permill, Perbill, SessionKeys};
+	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, RingConfig, KtonConfig, Permill, Perbill, SessionKeys};
 pub use node_runtime::GenesisConfig;
 use substrate_service;
 use hex_literal::hex;
@@ -116,6 +116,25 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 			existential_deposit: 1 * DOLLARS,
 			transfer_fee: 1 * CENTS,
 			creation_fee: 1 * CENTS,
+			vesting: vec![],
+		}),
+		ring: Some(RingConfig {
+			transaction_base_fee: 1 * CENTS,
+			transaction_byte_fee: 10 * MILLICENTS,
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			existential_deposit: 1 * DOLLARS,
+			transfer_fee: 1 * CENTS,
+			creation_fee: 1 * CENTS,
+			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
 			vesting: vec![],
 		}),
 		indices: Some(IndicesConfig {
@@ -264,6 +283,15 @@ pub fn testnet_genesis(
 		]
 	});
 
+	const MILLICENTS: u128 = 1_000_000_000;
+	const CENTS: u128 = 1_000 * MILLICENTS;    // assume this is worth about a cent.
+	const DOLLARS: u128 = 100 * CENTS;
+
+	const SECS_PER_BLOCK: u64 = 6;
+	const MINUTES: u64 = 60 / SECS_PER_BLOCK;
+	const HOURS: u64 = MINUTES * 60;
+	const DAYS: u64 = HOURS * 24;
+
 	const STASH: u128 = 1 << 20;
 	const ENDOWMENT: u128 = 1 << 20;
 
@@ -290,6 +318,7 @@ pub fn testnet_genesis(
 	// this should only be enabled on development chains
 	contracts_config.current_schedule.enable_println = enable_println;
 
+
 	GenesisConfig {
 		system: Some(SystemConfig {
 			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
@@ -306,6 +335,25 @@ pub fn testnet_genesis(
 			transfer_fee: 0,
 			creation_fee: 0,
 			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			vesting: vec![],
+		}),
+		ring: Some(RingConfig {
+			transaction_base_fee: 1 * CENTS,
+			transaction_byte_fee: 10 * MILLICENTS,
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			existential_deposit: 1 * DOLLARS,
+			transfer_fee: 1 * CENTS,
+			creation_fee: 1 * CENTS,
+			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
 			vesting: vec![],
 		}),
 		session: Some(SessionConfig {
@@ -389,6 +437,10 @@ fn local_testnet_genesis() -> GenesisConfig {
 		None,
 		false,
 	)
+}
+
+pub fn trilobita_testnet_config() -> ChainSpec {
+	ChainSpec::from_genesis("Darwinia POC-1 Testnet", "darwinia_poc_1_testnet", local_testnet_genesis, vec![], None, None, None, None)
 }
 
 /// Local testnet config (multivalidator Alice + Bob)

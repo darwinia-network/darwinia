@@ -120,6 +120,26 @@ impl balances::Trait for Runtime {
 	type TransferPayment = ();
 }
 
+impl ring::Trait for Runtime {
+	type Balance = Balance;
+	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnNewAccount = Indices;
+	type Event = Event;
+	type TransactionPayment = ();
+	type DustRemoval = ();
+	type TransferPayment = ();
+}
+
+
+impl kton::Trait for Runtime {
+	type Balance = Balance;
+	type Currency = Ring;
+	type Event = Event;
+	type OnMinted = ();
+	type OnRemoval = ();
+}
+
+
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
@@ -154,10 +174,12 @@ parameter_types! {
 	pub const BondingDuration: staking::EraIndex = 24 * 28;
 }
 
+
 impl staking::Trait for Runtime {
-	type Currency = Balances;
+	type Currency = Kton;
+	type RewardCurrency = Ring;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = Treasury;
+	type OnRewardMinted = ();
 	type Event = Event;
 	type Slash = ();
 	type Reward = ();
@@ -253,7 +275,6 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
-		Staking: staking::{default, OfflineWorker},
 		Democracy: democracy,
 		Council: council::{Module, Call, Storage, Event<T>},
 		CouncilMotions: council_motions::{Module, Call, Storage, Event<T>, Origin<T>},
@@ -263,6 +284,11 @@ construct_runtime!(
 		Treasury: treasury,
 		Contracts: contracts,
 		Sudo: sudo,
+		// evo module
+		Ring: ring,
+		Kton: kton,
+		Staking: staking::{default, OfflineWorker},
+
 	}
 );
 

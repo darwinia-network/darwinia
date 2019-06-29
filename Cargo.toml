@@ -59,6 +59,7 @@ members = [
     "srml/token/ring",
     "srml/token/kton",
     "srml/support",
+    "srml/aura",
 	"srml/try",
 ]
 
@@ -68,6 +69,6 @@ exclude = ["node/runtime/wasm"]
 authors = ['Parity Technologies <admin@parity.io>']
 build = 'build.rs'
 edition = '2018'
-name = 'node-template'
-version = '1.0.0'
+name = 'darwinia-poc1'
+version = '0.1.0'
 

@@ -7,7 +7,7 @@ use primitives::traits::{
 };
 
 use rstd::prelude::*;
-use rstd::{cmp, mem, result, convert::TryInto};
+use rstd::{cmp, mem, result, convert::{ TryInto, TryFrom}};
 use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue, ensure};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
@@ -113,13 +113,11 @@ decl_storage! {
 		// reward you can get per kton
 		pub RewardPerShare get(reward_per_share): CurrencyOf<T>;
 		// reward already paid to each ktoner
-		pub RewardPaidOut get(reward_paidout): map T::AccountId => i128;
+		pub RewardPaidOut get(reward_paid_out): map T::AccountId => i128;
 
 		/// system revenue
 		/// the id for evolution land is 42
 		pub SysRevenuePot get(system_revenue): CurrencyOf<T>;
-
-		pub ClaimFee get(claim_fee) config(): CurrencyOf<T>;
 
         /// For Currency and LockableCurrency Trait
 		/// The total `units issued in the system.
@@ -219,6 +217,19 @@ decl_module! {
 
 impl<T: Trait> Module<T> {
 
+    // PUB IMMUTABLE
+    pub fn reward_can_withdraw(who: &T::AccountId) -> CurrencyOf<T> {
+        let free_balance = Self::free_balance(who);
+        let max_should_withdraw = Self::convert_to_paid_out(free_balance);
+        let max_should_withdraw: u64  = max_should_withdraw.try_into().unwrap_or_default() as u64;
+        let should_withdraw = i128::from(max_should_withdraw) - Self::reward_paid_out(who);
+        if should_withdraw <= 0 {
+            0.into()
+        } else {
+            u64::try_from(should_withdraw).unwrap_or_default().try_into().unwrap_or_default()
+        }
+
+    }
 
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Moment>) {
         T::Currency::set_lock(
@@ -282,7 +293,7 @@ impl<T: Trait> Module<T> {
     /// is_refund false +
     fn update_reward_paid_out(who: &T::AccountId, value: CurrencyOf<T>, is_refund: bool) {
         let value = i128::from(value.try_into().unwrap_or_default() as u64);
-        let reward_paid_out = Self::reward_paidout(who);
+        let reward_paid_out = Self::reward_paid_out(who);
         if is_refund {
             <RewardPaidOut<T>>::insert(who, reward_paid_out - value);
         } else {
@@ -371,8 +382,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         if transactor != dest {
             Self::set_free_balance(transactor, new_from_balance);
             Self::set_free_balance(dest, new_to_balance);
-            let additional_reward_paid_out = Self::convert_to_paid_out(value);
-            Self::update_reward_paid_out(dest, additional_reward_paid_out, false);
+            // settle transactor reward
+            let from_should_withdraw = Self::reward_can_withdraw(transactor);
+            Self::update_reward_paid_out(transactor, from_should_withdraw, true);
+            // settle dest reward
+            let to_should_not_withdraw = Self::convert_to_paid_out(value);
+            Self::update_reward_paid_out(dest, to_should_not_withdraw, false);
             Self::deposit_event(RawEvent:: TokenTransfer(transactor.clone(), dest.clone(), value));
         }
 
