@@ -18,8 +18,8 @@
 
 use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_primitives::{AccountId, AuraId};
-use node_runtime::{CouncilSeatsConfig, AuraConfig, DemocracyConfig, SystemConfig,
-	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
+use node_runtime::{ AuraConfig, SystemConfig,
+	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig,
 	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, RingConfig, KtonConfig, Permill, Perbill, SessionKeys};
 pub use node_runtime::GenesisConfig;
 use substrate_service;
@@ -132,7 +132,10 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 			vesting: vec![],
 		}),
 		kton: Some(KtonConfig {
-			balances: vec![],
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
 			vesting: vec![],
 			sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
 		}),
@@ -156,30 +159,30 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		democracy: Some(DemocracyConfig::default()),
-		council_seats: Some(CouncilSeatsConfig {
-			active_council: vec![],
-			candidacy_bond: 10 * DOLLARS,
-			voter_bond: 1 * DOLLARS,
-			voting_fee: 2 * DOLLARS,
-			present_slash_per_voter: 1 * CENTS,
-			carry_count: 6,
-			presentation_duration: 1 * DAYS,
-			approval_voting_period: 2 * DAYS,
-			term_duration: 28 * DAYS,
-			desired_seats: 0,
-			decay_ratio: 0,
-			inactive_grace_period: 1,    // one additional vote should go by before an inactive voter can be reaped.
-		}),
+//		democracy: Some(DemocracyConfig::default()),
+//		council_seats: Some(CouncilSeatsConfig {
+//			active_council: vec![],
+//			candidacy_bond: 10 * DOLLARS,
+//			voter_bond: 1 * DOLLARS,
+//			voting_fee: 2 * DOLLARS,
+//			present_slash_per_voter: 1 * CENTS,
+//			carry_count: 6,
+//			presentation_duration: 1 * DAYS,
+//			approval_voting_period: 2 * DAYS,
+//			term_duration: 28 * DAYS,
+//			desired_seats: 0,
+//			decay_ratio: 0,
+//			inactive_grace_period: 1,    // one additional vote should go by before an inactive voter can be reaped.
+//		}),
 		timestamp: Some(TimestampConfig {
 			minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
 		}),
-		treasury: Some(TreasuryConfig {
-			proposal_bond: Permill::from_percent(5),
-			proposal_bond_minimum: 1 * DOLLARS,
-			spend_period: 1 * DAYS,
-			burn: Permill::from_percent(50),
-		}),
+//		treasury: Some(TreasuryConfig {
+//			proposal_bond: Permill::from_percent(5),
+//			proposal_bond_minimum: 1 * DOLLARS,
+//			spend_period: 1 * DAYS,
+//			burn: Permill::from_percent(50),
+//		}),
 		contracts: Some(ContractsConfig {
 			signed_claim_handicap: 2,
 			rent_byte_price: 4,
@@ -337,19 +340,22 @@ pub fn testnet_genesis(
 			vesting: vec![],
 		}),
 		ring: Some(RingConfig {
-			transaction_base_fee: 1 * CENTS,
-			transaction_byte_fee: 10 * MILLICENTS,
+			transaction_base_fee: 0,
+			transaction_byte_fee: 0,
 			balances: endowed_accounts.iter().cloned()
 				.map(|k| (k, ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 			existential_deposit: 0,
-			transfer_fee: 1 * CENTS,
-			creation_fee: 1 * CENTS,
+			transfer_fee: 0,
+			creation_fee: 0,
 			vesting: vec![],
 		}),
 		kton: Some(KtonConfig {
-			balances: vec![],
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
 			vesting: vec![],
 			sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
 		}),
@@ -360,7 +366,7 @@ pub fn testnet_genesis(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			minimum_validator_count: 1,
-			validator_count: 2,
+			validator_count: 10,
 			offline_slash: Perbill::zero(),
 			session_reward: Perbill::zero(),
 			current_session_reward: 0,
@@ -368,32 +374,32 @@ pub fn testnet_genesis(
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		democracy: Some(DemocracyConfig::default()),
-		council_seats: Some(CouncilSeatsConfig {
-			active_council: endowed_accounts.iter()
-				.filter(|&endowed| initial_authorities.iter().find(|&(_, controller, ..)| controller == endowed).is_none())
-				.map(|a| (a.clone(), 1000000)).collect(),
-			candidacy_bond: 10,
-			voter_bond: 2,
-			voting_fee: 5,
-			present_slash_per_voter: 1,
-			carry_count: 4,
-			presentation_duration: 10,
-			approval_voting_period: 20,
-			term_duration: 1000000,
-			desired_seats: council_desired_seats,
-			decay_ratio: council_desired_seats / 3,
-			inactive_grace_period: 1,
-		}),
+//		democracy: Some(DemocracyConfig::default()),
+//		council_seats: Some(CouncilSeatsConfig {
+//			active_council: endowed_accounts.iter()
+//				.filter(|&endowed| initial_authorities.iter().find(|&(_, controller, ..)| controller == endowed).is_none())
+//				.map(|a| (a.clone(), 1000000)).collect(),
+//			candidacy_bond: 10,
+//			voter_bond: 2,
+//			voting_fee: 5,
+//			present_slash_per_voter: 1,
+//			carry_count: 4,
+//			presentation_duration: 10,
+//			approval_voting_period: 20,
+//			term_duration: 1000000,
+//			desired_seats: council_desired_seats,
+//			decay_ratio: council_desired_seats / 3,
+//			inactive_grace_period: 1,
+//		}),
 		timestamp: Some(TimestampConfig {
-			minimum_period: 2,                    // 2*2=4 second block time.
+			minimum_period: 3,                    // 3*2=6 second block time.
 		}),
-		treasury: Some(TreasuryConfig {
-			proposal_bond: Permill::from_percent(5),
-			proposal_bond_minimum: 1_000_000,
-			spend_period: 12 * 60 * 24,
-			burn: Permill::from_percent(50),
-		}),
+//		treasury: Some(TreasuryConfig {
+//			proposal_bond: Permill::from_percent(5),
+//			proposal_bond_minimum: 1_000_000,
+//			spend_period: 12 * 60 * 24,
+//			burn: Permill::from_percent(50),
+//		}),
 		contracts: Some(contracts_config),
 		sudo: Some(SudoConfig {
 			key: root_key,

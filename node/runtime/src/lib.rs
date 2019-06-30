@@ -112,7 +112,7 @@ impl indices::Trait for Runtime {
 
 impl balances::Trait for Runtime {
 	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnFreeBalanceZero = (Staking, Session);
 	type OnNewAccount = Indices;
 	type Event = Event;
 	type TransactionPayment = ();
@@ -147,7 +147,7 @@ impl timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const Period: BlockNumber = 10 * MINUTES;
+	pub const Period: BlockNumber = 1 * MINUTES;
 	pub const Offset: BlockNumber = 0;
 }
 
@@ -204,46 +204,48 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 }
-impl democracy::Trait for Runtime {
-	type Proposal = Call;
-	type Event = Event;
-	type Currency = Balances;
-	type EnactmentPeriod = EnactmentPeriod;
-	type LaunchPeriod = LaunchPeriod;
-	type VotingPeriod = VotingPeriod;
-	type EmergencyVotingPeriod = EmergencyVotingPeriod;
-	type MinimumDeposit = MinimumDeposit;
-	type ExternalOrigin = council_motions::EnsureProportionAtLeast<_1, _2, AccountId>;
-	type ExternalMajorityOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
-	type EmergencyOrigin = council_motions::EnsureProportionAtLeast<_1, _1, AccountId>;
-	type CancellationOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
-	type VetoOrigin = council_motions::EnsureMember<AccountId>;
-	type CooloffPeriod = CooloffPeriod;
-}
 
-impl council::Trait for Runtime {
-	type Event = Event;
-	type BadPresentation = ();
-	type BadReaper = ();
-	type BadVoterIndex = ();
-	type LoserCandidate = ();
-	type OnMembersChanged = CouncilMotions;
-}
 
-impl council::motions::Trait for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-}
-
-impl treasury::Trait for Runtime {
-	type Currency = Balances;
-	type ApproveOrigin = council_motions::EnsureMembers<_4, AccountId>;
-	type RejectOrigin = council_motions::EnsureMembers<_2, AccountId>;
-	type Event = Event;
-	type MintedForSpending = ();
-	type ProposalRejection = ();
-}
+//impl democracy::Trait for Runtime {
+//	type Proposal = Call;
+//	type Event = Event;
+//	type Currency = Balances;
+//	type EnactmentPeriod = EnactmentPeriod;
+//	type LaunchPeriod = LaunchPeriod;
+//	type VotingPeriod = VotingPeriod;
+//	type EmergencyVotingPeriod = EmergencyVotingPeriod;
+//	type MinimumDeposit = MinimumDeposit;
+//	type ExternalOrigin = council_motions::EnsureProportionAtLeast<_1, _2, AccountId>;
+//	type ExternalMajorityOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
+//	type EmergencyOrigin = council_motions::EnsureProportionAtLeast<_1, _1, AccountId>;
+//	type CancellationOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
+//	type VetoOrigin = council_motions::EnsureMember<AccountId>;
+//	type CooloffPeriod = CooloffPeriod;
+//}
+//
+//impl council::Trait for Runtime {
+//	type Event = Event;
+//	type BadPresentation = ();
+//	type BadReaper = ();
+//	type BadVoterIndex = ();
+//	type LoserCandidate = ();
+//	type OnMembersChanged = CouncilMotions;
+//}
+//
+//impl council::motions::Trait for Runtime {
+//	type Origin = Origin;
+//	type Proposal = Call;
+//	type Event = Event;
+//}
+//
+//impl treasury::Trait for Runtime {
+//	type Currency = Balances;
+//	type ApproveOrigin = council_motions::EnsureMembers<_4, AccountId>;
+//	type RejectOrigin = council_motions::EnsureMembers<_2, AccountId>;
+//	type Event = Event;
+//	type MintedForSpending = ();
+//	type ProposalRejection = ();
+//}
 
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
@@ -281,13 +283,13 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
-		Democracy: democracy,
-		Council: council::{Module, Call, Storage, Event<T>},
-		CouncilMotions: council_motions::{Module, Call, Storage, Event<T>, Origin<T>},
-		CouncilSeats: council_seats::{Config<T>},
+//		Democracy: democracy,
+//		Council: council::{Module, Call, Storage, Event<T>},
+//		CouncilMotions: council_motions::{Module, Call, Storage, Event<T>, Origin<T>},
+//		CouncilSeats: council_seats::{Config<T>},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config<T>, Event},
-		Treasury: treasury,
+//		Treasury: treasury,
 		Contracts: contracts,
 		Sudo: sudo,
 		// evo module
@@ -313,7 +315,7 @@ pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Index, Call>;
 /// Executive: handles dispatch to the various modules.
-pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
+pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Ring, Runtime, AllModules>;
 
 impl_runtime_apis! {
 	impl client_api::Core<Block> for Runtime {

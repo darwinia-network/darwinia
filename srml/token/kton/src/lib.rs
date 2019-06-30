@@ -135,9 +135,11 @@ decl_storage! {
 		// like `existential_deposit`, but always set to 0
 		pub MinimumBalance get(minimum_balance): T::Balance = 0.into();
 
-		pub TotalIssuance get(total_issuance) : T::Balance;
+		pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T>| {
+			config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
+		}): T::Balance;
 
-		pub FreeBalance get(free_balance): map T::AccountId => T::Balance;
+		pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T>| config.balances.clone()): map T::AccountId => T::Balance;
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 

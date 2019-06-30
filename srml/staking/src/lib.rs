@@ -56,7 +56,7 @@ use system::ensure_signed;
 use phragmen::{elect, ACCURACY, ExtendedBalance};
 
 const RECENT_OFFLINE_COUNT: usize = 32;
-const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
+const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 10;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
