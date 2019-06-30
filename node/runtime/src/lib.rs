@@ -137,6 +137,7 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
+	type SystemRefund = ();
 }
 
 

@@ -132,11 +132,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 			vesting: vec![],
 		}),
 		kton: Some(KtonConfig {
-			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
+			balances: vec![],
 			vesting: vec![],
+			sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
 		}),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts.iter().cloned()
@@ -351,11 +349,9 @@ pub fn testnet_genesis(
 			vesting: vec![],
 		}),
 		kton: Some(KtonConfig {
-			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
+			balances: vec![],
 			vesting: vec![],
+			sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
 		}),
 		session: Some(SessionConfig {
 			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
