@@ -126,7 +126,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 				.map(|k| (k, ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
-			existential_deposit: 1 * DOLLARS,
+			existential_deposit: 0,
 			transfer_fee: 1 * CENTS,
 			creation_fee: 1 * CENTS,
 			vesting: vec![],
@@ -343,7 +343,7 @@ pub fn testnet_genesis(
 				.map(|k| (k, ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
-			existential_deposit: 1 * DOLLARS,
+			existential_deposit: 0,
 			transfer_fee: 1 * CENTS,
 			creation_fee: 1 * CENTS,
 			vesting: vec![],
