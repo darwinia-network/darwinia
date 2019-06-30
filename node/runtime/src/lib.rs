@@ -175,6 +175,11 @@ parameter_types! {
 	pub const BondingDuration: staking::EraIndex = 24 * 28;
 }
 
+// customed
+parameter_types! {
+	// decimal 3
+	pub const CAP: Balance = 10000000000000;
+}
 
 impl staking::Trait for Runtime {
 	type Currency = Kton;
