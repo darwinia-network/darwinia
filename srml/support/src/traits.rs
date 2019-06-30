@@ -5,17 +5,17 @@ use sr_primitives::traits::{
 use rstd::{prelude::*, result};
 use srml_support::traits::{Imbalance, Currency};
 
-pub trait SystemCurrency<AccountId> {
+pub trait SystemCurrency<AccountId, Currency>
+ where Currency: SimpleArithmetic + Codec + Copy + MaybeSerializeDebug + Default {
     // ring
-    type CurrencyOf: SimpleArithmetic + Codec + Copy + MaybeSerializeDebug + Default;
-    type PositiveImbalanceOf: Imbalance<Self::CurrencyOf, Opposite=Self::NegativeImbalanceOf>;
-    type NegativeImbalanceOf: Imbalance<Self::CurrencyOf, Opposite=Self::PositiveImbalanceOf>;
+    type PositiveImbalanceOf: Imbalance<Currency, Opposite=Self::NegativeImbalanceOf>;
+    type NegativeImbalanceOf: Imbalance<Currency, Opposite=Self::PositiveImbalanceOf>;
 
-    fn reward_to_pot(value: Self::CurrencyOf);
+    fn reward_to_pot(value: Currency);
 
-    fn reward_can_withdraw(who: &AccountId) -> Self::CurrencyOf;
+    fn reward_can_withdraw(who: &AccountId) -> Currency;
 
-    fn withdraw_from_sys_reward(who: &AccountId, value: Self::CurrencyOf) -> result::Result<(Self::NegativeImbalanceOf, Self::NegativeImbalanceOf), &'static str>;
+    fn withdraw_from_sys_reward(who: &AccountId, value: Currency) -> result::Result<(Self::NegativeImbalanceOf, Self::NegativeImbalanceOf), &'static str>;
 
 //    fn system_refund(who: &AccountId, value: Self::CurrencyOf, system_imbalance: Self::NegativeImbalanceOf, acc_imbalance: Self::NegativeImbalanceOf);
 }

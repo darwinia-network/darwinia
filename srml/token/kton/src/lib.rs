@@ -565,13 +565,13 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
     }
 }
 
-impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
+impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
     // all of ring
-    type CurrencyOf = CurrencyOf<T>;
+//    type CurrencyOf = CurrencyOf<T>;
     type PositiveImbalanceOf = PositiveImbalanceOf<T>;
     type NegativeImbalanceOf = NegativeImbalanceOf<T>;
 
-    fn reward_to_pot(value: Self::CurrencyOf) {
+    fn reward_to_pot(value: CurrencyOf<T>) {
         let sys_acc = Self::sys_acc();
         let positive = T::Currency::deposit_creating(&sys_acc, value);
 
@@ -588,7 +588,7 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
 
 
     // PUB IMMUTABLE
-    fn reward_can_withdraw(who: &T::AccountId) -> Self::CurrencyOf {
+    fn reward_can_withdraw(who: &T::AccountId) -> CurrencyOf<T> {
         let free_balance = Self::free_balance(who);
         let max_should_withdraw = Self::convert_to_paid_out(free_balance);
         let max_should_withdraw: u64  = max_should_withdraw.try_into().unwrap_or_default() as u64;
@@ -604,7 +604,7 @@ impl<T: Trait> SystemCurrency<T::AccountId> for Module<T> {
     /// pay system fee with reward
     fn withdraw_from_sys_reward(
         who: &T::AccountId,
-        value: Self::CurrencyOf)
+        value: CurrencyOf<T>)
         -> result::Result<(Self::NegativeImbalanceOf, Self::NegativeImbalanceOf), &'static str> {
 
         let can_withdraw_value = Self::reward_can_withdraw(who);

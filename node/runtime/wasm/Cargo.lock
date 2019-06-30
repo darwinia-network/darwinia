@@ -605,6 +605,7 @@ dependencies = [
 name = "evo-staking"
 version = "0.1.0"
 dependencies = [
+ "evo-support 0.1.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -33,6 +33,8 @@ mod phragmen;
 #[cfg(all(feature = "bench", test))]
 mod benches;
 
+mod minting;
+
 #[cfg(feature = "std")]
 use runtime_io::with_storage;
 use rstd::{prelude::*, result, collections::btree_map::BTreeMap};
@@ -52,7 +54,7 @@ use primitives::traits::{
 #[cfg(feature = "std")]
 use primitives::{Serialize, Deserialize};
 use system::ensure_signed;
-
+use dsupport::traits::SystemCurrency;
 use phragmen::{elect, ACCURACY, ExtendedBalance};
 
 const RECENT_OFFLINE_COUNT: usize = 32;
@@ -64,6 +66,8 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
+// customed: counter for number of eras per epoch.
+pub type ErasNums = u32;
 
 /// Indicates the initial status of the staker.
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
@@ -209,7 +213,8 @@ type ExpoMap<T> = BTreeMap<
 
 pub trait Trait: system::Trait + session::Trait {
 	/// The staking balance.
-	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
+	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber> +
+		SystemCurrency<Self::AccountId, <Self::RewardCurrency as Currency<Self::AccountId>>::Balance>;
 
 	// Customed: for ring
 	type RewardCurrency: Currency<Self::AccountId>;
@@ -238,6 +243,10 @@ pub trait Trait: system::Trait + session::Trait {
 
 	/// Number of eras that staked funds must remain bonded for.
 	type BondingDuration: Get<EraIndex>;
+
+	// customed
+	type Cap: Get<<Self::RewardCurrency as Currency<Self::AccountId>>::Balance>;
+	type ErasPerEpoch: Get<ErasNums>;
 }
 
 decl_storage! {
@@ -292,7 +301,7 @@ decl_storage! {
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
-		pub CurrentEraReward get(current_era_reward): RewardBalanceOf<T>;
+		pub CurrentEraTotalReward get(current_era_total_reward): RewardBalanceOf<T>;
 
 		/// The amount of balance actively at stake for each validator slot, currently.
 		///
@@ -311,6 +320,9 @@ decl_storage! {
 
 		/// True if the next session change will be a new era regardless of index.
 		pub ForceNewEra get(forcing_new_era): bool;
+
+		// customed
+		pub EpochIndex get(epoch_index) config(): T::BlockNumber;
 	}
 	add_extra_genesis {
 		config(stakers):
@@ -639,8 +651,8 @@ impl<T: Trait> Module<T> {
 	/// Session has just ended. Provide the validator set for the next session if it's an era-end.
 	fn new_session(session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
 		// accumulate good session reward
-		let reward = Self::current_session_reward();
-		<CurrentEraReward<T>>::mutate(|r| *r += reward);
+//		let reward = Self::current_session_reward();
+//		<CurrentEraReward<T>>::mutate(|r| *r += reward);
 
 		if <ForceNewEra<T>>::take() || session_index % T::SessionsPerEra::get() == 0 {
 			Self::new_era()
@@ -655,30 +667,40 @@ impl<T: Trait> Module<T> {
 	/// get a chance to set their session keys.
 	fn new_era() -> Option<Vec<T::AccountId>> {
 		// Payout
-		let reward = <CurrentEraReward<T>>::take();
+		let reward = Self::session_reward() * <CurrentEraTotalReward<T>>::take();
 		if !reward.is_zero() {
 			let validators = Self::current_elected();
-			for v in validators.iter() {
-				Self::reward_validator(v, reward);
-			}
-			Self::deposit_event(RawEvent::Reward(reward));
 			let len = validators.len() as u32; // validators length can never overflow u64
-			let len: BalanceOf<T> = len.into();
-//			let total_minted = reward * len;
-//			let total_rewarded_stake = Self::slot_stake() * len;
-//			T::OnRewardMinted::on_dilution(total_minted, total_rewarded_stake);
+			let len: RewardBalanceOf<T> = len.into();
+			let block_reward_per_validator = reward / len;
+			for v in validators.iter() {
+				Self::reward_validator(v, block_reward_per_validator);
+			}
+			Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
+
+			T::Currency::reward_to_pot(reward);
+			// TODO: reward to treasury
 		}
 
+		// check if ok to change epoch
+		if Self::current_era() % T::ErasPerEpoch::get() == 0 {
+			Self::new_epoch();
+		}
 		// Increment current era.
 		<CurrentEra<T>>::mutate(|s| *s += 1);
 
 		// Reassign all Stakers.
 		let (slot_stake, maybe_new_validators) = Self::select_validators();
 
-		// Update the balances for rewarding according to the stakes.
-//		<CurrentSessionReward<T>>::put(Self::session_reward() * slot_stake);
-
 		maybe_new_validators
+	}
+
+	fn new_epoch() {
+		<EpochIndex<T>>::put(Self::epoch_index() + One::one());
+		if let Ok(next_era_reward) =  minting::compute_current_era_reward::<T>() {
+			// TODO: change to CurrentEraReward
+			<CurrentEraTotalReward<T>>::put(next_era_reward);
+		}
 	}
 
 	fn slashable_balance_of(stash: &T::AccountId) -> BalanceOf<T> {

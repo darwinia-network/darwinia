@@ -15,6 +15,7 @@ primitives = { package = "sr-primitives",git = 'https://github.com/paritytech/su
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', default-features = false }
+dsupport = { package = "evo-support", path = "../support", default-features = false }
 
 [dev-dependencies]
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
@@ -37,4 +38,5 @@ std = [
 	"primitives/std",
 	"session/std",
 	"system/std",
+	"dsupport/std",
 ]

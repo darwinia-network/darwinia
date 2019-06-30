@@ -150,8 +150,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
+			epoch_index: 0,
 			offline_slash: Perbill::from_parts(1_000_000),
-			session_reward: Perbill::from_parts(2_065),
+			session_reward: Perbill::from_percent(40),
 			current_session_reward: 0,
 			validator_count: 7,
 			offline_slash_grace: 4,
@@ -365,10 +366,11 @@ pub fn testnet_genesis(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
+			epoch_index: 0,
 			minimum_validator_count: 1,
 			validator_count: 10,
 			offline_slash: Perbill::zero(),
-			session_reward: Perbill::zero(),
+			session_reward: Perbill::from_percent(45),
 			current_session_reward: 0,
 			offline_slash_grace: 0,
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),

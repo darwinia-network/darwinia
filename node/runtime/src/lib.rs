@@ -52,6 +52,7 @@ pub use balances::Call as BalancesCall;
 pub use runtime_primitives::{Permill, Perbill, impl_opaque_keys};
 pub use support::StorageValue;
 pub use staking::StakerStatus;
+pub use staking::ErasNums;
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -171,14 +172,16 @@ impl session::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 6;
+	pub const SessionsPerEra: session::SessionIndex = 5;
 	pub const BondingDuration: staking::EraIndex = 24 * 28;
+	// 288 * 365
+	pub const ErasPerEpoch: staking::ErasNums = 105120;
 }
 
 // customed
 parameter_types! {
 	// decimal 3
-	pub const CAP: Balance = 10000000000000;
+	pub const CAP: Balance = 10_000_000_000_000;
 }
 
 impl staking::Trait for Runtime {
@@ -191,9 +194,12 @@ impl staking::Trait for Runtime {
 	type Reward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	// customed
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
 }
 
-const MINUTES: BlockNumber = 6;
+const MINUTES: BlockNumber = 10;
 const BUCKS: Balance = 1_000_000_000_000;
 
 parameter_types! {
