@@ -42,7 +42,7 @@ pub fn flaming_fir_config() -> Result<ChainSpec, String> {
 }
 
 pub fn darwinia_fir_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_embedded(include_bytes!("../res/darwinia-fir.json.json"))
+	ChainSpec::from_embedded(include_bytes!("../res/darwinia-fir.json"))
 }
 
 pub fn trilobita_config() -> ChainSpec {

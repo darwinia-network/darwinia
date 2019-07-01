@@ -127,7 +127,7 @@ impl ChainSpec {
 			ChainSpec::Trilobita => chain_spec::trilobita_testnet_config(),
 			// latest
 			ChainSpec::Darwinia => chain_spec::trilobita_config(),
-			ChainSpec::DarwiniaFir => chain_spec::darwinia_fir_config(),
+			ChainSpec::DarwiniaFir => chain_spec::darwinia_fir_config()?,
 		})
 	}
 
