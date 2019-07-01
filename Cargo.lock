@@ -2147,6 +2147,7 @@ dependencies = [
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-finality-tracker 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-indices 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "structopt 0.2.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-basic-authorship 2.0.0 (git+https://github.com/paritytech/substrate.git)",

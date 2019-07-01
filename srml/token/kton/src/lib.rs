@@ -7,13 +7,13 @@ use primitives::traits::{
 };
 
 use rstd::prelude::*;
-use rstd::{cmp, mem, result, convert::{ TryInto, TryFrom}};
+use rstd::{cmp, result, convert::{ TryInto, TryFrom}};
 use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue, ensure};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
     Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier,
-    MakePayment, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency, SignedImbalance,
-    UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+    OnUnbalanced, SignedImbalance, UpdateBalanceOutcome,
+    WithdrawReason, WithdrawReasons,
 };
 use substrate_primitives::U256;
 use system::ensure_signed;
@@ -86,11 +86,11 @@ pub trait Trait: timestamp::Trait {
 
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-    // ring
+    // kton
     type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
     type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
 
-    // kton
+    // ring
     type SystemRefund: OnUnbalanced<PositiveImbalanceOf<Self>>;
 }
 
@@ -221,6 +221,19 @@ decl_module! {
                  T::OnMinted::on_unbalanced(positive_imbalance);
              }
         }
+
+
+        pub fn transfer(origin,
+            dest: <T::Lookup as StaticLookup>::Source,
+			#[compact] value: T::Balance
+		) {
+			let transactor = ensure_signed(origin)?;
+			let dest = T::Lookup::lookup(dest)?;
+
+            <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
+
+        }
+
 
     }
 

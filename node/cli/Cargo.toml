@@ -38,6 +38,7 @@ indices = { package = "srml-indices", git = 'https://github.com/paritytech/subst
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 rand = "0.6"
 finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/paritytech/substrate.git' }

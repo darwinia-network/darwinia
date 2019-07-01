@@ -22,6 +22,9 @@ use node_runtime::{ AuraConfig, SystemConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig,
 	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, RingConfig, KtonConfig, Permill, Perbill, SessionKeys};
 pub use node_runtime::GenesisConfig;
+use srml_support::traits::Get;
+// custom
+pub use node_runtime::ErasPerEpoch;
 use substrate_service;
 use hex_literal::hex;
 use substrate_telemetry::TelemetryEndpoints;
@@ -151,6 +154,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		staking: Some(StakingConfig {
 			current_era: 0,
 			epoch_index: 0,
+			current_era_total_reward: 1_600_000_000_000 / ErasPerEpoch::get() as u128,
 			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(40),
 			current_session_reward: 0,
@@ -367,6 +371,7 @@ pub fn testnet_genesis(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			epoch_index: 0,
+			current_era_total_reward: 1_600_000_000_000 / ErasPerEpoch::get() as u128,
 			minimum_validator_count: 1,
 			validator_count: 10,
 			offline_slash: Perbill::zero(),

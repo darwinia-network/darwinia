@@ -1,6 +1,6 @@
 
 //TODO: move this into lib.rs to be a inner mod
-use super::{result, Imbalance, Trait, Zero, Saturating, StorageValue, Module};
+use super::{result, Imbalance, Trait, Zero, Saturating, StorageValue};
 use rstd::mem;
 
 

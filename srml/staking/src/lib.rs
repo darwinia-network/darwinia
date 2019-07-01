@@ -31,6 +31,12 @@ extern crate test;
 mod phragmen;
 
 #[cfg(all(feature = "bench", test))]
+extern crate test;
+
+#[cfg(any(feature = "bench", test))]
+mod mock;
+
+#[cfg(all(feature = "bench", test))]
 mod benches;
 
 mod minting;
@@ -301,7 +307,7 @@ decl_storage! {
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
-		pub CurrentEraTotalReward get(current_era_total_reward): RewardBalanceOf<T>;
+		pub CurrentEraTotalReward get(current_era_total_reward) config(): RewardBalanceOf<T>;
 
 		/// The amount of balance actively at stake for each validator slot, currently.
 		///

@@ -1,8 +1,7 @@
-use rstd::prelude::*;
-use crate::{Trait, RewardBalanceOf, Module, ErasNums};
-use rstd::result;
+
+use crate::{Trait, RewardBalanceOf, ErasNums};
 use srml_support::traits::{Currency, Get};
-use primitives::traits::{Convert, Zero, One, StaticLookup, CheckedSub, Saturating, Bounded};
+use primitives::traits::CheckedSub;
 
 
 // change when new epoch
