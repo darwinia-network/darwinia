@@ -12,6 +12,6 @@
   },
   "Deposit": {
     "total": "CurrencyOf",
-    "deposit_list": "Vec<DepositInfo>"
+    "deposit_list": "Vec<IndividualDeposit>"
   }
 }
