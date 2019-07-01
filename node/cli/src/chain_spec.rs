@@ -394,9 +394,9 @@ pub fn testnet_genesis(
 			ids: endowed_accounts.clone(),
 		}),
 		balances: Some(BalancesConfig {
-			transaction_base_fee: 1,
+			transaction_base_fee: 0,
 			transaction_byte_fee: 0,
-			existential_deposit: 500,
+			existential_deposit: 0,
 			transfer_fee: 0,
 			creation_fee: 0,
 			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
