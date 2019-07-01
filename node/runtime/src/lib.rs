@@ -134,7 +134,7 @@ impl ring::Trait for Runtime {
 
 impl kton::Trait for Runtime {
 	type Balance = Balance;
-	type Currency = Ring;
+	type Currency = Balances;
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
@@ -186,7 +186,7 @@ parameter_types! {
 
 impl staking::Trait for Runtime {
 	type Currency = Kton;
-	type RewardCurrency = Ring;
+	type RewardCurrency = Balances;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = ();
 	type Event = Event;
@@ -321,7 +321,7 @@ pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Index, Call>;
 /// Executive: handles dispatch to the various modules.
-pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Ring, Runtime, AllModules>;
+pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
 
 impl_runtime_apis! {
 	impl client_api::Core<Block> for Runtime {

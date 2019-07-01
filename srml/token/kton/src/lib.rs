@@ -3,7 +3,7 @@
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
     CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
-    StaticLookup, Zero,
+    StaticLookup, Zero, Bounded
 };
 
 use rstd::prelude::*;
@@ -82,7 +82,7 @@ pub trait Trait: timestamp::Trait {
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
     MaybeSerializeDebug + From<Self::BlockNumber>;
 
-    type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
+    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -107,7 +107,8 @@ decl_event!(
         NewDeposit(Moment, AccountId, Balance, Currency),
         /// Transfer succeeded (from, to, value, fees).
         TokenTransfer(AccountId, AccountId, Balance),
-
+        /// Claim Reward
+        RewardClaim(AccountId, Currency),
         WithdrawDeposit(AccountId, Currency, Moment, bool),
     }
 );
@@ -242,6 +243,7 @@ decl_module! {
             if !value_can_withdraw.is_zero() {
                 Self::update_reward_paid_out(&transactor, value_can_withdraw, false);
                 T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw);
+                Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
         }
 
@@ -259,7 +261,8 @@ impl<T: Trait> Module<T> {
             DEPOSIT_ID,
             &who,
             deposit.total,
-            u32::max_value().into(),
+            // u32::max_value().into(),
+            T::BlockNumber::max_value(),
             WithdrawReasons::all()
         );
         <DepositLedger<T>>::insert(who, deposit);
