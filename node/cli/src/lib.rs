@@ -46,8 +46,10 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
-	/// darwinia poc-1 testnet
+	/// darwinia poc-1 testnet, same with local testnet
 	Trilobita,
+	/// darwinia poc-1 testnet
+	Darwinia,
 }
 
 /// Custom subcommands.
@@ -121,6 +123,8 @@ impl ChainSpec {
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
 			ChainSpec::Trilobita => chain_spec::trilobita_testnet_config(),
+			// latest
+			ChainSpec::Darwinia => chain_spec::trilobita_config(),
 		})
 	}
 
@@ -128,7 +132,8 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "trilobita" | "darwinia" => Some(ChainSpec::Trilobita),
+			"" => Some(ChainSpec::Darwinia),
+			"trilobita" | "darwinia" => Some(ChainSpec::Trilobita),
 			"fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
 			_ => None,
