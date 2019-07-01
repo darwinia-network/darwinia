@@ -108,8 +108,8 @@ cd {path_to_darwinia_appchain_root}
 --validator \
 --name AliceDarwiniaNode \
 --telemetry-url ws://telemetry.polkadot.io:1024 \
---rpc-external true \
---ws-external true
+--rpc-external \
+--ws-external
 ```
 
 #### Bob Joins In
@@ -122,10 +122,10 @@ Now that Alice's node is up and running, Bob can join the network by bootstrappi
 --port 30334 \
 --validator \
 --name BobDarwiniaNode \
--- botenodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID> \
+--bootnodes /ip4/<Alices IP Address>/tcp/<Alices Port>/p2p/<Alices Node ID> \
 --telemetry-url ws://telemetry.polkadot.io:1024 \
---rpc-external true \
---ws-external true
+--rpc-external \
+--ws-external
 ```
 
 - If these two nodes are running on the same physical machine, Bob MUST specify a different `--base-path` and `--port`.
