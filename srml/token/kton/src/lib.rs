@@ -177,7 +177,7 @@ decl_module! {
     pub struct Module<T: Trait> for enum Call where origin: T::Origin {
         fn deposit_event<T>() = default;
 
-
+        /// Deposit and lock rings, reward ktons
         fn deposit(origin, value: CurrencyOf<T>, months: T::Moment) {
             ensure!(!months.is_zero() && months <= 36.into(), "months must be at least 1");
             let transactor = ensure_signed(origin)?;
@@ -195,6 +195,7 @@ decl_module! {
 
             Self::update_deposit(&transactor, &deposit);
 
+            // reward ktons
             let kton_return = Self::compute_kton_balance(months, value).unwrap();
             let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
             T::OnMinted::on_unbalanced(positive_imbalance);
@@ -230,6 +231,7 @@ decl_module! {
 
 impl<T: Trait> Module<T> {
 
+    /// Lock rings
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Moment>) {
         T::Currency::set_lock(
             DEPOSIT_ID,
@@ -248,6 +250,7 @@ impl<T: Trait> Module<T> {
         additional_reward_paid_out
     }
 
+    /// Calculate the number of ktons to be rewarded based on the lock time and number of rings
     fn compute_kton_balance(months: T::Moment, value: CurrencyOf<T>) -> Option<T::Balance> {
         let months = months.try_into().unwrap_or_default() as u64;
         let value = value.try_into().unwrap_or_default() as u64;
@@ -446,6 +449,8 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         Ok(PositiveImbalance::new(value))
     }
 
+    /// Add the reward kton to the user's free balance
+    /// and distribute the relevant system revenue to the user
     fn deposit_creating(
         who: &T::AccountId,
         value: Self::Balance,
@@ -571,6 +576,7 @@ impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
     type PositiveImbalanceOf = PositiveImbalanceOf<T>;
     type NegativeImbalanceOf = NegativeImbalanceOf<T>;
 
+    /// system revenue in ring
     fn reward_to_pot(value: CurrencyOf<T>) {
         let sys_acc = Self::sys_acc();
         let positive = T::Currency::deposit_creating(&sys_acc, value);
