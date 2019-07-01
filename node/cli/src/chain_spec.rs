@@ -41,6 +41,10 @@ pub fn flaming_fir_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_embedded(include_bytes!("../res/flaming-fir.json"))
 }
 
+pub fn darwinia_fir_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_embedded(include_bytes!("../res/darwinia-fir.json.json"))
+}
+
 pub fn trilobita_config() -> ChainSpec {
 	let boot_nodes = vec![];
 	ChainSpec::from_genesis(

@@ -50,6 +50,8 @@ pub enum ChainSpec {
 	Trilobita,
 	/// darwinia poc-1 testnet
 	Darwinia,
+	/// darwinia poc-1 testnet fir
+	DarwiniaFir
 }
 
 /// Custom subcommands.
@@ -125,6 +127,7 @@ impl ChainSpec {
 			ChainSpec::Trilobita => chain_spec::trilobita_testnet_config(),
 			// latest
 			ChainSpec::Darwinia => chain_spec::trilobita_config(),
+			ChainSpec::DarwiniaFir => chain_spec::darwinia_fir_config(),
 		})
 	}
 
@@ -132,8 +135,9 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" => Some(ChainSpec::Darwinia),
-			"trilobita" | "darwinia" => Some(ChainSpec::Trilobita),
+			"darwinia" => Some(ChainSpec::Darwinia),
+			"" => Some(ChainSpec::DarwiniaFir),
+			"trilobita" => Some(ChainSpec::Trilobita),
 			"fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
 			_ => None,

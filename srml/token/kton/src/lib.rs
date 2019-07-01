@@ -465,9 +465,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
     ) -> Self::PositiveImbalance {
 
         let (imbalance, _) = Self::make_free_balance_be(who, Self::free_balance(who) + value);
-        // update reward paid out
-        let additional_reward_paid_out = Self::convert_to_paid_out(value);
-        Self::update_reward_paid_out(who, additional_reward_paid_out, false);
 
         if let SignedImbalance::Positive(p) = imbalance {
             p

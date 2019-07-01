@@ -696,7 +696,7 @@ impl<T: Trait> Module<T> {
 		<CurrentEra<T>>::mutate(|s| *s += 1);
 
 		// Reassign all Stakers.
-		let (slot_stake, maybe_new_validators) = Self::select_validators();
+		let (_, maybe_new_validators) = Self::select_validators();
 
 		maybe_new_validators
 	}
