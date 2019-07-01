@@ -63,19 +63,19 @@ fn darwinia_poc1_testnet_config_genesis() -> GenesisConfig {
 		vec![
 			get_authority_keys_from_seed("Alice"),
 			get_authority_keys_from_seed("Bob"),
-			(
-			// alex
-			hex!["c6856f9b0c3ffcc5d8a19a8d545b031f6fdcd480bc4a776f5c4737973ef3de3b"].unchecked_into(),
-			hex!["3861d67edcb1950906591ecc33ade54b3aa28ca6dcc36fb025169351a8aea024"].unchecked_into(),
-			hex!["5ebec212caea5988c173ef4f0abcd9d2649711f3f5417b3c50d840576451e88c"].unchecked_into(),
-			hex!["5ebec212caea5988c173ef4f0abcd9d2649711f3f5417b3c50d840576451e88c"].unchecked_into(),
-			),(
-			// yak
-			hex!["9453279ee3b21d3f4b23f9ce168f88042dee6662a5f0673bac1cf636aaaf7f19"].unchecked_into(),
-			hex!["62bb1c167bc3f8b560c52911b5eb32b4b0249bb1d8540d1564c4344554fe1752"].unchecked_into(),
-			hex!["c621d9fb2d23140f80f4ad511b62e4677d367c56e54abc184946f769ab4382b0"].unchecked_into(),
-			hex!["c621d9fb2d23140f80f4ad511b62e4677d367c56e54abc184946f769ab4382b0"].unchecked_into(),
-			)
+//			(
+//			// alex
+//			hex!["c6856f9b0c3ffcc5d8a19a8d545b031f6fdcd480bc4a776f5c4737973ef3de3b"].unchecked_into(),
+//			hex!["3861d67edcb1950906591ecc33ade54b3aa28ca6dcc36fb025169351a8aea024"].unchecked_into(),
+//			hex!["5ebec212caea5988c173ef4f0abcd9d2649711f3f5417b3c50d840576451e88c"].unchecked_into(),
+//			hex!["5ebec212caea5988c173ef4f0abcd9d2649711f3f5417b3c50d840576451e88c"].unchecked_into(),
+//			),(
+//			// yak
+//			hex!["9453279ee3b21d3f4b23f9ce168f88042dee6662a5f0673bac1cf636aaaf7f19"].unchecked_into(),
+//			hex!["62bb1c167bc3f8b560c52911b5eb32b4b0249bb1d8540d1564c4344554fe1752"].unchecked_into(),
+//			hex!["c621d9fb2d23140f80f4ad511b62e4677d367c56e54abc184946f769ab4382b0"].unchecked_into(),
+//			hex!["c621d9fb2d23140f80f4ad511b62e4677d367c56e54abc184946f769ab4382b0"].unchecked_into(),
+//			)
 	];
 
 	let endowed_accounts: Vec<AccountId> = vec![
