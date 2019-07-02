@@ -737,6 +737,7 @@ dependencies = [
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-balances 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
