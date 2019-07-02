@@ -20,7 +20,7 @@ use primitives::{ed25519, sr25519, Pair, crypto::UncheckedInto};
 use node_primitives::{AccountId, AuraId};
 use node_runtime::{ AuraConfig, SystemConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig,
-	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, RingConfig, KtonConfig, Permill, Perbill, SessionKeys};
+	SudoConfig, ContractsConfig, GrandpaConfig, IndicesConfig, KtonConfig, Permill, Perbill, SessionKeys};
 pub use node_runtime::GenesisConfig;
 use srml_support::traits::Get;
 // custom
@@ -81,19 +81,26 @@ fn darwinia_poc1_testnet_config_genesis() -> GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = vec![
 		get_account_id_from_seed("Alice"),
 		get_account_id_from_seed("Bob"),
-		get_account_id_from_seed("Alice//stash"),
-		get_account_id_from_seed("Bob//stash"),
-//		// alex
-//		hex!["c6856f9b0c3ffcc5d8a19a8d545b031f6fdcd480bc4a776f5c4737973ef3de3b"].unchecked_into(),
-//		hex!["3861d67edcb1950906591ecc33ade54b3aa28ca6dcc36fb025169351a8aea024"].unchecked_into(),
-//		//yak
-//		hex!["9453279ee3b21d3f4b23f9ce168f88042dee6662a5f0673bac1cf636aaaf7f19"].unchecked_into(),
-//		hex!["62bb1c167bc3f8b560c52911b5eb32b4b0249bb1d8540d1564c4344554fe1752"].unchecked_into(),
+		// jane
+		hex!["d291fa464b54dccbc02b2098b8e479b567fe183609baa2c42636b73cc4eed535"].unchecked_into(),
+		// t
+		hex!["2e842a5fc9bacedb87d8a3db914825f7da57f5a5149170802d47e52c11109647"].unchecked_into(),
+		// wb
+		hex!["1486518478c79befe09ffe69dc1eb8cb862e29ee013097b021fafcb74642127b"].unchecked_into(),
+
+		// alex
+		hex!["c6856f9b0c3ffcc5d8a19a8d545b031f6fdcd480bc4a776f5c4737973ef3de3b"].unchecked_into(),
+		hex!["3861d67edcb1950906591ecc33ade54b3aa28ca6dcc36fb025169351a8aea024"].unchecked_into(),
+		//yak
+		hex!["9453279ee3b21d3f4b23f9ce168f88042dee6662a5f0673bac1cf636aaaf7f19"].unchecked_into(),
+		hex!["62bb1c167bc3f8b560c52911b5eb32b4b0249bb1d8540d1564c4344554fe1752"].unchecked_into(),
+		// root
+		hex!["eaf872344d3158f575ba2ffd38b5c8630955d53a74d1c845939da71b6aa06133"].unchecked_into(),
 	];
 
 	testnet_genesis(
 		initial_authorities,
-		hex!["680b60a919c71863a4b6c1d718ab2f71d9f539194abc6e7e64f1def2b261a249"].unchecked_into(),
+		hex!["eaf872344d3158f575ba2ffd38b5c8630955d53a74d1c845939da71b6aa06133"].unchecked_into(),
 		Some(endowed_accounts),
 		false
 	)
@@ -181,18 +188,18 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 			creation_fee: 1 * CENTS,
 			vesting: vec![],
 		}),
-		ring: Some(RingConfig {
-			transaction_base_fee: 1 * CENTS,
-			transaction_byte_fee: 10 * MILLICENTS,
-			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			existential_deposit: 0,
-			transfer_fee: 1 * CENTS,
-			creation_fee: 1 * CENTS,
-			vesting: vec![],
-		}),
+//		ring: Some(RingConfig {
+//			transaction_base_fee: 1 * CENTS,
+//			transaction_byte_fee: 10 * MILLICENTS,
+//			balances: endowed_accounts.iter().cloned()
+//				.map(|k| (k, ENDOWMENT))
+//				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+//				.collect(),
+//			existential_deposit: 0,
+//			transfer_fee: 1 * CENTS,
+//			creation_fee: 1 * CENTS,
+//			vesting: vec![],
+//		}),
 		kton: Some(KtonConfig {
 			balances: endowed_accounts.iter().cloned()
 				.map(|k| (k, TEN))
@@ -398,31 +405,31 @@ pub fn testnet_genesis(
 		balances: Some(BalancesConfig {
 			transaction_base_fee: 0,
 			transaction_byte_fee: 0,
-			existential_deposit: 0,
-			transfer_fee: 0,
+			existential_deposit: 1,
+			transfer_fee: 1,
 			creation_fee: 0,
 			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, 400_000_000_000))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 200_000_000_000)))
+				.map(|k| (k, 180_000_000_000))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 100_000_000_000)))
 				.collect(),
 			vesting: vec![],
 		}),
-		ring: Some(RingConfig {
-			transaction_base_fee: 0,
-			transaction_byte_fee: 0,
-			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, 400_000_000_000))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 200_000_000_000)))
-				.collect(),
-			existential_deposit: 0,
-			transfer_fee: 0,
-			creation_fee: 0,
-			vesting: vec![],
-		}),
+//		ring: Some(RingConfig {
+//			transaction_base_fee: 0,
+//			transaction_byte_fee: 0,
+//			balances: endowed_accounts.iter().cloned()
+//				.map(|k| (k, 400_000_000_000))
+//				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 200_000_000_000)))
+//				.collect(),
+//			existential_deposit: 0,
+//			transfer_fee: 0,
+//			creation_fee: 0,
+//			vesting: vec![],
+//		}),
 		kton: Some(KtonConfig {
 			balances: endowed_accounts.iter().cloned()
 				.map(|k| (k, TEN))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 10)))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), TEN)))
 				.collect(),
 			vesting: vec![],
 			sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
