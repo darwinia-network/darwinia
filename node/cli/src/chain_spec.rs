@@ -443,7 +443,7 @@ pub fn testnet_genesis(
 			epoch_index: 0,
 			current_era_total_reward: 1_600_000_000_000 / ErasPerEpoch::get() as u128,
 			minimum_validator_count: 1,
-			validator_count: 10,
+			validator_count: 20,
 			offline_slash: Perbill::zero(),
 			session_reward: Perbill::from_percent(45),
 			current_session_reward: 0,
