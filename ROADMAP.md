@@ -4,7 +4,7 @@
 
 Darwinia Network provides game developers the scalability, cross-chain interoperability, and NFT identifiability, with seamless integrations to Polkadot, bridges to all major blockchains, and on-chain RNG services.
  
-## Development Roadmap
+## Development RoadMap
 
 ### The specifications of the project including:
 
@@ -29,11 +29,13 @@ Darwinia Network provides game developers the scalability, cross-chain interoper
     - Documents for validators to setup nodes and join the network
 
 Currently we are developing based on Substrate 1.0 rc, to setup the initial POC-1 testnet.  Later we will refactor code to comply with latest Substrate 2.0 design and trait, as Substrate 2.0 has no stable release yet, we'd start from what is there (the POC-1 testnet release at the time of writing).  Changes to Substrate 2.0 might cause refactorings and delay the plan.
-Milestones
+
+### Milestones
 
 - Start: already started, can view the current status of the project and development here:
     - https://github.com/darwinia-network/darwinia
     - https://github.com/darwinia-network/darwinia/milestone/1 (WIP)
+    
 - M1 (2 weeks): Darwinia PoC1 Testnet.  Include RING/KTON token runtime and Grigott runtime(Issuing KTON buy locking RING). 
     - Features and functions
         - Research on the tokens economic and staking protocol of Darwinia Network, and finalized the design paper
@@ -45,6 +47,7 @@ Milestones
         - A design paper introducing this project, and the technical structure of it, including token economics and staking.
         - Telemetry demonstrate the nodes status of the testnet
         - A prototype web wallet for users and tester to play with.
+        
 - M2 (4 weeks): Darwinia PoC2 Testnet. Including staking runtime.
     - Features and functions
         - A simple blockchain browser.
@@ -56,6 +59,7 @@ Milestones
         - Docker container running a substrate node with staking runtime included, can connect to testnet and syncing blocks.
         - Running node can get free tokens from faucet, and testing validator functions, running as validators. And normal users can support validators by nominating.
         - Users and view the blockchain data and extrinsics using blockchain browser.
+        
 - M3 (6 weeks): Darwinia PoC3 Testnet. Release candidate for mainnet launch(2019Q4), with runtimes including cross-chain NFT bridge, fungible token bridge between Ethereum and Tron, and experimental contract module.
     - Features and functions
         - Cross-chain NFT encoding and bridging Ethereum/TRON testnet and the POC-3 Testnet.
