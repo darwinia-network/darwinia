@@ -673,7 +673,7 @@ impl<T: Trait> Module<T> {
 	/// get a chance to set their session keys.
 	fn new_era() -> Option<Vec<T::AccountId>> {
 		// Payout
-		let reward = Self::session_reward() * <CurrentEraTotalReward<T>>::take();
+		let reward = Self::session_reward() * Self::current_era_total_reward();
 		if !reward.is_zero() {
 			let validators = Self::current_elected();
 			let len = validators.len() as u32; // validators length can never overflow u64

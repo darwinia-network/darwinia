@@ -3,7 +3,7 @@
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
     CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
-    StaticLookup, Zero,
+    StaticLookup, Zero, Bounded
 };
 
 use rstd::prelude::*;
@@ -82,7 +82,7 @@ pub trait Trait: timestamp::Trait {
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
     MaybeSerializeDebug + From<Self::BlockNumber>;
 
-    type Currency: LockableCurrency<<Self as system::Trait>::AccountId, Moment=Self::Moment>;
+    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -104,10 +104,11 @@ decl_event!(
         /// lock ring for getting kton
         /// Balance is for kton
         /// Currency is for ring
-        NewDeposit(u64, AccountId, Balance, Currency),
+        NewDeposit(Moment, AccountId, Balance, Currency),
         /// Transfer succeeded (from, to, value, fees).
         TokenTransfer(AccountId, AccountId, Balance),
-
+        /// Claim Reward
+        RewardClaim(AccountId, Currency),
         WithdrawDeposit(AccountId, Currency, Moment, bool),
     }
 );
@@ -190,7 +191,7 @@ decl_module! {
 
             let now = <timestamp::Module<T>>::now();
 
-            let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now, value: value, claimed: false};
+            let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now.clone(), value: value, claimed: false};
             let deposit = Deposit {total: value, deposit_list: vec![individual_deposit]};
 
             Self::update_deposit(&transactor, &deposit);
@@ -198,6 +199,7 @@ decl_module! {
             let kton_return = Self::compute_kton_balance(months, value).unwrap();
             let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
             T::OnMinted::on_unbalanced(positive_imbalance);
+            Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, value));
         }
 
 
@@ -212,13 +214,14 @@ decl_module! {
              if let Some(extra) = free_currency.checked_sub(&deposit.total) {
                  let extra = extra.min(additional_value);
                  deposit.total += extra;
-                 let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now, value: extra.clone(), claimed: false};
+                 let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now.clone(), value: extra.clone(), claimed: false};
                  deposit.deposit_list.push(individual_deposit);
                  Self::update_deposit(&transactor, &deposit);
 
                  let kton_return = Self::compute_kton_balance(months, extra).unwrap();
                  let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
                  T::OnMinted::on_unbalanced(positive_imbalance);
+                 Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, extra));
              }
         }
 
@@ -232,6 +235,16 @@ decl_module! {
 
             <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
 
+        }
+
+        pub fn claim_reward(origin) {
+            let transactor = ensure_signed(origin)?;
+            let value_can_withdraw = Self::reward_can_withdraw(&transactor);
+            if !value_can_withdraw.is_zero() {
+                Self::update_reward_paid_out(&transactor, value_can_withdraw, false);
+                T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw);
+                Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
+            }
         }
 
 
@@ -248,7 +261,8 @@ impl<T: Trait> Module<T> {
             DEPOSIT_ID,
             &who,
             deposit.total,
-            u32::max_value().into(),
+            // u32::max_value().into(),
+            T::BlockNumber::max_value(),
             WithdrawReasons::all()
         );
         <DepositLedger<T>>::insert(who, deposit);
@@ -587,6 +601,8 @@ impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
 
         // update reward-per-share
         let total_issuance: u64 = Self::total_issuance().try_into().unwrap_or_default() as u64;
+        //TODO: if kton total_issuance is super high
+        // this will be zero
         let additional_reward_per_share = value / total_issuance.try_into().unwrap_or_default();
         <RewardPerShare<T>>::mutate(|r| *r += additional_reward_per_share);
 
