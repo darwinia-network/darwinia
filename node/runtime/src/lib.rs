@@ -121,15 +121,15 @@ impl balances::Trait for Runtime {
 	type TransferPayment = ();
 }
 
-impl ring::Trait for Runtime {
-	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
-	type OnNewAccount = Indices;
-	type Event = Event;
-	type TransactionPayment = ();
-	type DustRemoval = ();
-	type TransferPayment = ();
-}
+//impl ring::Trait for Runtime {
+//	type Balance = Balance;
+//	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+//	type OnNewAccount = Indices;
+//	type Event = Event;
+//	type TransactionPayment = ();
+//	type DustRemoval = ();
+//	type TransferPayment = ();
+//}
 
 
 impl kton::Trait for Runtime {
@@ -299,7 +299,7 @@ construct_runtime!(
 		Contracts: contracts,
 		Sudo: sudo,
 		// evo module
-		Ring: ring,
+//		Ring: ring,
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
 

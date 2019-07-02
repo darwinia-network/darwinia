@@ -90,6 +90,7 @@ pub enum StakerStatus<AccountId> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum RewardDestination {
+	StakedDeprecated,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
 	/// Pay into the controller account.
@@ -557,6 +558,11 @@ decl_module! {
 		fn set_invulnerables(validators: Vec<T::AccountId>) {
 			<Invulnerables<T>>::put(validators);
 		}
+
+		// NOTE: ugly hacking. remove later.
+		fn report_offline_validator(controller: T::AccountId, missed_count: usize) {
+			Self::on_offline_validator(controller, missed_count);
+		}
 	}
 }
 
@@ -626,6 +632,7 @@ impl<T: Trait> Module<T> {
 				),
 			RewardDestination::Stash =>
 				T::RewardCurrency::deposit_into_existing(stash, amount).ok(),
+			RewardDestination::StakedDeprecated => None,
 		}
 	}
 
