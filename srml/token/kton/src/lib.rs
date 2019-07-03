@@ -175,7 +175,6 @@ decl_storage! {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
 		config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;
 	}
-	extra_genesis_skip_phantom_data_field;
 }
 
 decl_module! {
@@ -514,6 +513,27 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         };
 
         (imbalance, outcome)
+    }
+
+    fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
+        <TotalIssuance<T>>::mutate(|issued|
+            issued.checked_sub(&amount).unwrap_or_else(|| {
+                amount = *issued;
+                Zero::zero()
+            })
+        );
+        PositiveImbalance::new(amount)
+    }
+
+
+    fn issue(mut amount: Self::Balance) -> Self::NegativeImbalance {
+        <TotalIssuance<T>>::mutate(|issued|
+            *issued = issued.checked_add(&amount).unwrap_or_else(|| {
+                amount = Self::Balance::max_value() - *issued;
+                Self::Balance::max_value()
+            })
+        );
+        NegativeImbalance::new(amount)
     }
 
 }

@@ -90,7 +90,7 @@ pub enum StakerStatus<AccountId> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum RewardDestination {
-	StakedDeprecated,
+//	StakedDeprecated,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
 	/// Pay into the controller account.
@@ -532,7 +532,7 @@ decl_module! {
 
 		/// The ideal number of validators.
 		fn set_validator_count(#[compact] new: u32) {
-			<ValidatorCount<T>>::put(new);
+			ValidatorCount::put(new);
 		}
 
 		// ----- Root calls.
@@ -551,7 +551,7 @@ decl_module! {
 
 		/// Set the offline slash grace period.
 		fn set_offline_slash_grace(#[compact] new: u32) {
-			<OfflineSlashGrace<T>>::put(new);
+			OfflineSlashGrace::put(new);
 		}
 
 		/// Set the validators who cannot be slashed (if any).
@@ -632,7 +632,7 @@ impl<T: Trait> Module<T> {
 				),
 			RewardDestination::Stash =>
 				T::RewardCurrency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::StakedDeprecated => None,
+//			RewardDestination::StakedDeprecated => None,
 		}
 	}
 
@@ -667,7 +667,7 @@ impl<T: Trait> Module<T> {
 //		let reward = Self::current_session_reward();
 //		<CurrentEraReward<T>>::mutate(|r| *r += reward);
 
-		if <ForceNewEra<T>>::take() || session_index % T::SessionsPerEra::get() == 0 {
+		if ForceNewEra::take() || session_index % T::SessionsPerEra::get() == 0 {
 			Self::new_era()
 		} else {
 			None
@@ -700,7 +700,7 @@ impl<T: Trait> Module<T> {
 			Self::new_epoch();
 		}
 		// Increment current era.
-		<CurrentEra<T>>::mutate(|s| *s += 1);
+		CurrentEra::mutate(|s| *s += 1);
 
 		// Reassign all Stakers.
 		let (_, maybe_new_validators) = Self::select_validators();
@@ -834,7 +834,7 @@ impl<T: Trait> Module<T> {
 	}
 
 	fn apply_force_new_era() {
-		<ForceNewEra<T>>::put(true);
+		ForceNewEra::put(true);
 	}
 
 	/// Call when a validator is determined to be offline. `count` is the
