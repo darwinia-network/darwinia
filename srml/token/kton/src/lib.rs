@@ -23,7 +23,11 @@ use dsupport::traits::SystemCurrency;
 mod imbalance;
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
+mod mock;
+mod tests;
+
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
+const DECIMALS: u64 = 1000000000;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq)]
