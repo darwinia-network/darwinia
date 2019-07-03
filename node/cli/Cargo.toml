@@ -12,7 +12,7 @@ tokio = "0.1.7"
 futures = "0.1"
 exit-future = "0.1"
 cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git' }
-parity-codec = { version = "3.3" }
+parity-codec = { version = "4.1.1" }
 sr-io = { git = 'https://github.com/paritytech/substrate.git' }
 client = { package = "substrate-client", git = 'https://github.com/paritytech/substrate.git' }
 primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git' }
@@ -39,6 +39,7 @@ timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/s
 rand = "0.6"
 finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/paritytech/substrate.git' }

@@ -193,11 +193,11 @@ impl RuntimeAdapter for FactoryState<Number> {
 		} else {
 			match self.round() {
 				0 =>
-					// if round is 0 all transactions will be done with master as a sender
+				// if round is 0 all transactions will be done with master as a sender
 					self.block_no(),
 				_ =>
-					// if round is e.g. 1 every sender account will be new and not yet have
-					// any transactions done
+				// if round is e.g. 1 every sender account will be new and not yet have
+				// any transactions done
 					0
 			}
 		}

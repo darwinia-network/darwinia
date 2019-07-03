@@ -184,7 +184,6 @@ decl_storage! {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
 		config(vesting): Vec<(T::AccountId, u64, u64)>;		// begin, length
 	}
-	extra_genesis_skip_phantom_data_field;
 }
 
 decl_module! {
