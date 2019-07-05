@@ -245,7 +245,7 @@ decl_module! {
             let value_can_withdraw = Self::reward_can_withdraw(&transactor);
             if !value_can_withdraw.is_zero() {
                 Self::update_reward_paid_out(&transactor, value_can_withdraw, false);
-                T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw);
+                T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw)?;
                 Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
         }
@@ -281,13 +281,16 @@ impl<T: Trait> Module<T> {
     fn compute_kton_balance(months: T::Moment, value: CurrencyOf<T>) -> Option<T::Balance> {
         let months = months.try_into().unwrap_or_default() as u64;
         let value = value.try_into().unwrap_or_default() as u64;
+
         if !months.is_zero() {
-            let no = U256::from(67_u128).pow(U256::from(months.clone())) * U256::exp10(6);
+            let no = U256::from(67_u128).pow(U256::from(months.clone()));
             let de = U256::from(66_u128).pow(U256::from(months));
 
-            let res: U256 = U256::from(value) * no / de;
-            let value = (res - U256::exp10(6) * value) / (U256::from(197) * U256::exp10(7));
-            Some(value.as_u64().try_into().unwrap_or_default())
+            let quotient = no / de;
+            let remainder = no % de;
+            let res = U256::from(value) * (U256::from(1000) * (quotient - 1) + U256::from(1000) * remainder / de) / U256::from(1970000);
+
+            Some(res.as_u64().try_into().unwrap_or_default())
         } else {
             None
         }

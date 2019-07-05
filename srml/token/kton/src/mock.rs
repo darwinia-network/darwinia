@@ -1,18 +1,55 @@
+
 #![cfg(test)]
-extern crate runtime_io;
+use runtime_io;
 use primitives::BuildStorage;
 use primitives::{traits::{IdentityLookup}, testing::{Header}};
 use substrate_primitives::{H256, Blake2Hasher};
-use srml_support::impl_outer_origin;
+use srml_support::{ impl_outer_origin, traits::Get };
 use crate::{GenesisConfig, Module, Trait};
+use std::cell::RefCell;
 use super::*;
 
 impl_outer_origin!{
 	pub enum Origin for Test {}
 }
 
+thread_local! {
+	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
+	static TRANSFER_FEE: RefCell<u64> = RefCell::new(0);
+	static CREATION_FEE: RefCell<u64> = RefCell::new(0);
+	static TRANSACTION_BASE_FEE: RefCell<u64> = RefCell::new(0);
+	static TRANSACTION_BYTE_FEE: RefCell<u64> = RefCell::new(0);
+}
+
+pub const DECIMALS: u64 = 1000_000_000;
+
+pub struct ExistentialDeposit;
+impl Get<u64> for ExistentialDeposit {
+    fn get() -> u64 { EXISTENTIAL_DEPOSIT.with(|v| *v.borrow()) }
+}
+
+pub struct TransferFee;
+impl Get<u64> for TransferFee {
+    fn get() -> u64 { TRANSFER_FEE.with(|v| *v.borrow()) }
+}
+
+pub struct CreationFee;
+impl Get<u64> for CreationFee {
+    fn get() -> u64 { CREATION_FEE.with(|v| *v.borrow()) }
+}
+
+pub struct TransactionBaseFee;
+impl Get<u64> for TransactionBaseFee {
+    fn get() -> u64 { TRANSACTION_BASE_FEE.with(|v| *v.borrow()) }
+}
+
+pub struct TransactionByteFee;
+impl Get<u64> for TransactionByteFee {
+    fn get() -> u64 { TRANSACTION_BYTE_FEE.with(|v| *v.borrow()) }
+}
+
+
 #[derive(Clone, PartialEq, Eq, Debug)]
-// Runtime
 pub struct Test;
 
 impl system::Trait for Test {
@@ -39,8 +76,13 @@ impl balances::Trait for Test {
     type OnNewAccount = ();
     type Event = ();
     type TransactionPayment = ();
-    type TransferPayment = ();
     type DustRemoval = ();
+    type TransferPayment = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type TransferFee = TransferFee;
+    type CreationFee = CreationFee;
+    type TransactionBaseFee = TransactionBaseFee;
+    type TransactionByteFee = TransactionByteFee;
 }
 
 impl Trait for Test {
@@ -74,6 +116,7 @@ impl Default for ExtBuilder {
     }
 }
 
+
 impl ExtBuilder {
     pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
         self.existential_deposit = existential_deposit;
@@ -95,9 +138,18 @@ impl ExtBuilder {
         self
     }
 
+    pub fn set_associated_consts(&self) {
+        EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
+        TRANSFER_FEE.with(|v| *v.borrow_mut() = self.transfer_fee);
+        CREATION_FEE.with(|v| *v.borrow_mut() = self.creation_fee);
+        TRANSACTION_BASE_FEE.with(|v| *v.borrow_mut() = self.transaction_base_fee);
+        TRANSACTION_BYTE_FEE.with(|v| *v.borrow_mut() = self.transaction_byte_fee);
+    }
+
 
     pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
-        let (mut t, mut c) = system::GenesisConfig::<Test>::default().build_storage().unwrap();
+        self.set_associated_consts();
+        let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
         let balance_factor = if self.existential_deposit > 0 {
             1000 * DECIMALS
         } else {
@@ -115,9 +167,9 @@ impl ExtBuilder {
                 (3, 300 * balance_factor),
                 (4, 400 * balance_factor),
                 (10, balance_factor),
-                (11, balance_factor * 1000), // 1 m
+                (11, balance_factor * 10000000), // 10 b
                 (20, balance_factor),
-                (21, balance_factor * 2000), // 2 m
+                (21, balance_factor * 2000000), // 2 b
                 (30, balance_factor),
                 (31, balance_factor * 2000), // 2 m
                 (40, balance_factor),
@@ -125,11 +177,6 @@ impl ExtBuilder {
                 (100, 200000 * balance_factor),
                 (101, 200000 * balance_factor),
             ],
-            transaction_base_fee: self.transaction_base_fee,
-            transaction_byte_fee: self.transaction_byte_fee,
-            existential_deposit: self.existential_deposit,
-            transfer_fee: self.transfer_fee,
-            creation_fee: self.creation_fee,
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
