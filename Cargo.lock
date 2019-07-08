@@ -2174,6 +2174,7 @@ dependencies = [
 name = "node-executor"
 version = "2.0.0"
 dependencies = [
+ "evo-staking 0.1.0",
  "node-primitives 2.0.0",
  "node-runtime 0.1.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2184,7 +2185,6 @@ dependencies = [
  "srml-grandpa 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-indices 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-session 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-staking 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",

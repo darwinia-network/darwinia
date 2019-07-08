@@ -96,9 +96,9 @@ fn check_default_value() {
 #[test]
 fn check_delete() {
 	with_externalities(&mut new_test_ext(), || {
-		Try::update_list(1);
+		Try::update_list(1, true);
 		assert_eq!(Try::list(1), vec![1]);
-		Try::update_list(2);
+		Try::update_list(2, true);
 		assert_eq!(Try::list(1), vec![1, 2]);
 	});
 }

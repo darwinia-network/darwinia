@@ -43,6 +43,12 @@ impl system::Trait for Runtime {
 	type Header = Header;
 	type Event = ();
 }
+
+impl timestamp::Trait for Runtime {
+	type Moment = u64;
+	type OnTimestampSet = ();
+}
+
 impl Trait for Runtime {
 	type Balance = u64;
 	type OnFreeBalanceZero = ();
@@ -129,4 +135,5 @@ impl ExtBuilder {
 }
 
 pub type System = system::Module<Runtime>;
+pub type Timestamp = timestamp::Module<Runtime>;
 pub type Balances = Module<Runtime>;

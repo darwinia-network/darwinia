@@ -70,7 +70,7 @@ decl_module! {
 		        list.push(value);
 		        <List<T>>::insert(1, list);
 		    } else {
-		        list.remove(value);
+		        list.remove(value as usize);
 		    }
 
 		}
