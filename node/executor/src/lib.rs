@@ -23,6 +23,7 @@
 
 pub use substrate_executor::NativeExecutor;
 use substrate_executor::native_executor_instance;
+pub use node_runtime::{SessionsPerEra, BondingDuration, ErasPerEpoch, CAP};
 
 // Declare an instance of the native executor named `Executor`. Include the wasm binary as the
 // equivalent wasm code.
@@ -54,7 +55,7 @@ mod tests {
 	use system::{EventRecord, Phase};
 	use node_runtime::{Header, Block, UncheckedExtrinsic, CheckedExtrinsic, Call, Runtime, Balances,
 		BuildStorage, GenesisConfig, BalancesConfig, SessionConfig, StakingConfig, System,
-		SystemConfig, GrandpaConfig, IndicesConfig, Event, SessionKeys};
+		SystemConfig, GrandpaConfig, IndicesConfig, KtonConfig, Event, SessionKeys};
 	use wabt;
 	use primitives::map;
 
@@ -361,6 +362,18 @@ mod tests {
 				creation_fee: 0,
 				vesting: vec![],
 			}),
+			kton: Some(KtonConfig {
+				balances: vec![
+					(alice(), 111),
+					(bob(), 100),
+					(charlie(), 100_000_000),
+					(dave(), 111),
+					(eve(), 101),
+					(ferdie(), 100),
+				],
+				vesting: vec![],
+				sys_acc: ferdie(),
+			}),
 			session: Some(SessionConfig {
 				validators: vec![AccountKeyring::One.into(), AccountKeyring::Two.into(), three],
 				keys: vec![
@@ -371,6 +384,8 @@ mod tests {
 			}),
 			staking: Some(StakingConfig {
 				current_era: 0,
+				current_era_total_reward: 1,
+				epoch_index: 0,
 				stakers: vec![
 					(dave(), alice(), 111, staking::StakerStatus::Validator),
 					(eve(), bob(), 100, staking::StakerStatus::Validator),
@@ -384,10 +399,7 @@ mod tests {
 				offline_slash_grace: 0,
 				invulnerables: vec![alice(), bob(), charlie()],
 			}),
-			democracy: Some(Default::default()),
-			council_seats: Some(Default::default()),
 			timestamp: Some(Default::default()),
-			treasury: Some(Default::default()),
 			contracts: Some(Default::default()),
 			sudo: Some(Default::default()),
 			grandpa: Some(GrandpaConfig {
@@ -582,21 +594,6 @@ mod tests {
 					event: Event::system(system::Event::ExtrinsicSuccess),
 					topics: vec![],
 				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Spending(0)),
-					topics: vec![],
-				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Burnt(0)),
-					topics: vec![],
-				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Rollover(0)),
-					topics: vec![],
-				},
 			]);
 		});
 
@@ -652,21 +649,6 @@ mod tests {
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(2),
 					event: Event::system(system::Event::ExtrinsicSuccess),
-					topics: vec![],
-				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Spending(0)),
-					topics: vec![],
-				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Burnt(0)),
-					topics: vec![],
-				},
-				EventRecord {
-					phase: Phase::Finalization,
-					event: Event::treasury(treasury::RawEvent::Rollover(0)),
 					topics: vec![],
 				},
 			]);
