@@ -10,23 +10,21 @@ cache:
 
 branches:
   only:
-  - master
+    - master
 
 env:
   global:
     - RUST_BACKTRACE=1
+  matrix:
+    - RUST_TOOLCHAIN=nightly TARGET=wasm
+    - RUST_TOOLCHAIN=stable TARGET=native
 
 before_install:
   # Check how much space we've got on this machine.
   - df -h
 
-
-jobs:
-  include:
-    - stage: Install
-      script: ./ci/script.sh nightly wasm
-    - stage: Test
-      script: ./ci/script.sh stable native
+script:
+  - ./ci/script.sh
 
 after_script:
   # Check how much free disk space left after the build
