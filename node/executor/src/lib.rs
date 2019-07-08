@@ -23,7 +23,7 @@
 
 pub use substrate_executor::NativeExecutor;
 use substrate_executor::native_executor_instance;
-pub use node_runtime::{SessionsPerEra, BondingDuration, ErasPerEpoch, CAP};
+pub use node_runtime::{SessionsPerEra, BondingDuration, CAP};
 
 // Declare an instance of the native executor named `Executor`. Include the wasm binary as the
 // equivalent wasm code.

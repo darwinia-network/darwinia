@@ -22,11 +22,11 @@
 #[cfg(all(feature = "bench", test))]
 extern crate test;
 
-//#[cfg(any(feature = "bench", test))]
-//mod mock;
-//
-//#[cfg(test)]
-//mod tests;
+#[cfg(any(feature = "bench", test))]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 mod phragmen;
 
@@ -90,7 +90,7 @@ pub enum StakerStatus<AccountId> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum RewardDestination {
-//	StakedDeprecated,
+	StakedDeprecated,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
 	/// Pay into the controller account.
@@ -632,7 +632,7 @@ impl<T: Trait> Module<T> {
 				),
 			RewardDestination::Stash =>
 				T::RewardCurrency::deposit_into_existing(stash, amount).ok(),
-//			RewardDestination::StakedDeprecated => None,
+			RewardDestination::StakedDeprecated => None,
 		}
 	}
 

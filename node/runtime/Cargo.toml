@@ -26,7 +26,7 @@ finality-tracker = { package = "srml-finality-tracker", git = 'https://github.co
 grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-staking = { package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+#staking = { package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -39,7 +39,7 @@ substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optio
 # customed
 #ring = { package = "evo-ring", path = '../../srml/token/ring', default-features = false}
 kton = { package = "evo-kton", path = '../../srml/token/kton', default-features = false}
-#staking = { package = "evo-staking", path = "../../srml/staking", default-features = false}
+staking = { package = "evo-staking", path = "../../srml/staking", default-features = false}
 #aura = { package = "srml-aura", path = "../../srml/aura", default-features = false}
 
 [features]

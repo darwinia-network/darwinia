@@ -70,7 +70,7 @@ impl system::Trait for Test {
     type Header = Header;
     type Event = ();
 }
-impl ring::Trait for Test {
+impl balances::Trait for Test {
     type Balance = u64;
     type OnFreeBalanceZero = Staking;
     type OnNewAccount = ();

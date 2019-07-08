@@ -57,7 +57,7 @@ pub use contracts::Gas;
 pub use runtime_primitives::{Permill, Perbill, impl_opaque_keys};
 pub use support::StorageValue;
 pub use staking::StakerStatus;
-//pub use staking::ErasNums;
+pub use staking::ErasNums;
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -222,7 +222,7 @@ parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 5;
 	pub const BondingDuration: staking::EraIndex = 24 * 28;
 	// 288 * 365
-//	pub const ErasPerEpoch: staking::ErasNums = 105120;
+	pub const ErasPerEpoch: staking::ErasNums = 105120;
 }
 
 // customed
@@ -235,7 +235,7 @@ parameter_types! {
 
 impl staking::Trait for Runtime {
 	type Currency = Balances;
-//	type RewardCurrency = Balances;
+	type RewardCurrency = Kton;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = ();
 	type Event = Event;
@@ -243,6 +243,9 @@ impl staking::Trait for Runtime {
 	type Reward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	// customed
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
 }
 
 
