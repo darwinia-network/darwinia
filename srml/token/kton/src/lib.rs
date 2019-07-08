@@ -115,7 +115,7 @@ decl_event!(
 
 
 decl_storage! {
-	trait Store for Module<T: Trait> as KtonBalances {
+	trait Store for Module<T: Trait> as Kton {
 
 	    pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<CurrencyOf<T>, T::Moment>>;
 
