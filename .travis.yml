@@ -6,7 +6,7 @@ language: minimal
 cache:
   cargo: true
   directories:
-    $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target
+    - $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target
 
 branches:
   only:
