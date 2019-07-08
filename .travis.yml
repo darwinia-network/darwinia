@@ -24,9 +24,12 @@ before_install:
 jobs:
   include:
     - stage: Install
-      script: ./ci/script.sh nightly wasm
+      script: RUST_TOOLCHAIN=nightly TARGET=wasm
     - stage: Test
-      script: ./ci/script.sh stable native
+      script: RUST_TOOLCHAIN=stable TARGET=native
+
+script:
+  - ./ci/script.sh
 
 after_script:
   # Check how much free disk space left after the build
