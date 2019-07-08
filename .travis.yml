@@ -21,9 +21,9 @@ before_install:
 jobs:
   include:
     - stage: Install
-      script: ./ci/script.sh -RUST_TOOLCHAIN=nightly -TARGET=wasm
+      script: ./ci/script.sh nightly wasm
     - stage: Test
-      script: ./ci/script.sh -RUST_TOOLCHAIN=stable -TARGET=native
+      script: ./ci/script.sh stable native
 
 
 after_script:
