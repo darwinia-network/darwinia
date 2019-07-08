@@ -43,6 +43,8 @@ impl system::Trait for Runtime {
 	type Header = Header;
 	type Event = ();
 }
+
+
 impl Trait for Runtime {
 	type Balance = u64;
 	type OnFreeBalanceZero = ();
