@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/darwinia-network/darwinia.svg?branch=master)](https://travis-ci.org/darwinia-network/darwinia/builds)
+
 
 # Darwinia Relay Chain
 
