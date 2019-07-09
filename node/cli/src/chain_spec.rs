@@ -127,6 +127,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         }),
         staking: Some(StakingConfig {
             current_era: 0,
+            current_era_total_reward: 0,
             offline_slash: Perbill::from_parts(1_000_000),
             session_reward: Perbill::from_parts(2_065),
             current_session_reward: 0,
@@ -263,6 +264,7 @@ pub fn testnet_genesis(
         }),
         staking: Some(StakingConfig {
             current_era: 0,
+            current_era_total_reward: 0,
             minimum_validator_count: 1,
             validator_count: 2,
             offline_slash: Perbill::zero(),

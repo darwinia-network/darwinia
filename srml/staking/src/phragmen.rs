@@ -19,7 +19,7 @@
 use rstd::{prelude::*, collections::btree_map::BTreeMap};
 use primitives::{PerU128};
 use primitives::traits::{Zero, Convert, Saturating};
-use crate::{BalanceOf, RewardBalanceOf, Assignment, RawAssignment, ExpoMap, Trait, ValidatorPrefs};
+use crate::{BalanceOf, RewardBalanceOf, RawAssignment, ExpoMap, Trait, ValidatorPrefs, IndividualExposure};
 
 type Fraction = PerU128;
 /// Wrapper around the type used as the _safe_ wrapper around a `balance`.
@@ -111,26 +111,26 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 		let stash_balance = stash_of(&who);
 		(Candidate { who, ..Default::default() }, stash_balance)
 	})
-	.filter_map(|(mut c, s)| {
-		c.approval_stake += to_votes(s);
-		if c.approval_stake.is_zero() {
-			None
-		} else {
-			Some((c, s))
-		}
-	})
-	.enumerate()
-	.map(|(idx, (c, s))| {
-		nominators.push(Nominator {
-			who: c.who.clone(),
-			edges: vec![ Edge { who: c.who.clone(), candidate_index: idx, ..Default::default() }],
-			budget: to_votes(s),
-			load: Fraction::zero(),
-		});
-		c_idx_cache.insert(c.who.clone(), idx);
-		c
-	})
-	.collect::<Vec<Candidate<T::AccountId>>>();
+		.filter_map(|(mut c, s)| {
+			c.approval_stake += to_votes(s);
+			if c.approval_stake.is_zero() {
+				None
+			} else {
+				Some((c, s))
+			}
+		})
+		.enumerate()
+		.map(|(idx, (c, s))| {
+			nominators.push(Nominator {
+				who: c.who.clone(),
+				edges: vec![ Edge { who: c.who.clone(), candidate_index: idx, ..Default::default() }],
+				budget: to_votes(s),
+				load: Fraction::zero(),
+			});
+			c_idx_cache.insert(c.who.clone(), idx);
+			c
+		})
+		.collect::<Vec<Candidate<T::AccountId>>>();
 
 	// 2- Collect the nominators with the associated votes.
 	// Also collect approval stake along the way.
@@ -179,7 +179,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 						// Note that left-associativity in operators precedence is crucially important here.
 						let temp =
 							n.budget.saturating_mul(SCALE_FACTOR) / c.approval_stake
-							* (*n.load / SCALE_FACTOR);
+								* (*n.load / SCALE_FACTOR);
 						c.score = Fraction::from_parts((*c.score).saturating_add(temp));
 					}
 				}
@@ -246,7 +246,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 					for i in 0..l {
 						assignment.1[i%l].1 =
 							assignment.1[i%l].1
-							.saturating_add(diff_per_vote);
+								.saturating_add(diff_per_vote);
 					}
 				}
 
@@ -256,7 +256,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 				for i in 0..remainder as usize {
 					assignment.1[i%l].1 =
 						assignment.1[i%l].1
-						.saturating_add(1);
+							.saturating_add(1);
 				}
 				assigned.push(assignment);
 			}
@@ -275,7 +275,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 ///
 /// No value is returned from the function and the `expo_map` parameter is updated.
 pub fn equalize<T: Trait + 'static>(
-	assignments: &mut Vec<(T::AccountId, BalanceOf<T>, Vec<Assignment<T>>)>,
+	assignments: &mut Vec<(T::AccountId, BalanceOf<T>, Vec<(T::AccountId, ExtendedBalance, ExtendedBalance)>)>,
 	expo_map: &mut ExpoMap<T>,
 	tolerance: ExtendedBalance,
 	iterations: usize,
@@ -297,19 +297,19 @@ pub fn equalize<T: Trait + 'static>(
 fn do_equalize<T: Trait + 'static>(
 	nominator: &T::AccountId,
 	budget_balance: BalanceOf<T>,
-	elected_edges_balance: &mut Vec<Assignment<T>>,
+	elected_edges: &mut Vec<(T::AccountId, ExtendedBalance, ExtendedBalance)>,
 	expo_map: &mut ExpoMap<T>,
 	tolerance: ExtendedBalance
 ) -> ExtendedBalance {
-	let to_votes = |b: BalanceOf<T>| <T::CurrencyToVote as Convert<BalanceOf<T>, u64>>::convert(b) as ExtendedBalance;
-	let to_balance = |v: ExtendedBalance| <T::CurrencyToVote as Convert<ExtendedBalance, BalanceOf<T>>>::convert(v);
+	let to_votes = |b: BalanceOf<T>|
+		<T::CurrencyToVote as Convert<BalanceOf<T>, u64>>::convert(b) as ExtendedBalance;
+	let to_balance = |v: ExtendedBalance|
+		<T::CurrencyToVote as Convert<ExtendedBalance, BalanceOf<T>>>::convert(v);
 	let budget = to_votes(budget_balance);
 
-	// Convert all stakes to extended. Result is Vec<(Acc, Ratio, Balance)>
-	let mut elected_edges = elected_edges_balance
-		.into_iter()
-		.map(|e| (e.0.clone(), e.1, to_votes(e.2)))
-		.collect::<Vec<(T::AccountId, ExtendedBalance, ExtendedBalance)>>();
+	// Nothing to do. This nominator had nothing useful.
+	// Defensive only. Assignment list should always be populated.
+	if elected_edges.is_empty() { return 0; }
 
 	let stake_used = elected_edges
 		.iter()
@@ -350,18 +350,20 @@ fn do_equalize<T: Trait + 'static>(
 	elected_edges.iter_mut().for_each(|e| {
 		if let Some(expo) = expo_map.get_mut(&e.0) {
 			expo.total = expo.total.saturating_sub(to_balance(e.2));
+			expo.others.retain(|i_expo| i_expo.who != *nominator);
 		}
 		e.2 = 0;
 	});
 
-	elected_edges.sort_unstable_by_key(|e| e.2);
+	elected_edges.sort_unstable_by_key(|e|
+		if let Some(e) = expo_map.get(&e.0) { e.total } else { Zero::zero() }
+	);
 
 	let mut cumulative_stake: ExtendedBalance = 0;
 	let mut last_index = elected_edges.len() - 1;
 	elected_edges.iter_mut().enumerate().for_each(|(idx, e)| {
 		if let Some(expo) = expo_map.get_mut(&e.0) {
 			let stake: ExtendedBalance = to_votes(expo.total);
-
 			let stake_mul = stake.saturating_mul(idx as ExtendedBalance);
 			let stake_sub = stake_mul.saturating_sub(cumulative_stake);
 			if stake_sub > budget {
@@ -383,14 +385,9 @@ fn do_equalize<T: Trait + 'static>(
 				.saturating_add(last_stake)
 				.saturating_sub(to_votes(expo.total));
 			expo.total = expo.total.saturating_add(to_balance(e.2));
-			if let Some(i_expo) = expo.others.iter_mut().find(|i| i.who == nominator.clone()) {
-				i_expo.value = to_balance(e.2);
-			}
+			expo.others.push(IndividualExposure { who: nominator.clone(), value: to_balance(e.2)});
 		}
 	});
-
-	// Store back the individual edge weights.
-	elected_edges.iter().enumerate().for_each(|(idx, e)| elected_edges_balance[idx].2 = to_balance(e.2));
 
 	difference
 }

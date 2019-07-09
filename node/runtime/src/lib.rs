@@ -234,8 +234,8 @@ parameter_types! {
 
 
 impl staking::Trait for Runtime {
-	type Currency = Balances;
-	type RewardCurrency = Kton;
+	type Currency = Kton;
+	type RewardCurrency = Balances;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = ();
 	type Event = Event;

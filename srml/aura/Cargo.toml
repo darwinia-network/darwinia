@@ -14,8 +14,8 @@ substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', de
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-#staking = { package = "evo-staking", path = "../staking", default-features = false }
-staking = {package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+staking = { package = "evo-staking", path = "../staking", default-features = false }
+#staking = {package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-consensus-aura-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false}
 
