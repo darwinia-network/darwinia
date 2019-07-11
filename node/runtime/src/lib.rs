@@ -94,10 +94,18 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 	}
 }
 
+pub struct MockTreasury;
+impl OnUnbalanced<NegativeImbalance> for MockTreasury {
+	fn on_unbalanced(amount: NegativeImbalance) {
+		Balances::resolve_creating(&Sudo::key(), amount);
+	}
+}
+
+
 pub type DealWithFees = SplitTwoWays<
 	Balance,
 	NegativeImbalance,
-	_4, Treasury,   // 4 parts (80%) goes to the treasury.
+	_4, MockTreasury,   // 4 parts (80%) goes to the treasury.
 	_1, Author,     // 1 part (20%) goes to the block author.
 >;
 
@@ -250,88 +258,6 @@ impl staking::Trait for Runtime {
 
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const EmergencyVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-	pub const CooloffPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-}
-
-impl democracy::Trait for Runtime {
-	type Proposal = Call;
-	type Event = Event;
-	type Currency = Balances;
-	type EnactmentPeriod = EnactmentPeriod;
-	type LaunchPeriod = LaunchPeriod;
-	type VotingPeriod = VotingPeriod;
-	type EmergencyVotingPeriod = EmergencyVotingPeriod;
-	type MinimumDeposit = MinimumDeposit;
-	type ExternalOrigin = council_motions::EnsureProportionAtLeast<_1, _2, AccountId>;
-	type ExternalMajorityOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
-	type EmergencyOrigin = council_motions::EnsureProportionAtLeast<_1, _1, AccountId>;
-	type CancellationOrigin = council_motions::EnsureProportionAtLeast<_2, _3, AccountId>;
-	type VetoOrigin = council_motions::EnsureMember<AccountId>;
-	type CooloffPeriod = CooloffPeriod;
-}
-
-parameter_types! {
-	pub const CandidacyBond: Balance = 10 * DOLLARS;
-	pub const VotingBond: Balance = 1 * DOLLARS;
-	pub const VotingFee: Balance = 2 * DOLLARS;
-	pub const PresentSlashPerVoter: Balance = 1 * CENTS;
-	pub const CarryCount: u32 = 6;
-	// one additional vote should go by before an inactive voter can be reaped.
-	pub const InactiveGracePeriod: VoteIndex = 1;
-	pub const CouncilVotingPeriod: BlockNumber = 2 * DAYS;
-	pub const DecayRatio: u32 = 0;
-}
-
-impl council::Trait for Runtime {
-	type Event = Event;
-	type BadPresentation = ();
-	type BadReaper = ();
-	type BadVoterIndex = ();
-	type LoserCandidate = ();
-	type OnMembersChanged = CouncilMotions;
-	type CandidacyBond = CandidacyBond;
-	type VotingBond = VotingBond;
-	type VotingFee = VotingFee;
-	type PresentSlashPerVoter = PresentSlashPerVoter;
-	type CarryCount = CarryCount;
-	type InactiveGracePeriod = InactiveGracePeriod;
-	type CouncilVotingPeriod = CouncilVotingPeriod;
-	type DecayRatio = DecayRatio;
-}
-
-impl council::motions::Trait for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-}
-
-parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
-	pub const SpendPeriod: BlockNumber = 1 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(50);
-}
-
-impl treasury::Trait for Runtime {
-	type Currency = Balances;
-	type ApproveOrigin = council_motions::EnsureMembers<_4, AccountId>;
-	type RejectOrigin = council_motions::EnsureMembers<_2, AccountId>;
-	type Event = Event;
-	type MintedForSpending = ();
-	type ProposalRejection = ();
-	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
-	type Burn = Burn;
-}
-
-
-parameter_types! {
 	pub const SignedClaimHandicap: BlockNumber = 2;
 	pub const TombstoneDeposit: Balance = 16;
 	pub const StorageSizeOffset: u32 = 8;
@@ -407,13 +333,8 @@ construct_runtime!(
 		Balances: balances,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Staking: staking::{default, OfflineWorker},
-		Democracy: democracy::{Module, Call, Storage, Config, Event<T>},
-		Council: council::{Module, Call, Storage, Event<T>},
-		CouncilMotions: council_motions::{Module, Call, Storage, Event<T>, Origin<T>},
-		CouncilSeats: council_seats::{Config<T>},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		Treasury: treasury::{Module, Call, Storage, Event<T>},
 		Contracts: contracts,
 		Sudo: sudo,
 		Kton: kton,

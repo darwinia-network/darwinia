@@ -65,7 +65,7 @@ pub struct BalanceLock<Balance, BlockNumber> {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct IndividualDeposit<Currency, Moment> {
-    pub month: Moment,
+    pub month: u32,
     pub start_at: Moment,
     pub value: Currency,
     pub claimed: bool,
@@ -182,8 +182,8 @@ decl_module! {
         fn deposit_event<T>() = default;
 
 
-        fn deposit(origin, value: CurrencyOf<T>, months: T::Moment) {
-            ensure!(!months.is_zero() && months <= 36.into(), "months must be at least 1");
+        fn deposit(origin, value: CurrencyOf<T>, months: u32) {
+            ensure!(!months.is_zero() && months <= 36, "months must be at least 1");
             let transactor = ensure_signed(origin)?;
             if <DepositLedger<T>>::exists(&transactor) {
                 return Err("Already deposited.");
@@ -194,7 +194,7 @@ decl_module! {
 
             let now = <timestamp::Module<T>>::now();
 
-            let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now.clone(), value: value, claimed: false};
+            let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: value, claimed: false};
             let deposit = Deposit {total: value, deposit_list: vec![individual_deposit]};
 
             Self::update_deposit(&transactor, &deposit);
@@ -206,8 +206,8 @@ decl_module! {
         }
 
 
-        fn deposit_extra(origin, additional_value: CurrencyOf<T>, months: T::Moment) {
-             ensure!(!months.is_zero() && months <= 36.into(), "months must be at least 1");
+        fn deposit_extra(origin, additional_value: CurrencyOf<T>, months: u32) {
+             ensure!(!months.is_zero() && months <= 36, "months must be at least 1");
              let transactor = ensure_signed(origin)?;
              let mut deposit = Self::deposit_ledger(&transactor).ok_or("Use fn deposit instead.")?;
 
@@ -217,7 +217,7 @@ decl_module! {
              if let Some(extra) = free_currency.checked_sub(&deposit.total) {
                  let extra = extra.min(additional_value);
                  deposit.total += extra;
-                 let individual_deposit = IndividualDeposit {month: months.clone(), start_at: now.clone(), value: extra.clone(), claimed: false};
+                 let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: extra.clone(), claimed: false};
                  deposit.deposit_list.push(individual_deposit);
                  Self::update_deposit(&transactor, &deposit);
 
@@ -278,12 +278,12 @@ impl<T: Trait> Module<T> {
         additional_reward_paid_out
     }
 
-    fn compute_kton_balance(months: T::Moment, value: CurrencyOf<T>) -> Option<T::Balance> {
-        let months = months.try_into().unwrap_or_default() as u64;
+    fn compute_kton_balance(months: u32, value: CurrencyOf<T>) -> Option<T::Balance> {
+        let months = months as u64;
         let value = value.try_into().unwrap_or_default() as u64;
 
         if !months.is_zero() {
-            let no = U256::from(67_u128).pow(U256::from(months.clone()));
+            let no = U256::from(67_u128).pow(U256::from(months));
             let de = U256::from(66_u128).pow(U256::from(months));
 
             let quotient = no / de;

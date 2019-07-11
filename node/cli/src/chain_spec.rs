@@ -20,8 +20,8 @@ use grandpa::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_primitives::{AccountId, AuraId, Balance};
 use node_runtime::{
-    AuraConfig, BalancesConfig, ContractsConfig, CouncilSeatsConfig, DAYS,
-    DemocracyConfig, DOLLARS, GrandpaConfig, IndicesConfig, MILLICENTS,
+    AuraConfig, BalancesConfig, ContractsConfig, DAYS,
+    DOLLARS, GrandpaConfig, IndicesConfig, MILLICENTS,
     Perbill, SECS_PER_BLOCK, KtonConfig,
     SessionConfig, SessionKeys, StakerStatus,
     StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
@@ -136,13 +136,6 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
             minimum_validator_count: 4,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-        }),
-        democracy: Some(DemocracyConfig::default()),
-        council_seats: Some(CouncilSeatsConfig {
-            active_council: vec![],
-            presentation_duration: 1 * DAYS,
-            term_duration: 28 * DAYS,
-            desired_seats: 0,
         }),
         timestamp: Some(TimestampConfig {
             minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
@@ -273,15 +266,6 @@ pub fn testnet_genesis(
             offline_slash_grace: 0,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-        }),
-        democracy: Some(DemocracyConfig::default()),
-        council_seats: Some(CouncilSeatsConfig {
-            active_council: endowed_accounts.iter()
-                .filter(|&endowed| initial_authorities.iter().find(|&(_, controller, ..)| controller == endowed).is_none())
-                .map(|a| (a.clone(), 1000000)).collect(),
-            presentation_duration: 10,
-            term_duration: 1000000,
-            desired_seats: council_desired_seats,
         }),
         timestamp: Some(TimestampConfig {
             minimum_period: 2,                    // 2*2=4 second block time.
