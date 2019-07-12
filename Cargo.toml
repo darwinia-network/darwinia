@@ -56,7 +56,7 @@ members = [
     "node/runtime",
     "node/rpc-client",
     "srml/staking",
-    "srml/token/kton",
+    "srml/kton",
     "srml/support",
     "srml/aura",
 	"srml/try",

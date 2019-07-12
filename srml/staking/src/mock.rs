@@ -78,11 +78,15 @@ impl balances::Trait for Test {
     type TransactionPayment = ();
     type TransferPayment = ();
     type DustRemoval = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type TransferFee = TransferFee;
+    type CreationFee = CreationFee;
+    type TransactionBaseFee = TransactionBaseFee;
+    type TransactionByteFee = TransactionByteFee;
 }
-
 impl kton::Trait for Test {
     type Balance = Balance;
-    type Currency = Ring;
+    type Currency = Balances;
     type Event = ();
     type OnMinted = ();
     type OnRemoval = ();
@@ -119,7 +123,7 @@ parameter_types! {
 
 impl Trait for Test {
     type Currency = Kton;
-    type RewardCurrency = Ring;
+    type RewardCurrency = Balances;
     type CurrencyToVote = CurrencyToVoteHandler;
     type OnRewardMinted = ();
     type Event = ();
@@ -200,7 +204,7 @@ impl ExtBuilder {
             validators,
             keys: vec![],
         }.assimilate_storage(&mut t, &mut c);
-        let _ = ring::GenesisConfig::<Test>{
+        let _ = balances::GenesisConfig::<Test>{
             balances: vec![
                 (1, 10 * balance_factor),
                 (2, 20 * balance_factor),
@@ -217,11 +221,6 @@ impl ExtBuilder {
                 (100, 2000 * balance_factor),
                 (101, 2000 * balance_factor),
             ],
-            transaction_base_fee: 0,
-            transaction_byte_fee: 0,
-            existential_deposit: self.existential_deposit,
-            transfer_fee: 0,
-            creation_fee: 0,
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test>{
@@ -288,7 +287,7 @@ impl ExtBuilder {
 }
 
 pub type System = system::Module<Test>;
-pub type Ring = ring::Module<Test>;
+pub type Balances = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
@@ -311,7 +310,7 @@ pub fn assert_total_expo(acc: u64, val: u64) {
 pub fn bond_validator(acc: u64, val: u64) {
     // a = controller
     // a + 1 = stash
-    let _ = Ring::make_free_balance_be(&(acc+1), val);
+    let _ = Balances::make_free_balance_be(&(acc+1), val);
     assert_ok!(Staking::bond(Origin::signed(acc+1), acc, val, RewardDestination::Controller));
     assert_ok!(Staking::validate(Origin::signed(acc), ValidatorPrefs::default()));
 }
@@ -319,7 +318,7 @@ pub fn bond_validator(acc: u64, val: u64) {
 pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
     // a = controller
     // a + 1 = stash
-    let _ = Ring::make_free_balance_be(&(acc+1), val);
+    let _ = Balances::make_free_balance_be(&(acc+1), val);
     assert_ok!(Staking::bond(Origin::signed(acc+1), acc, val, RewardDestination::Controller));
     assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }

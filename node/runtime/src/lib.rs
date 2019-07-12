@@ -40,9 +40,7 @@ use runtime_primitives::traits::{
 	BlakeTwo256, Block as BlockT, DigestFor, NumberFor, StaticLookup, Convert,
 };
 use version::RuntimeVersion;
-use council::{motions as council_motions, VoteIndex};
-#[cfg(feature = "std")]
-use council::seats as council_seats;
+
 #[cfg(any(feature = "std", test))]
 use version::NativeVersion;
 use substrate_primitives::OpaqueMetadata;
@@ -80,9 +78,10 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-pub const MILLICENTS: Balance = 1_000_000_000;
-pub const CENTS: Balance = 1_000 * MILLICENTS;    // assume this is worth about a cent.
-pub const DOLLARS: Balance = 100 * CENTS;
+pub const NANO: Balance = 1;
+pub const MICRO: Balance = 1_000 * NANO;
+pub const MILLI: Balance = 1_000 * MICRO;
+pub const COIN: Balance = 1_000 * MILLI;
 
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
@@ -183,11 +182,11 @@ impl timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * DOLLARS;
-	pub const TransferFee: Balance = 1 * CENTS;
-	pub const CreationFee: Balance = 1 * CENTS;
-	pub const TransactionBaseFee: Balance = 1 * CENTS;
-	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
+	pub const ExistentialDeposit: Balance = 1 * MILLI;
+	pub const TransferFee: Balance = 1 * MILLI;
+	pub const CreationFee: Balance = 1 * MILLI;
+	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionByteFee: Balance = 10 * NANO;
 }
 
 parameter_types! {
@@ -264,11 +263,11 @@ parameter_types! {
 	pub const RentByteFee: Balance = 4;
 	pub const RentDepositOffset: Balance = 1000;
 	pub const SurchargeReward: Balance = 150;
-	pub const ContractTransferFee: Balance = 1 * CENTS;
-	pub const ContractCreationFee: Balance = 1 * CENTS;
-	pub const ContractTransactionBaseFee: Balance = 1 * CENTS;
-	pub const ContractTransactionByteFee: Balance = 10 * MILLICENTS;
-	pub const ContractFee: Balance = 1 * CENTS;
+	pub const ContractTransferFee: Balance = 1 * MILLI;
+	pub const ContractCreationFee: Balance = 1 * MILLI;
+	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
+	pub const ContractTransactionByteFee: Balance = 10 * NANO;
+	pub const ContractFee: Balance = 1 * MILLI;
 	pub const CallBaseFee: Gas = 1000;
 	pub const CreateBaseFee: Gas = 1000;
 	pub const MaxDepth: u32 = 1024;

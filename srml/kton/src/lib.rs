@@ -27,7 +27,7 @@ mod mock;
 mod tests;
 
 const DEPOSIT_ID: LockIdentifier = *b"lockkton";
-const DECIMALS: u64 = 1000000000;
+
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq)]
@@ -64,18 +64,19 @@ pub struct BalanceLock<Balance, BlockNumber> {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct IndividualDeposit<Currency, Moment> {
+pub struct IndividualDeposit<Currency, Balance, Moment> {
     pub month: u32,
     pub start_at: Moment,
     pub value: Currency,
+    pub balance: Balance,
     pub claimed: bool,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Deposit<Currency, Moment> {
+pub struct Deposit<Currency, Balance, Moment> {
     pub total: Currency,
-    pub deposit_list: Vec<IndividualDeposit<Currency, Moment>>,
+    pub deposit_list: Vec<IndividualDeposit<Currency, Balance, Moment>>,
 }
 
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
@@ -121,7 +122,7 @@ decl_event!(
 decl_storage! {
 	trait Store for Module<T: Trait> as Kton {
 
-	    pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<CurrencyOf<T>, T::Moment>>;
+	    pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<CurrencyOf<T>, T::Balance, T::Moment>>;
 
 		// reward you can get per kton
 		pub RewardPerShare get(reward_per_share): CurrencyOf<T>;
@@ -194,12 +195,13 @@ decl_module! {
 
             let now = <timestamp::Module<T>>::now();
 
-            let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: value, claimed: false};
+            let kton_return = Self::compute_kton_balance(months, value).unwrap();
+
+            let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: value, balance: kton_return, claimed: false};
             let deposit = Deposit {total: value, deposit_list: vec![individual_deposit]};
 
             Self::update_deposit(&transactor, &deposit);
 
-            let kton_return = Self::compute_kton_balance(months, value).unwrap();
             let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
             T::OnMinted::on_unbalanced(positive_imbalance);
             Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, value));
@@ -217,11 +219,12 @@ decl_module! {
              if let Some(extra) = free_currency.checked_sub(&deposit.total) {
                  let extra = extra.min(additional_value);
                  deposit.total += extra;
-                 let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: extra.clone(), claimed: false};
+
+                 let kton_return = Self::compute_kton_balance(months, extra).unwrap();
+                 let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: extra.clone(), balance: kton_return, claimed: false};
                  deposit.deposit_list.push(individual_deposit);
                  Self::update_deposit(&transactor, &deposit);
 
-                 let kton_return = Self::compute_kton_balance(months, extra).unwrap();
                  let positive_imbalance = Self::deposit_creating(&transactor, kton_return);
                  T::OnMinted::on_unbalanced(positive_imbalance);
                  Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, extra));
@@ -259,7 +262,7 @@ decl_module! {
 
 impl<T: Trait> Module<T> {
 
-    fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Moment>) {
+    fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Balance, T::Moment>) {
         T::Currency::set_lock(
             DEPOSIT_ID,
             &who,
@@ -284,7 +287,7 @@ impl<T: Trait> Module<T> {
 
         if !months.is_zero() {
             let no = U256::from(67_u128).pow(U256::from(months));
-            let de = U256::from(66_u128).pow(U256::from(months));
+            let de = U256::from(66_u128). pow(U256::from(months));
 
             let quotient = no / de;
             let remainder = no % de;
@@ -412,14 +415,17 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         };
 
         if transactor != dest {
-            Self::set_free_balance(transactor, new_from_balance);
-            Self::set_free_balance(dest, new_to_balance);
             // settle transactor reward
-            let from_should_withdraw = Self::reward_can_withdraw(transactor);
+            let from_should_withdraw = Self::convert_to_paid_out(value);
+            #[cfg(test)]
+            runtime_io::print(from_should_withdraw.try_into().unwrap_or_default() as u64);
             Self::update_reward_paid_out(transactor, from_should_withdraw, true);
             // settle dest reward
-            let to_should_not_withdraw = Self::convert_to_paid_out(value);
-            Self::update_reward_paid_out(dest, to_should_not_withdraw, false);
+            Self::update_reward_paid_out(dest, from_should_withdraw, false);
+
+            Self::set_free_balance(transactor, new_from_balance);
+            Self::set_free_balance(dest, new_to_balance);
+
             Self::deposit_event(RawEvent:: TokenTransfer(transactor.clone(), dest.clone(), value));
         }
 

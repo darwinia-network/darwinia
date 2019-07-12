@@ -21,7 +21,7 @@ use hex_literal::hex;
 use node_primitives::{AccountId, AuraId, Balance};
 use node_runtime::{
     AuraConfig, BalancesConfig, ContractsConfig, DAYS,
-    DOLLARS, GrandpaConfig, IndicesConfig, MILLICENTS,
+    RING, GrandpaConfig, IndicesConfig, MILLI,
     Perbill, SECS_PER_BLOCK, KtonConfig,
     SessionConfig, SessionKeys, StakerStatus,
     StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
@@ -93,8 +93,8 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         hex!["9ee5e5bdc0ec239eb164f865ecc345ce4c88e76ee002e0f7e318097347471809"].unchecked_into(),
     ];
 
-    const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
-    const STASH: Balance = 100 * DOLLARS;
+    const ENDOWMENT: Balance = 10_000_000 * RING;
+    const STASH: Balance = 100 * RING;
 
     GenesisConfig {
         system: Some(SystemConfig {
@@ -142,7 +142,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         }),
         contracts: Some(ContractsConfig {
             current_schedule: Default::default(),
-            gas_price: 1 * MILLICENTS,
+            gas_price: 1 * MILLI,
         }),
         sudo: Some(SudoConfig {
             key: endowed_accounts[0].clone(),
@@ -226,10 +226,8 @@ pub fn testnet_genesis(
         ]
     });
 
-    const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
-    const STASH: Balance = 100 * DOLLARS;
-
-    let council_desired_seats = (endowed_accounts.len() / 2 - initial_authorities.len()) as u32;
+    const ENDOWMENT: Balance = 10_000_000 * RING;
+    const STASH: Balance = 100 * RING;
 
     GenesisConfig {
         system: Some(SystemConfig {
@@ -259,11 +257,11 @@ pub fn testnet_genesis(
             current_era: 0,
             current_era_total_reward: 0,
             minimum_validator_count: 1,
-            validator_count: 2,
+            validator_count: 3,
             offline_slash: Perbill::zero(),
             session_reward: Perbill::zero(),
             current_session_reward: 0,
-            offline_slash_grace: 0,
+            offline_slash_grace: 2,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
@@ -275,7 +273,7 @@ pub fn testnet_genesis(
                 enable_println, // this should only be enabled on development chains
                 ..Default::default()
             },
-            gas_price: 1 * MILLICENTS,
+            gas_price: 1 * MILLI,
         }),
         sudo: Some(SudoConfig {
             key: root_key,

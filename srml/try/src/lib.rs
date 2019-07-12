@@ -47,8 +47,8 @@ decl_module! {
 		pub fn do_something(origin, something: u32) -> Result {
 			let who = ensure_signed(origin)?;
 
-			<Something<T>>::put(something);
-			<SomeOption<T>>::put(something);
+			Something::put(something);
+			SomeOption::put(something);
 
 			// here we are raising the Something event
 			Self::deposit_event(RawEvent::SomethingStored(something, who));
@@ -68,7 +68,7 @@ decl_module! {
 		    let mut list = Self::list(1);
 		    if is_add {
 		        list.push(value);
-		        <List<T>>::insert(1, list);
+		        List::insert(1, list);
 		    } else {
 		        list.remove(value as usize);
 		    }

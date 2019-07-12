@@ -7,6 +7,7 @@ use substrate_primitives::{H256, Blake2Hasher};
 use srml_support::{ impl_outer_origin, traits::Get };
 use crate::{GenesisConfig, Module, Trait};
 use std::cell::RefCell;
+use node_runtime::COIN;
 use super::*;
 
 impl_outer_origin!{
@@ -14,38 +15,37 @@ impl_outer_origin!{
 }
 
 thread_local! {
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
-	static TRANSFER_FEE: RefCell<u64> = RefCell::new(0);
-	static CREATION_FEE: RefCell<u64> = RefCell::new(0);
-	static TRANSACTION_BASE_FEE: RefCell<u64> = RefCell::new(0);
-	static TRANSACTION_BYTE_FEE: RefCell<u64> = RefCell::new(0);
+	static EXISTENTIAL_DEPOSIT: RefCell<u128> = RefCell::new(0);
+	static TRANSFER_FEE: RefCell<u128> = RefCell::new(0);
+	static CREATION_FEE: RefCell<u128> = RefCell::new(0);
+	static TRANSACTION_BASE_FEE: RefCell<u128> = RefCell::new(0);
+	static TRANSACTION_BYTE_FEE: RefCell<u128> = RefCell::new(0);
 }
 
-pub const DECIMALS: u64 = 1000_000_000;
 
 pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-    fn get() -> u64 { EXISTENTIAL_DEPOSIT.with(|v| *v.borrow()) }
+impl Get<u128> for ExistentialDeposit {
+    fn get() -> u128 { EXISTENTIAL_DEPOSIT.with(|v| *v.borrow()) }
 }
 
 pub struct TransferFee;
-impl Get<u64> for TransferFee {
-    fn get() -> u64 { TRANSFER_FEE.with(|v| *v.borrow()) }
+impl Get<u128> for TransferFee {
+    fn get() -> u128 { TRANSFER_FEE.with(|v| *v.borrow()) }
 }
 
 pub struct CreationFee;
-impl Get<u64> for CreationFee {
-    fn get() -> u64 { CREATION_FEE.with(|v| *v.borrow()) }
+impl Get<u128> for CreationFee {
+    fn get() -> u128 { CREATION_FEE.with(|v| *v.borrow()) }
 }
 
 pub struct TransactionBaseFee;
-impl Get<u64> for TransactionBaseFee {
-    fn get() -> u64 { TRANSACTION_BASE_FEE.with(|v| *v.borrow()) }
+impl Get<u128> for TransactionBaseFee {
+    fn get() -> u128 { TRANSACTION_BASE_FEE.with(|v| *v.borrow()) }
 }
 
 pub struct TransactionByteFee;
-impl Get<u64> for TransactionByteFee {
-    fn get() -> u64 { TRANSACTION_BYTE_FEE.with(|v| *v.borrow()) }
+impl Get<u128> for TransactionByteFee {
+    fn get() -> u128 { TRANSACTION_BYTE_FEE.with(|v| *v.borrow()) }
 }
 
 
@@ -71,7 +71,7 @@ impl timestamp::Trait for Test {
 
 
 impl balances::Trait for Test {
-    type Balance = u64;
+    type Balance = u128;
     type OnFreeBalanceZero = ();
     type OnNewAccount = ();
     type Event = ();
@@ -86,7 +86,7 @@ impl balances::Trait for Test {
 }
 
 impl Trait for Test {
-    type Balance = u64;
+    type Balance = u128;
     type Currency = balances::Module<Self>;
     type Event = ();
     type OnMinted = ();
@@ -95,11 +95,11 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder {
-    transaction_base_fee: u64,
-    transaction_byte_fee: u64,
-    existential_deposit: u64,
-    transfer_fee: u64,
-    creation_fee: u64,
+    transaction_base_fee: u128,
+    transaction_byte_fee: u128,
+    existential_deposit: u128,
+    transfer_fee: u128,
+    creation_fee: u128,
     sys_acc: u64,
 }
 
@@ -118,21 +118,21 @@ impl Default for ExtBuilder {
 
 
 impl ExtBuilder {
-    pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
+    pub fn existential_deposit(mut self, existential_deposit: u128) -> Self {
         self.existential_deposit = existential_deposit;
         self
     }
 
     #[allow(dead_code)]
-    pub fn transfer_fee(mut self, transfer_fee: u64) -> Self {
+    pub fn transfer_fee(mut self, transfer_fee: u128) -> Self {
         self.transfer_fee = transfer_fee;
         self
     }
-    pub fn creation_fee(mut self, creation_fee: u64) -> Self {
+    pub fn creation_fee(mut self, creation_fee: u128) -> Self {
         self.creation_fee = creation_fee;
         self
     }
-    pub fn transaction_fees(mut self, base_fee: u64, byte_fee: u64) -> Self {
+    pub fn transaction_fees(mut self, base_fee: u128, byte_fee: u128) -> Self {
         self.transaction_base_fee = base_fee;
         self.transaction_byte_fee = byte_fee;
         self
@@ -151,9 +151,9 @@ impl ExtBuilder {
         self.set_associated_consts();
         let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
         let balance_factor = if self.existential_deposit > 0 {
-            1000 * DECIMALS
+            1000 * COIN
         } else {
-            1 * DECIMALS
+            1 * COIN
         };
 
         let _ = timestamp::GenesisConfig::<Test> {
@@ -182,9 +182,7 @@ impl ExtBuilder {
 
         let _ = GenesisConfig::<Test> {
             sys_acc: 42,
-            balances: vec![
-                (1, 10 * balance_factor),
-            ],
+            balances: vec![],
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 

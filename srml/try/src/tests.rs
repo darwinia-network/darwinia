@@ -57,9 +57,8 @@ type System = system::Module<Test>;
 type Try = Module<Test>;
 
 fn new_test_ext() -> sr_io::TestExternalities<Blake2Hasher> {
-	let mut t = system::GenesisConfig::<Test>::default().build_storage().unwrap().0;
-	t.extend(GenesisConfig::<Test> {
-		_genesis_phantom_data: Default::default(),
+	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap().0;
+	t.extend(GenesisConfig {
 		someoption: 42,
 	}.build_storage().unwrap().0);
 	t.into()

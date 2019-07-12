@@ -20,7 +20,8 @@ dsupport = { package = "evo-support", path = "../support", default-features = fa
 [dev-dependencies]
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
-kton = { package = "evo-kton", path = "../token/kton" }
+balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
+kton = { package = "evo-kton", path = "../kton" }
 rand = "0.6.5"
 
 [features]

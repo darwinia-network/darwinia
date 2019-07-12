@@ -218,7 +218,7 @@ mod tests {
 	use consensus::CompatibleDigestItem;
 	use consensus_common::{Environment, Proposer, ImportBlock, BlockOrigin, ForkChoiceStrategy};
 	use node_primitives::DigestItem;
-	use node_runtime::{BalancesCall, Call, CENTS, UncheckedExtrinsic};
+	use node_runtime::{BalancesCall, Call, RING, UncheckedExtrinsic};
 	use parity_codec::{Compact, Encode, Decode};
 	use primitives::{
 		crypto::Pair as CryptoPair, ed25519::Pair, blake2_256,
@@ -350,7 +350,7 @@ mod tests {
 
 		let mut index = 0;
 		let extrinsic_factory = |service: &SyncService<<Factory as ServiceFactory>::FullService>| {
-			let amount = 5 * CENTS;
+			let amount = 5 * RING;
 			let to = AddressPublic::from_raw(bob.public().0);
 			let from = AddressPublic::from_raw(charlie.public().0);
 			let genesis_hash = service.get().client().block_hash(0).unwrap().unwrap();
