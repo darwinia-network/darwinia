@@ -240,8 +240,8 @@ decl_module! {
 			let dest = T::Lookup::lookup(dest)?;
 
             <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
-
         }
+
 
         pub fn claim_reward(origin) {
             let transactor = ensure_signed(origin)?;
@@ -252,8 +252,6 @@ decl_module! {
                 Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
         }
-
-
     }
 
 
@@ -508,11 +506,14 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
         let imbalance = if original <= balance {
             // update reward paid out
-            let additional_reward_paid_out = Self::convert_to_paid_out(balance);
+            let additional_reward_paid_out = Self::convert_to_paid_out(balance - original);
             Self::update_reward_paid_out(who, additional_reward_paid_out, false);
 
             SignedImbalance::Positive(PositiveImbalance::new(balance - original))
         } else {
+            // update reward paid out
+            let additional_reward_paid_out = Self::convert_to_paid_out(original - balance);
+            Self::update_reward_paid_out(who, additional_reward_paid_out, true);
             SignedImbalance::Negative(NegativeImbalance::new(original - balance))
         };
 
