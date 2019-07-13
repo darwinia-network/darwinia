@@ -1,11 +1,12 @@
 #![cfg(test)]
 
 use balances::BalanceLock;
-use mock::{ExtBuilder, Kton, Origin, Ring, System, Test, Timestamp};
 use runtime_io::with_externalities;
 use srml_support::{assert_err, assert_noop, assert_ok};
-use srml_support::traits::{Currency, Imbalance};
-use node_runtime::{ MILLI, COIN };
+use srml_support::traits::{Currency, ExistenceRequirement, Imbalance, WithdrawReason, WithdrawReasons};
+
+use mock::{ExtBuilder, Kton, Origin, Ring, System, Test, Timestamp};
+use node_runtime::{COIN, MILLI};
 
 use super::*;
 
@@ -84,7 +85,6 @@ fn reward_per_share_not_zero() {
 
     Kton::reward_to_pot(6000 * COIN);
     assert_eq!(Kton::reward_per_share(), 3000);
-
 }
 
 #[test]
@@ -108,7 +108,6 @@ fn reward_per_share_should_work() {
         // there is no system revenue
         // so acc 93 should withdraw 0
         assert_eq!(Kton::reward_can_withdraw(&93), 0);
-
     });
 }
 
@@ -149,13 +148,11 @@ fn transfer_should_work() {
         assert_eq!(Kton::free_balance(&94), 1 * COIN);
         assert_eq!(Kton::reward_can_withdraw(&93), 1000 * COIN);
         assert_eq!(Kton::reward_can_withdraw(&94), 0);
-
     });
 }
 
 #[test]
 fn withdraw_reward_should_work() {
-
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(MILLI).build(), || {
         // reward_per_share 3000
@@ -205,8 +202,113 @@ fn make_free_balance_be_should_work() {
         assert_eq!(Kton::reward_paid_out(&91), -3000 * COIN as i128);
         assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
         assert_eq!(Kton::total_issuance(), old_total_issuance - 1 * COIN);
-
     });
 }
 
+#[test]
+fn withdraw_in_currency_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(MILLI).build(), || {
+        // reward_per_share 3000
+        // acc 91 and 92 have 1 kton
+        reward_per_share_not_zero();
 
+        // before:
+        // acc 91 has 1 kton and 3k reward_paid_out
+        // after:
+        // acc 91 has 0 kton and 3k rewrd_paid_out
+        // total_issuance - 1
+        let old_total_issuance = Kton::total_issuance();
+        assert_eq!(Kton::reward_paid_out(&91), 0 as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+
+        Kton::withdraw(&91, 1 * COIN, WithdrawReason::Fee, ExistenceRequirement::KeepAlive);
+        assert_eq!(Kton::free_balance(&91), 0);
+        assert_eq!(Kton::reward_paid_out(&91), -3000 * COIN as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+        assert_eq!(Kton::total_issuance(), old_total_issuance - 1 * COIN);
+    });
+}
+
+#[test]
+fn slash_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(MILLI).build(), || {
+        // reward_per_share 3000
+        // acc 91 and 92 have 1 kton
+        reward_per_share_not_zero();
+
+        // before:
+        // acc 91 has 1 kton and 3k reward_paid_out
+        // after:
+        // acc 91 has 0 kton and 3k rewrd_paid_out
+        // total_issuance - 1
+        let old_total_issuance = Kton::total_issuance();
+        assert_eq!(Kton::reward_paid_out(&91), 0 as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+
+        Kton::slash(&91, 1 * COIN);
+        assert_eq!(Kton::free_balance(&91), 0);
+        assert_eq!(Kton::reward_paid_out(&91), -3000 * COIN as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+        assert_eq!(Kton::total_issuance(), old_total_issuance - 1 * COIN);
+    });
+}
+
+#[test]
+fn deposit_into_existing_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(MILLI).build(), || {
+        // reward_per_share 3000
+        // acc 91 and 92 have 1 kton
+        reward_per_share_not_zero();
+
+        // acc 94 should fail because it does not exist
+        Kton::deposit_into_existing(&94, 1 * COIN);
+        assert_eq!(Kton::free_balance(&94), 0);
+
+        // before:
+        // acc 91 has 1 kton and 0 reward_paid_out
+        // acc 91 can_withdraw 3k ring as reward
+        // after:
+        // acc 91 has 2 kton and 3k reward_paid_out
+        // acc 91 can_withdraw 3k ring as reward
+        // total_issuance + 1
+        let old_total_issuance = Kton::total_issuance();
+        assert_eq!(Kton::free_balance(&91), 1 * COIN);
+        assert_eq!(Kton::reward_paid_out(&91), 0 as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+        Kton::deposit_into_existing(&91, 1 * COIN);
+        assert_eq!(Kton::free_balance(&91), 2 * COIN);
+        assert_eq!(Kton::reward_paid_out(&91), 3000 * COIN as i128);
+        assert_eq!(Kton::reward_can_withdraw(&91), 3000 * COIN);
+        assert_eq!(Kton::total_issuance(), old_total_issuance + 1 * COIN);
+    });
+}
+
+#[test]
+fn deposit_creating_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(MILLI).build(), || {
+        // reward_per_share 3000
+        // acc 91 and 92 have 1 kton
+        reward_per_share_not_zero();
+
+        // before:
+        // acc 94 has 0 kton and 0 reward_paid_out
+        // acc 94 can_withdraw 0 ring as reward
+        // after:
+        // acc 94 has 1 kton and 3k reward_paid_out
+        // acc 94 can_withdraw 0 ring as reward
+        // total_issuance + 1
+        let old_total_issuance = Kton::total_issuance();
+        assert_eq!(Kton::free_balance(&94), 0);
+        assert_eq!(Kton::reward_paid_out(&94), 0 as i128);
+        assert_eq!(Kton::reward_can_withdraw(&94), 0);
+        Kton::deposit_creating(&94, 1 * COIN);
+        assert_eq!(Kton::free_balance(&94), 1 * COIN);
+        assert_eq!(Kton::reward_paid_out(&94), 3000 * COIN as i128);
+        assert_eq!(Kton::reward_can_withdraw(&94), 0);
+        assert_eq!(Kton::total_issuance(), old_total_issuance + 1 * COIN);
+    });
+}

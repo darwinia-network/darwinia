@@ -309,7 +309,7 @@ impl<T: Trait> Module<T> {
 
 
     // PRIVATE MUTABLE
-    // NOTE: different from balacnes module
+    // NOTE: different from balances module
     fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
         //TODO: check the value of balance, but no ensure!(...)
         <FreeBalance<T>>::insert(who, balance);
@@ -441,6 +441,9 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
                 return Err("payment would kill account")
             }
+            let additional_reward_paid_out = Self::convert_to_paid_out(value);
+            Self::update_reward_paid_out(who, additional_reward_paid_out, true);
+
             Self::ensure_can_withdraw(who, value, reason, new_balance)?;
             Self::set_free_balance(who, new_balance);
             Ok(NegativeImbalance::new(value))
@@ -457,6 +460,10 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);
+
+        let additional_reward_paid_out = Self::convert_to_paid_out(free_slash);
+        Self::update_reward_paid_out(who, additional_reward_paid_out, true);
+
         Self::set_free_balance(who, free_balance - free_slash);
         let remaining_slash = value - free_slash;
 
@@ -525,6 +532,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         (imbalance, outcome)
     }
 
+    // TODO: ready for hacking
     fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
         <TotalIssuance<T>>::mutate(|issued|
             issued.checked_sub(&amount).unwrap_or_else(|| {
@@ -535,7 +543,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         PositiveImbalance::new(amount)
     }
 
-
+    // TODO: ready for hacking
     fn issue(mut amount: Self::Balance) -> Self::NegativeImbalance {
         <TotalIssuance<T>>::mutate(|issued|
             *issued = issued.checked_add(&amount).unwrap_or_else(|| {
