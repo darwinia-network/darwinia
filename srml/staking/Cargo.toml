@@ -23,6 +23,7 @@ timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/s
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 kton = { package = "evo-kton", path = "../kton" }
 rand = "0.6.5"
+node-runtime = { path = "../../node/runtime" }
 
 [features]
 equalize = []

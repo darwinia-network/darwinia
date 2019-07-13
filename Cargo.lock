@@ -752,6 +752,7 @@ version = "0.1.0"
 dependencies = [
  "evo-kton 0.1.0",
  "evo-support 0.1.0",
+ "node-runtime 0.1.0",
  "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",

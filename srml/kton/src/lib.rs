@@ -183,7 +183,7 @@ decl_module! {
         fn deposit_event<T>() = default;
 
 
-        fn deposit(origin, value: CurrencyOf<T>, months: u32) {
+        pub fn deposit(origin, value: CurrencyOf<T>, months: u32) {
             ensure!(!months.is_zero() && months <= 36, "months must be at least 1");
             let transactor = ensure_signed(origin)?;
             if <DepositLedger<T>>::exists(&transactor) {
