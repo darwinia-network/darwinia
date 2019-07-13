@@ -21,7 +21,7 @@ use hex_literal::hex;
 use node_primitives::{AccountId, AuraId, Balance};
 use node_runtime::{
     AuraConfig, BalancesConfig, ContractsConfig, DAYS,
-    RING, GrandpaConfig, IndicesConfig, MILLI,
+    COIN, GrandpaConfig, IndicesConfig, MILLI,
     Perbill, SECS_PER_BLOCK, KtonConfig,
     SessionConfig, SessionKeys, StakerStatus,
     StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
@@ -93,8 +93,8 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         hex!["9ee5e5bdc0ec239eb164f865ecc345ce4c88e76ee002e0f7e318097347471809"].unchecked_into(),
     ];
 
-    const ENDOWMENT: Balance = 10_000_000 * RING;
-    const STASH: Balance = 100 * RING;
+    const ENDOWMENT: Balance = 10_000_000 * COIN;
+    const STASH: Balance = 100 * COIN;
 
     GenesisConfig {
         system: Some(SystemConfig {
@@ -226,8 +226,8 @@ pub fn testnet_genesis(
         ]
     });
 
-    const ENDOWMENT: Balance = 10_000_000 * RING;
-    const STASH: Balance = 100 * RING;
+    const ENDOWMENT: Balance = 10_000_000 * COIN;
+    const STASH: Balance = 100 * COIN;
 
     GenesisConfig {
         system: Some(SystemConfig {
