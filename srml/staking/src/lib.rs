@@ -337,6 +337,8 @@ decl_storage! {
 		pub ForceNewEra get(forcing_new_era): bool;
 
 		pub EpochIndex get(epoch_index): T::BlockNumber = 0.into();
+
+		pub ShouldOffline get(should_offline): Vec<T::AccountId>;
 	}
 	add_extra_genesis {
 		config(stakers):
@@ -597,12 +599,24 @@ impl<T: Trait> Module<T> {
     /// balance by preference, and reduces the nominators' balance if needed.
     fn slash_validator(stash: &T::AccountId, slash: BalanceOf<T>) {
         // The exposure (backing stake) information of the validator to be slashed.
-        let exposure = Self::stakers(stash);
+        let mut exposure = Self::stakers(stash);
         // The amount we are actually going to slash (can't be bigger than the validator's total
         // exposure)
         let slash = slash.min(exposure.total);
         // The amount we'll slash from the validator's stash directly.
-        let own_slash = exposure.own.min(slash);
+        let mut own_slash = exposure.own.min(slash);
+
+//        // customed
+//        // for validator, first slash bonded value
+//        let exposure_own = exposure.own;
+//
+//        if exposure.own > 0.into() {
+//            exposure.own -= own_slash;
+//            if slash > own_slash {
+//                own_slash = slash - own_slash;
+//            }
+//        }
+
         let (mut imbalance, missing) = T::Currency::slash(stash, own_slash);
         let own_slash = own_slash - missing;
         // The amount remaining that we can't slash from the validator, that must be taken from the
@@ -617,7 +631,11 @@ impl<T: Trait> Module<T> {
                     // best effort - not much that can be done on fail.
                     imbalance.subsume(T::Currency::slash(&i.who, per_u64 * rest_slash).0)
                 }
+            } else {
+                exposure.total = 0.into();
             }
+
+//            <Stakers<T>>::insert(stash, exposure);
         }
         T::Slash::on_unbalanced(imbalance);
     }
@@ -733,7 +751,7 @@ impl<T: Trait> Module<T> {
         );
 
         if let Some(elected_set) = maybe_elected_set {
-            let elected_stashes = elected_set.0;
+            let mut elected_stashes = elected_set.0;
             let assignments = elected_set.1;
 
             // helper closure.
@@ -823,6 +841,10 @@ impl<T: Trait> Module<T> {
             // Update slot stake.
             <SlotStake<T>>::put(&slot_stake);
 
+            for st in <ShouldOffline<T>>::take().iter() {
+                elected_stashes.retain(|ref s| s != &st);
+            }
+
             // Set the new validator set in sessions.
             <CurrentElected<T>>::put(&elected_stashes);
             let validators = elected_stashes.into_iter()
@@ -890,6 +912,7 @@ impl<T: Trait> Module<T> {
                     .map(|x| x.min(slash_exposure))
                     .unwrap_or(slash_exposure);
                 let _ = Self::slash_validator(&stash, slash);
+                <ShouldOffline<T>>::mutate(|s| s.push(stash.clone()));
                 let _ = <session::Module<T>>::disable(&controller);
 
                 RawEvent::OfflineSlash(stash.clone(), slash)

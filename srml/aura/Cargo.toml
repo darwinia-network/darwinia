@@ -18,11 +18,12 @@ staking = { package = "evo-staking", path = "../staking", default-features = fal
 #staking = {package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-consensus-aura-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false}
+runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 lazy_static = "1.0"
 parking_lot = "0.8.0"
-runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
+
 
 [features]
 default = ["std"]
@@ -38,4 +39,5 @@ std = [
 	"staking/std",
 	"inherents/std",
 	"substrate-consensus-aura-primitives/std",
+	"runtime_io/std",
 ]

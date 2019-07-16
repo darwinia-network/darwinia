@@ -61,9 +61,9 @@ pub use staking::ErasNums;
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
-	authoring_version: 1,
-	spec_version: 1,
-	impl_version: 1,
+	authoring_version: 2,
+	spec_version: 2,
+	impl_version: 2,
 	apis: RUNTIME_API_VERSIONS,
 };
 
