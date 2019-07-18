@@ -182,11 +182,11 @@ impl timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * MILLI;
-	pub const TransferFee: Balance = 1 * MILLI;
-	pub const CreationFee: Balance = 1 * MILLI;
-	pub const TransactionBaseFee: Balance = 1 * MILLI;
-	pub const TransactionByteFee: Balance = 10 * NANO;
+	pub const ExistentialDeposit: Balance = 1 * NANO;
+	pub const TransferFee: Balance = 1 * NANO;
+	pub const CreationFee: Balance = 1 * NANO;
+	pub const TransactionBaseFee: Balance = 1 * NANO;
+	pub const TransactionByteFee: Balance = 1 * NANO;
 }
 
 parameter_types! {
@@ -226,7 +226,7 @@ impl session::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 5;
+	pub const SessionsPerEra: session::SessionIndex = 6;
 	pub const BondingDuration: staking::EraIndex = 24 * 28;
 	// 288 * 365
 	pub const ErasPerEpoch: staking::ErasNums = 105120;
