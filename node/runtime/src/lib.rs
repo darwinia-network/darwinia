@@ -165,16 +165,24 @@ impl balances::Trait for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 }
 
+impl balances_ext::Trait for Runtime {
+        type Kton = Kton;
+        type Ring = Balances;
+        type Event = Event;
+}
 
 impl kton::Trait for Runtime {
 	type Balance = Balance;
 	type Currency = Balances;
 	type Event = Event;
-	type OnMinted = ();
-	type OnRemoval = ();
-	type SystemRefund = ();
+        type OnAccountBalanceChanged = Reward;
 }
 
+impl reward::Trait for Runtime {
+	type Kton = Kton;
+	type Ring = Balances;
+	type Event = Event;
+}
 
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
@@ -337,6 +345,8 @@ construct_runtime!(
 		Contracts: contracts,
 		Sudo: sudo,
 		Kton: kton,
+                BalancesExt: balances_ext::{Module, Call, Storage, Event<T>},
+                Reward: reward,
 	}
 );
 

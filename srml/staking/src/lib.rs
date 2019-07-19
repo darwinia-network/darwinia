@@ -30,6 +30,7 @@ use primitives::traits::{
     Bounded, CheckedShl, CheckedSub, Convert, One, Saturating, StaticLookup, Zero,
 };
 use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
+use rstd::{convert::{ TryInto, TryFrom}};
 #[cfg(feature = "std")]
 use runtime_io::with_storage;
 use session::{OnSessionEnding, SessionIndex};
@@ -42,9 +43,7 @@ use srml_support::{
 };
 use system::ensure_signed;
 
-use dsupport::traits::SystemCurrency;
 use phragmen::{ACCURACY, elect, equalize, ExtendedBalance};
-
 
 mod minting;
 
@@ -218,10 +217,9 @@ type ExpoMap<T> = BTreeMap<
 pub const DEFAULT_SESSIONS_PER_ERA: u32 = 3;
 pub const DEFAULT_BONDING_DURATION: u32 = 1;
 
-pub trait Trait: system::Trait + session::Trait {
+pub trait Trait: system::Trait + session::Trait + reward::Trait{
     /// The staking balance.
-    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber> +
-    SystemCurrency<Self::AccountId, <Self::RewardCurrency as Currency<Self::AccountId>>::Balance>;
+    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
     // Customed: for ring
     type RewardCurrency: Currency<Self::AccountId>;
@@ -709,7 +707,8 @@ impl<T: Trait> Module<T> {
             }
             Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
 
-            T::Currency::reward_to_pot(reward);
+            let reward_u128 = TryInto::<u128>::try_into(reward).ok().unwrap();
+            <reward::Module<T>>::reward_to_pot(reward_u128);
             // TODO: reward to treasury
         }
 

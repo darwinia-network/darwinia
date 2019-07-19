@@ -59,7 +59,9 @@ members = [
     "srml/kton",
     "srml/support",
     "srml/aura",
-	"srml/try",
+    "srml/try",
+    "srml/balances-ext",
+    "srml/reward",
 ]
 
 exclude = ["node/runtime/wasm"]

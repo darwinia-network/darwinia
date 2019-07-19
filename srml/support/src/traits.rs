@@ -32,3 +32,11 @@ pub trait SystemCurrency<AccountId, Currency>
 //pub trait DarwiniaDilution<Balance> {
 //    fn on_dilution(treasury_income: Balance);
 //}
+
+pub trait OnAccountUnbalanced<AccountId, Imbalance> {
+    fn on_unbalanced(who: &AccountId, amount: Imbalance);
+}
+
+pub trait OnAccountBalanceChanged<AccountId, Balance> {
+    fn on_changed(who: &AccountId, old: Balance, new: Balance);
+}
