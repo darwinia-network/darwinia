@@ -18,12 +18,10 @@ use srml_support::traits::{
 use substrate_primitives::U256;
 use system::ensure_signed;
 use dsupport::traits::OnAccountBalanceChanged;
+use dsupport::traits::OnDilution;
 
 type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
 type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-
-pub type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
-pub type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 
 pub type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 pub type RingPositiveImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
@@ -70,7 +68,7 @@ decl_module! {
             let transactor = ensure_signed(origin)?;
             let value_can_withdraw = Self::reward_can_withdraw(&transactor);
             if !value_can_withdraw.is_zero() {
-                Self::update_reward_paid_out(&transactor, value_can_withdraw, false);
+                Self::update_reward_paid_out(&transactor, value_can_withdraw);
                 T::Ring::transfer(&Self::sys_acc(), &transactor, value_can_withdraw)?;
                 Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
@@ -87,30 +85,24 @@ impl<T: Trait> Module<T> {
     }
 
     /// update one's reward_paid_out
-    /// is_refund true -, means giving out reward
-    /// is_refund false +
-    fn update_reward_paid_out(who: &T::AccountId, value: RingBalanceOf<T>, is_refund: bool) {
+    fn update_reward_paid_out(who: &T::AccountId, value: RingBalanceOf<T>) {
         let value = i128::from(value.try_into().unwrap_or_default() as u64);
         let reward_paid_out = Self::reward_paid_out(who);
-        if is_refund {
-            <RewardPaidOut<T>>::insert(who, reward_paid_out - value);
-        } else {
-            <RewardPaidOut<T>>::insert(who, reward_paid_out + value);
-        }
+        <RewardPaidOut<T>>::insert(who, reward_paid_out + value);
     }
 
-    pub fn reward_to_pot(value: u128) {
+    pub fn reward_to_pot(value: RingBalanceOf<T>) {
         let sys_acc = Self::sys_acc();
-        let positive = T::Ring::deposit_creating(&sys_acc, value.try_into().unwrap_or_default());
+        let positive = T::Ring::deposit_creating(&sys_acc, value);
 
         // update reward-per-share
-        let total_issuance = T::Kton::total_issuance().try_into().unwrap_or_default() as u128;
+        let total_issuance: u64 = T::Kton::total_issuance().try_into().unwrap_or_default() as u64;
         //TODO: if kton total_issuance is super high
         // this will be zero
-        let additional_reward_per_share = value / total_issuance;
-        <RewardPerShare<T>>::mutate(|r| *r += additional_reward_per_share.try_into().unwrap_or_default());
+        let additional_reward_per_share = value / total_issuance.try_into().unwrap_or_default();
+        <RewardPerShare<T>>::mutate(|r| *r += additional_reward_per_share);
 
-        <SysRevenuePot<T>>::insert(&sys_acc, Self::system_revenue(&sys_acc) + value.try_into().unwrap_or_default());
+        <SysRevenuePot<T>>::insert(&sys_acc, Self::system_revenue(&sys_acc) + value);
     }
 
     // PUB IMMUTABLE
@@ -162,11 +154,18 @@ impl<T: Trait> Module<T> {
 
 }
 
+/// account kton balance changed
 impl<T: Trait> OnAccountBalanceChanged<T::AccountId, KtonBalanceOf<T>> for Module<T> {
     fn on_changed(who: &T::AccountId, old: KtonBalanceOf<T>, new: KtonBalanceOf<T>) {
         // update reward paid out
         let additional_reward_paid_out = Self::convert_to_paid_out(new-old);
-        Self::update_reward_paid_out(who, additional_reward_paid_out, false);
+        Self::update_reward_paid_out(who, additional_reward_paid_out);
     }
 }
 
+/// reward(ring minted)
+impl<T: Trait> OnDilution<RingBalanceOf<T>> for Module<T> {
+    fn on_dilution(minted: RingBalanceOf<T>) {
+        Self::reward_to_pot(minted);
+    }
+}

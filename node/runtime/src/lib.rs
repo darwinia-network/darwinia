@@ -252,7 +252,7 @@ impl staking::Trait for Runtime {
 	type Currency = Kton;
 	type RewardCurrency = Balances;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = ();
+	type OnRewardMinted = Reward;
 	type Event = Event;
 	type Slash = ();
 	type Reward = ();

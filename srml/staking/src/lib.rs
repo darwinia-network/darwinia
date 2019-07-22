@@ -38,10 +38,11 @@ use srml_support::{
     decl_event, decl_module, decl_storage, ensure, EnumerableStorageMap,
     StorageMap, StorageValue, traits::{
         Currency, Get, Imbalance, LockableCurrency, LockIdentifier,
-        OnDilution, OnFreeBalanceZero, OnUnbalanced, WithdrawReasons,
+        OnFreeBalanceZero, OnUnbalanced, WithdrawReasons,
     },
 };
 use system::ensure_signed;
+use dsupport::traits::OnDilution;
 
 use phragmen::{ACCURACY, elect, equalize, ExtendedBalance};
 
@@ -217,7 +218,7 @@ type ExpoMap<T> = BTreeMap<
 pub const DEFAULT_SESSIONS_PER_ERA: u32 = 3;
 pub const DEFAULT_BONDING_DURATION: u32 = 1;
 
-pub trait Trait: system::Trait + session::Trait + reward::Trait{
+pub trait Trait: system::Trait + session::Trait{
     /// The staking balance.
     type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
@@ -707,8 +708,7 @@ impl<T: Trait> Module<T> {
             }
             Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
 
-            let reward_u128 = TryInto::<u128>::try_into(reward).ok().unwrap();
-            <reward::Module<T>>::reward_to_pot(reward_u128);
+            T::OnRewardMinted::on_dilution(reward);
             // TODO: reward to treasury
         }
 

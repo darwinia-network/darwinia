@@ -28,13 +28,9 @@ pub trait SystemCurrency<AccountId, Currency>
 //
 //    fn update_total_lock(amount: u64, is_add: bool) -> Result;
 //}
-//
-//pub trait DarwiniaDilution<Balance> {
-//    fn on_dilution(treasury_income: Balance);
-//}
 
-pub trait OnAccountUnbalanced<AccountId, Imbalance> {
-    fn on_unbalanced(who: &AccountId, amount: Imbalance);
+pub trait OnDilution<Balance> {
+   fn on_dilution(minted: Balance);
 }
 
 pub trait OnAccountBalanceChanged<AccountId, Balance> {
