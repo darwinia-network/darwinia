@@ -871,6 +871,7 @@ impl<T: Trait> Module<T> {
     ///
     /// NOTE: This is called with the controller (not the stash) account id.
     pub fn on_offline_validator(controller: T::AccountId, count: usize) {
+
         if let Some(l) = Self::ledger(&controller) {
             let stash = l.stash;
 

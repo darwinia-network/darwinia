@@ -228,6 +228,8 @@ impl AuraReport {
 			for index in 0..self.skipped {
 				punish_with((self.start_slot + index) % validator_count, 1);
 			}
+		} else {
+			runtime_io::print("ALL validators SKIP");
 		}
 	}
 }
