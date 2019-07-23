@@ -57,6 +57,8 @@ pub use support::StorageValue;
 pub use staking::StakerStatus;
 pub use staking::ErasNums;
 
+pub use balances as kton_balances;
+
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
@@ -155,7 +157,7 @@ impl balances::Trait for Runtime {
 	type OnFreeBalanceZero = ((Staking, Contracts), Session);
 	type OnNewAccount = Indices;
 	type Event = Event;
-	type TransactionPayment = DealWithFees;
+	type TransactionPayment = ();
 	type DustRemoval = ();
 	type TransferPayment = ();
 	type ExistentialDeposit = ExistentialDeposit;
@@ -165,21 +167,23 @@ impl balances::Trait for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 }
 
-impl balances_ext::Trait for Runtime {
-        type Kton = Kton;
-        type Ring = Balances;
+impl kton_balances::Trait<kton_balances::Instance1> for Runtime {
+        type Balance = Balance;
+        type OnFreeBalanceZero = ((Staking, Contracts), Session);
+        type OnNewAccount = Indices;
         type Event = Event;
-}
-
-impl kton::Trait for Runtime {
-	type Balance = Balance;
-	type Currency = Balances;
-	type Event = Event;
-        type OnAccountBalanceChanged = Reward;
+        type TransactionPayment = ();
+        type DustRemoval = ();
+        type TransferPayment = ();
+        type ExistentialDeposit = ExistentialDeposit;
+        type TransferFee = TransferFee;
+        type CreationFee = CreationFee;
+        type TransactionBaseFee = TransactionBaseFee;
+        type TransactionByteFee = TransactionByteFee;
 }
 
 impl reward::Trait for Runtime {
-	type Kton = Kton;
+	type Kton = KtonBalances;
 	type Ring = Balances;
 	type Event = Event;
 }
@@ -249,7 +253,7 @@ parameter_types! {
 
 
 impl staking::Trait for Runtime {
-	type Currency = Kton;
+	type Currency = KtonBalances;
 	type RewardCurrency = Balances;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type OnRewardMinted = Reward;
@@ -338,14 +342,13 @@ construct_runtime!(
 		Authorship: authorship::{Module, Call, Storage},
 		Indices: indices,
 		Balances: balances,
+                KtonBalances: kton_balances::<Instance1>::{Module, Event<T>, Config<T>},
 		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Staking: staking::{default, OfflineWorker},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		Contracts: contracts,
 		Sudo: sudo,
-		Kton: kton,
-                BalancesExt: balances_ext::{Module, Call, Storage, Event<T>},
                 Reward: reward,
 	}
 );

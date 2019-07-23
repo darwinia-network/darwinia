@@ -17,7 +17,6 @@ timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/s
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
-kton = { package = "evo-kton", path = "../kton", default-features = false }
 
 [dev-dependencies]
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
@@ -40,5 +39,4 @@ std = [
 	"substrate-primitives/std",
   "balances/std",
 	"dsupport/std",
-	"kton/std",
 ]

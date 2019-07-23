@@ -22,7 +22,7 @@ use node_primitives::{AccountId, AuraId, Balance};
 use node_runtime::{
     AuraConfig, BalancesConfig, ContractsConfig, DAYS,
     COIN, GrandpaConfig, IndicesConfig, MILLI,
-    Perbill, SECS_PER_BLOCK, KtonConfig,
+    Perbill, SECS_PER_BLOCK, KtonBalancesConfig,
     SessionConfig, SessionKeys, StakerStatus,
     StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
     RewardConfig
@@ -109,10 +109,10 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
                 .collect(),
             vesting: vec![],
         }),
-        kton: Some(KtonConfig {
+        kton_balances_Instance1: Some(KtonBalancesConfig {
             balances: endowed_accounts.iter().cloned()
                 .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
                 .collect(),
             vesting: vec![],
         }),
@@ -244,7 +244,7 @@ pub fn testnet_genesis(
             balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
             vesting: vec![],
         }),
-        kton: Some(KtonConfig {
+        kton_balances_Instance1: Some(KtonBalancesConfig {
             balances: endowed_accounts.iter().cloned()
                 .map(|k| (k, ENDOWMENT))
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
