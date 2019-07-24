@@ -42,6 +42,7 @@ staking = { package = "evo-staking", path = "../../srml/staking", default-featur
 aura = { package = "srml-aura",  path = "../../srml/aura", default-features = false }
 #aura = { package = "srml-aura", path = "../../srml/aura", default-features = false}
 reward = { package = "evo-reward",  path = "../../srml/reward", default-features = false }
+kton-delegate = { package = "evo-kton-delegate",  path = "../../srml/kton-delegate", default-features = false }
 
 [features]
 default = ["std"]
@@ -80,4 +81,5 @@ std = [
 	"substrate-keyring",
 	"offchain-primitives/std",
   "reward/std",
+  "kton-delegate/std",
 ]

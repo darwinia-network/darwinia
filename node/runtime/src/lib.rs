@@ -182,8 +182,12 @@ impl kton_balances::Trait<kton_balances::Instance1> for Runtime {
         type TransactionByteFee = TransactionByteFee;
 }
 
+impl kton_delegate::Trait for Runtime {
+        type OnAccountBalanceChanged = Reward;
+}
+
 impl reward::Trait for Runtime {
-	type Kton = KtonBalances;
+	type Kton = KtonDelegate;
 	type Ring = Balances;
 	type Event = Event;
 }
@@ -350,6 +354,7 @@ construct_runtime!(
 		Contracts: contracts,
 		Sudo: sudo,
                 Reward: reward,
+                KtonDelegate: kton_delegate::{Module},
 	}
 );
 

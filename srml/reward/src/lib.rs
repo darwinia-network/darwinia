@@ -1,18 +1,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use parity_codec::{Codec, Decode, Encode};
+use parity_codec::{Decode, Encode};
 use primitives::traits::{
-    CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
-    StaticLookup, Zero, Bounded
+    CheckedSub, Zero, Bounded
 };
 
 use rstd::prelude::*;
-use rstd::{cmp, result, convert::{ TryInto, TryFrom}};
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue, ensure};
-use srml_support::dispatch::Result;
+use rstd::{result, convert::{ TryInto, TryFrom}};
+use srml_support::{decl_event, decl_module, decl_storage, StorageMap, StorageValue, ensure};
 use srml_support::traits::{
     Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier,
-    OnUnbalanced, SignedImbalance, UpdateBalanceOutcome,
     WithdrawReason, WithdrawReasons,
 };
 use substrate_primitives::U256;
@@ -123,7 +120,6 @@ decl_module! {
             Self::update_deposit(&transactor, &deposit);
 
             let _positive_imbalance = T::Kton::deposit_into_existing(&transactor, kton_return);
-            Self::kton_minted(&transactor, kton_return);
             Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, value));
         }
 
@@ -145,7 +141,6 @@ decl_module! {
                 Self::update_deposit(&transactor, &deposit);
 
                 let _positive_imbalance = T::Kton::deposit_into_existing(&transactor, kton_return);
-                Self::kton_minted(&transactor, kton_return);
                 Self::deposit_event(RawEvent::NewDeposit(now, transactor, kton_return, extra));
             }
         }
@@ -164,11 +159,6 @@ decl_module! {
 
 
 impl<T: Trait> Module<T> {
-
-    fn kton_minted(who: &T::AccountId, value: KtonBalanceOf<T>) {
-        let additional_reward_paid_out = Self::convert_to_paid_out(value);
-        Self::update_reward_paid_out(who, additional_reward_paid_out);
-    }
 
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>) {
         T::Ring::set_lock(
@@ -281,5 +271,14 @@ impl<T: Trait> Module<T> {
 impl<T: Trait> OnDilution<RingBalanceOf<T>> for Module<T> {
     fn on_dilution(minted: RingBalanceOf<T>) {
         Self::reward_to_pot(minted);
+    }
+}
+
+/// account kton balance changed
+impl<T: Trait> OnAccountBalanceChanged<T::AccountId, KtonBalanceOf<T>> for Module<T> {
+    fn on_changed(who: &T::AccountId, old: KtonBalanceOf<T>, new: KtonBalanceOf<T>) {
+        // update reward paid out
+        let additional_reward_paid_out = Self::convert_to_paid_out(new-old);
+        Self::update_reward_paid_out(who, additional_reward_paid_out);
     }
 }

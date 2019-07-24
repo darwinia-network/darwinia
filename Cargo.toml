@@ -60,6 +60,7 @@ members = [
     "srml/aura",
     "srml/try",
     "srml/reward",
+    "srml/kton-delegate",
 ]
 
 exclude = ["node/runtime/wasm"]
