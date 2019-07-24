@@ -137,7 +137,7 @@ parameter_types! {
 pub const COIN: u64 = 1_000_000_000;
 parameter_types! {
 	// decimal 9
-	pub const CAP: Balance = 10_000_000_000_000 * COIN;
+	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
 
 
@@ -225,7 +225,8 @@ impl ExtBuilder {
         let validators = if self.validator_pool { vec![10, 20, 30, 40] } else { vec![10, 20] };
         let _ = session::GenesisConfig::<Test>{
             // NOTE: if config.nominate == false then 100 is also selected in the initial round.
-            validators,
+//            validators,
+            validators: vec![],
             keys: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = balances::GenesisConfig::<Test>{

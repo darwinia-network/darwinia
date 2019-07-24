@@ -2,13 +2,12 @@
 
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
-    CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
-    StaticLookup, Zero, Bounded
+    Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating,
+    SimpleArithmetic, StaticLookup, Zero,
 };
-
+use rstd::{cmp, convert::{TryFrom, TryInto}, result};
 use rstd::prelude::*;
-use rstd::{cmp, result, convert::{ TryInto, TryFrom}};
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue, ensure};
+use srml_support::{decl_event, decl_module, decl_storage, ensure, Parameter, StorageMap, StorageValue};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
     Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier,
@@ -18,11 +17,14 @@ use srml_support::traits::{
 use substrate_primitives::U256;
 use system::ensure_signed;
 
+#[cfg(feature = "std")]
+use runtime_io::with_storage;
+
 // customed
 use dsupport::traits::SystemCurrency;
-mod imbalance;
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
+mod imbalance;
 mod mock;
 mod tests;
 
@@ -141,11 +143,9 @@ decl_storage! {
 		// like `existential_deposit`, but always set to 0
 		pub MinimumBalance get(minimum_balance): T::Balance = 0.into();
 
-		pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T>| {
-			config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
-		}): T::Balance;
+		pub TotalIssuance get(total_issuance) : T::Balance;
 
-		pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T>| config.balances.clone()): map T::AccountId => T::Balance;
+		pub FreeBalance get(free_balance) : map T::AccountId => T::Balance;
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
@@ -153,29 +153,30 @@ decl_storage! {
 
 		pub TotalLock get(total_lock): T::Balance;
 
-		pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
-			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
-				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
-				let length = <T::Balance as From<T::BlockNumber>>::from(length);
-
-				config.balances.iter()
-					.find(|&&(ref w, _)| w == who)
-					.map(|&(_, balance)| {
-						// <= begin it should be >= balance
-						// >= begin+length it should be <= 0
-
-						let per_block = balance / length.max(primitives::traits::One::one());
-						let offset = begin * per_block + balance;
-
-						(who.clone(), VestingSchedule { offset, per_block })
-					})
-			}).collect::<Vec<_>>()
-		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
+		pub Vesting get(vesting): map T::AccountId => Option<VestingSchedule<T::Balance>>;
 	}
 	add_extra_genesis {
-		config(balances): Vec<(T::AccountId, T::Balance)>;
-		config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;
-	}
+        // for ring
+        config(ring_balances): Vec<(T::AccountId, CurrencyOf<T>, u32)>;
+        config(vesting): Vec <(T::AccountId, T::BlockNumber, T::BlockNumber)>;
+        build( |
+            storage: & mut primitives::StorageOverlay,
+            _: & mut primitives::ChildrenStorageOverlay,
+            config: & GenesisConfig<T>
+        | {
+            with_storage(storage, || {
+                for &(ref depositor, balance, months) in &config.ring_balances {
+                    assert!(T::Currency::free_balance(&depositor) >= balance);
+                    let _ = <Module<T>>::deposit(
+                        T::Origin::from(Some(depositor.clone()).into()),
+                        balance,
+                        months
+                    );
+
+                }
+            });
+        });
+    }
 }
 
 decl_module! {
@@ -259,7 +260,6 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Balance, T::Moment>) {
         T::Currency::set_lock(
             DEPOSIT_ID,
@@ -267,7 +267,7 @@ impl<T: Trait> Module<T> {
             deposit.total,
             // u32::max_value().into(),
             T::BlockNumber::max_value(),
-            WithdrawReasons::all()
+            WithdrawReasons::all(),
         );
         <DepositLedger<T>>::insert(who, deposit);
     }
@@ -275,7 +275,7 @@ impl<T: Trait> Module<T> {
 
     fn convert_to_paid_out(value: T::Balance) -> CurrencyOf<T> {
         let value: u64 = value.try_into().unwrap_or_default() as u64;
-        let additional_reward_paid_out: CurrencyOf<T> = Self::reward_per_share() *  value.try_into().unwrap_or_default();
+        let additional_reward_paid_out: CurrencyOf<T> = Self::reward_per_share() * value.try_into().unwrap_or_default();
         additional_reward_paid_out
     }
 
@@ -285,7 +285,7 @@ impl<T: Trait> Module<T> {
 
         if !months.is_zero() {
             let no = U256::from(67_u128).pow(U256::from(months));
-            let de = U256::from(66_u128). pow(U256::from(months));
+            let de = U256::from(66_u128).pow(U256::from(months));
 
             let quotient = no / de;
             let remainder = no % de;
@@ -295,7 +295,6 @@ impl<T: Trait> Module<T> {
         } else {
             None
         }
-
     }
 
     pub fn vesting_balance(who: &T::AccountId) -> T::Balance {
@@ -374,7 +373,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         }
         let locks = Self::locks(who);
         if locks.is_empty() {
-            return Ok(())
+            return Ok(());
         }
 
         let now = <system::Module<T>>::block_number();
@@ -394,7 +393,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
     // TODO: add fee
     fn transfer(transactor: &T::AccountId, dest: &T::AccountId, value: Self::Balance) -> Result {
-
         let from_balance = Self::free_balance(transactor);
         let to_balance = Self::free_balance(dest);
 
@@ -416,7 +414,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             // settle transactor reward
             let from_should_withdraw = Self::convert_to_paid_out(value);
             #[cfg(test)]
-            runtime_io::print(from_should_withdraw.try_into().unwrap_or_default() as u64);
+                runtime_io::print(from_should_withdraw.try_into().unwrap_or_default() as u64);
             Self::update_reward_paid_out(transactor, from_should_withdraw, true);
             // settle dest reward
             Self::update_reward_paid_out(dest, from_should_withdraw, false);
@@ -424,7 +422,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             Self::set_free_balance(transactor, new_from_balance);
             Self::set_free_balance(dest, new_to_balance);
 
-            Self::deposit_event(RawEvent:: TokenTransfer(transactor.clone(), dest.clone(), value));
+            Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
         }
 
         Ok(())
@@ -439,7 +437,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
     ) -> result::Result<Self::NegativeImbalance, &'static str> {
         if let Some(new_balance) = Self::free_balance(who).checked_sub(&value) {
             if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
-                return Err("payment would kill account")
+                return Err("payment would kill account");
             }
             let additional_reward_paid_out = Self::convert_to_paid_out(value);
             Self::update_reward_paid_out(who, additional_reward_paid_out, true);
@@ -450,13 +448,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         } else {
             Err("too few free funds in account")
         }
-
     }
 
 
     fn slash(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);
@@ -479,7 +476,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
     fn deposit_into_existing(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> result::Result<Self::PositiveImbalance, &'static str> {
         if Self::total_balance(who).is_zero() {
             return Err("beneficiary account must pre-exist");
@@ -494,7 +491,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         who: &T::AccountId,
         value: Self::Balance,
     ) -> Self::PositiveImbalance {
-
         let (imbalance, _) = Self::make_free_balance_be(who, Self::free_balance(who) + value);
 
         if let SignedImbalance::Positive(p) = imbalance {
@@ -553,7 +549,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         );
         NegativeImbalance::new(amount)
     }
-
 }
 
 
@@ -659,14 +654,13 @@ impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
     fn reward_can_withdraw(who: &T::AccountId) -> CurrencyOf<T> {
         let free_balance = Self::free_balance(who);
         let max_should_withdraw = Self::convert_to_paid_out(free_balance);
-        let max_should_withdraw: u64  = max_should_withdraw.try_into().unwrap_or_default() as u64;
+        let max_should_withdraw: u64 = max_should_withdraw.try_into().unwrap_or_default() as u64;
         let should_withdraw = i128::from(max_should_withdraw) - Self::reward_paid_out(who);
         if should_withdraw <= 0 {
             0.into()
         } else {
             u64::try_from(should_withdraw).unwrap_or_default().try_into().unwrap_or_default()
         }
-
     }
 
     /// pay system fee with reward
@@ -674,7 +668,6 @@ impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
         who: &T::AccountId,
         value: CurrencyOf<T>)
         -> result::Result<(Self::NegativeImbalanceOf, Self::NegativeImbalanceOf), &'static str> {
-
         let can_withdraw_value = Self::reward_can_withdraw(who);
 
         let mut system_imbalance = Self::NegativeImbalanceOf::zero();
@@ -702,9 +695,6 @@ impl<T: Trait> SystemCurrency<T::AccountId, CurrencyOf<T>> for Module<T> {
         }
 
         Ok((system_imbalance, acc_imbalance))
-
     }
-
-
 }
 

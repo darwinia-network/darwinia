@@ -30,6 +30,21 @@ fn deposit_with_decimals_pre() {
 }
 
 #[test]
+fn build_genesis_storage_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(1).build(), || {
+
+        assert_eq!(Kton::free_balance(&1), 1 * COIN);
+        assert_eq!(Kton::free_balance(&2), 2 * COIN);
+        assert_eq!(Kton::free_balance(&3), 30 * COIN);
+        assert_eq!(Kton::free_balance(&4), 40 * COIN);
+
+        assert_eq!(Kton::total_issuance(), (40 + 30 + 2 + 1) * COIN);
+    });
+
+}
+
+#[test]
 fn ext_builer_should_work() {
     // test existential_deposit setting
     with_externalities(&mut ExtBuilder::default()
@@ -79,11 +94,12 @@ fn reward_per_share_not_zero() {
 
     // acc 91 and 92 deposit 10k ring for 12 months
     // in return, acc 91 and 92 will get 1 kton
+    let old_total_issuance = Kton::total_issuance();
     Kton::deposit(Origin::signed(91), 10_000 * COIN, 12);
     Kton::deposit(Origin::signed(92), 10_000 * COIN, 12);
-    assert_eq!(Kton::total_issuance(), 2 * COIN);
+    assert_eq!(Kton::total_issuance(), old_total_issuance + 2 * COIN);
 
-    Kton::reward_to_pot(6000 * COIN);
+    Kton::reward_to_pot(225000 * COIN);
     assert_eq!(Kton::reward_per_share(), 3000);
 }
 
@@ -124,8 +140,9 @@ fn transfer_should_work() {
 
         // new things happen!
         // reward_per_share now change to
-        Kton::reward_to_pot(3000 * COIN);
-        assert_eq!(Ring::free_balance(&Kton::sys_acc()), 9000 * COIN);
+        assert_eq!(Kton::total_issuance(), 76 * COIN);
+        Kton::reward_to_pot(76000 * COIN);
+        assert_eq!(Ring::free_balance(&Kton::sys_acc()), 301000 * COIN);
         assert_eq!(Kton::reward_per_share(), 4000);
         assert_eq!(Kton::reward_can_withdraw(&93), 1000 * COIN);
 

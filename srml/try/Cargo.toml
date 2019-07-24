@@ -19,6 +19,19 @@ support = { package = "srml-support", git = "https://github.com/paritytech/subst
 system = { package = "srml-system", git = "https://github.com/paritytech/substrate", default-features = false }
 sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
 
+[dev-dependencies]
+support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
+balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
+executive = { package = "srml-executive", git = 'https://github.com/paritytech/substrate.git' }
+authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git' }
+finality-tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git' }
+grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git' }
+indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
+session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git' }
+system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
+sr-primitives = { git = 'https://github.com/paritytech/substrate.git' }
+
 
 [features]
 default = ["std"]

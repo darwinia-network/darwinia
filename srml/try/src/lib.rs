@@ -3,11 +3,15 @@
 // DONE: test initial value in Store
 // DONE: test Option value in Store
 // DONE: test visibility of functions in `decl_module!` and `impl Module` block
+// DONE: check the priority between configs set in chain_spec or in module
+
 
 // TODO: test difference between dispatch::Result & rstd::result::Result
-// TODO: check the priority between configs set in chain_spec or in module
 // TODO: try out add_extra_genesis
 // TODO: check tests in executor
+
+
+//! Tests in `try` mod is to test origin-module in SRML
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -18,6 +22,7 @@ use support::dispatch::Result;
 use system::ensure_signed;
 
 mod tests;
+mod finality_tests;
 
 pub trait Trait: system::Trait {
     /// The overarching event type.
@@ -32,7 +37,7 @@ decl_event!(
 
 decl_storage! {
 	trait Store for Module<T: Trait> as TemplateModule {
-		SomeOption get(someoption) config(): Option<u32>;
+		SomeOption get(some_option) config(): Option<u32> = Some(1);
 		Something get(something): u32;
 		MapOption get(map_option): map u32 => Option<T::AccountId>;
 		Map get(map): map u32 => T::AccountId;

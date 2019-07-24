@@ -16,9 +16,9 @@ system = { package = "srml-system", git = 'https://github.com/paritytech/substra
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
+runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 
 [dev-dependencies]
-runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 node-runtime = { path = "../../node/runtime" }
@@ -36,5 +36,6 @@ std = [
 	"system/std",
 	"timestamp/std",
 	"substrate-primitives/std",
+	"runtime_io/std",
 	"dsupport/std",
 ]

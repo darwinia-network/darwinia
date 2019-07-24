@@ -374,6 +374,8 @@ decl_storage! {
 
 				if let (_, Some(validators)) = <Module<T>>::select_validators() {
 					<session::Validators<T>>::put(&validators);
+					// initialize current_elected
+					<CurrentElected<T>>::put(&validators);
 				}
 			});
 		});
@@ -604,7 +606,7 @@ impl<T: Trait> Module<T> {
         // exposure)
         let slash = slash.min(exposure.total);
         // The amount we'll slash from the validator's stash directly.
-        let mut own_slash = exposure.own.min(slash);
+        let own_slash = exposure.own.min(slash);
 
 //        // customed
 //        // for validator, first slash bonded value

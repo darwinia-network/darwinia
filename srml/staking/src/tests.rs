@@ -50,6 +50,11 @@ fn test_env_build() {
         build_basic_env();
 
         check_exposure_all();
+
+        System::set_block_number(1);
+        Session::on_initialize(System::block_number());
+        assert_eq!(Session::validators(), vec![10, 20]);
+        assert_eq!(Staking::current_elected(), vec![10, 20]);
     });
 }
 
