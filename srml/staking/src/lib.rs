@@ -374,8 +374,6 @@ decl_storage! {
 
 				if let (_, Some(validators)) = <Module<T>>::select_validators() {
 					<session::Validators<T>>::put(&validators);
-					// initialize current_elected
-					<CurrentElected<T>>::put(&validators);
 				}
 			});
 		});

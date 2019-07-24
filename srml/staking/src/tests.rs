@@ -53,8 +53,11 @@ fn test_env_build() {
 
         System::set_block_number(1);
         Session::on_initialize(System::block_number());
-        assert_eq!(Session::validators(), vec![10, 20]);
-        assert_eq!(Staking::current_elected(), vec![10, 20]);
+        // initial build storage should work
+        // controller in session.validators
+        assert_eq!(Session::validators(), vec![10, 1, 20]);
+        // stash in staking.current_elected
+        assert_eq!(Staking::current_elected(), vec![11, 2, 21]);
     });
 }
 
