@@ -59,7 +59,7 @@ type Try = Module<Test>;
 fn new_test_ext() -> sr_io::TestExternalities<Blake2Hasher> {
 	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap().0;
 	t.extend(GenesisConfig {
-		someoption: 42,
+		some_option: 42,
 	}.build_storage().unwrap().0);
 	t.into()
 
@@ -70,7 +70,7 @@ fn it_works_for_default_value() {
 	with_externalities(&mut new_test_ext(), || {
 
 		assert_eq!(Try::something(), 0);
-		assert_eq!(Try::someoption(), Some(42));
+		assert_eq!(Try::some_option(), Some(42));
 	});
 }
 
@@ -99,5 +99,14 @@ fn check_delete() {
 		assert_eq!(Try::list(1), vec![1]);
 		Try::update_list(2, true);
 		assert_eq!(Try::list(1), vec![1, 2]);
+	});
+}
+
+#[test]
+fn check_genesis_privilege() {
+	with_externalities(&mut new_test_ext(), || {
+		assert_eq!(Try::some_option(), Some(42));
+		SomeOption::kill();
+		assert_eq!(Try::some_option(), Some(1));
 	});
 }

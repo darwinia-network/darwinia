@@ -603,7 +603,7 @@ impl<T: Trait> Module<T> {
         // exposure)
         let slash = slash.min(exposure.total);
         // The amount we'll slash from the validator's stash directly.
-        let mut own_slash = exposure.own.min(slash);
+        let own_slash = exposure.own.min(slash);
 
 //        // customed
 //        // for validator, first slash bonded value

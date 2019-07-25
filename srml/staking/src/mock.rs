@@ -137,7 +137,7 @@ parameter_types! {
 pub const COIN: u64 = 1_000_000_000;
 parameter_types! {
 	// decimal 9
-	pub const CAP: Balance = 10_000_000_000_000 * COIN;
+	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
 
 
@@ -175,7 +175,7 @@ impl Default for ExtBuilder {
             reward: 10,
             validator_pool: false,
             nominate: true,
-            validator_count: 2,
+            validator_count: 3,
             minimum_validator_count: 0,
             fair: true
         }
@@ -225,7 +225,8 @@ impl ExtBuilder {
         let validators = if self.validator_pool { vec![10, 20, 30, 40] } else { vec![10, 20] };
         let _ = session::GenesisConfig::<Test>{
             // NOTE: if config.nominate == false then 100 is also selected in the initial round.
-            validators,
+//            validators,
+            validators: vec![],
             keys: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = balances::GenesisConfig::<Test>{
@@ -248,7 +249,17 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
-            balances : vec![],
+            ring_balances : vec![
+                (1, 10 * balance_factor, 12),
+                (2, 20 * balance_factor, 12),
+                (3, 300 * balance_factor, 12),
+                (4, 400 * balance_factor, 12),
+                // for initial validator set
+                (10, balance_factor, 12),
+                (11, balance_factor * 1000, 12),
+                (20, balance_factor, 12),
+                (21, balance_factor * 2000, 12),
+            ],
             vesting: vec![],
             sys_acc: 42,
         }.assimilate_storage(&mut t, &mut c);
@@ -264,6 +275,7 @@ impl ExtBuilder {
             current_era: self.current_era,
             current_era_total_reward: 1_600_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
+                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
                 (11, 10, balance_factor * 1000, StakerStatus::<AccountId>::Validator),
                 (21, 20, stake_21, StakerStatus::<AccountId>::Validator),
                 (31, 30, stake_31, StakerStatus::<AccountId>::Validator),
