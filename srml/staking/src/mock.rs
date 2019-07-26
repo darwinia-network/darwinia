@@ -250,15 +250,15 @@ impl ExtBuilder {
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
             balances : vec![
-                (1, 10 * balance_factor, 12),
-                (2, 20 * balance_factor, 12),
-                (3, 300 * balance_factor, 12),
-                (4, 400 * balance_factor, 12),
+                (1, 10 * balance_factor),
+                (2, 20 * balance_factor),
+                (3, 300 * balance_factor),
+                (4, 400 * balance_factor),
                 // for initial validator set
-                (10, balance_factor, 12),
-                (11, balance_factor * 1000, 12),
-                (20, balance_factor, 12),
-                (21, balance_factor * 2000, 12),
+                (10, balance_factor),
+                (11, balance_factor * 1000),
+                (20, balance_factor),
+                (21, balance_factor * 2000),
             ],
             vesting: vec![],
             sys_acc: 42,
@@ -276,7 +276,7 @@ impl ExtBuilder {
             current_era_total_reward: 1_600_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
                 (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
-                (11, 10, balance_factor * 1000, StakerStatus::<AccountId>::Validator),
+                (11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
                 (21, 20, stake_21, StakerStatus::<AccountId>::Validator),
                 (31, 30, stake_31, StakerStatus::<AccountId>::Validator),
                 (41, 40, balance_factor * 1000, status_41),

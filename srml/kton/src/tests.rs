@@ -85,7 +85,7 @@ fn reward_per_share_not_zero() {
     Kton::deposit(Origin::signed(92), 10_000 * COIN, 12);
     assert_eq!(Kton::total_issuance(), old_total_issuance + 2 * COIN);
 
-    Kton::reward_to_pot(225000 * COIN);
+    Kton::reward_to_pot(6000 * COIN);
     assert_eq!(Kton::reward_per_share(), 3000);
 }
 
@@ -126,9 +126,9 @@ fn transfer_should_work() {
 
         // new things happen!
         // reward_per_share now change to
-        assert_eq!(Kton::total_issuance(), 76 * COIN);
-        Kton::reward_to_pot(76000 * COIN);
-        assert_eq!(Ring::free_balance(&Kton::sys_acc()), 301000 * COIN);
+        assert_eq!(Kton::total_issuance(), 3 * COIN);
+        Kton::reward_to_pot(3000 * COIN);
+        assert_eq!(Ring::free_balance(&Kton::sys_acc()), 9000 * COIN);
         assert_eq!(Kton::reward_per_share(), 4000);
         assert_eq!(Kton::reward_can_withdraw(&93), 1000 * COIN);
 
