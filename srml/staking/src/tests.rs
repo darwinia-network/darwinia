@@ -20,8 +20,8 @@ fn build_basic_env() {
     Ring::transfer(Origin::signed(100), 80, 10 * COIN);
 
     // acc 91 and 81 deposit kton
-    Kton::deposit(Origin::signed(91), 100_000 * COIN, 36);
-    Kton::deposit(Origin::signed(81), 100_000 * COIN, 36);
+    Reward::deposit(Origin::signed(91), 100_000 * COIN, 36);
+    Reward::deposit(Origin::signed(81), 100_000 * COIN, 36);
 
     // now acc 91 and 81 has about 36 kton
     Staking::bond(Origin::signed(91), 90, 20 * COIN, RewardDestination::Stash);

@@ -25,6 +25,7 @@ use node_runtime::{
     Perbill, SECS_PER_BLOCK, KtonConfig,
     SessionConfig, SessionKeys, StakerStatus,
     StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
+    RewardConfig,
 };
 pub use node_runtime::GenesisConfig;
 use primitives::{crypto::UncheckedInto, ed25519, Pair, sr25519};
@@ -114,7 +115,6 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
             vesting: vec![],
-            sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
         }),
         indices: Some(IndicesConfig {
             ids: endowed_accounts.iter().cloned()
@@ -153,6 +153,10 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         grandpa: Some(GrandpaConfig {
             authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
         }),
+        reward: Some(RewardConfig {
+            sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
+        }),
+        
     }
 }
 
@@ -247,7 +251,6 @@ pub fn testnet_genesis(
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
             vesting: vec![],
-            sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
         }),
         session: Some(SessionConfig {
             validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
@@ -284,6 +287,9 @@ pub fn testnet_genesis(
         }),
         grandpa: Some(GrandpaConfig {
             authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+        }),
+        reward: Some(RewardConfig {
+            sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
         }),
     }
 }

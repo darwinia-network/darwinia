@@ -41,7 +41,7 @@ substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optio
 kton = { package = "evo-kton", path = '../../srml/kton', default-features = false}
 staking = { package = "evo-staking", path = "../../srml/staking", default-features = false}
 aura = { package = "srml-aura",  path = "../../srml/aura", default-features = false }
-#aura = { package = "srml-aura", path = "../../srml/aura", default-features = false}
+reward = { package = "evo-reward", path = "../../srml/reward", default-features = false}
 
 [features]
 default = ["std"]
@@ -80,4 +80,5 @@ std = [
 	"substrate-keyring",
 	"offchain-primitives/std",
 	"kton/std",
+	"reward/std",
 ]
