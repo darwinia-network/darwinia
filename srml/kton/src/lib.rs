@@ -267,7 +267,7 @@ impl<T: Trait> Module<T> {
             deposit.total,
             // u32::max_value().into(),
             T::BlockNumber::max_value(),
-            WithdrawReasons::all(),
+            WithdrawReasons::all()
         );
         <DepositLedger<T>>::insert(who, deposit);
     }
@@ -453,7 +453,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
     fn slash(
         who: &T::AccountId,
-        value: Self::Balance,
+        value: Self::Balance
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);

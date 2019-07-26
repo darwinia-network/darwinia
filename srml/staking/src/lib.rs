@@ -841,9 +841,9 @@ impl<T: Trait> Module<T> {
             // Update slot stake.
             <SlotStake<T>>::put(&slot_stake);
 
-            for st in <ShouldOffline<T>>::take().iter() {
-                elected_stashes.retain(|ref s| s != &st);
-            }
+//            for st in <ShouldOffline<T>>::take().iter() {
+//                elected_stashes.retain(|ref s| s != &st);
+//            }
 
             // Set the new validator set in sessions.
             <CurrentElected<T>>::put(&elected_stashes);
@@ -913,7 +913,7 @@ impl<T: Trait> Module<T> {
                     .map(|x| x.min(slash_exposure))
                     .unwrap_or(slash_exposure);
                 let _ = Self::slash_validator(&stash, slash);
-                <ShouldOffline<T>>::mutate(|s| s.push(stash.clone()));
+//                <ShouldOffline<T>>::mutate(|s| s.push(stash.clone()));
                 let _ = <session::Module<T>>::disable(&controller);
 
                 RawEvent::OfflineSlash(stash.clone(), slash)

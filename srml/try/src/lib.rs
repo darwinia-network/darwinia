@@ -22,7 +22,7 @@ use support::dispatch::Result;
 use system::ensure_signed;
 
 mod tests;
-mod finality_tests;
+
 
 pub trait Trait: system::Trait {
     /// The overarching event type.
