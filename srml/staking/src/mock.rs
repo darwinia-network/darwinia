@@ -249,7 +249,7 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
-            ring_balances : vec![
+            balances : vec![
                 (1, 10 * balance_factor, 12),
                 (2, 20 * balance_factor, 12),
                 (3, 300 * balance_factor, 12),

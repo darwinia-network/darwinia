@@ -53,6 +53,9 @@ fn test_env_build() {
         // initial build storage should work
         // controller in session.validators
         assert_eq!(Session::validators(), vec![10, 1, 20]);
+        // 21 - the minimum bonded
+        assert_eq!(Staking::stakers(&21), Exposure { total: 1000, own: 1000, others: vec![IndividualExposure {who: 101, value: 0}]});
+        assert_eq!(Staking::stakers(&11), Exposure { total: 100 * COIN, own: 100 * COIN, others: vec![]});
         // stash in staking.current_elected
         assert_eq!(Staking::current_elected(), vec![11, 2, 21]);
 
@@ -83,8 +86,12 @@ fn offline_should_slash_and_disable() {
         Staking::on_offline_validator(90, 4);
 
         start_era(2);
+        // acc 21-20 will not be a validator because it failed to meet the standard
         assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
-//        assert_eq!(Session::validators(), vec![11, 91, 81]);
+        assert_eq!(Staking::stakers(&91), Exposure {total: 21 * COIN, own: 21 * COIN, others: vec![]});
+        // out of validator set, status related will be cleared
+        assert_eq!(Staking::stakers(&21), Exposure { total: 0, own: 0, others: vec![]});
+        assert_eq!(Session::validators(), vec![10, 90, 80]);
     });
 }
 

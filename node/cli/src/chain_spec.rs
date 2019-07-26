@@ -109,9 +109,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
             vesting: vec![],
         }),
         kton: Some(KtonConfig {
-            ring_balances: endowed_accounts.iter().cloned()
-                .map(|k| (k, ENDOWMENT, 12))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT, 12)))
+            balances: endowed_accounts.iter().cloned()
+                .map(|k| (k, ENDOWMENT))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
             vesting: vec![],
             sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),
@@ -242,9 +242,9 @@ pub fn testnet_genesis(
             vesting: vec![],
         }),
         kton: Some(KtonConfig {
-            ring_balances: endowed_accounts.iter().cloned()
-                .map(|k| (k, ENDOWMENT, 12))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT, 12)))
+            balances: endowed_accounts.iter().cloned()
+                .map(|k| (k, ENDOWMENT))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
             vesting: vec![],
             sys_acc: hex!["984d592d15d930ac36e6716407fbed3f7d1e2e62bc11f8429345f8b8b0dfc107"].unchecked_into(),

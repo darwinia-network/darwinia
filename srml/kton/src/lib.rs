@@ -7,6 +7,7 @@ use primitives::traits::{
 };
 use rstd::{cmp, convert::{TryFrom, TryInto}, result};
 use rstd::prelude::*;
+
 use srml_support::{decl_event, decl_module, decl_storage, ensure, Parameter, StorageMap, StorageValue};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
@@ -16,9 +17,6 @@ use srml_support::traits::{
 };
 use substrate_primitives::U256;
 use system::ensure_signed;
-
-#[cfg(feature = "std")]
-use runtime_io::with_storage;
 
 // customed
 use dsupport::traits::SystemCurrency;
@@ -143,9 +141,12 @@ decl_storage! {
 		// like `existential_deposit`, but always set to 0
 		pub MinimumBalance get(minimum_balance): T::Balance = 0.into();
 
-		pub TotalIssuance get(total_issuance) : T::Balance;
+		pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T>| {
+			config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
+		}): T::Balance;
 
-		pub FreeBalance get(free_balance) : map T::AccountId => T::Balance;
+		pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T>| config.balances.clone()):
+			map T::AccountId => T::Balance;
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
@@ -153,30 +154,29 @@ decl_storage! {
 
 		pub TotalLock get(total_lock): T::Balance;
 
-		pub Vesting get(vesting): map T::AccountId => Option<VestingSchedule<T::Balance>>;
+		pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
+			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
+				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
+				let length = <T::Balance as From<T::BlockNumber>>::from(length);
+
+				config.balances.iter()
+					.find(|&&(ref w, _)| w == who)
+					.map(|&(_, balance)| {
+						// <= begin it should be >= balance
+						// >= begin+length it should be <= 0
+
+						let per_block = balance / length.max(primitives::traits::One::one());
+						let offset = begin * per_block + balance;
+
+						(who.clone(), VestingSchedule { offset, per_block })
+					})
+			}).collect::<Vec<_>>()
+		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
 	}
 	add_extra_genesis {
-        // for ring
-        config(ring_balances): Vec<(T::AccountId, CurrencyOf<T>, u32)>;
-        config(vesting): Vec <(T::AccountId, T::BlockNumber, T::BlockNumber)>;
-        build( |
-            storage: & mut primitives::StorageOverlay,
-            _: & mut primitives::ChildrenStorageOverlay,
-            config: & GenesisConfig<T>
-        | {
-            with_storage(storage, || {
-                for &(ref depositor, balance, months) in &config.ring_balances {
-                    assert!(T::Currency::free_balance(&depositor) >= balance);
-                    let _ = <Module<T>>::deposit(
-                        T::Origin::from(Some(depositor.clone()).into()),
-                        balance,
-                        months
-                    );
-
-                }
-            });
-        });
-    }
+        config(balances): Vec<(T::AccountId, T::Balance)>;
+        config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;		// begin, length
+}
 }
 
 decl_module! {
@@ -267,7 +267,7 @@ impl<T: Trait> Module<T> {
             deposit.total,
             // u32::max_value().into(),
             T::BlockNumber::max_value(),
-            WithdrawReasons::all()
+            WithdrawReasons::all(),
         );
         <DepositLedger<T>>::insert(who, deposit);
     }
@@ -453,7 +453,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
     fn slash(
         who: &T::AccountId,
-        value: Self::Balance
+        value: Self::Balance,
     ) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);

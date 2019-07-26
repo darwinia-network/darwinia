@@ -29,20 +29,6 @@ fn deposit_with_decimals_pre() {
     Kton::deposit(Origin::signed(21), 1_000_000_000 * COIN, 36);
 }
 
-#[test]
-fn build_genesis_storage_should_work() {
-    with_externalities(&mut ExtBuilder::default()
-        .existential_deposit(1).build(), || {
-
-        assert_eq!(Kton::free_balance(&1), 1 * COIN);
-        assert_eq!(Kton::free_balance(&2), 2 * COIN);
-        assert_eq!(Kton::free_balance(&3), 30 * COIN);
-        assert_eq!(Kton::free_balance(&4), 40 * COIN);
-
-        assert_eq!(Kton::total_issuance(), (40 + 30 + 2 + 1) * COIN);
-    });
-
-}
 
 #[test]
 fn ext_builer_should_work() {
