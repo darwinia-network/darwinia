@@ -56,11 +56,11 @@ members = [
     "node/runtime",
     "node/rpc-client",
     "srml/staking",
-    "srml/token/ring",
-    "srml/token/kton",
+    "srml/kton",
     "srml/support",
     "srml/aura",
 	"srml/try",
+	"srml/reward",
 ]
 
 exclude = ["node/runtime/wasm"]

@@ -1,11 +1,17 @@
 // this crate is only for practice and verify syntax and functions.
 
-//DONE: test initial value in Store
-//DONE: test Option value in Store
-//TODO: test difference between dispatch::Result & rstd::result::Result
-//TODO: test visibility of functions in `decl_module!` and `impl Module` block
-//TODO: check the priority between configs set in chain_spec or in module
-//TODO: try out add_extra_genesis
+// DONE: test initial value in Store
+// DONE: test Option value in Store
+// DONE: test visibility of functions in `decl_module!` and `impl Module` block
+// DONE: check the priority between configs set in chain_spec or in module
+
+
+// TODO: test difference between dispatch::Result & rstd::result::Result
+// TODO: try out add_extra_genesis
+// TODO: check tests in executor
+
+
+//! Tests in `try` mod is to test origin-module in SRML
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -16,6 +22,7 @@ use support::dispatch::Result;
 use system::ensure_signed;
 
 mod tests;
+
 
 pub trait Trait: system::Trait {
     /// The overarching event type.
@@ -30,7 +37,7 @@ decl_event!(
 
 decl_storage! {
 	trait Store for Module<T: Trait> as TemplateModule {
-		SomeOption get(someoption) config(): Option<u32>;
+		SomeOption get(some_option) config(): Option<u32> = Some(1);
 		Something get(something): u32;
 		MapOption get(map_option): map u32 => Option<T::AccountId>;
 		Map get(map): map u32 => T::AccountId;
@@ -47,8 +54,8 @@ decl_module! {
 		pub fn do_something(origin, something: u32) -> Result {
 			let who = ensure_signed(origin)?;
 
-			<Something<T>>::put(something);
-			<SomeOption<T>>::put(something);
+			Something::put(something);
+			SomeOption::put(something);
 
 			// here we are raising the Something event
 			Self::deposit_event(RawEvent::SomethingStored(something, who));
@@ -68,7 +75,7 @@ decl_module! {
 		    let mut list = Self::list(1);
 		    if is_add {
 		        list.push(value);
-		        <List<T>>::insert(1, list);
+		        List::insert(1, list);
 		    } else {
 		        list.remove(value as usize);
 		    }

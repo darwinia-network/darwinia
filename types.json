@@ -5,9 +5,10 @@
   "RewardBalance": "u128",
   "RewardBalanceOf": "u128",
   "IndividualDeposit": {
-    "month": "Moment",
+    "month": "u32",
     "start_at": "Moment",
     "value": "CurrencyOf",
+    "balance": "Balance",
     "claimed": "bool"
   },
   "Deposit": {

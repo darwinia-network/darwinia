@@ -14,14 +14,44 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
+//! # Aura Module
+//!
+//! - [`aura::Trait`](./trait.Trait.html)
+//! - [`Module`](./struct.Module.html)
+//!
+//! ## Overview
+//!
+//! The Aura module extends Aura consensus by managing offline reporting.
+//!
+//! ## Interface
+//!
+//! ### Public Functions
+//!
+//! - `slot_duration` - Determine the Aura slot-duration based on the Timestamp module configuration.
+//!
+//! ## Related Modules
+//!
+//! - [Staking](../srml_staking/index.html): The Staking module is called in Aura to enforce slashing
+//!  if validators miss a certain number of slots (see the [`StakingSlasher`](./struct.StakingSlasher.html)
+//!  struct and associated method).
+//! - [Timestamp](../srml_timestamp/index.html): The Timestamp module is used in Aura to track
+//! consensus rounds (via `slots`).
+//! - [Consensus](../srml_consensus/index.html): The Consensus module does not relate directly to Aura,
+//!  but serves to manage offline reporting by implementing `ProvideInherent` in a similar way.
+//!
+//! ## References
+//!
+//! If you're interested in hacking on this module, it is useful to understand the interaction with
+//! `substrate/core/inherents/src/lib.rs` and, specifically, the required implementation of
+//! [`ProvideInherent`](../substrate_inherents/trait.ProvideInherent.html) and
+//! [`ProvideInherentData`](../substrate_inherents/trait.ProvideInherentData.html) to create and check inherents.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use timestamp;
 
 use rstd::{result, prelude::*};
-use parity_codec::{Codec, Decode, Encode};
-
+use parity_codec::Encode;
 use srml_support::{decl_storage, decl_module, Parameter, storage::StorageValue};
 use primitives::{traits::{SaturatedConversion, Saturating, Zero, One, Member}, generic::DigestItem};
 use timestamp::OnTimestampSet;
@@ -31,10 +61,11 @@ use inherents::{RuntimeString, InherentIdentifier, InherentData, ProvideInherent
 #[cfg(feature = "std")]
 use inherents::{InherentDataProviders, ProvideInherentData};
 use substrate_consensus_aura_primitives::{AURA_ENGINE_ID, ConsensusLog};
-//#[cfg(feature = "std")]
-//use parity_codec::Decode;
+#[cfg(feature = "std")]
+use parity_codec::Decode;
 
-
+mod mock;
+//mod tests;
 
 /// The Aura inherent identifier.
 pub const INHERENT_IDENTIFIER: InherentIdentifier = *b"auraslot";
@@ -136,7 +167,7 @@ decl_storage! {
 }
 
 decl_module! {
-	pub struct Module<T: Trait> for enum Call where origin: T::Origin {	}
+	pub struct Module<T: Trait> for enum Call where origin: T::Origin { }
 }
 
 impl<T: Trait> Module<T> {
@@ -158,11 +189,14 @@ impl<T: Trait> session::OneSessionHandler<T::AccountId> for Module<T> {
 	{
 		// instant changes
 		if changed {
+			runtime_io::print("11111");
 			let next_authorities = validators.map(|(_, k)| k).collect::<Vec<_>>();
 			let last_authorities = <Module<T>>::authorities();
 			if next_authorities != last_authorities {
 				Self::change_authorities(next_authorities);
 			}
+		} else {
+			runtime_io::print("00000");
 		}
 	}
 	fn on_disabled(_i: usize) {
@@ -194,6 +228,8 @@ impl AuraReport {
 			for index in 0..self.skipped {
 				punish_with((self.start_slot + index) % validator_count, 1);
 			}
+		} else {
+			runtime_io::print("ALL validators SKIP");
 		}
 	}
 }
@@ -244,7 +280,7 @@ pub struct StakingSlasher<T>(::rstd::marker::PhantomData<T>);
 impl<T: staking::Trait + Trait> HandleReport for StakingSlasher<T> {
 	fn handle_report(report: AuraReport) {
 		let validators = session::Module::<T>::validators();
-
+		runtime_io::print("OFFLINE REPORT");
 		report.punish(
 			validators.len(),
 			|idx, slash_count| {

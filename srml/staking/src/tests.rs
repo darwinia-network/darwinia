@@ -1,62 +1,104 @@
-use mock::*;
-use phragmen;
 use primitives::traits::OnInitialize;
 use runtime_io::with_externalities;
-use srml_support::{assert_eq_uvec, assert_noop, assert_ok, EnumerableStorageMap};
-use srml_support::traits::{Currency, ReservableCurrency};
+use srml_support::{assert_eq_uvec, assert_err, assert_noop, assert_ok, EnumerableStorageMap};
+use srml_support::traits::{Currency, ReservableCurrency, WithdrawReason, WithdrawReasons};
+
+use mock::*;
+use phragmen;
 
 use super::*;
 
+#[inline]
+fn build_basic_env() {
+    // stash -> controller
+    // 91 -> 90 (payee: stash)
+    // 81 -> 80 (payee: controller)
+    Ring::transfer(Origin::signed(100), 91, 1000_000 * COIN);
+    Ring::transfer(Origin::signed(100), 81, 1000_000 * COIN);
+    // for operation fee
+    Ring::transfer(Origin::signed(100), 90, 10 * COIN);
+    Ring::transfer(Origin::signed(100), 80, 10 * COIN);
+
+    // acc 91 and 81 deposit kton
+    Gringotts::deposit(Origin::signed(91), 100_000 * COIN, 36);
+    Gringotts::deposit(Origin::signed(81), 100_000 * COIN, 36);
+
+    // now acc 91 and 81 has about 36 kton
+    Staking::bond(Origin::signed(91), 90, 20 * COIN, RewardDestination::Stash);
+    Staking::bond(Origin::signed(81), 80, 20 * COIN, RewardDestination::Controller);
+
+    assert_eq!(Staking::bonded(&91), Some(90));
+    assert_eq!(Staking::bonded(&81), Some(80));
+
+    assert_eq!(Staking::ledger(&90), Some(StakingLedger { stash: 91, total: 20 * COIN, active: 20 * COIN, unlocking: vec![] }));
+    assert_eq!(Staking::ledger(&80), Some(StakingLedger { stash: 81, total: 20 * COIN, active: 20 * COIN, unlocking: vec![] }));
+
+    // users can not use `bond` twice
+    assert_err!(Staking::bond(Origin::signed(91), 90, 1 * COIN, RewardDestination::Stash), "stash already bonded");
+    // acc 103 has not bonded yet
+    assert_eq!(Staking::ledger(&103), None);
+    Staking::bond_extra(Origin::signed(91), 1 * COIN);
+    assert_eq!(Staking::ledger(&90), Some(StakingLedger { stash: 91, total: 21 * COIN, active: 21 * COIN, unlocking: vec![] }));
+
+    assert_ok!(Staking::validate(Origin::signed(90), ValidatorPrefs::default()));
+    assert_ok!(Staking::validate(Origin::signed(80), ValidatorPrefs::default()));
+}
+
 #[test]
-fn basic_setup_works() {
-    // Verifies initial conditions of mock
+fn test_env_build() {
     with_externalities(&mut ExtBuilder::default()
-        .build(), || {
-        assert_eq!(Staking::bonded(&11), Some(10)); // Account 11 is stashed and locked, and account 10 is the controller
-        assert_eq!(Staking::bonded(&21), Some(20)); // Account 21 is stashed and locked, and account 20 is the controller
-        assert_eq!(Staking::bonded(&1), None);        // Account 1 is not a stashed
-
-        // Account 10 controls the stash from account 11, which is 100 * balance_factor units
-        assert_eq!(Staking::ledger(&10), Some(StakingLedger { stash: 11, total: 1000, active: 1000, unlocking: vec![] }));
-        // Account 20 controls the stash from account 21, which is 200 * balance_factor units
-        assert_eq!(Staking::ledger(&20), Some(StakingLedger { stash: 21, total: 1000, active: 1000, unlocking: vec![] }));
-        // Account 1 does not control any stash
-        assert_eq!(Staking::ledger(&1), None);
-
-        // ValidatorPrefs are default, thus unstake_threshold is 3, other values are default for their type
-        assert_eq!(<Validators<Test>>::enumerate().collect::<Vec<_>>(), vec![
-            (31, ValidatorPrefs { unstake_threshold: 3, validator_payment: 0 }),
-            (21, ValidatorPrefs { unstake_threshold: 3, validator_payment: 0 }),
-            (11, ValidatorPrefs { unstake_threshold: 3, validator_payment: 0 })
-        ]);
-
-        // Account 100 is the default nominator
-        assert_eq!(Staking::ledger(100), Some(StakingLedger { stash: 101, total: 500, active: 500, unlocking: vec![] }));
-        assert_eq!(Staking::nominators(101), vec![11, 21]);
-
-        // Account 10 is exposed by 1000 * balance_factor from their own stash in account 11 + the default nominator vote
-        assert_eq!(Staking::stakers(11), Exposure { total: 1125, own: 1000, others: vec![IndividualExposure { who: 101, value: 125 }] });
-        // Account 20 is exposed by 1000 * balance_factor from their own stash in account 21 + the default nominator vote
-        assert_eq!(Staking::stakers(21), Exposure { total: 1375, own: 1000, others: vec![IndividualExposure { who: 101, value: 375 }] });
-
-        // The number of validators required.
-        assert_eq!(Staking::validator_count(), 2);
-
-        // Initial Era and session
-        assert_eq!(Staking::current_era(), 0);
-        assert_eq!(Session::current_index(), 0);
-
-        // initial rewards
-        assert_eq!(Staking::current_session_reward(), 10);
-
-        // initial slot_stake
-        assert_eq!(Staking::slot_stake(), 1125); // Naive
-
-        // initial slash_count of validators
-        assert_eq!(Staking::slash_count(&11), 0);
-        assert_eq!(Staking::slash_count(&21), 0);
-
-        // All exposures must be correct.
+        .existential_deposit(1).build(), || {
         check_exposure_all();
+
+        // initial build storage should work
+        // controller in session.validators
+        assert_eq!(Session::validators(), vec![10, 20]);
+        // 21 - the minimum bonded
+        assert_eq!(Staking::stakers(&21), Exposure { total: 1000, own: 1000, others: vec![IndividualExposure {who: 101, value: 0}]});
+        assert_eq!(Staking::stakers(&11), Exposure { total: 100 * COIN, own: 100 * COIN, others: vec![]});
+        // stash in staking.current_elected
+        assert_eq!(Staking::current_elected(), vec![11, 21]);
+
+        build_basic_env();
+
+        start_era(1);
+        assert_eq!(Session::validators(), vec![10, 90, 80]);
+        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
     });
 }
+
+#[test]
+fn offline_should_slash_and_disable() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(1).build(), || {
+
+        build_basic_env();
+        start_era(1);
+        // make sure acc 91 has bonded all his kton
+        let _ = Kton::make_free_balance_be(&91, 21 * COIN);
+        assert_err!(Kton::ensure_can_withdraw(&91, 1, WithdrawReason::Transfer, 0), "account liquidity restrictions prevent withdrawal");
+
+        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
+
+        assert_eq!(Staking::validators(&91).unstake_threshold, 3);
+        assert_eq!(Staking::offline_slash_grace(), 0);
+
+        assert!(<Validators<Test>>::exists(&91));
+        assert!(!is_disabled(90));
+        // limit offline_count for acc 91 is 3
+        // offline count = limit + 1
+        Staking::on_offline_validator(90, 11);
+        assert_eq!(Staking::slash_count(&91), 11);
+
+        assert!(is_disabled(90));
+
+        start_era(2);
+
+        // acc 21-20 will not be a validator because it failed to meet the standard
+        assert_eq!(Staking::current_elected(), vec![11, 81, 21]);
+        assert!(!<Stakers<Test>>::exists(&91));
+        // out of validator set, status related will be cleared
+        assert_eq!(Session::validators(), vec![10, 80, 20]);
+    });
+}
+

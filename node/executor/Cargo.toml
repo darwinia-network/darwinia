@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 trie-root = "0.12"
-parity-codec = "3.3"
+parity-codec = "4.1.1"
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 state_machine = { package = "substrate-state-machine", git = 'https://github.com/paritytech/substrate.git' }
 substrate-executor = { git = 'https://github.com/paritytech/substrate.git' }

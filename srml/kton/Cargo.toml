@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0", optional = true }
 safe-mix = { version = "1.0", default-features = false}
-parity-codec = { version = "3.3", default-features = false, features = ["derive"] }
+parity-codec = { version = "4.1.1", default-features = false, features = ["derive"] }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -15,11 +15,13 @@ srml-support = { git = 'https://github.com/paritytech/substrate.git', default-fe
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-dsupport = { package = "evo-support", path = "../../support", default-features = false }
+dsupport = { package = "evo-support", path = "../support", default-features = false }
 
 [dev-dependencies]
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
+balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
+node-runtime = { path = "../../node/runtime" }
 
 [features]
 default = ["std"]
