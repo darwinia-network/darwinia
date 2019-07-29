@@ -168,13 +168,23 @@ impl balances::Trait for Runtime {
 
 impl kton::Trait for Runtime {
 	type Balance = Balance;
-	type Currency = Balances;
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
-	type SystemRefund = ();
+        type OnAccountBalanceChanged = Reward;
 }
 
+impl gringotts::Trait for Runtime {
+	type Kton = Kton;
+	type Ring = Balances;
+	type Event = Event;
+}
+
+impl reward::Trait for Runtime {
+	type Kton = Kton;
+	type Ring = Balances;
+	type Event = Event;
+}
 
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
@@ -244,10 +254,10 @@ impl staking::Trait for Runtime {
 	type Currency = Kton;
 	type RewardCurrency = Balances;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = ();
+	type OnRewardMinted = Reward;
 	type Event = Event;
+        type Reward = ();
 	type Slash = ();
-	type Reward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	// customed
@@ -337,6 +347,8 @@ construct_runtime!(
 		Contracts: contracts,
 		Sudo: sudo,
 		Kton: kton,
+		Reward: reward,
+		Gringotts: gringotts::{Module, Call, Storage, Event<T>},
 	}
 );
 

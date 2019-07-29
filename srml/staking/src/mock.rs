@@ -120,13 +120,23 @@ impl timestamp::Trait for Test {
 
 impl kton::Trait for Test {
     type Balance = Balance;
-    type Currency = Ring;
     type Event = ();
     type OnMinted = ();
     type OnRemoval = ();
-    type SystemRefund = ();
+    type OnAccountBalanceChanged = Reward;
 }
 
+impl gringotts::Trait for Test {
+    type Kton = Kton;
+    type Ring = Ring;
+    type Event = ();
+}
+
+impl reward::Trait for Test {
+    type Kton = Kton;
+    type Ring = Ring;
+    type Event = ();
+}
 
 parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 3;
@@ -145,7 +155,7 @@ impl Trait for Test {
     type Currency = Kton;
     type RewardCurrency = Ring;
     type CurrencyToVote = CurrencyToVoteHandler;
-    type OnRewardMinted = ();
+    type OnRewardMinted = Reward;
     type Event = ();
     type Slash = ();
     type Reward = ();
@@ -261,6 +271,8 @@ impl ExtBuilder {
                 (21, balance_factor * 2000),
             ],
             vesting: vec![],
+        }.assimilate_storage(&mut t, &mut c);
+        let _ = reward::GenesisConfig::<Test> {
             sys_acc: 42,
         }.assimilate_storage(&mut t, &mut c);
         let stake_21 = if self.fair { 1000 } else { 2000 };
@@ -309,6 +321,8 @@ pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
+pub type Reward = reward::Module<Test>;
+pub type Gringotts = gringotts::Module<Test>;
 pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {

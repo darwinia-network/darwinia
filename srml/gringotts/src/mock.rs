@@ -86,12 +86,17 @@ impl balances::Trait for Test {
 }
 
 impl Trait for Test {
+    type Kton = kton::Module<Self>;
+    type Ring = balances::Module<Self>;
+    type Event = ();
+}
+
+impl kton::Trait for Test {
     type Balance = u128;
-    type Currency = balances::Module<Self>;
     type Event = ();
     type OnMinted = ();
     type OnRemoval = ();
-    type SystemRefund = ();
+    type OnAccountBalanceChanged = Module<Self>;
 }
 
 pub struct ExtBuilder {
@@ -180,10 +185,13 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
-        let _ = GenesisConfig::<Test> {
-            sys_acc: 42,
+        let _ = kton::GenesisConfig::<Test> {
             balances: vec![],
             vesting: vec![],
+        }.assimilate_storage(&mut t, &mut c);
+
+        let _ = GenesisConfig::<Test> {
+            sys_acc: 42,
         }.assimilate_storage(&mut t, &mut c);
         t.into()
 
@@ -193,4 +201,5 @@ impl ExtBuilder {
 pub type System = system::Module<Test>;
 pub type Ring = balances::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
-pub type Kton = Module<Test>;
+pub type Kton = kton::Module<Test>;
+pub type Reward = Module<Test>;

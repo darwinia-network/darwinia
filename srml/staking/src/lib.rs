@@ -37,12 +37,12 @@ use srml_support::{
     decl_event, decl_module, decl_storage, ensure, EnumerableStorageMap,
     StorageMap, StorageValue, traits::{
         Currency, Get, Imbalance, LockableCurrency, LockIdentifier,
-        OnDilution, OnFreeBalanceZero, OnUnbalanced, WithdrawReasons,
+        OnFreeBalanceZero, OnUnbalanced, WithdrawReasons,
     },
 };
 use system::ensure_signed;
+use dsupport::traits::OnMinted;
 
-use dsupport::traits::SystemCurrency;
 use phragmen::{ACCURACY, elect, equalize, ExtendedBalance};
 
 
@@ -220,16 +220,15 @@ pub const DEFAULT_BONDING_DURATION: u32 = 1;
 
 pub trait Trait: system::Trait + session::Trait {
     /// The staking balance.
-    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber> +
-    SystemCurrency<Self::AccountId, <Self::RewardCurrency as Currency<Self::AccountId>>::Balance>;
+    type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
     // Customed: for ring
-    type RewardCurrency: Currency<Self::AccountId>;
+    type RewardCurrency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
     type CurrencyToVote: Convert<BalanceOf<Self>, u64> + Convert<u128, BalanceOf<Self>>;
 
     /// Some tokens minted.
-    type OnRewardMinted: OnDilution<RewardBalanceOf<Self>>;
+    type OnRewardMinted: OnMinted<RewardBalanceOf<Self>>;
 
     /// The overarching event type.
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -709,7 +708,7 @@ impl<T: Trait> Module<T> {
             }
             Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
 
-            T::Currency::reward_to_pot(reward);
+            T::OnRewardMinted::on_minted(reward);
             // TODO: reward to treasury
         }
 
