@@ -275,7 +275,7 @@ impl ExtBuilder {
             current_era: self.current_era,
             current_era_total_reward: 1_600_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
-                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
+//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
                 (11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
                 (21, 20, stake_21, StakerStatus::<AccountId>::Validator),
                 (31, 30, stake_31, StakerStatus::<AccountId>::Validator),

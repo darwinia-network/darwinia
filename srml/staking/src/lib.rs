@@ -372,7 +372,7 @@ decl_storage! {
 					};
 				}
 
-				if let (_, Some(validators)) = <Module<T>>::select_validators() {
+				if let (_, Some(validators)) = <Module<T>>::select_validators() {∑
 					<session::Validators<T>>::put(&validators);
 				}
 			});
@@ -914,6 +914,7 @@ impl<T: Trait> Module<T> {
                     .unwrap_or(slash_exposure);
                 let _ = Self::slash_validator(&stash, slash);
 //                <ShouldOffline<T>>::mutate(|s| s.push(stash.clone()));
+                <Validators<T>>::remove(&stash);
                 let _ = <session::Module<T>>::disable(&controller);
 
                 RawEvent::OfflineSlash(stash.clone(), slash)

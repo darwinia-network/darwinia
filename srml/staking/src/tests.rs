@@ -52,12 +52,12 @@ fn test_env_build() {
 
         // initial build storage should work
         // controller in session.validators
-        assert_eq!(Session::validators(), vec![10, 1, 20]);
+        assert_eq!(Session::validators(), vec![10, 20]);
         // 21 - the minimum bonded
         assert_eq!(Staking::stakers(&21), Exposure { total: 1000, own: 1000, others: vec![IndividualExposure {who: 101, value: 0}]});
         assert_eq!(Staking::stakers(&11), Exposure { total: 100 * COIN, own: 100 * COIN, others: vec![]});
         // stash in staking.current_elected
-        assert_eq!(Staking::current_elected(), vec![11, 2, 21]);
+        assert_eq!(Staking::current_elected(), vec![11, 21]);
 
         build_basic_env();
 
@@ -78,20 +78,27 @@ fn offline_should_slash_and_disable() {
         let _ = Kton::make_free_balance_be(&91, 21 * COIN);
         assert_err!(Kton::ensure_can_withdraw(&91, 1, WithdrawReason::Transfer, 0), "account liquidity restrictions prevent withdrawal");
 
-        assert_eq!(Staking::validators(&91), ValidatorPrefs {unstake_threshold: 3, validator_payment: 0});
+        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
+
+        assert_eq!(Staking::validators(&91).unstake_threshold, 3);
         assert_eq!(Staking::offline_slash_grace(), 0);
 
+        assert!(<Validators<Test>>::exists(&91));
+        assert!(!is_disabled(90));
         // limit offline_count for acc 91 is 3
         // offline count = limit + 1
-        Staking::on_offline_validator(90, 4);
+        Staking::on_offline_validator(90, 11);
+        assert_eq!(Staking::slash_count(&91), 11);
+
+        assert!(is_disabled(90));
 
         start_era(2);
+
         // acc 21-20 will not be a validator because it failed to meet the standard
-        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
-        assert_eq!(Staking::stakers(&91), Exposure {total: 21 * COIN, own: 21 * COIN, others: vec![]});
+        assert_eq!(Staking::current_elected(), vec![11, 81, 21]);
+        assert!(!<Stakers<Test>>::exists(&91));
         // out of validator set, status related will be cleared
-        assert_eq!(Staking::stakers(&21), Exposure { total: 0, own: 0, others: vec![]});
-        assert_eq!(Session::validators(), vec![10, 90, 80]);
+        assert_eq!(Session::validators(), vec![10, 80, 20]);
     });
 }
 
