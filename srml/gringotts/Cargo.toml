@@ -1,5 +1,5 @@
 [package]
-name = "evo-reward"
+name = "evo-gringotts"
 version = "0.1.0"
 authors = ["Darwinia Network <hello@itering.com>"]
 edition = "2018"
@@ -24,7 +24,6 @@ substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 node-runtime = { path = "../../node/runtime" }
 kton = { package = "evo-kton", path = "../kton"}
-gringotts = { package = "evo-gringotts", path = "../gringotts"}
 
 [features]
 default = ["std"]

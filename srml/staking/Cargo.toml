@@ -23,6 +23,7 @@ substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 kton = { package = "evo-kton", path = "../kton" }
+gringotts = { package = "evo-gringotts", path = "../gringotts" }
 rand = "0.6.5"
 node-runtime = { path = "../../node/runtime" }
 

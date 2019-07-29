@@ -85,15 +85,9 @@ impl balances::Trait for Test {
     type TransactionByteFee = TransactionByteFee;
 }
 
-impl gringotts::Trait for Test {
-    type Kton = Kton;
-    type Ring = Ring;
-    type Event = ();
-}
-
 impl Trait for Test {
-    type Kton = Kton;
-    type Ring = Ring;
+    type Kton = kton::Module<Self>;
+    type Ring = balances::Module<Self>;
     type Event = ();
 }
 
@@ -208,5 +202,4 @@ pub type System = system::Module<Test>;
 pub type Ring = balances::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
 pub type Kton = kton::Module<Test>;
-pub type Gringotts = gringotts::Module<Test>;
 pub type Reward = Module<Test>;

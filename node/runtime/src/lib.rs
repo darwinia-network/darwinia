@@ -174,6 +174,12 @@ impl kton::Trait for Runtime {
         type OnAccountBalanceChanged = Reward;
 }
 
+impl gringotts::Trait for Runtime {
+	type Kton = Kton;
+	type Ring = Balances;
+	type Event = Event;
+}
+
 impl reward::Trait for Runtime {
 	type Kton = Kton;
 	type Ring = Balances;
@@ -342,6 +348,7 @@ construct_runtime!(
 		Sudo: sudo,
 		Kton: kton,
 		Reward: reward,
+		Gringotts: gringotts::{Module, Call, Storage, Event<T>},
 	}
 );
 

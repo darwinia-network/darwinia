@@ -5,7 +5,7 @@ use runtime_io::with_externalities;
 use srml_support::{assert_err, assert_noop, assert_ok};
 use srml_support::traits::{Currency, ExistenceRequirement, Imbalance, WithdrawReason, WithdrawReasons};
 
-use mock::{ExtBuilder, Gringotts, Reward, Kton, Origin, Ring, System, Test, Timestamp};
+use mock::{ExtBuilder, Reward, Kton, Origin, Ring, System, Test, Timestamp};
 use node_runtime::{COIN, MILLI};
 
 use super::*;
@@ -18,15 +18,15 @@ fn approximate_equal(real: u128, ideal: u128) -> bool {
 
 #[inline]
 fn deposit_pre() {
-    Gringotts::deposit(Origin::signed(11), 100000, 12);
-    Gringotts::deposit(Origin::signed(21), 100000, 36);
+    Reward::deposit(Origin::signed(11), 100000, 12);
+    Reward::deposit(Origin::signed(21), 100000, 36);
 }
 
 #[inline]
 fn deposit_with_decimals_pre() {
     // acc deposit 100w ring
-    Gringotts::deposit(Origin::signed(11), 10_000_000_000 * COIN, 12);
-    Gringotts::deposit(Origin::signed(21), 1_000_000_000 * COIN, 36);
+    Reward::deposit(Origin::signed(11), 10_000_000_000 * COIN, 12);
+    Reward::deposit(Origin::signed(21), 1_000_000_000 * COIN, 36);
 }
 
 
@@ -53,8 +53,8 @@ fn deposit_and_deposit_extra_should_work() {
         deposit_pre();
         assert_eq!(Kton::free_balance(&11), 10);
         assert_eq!(Kton::free_balance(&21), 36);
-        assert_err!(Gringotts::deposit(Origin::signed(11), 10000, 12), "Already deposited.");
-        Gringotts::deposit_extra(Origin::signed(11), 10000, 12);
+        assert_err!(Reward::deposit(Origin::signed(11), 10000, 12), "Already deposited.");
+        Reward::deposit_extra(Origin::signed(11), 10000, 12);
         assert_eq!(Kton::free_balance(&11), 11);
     });
 }
@@ -81,8 +81,8 @@ fn reward_per_share_not_zero() {
     // acc 91 and 92 deposit 10k ring for 12 months
     // in return, acc 91 and 92 will get 1 kton
     let old_total_issuance = Kton::total_issuance();
-    Gringotts::deposit(Origin::signed(91), 10_000 * COIN, 12);
-    Gringotts::deposit(Origin::signed(92), 10_000 * COIN, 12);
+    Reward::deposit(Origin::signed(91), 10_000 * COIN, 12);
+    Reward::deposit(Origin::signed(92), 10_000 * COIN, 12);
     assert_eq!(Kton::total_issuance(), old_total_issuance + 2 * COIN);
 
     Reward::reward_to_pot(6000 * COIN);
@@ -103,7 +103,7 @@ fn reward_per_share_should_work() {
         assert_eq!(Reward::reward_can_withdraw(&91), 3000 * COIN);
         assert_eq!(Reward::reward_can_withdraw(&91), 3000 * COIN);
 
-        Gringotts::deposit(Origin::signed(93), 10_000 * COIN, 12);
+        Reward::deposit(Origin::signed(93), 10_000 * COIN, 12);
         // acc 93 has got 1 kton and reward_per_share is 3000
         assert_eq!(Reward::reward_paid_out(&93), 3000 * COIN as i128);
         // after acc 93 has got kton
@@ -119,7 +119,7 @@ fn transfer_should_work() {
         .existential_deposit(MILLI).build(), || {
         // reward_per_share 3000
         reward_per_share_not_zero();
-        Gringotts::deposit(Origin::signed(93), 10_000 * COIN, 12);
+        Reward::deposit(Origin::signed(93), 10_000 * COIN, 12);
         // acc 93 has got 1 kton and reward_per_share is 3000
         assert_eq!(Reward::reward_paid_out(&93), 3000 * COIN as i128);
         assert_eq!(Reward::reward_can_withdraw(&93), 0);

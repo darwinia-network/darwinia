@@ -123,12 +123,18 @@ impl kton::Trait for Test {
     type Event = ();
     type OnMinted = ();
     type OnRemoval = ();
-    type OnAccountBalanceChanged = reward::Module<Test>;
+    type OnAccountBalanceChanged = Reward;
+}
+
+impl gringotts::Trait for Test {
+    type Kton = Kton;
+    type Ring = Ring;
+    type Event = ();
 }
 
 impl reward::Trait for Test {
-    type Kton = kton::Module<Self>;
-    type Ring = balances::Module<Self>;
+    type Kton = Kton;
+    type Ring = Ring;
     type Event = ();
 }
 
@@ -315,8 +321,9 @@ pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
-pub type Staking = Module<Test>;
 pub type Reward = reward::Module<Test>;
+pub type Gringotts = gringotts::Module<Test>;
+pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
     Staking::current_elected().into_iter().for_each(|acc| check_exposure(acc));
