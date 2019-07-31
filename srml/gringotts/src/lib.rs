@@ -66,7 +66,7 @@ decl_event!(
 );
 
 decl_storage! {
-    trait Store for Module<T: Trait> as Reward {
+    trait Store for Module<T: Trait> as Gringotts {
         pub DepositLedger get(deposit_ledger): map T::AccountId => Option<Deposit<RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>>;
     }
 }
