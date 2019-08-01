@@ -55,24 +55,6 @@ pub struct BalanceLock<Balance, BlockNumber> {
     pub reasons: WithdrawReasons,
 }
 
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
-pub struct IndividualDeposit<Currency, Balance, Moment> {
-    pub month: u32,
-    pub start_at: Moment,
-    pub value: Currency,
-    pub balance: Balance,
-    pub claimed: bool,
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
-pub struct Deposit<Currency, Balance, Moment> {
-    pub total: Currency,
-    pub deposit_list: Vec<IndividualDeposit<Currency, Balance, Moment>>,
-}
-
 pub trait Trait: timestamp::Trait {
     type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
     MaybeSerializeDebug + From<Self::BlockNumber>;
