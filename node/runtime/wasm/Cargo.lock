@@ -578,7 +578,9 @@ dependencies = [
  "srml-session 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "substrate-keyring 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
 ]
 
 [[package]]

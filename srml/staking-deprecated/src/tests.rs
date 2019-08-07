@@ -56,7 +56,7 @@ fn test_env_build() {
         // 21 - the minimum bonded
         assert_eq!(Staking::stakers(&21), Exposure { total: 1000, own: 1000, others: vec![IndividualExposure {who: 101, value: 0}]});
         assert_eq!(Staking::stakers(&11), Exposure { total: 100 * COIN, own: 100 * COIN, others: vec![]});
-        // stash in staking.current_elected
+        // stash in staking-deprecated.current_elected
         assert_eq!(Staking::current_elected(), vec![11, 21]);
 
         build_basic_env();

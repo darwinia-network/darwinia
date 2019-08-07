@@ -14,9 +14,11 @@ runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate
 primitives = { package = "sr-primitives",git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', default-features = false }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
 reward = { package = "evo-reward", path = "../reward", default-features = false }
+substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
@@ -40,8 +42,10 @@ std = [
 	"runtime_io/std",
 	"srml-support/std",
 	"primitives/std",
+	"substrate-primitives/std",
 	"session/std",
 	"system/std",
+	"timestamp/std",
 	"dsupport/std",
 	"reward/std",
 ]
