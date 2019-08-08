@@ -17,7 +17,6 @@ system = { package = "srml-system", git = 'https://github.com/paritytech/substra
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', default-features = false }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
-reward = { package = "evo-reward", path = "../reward", default-features = false }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
@@ -25,7 +24,6 @@ substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 kton = { package = "evo-kton", path = "../kton" }
-gringotts = { package = "evo-gringotts", path = "../gringotts" }
 rand = "0.6.5"
 node-runtime = { path = "../../node/runtime" }
 
@@ -47,5 +45,4 @@ std = [
 	"system/std",
 	"timestamp/std",
 	"dsupport/std",
-	"reward/std",
 ]

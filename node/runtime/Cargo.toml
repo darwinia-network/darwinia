@@ -37,12 +37,11 @@ rustc-hex = { version = "2.0", optional = true }
 serde = { version = "1.0", optional = true }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
 # customed
-#ring = { package = "evo-ring", path = '../../srml/token/ring', default-features = false}
+#balances = { package = "evo-ring", path = '../../srml/balances', default-features = false}
 kton = { package = "evo-kton", path = '../../srml/kton', default-features = false}
 staking = { package = "evo-staking", path = "../../srml/staking", default-features = false}
 aura = { package = "srml-aura",  path = "../../srml/aura", default-features = false }
-reward = { package = "evo-reward", path = "../../srml/reward", default-features = false}
-gringotts = { package = "evo-gringotts", path = "../../srml/gringotts", default-features = false}
+
 
 [features]
 default = ["std"]
@@ -81,6 +80,4 @@ std = [
 	"substrate-keyring",
 	"offchain-primitives/std",
 	"kton/std",
-	"reward/std",
-	"gringotts/std",
 ]

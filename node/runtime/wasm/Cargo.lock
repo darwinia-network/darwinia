@@ -509,25 +509,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "evo-gringotts"
-version = "0.1.0"
-dependencies = [
- "evo-support 0.1.0",
- "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-balances 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "substrate-keyring 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
-]
-
-[[package]]
 name = "evo-kton"
 version = "0.1.0"
 dependencies = [
@@ -545,29 +526,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "evo-reward"
-version = "0.1.0"
-dependencies = [
- "evo-support 0.1.0",
- "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-balances 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-timestamp 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "substrate-keyring 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
-]
-
-[[package]]
 name = "evo-staking"
 version = "0.1.0"
 dependencies = [
- "evo-reward 0.1.0",
  "evo-support 0.1.0",
  "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1513,9 +1474,7 @@ dependencies = [
 name = "node-runtime"
 version = "0.1.0"
 dependencies = [
- "evo-gringotts 0.1.0",
  "evo-kton 0.1.0",
- "evo-reward 0.1.0",
  "evo-staking 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-primitives 2.0.0",

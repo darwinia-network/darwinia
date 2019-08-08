@@ -60,7 +60,6 @@ members = [
     "srml/support",
     "srml/aura",
 	"srml/try",
-	"srml/reward",
 ]
 
 exclude = ["node/runtime/wasm"]
