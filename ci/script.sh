@@ -17,7 +17,7 @@ case $2 in
 		sudo apt-get -y update
 		sudo apt-get install -y cmake pkg-config libssl-dev
 
-		cargo test --all
+		cargo test --all --locked
 		;;
 
 	"wasm")
