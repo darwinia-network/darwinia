@@ -49,11 +49,11 @@ use system::ensure_signed;
 
 mod utils;
 
-//#[cfg(any(feature = "bench", test))]
-//mod mock;
+#[cfg(any(feature = "bench", test))]
+mod mock;
 //
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 //mod phragmen;
 
@@ -391,11 +391,11 @@ decl_storage! {
 		| {
 			with_storage(storage, || {
 				for &(ref stash, ref controller, balance, ref status) in &config.stakers {
-//					assert!(T::Currency::free_balance(&stash) >= balance);
+					assert!(T::Ring::free_balance(&stash) >= balance);
 					let _ = <Module<T>>::bond(
 						T::Origin::from(Some(stash.clone()).into()),
 						T::Lookup::unlookup(controller.clone()),
-						StakingBalance::Ring(100000.into()),
+						StakingBalance::Ring(balance),
 						RewardDestination::Stash,
 						12
 					);
