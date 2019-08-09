@@ -57,6 +57,7 @@ pub use support::StorageValue;
 pub use staking::StakerStatus;
 pub use staking::ErasNums;
 
+
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
@@ -171,20 +172,8 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
-        type OnAccountBalanceChanged = Reward;
 }
 
-impl gringotts::Trait for Runtime {
-	type Kton = Kton;
-	type Ring = Balances;
-	type Event = Event;
-}
-
-impl reward::Trait for Runtime {
-	type Kton = Kton;
-	type Ring = Balances;
-	type Event = Event;
-}
 
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
@@ -251,12 +240,11 @@ parameter_types! {
 
 
 impl staking::Trait for Runtime {
-	type Currency = Kton;
-	type RewardCurrency = Balances;
+	type Ring = Balances;
+	type Kton = Kton;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = Reward;
 	type Event = Event;
-        type Reward = ();
+	type Reward = ();
 	type Slash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -341,14 +329,12 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
-		Staking: staking::{default, OfflineWorker},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		Contracts: contracts,
 		Sudo: sudo,
 		Kton: kton,
-		Reward: reward,
-		Gringotts: gringotts::{Module, Call, Storage, Event<T>},
+		Staking: staking::{default, OfflineWorker},
 	}
 );
 

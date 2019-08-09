@@ -285,7 +285,7 @@ impl<T: staking::Trait + Trait> HandleReport for StakingSlasher<T> {
 			validators.len(),
 			|idx, slash_count| {
 				let v = validators[idx].clone();
-				staking::Module::<T>::on_offline_validator(v, slash_count);
+//				staking::Module::<T>::on_offline_validator(v, slash_count);
 			}
 		);
 	}

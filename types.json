@@ -1,18 +1,34 @@
 {
+  "EpochDuration": "u64",
   "TokenBalance": "u128",
   "Currency": "u128",
   "CurrencyOf": "u128",
-  "RewardBalance": "u128",
-  "RewardBalanceOf": "u128",
-  "IndividualDeposit": {
-    "month": "u32",
-    "start_at": "Moment",
-    "value": "CurrencyOf",
-    "balance": "Balance",
-    "claimed": "bool"
+  "RingBalanceOf": "u128",
+  "KtonBalanceOf": "u128",
+  "ValidatorPrefs": {
+    "unstake_threshold": "u32",
+    "validator_payment_ratio": "Balance"
   },
-  "Deposit": {
-    "total": "CurrencyOf",
-    "deposit_list": "Vec<IndividualDeposit>"
+  "RegularItem": {
+    "value": "RingBalanceOf",
+    "expire_time": "Moment"
+  },
+  "StakingLedgers": {
+    "stash": "AccountId",
+    "total_power": "u128",
+    "active_power": "u128",
+    "normal_ring": "RingBalanceOf",
+    "regular_ring": "RingBalanceOf",
+    "active_ring": "RingBalanceOf",
+    "normal_kton": "KtonBalanceOf",
+    "active_kton": "KtonBalanceOf",
+    "regular_items": "Vec<RegularItem>",
+    "unlocking": "Vec<UnlockChunk>"
+  },
+  "StakingBalance": {
+    "_enum": {
+      "Ring": "u128",
+      "Kton": "u128"
+    }
   }
 }
