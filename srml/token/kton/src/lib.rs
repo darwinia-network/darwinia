@@ -242,7 +242,7 @@ decl_module! {
             let value_can_withdraw = Self::reward_can_withdraw(&transactor);
             if !value_can_withdraw.is_zero() {
                 Self::update_reward_paid_out(&transactor, value_can_withdraw, false);
-                T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw);
+                T::Currency::transfer(&Self::sys_acc(), &transactor, value_can_withdraw)?;
                 Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
         }
