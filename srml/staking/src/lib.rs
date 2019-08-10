@@ -340,9 +340,9 @@ decl_storage! {
 		pub MinimumValidatorCount get(minimum_validator_count) config():
 			u32 = DEFAULT_MINIMUM_VALIDATOR_COUNT;
 
-		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_parts(60);
+		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_percent(60);
 
-		pub OfflineSlash get(offline_slash) config(): Perbill = Perbill::from_millionths(1000);
+		pub OfflineSlash get(offline_slash) config(): Perbill = Perbill::from_parts(1000);
 
 		pub OfflineSlashGrace get(offline_slash_grace) config(): u32;
 
