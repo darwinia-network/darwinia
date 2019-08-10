@@ -244,8 +244,10 @@ impl staking::Trait for Runtime {
 	type Kton = Kton;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type Event = Event;
-	type Reward = ();
-	type Slash = ();
+	type RingReward = ();
+	type RingSlash = ();
+	type KtonReward = ();
+	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	// customed
@@ -328,13 +330,13 @@ construct_runtime!(
 		Authorship: authorship::{Module, Call, Storage},
 		Indices: indices,
 		Balances: balances,
+		Kton: kton,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
+		Staking: staking::{default, OfflineWorker},
+		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		Contracts: contracts,
 		Sudo: sudo,
-		Kton: kton,
-		Staking: staking::{default, OfflineWorker},
 	}
 );
 

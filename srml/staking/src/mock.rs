@@ -147,8 +147,10 @@ impl Trait for Test {
     type Kton = Kton;
     type CurrencyToVote = CurrencyToVoteHandler;
     type Event = ();
-    type Slash = ();
-    type Reward = ();
+    type RingSlash = ();
+    type RingReward = ();
+    type KtonSlash = ();
+    type KtonReward = ();
     type SessionsPerEra = SessionsPerEra;
     type BondingDuration = BondingDuration;
     // customed
