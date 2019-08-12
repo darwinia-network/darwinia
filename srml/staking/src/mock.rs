@@ -1,4 +1,5 @@
 
+
 use std::{collections::HashSet, cell::RefCell};
 use primitives::Perbill;
 use primitives::traits::{IdentityLookup, Convert, OpaqueKeys, OnInitialize};
@@ -8,8 +9,9 @@ use runtime_io;
 use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
 use srml_support::traits::{Currency, Get};
 use crate::{EraIndex, ErasNums, GenesisConfig, Module, Trait, StakerStatus,
-            ValidatorPrefs, RewardDestination, Nominators
+            ValidatorPrefs, RewardDestination, Nominators, StakingBalance
 };
+
 
 
 /// The AccountId alias in this test module.
@@ -112,6 +114,7 @@ impl session::Trait for Test {
     type SessionHandler = TestSessionHandler;
     type Event = ();
 }
+
 impl timestamp::Trait for Test {
     type Moment = u64;
     type OnTimestampSet = ();
@@ -123,20 +126,8 @@ impl kton::Trait for Test {
     type Event = ();
     type OnMinted = ();
     type OnRemoval = ();
-    type OnAccountBalanceChanged = Reward;
 }
 
-impl gringotts::Trait for Test {
-    type Kton = Kton;
-    type Ring = Ring;
-    type Event = ();
-}
-
-impl reward::Trait for Test {
-    type Kton = Kton;
-    type Ring = Ring;
-    type Event = ();
-}
 
 parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 3;
@@ -152,13 +143,14 @@ parameter_types! {
 
 
 impl Trait for Test {
-    type Currency = Kton;
-    type RewardCurrency = Ring;
+    type Ring = Ring;
+    type Kton = Kton;
     type CurrencyToVote = CurrencyToVoteHandler;
-    type OnRewardMinted = Reward;
     type Event = ();
-    type Slash = ();
-    type Reward = ();
+    type RingSlash = ();
+    type RingReward = ();
+    type KtonSlash = ();
+    type KtonReward = ();
     type SessionsPerEra = SessionsPerEra;
     type BondingDuration = BondingDuration;
     // customed
@@ -259,22 +251,10 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
-            balances : vec![
-                (1, 10 * balance_factor),
-                (2, 20 * balance_factor),
-                (3, 300 * balance_factor),
-                (4, 400 * balance_factor),
-                // for initial validator set
-                (10, balance_factor),
-                (11, balance_factor * 1000),
-                (20, balance_factor),
-                (21, balance_factor * 2000),
-            ],
+            balances : vec![],
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
-        let _ = reward::GenesisConfig::<Test> {
-            sys_acc: 42,
-        }.assimilate_storage(&mut t, &mut c);
+
         let stake_21 = if self.fair { 1000 } else { 2000 };
         let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
         let status_41 = if self.validator_pool {
@@ -321,8 +301,6 @@ pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
-pub type Reward = reward::Module<Test>;
-pub type Gringotts = gringotts::Module<Test>;
 pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
@@ -362,7 +340,7 @@ pub fn check_nominator_exposure(stash: u64) {
     );
 }
 
-pub fn assert_total_expo(stash: u64, val: u64) {
+pub fn assert_total_expo(stash: u64, val: u128) {
     let expo = Staking::stakers(&stash);
     assert_eq!(expo.total, val);
 }
@@ -375,15 +353,15 @@ pub fn bond_validator(acc: u64, val: u64) {
     // a = controller
     // a + 1 = stash
     let _ = Ring::make_free_balance_be(&(acc+1), val);
-    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, val, RewardDestination::Controller));
-    assert_ok!(Staking::validate(Origin::signed(acc), ValidatorPrefs::default()));
+    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, StakingBalance::Ring(val), RewardDestination::Controller, 0));
+    assert_ok!(Staking::validate(Origin::signed(acc), "test".as_bytes().to_owned(), 0, 0));
 }
 
 pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
     // a = controller
     // a + 1 = stash
     let _ = Ring::make_free_balance_be(&(acc+1), val);
-    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, val, RewardDestination::Controller));
+    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, StakingBalance::Ring(val), RewardDestination::Controller, 0));
     assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }
 

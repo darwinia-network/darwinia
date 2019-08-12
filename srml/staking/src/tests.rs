@@ -2,103 +2,180 @@ use primitives::traits::OnInitialize;
 use runtime_io::with_externalities;
 use srml_support::{assert_eq_uvec, assert_err, assert_noop, assert_ok, EnumerableStorageMap};
 use srml_support::traits::{Currency, ReservableCurrency, WithdrawReason, WithdrawReasons};
-
 use mock::*;
-use phragmen;
-
 use super::*;
 
-#[inline]
-fn build_basic_env() {
-    // stash -> controller
-    // 91 -> 90 (payee: stash)
-    // 81 -> 80 (payee: controller)
-    Ring::transfer(Origin::signed(100), 91, 1000_000 * COIN);
-    Ring::transfer(Origin::signed(100), 81, 1000_000 * COIN);
-    // for operation fee
-    Ring::transfer(Origin::signed(100), 90, 10 * COIN);
-    Ring::transfer(Origin::signed(100), 80, 10 * COIN);
-
-    // acc 91 and 81 deposit kton
-    Gringotts::deposit(Origin::signed(91), 100_000 * COIN, 36);
-    Gringotts::deposit(Origin::signed(81), 100_000 * COIN, 36);
-
-    // now acc 91 and 81 has about 36 kton
-    Staking::bond(Origin::signed(91), 90, 20 * COIN, RewardDestination::Stash);
-    Staking::bond(Origin::signed(81), 80, 20 * COIN, RewardDestination::Controller);
-
-    assert_eq!(Staking::bonded(&91), Some(90));
-    assert_eq!(Staking::bonded(&81), Some(80));
-
-    assert_eq!(Staking::ledger(&90), Some(StakingLedger { stash: 91, total: 20 * COIN, active: 20 * COIN, unlocking: vec![] }));
-    assert_eq!(Staking::ledger(&80), Some(StakingLedger { stash: 81, total: 20 * COIN, active: 20 * COIN, unlocking: vec![] }));
-
-    // users can not use `bond` twice
-    assert_err!(Staking::bond(Origin::signed(91), 90, 1 * COIN, RewardDestination::Stash), "stash already bonded");
-    // acc 103 has not bonded yet
-    assert_eq!(Staking::ledger(&103), None);
-    Staking::bond_extra(Origin::signed(91), 1 * COIN);
-    assert_eq!(Staking::ledger(&90), Some(StakingLedger { stash: 91, total: 21 * COIN, active: 21 * COIN, unlocking: vec![] }));
-
-    assert_ok!(Staking::validate(Origin::signed(90), ValidatorPrefs::default()));
-    assert_ok!(Staking::validate(Origin::signed(80), ValidatorPrefs::default()));
-}
+// 3600 * 24 * 30
+pub const MONTH: u64 = 3600 * 24 * 30;
 
 #[test]
 fn test_env_build() {
     with_externalities(&mut ExtBuilder::default()
-        .existential_deposit(1).build(), || {
+        .existential_deposit(0).build(), || {
         check_exposure_all();
 
-        // initial build storage should work
-        // controller in session.validators
-        assert_eq!(Session::validators(), vec![10, 20]);
-        // 21 - the minimum bonded
-        assert_eq!(Staking::stakers(&21), Exposure { total: 1000, own: 1000, others: vec![IndividualExposure {who: 101, value: 0}]});
-        assert_eq!(Staking::stakers(&11), Exposure { total: 100 * COIN, own: 100 * COIN, others: vec![]});
-        // stash in staking.current_elected
-        assert_eq!(Staking::current_elected(), vec![11, 21]);
+        assert_eq!(Staking::bonded(&11), Some(10));
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: (100 * COIN / 10000) as u128,
+            active_power: (100 * COIN / 10000) as u128,
+            total_ring: 100 * COIN,
+            regular_ring: 100 * COIN,
+            active_ring: 100 * COIN,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH}],
+            unlocking: vec![]
+        }));
 
-        build_basic_env();
-
-        start_era(1);
-        assert_eq!(Session::validators(), vec![10, 90, 80]);
-        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
+        assert_eq!(Kton::free_balance(&11), COIN / 100);
+        assert_eq!(Kton::total_issuance(), 16 * COIN / 100);
     });
 }
 
 #[test]
-fn offline_should_slash_and_disable() {
+fn normal_kton_should_work() {
     with_externalities(&mut ExtBuilder::default()
-        .existential_deposit(1).build(), || {
+        .existential_deposit(0).build(), || {
 
-        build_basic_env();
-        start_era(1);
-        // make sure acc 91 has bonded all his kton
-        let _ = Kton::make_free_balance_be(&91, 21 * COIN);
-        assert_err!(Kton::ensure_can_withdraw(&91, 1, WithdrawReason::Transfer, 0), "account liquidity restrictions prevent withdrawal");
+        Kton::deposit_creating(&1001, 10 * COIN);
+        assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Kton(10 * COIN), RewardDestination::Stash, 0));
+        assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
+            stash: 1001,
+            total_power: (10 * COIN) as u128,
+            active_power: (10 * COIN) as u128,
+            total_ring: 0,
+            regular_ring: 0,
+            active_ring: 0,
+            total_kton: 10 * COIN,
+            active_kton: 10 * COIN,
+            regular_items: vec![],
+            unlocking: vec![]
+        }));
 
-        assert_eq!(Staking::current_elected(), vec![11, 91, 81]);
+        assert_eq!(Kton::locks(&1001), vec![kton::BalanceLock {id: STAKING_ID, amount: 10 * COIN, until: u64::max_value(), reasons: WithdrawReasons::all()}]);
 
-        assert_eq!(Staking::validators(&91).unstake_threshold, 3);
-        assert_eq!(Staking::offline_slash_grace(), 0);
+        // promise_month should not work for kton
+        Kton::deposit_creating(&2001, 10 * COIN);
+        assert_ok!(Staking::bond(Origin::signed(2001), 2000, StakingBalance::Kton(10 * COIN), RewardDestination::Stash, 12));
+        assert_eq!(Staking::ledger(&2000),Some(StakingLedgers {
+            stash: 2001,
+            total_power: (10 * COIN) as u128,
+            active_power: (10 * COIN) as u128,
+            total_ring: 0,
+            regular_ring: 0,
+            active_ring: 0,
+            total_kton: 10 * COIN,
+            active_kton: 10 * COIN,
+            regular_items: vec![],
+            unlocking: vec![]
+        }));
 
-        assert!(<Validators<Test>>::exists(&91));
-        assert!(!is_disabled(90));
-        // limit offline_count for acc 91 is 3
-        // offline count = limit + 1
-        Staking::on_offline_validator(90, 11);
-        assert_eq!(Staking::slash_count(&91), 11);
+    });
+}
 
-        assert!(is_disabled(90));
+#[test]
+fn regular_unbond_and_withdraw_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
 
-        start_era(2);
+        Timestamp::set_timestamp(13 * MONTH);
+        Ring::deposit_creating(&11, 1000 * COIN);
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN), true);
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: (100 * COIN / 10000) as u128,
+            active_power: (90 * COIN / 10000) as u128,
+            total_ring: 100 * COIN,
+            regular_ring: 90 * COIN,
+            active_ring: 90 * COIN,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![RegularItem {value: 90 * COIN, expire_time: 12 * MONTH}],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000}]
+        }));
 
-        // acc 21-20 will not be a validator because it failed to meet the standard
-        assert_eq!(Staking::current_elected(), vec![11, 81, 21]);
-        assert!(!<Stakers<Test>>::exists(&91));
-        // out of validator set, status related will be cleared
-        assert_eq!(Session::validators(), vec![10, 80, 20]);
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN), true);
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: (100 * COIN / 10000) as u128,
+            active_power: (70 * COIN / 10000) as u128,
+            total_ring: 100 * COIN,
+            regular_ring: 70 * COIN,
+            active_ring: 70 * COIN,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![RegularItem {value: 70 * COIN, expire_time: 12 * MONTH}],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000}]
+        }));
+
+        // more than active ring
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN), true);
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: (100 * COIN / 10000) as u128,
+            active_power: 0,
+            total_ring: 100 * COIN,
+            regular_ring: 0,
+            active_ring: 0,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![], // should be cleared
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000},
+                            UnlockChunk { value: StakingBalance::Ring(70000000000), era: 3, dt_power: 7000000}
+            ]
+        }));
+
+        start_era(3);
+
+        assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: 0,
+            active_power: 0,
+            total_ring: 0,
+            regular_ring: 0,
+            active_ring: 0,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![], // should be cleared
+            unlocking: vec![]
+        }));
+        let free_balance = Ring::free_balance(&11);
+        assert_eq!(Ring::locks(&11), vec![balances::BalanceLock {id: STAKING_ID, amount: 0, until: u64::max_value(), reasons: WithdrawReasons::all()}]);
+        assert_ok!(Ring::ensure_can_withdraw(&11, free_balance, WithdrawReason::Transfer, 0));
+    });
+}
+
+#[test]
+fn normal_unbond_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+
+        // unbond normal ring
+        Ring::deposit_creating(&11, 1000 * COIN);
+        let kton_free_balance = Kton::free_balance(&11);
+        let mut origin_ledger = Staking::ledger(&10).unwrap();
+        Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(200 * COIN), 12);
+        assert_eq!(Kton::free_balance(&11), kton_free_balance + 200 * COIN / 10000);
+
+        origin_ledger.regular_items.push(RegularItem {value: 200 * COIN, expire_time: 12 * MONTH});
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: origin_ledger.total_power + (200 * COIN / 10000) as u128,
+            active_power: origin_ledger.active_power + (200 * COIN / 10000) as u128,
+            total_ring: origin_ledger.total_ring + 200 * COIN,
+            regular_ring: origin_ledger.regular_ring + 200 * COIN,
+            active_ring: origin_ledger.active_ring + 200 * COIN,
+            total_kton: origin_ledger.total_kton,
+            active_kton: origin_ledger.active_kton,
+            regular_items: origin_ledger.regular_items,
+            unlocking: origin_ledger.unlocking
+        }));
+
+
     });
 }
 

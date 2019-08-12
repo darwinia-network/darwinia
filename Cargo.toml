@@ -50,6 +50,7 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
+    "test-client",
 	"node/cli",
     "node/executor",
     "node/primitives",
@@ -60,7 +61,6 @@ members = [
     "srml/support",
     "srml/aura",
 	"srml/try",
-	"srml/reward",
 ]
 
 exclude = ["node/runtime/wasm"]

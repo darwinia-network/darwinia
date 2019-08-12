@@ -16,7 +16,6 @@ use srml_support::traits::{
     WithdrawReason, WithdrawReasons,
 };
 use system::ensure_signed;
-use dsupport::traits::OnAccountBalanceChanged;
 
 // customed
 use imbalance::{NegativeImbalance, PositiveImbalance};
@@ -64,8 +63,6 @@ pub trait Trait: timestamp::Trait {
     // kton
     type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
     type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
-
-    type OnAccountBalanceChanged: OnAccountBalanceChanged<Self::AccountId, Self::Balance>;
 }
 
 decl_event!(
@@ -243,9 +240,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         };
 
         if transactor != dest {
-            // add here
-            T::OnAccountBalanceChanged::on_changed(transactor, from_balance, new_from_balance);
-            T::OnAccountBalanceChanged::on_changed(dest, to_balance, new_to_balance);
 
             Self::set_free_balance(transactor, new_from_balance);
             Self::set_free_balance(dest, new_to_balance);
@@ -268,8 +262,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
                 return Err("payment would kill account");
             }
-            // add here
-            T::OnAccountBalanceChanged::on_changed(who, old_balance, new_balance);
 
             Self::ensure_can_withdraw(who, value, reason, new_balance)?;
             Self::set_free_balance(who, new_balance);
@@ -288,8 +280,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         let free_slash = cmp::min(free_balance, value);
 
         let new_balance = free_balance - free_slash;
-        // add here
-        T::OnAccountBalanceChanged::on_changed(who, free_balance, new_balance);
 
         Self::set_free_balance(who, new_balance);
         let remaining_slash = value - free_slash;
@@ -314,8 +304,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         //add here 
         let old_balance = Self::free_balance(who);
         let new_balance = old_balance + value;
-
-        T::OnAccountBalanceChanged::on_changed(who, old_balance, new_balance);
 
         Self::set_free_balance(who, new_balance);
         Ok(PositiveImbalance::new(value))
@@ -344,8 +332,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         UpdateBalanceOutcome
     ) {
         let original = Self::free_balance(who);
-
-        T::OnAccountBalanceChanged::on_changed(who, original, balance);
 
         let imbalance = if original <= balance {
             SignedImbalance::Positive(PositiveImbalance::new(balance - original))

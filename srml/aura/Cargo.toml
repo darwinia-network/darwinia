@@ -15,7 +15,7 @@ srml-support = { git = 'https://github.com/paritytech/substrate.git', default-fe
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 staking = { package = "evo-staking", path = "../staking", default-features = false }
-#staking = {package = "srml-staking", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+#staking-deprecated = {package = "srml-staking-deprecated", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-consensus-aura-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false}
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git', default-features = false }

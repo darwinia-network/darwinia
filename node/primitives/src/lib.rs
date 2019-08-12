@@ -51,7 +51,7 @@ pub type AuraSignature = primitives::ed25519::Signature;
 pub type AuraId = primitives::ed25519::Public;
 
 /// Index of a transaction in the chain.
-pub type Index = u64;
+pub type Nonce = u64;
 
 /// A hash of some data used by the chain.
 pub type Hash = primitives::H256;

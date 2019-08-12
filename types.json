@@ -1,18 +1,47 @@
 {
-  "TokenBalance": "u128",
-  "Currency": "u128",
-  "CurrencyOf": "u128",
-  "RewardBalance": "u128",
-  "RewardBalanceOf": "u128",
-  "IndividualDeposit": {
-    "month": "u32",
-    "start_at": "Moment",
-    "value": "CurrencyOf",
-    "balance": "Balance",
-    "claimed": "bool"
+  "EpochDuration": "u64",
+  "EraIndex": "u32",
+  "RingBalanceOf": "u128",
+  "KtonBalanceOf": "u128",
+  "ExtendedBalance": "u128",
+  "ValidatorPrefs": {
+    "unstake_threshold": "Compact<u32>",
+    "validator_payment_ratio": "Compact<RingBalanceOf>"
   },
-  "Deposit": {
-    "total": "CurrencyOf",
-    "deposit_list": "Vec<IndividualDeposit>"
+  "StakingBalance": {
+    "_enum": {
+      "Ring": "RingBalanceOf",
+      "Kton": "KtonBalanceOf"
+    }
+  },
+  "RegularItem": {
+    "value": "Compact<RingBalanceOf>",
+    "expire_time": "Compact<Moment>"
+  },
+  "UnlockChunk": {
+    "value": "StakingBalance",
+    "era": "Compact<EraIndex>",
+    "dt_power": "ExtendedBalance"
+  },
+  "StakingLedgers": {
+    "stash": "AccountId",
+    "total_power": "Compact<ExtendedBalance>",
+    "active_power": "Compact<ExtendedBalance>",
+    "total_ring": "Compact<RingBalanceOf>",
+    "regular_ring": "Compact<RingBalanceOf>",
+    "active_ring": "Compact<RingBalanceOf>",
+    "total_kton": "Compact<KtonBalanceOf>",
+    "active_kton": "Compact<KtonBalanceOf>",
+    "regular_items": "Vec<RegularItem>",
+    "unlocking": "Vec<UnlockChunk>"
+  },
+  "Exposures": {
+    "total": "ExtendedBalance",
+    "own": "ExtendedBalance",
+    "others": "Vec<IndividualExpo>"
+  },
+  "IndividualExpo": {
+    "who": "AccountId",
+    "value": "ExtendedBalance"
   }
 }

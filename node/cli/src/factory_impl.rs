@@ -60,7 +60,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 	type Block = node_primitives::Block;
 	type Phase = sr_primitives::generic::Phase;
 	type Secret = sr25519::Pair;
-	type Index = node_primitives::Index;
+	type Index = node_primitives::Nonce;
 
 	type Number = Number;
 

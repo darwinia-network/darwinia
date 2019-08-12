@@ -25,8 +25,8 @@ use support::{
 	construct_runtime, parameter_types, traits::{SplitTwoWays, Currency, OnUnbalanced}
 };
 use substrate_primitives::u32_trait::{_1, _2, _3, _4};
-use node_primitives::{
-	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Index,
+pub use node_primitives::{
+	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Nonce,
 	Moment, Signature,
 };
 use grandpa::fg_primitives::{self, ScheduledChange};
@@ -56,6 +56,7 @@ pub use runtime_primitives::{Permill, Perbill, impl_opaque_keys};
 pub use support::StorageValue;
 pub use staking::StakerStatus;
 pub use staking::ErasNums;
+
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -128,7 +129,7 @@ impl Convert<u128, u128> for CurrencyToVoteHandler {
 
 impl system::Trait for Runtime {
 	type Origin = Origin;
-	type Index = Index;
+	type Index = Nonce;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hashing = BlakeTwo256;
@@ -171,20 +172,8 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
-        type OnAccountBalanceChanged = Reward;
 }
 
-impl gringotts::Trait for Runtime {
-	type Kton = Kton;
-	type Ring = Balances;
-	type Event = Event;
-}
-
-impl reward::Trait for Runtime {
-	type Kton = Kton;
-	type Ring = Balances;
-	type Event = Event;
-}
 
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
@@ -251,13 +240,14 @@ parameter_types! {
 
 
 impl staking::Trait for Runtime {
-	type Currency = Kton;
-	type RewardCurrency = Balances;
+	type Ring = Balances;
+	type Kton = Kton;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type OnRewardMinted = Reward;
 	type Event = Event;
-        type Reward = ();
-	type Slash = ();
+	type RingReward = ();
+	type RingSlash = ();
+	type KtonReward = ();
+	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	// customed
@@ -340,15 +330,13 @@ construct_runtime!(
 		Authorship: authorship::{Module, Call, Storage},
 		Indices: indices,
 		Balances: balances,
+		Kton: kton,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Staking: staking::{default, OfflineWorker},
+		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		Contracts: contracts,
 		Sudo: sudo,
-		Kton: kton,
-		Reward: reward,
-		Gringotts: gringotts::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -363,9 +351,9 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Index, Call, Signature>;
+pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, Signature>;
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Index, Call>;
+pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
 
