@@ -28,6 +28,22 @@ fn test_env_build() {
             regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH}],
             unlocking: vec![]
         }));
+
+        assert_eq!(Kton::free_balance(&11), COIN / 100);
+        assert_eq!(Kton::total_issuance(), 16 * COIN / 100);
+
+
+    });
+}
+
+#[test]
+fn normal_kton_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+
+        Kton::deposit_creating(&1001, 10 * COIN);
+        assert_ok!(Staking::bond(Origin:signed(1001), 1000, StakingBalance::Kton(10 * COIN), 0));
+
     });
 }
 

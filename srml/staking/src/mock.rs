@@ -251,17 +251,7 @@ impl ExtBuilder {
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
-            balances : vec![
-                (1, 10 * balance_factor),
-                (2, 20 * balance_factor),
-                (3, 300 * balance_factor),
-                (4, 400 * balance_factor),
-                // for initial validator set
-                (10, balance_factor),
-                (11, balance_factor * 1000),
-                (20, balance_factor),
-                (21, balance_factor * 2000),
-            ],
+            balances : vec![],
             vesting: vec![],
         }.assimilate_storage(&mut t, &mut c);
 
@@ -345,7 +335,7 @@ pub fn check_nominator_exposure(stash: u64) {
     let nominator_stake = Staking::slashable_balance_of(&stash);
     // a nominator cannot over-spend.
     assert!(
-        nominator_stake >= sum as u64,
+        nominator_stake >= sum,
         "failed: Nominator({}) stake({}) >= sum divided({})", stash, nominator_stake, sum,
     );
 }

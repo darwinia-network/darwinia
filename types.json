@@ -1,5 +1,6 @@
 {
   "EpochDuration": "u64",
+  "EraIndex": "u32",
   "RingBalanceOf": "u128",
   "KtonBalanceOf": "u128",
   "ExtendedBalance": "u128",
@@ -7,9 +8,20 @@
     "unstake_threshold": "u32",
     "validator_payment_ratio": "RingBalanceOf"
   },
+  "StakingBalance": {
+    "_enum": {
+      "Ring": "RingBalanceOf",
+      "Kton": "KtonBalanceOf"
+    }
+  },
   "RegularItem": {
     "value": "RingBalanceOf",
     "expire_time": "Moment"
+  },
+  "UnlockChunk": {
+    "value": "StakingBalance",
+    "era": "EraIndex",
+    "dt_power": "ExtendedBalance"
   },
   "StakingLedgers": {
     "stash": "AccountId",
@@ -22,12 +34,6 @@
     "active_kton": "KtonBalanceOf",
     "regular_items": "Vec<RegularItem>",
     "unlocking": "Vec<UnlockChunk>"
-  },
-  "StakingBalance": {
-    "_enum": {
-      "Ring": "RingBalanceOf",
-      "Kton": "KtonBalanceOf"
-    }
   },
   "Exposures": {
     "total": "ExtendedBalance",
