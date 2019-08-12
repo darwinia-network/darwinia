@@ -50,7 +50,7 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
-    "test-client",
+#    "test-client",
 	"node/cli",
     "node/executor",
     "node/primitives",

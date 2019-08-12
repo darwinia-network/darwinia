@@ -18,11 +18,14 @@
 
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
+#[macro_use]
+extern crate serde;
 
 pub use cli::error;
 pub mod chain_spec;
 mod service;
 mod factory_impl;
+mod panic_handle;
 
 use tokio::prelude::Future;
 use tokio::runtime::{Builder as RuntimeBuilder, Runtime};
@@ -33,6 +36,7 @@ use log::info;
 use structopt::{StructOpt, clap::App};
 use cli::{AugmentClap, GetLogFilter};
 use crate::factory_impl::FactoryState;
+use crate::panic_handle::set as panic_set;
 use transaction_factory::RuntimeAdapter;
 
 /// The chain specification option.
@@ -170,7 +174,7 @@ pub fn run<I, T, E>(args: I, exit: E, version: cli::VersionInfo) -> error::Resul
 			}.map_err(|e| format!("{:?}", e))
 		}
 	);
-
+	panic_set(version.support_url);
 	match &ret {
 		Ok(Some(CustomSubcommands::Factory(cli_args))) => {
 			let config = cli::create_config_with_db_path::<service::Factory, _>(
