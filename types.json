@@ -38,7 +38,7 @@
   "Exposures": {
     "total": "ExtendedBalance",
     "own": "ExtendedBalance",
-    "others": "Vec<IndividualExposure>"
+    "others": "Vec<IndividualExpo>"
   },
   "IndividualExpo": {
     "who": "AccountId",
