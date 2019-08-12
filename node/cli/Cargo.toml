@@ -39,6 +39,10 @@ timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/s
 rand = "0.6"
 finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+backtrace = "0.3"
+reqwest = "0.9.5"
+serde = "1.0"
+serde_json = "1.0"
 
 [dev-dependencies]
 consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/paritytech/substrate.git' }
