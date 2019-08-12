@@ -27,7 +27,7 @@
     "stash": "AccountId",
     "total_power": "Compact<ExtendedBalance>",
     "active_power": "Compact<ExtendedBalance>",
-    "total_kton": "Compact<RingBalanceOf>",
+    "total_ring": "Compact<RingBalanceOf>",
     "regular_ring": "Compact<RingBalanceOf>",
     "active_ring": "Compact<RingBalanceOf>",
     "total_kton": "Compact<KtonBalanceOf>",
