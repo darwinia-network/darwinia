@@ -259,7 +259,7 @@ impl<
 /// The amount of exposure (to slashing) than an individual nominator has.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct IndividualExposure<AccountId, Power> {
+pub struct IndividualExpo<AccountId, Power> {
     /// The stash account of the nominator in question.
     who: AccountId,
     /// Amount of funds exposed.
@@ -269,13 +269,13 @@ pub struct IndividualExposure<AccountId, Power> {
 /// A snapshot of the stake backing a single validator in the system.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Exposure<AccountId, Power> {
+pub struct Exposures<AccountId, Power> {
     /// The total balance backing this validator.
     pub total: Power,
     /// The validator's own stash that is exposed.
     pub own: Power,
     /// The portions of nominators stashes that are exposed.
-    pub others: Vec<IndividualExposure<AccountId, Power>>,
+    pub others: Vec<IndividualExpo<AccountId, Power>>,
 }
 
 
@@ -298,7 +298,7 @@ type RawAssignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance);
 type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, ExtendedBalance);
 type ExpoMap<T> = BTreeMap<
     <T as system::Trait>::AccountId,
-    Exposure<<T as system::Trait>::AccountId, ExtendedBalance>
+    Exposures<<T as system::Trait>::AccountId, ExtendedBalance>
 >;
 
 
@@ -360,7 +360,7 @@ decl_storage! {
 
 		pub Nominators get(nominators): linked_map T::AccountId => Vec<T::AccountId>;
 
-		pub Stakers get(stakers): map T::AccountId => Exposure<T::AccountId, ExtendedBalance>;
+		pub Stakers get(stakers): map T::AccountId => Exposures<T::AccountId, ExtendedBalance>;
 
 		pub CurrentElected get(current_elected): Vec<T::AccountId>;
 
@@ -803,12 +803,12 @@ impl<T: Trait> Module<T> {
     fn slash_validator(stash: &T::AccountId, slash_ratio_in_u32: u32) {
         // construct Perbill here to make sure slash_ratio lt 0.
         let slash_ratio = Perbill::from_parts(slash_ratio_in_u32);
-        // The exposure (backing stake) information of the validator to be slashed.
-        let exposure = Self::stakers(stash);
+        // The exposures (backing stake) information of the validator to be slashed.
+        let exposures = Self::stakers(stash);
 
         let (mut ring_imbalance, mut kton_imbalance) = Self::slash_individual(stash, slash_ratio);
 
-        for i in exposure.others.iter() {
+        for i in exposures.others.iter() {
             let (rn, kn) = Self::slash_individual(&i.who, slash_ratio);
             ring_imbalance.subsume(rn);
             kton_imbalance.subsume(kn);
@@ -904,15 +904,15 @@ impl<T: Trait> Module<T> {
         let validator_cut = if reward.is_zero() {
             Zero::zero()
         } else {
-            let exposure = Self::stakers(stash);
-            let total = exposure.total.max(One::one());
+            let exposures = Self::stakers(stash);
+            let total = exposures.total.max(One::one());
 
-            for i in &exposure.others {
+            for i in &exposures.others {
                 let per_u64 = Perbill::from_rational_approximation(i.value, total);
                 imbalance.maybe_subsume(Self::make_payout(&i.who, per_u64 * reward));
             }
 
-            let per_u64 = Perbill::from_rational_approximation(exposure.own, total);
+            let per_u64 = Perbill::from_rational_approximation(exposures.own, total);
             per_u64 * reward
         };
         imbalance.maybe_subsume(Self::make_payout(stash, validator_cut + off_the_table));
@@ -981,7 +981,7 @@ impl<T: Trait> Module<T> {
                 .iter()
                 .map(|e| (e, Self::slashable_balance_of(e)))
                 .for_each(|(e, s)| {
-                    let item = Exposure { own: s, total: s, ..Default::default() };
+                    let item = Exposures { own: s, total: s, ..Default::default() };
                     exposures.insert(e.clone(), item);
                 });
 
@@ -993,7 +993,7 @@ impl<T: Trait> Module<T> {
                         // Nuked. Sadly there is not much that we can do about this.
                         // See this test: phragmen_should_not_overflow_xxx()
                         expo.total = expo.total.saturating_add(*s);
-                        expo.others.push(IndividualExposure { who: n.clone(), value: *s });
+                        expo.others.push(IndividualExpo { who: n.clone(), value: *s });
                     }
                 }
             }

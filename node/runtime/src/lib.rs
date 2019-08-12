@@ -25,8 +25,8 @@ use support::{
 	construct_runtime, parameter_types, traits::{SplitTwoWays, Currency, OnUnbalanced}
 };
 use substrate_primitives::u32_trait::{_1, _2, _3, _4};
-use node_primitives::{
-	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Index,
+pub use node_primitives::{
+	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Nonce,
 	Moment, Signature,
 };
 use grandpa::fg_primitives::{self, ScheduledChange};
@@ -129,7 +129,7 @@ impl Convert<u128, u128> for CurrencyToVoteHandler {
 
 impl system::Trait for Runtime {
 	type Origin = Origin;
-	type Index = Index;
+	type Index = Nonce;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hashing = BlakeTwo256;
@@ -351,9 +351,9 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Index, Call, Signature>;
+pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, Signature>;
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Index, Call>;
+pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
 

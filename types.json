@@ -1,13 +1,11 @@
 {
   "EpochDuration": "u64",
-  "TokenBalance": "u128",
-  "Currency": "u128",
-  "CurrencyOf": "u128",
   "RingBalanceOf": "u128",
   "KtonBalanceOf": "u128",
+  "ExtendedBalance": "u128",
   "ValidatorPrefs": {
     "unstake_threshold": "u32",
-    "validator_payment_ratio": "Balance"
+    "validator_payment_ratio": "RingBalanceOf"
   },
   "RegularItem": {
     "value": "RingBalanceOf",
@@ -15,8 +13,8 @@
   },
   "StakingLedgers": {
     "stash": "AccountId",
-    "total_power": "u128",
-    "active_power": "u128",
+    "total_power": "ExtendedBalance",
+    "active_power": "ExtendedBalance",
     "normal_ring": "RingBalanceOf",
     "regular_ring": "RingBalanceOf",
     "active_ring": "RingBalanceOf",
@@ -27,8 +25,17 @@
   },
   "StakingBalance": {
     "_enum": {
-      "Ring": "u128",
-      "Kton": "u128"
+      "Ring": "RingBalanceOf",
+      "Kton": "KtonBalanceOf"
     }
+  },
+  "Exposures": {
+    "total": "ExtendedBalance",
+    "own": "ExtendedBalance",
+    "other": "Vec<IndividualExposure>"
+  },
+  "IndividualExpo": {
+    "who": "AccountId",
+    "value": "ExtendedBalance"
   }
 }

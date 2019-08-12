@@ -19,7 +19,7 @@
 use rstd::{prelude::*, collections::btree_map::BTreeMap};
 use primitives::{PerU128};
 use primitives::traits::{Zero, Convert, Saturating};
-use crate::{RingBalanceOf, RawAssignment, ExpoMap, Trait, ValidatorPrefs, IndividualExposure};
+use crate::{RingBalanceOf, RawAssignment, ExpoMap, Trait, ValidatorPrefs, IndividualExpo};
 
 type Fraction = PerU128;
 /// Wrapper around the type used as the _safe_ wrapper around a `balance`.
@@ -383,7 +383,7 @@ fn do_equalize<T: Trait + 'static>(
 				.saturating_add(last_stake)
 				.saturating_sub(expo.total);
 			expo.total = expo.total.saturating_add(e.2);
-			expo.others.push(IndividualExposure { who: nominator.clone(), value: e.2});
+			expo.others.push(IndividualExpo { who: nominator.clone(), value: e.2});
 		}
 	});
 
