@@ -43,7 +43,7 @@ use primitives::traits::{Convert,
 use primitives::{Serialize, Deserialize};
 use system::ensure_signed;
 
-
+use rstd::convert::TryInto;
 use phragmen::{ACCURACY, elect, equalize, ExtendedBalance};
 
 
@@ -521,7 +521,7 @@ decl_module! {
         /// for normal_ring or normal_kton, follow the original substrate pattern
         /// for regular_ring, transform it into normal_ring first
         /// modify regular_items and regular_ring amount
-        fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>, is_regular: bool) {
+        fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
             let controller = ensure_signed(origin)?;
 
             let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
@@ -533,10 +533,40 @@ decl_module! {
 
 		    match value {
 		        StakingBalance::Ring(r) => {
+		            // unbond normal ring first
+		            // to simplify computation
+		            // total_unbond_value = normal_unbond + regular_unbond
+		            let mut power_changed: ExtendedBalance = 0;
+		            let active_normal_ring = ledger.active_ring - ledger.regular_ring;
+		            let value = r.min(active_normal_ring);
+                    ledger.active_ring -= value;
+
+                    let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
+                    power_changed += dt_power;
+                    let dt_power = dt_power.min(ledger.active_power);
+                    ledger.active_power -= dt_power;
+
+                    let mut unlock_value_left = r - value;
+                    runtime_io::print(unlock_value_left.try_into().unwrap_or_default() as u64);
+                    let is_regular = if active_normal_ring.is_zero() {
+                       // check again later
+                       true
+                    } else {
+                        // consume all active_regular_ring
+                        let is_regular = if (ledger.active_ring - ledger.regular_ring).is_zero() {
+                            false
+                        } else {
+                            !unlock_value_left.is_zero()
+                        };
+                        is_regular
+                    };
+
+                    let mut total_regular_changed: RingBalanceOf<T> = Zero::zero();
+
 		            if is_regular {
 		                let now = <timestamp::Module<T>>::now();
-		                let mut total_changed: RingBalanceOf<T> = Zero::zero();
-		                let mut ring_value_left = r;
+
+//		                let mut ring_value_left = r;
                         /// for regular_ring, transform into normal one
                         let regular_items = ledger.regular_items.clone();
                         let new_regular_items = regular_items.into_iter()
@@ -545,15 +575,16 @@ decl_module! {
                             } else {
                             // NOTE: value that a user wants to unbond must
                             // be big enough to unlock all regular_ring
-                                let res = if ring_value_left.is_zero() {
+                            // double check
+                                let res = if unlock_value_left.is_zero() {
                                     None
                                 } else {
-                                    let value = ring_value_left.min(item.value);
-                                    ring_value_left = r.saturating_sub(value);
+                                    let value = unlock_value_left.min(item.value);
+                                    unlock_value_left = unlock_value_left.saturating_sub(value);
 
                                     ledger.regular_ring = ledger.regular_ring.saturating_sub(value);
                                     ledger.active_ring = ledger.active_ring.saturating_sub(value);
-                                    total_changed += value;
+                                    total_regular_changed += value;
                                     item.value -= value;
 
                                     let res = if item.value.is_zero() {
@@ -566,27 +597,19 @@ decl_module! {
                                 res
                             }).collect::<Vec<_>>();
                         // reduce active power then
-                        let dt_power = (total_changed / 10000.into()).saturated_into::<ExtendedBalance>();
+                        let dt_power = (total_regular_changed / 10000.into()).saturated_into::<ExtendedBalance>();
+                        power_changed += dt_power;
                         let dt_power = dt_power.min(ledger.active_power);
                         ledger.active_power -= dt_power;
                         ledger.regular_items = new_regular_items;
-                        // update unlocking list
-                        let era = Self::current_era() + T::BondingDuration::get();
-				        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_changed), era, dt_power });
 		            } else {
-		                // for normal_ring unbond
-		                let normal_ring = ledger.total_ring.saturating_sub(ledger.regular_ring);
-		                let value = r.min(normal_ring);
-
-		                let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
-                        let dt_power = dt_power.min(ledger.active_power);
-
-                        ledger.active_ring = ledger.active_ring.saturating_sub(value);
-                        ledger.active_power -= dt_power;
-
-		                let era = Self::current_era() + T::BondingDuration::get();
-				        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(value), era, dt_power });
+		                 // do nothing
 		            }
+
+		            let era = Self::current_era() + T::BondingDuration::get();
+		            let total_value = total_regular_changed + value;
+		             // update unlocking list
+				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_value), era, dt_power: power_changed });
 		        },
 
 		        StakingBalance::Kton(k) => {
@@ -596,6 +619,7 @@ decl_module! {
                     let dt_power = value.saturated_into::<ExtendedBalance>();
                     let dt_power = dt_power.min(ledger.active_power);
                     ledger.active_power -= dt_power;
+                    ledger.active_kton -= value;
                     let era = Self::current_era() + T::BondingDuration::get();
 				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Kton(value), era, dt_power });
 

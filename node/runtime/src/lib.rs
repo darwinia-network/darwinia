@@ -113,6 +113,7 @@ pub const SECS_PER_BLOCK: Moment = 6;
 pub const MINUTES: Moment = 60 / SECS_PER_BLOCK;
 pub const HOURS: Moment = MINUTES * 60;
 pub const DAYS: Moment = HOURS * 24;
+
 pub struct CurrencyToVoteHandler;
 
 impl CurrencyToVoteHandler {
@@ -188,11 +189,6 @@ parameter_types! {
 	pub const TransactionByteFee: Balance = 1 * NANO;
 }
 
-parameter_types! {
-	pub const Period: BlockNumber = 1 * MINUTES;
-	pub const Offset: BlockNumber = 0;
-}
-
 type SessionHandlers = (Grandpa, Aura);
 parameter_types! {
 	pub const UncleGenerations: u64 = 0;
@@ -216,6 +212,12 @@ impl authorship::Trait for Runtime {
 // TODO: Introduce some structure to tie these together to make it a bit less of a footgun. This
 // should be easy, since OneSessionHandler trait provides the `Key` as an associated type. #2858
 
+
+parameter_types! {
+	pub const Period: BlockNumber = 1 * MINUTES;
+	pub const Offset: BlockNumber = 0;
+}
+
 impl session::Trait for Runtime {
 	type OnSessionEnding = Staking;
 	type SessionHandler = SessionHandlers;
@@ -233,8 +235,8 @@ parameter_types! {
 
 // customed
 parameter_types! {
-	// decimal 3
-	pub const CAP: Balance = 10_000_000_000_000;
+	// decimal 9
+	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
 
 

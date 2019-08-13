@@ -227,8 +227,7 @@ impl ExtBuilder {
         let validators = if self.validator_pool { vec![10, 20, 30, 40] } else { vec![10, 20] };
         let _ = session::GenesisConfig::<Test>{
             // NOTE: if config.nominate == false then 100 is also selected in the initial round.
-//            validators,
-            validators: vec![],
+            validators,
             keys: vec![],
         }.assimilate_storage(&mut t, &mut c);
         let _ = balances::GenesisConfig::<Test>{

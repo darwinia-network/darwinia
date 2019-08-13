@@ -79,7 +79,7 @@ fn regular_unbond_and_withdraw_should_work() {
 
         Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
         Ring::deposit_creating(&11, 1000 * COIN);
-        Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN), true);
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
             total_power: (100 * COIN / 10000) as u128,
@@ -93,7 +93,7 @@ fn regular_unbond_and_withdraw_should_work() {
             unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000}]
         }));
 
-        Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN), true);
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
             total_power: (100 * COIN / 10000) as u128,
@@ -109,7 +109,7 @@ fn regular_unbond_and_withdraw_should_work() {
         }));
 
         // more than active ring
-        Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN), true);
+        Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
             total_power: (100 * COIN / 10000) as u128,
@@ -191,7 +191,7 @@ fn normal_unbond_should_work() {
             unlocking: origin_ledger.unlocking
         }));
 
-        assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Kton(300 * COIN / 10000), false));
+        assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Kton(300 * COIN / 10000)));
 
     });
 }
