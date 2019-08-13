@@ -4,9 +4,7 @@ use srml_support::{assert_eq_uvec, assert_err, assert_noop, assert_ok, Enumerabl
 use srml_support::traits::{Currency, ReservableCurrency, WithdrawReason, WithdrawReasons};
 use mock::*;
 use super::*;
-
-// 3600 * 24 * 30
-pub const MONTH: u64 = 3600 * 24 * 30;
+use super::MONTH_IN_SECONDS;
 
 #[test]
 fn test_env_build() {
@@ -24,7 +22,7 @@ fn test_env_build() {
             active_ring: 100 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH}],
+            regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64}],
             unlocking: vec![]
         }));
 
@@ -79,7 +77,7 @@ fn regular_unbond_and_withdraw_should_work() {
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(0).build(), || {
 
-        Timestamp::set_timestamp(13 * MONTH);
+        Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
         Ring::deposit_creating(&11, 1000 * COIN);
         Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN), true);
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
@@ -91,7 +89,7 @@ fn regular_unbond_and_withdraw_should_work() {
             active_ring: 90 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 90 * COIN, expire_time: 12 * MONTH}],
+            regular_items: vec![RegularItem {value: 90 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64}],
             unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000}]
         }));
 
@@ -105,7 +103,7 @@ fn regular_unbond_and_withdraw_should_work() {
             active_ring: 70 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 70 * COIN, expire_time: 12 * MONTH}],
+            regular_items: vec![RegularItem {value: 70 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
             unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000},
                             UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000}]
         }));
@@ -161,7 +159,7 @@ fn normal_unbond_should_work() {
         Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(200 * COIN), 12);
         assert_eq!(Kton::free_balance(&11), kton_free_balance + 200 * COIN / 10000);
 
-        origin_ledger.regular_items.push(RegularItem {value: 200 * COIN, expire_time: 12 * MONTH});
+        origin_ledger.regular_items.push(RegularItem {value: 200 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64});
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
             total_power: origin_ledger.total_power + (200 * COIN / 10000) as u128,
@@ -175,7 +173,86 @@ fn normal_unbond_should_work() {
             unlocking: origin_ledger.unlocking
         }));
 
+        assert_eq!(Kton::free_balance(&11), 300 * COIN / 10000);
+        let mut origin_ledger = Staking::ledger(&10).unwrap();
+        // actually acc 11 only has 0.03 Kton
+        // we try to bond 1 kton
+        assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Kton(COIN), 0));
+        assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
+            stash: 11,
+            total_power: origin_ledger.total_power + (300 * COIN / 10000) as u128,
+            active_power: origin_ledger.active_power + (300 * COIN / 10000) as u128,
+            total_ring: origin_ledger.total_ring,
+            regular_ring: origin_ledger.regular_ring,
+            active_ring: origin_ledger.active_ring,
+            total_kton: origin_ledger.total_kton + 300 * COIN / 10000,
+            active_kton: origin_ledger.active_kton + 300 * COIN / 10000,
+            regular_items: origin_ledger.regular_items,
+            unlocking: origin_ledger.unlocking
+        }));
+
+        assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Kton(300 * COIN / 10000), false));
 
     });
 }
+
+#[test]
+fn punished_unbond_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+        Ring::deposit_creating(&1001, 100 * COIN);
+        Kton::deposit_creating(&1001, COIN / 100000);
+
+        // timestamp now is 0.
+        // free balance of kton is too low to work
+        assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(10 * COIN), RewardDestination::Stash, 36));
+        assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
+            stash: 1001,
+            total_power: (10 * COIN / 10000) as u128,
+            active_power: (10 * COIN / 10000) as u128,
+            total_ring: 10 * COIN,
+            regular_ring: 10 * COIN,
+            active_ring: 10 * COIN,
+            total_kton: 0,
+            active_kton: 0,
+            regular_items: vec![RegularItem { value: 10 * COIN, expire_time: 36 * MONTH_IN_SECONDS as u64 }], // should be cleared
+            unlocking: vec![]
+        }));
+        let origin_ledger = Staking::ledger(&1000).unwrap();
+        let kton_free_balance = Kton::free_balance(&1001);
+        assert_ok!(Staking::unbond_with_punish(Origin::signed(1000), 10 * COIN, MONTH_IN_SECONDS as u64 * 36));
+        assert_eq!(Staking::ledger(&1000), Some(origin_ledger.clone()));
+        assert_eq!(Kton::free_balance(&1001), kton_free_balance);
+
+
+        // set more kton balance to make it work
+        Kton::deposit_creating(&1001, 10 * COIN);
+        let kton_free_balance = Kton::free_balance(&1001);
+        assert_ok!(Staking::unbond_with_punish(Origin::signed(1000), 5 * COIN, MONTH_IN_SECONDS as u64 * 36));
+        assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
+            stash: 1001,
+            total_power: origin_ledger.total_power,
+            active_power: origin_ledger.active_power - (5 * COIN / 10000) as u128,
+            total_ring: origin_ledger.total_ring,
+            regular_ring: origin_ledger.regular_ring - 5 * COIN,
+            active_ring: origin_ledger.active_ring - 5 * COIN,
+            total_kton: origin_ledger.total_kton,
+            active_kton: origin_ledger.active_kton,
+            regular_items: vec![RegularItem { value: 5 * COIN, expire_time: 36 * MONTH_IN_SECONDS as u64 }],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(5 * COIN), era: 3, dt_power: (5 * COIN / 10000) as u128 }]
+        }));
+
+        let kton_punishment = utils::compute_kton_return::<Test>(5 * COIN, 36);
+        assert_eq!(Kton::free_balance(&1001), kton_free_balance - 3 * kton_punishment);
+
+        // if regularItem.value == 0
+        // the whole item should be be dropped
+        assert_ok!(Staking::unbond_with_punish(Origin::signed(1000), 5 * COIN, MONTH_IN_SECONDS as u64 * 36));
+        assert_eq!(Staking::ledger(&1000).unwrap().regular_items, vec![]);
+    });
+}
+
+
+
+
 

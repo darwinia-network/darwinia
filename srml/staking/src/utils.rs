@@ -9,7 +9,7 @@ use rstd::convert::TryInto;
 
 //change when new epoch
 // the total reward per era
-pub fn compute_current_era_reward<T: Trait>() -> Result<RingBalanceOf<T>, &'static str> {
+pub fn compute_current_era_reward<T: Trait + 'static>() -> Result<RingBalanceOf<T>, &'static str> {
     //TODO: add decimal
     //TODO: add collection of eras as a minimum set for changing session_reward
     let eras_per_epoch = <T::ErasPerEpoch as Get<ErasNums>>::get();

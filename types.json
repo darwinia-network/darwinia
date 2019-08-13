@@ -35,13 +35,13 @@
     "regular_items": "Vec<RegularItem>",
     "unlocking": "Vec<UnlockChunk>"
   },
+  "IndividualExpo": {
+    "who": "AccountId",
+    "value": "ExtendedBalance"
+  },
   "Exposures": {
     "total": "ExtendedBalance",
     "own": "ExtendedBalance",
     "others": "Vec<IndividualExpo>"
-  },
-  "IndividualExpo": {
-    "who": "AccountId",
-    "value": "ExtendedBalance"
   }
 }

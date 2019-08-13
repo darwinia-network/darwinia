@@ -31,7 +31,7 @@ use srml_support::{
     StorageValue, StorageMap, EnumerableStorageMap, decl_module, decl_event,
     decl_storage, ensure, traits::{
         Currency, OnFreeBalanceZero, LockIdentifier, LockableCurrency,
-        WithdrawReasons, OnUnbalanced, Imbalance, Get,
+        WithdrawReasons, WithdrawReason, OnUnbalanced, Imbalance, Get,
     },
 };
 use session::{OnSessionEnding, SessionIndex};
@@ -65,6 +65,7 @@ const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
+const MONTH_IN_SECONDS: u32 = 2592000;
 const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
@@ -604,6 +605,66 @@ decl_module! {
         }
 
 
+        // NOTE: considered that expire_time won't
+        fn unbond_with_punish(origin, value: RingBalanceOf<T>, expire_time: T::Moment) {
+            let controller = ensure_signed(origin)?;
+            let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+            let stash = ledger.clone().stash;
+            let now = <timestamp::Module<T>>::now();
+            ensure!(expire_time.clone() > now.clone(), "use unbond instead.");
+            let regular_items = ledger.regular_items.clone();
+            let new_regular_items = regular_items.into_iter().filter_map(|mut item|
+                if item.expire_time != expire_time.clone() {
+                    Some(item)
+                } else {
+                    let value = item.value.min(value);
+                    // at least 1 month
+                    let month_left: u32 = ((expire_time.clone() - now.clone()).saturated_into::<u32>() / MONTH_IN_SECONDS).max(1u32);
+                    let kton_slash = utils::compute_kton_return::<T>(value, month_left) * 3.into();
+
+                    // check total free balance and locked one
+                    // strict on punishing in kton
+                    let is_slashable = T::Kton::free_balance(&stash)
+                        .checked_sub(&kton_slash)
+                        .and_then(|new_balance|
+                            T::Kton::ensure_can_withdraw(&stash, kton_slash, WithdrawReason::Transfer, new_balance).ok())
+                        .is_some();
+
+                    let res = if is_slashable {
+                        // update ring
+                        item.value -= value;
+                        ledger.regular_ring = ledger.regular_ring.saturating_sub(value);
+                        ledger.active_ring = ledger.active_ring.saturating_sub(value);
+                        // update power
+                        let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
+                        let dt_power = dt_power.min(ledger.active_power);
+                        ledger.active_power -= dt_power;
+
+                        let (imbalance, _) = T::Kton::slash(&stash, kton_slash);
+                        T::KtonSlash::on_unbalanced(imbalance);
+                        // update unlocks
+                        let era = Self::current_era() + T::BondingDuration::get();
+				        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(value), era, dt_power });
+
+                        let inner_res = if item.value.is_zero() {
+                                None
+                            } else {
+                                Some(item)
+                            };
+                            inner_res
+                        } else {
+                            Some(item)
+                        };
+                    res
+                }).collect::<Vec<_>>();
+
+                ledger.regular_items = new_regular_items;
+
+                <Ledger<T>>::insert(&controller, ledger);
+
+        }
+
+
         /// may both withdraw ring and kton at the same time
         fn withdraw_unbonded(origin) {
             let controller = ensure_signed(origin)?;
@@ -738,8 +799,7 @@ impl<T: Trait> Module<T> {
             // mint kton
             let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
             T::KtonReward::on_unbalanced(kton_positive_imbalance);
-            let const_month_in_seconds = 2592000;
-            let expire_time = <timestamp::Module<T>>::now() + (const_month_in_seconds * promise_month).into();
+            let expire_time = <timestamp::Module<T>>::now() + (MONTH_IN_SECONDS * promise_month).into();
             Some(RegularItem { value, expire_time })
         } else {
             None
