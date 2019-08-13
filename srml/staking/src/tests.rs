@@ -253,6 +253,32 @@ fn punished_unbond_should_work() {
 }
 
 
+#[test]
+fn transform_to_promomised_ring_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
 
+        Ring::deposit_creating(&1001, 100 * COIN);
+        assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(10 * COIN), RewardDestination::Stash, 0));
+        let origin_ledger = Staking::ledger(&1000).unwrap();
+        let kton_free_balance = Kton::free_balance(&1001);
 
+        assert_ok!(Staking::promise_extra(Origin::signed(1000), 5 * COIN, 12));
 
+        assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
+            stash: 1001,
+            total_power: origin_ledger.total_power,
+            active_power: origin_ledger.active_power,
+            total_ring: origin_ledger.total_ring,
+            regular_ring: origin_ledger.regular_ring + 5 * COIN,
+            active_ring: origin_ledger.active_ring,
+            total_kton: origin_ledger.total_kton,
+            active_kton: origin_ledger.active_kton,
+            regular_items: vec![RegularItem { value: 5 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
+            unlocking: vec![]
+        }));
+
+        assert_eq!(Kton::free_balance(&1001), kton_free_balance + (5 * COIN / 10000));
+
+    });
+}

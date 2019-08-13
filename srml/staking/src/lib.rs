@@ -688,6 +688,36 @@ decl_module! {
 
         }
 
+        /// called by controller
+        fn promise_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
+            let controller = ensure_signed(origin)?;
+            ensure!( promise_month <= 36, "months at most is 36.");
+            let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let stash = &ledger.stash;
+			let value = value.min(ledger.active_ring - ledger.regular_ring); // active_normal_ring
+
+            let regular_item = if !promise_month.is_zero() {
+                let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+                // update regular_ring
+                // while total_ring stays the same
+                ledger.regular_ring += value;
+
+                // for now, kton_return is free
+                // mint kton
+                let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
+                T::KtonReward::on_unbalanced(kton_positive_imbalance);
+                let expire_time = <timestamp::Module<T>>::now() + (MONTH_IN_SECONDS * promise_month).into();
+                Some(RegularItem { value, expire_time })
+            } else {
+                None
+            };
+
+            if let Some(r) = regular_item {
+            ledger.regular_items.push(r);
+            }
+            <Ledger<T>>::insert(&controller, ledger);
+        }
+
 
         /// may both withdraw ring and kton at the same time
         fn withdraw_unbonded(origin) {
