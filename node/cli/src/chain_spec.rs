@@ -298,6 +298,105 @@ fn development_config_genesis() -> GenesisConfig {
     )
 }
 
+fn crayfish_config_genesis() -> GenesisConfig {
+    crayfish_testnet_genesis(
+        vec![
+            get_authority_keys_from_seed("Alice"),
+            get_authority_keys_from_seed("Bob"),
+        ],
+        get_account_id_from_seed("Alice"),
+        None,
+        false,
+    )
+}
+
+
+/// Helper function to create GenesisConfig for testing
+pub fn crayfish_testnet_genesis(
+    initial_authorities: Vec<(AccountId, AccountId, AuraId, GrandpaId)>,
+    root_key: AccountId,
+    endowed_accounts: Option<Vec<AccountId>>,
+    enable_println: bool,
+) -> GenesisConfig {
+    let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
+        vec![
+            get_account_id_from_seed("Alice"),
+            get_account_id_from_seed("Bob"),
+            get_account_id_from_seed("Charlie"),
+            get_account_id_from_seed("Dave"),
+            get_account_id_from_seed("Eve"),
+            get_account_id_from_seed("Ferdie"),
+            get_account_id_from_seed("Alice//stash"),
+            get_account_id_from_seed("Bob//stash"),
+            get_account_id_from_seed("Charlie//stash"),
+            get_account_id_from_seed("Dave//stash"),
+            get_account_id_from_seed("Eve//stash"),
+            get_account_id_from_seed("Ferdie//stash"),
+        ]
+    });
+
+    const ENDOWMENT: Balance = 10_000_000 * COIN;
+    const STASH: Balance = 100 * COIN;
+
+    GenesisConfig {
+        system: Some(SystemConfig {
+            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
+            changes_trie_config: Default::default(),
+        }),
+        indices: Some(IndicesConfig {
+            ids: endowed_accounts.clone(),
+        }),
+        balances: Some(BalancesConfig {
+            balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+            vesting: vec![],
+        }),
+        kton: Some(KtonConfig {
+            balances: endowed_accounts.iter().cloned()
+                .map(|k| (k, ENDOWMENT))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+                .collect(),
+            vesting: vec![],
+        }),
+        session: Some(SessionConfig {
+            validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+            keys: initial_authorities.iter().map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone()))).collect::<Vec<_>>(),
+        }),
+        staking: Some(StakingConfig {
+            current_era: 0,
+            // TODO: ready for hacking
+            current_era_total_reward: 105820105820105,
+            minimum_validator_count: 1,
+            validator_count: 3,
+            offline_slash: Perbill::from_percent(90),
+            session_reward: Perbill::zero(),
+            current_session_reward: 0,
+            offline_slash_grace: 2,
+            stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+            invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+        }),
+        timestamp: Some(TimestampConfig {
+            minimum_period: 2,                    // 2*2=4 second block time.
+        }),
+        contracts: Some(ContractsConfig {
+            current_schedule: contracts::Schedule {
+                enable_println, // this should only be enabled on development chains
+                ..Default::default()
+            },
+            gas_price: 1 * MILLI,
+        }),
+        sudo: Some(SudoConfig {
+            key: root_key,
+        }),
+        aura: Some(AuraConfig {
+            authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+        }),
+        grandpa: Some(GrandpaConfig {
+            authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+        }),
+    }
+}
+
+
 /// Development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
     ChainSpec::from_genesis("Development", "dev", development_config_genesis, vec![], None, None, None, None)
@@ -318,6 +417,11 @@ fn local_testnet_genesis() -> GenesisConfig {
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
     ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, None)
+}
+
+/// c￿rayfish testnet config (multivalidator Alice + Bob)
+pub fn crayfish_testnet_config() -> ChainSpec {
+    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, None)
 }
 
 #[cfg(test)]

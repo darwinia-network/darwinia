@@ -1,27 +1,24 @@
 
 /// utility in staking
-use crate::{Trait, ErasNums, RingBalanceOf, KtonBalanceOf};
+use crate::{Trait, ErasNums, Module, RingBalanceOf, KtonBalanceOf};
 use srml_support::traits::{Currency, Get};
-use primitives::traits::{ CheckedSub,SaturatedConversion };
+use primitives::traits::{ CheckedSub,SaturatedConversion, IntegerSquareRoot, Convert };
 use substrate_primitives::U256;
 use rstd::convert::TryInto;
 
-
 //change when new epoch
 // the total reward per era
-pub fn compute_current_era_reward<T: Trait + 'static>() -> Result<RingBalanceOf<T>, &'static str> {
+pub fn compute_current_era_reward<T: Trait + 'static>() -> RingBalanceOf<T> {
     //TODO: add decimal
     //TODO: add collection of eras as a minimum set for changing session_reward
-    let eras_per_epoch = <T::ErasPerEpoch as Get<ErasNums>>::get();
-    let cap =  T::Cap::get();
-    let total_issuance_now = T::Ring::total_issuance();
-    if let Some(surplus) = cap.checked_sub(&total_issuance_now) {
-        // mint 20% of the rest
-        Ok(surplus / (5 * eras_per_epoch).into())
-    } else {
-        return Err("too large.");
-    }
+    let eras_per_epoch = <T::ErasPerEpoch as Get<ErasNums>>::get() as u128;
+    let current_epoch: u32 = <Module<T>>::epoch_index().try_into().unwrap_or_default() as u32;
+    let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).try_into().unwrap_or_default() as u128;
+    let surplus = U256::from(total_left) - U256::from(total_left * 99 * current_epoch.integer_sqrt() as u128) / U256::from(current_epoch.integer_sqrt() as u128 * 100);
+    let surplus = surplus.as_u128();
+    (surplus / eras_per_epoch).try_into().unwrap_or_default()
 }
+
 
 pub fn compute_kton_return<T: Trait + 'static>(value: RingBalanceOf<T>, months: u32) -> KtonBalanceOf<T> {
     let value = value.saturated_into::<u64>();

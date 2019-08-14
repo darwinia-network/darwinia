@@ -50,6 +50,8 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
+	/// Crayfish, darwinia network poc-2
+	CrayfishTestnet,
 }
 
 /// Custom subcommands.
@@ -122,6 +124,7 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
+			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
 		})
 	}
 
@@ -131,6 +134,7 @@ impl ChainSpec {
 			"local" => Some(ChainSpec::LocalTestnet),
 			"" | "fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
+			"crayfish" => Some(ChainSpec::CrayfishTestnet),
 			_ => None,
 		}
 	}

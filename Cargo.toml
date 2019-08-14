@@ -70,5 +70,5 @@ authors = ['Parity Technologies <admin@parity.io>']
 build = 'build.rs'
 edition = '2018'
 name = 'darwinia-poc1'
-version = '0.1.0'
+version = '0.2.2'
 

@@ -547,7 +547,6 @@ decl_module! {
                     ledger.active_power -= dt_power;
 
                     let mut unlock_value_left = r - value;
-                    runtime_io::print(unlock_value_left.try_into().unwrap_or_default() as u64);
                     let is_regular = if active_normal_ring.is_zero() {
                        // check again later
                        true
@@ -693,10 +692,27 @@ decl_module! {
             let controller = ensure_signed(origin)?;
             ensure!( promise_month <= 36, "months at most is 36.");
             let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let stash = &ledger.stash;
+			let stash = &ledger.stash.clone();
+
+			// remove expired regular_items
+			let now = <timestamp::Module<T>>::now();
+			let regular_items = ledger.regular_items.clone();
+
+			let new_regular_items = regular_items.into_iter().filter(|item|
+                if item.expire_time < now.clone() {
+                    // reduce regular_ring,
+                    // total/active ring, total/active power stay the same
+                    ledger.regular_ring = ledger.regular_ring.saturating_sub(item.value);
+                    false
+                } else {
+                    true
+                }).collect::<Vec<_>>();
+
+            ledger.regular_items = new_regular_items;
+
 			let value = value.min(ledger.active_ring - ledger.regular_ring); // active_normal_ring
 
-            let regular_item = if !promise_month.is_zero() {
+            let regular_item = if promise_month > 3 {
                 let kton_return = utils::compute_kton_return::<T>(value, promise_month);
                 // update regular_ring
                 // while total_ring stays the same
@@ -706,15 +722,16 @@ decl_module! {
                 // mint kton
                 let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
                 T::KtonReward::on_unbalanced(kton_positive_imbalance);
-                let expire_time = <timestamp::Module<T>>::now() + (MONTH_IN_SECONDS * promise_month).into();
+                let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
                 Some(RegularItem { value, expire_time })
             } else {
                 None
             };
 
             if let Some(r) = regular_item {
-            ledger.regular_items.push(r);
+                ledger.regular_items.push(r);
             }
+
             <Ledger<T>>::insert(&controller, ledger);
         }
 
@@ -845,7 +862,7 @@ impl<T: Trait> Module<T> {
         // if stash promise to a extra-lock
         // there will be extra reward, kton, which
         // can also be use to stake.
-        let regular_item = if !promise_month.is_zero() {
+        let regular_item = if promise_month > 3 {
             let kton_return = utils::compute_kton_return::<T>(value, promise_month);
             ledger.regular_ring += value;
 
@@ -1005,10 +1022,9 @@ impl<T: Trait> Module<T> {
 
     fn new_epoch() {
         <EpochIndex<T>>::put(Self::epoch_index() + One::one());
-        if let Ok(next_era_reward) = utils::compute_current_era_reward::<T>() {
-            // TODO: change to CurrentEraReward
-            <CurrentEraTotalReward<T>>::put(next_era_reward);
-        }
+        let next_era_reward = utils::compute_current_era_reward::<T>();
+        // TODO: change to CurrentEraReward
+        <CurrentEraTotalReward<T>>::put(next_era_reward);
     }
 
 

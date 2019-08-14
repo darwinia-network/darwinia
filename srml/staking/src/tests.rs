@@ -254,7 +254,7 @@ fn punished_unbond_should_work() {
 
 
 #[test]
-fn transform_to_promomised_ring_should_work() {
+fn transform_to_promised_ring_should_work() {
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(0).build(), || {
 
@@ -280,5 +280,48 @@ fn transform_to_promomised_ring_should_work() {
 
         assert_eq!(Kton::free_balance(&1001), kton_free_balance + (5 * COIN / 10000));
 
+    });
+}
+
+#[test]
+fn expired_ring_should_capable_to_promise_again() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+
+        Ring::deposit_creating(&1001, 100 * COIN);
+        assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(10 * COIN), RewardDestination::Stash, 12));
+        let origin_ledger = Staking::ledger(&1000).unwrap();
+        Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
+        assert_ok!(Staking::promise_extra(Origin::signed(1000), 5 * COIN, 13));
+        assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
+            stash: 1001,
+            total_power: origin_ledger.total_power,
+            active_power: origin_ledger.active_power,
+            total_ring: origin_ledger.total_ring,
+            regular_ring: origin_ledger.regular_ring - 5 * COIN,
+            active_ring: origin_ledger.active_ring,
+            total_kton: origin_ledger.total_kton,
+            active_kton: origin_ledger.active_kton,
+            // old regular_item with 12 months promised removed
+            regular_items: vec![ RegularItem { value: 5 * COIN, expire_time: 26 * MONTH_IN_SECONDS as u64 }],
+            unlocking: vec![]
+        }));
+    });
+}
+
+#[test]
+fn inflation_should_be_correct() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+
+        let initial_issuance = 1_200_000_000 * COIN;
+        let surplus_needed = initial_issuance - Ring::total_issuance();
+        Ring::deposit_into_existing(&11, surplus_needed);
+        assert_eq!(Ring::total_issuance(), initial_issuance);
+
+        start_era(11);
+        let current_era_total_reward = Staking::current_era_total_reward();
+        // ErasPerEpoch = 10
+        assert_eq!(current_era_total_reward, 88000000 * COIN / 10);
     });
 }
