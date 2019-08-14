@@ -189,14 +189,11 @@ impl<T: Trait> session::OneSessionHandler<T::AccountId> for Module<T> {
 	{
 		// instant changes
 		if changed {
-			runtime_io::print("11111");
 			let next_authorities = validators.map(|(_, k)| k).collect::<Vec<_>>();
 			let last_authorities = <Module<T>>::authorities();
 			if next_authorities != last_authorities {
 				Self::change_authorities(next_authorities);
 			}
-		} else {
-			runtime_io::print("00000");
 		}
 	}
 	fn on_disabled(_i: usize) {

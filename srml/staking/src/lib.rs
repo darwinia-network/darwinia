@@ -177,6 +177,7 @@ pub struct UnlockChunk<StakingBalance, Power> {
     #[codec(compact)]
     era: EraIndex,
     dt_power: Power,
+    is_regular: bool,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode)]
@@ -200,11 +201,13 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
     /// total_ring = nomarl_ring + regular_ring
     #[codec(compact)]
     pub total_ring: RingBalance,
-    // active regular ring
     #[codec(compact)]
-    pub regular_ring: RingBalance,
+    pub total_regular_ring: RingBalance,
     #[codec(compact)]
     pub active_ring: RingBalance,
+    // active regular ring
+    #[codec(compact)]
+    pub active_regular_ring: RingBalance,
     #[codec(compact)]
     pub total_kton: KtonBalance,
     #[codec(compact)]
@@ -229,6 +232,7 @@ impl<
         let mut total_power = self.total_power;
         let mut total_ring = self.total_ring;
         let mut total_kton = self.total_kton;
+        let mut total_regular_ring = self.total_regular_ring;
 
         let mut unlock_ring = 0u32;
         let mut unlock_kton = 0u32;
@@ -239,6 +243,9 @@ impl<
             if chunk.value.is_ring().0 {
                 total_power = total_power.saturating_sub(chunk.dt_power);
                 total_ring = total_ring.saturating_sub(chunk.value.is_ring().1.unwrap());
+                if chunk.is_regular {
+                    total_regular_ring = total_regular_ring.saturating_sub(chunk.value.is_ring().1.unwrap());
+                }
                 unlock_ring = 1;
                 false
             } else if chunk.value.is_kton().0 {
@@ -253,7 +260,7 @@ impl<
             }
         }).collect();
 
-        (Self { total_power, total_ring, total_kton, unlocking, ..self }, unlock_ring + unlock_kton)
+        (Self { total_power, total_ring, total_kton, unlocking, total_regular_ring, ..self }, unlock_ring + unlock_kton)
     }
 }
 
@@ -532,33 +539,33 @@ decl_module! {
 				"can not schedule more unlock chunks"
 			);
 
+		    let era = Self::current_era() + T::BondingDuration::get();
+
 		    match value {
 		        StakingBalance::Ring(r) => {
 		            // unbond normal ring first
 		            // to simplify computation
 		            // total_unbond_value = normal_unbond + regular_unbond
-		            let mut power_changed: ExtendedBalance = 0;
-		            let active_normal_ring = ledger.active_ring - ledger.regular_ring;
+
+		            let active_normal_ring = ledger.active_ring - ledger.active_regular_ring;
+
 		            let value = r.min(active_normal_ring);
-                    ledger.active_ring -= value;
+		            let mut unlock_value_left = r - value;
+		            if !value.is_zero() {
+		                ledger.active_ring -= value;
 
-                    let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
-                    power_changed += dt_power;
-                    let dt_power = dt_power.min(ledger.active_power);
-                    ledger.active_power -= dt_power;
+                        let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
+                        let dt_power = dt_power.min(ledger.active_power);
+                        ledger.active_power -= dt_power;
 
-                    let mut unlock_value_left = r - value;
-                    let is_regular = if active_normal_ring.is_zero() {
-                       // check again later
-                       true
+                        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(value), era, dt_power: dt_power, is_regular: false });
+		            }
+
+                    // no active_normal_ring
+                    let is_regular = if value.is_zero() {
+                        true
                     } else {
-                        // consume all active_regular_ring
-                        let is_regular = if (ledger.active_ring - ledger.regular_ring).is_zero() {
-                            false
-                        } else {
-                            !unlock_value_left.is_zero()
-                        };
-                        is_regular
+                        !unlock_value_left.is_zero()
                     };
 
                     let mut total_regular_changed: RingBalanceOf<T> = Zero::zero();
@@ -582,7 +589,7 @@ decl_module! {
                                     let value = unlock_value_left.min(item.value);
                                     unlock_value_left = unlock_value_left.saturating_sub(value);
 
-                                    ledger.regular_ring = ledger.regular_ring.saturating_sub(value);
+                                    ledger.active_regular_ring = ledger.active_regular_ring.saturating_sub(value);
                                     ledger.active_ring = ledger.active_ring.saturating_sub(value);
                                     total_regular_changed += value;
                                     item.value -= value;
@@ -598,18 +605,15 @@ decl_module! {
                             }).collect::<Vec<_>>();
                         // reduce active power then
                         let dt_power = (total_regular_changed / 10000.into()).saturated_into::<ExtendedBalance>();
-                        power_changed += dt_power;
                         let dt_power = dt_power.min(ledger.active_power);
                         ledger.active_power -= dt_power;
                         ledger.regular_items = new_regular_items;
+
+                        // update unlocking list
+				         ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_regular_changed), era, dt_power, is_regular: true });
 		            } else {
 		                 // do nothing
 		            }
-
-		            let era = Self::current_era() + T::BondingDuration::get();
-		            let total_value = total_regular_changed + value;
-		             // update unlocking list
-				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_value), era, dt_power: power_changed });
 		        },
 
 		        StakingBalance::Kton(k) => {
@@ -620,8 +624,8 @@ decl_module! {
                     let dt_power = dt_power.min(ledger.active_power);
                     ledger.active_power -= dt_power;
                     ledger.active_kton -= value;
-                    let era = Self::current_era() + T::BondingDuration::get();
-				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Kton(value), era, dt_power });
+
+				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Kton(value), era, dt_power, is_regular: false });
 
 		        },
 		    }
@@ -657,7 +661,7 @@ decl_module! {
                     let res = if is_slashable {
                         // update ring
                         item.value -= value;
-                        ledger.regular_ring = ledger.regular_ring.saturating_sub(value);
+                        ledger.active_regular_ring = ledger.active_regular_ring.saturating_sub(value);
                         ledger.active_ring = ledger.active_ring.saturating_sub(value);
                         // update power
                         let dt_power = (value / 10000.into()).saturated_into::<ExtendedBalance>();
@@ -668,7 +672,7 @@ decl_module! {
                         T::KtonSlash::on_unbalanced(imbalance);
                         // update unlocks
                         let era = Self::current_era() + T::BondingDuration::get();
-				        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(value), era, dt_power });
+				        ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(value), era, dt_power, is_regular: true });
 
                         let inner_res = if item.value.is_zero() {
                                 None
@@ -703,7 +707,8 @@ decl_module! {
                 if item.expire_time < now.clone() {
                     // reduce regular_ring,
                     // total/active ring, total/active power stay the same
-                    ledger.regular_ring = ledger.regular_ring.saturating_sub(item.value);
+                    ledger.active_regular_ring = ledger.active_regular_ring.saturating_sub(item.value);
+                    ledger.total_regular_ring = ledger.total_regular_ring.saturating_sub(item.value);
                     false
                 } else {
                     true
@@ -711,13 +716,14 @@ decl_module! {
 
             ledger.regular_items = new_regular_items;
 
-			let value = value.min(ledger.active_ring - ledger.regular_ring); // active_normal_ring
+			let value = value.min(ledger.active_ring - ledger.active_regular_ring); // active_normal_ring
 
-            let regular_item = if promise_month > 3 {
+            let regular_item = if promise_month >= 3 {
                 let kton_return = utils::compute_kton_return::<T>(value, promise_month);
                 // update regular_ring
                 // while total_ring stays the same
-                ledger.regular_ring += value;
+                ledger.active_regular_ring += value;
+                ledger.total_regular_ring += value;
 
                 // for now, kton_return is free
                 // mint kton
@@ -863,10 +869,10 @@ impl<T: Trait> Module<T> {
         // if stash promise to a extra-lock
         // there will be extra reward, kton, which
         // can also be use to stake.
-        let regular_item = if promise_month > 3 {
+        let regular_item = if promise_month >= 3 {
             let kton_return = utils::compute_kton_return::<T>(value, promise_month);
-            ledger.regular_ring += value;
-
+            ledger.active_regular_ring += value;
+            ledger.total_regular_ring += value;
             // for now, kton_return is free
             // mint kton
             let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
