@@ -20,6 +20,12 @@ use system::ensure_signed;
 // customed
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 mod imbalance;
 
 /// Struct to encode the vesting schedule of an individual account.

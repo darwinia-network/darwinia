@@ -20,8 +20,6 @@ dsupport = { package = "evo-support", path = "../support", default-features = fa
 [dev-dependencies]
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
-balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
-node-runtime = { path = "../../node/runtime" }
 
 [features]
 default = ["std"]

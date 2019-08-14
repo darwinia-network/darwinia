@@ -200,6 +200,7 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
     /// total_ring = nomarl_ring + regular_ring
     #[codec(compact)]
     pub total_ring: RingBalance,
+    // active regular ring
     #[codec(compact)]
     pub regular_ring: RingBalance,
     #[codec(compact)]
