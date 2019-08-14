@@ -599,7 +599,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-poc1"
+name = "darwinia-poc2"
 version = "0.2.2"
 dependencies = [
  "ctrlc 3.1.3 (registry+https://github.com/rust-lang/crates.io-index)",

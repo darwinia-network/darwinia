@@ -69,6 +69,6 @@ exclude = ["node/runtime/wasm"]
 authors = ['Parity Technologies <admin@parity.io>']
 build = 'build.rs'
 edition = '2018'
-name = 'darwinia-poc1'
+name = 'darwinia-poc2'
 version = '0.2.2'
 
