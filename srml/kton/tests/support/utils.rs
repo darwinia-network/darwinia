@@ -33,7 +33,7 @@ use rand::{
 ///
 /// // ---
 ///
-/// accounts![ALL; Alice(644), Bob(755), Dave(777)];
+/// accounts![_; Alice(644), Bob(755), Dave(777)];
 ///
 /// // equals to
 ///
