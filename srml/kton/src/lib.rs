@@ -280,21 +280,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
         let locks = Self::locks(who);
 
-        //        if locks.is_empty() {
-        //            return Ok(());
-        //        }
-        //
-        //        let now = <system::Module<T>>::block_number();
-        //
-        //        if locks
-        //            .into_iter()
-        //            .all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.contains(reason))
-        //        {
-        //            Ok(())
-        //        } else {
-        //            Err("account liquidity restrictions prevent withdrawal")
-        //        }
-
         if !locks.is_empty() {
             let now = <system::Module<T>>::block_number();
 
