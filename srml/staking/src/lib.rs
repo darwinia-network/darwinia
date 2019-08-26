@@ -240,17 +240,19 @@ impl<
             true
         } else {
             // for ring
-            if chunk.value.is_ring().0 {
+            let (is_ring, ring_value) = chunk.value.is_ring();
+            let(is_kton, kton_value) = chunk.value.is_kton();
+            if is_ring {
                 total_power = total_power.saturating_sub(chunk.dt_power);
-                total_ring = total_ring.saturating_sub(chunk.value.is_ring().1.unwrap());
+                total_ring = total_ring.saturating_sub(ring_value.unwrap());
                 if chunk.is_regular {
-                    total_regular_ring = total_regular_ring.saturating_sub(chunk.value.is_ring().1.unwrap());
+                    total_regular_ring = total_regular_ring.saturating_sub(ring_value.unwrap());
                 }
                 unlock_ring = 1;
                 false
-            } else if chunk.value.is_kton().0 {
+            } else if is_kton {
                 total_power = total_power.saturating_sub(chunk.dt_power);
-                total_kton = total_kton.saturating_sub(chunk.value.is_kton().1.unwrap());
+                total_kton = total_kton.saturating_sub(kton_value.unwrap());
                 unlock_kton = 2;
                 false
             } else {
@@ -314,7 +316,6 @@ pub trait Trait: timestamp::Trait + session::Trait {
     type Ring: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
     type Kton: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
 
-    // basic token
     type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
     /// The overarching event type.
@@ -449,6 +450,8 @@ decl_event!(
 		OfflineWarning(AccountId, u32),
 		/// One validator (and its nominators) has been slashed by the given ratio.
 		OfflineSlash(AccountId, u32),
+		/// NodeName changed
+	    NodeNameUpdated,
     }
 );
 
@@ -776,8 +779,9 @@ decl_module! {
 
 			<Nominators<T>>::remove(stash);
 			<Validators<T>>::insert(stash, prefs);
-			if !<NodeName<T>>::exists(stash) {
-			    <NodeName<T>>::insert(stash, name);
+			if !<NodeName<T>>::exists(&controller) {
+			    <NodeName<T>>::insert(controller, name);
+			    Self::deposit_event(RawEvent::NodeNameUpdated);
 			}
 		}
 
@@ -953,7 +957,6 @@ impl<T: Trait> Module<T> {
             ring_imbalance.subsume(rn);
             kton_imbalance.subsume(kn);
         }
-
 
         T::RingSlash::on_unbalanced(ring_imbalance);
         T::KtonSlash::on_unbalanced(kton_imbalance);
