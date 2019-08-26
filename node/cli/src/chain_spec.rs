@@ -255,7 +255,7 @@ pub fn testnet_genesis(
         staking: Some(StakingConfig {
             current_era: 0,
             // TODO: ready for hacking
-            current_era_total_reward: 105820105820105,
+            current_era_total_reward: 80_000_000 * COIN,
             minimum_validator_count: 1,
             validator_count: 3,
             offline_slash: Perbill::from_percent(90),
