@@ -113,34 +113,6 @@ pub enum StakingBalance<RingBalance, KtonBalance> {
     Kton(KtonBalance),
 }
 
-impl<RingBalance: Copy + Clone + HasCompact, KtonBalance: Copy + Clone + HasCompact>
-    StakingBalance<RingBalance, KtonBalance>
-{
-    fn is_ring(&self) -> bool {
-        if let StakingBalance::Ring(_) = self {
-            true
-        } else {
-            false
-        }
-    }
-
-    fn ring_value(&self) -> RingBalance {
-        if let StakingBalance::Ring(v) = self {
-            return *v;
-        }
-
-        unreachable!("ring_value call on kton");
-    }
-
-    fn kton_value(&self) -> KtonBalance {
-        if let StakingBalance::Kton(v) = self {
-            return *v;
-        }
-
-        unreachable!("kton_value call on ring");
-    }
-}
-
 impl<RingBalance: Default, KtonBalance: Default> Default
     for StakingBalance<RingBalance, KtonBalance>
 {
