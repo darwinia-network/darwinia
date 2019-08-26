@@ -18,6 +18,7 @@ substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', de
 dsupport = { package = "evo-support", path = "../support", default-features = false }
 
 [dev-dependencies]
+rand = "0.7.0"
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 
