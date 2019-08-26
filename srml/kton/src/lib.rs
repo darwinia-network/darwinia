@@ -182,6 +182,8 @@ decl_module! {
             let dest = T::Lookup::lookup(dest)?;
 
             <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
+
+            Self::deposit_event(RawEvent::TokenTransfer(transactor, dest, value));
         }
     }
 }
@@ -316,12 +318,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         if transactor != dest {
             Self::set_free_balance(transactor, new_from_balance);
             Self::set_free_balance(dest, new_to_balance);
-
-            Self::deposit_event(RawEvent::TokenTransfer(
-                transactor.to_owned(),
-                dest.to_owned(),
-                value,
-            ));
         }
 
         Ok(())
