@@ -18,12 +18,12 @@ fn test_env_build() {
             total_power: (100 * COIN / 10000) as u128,
             active_power: (100 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
-            total_regular_ring: 100 * COIN,
-            active_regular_ring: 100 * COIN,
+            total_deposit_ring: 100 * COIN,
+            active_deposit_ring: 100 * COIN,
             active_ring: 100 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64}],
+            deposit_items: vec![TimeDepositItem {value: 100 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64}],
             unlocking: vec![]
         }));
 
@@ -38,13 +38,13 @@ fn test_env_build() {
             total_power: origin_ledger.total_power + (20 * COIN / 10000) as u128,
             active_power: origin_ledger.active_power + (20 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring + 20 * COIN,
-            total_regular_ring: origin_ledger.total_regular_ring + 20 * COIN,
-            active_regular_ring: origin_ledger.active_regular_ring + 20 * COIN,
+            total_deposit_ring: origin_ledger.total_deposit_ring + 20 * COIN,
+            active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
             active_ring: origin_ledger.active_ring + 20 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 100 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64},
-                                RegularItem {value: 20 * COIN, expire_time: 13 * MONTH_IN_SECONDS as u64}],
+            deposit_items: vec![TimeDepositItem {value: 100 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64},
+                                TimeDepositItem {value: 20 * COIN, start_time: 0, expire_time: 13 * MONTH_IN_SECONDS as u64}],
             unlocking: vec![]
         }));
     });
@@ -62,12 +62,12 @@ fn normal_kton_should_work() {
             total_power: (10 * COIN) as u128,
             active_power: (10 * COIN) as u128,
             total_ring: 0,
-            total_regular_ring: 0,
-            active_regular_ring: 0,
+            total_deposit_ring: 0,
+            active_deposit_ring: 0,
             active_ring: 0,
             total_kton: 10 * COIN,
             active_kton: 10 * COIN,
-            regular_items: vec![],
+            deposit_items: vec![],
             unlocking: vec![]
         }));
 
@@ -81,12 +81,12 @@ fn normal_kton_should_work() {
             total_power: (10 * COIN) as u128,
             active_power: (10 * COIN) as u128,
             total_ring: 0,
-            total_regular_ring: 0,
-            active_regular_ring: 0,
+            total_deposit_ring: 0,
+            active_deposit_ring: 0,
             active_ring: 0,
             total_kton: 10 * COIN,
             active_kton: 10 * COIN,
-            regular_items: vec![],
+            deposit_items: vec![],
             unlocking: vec![]
         }));
 
@@ -94,7 +94,7 @@ fn normal_kton_should_work() {
 }
 
 #[test]
-fn regular_unbond_and_withdraw_should_work() {
+fn time_deposit_ring_unbond_and_withdraw_should_work() {
     with_externalities(&mut ExtBuilder::default()
         .existential_deposit(0).build(), || {
 
@@ -106,13 +106,13 @@ fn regular_unbond_and_withdraw_should_work() {
             total_power: (100 * COIN / 10000) as u128,
             active_power: (90 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
-            total_regular_ring: 100 * COIN,
-            active_regular_ring: 90 * COIN,
+            total_deposit_ring: 100 * COIN,
+            active_deposit_ring: 90 * COIN,
             active_ring: 90 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 90 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64}],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_regular: true }]
+            deposit_items: vec![TimeDepositItem {value: 90 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64}],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true }]
         }));
 
         Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN));
@@ -121,14 +121,14 @@ fn regular_unbond_and_withdraw_should_work() {
             total_power: (100 * COIN / 10000) as u128,
             active_power: (70 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
-            total_regular_ring: 100 * COIN,
-            active_regular_ring: 70 * COIN,
+            total_deposit_ring: 100 * COIN,
+            active_deposit_ring: 70 * COIN,
             active_ring: 70 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem {value: 70 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_regular: true},
-                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_regular: true}]
+            deposit_items: vec![TimeDepositItem {value: 70 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_time_deposit: true}]
         }));
 
         // more than active ring
@@ -138,15 +138,15 @@ fn regular_unbond_and_withdraw_should_work() {
             total_power: (100 * COIN / 10000) as u128,
             active_power: 0,
             total_ring: 100 * COIN,
-            total_regular_ring: 100 * COIN,
-            active_regular_ring: 0,
+            total_deposit_ring: 100 * COIN,
+            active_deposit_ring: 0,
             active_ring: 0,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![], // should be cleared
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_regular: true},
-                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_regular: true},
-                            UnlockChunk { value: StakingBalance::Ring(70000000000), era: 3, dt_power: 7000000, is_regular: true},
+            deposit_items: vec![], // should be cleared
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(70000000000), era: 3, dt_power: 7000000, is_time_deposit: true},
             ]
         }));
 
@@ -158,12 +158,12 @@ fn regular_unbond_and_withdraw_should_work() {
             total_power: 0,
             active_power: 0,
             total_ring: 0,
-            total_regular_ring: 0,
-            active_regular_ring: 0,
+            total_deposit_ring: 0,
+            active_deposit_ring: 0,
             active_ring: 0,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![], // should be cleared
+            deposit_items: vec![], // should be cleared
             unlocking: vec![]
         }));
         let free_balance = Ring::free_balance(&11);
@@ -184,18 +184,18 @@ fn normal_unbond_should_work() {
         Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(200 * COIN), 12);
         assert_eq!(Kton::free_balance(&11), kton_free_balance + 200 * COIN / 10000);
 
-        origin_ledger.regular_items.push(RegularItem {value: 200 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64});
+        origin_ledger.deposit_items.push(TimeDepositItem {value: 200 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64});
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
             total_power: origin_ledger.total_power + (200 * COIN / 10000) as u128,
             active_power: origin_ledger.active_power + (200 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring + 200 * COIN,
-            total_regular_ring: origin_ledger.total_regular_ring + 200 * COIN,
-            active_regular_ring: origin_ledger.active_regular_ring + 200 * COIN,
+            total_deposit_ring: origin_ledger.total_deposit_ring + 200 * COIN,
+            active_deposit_ring: origin_ledger.active_deposit_ring + 200 * COIN,
             active_ring: origin_ledger.active_ring + 200 * COIN,
             total_kton: origin_ledger.total_kton,
             active_kton: origin_ledger.active_kton,
-            regular_items: origin_ledger.regular_items,
+            deposit_items: origin_ledger.deposit_items,
             unlocking: origin_ledger.unlocking
         }));
 
@@ -209,12 +209,12 @@ fn normal_unbond_should_work() {
             total_power: origin_ledger.total_power + (300 * COIN / 10000) as u128,
             active_power: origin_ledger.active_power + (300 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring,
-            total_regular_ring: origin_ledger.total_regular_ring,
-            active_regular_ring: origin_ledger.active_regular_ring,
+            total_deposit_ring: origin_ledger.total_deposit_ring,
+            active_deposit_ring: origin_ledger.active_deposit_ring,
             active_ring: origin_ledger.active_ring,
             total_kton: origin_ledger.total_kton + 300 * COIN / 10000,
             active_kton: origin_ledger.active_kton + 300 * COIN / 10000,
-            regular_items: origin_ledger.regular_items,
+            deposit_items: origin_ledger.deposit_items,
             unlocking: origin_ledger.unlocking
         }));
 
@@ -238,12 +238,12 @@ fn punished_unbond_should_work() {
             total_power: (10 * COIN / 10000) as u128,
             active_power: (10 * COIN / 10000) as u128,
             total_ring: 10 * COIN,
-            total_regular_ring: 10 * COIN,
-            active_regular_ring: 10 * COIN,
+            total_deposit_ring: 10 * COIN,
+            active_deposit_ring: 10 * COIN,
             active_ring: 10 * COIN,
             total_kton: 0,
             active_kton: 0,
-            regular_items: vec![RegularItem { value: 10 * COIN, expire_time: 36 * MONTH_IN_SECONDS as u64 }], // should be cleared
+            deposit_items: vec![TimeDepositItem { value: 10 * COIN, start_time: 0, expire_time: 36 * MONTH_IN_SECONDS as u64 }], // should be cleared
             unlocking: vec![]
         }));
         let origin_ledger = Staking::ledger(&1000).unwrap();
@@ -262,22 +262,22 @@ fn punished_unbond_should_work() {
             total_power: origin_ledger.total_power,
             active_power: origin_ledger.active_power - (5 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring,
-            total_regular_ring: origin_ledger.total_regular_ring,
-            active_regular_ring: origin_ledger.active_regular_ring - 5 * COIN,
+            total_deposit_ring: origin_ledger.total_deposit_ring,
+            active_deposit_ring: origin_ledger.active_deposit_ring - 5 * COIN,
             active_ring: origin_ledger.active_ring - 5 * COIN,
             total_kton: origin_ledger.total_kton,
             active_kton: origin_ledger.active_kton,
-            regular_items: vec![RegularItem { value: 5 * COIN, expire_time: 36 * MONTH_IN_SECONDS as u64 }],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(5 * COIN), era: 3, dt_power: (5 * COIN / 10000) as u128, is_regular: true }]
+            deposit_items: vec![TimeDepositItem { value: 5 * COIN, start_time: 0, expire_time: 36 * MONTH_IN_SECONDS as u64 }],
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(5 * COIN), era: 3, dt_power: (5 * COIN / 10000) as u128, is_time_deposit: true }]
         }));
 
         let kton_punishment = utils::compute_kton_return::<Test>(5 * COIN, 36);
         assert_eq!(Kton::free_balance(&1001), kton_free_balance - 3 * kton_punishment);
 
-        // if regularItem.value == 0
+        // if deposit_item.value == 0
         // the whole item should be be dropped
         assert_ok!(Staking::unbond_with_punish(Origin::signed(1000), 5 * COIN, MONTH_IN_SECONDS as u64 * 36));
-        assert_eq!(Staking::ledger(&1000).unwrap().regular_items, vec![]);
+        assert_eq!(Staking::ledger(&1000).unwrap().deposit_items, vec![]);
     });
 }
 
@@ -299,12 +299,12 @@ fn transform_to_promised_ring_should_work() {
             total_power: origin_ledger.total_power,
             active_power: origin_ledger.active_power,
             total_ring: origin_ledger.total_ring,
-            total_regular_ring: origin_ledger.total_regular_ring + 5 * COIN,
-            active_regular_ring: origin_ledger.active_regular_ring + 5 * COIN,
+            total_deposit_ring: origin_ledger.total_deposit_ring + 5 * COIN,
+            active_deposit_ring: origin_ledger.active_deposit_ring + 5 * COIN,
             active_ring: origin_ledger.active_ring,
             total_kton: origin_ledger.total_kton,
             active_kton: origin_ledger.active_kton,
-            regular_items: vec![RegularItem { value: 5 * COIN, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
+            deposit_items: vec![ TimeDepositItem { value: 5 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
             unlocking: vec![]
         }));
 
@@ -328,13 +328,13 @@ fn expired_ring_should_capable_to_promise_again() {
             total_power: origin_ledger.total_power,
             active_power: origin_ledger.active_power,
             total_ring: origin_ledger.total_ring,
-            total_regular_ring: 5 * COIN,
-            active_regular_ring: 5 * COIN,
+            total_deposit_ring: 5 * COIN,
+            active_deposit_ring: 5 * COIN,
             active_ring: origin_ledger.active_ring,
             total_kton: origin_ledger.total_kton,
             active_kton: origin_ledger.active_kton,
-            // old regular_item with 12 months promised removed
-            regular_items: vec![ RegularItem { value: 5 * COIN, expire_time: 26 * MONTH_IN_SECONDS as u64 }],
+            // old deposit_item with 12 months promised removed
+            deposit_items: vec![ TimeDepositItem { value: 5 * COIN, start_time: 33696000, expire_time: 26 * MONTH_IN_SECONDS as u64 }],
             unlocking: vec![]
         }));
     });
