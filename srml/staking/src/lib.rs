@@ -210,7 +210,7 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
     // time-deposit items:
     // if you deposit ring for a minimum period,
     // you can get KTON as bonus
-    // which can also be used to nominate
+    // which can also be used for staking
     pub deposit_items: Vec<TimeDepositItem<RingBalance, Moment>>,
     pub unlocking: Vec<UnlockChunk<StakingBalance>>,
 }
@@ -385,8 +385,6 @@ decl_storage! {
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
 		pub CurrentEraTotalReward get(current_era_total_reward) config(): RingBalanceOf<T>;
-
-		pub ShouldOffline get(should_offline): Vec<T::AccountId>;
 
 		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
 
@@ -572,7 +570,6 @@ decl_module! {
 		            if is_time_deposit {
 		                let now = <timestamp::Module<T>>::now();
 
-//		                let mut ring_value_left = r;
                         /// for time_deposit_ring, transform into normal one
                         let deposit_items = ledger.deposit_items.clone();
                         let new_deposit_items = deposit_items.into_iter()
@@ -1162,10 +1159,6 @@ impl<T: Trait> Module<T> {
 
             // Update slot stake.
             SlotStake::put(&slot_stake);
-
-//            for st in <ShouldOffline<T>>::take().iter() {
-//                elected_stashes.retain(|ref s| s != &st);
-//            }
 
             // Set the new validator set in sessions.
             <CurrentElected<T>>::put(&elected_stashes);

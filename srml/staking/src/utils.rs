@@ -19,7 +19,8 @@ pub fn compute_current_era_reward<T: Trait + 'static>() -> RingBalanceOf<T> {
     (surplus / eras_per_epoch).try_into().unwrap_or_default()
 }
 
-
+// consistent with the formula in smart contract in evolution land which can be found in
+// https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280
 pub fn compute_kton_return<T: Trait + 'static>(value: RingBalanceOf<T>, months: u32) -> KtonBalanceOf<T> {
     let value = value.saturated_into::<u64>();
     let no = U256::from(67).pow(U256::from(months));
