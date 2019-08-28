@@ -15,8 +15,6 @@ fn test_env_build() {
         assert_eq!(Staking::bonded(&11), Some(10));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: (100 * COIN / 10000) as u128,
-            active_power: (100 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
             total_deposit_ring: 100 * COIN,
             active_deposit_ring: 100 * COIN,
@@ -35,8 +33,6 @@ fn test_env_build() {
         assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(20 * COIN), 13));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: origin_ledger.total_power + (20 * COIN / 10000) as u128,
-            active_power: origin_ledger.active_power + (20 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring + 20 * COIN,
             total_deposit_ring: origin_ledger.total_deposit_ring + 20 * COIN,
             active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
@@ -59,8 +55,6 @@ fn normal_kton_should_work() {
         assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Kton(10 * COIN), RewardDestination::Stash, 0));
         assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
             stash: 1001,
-            total_power: (10 * COIN) as u128,
-            active_power: (10 * COIN) as u128,
             total_ring: 0,
             total_deposit_ring: 0,
             active_deposit_ring: 0,
@@ -78,8 +72,6 @@ fn normal_kton_should_work() {
         assert_ok!(Staking::bond(Origin::signed(2001), 2000, StakingBalance::Kton(10 * COIN), RewardDestination::Stash, 12));
         assert_eq!(Staking::ledger(&2000),Some(StakingLedgers {
             stash: 2001,
-            total_power: (10 * COIN) as u128,
-            active_power: (10 * COIN) as u128,
             total_ring: 0,
             total_deposit_ring: 0,
             active_deposit_ring: 0,
@@ -103,8 +95,6 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
         Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: (100 * COIN / 10000) as u128,
-            active_power: (90 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
             total_deposit_ring: 100 * COIN,
             active_deposit_ring: 90 * COIN,
@@ -112,14 +102,12 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
             total_kton: 0,
             active_kton: 0,
             deposit_items: vec![TimeDepositItem {value: 90 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64}],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true }]
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, is_time_deposit: true }]
         }));
 
         Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: (100 * COIN / 10000) as u128,
-            active_power: (70 * COIN / 10000) as u128,
             total_ring: 100 * COIN,
             total_deposit_ring: 100 * COIN,
             active_deposit_ring: 70 * COIN,
@@ -127,16 +115,14 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
             total_kton: 0,
             active_kton: 0,
             deposit_items: vec![TimeDepositItem {value: 70 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64 }],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true},
-                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_time_deposit: true}]
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, is_time_deposit: true}]
         }));
 
         // more than active ring
         Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: (100 * COIN / 10000) as u128,
-            active_power: 0,
             total_ring: 100 * COIN,
             total_deposit_ring: 100 * COIN,
             active_deposit_ring: 0,
@@ -144,9 +130,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
             total_kton: 0,
             active_kton: 0,
             deposit_items: vec![], // should be cleared
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, dt_power: 1000000, is_time_deposit: true},
-                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, dt_power: 2000000, is_time_deposit: true},
-                            UnlockChunk { value: StakingBalance::Ring(70000000000), era: 3, dt_power: 7000000, is_time_deposit: true},
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(10000000000), era: 3, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(20000000000), era: 3, is_time_deposit: true},
+                            UnlockChunk { value: StakingBalance::Ring(70000000000), era: 3, is_time_deposit: true},
             ]
         }));
 
@@ -155,8 +141,6 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
         assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: 0,
-            active_power: 0,
             total_ring: 0,
             total_deposit_ring: 0,
             active_deposit_ring: 0,
@@ -187,8 +171,6 @@ fn normal_unbond_should_work() {
         origin_ledger.deposit_items.push(TimeDepositItem {value: 200 * COIN, start_time: 0, expire_time: 12 * MONTH_IN_SECONDS as u64});
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: origin_ledger.total_power + (200 * COIN / 10000) as u128,
-            active_power: origin_ledger.active_power + (200 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring + 200 * COIN,
             total_deposit_ring: origin_ledger.total_deposit_ring + 200 * COIN,
             active_deposit_ring: origin_ledger.active_deposit_ring + 200 * COIN,
@@ -206,8 +188,6 @@ fn normal_unbond_should_work() {
         assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Kton(COIN), 0));
         assert_eq!(Staking::ledger(&10), Some(StakingLedgers {
             stash: 11,
-            total_power: origin_ledger.total_power + (300 * COIN / 10000) as u128,
-            active_power: origin_ledger.active_power + (300 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring,
             total_deposit_ring: origin_ledger.total_deposit_ring,
             active_deposit_ring: origin_ledger.active_deposit_ring,
@@ -235,8 +215,6 @@ fn punished_unbond_should_work() {
         assert_ok!(Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(10 * COIN), RewardDestination::Stash, 36));
         assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
             stash: 1001,
-            total_power: (10 * COIN / 10000) as u128,
-            active_power: (10 * COIN / 10000) as u128,
             total_ring: 10 * COIN,
             total_deposit_ring: 10 * COIN,
             active_deposit_ring: 10 * COIN,
@@ -259,8 +237,6 @@ fn punished_unbond_should_work() {
         assert_ok!(Staking::unbond_with_punish(Origin::signed(1000), 5 * COIN, MONTH_IN_SECONDS as u64 * 36));
         assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
             stash: 1001,
-            total_power: origin_ledger.total_power,
-            active_power: origin_ledger.active_power - (5 * COIN / 10000) as u128,
             total_ring: origin_ledger.total_ring,
             total_deposit_ring: origin_ledger.total_deposit_ring,
             active_deposit_ring: origin_ledger.active_deposit_ring - 5 * COIN,
@@ -268,7 +244,7 @@ fn punished_unbond_should_work() {
             total_kton: origin_ledger.total_kton,
             active_kton: origin_ledger.active_kton,
             deposit_items: vec![TimeDepositItem { value: 5 * COIN, start_time: 0, expire_time: 36 * MONTH_IN_SECONDS as u64 }],
-            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(5 * COIN), era: 3, dt_power: (5 * COIN / 10000) as u128, is_time_deposit: true }]
+            unlocking: vec![UnlockChunk { value: StakingBalance::Ring(5 * COIN), era: 3, is_time_deposit: true }]
         }));
 
         let kton_punishment = utils::compute_kton_return::<Test>(5 * COIN, 36);
@@ -296,8 +272,6 @@ fn transform_to_promised_ring_should_work() {
 
         assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
             stash: 1001,
-            total_power: origin_ledger.total_power,
-            active_power: origin_ledger.active_power,
             total_ring: origin_ledger.total_ring,
             total_deposit_ring: origin_ledger.total_deposit_ring + 5 * COIN,
             active_deposit_ring: origin_ledger.active_deposit_ring + 5 * COIN,
@@ -325,8 +299,6 @@ fn expired_ring_should_capable_to_promise_again() {
         assert_ok!(Staking::promise_extra(Origin::signed(1000), 5 * COIN, 13));
         assert_eq!(Staking::ledger(&1000), Some(StakingLedgers {
             stash: 1001,
-            total_power: origin_ledger.total_power,
-            active_power: origin_ledger.active_power,
             total_ring: origin_ledger.total_ring,
             total_deposit_ring: 5 * COIN,
             active_deposit_ring: 5 * COIN,
