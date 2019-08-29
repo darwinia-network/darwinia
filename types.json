@@ -6,7 +6,7 @@
   "ExtendedBalance": "u128",
   "ValidatorPrefs": {
     "unstake_threshold": "Compact<u32>",
-    "validator_payment_ratio": "Compact<RingBalanceOf>"
+    "validator_payment_ratio": "Perbill"
   },
   "StakingBalance": {
     "_enum": {
@@ -28,8 +28,8 @@
     "stash": "AccountId",
     "total_ring": "Compact<RingBalanceOf>",
     "total_deposit_ring": "Compact<RingBalanceOf>",
-    "active_deposit_ring": "Compact<RingBalanceOf>",
     "active_ring": "Compact<RingBalanceOf>",
+    "active_deposit_ring": "Compact<RingBalanceOf>",
     "total_kton": "Compact<KtonBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",

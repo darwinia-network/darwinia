@@ -85,17 +85,16 @@ pub enum StakerStatus<AccountId> {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct ValidatorPrefs<RingBalance: HasCompact> {
+pub struct ValidatorPrefs {
     /// Validator should ensure this many more slashes than is necessary before being unstaked.
     #[codec(compact)]
     pub unstake_threshold: u32,
     /// percent of Reward that validator takes up-front; only the rest is split between themselves and
     /// nominators.
-    #[codec(compact)]
-    pub validator_payment_ratio: RingBalance,
+    pub validator_payment_ratio: Perbill,
 }
 
-impl<R: Default + HasCompact + Copy> Default for ValidatorPrefs<R> {
+impl Default for ValidatorPrefs {
     fn default() -> Self {
         ValidatorPrefs {
             unstake_threshold: 3,
@@ -358,7 +357,7 @@ decl_storage! {
 
 		pub Payee get(payee): map T::AccountId => RewardDestination;
 
-		pub Validators get(validators): linked_map T::AccountId => ValidatorPrefs<RingBalanceOf<T>>;
+		pub Validators get(validators): linked_map T::AccountId => ValidatorPrefs;
 
 		pub Nominators get(nominators): linked_map T::AccountId => Vec<T::AccountId>;
 
@@ -754,11 +753,7 @@ decl_module! {
 			);
             // at most 100%
             let ratio = Perbill::from_percent(ratio.min(100));
-            // TODO: 10**9 represent for COIN unit. ugly hacking.
-            // FIXME: https://github.com/darwinia-network/darwinia/issues/60
-            let payment_ratio = ratio * 1_000_000_000.saturated_into::<RingBalanceOf<T>>();
-
-            let prefs = ValidatorPrefs {unstake_threshold: unstake_threshold, validator_payment_ratio: payment_ratio };
+            let prefs = ValidatorPrefs {unstake_threshold: unstake_threshold, validator_payment_ratio: ratio };
 
 			<Nominators<T>>::remove(stash);
 			<Validators<T>>::insert(stash, prefs);
@@ -1018,7 +1013,7 @@ impl<T: Trait> Module<T> {
 
 
     fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) {
-        let off_the_table = reward.saturating_mul(Self::validators(stash).validator_payment_ratio);
+        let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
         let reward = reward - off_the_table;
         let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
         let validator_cut = if reward.is_zero() {

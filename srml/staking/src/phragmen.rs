@@ -92,7 +92,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 	nominator_iter: FN,
 	stash_of: FS,
 ) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Vec<RawAssignment<T>>)>)> where
-	FV: Iterator<Item=(T::AccountId, ValidatorPrefs<RingBalanceOf<T>>)>,
+	FV: Iterator<Item=(T::AccountId, ValidatorPrefs)>,
 	FN: Iterator<Item=(T::AccountId, Vec<T::AccountId>)>,
 	for <'r> FS: Fn(&'r T::AccountId) -> ExtendedBalance,
 {
