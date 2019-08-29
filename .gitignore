@@ -10,3 +10,5 @@
 !node/runtime/wasm/target/wasm32-unknown-unknown/release/*.compact.wasm
 
 test-client
+
+.DS_Store

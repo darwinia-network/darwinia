@@ -30,6 +30,9 @@ pub use node_runtime::GenesisConfig;
 use primitives::{crypto::UncheckedInto, ed25519, Pair, sr25519};
 use substrate_service;
 use substrate_telemetry::TelemetryEndpoints;
+use substrate_service::Properties;
+use serde_json::Number;
+use serde_json::de::ParserNumber;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
@@ -414,14 +417,21 @@ fn local_testnet_genesis() -> GenesisConfig {
     )
 }
 
+fn token_properties() -> Option<Properties> {
+    let mut properties = Properties::new();
+    properties.insert("tokenDecimals".to_owned(), serde_json::Value::Number(Number::from(ParserNumber::U64(9))));
+    properties.insert("tokenSymbol".to_owned(), serde_json::Value::String("RING".to_owned()));
+    Some(properties)
+}
+
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, token_properties())
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
 pub fn crayfish_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, token_properties())
 }
 
 #[cfg(test)]
