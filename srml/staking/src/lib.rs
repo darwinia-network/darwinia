@@ -367,8 +367,6 @@ decl_storage! {
 
 		pub CurrentEra get(current_era) config(): EraIndex;
 
-		pub CurrentSessionReward get(current_session_reward) config(): RingBalanceOf<T>;
-
 		pub CurrentEraReward get(current_era_reward): RingBalanceOf<T>;
 
 		pub SlotStake get(slot_stake): ExtendedBalance;
@@ -1016,9 +1014,6 @@ impl<T: Trait> Module<T> {
 
 
     fn new_session(session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-        // accumulate good session reward
-        let reward = Self::current_session_reward();
-        <CurrentEraReward<T>>::mutate(|r| *r += reward);
 
         if ForceNewEra::take() || session_index % T::SessionsPerEra::get() == 0 {
             Self::new_era()
@@ -1094,7 +1089,6 @@ impl<T: Trait> Module<T> {
     /// Actually make a payment to a staker. This uses the currency's reward function
     /// to pay the right payee for the given staker account.
     fn make_payout(stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
-        runtime_io::print(amount.saturated_into::<u64>());
         let dest = Self::payee(stash);
         match dest {
             RewardDestination::Controller => Self::bonded(stash)
