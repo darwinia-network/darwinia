@@ -227,10 +227,10 @@ impl session::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 10;
+	pub const SessionsPerEra: session::SessionIndex = 5;
 	pub const BondingDuration: staking::EraIndex = 2;
-	// 288 * 365
-	pub const ErasPerEpoch: staking::ErasNums = 105120;
+	// 365 days * 24 hours * 60 miutes / 5 minutes
+	pub const ErasPerEpoch: staking::ErasNums = 63720;
 }
 
 // customed

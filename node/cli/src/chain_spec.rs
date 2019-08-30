@@ -129,7 +129,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         }),
         staking: Some(StakingConfig {
             current_era: 0,
-            current_era_total_reward: 0,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             offline_slash: Perbill::from_parts(1_000_000),
             session_reward: Perbill::from_percent(90),
             validator_count: 7,
@@ -257,7 +257,7 @@ pub fn testnet_genesis(
         staking: Some(StakingConfig {
             current_era: 0,
             // TODO: ready for hacking
-            current_era_total_reward: 80_000_000 * COIN,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             minimum_validator_count: 1,
             validator_count: 3,
             offline_slash: Perbill::from_parts(1_000_000),
@@ -267,7 +267,7 @@ pub fn testnet_genesis(
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 2,                    // 2*2=4 second block time.
+            minimum_period: 3,                    // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {
@@ -365,7 +365,7 @@ pub fn crayfish_testnet_genesis(
         staking: Some(StakingConfig {
             current_era: 0,
             // TODO: ready for hacking
-            current_era_total_reward: 105820105820105,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             minimum_validator_count: 1,
             validator_count: 3,
             offline_slash: Perbill::from_parts(1_000_000),
@@ -375,7 +375,7 @@ pub fn crayfish_testnet_genesis(
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 2,                    // 2*2=4 second block time.
+            minimum_period: 3,                    // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {

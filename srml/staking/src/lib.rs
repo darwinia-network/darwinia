@@ -1006,7 +1006,7 @@ impl<T: Trait> Module<T> {
                 // to avoid underflow
                 let value = k.min(ledger.active_kton);
                 ledger.active_kton -= value;
-                Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
+                Self::update_ledger(controller, ledger, StakingBalance::Kton(0.into()));
                 (0.into(), value)
             }
         }
@@ -1260,27 +1260,29 @@ impl<T: Trait> Module<T> {
                 });
             }
 
-            let prefs = Self::validators(&stash);
-            let unstake_threshold = prefs.unstake_threshold.min(MAX_UNSTAKE_THRESHOLD);
-            let max_slashes = grace + unstake_threshold;
+            if <Validators<T>>::exists(&stash) {
+                let prefs = Self::validators(&stash);
+                let unstake_threshold = prefs.unstake_threshold.min(MAX_UNSTAKE_THRESHOLD);
+                let max_slashes = grace + unstake_threshold;
 
-            let event = if new_slash_count > max_slashes {
-                let offline_slash_ratio_base = *Self::offline_slash().encode_as();
-                // slash_ratio is ensured to be less than 1 in slash_validator
-                // don't worry here.
-                let slash_ratio_in_u32 = offline_slash_ratio_base
-                    .checked_shl(unstake_threshold)
-                    .unwrap_or_default();
-                Self::slash_validator(&stash, slash_ratio_in_u32);
-                <Validators<T>>::remove(&stash);
-                let _ = <session::Module<T>>::disable(&controller);
+                let event = if new_slash_count > max_slashes {
+                    let offline_slash_ratio_base = *Self::offline_slash().encode_as();
+                    // slash_ratio is ensured to be less than 1 in slash_validator
+                    // don't worry here.
+                    let slash_ratio_in_u32 = offline_slash_ratio_base
+                        .checked_shl(unstake_threshold)
+                        .unwrap_or_default();
+                    Self::slash_validator(&stash, slash_ratio_in_u32);
+                    <Validators<T>>::remove(&stash);
+                    let _ = <session::Module<T>>::disable(&controller);
 
-                RawEvent::OfflineSlash(stash.clone(), slash_ratio_in_u32)
-            } else {
-                RawEvent::OfflineWarning(stash.clone(), slash_count)
-            };
+                    RawEvent::OfflineSlash(stash.clone(), slash_ratio_in_u32)
+                } else {
+                    RawEvent::OfflineWarning(stash.clone(), slash_count)
+                };
 
-            Self::deposit_event(event);
+                Self::deposit_event(event);
+            }
         }
     }
 
