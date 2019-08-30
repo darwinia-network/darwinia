@@ -941,21 +941,77 @@ impl<T: Trait> Module<T> {
         // slash ring
         let (ring_imbalance, _) = if !ledger.total_ring.is_zero() {
             let slashable_ring = slash_ratio * ledger.total_ring;
-            Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
-            T::Ring::slash(stash, slashable_ring)
+            let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
+            T::Ring::slash(stash, value_slashed.0)
         } else {
             (<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
         };
 
         let (kton_imbalance, _) = if !ledger.total_kton.is_zero() {
             let slashable_kton = slash_ratio * ledger.total_kton;
-            Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
-            T::Kton::slash(stash, slashable_kton)
+            let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
+            T::Kton::slash(stash, value_slashed.1)
         } else {
             (<KtonNegativeImbalanceOf<T>>::zero(), Zero::zero())
         };
 
         (ring_imbalance, kton_imbalance)
+    }
+
+    fn slash_helper(
+        controller: &T::AccountId,
+        ledger: &mut StakingLedgers<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>,
+            StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>, T::Moment>,
+        value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) -> (RingBalanceOf<T>, KtonBalanceOf<T>){
+        match value {
+            StakingBalance::Ring(r) => {
+                // if slashing ring, first slashing normal ring
+                // then, slashing time-deposit ring
+                let value = r.min(ledger.total_ring - ledger.total_deposit_ring);
+                ledger.total_ring -= value;
+                // to prevent overflow
+                ledger.active_ring -= value.min(ledger.active_ring);
+                let mut value_left = r - value;
+                let mut deposit_items = ledger.deposit_items.clone();
+                if !value_left.is_zero() {
+                    // sorted by expire_time from far to near
+                    deposit_items.sort_unstable_by_key(|item|
+                        u64::max_value() - item.expire_time.clone().saturated_into::<u64>()
+                    );
+                    let new_deposit_items = deposit_items.into_iter()
+                        .filter_map(|mut item| {
+                            if value_left.is_zero() {
+                                Some(item)
+                            } else {
+                                let value_removed = value_left.min(item.value);
+                                item.value -= value_removed;
+                                ledger.total_deposit_ring -= value_removed;
+                                ledger.active_deposit_ring -= value_removed;
+                                value_left -= value_removed;
+                                if !item.value.is_zero() {
+                                    Some(item)
+                                } else {
+                                    None
+                                }
+                            }
+                        }).collect::<Vec<_>>();
+                    ledger.deposit_items = new_deposit_items;
+                }
+
+                Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
+                (value, 0.into())
+            },
+
+            StakingBalance::Kton(k) => {
+                let value = k.min(ledger.total_kton);
+                ledger.total_kton -= value;
+                // to avoid underflow
+                let value = k.min(ledger.active_kton);
+                ledger.active_kton -= value;
+                Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
+                (0.into(), value)
+            }
+        }
     }
 
 
@@ -1215,13 +1271,13 @@ impl<T: Trait> Module<T> {
             let max_slashes = grace + unstake_threshold;
 
             let event = if new_slash_count > max_slashes {
-                let offline_slash_ratio_base: u32 = *Self::offline_slash().encode_as();
-                // slash_ratio is ensured to be less than 1
+                let offline_slash_ratio_base = *Self::offline_slash().encode_as();
+                // slash_ratio is ensured to be less than 1 in slash_validator
+                // don't worry here.
                 let slash_ratio_in_u32 = offline_slash_ratio_base
                     .checked_shl(unstake_threshold)
-                    .map(|x| x.min(1_000_000_000))
                     .unwrap_or_default();
-                let _ = Self::slash_validator(&stash, slash_ratio_in_u32);
+                Self::slash_validator(&stash, slash_ratio_in_u32);
                 <Validators<T>>::remove(&stash);
                 let _ = <session::Module<T>>::disable(&controller);
 
@@ -1231,60 +1287,6 @@ impl<T: Trait> Module<T> {
             };
 
             Self::deposit_event(event);
-        }
-    }
-
-    fn slash_helper(
-        controller: &T::AccountId,
-        ledger: &mut StakingLedgers<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>,
-        StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>, T::Moment>,
-                    value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
-        match value {
-            StakingBalance::Ring(r) => {
-                // if slashing ring, first slashing normal ring
-                // then, slashing time-deposit ring
-                let value = r.min(ledger.total_ring - ledger.total_deposit_ring);
-                ledger.total_ring -= value;
-                // to prevent overflow
-                ledger.active_ring -= value.min(ledger.active_ring);
-                let mut value_left = r - value;
-                let mut deposit_items = ledger.deposit_items.clone();
-                if !value_left.is_zero() {
-                    // sorted by expire_time from far to near
-                    deposit_items.sort_unstable_by_key(|item|
-                        u64::max_value() - item.expire_time.clone().saturated_into::<u64>()
-                    );
-                    let new_deposit_items = deposit_items.into_iter()
-                        .filter_map(|mut item| {
-                            if value_left.is_zero() {
-                               Some(item)
-                            } else {
-                                let value_removed = value_left.min(item.value);
-                                item.value -= value_removed;
-                                ledger.total_deposit_ring -= value_removed;
-                                ledger.active_deposit_ring -= value_removed;
-                                value_left -= value_removed;
-                                if !item.value.is_zero() {
-                                    Some(item)
-                                } else {
-                                    None
-                                }
-                            }
-                        }).collect::<Vec<_>>();
-                    ledger.deposit_items = new_deposit_items;
-                }
-
-                Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
-            },
-
-            StakingBalance::Kton(k) => {
-                let value = k.min(ledger.total_kton);
-                ledger.total_kton -= value;
-                // to avoid underflow
-                let value = k.min(ledger.active_kton);
-                ledger.active_kton -= value;
-                Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
-            }
         }
     }
 

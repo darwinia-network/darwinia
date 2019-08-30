@@ -381,7 +381,23 @@ fn reward_should_work_correctly() {
                        others: vec![IndividualExpo { who: 1001, value: 600000000000 }] });
         assert_eq!(Ring::free_balance(&2000), 601 * COIN);
         assert_eq!(Ring::free_balance(&1000), 601 * COIN);
+    });
+}
 
+#[test]
+fn slash_should_work() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
 
+        Ring::deposit_creating(&1001, 100 * COIN);
+        Kton::deposit_creating(&1001, 100 * COIN);
+
+        Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(50 * COIN), RewardDestination::Controller, 0);
+        Staking::bond_extra(Origin::signed(1000), StakingBalance::Kton(50 * COIN), 0);
+        Staking::validate(Origin::signed(1000), [0;8].to_vec(), 0, 3);
+        // slash 1%
+        Staking::slash_validator(&1001, 10_000_000);
+        assert_eq!(Staking::ledger(&1000).unwrap().active_ring, 495 * COIN / 10);
+        assert_eq!(Ring::free_balance(&1001), 995 * COIN / 10);
     });
 }
