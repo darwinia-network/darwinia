@@ -387,10 +387,9 @@ decl_storage! {
 
 		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
 
-		pub RingPool get(ring_pool): RingBalanceOf<T> = 1.into();
-        // to avoid 'attempt to divide by zero'
-        // assigned a very small initial value that close to 0
-		pub KtonPool get(kton_pool): KtonBalanceOf<T> = 1.into();
+		pub RingPool get(ring_pool): RingBalanceOf<T>;
+
+		pub KtonPool get(kton_pool): KtonBalanceOf<T>;
     }
     add_extra_genesis {
 		config(stakers):
@@ -488,12 +487,14 @@ decl_module! {
 			        let stash_balance = T::Ring::free_balance(&stash);
 			        let value = r.min(stash_balance);
 			        // increase ring pool
-			        <RingPool<T>>::mutate(|r| *r = r.saturating_add(value));
-			        Self::bond_helper_in_ring(stash.clone(), controller.clone(), value, promise_month, ledger)},
+			        <RingPool<T>>::mutate(|r| *r += value);
+			        Self::bond_helper_in_ring(stash.clone(), controller.clone(), value, promise_month, ledger);
+			    },
 			    StakingBalance::Kton(k) => {
 			        let stash_balance = T::Kton::free_balance(&stash);
-			        let value = k.min(stash_balance);
-			        <KtonPool<T>>::mutate(|r| *r = r.saturating_add(value));
+			        let value: KtonBalanceOf<T> = k.min(stash_balance);
+			        // increase kton pool
+			        <KtonPool<T>>::mutate(|k| *k += value);
 			        Self::bond_helper_in_kton(controller.clone(), value, ledger);
 			    },
 			}
@@ -516,7 +517,6 @@ decl_module! {
                         Self::bond_helper_in_ring(stash.clone(), controller.clone(), extra, promise_month, ledger);
                     }
                 },
-
                 StakingBalance::Kton(k) => {
                     let stash_balance = T::Kton::free_balance(&stash);
                     if let Some(extra) = stash_balance.checked_sub(&(ledger.total_kton)) {
@@ -1038,6 +1038,7 @@ impl<T: Trait> Module<T> {
     /// Actually make a payment to a staker. This uses the currency's reward function
     /// to pay the right payee for the given staker account.
     fn make_payout(stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
+        runtime_io::print(amount.saturated_into::<u64>());
         let dest = Self::payee(stash);
         match dest {
             RewardDestination::Controller => Self::bonded(stash)
@@ -1295,10 +1296,12 @@ impl<T: Trait> Module<T> {
     // another 50% reward is distributed to kton holders
     fn kton_vote_weight() -> ExtendedBalance {
         let total_ring = Self::ring_pool().saturated_into::<ExtendedBalance>();
-        let total_kton = Self::kton_pool().saturated_into::<ExtendedBalance>();
+        // to avoid 'attempt to divide by zero'
+        let total_kton = Self::kton_pool().saturated_into::<ExtendedBalance>().max(1);
         // total_ring and total_kton are within the scope of u64
         // so it is safe to multiply ACCURACY when extended to u128
         total_ring * ACCURACY / total_kton
+
     }
 }
 

@@ -328,3 +328,60 @@ fn inflation_should_be_correct() {
         assert_eq!(current_era_total_reward, 88000000 * COIN / 10);
     });
 }
+
+#[test]
+fn reward_should_work_correctly() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+        // create controller account
+        Ring::deposit_creating(&2000, COIN);
+        Ring::deposit_creating(&1000, COIN);
+        Ring::deposit_creating(&200, COIN);
+        // new validator
+        Ring::deposit_creating(&2001, 2000 * COIN);
+        Kton::deposit_creating(&2001, 10 * COIN);
+        // new validator
+        Ring::deposit_creating(&1001,  300 * COIN);
+        Kton::deposit_creating(&1001, 1 * COIN);
+        // handle some dirty work
+        Ring::deposit_creating(&201, 2000 * COIN);
+        Kton::deposit_creating(&201, 10 * COIN);
+        assert_eq!(Kton::free_balance(&201), 10 * COIN);
+
+        // 2001-2000
+        Staking::bond(Origin::signed(2001), 2000, StakingBalance::Ring(300 * COIN), RewardDestination::Controller, 12);
+        Staking::bond_extra(Origin::signed(2001), StakingBalance::Kton(1 * COIN), 0);
+        // 1001-1000
+        Staking::bond(Origin::signed(1001), 1000, StakingBalance::Ring(300 * COIN), RewardDestination::Controller, 12);
+        Staking::bond_extra(Origin::signed(1001), StakingBalance::Kton(1 * COIN), 0);
+        let ring_pool = Staking::ring_pool();
+        let kton_pool = Staking::kton_pool();
+        // 201-200
+        Staking::bond(Origin::signed(201), 200, StakingBalance::Ring(3000 * COIN - ring_pool), RewardDestination::Stash, 12);
+        Staking::bond_extra(Origin::signed(201), StakingBalance::Kton(10 * COIN - kton_pool), 0);
+        // ring_pool and kton_pool
+        assert_eq!(Staking::ring_pool(), 3000 * COIN);
+        assert_eq!(Staking::kton_pool(), 10 * COIN);
+        // 1/5 ring_ppol and 1/5 kton_pool
+        Staking::validate(Origin::signed(2000), [0;8].to_vec(), 0, 3);
+        Staking::nominate(Origin::signed(1000), vec![2001]);
+
+        assert_eq!(Staking::ledger(&2000).unwrap().active_kton, 1 * COIN);
+        assert_eq!(Staking::ledger(&2000).unwrap().active_ring, 300 * COIN);
+        assert_eq!(Staking::slashable_balance_of(&2001), 600 * COIN as u128);
+        // 600COIN for rewarding ring bond-er
+        // 600COIN for rewarding kton bond-er
+        Staking::select_validators();
+        Staking::reward_validator(&2001, 1200 * COIN);
+
+        assert_eq!(Staking::stakers(2001),
+                   Exposures {
+                       total: 1200000000000,
+                       own: 600000000000,
+                       others: vec![IndividualExpo { who: 1001, value: 600000000000 }] });
+        assert_eq!(Ring::free_balance(&2000), 601 * COIN);
+        assert_eq!(Ring::free_balance(&1000), 601 * COIN);
+
+
+    });
+}
