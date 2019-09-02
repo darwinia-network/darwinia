@@ -164,6 +164,7 @@ mod tests {
 	use super::*;
 
 	#[test]
+    #[ignore]
 	fn does_not_abort() {
 		set("test");
 		let _guard = AbortGuard::force_unwind();

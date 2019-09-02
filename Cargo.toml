@@ -50,7 +50,7 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
-#    "test-client",
+#    "darwinia-client",
 	"node/cli",
     "node/executor",
     "node/primitives",
@@ -69,6 +69,6 @@ exclude = ["node/runtime/wasm"]
 authors = ['Darwinia Network <hello@darwinia.network>']
 build = 'build.rs'
 edition = '2018'
-name = 'darwinia-crayfish'
+name = 'darwinia'
 version = '0.3.1'
 

@@ -985,6 +985,8 @@ impl<T: Trait> Module<T> {
                                 item.value -= value_removed;
                                 ledger.total_deposit_ring -= value_removed;
                                 ledger.active_deposit_ring -= value_removed;
+                                ledger.total_ring -= value_removed;
+                                ledger.active_ring -= value_removed;
                                 value_left -= value_removed;
                                 if !item.value.is_zero() {
                                     Some(item)

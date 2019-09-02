@@ -17,7 +17,7 @@ node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
-#test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git' }
+test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git', rev = "5bf5e8f5" }
 keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
 runtime_primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git' }
 runtime_support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
