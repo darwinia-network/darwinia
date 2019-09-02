@@ -70,5 +70,5 @@ authors = ['Darwinia Network <hello@darwinia.network>']
 build = 'build.rs'
 edition = '2018'
 name = 'darwinia-crayfish'
-version = '0.3.0'
+version = '0.3.1'
 
