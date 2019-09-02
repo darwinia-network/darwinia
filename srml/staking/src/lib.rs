@@ -70,8 +70,6 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
-// customed: counter for number of eras per epoch.
-pub type ErasNums = u32;
 
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum StakerStatus<AccountId> {
@@ -330,7 +328,7 @@ pub trait Trait: timestamp::Trait + session::Trait {
 
     // custom
     type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
-    type ErasPerEpoch: Get<ErasNums>;
+    type ErasPerEpoch: Get<EraIndex>;
 }
 
 decl_storage! {
@@ -367,8 +365,6 @@ decl_storage! {
 
 		pub CurrentEra get(current_era) config(): EraIndex;
 
-		pub CurrentEraReward get(current_era_reward): RingBalanceOf<T>;
-
 		pub SlotStake get(slot_stake): ExtendedBalance;
 
 		pub SlashCount get(slash_count): map T::AccountId => u32;
@@ -377,7 +373,7 @@ decl_storage! {
 
 		pub ForceNewEra get(forcing_new_era): bool;
 
-		pub EpochIndex get(epoch_index): T::BlockNumber = 0.into();
+		pub EpochIndex get(epoch_index): u32 = 0;
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
@@ -1102,7 +1098,7 @@ impl<T: Trait> Module<T> {
         if !reward.is_zero() {
             let validators = Self::current_elected();
             let len = validators.len() as u32; // validators length can never overflow u64
-            let len: RingBalanceOf<T> = len.into();
+            let len: RingBalanceOf<T> = len.max(1).into();
             let block_reward_per_validator = reward / len;
             for v in validators.iter() {
                 Self::reward_validator(v, block_reward_per_validator);
@@ -1112,12 +1108,13 @@ impl<T: Trait> Module<T> {
             // TODO: reward to treasury
         }
 
+        // Increment current era.
+        CurrentEra::mutate(|s| *s += 1);
+
         // check if ok to change epoch
         if Self::current_era() % T::ErasPerEpoch::get() == 0 {
             Self::new_epoch();
         }
-        // Increment current era.
-        CurrentEra::mutate(|s| *s += 1);
 
         // Reassign all Stakers.
         let (_, maybe_new_validators) = Self::select_validators();
@@ -1126,10 +1123,12 @@ impl<T: Trait> Module<T> {
     }
 
     fn new_epoch() {
-        <EpochIndex<T>>::put(Self::epoch_index() + One::one());
+        EpochIndex::mutate(|e| *e += 1);
         let next_era_reward = utils::compute_current_era_reward::<T>();
-        // TODO: change to CurrentEraReward
-        <CurrentEraTotalReward<T>>::put(next_era_reward);
+        if !next_era_reward.is_zero() {
+            <CurrentEraTotalReward<T>>::put(next_era_reward);
+        }
+
     }
 
 

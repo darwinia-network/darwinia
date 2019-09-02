@@ -310,12 +310,7 @@ fn crayfish_config_genesis() -> GenesisConfig {
             get_authority_keys_from_seed("Bob"),
         ],
         hex!["5225c14bd888f6f623d4c6fb283b3b6bbb76560151f6dbf3476dc2b60c24c476"].unchecked_into(),
-        Some(vec![
-            // root
-            hex!["5225c14bd888f6f623d4c6fb283b3b6bbb76560151f6dbf3476dc2b60c24c476"].unchecked_into(),
-            // tony
-            hex!["12d5e8af67fc5c08ed231619d9210ecad2c665ff5d72e5948e56e82a0553f86b"].unchecked_into()
-        ]),
+        None,
         false,
     )
 }
@@ -358,8 +353,8 @@ pub fn crayfish_testnet_genesis(
         }),
         balances: Some(BalancesConfig {
             balances: endowed_accounts.iter().cloned()
-                .map(|k| (k, 9 * ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+                .map(|k| (k, 1 * ENDOWMENT))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), 4 * ENDOWMENT)))
                 .collect(),
             vesting: vec![],
         }),

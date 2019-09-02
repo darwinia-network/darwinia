@@ -55,7 +55,7 @@ pub use contracts::Gas;
 pub use runtime_primitives::{Permill, Perbill, impl_opaque_keys};
 pub use support::StorageValue;
 pub use staking::StakerStatus;
-pub use staking::ErasNums;
+pub use staking::EraIndex;
 
 
 /// Runtime version.
@@ -227,11 +227,11 @@ impl session::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 5;
+	pub const SessionsPerEra: session::SessionIndex = 1;
 	// about 14 days
 	pub const BondingDuration: staking::EraIndex = 4032;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
-	pub const ErasPerEpoch: staking::ErasNums = 105120;
+	pub const ErasPerEpoch: EraIndex = 105120;
 }
 
 // customed

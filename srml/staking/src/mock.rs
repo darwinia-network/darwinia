@@ -8,7 +8,7 @@ use substrate_primitives::{H256, Blake2Hasher};
 use runtime_io;
 use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
 use srml_support::traits::{Currency, Get};
-use crate::{EraIndex, ErasNums, GenesisConfig, Module, Trait, StakerStatus,
+use crate::{EraIndex, GenesisConfig, Module, Trait, StakerStatus,
             ValidatorPrefs, RewardDestination, Nominators, StakingBalance
 };
 
@@ -132,7 +132,7 @@ impl kton::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 3;
 	pub const BondingDuration: EraIndex = 3;
-	pub const ErasPerEpoch: ErasNums = 10;
+	pub const ErasPerEpoch: EraIndex = 10;
 }
 
 pub const COIN: u64 = 1_000_000_000;
@@ -264,7 +264,7 @@ impl ExtBuilder {
         let nominated = if self.nominate { vec![11, 21] } else { vec![] };
         let _ = GenesisConfig::<Test>{
             current_era: self.current_era,
-            current_era_total_reward: 1_600_000_000 * COIN / ErasPerEpoch::get() as u64,
+            current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
 //                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
                 (11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
