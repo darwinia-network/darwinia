@@ -623,7 +623,7 @@ decl_module! {
         fn unbond_with_punish(origin, value: RingBalanceOf<T>, expire_time: T::Moment) {
             let controller = ensure_signed(origin)?;
             let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-            let stash = ledger.clone().stash;
+            let stash = ledger.stash.clone();
             let now = <timestamp::Module<T>>::now();
             ensure!(expire_time.clone() > now.clone(), "use unbond instead.");
             let deposit_items = ledger.deposit_items.clone();
