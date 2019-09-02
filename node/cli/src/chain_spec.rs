@@ -305,8 +305,11 @@ fn crayfish_config_genesis() -> GenesisConfig {
             get_authority_keys_from_seed("Alice"),
             get_authority_keys_from_seed("Bob"),
         ],
-        get_account_id_from_seed("Alice"),
-        None,
+        hex!["5225c14bd888f6f623d4c6fb283b3b6bbb76560151f6dbf3476dc2b60c24c476"].unchecked_into(),
+        Some(vec![
+            // tony
+            hex!["12d5e8af67fc5c08ed231619d9210ecad2c665ff5d72e5948e56e82a0553f86b"].unchecked_into()
+        ]),
         false,
     )
 }
@@ -336,7 +339,7 @@ pub fn crayfish_testnet_genesis(
         ]
     });
 
-    const ENDOWMENT: Balance = 10_000_000 * COIN;
+    const ENDOWMENT: Balance = 100_000_000 * COIN;
     const STASH: Balance = 100 * COIN;
 
     GenesisConfig {
@@ -348,14 +351,14 @@ pub fn crayfish_testnet_genesis(
             ids: endowed_accounts.clone(),
         }),
         balances: Some(BalancesConfig {
-            balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+            balances: endowed_accounts.iter().cloned()
+                .map(|k| (k, 18 * ENDOWMENT))
+                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+                .collect(),
             vesting: vec![],
         }),
         kton: Some(KtonConfig {
-            balances: endowed_accounts.iter().cloned()
-                .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
-                .collect(),
+            balances: vec![],
             vesting: vec![],
         }),
         session: Some(SessionConfig {
@@ -367,10 +370,10 @@ pub fn crayfish_testnet_genesis(
             // TODO: ready for hacking
             current_era_total_reward: 80_000_000 * COIN / 63720,
             minimum_validator_count: 1,
-            validator_count: 3,
+            validator_count: 30,
             offline_slash: Perbill::from_parts(1_000_000),
             session_reward: Perbill::from_percent(90),
-            offline_slash_grace: 2,
+            offline_slash_grace: 4,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
@@ -428,7 +431,7 @@ pub fn local_testnet_config() -> ChainSpec {
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
 pub fn crayfish_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, token_properties())
+    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, Some("DAR"), None, token_properties())
 }
 
 #[cfg(test)]

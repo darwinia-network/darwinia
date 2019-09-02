@@ -599,8 +599,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-poc2"
-version = "0.2.2"
+name = "darwinia-crayfish"
+version = "0.3.0"
 dependencies = [
  "ctrlc 3.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fork-tree 2.0.0 (git+https://github.com/paritytech/substrate.git)",

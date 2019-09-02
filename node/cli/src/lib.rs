@@ -132,9 +132,9 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
+			"" | "crayfish" => Some(ChainSpec::CrayfishTestnet),
+			"flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
-			"crayfish" => Some(ChainSpec::CrayfishTestnet),
 			_ => None,
 		}
 	}
@@ -158,7 +158,7 @@ pub fn run<I, T, E>(args: I, exit: E, version: cli::VersionInfo) -> error::Resul
 		|exit, _cli_args, _custom_args, config| {
 			info!("{}", version.name);
 			info!("  version {}", config.full_version());
-			info!("  by Parity Technologies, 2017-2019");
+			info!("  by Darwinia Network, 2017-2019");
 			info!("Chain specification: {}", config.chain_spec.name());
 			info!("Node name: {}", config.name);
 			info!("Roles: {:?}", config.roles);

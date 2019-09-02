@@ -66,9 +66,9 @@ members = [
 exclude = ["node/runtime/wasm"]
 
 [package]
-authors = ['Parity Technologies <admin@parity.io>']
+authors = ['Darwinia Network <hello@darwinia.network>']
 build = 'build.rs'
 edition = '2018'
-name = 'darwinia-poc2'
-version = '0.2.2'
+name = 'darwinia-crayfish'
+version = '0.3.0'
 
