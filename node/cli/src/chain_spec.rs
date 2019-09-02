@@ -431,7 +431,15 @@ pub fn local_testnet_config() -> ChainSpec {
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
 pub fn crayfish_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, Some("DAR"), None, token_properties())
+    ChainSpec::from_genesis(
+        "Crayfish Testnet",
+        "crayfish_testnet",
+        crayfish_config_genesis,
+        vec![],
+        Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
+        Some("DAR"),
+        None,
+        token_properties())
 }
 
 #[cfg(test)]
