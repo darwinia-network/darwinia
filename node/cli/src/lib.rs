@@ -52,6 +52,7 @@ pub enum ChainSpec {
 	StagingTestnet,
 	/// Crayfish, darwinia network poc-2
 	CrayfishTestnet,
+	CrayfishTestnetFir,
 }
 
 /// Custom subcommands.
@@ -125,14 +126,16 @@ impl ChainSpec {
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
 			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
+			ChainSpec::CrayfishTestnetFir => chain_spec::crayfish_fir_config()?,
 		})
 	}
 
 	pub(crate) fn from(s: &str) -> Option<Self> {
 		match s {
 			"dev" => Some(ChainSpec::Development),
+			"" => Some(ChainSpec::CrayfishTestnetFir),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "crayfish" => Some(ChainSpec::CrayfishTestnet),
+			"crayfish" => Some(ChainSpec::CrayfishTestnet),
 			"flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
 			_ => None,

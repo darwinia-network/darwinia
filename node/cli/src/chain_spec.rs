@@ -44,6 +44,10 @@ pub fn flaming_fir_config() -> Result<ChainSpec, String> {
     ChainSpec::from_embedded(include_bytes!("../res/flaming-fir.json"))
 }
 
+pub fn crayfish_fir_config() -> Result<ChainSpec, String> {
+    ChainSpec::from_embedded(include_bytes!("../res/crayfish-fir.json"))
+}
+
 fn staging_testnet_config_genesis() -> GenesisConfig {
     // stash, controller, session-key
     // generated with secret:
