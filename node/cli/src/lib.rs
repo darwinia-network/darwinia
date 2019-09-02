@@ -50,12 +50,8 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
-	/// darwinia poc-1 testnet, same with local testnet
-	Trilobita,
-	/// darwinia poc-1 testnet
-	Darwinia,
-	/// darwinia poc-1 testnet fir
-	DarwiniaFir
+	/// Crayfish, darwinia network poc-2
+	CrayfishTestnet,
 }
 
 /// Custom subcommands.
@@ -63,8 +59,8 @@ pub enum ChainSpec {
 pub enum CustomSubcommands {
 	/// The custom factory subcommmand for manufacturing transactions.
 	#[structopt(
-		name = "factory",
-		about = "Manufactures num transactions from Alice to random accounts. \
+	name = "factory",
+	about = "Manufactures num transactions from Alice to random accounts. \
 		Only supported for development or local testnet."
 	)]
 	Factory(FactoryCmd),
@@ -128,10 +124,7 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::Trilobita => chain_spec::trilobita_testnet_config(),
-			// latest
-			ChainSpec::Darwinia => chain_spec::trilobita_config(),
-			ChainSpec::DarwiniaFir => chain_spec::darwinia_fir_config()?,
+			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
 		})
 	}
 
@@ -139,10 +132,8 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"darwinia" => Some(ChainSpec::Darwinia),
-			"" => Some(ChainSpec::DarwiniaFir),
-			"trilobita" => Some(ChainSpec::Trilobita),
-			"fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
+			"" | "crayfish" => Some(ChainSpec::CrayfishTestnet),
+			"flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
 			_ => None,
 		}
@@ -173,16 +164,15 @@ pub fn run<I, T, E>(args: I, exit: E, version: cli::VersionInfo) -> error::Resul
 			info!("Roles: {:?}", config.roles);
 			let runtime = RuntimeBuilder::new().name_prefix("main-tokio-").build()
 				.map_err(|e| format!("{:?}", e))?;
-			let executor = runtime.executor();
 			match config.roles {
 				ServiceRoles::LIGHT => run_until_exit(
 					runtime,
-					service::Factory::new_light(config, executor).map_err(|e| format!("{:?}", e))?,
+					service::Factory::new_light(config).map_err(|e| format!("{:?}", e))?,
 					exit
 				),
 				_ => run_until_exit(
 					runtime,
-					service::Factory::new_full(config, executor).map_err(|e| format!("{:?}", e))?,
+					service::Factory::new_full(config).map_err(|e| format!("{:?}", e))?,
 					exit
 				),
 			}.map_err(|e| format!("{:?}", e))
@@ -224,7 +214,7 @@ fn run_until_exit<T, C, E>(
 	e: E,
 ) -> error::Result<()>
 	where
-	    T: Deref<Target=substrate_service::Service<C>>,
+		T: Deref<Target=substrate_service::Service<C>> + Future<Item = (), Error = ()> + Send + 'static,
 		C: substrate_service::Components,
 		E: IntoExit,
 {
@@ -233,13 +223,12 @@ fn run_until_exit<T, C, E>(
 	let informant = cli::informant::build(&service);
 	runtime.executor().spawn(exit.until(informant).map(|_| ()));
 
-	let _ = runtime.block_on(e.into_exit());
-	exit_send.fire();
-
 	// we eagerly drop the service so that the internal exit future is fired,
 	// but we need to keep holding a reference to the global telemetry guard
 	let _telemetry = service.telemetry();
-	drop(service);
+
+	let _ = runtime.block_on(service.select(e.into_exit()));
+	exit_send.fire();
 
 	// TODO [andre]: timeout this future #1318
 	let _ = runtime.shutdown_on_idle().wait();

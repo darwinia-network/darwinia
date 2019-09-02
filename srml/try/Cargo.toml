@@ -9,15 +9,28 @@ hex-literal = "0.2.0"
 serde = { version = "1.0", default-features = false }
 serde_derive = { version = "1.0", optional = true }
 safe-mix = { version = "1.0", default-features = false}
-parity-codec = { version = "3.0", default-features = false }
-parity-codec-derive = { version = "3.0", default-features = false }
+parity-codec = { version = "4.1.1", default-features = false }
+parity-codec-derive = { version = "3.3.0", default-features = false }
 substrate-keyring = { git = "https://github.com/paritytech/substrate", optional = true }
 primitives = { package = "substrate-primitives", git = "https://github.com/paritytech/substrate", default-features = false }
 rstd = { package = "sr-std", git = "https://github.com/paritytech/substrate", default-features = false }
 sr-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
 support = { package = "srml-support", git = "https://github.com/paritytech/substrate", default-features = false }
 system = { package = "srml-system", git = "https://github.com/paritytech/substrate", default-features = false }
-sr-io = { git = "https://github.com/paritytech/substrate", default-features = false }
+sr-io = { git = "https://github.com/paritytech/substrate.git", default-features = false }
+
+[dev-dependencies]
+support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
+balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
+executive = { package = "srml-executive", git = 'https://github.com/paritytech/substrate.git' }
+authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git' }
+finality-tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git' }
+grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git' }
+indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
+session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git' }
+system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
+sr-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 
 
 [features]

@@ -60,7 +60,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 	type Block = node_primitives::Block;
 	type Phase = sr_primitives::generic::Phase;
 	type Secret = sr25519::Pair;
-	type Index = node_primitives::Index;
+	type Index = node_primitives::Nonce;
 
 	type Number = Number;
 
@@ -193,11 +193,11 @@ impl RuntimeAdapter for FactoryState<Number> {
 		} else {
 			match self.round() {
 				0 =>
-					// if round is 0 all transactions will be done with master as a sender
+				// if round is 0 all transactions will be done with master as a sender
 					self.block_no(),
 				_ =>
-					// if round is e.g. 1 every sender account will be new and not yet have
-					// any transactions done
+				// if round is e.g. 1 every sender account will be new and not yet have
+				// any transactions done
 					0
 			}
 		}

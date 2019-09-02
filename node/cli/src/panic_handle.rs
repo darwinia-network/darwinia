@@ -154,7 +154,7 @@ pub fn push_alert_to_ding(trace_err: String) {
     let client = reqwest::Client::new();
     let ding_talk_endpoint = "https://oapi.dingtalk.com/robot/send?access_token=";
     let ding_talk_token = env::var("DING_TALK_TOKEN").unwrap_or_default();
-    let mut r = client.post(&format!("{}{}", ding_talk_endpoint, ding_talk_token));
+    let r = client.post(&format!("{}{}", ding_talk_endpoint, ding_talk_token));
     let msg_body = PushMsg { msgtype: "text".to_string(), text: PushText { content: trace_err } };
     let res = r.json(&msg_body).send();
 }

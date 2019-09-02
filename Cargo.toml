@@ -50,14 +50,14 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
+#    "test-client",
 	"node/cli",
     "node/executor",
     "node/primitives",
     "node/runtime",
     "node/rpc-client",
     "srml/staking",
-    "srml/token/ring",
-    "srml/token/kton",
+    "srml/kton",
     "srml/support",
     "srml/aura",
 	"srml/try",
@@ -66,9 +66,9 @@ members = [
 exclude = ["node/runtime/wasm"]
 
 [package]
-authors = ['Parity Technologies <admin@parity.io>']
+authors = ['Darwinia Network <hello@darwinia.network>']
 build = 'build.rs'
 edition = '2018'
-name = 'darwinia-poc1'
-version = '0.1.0'
+name = 'darwinia-crayfish'
+version = '0.3.0'
 
