@@ -182,11 +182,11 @@ impl timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * NANO;
-	pub const TransferFee: Balance = 1 * NANO;
-	pub const CreationFee: Balance = 1 * NANO;
-	pub const TransactionBaseFee: Balance = 1 * NANO;
-	pub const TransactionByteFee: Balance = 1 * NANO;
+	pub const ExistentialDeposit: Balance = 1 * MICRO;
+	pub const TransferFee: Balance = 1 * MILLI;
+	pub const CreationFee: Balance = 1 * MILLI;
+	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionByteFee: Balance = 1 * MICRO;
 }
 
 type SessionHandlers = (Grandpa, Aura);
@@ -228,7 +228,8 @@ impl session::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 5;
-	pub const BondingDuration: staking::EraIndex = 2;
+	// about 14 days
+	pub const BondingDuration: staking::EraIndex = 4032;
 	// 365 days * 24 hours * 60 miutes / 5 minutes
 	pub const ErasPerEpoch: staking::ErasNums = 63720;
 }
