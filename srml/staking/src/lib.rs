@@ -511,7 +511,7 @@ decl_module! {
                     let stash_balance = T::Ring::free_balance(&stash);
                     if let Some(extra) = stash_balance.checked_sub(&(ledger.total_ring)) {
                         let extra = extra.min(r);
-                        <RingPool<T>>::mutate(|r| *r = r.saturating_add(extra));
+                        <RingPool<T>>::mutate(|r| *r += extra);
                         Self::bond_helper_in_ring(stash.clone(), controller.clone(), extra, promise_month, ledger);
                     }
                 },
@@ -519,7 +519,7 @@ decl_module! {
                     let stash_balance = T::Kton::free_balance(&stash);
                     if let Some(extra) = stash_balance.checked_sub(&(ledger.total_kton)) {
                         let extra = extra.min(k);
-                        <KtonPool<T>>::mutate(|r| *r = r.saturating_add(extra));
+                        <KtonPool<T>>::mutate(|r| *r += extra);
                         Self::bond_helper_in_kton(controller.clone(), extra, ledger);
                     }
                 },
@@ -545,10 +545,11 @@ decl_module! {
 		        StakingBalance::Ring(r) => {
 		            // total_unbond_value = normal_unbond + time_deposit_unbond
                     let total_value = r.min(ledger.active_ring);
-                     <RingPool<T>>::mutate(|r| *r -= total_value);
+
 		            let active_normal_ring = ledger.active_ring - ledger.active_deposit_ring;
                    // unbond normal ring first
 		            let active_normal_value = total_value.min(active_normal_ring);
+		            <RingPool<T>>::mutate(|r| *r -= active_normal_value);
 		            let mut unlock_value_left = total_value - active_normal_value;
 		            if !active_normal_value.is_zero() {
 		                ledger.active_ring -= active_normal_value;
@@ -581,7 +582,6 @@ decl_module! {
                                 } else {
                                     let value = unlock_value_left.min(item.value);
                                     unlock_value_left = unlock_value_left.saturating_sub(value);
-
                                     ledger.active_deposit_ring = ledger.active_deposit_ring.saturating_sub(value);
                                     ledger.active_ring = ledger.active_ring.saturating_sub(value);
                                     total_deposit_changed += value;
@@ -601,6 +601,7 @@ decl_module! {
 
                         // update unlocking list
 				         ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_deposit_changed), era, is_time_deposit: true });
+				          <RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
 		            } else {
 		                 // do nothing
 		            }
@@ -611,9 +612,7 @@ decl_module! {
                     <KtonPool<T>>::mutate(|r| *r -= value);
 
                     ledger.active_kton -= value;
-
 				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Kton(value), era, is_time_deposit: false });
-
 		        },
 		    }
 		    <Ledger<T>>::insert(&controller, ledger);
@@ -1044,10 +1043,11 @@ impl<T: Trait> Module<T> {
             StakingBalance::Kton(k) => {
                 let total_value = k.min(ledger.total_kton);
                 let active_value = total_value.min(ledger.active_kton);
+                // first slash active kton
                 ledger.active_kton -= active_value;
                 ledger.total_kton -= active_value;
                 <KtonPool<T>>::mutate(|k| *k -= active_value);
-
+                // then slash unlocking kton
                 let mut value_left = total_value - active_value;
                 // slash unlocking kton
                 if !value_left.is_zero() {
