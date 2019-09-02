@@ -369,8 +369,7 @@ pub fn crayfish_testnet_genesis(
         }),
         staking: Some(StakingConfig {
             current_era: 0,
-            // TODO: ready for hacking
-            current_era_total_reward: 80_000_000 * COIN / 63720,
+            current_era_total_reward: 80_000_000 * COIN / 105120,
             minimum_validator_count: 1,
             validator_count: 30,
             offline_slash: Perbill::from_parts(1_000_000),

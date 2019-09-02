@@ -230,8 +230,8 @@ parameter_types! {
 	pub const SessionsPerEra: session::SessionIndex = 5;
 	// about 14 days
 	pub const BondingDuration: staking::EraIndex = 4032;
-	// 365 days * 24 hours * 60 miutes / 5 minutes
-	pub const ErasPerEpoch: staking::ErasNums = 63720;
+	// 365 days * 24 hours * 60 minutes / 5 minutes
+	pub const ErasPerEpoch: staking::ErasNums = 105120;
 }
 
 // customed
