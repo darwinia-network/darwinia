@@ -321,11 +321,10 @@ fn inflation_should_be_correct() {
         let surplus_needed = initial_issuance - Ring::total_issuance();
         Ring::deposit_into_existing(&11, surplus_needed);
         assert_eq!(Ring::total_issuance(), initial_issuance);
-
+        assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
         start_era(11);
-        let current_era_total_reward = Staking::current_era_total_reward();
         // ErasPerEpoch = 10
-        assert_eq!(current_era_total_reward, 80000000 * COIN / 10);
+        assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
     });
 }
 
