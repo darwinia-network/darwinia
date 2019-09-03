@@ -70,8 +70,6 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
-// customed: counter for number of eras per epoch.
-pub type ErasNums = u32;
 
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum StakerStatus<AccountId> {
@@ -330,7 +328,7 @@ pub trait Trait: timestamp::Trait + session::Trait {
 
     // custom
     type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
-    type ErasPerEpoch: Get<ErasNums>;
+    type ErasPerEpoch: Get<EraIndex>;
 }
 
 decl_storage! {
@@ -367,8 +365,6 @@ decl_storage! {
 
 		pub CurrentEra get(current_era) config(): EraIndex;
 
-		pub CurrentEraReward get(current_era_reward): RingBalanceOf<T>;
-
 		pub SlotStake get(slot_stake): ExtendedBalance;
 
 		pub SlashCount get(slash_count): map T::AccountId => u32;
@@ -377,7 +373,7 @@ decl_storage! {
 
 		pub ForceNewEra get(forcing_new_era): bool;
 
-		pub EpochIndex get(epoch_index): T::BlockNumber = 0.into();
+		pub EpochIndex get(epoch_index): u32 = 0;
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
@@ -511,7 +507,7 @@ decl_module! {
                     let stash_balance = T::Ring::free_balance(&stash);
                     if let Some(extra) = stash_balance.checked_sub(&(ledger.total_ring)) {
                         let extra = extra.min(r);
-                        <RingPool<T>>::mutate(|r| *r = r.saturating_add(extra));
+                        <RingPool<T>>::mutate(|r| *r += extra);
                         Self::bond_helper_in_ring(stash.clone(), controller.clone(), extra, promise_month, ledger);
                     }
                 },
@@ -519,7 +515,7 @@ decl_module! {
                     let stash_balance = T::Kton::free_balance(&stash);
                     if let Some(extra) = stash_balance.checked_sub(&(ledger.total_kton)) {
                         let extra = extra.min(k);
-                        <KtonPool<T>>::mutate(|r| *r = r.saturating_add(extra));
+                        <KtonPool<T>>::mutate(|r| *r += extra);
                         Self::bond_helper_in_kton(controller.clone(), extra, ledger);
                     }
                 },
@@ -545,10 +541,11 @@ decl_module! {
 		        StakingBalance::Ring(r) => {
 		            // total_unbond_value = normal_unbond + time_deposit_unbond
                     let total_value = r.min(ledger.active_ring);
-                     <RingPool<T>>::mutate(|r| *r = r.saturating_sub(total_value));
+
 		            let active_normal_ring = ledger.active_ring - ledger.active_deposit_ring;
                    // unbond normal ring first
 		            let active_normal_value = total_value.min(active_normal_ring);
+		            <RingPool<T>>::mutate(|r| *r -= active_normal_value);
 		            let mut unlock_value_left = total_value - active_normal_value;
 		            if !active_normal_value.is_zero() {
 		                ledger.active_ring -= active_normal_value;
@@ -581,7 +578,6 @@ decl_module! {
                                 } else {
                                     let value = unlock_value_left.min(item.value);
                                     unlock_value_left = unlock_value_left.saturating_sub(value);
-
                                     ledger.active_deposit_ring = ledger.active_deposit_ring.saturating_sub(value);
                                     ledger.active_ring = ledger.active_ring.saturating_sub(value);
                                     total_deposit_changed += value;
@@ -601,6 +597,7 @@ decl_module! {
 
                         // update unlocking list
 				         ledger.unlocking.push(UnlockChunk { value: StakingBalance::Ring(total_deposit_changed), era, is_time_deposit: true });
+				          <RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
 		            } else {
 		                 // do nothing
 		            }
@@ -608,12 +605,10 @@ decl_module! {
 
 		        StakingBalance::Kton(k) => {
                     let value = k.min(ledger.active_kton);
-                    <KtonPool<T>>::mutate(|r| *r = r.saturating_sub(value));
+                    <KtonPool<T>>::mutate(|r| *r -= value);
 
                     ledger.active_kton -= value;
-
 				    ledger.unlocking.push(UnlockChunk { value: StakingBalance::Kton(value), era, is_time_deposit: false });
-
 		        },
 		    }
 		    <Ledger<T>>::insert(&controller, ledger);
@@ -624,7 +619,7 @@ decl_module! {
         fn unbond_with_punish(origin, value: RingBalanceOf<T>, expire_time: T::Moment) {
             let controller = ensure_signed(origin)?;
             let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-            let stash = ledger.clone().stash;
+            let stash = ledger.stash.clone();
             let now = <timestamp::Module<T>>::now();
             ensure!(expire_time.clone() > now.clone(), "use unbond instead.");
             let deposit_items = ledger.deposit_items.clone();
@@ -965,12 +960,19 @@ impl<T: Trait> Module<T> {
             StakingBalance::Ring(r) => {
                 // if slashing ring, first slashing normal ring
                 // then, slashing time-deposit ring
-                let value = r.min(ledger.total_ring - ledger.total_deposit_ring);
-                ledger.total_ring -= value;
+                let total_value = r.min(ledger.total_ring);
+                let normal_active_value = total_value.min(ledger.active_ring - ledger.active_deposit_ring);
                 // to prevent overflow
-                ledger.active_ring -= value.min(ledger.active_ring);
-                let mut value_left = r - value;
+                // first slash normal bonded ring
+                <RingPool<T>>::mutate(|r| *r -= normal_active_value);
+                ledger.active_ring -= normal_active_value;
+                ledger.total_ring -= normal_active_value;
+                // bonded + unlocking
+                // first slash active normal ring
+                let mut value_left = total_value - normal_active_value;
                 let mut deposit_items = ledger.deposit_items.clone();
+                // then slash active time-promise ring
+                // from the nearest expire time
                 if !value_left.is_zero() {
                     // sorted by expire_time from far to near
                     deposit_items.sort_unstable_by_key(|item|
@@ -985,6 +987,9 @@ impl<T: Trait> Module<T> {
                                 item.value -= value_removed;
                                 ledger.total_deposit_ring -= value_removed;
                                 ledger.active_deposit_ring -= value_removed;
+                                ledger.total_ring -= value_removed;
+                                ledger.active_ring -= value_removed;
+                                <RingPool<T>>::mutate(|r| *r -= value_removed);
                                 value_left -= value_removed;
                                 if !item.value.is_zero() {
                                     Some(item)
@@ -995,19 +1000,80 @@ impl<T: Trait> Module<T> {
                         }).collect::<Vec<_>>();
                     ledger.deposit_items = new_deposit_items;
                 }
+                // active_ring all slashed
+                // then slashing unlocking ring
+                if !value_left.is_zero() {
+                    let unlockings = ledger.unlocking.clone()
+                        .into_iter()
+                        .filter_map(|mut chunk| {
+                            match chunk.value {
+                                StakingBalance::Ring(r) => {
+                                    if value_left.is_zero() {
+                                        Some(chunk)
+                                    } else {
+                                        let value = value_left.min(r);
+                                        let new_value = r - value;
+                                        chunk.value = StakingBalance::Ring(new_value);
+                                        value_left -= value;
+                                        if chunk.is_time_deposit {
+                                            ledger.total_deposit_ring -= value;
+                                        }
+                                        ledger.total_ring -= value;
+                                        if new_value.is_zero() {
+                                            None
+                                        } else {
+                                            Some(chunk)
+                                        }
+                                    }
+                                },
+                                StakingBalance::Kton(_) => Some(chunk),
+                            }
+                        }).collect::<Vec<_>>();
+                    ledger.unlocking = unlockings;
+                }
 
                 Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
-                (value, 0.into())
+                (total_value, 0.into())
             },
 
             StakingBalance::Kton(k) => {
-                let value = k.min(ledger.total_kton);
-                ledger.total_kton -= value;
-                // to avoid underflow
-                let value = k.min(ledger.active_kton);
-                ledger.active_kton -= value;
+                let total_value = k.min(ledger.total_kton);
+                let active_value = total_value.min(ledger.active_kton);
+                // first slash active kton
+                ledger.active_kton -= active_value;
+                ledger.total_kton -= active_value;
+                <KtonPool<T>>::mutate(|k| *k -= active_value);
+                // then slash unlocking kton
+                let mut value_left = total_value - active_value;
+                // slash unlocking kton
+                if !value_left.is_zero() {
+                    let unlockings = ledger.unlocking.clone()
+                        .into_iter()
+                        .filter_map(|mut chunk| {
+                            match chunk.value {
+                                StakingBalance::Kton(k) => {
+                                    if value_left.is_zero() {
+                                        Some(chunk)
+                                    } else {
+                                        let value = value_left.min(k);
+                                        let new_value = k - value;
+                                        chunk.value = StakingBalance::Kton(k - value);
+                                        value_left -= value;
+                                        ledger.total_kton -= value;
+                                        if new_value.is_zero() {
+                                            None
+                                        } else {
+                                            Some(chunk)
+                                        }
+                                    }
+                                },
+                                StakingBalance::Ring(_) => Some(chunk),
+                            }
+                        }).collect::<Vec<_>>();
+                    ledger.unlocking = unlockings;
+                }
                 Self::update_ledger(controller, ledger, StakingBalance::Kton(0.into()));
-                (0.into(), value)
+                (0.into(), total_value)
             }
         }
     }
@@ -1032,7 +1098,7 @@ impl<T: Trait> Module<T> {
         if !reward.is_zero() {
             let validators = Self::current_elected();
             let len = validators.len() as u32; // validators length can never overflow u64
-            let len: RingBalanceOf<T> = len.into();
+            let len: RingBalanceOf<T> = len.max(1).into();
             let block_reward_per_validator = reward / len;
             for v in validators.iter() {
                 Self::reward_validator(v, block_reward_per_validator);
@@ -1042,12 +1108,13 @@ impl<T: Trait> Module<T> {
             // TODO: reward to treasury
         }
 
+        // Increment current era.
+        CurrentEra::mutate(|s| *s += 1);
+
         // check if ok to change epoch
         if Self::current_era() % T::ErasPerEpoch::get() == 0 {
             Self::new_epoch();
         }
-        // Increment current era.
-        CurrentEra::mutate(|s| *s += 1);
 
         // Reassign all Stakers.
         let (_, maybe_new_validators) = Self::select_validators();
@@ -1056,10 +1123,12 @@ impl<T: Trait> Module<T> {
     }
 
     fn new_epoch() {
-        <EpochIndex<T>>::put(Self::epoch_index() + One::one());
+        EpochIndex::mutate(|e| *e += 1);
         let next_era_reward = utils::compute_current_era_reward::<T>();
-        // TODO: change to CurrentEraReward
-        <CurrentEraTotalReward<T>>::put(next_era_reward);
+        if !next_era_reward.is_zero() {
+            <CurrentEraTotalReward<T>>::put(next_era_reward);
+        }
+
     }
 
 

@@ -321,11 +321,10 @@ fn inflation_should_be_correct() {
         let surplus_needed = initial_issuance - Ring::total_issuance();
         Ring::deposit_into_existing(&11, surplus_needed);
         assert_eq!(Ring::total_issuance(), initial_issuance);
-
+        assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
         start_era(11);
-        let current_era_total_reward = Staking::current_era_total_reward();
         // ErasPerEpoch = 10
-        assert_eq!(current_era_total_reward, 88000000 * COIN / 10);
+        assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
     });
 }
 
@@ -399,5 +398,16 @@ fn slash_should_work() {
         Staking::slash_validator(&1001, 10_000_000);
         assert_eq!(Staking::ledger(&1000).unwrap().active_ring, 495 * COIN / 10);
         assert_eq!(Ring::free_balance(&1001), 995 * COIN / 10);
+    });
+}
+
+#[test]
+fn test_inflation() {
+    with_externalities(&mut ExtBuilder::default()
+        .existential_deposit(0).build(), || {
+        assert_eq!(Staking::current_era_total_reward(), 80_000_000 * COIN / 10);
+        start_era(20);
+        assert_eq!(Staking::epoch_index(), 2);
+        assert_eq!(Staking::current_era_total_reward(), 9_999_988_266 * COIN / 1000);
     });
 }

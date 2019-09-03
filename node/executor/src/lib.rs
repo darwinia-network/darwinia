@@ -132,7 +132,7 @@ mod tests {
 	fn xt() -> UncheckedExtrinsic {
 		sign(CheckedExtrinsic {
 			signed: Some((alice(), 0)),
-			function: Call::Balances(balances::Call::transfer::<Runtime>(bob().into(), 69)),
+			function: Call::Balances(balances::Call::transfer::<Runtime>(bob().into(), 69 * COIN)),
 		})
 	}
 
@@ -247,8 +247,8 @@ mod tests {
 		assert!(r.is_ok());
 
 		runtime_io::with_externalities(&mut t, || {
-			assert_eq!(Balances::total_balance(&alice()), 110999999789);
-			assert_eq!(Balances::total_balance(&bob()), 69);
+			assert_eq!(Balances::total_balance(&alice()), 41997856000);
+			assert_eq!(Balances::total_balance(&bob()), 69 * COIN);
 		});
 	}
 
@@ -283,8 +283,8 @@ mod tests {
 		assert!(r.is_ok());
 
 		runtime_io::with_externalities(&mut t, || {
-			assert_eq!(Balances::total_balance(&alice()), 110999999789);
-			assert_eq!(Balances::total_balance(&bob()), 69);
+			assert_eq!(Balances::total_balance(&alice()), 41997856000);
+			assert_eq!(Balances::total_balance(&bob()), 69 * COIN);
 		});
 	}
 
@@ -327,7 +327,6 @@ mod tests {
 					(ferdie(), 100),
 				],
 				vesting: vec![],
-				sys_acc: ferdie(),
 			}),
 			session: Some(SessionConfig {
 				validators: vec![AccountKeyring::One.into(), AccountKeyring::Two.into(), three],
@@ -349,7 +348,6 @@ mod tests {
 				minimum_validator_count: 0,
 				offline_slash: Perbill::zero(),
 				session_reward: Perbill::zero(),
-				current_session_reward: 0,
 				offline_slash_grace: 0,
 				invulnerables: vec![alice(), bob(), charlie()],
 			}),
@@ -435,7 +433,7 @@ mod tests {
 				},
 				CheckedExtrinsic {
 					signed: Some((alice(), 0)),
-					function: Call::Balances(balances::Call::transfer(bob().into(), 69)),
+					function: Call::Balances(balances::Call::transfer(bob().into(), 69 * COIN)),
 				},
 			]
 		)
@@ -524,7 +522,7 @@ mod tests {
 		runtime_io::with_externalities(&mut t, || {
 			// block1 transfers from alice 69 to bob.
 			// -1 is the default fee
-			assert_eq!(Balances::total_balance(&alice()), 110999999789);
+			assert_eq!(Balances::total_balance(&alice()), 110997859931);
 			assert_eq!(Balances::total_balance(&bob()), 100000000069);
 //			assert_eq!(System::events(), vec![
 //				EventRecord {
@@ -577,9 +575,9 @@ mod tests {
 		runtime_io::with_externalities(&mut t, || {
 			// bob sends 5, alice sends 15 | bob += 10, alice -= 10
 			// 111 - 69 - 1 - 10 - 1 = 30
-			assert_eq!(Balances::total_balance(&alice()), 110999999638);
+			assert_eq!(Balances::total_balance(&alice()), 110995720921);
 			// 100 + 69 + 10 - 1     = 178
-			assert_eq!(Balances::total_balance(&bob()), 99999999938);
+			assert_eq!(Balances::total_balance(&bob()), 99997861079);
 //			assert_eq!(System::events(), vec![
 //				EventRecord {
 //					phase: Phase::ApplyExtrinsic(0),
@@ -635,7 +633,7 @@ mod tests {
 		runtime_io::with_externalities(&mut t, || {
 			// block1 transfers from alice 69 to bob.
 			// -1 is the default fee
-			assert_eq!(Balances::total_balance(&alice()), 110999999789);
+			assert_eq!(Balances::total_balance(&alice()), 110997859931);
 			assert_eq!(Balances::total_balance(&bob()), 100000000069);
 		});
 
@@ -644,9 +642,9 @@ mod tests {
 		runtime_io::with_externalities(&mut t, || {
 			// bob sends 5, alice sends 15 | bob += 10, alice -= 10
 			// 111 - 69 - 1 - 10 - 1 = 30
-			assert_eq!(Balances::total_balance(&alice()), 110999999638);
+			assert_eq!(Balances::total_balance(&alice()), 110995720921);
 			// 100 + 69 + 10 - 1     = 178
-			assert_eq!(Balances::total_balance(&bob()), 99999999938);
+			assert_eq!(Balances::total_balance(&bob()), 99997861079);
 		});
 	}
 
@@ -933,8 +931,8 @@ mod tests {
 		assert_eq!(r, Ok(ApplyOutcome::Success));
 
 		runtime_io::with_externalities(&mut t, || {
-			assert_eq!(Balances::total_balance(&alice()), 110999999789);
-			assert_eq!(Balances::total_balance(&bob()), 69);
+			assert_eq!(Balances::total_balance(&alice()), 41997856000);
+			assert_eq!(Balances::total_balance(&bob()), 69 * COIN);
 		});
 	}
 
@@ -965,37 +963,5 @@ mod tests {
 			.call(&mut t, 8, COMPACT_CODE, "Core_execute_block", &block1.0).unwrap();
 
 		assert!(t.storage_changes_root(GENESIS_HASH.into()).unwrap().is_some());
-	}
-
-	#[test]
-	fn should_import_block_with_test_client() {
-		use test_client::{ClientExt, TestClientBuilder, consensus::BlockOrigin};
-
-		let client = TestClientBuilder::default()
-			.build_with_native_executor::<Block, node_runtime::RuntimeApi, _>(executor())
-			.0;
-
-		let block1 = changes_trie_block();
-		let block_data = block1.0;
-		let block = Block::decode(&mut &block_data[..]).unwrap();
-
-		client.import(BlockOrigin::Own, block).unwrap();
-	}
-
-	#[cfg(feature = "benchmarks")]
-	mod benches {
-		use super::*;
-		use test::Bencher;
-
-		#[bench]
-		fn wasm_execute_block(b: &mut Bencher) {
-			let (block1, block2) = blocks();
-
-			b.iter(|| {
-				let mut t = new_test_ext(COMPACT_CODE, false);
-				WasmExecutor::new().call(&mut t, "Core_execute_block", &block1.0).unwrap();
-				WasmExecutor::new().call(&mut t, "Core_execute_block", &block2.0).unwrap();
-			});
-		}
 	}
 }

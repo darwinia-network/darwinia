@@ -45,7 +45,7 @@ impl cli::IntoExit for Exit {
 
 fn main() {
 	let version = VersionInfo {
-		name: "Darwinia POC-1 Node",
+		name: "Darwinia Crayfish Node",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
 		executable_name: "darwinia",

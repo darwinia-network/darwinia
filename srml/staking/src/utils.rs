@@ -1,22 +1,20 @@
 
 /// utility in staking
-use crate::{Trait, ErasNums, Module, RingBalanceOf, KtonBalanceOf};
+use crate::{Trait, EraIndex, Module, RingBalanceOf, KtonBalanceOf};
 use srml_support::traits::{Currency, Get};
 use primitives::traits::{ CheckedSub,SaturatedConversion, IntegerSquareRoot, Convert };
 use substrate_primitives::U256;
-use rstd::convert::TryInto;
+use rstd::convert::{TryInto, TryFrom};
 
 //change when new epoch
 // the total reward per era
 pub fn compute_current_era_reward<T: Trait + 'static>() -> RingBalanceOf<T> {
-    //TODO: add decimal
-    //TODO: add collection of eras as a minimum set for changing session_reward
-    let eras_per_epoch = <T::ErasPerEpoch as Get<ErasNums>>::get() as u128;
-    let current_epoch: u32 = <Module<T>>::epoch_index().try_into().unwrap_or_default() as u32;
-    let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).try_into().unwrap_or_default() as u128;
-    let surplus = U256::from(total_left) - U256::from(total_left * 99 * current_epoch.integer_sqrt() as u128) / U256::from(current_epoch.integer_sqrt() as u128 * 100);
-    let surplus = surplus.as_u128();
-    (surplus / eras_per_epoch).try_into().unwrap_or_default()
+    let eras_per_epoch: RingBalanceOf<T> = <T::ErasPerEpoch as Get<EraIndex>>::get().into();
+    let current_epoch: u32 = <Module<T>>::epoch_index();
+    let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>();
+    let surplus = total_left - total_left * 99_u128.pow(current_epoch.integer_sqrt()) / 100_u128.pow(current_epoch.integer_sqrt());
+    let surplus: RingBalanceOf<T> = <RingBalanceOf<T>>::saturated_from::<u128>(surplus);
+    (surplus / eras_per_epoch)
 }
 
 // consistent with the formula in smart contract in evolution land which can be found in
