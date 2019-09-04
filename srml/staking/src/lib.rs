@@ -750,7 +750,7 @@ decl_module! {
         fn promise_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
             let controller = ensure_signed(origin)?;
 
-            ensure!( promise_month <= 36, "months at most is 36.");
+            ensure!(promise_month <= 36, "months at most is 36.");
 
             let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
             let StakingLedger {
