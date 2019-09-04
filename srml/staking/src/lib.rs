@@ -634,6 +634,11 @@ decl_module! {
                             if item.expire_time > now {
                                 return false;
                             }
+
+                            // NOTE: value that a user wants to unbond must
+                            // be big enough to unlock all time_deposit_ring
+                            // double check
+
                             if unlock_value_left.is_zero() {
                                 return true;
                             }

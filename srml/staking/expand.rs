@@ -5091,7 +5091,7 @@ impl<T: Trait> Module<T> {
                 }
                 _ => ::std::rt::begin_panic(
                     "internal error: entered unreachable code",
-                    &("srml/staking/src/lib.rs", 856u32, 22u32),
+                    &("srml/staking/src/lib.rs", 861u32, 22u32),
                 ),
             }
         }
