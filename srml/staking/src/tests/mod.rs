@@ -176,7 +176,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
                         expire_time: 12 * MONTH_IN_SECONDS as u64,
                     }],
                     unlocking: vec![UnlockChunk {
-                        value: StakingBalance::Ring(10000000000),
+                        value: StakingBalance::Ring(10_000_000_000),
                         era: 3,
                         is_time_deposit: true,
                     }],
@@ -202,12 +202,12 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
                     }],
                     unlocking: vec![
                         UnlockChunk {
-                            value: StakingBalance::Ring(10000000000),
+                            value: StakingBalance::Ring(10_000_000_000),
                             era: 3,
                             is_time_deposit: true,
                         },
                         UnlockChunk {
-                            value: StakingBalance::Ring(20000000000),
+                            value: StakingBalance::Ring(20_000_000_000),
                             era: 3,
                             is_time_deposit: true,
                         }
@@ -231,17 +231,17 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
                     deposit_items: vec![], // should be cleared
                     unlocking: vec![
                         UnlockChunk {
-                            value: StakingBalance::Ring(10000000000),
+                            value: StakingBalance::Ring(10_000_000_000),
                             era: 3,
                             is_time_deposit: true,
                         },
                         UnlockChunk {
-                            value: StakingBalance::Ring(20000000000),
+                            value: StakingBalance::Ring(20_000_000_000),
                             era: 3,
                             is_time_deposit: true,
                         },
                         UnlockChunk {
-                            value: StakingBalance::Ring(70000000000),
+                            value: StakingBalance::Ring(70_000_000_000),
                             era: 3,
                             is_time_deposit: true,
                         },
@@ -362,7 +362,7 @@ fn punished_unbond_should_work() {
         &mut ExtBuilder::default().existential_deposit(0).build(),
         || {
             let _ = Ring::deposit_creating(&1001, 100 * COIN);
-            Kton::deposit_creating(&1001, COIN / 100000);
+            Kton::deposit_creating(&1001, COIN / 100_000);
 
             // timestamp now is 0.
             // free balance of kton is too low to work
@@ -554,12 +554,12 @@ fn inflation_should_be_correct() {
             let _ = Ring::deposit_into_existing(&11, surplus_needed);
 
             assert_eq!(Ring::total_issuance(), initial_issuance);
-            assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
+            assert_eq!(Staking::current_era_total_reward(), 80_000_000 * COIN / 10);
 
             start_era(11);
 
             // ErasPerEpoch = 10
-            assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
+            assert_eq!(Staking::current_era_total_reward(), 88_000_000 * COIN / 10);
         },
     );
 }
@@ -639,11 +639,11 @@ fn reward_should_work_correctly() {
             assert_eq!(
                 Staking::staker(2001),
                 Exposures {
-                    total: 1200000000000,
-                    own: 600000000000,
+                    total: 1_200_000_000_000,
+                    own: 600_000_000_000,
                     others: vec![IndividualExpo {
                         who: 1001,
-                        value: 600000000000
+                        value: 600_000_000_000
                     }]
                 }
             );
