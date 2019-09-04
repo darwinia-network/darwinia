@@ -360,7 +360,7 @@ fn do_equalize<T: Trait + 'static>(
 
     let mut difference;
 
-    if backing_backed_stake.len() > 0 {
+    if !backing_backed_stake.is_empty() {
         let max_stake = backing_backed_stake
             .iter()
             .max()

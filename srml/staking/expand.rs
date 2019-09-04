@@ -438,7 +438,7 @@ mod phragmen {
             .map(|e| e.total)
             .collect();
         let mut difference;
-        if backing_backed_stake.len() > 0 {
+        if !backing_backed_stake.is_empty() {
             let max_stake = backing_backed_stake
                 .iter()
                 .max()
