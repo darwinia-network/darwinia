@@ -2,9 +2,10 @@
 
 mod imbalance;
 
+#[cfg(test)]
+mod tests;
+
 // --- std ---
-#[cfg(not(feature = "std"))]
-use rstd::alloc::borrow::ToOwned;
 #[cfg(feature = "std")]
 use rstd::borrow::ToOwned;
 use rstd::vec::Vec;
@@ -140,7 +141,6 @@ decl_storage! {
                     .filter_map(|&(ref who, begin, length)| {
                         let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
                         let length = <T::Balance as From<T::BlockNumber>>::from(length);
-
                         config
                             .balances
                             .iter()
@@ -180,10 +180,7 @@ decl_module! {
         ) {
             let transactor = ensure_signed(origin)?;
             let dest = T::Lookup::lookup(dest)?;
-
             <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
-
-            Self::deposit_event(RawEvent::TokenTransfer(transactor, dest, value));
         }
     }
 }
@@ -203,13 +200,11 @@ impl<T: Trait> Module<T> {
     fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
         // TODO: check the value of balance, but no ensure!(...)
         <FreeBalance<T>>::insert(who, balance);
-
         UpdateBalanceOutcome::Updated
     }
 
     fn set_reserved_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
         <ReservedBalance<T>>::insert(who, balance);
-
         UpdateBalanceOutcome::Updated
     }
 }
@@ -240,7 +235,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         <TotalIssuance<T>>::mutate(|issued| {
             issued.checked_sub(&amount).unwrap_or_else(|| {
                 amount = *issued;
-
                 0.into()
             })
         });
@@ -253,7 +247,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         <TotalIssuance<T>>::mutate(|issued| {
             *issued = issued.checked_add(&amount).unwrap_or_else(|| {
                 amount = Self::Balance::max_value() - *issued;
-
                 Self::Balance::max_value()
             })
         });
@@ -320,6 +313,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             Self::set_free_balance(dest, new_to_balance);
         }
 
+        Self::deposit_event(RawEvent::TokenTransfer(
+            transactor.clone(),
+            dest.clone(),
+            value,
+        ));
+
         Ok(())
     }
 
@@ -330,7 +329,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         Self::set_free_balance(who, free_balance - free_slash);
 
         let remaining_slash = value - free_slash;
-
         if remaining_slash.is_zero() {
             (NegativeImbalance::new(value), 0.into())
         } else {
@@ -357,7 +355,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         // add here
         let balance = Self::free_balance(who);
         let new_balance = balance + value;
-
         Self::set_free_balance(who, new_balance);
 
         Ok(PositiveImbalance::new(value))
@@ -381,7 +378,8 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         liveness: ExistenceRequirement,
     ) -> Result<Self::NegativeImbalance, &'static str> {
         if let Some(new_balance) = Self::free_balance(who).checked_sub(&value) {
-            if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance()
+            if (liveness == ExistenceRequirement::KeepAlive)
+                && (new_balance < Self::minimum_balance())
             {
                 return Err("payment would kill account");
             }
@@ -437,11 +435,11 @@ where
         });
         let mut locks: Vec<_> = Self::locks(who)
             .into_iter()
-            .filter_map(|l| {
-                if l.id == id {
+            .filter_map(|lock| {
+                if lock.id == id {
                     new_lock.take()
-                } else if l.until > now {
-                    Some(l)
+                } else if lock.until > now {
+                    Some(lock)
                 } else {
                     None
                 }
@@ -471,16 +469,16 @@ where
         });
         let mut locks: Vec<_> = Self::locks(who)
             .into_iter()
-            .filter_map(|l| {
-                if l.id == id {
-                    new_lock.take().map(|nl| BalanceLock {
-                        id: l.id,
-                        amount: l.amount.max(nl.amount),
-                        until: l.until.max(nl.until),
-                        reasons: l.reasons | nl.reasons,
+            .filter_map(|lock| {
+                if lock.id == id {
+                    new_lock.take().map(|old_lock| BalanceLock {
+                        id,
+                        amount: lock.amount.max(old_lock.amount),
+                        until: lock.until.max(old_lock.until),
+                        reasons: lock.reasons | old_lock.reasons,
                     })
-                } else if l.until > now {
-                    Some(l)
+                } else if lock.until > now {
+                    Some(lock)
                 } else {
                     None
                 }
@@ -496,11 +494,8 @@ where
 
     fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
         let now = <system::Module<T>>::block_number();
-        let locks: Vec<_> = Self::locks(who)
-            .into_iter()
-            .filter(|l| l.until > now && l.id != id)
-            .collect();
-
-        <Locks<T>>::insert(who, locks);
+        <Locks<T>>::mutate(who, |locks| {
+            locks.retain(|lock| (lock.until > now) && (lock.id != id));
+        });
     }
 }

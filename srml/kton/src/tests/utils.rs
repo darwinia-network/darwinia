@@ -1,9 +1,3 @@
-extern crate evo_kton as kton;
-extern crate rand;
-
-#[macro_use]
-mod support;
-
 #[test]
 #[ignore]
 fn accounts_macro() {
@@ -11,7 +5,6 @@ fn accounts_macro() {
 
     let cmp = |a, b| {
         assert_eq!(a, b);
-
         a
     };
 

@@ -1,15 +1,22 @@
-use crate::{
-    EraIndex, ErasNums, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus,
-    StakingBalance, Trait, ValidatorPrefs,
-};
-use primitives::testing::{Header, UintAuthorityId};
-use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
-use primitives::Perbill;
-use runtime_io;
-use srml_support::traits::{Currency, Get};
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
+// --- std ---
 use std::{cell::RefCell, collections::HashSet};
+// --- external ---
+use primitives::{
+    testing::{Header, UintAuthorityId},
+    traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys},
+    Perbill,
+};
+use srml_support::{
+    assert_ok, impl_outer_origin, parameter_types,
+    traits::{Currency, Get},
+    EnumerableStorageMap,
+};
 use substrate_primitives::{Blake2Hasher, H256};
+// --- custom ---
+use crate::{
+    EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance,
+    Trait,
+};
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -132,7 +139,7 @@ impl kton::Trait for Test {
 parameter_types! {
     pub const SessionsPerEra: session::SessionIndex = 3;
     pub const BondingDuration: EraIndex = 3;
-    pub const ErasPerEpoch: ErasNums = 10;
+    pub const ErasPerEpoch: EraIndex = 10;
 }
 
 pub const COIN: u64 = 1_000_000_000;
@@ -276,7 +283,7 @@ impl ExtBuilder {
         let nominated = if self.nominate { vec![11, 21] } else { vec![] };
         let _ = GenesisConfig::<Test> {
             current_era: self.current_era,
-            current_era_total_reward: 1_600_000_000 * COIN / ErasPerEpoch::get() as u64,
+            current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
                 //                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
                 (11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
@@ -297,7 +304,6 @@ impl ExtBuilder {
                 (1000000 * self.reward / balance_factor) as u32,
             ),
             offline_slash: Perbill::from_percent(5),
-            current_session_reward: self.reward,
             offline_slash_grace: 0,
             invulnerables: vec![],
         }
@@ -312,6 +318,7 @@ impl ExtBuilder {
         ext
     }
 }
+
 pub type System = system::Module<Test>;
 pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
@@ -332,7 +339,7 @@ pub fn check_nominator_all() {
 /// Check for each selected validator: expo.total = Sum(expo.other) + expo.own
 pub fn check_exposure(stash: u64) {
     assert_is_stash(stash);
-    let expo = Staking::stakers(&stash);
+    let expo = Staking::staker(&stash);
     assert_eq!(
         expo.total as u128,
         expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
@@ -349,7 +356,7 @@ pub fn check_nominator_exposure(stash: u64) {
     let mut sum = 0;
     Staking::current_elected()
         .iter()
-        .map(|v| Staking::stakers(v))
+        .map(|v| Staking::staker(v))
         .for_each(|e| {
             e.others
                 .iter()
@@ -368,7 +375,7 @@ pub fn check_nominator_exposure(stash: u64) {
 }
 
 pub fn assert_total_expo(stash: u64, val: u128) {
-    let expo = Staking::stakers(&stash);
+    let expo = Staking::staker(&stash);
     assert_eq!(expo.total, val);
 }
 

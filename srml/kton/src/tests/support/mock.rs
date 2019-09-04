@@ -5,11 +5,10 @@ use primitives::{
     testing::Header,
     traits::{Convert, IdentityLookup},
 };
-use runtime_io;
 use srml_support::{impl_outer_origin, traits::Get};
 use substrate_primitives::{Blake2Hasher, H256};
 // --- custom ---
-use kton::{GenesisConfig, Module};
+use crate::{GenesisConfig, Module, Trait};
 
 const COIN: u64 = 1000000000;
 
@@ -75,7 +74,7 @@ impl timestamp::Trait for Test {
     type OnTimestampSet = ();
 }
 
-impl kton::Trait for Test {
+impl Trait for Test {
     type Event = ();
     type Balance = Balance;
     type OnMinted = ();

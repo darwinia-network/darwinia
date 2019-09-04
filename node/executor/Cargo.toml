@@ -17,13 +17,13 @@ node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
-#test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git' }
+test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git', rev = "5bf5e8f5" }
 keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
 runtime_primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git' }
 runtime_support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances",git = 'https://github.com/paritytech/substrate.git' }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git' }
-staking = { package = "evo-staking", path = '../../srml/staking' }
+staking = { package = "darwinia-staking", path = '../../srml/staking' }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
 treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git'  }

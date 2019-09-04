@@ -18,10 +18,10 @@
 
 // --- std ---
 #[cfg(not(feature = "std"))]
-use rstd::prelude::vec;
-use rstd::{collections::btree_map::BTreeMap, prelude::Vec};
+use rstd::{alloc::borrow::ToOwned, vec};
+use rstd::{collections::btree_map::BTreeMap, vec::Vec};
 // --- external ---
-use crate::{ExpoMap, IndividualExpo, RawAssignment, RingBalanceOf, Trait, ValidatorPrefs};
+use crate::{ExpoMap, IndividualExpo, RawAssignment, Trait, ValidatorPrefs};
 use primitives::{traits::Zero, PerU128};
 
 type Fraction = PerU128;
@@ -99,7 +99,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
     Vec<(T::AccountId, Vec<RawAssignment<T>>)>,
 )>
 where
-    FV: Iterator<Item = (T::AccountId, ValidatorPrefs<RingBalanceOf<T>>)>,
+    FV: Iterator<Item = (T::AccountId, ValidatorPrefs)>,
     FN: Iterator<Item = (T::AccountId, Vec<T::AccountId>)>,
     for<'r> FS: Fn(&'r T::AccountId) -> ExtendedBalance,
 {
@@ -110,11 +110,12 @@ where
 
     // 1- Pre-process candidates and place them in a container, optimisation and add phantom votes.
     // Candidates who have 0 stake => have no votes or all null-votes. Kick them out not.
-    let mut nominators: Vec<Nominator<T::AccountId>> =
+    let mut nominators =
         Vec::with_capacity(validator_iter.size_hint().0 + nominator_iter.size_hint().0);
-    let mut candidates = validator_iter
+    let mut candidates: Vec<_> = validator_iter
         .map(|(who, _)| {
             let stash_balance = stash_of(&who);
+
             (
                 Candidate {
                     who,
@@ -125,6 +126,7 @@ where
         })
         .filter_map(|(mut c, s)| {
             c.approval_stake += s;
+
             if c.approval_stake.is_zero() {
                 None
             } else {
@@ -136,23 +138,25 @@ where
             nominators.push(Nominator {
                 who: c.who.clone(),
                 edges: vec![Edge {
-                    who: c.who.clone(),
+                    who: c.who.to_owned(),
                     candidate_index: idx,
                     ..Default::default()
                 }],
                 budget: s,
                 load: Fraction::zero(),
             });
-            c_idx_cache.insert(c.who.clone(), idx);
+            c_idx_cache.insert(c.who.to_owned(), idx);
+
             c
         })
-        .collect::<Vec<Candidate<T::AccountId>>>();
+        .collect();
 
     // 2- Collect the nominators with the associated votes.
     // Also collect approval stake along the way.
     nominators.extend(nominator_iter.map(|(who, nominees)| {
         let nominator_stake = stash_of(&who);
         let mut edges: Vec<Edge<T::AccountId>> = Vec::with_capacity(nominees.len());
+
         for n in &nominees {
             if let Some(idx) = c_idx_cache.get(n) {
                 // This candidate is valid + already cached.
@@ -160,15 +164,16 @@ where
                     .approval_stake
                     .saturating_add(nominator_stake);
                 edges.push(Edge {
-                    who: n.clone(),
+                    who: n.to_owned(),
                     candidate_index: *idx,
                     ..Default::default()
                 });
             } // else {} would be wrong votes. We don't really care about it.
         }
+
         Nominator {
             who,
-            edges: edges,
+            edges,
             budget: nominator_stake,
             load: Fraction::zero(),
         }
@@ -180,6 +185,7 @@ where
 
         elected_candidates = Vec::with_capacity(validator_count);
         assigned = Vec::with_capacity(validator_count);
+
         // Main election loop
         for _round in 0..validator_count {
             // Loop 1: initialize score
@@ -222,7 +228,7 @@ where
                     }
                 }
 
-                elected_candidates.push(winner.who.clone());
+                elected_candidates.push(winner.who.to_owned());
             } else {
                 break;
             }
@@ -230,13 +236,14 @@ where
 
         // 4.1- Update backing stake of candidates and nominators
         for n in &mut nominators {
-            let mut assignment = (n.who.clone(), vec![]);
+            let mut assignment = (n.who.to_owned(), vec![]);
+
             for e in &mut n.edges {
                 if let Some(c) = elected_candidates.iter().find(|c| **c == e.who) {
                     if *c != n.who {
                         let ratio = {
                             // Full support. No need to calculate.
-                            if *n.load == *e.load {
+                            if n.load == e.load {
                                 ACCURACY
                             } else {
                                 // This should not saturate. Safest is to just check
@@ -248,6 +255,7 @@ where
                                 }
                             }
                         };
+
                         e.ratio = ratio;
                         assignment.1.push((e.who.clone(), ratio));
                     }
@@ -259,7 +267,7 @@ where
                 // we add a minimal post-processing to equally assign all of the leftover stake ratios.
                 let vote_count = assignment.1.len() as ExtendedBalance;
                 let l = assignment.1.len();
-                let sum = assignment.1.iter().map(|a| a.1).sum::<ExtendedBalance>();
+                let sum = assignment.1.iter().map(|a| a.1).sum();
                 let diff = ACCURACY.checked_sub(sum).unwrap_or(0);
                 let diff_per_vote = diff / vote_count;
 
@@ -272,9 +280,11 @@ where
                 // `remainder` is set to be less than maximum votes of a nominator (currently 16).
                 // safe to cast it to usize.
                 let remainder = diff - diff_per_vote * vote_count;
+
                 for i in 0..remainder as usize {
                     assignment.1[i % l].1 = assignment.1[i % l].1.saturating_add(1);
                 }
+
                 assigned.push(assignment);
             }
         }
@@ -282,6 +292,7 @@ where
         // if we have less than minimum, use the previous validator set.
         return None;
     }
+
     Some((elected_candidates, assigned))
 }
 
@@ -302,12 +313,14 @@ pub fn equalize<T: Trait + 'static>(
 ) {
     for _i in 0..iterations {
         let mut max_diff = 0;
+
         assignments.iter_mut().for_each(|(n, budget, assignment)| {
             let diff = do_equalize::<T>(&n, *budget, assignment, expo_map, tolerance);
             if diff > max_diff {
                 max_diff = diff;
             }
         });
+
         if max_diff < tolerance {
             break;
         }
@@ -331,21 +344,22 @@ fn do_equalize<T: Trait + 'static>(
 
     let stake_used = elected_edges
         .iter()
-        .fold(0 as ExtendedBalance, |s, e| s.saturating_add(e.2));
+        .fold(0, |s: ExtendedBalance, e| s.saturating_add(e.2));
 
     let backed_stakes_iter = elected_edges
         .iter()
         .filter_map(|e| expo_map.get(&e.0))
         .map(|e| e.total);
 
-    let backing_backed_stake = elected_edges
+    let backing_backed_stake: Vec<_> = elected_edges
         .iter()
         .filter(|e| e.2 > 0)
         .filter_map(|e| expo_map.get(&e.0))
         .map(|e| e.total)
-        .collect::<Vec<ExtendedBalance>>();
+        .collect();
 
-    let mut difference: u128;
+    let mut difference;
+
     if backing_backed_stake.len() > 0 {
         let max_stake = backing_backed_stake
             .iter()
@@ -357,6 +371,7 @@ fn do_equalize<T: Trait + 'static>(
 
         difference = max_stake.saturating_sub(min_stake);
         difference = difference.saturating_add(budget.saturating_sub(stake_used));
+
         if difference < tolerance {
             return difference;
         }
@@ -370,6 +385,7 @@ fn do_equalize<T: Trait + 'static>(
             expo.total = expo.total.saturating_sub(e.2);
             expo.others.retain(|i_expo| i_expo.who != *nominator);
         }
+
         e.2 = 0;
     });
 
@@ -377,21 +393,24 @@ fn do_equalize<T: Trait + 'static>(
         if let Some(e) = expo_map.get(&e.0) {
             e.total
         } else {
-            Zero::zero()
+            0
         }
     });
 
-    let mut cumulative_stake: ExtendedBalance = 0;
+    let mut cumulative_stake = 0;
     let mut last_index = elected_edges.len() - 1;
+
     elected_edges.iter_mut().enumerate().for_each(|(idx, e)| {
         if let Some(expo) = expo_map.get_mut(&e.0) {
-            let stake: ExtendedBalance = expo.total;
-            let stake_mul = stake.saturating_mul(idx as ExtendedBalance);
+            let stake = expo.total;
+            let stake_mul = stake.saturating_mul(idx as _);
             let stake_sub = stake_mul.saturating_sub(cumulative_stake);
+
             if stake_sub > budget {
                 last_index = idx.checked_sub(1).unwrap_or(0);
                 return;
             }
+
             cumulative_stake = cumulative_stake.saturating_add(stake);
         }
     });
@@ -400,7 +419,8 @@ fn do_equalize<T: Trait + 'static>(
     let split_ways = last_index + 1;
     let excess = budget
         .saturating_add(cumulative_stake)
-        .saturating_sub(last_stake.saturating_mul(split_ways as ExtendedBalance));
+        .saturating_sub(last_stake.saturating_mul(split_ways as _));
+
     elected_edges.iter_mut().take(split_ways).for_each(|e| {
         if let Some(expo) = expo_map.get_mut(&e.0) {
             e.2 = (excess / split_ways as ExtendedBalance)
