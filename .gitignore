@@ -7,7 +7,7 @@
 # jetbrains
 .idea
 
-# mnacOS
+# macOS
 .DS_Store
 
 !node/runtime/wasm/target/wasm32-unknown-unknown/release/*.compact.wasm
