@@ -7,7 +7,7 @@ use srml_support::{assert_err, assert_ok, traits::Currency};
 // --- custom ---
 use super::{uniform_range, ExtBuilder, Kton, Origin};
 
-const ROUND: usize = 100000;
+const ROUND: usize = 100_000;
 
 #[test]
 fn regular_transfer() {
