@@ -1,18 +1,14 @@
-
-
-use std::{collections::HashSet, cell::RefCell};
-use primitives::Perbill;
-use primitives::traits::{IdentityLookup, Convert, OpaqueKeys, OnInitialize};
-use primitives::testing::{Header, UintAuthorityId};
-use substrate_primitives::{H256, Blake2Hasher};
-use runtime_io;
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
-use srml_support::traits::{Currency, Get};
-use crate::{EraIndex, GenesisConfig, Module, Trait, StakerStatus,
-            ValidatorPrefs, RewardDestination, Nominators, StakingBalance
+use crate::{
+    EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait, ValidatorPrefs,
 };
-
-
+use primitives::testing::{Header, UintAuthorityId};
+use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
+use primitives::Perbill;
+use runtime_io;
+use srml_support::traits::{Currency, Get};
+use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
+use std::{cell::RefCell, collections::HashSet};
+use substrate_primitives::{Blake2Hasher, H256};
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -22,7 +18,9 @@ pub type Balance = u64;
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
 impl Convert<u64, u64> for CurrencyToVoteHandler {
-    fn convert(x: u64) -> u64 { x }
+    fn convert(x: u64) -> u64 {
+        x
+    }
 }
 impl Convert<u128, u64> for CurrencyToVoteHandler {
     fn convert(x: u128) -> u64 {
@@ -31,16 +29,14 @@ impl Convert<u128, u64> for CurrencyToVoteHandler {
 }
 
 thread_local! {
-	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
+    static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
+    static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
 }
 
 pub struct TestSessionHandler;
 impl session::SessionHandler<AccountId> for TestSessionHandler {
     fn on_new_session<Ks: OpaqueKeys>(_changed: bool, validators: &[(AccountId, Ks)]) {
-        SESSION.with(|x|
-            *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new())
-        );
+        SESSION.with(|x| *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new()));
     }
 
     fn on_disabled(validator_index: usize) {
@@ -64,8 +60,8 @@ impl Get<u64> for ExistentialDeposit {
     }
 }
 
-impl_outer_origin!{
-	pub enum Origin for Test {}
+impl_outer_origin! {
+    pub enum Origin for Test {}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -84,10 +80,10 @@ impl system::Trait for Test {
     type Event = ();
 }
 parameter_types! {
-	pub const TransferFee: u64 = 0;
-	pub const CreationFee: u64 = 0;
-	pub const TransactionBaseFee: u64 = 0;
-	pub const TransactionByteFee: u64 = 0;
+    pub const TransferFee: u64 = 0;
+    pub const CreationFee: u64 = 0;
+    pub const TransactionBaseFee: u64 = 0;
+    pub const TransactionByteFee: u64 = 0;
 }
 impl balances::Trait for Test {
     type Balance = u64;
@@ -104,8 +100,8 @@ impl balances::Trait for Test {
     type TransactionByteFee = TransactionByteFee;
 }
 parameter_types! {
-	pub const Period: BlockNumber = 1;
-	pub const Offset: BlockNumber = 0;
+    pub const Period: BlockNumber = 1;
+    pub const Offset: BlockNumber = 0;
 }
 impl session::Trait for Test {
     type OnSessionEnding = Staking;
@@ -120,7 +116,6 @@ impl timestamp::Trait for Test {
     type OnTimestampSet = ();
 }
 
-
 impl kton::Trait for Test {
     type Balance = Balance;
     type Event = ();
@@ -128,19 +123,17 @@ impl kton::Trait for Test {
     type OnRemoval = ();
 }
 
-
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 3;
-	pub const BondingDuration: EraIndex = 3;
-	pub const ErasPerEpoch: EraIndex = 10;
+    pub const SessionsPerEra: session::SessionIndex = 3;
+    pub const BondingDuration: EraIndex = 3;
+    pub const ErasPerEpoch: EraIndex = 10;
 }
 
 pub const COIN: u64 = 1_000_000_000;
 parameter_types! {
-	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * COIN;
+    // decimal 9
+    pub const CAP: Balance = 10_000_000_000 * COIN;
 }
-
 
 impl Trait for Test {
     type Ring = Ring;
@@ -179,7 +172,7 @@ impl Default for ExtBuilder {
             nominate: true,
             validator_count: 3,
             minimum_validator_count: 0,
-            fair: true
+            fair: true,
         }
     }
 }
@@ -224,13 +217,18 @@ impl ExtBuilder {
         } else {
             1 * COIN
         };
-        let validators = if self.validator_pool { vec![10, 20, 30, 40] } else { vec![10, 20] };
-        let _ = session::GenesisConfig::<Test>{
+        let validators = if self.validator_pool {
+            vec![10, 20, 30, 40]
+        } else {
+            vec![10, 20]
+        };
+        let _ = session::GenesisConfig::<Test> {
             // NOTE: if config.nominate == false then 100 is also selected in the initial round.
             validators,
             keys: vec![],
-        }.assimilate_storage(&mut t, &mut c);
-        let _ = balances::GenesisConfig::<Test>{
+        }
+        .assimilate_storage(&mut t, &mut c);
+        let _ = balances::GenesisConfig::<Test> {
             balances: vec![
                 (1, 10 * balance_factor),
                 (2, 20 * balance_factor),
@@ -248,11 +246,13 @@ impl ExtBuilder {
                 (101, 2000 * balance_factor),
             ],
             vesting: vec![],
-        }.assimilate_storage(&mut t, &mut c);
+        }
+        .assimilate_storage(&mut t, &mut c);
         let _ = kton::GenesisConfig::<Test> {
-            balances : vec![],
+            balances: vec![],
             vesting: vec![],
-        }.assimilate_storage(&mut t, &mut c);
+        }
+        .assimilate_storage(&mut t, &mut c);
 
         let stake_21 = if self.fair { 1000 } else { 2000 };
         let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
@@ -262,17 +262,22 @@ impl ExtBuilder {
             StakerStatus::<AccountId>::Idle
         };
         let nominated = if self.nominate { vec![11, 21] } else { vec![] };
-        let _ = GenesisConfig::<Test>{
+        let _ = GenesisConfig::<Test> {
             current_era: self.current_era,
             current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
             stakers: vec![
-//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
+                //                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
                 (11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
                 (21, 20, stake_21, StakerStatus::<AccountId>::Validator),
                 (31, 30, stake_31, StakerStatus::<AccountId>::Validator),
                 (41, 40, balance_factor * 1000, status_41),
                 // nominator
-                (101, 100, balance_factor * 500, StakerStatus::<AccountId>::Nominator(nominated))
+                (
+                    101,
+                    100,
+                    balance_factor * 500,
+                    StakerStatus::<AccountId>::Nominator(nominated),
+                ),
             ],
             validator_count: self.validator_count,
             minimum_validator_count: self.minimum_validator_count,
@@ -280,16 +285,13 @@ impl ExtBuilder {
             offline_slash: Perbill::from_percent(5),
             offline_slash_grace: 0,
             invulnerables: vec![],
-        }.assimilate_storage(&mut t, &mut c);
-        let _ = timestamp::GenesisConfig::<Test>{
-            minimum_period: 5,
-        }.assimilate_storage(&mut t, &mut c);
+        }
+        .assimilate_storage(&mut t, &mut c);
+        let _ = timestamp::GenesisConfig::<Test> { minimum_period: 5 }.assimilate_storage(&mut t, &mut c);
         let mut ext = t.into();
         runtime_io::with_externalities(&mut ext, || {
             let validators = Session::validators();
-            SESSION.with(|x|
-                *x.borrow_mut() = (validators.clone(), HashSet::new())
-            );
+            SESSION.with(|x| *x.borrow_mut() = (validators.clone(), HashSet::new()));
         });
         ext
     }
@@ -302,7 +304,9 @@ pub type Timestamp = timestamp::Module<Test>;
 pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
-    Staking::current_elected().into_iter().for_each(|acc| check_exposure(acc));
+    Staking::current_elected()
+        .into_iter()
+        .for_each(|acc| check_exposure(acc));
 }
 
 pub fn check_nominator_all() {
@@ -314,8 +318,11 @@ pub fn check_exposure(stash: u64) {
     assert_is_stash(stash);
     let expo = Staking::stakers(&stash);
     assert_eq!(
-        expo.total as u128, expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
-        "wrong total exposure for {:?}: {:?}", stash, expo,
+        expo.total as u128,
+        expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
+        "wrong total exposure for {:?}: {:?}",
+        stash,
+        expo,
     );
 }
 
@@ -327,14 +334,15 @@ pub fn check_nominator_exposure(stash: u64) {
     Staking::current_elected()
         .iter()
         .map(|v| Staking::stakers(v))
-        .for_each(|e| e.others.iter()
-            .filter(|i| i.who == stash)
-            .for_each(|i| sum += i.value));
+        .for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.value));
     let nominator_stake = Staking::slashable_balance_of(&stash);
     // a nominator cannot over-spend.
     assert!(
         nominator_stake >= sum,
-        "failed: Nominator({}) stake({}) >= sum divided({})", stash, nominator_stake, sum,
+        "failed: Nominator({}) stake({}) >= sum divided({})",
+        stash,
+        nominator_stake,
+        sum,
     );
 }
 
@@ -350,16 +358,33 @@ pub fn assert_is_stash(acc: u64) {
 pub fn bond_validator(acc: u64, val: u64) {
     // a = controller
     // a + 1 = stash
-    let _ = Ring::make_free_balance_be(&(acc+1), val);
-    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, StakingBalance::Ring(val), RewardDestination::Controller, 0));
-    assert_ok!(Staking::validate(Origin::signed(acc), "test".as_bytes().to_owned(), 0, 0));
+    let _ = Ring::make_free_balance_be(&(acc + 1), val);
+    assert_ok!(Staking::bond(
+        Origin::signed(acc + 1),
+        acc,
+        StakingBalance::Ring(val),
+        RewardDestination::Controller,
+        0
+    ));
+    assert_ok!(Staking::validate(
+        Origin::signed(acc),
+        "test".as_bytes().to_owned(),
+        0,
+        0
+    ));
 }
 
 pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
     // a = controller
     // a + 1 = stash
-    let _ = Ring::make_free_balance_be(&(acc+1), val);
-    assert_ok!(Staking::bond(Origin::signed(acc+1), acc, StakingBalance::Ring(val), RewardDestination::Controller, 0));
+    let _ = Ring::make_free_balance_be(&(acc + 1), val);
+    assert_ok!(Staking::bond(
+        Origin::signed(acc + 1),
+        acc,
+        StakingBalance::Ring(val),
+        RewardDestination::Controller,
+        0
+    ));
     assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }
 

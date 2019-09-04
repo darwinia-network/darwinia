@@ -17,11 +17,12 @@
 //! Low-level types used throughout the Substrate code.
 
 #![warn(missing_docs)]
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use runtime_primitives::{
-	generic, traits::{Verify, BlakeTwo256}, OpaqueExtrinsic, AnySignature
+    generic,
+    traits::{BlakeTwo256, Verify},
+    AnySignature, OpaqueExtrinsic,
 };
 
 /// An index to a block.

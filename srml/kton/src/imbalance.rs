@@ -1,8 +1,6 @@
-
 //TODO: move this into lib.rs to be a inner mod
-use super::{result, Imbalance, Trait, Zero, Saturating, StorageValue};
+use super::{result, Imbalance, Saturating, StorageValue, Trait, Zero};
 use rstd::mem;
-
 
 pub struct PositiveImbalance<T: Trait>(T::Balance);
 
@@ -113,17 +111,13 @@ impl<T: Trait> Imbalance<T::Balance> for NegativeImbalance<T> {
 impl<T: Trait> Drop for PositiveImbalance<T> {
     /// Basic drop handler will just square up the total issuance.
     fn drop(&mut self) {
-        <super::TotalIssuance<T>>::mutate(
-            |v| *v = v.saturating_add(self.0)
-        );
+        <super::TotalIssuance<T>>::mutate(|v| *v = v.saturating_add(self.0));
     }
 }
 
 impl<T: Trait> Drop for NegativeImbalance<T> {
     /// Basic drop handler will just square up the total issuance.
     fn drop(&mut self) {
-        <super::TotalIssuance<T>>::mutate(
-            |v| *v = v.saturating_sub(self.0)
-        );
+        <super::TotalIssuance<T>>::mutate(|v| *v = v.saturating_sub(self.0));
     }
 }

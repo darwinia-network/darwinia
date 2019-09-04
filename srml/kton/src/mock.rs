@@ -1,18 +1,15 @@
-
-
-use std::{collections::HashSet, cell::RefCell};
-use primitives::Perbill;
-use primitives::traits::{IdentityLookup, Convert, OpaqueKeys, OnInitialize};
-use primitives::testing::{Header, UintAuthorityId};
-use substrate_primitives::{H256, Blake2Hasher};
-use runtime_io;
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
-use srml_support::traits::{Currency, Get};
-use crate::{Module, GenesisConfig };
 use super::*;
+use crate::{GenesisConfig, Module};
+use primitives::testing::{Header, UintAuthorityId};
+use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
+use primitives::Perbill;
+use runtime_io;
+use srml_support::traits::{Currency, Get};
+use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
+use std::{cell::RefCell, collections::HashSet};
+use substrate_primitives::{Blake2Hasher, H256};
 
 const COIN: u64 = 1000000000;
-
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -22,7 +19,9 @@ pub type Balance = u64;
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
 impl Convert<u64, u64> for CurrencyToVoteHandler {
-    fn convert(x: u64) -> u64 { x }
+    fn convert(x: u64) -> u64 {
+        x
+    }
 }
 impl Convert<u128, u64> for CurrencyToVoteHandler {
     fn convert(x: u128) -> u64 {
@@ -31,8 +30,8 @@ impl Convert<u128, u64> for CurrencyToVoteHandler {
 }
 
 thread_local! {
-	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
+    static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
+    static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
 }
 
 pub struct ExistentialDeposit;
@@ -42,8 +41,8 @@ impl Get<u64> for ExistentialDeposit {
     }
 }
 
-impl_outer_origin!{
-	pub enum Origin for Test {}
+impl_outer_origin! {
+    pub enum Origin for Test {}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -62,12 +61,10 @@ impl system::Trait for Test {
     type Event = ();
 }
 
-
 impl timestamp::Trait for Test {
     type Moment = u64;
     type OnTimestampSet = ();
 }
-
 
 impl Trait for Test {
     type Balance = Balance;
@@ -82,9 +79,7 @@ pub struct ExtBuilder {
 
 impl Default for ExtBuilder {
     fn default() -> Self {
-        Self {
-            existential_deposit: 0
-        }
+        Self { existential_deposit: 0 }
     }
 }
 
@@ -106,7 +101,7 @@ impl ExtBuilder {
         } else {
             1 * COIN
         };
-        let _ = GenesisConfig::<Test>{
+        let _ = GenesisConfig::<Test> {
             balances: vec![
                 (1, 10 * balance_factor),
                 (2, 20 * balance_factor),
@@ -124,7 +119,8 @@ impl ExtBuilder {
                 (101, 2000 * balance_factor),
             ],
             vesting: vec![],
-        }.assimilate_storage(&mut t, &mut c);
+        }
+        .assimilate_storage(&mut t, &mut c);
         t.into()
     }
 }

@@ -19,20 +19,18 @@
 use grandpa::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_primitives::{AccountId, AuraId, Balance};
-use node_runtime::{
-    AuraConfig, BalancesConfig, ContractsConfig, DAYS,
-    COIN, GrandpaConfig, IndicesConfig, MILLI,
-    Perbill, SECS_PER_BLOCK, KtonConfig,
-    SessionConfig, SessionKeys, StakerStatus,
-    StakingConfig, SudoConfig, SystemConfig, TimestampConfig,
-};
 pub use node_runtime::GenesisConfig;
-use primitives::{crypto::UncheckedInto, ed25519, Pair, sr25519};
-use substrate_service;
-use substrate_telemetry::TelemetryEndpoints;
-use substrate_service::Properties;
-use serde_json::Number;
+use node_runtime::{
+    AuraConfig, BalancesConfig, ContractsConfig, GrandpaConfig, IndicesConfig, KtonConfig, Perbill, SessionConfig,
+    SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TimestampConfig, COIN, DAYS, MILLI,
+    SECS_PER_BLOCK,
+};
+use primitives::{crypto::UncheckedInto, ed25519, sr25519, Pair};
 use serde_json::de::ParserNumber;
+use serde_json::Number;
+use substrate_service;
+use substrate_service::Properties;
+use substrate_telemetry::TelemetryEndpoints;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
@@ -55,44 +53,48 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
     // and
     // for i in 1 2 3 4 ; do for j in session; do subkey --ed25519 inspect "$secret"//fir//$j//$i; done; done
 
-    let initial_authorities: Vec<(AccountId, AccountId, AuraId, GrandpaId)> =
-        vec![(
-                 // 5Fbsd6WXDGiLTxunqeK5BATNiocfCqu9bS1yArVjCgeBLkVy
-                 hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].unchecked_into(),
-                 // 5EnCiV7wSHeNhjW3FSUwiJNkcc2SBkPLn5Nj93FmbLtBjQUq
-                 hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].unchecked_into(),
-                 // 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
-                 hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
-                 // 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
-                 hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
-             ), (
-                 // 5ERawXCzCWkjVq3xz1W5KGNtVx2VdefvZ62Bw1FEuZW4Vny2
-                 hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].unchecked_into(),
-                 // 5Gc4vr42hH1uDZc93Nayk5G7i687bAQdHHc9unLuyeawHipF
-                 hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].unchecked_into(),
-                 // 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
-                 hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
-                 // 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
-                 hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
-             ), (
-                 // 5DyVtKWPidondEu8iHZgi6Ffv9yrJJ1NDNLom3X9cTDi98qp
-                 hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].unchecked_into(),
-                 // 5FeD54vGVNpFX3PndHPXJ2MDakc462vBCD5mgtWRnWYCpZU9
-                 hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].unchecked_into(),
-                 // 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
-                 hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
-                 // 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
-                 hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
-             ), (
-                 // 5HYZnKWe5FVZQ33ZRJK1rG3WaLMztxWrrNDb1JRwaHHVWyP9
-                 hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].unchecked_into(),
-                 // 5EPQdAQ39WQNLCRjWsCk5jErsCitHiY5ZmjfWzzbXDoAoYbn
-                 hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].unchecked_into(),
-                 // 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
-                 hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
-                 // 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
-                 hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
-             )];
+    let initial_authorities: Vec<(AccountId, AccountId, AuraId, GrandpaId)> = vec![
+        (
+            // 5Fbsd6WXDGiLTxunqeK5BATNiocfCqu9bS1yArVjCgeBLkVy
+            hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].unchecked_into(),
+            // 5EnCiV7wSHeNhjW3FSUwiJNkcc2SBkPLn5Nj93FmbLtBjQUq
+            hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].unchecked_into(),
+            // 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
+            hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
+            // 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
+            hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
+        ),
+        (
+            // 5ERawXCzCWkjVq3xz1W5KGNtVx2VdefvZ62Bw1FEuZW4Vny2
+            hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].unchecked_into(),
+            // 5Gc4vr42hH1uDZc93Nayk5G7i687bAQdHHc9unLuyeawHipF
+            hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].unchecked_into(),
+            // 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
+            hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
+            // 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
+            hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
+        ),
+        (
+            // 5DyVtKWPidondEu8iHZgi6Ffv9yrJJ1NDNLom3X9cTDi98qp
+            hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].unchecked_into(),
+            // 5FeD54vGVNpFX3PndHPXJ2MDakc462vBCD5mgtWRnWYCpZU9
+            hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].unchecked_into(),
+            // 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
+            hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
+            // 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
+            hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
+        ),
+        (
+            // 5HYZnKWe5FVZQ33ZRJK1rG3WaLMztxWrrNDb1JRwaHHVWyP9
+            hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].unchecked_into(),
+            // 5EPQdAQ39WQNLCRjWsCk5jErsCitHiY5ZmjfWzzbXDoAoYbn
+            hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].unchecked_into(),
+            // 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
+            hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
+            // 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
+            hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
+        ),
+    ];
 
     // generated with secret: subkey inspect "$secret"/fir
     let endowed_accounts: Vec<AccountId> = vec![
@@ -105,31 +107,41 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 
     GenesisConfig {
         system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),    // FIXME change once we have #1252
+            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+                .to_vec(), // FIXME change once we have #1252
             changes_trie_config: Default::default(),
         }),
         balances: Some(BalancesConfig {
-            balances: endowed_accounts.iter().cloned()
+            balances: endowed_accounts
+                .iter()
+                .cloned()
                 .map(|k| (k, ENDOWMENT))
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
                 .collect(),
             vesting: vec![],
         }),
         kton: Some(KtonConfig {
-            balances: endowed_accounts.iter().cloned()
+            balances: endowed_accounts
+                .iter()
+                .cloned()
                 .map(|k| (k, ENDOWMENT))
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
             vesting: vec![],
         }),
         indices: Some(IndicesConfig {
-            ids: endowed_accounts.iter().cloned()
+            ids: endowed_accounts
+                .iter()
+                .cloned()
                 .chain(initial_authorities.iter().map(|x| x.0.clone()))
                 .collect::<Vec<_>>(),
         }),
         session: Some(SessionConfig {
             validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities.iter().map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone()))).collect::<Vec<_>>(),
+            keys: initial_authorities
+                .iter()
+                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+                .collect::<Vec<_>>(),
         }),
         staking: Some(StakingConfig {
             current_era: 0,
@@ -139,7 +151,10 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
             validator_count: 7,
             offline_slash_grace: 4,
             minimum_validator_count: 4,
-            stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+            stakers: initial_authorities
+                .iter()
+                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+                .collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
@@ -158,7 +173,6 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         grandpa: Some(GrandpaConfig {
             authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
         }),
-        
     }
 }
 
@@ -204,7 +218,7 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, AuraId
         get_account_id_from_seed(&format!("{}//stash", seed)),
         get_account_id_from_seed(seed),
         get_aura_id_from_seed(seed),
-        get_grandpa_id_from_seed(seed)
+        get_grandpa_id_from_seed(seed),
     )
 }
 
@@ -237,7 +251,8 @@ pub fn testnet_genesis(
 
     GenesisConfig {
         system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
+            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+                .to_vec(),
             changes_trie_config: Default::default(),
         }),
         indices: Some(IndicesConfig {
@@ -248,7 +263,9 @@ pub fn testnet_genesis(
             vesting: vec![],
         }),
         kton: Some(KtonConfig {
-            balances: endowed_accounts.iter().cloned()
+            balances: endowed_accounts
+                .iter()
+                .cloned()
                 .map(|k| (k, ENDOWMENT))
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
                 .collect(),
@@ -256,7 +273,10 @@ pub fn testnet_genesis(
         }),
         session: Some(SessionConfig {
             validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities.iter().map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone()))).collect::<Vec<_>>(),
+            keys: initial_authorities
+                .iter()
+                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+                .collect::<Vec<_>>(),
         }),
         staking: Some(StakingConfig {
             current_era: 0,
@@ -267,11 +287,14 @@ pub fn testnet_genesis(
             offline_slash: Perbill::from_parts(1_000_000),
             session_reward: Perbill::from_percent(90),
             offline_slash_grace: 4,
-            stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+            stakers: initial_authorities
+                .iter()
+                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+                .collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 3,                    // 3*2=6 second block time.
+            minimum_period: 3, // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {
@@ -280,9 +303,7 @@ pub fn testnet_genesis(
             },
             gas_price: 1 * MILLI,
         }),
-        sudo: Some(SudoConfig {
-            key: root_key,
-        }),
+        sudo: Some(SudoConfig { key: root_key }),
         aura: Some(AuraConfig {
             authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
         }),
@@ -294,9 +315,7 @@ pub fn testnet_genesis(
 
 fn development_config_genesis() -> GenesisConfig {
     testnet_genesis(
-        vec![
-            get_authority_keys_from_seed("Alice"),
-        ],
+        vec![get_authority_keys_from_seed("Alice")],
         get_account_id_from_seed("Alice"),
         None,
         true,
@@ -314,7 +333,6 @@ fn crayfish_config_genesis() -> GenesisConfig {
         false,
     )
 }
-
 
 /// Helper function to create GenesisConfig for testing
 pub fn crayfish_testnet_genesis(
@@ -345,14 +363,17 @@ pub fn crayfish_testnet_genesis(
 
     GenesisConfig {
         system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
+            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+                .to_vec(),
             changes_trie_config: Default::default(),
         }),
         indices: Some(IndicesConfig {
             ids: endowed_accounts.clone(),
         }),
         balances: Some(BalancesConfig {
-            balances: endowed_accounts.iter().cloned()
+            balances: endowed_accounts
+                .iter()
+                .cloned()
                 .map(|k| (k, 1 * ENDOWMENT))
                 .chain(initial_authorities.iter().map(|x| (x.0.clone(), 4 * ENDOWMENT)))
                 .collect(),
@@ -364,7 +385,10 @@ pub fn crayfish_testnet_genesis(
         }),
         session: Some(SessionConfig {
             validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities.iter().map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone()))).collect::<Vec<_>>(),
+            keys: initial_authorities
+                .iter()
+                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+                .collect::<Vec<_>>(),
         }),
         staking: Some(StakingConfig {
             current_era: 0,
@@ -374,11 +398,14 @@ pub fn crayfish_testnet_genesis(
             offline_slash: Perbill::from_parts(1_000_000),
             session_reward: Perbill::from_percent(90),
             offline_slash_grace: 4,
-            stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+            stakers: initial_authorities
+                .iter()
+                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+                .collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 3,                    // 3*2=6 second block time.
+            minimum_period: 3, // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {
@@ -387,9 +414,7 @@ pub fn crayfish_testnet_genesis(
             },
             gas_price: 1 * MILLI,
         }),
-        sudo: Some(SudoConfig {
-            key: root_key,
-        }),
+        sudo: Some(SudoConfig { key: root_key }),
         aura: Some(AuraConfig {
             authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
         }),
@@ -399,10 +424,18 @@ pub fn crayfish_testnet_genesis(
     }
 }
 
-
 /// Development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
-    ChainSpec::from_genesis("Development", "dev", development_config_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis(
+        "Development",
+        "dev",
+        development_config_genesis,
+        vec![],
+        None,
+        None,
+        None,
+        None,
+    )
 }
 
 fn local_testnet_genesis() -> GenesisConfig {
@@ -419,14 +452,26 @@ fn local_testnet_genesis() -> GenesisConfig {
 
 fn token_properties() -> Option<Properties> {
     let mut properties = Properties::new();
-    properties.insert("tokenDecimals".to_owned(), serde_json::Value::Number(Number::from(ParserNumber::U64(9))));
+    properties.insert(
+        "tokenDecimals".to_owned(),
+        serde_json::Value::Number(Number::from(ParserNumber::U64(9))),
+    );
     properties.insert("tokenSymbol".to_owned(), serde_json::Value::String("RING".to_owned()));
     Some(properties)
 }
 
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, token_properties())
+    ChainSpec::from_genesis(
+        "Local Testnet",
+        "local_testnet",
+        local_testnet_genesis,
+        vec![],
+        None,
+        None,
+        None,
+        token_properties(),
+    )
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
@@ -439,7 +484,8 @@ pub fn crayfish_testnet_config() -> ChainSpec {
         Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
         Some("DAR"),
         None,
-        token_properties())
+        token_properties(),
+    )
 }
 
 #[cfg(test)]
@@ -458,9 +504,7 @@ pub(crate) mod tests {
 
     fn local_testnet_genesis_instant_single() -> GenesisConfig {
         let mut genesis = testnet_genesis(
-            vec![
-                get_authority_keys_from_seed("Alice"),
-            ],
+            vec![get_authority_keys_from_seed("Alice")],
             get_account_id_from_seed("Alice"),
             None,
             false,
@@ -485,7 +529,16 @@ pub(crate) mod tests {
 
     /// Local testnet config (multivalidator Alice + Bob)
     pub fn integration_test_config_with_two_authorities() -> ChainSpec {
-        ChainSpec::from_genesis("Integration Test", "test", local_testnet_genesis_instant, vec![], None, None, None, None)
+        ChainSpec::from_genesis(
+            "Integration Test",
+            "test",
+            local_testnet_genesis_instant,
+            vec![],
+            None,
+            None,
+            None,
+            None,
+        )
     }
 
     #[test]
