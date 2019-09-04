@@ -57,7 +57,7 @@ const MAX_UNLOCKING_CHUNKS: usize = 32;
 
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
-const MONTH_IN_SECONDS: u32 = 2592000;
+const MONTH_IN_SECONDS: u32 = 2_592_000;
 
 const STAKING_ID: LockIdentifier = *b"staking ";
 

@@ -527,7 +527,7 @@ mod utils {
         let remainder = no % de;
         let res = U256::from(value)
             * (U256::from(1000) * (quotient - 1) + U256::from(1000) * remainder / de)
-            / U256::from(1970000);
+            / U256::from(1_970_000);
         res.as_u128().try_into().unwrap_or_default()
     }
 }
@@ -557,7 +557,7 @@ const MAX_NOMINATIONS: usize = 16;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
-const MONTH_IN_SECONDS: u32 = 2592000;
+const MONTH_IN_SECONDS: u32 = 2_592_000;
 const STAKING_ID: LockIdentifier = *b"staking ";
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;

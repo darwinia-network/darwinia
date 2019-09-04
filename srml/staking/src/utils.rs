@@ -33,7 +33,7 @@ pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u32) -> Kt
     let remainder = no % de;
     let res = U256::from(value)
         * (U256::from(1000) * (quotient - 1) + U256::from(1000) * remainder / de)
-        / U256::from(1970000);
+        / U256::from(1_970_000);
 
     res.as_u128().try_into().unwrap_or_default()
 }
