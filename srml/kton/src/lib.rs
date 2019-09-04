@@ -2,19 +2,17 @@
 
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
-    Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating,
-    SimpleArithmetic, StaticLookup, Zero,
+    Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic, StaticLookup, Zero,
 };
-use rstd::{cmp, result};
 use rstd::prelude::*;
+use rstd::{cmp, result};
 
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use srml_support::dispatch::Result;
 use srml_support::traits::{
-    Currency, ExistenceRequirement, Imbalance, LockableCurrency, LockIdentifier,
-    OnUnbalanced, SignedImbalance, UpdateBalanceOutcome,
-    WithdrawReason, WithdrawReasons,
+    Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
+    UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
 };
+use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use system::ensure_signed;
 
 // customed
@@ -41,7 +39,8 @@ pub struct VestingSchedule<Balance> {
 impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
     /// Amount locked at block `n`.
     pub fn locked_at<BlockNumber>(&self, n: BlockNumber) -> Balance
-        where Balance: From<BlockNumber>
+    where
+        Balance: From<BlockNumber>,
     {
         if let Some(x) = Balance::from(n).checked_mul(&self.per_block) {
             self.offset.max(x) - x
@@ -61,8 +60,14 @@ pub struct BalanceLock<Balance, BlockNumber> {
 }
 
 pub trait Trait: timestamp::Trait {
-    type Balance: Parameter + Member + SimpleArithmetic + Codec + Default + Copy +
-    MaybeSerializeDebug + From<Self::BlockNumber>;
+    type Balance: Parameter
+        + Member
+        + SimpleArithmetic
+        + Codec
+        + Default
+        + Copy
+        + MaybeSerializeDebug
+        + From<Self::BlockNumber>;
 
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -81,48 +86,47 @@ decl_event!(
     }
 );
 
-
 decl_storage! {
-	trait Store for Module<T: Trait> as Kton {
+    trait Store for Module<T: Trait> as Kton {
 
         /// For Currency and LockableCurrency Trait
-		/// The total `units issued in the system.
-		// like `existential_deposit`, but always set to 0
-		pub MinimumBalance get(minimum_balance): T::Balance = 0.into();
+        /// The total `units issued in the system.
+        // like `existential_deposit`, but always set to 0
+        pub MinimumBalance get(minimum_balance): T::Balance = 0.into();
 
-		pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T>| {
-			config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
-		}): T::Balance;
+        pub TotalIssuance get(total_issuance) build(|config: &GenesisConfig<T>| {
+            config.balances.iter().fold(Zero::zero(), |acc: T::Balance, &(_, n)| acc + n)
+        }): T::Balance;
 
-		pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T>| config.balances.clone()):
-			map T::AccountId => T::Balance;
+        pub FreeBalance get(free_balance) build(|config: &GenesisConfig<T>| config.balances.clone()):
+            map T::AccountId => T::Balance;
 
-		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
+        pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+        pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 
-		pub TotalLock get(total_lock): T::Balance;
+        pub TotalLock get(total_lock): T::Balance;
 
-		pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
-			config.vesting.iter().filter_map(|&(ref who, begin, length)| {
-				let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
-				let length = <T::Balance as From<T::BlockNumber>>::from(length);
+        pub Vesting get(vesting) build(|config: &GenesisConfig<T>| {
+            config.vesting.iter().filter_map(|&(ref who, begin, length)| {
+                let begin = <T::Balance as From<T::BlockNumber>>::from(begin);
+                let length = <T::Balance as From<T::BlockNumber>>::from(length);
 
-				config.balances.iter()
-					.find(|&&(ref w, _)| w == who)
-					.map(|&(_, balance)| {
-						// <= begin it should be >= balance
-						// >= begin+length it should be <= 0
+                config.balances.iter()
+                    .find(|&&(ref w, _)| w == who)
+                    .map(|&(_, balance)| {
+                        // <= begin it should be >= balance
+                        // >= begin+length it should be <= 0
 
-						let per_block = balance / length.max(primitives::traits::One::one());
-						let offset = begin * per_block + balance;
+                        let per_block = balance / length.max(primitives::traits::One::one());
+                        let offset = begin * per_block + balance;
 
-						(who.clone(), VestingSchedule { offset, per_block })
-					})
-			}).collect::<Vec<_>>()
-		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
-	}
-	add_extra_genesis {
+                        (who.clone(), VestingSchedule { offset, per_block })
+                    })
+            }).collect::<Vec<_>>()
+        }): map T::AccountId => Option<VestingSchedule<T::Balance>>;
+    }
+    add_extra_genesis {
         config(balances): Vec<(T::AccountId, T::Balance)>;
         config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;		// begin, length
 }
@@ -134,10 +138,10 @@ decl_module! {
 
         pub fn transfer(origin,
             dest: <T::Lookup as StaticLookup>::Source,
-			#[compact] value: T::Balance
-		) {
-			let transactor = ensure_signed(origin)?;
-			let dest = T::Lookup::lookup(dest)?;
+            #[compact] value: T::Balance
+        ) {
+            let transactor = ensure_signed(origin)?;
+            let dest = T::Lookup::lookup(dest)?;
 
             <Self as Currency<_>>::transfer(&transactor, &dest, value)?;
         }
@@ -147,13 +151,11 @@ decl_module! {
 impl<T: Trait> Module<T> {
     pub fn vesting_balance(who: &T::AccountId) -> T::Balance {
         if let Some(v) = Self::vesting(who) {
-            Self::free_balance(who)
-                .min(v.locked_at::<T::BlockNumber>(<system::Module<T>>::block_number()))
+            Self::free_balance(who).min(v.locked_at::<T::BlockNumber>(<system::Module<T>>::block_number()))
         } else {
             Zero::zero()
         }
     }
-
 
     // PRIVATE MUTABLE
     // NOTE: different from balances module
@@ -168,7 +170,6 @@ impl<T: Trait> Module<T> {
         UpdateBalanceOutcome::Updated
     }
 }
-
 
 impl<T: Trait> Currency<T::AccountId> for Module<T> {
     type Balance = T::Balance;
@@ -202,8 +203,9 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         new_balance: T::Balance,
     ) -> Result {
         match reason {
-            WithdrawReason::Reserve | WithdrawReason::Transfer if Self::vesting_balance(who) > new_balance =>
-                return Err("vesting balance too high to send value"),
+            WithdrawReason::Reserve | WithdrawReason::Transfer if Self::vesting_balance(who) > new_balance => {
+                return Err("vesting balance too high to send value")
+            }
             _ => {}
         }
         let locks = Self::locks(who);
@@ -212,19 +214,15 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         }
 
         let now = <system::Module<T>>::block_number();
-        if locks.into_iter()
-            .all(|l|
-                now >= l.until
-                    || new_balance >= l.amount
-                    || !l.reasons.contains(reason)
-            )
+        if locks
+            .into_iter()
+            .all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.contains(reason))
         {
             Ok(())
         } else {
             Err("account liquidity restrictions prevent withdrawal")
         }
     }
-
 
     // TODO: add fee
     fn transfer(transactor: &T::AccountId, dest: &T::AccountId, value: Self::Balance) -> Result {
@@ -254,7 +252,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         Ok(())
     }
 
-
     fn withdraw(
         who: &T::AccountId,
         value: Self::Balance,
@@ -275,11 +272,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         }
     }
 
-
-    fn slash(
-        who: &T::AccountId,
-        value: Self::Balance,
-    ) -> (Self::NegativeImbalance, Self::Balance) {
+    fn slash(who: &T::AccountId, value: Self::Balance) -> (Self::NegativeImbalance, Self::Balance) {
         let free_balance = Self::free_balance(who);
         let free_slash = cmp::min(free_balance, value);
 
@@ -292,7 +285,10 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
             let reserved_balance = Self::reserved_balance(who);
             let reserved_slash = cmp::min(reserved_balance, remaining_slash);
             Self::set_reserved_balance(who, reserved_balance - reserved_slash);
-            (NegativeImbalance::new(free_slash + reserved_slash), remaining_slash - reserved_slash)
+            (
+                NegativeImbalance::new(free_slash + reserved_slash),
+                remaining_slash - reserved_slash,
+            )
         } else {
             (NegativeImbalance::new(value), Zero::zero())
         }
@@ -305,7 +301,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         if Self::total_balance(who).is_zero() {
             return Err("beneficiary account must pre-exist");
         }
-        //add here 
+        //add here
         let old_balance = Self::free_balance(who);
         let new_balance = old_balance + value;
 
@@ -313,11 +309,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         Ok(PositiveImbalance::new(value))
     }
 
-    fn deposit_creating(
-        who: &T::AccountId,
-        value: Self::Balance,
-    ) -> Self::PositiveImbalance {
-
+    fn deposit_creating(who: &T::AccountId, value: Self::Balance) -> Self::PositiveImbalance {
         let old_balance = Self::free_balance(who);
         let new_balance = old_balance + value;
 
@@ -331,9 +323,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
         }
     }
 
-    fn make_free_balance_be(who: &T::AccountId, balance: Self::Balance) -> (
+    fn make_free_balance_be(
+        who: &T::AccountId,
+        balance: Self::Balance,
+    ) -> (
         SignedImbalance<Self::Balance, Self::PositiveImbalance>,
-        UpdateBalanceOutcome
+        UpdateBalanceOutcome,
     ) {
         let original = Self::free_balance(who);
 
@@ -353,31 +348,30 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
     // TODO: ready for hacking
     fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
-        <TotalIssuance<T>>::mutate(|issued|
+        <TotalIssuance<T>>::mutate(|issued| {
             issued.checked_sub(&amount).unwrap_or_else(|| {
                 amount = *issued;
                 Zero::zero()
             })
-        );
+        });
         PositiveImbalance::new(amount)
     }
 
     // TODO: ready for hacking
     fn issue(mut amount: Self::Balance) -> Self::NegativeImbalance {
-        <TotalIssuance<T>>::mutate(|issued|
+        <TotalIssuance<T>>::mutate(|issued| {
             *issued = issued.checked_add(&amount).unwrap_or_else(|| {
                 amount = Self::Balance::max_value() - *issued;
                 Self::Balance::max_value()
             })
-        );
+        });
         NegativeImbalance::new(amount)
     }
 }
 
-
 impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
-    where
-        T::Balance: MaybeSerializeDebug
+where
+    T::Balance: MaybeSerializeDebug,
 {
     type Moment = T::BlockNumber;
 
@@ -389,15 +383,24 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
         reasons: WithdrawReasons,
     ) {
         let now = <system::Module<T>>::block_number();
-        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
-        let mut locks = Self::locks(who).into_iter().filter_map(|l|
-            if l.id == id {
-                new_lock.take()
-            } else if l.until > now {
-                Some(l)
-            } else {
-                None
-            }).collect::<Vec<_>>();
+        let mut new_lock = Some(BalanceLock {
+            id,
+            amount,
+            until,
+            reasons,
+        });
+        let mut locks = Self::locks(who)
+            .into_iter()
+            .filter_map(|l| {
+                if l.id == id {
+                    new_lock.take()
+                } else if l.until > now {
+                    Some(l)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
         if let Some(lock) = new_lock {
             locks.push(lock)
         }
@@ -412,40 +415,41 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
         reasons: WithdrawReasons,
     ) {
         let now = <system::Module<T>>::block_number();
-        let mut new_lock = Some(BalanceLock { id, amount, until, reasons });
-        let mut locks = Self::locks(who).into_iter().filter_map(|l|
-            if l.id == id {
-                new_lock.take().map(|nl| {
-                    BalanceLock {
+        let mut new_lock = Some(BalanceLock {
+            id,
+            amount,
+            until,
+            reasons,
+        });
+        let mut locks = Self::locks(who)
+            .into_iter()
+            .filter_map(|l| {
+                if l.id == id {
+                    new_lock.take().map(|nl| BalanceLock {
                         id: l.id,
                         amount: l.amount.max(nl.amount),
                         until: l.until.max(nl.until),
                         reasons: l.reasons | nl.reasons,
-                    }
-                })
-            } else if l.until > now {
-                Some(l)
-            } else {
-                None
-            }).collect::<Vec<_>>();
+                    })
+                } else if l.until > now {
+                    Some(l)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
         if let Some(lock) = new_lock {
             locks.push(lock)
         }
         <Locks<T>>::insert(who, locks);
     }
 
-    fn remove_lock(
-        id: LockIdentifier,
-        who: &T::AccountId,
-    ) {
+    fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
         let now = <system::Module<T>>::block_number();
-        let locks = Self::locks(who).into_iter().filter_map(|l|
-            if l.until > now && l.id != id {
-                Some(l)
-            } else {
-                None
-            }).collect::<Vec<_>>();
+        let locks = Self::locks(who)
+            .into_iter()
+            .filter_map(|l| if l.until > now && l.id != id { Some(l) } else { None })
+            .collect::<Vec<_>>();
         <Locks<T>>::insert(who, locks);
     }
 }
-

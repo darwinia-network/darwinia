@@ -23,15 +23,15 @@
 //! By default, the panic handler aborts the process by calling [`std::process::exit`]. This can
 //! temporarily be disabled by using an [`AbortGuard`].
 use backtrace::Backtrace;
+use std::cell::Cell;
+use std::env;
 use std::io::{self, Write};
 use std::marker::PhantomData;
 use std::panic::{self, PanicInfo};
-use std::cell::Cell;
 use std::thread;
-use std::env;
 
 thread_local! {
-	static ABORT: Cell<bool> = Cell::new(true);
+    static ABORT: Cell<bool> = Cell::new(true);
 }
 
 /// Set the panic hook.
@@ -45,11 +45,14 @@ pub fn set(bug_url: &'static str) {
 }
 
 macro_rules! ABOUT_PANIC {
-	() => ("
+    () => {
+        "
 This is a bug. Please report it at:
 
 	{}
-")}
+"
+    };
+}
 
 /// Set aborting flag. Returns previous value of the flag.
 fn set_abort(enabled: bool) -> bool {
@@ -111,7 +114,7 @@ fn panic_hook(info: &PanicInfo, report_url: &'static str) {
         None => match info.payload().downcast_ref::<String>() {
             Some(s) => &s[..],
             None => "Box<Any>",
-        }
+        },
     };
 
     let thread = thread::current();
@@ -125,11 +128,7 @@ fn panic_hook(info: &PanicInfo, report_url: &'static str) {
     let _ = writeln!(stderr, "");
     let _ = writeln!(stderr, "{:?}", backtrace);
     let _ = writeln!(stderr, "");
-    let _ = writeln!(
-        stderr,
-        "Thread '{}' panicked at '{}', {}:{}",
-        name, msg, file, line
-    );
+    let _ = writeln!(stderr, "Thread '{}' panicked at '{}', {}:{}", name, msg, file, line);
     let _ = writeln!(stderr, ABOUT_PANIC!(), report_url);
     push_alert_to_ding(format!("{:?}", backtrace));
     ABORT.with(|flag| {
@@ -147,7 +146,7 @@ pub struct PushMsg {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PushText {
-    pub content: String
+    pub content: String,
 }
 
 pub fn push_alert_to_ding(trace_err: String) {
@@ -155,19 +154,22 @@ pub fn push_alert_to_ding(trace_err: String) {
     let ding_talk_endpoint = "https://oapi.dingtalk.com/robot/send?access_token=";
     let ding_talk_token = env::var("DING_TALK_TOKEN").unwrap_or_default();
     let r = client.post(&format!("{}{}", ding_talk_endpoint, ding_talk_token));
-    let msg_body = PushMsg { msgtype: "text".to_string(), text: PushText { content: trace_err } };
+    let msg_body = PushMsg {
+        msgtype: "text".to_string(),
+        text: PushText { content: trace_err },
+    };
     let res = r.json(&msg_body).send();
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+    use super::*;
 
-	#[test]
+    #[test]
     #[ignore]
-	fn does_not_abort() {
-		set("test");
-		let _guard = AbortGuard::force_unwind();
-		::std::panic::catch_unwind(|| panic!()).ok();
-	}
+    fn does_not_abort() {
+        set("test");
+        let _guard = AbortGuard::force_unwind();
+        ::std::panic::catch_unwind(|| panic!()).ok();
+    }
 }
