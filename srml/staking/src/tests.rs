@@ -1,6 +1,6 @@
 use super::MONTH_IN_SECONDS;
 use super::*;
-use mock::*;
+use crate::mock::*;
 use primitives::traits::OnInitialize;
 use runtime_io::with_externalities;
 use srml_support::traits::{Currency, ReservableCurrency, WithdrawReason, WithdrawReasons};
@@ -610,5 +610,33 @@ fn set_controller_should_not_change_ledger() {
         assert_eq!(Staking::ledger(&10).unwrap().total_ring, 100 * COIN);
         assert_ok!(Staking::set_controller(Origin::signed(11), 12));
         assert_eq!(Staking::ledger(&12).unwrap().total_ring, 100 * COIN);
+    });
+}
+
+#[test]
+fn slash_should_not_touch_unlockings() {
+    with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+        let old_ledger = Staking::ledger(&10).unwrap();
+        // only deposit_ring, no normal_ring
+        assert_eq!((old_ledger.total_ring, old_ledger.active_ring, old_ledger.active_deposit_ring),
+                   (100 * COIN, 100 * COIN, 100 * COIN));
+
+        assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(100 * COIN), 0));
+        Kton::deposit_creating(&11, 10 * COIN);
+        assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Kton(10 * COIN), 0));
+
+        assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
+        let new_ledger = Staking::ledger(&10).unwrap();
+        assert_eq!((new_ledger.total_ring, new_ledger.active_ring, new_ledger.active_deposit_ring),
+                   (200 * COIN, 190 * COIN, 100 * COIN));
+
+        // slash 100%
+        Staking::slash_validator(&11, 1_000_000_000);
+
+        let ledger = Staking::ledger(&10).unwrap();
+        assert_eq!((ledger.total_ring, ledger.active_ring, ledger.active_deposit_ring),
+                   (10 * COIN, 0, 0));
+        assert_eq!(ledger.unlocking[0].value, StakingBalance::Ring(10 * COIN));
+
     });
 }

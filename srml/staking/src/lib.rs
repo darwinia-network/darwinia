@@ -950,7 +950,7 @@ impl<T: Trait> Module<T> {
 
         // slash ring
         let (ring_imbalance, _) = if !ledger.total_ring.is_zero() {
-            let slashable_ring = slash_ratio * ledger.total_ring;
+            let slashable_ring = slash_ratio * ledger.active_ring;
             let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
             T::Ring::slash(stash, value_slashed.0)
         } else {
@@ -958,7 +958,7 @@ impl<T: Trait> Module<T> {
         };
 
         let (kton_imbalance, _) = if !ledger.total_kton.is_zero() {
-            let slashable_kton = slash_ratio * ledger.total_kton;
+            let slashable_kton = slash_ratio * ledger.active_kton;
             let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
             T::Kton::slash(stash, value_slashed.1)
         } else {
@@ -983,7 +983,9 @@ impl<T: Trait> Module<T> {
             StakingBalance::Ring(r) => {
                 // if slashing ring, first slashing normal ring
                 // then, slashing time-deposit ring
-                let total_value = r.min(ledger.total_ring);
+                // TODO: check one more time (may be removed later)
+                let total_value = r.min(ledger.active_ring);
+
                 let normal_active_value = total_value.min(ledger.active_ring - ledger.active_deposit_ring);
                 // to prevent overflow
                 // first slash normal bonded ring
@@ -1025,82 +1027,22 @@ impl<T: Trait> Module<T> {
                         .collect::<Vec<_>>();
                     ledger.deposit_items = new_deposit_items;
                 }
-                // active_ring all slashed
-                // then slashing unlocking ring
-                if !value_left.is_zero() {
-                    let unlockings = ledger
-                        .unlocking
-                        .clone()
-                        .into_iter()
-                        .filter_map(|mut chunk| match chunk.value {
-                            StakingBalance::Ring(r) => {
-                                if value_left.is_zero() {
-                                    Some(chunk)
-                                } else {
-                                    let value = value_left.min(r);
-                                    let new_value = r - value;
-                                    chunk.value = StakingBalance::Ring(new_value);
-                                    value_left -= value;
-                                    if chunk.is_time_deposit {
-                                        ledger.total_deposit_ring -= value;
-                                    }
-                                    ledger.total_ring -= value;
-                                    if new_value.is_zero() {
-                                        None
-                                    } else {
-                                        Some(chunk)
-                                    }
-                                }
-                            }
-                            StakingBalance::Kton(_) => Some(chunk),
-                        })
-                        .collect::<Vec<_>>();
-                    ledger.unlocking = unlockings;
-                }
 
                 Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
                 (total_value, 0.into())
             }
 
             StakingBalance::Kton(k) => {
-                let total_value = k.min(ledger.total_kton);
-                let active_value = total_value.min(ledger.active_kton);
+                // check one more time
+                // TODO: may be removed later
+                let active_value = k.min(ledger.active_kton);
                 // first slash active kton
                 ledger.active_kton -= active_value;
                 ledger.total_kton -= active_value;
                 <KtonPool<T>>::mutate(|k| *k -= active_value);
-                // then slash unlocking kton
-                let mut value_left = total_value - active_value;
-                // slash unlocking kton
-                if !value_left.is_zero() {
-                    let unlockings = ledger
-                        .unlocking
-                        .clone()
-                        .into_iter()
-                        .filter_map(|mut chunk| match chunk.value {
-                            StakingBalance::Kton(k) => {
-                                if value_left.is_zero() {
-                                    Some(chunk)
-                                } else {
-                                    let value = value_left.min(k);
-                                    let new_value = k - value;
-                                    chunk.value = StakingBalance::Kton(k - value);
-                                    value_left -= value;
-                                    ledger.total_kton -= value;
-                                    if new_value.is_zero() {
-                                        None
-                                    } else {
-                                        Some(chunk)
-                                    }
-                                }
-                            }
-                            StakingBalance::Ring(_) => Some(chunk),
-                        })
-                        .collect::<Vec<_>>();
-                    ledger.unlocking = unlockings;
-                }
+
                 Self::update_ledger(controller, ledger, StakingBalance::Kton(0.into()));
-                (0.into(), total_value)
+                (0.into(), active_value)
             }
         }
     }
