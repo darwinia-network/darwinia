@@ -57,8 +57,8 @@ use inherents::{InherentDataProviders, ProvideInherentData};
 use parity_codec::Decode;
 use parity_codec::Encode;
 use primitives::{
-    generic::DigestItem,
-    traits::{Member, One, SaturatedConversion, Saturating, Zero},
+	generic::DigestItem,
+	traits::{Member, One, SaturatedConversion, Saturating, Zero},
 };
 use rstd::{prelude::*, result};
 use srml_support::{decl_module, decl_storage, storage::StorageValue, Parameter};
@@ -78,234 +78,245 @@ pub type InherentType = u64;
 
 /// Auxiliary trait to extract Aura inherent data.
 pub trait AuraInherentData {
-    /// Get aura inherent data.
-    fn aura_inherent_data(&self) -> result::Result<InherentType, RuntimeString>;
-    /// Replace aura inherent data.
-    fn aura_replace_inherent_data(&mut self, new: InherentType);
+	/// Get aura inherent data.
+	fn aura_inherent_data(&self) -> result::Result<InherentType, RuntimeString>;
+	/// Replace aura inherent data.
+	fn aura_replace_inherent_data(&mut self, new: InherentType);
 }
 
 impl AuraInherentData for InherentData {
-    fn aura_inherent_data(&self) -> result::Result<InherentType, RuntimeString> {
-        self.get_data(&INHERENT_IDENTIFIER)
-            .and_then(|r| r.ok_or_else(|| "Aura inherent data not found".into()))
-    }
+	fn aura_inherent_data(&self) -> result::Result<InherentType, RuntimeString> {
+		self.get_data(&INHERENT_IDENTIFIER)
+			.and_then(|r| r.ok_or_else(|| "Aura inherent data not found".into()))
+	}
 
-    fn aura_replace_inherent_data(&mut self, new: InherentType) {
-        self.replace_data(INHERENT_IDENTIFIER, &new);
-    }
+	fn aura_replace_inherent_data(&mut self, new: InherentType) {
+		self.replace_data(INHERENT_IDENTIFIER, &new);
+	}
 }
 
 /// Provides the slot duration inherent data for `Aura`.
 #[cfg(feature = "std")]
 pub struct InherentDataProvider {
-    slot_duration: u64,
+	slot_duration: u64,
 }
 
 #[cfg(feature = "std")]
 impl InherentDataProvider {
-    pub fn new(slot_duration: u64) -> Self {
-        Self { slot_duration }
-    }
+	pub fn new(slot_duration: u64) -> Self {
+		Self { slot_duration }
+	}
 }
 
 #[cfg(feature = "std")]
 impl ProvideInherentData for InherentDataProvider {
-    fn on_register(&self, providers: &InherentDataProviders) -> result::Result<(), RuntimeString> {
-        if !providers.has_provider(&timestamp::INHERENT_IDENTIFIER) {
-            // Add the timestamp inherent data provider, as we require it.
-            providers.register_provider(timestamp::InherentDataProvider)
-        } else {
-            Ok(())
-        }
-    }
+	fn on_register(&self, providers: &InherentDataProviders) -> result::Result<(), RuntimeString> {
+		if !providers.has_provider(&timestamp::INHERENT_IDENTIFIER) {
+			// Add the timestamp inherent data provider, as we require it.
+			providers.register_provider(timestamp::InherentDataProvider)
+		} else {
+			Ok(())
+		}
+	}
 
-    fn inherent_identifier(&self) -> &'static inherents::InherentIdentifier {
-        &INHERENT_IDENTIFIER
-    }
+	fn inherent_identifier(&self) -> &'static inherents::InherentIdentifier {
+		&INHERENT_IDENTIFIER
+	}
 
-    fn provide_inherent_data(&self, inherent_data: &mut InherentData) -> result::Result<(), RuntimeString> {
-        let timestamp = inherent_data.timestamp_inherent_data()?;
-        let slot_num = timestamp / self.slot_duration;
-        inherent_data.put_data(INHERENT_IDENTIFIER, &slot_num)
-    }
+	fn provide_inherent_data(
+		&self,
+		inherent_data: &mut InherentData,
+	) -> result::Result<(), RuntimeString> {
+		let timestamp = inherent_data.timestamp_inherent_data()?;
+		let slot_num = timestamp / self.slot_duration;
+		inherent_data.put_data(INHERENT_IDENTIFIER, &slot_num)
+	}
 
-    fn error_to_string(&self, error: &[u8]) -> Option<String> {
-        RuntimeString::decode(&mut &error[..]).map(Into::into)
-    }
+	fn error_to_string(&self, error: &[u8]) -> Option<String> {
+		RuntimeString::decode(&mut &error[..]).map(Into::into)
+	}
 }
 
 /// Something that can handle Aura consensus reports.
 pub trait HandleReport {
-    fn handle_report(report: AuraReport);
+	fn handle_report(report: AuraReport);
 }
 
 impl HandleReport for () {
-    fn handle_report(_report: AuraReport) {}
+	fn handle_report(_report: AuraReport) {}
 }
 
 pub trait Trait: timestamp::Trait {
-    /// The logic for handling reports.
-    type HandleReport: HandleReport;
+	/// The logic for handling reports.
+	type HandleReport: HandleReport;
 
-    /// The identifier type for an authority.
-    type AuthorityId: Member + Parameter + Default;
+	/// The identifier type for an authority.
+	type AuthorityId: Member + Parameter + Default;
 }
 
 decl_storage! {
-    trait Store for Module<T: Trait> as Aura {
-        /// The last timestamp.
-        LastTimestamp get(last) build(|_| 0.into()): T::Moment;
+	trait Store for Module<T: Trait> as Aura {
+		/// The last timestamp.
+		LastTimestamp get(last) build(|_| 0.into()): T::Moment;
 
-        /// The current authorities
-        pub Authorities get(authorities) config(): Vec<T::AuthorityId>;
-    }
+		/// The current authorities
+		pub Authorities get(authorities) config(): Vec<T::AuthorityId>;
+	}
 }
 
 decl_module! {
-    pub struct Module<T: Trait> for enum Call where origin: T::Origin { }
+	pub struct Module<T: Trait> for enum Call where origin: T::Origin { }
 }
 
 impl<T: Trait> Module<T> {
-    fn change_authorities(new: Vec<T::AuthorityId>) {
-        <Authorities<T>>::put(&new);
+	fn change_authorities(new: Vec<T::AuthorityId>) {
+		<Authorities<T>>::put(&new);
 
-        let log: DigestItem<T::Hash> =
-            DigestItem::Consensus(AURA_ENGINE_ID, ConsensusLog::AuthoritiesChange(new).encode());
-        <system::Module<T>>::deposit_log(log.into());
-    }
+		let log: DigestItem<T::Hash> = DigestItem::Consensus(
+			AURA_ENGINE_ID,
+			ConsensusLog::AuthoritiesChange(new).encode(),
+		);
+		<system::Module<T>>::deposit_log(log.into());
+	}
 }
 
 impl<T: Trait> session::OneSessionHandler<T::AccountId> for Module<T> {
-    type Key = T::AuthorityId;
-    fn on_new_session<'a, I: 'a>(changed: bool, validators: I)
-    where
-        I: Iterator<Item = (&'a T::AccountId, T::AuthorityId)>,
-    {
-        // instant changes
-        if changed {
-            let next_authorities = validators.map(|(_, k)| k).collect::<Vec<_>>();
-            let last_authorities = <Module<T>>::authorities();
-            if next_authorities != last_authorities {
-                Self::change_authorities(next_authorities);
-            }
-        }
-    }
-    fn on_disabled(_i: usize) {
-        // ignore?
-    }
+	type Key = T::AuthorityId;
+	fn on_new_session<'a, I: 'a>(changed: bool, validators: I)
+	where
+		I: Iterator<Item = (&'a T::AccountId, T::AuthorityId)>,
+	{
+		// instant changes
+		if changed {
+			let next_authorities = validators.map(|(_, k)| k).collect::<Vec<_>>();
+			let last_authorities = <Module<T>>::authorities();
+			if next_authorities != last_authorities {
+				Self::change_authorities(next_authorities);
+			}
+		}
+	}
+	fn on_disabled(_i: usize) {
+		// ignore?
+	}
 }
 
 /// A report of skipped authorities in Aura.
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct AuraReport {
-    // The first skipped slot.
-    start_slot: usize,
-    // The number of times authorities were skipped.
-    skipped: usize,
+	// The first skipped slot.
+	start_slot: usize,
+	// The number of times authorities were skipped.
+	skipped: usize,
 }
 
 impl AuraReport {
-    /// Call the closure with (`validator_indices`, `punishment_count`) for each
-    /// validator to punish.
-    pub fn punish<F>(&self, validator_count: usize, mut punish_with: F)
-    where
-        F: FnMut(usize, usize),
-    {
-        // If all validators have been skipped, then it implies some sort of
-        // systematic problem common to all rather than a minority of validators
-        // not fulfilling their specific duties. In this case, it doesn't make
-        // sense to punish anyone, so we guard against it.
-        if self.skipped < validator_count {
-            for index in 0..self.skipped {
-                punish_with((self.start_slot + index) % validator_count, 1);
-            }
-        } else {
-            runtime_io::print("ALL validators SKIP");
-        }
-    }
+	/// Call the closure with (`validator_indices`, `punishment_count`) for each
+	/// validator to punish.
+	pub fn punish<F>(&self, validator_count: usize, mut punish_with: F)
+	where
+		F: FnMut(usize, usize),
+	{
+		// If all validators have been skipped, then it implies some sort of
+		// systematic problem common to all rather than a minority of validators
+		// not fulfilling their specific duties. In this case, it doesn't make
+		// sense to punish anyone, so we guard against it.
+		if self.skipped < validator_count {
+			for index in 0..self.skipped {
+				punish_with((self.start_slot + index) % validator_count, 1);
+			}
+		} else {
+			runtime_io::print("ALL validators SKIP");
+		}
+	}
 }
 
 impl<T: Trait> Module<T> {
-    /// Determine the Aura slot-duration based on the Timestamp module configuration.
-    pub fn slot_duration() -> T::Moment {
-        // we double the minimum block-period so each author can always propose within
-        // the majority of its slot.
-        <timestamp::Module<T>>::minimum_period().saturating_mul(2.into())
-    }
+	/// Determine the Aura slot-duration based on the Timestamp module configuration.
+	pub fn slot_duration() -> T::Moment {
+		// we double the minimum block-period so each author can always propose within
+		// the majority of its slot.
+		<timestamp::Module<T>>::minimum_period().saturating_mul(2.into())
+	}
 
-    fn on_timestamp_set<H: HandleReport>(now: T::Moment, slot_duration: T::Moment) {
-        let last = Self::last();
-        <Self as Store>::LastTimestamp::put(now.clone());
+	fn on_timestamp_set<H: HandleReport>(now: T::Moment, slot_duration: T::Moment) {
+		let last = Self::last();
+		<Self as Store>::LastTimestamp::put(now.clone());
 
-        if last.is_zero() {
-            return;
-        }
+		if last.is_zero() {
+			return;
+		}
 
-        assert!(!slot_duration.is_zero(), "Aura slot duration cannot be zero.");
+		assert!(
+			!slot_duration.is_zero(),
+			"Aura slot duration cannot be zero."
+		);
 
-        let last_slot = last / slot_duration.clone();
-        let first_skipped = last_slot.clone() + One::one();
-        let cur_slot = now / slot_duration;
+		let last_slot = last / slot_duration.clone();
+		let first_skipped = last_slot.clone() + One::one();
+		let cur_slot = now / slot_duration;
 
-        assert!(last_slot < cur_slot, "Only one block may be authored per slot.");
-        if cur_slot == first_skipped {
-            return;
-        }
+		assert!(
+			last_slot < cur_slot,
+			"Only one block may be authored per slot."
+		);
+		if cur_slot == first_skipped {
+			return;
+		}
 
-        let skipped_slots = cur_slot - last_slot - One::one();
+		let skipped_slots = cur_slot - last_slot - One::one();
 
-        H::handle_report(AuraReport {
-            start_slot: first_skipped.saturated_into::<usize>(),
-            skipped: skipped_slots.saturated_into::<usize>(),
-        })
-    }
+		H::handle_report(AuraReport {
+			start_slot: first_skipped.saturated_into::<usize>(),
+			skipped: skipped_slots.saturated_into::<usize>(),
+		})
+	}
 }
 
 impl<T: Trait> OnTimestampSet<T::Moment> for Module<T> {
-    fn on_timestamp_set(moment: T::Moment) {
-        Self::on_timestamp_set::<T::HandleReport>(moment, Self::slot_duration())
-    }
+	fn on_timestamp_set(moment: T::Moment) {
+		Self::on_timestamp_set::<T::HandleReport>(moment, Self::slot_duration())
+	}
 }
 
 /// A type for performing slashing based on Aura reports.
 pub struct StakingSlasher<T>(::rstd::marker::PhantomData<T>);
 
 impl<T: staking::Trait + Trait> HandleReport for StakingSlasher<T> {
-    fn handle_report(report: AuraReport) {
-        let validators = session::Module::<T>::validators();
-        runtime_io::print("OFFLINE REPORT");
-        report.punish(validators.len(), |idx, slash_count| {
-            let v = validators[idx].clone();
-            staking::Module::<T>::on_offline_validator(v, slash_count);
-        });
-    }
+	fn handle_report(report: AuraReport) {
+		let validators = session::Module::<T>::validators();
+		runtime_io::print("OFFLINE REPORT");
+		report.punish(validators.len(), |idx, slash_count| {
+			let v = validators[idx].clone();
+			staking::Module::<T>::on_offline_validator(v, slash_count);
+		});
+	}
 }
 
 impl<T: Trait> ProvideInherent for Module<T> {
-    type Call = timestamp::Call<T>;
-    type Error = MakeFatalError<RuntimeString>;
-    const INHERENT_IDENTIFIER: InherentIdentifier = INHERENT_IDENTIFIER;
+	type Call = timestamp::Call<T>;
+	type Error = MakeFatalError<RuntimeString>;
+	const INHERENT_IDENTIFIER: InherentIdentifier = INHERENT_IDENTIFIER;
 
-    fn create_inherent(_: &InherentData) -> Option<Self::Call> {
-        None
-    }
+	fn create_inherent(_: &InherentData) -> Option<Self::Call> {
+		None
+	}
 
-    /// Verify the validity of the inherent using the timestamp.
-    fn check_inherent(call: &Self::Call, data: &InherentData) -> result::Result<(), Self::Error> {
-        let timestamp = match call {
-            timestamp::Call::set(ref timestamp) => timestamp.clone(),
-            _ => return Ok(()),
-        };
+	/// Verify the validity of the inherent using the timestamp.
+	fn check_inherent(call: &Self::Call, data: &InherentData) -> result::Result<(), Self::Error> {
+		let timestamp = match call {
+			timestamp::Call::set(ref timestamp) => timestamp.clone(),
+			_ => return Ok(()),
+		};
 
-        let timestamp_based_slot = timestamp / Self::slot_duration();
+		let timestamp_based_slot = timestamp / Self::slot_duration();
 
-        let seal_slot = data.aura_inherent_data()?.saturated_into();
+		let seal_slot = data.aura_inherent_data()?.saturated_into();
 
-        if timestamp_based_slot == seal_slot {
-            Ok(())
-        } else {
-            Err(RuntimeString::from("timestamp set in block doesn't match slot in seal").into())
-        }
-    }
+		if timestamp_based_slot == seal_slot {
+			Ok(())
+		} else {
+			Err(RuntimeString::from("timestamp set in block doesn't match slot in seal").into())
+		}
+	}
 }

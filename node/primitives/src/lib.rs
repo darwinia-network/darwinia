@@ -20,9 +20,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use runtime_primitives::{
-    generic,
-    traits::{BlakeTwo256, Verify},
-    AnySignature, OpaqueExtrinsic,
+	generic,
+	traits::{BlakeTwo256, Verify},
+	AnySignature, OpaqueExtrinsic,
 };
 
 /// An index to a block.
