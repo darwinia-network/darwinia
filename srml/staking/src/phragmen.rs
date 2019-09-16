@@ -16,8 +16,8 @@
 
 //! Rust implementation of the Phragmén election algorithm.
 
-use crate::{ExpoMap, IndividualExpo, RawAssignment, RingBalanceOf, Trait, ValidatorPrefs};
-use primitives::traits::{Convert, Saturating, Zero};
+use crate::{ExpoMap, IndividualExpo, RawAssignment, Trait, ValidatorPrefs};
+use primitives::traits::Zero;
 use primitives::PerU128;
 use rstd::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -165,7 +165,7 @@ where
 		}
 		Nominator {
 			who,
-			edges: edges,
+			edges,
 			budget: nominator_stake,
 			load: Fraction::zero(),
 		}
