@@ -526,7 +526,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "evo-staking"
+name = "darwinia-staking"
 version = "0.1.0"
 dependencies = [
  "evo-support 0.1.0",
@@ -1475,7 +1475,7 @@ name = "node-runtime"
 version = "0.1.0"
 dependencies = [
  "evo-kton 0.1.0",
- "evo-staking 0.1.0",
+ "darwinia-staking 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-primitives 2.0.0",
  "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2430,7 +2430,7 @@ dependencies = [
 name = "srml-aura"
 version = "2.0.0"
 dependencies = [
- "evo-staking 0.1.0",
+ "darwinia-staking 0.1.0",
  "parity-codec 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git)",

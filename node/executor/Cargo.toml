@@ -23,7 +23,7 @@ runtime_primitives = { package = "sr-primitives", git = 'https://github.com/pari
 runtime_support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
 balances = { package = "srml-balances",git = 'https://github.com/paritytech/substrate.git' }
 session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git' }
-staking = { package = "evo-staking", path = '../../srml/staking' }
+staking = { package = "darwinia-staking", path = '../../srml/staking' }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
 treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git'  }
