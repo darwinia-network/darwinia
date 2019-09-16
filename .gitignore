@@ -15,3 +15,6 @@ test-client
 
 # For cross compile
 linux-x86_64
+
+# Macro expand file
+expand.rs
