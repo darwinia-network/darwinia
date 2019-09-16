@@ -23,8 +23,7 @@ extern crate test;
 
 use parity_codec::{CompactAs, Decode, Encode, HasCompact};
 use primitives::traits::{
-	Bounded, CheckedShl, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup,
-	Zero,
+	Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero,
 };
 use primitives::Perbill;
 #[cfg(feature = "std")]
@@ -44,7 +43,6 @@ use srml_support::{
 use system::ensure_signed;
 
 use phragmen::{elect, equalize, ExtendedBalance, ACCURACY};
-use rstd::convert::TryInto;
 
 mod utils;
 
@@ -64,7 +62,7 @@ const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
-const MONTH_IN_SECONDS: u32 = 2592000;
+const MONTH_IN_SECONDS: u32 = 2_592_000;
 const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
