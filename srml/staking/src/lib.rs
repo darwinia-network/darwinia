@@ -629,110 +629,108 @@ decl_module! {
 			let controller = ensure_signed(origin)?;
 
 			ensure!( promise_month <= 36, "months at most is 36.");
-			
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
-                active_ring,
-                total_deposit_ring,
-                active_deposit_ring,
-                deposit_items,
-                stash,
-                ..
-            } = &mut ledger;
+				active_ring,
+				total_deposit_ring,
+				active_deposit_ring,
+				deposit_items,
+				stash,
+				..
+			} = &mut ledger;
 			// remove expired deposit_items
 			let now = <timestamp::Module<T>>::now();
-			
 			deposit_items.retain(|item| {
-                if item.expire_time < now {
-                    // reduce deposit_ring,
-                    // total / active ring
-                    *active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-                    *total_deposit_ring = total_deposit_ring.saturating_sub(item.value);
+				if item.expire_time < now {
+					// reduce deposit_ring,
+					// total / active ring
+					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+					*total_deposit_ring = total_deposit_ring.saturating_sub(item.value);
 
-                    false
-                } else {
-                    true
-                }
-            });
+					false
+				} else {
+					true
+				}
+			});
 
 			let value = value.min(*active_ring - *active_deposit_ring); // active_normal_ring
 
 			if promise_month >= 3 {
-                // update time_deposit_ring
-                // while total_ring stays the same
-                *total_deposit_ring += value;
-                *active_deposit_ring += value;
+				// update time_deposit_ring
+				// while total_ring stays the same
+				*total_deposit_ring += value;
+				*active_deposit_ring += value;
 
-                // for now, kton_return is free
-                // mint kton
-                let kton_return = utils::compute_kton_return::<T>(value, promise_month);
-                let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
-                T::KtonReward::on_unbalanced(kton_positive_imbalance);
+				// for now, kton_return is free
+				// mint kton
+				let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+				let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
+				T::KtonReward::on_unbalanced(kton_positive_imbalance);
 
-                let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
-                deposit_items.push(TimeDepositItem {
-                    value,
-                    start_time: now,
-                    expire_time,
-                });
-            }
+				let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
+				deposit_items.push(TimeDepositItem {
+					value,
+					start_time: now,
+					expire_time,
+				});
+			}
 
 			<Ledger<T>>::insert(&controller, ledger);
 		}
 
 		/// may both withdraw ring and kton at the same time
 		fn withdraw_unbonded(origin) {
-		    let controller = ensure_signed(origin)?;
-            let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-            let StakingLedgers {
-                total_ring,
-                total_deposit_ring,
-                total_kton,
-                unlocking,
-                ..
-            } = &mut ledger;
-            let mut balance_kind = 0u8;
-            let current_era = Self::current_era();
+			let controller = ensure_signed(origin)?;
+			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let StakingLedgers {
+				total_ring,
+				total_deposit_ring,
+				total_kton,
+				unlocking,
+				..
+			} = &mut ledger;
+			let mut balance_kind = 0u8;
+			let current_era = Self::current_era();
 
-            unlocking.retain(|UnlockChunk {
-                value,
-                era,
-                is_time_deposit,
-            }| {
-                if *era > current_era {
-                    return true;
-                }
+			unlocking.retain(|UnlockChunk {
+				value,
+				era,
+				is_time_deposit,
+			}| {
+				if *era > current_era {
+					return true;
+				}
 
-                match value {
-                    StakingBalance::Ring(ring) => {
-                        balance_kind |= 0b01;
-                        *total_ring = total_ring.saturating_sub(*ring);
+				match value {
+					StakingBalance::Ring(ring) => {
+						balance_kind |= 0b01;
+						*total_ring = total_ring.saturating_sub(*ring);
 
-                        if *is_time_deposit {
-                            *total_deposit_ring = total_deposit_ring.saturating_sub(*ring);
-                        }
+						if *is_time_deposit {
+							*total_deposit_ring = total_deposit_ring.saturating_sub(*ring);
+						}
 
-                    }
-                    StakingBalance::Kton(kton) => {
-                        balance_kind |= 0b10;
-                        *total_kton = total_kton.saturating_sub(*kton);
-                    }
-                }
+					}
+					StakingBalance::Kton(kton) => {
+						balance_kind |= 0b10;
+						*total_kton = total_kton.saturating_sub(*kton);
+					}
+				}
 
-                false
-            });
+				false
+			});
 
-            match balance_kind {
-                0 => (),
-                1 => Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into())),
-                2 => Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into())),
-                3 => {
-                    Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into()));
-                    Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into()));
-                }
-                _ => unreachable!(),
-            }
-        }
+			match balance_kind {
+				0 => (),
+				1 => Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into())),
+				2 => Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into())),
+				3 => {
+					Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into()));
+					Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into()));
+				}
+				_ => unreachable!(),
+			}
+		}
 
 		fn validate(origin, name: Vec<u8>, ratio: u32, unstake_threshold: u32) {
 			let controller = ensure_signed(origin)?;
@@ -847,20 +845,18 @@ impl<T: Trait> Module<T> {
 		if promise_month >= 3 {
 			ledger.active_deposit_ring += value;
 			ledger.total_deposit_ring += value;
-			
 			// for now, kton_return is free
 			// mint kton
 			let kton_return = utils::compute_kton_return::<T>(value, promise_month);
 			let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
 			T::KtonReward::on_unbalanced(kton_positive_imbalance);
-			
 			let now = <timestamp::Module<T>>::now();
 			let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
 			ledger.deposit_items.push(TimeDepositItem {
-                value,
-                start_time: now,
-                expire_time,
-            });
+				value,
+				start_time: now,
+				expire_time,
+			});
 		}
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
 		ledger.total_ring = ledger.total_ring.saturating_add(value);
@@ -944,29 +940,29 @@ impl<T: Trait> Module<T> {
 
 		// slash ring
 		let ring_imbalance = if ledger.total_ring.is_zero() {
-            <RingNegativeImbalanceOf<T>>::zero()
-        } else {
-            let slashable_ring = slash_ratio * ledger.total_ring;
-            let value_slashed = Self::slash_helper(
-                &controller,
-                &mut ledger,
-                StakingBalance::Ring(slashable_ring),
-            );
+			<RingNegativeImbalanceOf<T>>::zero()
+		} else {
+			let slashable_ring = slash_ratio * ledger.total_ring;
+			let value_slashed = Self::slash_helper(
+				&controller,
+				&mut ledger,
+				StakingBalance::Ring(slashable_ring),
+			);
 
-            T::Ring::slash(stash, value_slashed.0).0
-        };
+			T::Ring::slash(stash, value_slashed.0).0
+		};
 		let kton_imbalance = if ledger.total_kton.is_zero() {
-            <KtonNegativeImbalanceOf<T>>::zero()
-        } else {
-            let slashable_kton = slash_ratio * ledger.total_kton;
-            let value_slashed = Self::slash_helper(
-                &controller,
-                &mut ledger,
-                StakingBalance::Kton(slashable_kton),
-            );
+			<KtonNegativeImbalanceOf<T>>::zero()
+		} else {
+			let slashable_kton = slash_ratio * ledger.total_kton;
+			let value_slashed = Self::slash_helper(
+				&controller,
+				&mut ledger,
+				StakingBalance::Kton(slashable_kton),
+			);
 
-            T::Kton::slash(stash, value_slashed.1).0
-        };
+			T::Kton::slash(stash, value_slashed.1).0
+		};
 
 		(ring_imbalance, kton_imbalance)
 	}
@@ -985,13 +981,13 @@ impl<T: Trait> Module<T> {
 		match value {
 			StakingBalance::Ring(r) => {
 				let StakingLedgers {
-                    total_ring,
-                    active_ring,
-                    total_deposit_ring,
-                    active_deposit_ring,
-                    deposit_items,
-                    ..
-                } = ledger;
+					total_ring,
+					active_ring,
+					total_deposit_ring,
+					active_deposit_ring,
+					deposit_items,
+					..
+				} = ledger;
 
 				// if slashing ring, first slashing normal ring
 				// then, slashing time-deposit ring
@@ -1008,7 +1004,6 @@ impl<T: Trait> Module<T> {
 				// bonded + unlocking
 				// first slash active normal ring
 				let mut value_left = total_value - normal_active_value;
-				
 				// then slash active time-promise ring
 				// from the nearest expire time
 				if !value_left.is_zero() {
@@ -1017,24 +1012,24 @@ impl<T: Trait> Module<T> {
 						u64::max_value() - item.expire_time.clone().saturated_into::<u64>()
 					});
 					deposit_items.drain_filter(|item| {
-                        if value_left.is_zero() {
-                            return false;
-                        }
+						if value_left.is_zero() {
+							return false;
+						}
 
-                        let value_removed = value_left.min(item.value);
+						let value_removed = value_left.min(item.value);
 
-                        *total_ring -= value_removed;
-                        *active_ring -= value_removed;
-                        *total_deposit_ring -= value_removed;
-                        *active_deposit_ring -= value_removed;
+						*total_ring -= value_removed;
+						*active_ring -= value_removed;
+						*total_deposit_ring -= value_removed;
+						*active_deposit_ring -= value_removed;
 
-                        item.value -= value_removed;
-                        value_left -= value_removed;
+						item.value -= value_removed;
+						value_left -= value_removed;
 
-                        <RingPool<T>>::mutate(|ring| *ring -= value_removed);
+						<RingPool<T>>::mutate(|ring| *ring -= value_removed);
 
-                        item.value.is_zero()
-                    });
+						item.value.is_zero()
+					});
 				}
 
 				Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
@@ -1300,10 +1295,10 @@ impl<T: Trait> Module<T> {
 	/// NOTE: This is called with the controller (not the stash) account id.
 	pub fn on_offline_validator(controller: T::AccountId, count: usize) {
 		let stash = if let Some(l) = Self::ledger(&controller) {
-            l.stash
-        } else {
-            return;
-        };
+			l.stash
+		} else {
+			return;
+		};
 
 		// Early exit if validator is invulnerable.
 		if Self::invulnerables().contains(&stash) {
@@ -1322,14 +1317,14 @@ impl<T: Trait> Module<T> {
 				count as u32,
 			);
 			<RecentlyOffline<T>>::mutate(|v| {
-                if v.len() >= RECENT_OFFLINE_COUNT {
-                    *v.iter_mut()
-                        .min_by(|(_, block_a, _), (_, block_b, _)| block_a.cmp(&block_b))
-                        .expect("v is non-empty; qed") = item;
-                } else {
-                    v.push(item);
-                }
-            });
+				if v.len() >= RECENT_OFFLINE_COUNT {
+					*v.iter_mut()
+						.min_by(|(_, block_a, _), (_, block_b, _)| block_a.cmp(&block_b))
+						.expect("v is non-empty; qed") = item;
+				} else {
+					v.push(item);
+				}
+			});
 		}
 
 		if <Validators<T>>::exists(&stash) {
