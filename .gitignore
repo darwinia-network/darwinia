@@ -12,3 +12,6 @@
 test-client
 
 .DS_Store
+
+# For cross compile
+linux-x86_64
