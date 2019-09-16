@@ -406,7 +406,7 @@ decl_module! {
 				return Err("controller already paired")
 			}
 
-			<Bonded<T>>::insert(&stash, controller.clone());
+			<Bonded<T>>::insert(&stash, &controller);
 			<Payee<T>>::insert(&stash, payee);
 
 			let ledger = StakingLedgers {stash: stash.clone(), ..Default::default()};
@@ -439,7 +439,7 @@ decl_module! {
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&(ledger.total_ring)) {
+					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
 						let extra = extra.min(r);
 						<RingPool<T>>::mutate(|r| *r += extra);
 						Self::bond_helper_in_ring(&stash, &controller, extra, promise_month, ledger);
@@ -447,15 +447,14 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&(ledger.total_kton)) {
+					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
 						let extra = extra.min(k);
-						<KtonPool<T>>::mutate(|r| *r += extra);
+						<KtonPool<T>>::mutate(|k| *k += extra);
 						Self::bond_helper_in_kton(&controller, extra, ledger);
 					}
 				},
 			}
 		}
-
 
 		/// for normal_ring or normal_kton, follow the original substrate pattern
 		/// for time_deposit_ring, transform it into normal_ring first
