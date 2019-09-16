@@ -588,7 +588,7 @@ decl_module! {
 
 				// check total free balance and locked one
 				// strict on punishing in kton
-				if !T::Kton::free_balance(stash)
+				if T::Kton::free_balance(stash)
 					.checked_sub(&kton_slash)
 					.and_then(|new_balance| {
 						T::Kton::ensure_can_withdraw(
@@ -598,7 +598,7 @@ decl_module! {
 							new_balance
 						).ok()
 					})
-					.is_some() {
+					.is_none() {
 						return false;
 					}
 

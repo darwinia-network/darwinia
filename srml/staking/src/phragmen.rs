@@ -251,7 +251,7 @@ where
 				}
 			}
 
-			if assignment.1.len() > 0 {
+			if !assignment.1.is_empty() {
 				// To ensure an assertion indicating: no stake from the nominator going to waste,
 				// we add a minimal post-processing to equally assign all of the leftover stake ratios.
 				let vote_count = assignment.1.len() as ExtendedBalance;
@@ -343,7 +343,7 @@ fn do_equalize<T: Trait + 'static>(
 		.collect::<Vec<ExtendedBalance>>();
 
 	let mut difference: u128;
-	if backing_backed_stake.len() > 0 {
+	if !backing_backed_stake.is_empty() {
 		let max_stake = backing_backed_stake
 			.iter()
 			.max()
