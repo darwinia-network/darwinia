@@ -483,7 +483,7 @@ decl_module! {
 					// total_unbond_value = normal_unbond + time_deposit_unbond
 					let total_value = r.min(*active_ring);
 					let active_normal_ring = *active_ring - *active_deposit_ring;
-				   // unbond normal ring first
+				    // unbond normal ring first
 					let active_normal_value = total_value.min(active_normal_ring);
 
 					<RingPool<T>>::mutate(|r| *r -= active_normal_value);
