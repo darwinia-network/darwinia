@@ -59,7 +59,7 @@ impl<T: Trait> Imbalance<T::Balance> for PositiveImbalance<T> {
 		}
 	}
 	fn peek(&self) -> T::Balance {
-		self.0.clone()
+		self.0
 	}
 }
 
@@ -104,7 +104,7 @@ impl<T: Trait> Imbalance<T::Balance> for NegativeImbalance<T> {
 		}
 	}
 	fn peek(&self) -> T::Balance {
-		self.0.clone()
+		self.0
 	}
 }
 
