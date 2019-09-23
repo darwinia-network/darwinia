@@ -149,6 +149,7 @@ impl Trait for Test {
     // customed
     type Cap = CAP;
     type ErasPerEpoch = ErasPerEpoch;
+    type SessionLength = Period;
 }
 
 pub struct ExtBuilder {

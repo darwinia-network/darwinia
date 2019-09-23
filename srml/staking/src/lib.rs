@@ -329,6 +329,9 @@ pub trait Trait: timestamp::Trait + session::Trait {
     // custom
     type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
     type ErasPerEpoch: Get<EraIndex>;
+    // TODO: move it to sesions module later
+    type SessionLength: Get<Self::BlockNumber>;
+
 }
 
 decl_storage! {
@@ -432,7 +435,7 @@ decl_storage! {
 decl_event!(
     pub enum Event<T> where Balance = RingBalanceOf<T>, <T as system::Trait>::AccountId {
         /// All validators have been rewarded by the given balance.
-		Reward(Balance),
+		Reward(EraIndex, AccountId, AccountId, Balance),
 		/// One validator (and its nominators) has been given an offline-warning (it is still
 		/// within its grace). The accrued number of slashes is recorded, too.
 		OfflineWarning(AccountId, u32),
@@ -450,6 +453,8 @@ decl_module! {
 
         /// Number of eras that staked funds must remain bonded for.
         const BondingDuration: EraIndex = T::BondingDuration::get();
+
+        const SessionLength: T::BlockNumber = T::SessionLength::get();
 
         fn deposit_event<T>() = default;
 
@@ -1069,8 +1074,6 @@ impl<T: Trait> Module<T> {
             for v in validators.iter() {
                 Self::reward_validator(v, block_reward_per_validator);
             }
-            Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
-
             // TODO: reward to treasury
         }
 
@@ -1098,6 +1101,7 @@ impl<T: Trait> Module<T> {
 
     fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) {
         let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
+        let era_index = Self::current_era();
         let reward = reward - off_the_table;
         let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
         let validator_cut = if reward.is_zero() {
@@ -1108,25 +1112,32 @@ impl<T: Trait> Module<T> {
 
             for i in &exposures.others {
                 let per_u64 = Perbill::from_rational_approximation(i.value, total);
-                imbalance.maybe_subsume(Self::make_payout(&i.who, per_u64 * reward));
+                imbalance.maybe_subsume(Self::make_payout(era_index, stash, &i.who, per_u64 * reward));
             }
 
             let per_u64 = Perbill::from_rational_approximation(exposures.own, total);
             per_u64 * reward
         };
-        imbalance.maybe_subsume(Self::make_payout(stash, validator_cut + off_the_table));
+        imbalance.maybe_subsume(Self::make_payout(era_index, stash, stash, validator_cut + off_the_table));
         T::RingReward::on_unbalanced(imbalance);
     }
 
     /// Actually make a payment to a staker. This uses the currency's reward function
     /// to pay the right payee for the given staker account.
-    fn make_payout(stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
+    fn make_payout(era_index: EraIndex, validator_stash: &T::AccountId, stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
         let dest = Self::payee(stash);
         match dest {
             RewardDestination::Controller => {
-                Self::bonded(stash).and_then(|controller| T::Ring::deposit_into_existing(&controller, amount).ok())
+                Self::bonded(stash).and_then(|controller| {
+                    Self::deposit_event(RawEvent::Reward(era_index, validator_stash.clone(), controller.clone(), amount));
+                    T::Ring::deposit_into_existing(&controller, amount).ok()
+                })
+
             }
-            RewardDestination::Stash => T::Ring::deposit_into_existing(stash, amount).ok(),
+            RewardDestination::Stash => {
+                Self::deposit_event(RawEvent::Reward(era_index, validator_stash.clone(), stash.clone(), amount));
+                T::Ring::deposit_into_existing(stash, amount).ok()
+            },
         }
     }
 
@@ -1354,9 +1365,7 @@ impl<T: Trait> Module<T> {
 }
 
 impl<T: Trait> OnSessionEnding<T::AccountId> for Module<T> {
-    fn on_session_ending(i: SessionIndex) -> Option<Vec<T::AccountId>> {
-        Self::new_session(i + 1)
-    }
+    fn on_session_ending(i: SessionIndex) -> Option<Vec<T::AccountId>> { Self::new_session(i + 1) }
 }
 
 impl<T: Trait> OnFreeBalanceZero<T::AccountId> for Module<T> {
