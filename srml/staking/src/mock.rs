@@ -1,6 +1,6 @@
 use crate::{
 	EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance,
-	Trait, ValidatorPrefs,
+	Trait,
 };
 use primitives::testing::{Header, UintAuthorityId};
 use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
