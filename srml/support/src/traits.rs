@@ -12,9 +12,9 @@
 //}
 
 pub trait OnMinted<Balance> {
-    fn on_minted(value: Balance);
+	fn on_minted(value: Balance);
 }
 
 pub trait OnAccountBalanceChanged<AccountId, Balance> {
-    fn on_changed(who: &AccountId, old: Balance, new: Balance);
+	fn on_changed(who: &AccountId, old: Balance, new: Balance);
 }
