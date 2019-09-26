@@ -1,20 +1,17 @@
 [![Build Status](https://travis-ci.org/darwinia-network/darwinia.svg?branch=master)](https://travis-ci.org/darwinia-network/darwinia/builds)
 
-
 # Darwinia Relay Chain
 
 ![Darwinia Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
-
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
-It could have two models, the Solo model and the Polkadot model. For more details, go to [RFC-0007](  https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F 
+It could have two models, the Solo model and the Polkadot model. For more details, go to [RFC-0007](https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F 
 )
 
 # Architecture
 
 ![Darwinia Architecture](https://github.com/darwinia-network/rfcs/raw/master/RFC/zh_CN/images/0007-darwinia-architecture.jpeg)
-
 
 # Road Map
 [Road Map](ROADMAP.md)
@@ -24,7 +21,7 @@ Join the community if you have any other questions:
 
 [+darwinia:matrix.org](https://matrix.to/#/+darwinia:matrix.org)
 
-Or
+Or:
 
 [Riot.im](https://riot.im/app/#/group/+darwinia:matrix.org)
 
@@ -35,10 +32,9 @@ Or
 - [Darwinia Bridge](https://github.com/darwinia-network/darwinia-bridge) Darwinia Bridge Parachain and Tools to connect to other chains such as Ethereum, TRON and EOS etc.
 - More are coming...
 
-
 # Crayfish Testnet
 
-Quick start (professional user):
+Quick start (professional):
 - Telemetry: [https://telemetry.polkadot.io/#list/Darwinia%20Crayfish%20Testnet](https://telemetry.polkadot.io/#list/Darwinia%20Crayfish%20Testnet)
 - Darwinia Web Wallet: [https://testnet-wallet.darwinia.network](https://testnet-wallet.darwinia.network)
 - Bootnodes: 
@@ -56,12 +52,12 @@ proceed to the Running instructions or follow the instructions below for the man
 
 ### Require Packages
 
-Linux:
+**Linux**:
 ```bash
 sudo apt install cmake pkg-config libssl-dev git clang libclang-dev
 ```
 
-macOS:
+**macOS**:
 ```bash
 brew install cmake pkg-config openssl git llvm
 ```
@@ -69,11 +65,6 @@ brew install cmake pkg-config openssl git llvm
 ### Initial Setup
 
 Inital with darwinia-builder: [darwinia-builder](https://github.com/AurevoirXavier/darwinia-builder) which also use for cross compile
-
-Inital with script:
-```bash
-./init.sh
-```
 
 Or, you can run scripts step by step, like the following:
 ```bash
@@ -83,18 +74,21 @@ rustup target add wasm32-unknown-unknown
 cargo install --git https://github.com/alexcrichton/wasm-gc
 ```
 
+### Build
+
 Building with darwinia builder:
 ```bash
-darwinia-builder --wasm --release
+darwinia-builder --release --wasm
 ```
 
-Building With script:
+Building with script:
 ```bash
 ./build.sh
 cargo build --release
 ```
 
-Running:
+### Running
+
 ```bash
 ./target/release/darwinia --dev
 ```
@@ -115,6 +109,10 @@ To the type definitions text area.
 ### Running Local Testnet (default: Alice and Bob)
 
 First build:
+```bash
+darwinia-builder --release --wasm
+```
+Or:
 ```bash
 ./build.sh
 cargo build --release
