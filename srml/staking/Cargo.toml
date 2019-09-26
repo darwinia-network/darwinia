@@ -1,5 +1,5 @@
 [package]
-name = "evo-staking"
+name = "darwinia-staking"
 version = "0.1.0"
 authors = ["hammeWang <dsw0602@foxmail.com>"]
 edition = "2018"

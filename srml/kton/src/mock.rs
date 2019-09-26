@@ -1,45 +1,43 @@
 use super::*;
 use crate::{GenesisConfig, Module};
-use primitives::testing::{Header, UintAuthorityId};
-use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
-use primitives::Perbill;
-use runtime_io;
-use srml_support::traits::{Currency, Get};
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
+use primitives::testing::Header;
+use primitives::traits::IdentityLookup;
+use srml_support::impl_outer_origin;
 use std::{cell::RefCell, collections::HashSet};
 use substrate_primitives::{Blake2Hasher, H256};
 
-const COIN: u64 = 1000000000;
-
-/// The AccountId alias in this test module.
-pub type AccountId = u64;
-pub type BlockNumber = u64;
-pub type Balance = u64;
-
-/// Simple structure that exposes how u64 currency can be represented as... u64.
-pub struct CurrencyToVoteHandler;
-impl Convert<u64, u64> for CurrencyToVoteHandler {
-	fn convert(x: u64) -> u64 {
-		x
-	}
-}
-impl Convert<u128, u64> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> u64 {
-		x as u64
-	}
-}
+const COIN: u64 = 1_000_000_000;
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
 	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
 }
 
-pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-	fn get() -> u64 {
-		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-	}
-}
+/// The AccountId alias in this test module.
+pub type AccountId = u64;
+// pub type BlockNumber = u64;
+pub type Balance = u64;
+
+#[allow(unused_doc_comments)]
+/// Simple structure that exposes how u64 currency can be represented as... u64.
+// pub struct CurrencyToVoteHandler;
+// impl Convert<u64, u64> for CurrencyToVoteHandler {
+// fn convert(x: u64) -> u64 {
+// x
+// }
+// }
+// impl Convert<u128, u64> for CurrencyToVoteHandler {
+// fn convert(x: u128) -> u64 {
+// x as u64
+// }
+// }
+
+// pub struct ExistentialDeposit;
+// impl Get<u64> for ExistentialDeposit {
+// fn get() -> u64 {
+// EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
+// }
+// }
 
 impl_outer_origin! {
 	pub enum Origin for Test {}
@@ -126,4 +124,4 @@ impl ExtBuilder {
 }
 pub type System = system::Module<Test>;
 pub type Kton = Module<Test>;
-pub type Timestamp = timestamp::Module<Test>;
+// pub type Timestamp = timestamp::Module<Test>;

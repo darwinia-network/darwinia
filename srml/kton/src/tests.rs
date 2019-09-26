@@ -1,9 +1,7 @@
 use super::*;
-use mock::{ExtBuilder, Kton, Origin, System, Test, Timestamp};
+use mock::{ExtBuilder, Kton, Origin, System};
 use runtime_io::with_externalities;
-use srml_support::traits::{
-	Currency, ExistenceRequirement, Imbalance, LockIdentifier, WithdrawReason, WithdrawReasons,
-};
+use srml_support::traits::{Currency, LockIdentifier, WithdrawReason, WithdrawReasons};
 use srml_support::{assert_err, assert_noop, assert_ok};
 
 const ID_1: LockIdentifier = *b"1       ";

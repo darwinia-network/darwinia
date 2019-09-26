@@ -129,7 +129,7 @@ decl_storage! {
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
 		config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;		// begin, length
-}
+	}
 }
 
 decl_module! {
@@ -402,7 +402,7 @@ where
 			})
 			.collect::<Vec<_>>();
 		if let Some(lock) = new_lock {
-			locks.push(lock)
+			locks.push(lock);
 		}
 		<Locks<T>>::insert(who, locks);
 	}
@@ -439,17 +439,15 @@ where
 			})
 			.collect::<Vec<_>>();
 		if let Some(lock) = new_lock {
-			locks.push(lock)
+			locks.push(lock);
 		}
 		<Locks<T>>::insert(who, locks);
 	}
 
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
 		let now = <system::Module<T>>::block_number();
-		let locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| if l.until > now && l.id != id { Some(l) } else { None })
-			.collect::<Vec<_>>();
-		<Locks<T>>::insert(who, locks);
+		<Locks<T>>::mutate(who, |locks| {
+			locks.retain(|lock| (lock.until > now) && (lock.id != id));
+		});
 	}
 }
