@@ -130,7 +130,7 @@ decl_storage! {
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
 		config(vesting): Vec<(T::AccountId, T::BlockNumber, T::BlockNumber)>;		// begin, length
-}
+	}
 }
 
 decl_module! {
