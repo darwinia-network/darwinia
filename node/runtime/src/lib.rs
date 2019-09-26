@@ -59,12 +59,12 @@ pub use timestamp::Call as TimestampCall;
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node"),
-	impl_name: create_runtime_str!("darwinia-node"),
-	authoring_version: 2,
-	spec_version: 78,
-	impl_version: 78,
-	apis: RUNTIME_API_VERSIONS,
+    spec_name: create_runtime_str!("node"),
+    impl_name: create_runtime_str!("darwinia-node"),
+    authoring_version: 2,
+    spec_version: 79,
+    impl_version: 79,
+    apis: RUNTIME_API_VERSIONS,
 };
 
 /// Native version.
@@ -241,19 +241,20 @@ parameter_types! {
 }
 
 impl staking::Trait for Runtime {
-	type Ring = Balances;
-	type Kton = Kton;
-	type CurrencyToVote = CurrencyToVoteHandler;
-	type Event = Event;
-	type RingReward = ();
-	type RingSlash = ();
-	type KtonReward = ();
-	type KtonSlash = ();
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
-	// customed
-	type Cap = CAP;
-	type ErasPerEpoch = ErasPerEpoch;
+    type Ring = Balances;
+    type Kton = Kton;
+    type CurrencyToVote = CurrencyToVoteHandler;
+    type Event = Event;
+    type RingReward = ();
+    type RingSlash = ();
+    type KtonReward = ();
+    type KtonSlash = ();
+    type SessionsPerEra = SessionsPerEra;
+    type BondingDuration = BondingDuration;
+    // customed
+    type Cap = CAP;
+    type ErasPerEpoch = ErasPerEpoch;
+    type SessionLength = Period;
 }
 
 parameter_types! {

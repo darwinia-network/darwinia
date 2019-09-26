@@ -142,19 +142,20 @@ parameter_types! {
 }
 
 impl Trait for Test {
-	type Ring = Ring;
-	type Kton = Kton;
-	type CurrencyToVote = CurrencyToVoteHandler;
-	type Event = ();
-	type RingSlash = ();
-	type RingReward = ();
-	type KtonSlash = ();
-	type KtonReward = ();
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
-	// customed
-	type Cap = CAP;
-	type ErasPerEpoch = ErasPerEpoch;
+    type Ring = Ring;
+    type Kton = Kton;
+    type CurrencyToVote = CurrencyToVoteHandler;
+    type Event = ();
+    type RingSlash = ();
+    type RingReward = ();
+    type KtonSlash = ();
+    type KtonReward = ();
+    type SessionsPerEra = SessionsPerEra;
+    type BondingDuration = BondingDuration;
+    // customed
+    type Cap = CAP;
+    type ErasPerEpoch = ErasPerEpoch;
+    type SessionLength = Period;
 }
 
 pub struct ExtBuilder {
