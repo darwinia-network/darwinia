@@ -921,21 +921,20 @@ impl<T: Trait> Module<T> {
 		let mut ledger = Self::ledger(&controller).unwrap();
 
 		// slash ring
-		let ring_imbalance = if ledger.total_ring.is_zero() {
-			<RingNegativeImbalanceOf<T>>::zero()
-		} else {
+		let (ring_imbalance, _) = if !ledger.total_ring.is_zero() {
 			let slashable_ring = slash_ratio * ledger.total_ring;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
-
-			T::Ring::slash(stash, value_slashed.0).0
-		};
-		let kton_imbalance = if ledger.total_kton.is_zero() {
-			<KtonNegativeImbalanceOf<T>>::zero()
+			T::Ring::slash(stash, value_slashed.0)
 		} else {
+			(<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
+		};
+
+		let (kton_imbalance, _) = if !ledger.total_kton.is_zero() {
 			let slashable_kton = slash_ratio * ledger.total_kton;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
-
-			T::Kton::slash(stash, value_slashed.1).0
+			T::Kton::slash(stash, value_slashed.1)
+		} else {
+			(<KtonNegativeImbalanceOf<T>>::zero(), Zero::zero())
 		};
 
 		(ring_imbalance, kton_imbalance)
