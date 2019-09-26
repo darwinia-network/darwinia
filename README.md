@@ -64,7 +64,7 @@ brew install cmake pkg-config openssl git llvm
 
 ### Initial Setup
 
-Inital with darwinia-builder: [darwinia-builder](https://github.com/AurevoirXavier/darwinia-builder) which also use for cross compile
+Initalize with darwinia-builder: [darwinia-builder](https://github.com/AurevoirXavier/darwinia-builder) which also use for cross compile
 
 Or, you can run scripts step by step, like the following:
 ```bash
