@@ -77,9 +77,7 @@ pub struct ExtBuilder {
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			existential_deposit: 0,
-		}
+		Self { existential_deposit: 0 }
 	}
 }
 
@@ -95,9 +93,7 @@ impl ExtBuilder {
 
 	pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
 		self.set_associated_consts();
-		let (mut t, mut c) = system::GenesisConfig::default()
-			.build_storage::<Test>()
-			.unwrap();
+		let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
 			1_000 * COIN
 		} else {

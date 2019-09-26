@@ -23,9 +23,7 @@
 extern crate test;
 
 use parity_codec::{CompactAs, Decode, Encode, HasCompact};
-use primitives::traits::{
-	Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero,
-};
+use primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 use primitives::Perbill;
 #[cfg(feature = "std")]
 use primitives::{Deserialize, Serialize};
@@ -36,8 +34,8 @@ use session::{OnSessionEnding, SessionIndex};
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
 	traits::{
-		Currency, Get, Imbalance, LockIdentifier, LockableCurrency, OnFreeBalanceZero,
-		OnUnbalanced, WithdrawReason, WithdrawReasons,
+		Currency, Get, Imbalance, LockIdentifier, LockableCurrency, OnFreeBalanceZero, OnUnbalanced, WithdrawReason,
+		WithdrawReasons,
 	},
 	EnumerableStorageMap, StorageMap, StorageValue,
 };
@@ -107,9 +105,7 @@ pub enum StakingBalance<RingBalance, KtonBalance> {
 	Kton(KtonBalance),
 }
 
-impl<RingBalance: Default, KtonBalance: Default> Default
-	for StakingBalance<RingBalance, KtonBalance>
-{
+impl<RingBalance: Default, KtonBalance: Default> Default for StakingBalance<RingBalance, KtonBalance> {
 	fn default() -> Self {
 		StakingBalance::Ring(Default::default())
 	}
@@ -158,13 +154,7 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct StakingLedgers<
-	AccountId,
-	RingBalance: HasCompact,
-	KtonBalance: HasCompact,
-	StakingBalance,
-	Moment,
-> {
+pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
 	pub stash: AccountId,
 	// normal pattern: for ring
 	/// total_ring = nomarl_ring + time_deposit_ring
@@ -215,27 +205,17 @@ type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::Ac
 type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
 
 // for ring
-type RingPositiveImbalanceOf<T> =
-	<<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type RingNegativeImbalanceOf<T> =
-	<<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+type RingPositiveImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 // for kton
-type KtonPositiveImbalanceOf<T> =
-	<<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type KtonNegativeImbalanceOf<T> =
-	<<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 type RawAssignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance);
-type Assignment<T> = (
-	<T as system::Trait>::AccountId,
-	ExtendedBalance,
-	ExtendedBalance,
-);
-type ExpoMap<T> = BTreeMap<
-	<T as system::Trait>::AccountId,
-	Exposures<<T as system::Trait>::AccountId, ExtendedBalance>,
->;
+type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, ExtendedBalance);
+type ExpoMap<T> =
+	BTreeMap<<T as system::Trait>::AccountId, Exposures<<T as system::Trait>::AccountId, ExtendedBalance>>;
 
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
@@ -945,11 +925,7 @@ impl<T: Trait> Module<T> {
 			<RingNegativeImbalanceOf<T>>::zero()
 		} else {
 			let slashable_ring = slash_ratio * ledger.total_ring;
-			let value_slashed = Self::slash_helper(
-				&controller,
-				&mut ledger,
-				StakingBalance::Ring(slashable_ring),
-			);
+			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
 
 			T::Ring::slash(stash, value_slashed.0).0
 		};
@@ -957,11 +933,7 @@ impl<T: Trait> Module<T> {
 			<KtonNegativeImbalanceOf<T>>::zero()
 		} else {
 			let slashable_kton = slash_ratio * ledger.total_kton;
-			let value_slashed = Self::slash_helper(
-				&controller,
-				&mut ledger,
-				StakingBalance::Kton(slashable_kton),
-			);
+			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
 
 			T::Kton::slash(stash, value_slashed.1).0
 		};
@@ -1112,12 +1084,7 @@ impl<T: Trait> Module<T> {
 
 			for i in &exposures.others {
 				let per_u64 = Perbill::from_rational_approximation(i.value, total);
-				imbalance.maybe_subsume(Self::make_payout(
-					era_index,
-					stash,
-					&i.who,
-					per_u64 * reward,
-				));
+				imbalance.maybe_subsume(Self::make_payout(era_index, stash, &i.who, per_u64 * reward));
 			}
 
 			let per_u64 = Perbill::from_rational_approximation(exposures.own, total);
@@ -1170,8 +1137,7 @@ impl<T: Trait> Module<T> {
 			.and_then(Self::ledger)
 			.map(|l| {
 				l.active_ring.saturated_into::<ExtendedBalance>()
-					+ l.active_kton.saturated_into::<ExtendedBalance>() * Self::kton_vote_weight()
-						/ ACCURACY
+					+ l.active_kton.saturated_into::<ExtendedBalance>() * Self::kton_vote_weight() / ACCURACY
 			})
 			.unwrap_or_default()
 	}
@@ -1207,9 +1173,7 @@ impl<T: Trait> Module<T> {
 						n.clone(),
 						Self::slashable_balance_of(n),
 						a.iter()
-							.map(|(acc, r)| {
-								(acc.clone(), *r, ratio_of(Self::slashable_balance_of(n), *r))
-							})
+							.map(|(acc, r)| (acc.clone(), *r, ratio_of(Self::slashable_balance_of(n), *r)))
 							.collect::<Vec<Assignment<T>>>(),
 					)
 				})
@@ -1266,12 +1230,7 @@ impl<T: Trait> Module<T> {
 						ExtendedBalance,
 						Vec<(T::AccountId, ExtendedBalance, ExtendedBalance)>,
 					)>>();
-				equalize::<T>(
-					&mut assignments_with_votes,
-					&mut exposures,
-					tolerance,
-					iterations,
-				);
+				equalize::<T>(&mut assignments_with_votes, &mut exposures, tolerance, iterations);
 			}
 
 			// Clear Stakers and reduce their slash_count.
@@ -1339,11 +1298,7 @@ impl<T: Trait> Module<T> {
 		let grace = Self::offline_slash_grace();
 
 		if RECENT_OFFLINE_COUNT > 0 {
-			let item = (
-				stash.clone(),
-				<system::Module<T>>::block_number(),
-				count as u32,
-			);
+			let item = (stash.clone(), <system::Module<T>>::block_number(), count as u32);
 			<RecentlyOffline<T>>::mutate(|v| {
 				if v.len() >= RECENT_OFFLINE_COUNT {
 					*v.iter_mut()

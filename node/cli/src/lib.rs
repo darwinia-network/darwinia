@@ -192,24 +192,17 @@ where
 	panic_set(version.support_url);
 	match &ret {
 		Ok(Some(CustomSubcommands::Factory(cli_args))) => {
-			let config = cli::create_config_with_db_path::<service::Factory, _>(
-				load_spec,
-				&cli_args.shared_params,
-				&version,
-			)?;
+			let config =
+				cli::create_config_with_db_path::<service::Factory, _>(load_spec, &cli_args.shared_params, &version)?;
 
 			match ChainSpec::from(config.chain_spec.id()) {
 				Some(ref c) if c == &ChainSpec::Development || c == &ChainSpec::LocalTestnet => {}
 				_ => panic!("Factory is only supported for development and local testnet."),
 			}
 
-			let factory_state =
-				FactoryState::new(cli_args.mode.clone(), cli_args.num, cli_args.rounds);
-			transaction_factory::factory::<service::Factory, FactoryState<_>>(
-				factory_state,
-				config,
-			)
-			.map_err(|e| format!("Error in transaction factory: {}", e))?;
+			let factory_state = FactoryState::new(cli_args.mode.clone(), cli_args.num, cli_args.rounds);
+			transaction_factory::factory::<service::Factory, FactoryState<_>>(factory_state, config)
+				.map_err(|e| format!("Error in transaction factory: {}", e))?;
 
 			Ok(())
 		}
@@ -219,10 +212,7 @@ where
 
 fn run_until_exit<T, C, E>(mut runtime: Runtime, service: T, e: E) -> error::Result<()>
 where
-	T: Deref<Target = substrate_service::Service<C>>
-		+ Future<Item = (), Error = ()>
-		+ Send
-		+ 'static,
+	T: Deref<Target = substrate_service::Service<C>> + Future<Item = (), Error = ()> + Send + 'static,
 	C: substrate_service::Components,
 	E: IntoExit,
 {

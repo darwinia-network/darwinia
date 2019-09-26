@@ -35,8 +35,8 @@ use primitives::{ed25519, Pair as PairT};
 use substrate_service::construct_service_factory;
 use substrate_service::TelemetryOnConnect;
 use substrate_service::{
-	error::Error as ServiceError, FactoryFullConfiguration, FullBackend, FullClient,
-	FullComponents, FullExecutor, LightBackend, LightClient, LightComponents, LightExecutor,
+	error::Error as ServiceError, FactoryFullConfiguration, FullBackend, FullClient, FullComponents, FullExecutor,
+	LightBackend, LightClient, LightComponents, LightExecutor,
 };
 use transaction_pool::{self, txpool::Pool as TransactionPool};
 
@@ -49,10 +49,7 @@ construct_simple_protocol! {
 pub struct NodeConfig<F: substrate_service::ServiceFactory> {
 	/// grandpa connection to import block
 	// FIXME #1134 rather than putting this on the config, let's have an actual intermediate setup state
-	pub grandpa_import_setup: Option<(
-		Arc<grandpa::BlockImportForService<F>>,
-		grandpa::LinkHalfForService<F>,
-	)>,
+	pub grandpa_import_setup: Option<(Arc<grandpa::BlockImportForService<F>>, grandpa::LinkHalfForService<F>)>,
 	inherent_data_providers: InherentDataProviders,
 }
 
@@ -226,10 +223,7 @@ mod tests {
 	use node_primitives::DigestItem;
 	use node_runtime::{BalancesCall, Call, UncheckedExtrinsic, COIN};
 	use parity_codec::{Compact, Decode, Encode};
-	use primitives::{
-		blake2_256, crypto::Pair as CryptoPair, ed25519::Pair, sr25519::Public as AddressPublic,
-		H256,
-	};
+	use primitives::{blake2_256, crypto::Pair as CryptoPair, ed25519::Pair, sr25519::Public as AddressPublic, H256};
 	use service_test::SyncService;
 	use sr_primitives::{
 		generic::{BlockId, Digest, Era},
@@ -275,32 +269,24 @@ mod tests {
 				auxiliary: Vec::new(),
 			}
 		};
-		let extrinsic_factory =
-			|service: &SyncService<<Factory as service::ServiceFactory>::FullService>| {
-				let payload = (
-					0,
-					Call::Balances(BalancesCall::transfer(
-						RawAddress::Id(bob.public().0.into()),
-						69.into(),
-					)),
-					Era::immortal(),
-					service.client().genesis_hash(),
-				);
-				let signature = alice.sign(&payload.encode()).into();
-				let id = alice.public().0.into();
-				let xt = UncheckedExtrinsic {
-					signature: Some((RawAddress::Id(id), signature, payload.0, Era::immortal())),
-					function: payload.1,
-				}
-				.encode();
-				let v: Vec<u8> = Decode::decode(&mut xt.as_slice()).unwrap();
-				OpaqueExtrinsic(v)
-			};
-		service_test::sync::<Factory, _, _>(
-			chain_spec::integration_test_config(),
-			block_factory,
-			extrinsic_factory,
-		);
+		let extrinsic_factory = |service: &SyncService<<Factory as service::ServiceFactory>::FullService>| {
+			let payload = (
+				0,
+				Call::Balances(BalancesCall::transfer(RawAddress::Id(bob.public().0.into()), 69.into())),
+				Era::immortal(),
+				service.client().genesis_hash(),
+			);
+			let signature = alice.sign(&payload.encode()).into();
+			let id = alice.public().0.into();
+			let xt = UncheckedExtrinsic {
+				signature: Some((RawAddress::Id(id), signature, payload.0, Era::immortal())),
+				function: payload.1,
+			}
+			.encode();
+			let v: Vec<u8> = Decode::decode(&mut xt.as_slice()).unwrap();
+			OpaqueExtrinsic(v)
+		};
+		service_test::sync::<Factory, _, _>(chain_spec::integration_test_config(), block_factory, extrinsic_factory);
 	}
 
 	#[test]
@@ -362,37 +348,29 @@ mod tests {
 		let charlie = Arc::new(AccountKeyring::Charlie.pair());
 
 		let mut index = 0;
-		let extrinsic_factory =
-			|service: &SyncService<<Factory as ServiceFactory>::FullService>| {
-				let amount = 5 * COIN;
-				let to = AddressPublic::from_raw(bob.public().0);
-				let from = AddressPublic::from_raw(charlie.public().0);
-				let genesis_hash = service.get().client().block_hash(0).unwrap().unwrap();
-				let signer = charlie.clone();
+		let extrinsic_factory = |service: &SyncService<<Factory as ServiceFactory>::FullService>| {
+			let amount = 5 * COIN;
+			let to = AddressPublic::from_raw(bob.public().0);
+			let from = AddressPublic::from_raw(charlie.public().0);
+			let genesis_hash = service.get().client().block_hash(0).unwrap().unwrap();
+			let signer = charlie.clone();
 
-				let function = Call::Balances(BalancesCall::transfer(to.into(), amount));
-				let era = Era::immortal();
-				let raw_payload = (Compact(index), function, era, genesis_hash);
-				let signature = raw_payload.using_encoded(|payload| {
-					if payload.len() > 256 {
-						signer.sign(&blake2_256(payload)[..])
-					} else {
-						signer.sign(payload)
-					}
-				});
-				let xt = UncheckedExtrinsic::new_signed(
-					index,
-					raw_payload.1,
-					from.into(),
-					signature.into(),
-					era,
-				)
-				.encode();
-				let v: Vec<u8> = Decode::decode(&mut xt.as_slice()).unwrap();
+			let function = Call::Balances(BalancesCall::transfer(to.into(), amount));
+			let era = Era::immortal();
+			let raw_payload = (Compact(index), function, era, genesis_hash);
+			let signature = raw_payload.using_encoded(|payload| {
+				if payload.len() > 256 {
+					signer.sign(&blake2_256(payload)[..])
+				} else {
+					signer.sign(payload)
+				}
+			});
+			let xt = UncheckedExtrinsic::new_signed(index, raw_payload.1, from.into(), signature.into(), era).encode();
+			let v: Vec<u8> = Decode::decode(&mut xt.as_slice()).unwrap();
 
-				index += 1;
-				OpaqueExtrinsic(v)
-			};
+			index += 1;
+			OpaqueExtrinsic(v)
+		};
 
 		service_test::sync::<Factory, _, _>(chain_spec, block_factory, extrinsic_factory);
 	}

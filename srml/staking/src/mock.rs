@@ -1,7 +1,4 @@
-use crate::{
-	EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance,
-	Trait,
-};
+use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
 use primitives::testing::{Header, UintAuthorityId};
 use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
 use primitives::Perbill;
@@ -37,12 +34,7 @@ thread_local! {
 pub struct TestSessionHandler;
 impl session::SessionHandler<AccountId> for TestSessionHandler {
 	fn on_new_session<Ks: OpaqueKeys>(_changed: bool, validators: &[(AccountId, Ks)]) {
-		SESSION.with(|x| {
-			*x.borrow_mut() = (
-				validators.iter().map(|x| x.0.clone()).collect(),
-				HashSet::new(),
-			)
-		});
+		SESSION.with(|x| *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new()));
 	}
 
 	fn on_disabled(validator_index: usize) {
@@ -142,20 +134,20 @@ parameter_types! {
 }
 
 impl Trait for Test {
-    type Ring = Ring;
-    type Kton = Kton;
-    type CurrencyToVote = CurrencyToVoteHandler;
-    type Event = ();
-    type RingSlash = ();
-    type RingReward = ();
-    type KtonSlash = ();
-    type KtonReward = ();
-    type SessionsPerEra = SessionsPerEra;
-    type BondingDuration = BondingDuration;
-    // customed
-    type Cap = CAP;
-    type ErasPerEpoch = ErasPerEpoch;
-    type SessionLength = Period;
+	type Ring = Ring;
+	type Kton = Kton;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type Event = ();
+	type RingSlash = ();
+	type RingReward = ();
+	type KtonSlash = ();
+	type KtonReward = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	// customed
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
+	type SessionLength = Period;
 }
 
 pub struct ExtBuilder {
@@ -218,9 +210,7 @@ impl ExtBuilder {
 	}
 	pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
 		self.set_associated_consts();
-		let (mut t, mut c) = system::GenesisConfig::default()
-			.build_storage::<Test>()
-			.unwrap();
+		let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
 			1_000 * COIN
 		} else {
@@ -264,11 +254,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t, &mut c);
 
 		let stake_21 = if self.fair { 1000 } else { 2000 };
-		let stake_31 = if self.validator_pool {
-			balance_factor * 1000
-		} else {
-			1
-		};
+		let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
 		let status_41 = if self.validator_pool {
 			StakerStatus::<AccountId>::Validator
 		} else {
@@ -294,16 +280,13 @@ impl ExtBuilder {
 			],
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
-			session_reward: Perbill::from_millionths(
-				(1000000 * self.reward / balance_factor) as u32,
-			),
+			session_reward: Perbill::from_millionths((1000000 * self.reward / balance_factor) as u32),
 			offline_slash: Perbill::from_percent(5),
 			offline_slash_grace: 0,
 			invulnerables: vec![],
 		}
 		.assimilate_storage(&mut t, &mut c);
-		let _ = timestamp::GenesisConfig::<Test> { minimum_period: 5 }
-			.assimilate_storage(&mut t, &mut c);
+		let _ = timestamp::GenesisConfig::<Test> { minimum_period: 5 }.assimilate_storage(&mut t, &mut c);
 		let mut ext = t.into();
 		runtime_io::with_externalities(&mut ext, || {
 			let validators = Session::validators();
@@ -350,12 +333,7 @@ pub fn check_nominator_exposure(stash: u64) {
 	Staking::current_elected()
 		.iter()
 		.map(|v| Staking::stakers(v))
-		.for_each(|e| {
-			e.others
-				.iter()
-				.filter(|i| i.who == stash)
-				.for_each(|i| sum += i.value)
-		});
+		.for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.value));
 	let nominator_stake = Staking::slashable_balance_of(&stash);
 	// a nominator cannot over-spend.
 	assert!(

@@ -25,13 +25,9 @@ use client::{
 	impl_runtime_apis, runtime_api as client_api,
 };
 use grandpa::fg_primitives::{self, ScheduledChange};
-pub use node_primitives::{
-	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Moment, Nonce, Signature,
-};
+pub use node_primitives::{AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Moment, Nonce, Signature};
 use rstd::prelude::*;
-use runtime_primitives::traits::{
-	BlakeTwo256, Block as BlockT, Convert, DigestFor, NumberFor, StaticLookup,
-};
+use runtime_primitives::traits::{BlakeTwo256, Block as BlockT, Convert, DigestFor, NumberFor, StaticLookup};
 use runtime_primitives::transaction_validity::TransactionValidity;
 use runtime_primitives::{create_runtime_str, generic, ApplyResult};
 use substrate_primitives::u32_trait::{_1, _2, _3, _4};
@@ -59,12 +55,12 @@ pub use timestamp::Call as TimestampCall;
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("node"),
-    impl_name: create_runtime_str!("darwinia-node"),
-    authoring_version: 2,
-    spec_version: 79,
-    impl_version: 79,
-    apis: RUNTIME_API_VERSIONS,
+	spec_name: create_runtime_str!("node"),
+	impl_name: create_runtime_str!("darwinia-node"),
+	authoring_version: 2,
+	spec_version: 79,
+	impl_version: 79,
+	apis: RUNTIME_API_VERSIONS,
 };
 
 /// Native version.
@@ -241,20 +237,20 @@ parameter_types! {
 }
 
 impl staking::Trait for Runtime {
-    type Ring = Balances;
-    type Kton = Kton;
-    type CurrencyToVote = CurrencyToVoteHandler;
-    type Event = Event;
-    type RingReward = ();
-    type RingSlash = ();
-    type KtonReward = ();
-    type KtonSlash = ();
-    type SessionsPerEra = SessionsPerEra;
-    type BondingDuration = BondingDuration;
-    // customed
-    type Cap = CAP;
-    type ErasPerEpoch = ErasPerEpoch;
-    type SessionLength = Period;
+	type Ring = Balances;
+	type Kton = Kton;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type Event = Event;
+	type RingReward = ();
+	type RingSlash = ();
+	type KtonReward = ();
+	type KtonSlash = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	// customed
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
+	type SessionLength = Period;
 }
 
 parameter_types! {
@@ -352,19 +348,11 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic =
-	generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, Signature>;
+pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, Signature>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
-pub type Executive = executive::Executive<
-	Runtime,
-	Block,
-	system::ChainContext<Runtime>,
-	Balances,
-	Runtime,
-	AllModules,
->;
+pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
 
 impl_runtime_apis! {
 	impl client_api::Core<Block> for Runtime {

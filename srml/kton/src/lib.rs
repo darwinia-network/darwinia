@@ -2,16 +2,15 @@
 
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
-	Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic,
-	StaticLookup, Zero,
+	Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic, StaticLookup, Zero,
 };
 use rstd::prelude::*;
 use rstd::{cmp, result};
 
 use srml_support::dispatch::Result;
 use srml_support::traits::{
-	Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced,
-	SignedImbalance, UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+	Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
+	UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
 };
 use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use system::ensure_signed;
@@ -152,8 +151,7 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	pub fn vesting_balance(who: &T::AccountId) -> T::Balance {
 		if let Some(v) = Self::vesting(who) {
-			Self::free_balance(who)
-				.min(v.locked_at::<T::BlockNumber>(<system::Module<T>>::block_number()))
+			Self::free_balance(who).min(v.locked_at::<T::BlockNumber>(<system::Module<T>>::block_number()))
 		} else {
 			Zero::zero()
 		}
@@ -205,9 +203,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		new_balance: T::Balance,
 	) -> Result {
 		match reason {
-			WithdrawReason::Reserve | WithdrawReason::Transfer
-				if Self::vesting_balance(who) > new_balance =>
-			{
+			WithdrawReason::Reserve | WithdrawReason::Transfer if Self::vesting_balance(who) > new_balance => {
 				return Err("vesting balance too high to send value")
 			}
 			_ => {}
@@ -238,12 +234,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 			Some(b) => b,
 		};
 
-		Self::ensure_can_withdraw(
-			transactor,
-			value,
-			WithdrawReason::Transfer,
-			new_from_balance,
-		)?;
+		Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer, new_from_balance)?;
 
 		// NOTE: total stake being stored in the same type means that this could never overflow
 		// but better to be safe than sorry.
@@ -257,11 +248,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 			Self::set_free_balance(dest, new_to_balance);
 		}
 
-		Self::deposit_event(RawEvent::TokenTransfer(
-			transactor.clone(),
-			dest.clone(),
-			value,
-		));
+		Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
 		Ok(())
 	}
 
@@ -273,8 +260,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 	) -> result::Result<Self::NegativeImbalance, &'static str> {
 		let old_balance = Self::free_balance(who);
 		if let Some(new_balance) = old_balance.checked_sub(&value) {
-			if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance()
-			{
+			if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
 				return Err("payment would kill account");
 			}
 

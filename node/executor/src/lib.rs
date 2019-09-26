@@ -44,16 +44,13 @@ mod tests {
 	use keyring::{AccountKeyring, AuthorityKeyring};
 	use node_primitives::{AccountId, BlockNumber, Hash};
 	use node_runtime::{
-		Balances, BalancesConfig, Block, BuildStorage, Call, CheckedExtrinsic, Event,
-		GenesisConfig, GrandpaConfig, Header, IndicesConfig, KtonConfig, Runtime, SessionConfig,
-		SessionKeys, StakingConfig, System, SystemConfig, UncheckedExtrinsic, COIN,
+		Balances, BalancesConfig, Block, BuildStorage, Call, CheckedExtrinsic, Event, GenesisConfig, GrandpaConfig,
+		Header, IndicesConfig, KtonConfig, Runtime, SessionConfig, SessionKeys, StakingConfig, System, SystemConfig,
+		UncheckedExtrinsic, COIN,
 	};
 	use parity_codec::{Decode, Encode, Joiner};
 	use primitives::map;
-	use primitives::{
-		blake2_256, twox_128, Blake2Hasher, ChangesTrieConfiguration, NativeOrEncoded,
-		NeverNativeValue,
-	};
+	use primitives::{blake2_256, twox_128, Blake2Hasher, ChangesTrieConfiguration, NativeOrEncoded, NeverNativeValue};
 	use runtime_io;
 	use runtime_primitives::traits::{Hash as HashT, Header as HeaderT};
 	use runtime_primitives::{generic::Era, ApplyError, ApplyOutcome, ApplyResult, Perbill};
@@ -70,18 +67,16 @@ mod tests {
 	/// making the binary slimmer. There is a convention to use compact version of the runtime
 	/// as canonical. This is why `native_executor_instance` also uses the compact version of the
 	/// runtime.
-	const COMPACT_CODE: &[u8] = include_bytes!(
-		"../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm"
-	);
+	const COMPACT_CODE: &[u8] =
+		include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm");
 
 	/// The wasm runtime binary which hasn't undergone the compacting process.
 	///
 	/// The idea here is to pass it as the current runtime code to the executor so the executor will
 	/// have to execute provided wasm code instead of the native equivalent. This trick is used to
 	/// test code paths that differ between native and wasm versions.
-	const BLOATY_CODE: &[u8] = include_bytes!(
-		"../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.wasm"
-	);
+	const BLOATY_CODE: &[u8] =
+		include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.wasm");
 
 	const GENESIS_HASH: [u8; 32] = [69u8; 32];
 
@@ -127,12 +122,7 @@ mod tests {
 					})
 					.into();
 				UncheckedExtrinsic {
-					signature: Some((
-						indices::address::Address::Id(signed),
-						signature,
-						payload.0,
-						era,
-					)),
+					signature: Some((indices::address::Address::Id(signed), signature, payload.0, era)),
 					function: payload.1,
 				}
 			}
@@ -385,11 +375,7 @@ mod tests {
 					vesting: vec![],
 				}),
 				session: Some(SessionConfig {
-					validators: vec![
-						AccountKeyring::One.into(),
-						AccountKeyring::Two.into(),
-						three,
-					],
+					validators: vec![AccountKeyring::One.into(), AccountKeyring::Two.into(), three],
 					keys: vec![
 						(alice(), to_session_keys(&AuthorityKeyring::Alice)),
 						(bob(), to_session_keys(&AuthorityKeyring::Bob)),
@@ -414,9 +400,7 @@ mod tests {
 				timestamp: Some(Default::default()),
 				contracts: Some(Default::default()),
 				sudo: Some(Default::default()),
-				grandpa: Some(GrandpaConfig {
-					authorities: vec![],
-				}),
+				grandpa: Some(GrandpaConfig { authorities: vec![] }),
 			}
 			.build_storage()
 			.unwrap()
@@ -439,10 +423,9 @@ mod tests {
 		let extrinsics = extrinsics.into_iter().map(sign).collect::<Vec<_>>();
 
 		// calculate the header fields that we can.
-		let extrinsics_root =
-			ordered_trie_root::<Blake2Hasher, _, _>(extrinsics.iter().map(Encode::encode))
-				.to_fixed_bytes()
-				.into();
+		let extrinsics_root = ordered_trie_root::<Blake2Hasher, _, _>(extrinsics.iter().map(Encode::encode))
+			.to_fixed_bytes()
+			.into();
 
 		let header = Header {
 			parent_hash,
@@ -454,37 +437,19 @@ mod tests {
 
 		// execute the block to get the real header.
 		Executor::new(None)
-			.call::<_, NeverNativeValue, fn() -> _>(
-				env,
-				"Core_initialize_block",
-				&header.encode(),
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(env, "Core_initialize_block", &header.encode(), true, None)
 			.0
 			.unwrap();
 
 		for i in extrinsics.iter() {
 			Executor::new(None)
-				.call::<_, NeverNativeValue, fn() -> _>(
-					env,
-					"BlockBuilder_apply_extrinsic",
-					&i.encode(),
-					true,
-					None,
-				)
+				.call::<_, NeverNativeValue, fn() -> _>(env, "BlockBuilder_apply_extrinsic", &i.encode(), true, None)
 				.0
 				.unwrap();
 		}
 
 		let header = match Executor::new(None)
-			.call::<_, NeverNativeValue, fn() -> _>(
-				env,
-				"BlockBuilder_finalize_block",
-				&[0u8; 0],
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(env, "BlockBuilder_finalize_block", &[0u8; 0], true, None)
 			.0
 			.unwrap()
 		{
@@ -587,13 +552,7 @@ mod tests {
 		let (block1, block2) = blocks();
 
 		executor()
-			.call::<_, NeverNativeValue, fn() -> _>(
-				&mut t,
-				"Core_execute_block",
-				&block1.0,
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(&mut t, "Core_execute_block", &block1.0, true, None)
 			.0
 			.unwrap();
 
@@ -643,13 +602,7 @@ mod tests {
 		});
 
 		executor()
-			.call::<_, NeverNativeValue, fn() -> _>(
-				&mut t,
-				"Core_execute_block",
-				&block2.0,
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(&mut t, "Core_execute_block", &block2.0, true, None)
 			.0
 			.unwrap();
 
@@ -934,13 +887,7 @@ mod tests {
 		let mut t = new_test_ext(COMPACT_CODE, false);
 
 		assert!(WasmExecutor::new()
-			.call(
-				&mut t,
-				4,
-				COMPACT_CODE,
-				"Core_execute_block",
-				&big_block().0
-			)
+			.call(&mut t, 4, COMPACT_CODE, "Core_execute_block", &big_block().0)
 			.is_err());
 	}
 
@@ -949,13 +896,7 @@ mod tests {
 		let mut t = new_test_ext(COMPACT_CODE, false);
 
 		Executor::new(None)
-			.call::<_, NeverNativeValue, fn() -> _>(
-				&mut t,
-				"Core_execute_block",
-				&big_block().0,
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(&mut t, "Core_execute_block", &big_block().0, true, None)
 			.0
 			.unwrap();
 	}
@@ -965,13 +906,7 @@ mod tests {
 		let mut t = new_test_ext(COMPACT_CODE, false);
 
 		assert!(Executor::new(None)
-			.call::<_, NeverNativeValue, fn() -> _>(
-				&mut t,
-				"Core_execute_block",
-				&big_block().0,
-				false,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(&mut t, "Core_execute_block", &big_block().0, false, None,)
 			.0
 			.is_err());
 	}
@@ -1063,20 +998,11 @@ mod tests {
 
 		let mut t = new_test_ext(COMPACT_CODE, true);
 		Executor::new(None)
-			.call::<_, NeverNativeValue, fn() -> _>(
-				&mut t,
-				"Core_execute_block",
-				&block.encode(),
-				true,
-				None,
-			)
+			.call::<_, NeverNativeValue, fn() -> _>(&mut t, "Core_execute_block", &block.encode(), true, None)
 			.0
 			.unwrap();
 
-		assert!(t
-			.storage_changes_root(GENESIS_HASH.into())
-			.unwrap()
-			.is_some());
+		assert!(t.storage_changes_root(GENESIS_HASH.into()).unwrap().is_some());
 	}
 
 	#[test]
@@ -1088,9 +1014,6 @@ mod tests {
 			.call(&mut t, 8, COMPACT_CODE, "Core_execute_block", &block1.0)
 			.unwrap();
 
-		assert!(t
-			.storage_changes_root(GENESIS_HASH.into())
-			.unwrap()
-			.is_some());
+		assert!(t.storage_changes_root(GENESIS_HASH.into()).unwrap().is_some());
 	}
 }

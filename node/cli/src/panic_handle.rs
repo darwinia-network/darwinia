@@ -128,11 +128,7 @@ fn panic_hook(info: &PanicInfo, report_url: &'static str) {
 	let _ = writeln!(stderr, "");
 	let _ = writeln!(stderr, "{:?}", backtrace);
 	let _ = writeln!(stderr, "");
-	let _ = writeln!(
-		stderr,
-		"Thread '{}' panicked at '{}', {}:{}",
-		name, msg, file, line
-	);
+	let _ = writeln!(stderr, "Thread '{}' panicked at '{}', {}:{}", name, msg, file, line);
 	let _ = writeln!(stderr, ABOUT_PANIC!(), report_url);
 	push_alert_to_ding(format!("{:?}", backtrace));
 	ABORT.with(|flag| {

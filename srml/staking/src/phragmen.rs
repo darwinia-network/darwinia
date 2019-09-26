@@ -91,10 +91,7 @@ pub fn elect<T: Trait + 'static, FV, FN, FS>(
 	validator_iter: FV,
 	nominator_iter: FN,
 	stash_of: FS,
-) -> Option<(
-	Vec<T::AccountId>,
-	Vec<(T::AccountId, Vec<RawAssignment<T>>)>,
-)>
+) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Vec<RawAssignment<T>>)>)>
 where
 	FV: Iterator<Item = (T::AccountId, ValidatorPrefs)>,
 	FN: Iterator<Item = (T::AccountId, Vec<T::AccountId>)>,
@@ -153,9 +150,7 @@ where
 		for n in &nominees {
 			if let Some(idx) = c_idx_cache.get(n) {
 				// This candidate is valid + already cached.
-				candidates[*idx].approval_stake = candidates[*idx]
-					.approval_stake
-					.saturating_add(nominator_stake);
+				candidates[*idx].approval_stake = candidates[*idx].approval_stake.saturating_add(nominator_stake);
 				edges.push(Edge {
 					who: n.clone(),
 					candidate_index: *idx,
@@ -195,19 +190,14 @@ where
 						// since n.budget cannot exceed u64,despite being stored in u128. yet,
 						// `*n.load / SCALE_FACTOR` might collapse to zero. Hence, 32 or 16 bits are better scale factors.
 						// Note that left-associativity in operators precedence is crucially important here.
-						let temp = n.budget.saturating_mul(SCALE_FACTOR) / c.approval_stake
-							* (*n.load / SCALE_FACTOR);
+						let temp = n.budget.saturating_mul(SCALE_FACTOR) / c.approval_stake * (*n.load / SCALE_FACTOR);
 						c.score = Fraction::from_parts((*c.score).saturating_add(temp));
 					}
 				}
 			}
 
 			// Find the best
-			if let Some(winner) = candidates
-				.iter_mut()
-				.filter(|c| !c.elected)
-				.min_by_key(|c| *c.score)
-			{
+			if let Some(winner) = candidates.iter_mut().filter(|c| !c.elected).min_by_key(|c| *c.score) {
 				// loop 3: update nominator and edge load
 				winner.elected = true;
 				for n in &mut nominators {
@@ -330,10 +320,7 @@ fn do_equalize<T: Trait + 'static>(
 		.iter()
 		.fold(0 as ExtendedBalance, |s, e| s.saturating_add(e.2));
 
-	let backed_stakes_iter = elected_edges
-		.iter()
-		.filter_map(|e| expo_map.get(&e.0))
-		.map(|e| e.total);
+	let backed_stakes_iter = elected_edges.iter().filter_map(|e| expo_map.get(&e.0)).map(|e| e.total);
 
 	let backing_backed_stake = elected_edges
 		.iter()

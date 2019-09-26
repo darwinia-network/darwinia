@@ -123,10 +123,7 @@ impl ProvideInherentData for InherentDataProvider {
 		&INHERENT_IDENTIFIER
 	}
 
-	fn provide_inherent_data(
-		&self,
-		inherent_data: &mut InherentData,
-	) -> result::Result<(), RuntimeString> {
+	fn provide_inherent_data(&self, inherent_data: &mut InherentData) -> result::Result<(), RuntimeString> {
 		let timestamp = inherent_data.timestamp_inherent_data()?;
 		let slot_num = timestamp / self.slot_duration;
 		inherent_data.put_data(INHERENT_IDENTIFIER, &slot_num)
@@ -172,10 +169,8 @@ impl<T: Trait> Module<T> {
 	fn change_authorities(new: Vec<T::AuthorityId>) {
 		<Authorities<T>>::put(&new);
 
-		let log: DigestItem<T::Hash> = DigestItem::Consensus(
-			AURA_ENGINE_ID,
-			ConsensusLog::AuthoritiesChange(new).encode(),
-		);
+		let log: DigestItem<T::Hash> =
+			DigestItem::Consensus(AURA_ENGINE_ID, ConsensusLog::AuthoritiesChange(new).encode());
 		<system::Module<T>>::deposit_log(log.into());
 	}
 }
@@ -247,19 +242,13 @@ impl<T: Trait> Module<T> {
 			return;
 		}
 
-		assert!(
-			!slot_duration.is_zero(),
-			"Aura slot duration cannot be zero."
-		);
+		assert!(!slot_duration.is_zero(), "Aura slot duration cannot be zero.");
 
 		let last_slot = last / slot_duration.clone();
 		let first_skipped = last_slot.clone() + One::one();
 		let cur_slot = now / slot_duration;
 
-		assert!(
-			last_slot < cur_slot,
-			"Only one block may be authored per slot."
-		);
+		assert!(last_slot < cur_slot, "Only one block may be authored per slot.");
 		if cur_slot == first_skipped {
 			return;
 		}

@@ -21,9 +21,9 @@ use hex_literal::hex;
 use node_primitives::{AccountId, AuraId, Balance};
 pub use node_runtime::GenesisConfig;
 use node_runtime::{
-	AuraConfig, BalancesConfig, ContractsConfig, GrandpaConfig, IndicesConfig, KtonConfig, Perbill,
-	SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-	TimestampConfig, COIN, DAYS, MILLI, SECS_PER_BLOCK,
+	AuraConfig, BalancesConfig, ContractsConfig, GrandpaConfig, IndicesConfig, KtonConfig, Perbill, SessionConfig,
+	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TimestampConfig, COIN, DAYS, MILLI,
+	SECS_PER_BLOCK,
 };
 use primitives::{crypto::UncheckedInto, ed25519, sr25519, Pair};
 use serde_json::de::ParserNumber;
@@ -56,59 +56,43 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 	let initial_authorities: Vec<(AccountId, AccountId, AuraId, GrandpaId)> = vec![
 		(
 			// 5Fbsd6WXDGiLTxunqeK5BATNiocfCqu9bS1yArVjCgeBLkVy
-			hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"]
-				.unchecked_into(),
+			hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].unchecked_into(),
 			// 5EnCiV7wSHeNhjW3FSUwiJNkcc2SBkPLn5Nj93FmbLtBjQUq
-			hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"]
-				.unchecked_into(),
+			hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].unchecked_into(),
 			// 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
-			hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"]
-				.unchecked_into(),
+			hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
 			// 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
-			hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"]
-				.unchecked_into(),
+			hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
 		),
 		(
 			// 5ERawXCzCWkjVq3xz1W5KGNtVx2VdefvZ62Bw1FEuZW4Vny2
-			hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"]
-				.unchecked_into(),
+			hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].unchecked_into(),
 			// 5Gc4vr42hH1uDZc93Nayk5G7i687bAQdHHc9unLuyeawHipF
-			hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"]
-				.unchecked_into(),
+			hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].unchecked_into(),
 			// 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
-			hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"]
-				.unchecked_into(),
+			hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
 			// 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
-			hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"]
-				.unchecked_into(),
+			hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
 		),
 		(
 			// 5DyVtKWPidondEu8iHZgi6Ffv9yrJJ1NDNLom3X9cTDi98qp
-			hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"]
-				.unchecked_into(),
+			hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].unchecked_into(),
 			// 5FeD54vGVNpFX3PndHPXJ2MDakc462vBCD5mgtWRnWYCpZU9
-			hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"]
-				.unchecked_into(),
+			hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].unchecked_into(),
 			// 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
-			hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"]
-				.unchecked_into(),
+			hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
 			// 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
-			hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"]
-				.unchecked_into(),
+			hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
 		),
 		(
 			// 5HYZnKWe5FVZQ33ZRJK1rG3WaLMztxWrrNDb1JRwaHHVWyP9
-			hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"]
-				.unchecked_into(),
+			hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].unchecked_into(),
 			// 5EPQdAQ39WQNLCRjWsCk5jErsCitHiY5ZmjfWzzbXDoAoYbn
-			hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"]
-				.unchecked_into(),
+			hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].unchecked_into(),
 			// 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
-			hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"]
-				.unchecked_into(),
+			hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
 			// 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
-			hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"]
-				.unchecked_into(),
+			hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
 		),
 	];
 
@@ -122,74 +106,74 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-        system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
-                .to_vec(), // FIXME change once we have #1252
-            changes_trie_config: Default::default(),
-        }),
-        balances: Some(BalancesConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-                .collect(),
-            vesting: vec![],
-        }),
-        kton: Some(KtonConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
-                .collect(),
-            vesting: vec![],
-        }),
-        indices: Some(IndicesConfig {
-            ids: endowed_accounts
-                .iter()
-                .cloned()
-                .chain(initial_authorities.iter().map(|x| x.0.clone()))
-                .collect::<Vec<_>>(),
-        }),
-        session: Some(SessionConfig {
-            validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities
-                .iter()
-                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
-                .collect::<Vec<_>>(),
-        }),
-        staking: Some(StakingConfig {
-            current_era: 0,
-            current_era_total_reward: 80_000_000 * COIN / 63720,
-            offline_slash: Perbill::from_parts(1_000_000),
-            session_reward: Perbill::from_percent(90),
-            validator_count: 7,
-            offline_slash_grace: 4,
-            minimum_validator_count: 4,
-            stakers: initial_authorities
-                .iter()
-                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
-                .collect(),
-            invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-        }),
-        timestamp: Some(TimestampConfig {
-            minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
-        }),
-        contracts: Some(ContractsConfig {
-            current_schedule: Default::default(),
-            gas_price: 1 * MILLI,
-        }),
-        sudo: Some(SudoConfig {
-            key: endowed_accounts[0].clone(),
-        }),
-        aura: Some(AuraConfig {
-            authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
-        }),
-        grandpa: Some(GrandpaConfig {
-            authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
-        }),
-    }
+		system: Some(SystemConfig {
+			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+				.to_vec(), // FIXME change once we have #1252
+			changes_trie_config: Default::default(),
+		}),
+		balances: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.collect(),
+			vesting: vec![],
+		}),
+		indices: Some(IndicesConfig {
+			ids: endowed_accounts
+				.iter()
+				.cloned()
+				.chain(initial_authorities.iter().map(|x| x.0.clone()))
+				.collect::<Vec<_>>(),
+		}),
+		session: Some(SessionConfig {
+			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			keys: initial_authorities
+				.iter()
+				.map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+				.collect::<Vec<_>>(),
+		}),
+		staking: Some(StakingConfig {
+			current_era: 0,
+			current_era_total_reward: 80_000_000 * COIN / 63720,
+			offline_slash: Perbill::from_parts(1_000_000),
+			session_reward: Perbill::from_percent(90),
+			validator_count: 7,
+			offline_slash_grace: 4,
+			minimum_validator_count: 4,
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+				.collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+		}),
+		timestamp: Some(TimestampConfig {
+			minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
+		}),
+		contracts: Some(ContractsConfig {
+			current_schedule: Default::default(),
+			gas_price: 1 * MILLI,
+		}),
+		sudo: Some(SudoConfig {
+			key: endowed_accounts[0].clone(),
+		}),
+		aura: Some(AuraConfig {
+			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+		}),
+		grandpa: Some(GrandpaConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+		}),
+	}
 }
 
 /// Staging testnet config.
@@ -200,10 +184,7 @@ pub fn staging_testnet_config() -> ChainSpec {
 		"staging_testnet",
 		staging_testnet_config_genesis,
 		boot_nodes,
-		Some(TelemetryEndpoints::new(vec![(
-			STAGING_TELEMETRY_URL.to_string(),
-			0,
-		)])),
+		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		None,
 		None,
 		None,
@@ -269,67 +250,67 @@ pub fn testnet_genesis(
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-        system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
-                .to_vec(),
-            changes_trie_config: Default::default(),
-        }),
-        indices: Some(IndicesConfig {
-            ids: endowed_accounts.clone(),
-        }),
-        balances: Some(BalancesConfig {
-            balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
-            vesting: vec![],
-        }),
-        kton: Some(KtonConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
-                .collect(),
-            vesting: vec![],
-        }),
-        session: Some(SessionConfig {
-            validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities
-                .iter()
-                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
-                .collect::<Vec<_>>(),
-        }),
-        staking: Some(StakingConfig {
-            current_era: 0,
-            // TODO: ready for hacking
-            current_era_total_reward: 80_000_000 * COIN / 63720,
-            minimum_validator_count: 1,
-            validator_count: 3,
-            offline_slash: Perbill::from_parts(1_000_000),
-            session_reward: Perbill::from_percent(90),
-            offline_slash_grace: 4,
-            stakers: initial_authorities
-                .iter()
-                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
-                .collect(),
-            invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-        }),
-        timestamp: Some(TimestampConfig {
-            minimum_period: 3, // 3*2=6 second block time.
-        }),
-        contracts: Some(ContractsConfig {
-            current_schedule: contracts::Schedule {
-                enable_println, // this should only be enabled on development chains
-                ..Default::default()
-            },
-            gas_price: 1 * MILLI,
-        }),
-        sudo: Some(SudoConfig { key: root_key }),
-        aura: Some(AuraConfig {
-            authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
-        }),
-        grandpa: Some(GrandpaConfig {
-            authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
-        }),
-    }
+		system: Some(SystemConfig {
+			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+				.to_vec(),
+			changes_trie_config: Default::default(),
+		}),
+		indices: Some(IndicesConfig {
+			ids: endowed_accounts.clone(),
+		}),
+		balances: Some(BalancesConfig {
+			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.collect(),
+			vesting: vec![],
+		}),
+		session: Some(SessionConfig {
+			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			keys: initial_authorities
+				.iter()
+				.map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+				.collect::<Vec<_>>(),
+		}),
+		staking: Some(StakingConfig {
+			current_era: 0,
+			// TODO: ready for hacking
+			current_era_total_reward: 80_000_000 * COIN / 63720,
+			minimum_validator_count: 1,
+			validator_count: 3,
+			offline_slash: Perbill::from_parts(1_000_000),
+			session_reward: Perbill::from_percent(90),
+			offline_slash_grace: 4,
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+				.collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+		}),
+		timestamp: Some(TimestampConfig {
+			minimum_period: 3, // 3*2=6 second block time.
+		}),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MILLI,
+		}),
+		sudo: Some(SudoConfig { key: root_key }),
+		aura: Some(AuraConfig {
+			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+		}),
+		grandpa: Some(GrandpaConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+		}),
+	}
 }
 
 fn development_config_genesis() -> GenesisConfig {
@@ -381,66 +362,66 @@ pub fn crayfish_testnet_genesis(
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-        system: Some(SystemConfig {
-            code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
-                .to_vec(),
-            changes_trie_config: Default::default(),
-        }),
-        indices: Some(IndicesConfig {
-            ids: endowed_accounts.clone(),
-        }),
-        balances: Some(BalancesConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, 1 * ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), 4 * ENDOWMENT)))
-                .collect(),
-            vesting: vec![],
-        }),
-        kton: Some(KtonConfig {
-            balances: vec![],
-            vesting: vec![],
-        }),
-        session: Some(SessionConfig {
-            validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-            keys: initial_authorities
-                .iter()
-                .map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
-                .collect::<Vec<_>>(),
-        }),
-        staking: Some(StakingConfig {
-            current_era: 0,
-            current_era_total_reward: 80_000_000 * COIN / 105120,
-            minimum_validator_count: 1,
-            validator_count: 30,
-            offline_slash: Perbill::from_parts(1_000_000),
-            session_reward: Perbill::from_percent(90),
-            offline_slash_grace: 4,
-            stakers: initial_authorities
-                .iter()
-                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
-                .collect(),
-            invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-        }),
-        timestamp: Some(TimestampConfig {
-            minimum_period: 3, // 3*2=6 second block time.
-        }),
-        contracts: Some(ContractsConfig {
-            current_schedule: contracts::Schedule {
-                enable_println, // this should only be enabled on development chains
-                ..Default::default()
-            },
-            gas_price: 1 * MILLI,
-        }),
-        sudo: Some(SudoConfig { key: root_key }),
-        aura: Some(AuraConfig {
-            authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
-        }),
-        grandpa: Some(GrandpaConfig {
-            authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
-        }),
-    }
+		system: Some(SystemConfig {
+			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm")
+				.to_vec(),
+			changes_trie_config: Default::default(),
+		}),
+		indices: Some(IndicesConfig {
+			ids: endowed_accounts.clone(),
+		}),
+		balances: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 * ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), 4 * ENDOWMENT)))
+				.collect(),
+			vesting: vec![],
+		}),
+		kton: Some(KtonConfig {
+			balances: vec![],
+			vesting: vec![],
+		}),
+		session: Some(SessionConfig {
+			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			keys: initial_authorities
+				.iter()
+				.map(|x| (x.1.clone(), SessionKeys(x.2.clone(), x.2.clone())))
+				.collect::<Vec<_>>(),
+		}),
+		staking: Some(StakingConfig {
+			current_era: 0,
+			current_era_total_reward: 80_000_000 * COIN / 105120,
+			minimum_validator_count: 1,
+			validator_count: 30,
+			offline_slash: Perbill::from_parts(1_000_000),
+			session_reward: Perbill::from_percent(90),
+			offline_slash_grace: 4,
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+				.collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+		}),
+		timestamp: Some(TimestampConfig {
+			minimum_period: 3, // 3*2=6 second block time.
+		}),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MILLI,
+		}),
+		sudo: Some(SudoConfig { key: root_key }),
+		aura: Some(AuraConfig {
+			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+		}),
+		grandpa: Some(GrandpaConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+		}),
+	}
 }
 
 /// Development config (single validator Alice)
@@ -475,10 +456,7 @@ fn token_properties() -> Option<Properties> {
 		"tokenDecimals".to_owned(),
 		serde_json::Value::Number(Number::from(ParserNumber::U64(9))),
 	);
-	properties.insert(
-		"tokenSymbol".to_owned(),
-		serde_json::Value::String("RING".to_owned()),
-	);
+	properties.insert("tokenSymbol".to_owned(), serde_json::Value::String("RING".to_owned()));
 	Some(properties)
 }
 
@@ -503,10 +481,7 @@ pub fn crayfish_testnet_config() -> ChainSpec {
 		"crayfish_testnet",
 		crayfish_config_genesis,
 		vec![],
-		Some(TelemetryEndpoints::new(vec![(
-			STAGING_TELEMETRY_URL.to_string(),
-			0,
-		)])),
+		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
 		None,
 		token_properties(),

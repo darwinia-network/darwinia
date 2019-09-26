@@ -179,11 +179,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 		pair
 	}
 
-	fn extract_index(
-		&self,
-		_account_id: &Self::AccountId,
-		_block_hash: &<Self::Block as BlockT>::Hash,
-	) -> Self::Index {
+	fn extract_index(&self, _account_id: &Self::AccountId, _block_hash: &<Self::Block as BlockT>::Hash) -> Self::Index {
 		// TODO get correct index for account via api. See #2587.
 		// This currently prevents the factory from being used
 		// without a preceding purge of the database.
@@ -246,12 +242,7 @@ fn sign<F: ServiceFactory, RA: RuntimeAdapter>(
 				})
 				.into();
 			UncheckedExtrinsic {
-				signature: Some((
-					indices::address::Address::Id(signed),
-					signature,
-					payload.0,
-					era,
-				)),
+				signature: Some((indices::address::Address::Id(signed), signature, payload.0, era)),
 				function: payload.1,
 			}
 		}

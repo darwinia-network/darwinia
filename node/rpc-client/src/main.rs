@@ -49,9 +49,7 @@ fn main() {
 ///
 /// As the resul of running the code the entire content of the transaction pool is going
 /// to be removed and the extrinsics are going to be temporarily banned.
-fn remove_all_extrinsics(
-	client: AuthorClient<Hash, Hash>,
-) -> impl Future<Item = (), Error = RpcError> {
+fn remove_all_extrinsics(client: AuthorClient<Hash, Hash>) -> impl Future<Item = (), Error = RpcError> {
 	client
 		.pending_extrinsics()
 		.and_then(move |pending| {
