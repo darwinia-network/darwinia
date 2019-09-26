@@ -704,6 +704,7 @@ decl_module! {
 						balance_kind |= 0b01;
 						*total_ring = total_ring.saturating_sub(*ring);
 
+						// MUST be false if the item is not in deposit
 						if *is_time_deposit {
 							*total_deposit_ring = total_deposit_ring.saturating_sub(*ring);
 						}
