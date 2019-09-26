@@ -47,6 +47,7 @@ use phragmen::{elect, equalize, ExtendedBalance, ACCURACY};
 
 mod utils;
 
+#[allow(unused)]
 #[cfg(any(feature = "bench", test))]
 mod mock;
 //
@@ -483,7 +484,7 @@ decl_module! {
 					// total_unbond_value = normal_unbond + time_deposit_unbond
 					let total_value = r.min(*active_ring);
 					let active_normal_ring = *active_ring - *active_deposit_ring;
-				    // unbond normal ring first
+					// unbond normal ring first
 					let active_normal_value = total_value.min(active_normal_ring);
 
 					<RingPool<T>>::mutate(|r| *r -= active_normal_value);
@@ -538,7 +539,7 @@ decl_module! {
 							era,
 							is_time_deposit: true,
 						});
-						 <RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
+						<RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
 					}
 				},
 				StakingBalance::Kton(k) => {
@@ -572,11 +573,9 @@ decl_module! {
 			let now = <timestamp::Module<T>>::now();
 
 			ensure!(expire_time > now, "use unbond instead.");
-			deposit_items.drain_filter(|item| {
-				if item.expire_time != expire_time {
-					return false;
-				}
 
+			if let Some(i) = deposit_items.iter().position(|item| item.expire_time == expire_time) {
+				let item = &mut deposit_items[i];
 				let value = item.value.min(value);
 				// at least 1 month
 				let month_left = (
@@ -597,31 +596,30 @@ decl_module! {
 							new_balance
 						).ok()
 					})
-					.is_none() {
-						return false;
+					.is_some() {
+						// update ring
+						item.value -= value;
+						*active_ring = active_ring.saturating_sub(value);
+						*active_deposit_ring = active_deposit_ring.saturating_sub(value);
+
+						let (imbalance, _) = T::Kton::slash(stash, kton_slash);
+						T::KtonSlash::on_unbalanced(imbalance);
+
+						// update unlocks
+						unlocking.push(UnlockChunk {
+							value: StakingBalance::Ring(value),
+							era: Self::current_era() + T::BondingDuration::get(),
+							is_time_deposit: true
+						});
+						<RingPool<T>>::mutate(|r| *r -= value);
+
+						if item.value.is_zero() {
+							deposit_items.remove(i);
+						}
+
+						<Ledger<T>>::insert(&controller, ledger);
 					}
-
-				// update ring
-				item.value -= value;
-				*active_ring = active_ring.saturating_sub(value);
-				*active_deposit_ring = active_deposit_ring.saturating_sub(value);
-
-				let (imbalance, _) = T::Kton::slash(stash, kton_slash);
-
-				T::KtonSlash::on_unbalanced(imbalance);
-
-				// update unlocks
-				unlocking.push(UnlockChunk {
-					value: StakingBalance::Ring(value),
-					era: Self::current_era() + T::BondingDuration::get(),
-					is_time_deposit: true
-				});
-
-				item.value.is_zero()
-			});
-
-			<Ledger<T>>::insert(&controller, ledger);
-
+			}
 		}
 
 		/// called by controller
@@ -641,15 +639,15 @@ decl_module! {
 			// remove expired deposit_items
 			let now = <timestamp::Module<T>>::now();
 			deposit_items.retain(|item| {
-				if item.expire_time < now {
+				if item.expire_time > now {
+					true
+				} else {
 					// reduce deposit_ring,
 					// total / active ring
 					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
 					*total_deposit_ring = total_deposit_ring.saturating_sub(item.value);
 
 					false
-				} else {
-					true
 				}
 			});
 
@@ -709,7 +707,6 @@ decl_module! {
 						if *is_time_deposit {
 							*total_deposit_ring = total_deposit_ring.saturating_sub(*ring);
 						}
-
 					}
 					StakingBalance::Kton(kton) => {
 						balance_kind |= 0b10;
