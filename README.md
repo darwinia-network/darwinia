@@ -226,3 +226,5 @@ The first line shows that Bob has discovered Alice on the network. The second sh
 
 #### View On Telemetry
 then you can find your Node displayed on [Telemetry](https://telemetry.polkadot.io/#/Local%20Testnet)
+
+#### For cross compile instructions, vist [darwinia_builder](https://github.com/darwinia-network/darwinia-builder)
