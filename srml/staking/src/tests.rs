@@ -5,6 +5,12 @@ use runtime_io::with_externalities;
 use srml_support::traits::{Currency, WithdrawReason, WithdrawReasons};
 use srml_support::{assert_err, assert_ok};
 
+// gen_paired_account!(a(1), b(2), m(12));
+// will create stash `a` and controller `b` 
+// `a` has 100 Ring and 100 Kton
+// promise for `m` month with 50 Ring and 50 Kton
+// `m` can be ignore, and it wont perfrom `bond` action
+// gen_paired_account!(a(1), b(2));
 macro_rules! gen_paired_account {
 	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $promise_month:ident($how_long:expr)) => {
 		#[allow(non_snake_case, unused)]
