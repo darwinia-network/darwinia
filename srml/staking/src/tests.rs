@@ -6,7 +6,7 @@ use srml_support::traits::{Currency, WithdrawReason, WithdrawReasons};
 use srml_support::{assert_err, assert_ok};
 
 // gen_paired_account!(a(1), b(2), m(12));
-// will create stash `a` and controller `b` 
+// will create stash `a` and controller `b`
 // `a` has 100 Ring and 100 Kton
 // promise for `m` month with 50 Ring and 50 Kton
 // `m` can be ignore, and it wont perfrom `bond` action
@@ -914,7 +914,7 @@ fn unbond_over_max_unlocking_chunks_should_fail() {
 #[test]
 fn unlock_value_should_be_increased_and_decreased_correctly() {
 	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
-		// normal Ring
+		// normal Ring/Kton
 		{
 			let stash = 444;
 			let controller = 555;
@@ -930,52 +930,100 @@ fn unlock_value_should_be_increased_and_decreased_correctly() {
 			));
 			assert_ok!(Staking::bond_extra(
 				Origin::signed(stash),
-				StakingBalance::Ring(50 * COIN),
+				StakingBalance::Kton(50 * COIN),
 				0
 			));
 
-			let mut ledger = Staking::ledger(&controller).unwrap();
+			let mut unlocking = Staking::ledger(&controller).unwrap().unlocking;
 
 			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(COIN)));
-			ledger.active_ring -= COIN;
-			ledger.unlocking = vec![UnlockChunk {
+			unlocking.push(UnlockChunk {
 				value: StakingBalance::Ring(COIN),
 				era: 3,
 				is_time_deposit: false,
-			}];
-			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-
-			start_era(3);
+			});
+			assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(COIN)));
+			unlocking.push(UnlockChunk {
+				value: StakingBalance::Kton(COIN),
+				era: 3,
+				is_time_deposit: false,
+			});
+			assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
 
 			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(0)));
-			ledger.unlocking.push(UnlockChunk {
+			unlocking.push(UnlockChunk {
 				value: StakingBalance::Ring(0),
-				era: 6,
+				era: 3,
 				is_time_deposit: true,
 			});
-			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-			assert_ok!(Staking::withdraw_unbonded(Origin::signed(controller)));
-			ledger.total_ring -= COIN;
-			ledger.unlocking.remove(0);
-			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-
-			start_era(6);
-
-			assert_ok!(Staking::withdraw_unbonded(Origin::signed(controller)));
-			ledger.unlocking.remove(0);
-			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
+			assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(0)));
+			unlocking.push(UnlockChunk {
+				value: StakingBalance::Kton(0),
+				era: 3,
+				is_time_deposit: false,
+			});
+			assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
 		}
 
 		// promise Ring
 		{
 			gen_paired_account!(stash(666), controller(777), promise_month(12));
 
-			println!("{:#?}", Staking::ledger(&controller).unwrap());
-		}
+			assert_ok!(Staking::bond_extra(
+				Origin::signed(stash),
+				StakingBalance::Ring(50 * COIN),
+				36
+			));
 
-		// Kton
-		{
-			//
+			let mut unlocking = Staking::ledger(&controller).unwrap().unlocking;
+
+			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(COIN)));
+			unlocking.push(UnlockChunk {
+				value: StakingBalance::Ring(0),
+				era: 3,
+				is_time_deposit: true,
+			});
+			assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+
+			for month in [12, 36].iter() {
+				assert_ok!(Staking::unbond_with_punish(
+					Origin::signed(controller),
+					20 * COIN,
+					month * MONTH_IN_SECONDS as u64
+				));
+				unlocking.push(UnlockChunk {
+					value: StakingBalance::Ring(20 * COIN),
+					era: 3,
+					is_time_deposit: true,
+				});
+				assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+
+				assert_ok!(Staking::unbond_with_punish(
+					Origin::signed(controller),
+					29 * COIN,
+					month * MONTH_IN_SECONDS as u64
+				));
+				unlocking.push(UnlockChunk {
+					value: StakingBalance::Ring(29 * COIN),
+					era: 3,
+					is_time_deposit: true,
+				});
+				assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+
+				assert_ok!(Staking::unbond_with_punish(
+					Origin::signed(controller),
+					50 * COIN,
+					month * MONTH_IN_SECONDS as u64
+				));
+				unlocking.push(UnlockChunk {
+					value: StakingBalance::Ring(1 * COIN),
+					era: 3,
+					is_time_deposit: true,
+				});
+				assert_eq!(&Staking::ledger(&controller).unwrap().unlocking, &unlocking);
+			}
 		}
 	});
 }
