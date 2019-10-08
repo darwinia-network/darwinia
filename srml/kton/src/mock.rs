@@ -6,7 +6,7 @@ use srml_support::impl_outer_origin;
 use std::{cell::RefCell, collections::HashSet};
 use substrate_primitives::{Blake2Hasher, H256};
 
-const COIN: u64 = 1_000_000_000;
+pub const COIN: u64 = 1_000_000_000;
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
@@ -116,7 +116,7 @@ impl ExtBuilder {
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
 			],
-			vesting: vec![],
+			vesting: vec![(1, 0, 4)],
 		}
 		.assimilate_storage(&mut t, &mut c);
 		t.into()
