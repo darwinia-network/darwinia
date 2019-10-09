@@ -445,6 +445,7 @@ where
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
 		let now = <system::Module<T>>::block_number();
 		<Locks<T>>::mutate(who, |locks| {
+			// unexpired and mismatched id -> keep
 			locks.retain(|lock| (lock.until > now) && (lock.id != id));
 		});
 	}
