@@ -1159,3 +1159,53 @@ fn yakio_q1() {
 		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
 	});
 }
+
+// how to balance the power and calculate the reward if some validators have been chilled
+#[test]
+fn yakio_q2() {
+	fn run(with_new_era: bool) -> u64 {
+		let mut balance = 0;
+		with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
+			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
+			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_1_controller),
+				vec![0; 8],
+				0,
+				3
+			));
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_2_controller),
+				vec![1; 8],
+				0,
+				3
+			));
+			assert_ok!(Staking::nominate(
+				Origin::signed(nominator_controller),
+				vec![validator_1_stash, validator_2_stash]
+			));
+
+			start_era(1);
+			assert_ok!(Staking::chill(Origin::signed(validator_1_controller)));
+			// assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
+			if with_new_era {
+				start_era(2);
+			}
+			Staking::reward_validator(&validator_1_stash, 1000 * COIN);
+			Staking::reward_validator(&validator_2_stash, 1000 * COIN);
+
+			balance = Ring::free_balance(&nominator_stash);
+		});
+
+		balance
+	}
+
+	let free_balance = run(false);
+	let free_balance_with_new_era = run(true);
+
+	assert!(free_balance != 0);
+	assert!(free_balance_with_new_era != 0);
+	assert!(free_balance > free_balance_with_new_era);
+}
