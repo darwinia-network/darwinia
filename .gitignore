@@ -15,6 +15,7 @@ test-client
 .DS_Store
 
 # For cross compile
+osxcross
 darwin-x86_64
 darwin-x86_64.tar.gz
 linux-x86_64

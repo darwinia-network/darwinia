@@ -76,7 +76,7 @@ cargo install --git https://github.com/alexcrichton/wasm-gc
 
 ### Build
 
-Building with darwinia builder:
+Building with darwinia-builder:
 ```bash
 darwinia-builder --release --wasm
 ```

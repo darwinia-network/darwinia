@@ -226,10 +226,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 	// TODO: add fee
 	fn transfer(transactor: &T::AccountId, dest: &T::AccountId, value: Self::Balance) -> Result {
-		let from_balance = Self::free_balance(transactor);
-		let to_balance = Self::free_balance(dest);
-
-		let new_from_balance = match from_balance.checked_sub(&value) {
+		let new_from_balance = match Self::free_balance(transactor).checked_sub(&value) {
 			None => return Err("balance too low to send value"),
 			Some(b) => b,
 		};
@@ -238,7 +235,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 		// NOTE: total stake being stored in the same type means that this could never overflow
 		// but better to be safe than sorry.
-		let new_to_balance = match to_balance.checked_add(&value) {
+		let new_to_balance = match Self::free_balance(dest).checked_add(&value) {
 			Some(b) => b,
 			None => return Err("destination balance too high to receive value"),
 		};
@@ -375,6 +372,7 @@ where
 {
 	type Moment = T::BlockNumber;
 
+	// `amount` > `free_balance` is allowed
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
@@ -447,6 +445,7 @@ where
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
 		let now = <system::Module<T>>::block_number();
 		<Locks<T>>::mutate(who, |locks| {
+			// unexpired and mismatched id -> keep
 			locks.retain(|lock| (lock.until > now) && (lock.id != id));
 		});
 	}
