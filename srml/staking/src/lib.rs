@@ -349,7 +349,7 @@ decl_storage! {
 decl_event!(
     pub enum Event<T> where Balance = RingBalanceOf<T>, <T as system::Trait>::AccountId {
         /// All validators have been rewarded by the given balance.
-		Reward(EraIndex, AccountId, AccountId, Balance),
+		Reward(Balance),
 		/// One validator (and its nominators) has been given an offline-warning (it is still
 		/// within its grace). The accrued number of slashes is recorded, too.
 		OfflineWarning(AccountId, u32),
@@ -1045,6 +1045,7 @@ impl<T: Trait> Module<T> {
 			for v in validators.iter() {
 				Self::reward_validator(v, block_reward_per_validator);
 			}
+			Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
 			// TODO: reward to treasury
 		}
 
@@ -1083,49 +1084,25 @@ impl<T: Trait> Module<T> {
 
 			for i in &exposures.others {
 				let per_u64 = Perbill::from_rational_approximation(i.value, total);
-				imbalance.maybe_subsume(Self::make_payout(era_index, stash, &i.who, per_u64 * reward));
+				imbalance.maybe_subsume(Self::make_payout(&i.who, per_u64 * reward));
 			}
 
 			let per_u64 = Perbill::from_rational_approximation(exposures.own, total);
 			per_u64 * reward
 		};
-		imbalance.maybe_subsume(Self::make_payout(
-			era_index,
-			stash,
-			stash,
-			validator_cut + off_the_table,
-		));
+		imbalance.maybe_subsume(Self::make_payout(stash, validator_cut + off_the_table));
 		T::RingReward::on_unbalanced(imbalance);
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
 	/// to pay the right payee for the given staker account.
-	fn make_payout(
-		era_index: EraIndex,
-		validator_stash: &T::AccountId,
-		stash: &T::AccountId,
-		amount: RingBalanceOf<T>,
-	) -> Option<RingPositiveImbalanceOf<T>> {
+	fn make_payout(stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
 		let dest = Self::payee(stash);
 		match dest {
-			RewardDestination::Controller => Self::bonded(stash).and_then(|controller| {
-				Self::deposit_event(RawEvent::Reward(
-					era_index,
-					validator_stash.clone(),
-					controller.clone(),
-					amount,
-				));
-				T::Ring::deposit_into_existing(&controller, amount).ok()
-			}),
-			RewardDestination::Stash => {
-				Self::deposit_event(RawEvent::Reward(
-					era_index,
-					validator_stash.clone(),
-					stash.clone(),
-					amount,
-				));
-				T::Ring::deposit_into_existing(stash, amount).ok()
+			RewardDestination::Controller => {
+				Self::bonded(stash).and_then(|controller| T::Ring::deposit_into_existing(&controller, amount).ok())
 			}
+			RewardDestination::Stash => T::Ring::deposit_into_existing(stash, amount).ok(),
 		}
 	}
 
