@@ -20,6 +20,7 @@ dsupport = { package = "evo-support", path = "../support", default-features = fa
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sr-arithmetic = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 #phragmen = { package = "substrate-phragmen", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
@@ -50,5 +51,5 @@ std = [
 	"dsupport/std",
 	"sr-arithmetic/std",
 	"sr-staking-primitives/std",
-#	"phragmen/std"
+	"authorship/std"
 ]

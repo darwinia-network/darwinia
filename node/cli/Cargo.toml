@@ -35,7 +35,7 @@ substrate-telemetry = { package = "substrate-telemetry", git = 'https://github.c
 structopt = "0.3.3"
 transaction-factory = { git = 'https://github.com/paritytech/substrate.git' }
 keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
-indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
+indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git'}
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 rand = "0.7.2"
 finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }

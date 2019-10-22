@@ -36,6 +36,16 @@ substrate-transaction-pool = { git = 'https://github.com/paritytech/substrate.gi
 substrate-transaction-graph = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-trie = { git = 'https://github.com/paritytech/substrate.git' }
 fork-tree = { git = 'https://github.com/paritytech/substrate.git' }
+#new
+substrate-application-crypto = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-authority-discovery = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-basic-authorship = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-externalities = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-offchain = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-peerset = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-phragmen = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-session = { git = 'https://github.com/paritytech/substrate.git' }
+substrate-wasm-interface = { git = 'https://github.com/paritytech/substrate.git' }
 
 
 [build-dependencies]
@@ -59,7 +69,6 @@ members = [
     "srml/staking",
     "srml/kton",
     "srml/support",
-    "srml/aura",
 	"srml/try",
 ]
 

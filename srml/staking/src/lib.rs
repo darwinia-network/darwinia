@@ -305,6 +305,7 @@ decl_storage! {
 		pub RingPool get(ring_pool): RingBalanceOf<T>;
 
 		pub KtonPool get(kton_pool): KtonBalanceOf<T>;
+
 	}
 	add_extra_genesis {
 		config(stakers):
@@ -1401,7 +1402,6 @@ where
 	fn disable_validator(validator: &<T as system::Trait>::AccountId) -> Result<bool, ()> {
 		<session::Module<T>>::disable(validator)
 	}
-
 	fn validators() -> Vec<<T as system::Trait>::AccountId> {
 		<session::Module<T>>::validators()
 	}
@@ -1409,4 +1409,13 @@ where
 	fn prune_historical_up_to(up_to: SessionIndex) {
 		<session::historical::Module<T>>::prune_up_to(up_to);
 	}
+}
+
+/// Add reward points to block authors:
+/// * 20 points to the block producer for producing a (non-uncle) block in the relay chain,
+/// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
+/// * 1 point to the producer of each referenced uncle block.
+impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
+	fn note_author(author: T::AccountId) {}
+	fn note_uncle(author: T::AccountId, _age: T::BlockNumber) {}
 }
