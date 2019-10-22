@@ -51,5 +51,5 @@ consensus-common = { package = "substrate-consensus-common", git = 'https://gith
 service-test = { package = "substrate-service-test", git = 'https://github.com/paritytech/substrate.git' }
 
 [build-dependencies]
-cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git'}
-structopt = "0.2"
+cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git' }
+structopt = "0.3.3"
