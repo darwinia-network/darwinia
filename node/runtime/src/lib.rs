@@ -20,12 +20,15 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
+use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
 use client::{
 	block_builder::api::{self as block_builder_api, CheckInherentsResult, InherentData},
 	impl_runtime_apis, runtime_api as client_api,
 };
 use grandpa::fg_primitives::{self, ScheduledChange};
-pub use node_primitives::{AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Moment, Nonce, Signature};
+pub use node_primitives::{
+	AccountId, AccountIndex, AuraId, Balance, BlockNumber, Hash, Index, Moment, Nonce, Signature,
+};
 use rstd::prelude::*;
 use runtime_primitives::traits::{BlakeTwo256, Block as BlockT, Convert, DigestFor, NumberFor, StaticLookup};
 use runtime_primitives::transaction_validity::TransactionValidity;
@@ -130,7 +133,8 @@ impl Convert<u128, u128> for CurrencyToVoteHandler {
 
 impl system::Trait for Runtime {
 	type Origin = Origin;
-	type Index = Nonce;
+	type Call = Call;
+	type Index = Index;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hashing = BlakeTwo256;
@@ -138,6 +142,11 @@ impl system::Trait for Runtime {
 	type Lookup = Indices;
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	type Event = Event;
+	type BlockHashCount = BlockHashCount;
+	type MaximumBlockWeight = MaximumBlockWeight;
+	type MaximumBlockLength = MaximumBlockLength;
+	type AvailableBlockRatio = AvailableBlockRatio;
+	type Version = Version;
 }
 
 impl aura::Trait for Runtime {
@@ -154,19 +163,15 @@ impl indices::Trait for Runtime {
 
 impl balances::Trait for Runtime {
 	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnFreeBalanceZero = (Staking, Session);
 	type OnNewAccount = Indices;
 	type Event = Event;
-	type TransactionPayment = DealWithFees;
 	type DustRemoval = ();
 	type TransferPayment = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-	type TransactionBaseFee = TransactionBaseFee;
-	type TransactionByteFee = TransactionByteFee;
 }
-
 impl kton::Trait for Runtime {
 	type Balance = Balance;
 	type Event = Event;
@@ -174,9 +179,25 @@ impl kton::Trait for Runtime {
 	type OnRemoval = ();
 }
 
+parameter_types! {
+	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
+	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
+}
+
+impl babe::Trait for Runtime {
+	type EpochDuration = EpochDuration;
+	type ExpectedBlockTime = ExpectedBlockTime;
+	type EpochChangeTrigger = babe::ExternalTrigger;
+}
+
+parameter_types! {
+	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
+}
+
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
+	type MinimumPeriod = MinimumPeriod;
 }
 
 parameter_types! {
@@ -187,7 +208,6 @@ parameter_types! {
 	pub const TransactionByteFee: Balance = 1 * MICRO;
 }
 
-type SessionHandlers = (Grandpa, Aura);
 parameter_types! {
 	pub const UncleGenerations: u64 = 0;
 }
@@ -214,16 +234,30 @@ parameter_types! {
 	pub const Offset: BlockNumber = 0;
 }
 
+type SessionHandlers = (Grandpa, Babe, ImOnline, AuthorityDiscovery);
+parameter_types! {
+	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
+}
+
 impl session::Trait for Runtime {
 	type OnSessionEnding = Staking;
 	type SessionHandler = SessionHandlers;
 	type ShouldEndSession = session::PeriodicSessions<Period, Offset>;
 	type Event = Event;
 	type Keys = SessionKeys;
+	type ValidatorId = <Self as system::Trait>::AccountId;
+	type ValidatorIdOf = staking::StashOf<Self>;
+	type SelectInitialValidators = Staking;
+	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+}
+
+impl session::historical::Trait for Runtime {
+	type FullIdentification = staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = staking::ExposureOf<Runtime>;
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 5;
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
 	// about 14 days
 	pub const BondingDuration: staking::EraIndex = 4032;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
@@ -251,6 +285,7 @@ impl staking::Trait for Runtime {
 	type Cap = CAP;
 	type ErasPerEpoch = ErasPerEpoch;
 	type SessionLength = Period;
+	type SessionInterface = Self;
 }
 
 parameter_types! {
@@ -269,31 +304,6 @@ parameter_types! {
 	pub const CreateBaseFee: Gas = 1000;
 	pub const MaxDepth: u32 = 1024;
 	pub const BlockGasLimit: Gas = 10_000_000;
-}
-
-impl contracts::Trait for Runtime {
-	type Currency = Balances;
-	type Call = Call;
-	type Event = Event;
-	type DetermineContractAddress = contracts::SimpleAddressDeterminator<Runtime>;
-	type ComputeDispatchFee = contracts::DefaultDispatchFeeComputor<Runtime>;
-	type TrieIdGenerator = contracts::TrieIdFromParentCounter<Runtime>;
-	type GasPayment = ();
-	type SignedClaimHandicap = SignedClaimHandicap;
-	type TombstoneDeposit = TombstoneDeposit;
-	type StorageSizeOffset = StorageSizeOffset;
-	type RentByteFee = RentByteFee;
-	type RentDepositOffset = RentDepositOffset;
-	type SurchargeReward = SurchargeReward;
-	type TransferFee = ContractTransferFee;
-	type CreationFee = ContractCreationFee;
-	type TransactionBaseFee = ContractTransactionBaseFee;
-	type TransactionByteFee = ContractTransactionByteFee;
-	type ContractFee = ContractFee;
-	type CallBaseFee = CallBaseFee;
-	type CreateBaseFee = CreateBaseFee;
-	type MaxDepth = MaxDepth;
-	type BlockGasLimit = BlockGasLimit;
 }
 
 impl sudo::Trait for Runtime {
@@ -322,6 +332,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: system::{Module, Call, Storage, Config, Event},
+		Utility: utility::{Module, Call, Event},
 		Aura: aura::{Module, Config<T>, Inherent(Timestamp)},
 		Timestamp: timestamp::{Module, Call, Storage, Config<T>, Inherent},
 		Authorship: authorship::{Module, Call, Storage},
@@ -330,7 +341,6 @@ construct_runtime!(
 		Kton: kton,
 		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Staking: staking::{default, OfflineWorker},
-		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		Sudo: sudo,
@@ -352,7 +362,7 @@ pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
-pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Balances, Runtime, AllModules>;
+pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Runtime, AllModules>;
 
 impl_runtime_apis! {
 	impl client_api::Core<Block> for Runtime {

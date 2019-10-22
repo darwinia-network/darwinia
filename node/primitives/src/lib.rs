@@ -71,3 +71,5 @@ pub type BlockId = generic::BlockId<Block>;
 
 /// Opaque, encoded, unchecked extrinsic.
 pub type UncheckedExtrinsic = OpaqueExtrinsic;
+/// Index of a transaction in the chain.
+pub type Index = u32;

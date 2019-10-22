@@ -7,19 +7,20 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-log = "0.4"
-tokio = "0.1.7"
-futures = "0.1"
-exit-future = "0.1"
+log = "0.4.8"
+tokio = "0.1.22"
+futures = "0.1.29"
+exit-future = "0.1.4"
+jsonrpc-core = "13.2.0"
 cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git' }
-parity-codec = { version = "4.1.1" }
+codec = { package = "parity-scale-codec", version = "1.0.0" }
 sr-io = { git = 'https://github.com/paritytech/substrate.git' }
 client = { package = "substrate-client", git = 'https://github.com/paritytech/substrate.git' }
 primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git' }
 inherents = { package = "substrate-inherents", git = 'https://github.com/paritytech/substrate.git' }
 node-runtime = { path = "../runtime" }
 node-primitives = { path = "../primitives" }
-hex-literal = "0.2"
+hex-literal = "0.2.1"
 substrate-basic-authorship = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-service = { git = 'https://github.com/paritytech/substrate.git' }
 transaction_pool = { package = "substrate-transaction-pool", git = 'https://github.com/paritytech/substrate.git' }
@@ -31,18 +32,18 @@ aura_primitives = { package = "substrate-consensus-aura-primitives", git = 'http
 node-executor = { path = "../executor" }
 substrate-keystore = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-telemetry = { package = "substrate-telemetry", git = 'https://github.com/paritytech/substrate.git' }
-structopt = "0.2"
+structopt = "0.3.3"
 transaction-factory = { git = 'https://github.com/paritytech/substrate.git' }
 keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
 indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-rand = "0.6"
+rand = "0.7.2"
 finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 backtrace = "0.3"
 reqwest = "0.9.5"
-serde = "1.0"
+serde = { version = "1.0.101", features = [ "derive" ] }
 serde_json = "1.0"
 
 [dev-dependencies]

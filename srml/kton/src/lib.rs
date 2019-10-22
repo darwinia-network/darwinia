@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use parity_codec::{Codec, Decode, Encode};
+use codec::{Codec, Decode, Encode};
 use primitives::traits::{
 	Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic, StaticLookup, Zero,
 };
@@ -134,7 +134,7 @@ decl_storage! {
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		fn deposit_event<T>() = default;
+		fn deposit_event() = default;
 
 		pub fn transfer(origin,
 			dest: <T::Lookup as StaticLookup>::Source,
