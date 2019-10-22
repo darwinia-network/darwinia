@@ -8,11 +8,11 @@
 
 .idea
 .vscode
-!node/runtime/wasm/target/wasm32-unknown-unknown/release/*.compact.wasm
+.DS_Store
 
 test-client
+node_runtime.wasm
 
-.DS_Store
 
 # For cross compile
 osxcross

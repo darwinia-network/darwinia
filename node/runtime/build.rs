@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
+// Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Substrate.
 
 // Substrate is free software: you can redistribute it and/or modify
@@ -14,8 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! The Substrate runtime reexported for WebAssembly compile.
+use wasm_builder_runner::{build_current_project_with_rustflags, WasmBuilderSource};
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
-pub use node_runtime::*;
+fn main() {
+	build_current_project_with_rustflags(
+		"wasm_binary.rs",
+		WasmBuilderSource::Git {
+			repo: "https://github.com/paritytech/substrate.git",
+			rev: "a61c0eb8",
+		},
+		// This instructs LLD to export __heap_base as a global variable, which is used by the
+		// external memory allocator.
+		"-Clink-arg=--export=__heap_base",
+	);
+}

@@ -1419,3 +1419,11 @@ impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::Blo
 	fn note_author(author: T::AccountId) {}
 	fn note_uncle(author: T::AccountId, _age: T::BlockNumber) {}
 }
+
+pub struct StashOf<T>(rstd::marker::PhantomData<T>);
+
+impl<T: Trait> Convert<T::AccountId, Option<T::AccountId>> for StashOf<T> {
+	fn convert(controller: T::AccountId) -> Option<T::AccountId> {
+		<Module<T>>::ledger(&controller).map(|l| l.stash)
+	}
+}
