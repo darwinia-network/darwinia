@@ -9,7 +9,7 @@ serde = { version = "1.0", optional = true, features = ["derive"] }
 parity-codec = { version = "4.1.1", default-features = false, features = ["derive"] }
 primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-runtime_primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 substrate-serializer = { git = 'https://github.com/paritytech/substrate.git' }
@@ -21,6 +21,6 @@ std = [
 	"parity-codec/std",
 	"primitives/std",
 	"rstd/std",
-	"runtime_primitives/std",
+	"sr-primitives/std",
 	"serde",
 ]

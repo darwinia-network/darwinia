@@ -20,7 +20,7 @@ use chain_spec::ChainSpecExtension;
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
-use node_primitives::{AccountId, AuraId, Balance};
+use node_primitives::{AccountId, Balance};
 use node_runtime::constants::{currency::*, time::*};
 use node_runtime::Block;
 pub use node_runtime::GenesisConfig;

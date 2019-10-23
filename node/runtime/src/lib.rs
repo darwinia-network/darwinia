@@ -119,10 +119,10 @@ pub type DealWithFees = SplitTwoWays<
 	Author, // 1 part (20%) goes to the block author.
 >;
 
-pub const SECS_PER_BLOCK: Moment = 6;
-pub const MINUTES: Moment = 60 / SECS_PER_BLOCK;
-pub const HOURS: Moment = MINUTES * 60;
-pub const DAYS: Moment = HOURS * 24;
+pub const SECS_PER_BLOCK: BlockNumber = 6;
+pub const MINUTES: BlockNumber = 60 / SECS_PER_BLOCK;
+pub const HOURS: BlockNumber = MINUTES * 60;
+pub const DAYS: BlockNumber = HOURS * 24;
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
@@ -223,7 +223,7 @@ impl timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const UncleGenerations: u64 = 0;
+	pub const UncleGenerations: BlockNumber = 5;
 }
 
 impl_opaque_keys! {
@@ -238,7 +238,7 @@ impl_opaque_keys! {
 }
 
 impl authorship::Trait for Runtime {
-	type FindAuthor = ();
+	type FindAuthor = session::FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
 	type EventHandler = Staking;
