@@ -1,11 +1,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use parity_codec::{Codec, Decode, Encode};
-use primitives::traits::{
-	Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating, SimpleArithmetic, StaticLookup, Zero,
-};
+use codec::{Codec, Decode, Encode};
 use rstd::prelude::*;
 use rstd::{cmp, result};
+use sr_primitives::{
+	traits::{
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
+		StaticLookup, Zero,
+	},
+	weights::SimpleDispatchInfo,
+	RuntimeDebug,
+};
 
 use srml_support::dispatch::Result;
 use srml_support::traits::{
@@ -27,8 +32,7 @@ mod tests;
 mod imbalance;
 
 /// Struct to encode the vesting schedule of an individual account.
-#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
 pub struct VestingSchedule<Balance> {
 	/// Locked amount at genesis.
 	pub offset: Balance,
@@ -50,8 +54,7 @@ impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
 	}
 }
 
-#[derive(Encode, Decode, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct BalanceLock<Balance, BlockNumber> {
 	pub id: LockIdentifier,
 	pub amount: Balance,
@@ -66,7 +69,7 @@ pub trait Trait: timestamp::Trait {
 		+ Codec
 		+ Default
 		+ Copy
-		+ MaybeSerializeDebug
+		+ MaybeSerializeDeserialize
 		+ From<Self::BlockNumber>;
 
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -118,7 +121,7 @@ decl_storage! {
 						// <= begin it should be >= balance
 						// >= begin+length it should be <= 0
 
-						let per_block = balance / length.max(primitives::traits::One::one());
+						let per_block = balance / length.max(One::one());
 						let offset = begin * per_block + balance;
 
 						(who.clone(), VestingSchedule { offset, per_block })
@@ -134,7 +137,7 @@ decl_storage! {
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		fn deposit_event<T>() = default;
+		fn deposit_event() = default;
 
 		pub fn transfer(origin,
 			dest: <T::Lookup as StaticLookup>::Source,
@@ -368,7 +371,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
-	T::Balance: MaybeSerializeDebug,
+	T::Balance: MaybeSerializeDeserialize,
 {
 	type Moment = T::BlockNumber;
 

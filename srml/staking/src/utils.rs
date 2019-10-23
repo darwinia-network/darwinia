@@ -1,7 +1,7 @@
 /// utility in staking
 use crate::{EraIndex, KtonBalanceOf, Module, RingBalanceOf, Trait};
-use primitives::traits::{IntegerSquareRoot, SaturatedConversion};
 use rstd::convert::TryInto;
+use sr_primitives::traits::{IntegerSquareRoot, SaturatedConversion};
 use srml_support::traits::{Currency, Get};
 use substrate_primitives::U256;
 

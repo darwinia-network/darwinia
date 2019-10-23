@@ -22,7 +22,6 @@
 #[cfg(feature = "benchmarks")]
 extern crate test;
 
-pub use node_runtime::{BondingDuration, SessionsPerEra};
 use substrate_executor::native_executor_instance;
 pub use substrate_executor::NativeExecutor;
 
@@ -31,10 +30,7 @@ pub use substrate_executor::NativeExecutor;
 native_executor_instance!(
 	pub Executor,
 	node_runtime::api::dispatch,
-	node_runtime::native_version,
-	include_bytes!(
-		"../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm"
-	)
+	node_runtime::native_version
 );
 
 #[cfg(test)]

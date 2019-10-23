@@ -7,57 +7,69 @@ edition = "2018"
 [dependencies]
 integer-sqrt = { version = "0.1.2" }
 safe-mix = { version = "1.0", default-features = false }
-parity-codec = { version = "4.1.1", default-features = false, features = ["derive"] }
+rustc-hex = { version = "2.0", optional = true }
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 client = { package = "substrate-client", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-runtime_primitives = { package = "sr-primitives",git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 offchain-primitives = { package = "substrate-offchain-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 version = { package = "sr-version", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-#aura = { package = "srml-aura", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-council = { package = "srml-council", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-democracy = { package = "srml-democracy", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 executive = { package = "srml-executive", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 finality-tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-#staking-deprecated = { package = "srml-staking-deprecated", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git', default-features = false, features = ["historical"] }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sudo = { package = "srml-sudo", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 node-primitives = {path = "../primitives", default-features = false }
 consensus_aura = { package = "substrate-consensus-aura-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-rustc-hex = { version = "2.0", optional = true }
-serde = { version = "1.0", optional = true }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
 # customed
-#balances = { package = "evo-ring", path = '../../srml/balances', default-features = false}
 kton = { package = "evo-kton", path = '../../srml/kton', default-features = false}
 staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false}
-aura = { package = "srml-aura",  path = "../../srml/aura", default-features = false }
+
+# new
+babe = { package = "srml-babe", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+babe-primitives = { package = "substrate-consensus-babe-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+system-rpc-runtime-api = { package = "srml-system-rpc-runtime-api", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+substrate-session = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+# new and no-used
+authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+collective = { package = "srml-collective", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+contracts-rpc-runtime-api = { package = "srml-contracts-rpc-runtime-api", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+democracy = { package = "srml-democracy", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+elections = { package = "srml-elections", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+im-online = { package = "srml-im-online", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+membership = { package = "srml-membership", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+offences = { package = "srml-offences", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+randomness-collective-flip = { package = "srml-randomness-collective-flip", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+utility = { package = "srml-utility", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+transaction-payment = { package = "srml-transaction-payment", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+
+[build-dependencies]
+wasm-builder-runner = { package = "substrate-wasm-builder-runner", version = "1.0.2", git = 'https://github.com/paritytech/substrate.git' }
 
 
 [features]
 default = ["std"]
-core = [
-	"contracts/core",
-]
 std = [
-	"parity-codec/std",
+	"codec/std",
 	"substrate-primitives/std",
 	"rstd/std",
-	"runtime_primitives/std",
+	"sr-primitives/std",
 	"support/std",
-	"aura/std",
 	"balances/std",
 	"contracts/std",
-	"council/std",
 	"democracy/std",
 	"executive/std",
 	"finality-tracker/std",
@@ -79,5 +91,20 @@ std = [
 	"rustc-hex",
 	"substrate-keyring",
 	"offchain-primitives/std",
+	"babe-primitives/std",
+	"system-rpc-runtime-api/std",
 	"kton/std",
+	"authority-discovery/std",
+	"collective/std",
+	"contracts-rpc-runtime-api/std",
+	"elections/std",
+	"im-online/std",
+	"membership/std",
+	"offences/std",
+	"randomness-collective-flip/std",
+	"utility/std",
+	"transaction-payment/std",
+	"sr-staking-primitives/std",
+	"babe/std",
+	"substrate-session/std"
 ]

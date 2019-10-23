@@ -6,8 +6,8 @@ description = "Substrate node implementation in Rust."
 edition = "2018"
 
 [dependencies]
-trie-root = "0.12"
-parity-codec = "4.1.1"
+trie-root = "0.15.2"
+codec = { package = "parity-scale-codec", version = "1.0.0" }
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 state_machine = { package = "substrate-state-machine", git = 'https://github.com/paritytech/substrate.git' }
 substrate-executor = { git = 'https://github.com/paritytech/substrate.git' }
@@ -17,7 +17,7 @@ node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
-test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git', rev = "5bf5e8f5" }
+test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git' }
 keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
 runtime_primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git' }
 runtime_support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
@@ -30,7 +30,7 @@ treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/sub
 contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git' }
 grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git' }
 indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
-wabt = "~0.7.4"
+wabt = "0.9.2"
 
 [features]
 benchmarks = []
