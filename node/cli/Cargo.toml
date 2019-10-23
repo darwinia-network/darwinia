@@ -45,6 +45,20 @@ backtrace = "0.3"
 reqwest = "0.9.5"
 serde = { version = "1.0.101", features = [ "derive" ] }
 serde_json = "1.0"
+#new
+chain-spec = { package = "substrate-chain-spec", git = 'https://github.com/paritytech/substrate.git' }
+system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
+transaction-payment = { package = "srml-transaction-payment", git = 'https://github.com/paritytech/substrate.git' }
+node-rpc = { path = "../rpc" }
+substrate-rpc = { package = "substrate-rpc", git = 'https://github.com/paritytech/substrate.git' }
+client_db = { package = "substrate-client-db", git = 'https://github.com/paritytech/substrate.git', features = ["kvdb-rocksdb"] }
+babe = { package = "substrate-consensus-babe", git = 'https://github.com/paritytech/substrate.git' }
+babe-primitives = { package = "substrate-consensus-babe-primitives", git = 'https://github.com/paritytech/substrate.git' }
+grandpa_primitives = { package = "substrate-finality-grandpa-primitives", git = 'https://github.com/paritytech/substrate.git' }
+im-online = { package = "srml-im-online", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+authority-discovery = { package = "substrate-authority-discovery", git = 'https://github.com/paritytech/substrate.git' }
+offchain = { package = "substrate-offchain", git = 'https://github.com/paritytech/substrate.git' }
 
 [dev-dependencies]
 consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/paritytech/substrate.git' }

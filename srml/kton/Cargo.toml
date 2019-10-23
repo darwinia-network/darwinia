@@ -10,7 +10,7 @@ safe-mix = { version = "1.0.0", default-features = false }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -30,7 +30,7 @@ std = [
 	"substrate-keyring",
 	"rstd/std",
 	"srml-support/std",
-	"primitives/std",
+	"sr-primitives/std",
 	"system/std",
 	"timestamp/std",
 	"substrate-primitives/std",

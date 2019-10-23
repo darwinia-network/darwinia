@@ -28,9 +28,9 @@ use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
 use runtime_io::with_storage;
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
-use sr_primitives::Perbill;
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
+use sr_primitives::{Perbill, RuntimeDebug};
 use sr_staking_primitives::SessionIndex;
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
@@ -70,7 +70,8 @@ pub type EraIndex = u32;
 
 const ACCURACY: u128 = u32::max_value() as ExtendedBalance + 1;
 
-#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
+#[derive(RuntimeDebug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum StakerStatus<AccountId> {
 	/// Chilling.
 	Idle,
@@ -80,8 +81,7 @@ pub enum StakerStatus<AccountId> {
 	Nominator(Vec<AccountId>),
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct ValidatorPrefs {
 	/// Validator should ensure this many more slashes than is necessary before being unstaked.
 	#[codec(compact)]
@@ -100,8 +100,7 @@ impl Default for ValidatorPrefs {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub enum StakingBalance<RingBalance, KtonBalance> {
 	Ring(RingBalance),
 	Kton(KtonBalance),
@@ -114,8 +113,7 @@ impl<RingBalance: Default, KtonBalance: Default> Default for StakingBalance<Ring
 }
 
 /// A destination account for payment.
-#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug)]
 pub enum RewardDestination {
 	/// Pay into the stash account, increasing the amount at stake accordingly.
 	/// for now, we dont use this.
@@ -132,8 +130,7 @@ impl Default for RewardDestination {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct UnlockChunk<StakingBalance> {
 	/// Amount of funds to be unlocked.
 	value: StakingBalance,
@@ -143,8 +140,7 @@ pub struct UnlockChunk<StakingBalance> {
 	is_time_deposit: bool,
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 	#[codec(compact)]
 	value: RingBalance,
@@ -154,8 +150,7 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 	expire_time: Moment,
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, RuntimeDebug)]
 pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
 	pub stash: AccountId,
 	// normal pattern: for ring
@@ -182,8 +177,7 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
 }
 
 /// The amount of exposure (to slashing) than an individual nominator has.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
 pub struct IndividualExpo<AccountId, Power> {
 	/// The stash account of the nominator in question.
 	who: AccountId,
@@ -192,8 +186,7 @@ pub struct IndividualExpo<AccountId, Power> {
 }
 
 /// A snapshot of the stake backing a single validator in the system.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
 pub struct Exposures<AccountId, Power> {
 	/// The total balance backing this validator.
 	pub total: Power,
