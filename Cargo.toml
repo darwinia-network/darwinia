@@ -70,7 +70,8 @@ members = [
     "srml/kton",
     "srml/support",
 	"srml/try",
-	"srml/bridge",
+	"srml/chainrelay",
+	"srml/chainrelay/poa"
 ]
 
 exclude = ["node/runtime/wasm"]
