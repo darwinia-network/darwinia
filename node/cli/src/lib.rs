@@ -169,7 +169,7 @@ where
 			|exit, _cli_args, _custom_args, config: Config<_, _>| {
 				info!("{}", version.name);
 				info!("  version {}", config.full_version());
-				info!("  _____                     _       _       ");
+				info!("  _____                      _       _       ");
 				info!(" |  __ \\                   (_)     (_)      ");
 				info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
 				info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
