@@ -47,6 +47,7 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
+	CrayfishTestnet,
 }
 
 /// Custom subcommands.
@@ -129,6 +130,7 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
+			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
 		})
 	}
 
@@ -136,8 +138,9 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
+			"fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
+			"" => Some(ChainSpec::CrayfishTestnet),
 			_ => None,
 		}
 	}
@@ -166,7 +169,12 @@ where
 			|exit, _cli_args, _custom_args, config: Config<_, _>| {
 				info!("{}", version.name);
 				info!("  version {}", config.full_version());
-				info!("  by Parity Technologies, 2017-2019");
+				info!("  _____                      _       _       ");
+				info!(" |  __ \\                   (_)     (_)      ");
+				info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
+				info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
+				info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
+				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 				info!("Chain specification: {}", config.chain_spec.name());
 				info!("Node name: {}", config.name);
 				info!("Roles: {:?}", config.roles);

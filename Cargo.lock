@@ -661,6 +661,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-chainrelay"
+version = "0.1.0"
+dependencies = [
+ "darwinia-chainrelay-poa 0.1.0",
+ "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+]
+
+[[package]]
+name = "darwinia-chainrelay-poa"
+version = "0.1.0"
+
+[[package]]
 name = "darwinia-staking"
 version = "0.1.0"
 dependencies = [
