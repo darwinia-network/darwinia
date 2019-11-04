@@ -673,6 +673,10 @@ dependencies = [
 [[package]]
 name = "darwinia-chainrelay-poa"
 version = "0.1.0"
+dependencies = [
+ "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+]
 
 [[package]]
 name = "darwinia-staking"
