@@ -60,6 +60,7 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
+    "core/merkle-mountain-range",
 #    "darwinia-client",
 	"node/cli",
     "node/executor",
@@ -71,7 +72,6 @@ members = [
     "srml/support",
 	"srml/try",
 	"srml/chainrelay",
-	"srml/chainrelay/poa"
 ]
 
 exclude = ["node/runtime/wasm"]
