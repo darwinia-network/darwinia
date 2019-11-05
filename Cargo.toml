@@ -61,6 +61,7 @@ path = 'node/src/main.rs'
 [workspace]
 members = [
     "core/merkle-mountain-range",
+    "core/fly-client",
 #    "darwinia-client",
 	"node/cli",
     "node/executor",
@@ -82,4 +83,3 @@ build = 'build.rs'
 edition = '2018'
 name = 'darwinia'
 version = '0.3.2'
-

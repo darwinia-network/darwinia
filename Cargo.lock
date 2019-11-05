@@ -664,6 +664,7 @@ dependencies = [
 name = "darwinia-chainrelay"
 version = "0.1.0"
 dependencies = [
+ "blake2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "merkle-mountain-range 0.1.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
@@ -962,6 +963,10 @@ dependencies = [
  "miniz_oxide 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-io 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "fly-client"
+version = "0.1.0"
 
 [[package]]
 name = "fnv"
