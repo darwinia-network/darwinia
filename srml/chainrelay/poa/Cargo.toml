@@ -7,8 +7,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+sr-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
+substrate-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 
 [features]
 default = ["std"]
-std = []
+std = [
+    "sr-primitives/std",
+    "substrate-primitives/std"
+]

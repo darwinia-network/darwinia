@@ -61,6 +61,8 @@ path = 'node/src/main.rs'
 [workspace]
 members = [
 #    "darwinia-client",
+    "core/sr-eth-primitives",
+    "core/sr-rlp",
 	"node/cli",
     "node/executor",
     "node/primitives",

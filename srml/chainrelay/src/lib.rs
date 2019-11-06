@@ -15,7 +15,7 @@ decl_storage! {
 		// we don't need to start from genesis block
 		pub InitialBlock get(initial_block) config(): T::BlockNumber;
 		// BestHeader
-		pub BestHeader get(best_header): BestHeader;
+		pub BestHeader get(best_header): BestBLock;
 
 	}
 }
