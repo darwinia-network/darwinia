@@ -154,7 +154,7 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
 	pub stash: AccountId,
 	// normal pattern: for ring
-	/// total_ring = nomarl_ring + time_deposit_ring
+	/// total_ring = normal_ring + time_deposit_ring
 	#[codec(compact)]
 	pub total_ring: RingBalance,
 	#[codec(compact)]
