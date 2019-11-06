@@ -1,5 +1,5 @@
 use blake2::Digest;
-// for macro vec![]
+// for `vec![]` macro
 use rstd::vec;
 use rstd::vec::Vec;
 
