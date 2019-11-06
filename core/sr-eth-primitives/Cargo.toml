@@ -1,0 +1,40 @@
+[package]
+name = "sr-eth-primitives"
+version = "0.1.0"
+authors = ["hammeWang <dsw0602@foxmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+sr-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
+substrate-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
+rlp = { version = "0.4.3", optional = true }
+parity-crypto = { version = "0.4.2", features = ["publickey"] }
+rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git" }
+ethereum-types = "0.8.0"
+keccak-hash = "0.4.0"
+
+
+[dev-dependencies]
+support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git'}
+rustc-hex = "2.0"
+
+[features]
+default = ["std"]
+std = [
+    "serde",
+    "codec/std",
+    "rstd/std",
+    "sr-primitives/std",
+    "substrate-primitives/std",
+    "rlp",
+    "keccak-hash/std",
+    "ethereum-types/std",
+    "parity-crypto/publickey"
+]
+

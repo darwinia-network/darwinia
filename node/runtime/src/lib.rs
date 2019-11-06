@@ -163,9 +163,9 @@ impl indices::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * DOLLARS;
-	pub const TransferFee: Balance = 1 * CENTS;
-	pub const CreationFee: Balance = 1 * CENTS;
+	pub const ExistentialDeposit: Balance = 1 * COIN;
+	pub const TransferFee: Balance = 1 * MILLI;
+	pub const CreationFee: Balance = 1 * MILLI;
 }
 
 impl balances::Trait for Runtime {
@@ -181,8 +181,8 @@ impl balances::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * CENTS;
-	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
+	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionByteFee: Balance = 10 * MICRO;
 }
 
 impl transaction_payment::Trait for Runtime {
@@ -320,15 +320,15 @@ impl finality_tracker::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ContractTransferFee: Balance = 1 * CENTS;
-	pub const ContractCreationFee: Balance = 1 * CENTS;
-	pub const ContractTransactionBaseFee: Balance = 1 * CENTS;
-	pub const ContractTransactionByteFee: Balance = 10 * MILLICENTS;
-	pub const ContractFee: Balance = 1 * CENTS;
-	pub const TombstoneDeposit: Balance = 1 * DOLLARS;
-	pub const RentByteFee: Balance = 1 * DOLLARS;
-	pub const RentDepositOffset: Balance = 1000 * DOLLARS;
-	pub const SurchargeReward: Balance = 150 * DOLLARS;
+	pub const ContractTransferFee: Balance = 1 * MILLI;
+	pub const ContractCreationFee: Balance = 1 * MILLI;
+	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
+	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
+	pub const ContractFee: Balance = 1 * MILLI;
+	pub const TombstoneDeposit: Balance = 1 * COIN;
+	pub const RentByteFee: Balance = 1 * COIN;
+	pub const RentDepositOffset: Balance = 1000 * COIN;
+	pub const SurchargeReward: Balance = 150 * COIN;
 }
 
 impl contracts::Trait for Runtime {
