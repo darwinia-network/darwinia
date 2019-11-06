@@ -75,6 +75,7 @@ members = [
     "srml/support",
 	"srml/try",
 	"srml/chainrelay",
+	"srml/chainrelay/poa"
 ]
 
 exclude = ["node/runtime/wasm"]

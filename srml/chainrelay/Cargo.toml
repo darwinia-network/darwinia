@@ -14,6 +14,7 @@ support = { package = "srml-support", git = 'https://github.com/paritytech/subst
 system = { package = "srml-system",  git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
+poa = { package = "darwinia-chainrelay-poa", path = "../chainrelay/poa", default-features = false }
 
 [features]
 default = ["std"]
@@ -24,4 +25,5 @@ std = [
     "system/std",
 
     "merkle-mountain-range/std",
+    "poa/std",
 ]
