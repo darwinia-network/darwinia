@@ -5,29 +5,59 @@ use std::str::FromStr;
 use support::{assert_err, assert_noop, assert_ok};
 
 #[test]
+/// kovan tx hash: 0xc654b4c4a183386722d42605ca91e23bc93919db8aa160b10cf50ab6a320ad9f
+/// network: kovan
+/// chain_id: 42
+/// sender: 0x4cC4c344ebA849DC09ac9Af4bfF1977e44FC1D7E
+/// gas_price: 15 Gwei
+/// gas: 21000
+/// action: eth transfer to 0x674943d6003783cf20125caad89525983dbfd050
+/// sender nonce: 5240
 fn test() {
-	let bytes: Vec<u8> = FromHex::from_hex("f85f800182520894095e7baea6a6c7c4c2dfeb977efac326af552d870a801ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a0efffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804").unwrap();
+	let bytes: Vec<u8> = FromHex::from_hex("f86e82147885037e11d60082520894674943d6003783cf20125caad89525983dbfd050881bc16d674ec800008078a01e4143882cd0b9b35710398205cd10e1aea773d938f3bfc10b278e6466bc79a0a05439639ccb7c41a79a7534bd7f3fb68a47b8c615b8a89c0c643fa3bcb7541e0a").unwrap();
 	let tx: UnverifiedTransaction = rlp::decode(&bytes).expect("decoding failure");
-
-	assert_eq!(tx.unsigned.gas, U256::from(U128::from(21000)));
+	assert_eq!(tx.standard_v(), 1);
+	assert_eq!(tx.original_v(), 0x78);
+	// verify hash
+	assert_eq!(
+		tx.hash(),
+		H256::from_str("c654b4c4a183386722d42605ca91e23bc93919db8aa160b10cf50ab6a320ad9f").unwrap()
+	);
+	// verify transaction fields
+	assert_eq!(
+		tx.unsigned,
+		PlainTransaction {
+			nonce: U256::from(U128::from(5240_u128)),
+			gas_price: U256::from(U128::from(15000000000_u128)),
+			gas: U256::from(U128::from(21000_u128)),
+			action: Action::Call(Address::from_str("674943d6003783cf20125caad89525983dbfd050").unwrap()),
+			value: U256::from(U128::from(2000000000000000000_u128)),
+			data: b"".to_vec(),
+		}
+	);
 }
 
 #[test]
-fn compute_transaction_hash() {
+fn transaction_hash_should_be_derived_before() {
 	let plain_tx = PlainTransaction {
-		nonce: U256::from(U128::from(5240 as u128)),
-		gas_price: U256::from(U128::from(15000000000 as u128)),
-		gas: U256::from(U128::from(21000 as u128)),
+		nonce: U256::from(U128::from(5240_u128)),
+		gas_price: U256::from(U128::from(15000000000_u128)),
+		gas: U256::from(U128::from(21000_u128)),
 		action: Action::Call(Address::from_str("674943d6003783cf20125caad89525983dbfd050").unwrap()),
-		value: U256::from(U128::from(2000000000000000000 as u128)),
+		value: U256::from(U128::from(2000000000000000000_u128)),
 		data: b"".to_vec(),
 	};
 
-	// fill it with secret key
-	let sec = Secret::from_str("xxxxx").unwrap();
-	let signed_tx = plain_tx.sign(&sec, Some(42));
+	// compute hash
+	let r = H256::from_str("1e4143882cd0b9b35710398205cd10e1aea773d938f3bfc10b278e6466bc79a0").unwrap();
+	println!("{:?}", r);
+	let s = H256::from_str("5439639ccb7c41a79a7534bd7f3fb68a47b8c615b8a89c0c643fa3bcb7541e0a").unwrap();
+	// standardV
+	let v: u8 = 0x1;
+	let signature = Signature::from_rsv(&r, &s, v);
+	let unverified_tx = plain_tx.with_signature(signature, Some(42));
 	assert_eq!(
-		&signed_tx.hash(),
-		&H256::from_str("c654b4c4a183386722d42605ca91e23bc93919db8aa160b10cf50ab6a320ad9f").unwrap()
+		unverified_tx.hash(),
+		H256::from_str("c654b4c4a183386722d42605ca91e23bc93919db8aa160b10cf50ab6a320ad9f").unwrap()
 	);
 }

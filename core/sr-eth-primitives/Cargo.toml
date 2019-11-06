@@ -35,6 +35,6 @@ std = [
     "rlp",
     "keccak-hash/std",
     "ethereum-types/std",
-    "parity-crypto/publickey"
+    "parity-crypto/publickey",
 ]
 
