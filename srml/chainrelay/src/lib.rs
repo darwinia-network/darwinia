@@ -3,6 +3,8 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+// for `vec![]` macro
+use rstd::vec;
 use rstd::vec::Vec;
 
 // use blake2::Blake2b;
@@ -19,8 +21,8 @@ pub trait Trait: system::Trait {
 
 decl_storage! {
 	trait Store for Module<T: Trait> as Bridge {
-		pub ChainHeaders get(chain_headers): map Chain => Vec<Header>;
-		pub RelayerContribution get(relayer_contribution): map T::AccountId => u32;
+		pub ChainHeaders get(chain_headers): map Chain => Vec<Header> = vec![];
+		pub RelayerContribution get(relayer_contribution): map T::AccountId => u32 = 0;
 	}
 }
 
@@ -31,7 +33,7 @@ decl_module! {
 	{
 		pub fn submit_header(origin, chain: Chain, header: Header) {
 			let relayer = ensure_signed(origin)?;
-			let _ = Self::verify()?;
+			let _ = Self::verify(&header)?;
 
 			<RelayerContribution<T>>::mutate(relayer, |r_c| {
 				*r_c += 1;
@@ -51,14 +53,15 @@ decl_event! {
 }
 
 impl<T: Trait> Module<T> {
-	fn verify() -> Result {
-		/// 1. if exists?
-		/// 2. verify (difficulty + prev_hash + nonce)
-		/// 3. challenge
-		unimplemented!()
+	/// 1. if exists?
+	/// 2. verify (difficulty + prev_hash + nonce)
+	/// 3. challenge
+	fn verify(header: &Header) -> Result {
+		Ok(())
 	}
 }
 
+// FIXME: currently, use SPV instead
 // pub type MMR = MerkleMountainRange<Blake2b>;
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
