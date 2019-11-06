@@ -172,9 +172,9 @@ impl balances::Trait for Runtime {
 	type Balance = Balance;
 	type OnFreeBalanceZero = (Staking, Session);
 	type OnNewAccount = Indices;
-	type Event = Event;
-	type DustRemoval = ();
 	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
@@ -192,13 +192,6 @@ impl transaction_payment::Trait for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = FeeMultiplierUpdateHandler;
-}
-
-impl kton::Trait for Runtime {
-	type Balance = Balance;
-	type Event = Event;
-	type OnMinted = ();
-	type OnRemoval = ();
 }
 
 parameter_types! {
@@ -262,15 +255,15 @@ parameter_types! {
 }
 
 impl session::Trait for Runtime {
-	type OnSessionEnding = Staking;
-	type SessionHandler = SessionHandlers;
-	type ShouldEndSession = Babe;
 	type Event = Event;
-	type Keys = SessionKeys;
 	type ValidatorId = <Self as system::Trait>::AccountId;
 	type ValidatorIdOf = staking::StashOf<Self>;
-	type SelectInitialValidators = Staking;
+	type ShouldEndSession = Babe;
+	type OnSessionEnding = Staking;
+	type SessionHandler = SessionHandlers;
+	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+	type SelectInitialValidators = Staking;
 }
 
 impl session::historical::Trait for Runtime {
@@ -284,30 +277,6 @@ parameter_types! {
 	pub const BondingDuration: staking::EraIndex = 4032;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
-}
-
-// customed
-parameter_types! {
-	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * COIN;
-}
-
-impl staking::Trait for Runtime {
-	type Ring = Balances;
-	type Kton = Kton;
-	type CurrencyToVote = CurrencyToVoteHandler;
-	type Event = Event;
-	type RingReward = ();
-	type RingSlash = ();
-	type KtonReward = ();
-	type KtonSlash = ();
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
-	// customed
-	type Cap = CAP;
-	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
-	type SessionInterface = Self;
 }
 
 impl sudo::Trait for Runtime {
@@ -329,8 +298,8 @@ type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtr
 
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
-	type Call = Call;
 	type Event = Event;
+	type Call = Call;
 	type SubmitTransaction = SubmitTransaction;
 	type ReportUnresponsiveness = Offences;
 }
@@ -418,6 +387,39 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 	}
 }
 
+impl kton::Trait for Runtime {
+	type Balance = Balance;
+	type Event = Event;
+	type OnMinted = ();
+	type OnRemoval = ();
+}
+
+parameter_types! {
+	// decimal 9
+	pub const CAP: Balance = 10_000_000_000 * COIN;
+}
+
+impl staking::Trait for Runtime {
+	type Ring = Balances;
+	type Kton = Kton;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type Event = Event;
+	type RingSlash = ();
+	type RingReward = ();
+	type KtonSlash = ();
+	type KtonReward = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
+	type SessionLength = Period;
+	type SessionInterface = Self;
+}
+
+impl chainrelay::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -442,9 +444,10 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Utility: utility::{Module, Call, Event},
 
+		// custom
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-//		Chainrelay: chainrelay,
+		Chainrelay: chainrelay::{Storage, Module, Event<T>, Call},
 	}
 );
 
