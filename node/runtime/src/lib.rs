@@ -38,12 +38,9 @@ use sr_primitives::curve::PiecewiseLinear;
 use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
 use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
-
 #[cfg(any(feature = "std", test))]
 pub use sr_primitives::BuildStorage;
 use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill, Permill};
-use staking::EraIndex;
-pub use staking::StakerStatus;
 use substrate_primitives::u32_trait::{_1, _2, _3, _4};
 use substrate_primitives::OpaqueMetadata;
 use support::traits::OnUnbalanced;
@@ -57,6 +54,9 @@ pub use timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 use version::NativeVersion;
 use version::RuntimeVersion;
+
+use staking::EraIndex;
+pub use staking::StakerStatus;
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
@@ -418,6 +418,7 @@ impl staking::Trait for Runtime {
 
 impl chainrelay::Trait for Runtime {
 	type Event = Event;
+	type Ring = Balances;
 }
 
 construct_runtime!(
@@ -447,7 +448,7 @@ construct_runtime!(
 		// custom
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-		Chainrelay: chainrelay::{Storage, Module, Event<T>, Call},
+		Chainrelay: chainrelay::{Storage, Config<T>, Module, Event<T>, Call},
 	}
 );
 

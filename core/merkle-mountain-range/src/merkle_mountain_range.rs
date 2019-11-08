@@ -2,7 +2,6 @@ use core::{marker::PhantomData, ops::Index};
 
 use blake2::Digest;
 use codec::{Decode, Encode};
-
 use rstd::{borrow::ToOwned, vec::Vec};
 
 use crate::*;

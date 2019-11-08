@@ -15,6 +15,7 @@ system = { package = "srml-system",  git = 'https://github.com/paritytech/substr
 [features]
 default = ["std"]
 std = [
+	"codec/std",
     "blake2/std",
     "rstd/std",
 ]

@@ -1,9 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(test)]
 
-extern crate rstd;
 #[cfg(all(feature = "std", test))]
 extern crate test;
+
 mod common;
 mod merkle_mountain_range;
 mod merkle_proof;
