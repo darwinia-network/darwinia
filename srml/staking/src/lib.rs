@@ -116,7 +116,7 @@ impl<RingBalance: Default, KtonBalance: Default> Default for StakingBalance<Ring
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug)]
 pub enum RewardDestination {
 	/// Pay into the stash account, increasing the amount at stake accordingly.
-	/// for now, we dont use this.
+	/// for now, we don't use this.
 	//    DeprecatedStaked,
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
