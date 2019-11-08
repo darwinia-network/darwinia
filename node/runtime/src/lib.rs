@@ -28,20 +28,18 @@ use client::{
 };
 use codec::{Decode, Encode};
 pub use contracts::Gas;
-use elections::VoteIndex;
 use grandpa::fg_primitives;
 use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
-use sr_primitives::curve::PiecewiseLinear;
 use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
 use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
 #[cfg(any(feature = "std", test))]
 pub use sr_primitives::BuildStorage;
-use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill, Permill};
-use substrate_primitives::u32_trait::{_1, _2, _3, _4};
+use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill};
+use substrate_primitives::u32_trait::{_1, _4};
 use substrate_primitives::OpaqueMetadata;
 use support::traits::OnUnbalanced;
 pub use support::StorageValue;
@@ -64,7 +62,7 @@ use impls::{Author, CurrencyToVoteHandler, FeeMultiplierUpdateHandler, WeightToF
 
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, time::*};
+use constants::time::*;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -416,7 +414,12 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-impl chainrelay::Trait for Runtime {
+//impl eos_bridge::Trait for Runtime {
+//	type Event = Event;
+//	type Ring = Balances;
+//}
+
+impl ethereum_bridge::Trait for Runtime {
 	type Event = Event;
 	type Ring = Balances;
 }
@@ -448,7 +451,8 @@ construct_runtime!(
 		// custom
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-		Chainrelay: chainrelay::{Storage, Config<T>, Module, Event<T>, Call},
+//		EOSBridge: eos_bridge::{Storage, Config<T>, Module, Event<T>, Call},
+		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );
 

@@ -47,7 +47,6 @@ substrate-phragmen = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-session = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-wasm-interface = { git = 'https://github.com/paritytech/substrate.git' }
 
-
 [build-dependencies]
 vergen = "3.0.4"
 
@@ -64,18 +63,24 @@ members = [
     "core/fly-client",
     "core/sr-eth-primitives",
     "core/sr-rlp",
+
 #    "darwinia-client",
+
 	"node/cli",
     "node/executor",
     "node/primitives",
     "node/runtime",
     "node/rpc-client",
-    "srml/staking",
-    "srml/kton",
+
     "srml/support",
 	"srml/try",
-	"srml/chainrelay",
-	"srml/chainrelay/poa"
+
+	"srml/chainrelay/bridge/eos",
+	"srml/chainrelay/bridge/ethereum",
+	"srml/chainrelay/relayer",
+
+    "srml/kton",
+    "srml/staking",
 ]
 
 exclude = ["node/runtime/wasm"]

@@ -24,9 +24,7 @@ extern crate test;
 
 use codec::{CompactAs, Decode, Encode, HasCompact};
 use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
-#[cfg(feature = "std")]
-use runtime_io::with_storage;
-use session::{historical::OnSessionEnding, SelectInitialValidators};
+use session::SelectInitialValidators;
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
@@ -207,8 +205,12 @@ type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::
 type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
+// TODO
+#[allow(unused)]
 type RawAssignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance);
+#[allow(unused)]
 type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, ExtendedBalance);
+#[allow(unused)]
 type ExpoMap<T> =
 	BTreeMap<<T as system::Trait>::AccountId, Exposures<<T as system::Trait>::AccountId, ExtendedBalance>>;
 
@@ -1151,7 +1153,7 @@ impl<T: Trait> Module<T> {
 			let assignments = elected_set.assignments;
 
 			// The return value of this is safe to be converted to u64.
-			/// Initialize the support of each candidate.
+			// Initialize the support of each candidate.
 			let mut supports = <SupportMap<T::AccountId>>::new();
 			elected_stashes
 				.iter()
@@ -1409,8 +1411,8 @@ where
 /// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
 /// * 1 point to the producer of each referenced uncle block.
 impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
-	fn note_author(author: T::AccountId) {}
-	fn note_uncle(author: T::AccountId, _age: T::BlockNumber) {}
+	fn note_author(_author: T::AccountId) {}
+	fn note_uncle(_author: T::AccountId, _age: T::BlockNumber) {}
 }
 
 pub struct StashOf<T>(rstd::marker::PhantomData<T>);

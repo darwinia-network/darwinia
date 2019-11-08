@@ -21,13 +21,13 @@ use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_primitives::{AccountId, Balance};
-use node_runtime::constants::{currency::*, time::*};
+use node_runtime::constants::currency::*;
 use node_runtime::Block;
 pub use node_runtime::GenesisConfig;
 use node_runtime::{
 	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, GrandpaConfig, ImOnlineConfig,
 	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, COIN,
-	DAYS, MILLI, SECS_PER_BLOCK, WASM_BINARY,
+	WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -40,6 +40,8 @@ use substrate_telemetry::TelemetryEndpoints;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
+// TODO: docs
+#[allow(missing_docs)]
 #[derive(Default, Clone, Serialize, Deserialize, ChainSpecExtension)]
 pub struct Extensions {
 	/// Block numbers with known hashes.
@@ -54,6 +56,7 @@ pub fn flaming_fir_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/flaming-fir.json")[..])
 }
 
+#[allow(missing_docs)]
 pub fn crayfish_fir_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/crayfish-fir.json")[..])
 }
@@ -319,6 +322,8 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
+// TODO: docs
+#[allow(missing_docs)]
 pub fn darwinia_genesis_verbose(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)>,
 	root_key: AccountId,

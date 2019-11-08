@@ -8,7 +8,6 @@ use sr_primitives::{
 		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
 		StaticLookup, Zero,
 	},
-	weights::SimpleDispatchInfo,
 	RuntimeDebug,
 };
 
