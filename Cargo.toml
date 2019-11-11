@@ -24,7 +24,8 @@ substrate-rpc-servers = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-serializer = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-service = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-service-test = { git = 'https://github.com/paritytech/substrate.git' }
-sr-api-macros = { git = 'https://github.com/paritytech/substrate.git' }
+sr-api = { git = 'https://github.com/paritytech/substrate.git' }
+sr-api-proc-macro = { git = 'https://github.com/paritytech/substrate.git' }
 sr-io = { git = 'https://github.com/paritytech/substrate.git' }
 sr-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 sr-sandbox = { git = 'https://github.com/paritytech/substrate.git' }

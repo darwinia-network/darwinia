@@ -24,8 +24,6 @@ extern crate test;
 
 use codec::{CompactAs, Decode, Encode, HasCompact};
 use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
-#[cfg(feature = "std")]
-use runtime_io::with_storage;
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
@@ -568,7 +566,7 @@ decl_module! {
 						T::Kton::ensure_can_withdraw(
 							stash,
 							kton_slash,
-							WithdrawReason::Transfer,
+							WithdrawReason::Transfer.into(),
 							new_balance
 						).ok()
 					})
