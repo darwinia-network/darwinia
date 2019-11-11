@@ -26,8 +26,8 @@ use node_runtime::Block;
 pub use node_runtime::GenesisConfig;
 use node_runtime::{
 	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, RelayerConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig,
-	SystemConfig, COIN, WASM_BINARY,
+	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, COIN,
+	WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -261,7 +261,6 @@ pub fn testnet_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		relayer: Some(RelayerConfig { deposit_pool: 0 }),
 	}
 }
 
@@ -415,7 +414,6 @@ pub fn darwinia_genesis_verbose(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		relayer: Some(RelayerConfig { deposit_pool: 0 }),
 	}
 }
 

@@ -688,7 +688,6 @@ dependencies = [
 name = "darwinia-eos-bridge"
 version = "0.1.0"
 dependencies = [
- "darwinia-relayer 0.1.0",
  "merkle-mountain-range 0.1.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
@@ -700,20 +699,9 @@ dependencies = [
 name = "darwinia-ethereum-bridge"
 version = "0.1.0"
 dependencies = [
- "darwinia-relayer 0.1.0",
  "merkle-mountain-range 0.1.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
-]
-
-[[package]]
-name = "darwinia-relayer"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
@@ -2662,7 +2650,6 @@ version = "0.1.0"
 dependencies = [
  "darwinia-eos-bridge 0.1.0",
  "darwinia-ethereum-bridge 0.1.0",
- "darwinia-relayer 0.1.0",
  "darwinia-staking 0.1.0",
  "evo-kton 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",

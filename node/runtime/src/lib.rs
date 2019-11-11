@@ -423,10 +423,6 @@ impl ethereum_bridge::Trait for Runtime {
 	type Ring = Balances;
 }
 
-impl relayer::Trait for Runtime {
-	type Event = Event;
-}
-
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -455,7 +451,6 @@ construct_runtime!(
 		Staking: staking::{default, OfflineWorker},
 		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},
 		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
-		Relayer: relayer::{Storage, Config<T>, Module, Event<T>, Call},
 	}
 );
 

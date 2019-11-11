@@ -5,6 +5,7 @@
 
 // use blake2::Blake2b;
 //use codec::{Decode, Encode};
+use rstd::vec::Vec;
 use support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
