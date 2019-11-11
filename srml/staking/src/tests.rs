@@ -1205,7 +1205,7 @@ fn yakio_q2() {
 	let free_balance = run(false);
 	let free_balance_with_new_era = run(true);
 
-	assert!(free_balance != 0);
-	assert!(free_balance_with_new_era != 0);
+	assert_ne!(free_balance, 0);
+	assert_ne!(free_balance_with_new_era, 0);
 	assert!(free_balance > free_balance_with_new_era);
 }
