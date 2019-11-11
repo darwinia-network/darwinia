@@ -17,11 +17,13 @@ system = { package = "srml-system",  git = 'https://github.com/paritytech/substr
 
 merkle-mountain-range = { path = "../../../../core/merkle-mountain-range", default-features = false }
 
+relayer = { package = "darwinia-relayer", path = "../../relayer", default-features = false }
+
 [features]
 default = ["std"]
 std = [
 #    "blake2/std",
-    "serde",
+    "serde/std",
 
 	"codec/std",
     "rstd/std",
@@ -29,4 +31,6 @@ std = [
     "system/std",
 
     "merkle-mountain-range/std",
+
+    "relayer/std"
 ]

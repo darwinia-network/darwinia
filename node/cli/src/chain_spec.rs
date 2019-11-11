@@ -26,8 +26,8 @@ use node_runtime::Block;
 pub use node_runtime::GenesisConfig;
 use node_runtime::{
 	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, COIN,
-	WASM_BINARY,
+	IndicesConfig, KtonConfig, RelayerConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig,
+	SystemConfig, COIN, WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -212,15 +212,6 @@ pub fn testnet_genesis(
 				.collect(),
 			vesting: vec![],
 		}),
-		kton: Some(KtonConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
-				.collect(),
-			vesting: vec![],
-		}),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -233,6 +224,28 @@ pub fn testnet_genesis(
 				.iter()
 				.map(|x| (x.0.clone(), session_keys(x.2.clone(), x.3.clone(), x.4.clone())))
 				.collect::<Vec<_>>(),
+		}),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MILLICENTS,
+		}),
+		sudo: Some(SudoConfig { key: root_key }),
+		babe: Some(BabeConfig { authorities: vec![] }),
+		im_online: Some(ImOnlineConfig { keys: vec![] }),
+		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
+		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+
+		kton: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.collect(),
+			vesting: vec![],
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
@@ -248,18 +261,7 @@ pub fn testnet_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		contracts: Some(ContractsConfig {
-			current_schedule: contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
-				..Default::default()
-			},
-			gas_price: 1 * MILLICENTS,
-		}),
-		sudo: Some(SudoConfig { key: root_key }),
-		babe: Some(BabeConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
-		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		relayer: Some(RelayerConfig { deposit_pool: 0 }),
 	}
 }
 
@@ -364,15 +366,6 @@ pub fn darwinia_genesis_verbose(
 				.collect(),
 			vesting: vec![],
 		}),
-		kton: Some(KtonConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
-				.collect(),
-			vesting: vec![],
-		}),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -385,6 +378,28 @@ pub fn darwinia_genesis_verbose(
 				.iter()
 				.map(|x| (x.0.clone(), session_keys(x.2.clone(), x.3.clone(), x.4.clone())))
 				.collect::<Vec<_>>(),
+		}),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MILLICENTS,
+		}),
+		sudo: Some(SudoConfig { key: root_key }),
+		babe: Some(BabeConfig { authorities: vec![] }),
+		im_online: Some(ImOnlineConfig { keys: vec![] }),
+		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
+		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+
+		kton: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.collect(),
+			vesting: vec![],
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
@@ -400,18 +415,7 @@ pub fn darwinia_genesis_verbose(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
-		contracts: Some(ContractsConfig {
-			current_schedule: contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
-				..Default::default()
-			},
-			gas_price: 1 * MILLICENTS,
-		}),
-		sudo: Some(SudoConfig { key: root_key }),
-		babe: Some(BabeConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
-		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		relayer: Some(RelayerConfig { deposit_pool: 0 }),
 	}
 }
 

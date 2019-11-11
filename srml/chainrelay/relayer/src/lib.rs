@@ -3,6 +3,7 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Decode, Encode};
 use support::{decl_event, decl_module, decl_storage};
 
 pub trait Trait: system::Trait {
@@ -11,7 +12,8 @@ pub trait Trait: system::Trait {
 
 decl_storage! {
 	trait Store for Module<T: Trait> as Bridge {
-
+		pub EOSRelayer get(eos_relayer): map T::AccountId => Relayer;
+		pub EthereumRelayer get(ethereum_relayer): map T::AccountId => Relayer;
 	}
 }
 
@@ -34,3 +36,8 @@ decl_event! {
 }
 
 impl<T: Trait> Module<T> {}
+
+#[derive(Default, Decode, Encode)]
+pub struct Relayer {
+	contribution: i32,
+}

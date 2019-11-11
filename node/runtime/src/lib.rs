@@ -414,14 +414,17 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-//impl eos_bridge::Trait for Runtime {
-//	type Event = Event;
-//	type Ring = Balances;
-//}
+impl eos_bridge::Trait for Runtime {
+	type Event = Event;
+}
 
 impl ethereum_bridge::Trait for Runtime {
 	type Event = Event;
 	type Ring = Balances;
+}
+
+impl relayer::Trait for Runtime {
+	type Event = Event;
 }
 
 construct_runtime!(
@@ -448,11 +451,11 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Utility: utility::{Module, Call, Event},
 
-		// custom
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-//		EOSBridge: eos_bridge::{Storage, Config<T>, Module, Event<T>, Call},
+		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},
 		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
+		Relayer: relayer::{Storage, Config<T>, Module, Event<T>, Call},
 	}
 );
 

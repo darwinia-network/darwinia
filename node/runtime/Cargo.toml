@@ -36,9 +36,10 @@ babe-primitives = { package = "substrate-consensus-babe-primitives", git = 'http
 system-rpc-runtime-api = { package = "srml-system-rpc-runtime-api", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-session = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
+# staking tests needed
+authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 # new and no-used
-authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 collective = { package = "srml-collective", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -99,6 +100,7 @@ std = [
 	"babe-primitives/std",
 	"system-rpc-runtime-api/std",
 	"authority-discovery/std",
+	"authority-discovery-primitives/std",
 	"collective/std",
 	"contracts-rpc-runtime-api/std",
 	"elections/std",
@@ -118,7 +120,6 @@ std = [
 
     # core struct
 	"merkle-mountain-range/std",
-
 
     # chainrelay
         # bridge

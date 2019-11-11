@@ -4,7 +4,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 // use blake2::Blake2b;
-use codec::{Decode, Encode};
+//use codec::{Decode, Encode};
 use support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
@@ -23,7 +23,12 @@ pub trait Trait: system::Trait {
 // tracking issue: https://github.com/rust-lang/rust/issues/27812
 decl_storage! {
 	trait Store for Module<T: Trait> as Bridge {
-		pub DepositPool get(deposit_pool): RingBalanceOf<T>;
+		pub DepositPool get(deposit_pool) config(): RingBalanceOf<T>;
+		pub DepositValue get(deposit_value): RingBalanceOf<T>;
+
+		// store Vec<Header> or MPT<Header>?
+		pub VerifiedHeader get(verified_header): Vec<Header>;
+		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
 	}
 }
 
@@ -35,7 +40,10 @@ decl_module! {
 		pub fn submit_header(origin, header: Header) {
 			let _relayer = ensure_signed(origin)?;
 			let _ = Self::verify(&header)?;
-		}
+
+			// if header confirmed then return
+			// if header in unverified header then challenge
+		 }
 
 		// `Darwinia lock` corresponds to `TargetChain redeem`
 		pub fn lock(origin) {
@@ -59,6 +67,10 @@ decl_event! {
 }
 
 impl<T: Trait> Module<T> {
+	pub fn adjust_deposit_value() {
+		unimplemented!()
+	}
+
 	/// 1. if exists?
 	/// 2. verify (difficulty + prev_hash + nonce)
 	/// 3. challenge
@@ -78,5 +90,6 @@ impl<T: Trait> Module<T> {
 type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
 // TODO: type
 type Header = ();
+type PrevHash = ();
 // FIXME: currently, use SPV instead
 // pub type MMR = MerkleMountainRange<Blake2b>;

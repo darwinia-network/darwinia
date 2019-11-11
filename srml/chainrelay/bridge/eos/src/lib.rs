@@ -3,18 +3,10 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-//use codec::{Decode, Encode};
-use support::{
-	decl_event,
-	decl_module,
-	decl_storage,
-	//	dispatch::Result,
-	traits::{Currency, LockableCurrency},
-};
+use support::{decl_event, decl_module, decl_storage};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 }
 
 decl_storage! {
@@ -42,7 +34,3 @@ decl_event! {
 }
 
 impl<T: Trait> Module<T> {}
-
-type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-// FIXME: currently, use SPV instead
-// pub type MMR = MerkleMountainRange<Blake2b>;
