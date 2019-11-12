@@ -22,15 +22,14 @@
 use authority_discovery_primitives::{AuthorityId as EncodedAuthorityId, Signature as EncodedSignature};
 use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
 pub use balances::Call as BalancesCall;
-use client::{
-	block_builder::api::{self as block_builder_api, CheckInherentsResult, InherentData},
-	impl_runtime_apis, runtime_api as client_api,
-};
+use sr_api::impl_runtime_apis;
 use codec::{Decode, Encode};
 pub use contracts::Gas;
-use grandpa::fg_primitives;
-use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
-use im_online::sr25519::AuthorityId as ImOnlineId;
+
+//use grandpa::fg_primitives;
+//use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
+//use im_online::sr25519::AuthorityId as ImOnlineId;
+
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
 use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
@@ -38,27 +37,36 @@ use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
 #[cfg(any(feature = "std", test))]
 pub use sr_primitives::BuildStorage;
-use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill};
+
+use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, ApplyResult, Perbill};
 use substrate_primitives::u32_trait::{_1, _4};
-use substrate_primitives::OpaqueMetadata;
+
 use support::traits::OnUnbalanced;
 pub use support::StorageValue;
 use support::{
 	construct_runtime, parameter_types,
 	traits::{Currency, Randomness, SplitTwoWays},
 };
-use system::offchain::TransactionSubmitter;
+
 pub use timestamp::Call as TimestampCall;
-#[cfg(any(feature = "std", test))]
-use version::NativeVersion;
 use version::RuntimeVersion;
+#[cfg(any(feature = "std", test))]
+
+use version::NativeVersion;
+
+use substrate_primitives::OpaqueMetadata;
+use grandpa::AuthorityList as GrandpaAuthorityList;
+use grandpa::fg_primitives;
+use im_online::sr25519::{AuthorityId as ImOnlineId};
+use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
+use system::offchain::TransactionSubmitter;
 
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
-use impls::{Author, CurrencyToVoteHandler, FeeMultiplierUpdateHandler, WeightToFee};
+use impls::{CurrencyToVoteHandler, Author, LinearWeightToFee, TargetedFeeAdjustment};
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -181,6 +189,10 @@ impl balances::Trait for Runtime {
 parameter_types! {
 	pub const TransactionBaseFee: Balance = 1 * MILLI;
 	pub const TransactionByteFee: Balance = 10 * MICRO;
+	// setting this to zero will disable the weight fee.
+	pub const WeightFeeCoefficient: Balance = 1_000;
+	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
+	pub const TargetBlockFullness: Perbill = Perbill::from_percent(25);
 }
 
 impl transaction_payment::Trait for Runtime {
@@ -188,8 +200,8 @@ impl transaction_payment::Trait for Runtime {
 	type OnTransactionPayment = DealWithFees;
 	type TransactionBaseFee = TransactionBaseFee;
 	type TransactionByteFee = TransactionByteFee;
-	type WeightToFee = WeightToFee;
-	type FeeMultiplierUpdate = FeeMultiplierUpdateHandler;
+	type WeightToFee = LinearWeightToFee<WeightFeeCoefficient>;
+	type FeeMultiplierUpdate = TargetedFeeAdjustment<TargetBlockFullness>;
 }
 
 parameter_types! {
@@ -219,12 +231,9 @@ parameter_types! {
 
 impl_opaque_keys! {
 	pub struct SessionKeys {
-		#[id(key_types::GRANDPA)]
-		pub grandpa: GrandpaId,
-		#[id(key_types::BABE)]
-		pub babe: BabeId,
-		#[id(key_types::IM_ONLINE)]
-		pub im_online: ImOnlineId,
+		pub grandpa: Grandpa,
+		pub babe: Babe,
+		pub im_online: ImOnline,
 	}
 }
 
@@ -294,12 +303,17 @@ impl offences::Trait for Runtime {
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
 
+parameter_types! {
+	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+}
+
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
 	type Event = Event;
 	type Call = Call;
 	type SubmitTransaction = SubmitTransaction;
 	type ReportUnresponsiveness = Offences;
+	type SessionDuration = SessionDuration;
 }
 
 impl authority_discovery::Trait for Runtime {
@@ -339,6 +353,7 @@ impl contracts::Trait for Runtime {
 	type ComputeDispatchFee = contracts::DefaultDispatchFeeComputor<Runtime>;
 	type TrieIdGenerator = contracts::TrieIdFromParentCounter<Runtime>;
 	type GasPayment = ();
+	type RentPayment = ();
 	type SignedClaimHandicap = contracts::DefaultSignedClaimHandicap;
 	type TombstoneDeposit = TombstoneDeposit;
 	type StorageSizeOffset = contracts::DefaultStorageSizeOffset;
@@ -358,10 +373,12 @@ impl contracts::Trait for Runtime {
 }
 
 impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
+	type Public = <Signature as traits::Verify>::Signer;
 	type Signature = Signature;
 
 	fn create_transaction<F: system::offchain::Signer<AccountId, Self::Signature>>(
 		call: Call,
+		public: Self::Public,
 		account: AccountId,
 		index: Index,
 	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
@@ -378,7 +395,7 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 			Default::default(),
 		);
 		let raw_payload = SignedPayload::new(call, extra).ok()?;
-		let signature = F::sign(account.clone(), &raw_payload)?;
+		let signature = F::sign(public, &raw_payload)?;
 		let address = Indices::unlookup(account);
 		let (call, extra, _) = raw_payload.deconstruct();
 		Some((call, (address, signature, extra)))
@@ -484,7 +501,7 @@ pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExt
 pub type Executive = executive::Executive<Runtime, Block, system::ChainContext<Runtime>, Runtime, AllModules>;
 
 impl_runtime_apis! {
-	impl client_api::Core<Block> for Runtime {
+	impl sr_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
 			VERSION
 		}
@@ -498,7 +515,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl client_api::Metadata<Block> for Runtime {
+	impl sr_api::Metadata<Block> for Runtime {
 		fn metadata() -> OpaqueMetadata {
 			Runtime::metadata().into()
 		}
@@ -513,11 +530,14 @@ impl_runtime_apis! {
 			Executive::finalize_block()
 		}
 
-		fn inherent_extrinsics(data: InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
+		fn inherent_extrinsics(data: inherents::InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
 			data.create_extrinsics()
 		}
 
-		fn check_inherents(block: Block, data: InherentData) -> CheckInherentsResult {
+		fn check_inherents(
+			block: Block,
+			data: inherents::InherentData,
+		) -> inherents::CheckInherentsResult {
 			data.check_extrinsics(&block)
 		}
 
@@ -526,7 +546,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl client_api::TaggedTransactionQueue<Block> for Runtime {
+	impl tx_pool_api::TaggedTransactionQueue<Block> for Runtime {
 		fn validate_transaction(tx: <Block as BlockT>::Extrinsic) -> TransactionValidity {
 			Executive::validate_transaction(tx)
 		}
@@ -539,7 +559,7 @@ impl_runtime_apis! {
 	}
 
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
-		fn grandpa_authorities() -> Vec<(GrandpaId, GrandpaWeight)> {
+		fn grandpa_authorities() -> GrandpaAuthorityList {
 			Grandpa::grandpa_authorities()
 		}
 	}
@@ -622,11 +642,35 @@ impl_runtime_apis! {
 				Err(_) => ContractExecResult::Error,
 			}
 		}
+
+		fn get_storage(
+			address: AccountId,
+			key: [u8; 32],
+		) -> contracts_rpc_runtime_api::GetStorageResult {
+			Contracts::get_storage(address, key).map_err(|rpc_err| {
+				use contracts::GetStorageError;
+				use contracts_rpc_runtime_api::{GetStorageError as RpcGetStorageError};
+				/// Map the contract error into the RPC layer error.
+				match rpc_err {
+					GetStorageError::ContractDoesntExist => RpcGetStorageError::ContractDoesntExist,
+					GetStorageError::IsTombstone => RpcGetStorageError::IsTombstone,
+				}
+			})
+		}
+	}
+
+	impl transaction_payment_rpc_runtime_api::TransactionPaymentApi<
+		Block,
+		Balance,
+		UncheckedExtrinsic,
+	> for Runtime {
+		fn query_info(uxt: UncheckedExtrinsic, len: u32) -> RuntimeDispatchInfo<Balance> {
+			TransactionPayment::query_info(uxt, len)
+		}
 	}
 
 	impl substrate_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
-			let seed = seed.as_ref().map(|s| rstd::str::from_utf8(&s).expect("Seed is an utf8 string"));
 			SessionKeys::generate(seed)
 		}
 	}

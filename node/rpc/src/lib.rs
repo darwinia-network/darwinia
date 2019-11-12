@@ -32,6 +32,8 @@
 use std::sync::Arc;
 
 use node_primitives::{AccountId, Balance, Block, Index};
+use node_runtime::UncheckedExtrinsic;
+
 use sr_primitives::traits::ProvideRuntimeApi;
 use transaction_pool::txpool::{ChainApi, Pool};
 
@@ -43,14 +45,23 @@ where
 	C: Send + Sync + 'static,
 	C::Api: srml_system_rpc::AccountNonceApi<Block, AccountId, Index>,
 	C::Api: srml_contracts_rpc::ContractsRuntimeApi<Block, AccountId, Balance>,
+	C::Api: srml_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UncheckedExtrinsic>,
 	P: ChainApi + Sync + Send + 'static,
 	M: jsonrpc_core::Metadata + Default,
 {
-	use srml_contracts_rpc::{Contracts, ContractsApi};
 	use srml_system_rpc::{System, SystemApi};
+	use srml_contracts_rpc::{Contracts, ContractsApi};
+	use srml_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
-	io.extend_with(SystemApi::to_delegate(System::new(client.clone(), pool)));
-	io.extend_with(ContractsApi::to_delegate(Contracts::new(client)));
+	io.extend_with(
+		SystemApi::to_delegate(System::new(client.clone(), pool))
+	);
+	io.extend_with(
+		ContractsApi::to_delegate(Contracts::new(client.clone()))
+	);
+	io.extend_with(
+		TransactionPaymentApi::to_delegate(TransactionPayment::new(client))
+	);
 	io
 }

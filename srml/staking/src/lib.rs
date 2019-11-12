@@ -569,7 +569,7 @@ decl_module! {
 						T::Kton::ensure_can_withdraw(
 							stash,
 							kton_slash,
-							WithdrawReason::Transfer,
+							WithdrawReason::Transfer.into(),
 							new_balance
 						).ok()
 					})

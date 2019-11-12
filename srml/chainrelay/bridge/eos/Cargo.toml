@@ -8,9 +8,9 @@ edition = "2018"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-system = { package = "srml-system",  git = 'https://github.com/paritytech/substrate.git', default-features = false }
+rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+system = { package = "srml-system",  git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
 merkle-mountain-range = { path = "../../../../core/merkle-mountain-range", default-features = false }
 
