@@ -18,6 +18,8 @@ use crate::{
 	StakingBalance, Trait,
 };
 
+pub const COIN: u64 = 1_000_000_000;
+
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -162,9 +164,7 @@ parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDuration: EraIndex = 3;
 	pub const ErasPerEpoch: EraIndex = 10;
-}
-pub const COIN: u64 = 1_000_000_000;
-parameter_types! {
+
 	// decimal 9
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 }

@@ -1028,12 +1028,7 @@ fn unlock_value_should_be_increased_and_decreased_correctly() {
 }
 
 // #[test]
-// fn total_deposit_should_be_increased_and_decreased_correctly() {
-// with_externalities(
-// &mut ExtBuilder::default().existential_deposit(0).build(),
-// || body,
-// );
-// }
+// fn total_deposit_should_be_increased_and_decreased_correctly() {}
 
 #[test]
 fn promise_extra_should_not_remove_unexpired_items() {
