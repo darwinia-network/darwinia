@@ -1,12 +1,22 @@
-use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
-use primitives::testing::{Header, UintAuthorityId};
-use primitives::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys};
-use primitives::Perbill;
-use runtime_io;
-use srml_support::traits::{Currency, Get};
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
 use std::{cell::RefCell, collections::HashSet};
-use substrate_primitives::{Blake2Hasher, H256};
+
+use sr_primitives::{
+	testing::{Header, UintAuthorityId},
+	traits::{BlakeTwo256, Convert, IdentityLookup, OnInitialize, OpaqueKeys},
+	Perbill,
+};
+use sr_staking_primitives::SessionIndex;
+use srml_support::{
+	assert_ok, impl_outer_origin, parameter_types,
+	traits::{Currency, Get},
+	StorageLinkedMap,
+};
+use substrate_primitives::H256;
+
+use crate::{
+	phragmen::ExtendedBalance, EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus,
+	StakingBalance, Trait,
+};
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -33,7 +43,13 @@ thread_local! {
 
 pub struct TestSessionHandler;
 impl session::SessionHandler<AccountId> for TestSessionHandler {
-	fn on_new_session<Ks: OpaqueKeys>(_changed: bool, validators: &[(AccountId, Ks)]) {
+	fn on_genesis_session<Ks: OpaqueKeys>(_validators: &[(AccountId, Ks)]) {}
+
+	fn on_new_session<Ks: OpaqueKeys>(
+		_changed: bool,
+		validators: &[(AccountId, Ks)],
+		_queued_validators: &[(AccountId, Ks)],
+	) {
 		SESSION.with(|x| *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new()));
 	}
 
@@ -41,7 +57,6 @@ impl session::SessionHandler<AccountId> for TestSessionHandler {
 		SESSION.with(|d| {
 			let mut d = d.borrow_mut();
 			let value = d.0[validator_index];
-			println!("on_disabled {} -> {}", validator_index, value);
 			d.1.insert(value);
 		})
 	}
@@ -65,17 +80,28 @@ impl_outer_origin! {
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
-
+parameter_types! {
+	pub const BlockHashCount: u64 = 250;
+	pub const MaximumBlockWeight: u32 = 1024;
+	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const AvailableBlockRatio: Perbill = Perbill::one();
+}
 impl system::Trait for Test {
 	type Origin = Origin;
+	type Call = ();
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
-	type Hashing = ::primitives::traits::BlakeTwo256;
+	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = ();
+	type BlockHashCount = BlockHashCount;
+	type MaximumBlockWeight = MaximumBlockWeight;
+	type MaximumBlockLength = MaximumBlockLength;
+	type AvailableBlockRatio = AvailableBlockRatio;
+	type Version = ();
 }
 parameter_types! {
 	pub const TransferFee: u64 = 0;
@@ -87,31 +113,42 @@ impl balances::Trait for Test {
 	type Balance = u64;
 	type OnFreeBalanceZero = Staking;
 	type OnNewAccount = ();
-	type Event = ();
-	type TransactionPayment = ();
 	type TransferPayment = ();
 	type DustRemoval = ();
+	type Event = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-	type TransactionBaseFee = TransactionBaseFee;
-	type TransactionByteFee = TransactionByteFee;
 }
 parameter_types! {
 	pub const Period: BlockNumber = 1;
 	pub const Offset: BlockNumber = 0;
+	pub const UncleGenerations: u64 = 0;
+	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(25);
 }
 impl session::Trait for Test {
-	type OnSessionEnding = Staking;
-	type Keys = UintAuthorityId;
-	type ShouldEndSession = session::PeriodicSessions<Period, Offset>;
-	type SessionHandler = TestSessionHandler;
 	type Event = ();
+	type ValidatorId = AccountId;
+	type ValidatorIdOf = crate::StashOf<Test>;
+	type ShouldEndSession = session::PeriodicSessions<Period, Offset>;
+	type OnSessionEnding = session::historical::NoteHistoricalRoot<Test, Staking>;
+	type SessionHandler = TestSessionHandler;
+	type Keys = UintAuthorityId;
+	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+	type SelectInitialValidators = Staking;
 }
 
+impl session::historical::Trait for Test {
+	type FullIdentification = crate::Exposure<AccountId, ExtendedBalance>;
+	type FullIdentificationOf = crate::ExposureOf<Test>;
+}
+parameter_types! {
+	pub const MinimumPeriod: u64 = 5;
+}
 impl timestamp::Trait for Test {
 	type Moment = u64;
 	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
 }
 
 impl kton::Trait for Test {
@@ -122,17 +159,15 @@ impl kton::Trait for Test {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: session::SessionIndex = 3;
+	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDuration: EraIndex = 3;
 	pub const ErasPerEpoch: EraIndex = 10;
 }
-
 pub const COIN: u64 = 1_000_000_000;
 parameter_types! {
 	// decimal 9
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
-
 impl Trait for Test {
 	type Ring = Ring;
 	type Kton = Kton;
@@ -144,10 +179,10 @@ impl Trait for Test {
 	type KtonReward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
-	// customed
 	type Cap = CAP;
 	type ErasPerEpoch = ErasPerEpoch;
 	type SessionLength = Period;
+	type SessionInterface = Self;
 }
 
 pub struct ExtBuilder {
@@ -208,9 +243,9 @@ impl ExtBuilder {
 	pub fn set_associated_consts(&self) {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
 	}
-	pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
+	pub fn build(self) -> runtime_io::TestExternalities {
 		self.set_associated_consts();
-		let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
 			1_000 * COIN
 		} else {
@@ -221,12 +256,12 @@ impl ExtBuilder {
 		} else {
 			vec![10, 20]
 		};
+
 		let _ = session::GenesisConfig::<Test> {
-			// NOTE: if config.nominate == false then 100 is also selected in the initial round.
-			validators,
-			keys: vec![],
+			keys: validators.iter().map(|x| (*x, UintAuthorityId(*x))).collect(),
 		}
-		.assimilate_storage(&mut t, &mut c);
+		.assimilate_storage(&mut storage);
+
 		let _ = balances::GenesisConfig::<Test> {
 			balances: vec![
 				(1, 10 * balance_factor),
@@ -246,12 +281,13 @@ impl ExtBuilder {
 			],
 			vesting: vec![],
 		}
-		.assimilate_storage(&mut t, &mut c);
+		.assimilate_storage(&mut storage);
+
 		let _ = kton::GenesisConfig::<Test> {
 			balances: vec![],
 			vesting: vec![],
 		}
-		.assimilate_storage(&mut t, &mut c);
+		.assimilate_storage(&mut storage);
 
 		let stake_21 = if self.fair { 1000 } else { 2000 };
 		let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
@@ -280,15 +316,15 @@ impl ExtBuilder {
 			],
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
-			session_reward: Perbill::from_millionths((1000000 * self.reward / balance_factor) as u32),
+			session_reward: Perbill::from_rational_approximation(1_000_000 * self.reward / balance_factor, 1_000_000),
 			offline_slash: Perbill::from_percent(5),
 			offline_slash_grace: 0,
 			invulnerables: vec![],
 		}
-		.assimilate_storage(&mut t, &mut c);
-		let _ = timestamp::GenesisConfig::<Test> { minimum_period: 5 }.assimilate_storage(&mut t, &mut c);
-		let mut ext = t.into();
-		runtime_io::with_externalities(&mut ext, || {
+		.assimilate_storage(&mut storage);
+
+		let mut ext = runtime_io::TestExternalities::from(storage);
+		ext.execute_with(|| {
 			let validators = Session::validators();
 			SESSION.with(|x| *x.borrow_mut() = (validators.clone(), HashSet::new()));
 		});
@@ -387,7 +423,7 @@ pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
 	assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }
 
-pub fn start_session(session_index: session::SessionIndex) {
+pub fn start_session(session_index: SessionIndex) {
 	for i in 0..(session_index - Session::current_index()) {
 		System::set_block_number((i + 1).into());
 		Session::on_initialize(System::block_number());

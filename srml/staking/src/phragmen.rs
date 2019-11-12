@@ -34,7 +34,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use rstd::{collections::btree_map::BTreeMap, prelude::*};
-use sr_primitives::traits::{Bounded, Convert, Member, Saturating, SimpleArithmetic, Zero};
+use sr_primitives::traits::{Bounded, Member, Saturating, Zero};
 use sr_primitives::{helpers_128bit::multiply_by_rational, Perbill, Rational128};
 
 /// A type in which performing operations on balances and stakes of candidates and voters are safe.

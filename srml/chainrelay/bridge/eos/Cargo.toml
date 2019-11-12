@@ -1,22 +1,26 @@
 [package]
-name = "darwinia-chainrelay"
+name = "darwinia-eos-bridge"
 version = "0.1.0"
-authors = ["hammeWang <dsw0602@foxmail.com>"]
+authors = ["Xavier Lau <c.estlavie@icloud.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 system = { package = "srml-system",  git = 'https://github.com/paritytech/substrate.git', default-features = false }
-poa = { package = "darwinia-chainrelay-poa", path = "../chainrelay/poa", default-features = false }
+
+merkle-mountain-range = { path = "../../../../core/merkle-mountain-range", default-features = false }
 
 [features]
 default = ["std"]
 std = [
+	"codec/std",
     "rstd/std",
     "support/std",
     "system/std",
-    "poa/std",
+
+    "merkle-mountain-range/std",
 ]

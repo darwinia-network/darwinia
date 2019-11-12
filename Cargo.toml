@@ -47,7 +47,6 @@ substrate-phragmen = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-session = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-wasm-interface = { git = 'https://github.com/paritytech/substrate.git' }
 
-
 [build-dependencies]
 vergen = "3.0.4"
 
@@ -60,20 +59,27 @@ path = 'node/src/main.rs'
 
 [workspace]
 members = [
-#    "darwinia-client",
+    "core/merkle-mountain-range",
+    "core/fly-client",
     "core/sr-eth-primitives",
     "core/sr-rlp",
+
+#    "darwinia-client",
+
 	"node/cli",
     "node/executor",
     "node/primitives",
     "node/runtime",
     "node/rpc-client",
-    "srml/staking",
-    "srml/kton",
+
     "srml/support",
 	"srml/try",
-	"srml/chainrelay",
-	"srml/chainrelay/poa"
+
+	"srml/chainrelay/bridge/eos",
+	"srml/chainrelay/bridge/ethereum",
+
+    "srml/kton",
+    "srml/staking",
 ]
 
 exclude = ["node/runtime/wasm"]
@@ -84,4 +90,3 @@ build = 'build.rs'
 edition = '2018'
 name = 'darwinia'
 version = '0.3.2'
-
