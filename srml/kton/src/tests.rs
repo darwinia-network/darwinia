@@ -1,6 +1,5 @@
 use super::*;
 use mock::{ExtBuilder, Kton, Origin, System, Test};
-use runtime_io::with_externalities;
 use srml_support::traits::{Currency, LockIdentifier, WithdrawReason, WithdrawReasons};
 use srml_support::{assert_err, assert_noop, assert_ok};
 
@@ -10,7 +9,7 @@ const ID_3: LockIdentifier = *b"3       ";
 
 #[test]
 fn transfer_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let _ = Kton::deposit_creating(&666, 100);
 
 		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
@@ -27,7 +26,7 @@ fn transfer_should_work() {
 
 #[test]
 fn transfer_should_fail() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let _ = Kton::deposit_creating(&777, 1);
 		assert_err!(
 			Kton::transfer(Origin::signed(666), 777, 50),
@@ -55,7 +54,7 @@ fn transfer_should_fail() {
 
 #[test]
 fn set_lock_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let lock_ids = [[0; 8], [1; 8], [2; 8], [3; 8]];
 		let balance_per_lock = Kton::free_balance(&1) / (lock_ids.len() as u64);
 
@@ -88,7 +87,7 @@ fn set_lock_should_work() {
 
 #[test]
 fn remove_lock_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::set_lock(ID_1, &2, u64::max_value(), u64::max_value(), WithdrawReasons::all());
 		Kton::set_lock(
 			ID_2,
@@ -119,7 +118,7 @@ fn remove_lock_should_work() {
 
 #[test]
 fn update_lock_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let mut locks = vec![];
 		for id in 0..10 {
 			// until > 1
@@ -148,7 +147,7 @@ fn update_lock_should_work() {
 
 #[test]
 fn combination_locking_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(ID_1, &1001, u64::max_value(), 0, WithdrawReasons::none());
 		Kton::set_lock(ID_2, &1001, 0, u64::max_value(), WithdrawReasons::none());
@@ -159,7 +158,7 @@ fn combination_locking_should_work() {
 
 #[test]
 fn extend_lock_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let mut locks = vec![];
 		{
 			let amount = 1;
@@ -214,7 +213,7 @@ fn extend_lock_should_work() {
 
 #[test]
 fn lock_block_number_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(ID_1, &1001, 10, 2, WithdrawReasons::all());
 		assert_noop!(
@@ -229,7 +228,7 @@ fn lock_block_number_should_work() {
 
 #[test]
 fn lock_block_number_extension_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(ID_1, &1001, 10, 2, WithdrawReasons::all());
 		assert_noop!(
@@ -252,7 +251,7 @@ fn lock_block_number_extension_should_work() {
 
 #[test]
 fn lock_reasons_extension_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(ID_1, &1001, 10, 10, WithdrawReason::Transfer.into());
 		assert_noop!(
