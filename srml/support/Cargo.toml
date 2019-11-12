@@ -1,5 +1,5 @@
 [package]
-name = "evo-support"
+name = "darwinia-support"
 version = "0.1.0"
 authors = ["hammeWang <dsw0602@foxmail.com>"]
 edition = "2018"

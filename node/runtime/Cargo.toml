@@ -61,7 +61,7 @@ inherents = { package = "substrate-inherents", git = 'https://github.com/darwini
 
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
-kton = { package = "evo-kton", path = '../../srml/kton', default-features = false }
+kton = { package = "darwinia-kton", path = '../../srml/kton', default-features = false }
 staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false }
 
 merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
