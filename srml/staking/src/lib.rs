@@ -24,7 +24,7 @@ extern crate test;
 
 use codec::{CompactAs, Decode, Encode, HasCompact};
 use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
-use session::SelectInitialValidators;
+use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
@@ -176,7 +176,7 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
 
 /// The amount of exposure (to slashing) than an individual nominator has.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
-pub struct IndividualExpo<AccountId, Power> {
+pub struct IndividualExposure<AccountId, Power> {
 	/// The stash account of the nominator in question.
 	who: AccountId,
 	/// Amount of funds exposed.
@@ -185,13 +185,13 @@ pub struct IndividualExpo<AccountId, Power> {
 
 /// A snapshot of the stake backing a single validator in the system.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
-pub struct Exposures<AccountId, Power> {
+pub struct Exposure<AccountId, Power> {
 	/// The total balance backing this validator.
 	pub total: Power,
 	/// The validator's own stash that is exposed.
 	pub own: Power,
 	/// The portions of nominators stashes that are exposed.
-	pub others: Vec<IndividualExpo<AccountId, Power>>,
+	pub others: Vec<IndividualExposure<AccountId, Power>>,
 }
 
 type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
@@ -211,8 +211,7 @@ type RawAssignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance);
 #[allow(unused)]
 type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, ExtendedBalance);
 #[allow(unused)]
-type ExpoMap<T> =
-	BTreeMap<<T as system::Trait>::AccountId, Exposures<<T as system::Trait>::AccountId, ExtendedBalance>>;
+type ExpoMap<T> = BTreeMap<<T as system::Trait>::AccountId, Exposure<<T as system::Trait>::AccountId, ExtendedBalance>>;
 
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
@@ -275,7 +274,7 @@ decl_storage! {
 
 		pub Nominators get(nominators): linked_map T::AccountId => Vec<T::AccountId>;
 
-		pub Stakers get(stakers): map T::AccountId => Exposures<T::AccountId, ExtendedBalance>;
+		pub Stakers get(stakers): map T::AccountId => Exposure<T::AccountId, ExtendedBalance>;
 
 		pub CurrentElected get(current_elected): Vec<T::AccountId>;
 
@@ -1025,7 +1024,7 @@ impl<T: Trait> Module<T> {
 		session_index: SessionIndex,
 	) -> Option<(
 		Vec<T::AccountId>,
-		Vec<(T::AccountId, Exposures<T::AccountId, ExtendedBalance>)>,
+		Vec<(T::AccountId, Exposure<T::AccountId, ExtendedBalance>)>,
 	)> {
 		if ForceNewEra::take() || session_index % T::SessionsPerEra::get() == 0 {
 			let validators = T::SessionInterface::validators();
@@ -1216,7 +1215,7 @@ impl<T: Trait> Module<T> {
 			let mut slot_stake = ExtendedBalance::max_value();
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
-				let exposure = Exposures {
+				let exposure = Exposure {
 					own: s.own,
 					// This might reasonably saturate and we cannot do much about it. The sum of
 					// someone's stake might exceed the balance type if they have the maximum amount
@@ -1226,8 +1225,8 @@ impl<T: Trait> Module<T> {
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExpo { who, value: value })
-						.collect::<Vec<IndividualExpo<_, _>>>(),
+						.map(|(who, value)| IndividualExposure { who, value: value })
+						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
 				if exposure.total < slot_stake {
 					slot_stake = exposure.total;
@@ -1342,6 +1341,18 @@ impl<T: Trait> session::OnSessionEnding<T::AccountId> for Module<T> {
 	}
 }
 
+impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, ExtendedBalance>> for Module<T> {
+	fn on_session_ending(
+		_ending: SessionIndex,
+		start_session: SessionIndex,
+	) -> Option<(
+		Vec<T::AccountId>,
+		Vec<(T::AccountId, Exposure<T::AccountId, ExtendedBalance>)>,
+	)> {
+		Self::new_session(start_session - 1)
+	}
+}
+
 impl<T: Trait> OnFreeBalanceZero<T::AccountId> for Module<T> {
 	fn on_free_balance_zero(stash: &T::AccountId) {
 		if let Some(controller) = <Bonded<T>>::take(stash) {
@@ -1364,8 +1375,8 @@ impl<T: Trait> SelectInitialValidators<T::AccountId> for Module<T> {
 /// on that account.
 pub struct ExposureOf<T>(rstd::marker::PhantomData<T>);
 
-impl<T: Trait> Convert<T::AccountId, Option<Exposures<T::AccountId, ExtendedBalance>>> for ExposureOf<T> {
-	fn convert(validator: T::AccountId) -> Option<Exposures<T::AccountId, ExtendedBalance>> {
+impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, ExtendedBalance>>> for ExposureOf<T> {
+	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, ExtendedBalance>> {
 		Some(<Module<T>>::stakers(&validator))
 	}
 }
@@ -1386,7 +1397,7 @@ impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
 where
 	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: session::historical::Trait<
-		FullIdentification = Exposures<<T as system::Trait>::AccountId, ExtendedBalance>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,

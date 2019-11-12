@@ -265,7 +265,7 @@ impl session::Trait for Runtime {
 }
 
 impl session::historical::Trait for Runtime {
-	type FullIdentification = staking::Exposures<AccountId, Balance>;
+	type FullIdentification = staking::Exposure<AccountId, Balance>;
 	type FullIdentificationOf = staking::ExposureOf<Runtime>;
 }
 
