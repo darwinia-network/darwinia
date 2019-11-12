@@ -14,7 +14,7 @@ exit-future = "0.1.4"
 jsonrpc-core = "14.0.3"
 cli = { package = "substrate-cli", git = 'https://github.com/paritytech/substrate.git' }
 codec = { package = "parity-scale-codec", version = "1.0.0" }
-sr-io = { git = 'https://github.com/paritytech/substrate.git' }
+runtime-io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
 client = { package = "substrate-client", git = 'https://github.com/paritytech/substrate.git' }
 primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git' }
 inherents = { package = "substrate-inherents", git = 'https://github.com/paritytech/substrate.git' }
