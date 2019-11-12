@@ -8,7 +8,6 @@ use sr_primitives::{
 		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
 		StaticLookup, Zero,
 	},
-	weights::SimpleDispatchInfo,
 	RuntimeDebug,
 };
 
@@ -195,6 +194,28 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		Self::minimum_balance()
 	}
 
+	// TODO: ready for hacking
+	fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
+		<TotalIssuance<T>>::mutate(|issued| {
+			issued.checked_sub(&amount).unwrap_or_else(|| {
+				amount = *issued;
+				Zero::zero()
+			})
+		});
+		PositiveImbalance::new(amount)
+	}
+
+	// TODO: ready for hacking
+	fn issue(mut amount: Self::Balance) -> Self::NegativeImbalance {
+		<TotalIssuance<T>>::mutate(|issued| {
+			*issued = issued.checked_add(&amount).unwrap_or_else(|| {
+				amount = Self::Balance::max_value() - *issued;
+				Self::Balance::max_value()
+			})
+		});
+		NegativeImbalance::new(amount)
+	}
+
 	fn free_balance(who: &T::AccountId) -> Self::Balance {
 		<FreeBalance<T>>::get(who)
 	}
@@ -262,26 +283,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		Ok(())
 	}
 
-	fn withdraw(
-		who: &T::AccountId,
-		value: Self::Balance,
-		reasons: WithdrawReasons,
-		liveness: ExistenceRequirement,
-	) -> result::Result<Self::NegativeImbalance, &'static str> {
-		let old_balance = Self::free_balance(who);
-		if let Some(new_balance) = old_balance.checked_sub(&value) {
-			if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
-				return Err("payment would kill account");
-			}
-
-			Self::ensure_can_withdraw(who, value, reasons, new_balance)?;
-			Self::set_free_balance(who, new_balance);
-			Ok(NegativeImbalance::new(value))
-		} else {
-			Err("too few free funds in account")
-		}
-	}
-
 	fn slash(who: &T::AccountId, value: Self::Balance) -> (Self::NegativeImbalance, Self::Balance) {
 		let free_balance = Self::free_balance(who);
 		let free_slash = cmp::min(free_balance, value);
@@ -333,6 +334,26 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		}
 	}
 
+	fn withdraw(
+		who: &T::AccountId,
+		value: Self::Balance,
+		reasons: WithdrawReasons,
+		liveness: ExistenceRequirement,
+	) -> result::Result<Self::NegativeImbalance, &'static str> {
+		let old_balance = Self::free_balance(who);
+		if let Some(new_balance) = old_balance.checked_sub(&value) {
+			if liveness == ExistenceRequirement::KeepAlive && new_balance < Self::minimum_balance() {
+				return Err("payment would kill account");
+			}
+
+			Self::ensure_can_withdraw(who, value, reasons, new_balance)?;
+			Self::set_free_balance(who, new_balance);
+			Ok(NegativeImbalance::new(value))
+		} else {
+			Err("too few free funds in account")
+		}
+	}
+
 	fn make_free_balance_be(
 		who: &T::AccountId,
 		balance: Self::Balance,
@@ -354,28 +375,6 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		};
 
 		(imbalance, outcome)
-	}
-
-	// TODO: ready for hacking
-	fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
-		<TotalIssuance<T>>::mutate(|issued| {
-			issued.checked_sub(&amount).unwrap_or_else(|| {
-				amount = *issued;
-				Zero::zero()
-			})
-		});
-		PositiveImbalance::new(amount)
-	}
-
-	// TODO: ready for hacking
-	fn issue(mut amount: Self::Balance) -> Self::NegativeImbalance {
-		<TotalIssuance<T>>::mutate(|issued| {
-			*issued = issued.checked_add(&amount).unwrap_or_else(|| {
-				amount = Self::Balance::max_value() - *issued;
-				Self::Balance::max_value()
-			})
-		});
-		NegativeImbalance::new(amount)
 	}
 }
 

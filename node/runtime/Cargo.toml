@@ -30,9 +30,6 @@ sudo = { package = "srml-sudo", git = 'https://github.com/paritytech/substrate.g
 node-primitives = {path = "../primitives", default-features = false }
 consensus_aura = { package = "substrate-consensus-aura-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
-# customed
-kton = { package = "evo-kton", path = '../../srml/kton', default-features = false}
-staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false}
 
 # new
 babe = { package = "srml-babe", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -40,8 +37,10 @@ babe-primitives = { package = "substrate-consensus-babe-primitives", git = 'http
 system-rpc-runtime-api = { package = "srml-system-rpc-runtime-api", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-session = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-# new and no-used
+# staking tests needed
 authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+
+# new and no-used
 authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 collective = { package = "srml-collective", git = 'https://github.com/paritytech/substrate.git', default-features = false }
@@ -62,9 +61,16 @@ inherents = { package = "substrate-inherents", git = 'https://github.com/parityt
 
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
+kton = { package = "evo-kton", path = '../../srml/kton', default-features = false }
+staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false }
+
+merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
+
+eos-bridge = { package = "darwinia-eos-bridge", path = "../../srml/chainrelay/bridge/eos", default-features = false }
+ethereum-bridge = { package = "darwinia-ethereum-bridge", path = "../../srml/chainrelay/bridge/ethereum", default-features = false }
+
 [build-dependencies]
 wasm-builder-runner = { package = "substrate-wasm-builder-runner", version = "1.0.2", git = 'https://github.com/paritytech/substrate.git' }
-
 
 [features]
 default = ["std"]
@@ -83,7 +89,6 @@ std = [
 	"indices/std",
 	"session/std",
 	"authorship/std",
-	"staking/std",
 	"system/std",
 	"timestamp/std",
 	"treasury/std",
@@ -99,8 +104,8 @@ std = [
 	"offchain-primitives/std",
 	"babe-primitives/std",
 	"system-rpc-runtime-api/std",
-	"kton/std",
 	"authority-discovery/std",
+	"authority-discovery-primitives/std",
 	"collective/std",
 	"contracts-rpc-runtime-api/std",
 	"elections/std",
@@ -117,4 +122,16 @@ std = [
 	"block-builder-api/std",
     "tx-pool-api/std",
     "inherents/std",
+
+    # custom module
+	"kton/std",
+	"staking/std",
+
+    # core struct
+	"merkle-mountain-range/std",
+
+    # chainrelay
+    # bridge
+    "eos-bridge/std",
+    "ethereum-bridge/std",
 ]

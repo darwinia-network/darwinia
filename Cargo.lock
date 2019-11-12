@@ -682,21 +682,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-chainrelay"
+name = "darwinia-eos-bridge"
 version = "0.1.0"
 dependencies = [
- "darwinia-chainrelay-poa 0.1.0",
+ "merkle-mountain-range 0.1.0",
+ "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
 ]
 
 [[package]]
-name = "darwinia-chainrelay-poa"
+name = "darwinia-ethereum-bridge"
 version = "0.1.0"
 dependencies = [
- "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
- "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "merkle-mountain-range 0.1.0",
+ "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
 ]
 
 [[package]]
@@ -1007,6 +1012,10 @@ dependencies = [
  "miniz_oxide 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-io 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "fly-client"
+version = "0.1.0"
 
 [[package]]
 name = "fnv"
@@ -2341,6 +2350,16 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "merkle-mountain-range"
+version = "0.1.0"
+dependencies = [
+ "blake2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-std 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+ "srml-system 2.0.0 (git+https://github.com/paritytech/substrate.git)",
+]
+
+[[package]]
 name = "merlin"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2628,9 +2647,12 @@ dependencies = [
 name = "node-runtime"
 version = "0.1.0"
 dependencies = [
+ "darwinia-eos-bridge 0.1.0",
+ "darwinia-ethereum-bridge 0.1.0",
  "darwinia-staking 0.1.0",
  "evo-kton 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "merkle-mountain-range 0.1.0",
  "node-primitives 2.0.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -47,6 +47,8 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
+	// TODO: docs
+	#[allow(missing_docs)]
 	CrayfishTestnet,
 }
 

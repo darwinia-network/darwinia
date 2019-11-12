@@ -25,20 +25,22 @@ pub use balances::Call as BalancesCall;
 use sr_api::impl_runtime_apis;
 use codec::{Decode, Encode};
 pub use contracts::Gas;
-use elections::VoteIndex;
+
+//use grandpa::fg_primitives;
+//use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
+//use im_online::sr25519::AuthorityId as ImOnlineId;
+
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
-use sr_primitives::curve::PiecewiseLinear;
 use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
 use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
-
 #[cfg(any(feature = "std", test))]
 pub use sr_primitives::BuildStorage;
-use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill, Permill};
-use staking::EraIndex;
-pub use staking::StakerStatus;
-use substrate_primitives::u32_trait::{_1, _2, _3, _4};
+
+use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, ApplyResult, Perbill};
+use substrate_primitives::u32_trait::{_1, _4};
+
 use support::traits::OnUnbalanced;
 pub use support::StorageValue;
 use support::{
@@ -49,14 +51,18 @@ use support::{
 pub use timestamp::Call as TimestampCall;
 use version::RuntimeVersion;
 #[cfg(any(feature = "std", test))]
+
 use version::NativeVersion;
+
 use substrate_primitives::OpaqueMetadata;
 use grandpa::AuthorityList as GrandpaAuthorityList;
 use grandpa::fg_primitives;
 use im_online::sr25519::{AuthorityId as ImOnlineId};
 use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
-use contracts_rpc_runtime_api::ContractExecResult;
 use system::offchain::TransactionSubmitter;
+
+use staking::EraIndex;
+pub use staking::StakerStatus;
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
@@ -64,7 +70,7 @@ use impls::{CurrencyToVoteHandler, Author, LinearWeightToFee, TargetedFeeAdjustm
 
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, time::*};
+use constants::time::*;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -172,9 +178,9 @@ impl balances::Trait for Runtime {
 	type Balance = Balance;
 	type OnFreeBalanceZero = (Staking, Session);
 	type OnNewAccount = Indices;
-	type Event = Event;
-	type DustRemoval = ();
 	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
@@ -196,13 +202,6 @@ impl transaction_payment::Trait for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = LinearWeightToFee<WeightFeeCoefficient>;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<TargetBlockFullness>;
-}
-
-impl kton::Trait for Runtime {
-	type Balance = Balance;
-	type Event = Event;
-	type OnMinted = ();
-	type OnRemoval = ();
 }
 
 parameter_types! {
@@ -263,19 +262,19 @@ parameter_types! {
 }
 
 impl session::Trait for Runtime {
-	type OnSessionEnding = Staking;
-	type SessionHandler = SessionHandlers;
-	type ShouldEndSession = Babe;
 	type Event = Event;
-	type Keys = SessionKeys;
 	type ValidatorId = <Self as system::Trait>::AccountId;
 	type ValidatorIdOf = staking::StashOf<Self>;
-	type SelectInitialValidators = Staking;
+	type ShouldEndSession = Babe;
+	type OnSessionEnding = Staking;
+	type SessionHandler = SessionHandlers;
+	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+	type SelectInitialValidators = Staking;
 }
 
 impl session::historical::Trait for Runtime {
-	type FullIdentification = staking::Exposures<AccountId, Balance>;
+	type FullIdentification = staking::Exposure<AccountId, Balance>;
 	type FullIdentificationOf = staking::ExposureOf<Runtime>;
 }
 
@@ -285,30 +284,6 @@ parameter_types! {
 	pub const BondingDuration: staking::EraIndex = 4032;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
-}
-
-// customed
-parameter_types! {
-	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * COIN;
-}
-
-impl staking::Trait for Runtime {
-	type Ring = Balances;
-	type Kton = Kton;
-	type CurrencyToVote = CurrencyToVoteHandler;
-	type Event = Event;
-	type RingReward = ();
-	type RingSlash = ();
-	type KtonReward = ();
-	type KtonSlash = ();
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
-	// customed
-	type Cap = CAP;
-	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
-	type SessionInterface = Self;
 }
 
 impl sudo::Trait for Runtime {
@@ -334,8 +309,8 @@ parameter_types! {
 
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
-	type Call = Call;
 	type Event = Event;
+	type Call = Call;
 	type SubmitTransaction = SubmitTransaction;
 	type ReportUnresponsiveness = Offences;
 	type SessionDuration = SessionDuration;
@@ -427,31 +402,72 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 	}
 }
 
+impl kton::Trait for Runtime {
+	type Balance = Balance;
+	type Event = Event;
+	type OnMinted = ();
+	type OnRemoval = ();
+}
+
+parameter_types! {
+	// decimal 9
+	pub const CAP: Balance = 10_000_000_000 * COIN;
+}
+
+impl staking::Trait for Runtime {
+	type Ring = Balances;
+	type Kton = Kton;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type Event = Event;
+	type RingSlash = ();
+	type RingReward = ();
+	type KtonSlash = ();
+	type KtonReward = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type Cap = CAP;
+	type ErasPerEpoch = ErasPerEpoch;
+	type SessionLength = Period;
+	type SessionInterface = Self;
+}
+
+impl eos_bridge::Trait for Runtime {
+	type Event = Event;
+}
+
+impl ethereum_bridge::Trait for Runtime {
+	type Event = Event;
+	type Ring = Balances;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
 		NodeBlock = node_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: system::{Module, Call, Storage, Config, Event},
-		Utility: utility::{Module, Call, Event},
-		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
-		Timestamp: timestamp::{Module, Call, Storage, Inherent},
+		AuthorityDiscovery: authority_discovery::{Module, Call, Config<T>},
 		Authorship: authorship::{Module, Call, Storage},
-		Indices: indices,
+		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
 		Balances: balances::{default, Error},
-		TransactionPayment: transaction_payment::{Module, Storage},
-		Kton: kton,
-		Staking: staking::{default, OfflineWorker},
-		Session: session::{Module, Call, Storage, Event, Config<T>},
+		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		Contracts: contracts,
-		Sudo: sudo,
 		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
-		AuthorityDiscovery: authority_discovery::{Module, Call, Config<T>},
+		Indices: indices,
 		Offences: offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
+		Session: session::{Module, Call, Storage, Event, Config<T>},
+		Sudo: sudo,
+		System: system::{Module, Call, Storage, Config, Event},
+		Timestamp: timestamp::{Module, Call, Storage, Inherent},
+		TransactionPayment: transaction_payment::{Module, Storage},
+		Utility: utility::{Module, Call, Event},
+
+		Kton: kton,
+		Staking: staking::{default, OfflineWorker},
+		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},
+		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );
 

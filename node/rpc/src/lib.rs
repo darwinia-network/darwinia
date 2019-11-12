@@ -31,13 +31,15 @@
 
 use std::sync::Arc;
 
-use node_primitives::{Block, AccountId, Index, Balance};
+use node_primitives::{AccountId, Balance, Block, Index};
 use node_runtime::UncheckedExtrinsic;
+
 use sr_primitives::traits::ProvideRuntimeApi;
 use transaction_pool::txpool::{ChainApi, Pool};
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, M>(client: Arc<C>, pool: Arc<Pool<P>>) -> jsonrpc_core::IoHandler<M> where
+pub fn create<C, P, M>(client: Arc<C>, pool: Arc<Pool<P>>) -> jsonrpc_core::IoHandler<M>
+where
 	C: ProvideRuntimeApi,
 	C: client::blockchain::HeaderBackend<Block>,
 	C: Send + Sync + 'static,
