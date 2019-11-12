@@ -8,25 +8,25 @@ edition = "2018"
 serde = { version = "1.0.101", optional = true }
 safe-mix = { version = "1.0.0", default-features = false }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-substrate-keyring = { git = 'https://github.com/paritytech/substrate.git', optional = true }
-rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-sr-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-srml-support = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', default-features = false, features = ["historical"] }
+substrate-keyring = { git = 'https://github.com/darwinia-network/substrate.git', optional = true }
+rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+runtime_io = { package = "sr-io", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+sr-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+srml-support = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+system = { package = "srml-system", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+session = { package = "srml-session",git = 'https://github.com/darwinia-network/substrate.git', default-features = false, features = ["historical"] }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
-substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-sr-arithmetic = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
-authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-#phragmen = { package = "substrate-phragmen", git = 'https://github.com/paritytech/substrate.git', default-features = false }
+substrate-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+sr-arithmetic = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+sr-staking-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+authorship = { package = "srml-authorship", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+#phragmen = { package = "substrate-phragmen", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
 [dev-dependencies]
-substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
-timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
-balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
+substrate-primitives = { git = 'https://github.com/darwinia-network/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git' }
+balances = { package = "srml-balances", git = 'https://github.com/darwinia-network/substrate.git' }
 kton = { package = "evo-kton", path = "../kton" }
 rand = "0.7.2"
 node-runtime = { path = "../../node/runtime" }
