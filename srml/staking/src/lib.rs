@@ -28,7 +28,7 @@ use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
-use sr_primitives::{Perbill, RuntimeDebug};
+use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
 use sr_staking_primitives::SessionIndex;
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
@@ -66,7 +66,7 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
 
-const ACCURACY: u128 = u32::max_value() as ExtendedBalance + 1;
+const POWER_COUNT: u128 = 1_000_000_000;
 
 #[derive(RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -1116,14 +1116,19 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
-	// TODO: ready for hacking
-	// power is a mixture of ring and kton
+	// TODO: Comment and Refactor
 	fn slashable_balance_of(stash: &T::AccountId) -> ExtendedBalance {
+		// power is a mixture of ring and kton
+		// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
 		Self::bonded(stash)
 			.and_then(Self::ledger)
 			.map(|l| {
-				l.active_ring.saturated_into::<ExtendedBalance>()
-					+ l.active_kton.saturated_into::<ExtendedBalance>() * Self::kton_vote_weight() / ACCURACY
+				Perquintill::from_rational_approximation(
+					l.active_ring.saturated_into::<ExtendedBalance>(), Self::ring_pool().saturated_into::<ExtendedBalance>().max(1)
+				) * (POWER_COUNT / 2 ) +
+					Perquintill::from_rational_approximation(
+						l.active_kton.saturated_into::<ExtendedBalance>(), Self::kton_pool().saturated_into::<ExtendedBalance>().max(1)
+					) * (POWER_COUNT / 2)
 			})
 			.unwrap_or_default()
 	}
@@ -1317,21 +1322,6 @@ impl<T: Trait> Module<T> {
 
 			Self::deposit_event(event);
 		}
-	}
-
-	// total_kton * kton_vote_weight / ACCURACY = total_ring
-	// it ensures that when rewarding validators
-	// reward to ring_pool will be the same with the
-	// reward to kton_pool
-	// that means 50% reward is distributed to ring holders,
-	// another 50% reward is distributed to kton holders
-	fn kton_vote_weight() -> ExtendedBalance {
-		let total_ring = Self::ring_pool().saturated_into::<ExtendedBalance>();
-		// to avoid 'attempt to divide by zero'
-		let total_kton = Self::kton_pool().saturated_into::<ExtendedBalance>().max(1);
-		// total_ring and total_kton are within the scope of u64
-		// so it is safe to multiply ACCURACY when extended to u128
-		total_ring * ACCURACY / total_kton
 	}
 }
 
