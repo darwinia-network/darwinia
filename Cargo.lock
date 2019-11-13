@@ -6147,33 +6147,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "try"
-version = "0.1.0"
-dependencies = [
- "hex-literal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-codec 4.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-codec-derive 3.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-authorship 0.1.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-balances 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-executive 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-finality-tracker 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-grandpa 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-indices 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
- "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
-]
-
-[[package]]
 name = "try-lock"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

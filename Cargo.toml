@@ -74,7 +74,6 @@ members = [
     "node/rpc-client",
 
     "srml/support",
-	"srml/try",
 
 	"srml/chainrelay/bridge/eos",
 	"srml/chainrelay/bridge/ethereum",
