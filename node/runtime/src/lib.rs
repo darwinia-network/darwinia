@@ -28,24 +28,27 @@ use client::{
 };
 use codec::{Decode, Encode};
 pub use contracts::Gas;
-use grandpa::fg_primitives;
-use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
+use grandpa::{fg_primitives, AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
-use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
-use sr_primitives::transaction_validity::TransactionValidity;
-use sr_primitives::weights::Weight;
 #[cfg(any(feature = "std", test))]
 pub use sr_primitives::BuildStorage;
-use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, key_types, ApplyResult, Perbill};
-use substrate_primitives::u32_trait::{_1, _4};
-use substrate_primitives::OpaqueMetadata;
-use support::traits::OnUnbalanced;
+use sr_primitives::{
+	create_runtime_str, generic, impl_opaque_keys, key_types,
+	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup},
+	transaction_validity::TransactionValidity,
+	weights::Weight,
+	ApplyResult, Perbill,
+};
+use substrate_primitives::{
+	u32_trait::{_1, _4},
+	OpaqueMetadata,
+};
 pub use support::StorageValue;
 use support::{
 	construct_runtime, parameter_types,
-	traits::{Currency, Randomness, SplitTwoWays},
+	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
 };
 use system::offchain::TransactionSubmitter;
 pub use timestamp::Call as TimestampCall;
@@ -129,7 +132,6 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const Version: RuntimeVersion = VERSION;
 }
-
 impl system::Trait for Runtime {
 	type Origin = Origin;
 	type Call = Call;
@@ -165,7 +167,6 @@ parameter_types! {
 	pub const TransferFee: Balance = 1 * MILLI;
 	pub const CreationFee: Balance = 1 * MILLI;
 }
-
 impl balances::Trait for Runtime {
 	type Balance = Balance;
 	type OnFreeBalanceZero = (Staking, Session);
@@ -182,7 +183,6 @@ parameter_types! {
 	pub const TransactionBaseFee: Balance = 1 * MILLI;
 	pub const TransactionByteFee: Balance = 10 * MICRO;
 }
-
 impl transaction_payment::Trait for Runtime {
 	type Currency = Balances;
 	type OnTransactionPayment = DealWithFees;
@@ -196,7 +196,6 @@ parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
 	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
 }
-
 impl babe::Trait for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
@@ -206,15 +205,10 @@ impl babe::Trait for Runtime {
 parameter_types! {
 	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
 }
-
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
-}
-
-parameter_types! {
-	pub const UncleGenerations: BlockNumber = 5;
 }
 
 impl_opaque_keys! {
@@ -228,6 +222,9 @@ impl_opaque_keys! {
 	}
 }
 
+parameter_types! {
+	pub const UncleGenerations: BlockNumber = 5;
+}
 impl authorship::Trait for Runtime {
 	type FindAuthor = session::FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
@@ -241,17 +238,12 @@ impl authorship::Trait for Runtime {
 // TODO: Introduce some structure to tie these together to make it a bit less of a footgun. This
 // should be easy, since OneSessionHandler trait provides the `Key` as an associated type. #2858
 
+type SessionHandlers = (Grandpa, Babe, ImOnline, AuthorityDiscovery);
 parameter_types! {
 	pub const Period: BlockNumber = 1 * MINUTES;
 	pub const Offset: BlockNumber = 0;
-}
-
-type SessionHandlers = (Grandpa, Babe, ImOnline, AuthorityDiscovery);
-
-parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
 }
-
 impl session::Trait for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as system::Trait>::AccountId;
@@ -267,14 +259,6 @@ impl session::Trait for Runtime {
 impl session::historical::Trait for Runtime {
 	type FullIdentification = staking::Exposure<AccountId, Balance>;
 	type FullIdentificationOf = staking::ExposureOf<Runtime>;
-}
-
-parameter_types! {
-	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
-	// about 14 days
-	pub const BondingDuration: staking::EraIndex = 4032;
-	// 365 days * 24 hours * 60 minutes / 5 minutes
-	pub const ErasPerEpoch: EraIndex = 105120;
 }
 
 impl sudo::Trait for Runtime {
@@ -293,7 +277,6 @@ impl offences::Trait for Runtime {
 }
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
-
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
 	type Event = Event;
@@ -310,7 +293,6 @@ parameter_types! {
 	pub const WindowSize: BlockNumber = 101;
 	pub const ReportLatency: BlockNumber = 1000;
 }
-
 impl finality_tracker::Trait for Runtime {
 	type OnFinalizationStalled = Grandpa;
 	type WindowSize = WindowSize;
@@ -328,7 +310,6 @@ parameter_types! {
 	pub const RentDepositOffset: Balance = 1000 * COIN;
 	pub const SurchargeReward: Balance = 150 * COIN;
 }
-
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
 	type Time = Timestamp;
@@ -393,10 +374,14 @@ impl kton::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
+	// about 14 days
+	pub const BondingDuration: staking::EraIndex = 4032;
+	// 365 days * 24 hours * 60 minutes / 5 minutes
+	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
-
 impl staking::Trait for Runtime {
 	type Ring = Balances;
 	type Kton = Kton;

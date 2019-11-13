@@ -13,7 +13,6 @@
 test-client
 node_runtime.wasm
 
-
 # For cross compile
 osxcross
 darwin-x86_64

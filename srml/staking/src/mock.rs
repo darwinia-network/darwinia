@@ -332,10 +332,10 @@ impl ExtBuilder {
 	}
 }
 pub type System = system::Module<Test>;
-pub type Ring = balances::Module<Test>;
-pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
+pub type Ring = balances::Module<Test>;
+pub type Kton = kton::Module<Test>;
 pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
