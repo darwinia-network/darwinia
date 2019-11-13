@@ -1,10 +1,11 @@
+use std::{cell::RefCell, collections::HashSet};
+
 use sr_primitives::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
 use srml_support::{impl_outer_origin, parameter_types};
-use std::{cell::RefCell, collections::HashSet};
 use substrate_primitives::H256;
 
 use super::*;
@@ -123,5 +124,6 @@ impl ExtBuilder {
 	}
 }
 
+pub type Timestamp = timestamp::Module<Test>;
 pub type System = system::Module<Test>;
 pub type Kton = Module<Test>;

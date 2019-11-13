@@ -1,7 +1,10 @@
+use srml_support::{
+	assert_err, assert_noop, assert_ok,
+	traits::{Currency, LockIdentifier, WithdrawReason, WithdrawReasons},
+};
+
 use super::*;
-use mock::{ExtBuilder, Kton, Origin, System, Test};
-use srml_support::traits::{Currency, LockIdentifier, WithdrawReason, WithdrawReasons};
-use srml_support::{assert_err, assert_noop, assert_ok};
+use crate::mock::*;
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
@@ -88,30 +91,28 @@ fn set_lock_should_work() {
 #[test]
 fn remove_lock_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-		Kton::set_lock(ID_1, &2, u64::max_value(), u64::max_value(), WithdrawReasons::all());
-		Kton::set_lock(
-			ID_2,
-			&2,
-			u64::max_value(),
-			<system::Module<Test>>::block_number() + 1,
-			WithdrawReasons::all(),
-		);
-		// expired
-		Kton::set_lock(
-			ID_3,
-			&2,
-			u64::max_value(),
-			<system::Module<Test>>::block_number(),
-			WithdrawReasons::all(),
-		);
+		Timestamp::set_timestamp(0);
+		let ts: u64 = Timestamp::now().into();
 
-		Kton::remove_lock(ID_1, &2);
+		Kton::set_lock(ID_1, &2, u64::max_value(), u64::max_value(), WithdrawReasons::all());
 		assert_err!(
 			Kton::transfer(Origin::signed(2), 1, 1),
 			"account liquidity restrictions prevent withdrawal"
 		);
 
+		// unexpired
+		Kton::set_lock(ID_2, &2, u64::max_value(), ts + 1, WithdrawReasons::all());
+		Kton::remove_lock(ID_1, &2);
+		Timestamp::set_timestamp(ts);
+		assert_err!(
+			Kton::transfer(Origin::signed(2), 1, 1),
+			"account liquidity restrictions prevent withdrawal"
+		);
 		Kton::remove_lock(ID_2, &2);
+		assert_ok!(Kton::transfer(Origin::signed(2), 1, 1));
+
+		// expired
+		Kton::set_lock(ID_3, &2, u64::max_value(), ts, WithdrawReasons::all());
 		assert_ok!(Kton::transfer(Origin::signed(2), 1, 1));
 	});
 }
@@ -131,7 +132,7 @@ fn update_lock_should_work() {
 			Kton::set_lock([id; 8], &1, 1, 2, WithdrawReasons::none());
 		}
 		let update_id = 4;
-		for amount in 32767..65535 {
+		for amount in 32767u64..65535 {
 			let until = amount + 1;
 			locks[update_id as usize] = BalanceLock {
 				id: [update_id; 8],
@@ -215,14 +216,19 @@ fn extend_lock_should_work() {
 fn lock_block_number_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
-		Kton::set_lock(ID_1, &1001, 10, 2, WithdrawReasons::all());
-		assert_noop!(
-			<Kton as Currency<_>>::transfer(&1001, &1002, 1),
-			"account liquidity restrictions prevent withdrawal"
-		);
 
-		System::set_block_number(2);
-		assert_ok!(<Kton as Currency<_>>::transfer(&1001, &1002, 1));
+		for &until in [1, 2, 3, 4].iter() {
+			Timestamp::set_timestamp(0);
+
+			Kton::set_lock(ID_1, &1001, 10, until, WithdrawReasons::all());
+			assert_noop!(
+				<Kton as Currency<_>>::transfer(&1001, &1002, 1),
+				"account liquidity restrictions prevent withdrawal"
+			);
+
+			Timestamp::set_timestamp(until);
+			assert_ok!(<Kton as Currency<_>>::transfer(&1001, &1002, 1));
+		}
 	});
 }
 

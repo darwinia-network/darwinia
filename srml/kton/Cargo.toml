@@ -17,8 +17,12 @@ timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/s
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git', default-features = false }
 dsupport = { package = "evo-support", path = "../support", default-features = false }
 
+staking = { package = "darwinia-staking", path = "../staking", default-features = false }
+
 [dev-dependencies]
 runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
+session = { package = "srml-session",git = 'https://github.com/paritytech/substrate.git', features = ["historical"] }
+sr-staking-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 
 [features]
@@ -35,4 +39,6 @@ std = [
 	"timestamp/std",
 	"substrate-primitives/std",
 	"dsupport/std",
+
+	"staking/std"
 ]

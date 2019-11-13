@@ -78,6 +78,7 @@ members = [
 	"srml/chainrelay/bridge/eos",
 	"srml/chainrelay/bridge/ethereum",
 
+#    "srml/balances",
     "srml/kton",
     "srml/staking",
 ]
