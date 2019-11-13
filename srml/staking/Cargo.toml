@@ -26,10 +26,11 @@ authorship = { package = "srml-authorship", git = 'https://github.com/paritytech
 [dev-dependencies]
 substrate-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
-balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 kton = { package = "evo-kton", path = "../kton" }
 rand = "0.7.2"
 node-runtime = { path = "../../node/runtime" }
+
+balances = { package = "darwinia-balances", path = "../../srml/balances", default-features = false }
 
 [features]
 equalize = []

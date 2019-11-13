@@ -14,6 +14,7 @@ rstd = { package = "sr-std", git = "https://github.com/paritytech/substrate.git"
 sr-primitives = { git = "https://github.com/paritytech/substrate.git", default-features = false }
 support = { package = "srml-support", git = "https://github.com/paritytech/substrate.git", default-features = false }
 system = { package = "srml-system", git = "https://github.com/paritytech/substrate.git", default-features = false }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 
 [dev-dependencies]
 runtime-io = { package = "sr-io", git = "https://github.com/paritytech/substrate.git" }
@@ -31,4 +32,5 @@ std = [
 	"support/std",
 	"sr-primitives/std",
 	"system/std",
+	"timestamp/std"
 ]

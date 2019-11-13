@@ -174,7 +174,7 @@ mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 
-pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
+pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -205,7 +205,7 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
 	type CreationFee: Get<Self::Balance>;
 }
 
-pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
+pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -299,10 +299,10 @@ impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> Ves
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct BalanceLock<Balance, BlockNumber> {
+pub struct BalanceLock<Balance, Moment> {
 	pub id: LockIdentifier,
 	pub amount: Balance,
-	pub until: BlockNumber,
+	pub until: Moment,
 	pub reasons: WithdrawReasons,
 }
 
@@ -369,7 +369,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -767,13 +767,18 @@ impl<T: Subtrait<I>, I: Instance> system::Trait for ElevatedTrait<T, I> {
 	type AvailableBlockRatio = T::AvailableBlockRatio;
 	type Version = T::Version;
 }
+impl<T: Subtrait<I>, I: Instance> timestamp::Trait for ElevatedTrait<T, I> {
+	type Moment = T::Moment;
+	type OnTimestampSet = ();
+	type MinimumPeriod = ();
+}
 impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type Balance = T::Balance;
 	type OnFreeBalanceZero = T::OnFreeBalanceZero;
 	type OnNewAccount = T::OnNewAccount;
+	type Event = ();
 	type TransferPayment = ();
 	type DustRemoval = ();
-	type Event = ();
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
@@ -803,6 +808,10 @@ where
 		T::ExistentialDeposit::get()
 	}
 
+	fn free_balance(who: &T::AccountId) -> Self::Balance {
+		<FreeBalance<T, I>>::get(who)
+	}
+
 	fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
 		<TotalIssuance<T, I>>::mutate(|issued| {
 			*issued = issued.checked_sub(&amount).unwrap_or_else(|| {
@@ -823,10 +832,6 @@ where
 		NegativeImbalance::new(amount)
 	}
 
-	fn free_balance(who: &T::AccountId) -> Self::Balance {
-		<FreeBalance<T, I>>::get(who)
-	}
-
 	// # <weight>
 	// Despite iterating over a list of locks, they are limited by the number of
 	// lock IDs, which means the number of runtime modules that intend to use and create locks.
@@ -837,8 +842,6 @@ where
 		reason: WithdrawReason,
 		new_balance: T::Balance,
 	) -> Result {
-		return Err("hacked");
-
 		match reason {
 			WithdrawReason::Reserve | WithdrawReason::Transfer if Self::vesting_balance(who) > new_balance => {
 				return Err("vesting balance too high to send value")
@@ -850,7 +853,7 @@ where
 			return Ok(());
 		}
 
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
 			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.contains(reason))
@@ -904,6 +907,31 @@ where
 		Ok(())
 	}
 
+	fn withdraw(
+		who: &T::AccountId,
+		value: Self::Balance,
+		reason: WithdrawReason,
+		liveness: ExistenceRequirement,
+	) -> result::Result<Self::NegativeImbalance, &'static str> {
+		let old_balance = Self::free_balance(who);
+		if let Some(new_balance) = old_balance.checked_sub(&value) {
+			// if we need to keep the account alive...
+			if liveness == ExistenceRequirement::KeepAlive
+				// ...and it would be dead afterwards...
+				&& new_balance < T::ExistentialDeposit::get()
+				// ...yet is was alive before
+				&& old_balance >= T::ExistentialDeposit::get()
+			{
+				return Err("payment would kill account");
+			}
+			Self::ensure_can_withdraw(who, value, reason, new_balance)?;
+			Self::set_free_balance(who, new_balance);
+			Ok(NegativeImbalance::new(value))
+		} else {
+			Err("too few free funds in account")
+		}
+	}
+
 	fn slash(who: &T::AccountId, value: Self::Balance) -> (Self::NegativeImbalance, Self::Balance) {
 		let free_balance = Self::free_balance(who);
 		let free_slash = cmp::min(free_balance, value);
@@ -944,31 +972,6 @@ where
 		} else {
 			// Impossible, but be defensive.
 			Self::PositiveImbalance::zero()
-		}
-	}
-
-	fn withdraw(
-		who: &T::AccountId,
-		value: Self::Balance,
-		reason: WithdrawReason,
-		liveness: ExistenceRequirement,
-	) -> result::Result<Self::NegativeImbalance, &'static str> {
-		let old_balance = Self::free_balance(who);
-		if let Some(new_balance) = old_balance.checked_sub(&value) {
-			// if we need to keep the account alive...
-			if liveness == ExistenceRequirement::KeepAlive
-				// ...and it would be dead afterwards...
-				&& new_balance < T::ExistentialDeposit::get()
-				// ...yet is was alive before
-				&& old_balance >= T::ExistentialDeposit::get()
-			{
-				return Err("payment would kill account");
-			}
-			Self::ensure_can_withdraw(who, value, reason, new_balance)?;
-			Self::set_free_balance(who, new_balance);
-			Ok(NegativeImbalance::new(value))
-		} else {
-			Err("too few free funds in account")
 		}
 	}
 
@@ -1084,16 +1087,16 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::BlockNumber;
+	type Moment = T::Moment;
 
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
 		amount: T::Balance,
-		until: T::BlockNumber,
+		until: Self::Moment,
 		reasons: WithdrawReasons,
 	) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now();
 		let mut new_lock = Some(BalanceLock {
 			id,
 			amount,
@@ -1122,10 +1125,10 @@ where
 		id: LockIdentifier,
 		who: &T::AccountId,
 		amount: T::Balance,
-		until: T::BlockNumber,
+		until: Self::Moment,
 		reasons: WithdrawReasons,
 	) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now();
 		let mut new_lock = Some(BalanceLock {
 			id,
 			amount,
@@ -1156,7 +1159,7 @@ where
 	}
 
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now();
 		let locks = Self::locks(who)
 			.into_iter()
 			.filter_map(|l| if l.until > now && l.id != id { Some(l) } else { None })

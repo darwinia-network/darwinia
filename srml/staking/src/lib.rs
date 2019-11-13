@@ -216,9 +216,9 @@ type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, Extended
 #[allow(unused)]
 type ExpoMap<T> = BTreeMap<<T as system::Trait>::AccountId, Exposure<<T as system::Trait>::AccountId, ExtendedBalance>>;
 
-pub trait Trait: timestamp::Trait + session::Trait {
-	type Ring: LockableCurrency<Self::AccountId, Moment = EraIndex>;
-	type Kton: LockableCurrency<Self::AccountId, Moment = EraIndex>;
+pub trait Trait: session::Trait + timestamp::Trait {
+	type Ring: LockableCurrency<Self::AccountId, Moment = Timestamp>;
+	type Kton: LockableCurrency<Self::AccountId, Moment = Timestamp>;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
@@ -238,7 +238,7 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	type SessionsPerEra: Get<SessionIndex>;
 
 	/// Number of eras that staked funds must remain bonded for.
-	type BondingDuration: Get<EraIndex>;
+	type BondingDuration: Get<Timestamp>;
 
 	// custom
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
@@ -362,7 +362,7 @@ decl_module! {
 		const SessionsPerEra: SessionIndex = T::SessionsPerEra::get();
 
 		/// Number of eras that staked funds must remain bonded for.
-		const BondingDuration: EraIndex = T::BondingDuration::get();
+		const BondingDuration: Timestamp = T::BondingDuration::get();
 
 		const SessionLength: T::BlockNumber = T::SessionLength::get();
 
@@ -458,6 +458,8 @@ decl_module! {
 				"can not schedule more unlock chunks"
 			);
 
+			// FIXME: `saturated_into` was not recommended https://stackoverflow.com/questions/56081117/how-do-you-convert-between-substrate-specific-types-and-rust-primitive-types
+			let until = <timestamp::Module<T>>::now().saturated_into::<u64>() + T::BondingDuration::get();
 //			let era = Self::current_era() + T::BondingDuration::get();
 
 			match value {
@@ -473,11 +475,11 @@ decl_module! {
 
 					if !active_normal_value.is_zero() {
 						*active_ring -= active_normal_value;
-						unlocking.push(UnlockChunk {
-							value: StakingBalance::Ring(total_value),
-							era,
-							is_time_deposit: false
-						});
+//						unlocking.push(UnlockChunk {
+//							value: StakingBalance::Ring(total_value),
+//							era,
+//							is_time_deposit: false
+//						});
 					}
 
 					// no active_normal_ring
@@ -515,11 +517,11 @@ decl_module! {
 						});
 
 						// update unlocking list
-						unlocking.push(UnlockChunk {
-							value: StakingBalance::Ring(total_deposit_changed),
-							era,
-							is_time_deposit: true,
-						});
+//						unlocking.push(UnlockChunk {
+//							value: StakingBalance::Ring(total_deposit_changed),
+//							era,
+//							is_time_deposit: true,
+//						});
 						<RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
 					}
 				},
@@ -533,7 +535,7 @@ decl_module! {
 						STAKING_ID,
 						stash,
 						value,
-						EraIndex::max_value(),
+						until,
 						WithdrawReasons::all(),
 					);
 
@@ -889,14 +891,14 @@ impl<T: Trait> Module<T> {
 				STAKING_ID,
 				&ledger.stash,
 				ledger.total_ring,
-				EraIndex::max_value(),
+				Timestamp::max_value(),
 				WithdrawReasons::all(),
 			),
 			StakingBalance::Kton(_k) => T::Kton::set_lock(
 				STAKING_ID,
 				&ledger.stash,
 				ledger.total_kton,
-				EraIndex::max_value(),
+				Timestamp::max_value(),
 				WithdrawReasons::all(),
 			),
 		}
@@ -1078,7 +1080,7 @@ impl<T: Trait> Module<T> {
 		// TODO: can be removed?
 		// check if ok to change epoch
 		//		if Self::current_era() % T::ErasPerEpoch::get() == 0 {
-		//			Self::new_epoch();
+		Self::new_epoch();
 		//		}
 
 		// Reassign all Stakers.

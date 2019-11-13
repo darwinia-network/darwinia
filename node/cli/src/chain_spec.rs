@@ -248,7 +248,7 @@ pub fn testnet_genesis(
 			vesting: vec![],
 		}),
 		staking: Some(StakingConfig {
-			current_era: 0,
+			//			current_era: 0,
 			current_era_total_reward: 80_000_000 * COIN / 63720,
 			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
@@ -401,7 +401,7 @@ pub fn darwinia_genesis_verbose(
 			vesting: vec![],
 		}),
 		staking: Some(StakingConfig {
-			current_era: 0,
+			//			current_era: 0,
 			current_era_total_reward: 80_000_000 * COIN / 63720,
 			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),

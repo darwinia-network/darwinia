@@ -21,7 +21,6 @@ sr-io = { git = "https://github.com/paritytech/substrate.git", default-features 
 
 [dev-dependencies]
 support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
-balances = { package = "srml-balances", git = 'https://github.com/paritytech/substrate.git' }
 executive = { package = "srml-executive", git = 'https://github.com/paritytech/substrate.git' }
 authorship = { package = "srml-authorship", git = 'https://github.com/paritytech/substrate.git' }
 finality-tracker = { package = "srml-finality-tracker", git = 'https://github.com/paritytech/substrate.git' }
@@ -32,6 +31,7 @@ system = { package = "srml-system", git = 'https://github.com/paritytech/substra
 timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
 sr-primitives = { git = 'https://github.com/paritytech/substrate.git' }
 
+balances = { package = "darwinia-balances", path = "../../srml/balances", default-features = false }
 
 [features]
 default = ["std"]

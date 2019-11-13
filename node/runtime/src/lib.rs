@@ -375,8 +375,8 @@ impl kton::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
-	// about 14 days
-	pub const BondingDuration: staking::EraIndex = 4032;
+	// about 14 days = 14 * 24 * 24 * 60
+	pub const BondingDuration: staking::Timestamp = 1209600;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
@@ -417,7 +417,6 @@ construct_runtime!(
 		AuthorityDiscovery: authority_discovery::{Module, Call, Config<T>},
 		Authorship: authorship::{Module, Call, Storage},
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
-		Balances: balances::{default, Error},
 		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
@@ -432,6 +431,7 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Utility: utility::{Module, Call, Event},
 
+		Balances: balances::{default, Error},
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
 		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},

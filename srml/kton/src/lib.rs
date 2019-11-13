@@ -1,7 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
-use rstd::{cmp, prelude::*, result};
+use rstd::{cmp, fmt::Debug, prelude::*, result};
 use sr_primitives::{
 	traits::{
 		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
@@ -69,6 +69,7 @@ pub trait Trait: timestamp::Trait {
 		+ Codec
 		+ Default
 		+ Copy
+		+ Debug
 		+ MaybeSerializeDeserialize
 		+ From<Self::BlockNumber>;
 
@@ -371,7 +372,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
-	T::Balance: MaybeSerializeDeserialize,
+	T::Balance: MaybeSerializeDeserialize + Debug,
 {
 	type Moment = T::Moment;
 
