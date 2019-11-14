@@ -133,7 +133,6 @@ pub struct UnlockChunk<StakingBalance> {
 	/// Era number at which point it'll be unlocked.
 	#[codec(compact)]
 	era: EraIndex,
-	is_time_deposit: bool,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -150,14 +149,12 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
 	/// The stash account whose balance is actually locked and at stake.
 	pub stash: AccountId,
+
 	/// The total amount of the stash's balance that we are currently accounting for.
 	/// It's just `active` plus all the `unlocking` balances.
 	/// active_ring = normal_ring + time_deposit_ring
 	#[codec(compact)]
 	pub total_ring: RingBalance,
-	#[codec(compact)]
-	pub total_deposit_ring: RingBalance,
-
 	/// The total amount of the stash's balance that will be at stake in any forthcoming
 	/// rounds.
 	#[codec(compact)]
@@ -486,7 +483,6 @@ decl_module! {
 						unlocking.push(UnlockChunk {
 							value: StakingBalance::Ring(available_unbund_ring),
 							era,
-							is_time_deposit: false
 						});
 
 						Self::update_ledger(&controller, &ledger, value);
@@ -503,7 +499,6 @@ decl_module! {
 						unlocking.push(UnlockChunk {
 							value: StakingBalance::Kton(unbound_kton),
 							era,
-							is_time_deposit: false,
 						});
 
 						Self::update_ledger(&controller, &ledger, value);
@@ -520,33 +515,18 @@ decl_module! {
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				active_ring,
-				total_deposit_ring,
 				active_deposit_ring,
 				deposit_items,
 				stash,
 				..
 			} = &mut ledger;
-			// remove expired deposit_items
-			let now = <timestamp::Module<T>>::now();
-			deposit_items.retain(|item| {
-				if item.expire_time > now {
-					true
-				} else {
-					// reduce deposit_ring,
-					// total / active ring
-					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-					*total_deposit_ring = total_deposit_ring.saturating_sub(item.value);
 
-					false
-				}
-			});
+			// TODO: claim_mature_deposits
 
 			let value = value.min(*active_ring - *active_deposit_ring); // active_normal_ring
 
 			if promise_month >= 3 {
-				// update time_deposit_ring
-				// while total_ring stays the same
-				*total_deposit_ring += value;
+				// update active_deposit_ring
 				*active_deposit_ring += value;
 
 				// for now, kton_return is free
@@ -650,7 +630,6 @@ decl_module! {
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				total_ring,
-				total_deposit_ring,
 				total_kton,
 				unlocking,
 				..
@@ -661,7 +640,6 @@ decl_module! {
 			unlocking.retain(|UnlockChunk {
 				value,
 				era,
-				is_time_deposit,
 			}| {
 				if *era > current_era {
 					return true;
@@ -671,11 +649,6 @@ decl_module! {
 					StakingBalance::Ring(ring) => {
 						balance_kind |= 0b01;
 						*total_ring = total_ring.saturating_sub(*ring);
-
-						// MUST be false if the item is not in deposit
-						if *is_time_deposit {
-							*total_deposit_ring = total_deposit_ring.saturating_sub(*ring);
-						}
 					}
 					StakingBalance::Kton(kton) => {
 						balance_kind |= 0b10;
@@ -815,7 +788,6 @@ impl<T: Trait> Module<T> {
 		// can also be use to stake.
 		if promise_month >= 3 {
 			ledger.active_deposit_ring += value;
-			ledger.total_deposit_ring += value;
 			// for now, kton_return is free
 			// mint kton
 			let kton_return = utils::compute_kton_return::<T>(value, promise_month);
@@ -945,7 +917,6 @@ impl<T: Trait> Module<T> {
 				let StakingLedgers {
 					total_ring,
 					active_ring,
-					total_deposit_ring,
 					active_deposit_ring,
 					deposit_items,
 					..
@@ -982,7 +953,6 @@ impl<T: Trait> Module<T> {
 
 						*total_ring -= value_removed;
 						*active_ring -= value_removed;
-						*total_deposit_ring -= value_removed;
 						*active_deposit_ring -= value_removed;
 
 						item.value -= value_removed;
