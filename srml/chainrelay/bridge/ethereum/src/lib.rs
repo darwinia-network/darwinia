@@ -6,19 +6,18 @@
 // use blake2::Blake2b;
 //use codec::{Decode, Encode};
 use rstd::vec::Vec;
-use support::{
-	decl_event, decl_module, decl_storage,
-	dispatch::Result,
-	traits::{Currency, LockableCurrency},
-};
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use darwinia_support::types::TimeStamp;
-//use merkle_mountain_range::{MerkleMountainRange, Hash};
+use darwinia_support::{
+	traits::LockableCurrency,
+	types::{Id, TimeStamp},
+};
+use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
+	type Ring: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>>;
 }
 
 // config() require `serde = { version = "1.0.101", optional = true }`

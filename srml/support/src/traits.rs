@@ -11,10 +11,36 @@
 //    fn on_dilution(treasury_income: Balance);
 //}
 
+use srml_support::traits::Currency;
+
 pub trait OnMinted<Balance> {
 	fn on_minted(value: Balance);
 }
 
 pub trait OnAccountBalanceChanged<AccountId, Balance> {
 	fn on_changed(who: &AccountId, old: Balance, new: Balance);
+}
+
+/// A currency whose accounts can have liquidity restrictions.
+pub trait LockableCurrency<AccountId>: Currency<AccountId> {
+	/// The quantity used to denote time; usually just a `BlockNumber`.
+	/// In Darwinia we prefer using `TimeStamp/u64`.
+	type Id;
+
+	/// Create a new balance lock on account `who`.
+	///
+	/// If the new lock is valid (i.e. not already expired), it will push the struct to
+	/// the `Locks` vec in storage. Note that you can lock more funds than a user has.
+	///
+	/// If the lock `id` already exists, this will update it.
+	fn set_lock(who: &AccountId, amount: Self::Balance, id: Self::Id);
+
+	// TODO: reserve
+	// fn extend_lock();
+
+	/// Remove an existing lock.
+	fn remove_lock(id: Self::Id, who: &AccountId);
+
+	/// The number of locks.
+	fn count() -> u32;
 }

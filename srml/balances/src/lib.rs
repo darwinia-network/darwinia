@@ -14,137 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! # Balances Module
-//!
-//! The Balances module provides functionality for handling accounts and balances.
-//!
-//! - [`balances::Trait`](./trait.Trait.html)
-//! - [`Call`](./enum.Call.html)
-//! - [`Module`](./struct.Module.html)
-//!
-//! ## Overview
-//!
-//! The Balances module provides functions for:
-//!
-//! - Getting and setting free balances.
-//! - Retrieving total, reserved and unreserved balances.
-//! - Repatriating a reserved balance to a beneficiary account that exists.
-//! - Transferring a balance between accounts (when not reserved).
-//! - Slashing an account balance.
-//! - Account creation and removal.
-//! - Managing total issuance.
-//! - Setting and managing locks.
-//!
-//! ### Terminology
-//!
-//! - **Existential Deposit:** The minimum balance required to create or keep an account open. This prevents
-//! "dust accounts" from filling storage.
-//! - **Total Issuance:** The total number of units in existence in a system.
-//! - **Reaping an account:** The act of removing an account by resetting its nonce. Happens after its balance is set
-//! to zero.
-//! - **Free Balance:** The portion of a balance that is not reserved. The free balance is the only balance that matters
-//! for most operations. When this balance falls below the existential deposit, most functionality of the account is
-//! removed. When both it and the reserved balance are deleted, then the account is said to be dead.
-//! - **Reserved Balance:** Reserved balance still belongs to the account holder, but is suspended. Reserved balance
-//! can still be slashed, but only after all the free balance has been slashed. If the reserved balance falls below the
-//! existential deposit then it and any related functionality will be deleted. When both it and the free balance are
-//! deleted, then the account is said to be dead.
-//! - **Imbalance:** A condition when some funds were credited or debited without equal and opposite accounting
-//! (i.e. a difference between total issuance and account balances). Functions that result in an imbalance will
-//! return an object of the `Imbalance` trait that can be managed within your runtime logic. (If an imbalance is
-//! simply dropped, it should automatically maintain any book-keeping such as total issuance.)
-//! - **Lock:** A freeze on a specified amount of an account's free balance until a specified block number. Multiple
-//! locks always operate over the same funds, so they "overlay" rather than "stack".
-//! - **Vesting:** Similar to a lock, this is another, but independent, liquidity restriction that reduces linearly
-//! over time.
-//!
-//! ### Implementations
-//!
-//! The Balances module provides implementations for the following traits. If these traits provide the functionality
-//! that you need, then you can avoid coupling with the Balances module.
-//!
-//! - [`Currency`](../srml_support/traits/trait.Currency.html): Functions for dealing with a
-//! fungible assets system.
-//! - [`ReservableCurrency`](../srml_support/traits/trait.ReservableCurrency.html):
-//! Functions for dealing with assets that can be reserved from an account.
-//! - [`LockableCurrency`](../srml_support/traits/trait.LockableCurrency.html): Functions for
-//! dealing with accounts that allow liquidity restrictions.
-//! - [`Imbalance`](../srml_support/traits/trait.Imbalance.html): Functions for handling
-//! imbalances between total issuance in the system and account balances. Must be used when a function
-//! creates new funds (e.g. a reward) or destroys some funds (e.g. a system fee).
-//! - [`IsDeadAccount`](../srml_system/trait.IsDeadAccount.html): Determiner to say whether a
-//! given account is unused.
-//!
-//! ## Interface
-//!
-//! ### Dispatchable Functions
-//!
-//! - `transfer` - Transfer some liquid free balance to another account.
-//! - `set_balance` - Set the balances of a given account. The origin of this call must be root.
-//!
-//! ### Public Functions
-//!
-//! - `vesting_balance` - Get the amount that is currently being vested and cannot be transferred out of this account.
-//!
-//! ## Usage
-//!
-//! The following examples show how to use the Balances module in your custom module.
-//!
-//! ### Examples from the SRML
-//!
-//! The Contract module uses the `Currency` trait to handle gas payment, and its types inherit from `Currency`:
-//!
-//! ```
-//! use support::traits::Currency;
-//! # pub trait Trait: system::Trait {
-//! # 	type Currency: Currency<Self::AccountId>;
-//! # }
-//!
-//! pub type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
-//! pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
-//!
-//! # fn main() {}
-//! ```
-//!
-//! The Staking module uses the `LockableCurrency` trait to lock a stash account's funds:
-//!
-//! ```
-//! use support::traits::{WithdrawReasons, LockableCurrency};
-//! use sr_primitives::traits::Bounded;
-//! pub trait Trait: system::Trait {
-//! 	type Currency: LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
-//! }
-//! # struct StakingLedger<T: Trait> {
-//! # 	stash: <T as system::Trait>::AccountId,
-//! # 	total: <<T as Trait>::Currency as support::traits::Currency<<T as system::Trait>::AccountId>>::Balance,
-//! # 	phantom: std::marker::PhantomData<T>,
-//! # }
-//! # const STAKING_ID: [u8; 8] = *b"staking ";
-//!
-//! fn update_ledger<T: Trait>(
-//! 	controller: &T::AccountId,
-//! 	ledger: &StakingLedger<T>
-//! ) {
-//! 	T::Currency::set_lock(
-//! 		STAKING_ID,
-//! 		&ledger.stash,
-//! 		ledger.total,
-//! 		T::BlockNumber::max_value(),
-//! 		WithdrawReasons::all()
-//! 	);
-//! 	// <Ledger<T>>::insert(controller, ledger); // Commented out as we don't have access to Staking's storage here.
-//! }
-//! # fn main() {}
-//! ```
-//!
-//! ## Genesis config
-//!
-//! The Balances module depends on the [`GenesisConfig`](./struct.GenesisConfig.html).
-//!
-//! ## Assumptions
-//!
-//! * Total issued balanced of all accounts should be less than `Trait::Balance::max_value()`.
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
@@ -162,8 +31,8 @@ use support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
 	traits::{
-		Currency, ExistenceRequirement, Get, Imbalance, LockIdentifier, LockableCurrency, OnFreeBalanceZero,
-		OnUnbalanced, ReservableCurrency, SignedImbalance, UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+		Currency, ExistenceRequirement, Get, Imbalance, LockIdentifier, OnFreeBalanceZero, OnUnbalanced,
+		ReservableCurrency, SignedImbalance, UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
 	},
 	Parameter, StorageValue,
 };
@@ -173,6 +42,7 @@ mod mock;
 mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
+use darwinia_support::{traits::LockableCurrency, types::Id};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
@@ -862,25 +732,27 @@ where
 		reasons: WithdrawReasons,
 		new_balance: T::Balance,
 	) -> Result {
-		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
-			&& Self::vesting_balance(who) > new_balance
-		{
-			return Err("vesting balance too high to send value");
-		}
-		let locks = Self::locks(who);
-		if locks.is_empty() {
-			return Ok(());
-		}
-
-		let now = <timestamp::Module<T>>::now();
-		if locks
-			.into_iter()
-			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
-		{
-			Ok(())
-		} else {
-			Err("account liquidity restrictions prevent withdrawal")
-		}
+		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
+		//			&& Self::vesting_balance(who) > new_balance
+		//		{
+		//			return Err("vesting balance too high to send value");
+		//		}
+		//		let locks = Self::locks(who);
+		//		if locks.is_empty() {
+		//			return Ok(());
+		//		}
+		//
+		//		let now = <timestamp::Module<T>>::now();
+		//		if locks
+		//			.into_iter()
+		//			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
+		//		{
+		//			Ok(())
+		//		} else {
+		//			Err("account liquidity restrictions prevent withdrawal")
+		//		}
+		//		TODO
+		unimplemented!()
 	}
 
 	fn transfer(
@@ -1117,84 +989,45 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::Moment;
+	type Id = Id<T::Moment>;
 
 	// `amount` > `free_balance` is allowed
-	fn set_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: Self::Moment,
-		reasons: WithdrawReasons,
-	) {
-		let now = <timestamp::Module<T>>::now();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take()
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
-		<Locks<T>>::insert(who, locks);
+	fn set_lock(who: &T::AccountId, amount: Self::Balance, id: Self::Id) {
+		//		let now = <timestamp::Module<T>>::now();
+		//		let mut new_lock = Some(BalanceLock {
+		//			id,
+		//			amount,
+		//			until,
+		//			reasons,
+		//		});
+		//		let mut locks = Self::locks(who)
+		//			.into_iter()
+		//			.filter_map(|l| {
+		//				if l.id == id {
+		//					new_lock.take()
+		//				} else if l.until > now {
+		//					Some(l)
+		//				} else {
+		//					None
+		//				}
+		//			})
+		//			.collect::<Vec<_>>();
+		//		if let Some(lock) = new_lock {
+		//			locks.push(lock);
+		//		}
+		//		<Locks<T>>::insert(who, locks);
 	}
 
-	fn extend_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: Self::Moment,
-		reasons: WithdrawReasons,
-	) {
-		let now = <timestamp::Module<T>>::now();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take().map(|nl| BalanceLock {
-						id: l.id,
-						amount: l.amount.max(nl.amount),
-						until: l.until.max(nl.until),
-						reasons: l.reasons | nl.reasons,
-					})
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
-		<Locks<T>>::insert(who, locks);
+	fn remove_lock(id: Self::Id, who: &T::AccountId) {
+		//		let now = <timestamp::Module<T>>::now();
+		//		<Locks<T>>::mutate(who, |locks| {
+		//			// unexpired and mismatched id -> keep
+		//			locks.retain(|lock| (lock.until > now) && (lock.id != id));
+		//		});
 	}
 
-	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <timestamp::Module<T>>::now();
-		<Locks<T>>::mutate(who, |locks| {
-			// unexpired and mismatched id -> keep
-			locks.retain(|lock| (lock.until > now) && (lock.id != id));
-		});
+	fn count() -> u32 {
+		unimplemented!()
 	}
 }
 

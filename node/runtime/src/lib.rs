@@ -60,6 +60,7 @@ use substrate_primitives::OpaqueMetadata;
 use system::offchain::TransactionSubmitter;
 use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 
+use darwinia_support::types::TimeStamp;
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
@@ -387,8 +388,8 @@ parameter_types! {
 	pub const Period: BlockNumber = 1 * MINUTES;
 //	pub const Offset: BlockNumber = 0;
 	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
-	// about 14 days
-	pub const BondingDuration: staking::EraIndex = 4032;
+	// about 14 days = 14 * 24 * 60 * 60
+	pub const BondingDuration: TimeStamp = 1209600;
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
@@ -409,10 +410,6 @@ impl staking::Trait for Runtime {
 	type ErasPerEpoch = ErasPerEpoch;
 	type SessionLength = Period;
 	type SessionInterface = Self;
-}
-
-impl eos_bridge::Trait for Runtime {
-	type Event = Event;
 }
 
 impl ethereum_bridge::Trait for Runtime {
@@ -446,7 +443,6 @@ construct_runtime!(
 		Balances: balances::{default, Error},
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},
 		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );

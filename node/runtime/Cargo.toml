@@ -60,13 +60,13 @@ inherents = { package = "substrate-inherents", git = 'https://github.com/darwini
 
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
+darwinia-support = { path = "../../srml/support", default-features = false }
 balances = { package = "darwinia-balances", path = '../../srml/balances', default-features = false }
 kton = { package = "darwinia-kton", path = '../../srml/kton', default-features = false }
 staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false }
 
 merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
 
-eos-bridge = { package = "darwinia-eos-bridge", path = "../../srml/chainrelay/bridge/eos", default-features = false }
 ethereum-bridge = { package = "darwinia-ethereum-bridge", path = "../../srml/chainrelay/bridge/ethereum", default-features = false }
 
 [build-dependencies]
@@ -124,14 +124,10 @@ std = [
     "inherents/std",
 
     # custom module
+    "darwinia-support/std",
 	"kton/std",
 	"staking/std",
 
-    # core struct
-	"merkle-mountain-range/std",
-
     # chainrelay
-    # bridge
-    "eos-bridge/std",
     "ethereum-bridge/std",
 ]

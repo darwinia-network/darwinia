@@ -79,7 +79,6 @@ members = [
     "srml/kton",
     "srml/staking",
 
-    "srml/chainrelay/bridge/eos",
     "srml/chainrelay/bridge/ethereum",
 ]
 

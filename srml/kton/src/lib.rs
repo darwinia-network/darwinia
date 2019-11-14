@@ -13,13 +13,14 @@ use srml_support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
 	traits::{
-		Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
-		UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+		Currency, ExistenceRequirement, Imbalance, LockIdentifier, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome,
+		WithdrawReason, WithdrawReasons,
 	},
 	Parameter, StorageMap, StorageValue,
 };
 use system::ensure_signed;
 
+use darwinia_support::{traits::LockableCurrency, types::Id};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -55,9 +56,8 @@ impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct BalanceLock<Balance, Moment> {
-	pub id: LockIdentifier,
+	pub id: Id<Moment>,
 	pub amount: Balance,
-	pub until: Moment,
 	pub reasons: WithdrawReasons,
 }
 
@@ -226,25 +226,27 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		reasons: WithdrawReasons,
 		new_balance: T::Balance,
 	) -> Result {
-		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
-			&& Self::vesting_balance(who) > new_balance
-		{
-			return Err("vesting balance too high to send value");
-		}
-		let locks = Self::locks(who);
-		if locks.is_empty() {
-			return Ok(());
-		}
-
-		let now = <timestamp::Module<T>>::now();
-		if locks
-			.into_iter()
-			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
-		{
-			Ok(())
-		} else {
-			Err("account liquidity restrictions prevent withdrawal")
-		}
+		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
+		//			&& Self::vesting_balance(who) > new_balance
+		//		{
+		//			return Err("vesting balance too high to send value");
+		//		}
+		//		let locks = Self::locks(who);
+		//		if locks.is_empty() {
+		//			return Ok(());
+		//		}
+		//
+		//		let now = <timestamp::Module<T>>::now();
+		//		if locks
+		//			.into_iter()
+		//			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
+		//		{
+		//			Ok(())
+		//		} else {
+		//			Err("account liquidity restrictions prevent withdrawal")
+		//		}
+		//		TODO
+		unimplemented!()
 	}
 
 	// TODO: add fee
@@ -382,83 +384,44 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::Moment;
+	type Id = Id<T::Moment>;
 
 	// `amount` > `free_balance` is allowed
-	fn set_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: Self::Moment,
-		reasons: WithdrawReasons,
-	) {
-		let now = <timestamp::Module<T>>::now();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take()
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
-		<Locks<T>>::insert(who, locks);
+	fn set_lock(who: &T::AccountId, amount: Self::Balance, id: Self::Id) {
+		//		let now = <timestamp::Module<T>>::now();
+		//		let mut new_lock = Some(BalanceLock {
+		//			id,
+		//			amount,
+		//			until,
+		//			reasons,
+		//		});
+		//		let mut locks = Self::locks(who)
+		//			.into_iter()
+		//			.filter_map(|l| {
+		//				if l.id == id {
+		//					new_lock.take()
+		//				} else if l.until > now {
+		//					Some(l)
+		//				} else {
+		//					None
+		//				}
+		//			})
+		//			.collect::<Vec<_>>();
+		//		if let Some(lock) = new_lock {
+		//			locks.push(lock);
+		//		}
+		//		<Locks<T>>::insert(who, locks);
 	}
 
-	fn extend_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: Self::Moment,
-		reasons: WithdrawReasons,
-	) {
-		let now = <timestamp::Module<T>>::now();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take().map(|nl| BalanceLock {
-						id: l.id,
-						amount: l.amount.max(nl.amount),
-						until: l.until.max(nl.until),
-						reasons: l.reasons | nl.reasons,
-					})
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
-		<Locks<T>>::insert(who, locks);
+	fn remove_lock(id: Self::Id, who: &T::AccountId) {
+		//		let now = <timestamp::Module<T>>::now();
+		//		<Locks<T>>::mutate(who, |locks| {
+		//			// unexpired and mismatched id -> keep
+		//			locks.retain(|lock| (lock.until > now) && (lock.id != id));
+		//		});
 	}
 
-	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <timestamp::Module<T>>::now();
-		<Locks<T>>::mutate(who, |locks| {
-			// unexpired and mismatched id -> keep
-			locks.retain(|lock| (lock.until > now) && (lock.id != id));
-		});
+	fn count() -> u32 {
+		unimplemented!()
 	}
 }

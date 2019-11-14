@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashSet};
 use sr_primitives::{
 	testing::{Header, UintAuthorityId},
 	traits::{BlakeTwo256, Convert, IdentityLookup, OnInitialize, OpaqueKeys},
-	Perbill,
+	KeyTypeId, Perbill,
 };
 use sr_staking_primitives::SessionIndex;
 use srml_support::{
@@ -11,12 +11,13 @@ use srml_support::{
 	traits::{Currency, Get},
 	StorageLinkedMap,
 };
-use substrate_primitives::H256;
+use substrate_primitives::{crypto::key_types, H256};
 
 use crate::{
 	phragmen::ExtendedBalance, EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus,
 	StakingBalance, Trait,
 };
+use darwinia_support::types::TimeStamp;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -43,6 +44,8 @@ thread_local! {
 
 pub struct TestSessionHandler;
 impl session::SessionHandler<AccountId> for TestSessionHandler {
+	const KEY_TYPE_IDS: &'static [KeyTypeId] = &[key_types::DUMMY];
+
 	fn on_genesis_session<Ks: OpaqueKeys>(_validators: &[(AccountId, Ks)]) {}
 
 	fn on_new_session<Ks: OpaqueKeys>(
@@ -160,7 +163,7 @@ impl kton::Trait for Test {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
-	pub const BondingDuration: EraIndex = 3;
+	pub const BondingDuration: TimeStamp = 60;
 	pub const ErasPerEpoch: EraIndex = 10;
 }
 pub const COIN: u64 = 1_000_000_000;
