@@ -370,7 +370,7 @@ pub fn check_nominator_exposure(stash: u64) {
 		.iter()
 		.map(|v| Staking::stakers(v))
 		.for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.value));
-	let nominator_stake = Staking::slashable_balance_of(&stash);
+	let nominator_stake = Staking::power_of(&stash);
 	// a nominator cannot over-spend.
 	assert!(
 		nominator_stake >= sum,
