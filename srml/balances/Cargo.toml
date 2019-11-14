@@ -1,0 +1,39 @@
+[package]
+name = "darwinia-balances"
+version = "2.0.0"
+authors = ["Xavier Lau <c.estlavie@icloud.com>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.101", optional = true }
+safe-mix = { version = "1.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+substrate-keyring = { git = "https://github.com/darwinia-network/substrate.git", optional = true }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", default-features = false }
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", default-features = false }
+system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", default-features = false }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+
+darwinia-support = { path = "../support", default-features = false }
+
+[dev-dependencies]
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git" }
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git" }
+transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"safe-mix/std",
+	"substrate-keyring",
+	"codec/std",
+	"rstd/std",
+	"support/std",
+	"sr-primitives/std",
+	"system/std",
+	"timestamp/std",
+
+	"darwinia-support/std"
+]

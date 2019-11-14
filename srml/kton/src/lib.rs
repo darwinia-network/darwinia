@@ -1,25 +1,26 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
-use rstd::prelude::*;
-use rstd::{cmp, result};
+use rstd::{cmp, fmt::Debug, prelude::*, result};
 use sr_primitives::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
-		StaticLookup, Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, SaturatedConversion, Saturating,
+		SimpleArithmetic, StaticLookup, Zero,
 	},
 	RuntimeDebug,
 };
-
-use srml_support::dispatch::Result;
-use srml_support::traits::{
-	Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
-	UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+use srml_support::{
+	decl_event, decl_module, decl_storage,
+	dispatch::Result,
+	traits::{
+		Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
+		UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+	},
+	Parameter, StorageMap, StorageValue,
 };
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use system::ensure_signed;
 
-// customed
+use darwinia_support::types::TimeStamp;
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -54,10 +55,10 @@ impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct BalanceLock<Balance, BlockNumber> {
+pub struct BalanceLock<Balance> {
 	pub id: LockIdentifier,
 	pub amount: Balance,
-	pub until: BlockNumber,
+	pub until: TimeStamp,
 	pub reasons: WithdrawReasons,
 }
 
@@ -105,7 +106,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance>>;
 
 		pub TotalLock get(total_lock): T::Balance;
 
@@ -236,7 +237,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 			return Ok(());
 		}
 
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>();
 		if locks
 			.into_iter()
 			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
@@ -380,19 +381,19 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
-	T::Balance: MaybeSerializeDeserialize,
+	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::BlockNumber;
+	type Moment = TimeStamp;
 
 	// `amount` > `free_balance` is allowed
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
 		amount: T::Balance,
-		until: T::BlockNumber,
+		until: TimeStamp,
 		reasons: WithdrawReasons,
 	) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>();
 		let mut new_lock = Some(BalanceLock {
 			id,
 			amount,
@@ -421,10 +422,10 @@ where
 		id: LockIdentifier,
 		who: &T::AccountId,
 		amount: T::Balance,
-		until: T::BlockNumber,
+		until: TimeStamp,
 		reasons: WithdrawReasons,
 	) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>();
 		let mut new_lock = Some(BalanceLock {
 			id,
 			amount,
@@ -455,7 +456,7 @@ where
 	}
 
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>();
 		<Locks<T>>::mutate(who, |locks| {
 			// unexpired and mismatched id -> keep
 			locks.retain(|lock| (lock.until > now) && (lock.id != id));

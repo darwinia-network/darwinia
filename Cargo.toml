@@ -75,11 +75,12 @@ members = [
 
     "srml/support",
 
-	"srml/chainrelay/bridge/eos",
-	"srml/chainrelay/bridge/ethereum",
-
+    "srml/balances",
     "srml/kton",
     "srml/staking",
+
+    "srml/chainrelay/bridge/eos",
+    "srml/chainrelay/bridge/ethereum",
 ]
 
 exclude = ["node/runtime/wasm"]

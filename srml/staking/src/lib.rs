@@ -25,7 +25,7 @@ extern crate test;
 use codec::{CompactAs, Decode, Encode, HasCompact};
 use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
-use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
+use sr_primitives::traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
 use sr_primitives::{Perbill, RuntimeDebug};
@@ -39,6 +39,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
+use darwinia_support::types::TimeStamp;
 use phragmen::{elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
 
 mod utils;
@@ -214,8 +215,8 @@ type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, Extended
 type ExpoMap<T> = BTreeMap<<T as system::Trait>::AccountId, Exposure<<T as system::Trait>::AccountId, ExtendedBalance>>;
 
 pub trait Trait: timestamp::Trait + session::Trait {
-	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
-	type Kton: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
+	type Kton: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
@@ -876,7 +877,7 @@ impl<T: Trait> Module<T> {
 				STAKING_ID,
 				&ledger.stash,
 				ledger.total_ring,
-				T::BlockNumber::max_value(),
+				TimeStamp::max_value(),
 				WithdrawReasons::all(),
 			),
 
@@ -884,7 +885,7 @@ impl<T: Trait> Module<T> {
 				STAKING_ID,
 				&ledger.stash,
 				ledger.total_kton,
-				T::BlockNumber::max_value(),
+				TimeStamp::max_value(),
 				WithdrawReasons::all(),
 			),
 		}

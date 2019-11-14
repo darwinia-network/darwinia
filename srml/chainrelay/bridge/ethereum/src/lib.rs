@@ -13,11 +13,12 @@ use support::{
 };
 use system::ensure_signed;
 
+use darwinia_support::types::TimeStamp;
 //use merkle_mountain_range::{MerkleMountainRange, Hash};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
 }
 
 // config() require `serde = { version = "1.0.101", optional = true }`
