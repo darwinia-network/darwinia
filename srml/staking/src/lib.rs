@@ -148,20 +148,30 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, RuntimeDebug)]
 pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
+	/// The stash account whose balance is actually locked and at stake.
 	pub stash: AccountId,
-	// normal pattern: for ring
-	/// total_ring = normal_ring + time_deposit_ring
+	/// The total amount of the stash's balance that we are currently accounting for.
+	/// It's just `active` plus all the `unlocking` balances.
+	/// active_ring = normal_ring + time_deposit_ring
 	#[codec(compact)]
 	pub total_ring: RingBalance,
 	#[codec(compact)]
 	pub total_deposit_ring: RingBalance,
+
+	/// The total amount of the stash's balance that will be at stake in any forthcoming
+	/// rounds.
 	#[codec(compact)]
 	pub active_ring: RingBalance,
 	// active time-deposit ring
 	#[codec(compact)]
 	pub active_deposit_ring: RingBalance,
+
+	/// The total amount of the stash's balance that we are currently accounting for.
+	/// It's just `active` plus all the `unlocking` balances.
 	#[codec(compact)]
 	pub total_kton: KtonBalance,
+	/// The total amount of the stash's balance that will be at stake in any forthcoming
+	/// rounds.
 	#[codec(compact)]
 	pub active_kton: KtonBalance,
 	// time-deposit items:
@@ -169,6 +179,9 @@ pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCo
 	// you can get KTON as bonus
 	// which can also be used for staking
 	pub deposit_items: Vec<TimeDepositItem<RingBalance, Moment>>,
+
+	/// Any balance that is becoming free, which may eventually be transferred out
+	/// of the stash (assuming it doesn't get slashed first).
 	pub unlocking: Vec<UnlockChunk<StakingBalance>>,
 }
 
@@ -437,6 +450,10 @@ decl_module! {
 		/// modify time_deposit_items and time_deposit_ring amount
 		fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
 			let controller = ensure_signed(origin)?;
+
+			// TODO: Claim Deposits first, This can also be removed.
+//			Self::claim_mature_deposits(&origin);
+
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				active_ring,
@@ -456,149 +473,47 @@ decl_module! {
 
 			match value {
 				StakingBalance::Ring(r) => {
-					// total_unbond_value = normal_unbond + time_deposit_unbond
-					let total_value = r.min(*active_ring);
+					// total_active_ring = normal_ring + time_deposit_ring
+					// Only active normal ring can be unbond
 					let active_normal_ring = *active_ring - *active_deposit_ring;
 					// unbond normal ring first
-					let active_normal_value = total_value.min(active_normal_ring);
+					let available_unbund_ring = r.min(active_normal_ring);
 
-					<RingPool<T>>::mutate(|r| *r -= active_normal_value);
-					let mut unlock_value_left = total_value - active_normal_value;
+					<RingPool<T>>::mutate(|r| *r -= available_unbund_ring);
 
-					if !active_normal_value.is_zero() {
-						*active_ring -= active_normal_value;
+					if !available_unbund_ring.is_zero() {
+						*active_ring -= available_unbund_ring;
 						unlocking.push(UnlockChunk {
-							value: StakingBalance::Ring(total_value),
+							value: StakingBalance::Ring(available_unbund_ring),
 							era,
 							is_time_deposit: false
 						});
-					}
 
-					// no active_normal_ring
-					let is_time_deposit = active_normal_value.is_zero() || !unlock_value_left.is_zero();
-					let mut total_deposit_changed = 0.into();
-
-					if is_time_deposit {
-						let now = <timestamp::Module<T>>::now();
-
-						/// for time_deposit_ring, transform into normal one
-						deposit_items.drain_filter(|item| {
-							if item.expire_time > now {
-								return false;
-							}
-
-							// NOTE: value that a user wants to unbond must
-							// be big enough to unlock all time_deposit_ring
-							// double check
-
-							if unlock_value_left.is_zero() {
-								return true;
-							}
-
-							let value = unlock_value_left.min(item.value);
-
-							unlock_value_left = unlock_value_left.saturating_sub(value);
-
-							*active_deposit_ring = active_deposit_ring.saturating_sub(value);
-							*active_ring = active_ring.saturating_sub(value);
-
-							total_deposit_changed += value;
-							item.value -= value;
-
-							item.value.is_zero()
-						});
-
-						// update unlocking list
-						unlocking.push(UnlockChunk {
-							value: StakingBalance::Ring(total_deposit_changed),
-							era,
-							is_time_deposit: true,
-						});
-						<RingPool<T>>::mutate(|r| *r -= total_deposit_changed);
+						Self::update_ledger(&controller, &ledger, value);
 					}
 				},
 				StakingBalance::Kton(k) => {
-					let value = k.min(*active_kton);
-					<KtonPool<T>>::mutate(|k| *k -= value);
+					let unbound_kton = k.min(*active_kton);
 
-					*active_kton -= value;
-					unlocking.push(UnlockChunk {
-						value: StakingBalance::Kton(value),
-						era,
-						is_time_deposit: false,
-					});
-				},
-			}
+					if !unbound_kton.is_zero() {
+						<KtonPool<T>>::mutate(|k| *k -= unbound_kton);
 
-			<Ledger<T>>::insert(&controller, ledger);
-		}
+						*active_kton -= unbound_kton;
 
-		// NOTE: considered that expire_time won't
-		fn unbond_with_punish(origin, value: RingBalanceOf<T>, expire_time: T::Moment) {
-			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedgers {
-				stash,
-				active_ring,
-				active_deposit_ring,
-				deposit_items,
-				unlocking,
-				..
-			} = &mut ledger;
-			let now = <timestamp::Module<T>>::now();
-
-			ensure!(expire_time > now, "use unbond instead.");
-
-			if let Some(i) = deposit_items.iter().position(|item| item.expire_time == expire_time) {
-				let item = &mut deposit_items[i];
-				let value = item.value.min(value);
-				// at least 1 month
-				let month_left = (
-					(expire_time.clone() - now.clone()).saturated_into::<u32>()
-					/ MONTH_IN_SECONDS
-				).max(1);
-				let kton_slash = utils::compute_kton_return::<T>(value, month_left) * 3.into();
-
-				// check total free balance and locked one
-				// strict on punishing in kton
-				if T::Kton::free_balance(stash)
-					.checked_sub(&kton_slash)
-					.and_then(|new_balance| {
-						T::Kton::ensure_can_withdraw(
-							stash,
-							kton_slash,
-							WithdrawReason::Transfer.into(),
-							new_balance
-						).ok()
-					})
-					.is_some() {
-						// update ring
-						item.value -= value;
-						*active_ring = active_ring.saturating_sub(value);
-						*active_deposit_ring = active_deposit_ring.saturating_sub(value);
-
-						let (imbalance, _) = T::Kton::slash(stash, kton_slash);
-						T::KtonSlash::on_unbalanced(imbalance);
-
-						// update unlocks
 						unlocking.push(UnlockChunk {
-							value: StakingBalance::Ring(value),
-							era: Self::current_era() + T::BondingDuration::get(),
-							is_time_deposit: true
+							value: StakingBalance::Kton(unbound_kton),
+							era,
+							is_time_deposit: false,
 						});
-						<RingPool<T>>::mutate(|r| *r -= value);
 
-						if item.value.is_zero() {
-							deposit_items.remove(i);
-						}
-
-						<Ledger<T>>::insert(&controller, ledger);
+						Self::update_ledger(&controller, &ledger, value);
 					}
+				},
 			}
 		}
 
 		/// called by controller
-		fn promise_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
+		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
 
 			ensure!( promise_month <= 36, "months at most is 36.");
@@ -647,8 +562,86 @@ decl_module! {
 					expire_time,
 				});
 			}
+		}
 
-			<Ledger<T>>::insert(&controller, ledger);
+		fn claim_mature_deposits(origin) {
+			let controller = ensure_signed(origin)?;
+			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+
+			let StakingLedgers {
+				active_ring,
+				active_deposit_ring,
+				active_kton,
+				deposit_items,
+				unlocking,
+				..
+			} = &mut ledger;
+
+			let now = <timestamp::Module<T>>::now();
+
+			/// for time_deposit_ring, transform into normal one
+			deposit_items.retain(|item| {
+				if item.expire_time > now {
+					return true;
+				}
+
+				*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+
+				false
+			});
+		}
+
+		// TODO: Replace expire_time with Deposit Id.
+		fn claim_deposits_with_punish(origin, expire_time: T::Moment) {
+			let controller = ensure_signed(origin)?;
+			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let StakingLedgers {
+				stash,
+				active_ring,
+				active_deposit_ring,
+				deposit_items,
+				unlocking,
+				..
+			} = &mut ledger;
+
+			let now = <timestamp::Module<T>>::now();
+
+			ensure!(expire_time > now, "use unbond instead.");
+
+			deposit_items.retain(|item| {
+				if item.expire_time == expire_time {
+					// at least 1 month
+					let month_left = (
+						(expire_time.clone() - now.clone()).saturated_into::<u32>()
+						/ MONTH_IN_SECONDS
+						).max(1);
+					let kton_slash = utils::compute_kton_return::<T>(item.value, month_left) * 3.into();
+
+					// check total free balance and locked one
+					// strict on punishing in kton
+					if T::Kton::free_balance(stash).checked_sub(&kton_slash).and_then(
+						|new_balance| {
+								T::Kton::ensure_can_withdraw(
+									stash,
+									kton_slash,
+									WithdrawReason::Transfer.into(),
+									new_balance
+								).ok()
+							}
+						)
+						.is_some()
+					{
+						*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+
+						let (imbalance, _) = T::Kton::slash(stash, kton_slash);
+						T::KtonSlash::on_unbalanced(imbalance);
+
+						return false;
+					}
+				}
+
+				true
+			});
 		}
 
 		/// may both withdraw ring and kton at the same time
@@ -800,9 +793,9 @@ impl<T: Trait> Module<T> {
 	/// The total that can be slashed from a validator controller account as of
 	/// right now.
 	/// TODO: Replaced with slashable RING and KTON Balance. ExtendedBalance is not Balance.
-//	pub fn slashable_balance(who: &T::AccountId) -> ExtendedBalance {
-//		Self::stakers(who).total
-//	}
+	//	pub fn slashable_balance(who: &T::AccountId) -> ExtendedBalance {
+	//		Self::stakers(who).total
+	//	}
 
 	fn bond_helper_in_ring(
 		stash: &T::AccountId,
@@ -1117,15 +1110,14 @@ impl<T: Trait> Module<T> {
 
 	// TODO: Comments
 	fn power_of(stash: &T::AccountId) -> ExtendedBalance {
-
 		// power is a mixture of ring and kton
 		// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
 		fn calc_power<S: rstd::convert::TryInto<u128>>(active: S, pool: S) -> ExtendedBalance {
-			const HALF_POWER_COUNT: u128  = 1_000_000_000 / 2;
+			const HALF_POWER_COUNT: u128 = 1_000_000_000 / 2;
 
 			Perquintill::from_rational_approximation(
 				active.saturated_into::<ExtendedBalance>(),
-				pool.saturated_into::<ExtendedBalance>().max(1)
+				pool.saturated_into::<ExtendedBalance>().max(1),
 			) * HALF_POWER_COUNT
 		}
 
@@ -1204,13 +1196,7 @@ impl<T: Trait> Module<T> {
 
 				let tolerance = 0_u128;
 				let iterations = 2_usize;
-				equalize::<_, _>(
-					staked_assignments,
-					&mut supports,
-					tolerance,
-					iterations,
-					Self::power_of,
-				);
+				equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
 			}
 
 			// Clear Stakers.
