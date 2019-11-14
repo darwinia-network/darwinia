@@ -15,8 +15,6 @@ support = { package = "srml-support", git = "https://github.com/darwinia-network
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", default-features = false }
 timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
-darwinia-support = { path = "../support", default-features = false }
-
 [dev-dependencies]
 runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git" }
 primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git" }
@@ -34,6 +32,4 @@ std = [
 	"sr-primitives/std",
 	"system/std",
 	"timestamp/std",
-
-	"darwinia-support/std"
 ]
