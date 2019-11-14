@@ -23,7 +23,7 @@
 extern crate test;
 
 use codec::{CompactAs, Decode, Encode, HasCompact};
-use rstd::{collections::btree_map::BTreeMap, prelude::*, result};
+use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
@@ -213,14 +213,6 @@ type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::
 type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
-// TODO
-#[allow(unused)]
-type RawAssignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance);
-#[allow(unused)]
-type Assignment<T> = (<T as system::Trait>::AccountId, ExtendedBalance, ExtendedBalance);
-#[allow(unused)]
-type ExpoMap<T> = BTreeMap<<T as system::Trait>::AccountId, Exposure<<T as system::Trait>::AccountId, ExtendedBalance>>;
-
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 	type Kton: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
@@ -339,10 +331,6 @@ decl_storage! {
 						}, _ => Ok(())
 					};
 				}
-
-//				if let (_, Some(validators)) = <Module<T>>::select_validators() {
-//					<session::Validators<T>>::put(&validators);
-//				}
 			});
 	}
 }
@@ -448,15 +436,13 @@ decl_module! {
 		fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
 			let controller = ensure_signed(origin)?;
 
-			// TODO: Claim Deposits first, This can also be removed.
-//			Self::claim_mature_deposits(&origin);
+			Self::clear_mature_deposits(&controller);
 
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				active_ring,
 				active_deposit_ring,
 				active_kton,
-				deposit_items,
 				unlocking,
 				..
 			} = &mut ledger;
@@ -521,9 +507,11 @@ decl_module! {
 				..
 			} = &mut ledger;
 
-			// TODO: claim_mature_deposits
+			Self::clear_mature_deposits(&controller);
 
 			let value = value.min(*active_ring - *active_deposit_ring); // active_normal_ring
+
+			let now = <timestamp::Module<T>>::now();
 
 			if promise_month >= 3 {
 				// update active_deposit_ring
@@ -546,29 +534,7 @@ decl_module! {
 
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-
-			let StakingLedgers {
-				active_ring,
-				active_deposit_ring,
-				active_kton,
-				deposit_items,
-				unlocking,
-				..
-			} = &mut ledger;
-
-			let now = <timestamp::Module<T>>::now();
-
-			/// for time_deposit_ring, transform into normal one
-			deposit_items.retain(|item| {
-				if item.expire_time > now {
-					return true;
-				}
-
-				*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-
-				false
-			});
+			Self::clear_mature_deposits(&controller);
 		}
 
 		// TODO: Replace expire_time with Deposit Id.
@@ -577,10 +543,8 @@ decl_module! {
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				stash,
-				active_ring,
 				active_deposit_ring,
 				deposit_items,
-				unlocking,
 				..
 			} = &mut ledger;
 
@@ -763,12 +727,33 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	/// The total that can be slashed from a validator controller account as of
-	/// right now.
-	/// TODO: Replaced with slashable RING and KTON Balance. ExtendedBalance is not Balance.
-	//	pub fn slashable_balance(who: &T::AccountId) -> ExtendedBalance {
-	//		Self::stakers(who).total
-	//	}
+	pub fn clear_mature_deposits(who: &T::AccountId) {
+		let mut ledger = if let Some(l) = Self::ledger(&who) {
+			l
+		} else {
+			return;
+		};
+
+		//		let mut ledger = Self::ledger(who).ok_or("not a controller")?;
+
+		let StakingLedgers {
+			active_deposit_ring,
+			deposit_items,
+			..
+		} = &mut ledger;
+
+		let now = <timestamp::Module<T>>::now();
+
+		deposit_items.retain(|item| {
+			if item.expire_time > now {
+				return true;
+			}
+
+			*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+
+			false
+		});
+	}
 
 	fn bond_helper_in_ring(
 		stash: &T::AccountId,
