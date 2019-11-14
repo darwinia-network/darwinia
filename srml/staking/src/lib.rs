@@ -66,8 +66,6 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
 
-const POWER_COUNT: u128 = 1_000_000_000;
-
 #[derive(RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum StakerStatus<AccountId> {
@@ -801,9 +799,10 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	/// The total that can be slashed from a validator controller account as of
 	/// right now.
-	pub fn slashable_balance(who: &T::AccountId) -> ExtendedBalance {
-		Self::stakers(who).total
-	}
+	/// TODO: Replaced with slashable RING and KTON Balance. ExtendedBalance is not Balance.
+//	pub fn slashable_balance(who: &T::AccountId) -> ExtendedBalance {
+//		Self::stakers(who).total
+//	}
 
 	fn bond_helper_in_ring(
 		stash: &T::AccountId,
@@ -1116,20 +1115,23 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
-	// TODO: Comment and Refactor
-	fn slashable_balance_of(stash: &T::AccountId) -> ExtendedBalance {
+	// TODO: Comments
+	fn power_of(stash: &T::AccountId) -> ExtendedBalance {
+
 		// power is a mixture of ring and kton
 		// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
+		fn calc_power<S: rstd::convert::TryInto<u128>>(active: S, pool: S) -> ExtendedBalance {
+			const HALF_POWER_COUNT: u128  = 1_000_000_000 / 2;
+
+			Perquintill::from_rational_approximation(
+				active.saturated_into::<ExtendedBalance>(),
+				pool.saturated_into::<ExtendedBalance>().max(1)
+			) * HALF_POWER_COUNT
+		}
+
 		Self::bonded(stash)
 			.and_then(Self::ledger)
-			.map(|l| {
-				Perquintill::from_rational_approximation(
-					l.active_ring.saturated_into::<ExtendedBalance>(), Self::ring_pool().saturated_into::<ExtendedBalance>().max(1)
-				) * (POWER_COUNT / 2 ) +
-					Perquintill::from_rational_approximation(
-						l.active_kton.saturated_into::<ExtendedBalance>(), Self::kton_pool().saturated_into::<ExtendedBalance>().max(1)
-					) * (POWER_COUNT / 2)
-			})
+			.map(|l| calc_power(l.active_ring, Self::ring_pool()) + calc_power(l.active_kton, Self::kton_pool()))
 			.unwrap_or_default()
 	}
 
@@ -1144,7 +1146,7 @@ impl<T: Trait> Module<T> {
 				.map(|(who, _)| who)
 				.collect::<Vec<T::AccountId>>(),
 			<Nominators<T>>::enumerate().collect(),
-			Self::slashable_balance_of,
+			Self::power_of,
 			true,
 		);
 
@@ -1161,7 +1163,7 @@ impl<T: Trait> Module<T> {
 			let mut supports = <SupportMap<T::AccountId>>::new();
 			elected_stashes
 				.iter()
-				.map(|e| (e, Self::slashable_balance_of(e)))
+				.map(|e| (e, Self::power_of(e)))
 				.for_each(|(e, s)| {
 					let item = Support {
 						own: s,
@@ -1174,7 +1176,7 @@ impl<T: Trait> Module<T> {
 			// build support struct.
 			for (n, assignment) in assignments.iter() {
 				for (c, per_thing) in assignment.iter() {
-					let nominator_stake = Self::slashable_balance_of(n);
+					let nominator_stake = Self::power_of(n);
 					// AUDIT: it is crucially important for the `Mul` implementation of all
 					// per-things to be sound.
 					let other_stake = *per_thing * nominator_stake;
@@ -1193,7 +1195,7 @@ impl<T: Trait> Module<T> {
 					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
 						Vec::with_capacity(assignment.len());
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = Self::slashable_balance_of(n);
+						let nominator_stake = Self::power_of(n);
 						let other_stake = *per_thing * nominator_stake;
 						staked_assignment.push((c.clone(), other_stake));
 					}
@@ -1207,7 +1209,7 @@ impl<T: Trait> Module<T> {
 					&mut supports,
 					tolerance,
 					iterations,
-					Self::slashable_balance_of,
+					Self::power_of,
 				);
 			}
 

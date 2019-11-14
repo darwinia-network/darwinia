@@ -617,7 +617,7 @@ fn reward_should_work_correctly() {
 
 		assert_eq!(Staking::ledger(&2000).unwrap().active_kton, 1 * COIN);
 		assert_eq!(Staking::ledger(&2000).unwrap().active_ring, 300 * COIN);
-		assert_eq!(Staking::slashable_balance_of(&2001), 600 * COIN as u128);
+		assert_eq!(Staking::power_of(&2001), 1_000_000_000 / 10 as u128);
 		// 600COIN for rewarding ring bond-er
 		// 600COIN for rewarding kton bond-er
 		Staking::select_validators();
