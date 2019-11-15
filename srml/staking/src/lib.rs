@@ -22,19 +22,24 @@
 #[cfg(all(feature = "bench", test))]
 extern crate test;
 
-use codec::{CompactAs, Decode, Encode, HasCompact};
+use codec::{Decode, Encode, HasCompact};
 use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
 use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
-use sr_staking_primitives::SessionIndex;
+
+use sr_staking_primitives::{
+	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
+	SessionIndex,
+};
+
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
 	traits::{
-		Currency, Get, Imbalance, LockIdentifier, LockableCurrency, OnFreeBalanceZero, OnUnbalanced, WithdrawReason,
-		WithdrawReasons,
+		Currency, Get, Imbalance, LockIdentifier, LockableCurrency, OnFreeBalanceZero, OnUnbalanced, Time,
+		WithdrawReason, WithdrawReasons,
 	},
 };
 use system::{ensure_root, ensure_signed};
@@ -202,6 +207,14 @@ pub struct Exposure<AccountId, Power> {
 	pub others: Vec<IndividualExposure<AccountId, Power>>,
 }
 
+/// A slashing event occurred, slashing a validator for a given amount of balance.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
+pub struct SlashJournalEntry<AccountId, Balance: HasCompact> {
+	who: AccountId,
+	amount: Balance,
+	own_slash: Balance, // the amount of `who`'s own exposure that was slashed
+}
+
 type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
 type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
 
@@ -213,9 +226,51 @@ type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::
 type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
+type MomentOf<T> = <<T as Trait>::Time as Time>::Moment;
+
+pub trait SessionInterface<AccountId>: system::Trait {
+	/// Disable a given validator by stash ID.
+	///
+	/// Returns `true` if new era should be forced at the end of this session.
+	/// This allows preventing a situation where there is too many validators
+	/// disabled and block production stalls.
+	fn disable_validator(validator: &AccountId) -> Result<bool, ()>;
+	/// Get the validators from session.
+	fn validators() -> Vec<AccountId>;
+	/// Prune historical session tries up to but not including the given index.
+	fn prune_historical_up_to(up_to: SessionIndex);
+}
+
+impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
+where
+	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
+	T: session::historical::Trait<
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
+		FullIdentificationOf = ExposureOf<T>,
+	>,
+	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,
+	T::OnSessionEnding: session::OnSessionEnding<<T as system::Trait>::AccountId>,
+	T::SelectInitialValidators: session::SelectInitialValidators<<T as system::Trait>::AccountId>,
+	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
+{
+	fn disable_validator(validator: &<T as system::Trait>::AccountId) -> Result<bool, ()> {
+		<session::Module<T>>::disable(validator)
+	}
+	fn validators() -> Vec<<T as system::Trait>::AccountId> {
+		<session::Module<T>>::validators()
+	}
+
+	fn prune_historical_up_to(up_to: SessionIndex) {
+		<session::historical::Module<T>>::prune_up_to(up_to);
+	}
+}
+
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 	type Kton: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+
+	/// Time used for computing era duration.
+	type Time: Time;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
@@ -246,6 +301,26 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
 }
 
+/// Mode of era-forcing.
+#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum Forcing {
+	/// Not forcing anything - just let whatever happen.
+	NotForcing,
+	/// Force a new era, then reset to `NotForcing` as soon as it is done.
+	ForceNew,
+	/// Avoid a new era indefinitely.
+	ForceNone,
+	/// Force a new era at the end of all sessions indefinitely.
+	ForceAlways,
+}
+
+impl Default for Forcing {
+	fn default() -> Self {
+		Forcing::NotForcing
+	}
+}
+
 decl_storage! {
 	trait Store for Module<T: Trait> as Staking {
 
@@ -254,13 +329,12 @@ decl_storage! {
 		pub MinimumValidatorCount get(minimum_validator_count) config():
 			u32 = DEFAULT_MINIMUM_VALIDATOR_COUNT;
 
+		/// Any validators that may never be slashed or forcibly kicked. It's a Vec since they're
+		/// easy to initialize and the performance hit is minimal (we expect no more than four
+		/// invulnerables) and restricted to testnets.
+		pub Invulnerables get(fn invulnerables) config(): Vec<T::AccountId>;
+
 		pub SessionReward get(session_reward) config(): Perbill = Perbill::from_percent(60);
-
-		pub OfflineSlash get(offline_slash) config(): Perbill = Perbill::from_parts(1000);
-
-		pub OfflineSlashGrace get(offline_slash_grace) config(): u32;
-
-		pub Invulnerables get(invulnerables) config(): Vec<T::AccountId>;
 
 		pub Bonded get(bonded): map T::AccountId => Option<T::AccountId>;
 
@@ -280,19 +354,34 @@ decl_storage! {
 
 		pub CurrentEra get(current_era) config(): EraIndex;
 
+		/// The start of the current era.
+		pub CurrentEraStart get(fn current_era_start): MomentOf<T>;
+
+		/// The session index at which the current era started.
+		pub CurrentEraStartSessionIndex get(fn current_era_start_session_index): SessionIndex;
+
+		/// Rewards for the current era. Using indices of current elected set.
+		CurrentEraPointsEarned get(fn current_era_reward): EraPoints;
+
 		pub SlotStake get(slot_stake): ExtendedBalance;
 
-		pub SlashCount get(slash_count): map T::AccountId => u32;
+		/// True if the next session change will be a new era regardless of index.
+		pub ForceEra get(fn force_era) config(): Forcing;
 
-		pub RecentlyOffline get(recently_offline): Vec<(T::AccountId, T::BlockNumber, u32)>;
-
-		pub ForceNewEra get(forcing_new_era): bool;
+		/// The percentage of the slash that is distributed to reporters.
+		///
+		/// The rest of the slashed value is handled by the `Slash`.
+		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
 		pub EpochIndex get(epoch_index): u32 = 0;
 
 		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
 		/// and increased for every successfully finished session.
 		pub CurrentEraTotalReward get(current_era_total_reward) config(): RingBalanceOf<T>;
+
+		/// All slashes that have occurred in a given era.
+		EraSlashJournal get(fn era_slash_journal):
+			map EraIndex => Vec<SlashJournalEntry<T::AccountId, BalanceOf<T>>>;
 
 		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
 
@@ -709,13 +798,7 @@ decl_module! {
 
 		fn force_new_era(origin) {
 			ensure_root(origin)?;
-			Self::apply_force_new_era()
-		}
-
-		/// Set the offline slash grace period.
-		fn set_offline_slash_grace(origin, #[compact] new: u32) {
-			ensure_root(origin)?;
-			OfflineSlashGrace::put(new);
+			ForceEra::put(Forcing::ForceNone);
 		}
 
 		/// Set the validators who cannot be slashed (if any).
@@ -1204,66 +1287,36 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
-	fn apply_force_new_era() {
-		ForceNewEra::put(true);
+	/// Remove all associated data of a stash account from the staking system.
+	///
+	/// This is called :
+	/// - Immediately when an account's balance falls below existential deposit.
+	/// - after a `withdraw_unbond()` call that frees all of a stash's bonded balance.
+	fn kill_stash(stash: &T::AccountId) {
+		if let Some(controller) = <Bonded<T>>::take(stash) {
+			<Ledger<T>>::remove(&controller);
+		}
+		<Payee<T>>::remove(stash);
+		<Validators<T>>::remove(stash);
+		<Nominators<T>>::remove(stash);
 	}
 
-	/// Call when a validator is determined to be offline. `count` is the
-	/// number of offenses the validator has committed.
-	///
-	/// NOTE: This is called with the controller (not the stash) account id.
-	pub fn on_offline_validator(controller: T::AccountId, count: usize) {
-		let stash = if let Some(l) = Self::ledger(&controller) {
-			l.stash
-		} else {
-			return;
-		};
-
-		// Early exit if validator is invulnerable.
-		if Self::invulnerables().contains(&stash) {
-			return;
-		}
-
-		let slash_count = Self::slash_count(&stash);
-		let new_slash_count = slash_count + count as u32;
-		<SlashCount<T>>::insert(&stash, new_slash_count);
-		let grace = Self::offline_slash_grace();
-
-		if RECENT_OFFLINE_COUNT > 0 {
-			let item = (stash.clone(), <system::Module<T>>::block_number(), count as u32);
-			<RecentlyOffline<T>>::mutate(|v| {
-				if v.len() >= RECENT_OFFLINE_COUNT {
-					*v.iter_mut()
-						.min_by(|(_, block_a, _), (_, block_b, _)| block_a.cmp(&block_b))
-						.expect("v is non-empty; qed") = item;
-				} else {
-					v.push(item);
+	pub fn reward_by_ids(validators_points: impl IntoIterator<Item = (T::AccountId, u32)>) {
+		CurrentEraPointsEarned::mutate(|rewards| {
+			let current_elected = <Module<T>>::current_elected();
+			for (validator, points) in validators_points.into_iter() {
+				if let Some(index) = current_elected.iter().position(|elected| *elected == validator) {
+					rewards.add_points_to_index(index as u32, points);
 				}
-			});
-		}
+			}
+		});
+	}
 
-		if <Validators<T>>::exists(&stash) {
-			let prefs = Self::validators(&stash);
-			let unstake_threshold = prefs.unstake_threshold.min(MAX_UNSTAKE_THRESHOLD);
-			let max_slashes = grace + unstake_threshold;
-
-			let event = if new_slash_count > max_slashes {
-				let offline_slash_ratio_base = *Self::offline_slash().encode_as();
-				// slash_ratio is ensured to be less than 1 in slash_validator
-				// don't worry here.
-				let slash_ratio_in_u32 = offline_slash_ratio_base
-					.checked_shl(unstake_threshold)
-					.unwrap_or_default();
-				Self::slash_validator(&stash, slash_ratio_in_u32);
-				<Validators<T>>::remove(&stash);
-				let _ = T::SessionInterface::disable_validator(&stash);
-
-				RawEvent::OfflineSlash(stash.clone(), slash_ratio_in_u32)
-			} else {
-				RawEvent::OfflineWarning(stash.clone(), slash_count)
-			};
-
-			Self::deposit_event(event);
+	/// Ensures that at the end of the current session there will be a new era.
+	fn ensure_new_era() {
+		match ForceEra::get() {
+			Forcing::ForceAlways | Forcing::ForceNew => (),
+			_ => ForceEra::put(Forcing::ForceNew),
 		}
 	}
 }
@@ -1288,19 +1341,26 @@ impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, ExtendedBala
 
 impl<T: Trait> OnFreeBalanceZero<T::AccountId> for Module<T> {
 	fn on_free_balance_zero(stash: &T::AccountId) {
-		if let Some(controller) = <Bonded<T>>::take(stash) {
-			<Ledger<T>>::remove(&controller);
-		}
-		<Payee<T>>::remove(stash);
-		<SlashCount<T>>::remove(stash);
-		<Validators<T>>::remove(stash);
-		<Nominators<T>>::remove(stash);
+		Self::kill_stash(stash);
 	}
 }
 
-impl<T: Trait> SelectInitialValidators<T::AccountId> for Module<T> {
-	fn select_initial_validators() -> Option<Vec<T::AccountId>> {
-		<Module<T>>::select_validators().1
+/// Add reward points to block authors:
+/// * 20 points to the block producer for producing a (non-uncle) block in the relay chain,
+/// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
+/// * 1 point to the producer of each referenced uncle block.
+impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
+	fn note_author(_author: T::AccountId) {}
+	fn note_uncle(_author: T::AccountId, _age: T::BlockNumber) {
+		Self::reward_by_ids(vec![(<authorship::Module<T>>::author(), 2), (author, 1)])
+	}
+}
+
+pub struct StashOf<T>(rstd::marker::PhantomData<T>);
+
+impl<T: Trait> Convert<T::AccountId, Option<T::AccountId>> for StashOf<T> {
+	fn convert(controller: T::AccountId) -> Option<T::AccountId> {
+		<Module<T>>::ledger(&controller).map(|l| l.stash)
 	}
 }
 
@@ -1313,24 +1373,19 @@ impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, ExtendedBalan
 		Some(<Module<T>>::stakers(&validator))
 	}
 }
-pub trait SessionInterface<AccountId>: system::Trait {
-	/// Disable a given validator by stash ID.
-	///
-	/// Returns `true` if new era should be forced at the end of this session.
-	/// This allows preventing a situation where there is too many validators
-	/// disabled and block production stalls.
-	fn disable_validator(validator: &AccountId) -> Result<bool, ()>;
-	/// Get the validators from session.
-	fn validators() -> Vec<AccountId>;
-	/// Prune historical session tries up to but not including the given index.
-	fn prune_historical_up_to(up_to: SessionIndex);
+
+impl<T: Trait> SelectInitialValidators<T::AccountId> for Module<T> {
+	fn select_initial_validators() -> Option<Vec<T::AccountId>> {
+		<Module<T>>::select_validators().1
+	}
 }
 
-impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
+/// This is intended to be used with `FilterHistoricalOffences`.
+impl<T: Trait> OnOffenceHandler<T::AccountId, session::historical::IdentificationTuple<T>> for Module<T>
 where
 	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: session::historical::Trait<
-		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, BalanceOf<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,
@@ -1338,31 +1393,92 @@ where
 	T::SelectInitialValidators: session::SelectInitialValidators<<T as system::Trait>::AccountId>,
 	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
 {
-	fn disable_validator(validator: &<T as system::Trait>::AccountId) -> Result<bool, ()> {
-		<session::Module<T>>::disable(validator)
-	}
-	fn validators() -> Vec<<T as system::Trait>::AccountId> {
-		<session::Module<T>>::validators()
-	}
+	fn on_offence(
+		offenders: &[OffenceDetails<T::AccountId, session::historical::IdentificationTuple<T>>],
+		slash_fraction: &[Perbill],
+	) {
+		let mut remaining_imbalance = <NegativeImbalanceOf<T>>::zero();
+		let slash_reward_fraction = SlashRewardFraction::get();
 
-	fn prune_historical_up_to(up_to: SessionIndex) {
-		<session::historical::Module<T>>::prune_up_to(up_to);
+		let era_now = Self::current_era();
+		let mut journal = Self::era_slash_journal(era_now);
+		for (details, slash_fraction) in offenders.iter().zip(slash_fraction) {
+			let stash = &details.offender.0;
+			let exposure = &details.offender.1;
+
+			// Skip if the validator is invulnerable.
+			if Self::invulnerables().contains(stash) {
+				continue;
+			}
+
+			// Auto deselect validator on any offence and force a new era if they haven't previously
+			// been deselected.
+			if <Validators<T>>::exists(stash) {
+				<Validators<T>>::remove(stash);
+				Self::ensure_new_era();
+			}
+
+			// calculate the amount to slash
+			let slash_exposure = exposure.total;
+			let amount = *slash_fraction * slash_exposure;
+			// in some cases `slash_fraction` can be just `0`,
+			// which means we are not slashing this time.
+			if amount.is_zero() {
+				continue;
+			}
+
+			// make sure to disable validator till the end of this session
+			if T::SessionInterface::disable_validator(stash).unwrap_or(false) {
+				// force a new era, to select a new validator set
+				Self::ensure_new_era();
+			}
+			// actually slash the validator
+			let slashed_amount = Self::slash_validator(stash, amount, exposure, &mut journal);
+
+			// distribute the rewards according to the slash
+			let slash_reward = slash_reward_fraction * slashed_amount.peek();
+			if !slash_reward.is_zero() && !details.reporters.is_empty() {
+				let (mut reward, rest) = slashed_amount.split(slash_reward);
+				// split the reward between reporters equally. Division cannot fail because
+				// we guarded against it in the enclosing if.
+				let per_reporter = reward.peek() / (details.reporters.len() as u32).into();
+				for reporter in &details.reporters {
+					let (reporter_reward, rest) = reward.split(per_reporter);
+					reward = rest;
+					T::Currency::resolve_creating(reporter, reporter_reward);
+				}
+				// The rest goes to the treasury.
+				remaining_imbalance.subsume(reward);
+				remaining_imbalance.subsume(rest);
+			} else {
+				remaining_imbalance.subsume(slashed_amount);
+			}
+		}
+		<EraSlashJournal<T>>::insert(era_now, journal);
+
+		// Handle the rest of imbalances
+		T::Slash::on_unbalanced(remaining_imbalance);
 	}
 }
 
-/// Add reward points to block authors:
-/// * 20 points to the block producer for producing a (non-uncle) block in the relay chain,
-/// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
-/// * 1 point to the producer of each referenced uncle block.
-impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
-	fn note_author(_author: T::AccountId) {}
-	fn note_uncle(_author: T::AccountId, _age: T::BlockNumber) {}
+/// Filter historical offences out and only allow those from the current era.
+pub struct FilterHistoricalOffences<T, R> {
+	_inner: rstd::marker::PhantomData<(T, R)>,
 }
 
-pub struct StashOf<T>(rstd::marker::PhantomData<T>);
-
-impl<T: Trait> Convert<T::AccountId, Option<T::AccountId>> for StashOf<T> {
-	fn convert(controller: T::AccountId) -> Option<T::AccountId> {
-		<Module<T>>::ledger(&controller).map(|l| l.stash)
+impl<T, Reporter, Offender, R, O> ReportOffence<Reporter, Offender, O> for FilterHistoricalOffences<Module<T>, R>
+where
+	T: Trait,
+	R: ReportOffence<Reporter, Offender, O>,
+	O: Offence<Offender>,
+{
+	fn report_offence(reporters: Vec<Reporter>, offence: O) {
+		// disallow any slashing from before the current era.
+		let offence_session = offence.session_index();
+		if offence_session >= <Module<T>>::current_era_start_session_index() {
+			R::report_offence(reporters, offence)
+		} else {
+			<Module<T>>::deposit_event(RawEvent::OldSlashingReportDiscarded(offence_session))
+		}
 	}
 }
