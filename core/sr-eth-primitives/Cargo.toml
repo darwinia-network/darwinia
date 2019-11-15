@@ -15,13 +15,22 @@ sr-primitives = {git = 'https://github.com/paritytech/substrate.git', default-fe
 substrate-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
 rlp = { version = "0.4.3", default-features = true }
 parity-crypto = { version = "0.4.2", features = ["publickey"] }
-rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git" }
-ethereum-types = { version = "0.8.0", default-feature = false}
+rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git", default-features = false }
+ethereum-types = { version = "0.8.0", default-feature = false, features = ["serialize"] }
 keccak-hash = "0.4.0"
+ethbloom = { version = "0.8", default-features = false, features = ["serialize"] }
+impl-codec = { version = "0.4", default-features = false, optional = true }
+fixed-hash = { version = "0.4", default-features = false}
+impl-rlp = { version = "0.2", default-features = false, optional = true }
+
 
 [dev-dependencies]
 support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git'}
 rustc-hex = "2.0"
+keccak-hasher = "0.1"
+triehash-ethereum = { version = "0.2", git = "https://github.com/paritytech/parity-ethereum.git" }
+hex-literal = "0.2.1"
+
 
 [features]
 default = ["std"]
@@ -36,5 +45,11 @@ std = [
     "ethereum-types/std",
     "parity-crypto/publickey",
     "ethereum-types/std",
+    "ethereum-types/serialize",
+    "ethbloom/std",
+    "ethbloom/serialize",
+    "impl-codec/std",
+    "fixed-hash/std",
+    "impl-rlp/std"
 ]
 

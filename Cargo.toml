@@ -63,7 +63,6 @@ members = [
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
-    "core/sr-rlp",
 
 #    "darwinia-client",
 
