@@ -724,7 +724,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "darwinia-kton 0.1.0",
  "darwinia-support 0.1.0",
@@ -745,6 +745,7 @@ dependencies = [
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
+ "substrate-phragmen 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
 ]
 
@@ -2577,7 +2578,7 @@ dependencies = [
 name = "node-executor"
 version = "2.0.0"
 dependencies = [
- "darwinia-staking 0.1.0",
+ "darwinia-staking 0.2.0",
  "node-primitives 2.0.0",
  "node-runtime 0.1.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2650,7 +2651,7 @@ dependencies = [
  "darwinia-eos-bridge 0.1.0",
  "darwinia-ethereum-bridge 0.1.0",
  "darwinia-kton 0.1.0",
- "darwinia-staking 0.1.0",
+ "darwinia-staking 0.2.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "merkle-mountain-range 0.1.0",
  "node-primitives 2.0.0",

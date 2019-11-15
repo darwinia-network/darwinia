@@ -44,7 +44,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use phragmen::{elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
+use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
 
 mod utils;
 
@@ -55,12 +55,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-mod phragmen;
-
 //#[cfg(all(feature = "bench", test))]
 //mod benches;
 
-const RECENT_OFFLINE_COUNT: usize = 32;
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
@@ -298,7 +295,7 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
 
-	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
+	type CurrencyToVote: Convert<ExtendedBalance, u64> + Convert<u128, ExtendedBalance>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -389,7 +386,7 @@ decl_storage! {
 		/// Rewards for the current era. Using indices of current elected set.
 		CurrentEraPointsEarned get(fn current_era_reward): EraPoints;
 
-		pub SlotStake get(slot_stake): ExtendedBalance;
+		pub SlotStake get(fn slot_stake): ExtendedBalance;
 
 		/// True if the next session change will be a new era regardless of index.
 		pub ForceEra get(fn force_era) config(): Forcing;
@@ -976,7 +973,7 @@ impl<T: Trait> Module<T> {
 
 		// The amount we'll slash from the validator's stash directly.
 		let own_slash = own_remaining.min(slash);
-		let (mut ring_imbalance, kton_imblance, missing) =
+		let (mut ring_imbalance, mut kton_imblance, missing) =
 			Self::slash_individual(stash, Perbill::from_rational_approximation(own_slash, exposure.own)); // T::Currency::slash(stash, own_slash);
 		let own_slash = own_slash - missing;
 		// The amount remaining that we can't slash from the validator,
@@ -1012,24 +1009,6 @@ impl<T: Trait> Module<T> {
 
 		(ring_imbalance, kton_imblance)
 	}
-
-	//	fn slash_validator(stash: &T::AccountId, slash_ratio_in_u32: u32) {
-	//		// construct Perbill here to make sure slash_ratio lt 0.
-	//		let slash_ratio = Perbill::from_parts(slash_ratio_in_u32);
-	//		// The exposures (backing stake) information of the validator to be slashed.
-	//		let exposures = Self::stakers(stash);
-	//
-	//		let (mut ring_imbalance, mut kton_imbalance) = Self::slash_individual(stash, slash_ratio);
-	//
-	//		for i in exposures.others.iter() {
-	//			let (rn, kn) = Self::slash_individual(&i.who, slash_ratio);
-	//			ring_imbalance.subsume(rn);
-	//			kton_imbalance.subsume(kn);
-	//		}
-	//
-	//		T::RingSlash::on_unbalanced(ring_imbalance);
-	//		T::KtonSlash::on_unbalanced(kton_imbalance);
-	//	}
 
 	// TODO: there is reserve balance in Balance.Slash, we assuming it is zero for now.
 	fn slash_individual(
@@ -1146,27 +1125,32 @@ impl<T: Trait> Module<T> {
 		Vec<T::AccountId>,
 		Vec<(T::AccountId, Exposure<T::AccountId, ExtendedBalance>)>,
 	)> {
-		if ForceNewEra::take() || session_index % T::SessionsPerEra::get() == 0 {
-			let validators = T::SessionInterface::validators();
-			let prior = validators
-				.into_iter()
-				.map(|v| {
-					let e = Self::stakers(&v);
-					(v, e)
-				})
-				.collect();
-
-			Self::new_era().map(move |new| (new, prior))
-		} else {
-			None
+		let era_length = session_index
+			.checked_sub(Self::current_era_start_session_index())
+			.unwrap_or(0);
+		match ForceEra::get() {
+			Forcing::ForceNew => ForceEra::kill(),
+			Forcing::ForceAlways => (),
+			Forcing::NotForcing if era_length >= T::SessionsPerEra::get() => (),
+			_ => return None,
 		}
+		let validators = T::SessionInterface::validators();
+		let prior = validators
+			.into_iter()
+			.map(|v| {
+				let e = Self::stakers(&v);
+				(v, e)
+			})
+			.collect();
+
+		Self::new_era(session_index).map(move |new| (new, prior))
 	}
 
 	/// The era has changed - enact new staking set.
 	///
 	/// NOTE: This always happens immediately before a session change to ensure that new validators
 	/// get a chance to set their session keys.
-	fn new_era() -> Option<Vec<T::AccountId>> {
+	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
 		let reward = Self::session_reward() * Self::current_era_total_reward();
 		if !reward.is_zero() {
 			let validators = Self::current_elected();
@@ -1259,63 +1243,57 @@ impl<T: Trait> Module<T> {
 	///
 	/// Returns the new `SlotStake` value.
 	fn select_validators() -> (ExtendedBalance, Option<Vec<T::AccountId>>) {
-		let maybe_elected_set = elect::<_, _>(
+		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = Vec::new();
+		let all_validator_candidates_iter = <Validators<T>>::enumerate();
+		let all_validators = all_validator_candidates_iter
+			.map(|(who, _pref)| {
+				let self_vote = (who.clone(), vec![who.clone()]);
+				all_nominators.push(self_vote);
+				who
+			})
+			.collect::<Vec<T::AccountId>>();
+		all_nominators.extend(<Nominators<T>>::enumerate());
+
+		let maybe_phragmen_result = elect::<_, _, _, T::CurrencyToVote>(
 			Self::validator_count() as usize,
 			Self::minimum_validator_count().max(1) as usize,
-			<Validators<T>>::enumerate()
-				.map(|(who, _)| who)
-				.collect::<Vec<T::AccountId>>(),
-			<Nominators<T>>::enumerate().collect(),
+			all_validators,
+			all_nominators,
 			Self::power_of,
-			true,
 		);
 
-		if let Some(elected_set) = maybe_elected_set {
-			let elected_stashes = elected_set
+		if let Some(phragmen_result) = maybe_phragmen_result {
+			let elected_stashes = phragmen_result
 				.winners
 				.iter()
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
-			let assignments = elected_set.assignments;
+			let assignments = phragmen_result.assignments;
 
-			// The return value of this is safe to be converted to u64.
-			// Initialize the support of each candidate.
-			let mut supports = <SupportMap<T::AccountId>>::new();
-			elected_stashes
-				.iter()
-				.map(|e| (e, Self::power_of(e)))
-				.for_each(|(e, s)| {
-					let item = Support {
-						own: s,
-						total: s,
-						..Default::default()
-					};
-					supports.insert(e.clone(), item);
-				});
+			let to_votes = |b: ExtendedBalance| {
+				<T::CurrencyToVote as Convert<ExtendedBalance, u64>>::convert(b) as ExtendedBalance
+			};
+			let to_balance =
+				|e: ExtendedBalance| <T::CurrencyToVote as Convert<ExtendedBalance, ExtendedBalance>>::convert(e);
 
-			// build support struct.
-			for (n, assignment) in assignments.iter() {
-				for (c, per_thing) in assignment.iter() {
-					let nominator_stake = Self::power_of(n);
-					// AUDIT: it is crucially important for the `Mul` implementation of all
-					// per-things to be sound.
-					let other_stake = *per_thing * nominator_stake;
-					if let Some(support) = supports.get_mut(c) {
-						// For an astronomically rich validator with more astronomically rich
-						// set of nominators, this might saturate.
-						support.total = support.total.saturating_add(other_stake);
-						support.others.push((n.clone(), other_stake));
-					}
-				}
-			}
+			let mut supports =
+				build_support_map::<_, _, _, T::CurrencyToVote>(&elected_stashes, &assignments, Self::power_of);
+
 			if cfg!(feature = "equalize") {
 				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
 					Vec::with_capacity(assignments.len());
 				for (n, assignment) in assignments.iter() {
 					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
 						Vec::with_capacity(assignment.len());
+
+					// If this is a self vote, then we don't need to equalise it at all. While the
+					// staking system does not allow nomination and validation at the same time,
+					// this must always be 100% support.
+					if assignment.len() == 1 && assignment[0].0 == *n {
+						continue;
+					}
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = Self::power_of(n);
+						let nominator_stake = to_votes(Self::power_of(n));
 						let other_stake = *per_thing * nominator_stake;
 						staked_assignment.push((c.clone(), other_stake));
 					}
@@ -1324,7 +1302,13 @@ impl<T: Trait> Module<T> {
 
 				let tolerance = 0_u128;
 				let iterations = 2_usize;
-				equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
+				equalize::<_, _, T::CurrencyToVote, _>(
+					staked_assignments,
+					&mut supports,
+					tolerance,
+					iterations,
+					Self::power_of,
+				);
 			}
 
 			// Clear Stakers.
@@ -1337,16 +1321,19 @@ impl<T: Trait> Module<T> {
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
-					own: s.own,
+					own: to_balance(s.own),
 					// This might reasonably saturate and we cannot do much about it. The sum of
 					// someone's stake might exceed the balance type if they have the maximum amount
 					// of balance and receive some support. This is super unlikely to happen, yet
 					// we simulate it in some tests.
-					total: s.total,
+					total: to_balance(s.total),
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExposure { who, value: value })
+						.map(|(who, value)| IndividualExposure {
+							who,
+							value: to_balance(value),
+						})
 						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
 				if exposure.total < slot_stake {
@@ -1356,7 +1343,7 @@ impl<T: Trait> Module<T> {
 			}
 
 			// Update slot stake.
-			SlotStake::put(&slot_stake);
+			<SlotStake>::put(&slot_stake);
 
 			// Set the new validator set in sessions.
 			<CurrentElected<T>>::put(&elected_stashes);

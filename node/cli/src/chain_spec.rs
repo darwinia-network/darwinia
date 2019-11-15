@@ -250,16 +250,18 @@ pub fn testnet_genesis(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			current_era_total_reward: 80_000_000 * COIN / 63720,
-			offline_slash: Perbill::from_parts(1_000_000),
+			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,
-			offline_slash_grace: 4,
+			//			offline_slash_grace: 4,
 			minimum_validator_count: 4,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
 		}),
 	}
 }
@@ -403,16 +405,18 @@ pub fn darwinia_genesis_verbose(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			current_era_total_reward: 80_000_000 * COIN / 63720,
-			offline_slash: Perbill::from_parts(1_000_000),
+			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,
-			offline_slash_grace: 4,
+			//			offline_slash_grace: 4,
 			minimum_validator_count: 4,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
 		}),
 	}
 }

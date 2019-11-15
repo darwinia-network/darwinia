@@ -317,9 +317,11 @@ impl ExtBuilder {
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			session_reward: Perbill::from_rational_approximation(1_000_000 * self.reward / balance_factor, 1_000_000),
-			offline_slash: Perbill::from_percent(5),
-			offline_slash_grace: 0,
+			//			offline_slash: Perbill::from_percent(5),
+			//			offline_slash_grace: 0,
 			invulnerables: vec![],
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
 		}
 		.assimilate_storage(&mut storage);
 

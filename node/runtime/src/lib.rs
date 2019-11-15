@@ -22,9 +22,9 @@
 use authority_discovery_primitives::{AuthorityId as EncodedAuthorityId, Signature as EncodedSignature};
 use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
 pub use balances::Call as BalancesCall;
-use sr_api::impl_runtime_apis;
 use codec::{Decode, Encode};
 pub use contracts::Gas;
+use sr_api::impl_runtime_apis;
 
 //use grandpa::fg_primitives;
 //use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
@@ -49,24 +49,23 @@ use support::{
 };
 
 pub use timestamp::Call as TimestampCall;
-use version::RuntimeVersion;
 #[cfg(any(feature = "std", test))]
-
 use version::NativeVersion;
+use version::RuntimeVersion;
 
-use substrate_primitives::OpaqueMetadata;
-use grandpa::AuthorityList as GrandpaAuthorityList;
 use grandpa::fg_primitives;
-use im_online::sr25519::{AuthorityId as ImOnlineId};
-use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
+use grandpa::AuthorityList as GrandpaAuthorityList;
+use im_online::sr25519::AuthorityId as ImOnlineId;
+use substrate_primitives::OpaqueMetadata;
 use system::offchain::TransactionSubmitter;
+use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
-use impls::{CurrencyToVoteHandler, Author, LinearWeightToFee, TargetedFeeAdjustment};
+use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -417,6 +416,7 @@ parameter_types! {
 impl staking::Trait for Runtime {
 	type Ring = Balances;
 	type Kton = Kton;
+	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type Event = Event;
 	type RingSlash = ();
