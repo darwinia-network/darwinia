@@ -13,10 +13,10 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
 sr-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
 substrate-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
-rlp = { version = "0.4.3", optional = true }
+rlp = { version = "0.4.3", default-features = true }
 parity-crypto = { version = "0.4.2", features = ["publickey"] }
 rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git" }
-ethereum-types = "0.8.0"
+ethereum-types = { version = "0.8.0", default-feature = false}
 keccak-hash = "0.4.0"
 
 
@@ -32,9 +32,10 @@ std = [
     "rstd/std",
     "sr-primitives/std",
     "substrate-primitives/std",
-    "rlp",
+    "rlp/std",
     "keccak-hash/std",
     "ethereum-types/std",
     "parity-crypto/publickey",
+    "ethereum-types/std",
 ]
 

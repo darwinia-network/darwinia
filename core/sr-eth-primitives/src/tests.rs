@@ -1,4 +1,4 @@
-use super::*;
+use crate::transaction::*;
 use ethereum_types::{Address, H256, U128, U256};
 use rustc_hex::FromHex;
 use std::str::FromStr;
@@ -25,8 +25,8 @@ fn test() {
 	);
 	// verify transaction fields
 	assert_eq!(
-		tx.unsigned,
-		PlainTransaction {
+		tx.as_unsigned(),
+		&PlainTransaction {
 			nonce: U256::from(U128::from(5240_u128)),
 			gas_price: U256::from(U128::from(15000000000_u128)),
 			gas: U256::from(U128::from(21000_u128)),
