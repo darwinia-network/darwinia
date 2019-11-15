@@ -737,12 +737,42 @@ where
 			return Ok(());
 		}
 
+		// 1. for Lock:
+		//     currently, we only use `WithdrawReasons::all()` in staking module
+		//     so the `!lock.reasons.intersects(reasons)` always be `false`
+		// 2. for Staking Lock:
+		//     make sure the free Kton > the Kton which in Staking
+		// 3. for Unbonding Lock:
+		//     because of the rule 1, only check if is expired
 		let now = <timestamp::Module<T>>::now();
-		// TODO: logic?
-		if locks
-			.into_iter()
-			.all(|lock| !lock.valid(&now) || new_balance >= lock.amount || !lock.reasons.intersects(reasons))
-		{
+		let mut can_withdraw_staking = false;
+		let mut can_withdraw_unbonding = false;
+		for lock in locks {
+			match lock.id {
+				Id::Staking(_) => {
+					can_withdraw_staking = !lock.valid_at(&now);
+					if can_withdraw_staking {
+						continue;
+					}
+
+					can_withdraw_staking = new_balance >= lock.amount;
+					if can_withdraw_staking {
+						continue;
+					}
+
+					// due to rule 1
+					can_withdraw_staking = false;
+					// TODO: for complex reasons, in the future
+					// can_withdraw = !lock.reasons.intersects(reasons);
+				}
+				Id::Unbonding(_) => {
+					// due to rule 3
+					can_withdraw_unbonding = !lock.valid_at(&now);
+				}
+			}
+		}
+
+		if can_withdraw_unbonding || can_withdraw_staking {
 			Ok(())
 		} else {
 			Err("account liquidity restrictions prevent withdrawal")
@@ -987,19 +1017,17 @@ where
 	type WithdrawReasons = WithdrawReasons;
 
 	fn set_lock(who: &T::AccountId, id: Self::Id, amount: Self::Balance, reasons: Self::WithdrawReasons) {
-		let now = <timestamp::Module<T>>::now();
-
+		Self::remove_lock(who, &id);
 		<Locks<T>>::mutate(who, |locks| {
-			locks.retain(|lock| lock.id != id || lock.valid(&now));
 			locks.push(BalanceLock { id, amount, reasons });
 		});
 	}
 
-	fn remove_lock(who: &T::AccountId, id: Self::Id) {
+	fn remove_lock(who: &T::AccountId, id: &Self::Id) {
 		let now = <timestamp::Module<T>>::now();
 		<Locks<T>>::mutate(who, |locks| {
 			// unexpired and mismatched id -> keep
-			locks.retain(|lock| lock.valid(&now) && lock.id != id);
+			locks.retain(|lock| lock.valid_at(&now) && &lock.id != id);
 		});
 	}
 

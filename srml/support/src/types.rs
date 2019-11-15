@@ -15,8 +15,8 @@ impl<Balance, Moment> BalanceLock<Balance, Moment>
 where
 	Moment: PartialOrd,
 {
-	pub fn valid(&self, until: &Moment) -> bool {
-		self.id.until() > until
+	pub fn valid_at(&self, at: &Moment) -> bool {
+		self.id.until() > at
 	}
 }
 

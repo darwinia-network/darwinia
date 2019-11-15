@@ -1208,6 +1208,39 @@ fn test_env_build() {
 #[test]
 fn xavier_q1() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-		gen_paired_account!(stash(123), controller(456), 12);
+		let stash = 123;
+		let controller = 456;
+		Kton::deposit_creating(&stash, 10);
+
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalance::Kton(5),
+			RewardDestination::Stash,
+			0,
+		));
+		println!("Ok Init - Kton Balance: {:?}", Kton::free_balance(stash));
+		println!("Ok Init - Kton Locks: {:?}", Kton::locks(stash));
+
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(5), 0));
+		println!("Ok Bond Extra - Kton Balance: {:?}", Kton::free_balance(stash));
+		println!("Ok Bond Extra - Kton Locks: {:?}", Kton::locks(stash));
+
+		Timestamp::set_timestamp(0);
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(10)));
+		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
+		println!("Ok Unbond - Kton Locks: {:?}", Kton::locks(stash));
+
+		assert_err!(
+			Kton::transfer(Origin::signed(stash), controller, 1),
+			"account liquidity restrictions prevent withdrawal"
+		);
+		println!("Locking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
+		println!("Locking Transfer - Kton Locks: {:?}", Kton::locks(stash));
+
+		Timestamp::set_timestamp(BondingDuration::get());
+		assert_ok!(Kton::transfer(Origin::signed(stash), controller, 1));
+		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
+		println!("Unlocking Transfer - Kton Locks: {:?}", Kton::locks(stash));
 	});
 }

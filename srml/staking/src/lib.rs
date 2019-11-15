@@ -25,14 +25,14 @@ extern crate test;
 use codec::{CompactAs, Decode, Encode, HasCompact};
 use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
-use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
+use sr_primitives::traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
 use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
 use sr_staking_primitives::SessionIndex;
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
-	traits::{Currency, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, WithdrawReason},
+	traits::{Currency, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, WithdrawReason, WithdrawReasons},
 };
 use system::{ensure_root, ensure_signed};
 
@@ -201,8 +201,8 @@ type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::
 type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 pub trait Trait: timestamp::Trait + session::Trait {
-	type Ring: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>>;
-	type Kton: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>>;
+	type Ring: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>, WithdrawReasons = WithdrawReasons>;
+	type Kton: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>, WithdrawReasons = WithdrawReasons>;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
@@ -391,7 +391,7 @@ decl_module! {
 			promise_month: u32
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!( promise_month <= 36, "months at most is 36.");
+			ensure!(promise_month <= 36, "months at most is 36.");
 			let controller = Self::bonded(&stash).ok_or("not a stash")?;
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			match value {
@@ -450,11 +450,8 @@ decl_module! {
 
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
-//						TODO
-//						unlocking.push(UnlockChunk {
-//							value: StakingBalance::Ring(available_unbond_ring),
-//							era,
-//						});
+//						TODO: ok?
+						T::Ring::set_lock(stash, Id::Unbonding(until), available_unbond_ring, WithdrawReasons::all());
 
 						Self::update_ledger(&controller, &ledger, value);
 					}
@@ -466,11 +463,8 @@ decl_module! {
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
 						*active_kton -= unbond_kton;
-//						TODO
-//						unlocking.push(UnlockChunk {
-//							value: StakingBalance::Kton(unbond_kton),
-//							era,
-//						});
+//						TODO: ok?
+						T::Kton::set_lock(stash, Id::Unbonding(until), unbond_kton, WithdrawReasons::all());
 
 						Self::update_ledger(&controller, &ledger, value);
 					}
@@ -788,23 +782,20 @@ impl<T: Trait> Module<T> {
 		ledger: &StakingLedgers<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
 		staking_balance: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 	) {
-		//		TODO
-		//		match staking_balance {
-		//			StakingBalance::Ring(_r) => T::Ring::set_lock(
-		//				STAKING_ID,
-		//				&ledger.stash,
-		//				ledger.total_ring,
-		//				T::BlockNumber::max_value(),
-		//				WithdrawReasons::all(),
-		//			),
-		//			StakingBalance::Kton(_k) => T::Kton::set_lock(
-		//				STAKING_ID,
-		//				&ledger.stash,
-		//				ledger.total_kton,
-		//				T::BlockNumber::max_value(),
-		//				WithdrawReasons::all(),
-		//			),
-		//		}
+		match staking_balance {
+			StakingBalance::Ring(_r) => T::Ring::set_lock(
+				&ledger.stash,
+				Id::Staking(TimeStamp::max_value()),
+				ledger.total_ring,
+				WithdrawReasons::all(),
+			),
+			StakingBalance::Kton(_k) => T::Kton::set_lock(
+				&ledger.stash,
+				Id::Staking(TimeStamp::max_value()),
+				ledger.total_kton,
+				WithdrawReasons::all(),
+			),
+		}
 
 		<Ledger<T>>::insert(controller, ledger);
 	}
@@ -1135,7 +1126,7 @@ impl<T: Trait> Module<T> {
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExposure { who, value: value })
+						.map(|(who, value)| IndividualExposure { who, value })
 						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
 				if exposure.total < slot_stake {

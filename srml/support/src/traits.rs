@@ -50,7 +50,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	// fn extend_lock();
 
 	/// Remove an existing lock.
-	fn remove_lock(who: &AccountId, id: Self::Id);
+	fn remove_lock(who: &AccountId, id: &Self::Id);
 
 	/// The number of locks.
 	fn locks_count(who: &AccountId) -> u32;
