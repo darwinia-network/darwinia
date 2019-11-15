@@ -444,15 +444,15 @@ decl_module! {
 					// Only active normal ring can be unbond
 					let active_normal_ring = *active_ring - *active_deposit_ring;
 					// unbond normal ring first
-					let available_unbund_ring = r.min(active_normal_ring);
+					let available_unbond_ring = r.min(active_normal_ring);
 
-					<RingPool<T>>::mutate(|r| *r -= available_unbund_ring);
+					<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
 
-					if !available_unbund_ring.is_zero() {
-						*active_ring -= available_unbund_ring;
+					if !available_unbond_ring.is_zero() {
+						*active_ring -= available_unbond_ring;
 //						TODO
 //						unlocking.push(UnlockChunk {
-//							value: StakingBalance::Ring(available_unbund_ring),
+//							value: StakingBalance::Ring(available_unbond_ring),
 //							era,
 //						});
 
@@ -460,15 +460,15 @@ decl_module! {
 					}
 				},
 				StakingBalance::Kton(k) => {
-					let unbound_kton = k.min(*active_kton);
+					let unbond_kton = k.min(*active_kton);
 
-					if !unbound_kton.is_zero() {
-						<KtonPool<T>>::mutate(|k| *k -= unbound_kton);
+					if !unbond_kton.is_zero() {
+						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
-						*active_kton -= unbound_kton;
+						*active_kton -= unbond_kton;
 //						TODO
 //						unlocking.push(UnlockChunk {
-//							value: StakingBalance::Kton(unbound_kton),
+//							value: StakingBalance::Kton(unbond_kton),
 //							era,
 //						});
 
