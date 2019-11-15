@@ -13,14 +13,17 @@ use srml_support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
 	traits::{
-		Currency, ExistenceRequirement, Imbalance, LockIdentifier, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome,
-		WithdrawReason, WithdrawReasons,
+		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome, WithdrawReason,
+		WithdrawReasons,
 	},
 	Parameter, StorageMap, StorageValue,
 };
 use system::ensure_signed;
 
-use darwinia_support::{traits::LockableCurrency, types::Id};
+use darwinia_support::{
+	traits::LockableCurrency,
+	types::{BalanceLock, Id},
+};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -52,13 +55,6 @@ impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
 			Zero::zero()
 		}
 	}
-}
-
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct BalanceLock<Balance, Moment> {
-	pub id: Id<Moment>,
-	pub amount: Balance,
-	pub reasons: WithdrawReasons,
 }
 
 pub trait Trait: timestamp::Trait {
@@ -226,27 +222,26 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		reasons: WithdrawReasons,
 		new_balance: T::Balance,
 	) -> Result {
-		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
-		//			&& Self::vesting_balance(who) > new_balance
-		//		{
-		//			return Err("vesting balance too high to send value");
-		//		}
-		//		let locks = Self::locks(who);
-		//		if locks.is_empty() {
-		//			return Ok(());
-		//		}
-		//
-		//		let now = <timestamp::Module<T>>::now();
-		//		if locks
-		//			.into_iter()
-		//			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
-		//		{
-		//			Ok(())
-		//		} else {
-		//			Err("account liquidity restrictions prevent withdrawal")
-		//		}
-		//		TODO
-		unimplemented!()
+		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
+			&& Self::vesting_balance(who) > new_balance
+		{
+			return Err("vesting balance too high to send value");
+		}
+		let locks = Self::locks(who);
+		if locks.is_empty() {
+			return Ok(());
+		}
+
+		let now = <timestamp::Module<T>>::now();
+		// TODO: logic?
+		if locks
+			.into_iter()
+			.all(|lock| !lock.valid(&now) || new_balance >= lock.amount || !lock.reasons.intersects(reasons))
+		{
+			Ok(())
+		} else {
+			Err("account liquidity restrictions prevent withdrawal")
+		}
 	}
 
 	// TODO: add fee
@@ -385,43 +380,26 @@ where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
 	type Id = Id<T::Moment>;
+	type WithdrawReasons = WithdrawReasons;
 
-	// `amount` > `free_balance` is allowed
-	fn set_lock(who: &T::AccountId, amount: Self::Balance, id: Self::Id) {
-		//		let now = <timestamp::Module<T>>::now();
-		//		let mut new_lock = Some(BalanceLock {
-		//			id,
-		//			amount,
-		//			until,
-		//			reasons,
-		//		});
-		//		let mut locks = Self::locks(who)
-		//			.into_iter()
-		//			.filter_map(|l| {
-		//				if l.id == id {
-		//					new_lock.take()
-		//				} else if l.until > now {
-		//					Some(l)
-		//				} else {
-		//					None
-		//				}
-		//			})
-		//			.collect::<Vec<_>>();
-		//		if let Some(lock) = new_lock {
-		//			locks.push(lock);
-		//		}
-		//		<Locks<T>>::insert(who, locks);
+	fn set_lock(who: &T::AccountId, id: Self::Id, amount: Self::Balance, reasons: Self::WithdrawReasons) {
+		let now = <timestamp::Module<T>>::now();
+
+		<Locks<T>>::mutate(who, |locks| {
+			locks.retain(|lock| lock.id != id || lock.valid(&now));
+			locks.push(BalanceLock { id, amount, reasons });
+		});
 	}
 
-	fn remove_lock(id: Self::Id, who: &T::AccountId) {
-		//		let now = <timestamp::Module<T>>::now();
-		//		<Locks<T>>::mutate(who, |locks| {
-		//			// unexpired and mismatched id -> keep
-		//			locks.retain(|lock| (lock.until > now) && (lock.id != id));
-		//		});
+	fn remove_lock(who: &T::AccountId, id: Self::Id) {
+		let now = <timestamp::Module<T>>::now();
+		<Locks<T>>::mutate(who, |locks| {
+			// unexpired and mismatched id -> keep
+			locks.retain(|lock| lock.valid(&now) && lock.id != id);
+		});
 	}
 
-	fn count() -> u32 {
-		unimplemented!()
+	fn locks_count(who: &T::AccountId) -> u32 {
+		<Locks<T>>::get(&who).len() as _
 	}
 }

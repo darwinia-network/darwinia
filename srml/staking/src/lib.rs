@@ -60,7 +60,7 @@ const RECENT_OFFLINE_COUNT: usize = 32;
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
-const MAX_UNLOCKING_CHUNKS: usize = 32;
+const MAX_UNLOCKING_CHUNKS: u32 = 32;
 const MONTH_IN_SECONDS: u32 = 2_592_000;
 
 /// Counter for the number of eras that have passed.
@@ -431,11 +431,10 @@ decl_module! {
 				..
 			} = &mut ledger;
 
-//			TODO
-//			ensure!(
-//				unlocking.len() < MAX_UNLOCKING_CHUNKS,
-//				"can not schedule more unlock chunks"
-//			);
+			ensure!(
+				T::Ring::locks_count(stash) + T::Kton::locks_count(stash) < MAX_UNLOCKING_CHUNKS,
+				"can not schedule more unlock chunks"
+			);
 
 			let until = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>() + T::BondingDuration::get();
 

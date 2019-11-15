@@ -21,11 +21,22 @@ pub trait OnAccountBalanceChanged<AccountId, Balance> {
 	fn on_changed(who: &AccountId, old: Balance, new: Balance);
 }
 
-/// A currency whose accounts can have liquidity restrictions.
+/// A more powerful lockable currency.
 pub trait LockableCurrency<AccountId>: Currency<AccountId> {
-	/// The quantity used to denote time; usually just a `BlockNumber`.
-	/// In Darwinia we prefer using `TimeStamp/u64`.
+	/// Recommend to define `Id` as below and customize `PartialEq` to differentiate the locks:
+	/// ```rust
+	/// #[derive(Eq, Clone, Encode, Decode, RuntimeDebug)]
+	/// pub enum Id<Moment> {
+	///		Staking(Moment),
+	///		Unbonding(Moment),
+	/// }
+	/// ```
+	/// Moment:
+	/// - The quantity used to denote time; usually just a `BlockNumber`.
+	/// - In Darwinia we prefer using `TimeStamp/u64`.
 	type Id;
+	/// Customize our `WithdrawReasons`
+	type WithdrawReasons;
 
 	/// Create a new balance lock on account `who`.
 	///
@@ -33,14 +44,14 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// the `Locks` vec in storage. Note that you can lock more funds than a user has.
 	///
 	/// If the lock `id` already exists, this will update it.
-	fn set_lock(who: &AccountId, amount: Self::Balance, id: Self::Id);
+	fn set_lock(who: &AccountId, id: Self::Id, amount: Self::Balance, reasons: Self::WithdrawReasons);
 
 	// TODO: reserve
 	// fn extend_lock();
 
 	/// Remove an existing lock.
-	fn remove_lock(id: Self::Id, who: &AccountId);
+	fn remove_lock(who: &AccountId, id: Self::Id);
 
 	/// The number of locks.
-	fn count() -> u32;
+	fn locks_count(who: &AccountId) -> u32;
 }
