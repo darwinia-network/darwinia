@@ -71,6 +71,32 @@ const STAKING_ID: LockIdentifier = *b"staking ";
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
 
+/// Counter for the number of "reward" points earned by a given validator.
+pub type Points = u32;
+
+/// Reward points of an era. Used to split era total payout between validators.
+#[derive(Encode, Decode, Default)]
+pub struct EraPoints {
+	/// Total number of points. Equals the sum of reward points for each validator.
+	total: Points,
+	/// The reward points earned by a given validator. The index of this vec corresponds to the
+	/// index into the current validator set.
+	individual: Vec<Points>,
+}
+
+impl EraPoints {
+	/// Add the reward to the validator at the given index. Index must be valid
+	/// (i.e. `index < current_elected.len()`).
+	fn add_points_to_index(&mut self, index: u32, points: u32) {
+		if let Some(new_total) = self.total.checked_add(points) {
+			self.total = new_total;
+			self.individual
+				.resize((index as usize + 1).max(self.individual.len()), 0);
+			self.individual[index as usize] += points; // Addition is less than total
+		}
+	}
+}
+
 #[derive(RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum StakerStatus<AccountId> {
@@ -381,7 +407,7 @@ decl_storage! {
 
 		/// All slashes that have occurred in a given era.
 		EraSlashJournal get(fn era_slash_journal):
-			map EraIndex => Vec<SlashJournalEntry<T::AccountId, BalanceOf<T>>>;
+			map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
 
 		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
 
@@ -428,11 +454,11 @@ decl_event!(
     pub enum Event<T> where Balance = RingBalanceOf<T>, <T as system::Trait>::AccountId {
         /// All validators have been rewarded by the given balance.
 		Reward(Balance),
-		/// One validator (and its nominators) has been given an offline-warning (it is still
-		/// within its grace). The accrued number of slashes is recorded, too.
-		OfflineWarning(AccountId, u32),
-		/// One validator (and its nominators) has been slashed by the given ratio.
-		OfflineSlash(AccountId, u32),
+
+		// TODO: refactor to Balance later?
+		Slash(AccountId, ExtendedBalance),
+		OldSlashingReportDiscarded(SessionIndex),
+
 		/// NodeName changed
 	    NodeNameUpdated,
     }
@@ -924,28 +950,92 @@ impl<T: Trait> Module<T> {
 		<Ledger<T>>::insert(controller, ledger);
 	}
 
-	fn slash_validator(stash: &T::AccountId, slash_ratio_in_u32: u32) {
-		// construct Perbill here to make sure slash_ratio lt 0.
-		let slash_ratio = Perbill::from_parts(slash_ratio_in_u32);
-		// The exposures (backing stake) information of the validator to be slashed.
-		let exposures = Self::stakers(stash);
+	fn slash_validator(
+		stash: &T::AccountId,
+		slash: ExtendedBalance,
+		exposure: &Exposure<T::AccountId, ExtendedBalance>,
+		journal: &mut Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>,
+	) -> (RingNegativeImbalanceOf<T>, KtonNegativeImbalanceOf<T>) {
+		// The amount we are actually going to slash (can't be bigger than the validator's total
+		// exposure)
+		let slash = slash.min(exposure.total);
 
-		let (mut ring_imbalance, mut kton_imbalance) = Self::slash_individual(stash, slash_ratio);
+		// limit what we'll slash of the stash's own to only what's in
+		// the exposure.
+		//
+		// note: this is fine only because we limit reports of the current era.
+		// otherwise, these funds may have already been slashed due to something
+		// reported from a prior era.
+		let already_slashed_own = journal
+			.iter()
+			.filter(|entry| &entry.who == stash)
+			.map(|entry| entry.own_slash)
+			.fold(ExtendedBalance::zero(), |a, c| a.saturating_add(c));
 
-		for i in exposures.others.iter() {
-			let (rn, kn) = Self::slash_individual(&i.who, slash_ratio);
-			ring_imbalance.subsume(rn);
-			kton_imbalance.subsume(kn);
+		let own_remaining = exposure.own.saturating_sub(already_slashed_own);
+
+		// The amount we'll slash from the validator's stash directly.
+		let own_slash = own_remaining.min(slash);
+		let (mut ring_imbalance, kton_imblance, missing) =
+			Self::slash_individual(stash, Perbill::from_rational_approximation(own_slash, exposure.own)); // T::Currency::slash(stash, own_slash);
+		let own_slash = own_slash - missing;
+		// The amount remaining that we can't slash from the validator,
+		// that must be taken from the nominators.
+		let rest_slash = slash - own_slash;
+		if !rest_slash.is_zero() {
+			// The total to be slashed from the nominators.
+			let total = exposure.total - exposure.own;
+			if !total.is_zero() {
+				for i in exposure.others.iter() {
+					let per_u64 = Perbill::from_rational_approximation(i.value, total);
+					// best effort - not much that can be done on fail.
+					// imbalance.subsume(T::Currency::slash(&i.who, per_u64 * rest_slash).0)
+					let (r, k, _) = Self::slash_individual(
+						&i.who,
+						Perbill::from_rational_approximation(per_u64 * rest_slash, i.value),
+					);
+
+					ring_imbalance.subsume(r);
+					kton_imblance.subsume(k);
+				}
+			}
 		}
 
-		T::RingSlash::on_unbalanced(ring_imbalance);
-		T::KtonSlash::on_unbalanced(kton_imbalance);
+		journal.push(SlashJournalEntry {
+			who: stash.clone(),
+			own_slash: own_slash.clone(),
+			amount: slash,
+		});
+
+		// trigger the event
+		Self::deposit_event(RawEvent::Slash(stash.clone(), slash));
+
+		(ring_imbalance, kton_imblance)
 	}
 
+	//	fn slash_validator(stash: &T::AccountId, slash_ratio_in_u32: u32) {
+	//		// construct Perbill here to make sure slash_ratio lt 0.
+	//		let slash_ratio = Perbill::from_parts(slash_ratio_in_u32);
+	//		// The exposures (backing stake) information of the validator to be slashed.
+	//		let exposures = Self::stakers(stash);
+	//
+	//		let (mut ring_imbalance, mut kton_imbalance) = Self::slash_individual(stash, slash_ratio);
+	//
+	//		for i in exposures.others.iter() {
+	//			let (rn, kn) = Self::slash_individual(&i.who, slash_ratio);
+	//			ring_imbalance.subsume(rn);
+	//			kton_imbalance.subsume(kn);
+	//		}
+	//
+	//		T::RingSlash::on_unbalanced(ring_imbalance);
+	//		T::KtonSlash::on_unbalanced(kton_imbalance);
+	//	}
+
+	// TODO: there is reserve balance in Balance.Slash, we assuming it is zero for now.
 	fn slash_individual(
 		stash: &T::AccountId,
 		slash_ratio: Perbill,
-	) -> (RingNegativeImbalanceOf<T>, KtonNegativeImbalanceOf<T>) {
+	) -> (RingNegativeImbalanceOf<T>, KtonNegativeImbalanceOf<T>, ExtendedBalance) {
 		let controller = Self::bonded(stash).unwrap();
 		let mut ledger = Self::ledger(&controller).unwrap();
 
@@ -966,7 +1056,7 @@ impl<T: Trait> Module<T> {
 			(<KtonNegativeImbalanceOf<T>>::zero(), Zero::zero())
 		};
 
-		(ring_imbalance, kton_imbalance)
+		(ring_imbalance, kton_imbalance, 0)
 	}
 
 	fn slash_helper(
@@ -1350,8 +1440,10 @@ impl<T: Trait> OnFreeBalanceZero<T::AccountId> for Module<T> {
 /// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
 /// * 1 point to the producer of each referenced uncle block.
 impl<T: Trait + authorship::Trait> authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
-	fn note_author(_author: T::AccountId) {}
-	fn note_uncle(_author: T::AccountId, _age: T::BlockNumber) {
+	fn note_author(author: T::AccountId) {
+		Self::reward_by_ids(vec![(author, 20)]);
+	}
+	fn note_uncle(author: T::AccountId, _age: T::BlockNumber) {
 		Self::reward_by_ids(vec![(<authorship::Module<T>>::author(), 2), (author, 1)])
 	}
 }
@@ -1385,7 +1477,7 @@ impl<T: Trait> OnOffenceHandler<T::AccountId, session::historical::Identificatio
 where
 	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: session::historical::Trait<
-		FullIdentification = Exposure<<T as system::Trait>::AccountId, BalanceOf<T>>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,
@@ -1397,7 +1489,8 @@ where
 		offenders: &[OffenceDetails<T::AccountId, session::historical::IdentificationTuple<T>>],
 		slash_fraction: &[Perbill],
 	) {
-		let mut remaining_imbalance = <NegativeImbalanceOf<T>>::zero();
+		let mut ring_remaining_imbalance = <RingNegativeImbalanceOf<T>>::zero();
+		let mut kton_remaining_imbalance = <KtonNegativeImbalanceOf<T>>::zero();
 		let slash_reward_fraction = SlashRewardFraction::get();
 
 		let era_now = Self::current_era();
@@ -1433,31 +1526,53 @@ where
 				Self::ensure_new_era();
 			}
 			// actually slash the validator
-			let slashed_amount = Self::slash_validator(stash, amount, exposure, &mut journal);
+			let (ring_slashed_amount, kton_slash_amount) = Self::slash_validator(stash, amount, exposure, &mut journal);
 
 			// distribute the rewards according to the slash
-			let slash_reward = slash_reward_fraction * slashed_amount.peek();
-			if !slash_reward.is_zero() && !details.reporters.is_empty() {
-				let (mut reward, rest) = slashed_amount.split(slash_reward);
+			// RING part
+			let ring_slash_reward = slash_reward_fraction * ring_slashed_amount.peek();
+			if !ring_slash_reward.is_zero() && !details.reporters.is_empty() {
+				let (mut reward, rest) = ring_slashed_amount.split(ring_slash_reward);
 				// split the reward between reporters equally. Division cannot fail because
 				// we guarded against it in the enclosing if.
 				let per_reporter = reward.peek() / (details.reporters.len() as u32).into();
 				for reporter in &details.reporters {
 					let (reporter_reward, rest) = reward.split(per_reporter);
 					reward = rest;
-					T::Currency::resolve_creating(reporter, reporter_reward);
+					T::Ring::resolve_creating(reporter, reporter_reward);
 				}
 				// The rest goes to the treasury.
-				remaining_imbalance.subsume(reward);
-				remaining_imbalance.subsume(rest);
+				ring_remaining_imbalance.subsume(reward);
+				ring_remaining_imbalance.subsume(rest);
 			} else {
-				remaining_imbalance.subsume(slashed_amount);
+				ring_remaining_imbalance.subsume(ring_slashed_amount);
+			}
+
+			// distribute the rewards according to the slash
+			// KTON part
+			let kton_slash_reward = slash_reward_fraction * kton_slash_amount.peek();
+			if !kton_slash_reward.is_zero() && !details.reporters.is_empty() {
+				let (mut reward, rest) = kton_slash_amount.split(kton_slash_reward);
+				// split the reward between reporters equally. Division cannot fail because
+				// we guarded against it in the enclosing if.
+				let per_reporter = reward.peek() / (details.reporters.len() as u32).into();
+				for reporter in &details.reporters {
+					let (reporter_reward, rest) = reward.split(per_reporter);
+					reward = rest;
+					T::Kton::resolve_creating(reporter, reporter_reward);
+				}
+				// The rest goes to the treasury.
+				kton_remaining_imbalance.subsume(reward);
+				kton_remaining_imbalance.subsume(rest);
+			} else {
+				kton_remaining_imbalance.subsume(kton_slash_amount);
 			}
 		}
 		<EraSlashJournal<T>>::insert(era_now, journal);
 
 		// Handle the rest of imbalances
-		T::Slash::on_unbalanced(remaining_imbalance);
+		T::RingSlash::on_unbalanced(ring_remaining_imbalance);
+		T::KtonSlash::on_unbalanced(kton_remaining_imbalance);
 	}
 }
 
