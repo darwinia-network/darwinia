@@ -1,7 +1,6 @@
 use super::MONTH_IN_SECONDS;
 use super::*;
 use crate::mock::*;
-use runtime_io::with_externalities;
 use srml_support::traits::{Currency, WithdrawReason, WithdrawReasons};
 use srml_support::{assert_err, assert_ok};
 
@@ -69,7 +68,7 @@ macro_rules! gen_paired_account {
 
 #[test]
 fn test_env_build() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		check_exposure_all();
 
 		assert_eq!(Staking::bonded(&11), Some(10));
@@ -132,7 +131,7 @@ fn test_env_build() {
 
 #[test]
 fn normal_kton_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10 * COIN);
 		assert_ok!(Staking::bond(
 			Origin::signed(1001),
@@ -194,7 +193,7 @@ fn normal_kton_should_work() {
 
 #[test]
 fn time_deposit_ring_unbond_and_withdraw_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
 
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
@@ -324,7 +323,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 
 #[test]
 fn normal_unbond_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let stash = 11;
 		let controller = 10;
 		let value = 200 * COIN;
@@ -390,7 +389,7 @@ fn normal_unbond_should_work() {
 
 #[test]
 fn punished_unbond_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let stash = 1001;
 		let controller = 1000;
 		let promise_month = 36;
@@ -471,7 +470,7 @@ fn punished_unbond_should_work() {
 
 #[test]
 fn transform_to_promised_ring_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let _ = Ring::deposit_creating(&1001, 100 * COIN);
 		assert_ok!(Staking::bond(
 			Origin::signed(1001),
@@ -510,7 +509,7 @@ fn transform_to_promised_ring_should_work() {
 
 #[test]
 fn expired_ring_should_capable_to_promise_again() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let _ = Ring::deposit_creating(&1001, 100 * COIN);
 		assert_ok!(Staking::bond(
 			Origin::signed(1001),
@@ -538,7 +537,7 @@ fn expired_ring_should_capable_to_promise_again() {
 
 #[test]
 fn inflation_should_be_correct() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let initial_issuance = 1_200_000_000 * COIN;
 		let surplus_needed = initial_issuance - Ring::total_issuance();
 		let _ = Ring::deposit_into_existing(&11, surplus_needed);
@@ -552,7 +551,7 @@ fn inflation_should_be_correct() {
 
 #[test]
 fn reward_should_work_correctly() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		// create controller account
 		let _ = Ring::deposit_creating(&2000, COIN);
 		let _ = Ring::deposit_creating(&1000, COIN);
@@ -618,7 +617,7 @@ fn reward_should_work_correctly() {
 
 		assert_eq!(Staking::ledger(&2000).unwrap().active_kton, 1 * COIN);
 		assert_eq!(Staking::ledger(&2000).unwrap().active_ring, 300 * COIN);
-		assert_eq!(Staking::slashable_balance_of(&2001), 600 * COIN as u128);
+		assert_eq!(Staking::power_of(&2001), 1_000_000_000 / 10 as u128);
 		// 600COIN for rewarding ring bond-er
 		// 600COIN for rewarding kton bond-er
 		Staking::select_validators();
@@ -626,10 +625,10 @@ fn reward_should_work_correctly() {
 
 		assert_eq!(
 			Staking::stakers(2001),
-			Exposures {
+			Exposure {
 				total: 1200000000000,
 				own: 600000000000,
-				others: vec![IndividualExpo {
+				others: vec![IndividualExposure {
 					who: 1001,
 					value: 600000000000
 				}]
@@ -642,7 +641,7 @@ fn reward_should_work_correctly() {
 
 #[test]
 fn slash_should_work() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let _ = Ring::deposit_creating(&1001, 100 * COIN);
 		Kton::deposit_creating(&1001, 100 * COIN);
 
@@ -678,7 +677,7 @@ fn slash_should_work() {
 
 #[test]
 fn test_inflation() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		assert_eq!(Staking::current_era_total_reward(), 80_000_000 * COIN / 10);
 		start_era(20);
 		assert_eq!(Staking::epoch_index(), 2);
@@ -688,7 +687,7 @@ fn test_inflation() {
 
 #[test]
 fn set_controller_should_remove_old_ledger() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let stash = 11;
 		let old_controller = 10;
 		let new_controller = 12;
@@ -703,7 +702,7 @@ fn set_controller_should_remove_old_ledger() {
 
 #[test]
 fn set_controller_should_not_change_ledger() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		assert_eq!(Staking::ledger(&10).unwrap().total_ring, 100 * COIN);
 		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
 		assert_eq!(Staking::ledger(&12).unwrap().total_ring, 100 * COIN);
@@ -712,7 +711,7 @@ fn set_controller_should_not_change_ledger() {
 
 #[test]
 fn slash_should_not_touch_unlockings() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let old_ledger = Staking::ledger(&10).unwrap();
 		// only deposit_ring, no normal_ring
 		assert_eq!(
@@ -762,7 +761,7 @@ fn slash_should_not_touch_unlockings() {
 
 #[test]
 fn bond_over_max_promise_month_should_fail() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456));
 		assert_err!(
 			Staking::bond(
@@ -785,7 +784,7 @@ fn bond_over_max_promise_month_should_fail() {
 
 #[test]
 fn stash_already_bonded_and_controller_already_paired_should_fail() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		gen_paired_account!(unpaired_stash(123), unpaired_controller(456));
 		assert_err!(
 			Staking::bond(
@@ -812,7 +811,7 @@ fn stash_already_bonded_and_controller_already_paired_should_fail() {
 
 #[test]
 fn pool_should_be_increased_and_decreased_correctly() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let mut ring_pool = Staking::ring_pool();
 		let mut kton_pool = Staking::kton_pool();
 
@@ -874,7 +873,7 @@ fn pool_should_be_increased_and_decreased_correctly() {
 
 #[test]
 fn unbond_over_max_unlocking_chunks_should_fail() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456), promise_month(12));
 		let deposit_items_len = MAX_UNLOCKING_CHUNKS + 1;
 
@@ -913,7 +912,7 @@ fn unbond_over_max_unlocking_chunks_should_fail() {
 
 #[test]
 fn unlock_value_should_be_increased_and_decreased_correctly() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		// normal Ring/Kton
 		{
 			let stash = 444;
@@ -1038,7 +1037,7 @@ fn unlock_value_should_be_increased_and_decreased_correctly() {
 
 #[test]
 fn promise_extra_should_not_remove_unexpired_items() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456), promise_month(12));
 
 		let expired_item_len = 3;
@@ -1076,7 +1075,7 @@ fn promise_extra_should_not_remove_unexpired_items() {
 
 #[test]
 fn unbond_zero_before_expiry() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let expiry_date = 12 * MONTH_IN_SECONDS as u64;
 		let unbond_value = StakingBalance::Ring(COIN);
 
@@ -1101,7 +1100,7 @@ fn unbond_zero_before_expiry() {
 // lost 3 Kton and 10_000 Ring's power for nominate
 #[test]
 fn yakio_q1() {
-	with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let stash = 777;
 		let controller = 888;
 		let _ = Ring::deposit_creating(&stash, 20_000);
@@ -1165,7 +1164,7 @@ fn yakio_q1() {
 fn yakio_q2() {
 	fn run(with_new_era: bool) -> u64 {
 		let mut balance = 0;
-		with_externalities(&mut ExtBuilder::default().existential_deposit(0).build(), || {
+		ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
 			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
 			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
@@ -1205,7 +1204,7 @@ fn yakio_q2() {
 	let free_balance = run(false);
 	let free_balance_with_new_era = run(true);
 
-	assert!(free_balance != 0);
-	assert!(free_balance_with_new_era != 0);
+	assert_ne!(free_balance, 0);
+	assert_ne!(free_balance_with_new_era, 0);
 	assert!(free_balance > free_balance_with_new_era);
 }

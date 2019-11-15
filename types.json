@@ -35,13 +35,13 @@
     "deposit_items": "Vec<TimeDepositItem>",
     "unlocking": "Vec<UnlockChunk>"
   },
-  "IndividualExpo": {
+  "IndividualExposure": {
     "who": "AccountId",
     "value": "ExtendedBalance"
   },
-  "Exposures": {
+  "Exposure": {
     "total": "ExtendedBalance",
     "own": "ExtendedBalance",
-    "others": "Vec<IndividualExpo>"
+    "others": "Vec<IndividualExposure>"
   }
 }

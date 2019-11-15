@@ -19,9 +19,8 @@ rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git" }
 ethereum-types = { version = "0.8.0", default-feature = false}
 keccak-hash = "0.4.0"
 
-
 [dev-dependencies]
-support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git'}
+support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git'}
 rustc-hex = "2.0"
 
 [features]

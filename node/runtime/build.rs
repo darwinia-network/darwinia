@@ -20,7 +20,7 @@ fn main() {
 	build_current_project_with_rustflags(
 		"wasm_binary.rs",
 		WasmBuilderSource::Git {
-			repo: "https://github.com/paritytech/substrate.git",
+			repo: "https://github.com/darwinia-network/substrate.git",
 			rev: "a61c0eb8",
 		},
 		// This instructs LLD to export __heap_base as a global variable, which is used by the

@@ -16,13 +16,13 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
+use crate::{Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
 use node_primitives::Balance;
-use sr_primitives::weights::Weight;
 use sr_primitives::traits::{Convert, Saturating};
-use sr_primitives::Fixed64;
-use support::traits::{OnUnbalanced, Currency};
-use crate::{Balances, Authorship, MaximumBlockWeight, NegativeImbalance};
-use crate::constants::fee::TARGET_BLOCK_FULLNESS;
+
+use sr_primitives::weights::Weight;
+use sr_primitives::{Fixed64, Perbill};
+use support::traits::{OnUnbalanced, Currency, Get};
 
 pub struct Author;
 impl OnUnbalanced<NegativeImbalance> for Author {
@@ -36,59 +36,51 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 pub struct CurrencyToVoteHandler;
 
 impl CurrencyToVoteHandler {
-	fn factor() -> Balance { (Balances::total_issuance() / u64::max_value() as Balance).max(1) }
-}
-
-impl Convert<Balance, u64> for CurrencyToVoteHandler {
-	fn convert(x: Balance) -> u64 { (x / Self::factor()) as u64 }
-}
-
-impl Convert<u128, Balance> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> Balance { x * Self::factor() }
-}
-
-/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
-/// node's balance type.
-///
-/// This should typically create a mapping between the following ranges:
-///   - [0, system::MaximumBlockWeight]
-///   - [Balance::min, Balance::max]
-///
-/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
-///   - Setting it to `0` will essentially disable the weight fee.
-///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
-///
-/// By default, substrate node will have a weight range of [0, 1_000_000_000].
-pub struct WeightToFee;
-impl Convert<Weight, Balance> for WeightToFee {
-	fn convert(x: Weight) -> Balance {
-		// substrate-node a weight of 10_000 (smallest non-zero weight) to be mapped to 10^7 units of
-		// fees, hence:
-		Balance::from(x).saturating_mul(1_000)
+	fn factor() -> Balance {
+		(Balances::total_issuance() / u64::max_value() as Balance).max(1)
 	}
 }
 
-/// A struct that updates the weight multiplier based on the saturation level of the previous block.
-/// This should typically be called once per-block.
+impl Convert<Balance, u64> for CurrencyToVoteHandler {
+	fn convert(x: Balance) -> u64 {
+		(x / Self::factor()) as u64
+	}
+}
+
+impl Convert<u128, Balance> for CurrencyToVoteHandler {
+	fn convert(x: u128) -> Balance {
+		x * Self::factor()
+	}
+}
+
+/// Convert from weight to balance via a simple coefficient multiplication
+/// The associated type C encapsulates a constant in units of balance per weight
+pub struct LinearWeightToFee<C>(rstd::marker::PhantomData<C>);
+
+impl<C: Get<Balance>> Convert<Weight, Balance> for LinearWeightToFee<C> {
+	fn convert(w: Weight) -> Balance {
+		// substrate-node a weight of 10_000 (smallest non-zero weight) to be mapped to 10^7 units of
+		// fees, hence:
+		let coefficient = C::get();
+		Balance::from(w).saturating_mul(coefficient)
+	}
+}
+
+/// Update the given multiplier based on the following formula
 ///
-/// This assumes that weight is a numeric value in the u32 range.
-///
-/// Given `TARGET_BLOCK_FULLNESS = 1/2`, a block saturation greater than 1/2 will cause the system
-/// fees to slightly grow and the opposite for block saturations less than 1/2.
-///
-/// Formula:
-///   diff = (target_weight - current_block_weight)
+///   diff = (previous_block_weight - target_weight)
 ///   v = 0.00004
 ///   next_weight = weight * (1 + (v . diff) + (v . diff)^2 / 2)
 ///
+/// Where `target_weight` must be given as the `Get` implementation of the `T` generic type.
 /// https://research.web3.foundation/en/latest/polkadot/Token%20Economics/#relay-chain-transaction-fees
-pub struct FeeMultiplierUpdateHandler;
+pub struct TargetedFeeAdjustment<T>(rstd::marker::PhantomData<T>);
 
-impl Convert<(Weight, Fixed64), Fixed64> for FeeMultiplierUpdateHandler {
-	fn convert(previous_state: (Weight, Fixed64)) -> Fixed64 {
-		let (block_weight, multiplier) = previous_state;
+impl<T: Get<Perbill>> Convert<Fixed64, Fixed64> for TargetedFeeAdjustment<T> {
+	fn convert(multiplier: Fixed64) -> Fixed64 {
+		let block_weight = System::all_extrinsics_weight();
 		let max_weight = MaximumBlockWeight::get();
-		let target_weight = (TARGET_BLOCK_FULLNESS * max_weight) as u128;
+		let target_weight = (T::get() * max_weight) as u128;
 		let block_weight = block_weight as u128;
 
 		// determines if the first_term is positive
@@ -100,8 +92,8 @@ impl Convert<(Weight, Fixed64), Fixed64> for FeeMultiplierUpdateHandler {
 
 		// 0.00004 = 4/100_000 = 40_000/10^9
 		let v = Fixed64::from_rational(4, 100_000);
-		// 0.00004^2 = 16/10^10 ~= 2/10^9. Taking the future /2 into account, then it is just 1 parts
-		// from a billionth.
+		// 0.00004^2 = 16/10^10 ~= 2/10^9. Taking the future /2 into account, then it is just 1
+		// parts from a billionth.
 		let v_squared_2 = Fixed64::from_rational(1, 1_000_000_000);
 
 		let first_term = v.saturating_mul(diff);
@@ -131,9 +123,9 @@ impl Convert<(Weight, Fixed64), Fixed64> for FeeMultiplierUpdateHandler {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sr_primitives::weights::Weight;
-	use crate::{MaximumBlockWeight, AvailableBlockRatio, Runtime};
 	use crate::constants::currency::*;
+	use crate::{AvailableBlockRatio, MaximumBlockWeight, Runtime};
+	use sr_primitives::weights::Weight;
 
 	fn max() -> Weight {
 		MaximumBlockWeight::get()
@@ -144,7 +136,7 @@ mod tests {
 	}
 
 	// poc reference implementation.
-	fn fee_multiplier_update(block_weight: Weight, previous: Fixed64) -> Fixed64  {
+	fn fee_multiplier_update(block_weight: Weight, previous: Fixed64) -> Fixed64 {
 		let block_weight = block_weight as f32;
 		let v: f32 = 0.00004;
 
@@ -155,7 +147,7 @@ mod tests {
 		// Current saturation in terms of weight
 		let s = block_weight;
 
-		let fm = (v * (s/m - ss/m)) + (v.powi(2) * (s/m - ss/m).powi(2)) / 2.0;
+		let fm = (v * (s / m - ss / m)) + (v.powi(2) * (s / m - ss / m).powi(2)) / 2.0;
 		let addition_fm = Fixed64::from_parts((fm * 1_000_000_000_f32) as i64);
 		previous.saturating_add(addition_fm)
 	}
@@ -195,7 +187,9 @@ mod tests {
 		loop {
 			let next = FeeMultiplierUpdateHandler::convert((block_weight, fm));
 			fm = next;
-			if fm == Fixed64::from_rational(-1, 1) { break; }
+			if fm == Fixed64::from_rational(-1, 1) {
+				break;
+			}
 			iterations += 1;
 		}
 		println!("iteration {}, new fm = {:?}. Weight fee is now zero", iterations, fm);
@@ -219,14 +213,16 @@ mod tests {
 		let mut iterations: u64 = 0;
 		loop {
 			let next = FeeMultiplierUpdateHandler::convert((block_weight, fm));
-			if fm == next { break; }
+			if fm == next {
+				break;
+			}
 			fm = next;
 			iterations += 1;
 			let fee = <Runtime as transaction_payment::Trait>::WeightToFee::convert(tx_weight);
 			let adjusted_fee = fm.saturated_multiply_accumulate(fee);
 			println!(
 				"iteration {}, new fm = {:?}. Fee at this point is: \
-				{} units, {} millicents, {} cents, {} dollars",
+				 {} units, {} millicents, {} cents, {} dollars",
 				iterations,
 				fm,
 				adjusted_fee,
@@ -284,18 +280,9 @@ mod tests {
 
 	#[test]
 	fn stateful_weight_mil_collapse_to_minus_one() {
-		assert_eq!(
-			FeeMultiplierUpdateHandler::convert((0, Fixed64::default())),
-			fm(-10000)
-		);
-		assert_eq!(
-			FeeMultiplierUpdateHandler::convert((0, fm(-10000))),
-			fm(-20000)
-		);
-		assert_eq!(
-			FeeMultiplierUpdateHandler::convert((0, fm(-20000))),
-			fm(-30000)
-		);
+		assert_eq!(FeeMultiplierUpdateHandler::convert((0, Fixed64::default())), fm(-10000));
+		assert_eq!(FeeMultiplierUpdateHandler::convert((0, fm(-10000))), fm(-20000));
+		assert_eq!(FeeMultiplierUpdateHandler::convert((0, fm(-20000))), fm(-30000));
 		// ...
 		assert_eq!(
 			FeeMultiplierUpdateHandler::convert((0, fm(1_000_000_000 * -1))),
@@ -320,22 +307,19 @@ mod tests {
 			mb,
 			10 * mb,
 			Weight::max_value() / 2,
-			Weight::max_value()
-		].into_iter().for_each(|i| {
+			Weight::max_value(),
+		]
+		.into_iter()
+		.for_each(|i| {
 			FeeMultiplierUpdateHandler::convert((i, Fixed64::default()));
 		});
 
 		// Some values that are all above the target and will cause an increase.
 		let t = target();
-		vec![t + 100, t * 2, t * 4]
-			.into_iter()
-			.for_each(|i| {
-				let fm = FeeMultiplierUpdateHandler::convert((
-					i,
-					max_fm
-				));
-				// won't grow. The convert saturates everything.
-				assert_eq!(fm, max_fm);
-			});
+		vec![t + 100, t * 2, t * 4].into_iter().for_each(|i| {
+			let fm = FeeMultiplierUpdateHandler::convert((i, max_fm));
+			// won't grow. The convert saturates everything.
+			assert_eq!(fm, max_fm);
+		});
 	}
 }

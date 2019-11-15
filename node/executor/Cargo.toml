@@ -8,28 +8,28 @@ edition = "2018"
 [dependencies]
 trie-root = "0.15.2"
 codec = { package = "parity-scale-codec", version = "1.0.0" }
-runtime_io = { package = "sr-io", git = 'https://github.com/paritytech/substrate.git' }
-state_machine = { package = "substrate-state-machine", git = 'https://github.com/paritytech/substrate.git' }
-substrate-executor = { git = 'https://github.com/paritytech/substrate.git' }
-primitives = { package = "substrate-primitives", git = 'https://github.com/paritytech/substrate.git' }
-trie = { package = "substrate-trie", git = 'https://github.com/paritytech/substrate.git' }
+runtime_io = { package = "sr-io", git = 'https://github.com/darwinia-network/substrate.git' }
+state_machine = { package = "substrate-state-machine", git = 'https://github.com/darwinia-network/substrate.git' }
+substrate-executor = { git = 'https://github.com/darwinia-network/substrate.git' }
+primitives = { package = "substrate-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
+trie = { package = "substrate-trie", git = 'https://github.com/darwinia-network/substrate.git' }
 node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
-test-client = { package = "substrate-test-client", git = 'https://github.com/paritytech/substrate.git' }
-keyring = { package = "substrate-keyring", git = 'https://github.com/paritytech/substrate.git' }
-runtime_primitives = { package = "sr-primitives", git = 'https://github.com/paritytech/substrate.git' }
-runtime_support = { package = "srml-support", git = 'https://github.com/paritytech/substrate.git' }
-balances = { package = "srml-balances",git = 'https://github.com/paritytech/substrate.git' }
-session = { package = "srml-session", git = 'https://github.com/paritytech/substrate.git' }
+test-client = { package = "substrate-test-client", git = 'https://github.com/darwinia-network/substrate.git' }
+keyring = { package = "substrate-keyring", git = 'https://github.com/darwinia-network/substrate.git' }
+runtime_primitives = { package = "sr-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
+runtime_support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git' }
+balances = { package = "srml-balances",git = 'https://github.com/darwinia-network/substrate.git' }
+session = { package = "srml-session", git = 'https://github.com/darwinia-network/substrate.git' }
 staking = { package = "darwinia-staking", path = '../../srml/staking' }
-system = { package = "srml-system", git = 'https://github.com/paritytech/substrate.git' }
-timestamp = { package = "srml-timestamp", git = 'https://github.com/paritytech/substrate.git' }
-treasury = { package = "srml-treasury", git = 'https://github.com/paritytech/substrate.git'  }
-contracts = { package = "srml-contracts", git = 'https://github.com/paritytech/substrate.git' }
-grandpa = { package = "srml-grandpa", git = 'https://github.com/paritytech/substrate.git' }
-indices = { package = "srml-indices", git = 'https://github.com/paritytech/substrate.git' }
+system = { package = "srml-system", git = 'https://github.com/darwinia-network/substrate.git' }
+timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git' }
+treasury = { package = "srml-treasury", git = 'https://github.com/darwinia-network/substrate.git'  }
+contracts = { package = "srml-contracts", git = 'https://github.com/darwinia-network/substrate.git' }
+grandpa = { package = "srml-grandpa", git = 'https://github.com/darwinia-network/substrate.git' }
+indices = { package = "srml-indices", git = 'https://github.com/darwinia-network/substrate.git' }
 wabt = "0.9.2"
 
 [features]
