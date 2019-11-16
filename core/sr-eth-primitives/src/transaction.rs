@@ -193,11 +193,11 @@ impl PlainTransaction {
 
 #[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct UnverifiedTransaction {
-	unsigned: PlainTransaction,
-	v: u64,
-	r: U256,
-	s: U256,
-	hash: H256,
+	pub unsigned: PlainTransaction,
+	pub v: u64,
+	pub r: U256,
+	pub s: U256,
+	pub hash: H256,
 }
 
 impl Deref for UnverifiedTransaction {
@@ -399,6 +399,7 @@ impl SignedTransaction {
 mod tests {
 	use crate::transaction::*;
 	use ethereum_types::{Address, H256, U128, U256};
+	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;
 	use support::{assert_err, assert_noop, assert_ok};
@@ -449,7 +450,6 @@ mod tests {
 
 		// compute hash
 		let r = H256::from_str("1e4143882cd0b9b35710398205cd10e1aea773d938f3bfc10b278e6466bc79a0").unwrap();
-		println!("{:?}", r);
 		let s = H256::from_str("5439639ccb7c41a79a7534bd7f3fb68a47b8c615b8a89c0c643fa3bcb7541e0a").unwrap();
 		// standardV
 		let v: u8 = 0x1;
@@ -459,6 +459,34 @@ mod tests {
 			unverified_tx.hash(),
 			H256::from_str("c654b4c4a183386722d42605ca91e23bc93919db8aa160b10cf50ab6a320ad9f").unwrap()
 		);
+	}
+
+	#[test]
+	fn check_txs_root() {
+		let ptx = PlainTransaction {
+			nonce: U256::from(U128::from(53897)),
+			gas_price: U256::from(U128::from(1000000000)),
+			gas: U256::from(U128::from(1000000)),
+			action: Action::Call(Address::from_str("a24df0420de1f3b8d740a52aaeb9d55d6d64478e").unwrap()),
+			value: U256::default(),
+			data:"2ee577ea00000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000363384a3868b9000000000000000000000000000000000000000000000000000000005d75f54f0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000000e53504f5450582f4241542d4554480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000000000000001b000000000000000000000000000000000000000000000000000000000000000333db5c9091edfe85293d632dc26b4bf8e86fa365ba0378dcc3a904b6868b07ce32cbf068cbc662ff780422c7f8ff19a1bc1093018de5c678e73319bbaa112952f2801cf69f5269d2f0ea7f339a2c9b136123144657edf9f528aff6217f782fdd00000000000000000000000000000000000000000000000000000000000000030003f065263326085b678f17da83a1a01920912c0483967d74e3ff90b268071773d04c976ab5b7a113312c701abcf6bf15fefeddbd7b9b298bdcf6673f59c5de14ac19a1f4e80e3f5fc68ffabce1686530f3ceae123f19392f7bdfe4d90a6930".from_hex().unwrap(),
+		};
+
+		/// for r and v, if length is not 64bytes, remember left pad 0.
+		let r = H256::from_str("4871bbd37aeeac71d7793542f7065eb84097528229276f18807a3620c5b7ebc6").unwrap();
+		let s = H256::from_str("0247b53e47ef9e9b1601f085659c1db524d9658c6d4b163c56fc8f716dbfbb1f").unwrap();
+		let v: u8 = 0x1;
+
+		let signature = Signature::from_rsv(&r, &s, v);
+		let uv_tx = ptx.with_signature(signature, Some(42));
+
+		let signed_tx = SignedTransaction::new(uv_tx).unwrap();
+		let transactions = vec![signed_tx];
+		let txs_root = triehash_ethereum::ordered_trie_root(transactions.iter().map(rlp::encode));
+
+		let expected_txs_root = H256::from(hex!("175525f964b9aa7ecbaf5110d5baa707cfccfa1008400271ffbb44a75ad1ef68"));
+
+		assert_eq!(txs_root, expected_txs_root);
 	}
 
 }

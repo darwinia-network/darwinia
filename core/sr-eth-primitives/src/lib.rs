@@ -11,6 +11,7 @@ extern crate impl_rlp;
 #[macro_use]
 extern crate rlp_derive;
 
+pub mod lookup;
 pub mod receipt;
 pub mod transaction;
 
