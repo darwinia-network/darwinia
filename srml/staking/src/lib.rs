@@ -448,7 +448,6 @@ decl_module! {
 
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
-//						TODO: ok?
 						let expired_locks_ring = T::Ring::set_lock(stash, available_unbond_ring, at, WithdrawReasons::all());
 						// TODO: check underflow?
 						*total_ring -= expired_locks_ring;
@@ -463,7 +462,6 @@ decl_module! {
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
 						*active_kton -= unbond_kton;
-//						TODO: ok?
 						let expired_locks_kton = T::Kton::set_lock(stash, unbond_kton, at, WithdrawReasons::all());
 						// TODO: check underflow?
 						*total_kton -= expired_locks_kton;
