@@ -724,7 +724,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "darwinia-kton 0.1.0",
  "darwinia-support 0.1.0",
@@ -745,6 +745,7 @@ dependencies = [
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
+ "substrate-phragmen 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
 ]
 
@@ -2577,7 +2578,7 @@ dependencies = [
 name = "node-executor"
 version = "2.0.0"
 dependencies = [
- "darwinia-staking 0.1.0",
+ "darwinia-staking 0.2.0",
  "node-primitives 2.0.0",
  "node-runtime 0.1.0",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2650,7 +2651,7 @@ dependencies = [
  "darwinia-eos-bridge 0.1.0",
  "darwinia-ethereum-bridge 0.1.0",
  "darwinia-kton 0.1.0",
- "darwinia-staking 0.1.0",
+ "darwinia-staking 0.2.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "merkle-mountain-range 0.1.0",
  "node-primitives 2.0.0",
@@ -2681,6 +2682,7 @@ dependencies = [
  "srml-offences 1.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-randomness-collective-flip 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
+ "srml-staking-reward-curve 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-sudo 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
@@ -4450,6 +4452,17 @@ dependencies = [
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
  "substrate-trie 2.0.0 (git+https://github.com/darwinia-network/substrate.git)",
+]
+
+[[package]]
+name = "srml-staking-reward-curve"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "proc-macro-crate 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -7099,6 +7112,7 @@ dependencies = [
 "checksum srml-offences 1.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
 "checksum srml-randomness-collective-flip 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
 "checksum srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
+"checksum srml-staking-reward-curve 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
 "checksum srml-sudo 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
 "checksum srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"
 "checksum srml-support-procedural 2.0.0 (git+https://github.com/darwinia-network/substrate.git)" = "<none>"

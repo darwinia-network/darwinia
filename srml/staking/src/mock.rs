@@ -181,7 +181,6 @@ impl Trait for Test {
 	type BondingDuration = BondingDuration;
 	type Cap = CAP;
 	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
 	type SessionInterface = Self;
 }
 
@@ -299,7 +298,7 @@ impl ExtBuilder {
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			current_era: self.current_era,
-			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
+			//			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
 			stakers: vec![
 				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
 				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
@@ -317,9 +316,11 @@ impl ExtBuilder {
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			session_reward: Perbill::from_rational_approximation(1_000_000 * self.reward / balance_factor, 1_000_000),
-			offline_slash: Perbill::from_percent(5),
-			offline_slash_grace: 0,
+			//			offline_slash: Perbill::from_percent(5),
+			//			offline_slash_grace: 0,
 			invulnerables: vec![],
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
 		}
 		.assimilate_storage(&mut storage);
 

@@ -380,7 +380,7 @@ mod tests {
 				}),
 				staking: Some(StakingConfig {
 					current_era: 0,
-					current_era_total_reward: 1,
+					//					current_era_total_reward: 1,
 					stakers: vec![
 						(dave(), alice(), 111, staking::StakerStatus::Validator),
 						(eve(), bob(), 100, staking::StakerStatus::Validator),
@@ -388,10 +388,12 @@ mod tests {
 					],
 					validator_count: 3,
 					minimum_validator_count: 0,
-					offline_slash: Perbill::zero(),
+					//					offline_slash: Perbill::zero(),
 					session_reward: Perbill::zero(),
-					offline_slash_grace: 0,
+					//					offline_slash_grace: 0,
 					invulnerables: vec![alice(), bob(), charlie()],
+					slash_reward_fraction: Perbill::from_percent(10),
+					..Default::default()
 				}),
 				timestamp: Some(Default::default()),
 				contracts: Some(Default::default()),
