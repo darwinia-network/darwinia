@@ -380,7 +380,7 @@ mod tests {
 				}),
 				staking: Some(StakingConfig {
 					current_era: 0,
-					current_era_total_reward: 1,
+					//					current_era_total_reward: 1,
 					stakers: vec![
 						(dave(), alice(), 111, staking::StakerStatus::Validator),
 						(eve(), bob(), 100, staking::StakerStatus::Validator),

@@ -16,19 +16,20 @@
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(all(feature = "bench", test), feature(test))]
 #![feature(drain_filter)]
-
+#![cfg_attr(all(feature = "bench", test), feature(test))]
 #[cfg(all(feature = "bench", test))]
 extern crate test;
+
+pub mod inflation;
 
 use codec::{Decode, Encode, HasCompact};
 use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
+use sr_primitives::{curve::PiecewiseLinear, Perbill, Perquintill, RuntimeDebug};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
-use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
 
 use sr_staking_primitives::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
@@ -44,7 +45,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
+use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 mod utils;
 
@@ -297,6 +298,8 @@ pub trait Trait: timestamp::Trait + session::Trait {
 
 	type CurrencyToVote: Convert<ExtendedBalance, u64> + Convert<u128, ExtendedBalance>;
 
+	type RingRewardRemainder: OnUnbalanced<RingNegativeImbalanceOf<Self>>;
+
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -318,10 +321,12 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	// custom
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
 	type ErasPerEpoch: Get<EraIndex>;
-	// TODO: move it to sesions module later
-	type SessionLength: Get<Self::BlockNumber>;
+
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
+
+	// TODO: The NPoS reward curve to use.
+	type RewardCurve: Get<&'static PiecewiseLinear<'static>>;
 }
 
 /// Mode of era-forcing.
@@ -386,6 +391,9 @@ decl_storage! {
 		/// Rewards for the current era. Using indices of current elected set.
 		CurrentEraPointsEarned get(fn current_era_reward): EraPoints;
 
+		/// The amount of balance actively at stake for each validator slot, currently.
+		///
+		/// This is used to derive rewards and punishments.
 		pub SlotStake get(fn slot_stake): ExtendedBalance;
 
 		/// True if the next session change will be a new era regardless of index.
@@ -396,11 +404,8 @@ decl_storage! {
 		/// The rest of the slashed value is handled by the `Slash`.
 		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
-		pub EpochIndex get(epoch_index): u32 = 0;
-
-		/// The accumulated reward for the current era. Reset to zero at the beginning of the era
-		/// and increased for every successfully finished session.
-		pub CurrentEraTotalReward get(current_era_total_reward) config(): RingBalanceOf<T>;
+		/// A mapping from still-bonded eras to the first session index of that era.
+		BondedEras: Vec<(EraIndex, SessionIndex)>;
 
 		/// All slashes that have occurred in a given era.
 		EraSlashJournal get(fn era_slash_journal):
@@ -450,7 +455,7 @@ decl_storage! {
 decl_event!(
     pub enum Event<T> where Balance = RingBalanceOf<T>, <T as system::Trait>::AccountId {
         /// All validators have been rewarded by the given balance.
-		Reward(Balance),
+		Reward(Balance, Balance),
 
 		// TODO: refactor to Balance later?
 		Slash(AccountId, ExtendedBalance),
@@ -468,8 +473,6 @@ decl_module! {
 
 		/// Number of eras that staked funds must remain bonded for.
 		const BondingDuration: EraIndex = T::BondingDuration::get();
-
-		const SessionLength: T::BlockNumber = T::SessionLength::get();
 
 		fn deposit_event() = default;
 
@@ -1151,42 +1154,83 @@ impl<T: Trait> Module<T> {
 	/// NOTE: This always happens immediately before a session change to ensure that new validators
 	/// get a chance to set their session keys.
 	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		let reward = Self::session_reward() * Self::current_era_total_reward();
-		if !reward.is_zero() {
+		// Payout
+		let points = CurrentEraPointsEarned::take();
+		let now = T::Time::now();
+		let previous_era_start = <CurrentEraStart<T>>::mutate(|v| rstd::mem::replace(v, now));
+		let era_duration = now - previous_era_start;
+		if !era_duration.is_zero() {
 			let validators = Self::current_elected();
-			let len = validators.len() as u32; // validators length can never overflow u64
-			let len: RingBalanceOf<T> = len.max(1).into();
-			let block_reward_per_validator = reward / len;
-			for v in validators.iter() {
-				Self::reward_validator(v, block_reward_per_validator);
+
+			// TODO:All reward will give to payouts.
+			//			let validator_len: ExtendedBalance = (validators.len() as u32).into();
+			//			let total_rewarded_stake = Self::slot_stake() * validator_len;
+
+			let (total_payout, max_payout) = inflation::compute_total_payout(
+				&T::RewardCurve::get(),
+				// TODO: replace with fraction including KTON.
+				Self::ring_pool(), //total_rewarded_stake.clone(),
+				T::Ring::total_issuance(),
+				// Duration of era; more than u64::MAX is rewarded as u64::MAX.
+				era_duration.saturated_into::<u64>(),
+			);
+
+			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();
+
+			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
+				if p != 0 {
+					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
+					total_imbalance.subsume(Self::reward_validator(v, reward));
+				}
 			}
-			Self::deposit_event(RawEvent::Reward(block_reward_per_validator));
-			// TODO: reward to treasury
+
+			// assert!(total_imbalance.peek() == total_payout)
+			let total_payout = total_imbalance.peek();
+
+			let rest = max_payout.saturating_sub(total_payout);
+			Self::deposit_event(RawEvent::Reward(total_payout, rest));
+
+			T::RingReward::on_unbalanced(total_imbalance);
+			T::RingRewardRemainder::on_unbalanced(T::Ring::issue(rest));
 		}
 
 		// Increment current era.
-		CurrentEra::mutate(|s| *s += 1);
+		let current_era = CurrentEra::mutate(|s| {
+			*s += 1;
+			*s
+		});
 
-		// check if ok to change epoch
-		if Self::current_era() % T::ErasPerEpoch::get() == 0 {
-			Self::new_epoch();
+		// prune journal for last era.
+		<EraSlashJournal<T>>::remove(current_era - 1);
+
+		CurrentEraStartSessionIndex::mutate(|v| {
+			*v = start_session_index;
+		});
+		let bonding_duration = T::BondingDuration::get();
+
+		if current_era > bonding_duration {
+			let first_kept = current_era - bonding_duration;
+			BondedEras::mutate(|bonded| {
+				bonded.push((current_era, start_session_index));
+
+				// prune out everything that's from before the first-kept index.
+				let n_to_prune = bonded.iter().take_while(|&&(era_idx, _)| era_idx < first_kept).count();
+
+				bonded.drain(..n_to_prune);
+
+				if let Some(&(_, first_session)) = bonded.first() {
+					T::SessionInterface::prune_historical_up_to(first_session);
+				}
+			})
 		}
 
 		// Reassign all Stakers.
-		let (_, maybe_new_validators) = Self::select_validators();
+		let (_slot_stake, maybe_new_validators) = Self::select_validators();
 
 		maybe_new_validators
 	}
 
-	fn new_epoch() {
-		EpochIndex::mutate(|e| *e += 1);
-		let next_era_reward = utils::compute_current_era_reward::<T>();
-		if !next_era_reward.is_zero() {
-			<CurrentEraTotalReward<T>>::put(next_era_reward);
-		}
-	}
-
-	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) {
+	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) -> RingPositiveImbalanceOf<T> {
 		let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
 		let reward = reward - off_the_table;
 		let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
@@ -1205,7 +1249,8 @@ impl<T: Trait> Module<T> {
 			per_u64 * reward
 		};
 		imbalance.maybe_subsume(Self::make_payout(stash, validator_cut + off_the_table));
-		T::RingReward::on_unbalanced(imbalance);
+
+		imbalance
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function

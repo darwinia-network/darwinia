@@ -32,6 +32,7 @@ use sr_api::impl_runtime_apis;
 
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
+use sr_primitives::curve::PiecewiseLinear;
 use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
 use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
@@ -408,9 +409,22 @@ impl kton::Trait for Runtime {
 	type OnRemoval = ();
 }
 
+srml_staking_reward_curve::build! {
+	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
+		min_inflation: 0_025_000,
+		max_inflation: 0_100_000,
+		ideal_stake: 0_500_000,
+		falloff: 0_050_000,
+		max_piece_count: 40,
+		test_precision: 0_005_000,
+	);
+}
+
 parameter_types! {
 	// decimal 9
 	pub const CAP: Balance = 10_000_000_000 * COIN;
+
+	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 }
 
 impl staking::Trait for Runtime {
@@ -418,6 +432,7 @@ impl staking::Trait for Runtime {
 	type Kton = Kton;
 	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
+	type RingRewardRemainder = ();
 	type Event = Event;
 	type RingSlash = ();
 	type RingReward = ();
@@ -427,8 +442,8 @@ impl staking::Trait for Runtime {
 	type BondingDuration = BondingDuration;
 	type Cap = CAP;
 	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
 	type SessionInterface = Self;
+	type RewardCurve = RewardCurve;
 }
 
 impl eos_bridge::Trait for Runtime {

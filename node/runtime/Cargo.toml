@@ -59,6 +59,8 @@ block-builder-api = { package = "substrate-block-builder-runtime-api", git = 'ht
 tx-pool-api = { package = "substrate-transaction-pool-runtime-api", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 inherents = { package = "substrate-inherents", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
+srml-staking-reward-curve = { git = 'https://github.com/darwinia-network/substrate.git' }
+
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
 kton = { package = "darwinia-kton", path = '../../srml/kton', default-features = false }
