@@ -17,12 +17,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
-use rstd::prelude::*;
-use rstd::{cmp, fmt::Debug, mem, result};
+#[cfg(not(feature = "std"))]
+use rstd::borrow::ToOwned;
+use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
-		Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, SaturatedConversion, Saturating,
+		SimpleArithmetic, StaticLookup, Zero,
 	},
 	weights::SimpleDispatchInfo,
 	RuntimeDebug,
@@ -44,7 +45,7 @@ mod tests;
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{BalanceLock, Id},
+	types::{BalanceLock, TimeStamp},
 };
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -234,7 +235,8 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
+		/// Locks: (StakingBalance, Locks)
+		pub Locks get(locks): map T::AccountId => (BalanceLock<T::Balance, T::Moment>, Vec<BalanceLock<T::Balance, T::Moment>>);
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -723,7 +725,7 @@ where
 	// # </weight>
 	fn ensure_can_withdraw(
 		who: &T::AccountId,
-		_amount: T::Balance,
+		amount: T::Balance,
 		reasons: WithdrawReasons,
 		new_balance: T::Balance,
 	) -> Result {
@@ -732,47 +734,26 @@ where
 		{
 			return Err("vesting balance too high to send value");
 		}
-		let locks = Self::locks(who);
-		if locks.is_empty() {
+		let (staking_lock, unbonding_locks) = Self::locks(who);
+		if unbonding_locks.is_empty() {
 			return Ok(());
 		}
 
-		// 1. for Lock:
-		//     currently, we only use `WithdrawReasons::all()` in staking module
-		//     so the `!lock.reasons.intersects(reasons)` always be `false`
-		// 2. for Staking Lock:
-		//     make sure the free Kton > the Kton which in Staking
-		// 3. for Unbonding Lock:
-		//     because of the rule 1, only check if is expired
 		let now = <timestamp::Module<T>>::now();
-		let mut can_withdraw_staking = false;
-		let mut can_withdraw_unbonding = false;
-		for lock in locks {
-			match lock.id {
-				Id::Staking(_) => {
-					can_withdraw_staking = !lock.valid_at(&now);
-					if can_withdraw_staking {
-						continue;
-					}
-
-					can_withdraw_staking = new_balance >= lock.amount;
-					if can_withdraw_staking {
-						continue;
-					}
-
-					// due to rule 1
-					can_withdraw_staking = false;
-					// TODO: for complex reasons, in the future
-					// can_withdraw = !lock.reasons.intersects(reasons);
-				}
-				Id::Unbonding(_) => {
-					// due to rule 3
-					can_withdraw_unbonding = !lock.valid_at(&now);
+		let ok_with_staking_lock = new_balance >= staking_lock.amount || !staking_lock.reasons.intersects(reasons);
+		let ok_with_unbonding_lock = {
+			let mut locked_amount = T::Balance::zero();
+			for unbonding_lock in unbonding_locks.into_iter() {
+				if unbonding_lock.valid_at(now) && unbonding_lock.reasons.intersects(reasons) {
+					// TODO: check overflow?
+					locked_amount += unbonding_lock.amount;
 				}
 			}
-		}
 
-		if can_withdraw_unbonding || can_withdraw_staking {
+			// TODO: check underflow?
+			Self::free_balance(who) - locked_amount >= amount
+		};
+		if ok_with_staking_lock || ok_with_unbonding_lock {
 			Ok(())
 		} else {
 			Err("account liquidity restrictions prevent withdrawal")
@@ -1013,26 +994,71 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Id = Id<T::Moment>;
+	type Moment = T::Moment;
 	type WithdrawReasons = WithdrawReasons;
 
-	fn set_lock(who: &T::AccountId, id: Self::Id, amount: Self::Balance, reasons: Self::WithdrawReasons) {
-		Self::remove_lock(who, &id);
-		<Locks<T>>::mutate(who, |locks| {
-			locks.push(BalanceLock { id, amount, reasons });
+	fn set_lock(
+		who: &T::AccountId,
+		amount: Self::Balance,
+		at: Self::Moment,
+		reasons: Self::WithdrawReasons,
+	) -> Self::Balance {
+		let now = <timestamp::Module<T>>::now();
+		let mut expired_locks_amount = Self::Balance::default();
+
+		if at.saturated_into::<TimeStamp>() == 0 {
+			<Locks<T>>::mutate(who, |(staking_lock, unbonding_locks)| {
+				staking_lock.amount = amount;
+				staking_lock.reasons = reasons;
+
+				unbonding_locks.retain(|unbonding_lock| {
+					if unbonding_lock.valid_at(now) {
+						true
+					} else {
+						expired_locks_amount += unbonding_lock.amount;
+						false
+					}
+				});
+			});
+
+			return expired_locks_amount;
+		}
+
+		let mut new_lock = Some(BalanceLock { amount, at, reasons });
+		let mut unbonding_locks = Self::locks(who)
+			.1
+			.into_iter()
+			.filter_map(|lock| {
+				if lock.at == at {
+					new_lock.take()
+				} else if lock.valid_at(now) {
+					Some(lock)
+				} else {
+					// TODO: check overflow?
+					expired_locks_amount += lock.amount;
+					None
+				}
+			})
+			.collect::<Vec<_>>();
+		if let Some(lock) = new_lock {
+			unbonding_locks.push(lock)
+		}
+		<Locks<T>>::mutate(who, |(_, unbonding_locks_)| {
+			*unbonding_locks_ = unbonding_locks;
 		});
+
+		expired_locks_amount
 	}
 
-	fn remove_lock(who: &T::AccountId, id: &Self::Id) {
+	fn remove_lock(who: &T::AccountId, at: Self::Moment) {
 		let now = <timestamp::Module<T>>::now();
-		<Locks<T>>::mutate(who, |locks| {
-			// unexpired and mismatched id -> keep
-			locks.retain(|lock| lock.valid_at(&now) && &lock.id != id);
+		<Locks<T>>::mutate(who, |(_, locks)| {
+			locks.retain(|lock| lock.valid_at(now) && lock.at != at);
 		});
 	}
 
 	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T>>::get(&who).len() as _
+		<Locks<T>>::get(&who).1.len() as _
 	}
 }
 

@@ -36,10 +36,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use darwinia_support::{
-	traits::LockableCurrency,
-	types::{Id, TimeStamp},
-};
+use darwinia_support::{traits::LockableCurrency, types::TimeStamp};
 use phragmen::{elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
 
 mod utils;
@@ -201,8 +198,8 @@ type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::
 type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 pub trait Trait: timestamp::Trait + session::Trait {
-	type Ring: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>, WithdrawReasons = WithdrawReasons>;
-	type Kton: LockableCurrency<Self::AccountId, Id = Id<TimeStamp>, WithdrawReasons = WithdrawReasons>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp, WithdrawReasons = WithdrawReasons>;
+	type Kton: LockableCurrency<Self::AccountId, Moment = TimeStamp, WithdrawReasons = WithdrawReasons>;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
 
@@ -352,7 +349,7 @@ decl_module! {
 			promise_month: u32
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!( promise_month <= 36, "months at most is 36.");
+			ensure!(promise_month <= 36, "months at most is 36.");
 
 			if <Bonded<T>>::exists(&stash) {
 				return Err("stash already bonded")
@@ -425,8 +422,10 @@ decl_module! {
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				stash,
+				total_ring,
 				active_ring,
 				active_deposit_ring,
+				total_kton,
 				active_kton,
 				..
 			} = &mut ledger;
@@ -436,8 +435,7 @@ decl_module! {
 				"can not schedule more unlock chunks"
 			);
 
-			let until = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>() + T::BondingDuration::get();
-
+			let at = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>() + T::BondingDuration::get();
 			match value {
 				StakingBalance::Ring(r) => {
 					// total_active_ring = normal_ring + time_deposit_ring
@@ -451,9 +449,11 @@ decl_module! {
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
 //						TODO: ok?
-						T::Ring::set_lock(stash, Id::Unbonding(until), available_unbond_ring, WithdrawReasons::all());
+						let expired_locks_ring = T::Ring::set_lock(stash, available_unbond_ring, at, WithdrawReasons::all());
+						// TODO: check underflow?
+						*total_ring -= expired_locks_ring;
 
-						Self::update_ledger(&controller, &ledger, value);
+						Self::update_ledger(&controller, &mut ledger, value);
 					}
 				},
 				StakingBalance::Kton(k) => {
@@ -464,9 +464,11 @@ decl_module! {
 
 						*active_kton -= unbond_kton;
 //						TODO: ok?
-						T::Kton::set_lock(stash, Id::Unbonding(until), unbond_kton, WithdrawReasons::all());
+						let expired_locks_kton = T::Kton::set_lock(stash, unbond_kton, at, WithdrawReasons::all());
+						// TODO: check underflow?
+						*total_kton -= expired_locks_kton;
 
-						Self::update_ledger(&controller, &ledger, value);
+						Self::update_ledger(&controller, &mut ledger, value);
 					}
 				},
 			}
@@ -476,7 +478,7 @@ decl_module! {
 		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
 
-			ensure!( promise_month <= 36, "months at most is 36.");
+			ensure!(promise_month <= 36, "months at most is 36.");
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedgers {
 				active_ring,
@@ -502,7 +504,7 @@ decl_module! {
 				let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
 				T::KtonReward::on_unbalanced(kton_positive_imbalance);
 
-				let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
+				let expire_time = now + (MONTH_IN_SECONDS * promise_month).into();
 				deposit_items.push(TimeDepositItem {
 					value,
 					start_time: now,
@@ -535,7 +537,7 @@ decl_module! {
 				if item.expire_time == expire_time {
 					// at least 1 month
 					let month_left = (
-						(expire_time.clone() - now.clone()).saturated_into::<u32>()
+						(expire_time - now).saturated_into::<u32>()
 						/ MONTH_IN_SECONDS
 						).max(1);
 					let kton_slash = utils::compute_kton_return::<T>(item.value, month_left) * 3.into();
@@ -566,54 +568,6 @@ decl_module! {
 				true
 			});
 		}
-
-		/// may both withdraw ring and kton at the same time
-//		TODO
-//		fn withdraw_unbonded(origin) {
-//			let controller = ensure_signed(origin)?;
-//			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-//			let StakingLedgers {
-//				total_ring,
-//				total_kton,
-//				unlocking,
-//				..
-//			} = &mut ledger;
-//			let mut balance_kind = 0u8;
-//			let current_era = Self::current_era();
-//
-//			unlocking.retain(|UnlockChunk {
-//				value,
-//				era,
-//			}| {
-//				if *era > current_era {
-//					return true;
-//				}
-//
-//				match value {
-//					StakingBalance::Ring(ring) => {
-//						balance_kind |= 0b01;
-//						*total_ring = total_ring.saturating_sub(*ring);
-//					}
-//					StakingBalance::Kton(kton) => {
-//						balance_kind |= 0b10;
-//						*total_kton = total_kton.saturating_sub(*kton);
-//					}
-//				}
-//
-//				false
-//			});
-//
-//			match balance_kind {
-//				0 => (),
-//				1 => Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into())),
-//				2 => Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into())),
-//				3 => {
-//					Self::update_ledger(&controller, &ledger, StakingBalance::Ring(0.into()));
-//					Self::update_ledger(&controller, &ledger, StakingBalance::Kton(0.into()));
-//				}
-//				_ => unreachable!(),
-//			}
-//		}
 
 		fn validate(origin, name: Vec<u8>, ratio: u32, unstake_threshold: u32) {
 			let controller = ensure_signed(origin)?;
@@ -753,7 +707,7 @@ impl<T: Trait> Module<T> {
 			let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
 			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 			let now = <timestamp::Module<T>>::now();
-			let expire_time = now.clone() + (MONTH_IN_SECONDS * promise_month).into();
+			let expire_time = now + (MONTH_IN_SECONDS * promise_month).into();
 			ledger.deposit_items.push(TimeDepositItem {
 				value,
 				start_time: now,
@@ -763,7 +717,7 @@ impl<T: Trait> Module<T> {
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
 		ledger.total_ring = ledger.total_ring.saturating_add(value);
 
-		Self::update_ledger(&controller, &ledger, StakingBalance::Ring(value));
+		Self::update_ledger(&controller, &mut ledger, StakingBalance::Ring(value));
 	}
 
 	fn bond_helper_in_kton(
@@ -774,27 +728,25 @@ impl<T: Trait> Module<T> {
 		ledger.total_kton += value;
 		ledger.active_kton += value;
 
-		Self::update_ledger(&controller, &ledger, StakingBalance::Kton(value));
+		Self::update_ledger(&controller, &mut ledger, StakingBalance::Kton(value));
 	}
 
 	fn update_ledger(
 		controller: &T::AccountId,
-		ledger: &StakingLedgers<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
+		ledger: &mut StakingLedgers<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
 		staking_balance: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 	) {
 		match staking_balance {
-			StakingBalance::Ring(_r) => T::Ring::set_lock(
-				&ledger.stash,
-				Id::Staking(TimeStamp::max_value()),
-				ledger.total_ring,
-				WithdrawReasons::all(),
-			),
-			StakingBalance::Kton(_k) => T::Kton::set_lock(
-				&ledger.stash,
-				Id::Staking(TimeStamp::max_value()),
-				ledger.total_kton,
-				WithdrawReasons::all(),
-			),
+			StakingBalance::Ring(_r) => {
+				let expired_locks_ring = T::Ring::set_lock(&ledger.stash, ledger.total_ring, 0, WithdrawReasons::all());
+				// TODO: check underflow?
+				ledger.total_ring -= expired_locks_ring;
+			}
+			StakingBalance::Kton(_k) => {
+				let expired_locks_kton = T::Kton::set_lock(&ledger.stash, ledger.total_kton, 0, WithdrawReasons::all());
+				// TODO: check underflow?
+				ledger.total_kton -= expired_locks_kton;
+			}
 		}
 
 		<Ledger<T>>::insert(controller, ledger);
@@ -879,9 +831,8 @@ impl<T: Trait> Module<T> {
 				// from the nearest expire time
 				if !value_left.is_zero() {
 					// sorted by expire_time from far to near
-					deposit_items.sort_unstable_by_key(|item| {
-						u64::max_value() - item.expire_time.clone().saturated_into::<u64>()
-					});
+					deposit_items
+						.sort_unstable_by_key(|item| u64::max_value() - item.expire_time.saturated_into::<u64>());
 					deposit_items.drain_filter(|item| {
 						if value_left.is_zero() {
 							return false;
