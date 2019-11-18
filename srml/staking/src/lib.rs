@@ -85,7 +85,7 @@ pub struct EraPoints {
 impl EraPoints {
 	/// Add the reward to the validator at the given index. Index must be valid
 	/// (i.e. `index < current_elected.len()`).
-	fn add_points_to_index(&mut self, index: u32, points: u32) {
+	fn add_points_to_index(&mut self, index: u32, points: Points) {
 		if let Some(new_total) = self.total.checked_add(points) {
 			self.total = new_total;
 			self.individual
@@ -1423,7 +1423,7 @@ impl<T: Trait> Module<T> {
 		<Nominators<T>>::remove(stash);
 	}
 
-	pub fn reward_by_ids(validators_points: impl IntoIterator<Item = (T::AccountId, u32)>) {
+	pub fn reward_by_ids(validators_points: impl IntoIterator<Item = (T::AccountId, Points)>) {
 		CurrentEraPointsEarned::mutate(|rewards| {
 			let current_elected = <Module<T>>::current_elected();
 			for (validator, points) in validators_points.into_iter() {
