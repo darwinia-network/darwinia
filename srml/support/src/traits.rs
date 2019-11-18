@@ -45,7 +45,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	///
 	/// If the lock `id/until` already exists, this will update it.
 	///
-	/// The function will return the sum of expired locks' amount
+	/// The function will return the sum of expired locks' amount.
 	fn set_lock(
 		who: &AccountId,
 		amount: Self::Balance,
@@ -57,7 +57,9 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	// fn extend_lock();
 
 	/// Remove an existing lock.
-	fn remove_lock(who: &AccountId, at: Self::Moment);
+	///
+	/// The function will return the sum of expired locks' amount.
+	fn remove_lock(who: &AccountId, at: Self::Moment) -> Self::Balance;
 
 	/// The number of locks.
 	fn locks_count(who: &AccountId) -> u32;

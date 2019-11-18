@@ -449,11 +449,22 @@ where
 		expired_locks_amount
 	}
 
-	fn remove_lock(who: &T::AccountId, at: Self::Moment) {
+	fn remove_lock(who: &T::AccountId, at: Self::Moment) -> Self::Balance {
 		let now = <timestamp::Module<T>>::now();
-		<Locks<T>>::mutate(who, |(_, locks)| {
-			locks.retain(|lock| lock.valid_at(now) && lock.at != at);
+		let mut expired_locks_amount = Self::Balance::default();
+
+		<Locks<T>>::mutate(who, |(_, unbonding_locks)| {
+			unbonding_locks.retain(|unbonding_lock| {
+				if unbonding_lock.valid_at(now) && unbonding_lock.at != at {
+					true
+				} else {
+					expired_locks_amount += unbonding_lock.amount;
+					false
+				}
+			});
 		});
+
+		expired_locks_amount
 	}
 
 	fn locks_count(who: &T::AccountId) -> u32 {
