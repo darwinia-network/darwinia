@@ -74,7 +74,7 @@ fn test_env_build() {
 		assert_eq!(Staking::bonded(&11), Some(10));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: 100 * COIN,
 				total_deposit_ring: 100 * COIN,
@@ -103,7 +103,7 @@ fn test_env_build() {
 		));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: origin_ledger.total_ring + 20 * COIN,
 				total_deposit_ring: origin_ledger.total_deposit_ring + 20 * COIN,
@@ -142,7 +142,7 @@ fn normal_kton_should_work() {
 		));
 		assert_eq!(
 			Staking::ledger(&1000),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 1001,
 				total_ring: 0,
 				total_deposit_ring: 0,
@@ -176,7 +176,7 @@ fn normal_kton_should_work() {
 		));
 		assert_eq!(
 			Staking::ledger(&2000),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 2001,
 				total_ring: 0,
 				total_deposit_ring: 0,
@@ -199,7 +199,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: 100 * COIN,
 				total_deposit_ring: 100 * COIN,
@@ -223,7 +223,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN)));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: 100 * COIN,
 				total_deposit_ring: 100 * COIN,
@@ -255,7 +255,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN)));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: 100 * COIN,
 				total_deposit_ring: 100 * COIN,
@@ -289,7 +289,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 		assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
 		assert_eq!(
 			Staking::ledger(&10),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 11,
 				total_ring: 0,
 				total_deposit_ring: 0,
@@ -408,7 +408,7 @@ fn punished_unbond_should_work() {
 		));
 		assert_eq!(
 			Staking::ledger(&controller),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash,
 				total_ring: 10 * COIN,
 				total_deposit_ring: 10 * COIN,
@@ -486,7 +486,7 @@ fn transform_to_promised_ring_should_work() {
 
 		assert_eq!(
 			Staking::ledger(&1000),
-			Some(StakingLedgers {
+			Some(StakingLedger {
 				stash: 1001,
 				total_ring: origin_ledger.total_ring,
 				total_deposit_ring: origin_ledger.total_deposit_ring + 5 * COIN,
@@ -1130,7 +1130,7 @@ fn yakio_q1() {
 		));
 		assert_eq!(Kton::free_balance(&stash), 1);
 
-		let ledger = StakingLedgers {
+		let ledger = StakingLedger {
 			stash: 777,
 			total_ring: 10_000,
 			total_deposit_ring: 10_000,

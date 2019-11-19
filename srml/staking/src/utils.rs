@@ -1,7 +1,7 @@
 /// utility in staking
 use crate::{KtonBalanceOf, RingBalanceOf, Trait};
 use rstd::convert::TryInto;
-use sr_primitives::traits::{IntegerSquareRoot, SaturatedConversion};
+use sr_primitives::traits::SaturatedConversion;
 use substrate_primitives::U256;
 
 //change when new epoch
