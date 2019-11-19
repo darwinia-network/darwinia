@@ -1,6 +1,6 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
-use sr_primitives::RuntimeDebug;
+use sr_primitives::{traits::Zero, RuntimeDebug};
 use srml_support::traits::WithdrawReasons;
 
 pub type TimeStamp = u64;
@@ -9,6 +9,15 @@ pub type TimeStamp = u64;
 pub struct CompositeLock<Balance, Moment> {
 	pub staking_amount: Balance,
 	pub locks: Vec<BalanceLock<Balance, Moment>>,
+}
+
+impl<Balance, Moment> CompositeLock<Balance, Moment>
+where
+	Balance: Zero,
+{
+	pub fn is_empty(&self) -> bool {
+		self.staking_amount.is_zero() && self.locks.is_empty()
+	}
 }
 
 pub struct LockUpdateStrategy<Balance, Moment> {

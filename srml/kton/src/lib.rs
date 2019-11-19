@@ -444,7 +444,7 @@ where
 	fn can_withdraw(who: &T::AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {
 		let composite_lock = Self::locks(who);
 
-		if composite_lock.staking_amount.is_zero() && composite_lock.locks.is_empty() {
+		if composite_lock.is_empty() {
 			return true;
 		}
 
