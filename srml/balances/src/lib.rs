@@ -45,7 +45,7 @@ mod tests;
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{CompositeLock, LockUpdateStrategy},
+	types::{BalanceLocks, Lock},
 };
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -235,7 +235,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(locks): map T::AccountId => CompositeLock<T::Balance, T::Moment>;
+		pub Locks get(locks): map T::AccountId => BalanceLocks<T::Balance, T::Moment>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -733,7 +733,7 @@ where
 		{
 			Err("vesting balance too high to send value")
 		} else {
-			if Self::can_withdraw(who, reasons, new_balance) {
+			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
 				Ok(())
 			} else {
 				Err("account liquidity restrictions prevent withdrawal")
@@ -975,100 +975,35 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type LockUpdateStrategy = LockUpdateStrategy<T::Balance, Self::Moment>;
+	type Lock = Lock<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
 	type WithdrawReasons = WithdrawReasons;
 
-	fn update_lock(who: &T::AccountId, lock_update_strategy: Self::LockUpdateStrategy) -> Self::Balance {
-		let now = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::default();
-		let mut composite_lock = Self::locks(who);
-
-		if let Some(staking_amount) = lock_update_strategy.staking_amount {
-			composite_lock.staking_amount = staking_amount;
-		}
-		if let Some(lock) = lock_update_strategy.lock {
-			let at = lock.at;
-			let mut new_lock = Some(lock);
-			composite_lock.locks = composite_lock
-				.locks
-				.into_iter()
-				.filter_map(|lock| {
-					if lock.at == at {
-						new_lock.take()
-					} else if lock.valid_at(now) {
-						Some(lock)
-					} else {
-						// TODO: check overflow?
-						expired_locks_amount += lock.amount;
-						None
-					}
-				})
-				.collect::<Vec<_>>();
-			if let Some(lock) = new_lock {
-				composite_lock.locks.push(lock);
-			}
-		} else if lock_update_strategy.check_expired {
-			composite_lock.locks.retain(|lock| {
-				if lock.valid_at(now) {
-					true
-				} else {
-					expired_locks_amount += lock.amount;
-					false
-				}
-			});
-		}
-
-		<Locks<T, I>>::insert(who, composite_lock);
+	fn update_lock(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		let mut locks = Self::locks(who);
+		let expired_locks_amount = if let Some(lock) = lock {
+			locks.update_lock(lock, at)
+		} else {
+			locks.remove_expired_locks(at)
+		};
+		<Locks<T, I>>::insert(who, locks);
 
 		expired_locks_amount
 	}
 
-	fn remove_lock(who: &T::AccountId, at: Self::Moment) -> Self::Balance {
-		let now = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::default();
-
-		<Locks<T, I>>::mutate(who, |composite_lock| {
-			composite_lock.locks.retain(|lock| {
-				if lock.valid_at(now) && lock.at != at {
-					true
-				} else {
-					expired_locks_amount += lock.amount;
-					false
-				}
-			});
+	fn remove_locks(who: &T::AccountId, lock: &Self::Lock) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		let mut expired_locks_amount = Self::Balance::zero();
+		<Locks<T, I>>::mutate(who, |locks| {
+			expired_locks_amount = locks.remove_locks(at, lock);
 		});
 
 		expired_locks_amount
 	}
 
-	fn can_withdraw(who: &T::AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {
-		let composite_lock = Self::locks(who);
-
-		if composite_lock.is_empty() {
-			return true;
-		}
-
-		if {
-			let now = <timestamp::Module<T>>::now();
-			let mut locked_amount = composite_lock.staking_amount;
-			for lock in composite_lock.locks.into_iter() {
-				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
-					// TODO: check overflow?
-					locked_amount += lock.amount;
-				}
-			}
-
-			new_balance >= locked_amount
-		} {
-			return true;
-		}
-
-		false
-	}
-
 	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T, I>>::get(who).locks.len() as _
+		<Locks<T, I>>::get(who).len()
 	}
 }
 

@@ -22,7 +22,7 @@ use sr_primitives::traits::{Convert, Saturating};
 
 use sr_primitives::weights::Weight;
 use sr_primitives::{Fixed64, Perbill};
-use support::traits::{OnUnbalanced, Currency, Get};
+use support::traits::{Currency, Get, OnUnbalanced};
 
 pub struct Author;
 impl OnUnbalanced<NegativeImbalance> for Author {

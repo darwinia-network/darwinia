@@ -26,7 +26,7 @@ use system::ensure_signed;
 
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{CompositeLock, Lock},
+	types::{BalanceLocks, Lock},
 };
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
@@ -231,7 +231,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		{
 			Err("vesting balance too high to send value")
 		} else {
-			if Self::can_withdraw(who, reasons, new_balance) {
+			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
 				Ok(())
 			} else {
 				Err("account liquidity restrictions prevent withdrawal")
@@ -384,44 +384,24 @@ where
 		let expired_locks_amount = if let Some(lock) = lock {
 			locks.update_lock(lock, at)
 		} else {
-			locks.remove_expired_lock(at)
+			locks.remove_expired_locks(at)
 		};
 		<Locks<T>>::insert(who, locks);
 
 		expired_locks_amount
 	}
 
-	fn remove_locks(who: &T::AccountId, lock: Self::Lock) -> Self::Balance {
+	fn remove_locks(who: &T::AccountId, lock: &Self::Lock) -> Self::Balance {
 		let at = <timestamp::Module<T>>::now();
-		locks.remove_locks(at, lock)
-	}
+		let mut expired_locks_amount = Self::Balance::zero();
+		<Locks<T>>::mutate(who, |locks| {
+			expired_locks_amount = locks.remove_locks(at, lock);
+		});
 
-	fn can_withdraw(who: &T::AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {
-		let composite_lock = Self::locks(who);
-
-		if composite_lock.is_empty() {
-			return true;
-		}
-
-		if {
-			let now = <timestamp::Module<T>>::now();
-			let mut locked_amount = composite_lock.staking_amount;
-			for lock in composite_lock.locks.into_iter() {
-				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
-					// TODO: check overflow?
-					locked_amount += lock.amount;
-				}
-			}
-
-			new_balance >= locked_amount
-		} {
-			return true;
-		}
-
-		false
+		expired_locks_amount
 	}
 
 	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T>>::get(who).locks.len() as _
+		<Locks<T>>::get(who).len()
 	}
 }

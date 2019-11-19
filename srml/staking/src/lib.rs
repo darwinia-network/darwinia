@@ -38,7 +38,7 @@ use system::{ensure_root, ensure_signed};
 
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{BalanceLock, LockUpdateStrategy, TimeStamp},
+	types::{BalanceLock, Lock, TimeStamp},
 };
 use phragmen::{elect, equalize, ExtendedBalance, PhragmenStakedAssignment, Support, SupportMap};
 
@@ -203,14 +203,14 @@ type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<
 		Self::AccountId,
-		LockUpdateStrategy = LockUpdateStrategy<RingBalanceOf<Self>, TimeStamp>,
+		Lock = Lock<RingBalanceOf<Self>, TimeStamp>,
 		Moment = TimeStamp,
 		WithdrawReasons = WithdrawReasons,
 	>;
 	type Kton: LockableCurrency<
 		Self::AccountId,
+		Lock = Lock<KtonBalanceOf<Self>, TimeStamp>,
 		Moment = TimeStamp,
-		LockUpdateStrategy = LockUpdateStrategy<KtonBalanceOf<Self>, TimeStamp>,
 		WithdrawReasons = WithdrawReasons,
 	>;
 
@@ -407,10 +407,7 @@ decl_module! {
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
-					let expired_locks_ring = T::Ring::update_lock(
-						&stash,
-						LockUpdateStrategy::new().with_check_expired(true),
-					);
+					let expired_locks_ring = T::Ring::update_lock(&stash, None);
 					// TODO: check underflow?
 					ledger.total_ring -= expired_locks_ring;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
@@ -421,10 +418,7 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					let expired_locks_kton = T::Kton::update_lock(
-						&stash,
-						LockUpdateStrategy::new().with_check_expired(true),
-					);
+					let expired_locks_kton = T::Kton::update_lock(&stash, None);
 					ledger.total_kton -= expired_locks_kton;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
 						let extra = extra.min(k);
@@ -474,12 +468,11 @@ decl_module! {
 						*active_ring -= available_unbond_ring;
 						let expired_locks_ring = T::Ring::update_lock(
 							stash,
-							LockUpdateStrategy::new()
-								.with_lock(BalanceLock {
-									amount: available_unbond_ring,
-									at,
-									reasons: WithdrawReasons::all()
-								}),
+							Some(Lock::Unbonding(BalanceLock {
+								amount: available_unbond_ring,
+								at,
+								reasons: WithdrawReasons::all()
+							})),
 						);
 						// TODO: check underflow?
 						*total_ring -= expired_locks_ring;
@@ -496,12 +489,11 @@ decl_module! {
 						*active_kton -= unbond_kton;
 						let expired_locks_kton = T::Kton::update_lock(
 							stash,
-							LockUpdateStrategy::new()
-								.with_lock(BalanceLock {
-									amount: unbond_kton,
-									at,
-									reasons: WithdrawReasons::all(),
-								}),
+							Some(Lock::Unbonding(BalanceLock {
+								amount: unbond_kton,
+								at,
+								reasons: WithdrawReasons::all(),
+							})),
 						);
 						// TODO: check underflow?
 						*total_kton -= expired_locks_kton;
@@ -776,22 +768,12 @@ impl<T: Trait> Module<T> {
 	) {
 		match staking_balance {
 			StakingBalance::Ring(_r) => {
-				let expired_locks_ring = T::Ring::update_lock(
-					&ledger.stash,
-					LockUpdateStrategy::new()
-						.with_check_expired(true)
-						.with_staking_amount(ledger.active_ring),
-				);
+				let expired_locks_ring = T::Ring::update_lock(&ledger.stash, Some(Lock::Staking(ledger.active_ring)));
 				// TODO: check underflow?
 				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
-				let expired_locks_kton = T::Kton::update_lock(
-					&ledger.stash,
-					LockUpdateStrategy::new()
-						.with_check_expired(true)
-						.with_staking_amount(ledger.active_kton),
-				);
+				let expired_locks_kton = T::Kton::update_lock(&ledger.stash, Some(Lock::Staking(ledger.active_kton)));
 				// TODO: check underflow?
 				ledger.total_kton -= expired_locks_kton;
 			}

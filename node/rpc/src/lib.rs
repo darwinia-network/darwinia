@@ -49,19 +49,13 @@ where
 	P: ChainApi + Sync + Send + 'static,
 	M: jsonrpc_core::Metadata + Default,
 {
-	use srml_system_rpc::{System, SystemApi};
 	use srml_contracts_rpc::{Contracts, ContractsApi};
+	use srml_system_rpc::{System, SystemApi};
 	use srml_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
-	io.extend_with(
-		SystemApi::to_delegate(System::new(client.clone(), pool))
-	);
-	io.extend_with(
-		ContractsApi::to_delegate(Contracts::new(client.clone()))
-	);
-	io.extend_with(
-		TransactionPaymentApi::to_delegate(TransactionPayment::new(client))
-	);
+	io.extend_with(SystemApi::to_delegate(System::new(client.clone(), pool)));
+	io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
+	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client)));
 	io
 }
