@@ -23,7 +23,7 @@ pub trait OnAccountBalanceChanged<AccountId, Balance> {
 
 /// A more powerful lockable currency.
 pub trait LockableCurrency<AccountId>: Currency<AccountId> {
-	type LockUpdateStrategy;
+	type Lock;
 	/// The quantity used to denote time; usually just a `BlockNumber`.
 	/// In Darwinia we prefer using `TimeStamp/u64`.
 	type Moment;
@@ -36,7 +36,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// - Remove the expired locks on account `who`.
 	/// - Update the global staking amount.
 	/// - The function will return the sum of expired locks' amount.
-	fn update_lock(who: &AccountId, strategy: Self::LockUpdateStrategy) -> Self::Balance;
+	fn update_lock(who: &AccountId, strategy: Self::Lock) -> Self::Balance;
 
 	// TODO: reserve
 	// fn extend_lock();
@@ -44,7 +44,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// Remove an existing lock.
 	///
 	/// The function will return the sum of expired locks' amount.
-	fn remove_lock(who: &AccountId, at: Self::Moment) -> Self::Balance;
+	fn remove_locks(who: &AccountId, lock: Self::Lock) -> Self::Balance;
 
 	fn can_withdraw(who: &AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool;
 

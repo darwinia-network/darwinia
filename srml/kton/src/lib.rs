@@ -26,7 +26,7 @@ use system::ensure_signed;
 
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{CompositeLock, LockUpdateStrategy},
+	types::{CompositeLock, Lock},
 };
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
@@ -105,7 +105,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => CompositeLock<T::Balance, T::Moment>;
+		pub Locks get(locks): map T::AccountId => BalanceLocks<T::Balance, T::Moment>;
 
 		pub TotalLock get(total_lock): T::Balance;
 
@@ -374,71 +374,26 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type LockUpdateStrategy = LockUpdateStrategy<T::Balance, Self::Moment>;
+	type Lock = Lock<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
 	type WithdrawReasons = WithdrawReasons;
 
-	fn update_lock(who: &T::AccountId, lock_update_strategy: Self::LockUpdateStrategy) -> Self::Balance {
-		let now = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::default();
-		let mut composite_lock = Self::locks(who);
-
-		if let Some(staking_amount) = lock_update_strategy.staking_amount {
-			composite_lock.staking_amount = staking_amount;
-		}
-		if let Some(lock) = lock_update_strategy.lock {
-			let at = lock.at;
-			let mut new_lock = Some(lock);
-			composite_lock.locks = composite_lock
-				.locks
-				.into_iter()
-				.filter_map(|lock| {
-					if lock.at == at {
-						new_lock.take()
-					} else if lock.valid_at(now) {
-						Some(lock)
-					} else {
-						// TODO: check overflow?
-						expired_locks_amount += lock.amount;
-						None
-					}
-				})
-				.collect::<Vec<_>>();
-			if let Some(lock) = new_lock {
-				composite_lock.locks.push(lock);
-			}
-		} else if lock_update_strategy.check_expired {
-			composite_lock.locks.retain(|lock| {
-				if lock.valid_at(now) {
-					true
-				} else {
-					expired_locks_amount += lock.amount;
-					false
-				}
-			});
-		}
-
-		<Locks<T>>::insert(who, composite_lock);
+	fn update_lock(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		let mut locks = Self::locks(who);
+		let expired_locks_amount = if let Some(lock) = lock {
+			locks.update_lock(lock, at)
+		} else {
+			locks.remove_expired_lock(at)
+		};
+		<Locks<T>>::insert(who, locks);
 
 		expired_locks_amount
 	}
 
-	fn remove_lock(who: &T::AccountId, at: Self::Moment) -> Self::Balance {
-		let now = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::default();
-
-		<Locks<T>>::mutate(who, |composite_lock| {
-			composite_lock.locks.retain(|lock| {
-				if lock.valid_at(now) && lock.at != at {
-					true
-				} else {
-					expired_locks_amount += lock.amount;
-					false
-				}
-			});
-		});
-
-		expired_locks_amount
+	fn remove_locks(who: &T::AccountId, lock: Self::Lock) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		locks.remove_locks(at, lock)
 	}
 
 	fn can_withdraw(who: &T::AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {

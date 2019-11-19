@@ -1,54 +1,83 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
-use sr_primitives::{traits::Zero, RuntimeDebug};
+use sr_primitives::{traits::SimpleArithmetic, RuntimeDebug};
 use srml_support::traits::WithdrawReasons;
 
 pub type TimeStamp = u64;
 
-#[derive(Clone, PartialEq, Default, Encode, Decode, RuntimeDebug)]
-pub struct CompositeLock<Balance, Moment> {
-	pub staking_amount: Balance,
-	pub locks: Vec<BalanceLock<Balance, Moment>>,
-}
+#[derive(Clone, Default, Encode, Decode, RuntimeDebug)]
+pub struct BalanceLocks<Balance, Moment>(Vec<Lock<Balance, Moment>>);
 
-impl<Balance, Moment> CompositeLock<Balance, Moment>
+impl<Balance, Moment> BalanceLocks<Balance, Moment>
 where
-	Balance: Zero,
+	Balance: Clone + Copy + Default + SimpleArithmetic,
+	Moment: Clone + Copy + PartialOrd,
 {
-	pub fn is_empty(&self) -> bool {
-		self.staking_amount.is_zero() && self.locks.is_empty()
+	#[inline]
+	fn update_lock(&mut self, lock: Lock<Balance, Moment>, at: Moment) -> Balance {
+		let expired_locks_amount = self.remove_expired_locks(at);
+		self.0.push(lock);
+
+		expired_locks_amount
+	}
+
+	fn remove_locks(&mut self, at: Moment, lock: Lock<Balance, Moment>) -> Balance {
+		let mut expired_locks_amount = Self::Balance::zero();
+
+		<Locks<T>>::mutate(who, |locks| {
+			locks.retain(|lock_| {
+				if lock_.valid_at(now) && lock == lock {
+					true
+				} else {
+					expired_locks_amount += lock.amount;
+					false
+				}
+			});
+		});
+
+		expired_locks_amount
+	}
+
+	fn remove_expired_locks(&mut self, at: Moment) -> Balance {
+		let mut expired_locks_amount = Balance::default();
+		self.0.retain(|lock| {
+			if lock.valid_at(at) {
+				true
+			} else {
+				expired_locks_amount += lock.amount();
+				false
+			}
+		});
+
+		expired_locks_amount
 	}
 }
 
-pub struct LockUpdateStrategy<Balance, Moment> {
-	/// if `lock` is set, `check_expired` will be ignored
-	pub check_expired: bool,
-	pub staking_amount: Option<Balance>,
-	pub lock: Option<BalanceLock<Balance, Moment>>,
+#[derive(Clone, RuntimeDebug)]
+pub enum Lock<Balance, Moment> {
+	Staking(Balance),
+	Unbonding(BalanceLock<Balance, Moment>),
 }
 
-impl<Balance, Moment> LockUpdateStrategy<Balance, Moment> {
-	pub fn new() -> Self {
-		Self {
-			check_expired: false,
-			staking_amount: None,
-			lock: None,
+impl<Balance, Moment> Lock<Balance, Moment>
+where
+	Balance: Copy,
+	Moment: PartialOrd,
+{
+	#[inline]
+	fn valid_at(&self, at: Moment) -> bool {
+		match self {
+			Lock::Staking(_) => true,
+			Lock::Unbonding(balance_lock) => balance_lock.at > at,
 		}
 	}
 
-	pub fn with_check_expired(mut self, check_expired: bool) -> Self {
-		self.check_expired = check_expired;
-		self
-	}
-
-	pub fn with_staking_amount(mut self, staking_amount: Balance) -> Self {
-		self.staking_amount = Some(staking_amount);
-		self
-	}
-
-	pub fn with_lock(mut self, lock: BalanceLock<Balance, Moment>) -> Self {
-		self.lock = Some(lock);
-		self
+	#[inline]
+	fn amount(&self) -> Balance {
+		match self {
+			Lock::Staking(balance) => *balance,
+			Lock::Unbonding(balance_lock) => balance_lock.amount,
+		}
 	}
 }
 
@@ -57,13 +86,4 @@ pub struct BalanceLock<Balance, Moment> {
 	pub amount: Balance,
 	pub at: Moment,
 	pub reasons: WithdrawReasons,
-}
-
-impl<Balance, Moment> BalanceLock<Balance, Moment>
-where
-	Moment: PartialOrd,
-{
-	pub fn valid_at(&self, at: Moment) -> bool {
-		self.at > at
-	}
 }
