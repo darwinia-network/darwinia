@@ -22,8 +22,8 @@ use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, SaturatedConversion, Saturating,
-		SimpleArithmetic, StaticLookup, Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
+		Zero,
 	},
 	weights::SimpleDispatchInfo,
 	RuntimeDebug,
@@ -45,7 +45,7 @@ mod tests;
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
 	traits::LockableCurrency,
-	types::{BalanceLock, TimeStamp},
+	types::{CompositeLock, LockUpdateStrategy},
 };
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -235,8 +235,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		/// Locks: (StakingBalance, Locks)
-		pub Locks get(locks): map T::AccountId => (BalanceLock<T::Balance, T::Moment>, Vec<BalanceLock<T::Balance, T::Moment>>);
+		pub Locks get(locks): map T::AccountId => CompositeLock<T::Balance, T::Moment>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -734,30 +733,34 @@ where
 		{
 			return Err("vesting balance too high to send value");
 		}
-		let (staking_lock, unbonding_locks) = Self::locks(who);
-		if unbonding_locks.is_empty() {
+
+		let composite_lock = Self::locks(who);
+
+		if composite_lock.staking_amount.is_zero() && composite_lock.locks.is_empty() {
 			return Ok(());
 		}
 
-		let now = <timestamp::Module<T>>::now();
-		let ok_with_staking_lock = new_balance >= staking_lock.amount || !staking_lock.reasons.intersects(reasons);
-		let ok_with_unbonding_lock = {
+		if new_balance >= composite_lock.staking_amount {
+			return Ok(());
+		}
+
+		if {
+			let now = <timestamp::Module<T>>::now();
 			let mut locked_amount = T::Balance::zero();
-			for unbonding_lock in unbonding_locks.into_iter() {
-				if unbonding_lock.valid_at(now) && unbonding_lock.reasons.intersects(reasons) {
+			for lock in composite_lock.locks.into_iter() {
+				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
 					// TODO: check overflow?
-					locked_amount += unbonding_lock.amount;
+					locked_amount += lock.amount;
 				}
 			}
 
 			// TODO: check underflow?
 			Self::free_balance(who) - locked_amount >= amount
-		};
-		if ok_with_staking_lock || ok_with_unbonding_lock {
-			Ok(())
-		} else {
-			Err("account liquidity restrictions prevent withdrawal")
+		} {
+			return Ok(());
 		}
+
+		Err("account liquidity restrictions prevent withdrawal")
 	}
 
 	fn transfer(
@@ -994,57 +997,53 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
+	type LockUpdateStrategy = LockUpdateStrategy<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
-	type WithdrawReasons = WithdrawReasons;
 
-	fn set_lock(
-		who: &T::AccountId,
-		amount: Self::Balance,
-		at: Self::Moment,
-		reasons: Self::WithdrawReasons,
-	) -> Self::Balance {
+	fn update_lock(who: &T::AccountId, lock_update_strategy: Self::LockUpdateStrategy) -> Self::Balance {
 		let now = <timestamp::Module<T>>::now();
 		let mut expired_locks_amount = Self::Balance::default();
+		let mut composite_lock = Self::locks(who);
 
-		if at.saturated_into::<TimeStamp>() == 0 {
-			<Locks<T>>::mutate(who, |(staking_lock, unbonding_locks)| {
-				staking_lock.amount = amount;
-				staking_lock.reasons = reasons;
-
-				unbonding_locks.retain(|unbonding_lock| {
-					if unbonding_lock.valid_at(now) {
+		if let Some(staking_amount) = lock_update_strategy.staking_amount {
+			composite_lock.staking_amount = staking_amount;
+		}
+		if let Some(lock) = lock_update_strategy.lock {
+			let at = lock.at;
+			let mut new_lock = Some(lock);
+			composite_lock.locks = composite_lock
+				.locks
+				.into_iter()
+				.filter_map(|lock| {
+					if lock.at == at {
+						new_lock.take()
+					} else if lock.valid_at(now) {
+						Some(lock)
+					} else {
+						// TODO: check overflow?
+						expired_locks_amount += lock.amount;
+						None
+					}
+				})
+				.collect::<Vec<_>>();
+			if let Some(lock) = new_lock {
+				composite_lock.locks.push(lock);
+			}
+		} else if lock_update_strategy.check_expired {
+			<Locks<T>>::mutate(who, |composite_lock| {
+				composite_lock.locks.retain(|lock| {
+					if lock.valid_at(now) {
 						true
 					} else {
-						expired_locks_amount += unbonding_lock.amount;
+						expired_locks_amount += lock.amount;
 						false
 					}
 				});
 			});
-
-			return expired_locks_amount;
 		}
 
-		let mut new_lock = Some(BalanceLock { amount, at, reasons });
-		let mut unbonding_locks = Self::locks(who)
-			.1
-			.into_iter()
-			.filter_map(|lock| {
-				if lock.at == at {
-					new_lock.take()
-				} else if lock.valid_at(now) {
-					Some(lock)
-				} else {
-					// TODO: check overflow?
-					expired_locks_amount += lock.amount;
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			unbonding_locks.push(lock)
-		}
-		<Locks<T>>::mutate(who, |(_, unbonding_locks_)| {
-			*unbonding_locks_ = unbonding_locks;
+		<Locks<T>>::mutate(who, |composite_lock_| {
+			*composite_lock_ = composite_lock;
 		});
 
 		expired_locks_amount
@@ -1054,12 +1053,12 @@ where
 		let now = <timestamp::Module<T>>::now();
 		let mut expired_locks_amount = Self::Balance::default();
 
-		<Locks<T>>::mutate(who, |(_, unbonding_locks)| {
-			unbonding_locks.retain(|unbonding_lock| {
-				if unbonding_lock.valid_at(now) && unbonding_lock.at != at {
+		<Locks<T>>::mutate(who, |composite_lock| {
+			composite_lock.locks.retain(|lock| {
+				if lock.valid_at(now) && lock.at != at {
 					true
 				} else {
-					expired_locks_amount += unbonding_lock.amount;
+					expired_locks_amount += lock.amount;
 					false
 				}
 			});
@@ -1069,7 +1068,7 @@ where
 	}
 
 	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T>>::get(&who).1.len() as _
+		<Locks<T>>::get(who).locks.len() as _
 	}
 }
 
