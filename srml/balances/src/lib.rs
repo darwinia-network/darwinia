@@ -1059,7 +1059,6 @@ where
 				}
 			}
 
-			// TODO: check underflow?
 			new_balance >= locked_amount
 		} {
 			return true;
