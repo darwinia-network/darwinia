@@ -27,9 +27,9 @@ use codec::{Decode, Encode, HasCompact};
 use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
-use sr_primitives::{curve::PiecewiseLinear, Perbill, Perquintill, RuntimeDebug};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
+use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
 
 use sr_staking_primitives::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
@@ -46,8 +46,6 @@ use srml_support::{
 use system::{ensure_root, ensure_signed};
 
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
-
-mod utils;
 
 #[allow(unused)]
 #[cfg(any(feature = "bench", test))]
@@ -320,13 +318,12 @@ pub trait Trait: timestamp::Trait + session::Trait {
 
 	// custom
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
+	type GenesisTime: Get<MomentOf<Self>>;
+
 	type ErasPerEpoch: Get<EraIndex>;
 
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
-
-	// TODO: The NPoS reward curve to use.
-	type RewardCurve: Get<&'static PiecewiseLinear<'static>>;
 }
 
 /// Mode of era-forcing.
@@ -634,7 +631,7 @@ decl_module! {
 
 				// for now, kton_return is free
 				// mint kton
-				let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+				let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
 				let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
 				T::KtonReward::on_unbalanced(kton_positive_imbalance);
 
@@ -678,7 +675,7 @@ decl_module! {
 						/ MONTH_IN_SECONDS
 						;
 
-					let kton_slash = (utils::compute_kton_return::<T>(item.value, plan_duration) - utils::compute_kton_return::<T>(item.value, passed_duration)) * 3.into();
+					let kton_slash = (inflation::compute_kton_return::<T>(item.value, plan_duration) - inflation::compute_kton_return::<T>(item.value, passed_duration)) * 3.into();
 
 					// check total free balance and locked one
 					// strict on punishing in kton
@@ -888,7 +885,7 @@ impl<T: Trait> Module<T> {
 			ledger.active_deposit_ring += value;
 			// for now, kton_return is free
 			// mint kton
-			let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
 			let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
 			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 			let now = <timestamp::Module<T>>::now();
@@ -1170,13 +1167,11 @@ impl<T: Trait> Module<T> {
 			//			let validator_len: ExtendedBalance = (validators.len() as u32).into();
 			//			let total_rewarded_stake = Self::slot_stake() * validator_len;
 
-			let (total_payout, max_payout) = inflation::compute_total_payout(
-				&T::RewardCurve::get(),
-				// TODO: replace with fraction including KTON.
-				Self::ring_pool(), //total_rewarded_stake.clone(),
-				T::Ring::total_issuance(),
-				// Duration of era; more than u64::MAX is rewarded as u64::MAX.
+			let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>();
+			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration.saturated_into::<u64>(),
+				(T::GenesisTime::get() - T::Time::now()).saturated_into::<u64>(),
+				total_left,
 			);
 
 			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();

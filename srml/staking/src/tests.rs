@@ -342,7 +342,7 @@ fn normal_unbond_should_work() {
 			));
 			assert_eq!(
 				Kton::free_balance(&stash),
-				kton_free_balance + utils::compute_kton_return::<Test>(value, promise_month)
+				kton_free_balance + inflation::compute_kton_return::<Test>(value, promise_month)
 			);
 			ledger.total_ring += value;
 			ledger.total_deposit_ring += value;
@@ -454,7 +454,7 @@ fn punished_unbond_should_work() {
 		}];
 		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
 
-		let kton_punishment = utils::compute_kton_return::<Test>(unbond_value, promise_month);
+		let kton_punishment = inflation::compute_kton_return::<Test>(unbond_value, promise_month);
 		assert_eq!(Kton::free_balance(&stash), kton_free_balance - 3 * kton_punishment);
 
 		// if deposit_item.value == 0
