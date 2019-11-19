@@ -33,7 +33,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// 	- If the new lock is valid (i.e. not already expired), it will push the struct to
 	/// 	the `Locks` vec in storage. Note that you can lock more funds than a user has.
 	/// 	- If the lock `id/until` already exists, this will update it.
-	/// 	- Remove the expired locks on account `who`.
+	/// - Remove the expired locks on account `who`.
 	/// - Update the global staking amount.
 	/// - The function will return the sum of expired locks' amount.
 	fn update_lock(who: &AccountId, strategy: Self::LockUpdateStrategy) -> Self::Balance;
