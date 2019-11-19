@@ -1019,9 +1019,7 @@ where
 			});
 		}
 
-		<Locks<T, I>>::mutate(who, |composite_lock_| {
-			*composite_lock_ = composite_lock;
-		});
+		<Locks<T, I>>::insert(who, composite_lock);
 
 		expired_locks_amount
 	}
@@ -1051,13 +1049,9 @@ where
 			return true;
 		}
 
-		if new_balance >= composite_lock.staking_amount {
-			return true;
-		}
-
 		if {
 			let now = <timestamp::Module<T>>::now();
-			let mut locked_amount = T::Balance::zero();
+			let mut locked_amount = composite_lock.staking_amount;
 			for lock in composite_lock.locks.into_iter() {
 				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
 					// TODO: check overflow?
