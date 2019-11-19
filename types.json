@@ -24,7 +24,7 @@
     "era": "Compact<EraIndex>",
     "is_time_deposit": "bool"
   },
-  "StakingLedgers": {
+  "StakingLedger": {
     "stash": "AccountId",
     "total_ring": "Compact<RingBalanceOf>",
     "total_deposit_ring": "Compact<RingBalanceOf>",

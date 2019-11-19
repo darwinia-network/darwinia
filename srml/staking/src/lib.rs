@@ -27,9 +27,9 @@ use codec::{Decode, Encode, HasCompact};
 use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero};
-use sr_primitives::{curve::PiecewiseLinear, Perbill, Perquintill, RuntimeDebug};
 #[cfg(feature = "std")]
 use sr_primitives::{Deserialize, Serialize};
+use sr_primitives::{Perbill, Perquintill, RuntimeDebug};
 
 use sr_staking_primitives::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
@@ -46,8 +46,6 @@ use srml_support::{
 use system::{ensure_root, ensure_signed};
 
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
-
-mod utils;
 
 #[allow(unused)]
 #[cfg(any(feature = "bench", test))]
@@ -175,7 +173,7 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 }
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, RuntimeDebug)]
-pub struct StakingLedgers<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
+pub struct StakingLedger<AccountId, RingBalance: HasCompact, KtonBalance: HasCompact, StakingBalance, Moment> {
 	/// The stash account whose balance is actually locked and at stake.
 	pub stash: AccountId,
 
@@ -320,13 +318,12 @@ pub trait Trait: timestamp::Trait + session::Trait {
 
 	// custom
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
+	type GenesisTime: Get<MomentOf<Self>>;
+
 	type ErasPerEpoch: Get<EraIndex>;
 
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
-
-	// TODO: The NPoS reward curve to use.
-	type RewardCurve: Get<&'static PiecewiseLinear<'static>>;
 }
 
 /// Mode of era-forcing.
@@ -366,7 +363,7 @@ decl_storage! {
 
 		pub Bonded get(bonded): map T::AccountId => Option<T::AccountId>;
 
-		pub Ledger get(ledger): map T::AccountId => Option<StakingLedgers<
+		pub Ledger get(ledger): map T::AccountId => Option<StakingLedger<
 			T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 			T::Moment>>;
 
@@ -498,7 +495,7 @@ decl_module! {
 			<Bonded<T>>::insert(&stash, &controller);
 			<Payee<T>>::insert(&stash, payee);
 
-			let ledger = StakingLedgers {stash: stash.clone(), ..Default::default()};
+			let ledger = StakingLedger {stash: stash.clone(), ..Default::default()};
 			match value {
 				StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
@@ -554,7 +551,7 @@ decl_module! {
 			Self::clear_mature_deposits(&controller);
 
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedgers {
+			let StakingLedger {
 				active_ring,
 				active_deposit_ring,
 				active_kton,
@@ -614,7 +611,7 @@ decl_module! {
 
 			ensure!( promise_month <= 36, "months at most is 36.");
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedgers {
+			let StakingLedger {
 				active_ring,
 				active_deposit_ring,
 				deposit_items,
@@ -634,7 +631,7 @@ decl_module! {
 
 				// for now, kton_return is free
 				// mint kton
-				let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+				let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
 				let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
 				T::KtonReward::on_unbalanced(kton_positive_imbalance);
 
@@ -652,11 +649,10 @@ decl_module! {
 			Self::clear_mature_deposits(&controller);
 		}
 
-		// TODO: Replace expire_time with Deposit Id.
 		fn claim_deposits_with_punish(origin, expire_time: T::Moment) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedgers {
+			let StakingLedger {
 				stash,
 				active_deposit_ring,
 				deposit_items,
@@ -669,12 +665,17 @@ decl_module! {
 
 			deposit_items.retain(|item| {
 				if item.expire_time == expire_time {
-					// at least 1 month
-					let month_left = (
-						(expire_time.clone() - now.clone()).saturated_into::<u32>()
+					let passed_duration =
+						(now.clone() - item.start_time.clone()).saturated_into::<u32>()
 						/ MONTH_IN_SECONDS
-						).max(1);
-					let kton_slash = utils::compute_kton_return::<T>(item.value, month_left) * 3.into();
+						;
+
+					let plan_duration =
+						(item.expire_time.clone() - item.start_time.clone()).saturated_into::<u32>()
+						/ MONTH_IN_SECONDS
+						;
+
+					let kton_slash = (inflation::compute_kton_return::<T>(item.value, plan_duration) - inflation::compute_kton_return::<T>(item.value, passed_duration)) * 3.into();
 
 					// check total free balance and locked one
 					// strict on punishing in kton
@@ -707,7 +708,7 @@ decl_module! {
 		fn withdraw_unbonded(origin) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedgers {
+			let StakingLedger {
 				total_ring,
 				total_kton,
 				unlocking,
@@ -845,7 +846,7 @@ impl<T: Trait> Module<T> {
 
 		//		let mut ledger = Self::ledger(who).ok_or("not a controller")?;
 
-		let StakingLedgers {
+		let StakingLedger {
 			active_deposit_ring,
 			deposit_items,
 			..
@@ -869,7 +870,7 @@ impl<T: Trait> Module<T> {
 		controller: &T::AccountId,
 		value: RingBalanceOf<T>,
 		promise_month: u32,
-		mut ledger: StakingLedgers<
+		mut ledger: StakingLedger<
 			T::AccountId,
 			RingBalanceOf<T>,
 			KtonBalanceOf<T>,
@@ -884,7 +885,7 @@ impl<T: Trait> Module<T> {
 			ledger.active_deposit_ring += value;
 			// for now, kton_return is free
 			// mint kton
-			let kton_return = utils::compute_kton_return::<T>(value, promise_month);
+			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
 			let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
 			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 			let now = <timestamp::Module<T>>::now();
@@ -904,7 +905,7 @@ impl<T: Trait> Module<T> {
 	fn bond_helper_in_kton(
 		controller: &T::AccountId,
 		value: KtonBalanceOf<T>,
-		mut ledger: StakingLedgers<
+		mut ledger: StakingLedger<
 			T::AccountId,
 			RingBalanceOf<T>,
 			KtonBalanceOf<T>,
@@ -920,7 +921,7 @@ impl<T: Trait> Module<T> {
 
 	fn update_ledger(
 		controller: &T::AccountId,
-		ledger: &StakingLedgers<
+		ledger: &StakingLedger<
 			T::AccountId,
 			RingBalanceOf<T>,
 			KtonBalanceOf<T>,
@@ -1043,7 +1044,7 @@ impl<T: Trait> Module<T> {
 
 	fn slash_helper(
 		controller: &T::AccountId,
-		ledger: &mut StakingLedgers<
+		ledger: &mut StakingLedger<
 			T::AccountId,
 			RingBalanceOf<T>,
 			KtonBalanceOf<T>,
@@ -1054,7 +1055,7 @@ impl<T: Trait> Module<T> {
 	) -> (RingBalanceOf<T>, KtonBalanceOf<T>) {
 		match value {
 			StakingBalance::Ring(r) => {
-				let StakingLedgers {
+				let StakingLedger {
 					total_ring,
 					active_ring,
 					active_deposit_ring,
@@ -1166,13 +1167,11 @@ impl<T: Trait> Module<T> {
 			//			let validator_len: ExtendedBalance = (validators.len() as u32).into();
 			//			let total_rewarded_stake = Self::slot_stake() * validator_len;
 
-			let (total_payout, max_payout) = inflation::compute_total_payout(
-				&T::RewardCurve::get(),
-				// TODO: replace with fraction including KTON.
-				Self::ring_pool(), //total_rewarded_stake.clone(),
-				T::Ring::total_issuance(),
-				// Duration of era; more than u64::MAX is rewarded as u64::MAX.
+			let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>();
+			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration.saturated_into::<u64>(),
+				(T::GenesisTime::get() - T::Time::now()).saturated_into::<u64>(),
+				total_left,
 			);
 
 			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();
