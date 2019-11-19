@@ -41,6 +41,7 @@ std = [
 	"substrate-keyring",
 	"codec/std",
 	"rstd/std",
+	"phragmen/std",
 	"runtime_io/std",
 	"srml-support/std",
 	"sr-primitives/std",
