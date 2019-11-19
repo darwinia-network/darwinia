@@ -43,7 +43,7 @@ impl<Balance, Moment> LockUpdateStrategy<Balance, Moment> {
 	}
 }
 
-#[derive(Clone, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
 pub struct BalanceLock<Balance, Moment> {
 	pub amount: Balance,
 	pub at: Moment,
@@ -56,14 +56,5 @@ where
 {
 	pub fn valid_at(&self, at: Moment) -> bool {
 		self.at > at
-	}
-}
-
-impl<Balance, Moment> PartialEq for BalanceLock<Balance, Moment>
-where
-	Moment: PartialEq,
-{
-	fn eq(&self, other: &Self) -> bool {
-		self.at == other.at
 	}
 }

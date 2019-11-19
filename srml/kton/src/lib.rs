@@ -222,43 +222,21 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 	fn ensure_can_withdraw(
 		who: &T::AccountId,
-		amount: T::Balance,
+		_amount: T::Balance,
 		reasons: WithdrawReasons,
 		new_balance: T::Balance,
 	) -> Result {
 		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
 			&& Self::vesting_balance(who) > new_balance
 		{
-			return Err("vesting balance too high to send value");
-		}
-
-		let composite_lock = Self::locks(who);
-
-		if composite_lock.staking_amount.is_zero() && composite_lock.locks.is_empty() {
-			return Ok(());
-		}
-
-		if new_balance >= composite_lock.staking_amount {
-			return Ok(());
-		}
-
-		if {
-			let now = <timestamp::Module<T>>::now();
-			let mut locked_amount = T::Balance::zero();
-			for lock in composite_lock.locks.into_iter() {
-				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
-					// TODO: check overflow?
-					locked_amount += lock.amount;
-				}
+			Err("vesting balance too high to send value")
+		} else {
+			if Self::can_withdraw(who, reasons, new_balance) {
+				Ok(())
+			} else {
+				Err("account liquidity restrictions prevent withdrawal")
 			}
-
-			// TODO: check underflow?
-			Self::free_balance(who) - locked_amount >= amount
-		} {
-			return Ok(());
 		}
-
-		Err("account liquidity restrictions prevent withdrawal")
 	}
 
 	// TODO: add fee
@@ -398,6 +376,7 @@ where
 {
 	type LockUpdateStrategy = LockUpdateStrategy<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
+	type WithdrawReasons = WithdrawReasons;
 
 	fn update_lock(who: &T::AccountId, lock_update_strategy: Self::LockUpdateStrategy) -> Self::Balance {
 		let now = <timestamp::Module<T>>::now();
@@ -439,9 +418,7 @@ where
 			});
 		}
 
-		<Locks<T>>::mutate(who, |composite_lock_| {
-			*composite_lock_ = composite_lock;
-		});
+		<Locks<T>>::insert(who, composite_lock);
 
 		expired_locks_amount
 	}
@@ -462,6 +439,32 @@ where
 		});
 
 		expired_locks_amount
+	}
+
+	fn can_withdraw(who: &T::AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {
+		let composite_lock = Self::locks(who);
+
+		if composite_lock.staking_amount.is_zero() && composite_lock.locks.is_empty() {
+			return true;
+		}
+
+		if {
+			let now = <timestamp::Module<T>>::now();
+			let mut locked_amount = composite_lock.staking_amount;
+			for lock in composite_lock.locks.into_iter() {
+				if lock.valid_at(now) && lock.reasons.intersects(reasons) {
+					// TODO: check overflow?
+					locked_amount += lock.amount;
+				}
+			}
+
+			// TODO: check underflow?
+			new_balance >= locked_amount
+		} {
+			return true;
+		}
+
+		false
 	}
 
 	fn locks_count(who: &T::AccountId) -> u32 {

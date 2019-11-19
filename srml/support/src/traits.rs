@@ -27,6 +27,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// The quantity used to denote time; usually just a `BlockNumber`.
 	/// In Darwinia we prefer using `TimeStamp/u64`.
 	type Moment;
+	type WithdrawReasons;
 
 	/// - Create a new balance lock on account `who`.
 	/// 	- If the new lock is valid (i.e. not already expired), it will push the struct to
@@ -44,6 +45,8 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	///
 	/// The function will return the sum of expired locks' amount.
 	fn remove_lock(who: &AccountId, at: Self::Moment) -> Self::Balance;
+
+	fn can_withdraw(who: &AccountId, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool;
 
 	/// The number of locks.
 	fn locks_count(who: &AccountId) -> u32;

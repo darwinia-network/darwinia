@@ -203,13 +203,15 @@ type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::
 pub trait Trait: timestamp::Trait + session::Trait {
 	type Ring: LockableCurrency<
 		Self::AccountId,
-		Moment = TimeStamp,
 		LockUpdateStrategy = LockUpdateStrategy<RingBalanceOf<Self>, TimeStamp>,
+		Moment = TimeStamp,
+		WithdrawReasons = WithdrawReasons,
 	>;
 	type Kton: LockableCurrency<
 		Self::AccountId,
 		Moment = TimeStamp,
 		LockUpdateStrategy = LockUpdateStrategy<KtonBalanceOf<Self>, TimeStamp>,
+		WithdrawReasons = WithdrawReasons,
 	>;
 
 	type CurrencyToVote: Convert<KtonBalanceOf<Self>, u64> + Convert<u128, KtonBalanceOf<Self>>;
@@ -401,10 +403,16 @@ decl_module! {
 			let stash = ensure_signed(origin)?;
 			ensure!(promise_month <= 36, "months at most is 36.");
 			let controller = Self::bonded(&stash).ok_or("not a stash")?;
-			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
+					let expired_locks_ring = T::Ring::update_lock(
+						&stash,
+						LockUpdateStrategy::new().with_check_expired(true),
+					);
+					// TODO: check underflow?
+					ledger.total_ring -= expired_locks_ring;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
 						let extra = extra.min(r);
 						<RingPool<T>>::mutate(|r| *r += extra);
@@ -413,6 +421,11 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
+					let expired_locks_kton = T::Kton::update_lock(
+						&stash,
+						LockUpdateStrategy::new().with_check_expired(true),
+					);
+					ledger.total_kton -= expired_locks_kton;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
 						let extra = extra.min(k);
 						<KtonPool<T>>::mutate(|k| *k += extra);
@@ -767,32 +780,20 @@ impl<T: Trait> Module<T> {
 					&ledger.stash,
 					LockUpdateStrategy::new()
 						.with_check_expired(true)
-						.with_staking_amount(ledger.total_ring),
+						.with_staking_amount(ledger.active_ring),
 				);
-				if !expired_locks_ring.is_zero() {
-					// TODO: check underflow?
-					ledger.total_ring -= expired_locks_ring;
-					T::Ring::update_lock(
-						&ledger.stash,
-						LockUpdateStrategy::new().with_staking_amount(ledger.total_ring),
-					);
-				}
+				// TODO: check underflow?
+				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
 				let expired_locks_kton = T::Kton::update_lock(
 					&ledger.stash,
 					LockUpdateStrategy::new()
 						.with_check_expired(true)
-						.with_staking_amount(ledger.total_kton),
+						.with_staking_amount(ledger.active_kton),
 				);
-				if !expired_locks_kton.is_zero() {
-					// TODO: check underflow?
-					ledger.total_kton -= expired_locks_kton;
-					T::Kton::update_lock(
-						&ledger.stash,
-						LockUpdateStrategy::new().with_staking_amount(ledger.total_kton),
-					);
-				}
+				// TODO: check underflow?
+				ledger.total_kton -= expired_locks_kton;
 			}
 		}
 

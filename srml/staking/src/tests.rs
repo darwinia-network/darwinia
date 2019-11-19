@@ -1252,15 +1252,15 @@ fn xavier_q1() {
 
 		let unbond_start = 2;
 		Timestamp::set_timestamp(unbond_start);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(10)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(9)));
 		assert_eq!(Timestamp::get(), 2);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 1,
 				locks: vec![BalanceLock {
-					amount: 10,
+					amount: 9,
 					at: BondingDuration::get() + unbond_start,
 					reasons: WithdrawReasons::all()
 				}]
@@ -1292,9 +1292,9 @@ fn xavier_q1() {
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 1,
 				locks: vec![BalanceLock {
-					amount: 10,
+					amount: 9,
 					at: BondingDuration::get() + unbond_start,
 					reasons: WithdrawReasons::all()
 				}]
@@ -1307,7 +1307,7 @@ fn xavier_q1() {
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 19,
+				staking_amount: 20,
 				locks: vec![]
 			}
 		);
@@ -1318,8 +1318,8 @@ fn xavier_q1() {
 				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 19,
-				active_kton: 19,
+				total_kton: 20,
+				active_kton: 20,
 				deposit_items: vec![],
 			}
 		);
@@ -1361,13 +1361,13 @@ fn xavier_q2() {
 		//		println!();
 
 		Timestamp::set_timestamp(1);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(5), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(4), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 9,
 				locks: vec![]
 			}
 		);
@@ -1386,10 +1386,10 @@ fn xavier_q2() {
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 7,
 				locks: vec![BalanceLock {
 					amount: 2,
-					at: 62,
+					at: BondingDuration::get() + unbond_start_1,
 					reasons: WithdrawReasons::all(),
 				}]
 			}
@@ -1398,24 +1398,24 @@ fn xavier_q2() {
 		//		println!("Ok Unbond - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
 
-		let (unbond_value_2, unbond_start_2) = (7, 3);
+		let (unbond_value_2, unbond_start_2) = (6, 3);
 		Timestamp::set_timestamp(unbond_start_2);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(7)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(6)));
 		assert_eq!(Timestamp::get(), unbond_start_2);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 1,
 				locks: vec![
 					BalanceLock {
 						amount: 2,
-						at: 62,
+						at: BondingDuration::get() + unbond_start_1,
 						reasons: WithdrawReasons::all(),
 					},
 					BalanceLock {
-						amount: 7,
-						at: 63,
+						amount: 6,
+						at: BondingDuration::get() + unbond_start_2,
 						reasons: WithdrawReasons::all(),
 					},
 				]
@@ -1433,26 +1433,26 @@ fn xavier_q2() {
 		//		println!("Locking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
 
-		assert_ok!(Kton::transfer(Origin::signed(stash), controller, 1));
+		assert_ok!(Kton::transfer(Origin::signed(stash), controller, unbond_value_1 - 1));
 		assert_eq!(Kton::free_balance(stash), 9);
 		//		println!("Normal Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Normal Transfer - Kton Locks: {:#?}", Kton::locks(stash));
 
 		Timestamp::set_timestamp(BondingDuration::get() + unbond_start_1);
 		assert_err!(
-			Kton::transfer(Origin::signed(stash), controller, 3),
+			Kton::transfer(Origin::signed(stash), controller, unbond_value_1 + 1),
 			"account liquidity restrictions prevent withdrawal"
 		);
 		//		println!("Locking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Locking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
-		assert_ok!(Kton::transfer(Origin::signed(stash), controller, 2));
+		assert_ok!(Kton::transfer(Origin::signed(stash), controller, unbond_value_1));
 		assert_eq!(Timestamp::get(), BondingDuration::get() + unbond_start_1);
 		assert_eq!(Kton::free_balance(stash), 7);
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 1,
 				locks: vec![
 					BalanceLock {
 						amount: 2,
@@ -1460,7 +1460,7 @@ fn xavier_q2() {
 						reasons: WithdrawReasons::all(),
 					},
 					BalanceLock {
-						amount: 7,
+						amount: 6,
 						at: 63,
 						reasons: WithdrawReasons::all(),
 					},
@@ -1473,11 +1473,11 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(BondingDuration::get() + unbond_start_2);
 		assert_ok!(Kton::transfer(Origin::signed(stash), controller, unbond_value_2));
 		assert_eq!(Timestamp::get(), BondingDuration::get() + unbond_start_2);
-		assert_eq!(Kton::free_balance(stash), 0);
+		assert_eq!(Kton::free_balance(stash), 1);
 		assert_eq!(
 			Kton::locks(stash),
 			CompositeLock {
-				staking_amount: 10,
+				staking_amount: 1,
 				locks: vec![
 					BalanceLock {
 						amount: 2,
@@ -1485,7 +1485,7 @@ fn xavier_q2() {
 						reasons: WithdrawReasons::all(),
 					},
 					BalanceLock {
-						amount: 7,
+						amount: 6,
 						at: 63,
 						reasons: WithdrawReasons::all(),
 					},
@@ -1494,6 +1494,18 @@ fn xavier_q2() {
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Unlocking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
+
+		Kton::deposit_creating(&stash, 1);
+		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
+		assert_eq!(Kton::free_balance(stash), 2);
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 0));
+		assert_eq!(
+			Kton::locks(stash),
+			CompositeLock {
+				staking_amount: 2,
+				locks: vec![],
+			}
+		);
 	});
 }
 
