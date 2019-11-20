@@ -196,7 +196,7 @@ where
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
 			(CompositeLock::Staking(_), CompositeLock::Staking(_)) => true,
-			(CompositeLock::Unbonding(a), CompositeLock::Unbonding(b)) => a.at == b.at,
+			(CompositeLock::Unbonding(a), CompositeLock::Unbonding(b)) => a == b,
 			_ => false,
 		}
 	}
