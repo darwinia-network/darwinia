@@ -15,6 +15,7 @@ rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrat
 support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 system = { package = "srml-system",  git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
+darwinia-support = { path = "../../../support", default-features = false }
 merkle-mountain-range = { path = "../../../../core/merkle-mountain-range", default-features = false }
 
 [features]
@@ -28,5 +29,6 @@ std = [
     "support/std",
     "system/std",
 
-    "merkle-mountain-range/std",
+    "darwinia-support/std",
+    "merkle-mountain-range/std"
 ]

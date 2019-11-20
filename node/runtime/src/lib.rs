@@ -60,6 +60,7 @@ use substrate_primitives::OpaqueMetadata;
 use system::offchain::TransactionSubmitter;
 use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 
+use darwinia_support::types::{Locks, TimeStamp};
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
@@ -136,7 +137,6 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const Version: RuntimeVersion = VERSION;
 }
-
 impl system::Trait for Runtime {
 	type Origin = Origin;
 	type Call = Call;
@@ -172,7 +172,6 @@ parameter_types! {
 	pub const TransferFee: Balance = 1 * MILLI;
 	pub const CreationFee: Balance = 1 * MILLI;
 }
-
 impl balances::Trait for Runtime {
 	type Balance = Balance;
 	type OnFreeBalanceZero = (Staking, Session);
@@ -183,6 +182,7 @@ impl balances::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
+	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
@@ -193,7 +193,6 @@ parameter_types! {
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perbill = Perbill::from_percent(25);
 }
-
 impl transaction_payment::Trait for Runtime {
 	type Currency = Balances;
 	type OnTransactionPayment = DealWithFees;
@@ -207,7 +206,6 @@ parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
 	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
 }
-
 impl babe::Trait for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
@@ -217,15 +215,10 @@ impl babe::Trait for Runtime {
 parameter_types! {
 	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
 }
-
 impl timestamp::Trait for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
-}
-
-parameter_types! {
-	pub const UncleGenerations: BlockNumber = 5;
 }
 
 impl_opaque_keys! {
@@ -236,6 +229,9 @@ impl_opaque_keys! {
 	}
 }
 
+parameter_types! {
+	pub const UncleGenerations: BlockNumber = 5;
+}
 impl authorship::Trait for Runtime {
 	type FindAuthor = session::FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
@@ -249,17 +245,10 @@ impl authorship::Trait for Runtime {
 // TODO: Introduce some structure to tie these together to make it a bit less of a footgun. This
 // should be easy, since OneSessionHandler trait provides the `Key` as an associated type. #2858
 
-parameter_types! {
-	pub const Period: BlockNumber = 1 * MINUTES;
-	pub const Offset: BlockNumber = 0;
-}
-
 type SessionHandlers = (Grandpa, Babe, ImOnline, AuthorityDiscovery);
-
 parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
 }
-
 impl session::Trait for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as system::Trait>::AccountId;
@@ -275,14 +264,6 @@ impl session::Trait for Runtime {
 impl session::historical::Trait for Runtime {
 	type FullIdentification = staking::Exposure<AccountId, Balance>;
 	type FullIdentificationOf = staking::ExposureOf<Runtime>;
-}
-
-parameter_types! {
-	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
-	// about 14 days
-	pub const BondingDuration: staking::EraIndex = 4032;
-	// 365 days * 24 hours * 60 minutes / 5 minutes
-	pub const ErasPerEpoch: EraIndex = 105120;
 }
 
 impl sudo::Trait for Runtime {
@@ -301,18 +282,16 @@ impl offences::Trait for Runtime {
 }
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
-
 parameter_types! {
 	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
 }
-
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
 	type Event = Event;
 	type Call = Call;
 	type SubmitTransaction = SubmitTransaction;
-	type ReportUnresponsiveness = Offences;
 	type SessionDuration = SessionDuration;
+	type ReportUnresponsiveness = Offences;
 }
 
 impl authority_discovery::Trait for Runtime {
@@ -323,7 +302,6 @@ parameter_types! {
 	pub const WindowSize: BlockNumber = 101;
 	pub const ReportLatency: BlockNumber = 1000;
 }
-
 impl finality_tracker::Trait for Runtime {
 	type OnFinalizationStalled = Grandpa;
 	type WindowSize = WindowSize;
@@ -341,7 +319,6 @@ parameter_types! {
 	pub const RentDepositOffset: Balance = 1000 * COIN;
 	pub const SurchargeReward: Balance = 150 * COIN;
 }
-
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
 	type Time = Timestamp;
@@ -406,14 +383,21 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
+	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
+	pub const Period: BlockNumber = 1 * MINUTES;
+//	pub const Offset: BlockNumber = 0;
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
+	// about 14 days = 14 * 24 * 60 * 60
+	pub const BondingDuration: TimeStamp = 1209600;
+	// 365 days * 24 hours * 60 minutes / 5 minutes
+	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
 	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
-
 impl staking::Trait for Runtime {
 	type Ring = Balances;
 	type Kton = Kton;
@@ -433,10 +417,6 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-impl eos_bridge::Trait for Runtime {
-	type Event = Event;
-}
-
 impl ethereum_bridge::Trait for Runtime {
 	type Event = Event;
 	type Ring = Balances;
@@ -451,7 +431,6 @@ construct_runtime!(
 		AuthorityDiscovery: authority_discovery::{Module, Call, Config<T>},
 		Authorship: authorship::{Module, Call, Storage},
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
-		Balances: balances::{default, Error},
 		Contracts: contracts,
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
@@ -466,9 +445,9 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Utility: utility::{Module, Call, Event},
 
+		Balances: balances::{default, Error},
 		Kton: kton,
 		Staking: staking::{default, OfflineWorker},
-		EOSBridge: eos_bridge::{Storage, Module, Event<T>, Call},
 		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );

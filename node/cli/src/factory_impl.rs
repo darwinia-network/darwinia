@@ -18,25 +18,25 @@
 //! using the cli to manufacture transactions and distribute them
 //! to accounts.
 
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 
-use codec::{Encode, Decode};
-use keyring::sr25519::Keyring;
-use node_runtime::{
-	Call, CheckedExtrinsic, UncheckedExtrinsic, SignedExtra, BalancesCall, ExistentialDeposit,
-	MinimumPeriod
-};
-use node_primitives::Signature;
-use primitives::{sr25519, crypto::Pair};
-use sr_primitives::{
-	generic::Era, traits::{Block as BlockT, Header as HeaderT, SignedExtension, Verify, IdentifyAccount}
-};
-use transaction_factory::RuntimeAdapter;
-use transaction_factory::modes::Mode;
-use inherents::InherentData;
-use timestamp;
+use codec::{Decode, Encode};
 use finality_tracker;
+use inherents::InherentData;
+use keyring::sr25519::Keyring;
+use node_primitives::Signature;
+use node_runtime::{
+	BalancesCall, Call, CheckedExtrinsic, ExistentialDeposit, MinimumPeriod, SignedExtra, UncheckedExtrinsic,
+};
+use primitives::{crypto::Pair, sr25519};
+use sr_primitives::{
+	generic::Era,
+	traits::{Block as BlockT, Header as HeaderT, IdentifyAccount, SignedExtension, Verify},
+};
+use timestamp;
+use transaction_factory::modes::Mode;
+use transaction_factory::RuntimeAdapter;
 
 type AccountPublic = <Signature as Verify>::Signer;
 
@@ -77,11 +77,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 
 	type Number = Number;
 
-	fn new(
-		mode: Mode,
-		num: u64,
-		rounds: u64,
-	) -> FactoryState<Self::Number> {
+	fn new(mode: Mode, num: u64, rounds: u64) -> FactoryState<Self::Number> {
 		FactoryState {
 			mode,
 			num: num as u32,
@@ -145,24 +141,28 @@ impl RuntimeAdapter for FactoryState<Number> {
 	) -> <Self::Block as BlockT>::Extrinsic {
 		let index = self.extract_index(&sender, prior_block_hash);
 		let phase = self.extract_phase(*prior_block_hash);
-		sign::<Self>(CheckedExtrinsic {
-			signed: Some((sender.clone(), Self::build_extra(index, phase))),
-			function: Call::Balances(
-				BalancesCall::transfer(
+		sign::<Self>(
+			CheckedExtrinsic {
+				signed: Some((sender.clone(), Self::build_extra(index, phase))),
+				function: Call::Balances(BalancesCall::transfer(
 					indices::address::Address::Id(destination.clone().into()),
-					(*amount).into()
-				)
-			)
-		}, key, (version, genesis_hash.clone(), prior_block_hash.clone(), (), (), (), ()))
+					(*amount).into(),
+				)),
+			},
+			key,
+			(version, genesis_hash.clone(), prior_block_hash.clone(), (), (), (), ()),
+		)
 	}
 
 	fn inherent_extrinsics(&self) -> InherentData {
 		let timestamp = (self.block_no as u64 + 1) * MinimumPeriod::get();
 
 		let mut inherent = InherentData::new();
-		inherent.put_data(timestamp::INHERENT_IDENTIFIER, &timestamp)
+		inherent
+			.put_data(timestamp::INHERENT_IDENTIFIER, &timestamp)
 			.expect("Failed putting timestamp inherent");
-		inherent.put_data(finality_tracker::INHERENT_IDENTIFIER, &self.block_no)
+		inherent
+			.put_data(finality_tracker::INHERENT_IDENTIFIER, &self.block_no)
 			.expect("Failed putting finalized number inherent");
 		inherent
 	}
@@ -191,11 +191,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 		pair
 	}
 
-	fn extract_index(
-		&self,
-		_account_id: &Self::AccountId,
-		_block_hash: &<Self::Block as BlockT>::Hash,
-	) -> Self::Index {
+	fn extract_index(&self, _account_id: &Self::AccountId, _block_hash: &<Self::Block as BlockT>::Hash) -> Self::Index {
 		// TODO get correct index for account via api. See #2587.
 		// This currently prevents the factory from being used
 		// without a preceding purge of the database.
@@ -204,20 +200,21 @@ impl RuntimeAdapter for FactoryState<Number> {
 		} else {
 			match self.round() {
 				0 =>
-					// if round is 0 all transactions will be done with master as a sender
-					self.block_no() as Self::Index,
+				// if round is 0 all transactions will be done with master as a sender
+				{
+					self.block_no() as Self::Index
+				}
 				_ =>
-					// if round is e.g. 1 every sender account will be new and not yet have
-					// any transactions done
+				// if round is e.g. 1 every sender account will be new and not yet have
+				// any transactions done
+				{
 					0
+				}
 			}
 		}
 	}
 
-	fn extract_phase(
-		&self,
-		_block_hash: <Self::Block as BlockT>::Hash
-	) -> Self::Phase {
+	fn extract_phase(&self, _block_hash: <Self::Block as BlockT>::Hash) -> Self::Phase {
 		// TODO get correct phase via api. See #2587.
 		// This currently prevents the factory from being used
 		// without a preceding purge of the database.
@@ -245,13 +242,15 @@ fn sign<RA: RuntimeAdapter>(
 	let s = match xt.signed {
 		Some((signed, extra)) => {
 			let payload = (xt.function, extra.clone(), additional_signed);
-			let signature = payload.using_encoded(|b| {
-				if b.len() > 256 {
-					key.sign(&runtime_io::hashing::blake2_256(b))
-				} else {
-					key.sign(b)
-				}
-			}).into();
+			let signature = payload
+				.using_encoded(|b| {
+					if b.len() > 256 {
+						key.sign(&runtime_io::hashing::blake2_256(b))
+					} else {
+						key.sign(b)
+					}
+				})
+				.into();
 			UncheckedExtrinsic {
 				signature: Some((indices::address::Address::Id(signed), signature, extra)),
 				function: payload.0,

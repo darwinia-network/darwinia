@@ -1,10 +1,15 @@
+use std::{cell::RefCell, collections::HashSet};
+
+use sr_primitives::{
+	testing::Header,
+	traits::{BlakeTwo256, IdentityLookup},
+	Perbill,
+};
+use srml_support::{impl_outer_origin, parameter_types};
+use substrate_primitives::H256;
+
 use super::*;
 use crate::{GenesisConfig, Module};
-use primitives::testing::Header;
-use primitives::traits::IdentityLookup;
-use srml_support::impl_outer_origin;
-use std::{cell::RefCell, collections::HashSet};
-use substrate_primitives::{Blake2Hasher, H256};
 
 pub const COIN: u64 = 1_000_000_000;
 
@@ -15,29 +20,8 @@ thread_local! {
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-// pub type BlockNumber = u64;
+pub type BlockNumber = u64;
 pub type Balance = u64;
-
-#[allow(unused_doc_comments)]
-/// Simple structure that exposes how u64 currency can be represented as... u64.
-// pub struct CurrencyToVoteHandler;
-// impl Convert<u64, u64> for CurrencyToVoteHandler {
-// fn convert(x: u64) -> u64 {
-// x
-// }
-// }
-// impl Convert<u128, u64> for CurrencyToVoteHandler {
-// fn convert(x: u128) -> u64 {
-// x as u64
-// }
-// }
-
-// pub struct ExistentialDeposit;
-// impl Get<u64> for ExistentialDeposit {
-// fn get() -> u64 {
-// EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-// }
-// }
 
 impl_outer_origin! {
 	pub enum Origin for Test {}
@@ -46,22 +30,37 @@ impl_outer_origin! {
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
-
+parameter_types! {
+	pub const BlockHashCount: u64 = 250;
+	pub const MaximumBlockWeight: u32 = 1024;
+	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const AvailableBlockRatio: Perbill = Perbill::one();
+}
 impl system::Trait for Test {
 	type Origin = Origin;
+	type Call = ();
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
-	type Hashing = ::primitives::traits::BlakeTwo256;
+	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = ();
+	type BlockHashCount = BlockHashCount;
+	type MaximumBlockWeight = MaximumBlockWeight;
+	type MaximumBlockLength = MaximumBlockLength;
+	type AvailableBlockRatio = AvailableBlockRatio;
+	type Version = ();
 }
 
+parameter_types! {
+	pub const MinimumPeriod: u64 = 5;
+}
 impl timestamp::Trait for Test {
 	type Moment = u64;
 	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
 }
 
 impl Trait for Test {
@@ -91,14 +90,15 @@ impl ExtBuilder {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
 	}
 
-	pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
+	pub fn build(self) -> runtime_io::TestExternalities {
 		self.set_associated_consts();
-		let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
 			1_000 * COIN
 		} else {
 			1 * COIN
 		};
+
 		let _ = GenesisConfig::<Test> {
 			balances: vec![
 				(1, 10 * balance_factor),
@@ -118,10 +118,12 @@ impl ExtBuilder {
 			],
 			vesting: vec![(1, 0, 4)],
 		}
-		.assimilate_storage(&mut t, &mut c);
+		.assimilate_storage(&mut t);
+
 		t.into()
 	}
 }
+
+pub type Timestamp = timestamp::Module<Test>;
 pub type System = system::Module<Test>;
 pub type Kton = Module<Test>;
-// pub type Timestamp = timestamp::Module<Test>;

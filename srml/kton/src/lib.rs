@@ -1,25 +1,33 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Codec, Decode, Encode};
-use rstd::prelude::*;
-use rstd::{cmp, result};
+use codec::{Codec, Decode, Encode, EncodeLike};
+#[cfg(not(feature = "std"))]
+use rstd::borrow::ToOwned;
+use rstd::{cmp, fmt::Debug, prelude::*, result};
+#[cfg(feature = "std")]
+use sr_primitives::traits::One;
 use sr_primitives::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
-		StaticLookup, Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
+		Zero,
 	},
 	RuntimeDebug,
 };
-
-use srml_support::dispatch::Result;
-use srml_support::traits::{
-	Currency, ExistenceRequirement, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, SignedImbalance,
-	UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+use srml_support::{
+	decl_event, decl_module, decl_storage,
+	dispatch::Result,
+	traits::{
+		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome, WithdrawReason,
+		WithdrawReasons,
+	},
+	Parameter, StorageMap, StorageValue,
 };
-use srml_support::{decl_event, decl_module, decl_storage, Parameter, StorageMap, StorageValue};
 use system::ensure_signed;
 
-// customed
+use darwinia_support::{
+	traits::{LockableCurrency, Locks as LocksTrait},
+	types::CompositeLock,
+};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -53,14 +61,6 @@ impl<Balance: SimpleArithmetic + Copy> VestingSchedule<Balance> {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct BalanceLock<Balance, BlockNumber> {
-	pub id: LockIdentifier,
-	pub amount: Balance,
-	pub until: BlockNumber,
-	pub reasons: WithdrawReasons,
-}
-
 pub trait Trait: timestamp::Trait {
 	type Balance: Parameter
 		+ Member
@@ -73,9 +73,17 @@ pub trait Trait: timestamp::Trait {
 
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-	// kton
 	type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
 	type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
+
+	type Locks: LocksTrait<
+			Balance = Self::Balance,
+			Lock = CompositeLock<Self::Balance, Self::Moment>,
+			Moment = Self::Moment,
+			WithdrawReasons = WithdrawReasons,
+		> + Default
+		+ EncodeLike
+		+ Decode;
 }
 
 decl_event!(
@@ -105,7 +113,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+		pub Locks get(locks): map T::AccountId => T::Locks;
 
 		pub TotalLock get(total_lock): T::Balance;
 
@@ -229,21 +237,13 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
 			&& Self::vesting_balance(who) > new_balance
 		{
-			return Err("vesting balance too high to send value");
-		}
-		let locks = Self::locks(who);
-		if locks.is_empty() {
-			return Ok(());
-		}
-
-		let now = <system::Module<T>>::block_number();
-		if locks
-			.into_iter()
-			.all(|l| now >= l.until || new_balance >= l.amount || !l.reasons.intersects(reasons))
-		{
-			Ok(())
+			Err("vesting balance too high to send value")
 		} else {
-			Err("account liquidity restrictions prevent withdrawal")
+			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
+				Ok(())
+			} else {
+				Err("account liquidity restrictions prevent withdrawal")
+			}
 		}
 	}
 
@@ -380,85 +380,37 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
-	T::Balance: MaybeSerializeDeserialize,
+	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::BlockNumber;
+	type Lock = CompositeLock<T::Balance, Self::Moment>;
+	type Moment = T::Moment;
+	type WithdrawReasons = WithdrawReasons;
 
-	// `amount` > `free_balance` is allowed
-	fn set_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: T::BlockNumber,
-		reasons: WithdrawReasons,
-	) {
-		let now = <system::Module<T>>::block_number();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take()
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
-		<Locks<T>>::insert(who, locks);
+	#[inline]
+	fn locks_count(who: &T::AccountId) -> u32 {
+		<Locks<T>>::get(who).locks_count()
 	}
 
-	fn extend_lock(
-		id: LockIdentifier,
-		who: &T::AccountId,
-		amount: T::Balance,
-		until: T::BlockNumber,
-		reasons: WithdrawReasons,
-	) {
-		let now = <system::Module<T>>::block_number();
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			until,
-			reasons,
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take().map(|nl| BalanceLock {
-						id: l.id,
-						amount: l.amount.max(nl.amount),
-						until: l.until.max(nl.until),
-						reasons: l.reasons | nl.reasons,
-					})
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock);
-		}
+	fn update_locks(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		let mut locks = Self::locks(who);
+		let expired_locks_amount = if let Some(lock) = lock {
+			locks.update_locks(lock, at)
+		} else {
+			locks.remove_expired_locks(at)
+		};
 		<Locks<T>>::insert(who, locks);
+
+		expired_locks_amount
 	}
 
-	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <system::Module<T>>::block_number();
+	fn remove_locks(who: &T::AccountId, lock: &Self::Lock) -> Self::Balance {
+		let at = <timestamp::Module<T>>::now();
+		let mut expired_locks_amount = Self::Balance::zero();
 		<Locks<T>>::mutate(who, |locks| {
-			// unexpired and mismatched id -> keep
-			locks.retain(|lock| (lock.until > now) && (lock.id != id));
+			expired_locks_amount = locks.remove_locks(lock, at);
 		});
+
+		expired_locks_amount
 	}
 }
