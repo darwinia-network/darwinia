@@ -393,12 +393,15 @@ parameter_types! {
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * COIN;
+	pub const HardCap: Balance = 10_000_000_000 * COIN;
+	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
 impl staking::Trait for Runtime {
 	type Ring = Balances;
 	type Kton = Kton;
+	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
+	type RingRewardRemainder = ();
 	type Event = Event;
 	type RingSlash = ();
 	type RingReward = ();
@@ -406,9 +409,9 @@ impl staking::Trait for Runtime {
 	type KtonReward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
-	type Cap = CAP;
+	type Cap = HardCap;
+	type GenesisTime = GenesisTime;
 	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
 	type SessionInterface = Self;
 }
 

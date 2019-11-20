@@ -37,7 +37,8 @@ pub struct CurrencyToVoteHandler;
 
 impl CurrencyToVoteHandler {
 	fn factor() -> Balance {
-		(Balances::total_issuance() / u64::max_value() as Balance).max(1)
+		//(Balances::total_issuance() / u64::max_value() as Balance).max(1)
+		1
 	}
 }
 
@@ -52,6 +53,18 @@ impl Convert<u128, Balance> for CurrencyToVoteHandler {
 		x * Self::factor()
 	}
 }
+
+//impl Convert<u128, u64> for CurrencyToVoteHandler {
+//	fn convert(x: u128) -> u64 {
+//		x as u64
+//	}
+//}
+//
+//impl Convert<u128, u128> for CurrencyToVoteHandler {
+//	fn convert(x: u128) -> u128 {
+//		x
+//	}
+//}
 
 /// Convert from weight to balance via a simple coefficient multiplication
 /// The associated type C encapsulates a constant in units of balance per weight

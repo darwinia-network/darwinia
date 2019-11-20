@@ -13,21 +13,32 @@ use srml_support::{
 };
 use substrate_primitives::{crypto::key_types, H256};
 
-use crate::{
-	phragmen::ExtendedBalance, EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus,
-	StakingBalance, Trait,
-};
+use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
 use darwinia_support::types::TimeStamp;
+use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
 pub type BlockNumber = u64;
 pub type Balance = u64;
 
+/// Module alias
+pub type System = system::Module<Test>;
+pub type Ring = balances::Module<Test>;
+pub type Kton = kton::Module<Test>;
+pub type Session = session::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
+pub type Staking = Module<Test>;
+
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
 impl Convert<u64, u64> for CurrencyToVoteHandler {
 	fn convert(x: u64) -> u64 {
+		x
+	}
+}
+impl Convert<u128, u128> for CurrencyToVoteHandler {
+	fn convert(x: u128) -> u128 {
 		x
 	}
 }
@@ -174,7 +185,9 @@ parameter_types! {
 impl Trait for Test {
 	type Ring = Ring;
 	type Kton = Kton;
+	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
+	type RingRewardRemainder = ();
 	type Event = ();
 	type RingSlash = ();
 	type RingReward = ();
@@ -183,8 +196,8 @@ impl Trait for Test {
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type Cap = CAP;
+	type GenesisTime = ();
 	type ErasPerEpoch = ErasPerEpoch;
-	type SessionLength = Period;
 	type SessionInterface = Self;
 }
 
@@ -302,7 +315,7 @@ impl ExtBuilder {
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			current_era: self.current_era,
-			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
+			//			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
 			stakers: vec![
 				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
 				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
@@ -320,9 +333,11 @@ impl ExtBuilder {
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			session_reward: Perbill::from_rational_approximation(1_000_000 * self.reward / balance_factor, 1_000_000),
-			offline_slash: Perbill::from_percent(5),
-			offline_slash_grace: 0,
+			//			offline_slash: Perbill::from_percent(5),
+			//			offline_slash_grace: 0,
 			invulnerables: vec![],
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
 		}
 		.assimilate_storage(&mut storage);
 
@@ -334,12 +349,6 @@ impl ExtBuilder {
 		ext
 	}
 }
-pub type System = system::Module<Test>;
-pub type Ring = balances::Module<Test>;
-pub type Kton = kton::Module<Test>;
-pub type Session = session::Module<Test>;
-pub type Timestamp = timestamp::Module<Test>;
-pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
 	Staking::current_elected()

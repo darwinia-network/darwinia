@@ -1,7 +1,7 @@
 [package]
 name = "darwinia-staking"
-version = "0.1.0"
-authors = ["hammeWang <dsw0602@foxmail.com>"]
+version = "0.2.0"
+authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
@@ -10,6 +10,7 @@ safe-mix = { version = "1.0.0", default-features = false }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 substrate-keyring = { git = 'https://github.com/darwinia-network/substrate.git', optional = true }
 rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+phragmen = { package = "substrate-phragmen", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 runtime_io = { package = "sr-io", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 sr-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 srml-support = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
@@ -20,7 +21,6 @@ substrate-primitives = { git = 'https://github.com/darwinia-network/substrate.gi
 sr-arithmetic = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 sr-staking-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 authorship = { package = "srml-authorship", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-#phragmen = { package = "substrate-phragmen", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
 
@@ -43,6 +43,7 @@ std = [
 	"substrate-keyring",
 	"codec/std",
 	"rstd/std",
+	"phragmen/std",
 	"runtime_io/std",
 	"srml-support/std",
 	"sr-primitives/std",
