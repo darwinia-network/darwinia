@@ -16,7 +16,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Codec, Decode, Encode};
+use codec::{Codec, Decode, Encode, EncodeLike};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
@@ -45,7 +45,7 @@ mod tests;
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
 	traits::{LockableCurrency, Locks as LocksTrait},
-	types::{CompositeLock, Locks as LocksStruct},
+	types::CompositeLock,
 };
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -77,6 +77,15 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Tr
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
+
+	type Locks: LocksTrait<
+			Balance = Self::Balance,
+			Lock = CompositeLock<Self::Balance, Self::Moment>,
+			Moment = Self::Moment,
+			WithdrawReasons = WithdrawReasons,
+		> + Default
+		+ EncodeLike
+		+ Decode;
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -118,6 +127,15 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
+
+	type Locks: LocksTrait<
+			Balance = Self::Balance,
+			Lock = CompositeLock<Self::Balance, Self::Moment>,
+			Moment = Self::Moment,
+			WithdrawReasons = WithdrawReasons,
+		> + Default
+		+ EncodeLike
+		+ Decode;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
@@ -127,6 +145,7 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
+	type Locks = T::Locks;
 }
 
 decl_event!(
@@ -235,7 +254,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(locks): map T::AccountId => LocksStruct<T::Balance, T::Moment>;
+		pub Locks get(locks): map T::AccountId => T::Locks;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -668,6 +687,7 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
+	type Locks = T::Locks;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>

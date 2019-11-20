@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Codec, Decode, Encode};
+use codec::{Codec, Decode, Encode, EncodeLike};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, prelude::*, result};
@@ -26,7 +26,7 @@ use system::ensure_signed;
 
 use darwinia_support::{
 	traits::{LockableCurrency, Locks as LocksTrait},
-	types::{CompositeLock, Locks as LocksStruct},
+	types::CompositeLock,
 };
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
@@ -73,9 +73,17 @@ pub trait Trait: timestamp::Trait {
 
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-	// kton
 	type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
 	type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
+
+	type Locks: LocksTrait<
+			Balance = Self::Balance,
+			Lock = CompositeLock<Self::Balance, Self::Moment>,
+			Moment = Self::Moment,
+			WithdrawReasons = WithdrawReasons,
+		> + Default
+		+ EncodeLike
+		+ Decode;
 }
 
 decl_event!(
@@ -105,7 +113,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => LocksStruct<T::Balance, T::Moment>;
+		pub Locks get(locks): map T::AccountId => T::Locks;
 
 		pub TotalLock get(total_lock): T::Balance;
 

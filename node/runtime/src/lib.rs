@@ -60,7 +60,7 @@ use substrate_primitives::OpaqueMetadata;
 use system::offchain::TransactionSubmitter;
 use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 
-use darwinia_support::types::TimeStamp;
+use darwinia_support::types::{Locks, TimeStamp};
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
@@ -182,6 +182,7 @@ impl balances::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
+	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
@@ -382,6 +383,7 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
+	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
