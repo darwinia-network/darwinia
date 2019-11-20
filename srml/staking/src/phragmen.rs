@@ -31,8 +31,6 @@
 //! Further details:
 //! https://research.web3.foundation/en/latest/polkadot/NPoS/4.%20Sequential%20Phragm%C3%A9n%E2%80%99s%20method/
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
 use rstd::{collections::btree_map::BTreeMap, prelude::*};
 use sr_primitives::traits::{Bounded, Member, Saturating, Zero};
 use sr_primitives::{helpers_128bit::multiply_by_rational, Perbill, Rational128};
