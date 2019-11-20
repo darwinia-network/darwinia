@@ -39,7 +39,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	/// - Remove the expired locks on account `who`.
 	/// - Update the global staking amount.
 	/// - The function will return the sum of expired locks' amount.
-	fn update_lock(who: &AccountId, lock: Option<Self::Lock>) -> Self::Balance;
+	fn update_locks(who: &AccountId, lock: Option<Self::Lock>) -> Self::Balance;
 
 	// TODO: reserve
 	// fn extend_lock();
@@ -66,7 +66,7 @@ pub trait Locks {
 	/// - Remove the expired locks on account `who`.
 	/// - Update the global staking amount.
 	/// - The function will return the sum of expired locks' amount.
-	fn update_lock(&mut self, lock: Self::Lock, at: Self::Moment) -> Self::Balance;
+	fn update_locks(&mut self, lock: Self::Lock, at: Self::Moment) -> Self::Balance;
 
 	/// Remove expired locks
 	fn remove_expired_locks(&mut self, at: Self::Moment) -> Self::Balance;

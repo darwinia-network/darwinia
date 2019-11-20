@@ -25,7 +25,7 @@ where
 		self.0.len() as _
 	}
 
-	fn update_lock(&mut self, lock: Self::Lock, at: Self::Moment) -> Self::Balance {
+	fn update_locks(&mut self, lock: Self::Lock, at: Self::Moment) -> Self::Balance {
 		let expired_locks_amount = self.remove_expired_locks(at);
 		if let Some(i) = self.0.iter().position(|lock_| lock_ == &lock) {
 			self.0[i] = lock;
@@ -80,72 +80,6 @@ where
 		new_balance >= locked_amount
 	}
 }
-
-//impl<Balance, Moment> BalanceLocks<Balance, Moment>
-//where
-//	Balance: Clone + Copy + Default + SimpleArithmetic,
-//	Moment: Clone + Copy + PartialOrd,
-//{
-//	#[inline]
-//	pub fn len(&self) -> u32 {
-//		self.0.len() as _
-//	}
-//
-//	pub fn update_lock(&mut self, lock: Lock<Balance, Moment>, at: Moment) -> Balance {
-//		let expired_locks_amount = self.remove_expired_locks(at);
-//		if let Some(i) = self.0.iter().position(|lock_| lock_ == &lock) {
-//			self.0[i] = lock;
-//		} else {
-//			self.0.push(lock);
-//		}
-//
-//		expired_locks_amount
-//	}
-//
-//	pub fn remove_expired_locks(&mut self, at: Moment) -> Balance {
-//		let mut expired_locks_amount = Balance::default();
-//		self.0.retain(|lock| {
-//			if lock.valid_at(at) {
-//				true
-//			} else {
-//				expired_locks_amount += lock.amount();
-//				false
-//			}
-//		});
-//
-//		expired_locks_amount
-//	}
-//
-//	pub fn remove_locks(&mut self, lock: &Lock<Balance, Moment>, at: Moment) -> Balance {
-//		let mut expired_locks_amount = Balance::zero();
-//		self.0.retain(|lock_| {
-//			if lock_.valid_at(at) && lock_ != lock {
-//				true
-//			} else {
-//				expired_locks_amount += lock_.amount();
-//				false
-//			}
-//		});
-//
-//		expired_locks_amount
-//	}
-//
-//	pub fn ensure_can_withdraw(&self, at: Moment, reasons: WithdrawReasons, new_balance: Balance) -> bool {
-//		if self.0.is_empty() {
-//			return true;
-//		}
-//
-//		let mut locked_amount = Balance::default();
-//		for lock in self.0.iter() {
-//			if lock.valid_at(at) && lock.check_reasons_intersects(reasons) {
-//				// TODO: check overflow?
-//				locked_amount += lock.amount();
-//			}
-//		}
-//
-//		new_balance >= locked_amount
-//	}
-//}
 
 #[derive(Clone, Encode, Decode, RuntimeDebug)]
 pub enum CompositeLock<Balance, Moment> {

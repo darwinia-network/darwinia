@@ -1004,11 +1004,11 @@ where
 		<Locks<T, I>>::get(who).locks_count()
 	}
 
-	fn update_lock(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
+	fn update_locks(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
 		let at = <timestamp::Module<T>>::now();
 		let mut locks = Self::locks(who);
 		let expired_locks_amount = if let Some(lock) = lock {
-			locks.update_lock(lock, at)
+			locks.update_locks(lock, at)
 		} else {
 			locks.remove_expired_locks(at)
 		};

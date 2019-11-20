@@ -519,7 +519,7 @@ decl_module! {
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
-					let expired_locks_ring = T::Ring::update_lock(&stash, None);
+					let expired_locks_ring = T::Ring::update_locks(&stash, None);
 					// TODO: check underflow?
 					ledger.total_ring -= expired_locks_ring;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
@@ -530,7 +530,7 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					let expired_locks_kton = T::Kton::update_lock(&stash, None);
+					let expired_locks_kton = T::Kton::update_locks(&stash, None);
 					ledger.total_kton -= expired_locks_kton;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
 						let extra = extra.min(k);
@@ -578,7 +578,7 @@ decl_module! {
 
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
-						let expired_locks_ring = T::Ring::update_lock(
+						let expired_locks_ring = T::Ring::update_locks(
 							stash,
 							Some(CompositeLock::Unbonding(Lock {
 								amount: available_unbond_ring,
@@ -599,7 +599,7 @@ decl_module! {
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
 						*active_kton -= unbond_kton;
-						let expired_locks_kton = T::Kton::update_lock(
+						let expired_locks_kton = T::Kton::update_locks(
 							stash,
 							Some(CompositeLock::Unbonding(Lock {
 								amount: unbond_kton,
@@ -879,13 +879,13 @@ impl<T: Trait> Module<T> {
 		match staking_balance {
 			StakingBalance::Ring(_r) => {
 				let expired_locks_ring =
-					T::Ring::update_lock(&ledger.stash, Some(CompositeLock::Staking(ledger.active_ring)));
+					T::Ring::update_locks(&ledger.stash, Some(CompositeLock::Staking(ledger.active_ring)));
 				// TODO: check underflow?
 				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
 				let expired_locks_kton =
-					T::Kton::update_lock(&ledger.stash, Some(CompositeLock::Staking(ledger.active_kton)));
+					T::Kton::update_locks(&ledger.stash, Some(CompositeLock::Staking(ledger.active_kton)));
 				// TODO: check underflow?
 				ledger.total_kton -= expired_locks_kton;
 			}
