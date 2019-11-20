@@ -42,10 +42,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use darwinia_support::{
-	traits::LockableCurrency,
-	types::{CompositeLock, Lock, TimeStamp},
-};
+use darwinia_support::{CompositeLock, Lock, LockableCurrency, TimeStamp};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 #[allow(unused)]

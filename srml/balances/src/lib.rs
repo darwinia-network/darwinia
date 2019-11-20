@@ -43,10 +43,7 @@ mod mock;
 mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
-use darwinia_support::{
-	traits::{LockableCurrency, Locks as LocksTrait},
-	types::CompositeLock,
-};
+use darwinia_support::{DetailLock, LockIdentifier, LockableCurrency};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
@@ -78,14 +75,14 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Tr
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
 
-	type Locks: LocksTrait<
-			Balance = Self::Balance,
-			Lock = CompositeLock<Self::Balance, Self::Moment>,
-			Moment = Self::Moment,
-			WithdrawReasons = WithdrawReasons,
-		> + Default
-		+ EncodeLike
-		+ Decode;
+	//	type Locks: LocksTrait<
+	//			Balance = Self::Balance,
+	//			Lock = CompositeLock<Self::Balance, Self::Moment>,
+	//			Moment = Self::Moment,
+	//			WithdrawReasons = WithdrawReasons,
+	//		> + Default
+	//		+ EncodeLike
+	//		+ Decode;
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -128,14 +125,14 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
 
-	type Locks: LocksTrait<
-			Balance = Self::Balance,
-			Lock = CompositeLock<Self::Balance, Self::Moment>,
-			Moment = Self::Moment,
-			WithdrawReasons = WithdrawReasons,
-		> + Default
-		+ EncodeLike
-		+ Decode;
+	//	type Locks: LocksTrait<
+	//			Balance = Self::Balance,
+	//			Lock = CompositeLock<Self::Balance, Self::Moment>,
+	//			Moment = Self::Moment,
+	//			WithdrawReasons = WithdrawReasons,
+	//		> + Default
+	//		+ EncodeLike
+	//		+ Decode;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
@@ -145,7 +142,7 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-	type Locks = T::Locks;
+	//	type Locks = T::Locks;
 }
 
 decl_event!(
@@ -189,6 +186,13 @@ impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> Ves
 			Zero::zero()
 		}
 	}
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+pub struct WithdrawLock<Balance, Moment> {
+	pub id: LockIdentifier,
+	pub detail_lock: DetailLock<Balance, Moment>,
+	pub reasons: WithdrawReasons,
 }
 
 decl_storage! {
@@ -254,7 +258,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(locks): map T::AccountId => T::Locks;
+		pub Locks get(fn locks): map T::AccountId => Vec<WithdrawLock<T::Balance, T::Moment>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -687,7 +691,7 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-	type Locks = T::Locks;
+	//	type Locks = T::Locks;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
@@ -751,14 +755,34 @@ where
 		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
 			&& Self::vesting_balance(who) > new_balance
 		{
-			Err("vesting balance too high to send value")
-		} else {
-			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
-				Ok(())
-			} else {
-				Err("account liquidity restrictions prevent withdrawal")
-			}
+			return Err("vesting balance too high to send value");
 		}
+		let locks = Self::locks(who);
+		if locks.is_empty() {
+			return Ok(());
+		}
+
+		let now = <system::Module<T>>::block_number();
+		if locks
+			.into_iter()
+			.all(|l| l.valid_at(now, new_balance) || !l.reasons.intersects(reasons))
+		{
+			Ok(())
+		} else {
+			Err("account liquidity restrictions prevent withdrawal")
+		}
+
+		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
+		//			&& Self::vesting_balance(who) > new_balance
+		//		{
+		//			Err("vesting balance too high to send value")
+		//		} else {
+		//			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
+		//				Ok(())
+		//			} else {
+		//				Err("account liquidity restrictions prevent withdrawal")
+		//			}
+		//		}
 	}
 
 	fn transfer(
@@ -995,36 +1019,73 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Lock = CompositeLock<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
-	type WithdrawReasons = WithdrawReasons;
 
-	#[inline]
-	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T, I>>::get(who).locks_count()
-	}
-
-	fn update_locks(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
-		let at = <timestamp::Module<T>>::now();
-		let mut locks = Self::locks(who);
-		let expired_locks_amount = if let Some(lock) = lock {
-			locks.update_locks(lock, at)
-		} else {
-			locks.remove_expired_locks(at)
-		};
+	fn set_lock(
+		id: LockIdentifier,
+		who: &T::AccountId,
+		lock: DetailLock<Self::Balance, Self::Moment>,
+		reasons: WithdrawReasons,
+	) {
+		let now = <system::Module<T>>::block_number();
+		let mut new_lock = Some(WithdrawLock { id, lock, reasons });
+		let mut locks = Self::locks(who)
+			.into_iter()
+			.filter_map(|l| {
+				if l.id == id {
+					new_lock.take()
+				} else if l.until > now {
+					Some(l)
+				} else {
+					None
+				}
+			})
+			.collect::<Vec<_>>();
+		if let Some(lock) = new_lock {
+			locks.push(lock)
+		}
 		<Locks<T, I>>::insert(who, locks);
-
-		expired_locks_amount
 	}
 
-	fn remove_locks(who: &T::AccountId, lock: &Self::Lock) -> Self::Balance {
-		let at = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::zero();
-		<Locks<T, I>>::mutate(who, |locks| {
-			expired_locks_amount = locks.remove_locks(lock, at);
-		});
+	//	fn extend_lock(
+	//		id: LockIdentifier,
+	//		who: &T::AccountId,
+	//		lock: DetailLock<Self::Balance, Self::Moment>,
+	//		reasons: WithdrawReasons,
+	//	) {
+	//		let now = <system::Module<T>>::block_number();
+	//		let mut new_lock = Some(WithdrawLock { id, lock, reasons });
+	//		let mut locks = Self::locks(who)
+	//			.into_iter()
+	//			.filter_map(|l| {
+	//				if l.id == id {
+	//					new_lock.take().map(|nl| WithdrawLock {
+	//						id: l.id,
+	//						lock. nl.extend
+	//						amount: l.amount.max(nl.amount),
+	//						until: l.until.max(nl.until),
+	//						reasons: l.reasons | nl.reasons,
+	//					})
+	//				} else if l.until > now {
+	//					Some(l)
+	//				} else {
+	//					None
+	//				}
+	//			})
+	//			.collect::<Vec<_>>();
+	//		if let Some(lock) = new_lock {
+	//			locks.push(lock)
+	//		}
+	//		<Locks<T, I>>::insert(who, locks);
+	//	}
 
-		expired_locks_amount
+	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
+		let now = <system::Module<T>>::block_number();
+		let locks = Self::locks(who)
+			.into_iter()
+			.filter_map(|l| if l.until > now && l.id != id { Some(l) } else { None })
+			.collect::<Vec<_>>();
+		<Locks<T, I>>::insert(who, locks);
 	}
 }
 
