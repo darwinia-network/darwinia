@@ -239,7 +239,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		{
 			Err("vesting balance too high to send value")
 		} else {
-			if Self::locks(who).ensure_can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
+			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
 				Ok(())
 			} else {
 				Err("account liquidity restrictions prevent withdrawal")

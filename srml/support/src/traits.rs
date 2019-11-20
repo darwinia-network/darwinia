@@ -74,6 +74,5 @@ pub trait Locks {
 	/// Remove specify locks and expired locks
 	fn remove_locks(&mut self, lock: &Self::Lock, at: Self::Moment) -> Self::Balance;
 
-	fn ensure_can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance)
-		-> bool;
+	fn can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool;
 }

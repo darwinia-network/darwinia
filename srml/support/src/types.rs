@@ -64,12 +64,7 @@ where
 		expired_locks_amount
 	}
 
-	fn ensure_can_withdraw(
-		&self,
-		at: Self::Moment,
-		reasons: Self::WithdrawReasons,
-		new_balance: Self::Balance,
-	) -> bool {
+	fn can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {
 		if self.0.is_empty() {
 			return true;
 		}
