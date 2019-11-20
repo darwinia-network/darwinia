@@ -63,7 +63,6 @@ const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
 const MAX_UNLOCKING_CHUNKS: u32 = 32;
 const MONTH_IN_SECONDS: u32 = 2_592_000;
-const ERA_IN_SECONDS: TimeStamp = 300;
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
@@ -1142,7 +1141,10 @@ impl<T: Trait> Module<T> {
 		CurrentEraStartSessionIndex::mutate(|v| {
 			*v = start_session_index;
 		});
-		let bonding_duration = (T::BondingDuration::get() / ERA_IN_SECONDS) as _;
+		let bonding_duration = {
+			const BONDING_DURATION_ERA_TO_SECS_RATIO: TimeStamp = 300;
+			(T::BondingDuration::get() / BONDING_DURATION_ERA_TO_SECS_RATIO) as _
+		};
 
 		if current_era > bonding_duration {
 			let first_kept = current_era - bonding_duration;
