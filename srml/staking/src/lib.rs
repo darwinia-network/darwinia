@@ -42,8 +42,11 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use darwinia_support::{CompositeLock, Lock, LockableCurrency, TimeStamp};
+use darwinia_support::DetailLock::StakingAndUnbondingDetailLock;
+use darwinia_support::{LockIdentifier, LockableCurrency, StakingAndUnbondingLock, TimeStamp, UnlockChunk};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
+
+use core::convert::TryInto;
 
 #[allow(unused)]
 #[cfg(any(feature = "bench", test))]
@@ -60,6 +63,8 @@ const MAX_NOMINATIONS: usize = 16;
 const MAX_UNSTAKE_THRESHOLD: u32 = 10;
 const MAX_UNLOCKING_CHUNKS: u32 = 32;
 const MONTH_IN_SECONDS: u32 = 2_592_000;
+
+const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
@@ -191,6 +196,10 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	// you can get KTON as bonus
 	// which can also be used for staking
 	pub deposit_items: Vec<TimeDepositItem<Ring, Moment>>,
+
+	pub ring_detail_lock: StakingAndUnbondingLock<Ring, TimeStamp>,
+
+	pub kton_detail_lock: StakingAndUnbondingLock<Kton, TimeStamp>,
 }
 
 /// The amount of exposure (to slashing) than an individual nominator has.
@@ -272,18 +281,8 @@ where
 }
 
 pub trait Trait: timestamp::Trait + session::Trait {
-	type Ring: LockableCurrency<
-		Self::AccountId,
-		Lock = CompositeLock<RingBalanceOf<Self>, TimeStamp>,
-		Moment = TimeStamp,
-		WithdrawReasons = WithdrawReasons,
-	>;
-	type Kton: LockableCurrency<
-		Self::AccountId,
-		Lock = CompositeLock<KtonBalanceOf<Self>, TimeStamp>,
-		Moment = TimeStamp,
-		WithdrawReasons = WithdrawReasons,
-	>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
+	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
 
 	/// Time used for computing era duration.
 	type Time: Time;
@@ -516,9 +515,6 @@ decl_module! {
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
-					let expired_locks_ring = T::Ring::update_locks(&stash, None);
-					// TODO: check underflow?
-					ledger.total_ring -= expired_locks_ring;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
 						let extra = extra.min(r);
 						<RingPool<T>>::mutate(|r| *r += extra);
@@ -527,8 +523,6 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					let expired_locks_kton = T::Kton::update_locks(&stash, None);
-					ledger.total_kton -= expired_locks_kton;
 					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
 						let extra = extra.min(k);
 						<KtonPool<T>>::mutate(|k| *k += extra);
@@ -554,11 +548,13 @@ decl_module! {
 				active_deposit_ring,
 				total_kton,
 				active_kton,
+				ring_detail_lock,
+				kton_detail_lock,
 				..
 			} = &mut ledger;
 
 			ensure!(
-				T::Ring::locks_count(stash) + T::Kton::locks_count(stash) < MAX_UNLOCKING_CHUNKS,
+				ring_detail_lock.unlocking.len() + kton_detail_lock.unlocking.len() < MAX_UNLOCKING_CHUNKS.try_into().unwrap(),
 				"can not schedule more unlock chunks"
 			);
 
@@ -575,16 +571,11 @@ decl_module! {
 
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
-						let expired_locks_ring = T::Ring::update_locks(
-							stash,
-							Some(CompositeLock::Unbonding(Lock {
-								amount: available_unbond_ring,
-								at,
-								reasons: WithdrawReasons::all()
-							})),
-						);
+
+						(*ring_detail_lock).unlocking.push(UnlockChunk { value: available_unbond_ring, until: at });
+
 						// TODO: check underflow?
-						*total_ring -= expired_locks_ring;
+						*total_ring -= available_unbond_ring;
 
 						Self::update_ledger(&controller, &mut ledger, value);
 					}
@@ -596,16 +587,9 @@ decl_module! {
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
 						*active_kton -= unbond_kton;
-						let expired_locks_kton = T::Kton::update_locks(
-							stash,
-							Some(CompositeLock::Unbonding(Lock {
-								amount: unbond_kton,
-								at,
-								reasons: WithdrawReasons::all(),
-							})),
-						);
+						(*kton_detail_lock).unlocking.push(UnlockChunk { value: unbond_kton, until: at });
 						// TODO: check underflow?
-						*total_kton -= expired_locks_kton;
+						*total_kton -= unbond_kton;
 
 						Self::update_ledger(&controller, &mut ledger, value);
 					}
@@ -875,16 +859,28 @@ impl<T: Trait> Module<T> {
 	) {
 		match staking_balance {
 			StakingBalance::Ring(_r) => {
-				let expired_locks_ring =
-					T::Ring::update_locks(&ledger.stash, Some(CompositeLock::Staking(ledger.active_ring)));
+				ledger.ring_detail_lock.staking_amount = ledger.active_ring;
+
+				T::Ring::set_lock(
+					STAKING_ID,
+					&ledger.stash,
+					StakingAndUnbondingDetailLock(ledger.ring_detail_lock.clone()),
+					WithdrawReasons::all(),
+				);
 				// TODO: check underflow?
-				ledger.total_ring -= expired_locks_ring;
+				//				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
-				let expired_locks_kton =
-					T::Kton::update_locks(&ledger.stash, Some(CompositeLock::Staking(ledger.active_kton)));
+				ledger.kton_detail_lock.staking_amount = ledger.active_kton;
+
+				T::Kton::set_lock(
+					STAKING_ID,
+					&ledger.stash,
+					StakingAndUnbondingDetailLock(ledger.kton_detail_lock.clone()),
+					WithdrawReasons::all(),
+				);
 				// TODO: check underflow?
-				ledger.total_kton -= expired_locks_kton;
+				//				ledger.total_kton -= expired_locks_kton;
 			}
 		}
 

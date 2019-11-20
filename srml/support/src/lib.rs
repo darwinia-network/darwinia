@@ -4,7 +4,10 @@
 
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
-use sr_primitives::{traits::SimpleArithmetic, RuntimeDebug};
+use sr_primitives::{
+	traits::{SaturatedConversion, SimpleArithmetic},
+	RuntimeDebug,
+};
 use srml_support::traits::Currency;
 use srml_support::traits::WithdrawReasons;
 
@@ -30,37 +33,39 @@ pub type TimeStamp = u64;
 
 #[derive(Clone, Encode, Decode, RuntimeDebug)]
 pub enum DetailLock<Balance, Moment> {
-	BalanceLock(BalanceLock<Balance, Moment>),
-	StakingAndUnbondingLock(StakingAndUnbondingLock<Balance, Moment>),
+	BalanceDetailLock(BalanceLock<Balance, Moment>),
+	StakingAndUnbondingDetailLock(StakingAndUnbondingLock<Balance, TimeStamp>),
 }
 
 impl<Balance, Moment> DetailLock<Balance, Moment>
 where
 	Balance: Clone + Copy + Default + SimpleArithmetic,
-	Moment: Clone + Copy + PartialOrd,
+	Moment: Clone + Copy + PartialOrd + SaturatedConversion + rstd::convert::TryInto<u64>,
 {
-	fn valid_at(&self, at: Moment, new_balance: Balance) -> bool {
+	pub fn valid_at(&self, at: Moment, new_balance: Balance) -> bool {
 		match self {
-			DetailLock::BalanceLock(lock) => lock.valid_at(at, new_balance),
-			DetailLock::StakingAndUnbondingLock(lock) => lock.valid_at(at, new_balance),
+			DetailLock::BalanceDetailLock(lock) => lock.valid_at(at, new_balance),
+			DetailLock::StakingAndUnbondingDetailLock(lock) => {
+				lock.valid_at(at.saturated_into::<TimeStamp>(), new_balance)
+			}
 		}
 	}
 }
 
-//impl<Balance, Moment> PartialEq for DetailLock<Balance, Moment>
-//where
-//	Balance: PartialEq,
-//	Moment: PartialEq,
-//{
-//	#[inline]
-//	fn eq(&self, other: &Self) -> bool {
-//		match (self, other) {
-//			(DetailLock::BalanceLock(_), CompositeLock::Staking(_)) => true,
-//			(DetailLock::StakingAndUnbondingLock(a), CompositeLock::Unbonding(b)) => a == b,
-//			_ => false,
-//		}
-//	}
-//}
+impl<Balance, Moment> PartialEq for DetailLock<Balance, Moment>
+where
+	Balance: PartialEq,
+	Moment: PartialEq,
+{
+	#[inline]
+	fn eq(&self, other: &Self) -> bool {
+		match (self, other) {
+			(DetailLock::BalanceDetailLock(a), DetailLock::BalanceDetailLock(b)) => a == b,
+			(DetailLock::StakingAndUnbondingDetailLock(a), DetailLock::StakingAndUnbondingDetailLock(b)) => a == b,
+			_ => false,
+		}
+	}
+}
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub struct BalanceLock<Balance, Moment> {
@@ -201,7 +206,7 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	fn set_lock(
 		id: LockIdentifier,
 		who: &AccountId,
-		lock: DetailLock<Self::Balance, Self::Moment>,
+		detail_lock: DetailLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	);
 

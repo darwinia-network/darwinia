@@ -16,7 +16,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Codec, Decode, Encode, EncodeLike};
+use codec::{Codec, Decode, Encode};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
@@ -762,10 +762,10 @@ where
 			return Ok(());
 		}
 
-		let now = <system::Module<T>>::block_number();
+		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
-			.all(|l| l.valid_at(now, new_balance) || !l.reasons.intersects(reasons))
+			.all(|l| l.detail_lock.valid_at(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
@@ -1024,22 +1024,18 @@ where
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
-		lock: DetailLock<Self::Balance, Self::Moment>,
+		detail_lock: DetailLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
 		let now = <system::Module<T>>::block_number();
-		let mut new_lock = Some(WithdrawLock { id, lock, reasons });
+		let mut new_lock = Some(WithdrawLock {
+			id,
+			detail_lock,
+			reasons,
+		});
 		let mut locks = Self::locks(who)
 			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take()
-				} else if l.until > now {
-					Some(l)
-				} else {
-					None
-				}
-			})
+			.filter_map(|l| if l.id == id { new_lock.take() } else { Some(l) })
 			.collect::<Vec<_>>();
 		if let Some(lock) = new_lock {
 			locks.push(lock)
@@ -1083,7 +1079,7 @@ where
 		let now = <system::Module<T>>::block_number();
 		let locks = Self::locks(who)
 			.into_iter()
-			.filter_map(|l| if l.until > now && l.id != id { Some(l) } else { None })
+			.filter_map(|l| if l.id != id { Some(l) } else { None })
 			.collect::<Vec<_>>();
 		<Locks<T, I>>::insert(who, locks);
 	}
