@@ -31,7 +31,7 @@ pub type TimeStamp = u64;
 //	//	fn can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {}
 //}
 
-#[derive(Clone, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub enum DetailLock<Balance, Moment> {
 	BalanceDetailLock(BalanceLock<Balance, Moment>),
 	StakingAndUnbondingDetailLock(StakingAndUnbondingLock<Balance, TimeStamp>),
@@ -52,20 +52,20 @@ where
 	}
 }
 
-impl<Balance, Moment> PartialEq for DetailLock<Balance, Moment>
-where
-	Balance: PartialEq,
-	Moment: PartialEq,
-{
-	#[inline]
-	fn eq(&self, other: &Self) -> bool {
-		match (self, other) {
-			(DetailLock::BalanceDetailLock(a), DetailLock::BalanceDetailLock(b)) => a == b,
-			(DetailLock::StakingAndUnbondingDetailLock(a), DetailLock::StakingAndUnbondingDetailLock(b)) => a == b,
-			_ => false,
-		}
-	}
-}
+//impl<Balance, Moment> PartialEq for DetailLock<Balance, Moment>
+//where
+//	Balance: PartialEq,
+//	Moment: PartialEq,
+//{
+//	#[inline]
+//	fn eq(&self, other: &Self) -> bool {
+//		match (self, other) {
+//			(DetailLock::BalanceDetailLock(a), DetailLock::BalanceDetailLock(b)) => a == b,
+//			(DetailLock::StakingAndUnbondingDetailLock(a), DetailLock::StakingAndUnbondingDetailLock(b)) => a == b,
+//			_ => false,
+//		}
+//	}
+//}
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub struct BalanceLock<Balance, Moment> {
@@ -87,12 +87,12 @@ where
 pub struct UnlockChunk<Balance, Moment> {
 	/// Amount of funds to be unlocked.
 	// TODO: Compact?
-	value: Balance,
+	pub value: Balance,
 	/// Era number at which point it'll be unlocked.
-	until: Moment,
+	pub until: Moment,
 }
 
-#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub struct StakingAndUnbondingLock<Balance, Moment> {
 	pub staking_amount: Balance,
 	// now >= l.until || new_balance >= l.amount
@@ -100,6 +100,28 @@ pub struct StakingAndUnbondingLock<Balance, Moment> {
 	/// of the stash (assuming it doesn't get slashed first).
 	pub unlocking: Vec<UnlockChunk<Balance, Moment>>,
 }
+
+impl<Balance: Default, Moment: Default> Default for StakingAndUnbondingLock<Balance, Moment> {
+	fn default() -> Self {
+		StakingAndUnbondingLock {
+			staking_amount: Default::default(),
+			unlocking: Default::default(),
+		}
+	}
+}
+
+//impl<Balance, Moment> PartialEq for StakingAndUnbondingLock<Balance, Moment>
+////where
+////	Balance: PartialEq,
+////	Moment: PartialEq,
+//{
+//	#[inline]
+//	fn eq(&self, other: &Self) -> bool {
+//		self.staking_amount == other.staking_amount
+//			&& self.unlocking.len() == other.unlocking.len()
+//			&& self.unlocking.iter().zip(other.unlocking.iter()).all(|x, y| x == y)
+//	}
+//}
 
 impl<Balance, Moment> StakingAndUnbondingLock<Balance, Moment>
 where

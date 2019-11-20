@@ -485,7 +485,7 @@ decl_module! {
 			<Bonded<T>>::insert(&stash, &controller);
 			<Payee<T>>::insert(&stash, payee);
 
-			let ledger = StakingLedger {stash: stash.clone(), ..Default::default()};
+			let mut ledger = StakingLedger {stash: stash.clone(), ..Default::default()};
 			match value {
 				StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
@@ -511,7 +511,7 @@ decl_module! {
 			let stash = ensure_signed(origin)?;
 			ensure!(promise_month <= 36, "months at most is 36.");
 			let controller = Self::bonded(&stash).ok_or("not a stash")?;
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
