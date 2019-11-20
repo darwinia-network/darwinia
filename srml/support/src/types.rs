@@ -190,6 +190,7 @@ where
 
 impl<Balance, Moment> PartialEq for CompositeLock<Balance, Moment>
 where
+	Balance: PartialEq,
 	Moment: PartialEq,
 {
 	#[inline]
