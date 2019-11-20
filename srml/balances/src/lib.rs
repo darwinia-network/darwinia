@@ -44,8 +44,8 @@ mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
-	traits::LockableCurrency,
-	types::{BalanceLocks, Lock},
+	traits::{LockableCurrency, Locks as LocksTrait},
+	types::{CompositeLock, Locks as LocksStruct},
 };
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -235,7 +235,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(locks): map T::AccountId => BalanceLocks<T::Balance, T::Moment>;
+		pub Locks get(locks): map T::AccountId => LocksStruct<T::Balance, T::Moment>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -733,7 +733,7 @@ where
 		{
 			Err("vesting balance too high to send value")
 		} else {
-			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
+			if Self::locks(who).ensure_can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
 				Ok(())
 			} else {
 				Err("account liquidity restrictions prevent withdrawal")
@@ -975,9 +975,14 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Lock = Lock<T::Balance, Self::Moment>;
+	type Lock = CompositeLock<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
 	type WithdrawReasons = WithdrawReasons;
+
+	#[inline]
+	fn locks_count(who: &T::AccountId) -> u32 {
+		<Locks<T, I>>::get(who).locks_count()
+	}
 
 	fn update_lock(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
 		let at = <timestamp::Module<T>>::now();
@@ -996,14 +1001,10 @@ where
 		let at = <timestamp::Module<T>>::now();
 		let mut expired_locks_amount = Self::Balance::zero();
 		<Locks<T, I>>::mutate(who, |locks| {
-			expired_locks_amount = locks.remove_locks(at, lock);
+			expired_locks_amount = locks.remove_locks(lock, at);
 		});
 
 		expired_locks_amount
-	}
-
-	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T, I>>::get(who).len()
 	}
 }
 

@@ -29,6 +29,9 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	type Moment;
 	type WithdrawReasons;
 
+	/// The number of locks.
+	fn locks_count(who: &AccountId) -> u32;
+
 	/// - Create a new balance lock on account `who`.
 	/// 	- If the new lock is valid (i.e. not already expired), it will push the struct to
 	/// 	the `Locks` vec in storage. Note that you can lock more funds than a user has.
@@ -45,7 +48,32 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 	///
 	/// The function will return the sum of expired locks' amount.
 	fn remove_locks(who: &AccountId, lock: &Self::Lock) -> Self::Balance;
+}
+
+pub trait Locks {
+	type Balance;
+	type Lock;
+	type Moment;
+	type WithdrawReasons;
 
 	/// The number of locks.
-	fn locks_count(who: &AccountId) -> u32;
+	fn locks_count(&self) -> u32;
+
+	/// - Create a new balance lock on account `who`.
+	/// 	- If the new lock is valid (i.e. not already expired), it will push the struct to
+	/// 	the `Locks` vec in storage. Note that you can lock more funds than a user has.
+	/// 	- If the lock `id/until` already exists, this will update it.
+	/// - Remove the expired locks on account `who`.
+	/// - Update the global staking amount.
+	/// - The function will return the sum of expired locks' amount.
+	fn update_lock(&mut self, lock: Self::Lock, at: Self::Moment) -> Self::Balance;
+
+	/// Remove expired locks
+	fn remove_expired_locks(&mut self, at: Self::Moment) -> Self::Balance;
+
+	/// Remove specify locks and expired locks
+	fn remove_locks(&mut self, lock: &Self::Lock, at: Self::Moment) -> Self::Balance;
+
+	fn ensure_can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance)
+		-> bool;
 }
