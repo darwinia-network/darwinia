@@ -1141,13 +1141,13 @@ impl<T: Trait> Module<T> {
 		CurrentEraStartSessionIndex::mutate(|v| {
 			*v = start_session_index;
 		});
-		let bonding_duration = {
+		let bonding_era = {
 			const BONDING_DURATION_ERA_TO_SECS_RATIO: TimeStamp = 300;
 			(T::BondingDuration::get() / BONDING_DURATION_ERA_TO_SECS_RATIO) as _
 		};
 
-		if current_era > bonding_duration {
-			let first_kept = current_era - bonding_duration;
+		if current_era > bonding_era {
+			let first_kept = current_era - bonding_era;
 			BondedEras::mutate(|bonded| {
 				bonded.push((current_era, start_session_index));
 
