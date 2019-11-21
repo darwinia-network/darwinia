@@ -1,11 +1,11 @@
 use srml_support::{
 	assert_err, assert_ok,
-	traits::{Currency, WithdrawReasons},
+	traits::{Currency, WithdrawReason, WithdrawReasons},
 };
 
 use super::*;
 use crate::mock::*;
-use darwinia_support::{DetailLock, StakingAndUnbondingLock};
+use darwinia_support::{DetailLock, StakingAndUnbondingLock, UnlockChunk};
 
 // gen_paired_account!(a(1), b(2), m(12));
 // will create stash `a` and controller `b`
@@ -76,12 +76,12 @@ fn test_env_build() {
 
 		assert_eq!(Staking::bonded(&11), Some(10));
 		assert_eq!(
-			Staking::ledger(&10),
-			Some(StakingLedger {
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
 				stash: 11,
 				total_ring: 100 * COIN,
-				active_deposit_ring: 100 * COIN,
 				active_ring: 100 * COIN,
+				active_deposit_ring: 100 * COIN,
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![TimeDepositItem {
@@ -89,8 +89,15 @@ fn test_env_build() {
 					start_time: 0,
 					expire_time: 12 * MONTH_IN_SECONDS as u64
 				}],
-				..
-			})
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
 		);
 
 		assert_eq!(Kton::free_balance(&11), COIN / 100);
@@ -104,12 +111,12 @@ fn test_env_build() {
 			13
 		));
 		assert_eq!(
-			Staking::ledger(&10),
-			Some(StakingLedger {
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
 				stash: 11,
 				total_ring: origin_ledger.total_ring + 20 * COIN,
-				active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
 				active_ring: origin_ledger.active_ring + 20 * COIN,
+				active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![
@@ -124,204 +131,238 @@ fn test_env_build() {
 						expire_time: 13 * MONTH_IN_SECONDS as u64
 					}
 				],
-				..
-			})
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
 		);
 	});
 }
 
-//#[test]
-//fn normal_kton_should_work() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		Kton::deposit_creating(&1001, 10 * COIN);
-//		assert_ok!(Staking::bond(
-//			Origin::signed(1001),
-//			1000,
-//			StakingBalance::Kton(10 * COIN),
-//			RewardDestination::Stash,
-//			0
-//		));
-//		assert_eq!(
-//			Staking::ledger(&1000),
-//			Some(StakingLedger {
-//				stash: 1001,
-//				total_ring: 0,
-//				total_deposit_ring: 0,
-//				active_deposit_ring: 0,
-//				active_ring: 0,
-//				total_kton: 10 * COIN,
-//				active_kton: 10 * COIN,
-//				deposit_items: vec![],
-//				unlocking: vec![]
-//			})
-//		);
-//
-//		assert_eq!(
-//			Kton::locks(&1001),
-//			vec![kton::BalanceLock {
-//				id: STAKING_ID,
-//				amount: 10 * COIN,
-//				until: u64::max_value(),
-//				reasons: WithdrawReasons::all()
-//			}]
-//		);
-//
-//		// promise_month should not work for kton
-//		Kton::deposit_creating(&2001, 10 * COIN);
-//		assert_ok!(Staking::bond(
-//			Origin::signed(2001),
-//			2000,
-//			StakingBalance::Kton(10 * COIN),
-//			RewardDestination::Stash,
-//			12
-//		));
-//		assert_eq!(
-//			Staking::ledger(&2000),
-//			Some(StakingLedger {
-//				stash: 2001,
-//				total_ring: 0,
-//				total_deposit_ring: 0,
-//				active_deposit_ring: 0,
-//				active_ring: 0,
-//				total_kton: 10 * COIN,
-//				active_kton: 10 * COIN,
-//				deposit_items: vec![],
-//				unlocking: vec![]
-//			})
-//		);
-//	});
-//}
-//
-//#[test]
-//fn time_deposit_ring_unbond_and_withdraw_should_work() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
-//
-//		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total_ring: 100 * COIN,
-//				total_deposit_ring: 100 * COIN,
-//				active_deposit_ring: 90 * COIN,
-//				active_ring: 90 * COIN,
-//				total_kton: 0,
-//				active_kton: 0,
-//				deposit_items: vec![TimeDepositItem {
-//					value: 90 * COIN,
-//					start_time: 0,
-//					expire_time: 12 * MONTH_IN_SECONDS as u64
-//				}],
-//				unlocking: vec![UnlockChunk {
-//					value: StakingBalance::Ring(10 * COIN),
-//					era: 3,
-//					is_time_deposit: true
-//				}]
-//			})
-//		);
-//
-//		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN)));
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total_ring: 100 * COIN,
-//				total_deposit_ring: 100 * COIN,
-//				active_deposit_ring: 70 * COIN,
-//				active_ring: 70 * COIN,
-//				total_kton: 0,
-//				active_kton: 0,
-//				deposit_items: vec![TimeDepositItem {
-//					value: 70 * COIN,
-//					start_time: 0,
-//					expire_time: 12 * MONTH_IN_SECONDS as u64
-//				}],
-//				unlocking: vec![
-//					UnlockChunk {
-//						value: StakingBalance::Ring(10 * COIN),
-//						era: 3,
-//						is_time_deposit: true
-//					},
-//					UnlockChunk {
-//						value: StakingBalance::Ring(20 * COIN),
-//						era: 3,
-//						is_time_deposit: true
-//					}
-//				]
-//			})
-//		);
-//
-//		// more than active ring
-//		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN)));
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total_ring: 100 * COIN,
-//				total_deposit_ring: 100 * COIN,
-//				active_deposit_ring: 0,
-//				active_ring: 0,
-//				total_kton: 0,
-//				active_kton: 0,
-//				deposit_items: vec![], // should be cleared
-//				unlocking: vec![
-//					UnlockChunk {
-//						value: StakingBalance::Ring(10 * COIN),
-//						era: 3,
-//						is_time_deposit: true
-//					},
-//					UnlockChunk {
-//						value: StakingBalance::Ring(20 * COIN),
-//						era: 3,
-//						is_time_deposit: true
-//					},
-//					UnlockChunk {
-//						value: StakingBalance::Ring(70 * COIN),
-//						era: 3,
-//						is_time_deposit: true
-//					},
-//				]
-//			})
-//		);
-//
-//		start_era(3);
-//
-//		assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total_ring: 0,
-//				total_deposit_ring: 0,
-//				active_deposit_ring: 0,
-//				active_ring: 0,
-//				total_kton: 0,
-//				active_kton: 0,
-//				deposit_items: vec![], // should be cleared
-//				unlocking: vec![]
-//			})
-//		);
-//
-//		let free_balance = Ring::free_balance(&11);
-//		assert_eq!(
-//			Ring::locks(&11),
-//			vec![balances::BalanceLock {
-//				id: STAKING_ID,
-//				amount: 0,
-//				until: u64::max_value(),
-//				reasons: WithdrawReasons::all()
-//			}]
-//		);
-//		assert_ok!(Ring::ensure_can_withdraw(
-//			&11,
-//			free_balance,
-//			WithdrawReason::Transfer,
-//			0
-//		));
-//	});
-//}
-//
+#[test]
+fn normal_kton_should_work() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		Kton::deposit_creating(&1001, 10 * COIN);
+		assert_ok!(Staking::bond(
+			Origin::signed(1001),
+			1000,
+			StakingBalance::Kton(10 * COIN),
+			RewardDestination::Stash,
+			0
+		));
+		assert_eq!(
+			Staking::ledger(&1000).unwrap(),
+			StakingLedger {
+				stash: 1001,
+				total_ring: 0,
+				active_ring: 0,
+				active_deposit_ring: 0,
+				total_kton: 10 * COIN,
+				active_kton: 10 * COIN,
+				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
+		);
+		assert_eq!(
+			Kton::locks(&1001),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 10 * COIN,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
+
+		// promise_month should not work for kton
+		Kton::deposit_creating(&2001, 10 * COIN);
+		assert_ok!(Staking::bond(
+			Origin::signed(2001),
+			2000,
+			StakingBalance::Kton(10 * COIN),
+			RewardDestination::Stash,
+			12
+		));
+		assert_eq!(
+			Staking::ledger(&2000).unwrap(),
+			StakingLedger {
+				stash: 2001,
+				total_ring: 0,
+				active_ring: 0,
+				active_deposit_ring: 0,
+				total_kton: 10 * COIN,
+				active_kton: 10 * COIN,
+				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
+		);
+	});
+}
+
+#[test]
+fn time_deposit_ring_unbond_and_withdraw_should_work() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
+
+		let ledger = Staking::ledger(&10).unwrap();
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
+		// Only active normal ring can be unbond
+		assert_eq!(&Staking::ledger(&10).unwrap(), &ledger,);
+		assert_eq!(
+			Ring::locks(11),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 100 * COIN,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
+
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(20 * COIN)));
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				total_ring: 100 * COIN,
+				active_ring: 100 * COIN,
+				active_deposit_ring: 70 * COIN,
+				total_kton: 0,
+				active_kton: 0,
+				deposit_items: vec![TimeDepositItem {
+					value: 70 * COIN,
+					start_time: 0,
+					expire_time: 12 * MONTH_IN_SECONDS as u64
+				}],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
+		);
+		//		unlocking: vec![
+		//			UnlockChunk {
+		//				value: StakingBalance::Ring(10 * COIN),
+		//				era: 3,
+		//				is_time_deposit: true
+		//			},
+		//			UnlockChunk {
+		//				value: StakingBalance::Ring(20 * COIN),
+		//				era: 3,
+		//				is_time_deposit: true
+		//			}
+		//		]
+
+		// more than active ring
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(120 * COIN)));
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				total_ring: 100 * COIN,
+				active_ring: 100 * COIN,
+				active_deposit_ring: 0,
+				total_kton: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
+		);
+		//		unlocking: vec![
+		//			UnlockChunk {
+		//				value: StakingBalance::Ring(10 * COIN),
+		//				era: 3,
+		//				is_time_deposit: true
+		//			},
+		//			UnlockChunk {
+		//				value: StakingBalance::Ring(20 * COIN),
+		//				era: 3,
+		//				is_time_deposit: true
+		//			},
+		//			UnlockChunk {
+		//				value: StakingBalance::Ring(70 * COIN),
+		//				era: 3,
+		//				is_time_deposit: true
+		//			},
+		//		]
+
+		Timestamp::set_timestamp(BondingDuration::get());
+
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				total_ring: 0,
+				active_ring: 0,
+				active_deposit_ring: 0,
+				total_kton: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+			}
+		);
+		//		unlocking: vec![]
+
+		let free_balance = Ring::free_balance(&11);
+		assert_eq!(
+			Ring::locks(&11),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
+		assert_ok!(Ring::ensure_can_withdraw(
+			&11,
+			free_balance,
+			WithdrawReason::Transfer.into(),
+			0
+		));
+	});
+}
+
 //#[test]
 //fn normal_unbond_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -1226,7 +1267,17 @@ fn xavier_q1() {
 		));
 		assert_eq!(Timestamp::get(), 0);
 		assert_eq!(Kton::free_balance(stash), 10);
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(5)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 5,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Init - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Init - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
@@ -1235,7 +1286,17 @@ fn xavier_q1() {
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(5), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Kton::free_balance(stash), 10);
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(10)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 10,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Bond Extra - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Bond Extra - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
@@ -1247,14 +1308,17 @@ fn xavier_q1() {
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 9,
-					at: BondingDuration::get() + unbond_start,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![UnlockChunk {
+						value: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Unbond - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1281,20 +1345,33 @@ fn xavier_q1() {
 		assert_eq!(Kton::free_balance(stash), 9);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 9,
-					at: BondingDuration::get() + unbond_start,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![UnlockChunk {
+						value: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 
 		Kton::deposit_creating(&stash, 20);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(19), 0));
 		assert_eq!(Kton::free_balance(stash), 29);
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(20)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 20,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		assert_eq!(
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
@@ -1305,6 +1382,14 @@ fn xavier_q1() {
 				total_kton: 20,
 				active_kton: 20,
 				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1331,7 +1416,17 @@ fn xavier_q1() {
 		));
 		assert_eq!(Timestamp::get(), 0);
 		assert_eq!(Ring::free_balance(stash), 10);
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(5)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 5,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Init - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Init - Ring Locks: {:#?}", Ring::locks(stash));
 		//		println!();
@@ -1340,7 +1435,17 @@ fn xavier_q1() {
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(5), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Ring::free_balance(stash), 10);
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(10)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 10,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Bond Extra - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Bond Extra - Ring Locks: {:#?}", Ring::locks(stash));
 		//		println!();
@@ -1352,14 +1457,17 @@ fn xavier_q1() {
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 9,
-					at: BondingDuration::get() + unbond_start,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![UnlockChunk {
+						value: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Unbond - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1386,20 +1494,33 @@ fn xavier_q1() {
 		assert_eq!(Ring::free_balance(stash), 9);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 9,
-					at: BondingDuration::get() + unbond_start,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![UnlockChunk {
+						value: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 
 		let _ = Ring::deposit_creating(&stash, 20);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(19), 0));
 		assert_eq!(Ring::free_balance(stash), 29);
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(20)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 20,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		assert_eq!(
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
@@ -1410,6 +1531,14 @@ fn xavier_q1() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Unlocking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1438,7 +1567,17 @@ fn xavier_q2() {
 			0,
 		));
 		assert_eq!(Kton::free_balance(stash), 10);
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(5)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 5,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Init - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Init - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
@@ -1447,7 +1586,17 @@ fn xavier_q2() {
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(4), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Kton::free_balance(stash), 10);
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(9)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 9,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Bond Extra - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Bond Extra - Kton Locks: {:#?}", Kton::locks(stash));
 		//		println!();
@@ -1462,14 +1611,17 @@ fn xavier_q2() {
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(7),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 7,
+					unlocking: vec![UnlockChunk {
+						value: 2,
+						until: BondingDuration::get() + unbond_start_1,
+					}],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Unbond - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1482,19 +1634,23 @@ fn xavier_q2() {
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Ok Unbond - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1526,19 +1682,23 @@ fn xavier_q2() {
 		assert_eq!(Kton::free_balance(stash), 7);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Unlocking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1549,19 +1709,23 @@ fn xavier_q2() {
 		assert_eq!(Kton::free_balance(stash), 1);
 		assert_eq!(
 			Kton::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Unlocking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1570,7 +1734,17 @@ fn xavier_q2() {
 		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
 		assert_eq!(Kton::free_balance(stash), 2);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 0));
-		assert_eq!(Kton::locks(stash), Locks(vec![CompositeLock::Staking(2)]));
+		assert_eq!(
+			Kton::locks(stash),
+			vec![kton::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 2,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 	});
 
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -1587,7 +1761,17 @@ fn xavier_q2() {
 			0,
 		));
 		assert_eq!(Ring::free_balance(stash), 10);
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(5)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 5,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Init - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Init - Ring Locks: {:#?}", Ring::locks(stash));
 		//		println!();
@@ -1596,7 +1780,17 @@ fn xavier_q2() {
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(4), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Ring::free_balance(stash), 10);
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(9)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 9,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 		//		println!("Ok Bond Extra - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Bond Extra - Ring Locks: {:#?}", Ring::locks(stash));
 		//		println!();
@@ -1611,14 +1805,17 @@ fn xavier_q2() {
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(7),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
-				})
-			])
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 7,
+					unlocking: vec![UnlockChunk {
+						value: 2,
+						until: BondingDuration::get() + unbond_start_1,
+					},],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Unbond - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1631,19 +1828,23 @@ fn xavier_q2() {
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Ok Unbond - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1675,19 +1876,23 @@ fn xavier_q2() {
 		assert_eq!(Ring::free_balance(stash), 7);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Unlocking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Unlocking Transfer - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1698,19 +1903,23 @@ fn xavier_q2() {
 		assert_eq!(Ring::free_balance(stash), 1);
 		assert_eq!(
 			Ring::locks(stash),
-			Locks(vec![
-				CompositeLock::Staking(1),
-				CompositeLock::Unbonding(Lock {
-					amount: 2,
-					at: BondingDuration::get() + unbond_start_1,
-					reasons: WithdrawReasons::all()
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 1,
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
-				CompositeLock::Unbonding(Lock {
-					amount: 6,
-					at: BondingDuration::get() + unbond_start_2,
-					reasons: WithdrawReasons::all(),
-				}),
-			])
+				reasons: WithdrawReasons::all()
+			}]
 		);
 		//		println!("Unlocking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Unlocking Transfer - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1719,7 +1928,17 @@ fn xavier_q2() {
 		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
 		assert_eq!(Ring::free_balance(stash), 2);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(1), 0));
-		assert_eq!(Ring::locks(stash), Locks(vec![CompositeLock::Staking(2)]));
+		assert_eq!(
+			Ring::locks(stash),
+			vec![balances::WithdrawLock {
+				id: STAKING_ID,
+				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
+					staking_amount: 2,
+					unlocking: vec![],
+				}),
+				reasons: WithdrawReasons::all()
+			}]
+		);
 	});
 }
 
@@ -1749,6 +1968,14 @@ fn xavier_q3() {
 				total_kton: 5,
 				active_kton: 5,
 				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Kton::locks(stash));
@@ -1766,6 +1993,14 @@ fn xavier_q3() {
 				total_kton: 5,
 				active_kton: 0,
 				deposit_items: vec![],
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Kton::locks(stash));
@@ -1785,7 +2020,14 @@ fn xavier_q3() {
 				total_kton: 1,
 				active_kton: 1,
 				deposit_items: vec![],
-				..
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Kton::locks(stash));
@@ -1817,7 +2059,14 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
-				..
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));
@@ -1835,7 +2084,14 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
-				..
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));
@@ -1855,7 +2111,14 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
-				..
+				ring_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
+				kton_detail_lock: StakingAndUnbondingLock {
+					staking_amount: 0,
+					unlocking: vec![]
+				},
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));
