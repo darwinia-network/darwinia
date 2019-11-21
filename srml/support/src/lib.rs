@@ -34,21 +34,6 @@ where
 	}
 }
 
-//impl<Balance, Moment> PartialEq for DetailLock<Balance, Moment>
-//where
-//	Balance: PartialEq,
-//	Moment: PartialEq,
-//{
-//	#[inline]
-//	fn eq(&self, other: &Self) -> bool {
-//		match (self, other) {
-//			(DetailLock::BalanceDetailLock(a), DetailLock::BalanceDetailLock(b)) => a == b,
-//			(DetailLock::StakingAndUnbondingDetailLock(a), DetailLock::StakingAndUnbondingDetailLock(b)) => a == b,
-//			_ => false,
-//		}
-//	}
-//}
-
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub struct BalanceLock<Balance, Moment> {
 	pub amount: Balance,
