@@ -1,5 +1,5 @@
 use super::*;
-pub use ethereum_types::{Address, Bloom, BloomInput, H160, H256, U128, U256};
+//pub use ethereum_types::{Address, Bloom, BloomInput, H160, H256, U128, U256};
 use rlp::{self, Decodable, DecoderError, Encodable, Rlp, RlpStream};
 use rstd::ops::Deref;
 use rstd::prelude::*;

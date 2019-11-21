@@ -11,12 +11,25 @@ extern crate impl_rlp;
 #[macro_use]
 extern crate rlp_derive;
 
-pub mod lookup;
+pub mod encoded;
+pub mod error;
+pub mod keccak;
+pub mod pow;
 pub mod receipt;
 pub mod transaction;
 
 pub use codec::{Decode, Encode};
+pub use ethereum_types::{Address, BigEndianHash, Bloom, BloomInput, H160, H256, H64, U128, U256, U512};
+pub use keccak_hash::keccak;
+pub use rlp::{self, DecoderError, Encodable, Rlp, RlpStream};
+
 pub type Bytes = Vec<u8>;
+pub type BlockNumber = u64;
+pub struct BestBLock {
+	height: u64, // enough for ethereum poa network (kovan)
+	hash: H256,
+	total_difficulty: U256,
+}
 
 // TODO: later rewrite Bloom to impl Encode and Decode
 //pub use ethbloom::{BloomRef, Input};

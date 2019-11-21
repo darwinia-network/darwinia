@@ -1,8 +1,6 @@
 use super::*;
-use ethereum_types::{Address, BigEndianHash, H160, H256, U256};
-use keccak_hash::keccak;
+//use ethereum_types::{Address, BigEndianHash, H160, H256, U256};
 pub use parity_crypto::publickey::{public_to_address, recover, Public, Secret, Signature};
-use rlp::{self, DecoderError, Encodable, Rlp, RlpStream};
 use rstd::ops::Deref;
 use rstd::prelude::*;
 use substrate_primitives::RuntimeDebug;
@@ -65,31 +63,6 @@ impl rlp::Encodable for Action {
 			Action::Call(ref addr) => s.append_internal(addr),
 		};
 	}
-}
-
-pub struct BestBLock {
-	height: u64, // enough for ethereum poa network (kovan)
-	hash: H256,
-	total_difficulty: U256,
-}
-
-#[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-struct EthHeader<Moment> {
-	parent_hash: H256,
-	ommers_hash: H256,
-	beneficiary: Address,
-	state_root: H256,
-	transactions_root: H256,
-	receipt_root: H256,
-	logs_bloom: H256,
-	difficulty: u64,
-	number: u64,
-	gas_limit: u64,
-	gas_used: u64,
-	timestamp: Moment,
-	extra_data: Bytes,
-	mix_hash: H256,
-	nonce: u64,
 }
 
 #[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]

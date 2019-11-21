@@ -30,6 +30,7 @@ rustc-hex = "2.0"
 keccak-hasher = "0.1"
 triehash-ethereum = { version = "0.2", git = "https://github.com/paritytech/parity-ethereum.git" }
 hex-literal = "0.2.1"
+eth-spec = { package = "spec", git = "https://github.com/paritytech/parity-ethereum.git"}
 
 
 [features]
