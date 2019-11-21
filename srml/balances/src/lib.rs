@@ -17,8 +17,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
-#[cfg(not(feature = "std"))]
-use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
 	traits::{
@@ -43,7 +41,7 @@ mod mock;
 mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
-use darwinia_support::{DetailLock, LockIdentifier, LockableCurrency};
+use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
@@ -169,13 +167,6 @@ impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> Ves
 	}
 }
 
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct WithdrawLock<Balance, Moment> {
-	pub id: LockIdentifier,
-	pub detail_lock: DetailLock<Balance, Moment>,
-	pub reasons: WithdrawReasons,
-}
-
 decl_storage! {
 	trait Store for Module<T: Trait<I>, I: Instance=DefaultInstance> as Balances {
 		/// The total units issued in the system.
@@ -239,7 +230,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<WithdrawLock<T::Balance, T::Moment>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -745,7 +736,7 @@ where
 		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
-			.all(|l| l.detail_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
+			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
@@ -992,12 +983,12 @@ where
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
-		detail_lock: DetailLock<Self::Balance, Self::Moment>,
+		withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
-		let mut new_lock = Some(WithdrawLock {
+		let mut new_lock = Some(BalanceLock {
 			id,
-			detail_lock,
+			withdraw_lock,
 			reasons,
 		});
 		let mut locks = Self::locks(who)

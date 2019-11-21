@@ -5,7 +5,7 @@ use srml_support::{
 
 use super::*;
 use crate::mock::*;
-use darwinia_support::{DetailLock, StakingAndUnbondingLock};
+use darwinia_support::{BalanceLock, StakingLock, WithdrawLock};
 
 // gen_paired_account!(a(1), b(2), m(12));
 // will create stash `a` and controller `b`
