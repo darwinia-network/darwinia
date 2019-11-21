@@ -128,7 +128,7 @@ fn test_env_build() {
 					}
 				],
 				ring_staking_lock: StakingLock {
-					staking_amount: 0,
+					staking_amount: origin_ledger.active_ring + 20 * COIN,
 					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
@@ -1362,8 +1362,11 @@ fn xavier_q1() {
 					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
+					staking_amount: 20,
+					unbondings: vec![NormalLock {
+						amount: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
 				},
 			}
 		);
@@ -1491,7 +1494,10 @@ fn xavier_q1() {
 				id: STAKING_ID,
 				withdraw_lock: WithdrawLock::WithStaking(StakingLock {
 					staking_amount: 20,
-					unbondings: vec![],
+					unbondings: vec![NormalLock {
+						amount: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
 				}),
 				reasons: WithdrawReasons::all()
 			}]
@@ -1505,8 +1511,11 @@ fn xavier_q1() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
+					staking_amount: 20,
+					unbondings: vec![NormalLock {
+						amount: 9,
+						until: BondingDuration::get() + unbond_start,
+					}]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
@@ -1916,7 +1925,16 @@ fn xavier_q2() {
 				id: STAKING_ID,
 				withdraw_lock: WithdrawLock::WithStaking(StakingLock {
 					staking_amount: 2,
-					unbondings: vec![],
+					unbondings: vec![
+						NormalLock {
+							amount: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						NormalLock {
+							amount: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
 				reasons: WithdrawReasons::all()
 			}]
@@ -1977,7 +1995,7 @@ fn xavier_q3() {
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }]
 				},
 			}
 		);
@@ -2001,8 +2019,8 @@ fn xavier_q3() {
 					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
+					staking_amount: 1,
+					unbondings: vec![NormalLock { amount: 5, until: 61 }]
 				},
 			}
 		);
@@ -2034,7 +2052,7 @@ fn xavier_q3() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 0,
+					staking_amount: 5,
 					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
@@ -2058,7 +2076,7 @@ fn xavier_q3() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
@@ -2082,8 +2100,8 @@ fn xavier_q3() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
+					staking_amount: 1,
+					unbondings: vec![NormalLock { amount: 5, until: 61 }]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
