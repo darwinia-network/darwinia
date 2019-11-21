@@ -11,25 +11,7 @@ use sr_primitives::{
 use srml_support::traits::Currency;
 use srml_support::traits::WithdrawReasons;
 
-//use super::traits::Locks as LocksTrait;
-
 pub type TimeStamp = u64;
-
-//#[derive(Clone, Default, PartialEq, Encode, Decode, RuntimeDebug)]
-//pub struct Locks<Balance, Moment>(pub Vec<CompositeLock<Balance, Moment>>);
-//
-//impl<Balance, Moment> LocksTrait for Locks<Balance, Moment>
-//where
-//	Balance: Clone + Copy + Default + SimpleArithmetic,
-//	Moment: Clone + Copy + PartialOrd,
-//{
-//	type Balance = Balance;
-//	type Lock = CompositeLock<Balance, Moment>;
-//	type Moment = Moment;
-//	type WithdrawReasons = WithdrawReasons;
-//
-//	//	fn can_withdraw(&self, at: Self::Moment, reasons: Self::WithdrawReasons, new_balance: Self::Balance) -> bool {}
-//}
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub enum DetailLock<Balance, Moment> {
@@ -42,11 +24,11 @@ where
 	Balance: Clone + Copy + Default + SimpleArithmetic,
 	Moment: Clone + Copy + PartialOrd + SaturatedConversion + rstd::convert::TryInto<u64>,
 {
-	pub fn valid_at(&self, at: Moment, new_balance: Balance) -> bool {
+	pub fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
 		match self {
-			DetailLock::BalanceDetailLock(lock) => lock.valid_at(at, new_balance),
+			DetailLock::BalanceDetailLock(lock) => lock.can_withdraw(at, new_balance),
 			DetailLock::StakingAndUnbondingDetailLock(lock) => {
-				lock.valid_at(at.saturated_into::<TimeStamp>(), new_balance)
+				lock.can_withdraw(at.saturated_into::<TimeStamp>(), new_balance)
 			}
 		}
 	}
@@ -78,7 +60,7 @@ where
 	Balance: Clone + Copy + Default + SimpleArithmetic,
 	Moment: Clone + Copy + PartialOrd,
 {
-	fn valid_at(&self, at: Moment, new_balance: Balance) -> bool {
+	fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
 		self.until > at && self.amount > new_balance
 	}
 }
@@ -128,53 +110,7 @@ where
 	Balance: Clone + Copy + Default + SimpleArithmetic,
 	Moment: Clone + Copy + PartialOrd,
 {
-	//	// TODO:
-	//	fn update_locks(&mut self, lock: UnlockChunk<Balance, Moment>, at: Moment) -> Balance {
-	//		let expired_locks_amount = self.remove_expired_locks(at);
-	//		// TODO add Eq to UnlockChunk
-	//		if let Some(i) = self.unlocking.iter().position(|lock_| lock_ == &lock) {
-	//			self.unlocking[i] = lock;
-	//		} else {
-	//			self.unlocking.push(lock);
-	//		}
-	//
-	//		expired_locks_amount
-	//	}
-	//
-	//	// TODO:
-	//	fn remove_expired_locks(&mut self, at: Moment) -> Balance {
-	//		let mut expired_locks_amount = Balance::default();
-	//		self.unlocking.retain(|lock| {
-	//			if lock.util > at {
-	//				true
-	//			} else {
-	//				expired_locks_amount += lock.value;
-	//				false
-	//			}
-	//		});
-	//
-	//		expired_locks_amount
-	//	}
-	//
-	//	// TODO:
-	//	fn remove_locks(&mut self, lock: &UnlockChunk<Balance, Moment>, at: Moment) -> Balance {
-	//		let mut expired_locks_amount = Balance::default();
-	//		self.unlocking.retain(|lock_| {
-	//			if lock_.util > at && lock_ != lock {
-	//				true
-	//			} else {
-	//				expired_locks_amount += lock_.value;
-	//				false
-	//			}
-	//		});
-	//
-	//		expired_locks_amount
-	//	}
-
-	//
-	//	/// The number of locks.
-	//	fn locks_count(&self) -> u32;
-	fn valid_at(&self, at: Moment, new_balance: Balance) -> bool {
+	fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
 		// TODO: Is it correct to use clone here?
 		let mut locked_amount = self.staking_amount.clone();
 
@@ -188,19 +124,6 @@ where
 		new_balance >= locked_amount
 	}
 }
-
-//pub trait LockRate {
-//    //TODO： ugly to use u64, ready for hacking
-//    //    type Balance: SimpleArithmetic + As<usize> + As<u64> + Codec + Copy + MaybeSerializeDebug + Default;
-//
-//    fn bill_lock_rate() -> Perbill;
-//
-//    fn update_total_lock(amount: u64, is_add: bool) -> Result;
-//}
-//
-//pub trait DarwiniaDilution<Balance> {
-//    fn on_dilution(treasury_income: Balance);
-//}
 
 pub trait OnMinted<Balance> {
 	fn on_minted(value: Balance);

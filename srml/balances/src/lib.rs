@@ -74,15 +74,6 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Tr
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
-
-	//	type Locks: LocksTrait<
-	//			Balance = Self::Balance,
-	//			Lock = CompositeLock<Self::Balance, Self::Moment>,
-	//			Moment = Self::Moment,
-	//			WithdrawReasons = WithdrawReasons,
-	//		> + Default
-	//		+ EncodeLike
-	//		+ Decode;
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
@@ -124,15 +115,6 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
-
-	//	type Locks: LocksTrait<
-	//			Balance = Self::Balance,
-	//			Lock = CompositeLock<Self::Balance, Self::Moment>,
-	//			Moment = Self::Moment,
-	//			WithdrawReasons = WithdrawReasons,
-	//		> + Default
-	//		+ EncodeLike
-	//		+ Decode;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
@@ -142,7 +124,6 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-	//	type Locks = T::Locks;
 }
 
 decl_event!(
@@ -691,7 +672,6 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-	//	type Locks = T::Locks;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
@@ -765,24 +745,12 @@ where
 		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
-			.all(|l| l.detail_lock.valid_at(now, new_balance) || !l.reasons.intersects(reasons))
+			.all(|l| l.detail_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
 			Err("account liquidity restrictions prevent withdrawal")
 		}
-
-		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
-		//			&& Self::vesting_balance(who) > new_balance
-		//		{
-		//			Err("vesting balance too high to send value")
-		//		} else {
-		//			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
-		//				Ok(())
-		//			} else {
-		//				Err("account liquidity restrictions prevent withdrawal")
-		//			}
-		//		}
 	}
 
 	fn transfer(

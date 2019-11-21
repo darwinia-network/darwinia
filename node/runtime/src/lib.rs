@@ -182,7 +182,6 @@ impl balances::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-	//	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
@@ -383,7 +382,6 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
-	//	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {

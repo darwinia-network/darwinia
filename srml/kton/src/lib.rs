@@ -72,15 +72,6 @@ pub trait Trait: timestamp::Trait {
 
 	type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
 	type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
-
-	//	type Locks: LocksTrait<
-	//			Balance = Self::Balance,
-	//			Lock = CompositeLock<Self::Balance, Self::Moment>,
-	//			Moment = Self::Moment,
-	//			WithdrawReasons = WithdrawReasons,
-	//		> + Default
-	//		+ EncodeLike
-	//		+ Decode;
 }
 
 decl_event!(
@@ -251,24 +242,12 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
-			.all(|l| l.detail_lock.valid_at(now, new_balance) || !l.reasons.intersects(reasons))
+			.all(|l| l.detail_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
 			Err("account liquidity restrictions prevent withdrawal")
 		}
-
-		//		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
-		//			&& Self::vesting_balance(who) > new_balance
-		//		{
-		//			Err("vesting balance too high to send value")
-		//		} else {
-		//			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
-		//				Ok(())
-		//			} else {
-		//				Err("account liquidity restrictions prevent withdrawal")
-		//			}
-		//		}
 	}
 
 	// TODO: add fee
