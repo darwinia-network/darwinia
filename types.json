@@ -19,7 +19,7 @@
     "start_time": "Compact<Moment>",
     "expire_time": "Compact<Moment>"
   },
-  "UnlockChunk": {
+  "NormalLock": {
     "value": "StakingBalance",
     "era": "Compact<EraIndex>",
     "is_time_deposit": "bool"
@@ -33,7 +33,7 @@
     "total_kton": "Compact<KtonBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",
-    "unlocking": "Vec<UnlockChunk>"
+    "unbondings": "Vec<NormalLock>"
   },
   "IndividualExposure": {
     "who": "AccountId",

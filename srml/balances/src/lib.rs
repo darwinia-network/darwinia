@@ -145,7 +145,7 @@ pub struct VestingSchedule<Balance, BlockNumber> {
 	pub locked: Balance,
 	/// Amount that gets unlocked every block after `starting_block`.
 	pub per_block: Balance,
-	/// Starting block for unlocking(vesting).
+	/// Starting block for unbondings(vesting).
 	pub starting_block: BlockNumber,
 }
 

@@ -170,7 +170,7 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	pub stash: AccountId,
 
 	/// The total amount of the stash's balance that we are currently accounting for.
-	/// It's just `active` plus all the `unlocking` balances.
+	/// It's just `active` plus all the `unbondings` balances.
 	/// active_ring = normal_ring + time_deposit_ring
 	#[codec(compact)]
 	pub total_ring: Ring,
@@ -183,7 +183,7 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	pub active_deposit_ring: Ring,
 
 	/// The total amount of the stash's balance that we are currently accounting for.
-	/// It's just `active` plus all the `unlocking` balances.
+	/// It's just `active` plus all the `unbondings` balances.
 	#[codec(compact)]
 	pub total_kton: Kton,
 	/// The total amount of the stash's balance that will be at stake in any forthcoming
@@ -1005,7 +1005,7 @@ impl<T: Trait> Module<T> {
 				*active_ring -= normal_active_value;
 				*total_ring -= normal_active_value;
 
-				// bonded + unlocking
+				// bonded + unbondings
 				// first slash active normal ring
 				let mut value_left = total_value - normal_active_value;
 				// then slash active time-promise ring
