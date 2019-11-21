@@ -90,7 +90,7 @@ fn test_env_build() {
 					expire_time: 12 * MONTH_IN_SECONDS as u64
 				}],
 				ring_detail_lock: StakingAndUnbondingLock {
-					staking_amount: 0,
+					staking_amount: 100 * COIN,
 					unlocking: vec![]
 				},
 				kton_detail_lock: StakingAndUnbondingLock {
@@ -170,7 +170,7 @@ fn normal_kton_should_work() {
 					unlocking: vec![]
 				},
 				kton_detail_lock: StakingAndUnbondingLock {
-					staking_amount: 0,
+					staking_amount: 10 * COIN,
 					unlocking: vec![]
 				},
 			}
@@ -211,7 +211,7 @@ fn normal_kton_should_work() {
 					unlocking: vec![]
 				},
 				kton_detail_lock: StakingAndUnbondingLock {
-					staking_amount: 0,
+					staking_amount: 10 * COIN,
 					unlocking: vec![]
 				},
 			}
@@ -256,7 +256,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 					expire_time: 12 * MONTH_IN_SECONDS as u64
 				}],
 				ring_detail_lock: StakingAndUnbondingLock {
-					staking_amount: 0,
+					staking_amount: 100 * COIN,
 					unlocking: vec![]
 				},
 				kton_detail_lock: StakingAndUnbondingLock {
@@ -1367,7 +1367,10 @@ fn xavier_q1() {
 				id: STAKING_ID,
 				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
 					staking_amount: 20,
-					unlocking: vec![],
+					unlocking: vec![UnlockChunk {
+						value: 9,
+						until: BondingDuration::get() + unbond_start,
+					}],
 				}),
 				reasons: WithdrawReasons::all()
 			}]
@@ -1740,7 +1743,16 @@ fn xavier_q2() {
 				id: STAKING_ID,
 				detail_lock: DetailLock::StakingAndUnbondingDetailLock(StakingAndUnbondingLock {
 					staking_amount: 2,
-					unlocking: vec![],
+					unlocking: vec![
+						UnlockChunk {
+							value: 2,
+							until: BondingDuration::get() + unbond_start_1,
+						},
+						UnlockChunk {
+							value: 6,
+							until: BondingDuration::get() + unbond_start_2,
+						}
+					],
 				}),
 				reasons: WithdrawReasons::all()
 			}]
@@ -1973,7 +1985,7 @@ fn xavier_q3() {
 					unlocking: vec![]
 				},
 				kton_detail_lock: StakingAndUnbondingLock {
-					staking_amount: 0,
+					staking_amount: 5,
 					unlocking: vec![]
 				},
 			}
