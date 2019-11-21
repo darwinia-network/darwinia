@@ -26,11 +26,9 @@
   },
   "StakingLedger": {
     "stash": "AccountId",
-    "total_ring": "Compact<RingBalanceOf>",
     "total_deposit_ring": "Compact<RingBalanceOf>",
     "active_ring": "Compact<RingBalanceOf>",
     "active_deposit_ring": "Compact<RingBalanceOf>",
-    "total_kton": "Compact<KtonBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",
     "unbondings": "Vec<NormalLock>"

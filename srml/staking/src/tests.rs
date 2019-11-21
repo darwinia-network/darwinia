@@ -79,10 +79,8 @@ fn test_env_build() {
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
 				stash: 11,
-				total_ring: 100 * COIN,
 				active_ring: 100 * COIN,
 				active_deposit_ring: 100 * COIN,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![TimeDepositItem {
 					value: 100 * COIN,
@@ -114,10 +112,8 @@ fn test_env_build() {
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
 				stash: 11,
-				total_ring: origin_ledger.total_ring + 20 * COIN,
 				active_ring: origin_ledger.active_ring + 20 * COIN,
 				active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![
 					TimeDepositItem {
@@ -159,10 +155,8 @@ fn normal_kton_should_work() {
 			Staking::ledger(&1000).unwrap(),
 			StakingLedger {
 				stash: 1001,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 10 * COIN,
 				active_kton: 10 * COIN,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -200,10 +194,8 @@ fn normal_kton_should_work() {
 			Staking::ledger(&2000).unwrap(),
 			StakingLedger {
 				stash: 2001,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 10 * COIN,
 				active_kton: 10 * COIN,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -245,10 +237,8 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
 				stash: 11,
-				total_ring: 100 * COIN,
 				active_ring: 100 * COIN,
 				active_deposit_ring: 70 * COIN,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![TimeDepositItem {
 					value: 70 * COIN,
@@ -284,10 +274,8 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
 				stash: 11,
-				total_ring: 100 * COIN,
 				active_ring: 100 * COIN,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -324,10 +312,8 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
 				stash: 11,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -386,7 +372,6 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //				Kton::free_balance(&stash),
 //				kton_free_balance + inflation::compute_kton_return::<Test>(value, promise_month)
 //			);
-//			ledger.total_ring += value;
 //			ledger.total_deposit_ring += value;
 //			ledger.active_ring += value;
 //			ledger.active_deposit_ring += value;
@@ -410,7 +395,6 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //				StakingBalance::Kton(COIN),
 //				0
 //			));
-//			ledger.total_kton += kton_free_balance;
 //			ledger.active_kton += kton_free_balance;
 //			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
 //
@@ -452,11 +436,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //			Staking::ledger(&controller),
 //			Some(StakingLedger {
 //				stash,
-//				total_ring: 10 * COIN,
 //				total_deposit_ring: 10 * COIN,
 //				active_deposit_ring: 10 * COIN,
 //				active_ring: 10 * COIN,
-//				total_kton: 0,
 //				active_kton: 0,
 //				deposit_items: vec![TimeDepositItem {
 //					value: 10 * COIN,
@@ -530,11 +512,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //			Staking::ledger(&1000),
 //			Some(StakingLedger {
 //				stash: 1001,
-//				total_ring: origin_ledger.total_ring,
 //				total_deposit_ring: origin_ledger.total_deposit_ring + 5 * COIN,
 //				active_deposit_ring: origin_ledger.active_deposit_ring + 5 * COIN,
 //				active_ring: origin_ledger.active_ring,
-//				total_kton: origin_ledger.total_kton,
 //				active_kton: origin_ledger.active_kton,
 //				deposit_items: vec![TimeDepositItem {
 //					value: 5 * COIN,
@@ -707,9 +687,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //		let ring_free_balance = Ring::free_balance(&1001);
 //		let kton_free_balance = Kton::free_balance(&1001);
 //		Staking::slash_validator(&1001, 10_000_000);
-//		ledger.total_ring -= slash_value;
 //		ledger.active_ring -= slash_value;
-//		ledger.total_kton -= slash_value;
 //		ledger.active_kton -= slash_value;
 //		assert_eq!(&Staking::ledger(&1000).unwrap(), &ledger);
 //		assert_eq!(Ring::free_balance(&1001), ring_free_balance - slash_value);
@@ -744,9 +722,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //#[test]
 //fn set_controller_should_not_change_ledger() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		assert_eq!(Staking::ledger(&10).unwrap().total_ring, 100 * COIN);
+//		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 100 * COIN);
 //		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
-//		assert_eq!(Staking::ledger(&12).unwrap().total_ring, 100 * COIN);
+//		assert_eq!(Staking::ledger(&12).unwrap().active_ring, 100 * COIN);
 //	});
 //}
 //
@@ -757,11 +735,10 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //		// only deposit_ring, no normal_ring
 //		assert_eq!(
 //			(
-//				old_ledger.total_ring,
 //				old_ledger.active_ring,
 //				old_ledger.active_deposit_ring
 //			),
-//			(100 * COIN, 100 * COIN, 100 * COIN)
+//			(100 * COIN, 100 * COIN)
 //		);
 //
 //		assert_ok!(Staking::bond_extra(
@@ -780,11 +757,10 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //		let new_ledger = Staking::ledger(&10).unwrap();
 //		assert_eq!(
 //			(
-//				new_ledger.total_ring,
 //				new_ledger.active_ring,
 //				new_ledger.active_deposit_ring
 //			),
-//			(200 * COIN, 190 * COIN, 100 * COIN)
+//			(190 * COIN, 100 * COIN)
 //		);
 //
 //		// slash 100%
@@ -792,9 +768,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //
 //		let ledger = Staking::ledger(&10).unwrap();
 //		assert_eq!(
-//			(ledger.total_ring, ledger.active_ring, ledger.active_deposit_ring),
+//			(ledger.active_ring, ledger.active_deposit_ring),
 //			// 10Ring in unbondings
-//			(10 * COIN, 0, 0)
+//			(0, 0)
 //		);
 //		assert_eq!(ledger.unbondings[0].value, StakingBalance::Ring(10 * COIN));
 //	});
@@ -1161,7 +1137,7 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //		assert_eq!(Kton::free_balance(&stash), 4);
 //
 //		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 36));
-//		assert_eq!(Staking::ledger(&controller).unwrap().total_kton, 1);
+//		assert_eq!(Staking::ledger(&controller).unwrap().active_kton, 1);
 //
 //		assert_ok!(Staking::nominate(Origin::signed(controller), vec![controller]));
 //
@@ -1174,11 +1150,9 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 //
 //		let ledger = StakingLedger {
 //			stash: 777,
-//			total_ring: 10_000,
 //			total_deposit_ring: 10_000,
 //			active_ring: 10_000,
 //			active_deposit_ring: 10_000,
-//			total_kton: 1,
 //			active_kton: 1,
 //			deposit_items: vec![TimeDepositItem {
 //				value: 10_000,
@@ -1379,10 +1353,8 @@ fn xavier_q1() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 20,
 				active_kton: 20,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -1528,10 +1500,8 @@ fn xavier_q1() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 20,
 				active_ring: 20,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -1974,10 +1944,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 5,
 				active_kton: 5,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -1999,10 +1967,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 5,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -2026,10 +1992,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 0,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 1,
 				active_kton: 1,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -2065,10 +2029,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 5,
 				active_ring: 5,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -2090,10 +2052,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 5,
 				active_ring: 0,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
@@ -2117,10 +2077,8 @@ fn xavier_q3() {
 			Staking::ledger(&controller).unwrap(),
 			StakingLedger {
 				stash: 123,
-				total_ring: 1,
 				active_ring: 1,
 				active_deposit_ring: 0,
-				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {

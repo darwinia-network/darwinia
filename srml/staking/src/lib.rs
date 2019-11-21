@@ -169,11 +169,6 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	/// The stash account whose balance is actually locked and at stake.
 	pub stash: AccountId,
 
-	/// The total amount of the stash's balance that we are currently accounting for.
-	/// It's just `active` plus all the `unbondings` balances.
-	/// active_ring = normal_ring + time_deposit_ring
-	#[codec(compact)]
-	pub total_ring: Ring,
 	/// The total amount of the stash's balance that will be at stake in any forthcoming
 	/// rounds.
 	#[codec(compact)]
@@ -182,10 +177,6 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	#[codec(compact)]
 	pub active_deposit_ring: Ring,
 
-	/// The total amount of the stash's balance that we are currently accounting for.
-	/// It's just `active` plus all the `unbondings` balances.
-	#[codec(compact)]
-	pub total_kton: Kton,
 	/// The total amount of the stash's balance that will be at stake in any forthcoming
 	/// rounds.
 	#[codec(compact)]
@@ -513,7 +504,7 @@ decl_module! {
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&ledger.total_ring) {
+					if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
 						let extra = extra.min(r);
 						<RingPool<T>>::mutate(|r| *r += extra);
 						Self::bond_helper_in_ring(&stash, &controller, extra, promise_month, ledger);
@@ -521,7 +512,7 @@ decl_module! {
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&ledger.total_kton) {
+					if let Some(extra) = stash_balance.checked_sub(&ledger.active_kton) {
 						let extra = extra.min(k);
 						<KtonPool<T>>::mutate(|k| *k += extra);
 						Self::bond_helper_in_kton(&controller, extra, ledger);
@@ -541,10 +532,8 @@ decl_module! {
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedger {
 				stash: _,
-				total_ring,
 				active_ring,
 				active_deposit_ring,
-				total_kton,
 				active_kton,
 				ring_staking_lock,
 				kton_staking_lock,
@@ -572,9 +561,6 @@ decl_module! {
 
 						ring_staking_lock.unbondings.push(NormalLock { amount: available_unbond_ring, until: at });
 
-						// TODO: check underflow?
-						*total_ring -= available_unbond_ring;
-
 						Self::update_ledger(&controller, &mut ledger, value);
 					}
 				},
@@ -587,9 +573,6 @@ decl_module! {
 						*active_kton -= unbond_kton;
 
 						kton_staking_lock.unbondings.push(NormalLock { amount: unbond_kton, until: at });
-
-						// TODO: check underflow?
-						*total_kton -= unbond_kton;
 
 						Self::update_ledger(&controller, &mut ledger, value);
 					}
@@ -836,7 +819,6 @@ impl<T: Trait> Module<T> {
 			});
 		}
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
-		ledger.total_ring = ledger.total_ring.saturating_add(value);
 
 		Self::update_ledger(&controller, &mut ledger, StakingBalance::Ring(value));
 	}
@@ -846,7 +828,6 @@ impl<T: Trait> Module<T> {
 		value: KtonBalanceOf<T>,
 		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
 	) {
-		ledger.total_kton += value;
 		ledger.active_kton += value;
 
 		Self::update_ledger(&controller, &mut ledger, StakingBalance::Kton(value));
@@ -867,8 +848,6 @@ impl<T: Trait> Module<T> {
 					WithdrawLock::WithStaking(ledger.ring_staking_lock.clone()),
 					WithdrawReasons::all(),
 				);
-				// TODO: check underflow?
-				//				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
 				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
@@ -879,8 +858,6 @@ impl<T: Trait> Module<T> {
 					WithdrawLock::WithStaking(ledger.kton_staking_lock.clone()),
 					WithdrawReasons::all(),
 				);
-				// TODO: check underflow?
-				//				ledger.total_kton -= expired_locks_kton;
 			}
 		}
 
@@ -959,16 +936,16 @@ impl<T: Trait> Module<T> {
 		let mut ledger = Self::ledger(&controller).unwrap();
 
 		// slash ring
-		let (ring_imbalance, _) = if !ledger.total_ring.is_zero() {
-			let slashable_ring = slash_ratio * ledger.total_ring;
+		let (ring_imbalance, _) = if !ledger.active_ring.is_zero() {
+			let slashable_ring = slash_ratio * ledger.active_ring;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
 			T::Ring::slash(stash, value_slashed.0)
 		} else {
 			(<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
 		};
 
-		let (kton_imbalance, _) = if !ledger.total_kton.is_zero() {
-			let slashable_kton = slash_ratio * ledger.total_kton;
+		let (kton_imbalance, _) = if !ledger.active_kton.is_zero() {
+			let slashable_kton = slash_ratio * ledger.active_kton;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
 			T::Kton::slash(stash, value_slashed.1)
 		} else {
@@ -986,7 +963,6 @@ impl<T: Trait> Module<T> {
 		match value {
 			StakingBalance::Ring(r) => {
 				let StakingLedger {
-					total_ring,
 					active_ring,
 					active_deposit_ring,
 					deposit_items,
@@ -1003,7 +979,6 @@ impl<T: Trait> Module<T> {
 				// first slash normal bonded ring
 				<RingPool<T>>::mutate(|r| *r -= normal_active_value);
 				*active_ring -= normal_active_value;
-				*total_ring -= normal_active_value;
 
 				// bonded + unbondings
 				// first slash active normal ring
@@ -1021,7 +996,6 @@ impl<T: Trait> Module<T> {
 
 						let value_removed = value_left.min(item.value);
 
-						*total_ring -= value_removed;
 						*active_ring -= value_removed;
 						*active_deposit_ring -= value_removed;
 
@@ -1043,7 +1017,7 @@ impl<T: Trait> Module<T> {
 				let active_value = k.min(ledger.active_kton);
 				// first slash active kton
 				ledger.active_kton -= active_value;
-				ledger.total_kton -= active_value;
+
 				<KtonPool<T>>::mutate(|k| *k -= active_value);
 
 				Self::update_ledger(controller, ledger, StakingBalance::Kton(0.into()));
