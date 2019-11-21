@@ -393,7 +393,6 @@ where
 		detail_lock: DetailLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
-		let now = <system::Module<T>>::block_number();
 		let mut new_lock = Some(WithdrawLock {
 			id,
 			detail_lock,
@@ -410,7 +409,6 @@ where
 	}
 
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
-		let now = <system::Module<T>>::block_number();
 		let locks = Self::locks(who)
 			.into_iter()
 			.filter_map(|l| if l.id != id { Some(l) } else { None })

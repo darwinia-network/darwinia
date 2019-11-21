@@ -542,7 +542,7 @@ decl_module! {
 
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedger {
-				stash,
+				stash: _,
 				total_ring,
 				active_ring,
 				active_deposit_ring,
