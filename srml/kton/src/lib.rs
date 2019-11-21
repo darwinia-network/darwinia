@@ -24,7 +24,7 @@ use srml_support::{
 };
 use system::ensure_signed;
 
-use darwinia_support::{DetailLock, LockIdentifier, LockableCurrency};
+use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -84,13 +84,6 @@ decl_event!(
     }
 );
 
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct WithdrawLock<Balance, Moment> {
-	pub id: LockIdentifier,
-	pub detail_lock: DetailLock<Balance, Moment>,
-	pub reasons: WithdrawReasons,
-}
-
 decl_storage! {
 	trait Store for Module<T: Trait> as Kton {
 
@@ -108,7 +101,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(fn locks): map T::AccountId => Vec<WithdrawLock<T::Balance, T::Moment>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 
 		pub TotalLock get(total_lock): T::Balance;
 
@@ -242,7 +235,7 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		let now = <timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
-			.all(|l| l.detail_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
+			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
@@ -390,12 +383,12 @@ where
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
-		detail_lock: DetailLock<Self::Balance, Self::Moment>,
+		withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
-		let mut new_lock = Some(WithdrawLock {
+		let mut new_lock = Some(BalanceLock {
 			id,
-			detail_lock,
+			withdraw_lock,
 			reasons,
 		});
 		let mut locks = Self::locks(who)

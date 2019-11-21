@@ -42,8 +42,7 @@ use srml_support::{
 };
 use system::{ensure_root, ensure_signed};
 
-use darwinia_support::DetailLock::StakingAndUnbondingDetailLock;
-use darwinia_support::{LockIdentifier, LockableCurrency, StakingAndUnbondingLock, TimeStamp, UnlockChunk};
+use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 use core::convert::TryInto;
@@ -197,9 +196,8 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	// which can also be used for staking
 	pub deposit_items: Vec<TimeDepositItem<Ring, Moment>>,
 
-	pub ring_detail_lock: StakingAndUnbondingLock<Ring, TimeStamp>,
-
-	pub kton_detail_lock: StakingAndUnbondingLock<Kton, TimeStamp>,
+	pub ring_staking_lock: StakingLock<Ring, TimeStamp>,
+	pub kton_staking_lock: StakingLock<Kton, TimeStamp>,
 }
 
 /// The amount of exposure (to slashing) than an individual nominator has.
@@ -485,7 +483,7 @@ decl_module! {
 			<Bonded<T>>::insert(&stash, &controller);
 			<Payee<T>>::insert(&stash, payee);
 
-			let mut ledger = StakingLedger {stash: stash.clone(), ..Default::default()};
+			let ledger = StakingLedger {stash: stash.clone(), ..Default::default()};
 			match value {
 				StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
@@ -548,13 +546,13 @@ decl_module! {
 				active_deposit_ring,
 				total_kton,
 				active_kton,
-				ring_detail_lock,
-				kton_detail_lock,
+				ring_staking_lock,
+				kton_staking_lock,
 				..
 			} = &mut ledger;
 
 			ensure!(
-				ring_detail_lock.unlocking.len() + kton_detail_lock.unlocking.len() < MAX_UNLOCKING_CHUNKS.try_into().unwrap(),
+				ring_staking_lock.unbondings.len() + kton_staking_lock.unbondings.len() < MAX_UNLOCKING_CHUNKS.try_into().unwrap(),
 				"can not schedule more unlock chunks"
 			);
 
@@ -572,7 +570,7 @@ decl_module! {
 					if !available_unbond_ring.is_zero() {
 						*active_ring -= available_unbond_ring;
 
-						(*ring_detail_lock).unlocking.push(UnlockChunk { value: available_unbond_ring, until: at });
+						ring_staking_lock.unbondings.push(NormalLock { amount: available_unbond_ring, until: at });
 
 						// TODO: check underflow?
 						*total_ring -= available_unbond_ring;
@@ -587,7 +585,9 @@ decl_module! {
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 
 						*active_kton -= unbond_kton;
-						(*kton_detail_lock).unlocking.push(UnlockChunk { value: unbond_kton, until: at });
+
+						kton_staking_lock.unbondings.push(NormalLock { amount: unbond_kton, until: at });
+
 						// TODO: check underflow?
 						*total_kton -= unbond_kton;
 
@@ -859,24 +859,24 @@ impl<T: Trait> Module<T> {
 	) {
 		match staking_balance {
 			StakingBalance::Ring(_r) => {
-				ledger.ring_detail_lock.staking_amount = ledger.active_ring;
+				ledger.ring_staking_lock.staking_amount = ledger.active_ring;
 
 				T::Ring::set_lock(
 					STAKING_ID,
 					&ledger.stash,
-					StakingAndUnbondingDetailLock(ledger.ring_detail_lock.clone()),
+					WithdrawLock::WithStaking(ledger.ring_staking_lock.clone()),
 					WithdrawReasons::all(),
 				);
 				// TODO: check underflow?
 				//				ledger.total_ring -= expired_locks_ring;
 			}
 			StakingBalance::Kton(_k) => {
-				ledger.kton_detail_lock.staking_amount = ledger.active_kton;
+				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
 
 				T::Kton::set_lock(
 					STAKING_ID,
 					&ledger.stash,
-					StakingAndUnbondingDetailLock(ledger.kton_detail_lock.clone()),
+					WithdrawLock::WithStaking(ledger.kton_staking_lock.clone()),
 					WithdrawReasons::all(),
 				);
 				// TODO: check underflow?
