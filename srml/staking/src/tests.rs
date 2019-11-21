@@ -89,6 +89,7 @@ fn test_env_build() {
 					start_time: 0,
 					expire_time: 12 * MONTH_IN_SECONDS as u64
 				}],
+				..
 			})
 		);
 
@@ -123,6 +124,7 @@ fn test_env_build() {
 						expire_time: 13 * MONTH_IN_SECONDS as u64
 					}
 				],
+				..
 			})
 		);
 	});
@@ -1783,6 +1785,7 @@ fn xavier_q3() {
 				total_kton: 1,
 				active_kton: 1,
 				deposit_items: vec![],
+				..
 			}
 		);
 		//		println!("Locks: {:#?}", Kton::locks(stash));
@@ -1814,6 +1817,7 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
+				..
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));
@@ -1831,6 +1835,7 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
+				..
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));
@@ -1850,6 +1855,7 @@ fn xavier_q3() {
 				total_kton: 0,
 				active_kton: 0,
 				deposit_items: vec![],
+				..
 			}
 		);
 		//		println!("Locks: {:#?}", Ring::locks(stash));

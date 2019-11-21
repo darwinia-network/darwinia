@@ -1011,38 +1011,6 @@ where
 		<Locks<T, I>>::insert(who, locks);
 	}
 
-	//	fn extend_lock(
-	//		id: LockIdentifier,
-	//		who: &T::AccountId,
-	//		lock: DetailLock<Self::Balance, Self::Moment>,
-	//		reasons: WithdrawReasons,
-	//	) {
-	//		let now = <system::Module<T>>::block_number();
-	//		let mut new_lock = Some(WithdrawLock { id, lock, reasons });
-	//		let mut locks = Self::locks(who)
-	//			.into_iter()
-	//			.filter_map(|l| {
-	//				if l.id == id {
-	//					new_lock.take().map(|nl| WithdrawLock {
-	//						id: l.id,
-	//						lock. nl.extend
-	//						amount: l.amount.max(nl.amount),
-	//						until: l.until.max(nl.until),
-	//						reasons: l.reasons | nl.reasons,
-	//					})
-	//				} else if l.until > now {
-	//					Some(l)
-	//				} else {
-	//					None
-	//				}
-	//			})
-	//			.collect::<Vec<_>>();
-	//		if let Some(lock) = new_lock {
-	//			locks.push(lock)
-	//		}
-	//		<Locks<T, I>>::insert(who, locks);
-	//	}
-
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
 		let now = <system::Module<T>>::block_number();
 		let locks = Self::locks(who)

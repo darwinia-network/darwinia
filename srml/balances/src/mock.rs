@@ -112,6 +112,16 @@ impl Trait for Runtime {
 	type CreationFee = CreationFee;
 }
 
+parameter_types! {
+	pub const MinimumPeriod: u64 = 5;
+}
+
+impl timestamp::Trait for Runtime {
+	type Moment = u64;
+	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
+}
+
 pub struct ExtBuilder {
 	existential_deposit: u64,
 	transfer_fee: u64,
