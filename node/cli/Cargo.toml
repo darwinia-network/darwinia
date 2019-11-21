@@ -18,7 +18,6 @@ runtime-io = { package = "sr-io", git = 'https://github.com/darwinia-network/sub
 client = { package = "substrate-client", git = 'https://github.com/darwinia-network/substrate.git' }
 primitives = { package = "substrate-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
 inherents = { package = "substrate-inherents", git = 'https://github.com/darwinia-network/substrate.git' }
-node-runtime = { path = "../runtime" }
 node-primitives = { path = "../primitives" }
 hex-literal = "0.2.1"
 substrate-basic-authorship = { git = 'https://github.com/darwinia-network/substrate.git' }
@@ -59,6 +58,8 @@ im-online = { package = "srml-im-online", git = 'https://github.com/darwinia-net
 sr-authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
 authority-discovery = { package = "substrate-authority-discovery", git = 'https://github.com/darwinia-network/substrate.git' }
 offchain = { package = "substrate-offchain", git = 'https://github.com/darwinia-network/substrate.git' }
+
+node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
 consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/darwinia-network/substrate.git' }
