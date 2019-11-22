@@ -381,84 +381,83 @@ fn normal_unbond_should_work() {
 	});
 }
 
-//#[test]
-//fn punished_unbond_should_work() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let stash = 1001;
-//		let controller = 1000;
-//		let promise_month = 36;
-//
-//		let _ = Ring::deposit_creating(&stash, 100 * MILLICENTS);
-//		Kton::deposit_creating(&stash, MILLICENTS / 100000);
-//
-//		// timestamp now is 0.
-//		// free balance of kton is too low to work
-//		assert_ok!(Staking::bond(
-//			Origin::signed(stash),
-//			controller,
-//			StakingBalance::Ring(10 * MILLICENTS),
-//			RewardDestination::Stash,
-//			promise_month
-//		));
-//		assert_eq!(
-//			Staking::ledger(&controller),
-//			Some(StakingLedger {
-//				stash,
-//				total_deposit_ring: 10 * MILLICENTS,
-//				active_deposit_ring: 10 * MILLICENTS,
-//				active_ring: 10 * MILLICENTS,
-//				active_kton: 0,
-//				deposit_items: vec![TimeDepositItem {
-//					value: 10 * MILLICENTS,
-//					start_time: 0,
-//					expire_time: promise_month as u64 * MONTH_IN_SECONDS as u64
-//				}], // should be cleared
-//				unbondings: vec![]
-//			})
-//		);
-//		let mut ledger = Staking::ledger(&controller).unwrap();
-//		let kton_free_balance = Kton::free_balance(&stash);
-//		// kton is 0, skip unbond_with_punish
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller),
-//			10 * MILLICENTS,
-//			promise_month as u64 * MONTH_IN_SECONDS as u64
-//		));
-//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-//		assert_eq!(Kton::free_balance(&stash), kton_free_balance);
-//
-//		// set more kton balance to make it work
-//		Kton::deposit_creating(&stash, 10 * MILLICENTS);
-//		let kton_free_balance = Kton::free_balance(&stash);
-//		let unbond_value = 5 * MILLICENTS;
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller),
-//			unbond_value,
-//			promise_month as u64 * MONTH_IN_SECONDS as u64
-//		));
-//		ledger.active_ring -= unbond_value;
-//		ledger.active_deposit_ring -= unbond_value;
-//		ledger.deposit_items[0].value -= unbond_value;
-//		ledger.unbondings = vec![NormalLock {
-//			value: StakingBalance::Ring(unbond_value),
-//			era: 3,
-//			is_time_deposit: true,
-//		}];
-//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-//
-//		let kton_punishment = inflation::compute_kton_return::<Test>(unbond_value, promise_month);
-//		assert_eq!(Kton::free_balance(&stash), kton_free_balance - 3 * kton_punishment);
-//
-//		// if deposit_item.value == 0
-//		// the whole item should be be dropped
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller),
-//			5 * MILLICENTS,
-//			promise_month as u64 * MONTH_IN_SECONDS as u64
-//		));
-//		assert!(Staking::ledger(&controller).unwrap().deposit_items.is_empty());
-//	});
-//}
+#[test]
+fn punished_unbond_should_work() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let stash = 1001;
+		let controller = 1000;
+		let promise_month = 36;
+		let _ = Ring::deposit_creating(&stash, 100 * MILLICENTS);
+		Kton::deposit_creating(&stash, MILLICENTS / 100000);
+
+		// timestamp now is 0.
+		// free balance of kton is too low to work
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalance::Ring(10 * MILLICENTS),
+			RewardDestination::Stash,
+			promise_month,
+		));
+		//		assert_eq!(
+		//			Staking::ledger(&controller),
+		//			Some(StakingLedger {
+		//				stash,
+		//				total_deposit_ring: 10 * MILLICENTS,
+		//				active_deposit_ring: 10 * MILLICENTS,
+		//				active_ring: 10 * MILLICENTS,
+		//				active_kton: 0,
+		//				deposit_items: vec![TimeDepositItem {
+		//					value: 10 * MILLICENTS,
+		//					start_time: 0,
+		//					expire_time: promise_month as u64 * MONTH_IN_SECONDS as u64
+		//				}], // should be cleared
+		//				unbondings: vec![]
+		//			})
+		//		);
+		//		let mut ledger = Staking::ledger(&controller).unwrap();
+		//		let kton_free_balance = Kton::free_balance(&stash);
+		//		// kton is 0, skip unbond_with_punish
+		//		assert_ok!(Staking::unbond_with_punish(
+		//			Origin::signed(controller),
+		//			10 * MILLICENTS,
+		//			promise_month as u64 * MONTH_IN_SECONDS as u64
+		//		));
+		//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
+		//		assert_eq!(Kton::free_balance(&stash), kton_free_balance);
+		//
+		//		// set more kton balance to make it work
+		//		Kton::deposit_creating(&stash, 10 * MILLICENTS);
+		//		let kton_free_balance = Kton::free_balance(&stash);
+		//		let unbond_value = 5 * MILLICENTS;
+		//		assert_ok!(Staking::unbond_with_punish(
+		//			Origin::signed(controller),
+		//			unbond_value,
+		//			promise_month as u64 * MONTH_IN_SECONDS as u64
+		//		));
+		//		ledger.active_ring -= unbond_value;
+		//		ledger.active_deposit_ring -= unbond_value;
+		//		ledger.deposit_items[0].value -= unbond_value;
+		//		ledger.unbondings = vec![NormalLock {
+		//			value: StakingBalance::Ring(unbond_value),
+		//			era: 3,
+		//			is_time_deposit: true,
+		//		}];
+		//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
+		//
+		//		let kton_punishment = inflation::compute_kton_return::<Test>(unbond_value, promise_month);
+		//		assert_eq!(Kton::free_balance(&stash), kton_free_balance - 3 * kton_punishment);
+		//
+		//		// if deposit_item.value == 0
+		//		// the whole item should be be dropped
+		//		assert_ok!(Staking::unbond_with_punish(
+		//			Origin::signed(controller),
+		//			5 * MILLICENTS,
+		//			promise_month as u64 * MONTH_IN_SECONDS as u64
+		//		));
+		//		assert!(Staking::ledger(&controller).unwrap().deposit_items.is_empty());
+	});
+}
 
 //#[test]
 //fn transform_to_promised_ring_should_work() {
