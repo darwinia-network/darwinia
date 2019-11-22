@@ -9,7 +9,7 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use darwinia_support::{traits::LockableCurrency, types::TimeStamp};
+use darwinia_support::{LockableCurrency, TimeStamp};
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub trait Trait: system::Trait {

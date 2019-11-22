@@ -19,21 +19,19 @@
     "start_time": "Compact<Moment>",
     "expire_time": "Compact<Moment>"
   },
-  "UnlockChunk": {
+  "NormalLock": {
     "value": "StakingBalance",
     "era": "Compact<EraIndex>",
     "is_time_deposit": "bool"
   },
   "StakingLedger": {
     "stash": "AccountId",
-    "total_ring": "Compact<RingBalanceOf>",
     "total_deposit_ring": "Compact<RingBalanceOf>",
     "active_ring": "Compact<RingBalanceOf>",
     "active_deposit_ring": "Compact<RingBalanceOf>",
-    "total_kton": "Compact<KtonBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",
-    "unlocking": "Vec<UnlockChunk>"
+    "unbondings": "Vec<NormalLock>"
   },
   "IndividualExposure": {
     "who": "AccountId",

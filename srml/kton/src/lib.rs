@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Codec, Decode, Encode, EncodeLike};
+use codec::{Codec, Decode, Encode};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, prelude::*, result};
@@ -24,10 +24,7 @@ use srml_support::{
 };
 use system::ensure_signed;
 
-use darwinia_support::{
-	traits::{LockableCurrency, Locks as LocksTrait},
-	types::CompositeLock,
-};
+use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
@@ -75,15 +72,6 @@ pub trait Trait: timestamp::Trait {
 
 	type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
 	type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
-
-	type Locks: LocksTrait<
-			Balance = Self::Balance,
-			Lock = CompositeLock<Self::Balance, Self::Moment>,
-			Moment = Self::Moment,
-			WithdrawReasons = WithdrawReasons,
-		> + Default
-		+ EncodeLike
-		+ Decode;
 }
 
 decl_event!(
@@ -113,7 +101,7 @@ decl_storage! {
 
 		pub ReservedBalance get(reserved_balance): map T::AccountId => T::Balance;
 
-		pub Locks get(locks): map T::AccountId => T::Locks;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
 
 		pub TotalLock get(total_lock): T::Balance;
 
@@ -237,13 +225,21 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
 			&& Self::vesting_balance(who) > new_balance
 		{
-			Err("vesting balance too high to send value")
+			return Err("vesting balance too high to send value");
+		}
+		let locks = Self::locks(who);
+		if locks.is_empty() {
+			return Ok(());
+		}
+
+		let now = <timestamp::Module<T>>::now();
+		if locks
+			.into_iter()
+			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
+		{
+			Ok(())
 		} else {
-			if Self::locks(who).can_withdraw(<timestamp::Module<T>>::now(), reasons, new_balance) {
-				Ok(())
-			} else {
-				Err("account liquidity restrictions prevent withdrawal")
-			}
+			Err("account liquidity restrictions prevent withdrawal")
 		}
 	}
 
@@ -382,35 +378,34 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Lock = CompositeLock<T::Balance, Self::Moment>;
 	type Moment = T::Moment;
-	type WithdrawReasons = WithdrawReasons;
 
-	#[inline]
-	fn locks_count(who: &T::AccountId) -> u32 {
-		<Locks<T>>::get(who).locks_count()
-	}
-
-	fn update_locks(who: &T::AccountId, lock: Option<Self::Lock>) -> Self::Balance {
-		let at = <timestamp::Module<T>>::now();
-		let mut locks = Self::locks(who);
-		let expired_locks_amount = if let Some(lock) = lock {
-			locks.update_locks(lock, at)
-		} else {
-			locks.remove_expired_locks(at)
-		};
-		<Locks<T>>::insert(who, locks);
-
-		expired_locks_amount
-	}
-
-	fn remove_locks(who: &T::AccountId, lock: &Self::Lock) -> Self::Balance {
-		let at = <timestamp::Module<T>>::now();
-		let mut expired_locks_amount = Self::Balance::zero();
-		<Locks<T>>::mutate(who, |locks| {
-			expired_locks_amount = locks.remove_locks(lock, at);
+	fn set_lock(
+		id: LockIdentifier,
+		who: &T::AccountId,
+		withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
+		reasons: WithdrawReasons,
+	) {
+		let mut new_lock = Some(BalanceLock {
+			id,
+			withdraw_lock,
+			reasons,
 		});
+		let mut locks = Self::locks(who)
+			.into_iter()
+			.filter_map(|l| if l.id == id { new_lock.take() } else { Some(l) })
+			.collect::<Vec<_>>();
+		if let Some(lock) = new_lock {
+			locks.push(lock)
+		}
+		<Locks<T>>::insert(who, locks);
+	}
 
-		expired_locks_amount
+	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
+		let locks = Self::locks(who)
+			.into_iter()
+			.filter_map(|l| if l.id != id { Some(l) } else { None })
+			.collect::<Vec<_>>();
+		<Locks<T>>::insert(who, locks);
 	}
 }
