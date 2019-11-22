@@ -363,6 +363,7 @@ fn normal_unbond_should_work() {
 				0
 			));
 			ledger.active_kton += kton_free_balance;
+			ledger.kton_staking_lock.staking_amount += kton_free_balance;
 			assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
 
 			assert_ok!(Staking::unbond(
@@ -370,12 +371,12 @@ fn normal_unbond_should_work() {
 				StakingBalance::Kton(kton_free_balance)
 			));
 			ledger.active_kton = 0;
-			ledger.unbondings = vec![NormalLock {
-				value: StakingBalance::Kton(kton_free_balance),
-				era: 3,
-				is_time_deposit: false,
-			}];
-			assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
+			ledger.kton_staking_lock.staking_amount = 0;
+			ledger.kton_staking_lock.unbondings.push(NormalLock {
+				amount: kton_free_balance,
+				until: BondingDuration::get(),
+			});
+			assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
 		}
 	});
 }
@@ -458,7 +459,7 @@ fn normal_unbond_should_work() {
 //		assert!(Staking::ledger(&controller).unwrap().deposit_items.is_empty());
 //	});
 //}
-//
+
 //#[test]
 //fn transform_to_promised_ring_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
