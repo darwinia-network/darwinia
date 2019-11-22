@@ -25,9 +25,9 @@ use node_runtime::constants::currency::*;
 use node_runtime::Block;
 pub use node_runtime::GenesisConfig;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, COIN,
-	WASM_BINARY,
+	constants::currency::MILLICENTS, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig,
+	GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig,
+	SudoConfig, SystemConfig, WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -249,7 +249,7 @@ pub fn testnet_genesis(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * COIN / 63720,
+			//			current_era_total_reward: 80_000_000 * MILLICENTS / 63720,
 			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,
@@ -350,8 +350,8 @@ pub fn darwinia_genesis_verbose(
 		]
 	});
 
-	const ENDOWMENT: Balance = 100_000_000 * COIN;
-	const STASH: Balance = 100 * COIN;
+	const ENDOWMENT: Balance = 100_000_000 * MILLICENTS;
+	const STASH: Balance = 100 * MILLICENTS;
 
 	GenesisConfig {
 		system: Some(SystemConfig {
@@ -404,7 +404,7 @@ pub fn darwinia_genesis_verbose(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * COIN / 63720,
+			//			current_era_total_reward: 80_000_000 * MILLICENTS / 63720,
 			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,

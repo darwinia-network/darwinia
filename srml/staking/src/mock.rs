@@ -1,8 +1,11 @@
+pub use node_runtime::constants::currency::MILLICENTS;
+
 use std::{cell::RefCell, collections::HashSet};
 
 use sr_primitives::{
 	testing::{Header, UintAuthorityId},
 	traits::{BlakeTwo256, Convert, IdentityLookup, OnInitialize, OpaqueKeys},
+	weights::Weight,
 	KeyTypeId, Perbill,
 };
 use sr_staking_primitives::SessionIndex;
@@ -15,12 +18,17 @@ use substrate_primitives::{crypto::key_types, H256};
 
 use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
 use darwinia_support::TimeStamp;
+use node_primitives::Balance;
 use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
+// FIXME:
+//     replace
+//     	  testing::Header.number: u64
+//     with
+//         node_primitives::BlockNumber
 pub type BlockNumber = u64;
-pub type Balance = u64;
 
 /// Module alias
 pub type System = system::Module<Test>;
@@ -50,7 +58,7 @@ impl Convert<u128, u64> for CurrencyToVoteHandler {
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
+	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
 }
 
 pub struct TestSessionHandler;
@@ -81,8 +89,8 @@ pub fn is_disabled(validator: AccountId) -> bool {
 }
 
 pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-	fn get() -> u64 {
+impl Get<Balance> for ExistentialDeposit {
+	fn get() -> Balance {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
 	}
 }
@@ -95,8 +103,8 @@ impl_outer_origin! {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: u32 = 1024;
+	pub const BlockHashCount: BlockNumber = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -177,10 +185,9 @@ parameter_types! {
 	pub const BondingDuration: TimeStamp = 60;
 	pub const ErasPerEpoch: EraIndex = 10;
 }
-pub const COIN: u64 = 1_000_000_000;
 parameter_types! {
 	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * COIN;
+	pub const CAP: Balance = 10_000_000_000 * MILLICENTS;
 }
 impl Trait for Test {
 	type Ring = Ring;
@@ -202,9 +209,9 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder {
-	existential_deposit: u64,
+	existential_deposit: Balance,
 	current_era: EraIndex,
-	reward: u64,
+	reward: Balance,
 	validator_pool: bool,
 	nominate: bool,
 	validator_count: u32,
@@ -228,7 +235,7 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
+	pub fn existential_deposit(mut self, existential_deposit: Balance) -> Self {
 		self.existential_deposit = existential_deposit;
 		self
 	}
@@ -263,9 +270,9 @@ impl ExtBuilder {
 		self.set_associated_consts();
 		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * COIN
+			1_000 * MILLICENTS
 		} else {
-			1 * COIN
+			1 * MILLICENTS
 		};
 		let validators = if self.validator_pool {
 			vec![10, 20, 30, 40]
@@ -315,10 +322,10 @@ impl ExtBuilder {
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			current_era: self.current_era,
-			//			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
+			//			current_era_total_reward: 80_000_000 * MILLICENTS / ErasPerEpoch::get() as u64,
 			stakers: vec![
-				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
-				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
+				//                (2, 1, 1 * MILLICENTS, StakerStatus::<AccountId>::Validator),
+				(11, 10, 100 * MILLICENTS, StakerStatus::<AccountId>::Validator),
 				(21, 20, stake_21, StakerStatus::<AccountId>::Validator),
 				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
@@ -393,7 +400,7 @@ pub fn check_nominator_exposure(stash: u64) {
 	);
 }
 
-pub fn assert_total_expo(stash: u64, val: u128) {
+pub fn assert_total_expo(stash: u64, val: Balance) {
 	let expo = Staking::stakers(&stash);
 	assert_eq!(expo.total, val);
 }
@@ -402,7 +409,7 @@ pub fn assert_is_stash(acc: u64) {
 	assert!(Staking::bonded(&acc).is_some(), "Not a stash.");
 }
 
-pub fn bond_validator(acc: u64, val: u64) {
+pub fn bond_validator(acc: u64, val: Balance) {
 	// a = controller
 	// a + 1 = stash
 	let _ = Ring::make_free_balance_be(&(acc + 1), val);
@@ -421,7 +428,7 @@ pub fn bond_validator(acc: u64, val: u64) {
 	));
 }
 
-pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
+pub fn bond_nominator(acc: u64, val: Balance, target: Vec<u64>) {
 	// a = controller
 	// a + 1 = stash
 	let _ = Ring::make_free_balance_be(&(acc + 1), val);

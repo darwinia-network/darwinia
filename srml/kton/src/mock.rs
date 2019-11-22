@@ -1,8 +1,11 @@
+pub use node_runtime::constants::currency::MILLICENTS;
+
 use std::{cell::RefCell, collections::HashSet};
 
 use sr_primitives::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
+	weights::Weight,
 	Perbill,
 };
 use srml_support::{impl_outer_origin, parameter_types};
@@ -10,18 +13,21 @@ use substrate_primitives::H256;
 
 use super::*;
 use crate::{GenesisConfig, Module};
-
-pub const COIN: u64 = 1_000_000_000;
+use node_primitives::Balance;
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
+	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
 }
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
+// FIXME:
+//     replace
+//     	  testing::Header.number: u64
+//     with
+//         node_primitives::BlockNumber
 pub type BlockNumber = u64;
-pub type Balance = u64;
 
 impl_outer_origin! {
 	pub enum Origin for Test {}
@@ -31,8 +37,8 @@ impl_outer_origin! {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: u32 = 1024;
+	pub const BlockHashCount: BlockNumber = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -71,7 +77,7 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder {
-	existential_deposit: u64,
+	existential_deposit: Balance,
 }
 
 impl Default for ExtBuilder {
@@ -81,7 +87,7 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
+	pub fn existential_deposit(mut self, existential_deposit: Balance) -> Self {
 		self.existential_deposit = existential_deposit;
 		self
 	}
@@ -94,9 +100,9 @@ impl ExtBuilder {
 		self.set_associated_consts();
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * COIN
+			1_000 * MILLICENTS
 		} else {
-			1 * COIN
+			1 * MILLICENTS
 		};
 
 		let _ = GenesisConfig::<Test> {
