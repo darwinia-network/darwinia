@@ -11,7 +11,7 @@ use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock};
 // will create stash `a` and controller `b`
 // `a` has 100 Ring and 100 Kton
 // promise for `m` month with 50 Ring and 50 Kton
-// `m` can be ignore, and it wont perfrom `bond` action
+// `m` can be ignore, and it wont perform `bond` action
 // gen_paired_account!(a(1), b(2));
 //macro_rules! gen_paired_account {
 //	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $promise_month:ident($how_long:expr)) => {
@@ -212,73 +212,61 @@ fn normal_kton_should_work() {
 }
 
 #[test]
-fn time_deposit_ring_unbond_and_withdraw_should_work() {
+fn time_deposit_ring_can_not_be_unbond() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let locks = vec![BalanceLock {
+			id: STAKING_ID,
+			withdraw_lock: WithdrawLock::WithStaking(StakingLock {
+				staking_amount: 100 * MILLICENTS,
+				unbondings: vec![],
+			}),
+			reasons: WithdrawReasons::all(),
+		}];
+		let ledger = StakingLedger {
+			stash: 11,
+			active_ring: 100 * MILLICENTS,
+			active_deposit_ring: 100 * MILLICENTS,
+			active_kton: 0,
+			deposit_items: vec![TimeDepositItem {
+				value: 100 * MILLICENTS,
+				start_time: 0,
+				expire_time: 12 * MONTH_IN_SECONDS as u64,
+			}],
+			ring_staking_lock: StakingLock {
+				staking_amount: 100 * MILLICENTS,
+				unbondings: vec![],
+			},
+			kton_staking_lock: StakingLock {
+				staking_amount: 0,
+				unbondings: vec![],
+			},
+		};
+
 		Timestamp::set_timestamp(13 * MONTH_IN_SECONDS as u64);
 
-		let ledger = Staking::ledger(&10).unwrap();
 		assert_ok!(Staking::unbond(
 			Origin::signed(10),
 			StakingBalance::Ring(10 * MILLICENTS)
 		));
-		// Only active normal ring can be unbond
-		assert_eq!(&Staking::ledger(&10).unwrap(), &ledger,);
-		assert_eq!(
-			Ring::locks(11),
-			vec![BalanceLock {
-				id: STAKING_ID,
-				withdraw_lock: WithdrawLock::WithStaking(StakingLock {
-					staking_amount: 100 * MILLICENTS,
-					unbondings: vec![],
-				}),
-				reasons: WithdrawReasons::all()
-			}]
-		);
+		assert_eq!(Ring::locks(11), locks);
+		assert_eq!(Staking::ledger(&10).unwrap(), ledger,);
 
 		assert_ok!(Staking::unbond(
 			Origin::signed(10),
 			StakingBalance::Ring(20 * MILLICENTS)
 		));
-		assert_eq!(
-			Staking::ledger(&10).unwrap(),
-			StakingLedger {
-				stash: 11,
-				active_ring: 100 * MILLICENTS,
-				active_deposit_ring: 70 * MILLICENTS,
-				active_kton: 0,
-				deposit_items: vec![TimeDepositItem {
-					value: 70 * MILLICENTS,
-					start_time: 0,
-					expire_time: 12 * MONTH_IN_SECONDS as u64
-				}],
-				ring_staking_lock: StakingLock {
-					staking_amount: 100 * MILLICENTS,
-					unbondings: vec![]
-				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-			}
-		);
-		//		unbondings: vec![
-		//			NormalLock {
-		//				value: StakingBalance::Ring(10 * MILLICENTS),
-		//				era: 3,
-		//				is_time_deposit: true
-		//			},
-		//			NormalLock {
-		//				value: StakingBalance::Ring(20 * MILLICENTS),
-		//				era: 3,
-		//				is_time_deposit: true
-		//			}
-		//		]
+		assert_eq!(Ring::locks(11), locks);
+		assert_eq!(Staking::ledger(&10).unwrap(), ledger);
 
-		// more than active ring
 		assert_ok!(Staking::unbond(
 			Origin::signed(10),
 			StakingBalance::Ring(120 * MILLICENTS)
 		));
+		assert_eq!(Ring::locks(11), locks);
+		assert_eq!(Staking::ledger(&10).unwrap(), ledger);
+
+		assert_ok!(Staking::claim_mature_deposits(Origin::signed(10)));
+		//		assert_eq!(Ring::locks(11), locks);
 		assert_eq!(
 			Staking::ledger(&10).unwrap(),
 			StakingLedger {
@@ -288,73 +276,54 @@ fn time_deposit_ring_unbond_and_withdraw_should_work() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
+					staking_amount: 100 * MILLICENTS,
+					unbondings: vec![],
 				},
 				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-			}
-		);
-		//		unbondings: vec![
-		//			NormalLock {
-		//				value: StakingBalance::Ring(10 * MILLICENTS),
-		//				era: 3,
-		//				is_time_deposit: true
-		//			},
-		//			NormalLock {
-		//				value: StakingBalance::Ring(20 * MILLICENTS),
-		//				era: 3,
-		//				is_time_deposit: true
-		//			},
-		//			NormalLock {
-		//				value: StakingBalance::Ring(70 * MILLICENTS),
-		//				era: 3,
-		//				is_time_deposit: true
-		//			},
-		//		]
-
-		Timestamp::set_timestamp(BondingDuration::get());
-
-		assert_eq!(
-			Staking::ledger(&10).unwrap(),
-			StakingLedger {
-				stash: 11,
-				active_ring: 0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-			}
-		);
-		//		unbondings: vec![]
-
-		let free_balance = Ring::free_balance(&11);
-		assert_eq!(
-			Ring::locks(&11),
-			vec![BalanceLock {
-				id: STAKING_ID,
-				withdraw_lock: WithdrawLock::WithStaking(StakingLock {
 					staking_amount: 0,
 					unbondings: vec![],
-				}),
-				reasons: WithdrawReasons::all()
-			}]
+				},
+			}
 		);
-		assert_ok!(Ring::ensure_can_withdraw(
-			&11,
-			free_balance,
-			WithdrawReason::Transfer.into(),
-			0
-		));
+
+		//		assert_eq!(
+		//			Staking::ledger(&10).unwrap(),
+		//			StakingLedger {
+		//				stash: 11,
+		//				active_ring: 0,
+		//				active_deposit_ring: 0,
+		//				active_kton: 0,
+		//				deposit_items: vec![],
+		//				ring_staking_lock: StakingLock {
+		//					staking_amount: 0,
+		//					unbondings: vec![]
+		//				},
+		//				kton_staking_lock: StakingLock {
+		//					staking_amount: 0,
+		//					unbondings: vec![]
+		//				},
+		//			}
+		//		);
+		//		unbondings: vec![]
+
+		//		let free_balance = Ring::free_balance(&11);
+		//		assert_eq!(
+		//			Ring::locks(&11),
+		//			vec![BalanceLock {
+		//				id: STAKING_ID,
+		//				withdraw_lock: WithdrawLock::WithStaking(StakingLock {
+		//					staking_amount: 0,
+		//					unbondings: vec![],
+		//				}),
+		//				reasons: WithdrawReasons::all()
+		//			}]
+		//		);
+		//		assert_ok!(Ring::ensure_can_withdraw(
+		//			&11,
+		//			free_balance,
+		//			WithdrawReason::Transfer.into(),
+		//			0
+		//		));
 	});
 }
 
