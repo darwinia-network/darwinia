@@ -15,26 +15,24 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Substrate chain configurations.
+pub use node_runtime::GenesisConfig;
+
 use babe_primitives::AuthorityId as BabeId;
 use chain_spec::ChainSpecExtension;
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_primitives::{AccountId, Balance};
-use node_runtime::constants::currency::*;
-use node_runtime::Block;
-pub use node_runtime::GenesisConfig;
 use node_runtime::{
-	constants::currency::MILLICENTS, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig,
-	GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig,
-	SudoConfig, SystemConfig, WASM_BINARY,
+	constants::currency::{COIN, MILLI},
+	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, Block, ContractsConfig, GrandpaConfig, ImOnlineConfig,
+	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, Pair, Public};
 use serde::{Deserialize, Serialize};
-use serde_json::de::ParserNumber;
-use serde_json::Number;
+use serde_json::{de::ParserNumber, Number};
 use sr_primitives::Perbill;
-use substrate_service;
 use substrate_service::Properties;
 use substrate_telemetry::TelemetryEndpoints;
 
@@ -195,8 +193,8 @@ pub fn testnet_genesis(
 		]
 	});
 
-	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
-	const STASH: Balance = 100 * DOLLARS;
+	const ENDOWMENT: Balance = 10_000_000 * COIN;
+	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
 		system: Some(SystemConfig {
@@ -230,7 +228,7 @@ pub fn testnet_genesis(
 				enable_println, // this should only be enabled on development chains
 				..Default::default()
 			},
-			gas_price: 1 * MILLICENTS,
+			gas_price: 1 * MILLI,
 		}),
 		sudo: Some(SudoConfig { key: root_key }),
 		babe: Some(BabeConfig { authorities: vec![] }),
@@ -249,7 +247,7 @@ pub fn testnet_genesis(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * MILLICENTS / 63720,
+			//			current_era_total_reward: 80_000_000 * MILLI / 63720,
 			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,
@@ -350,8 +348,8 @@ pub fn darwinia_genesis_verbose(
 		]
 	});
 
-	const ENDOWMENT: Balance = 100_000_000 * MILLICENTS;
-	const STASH: Balance = 100 * MILLICENTS;
+	const ENDOWMENT: Balance = 100_000_000 * MILLI;
+	const STASH: Balance = 100 * MILLI;
 
 	GenesisConfig {
 		system: Some(SystemConfig {
@@ -385,7 +383,7 @@ pub fn darwinia_genesis_verbose(
 				enable_println, // this should only be enabled on development chains
 				..Default::default()
 			},
-			gas_price: 1 * MILLICENTS,
+			gas_price: 1 * MILLI,
 		}),
 		sudo: Some(SudoConfig { key: root_key }),
 		babe: Some(BabeConfig { authorities: vec![] }),
@@ -404,7 +402,7 @@ pub fn darwinia_genesis_verbose(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * MILLICENTS / 63720,
+			//			current_era_total_reward: 80_000_000 * MILLI / 63720,
 			//			offline_slash: Perbill::from_parts(1_000_000),
 			session_reward: Perbill::from_percent(90),
 			validator_count: 7,

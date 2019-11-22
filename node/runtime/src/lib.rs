@@ -151,7 +151,7 @@ impl indices::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * MILLICENTS;
+	pub const ExistentialDeposit: Balance = 1 * COIN;
 	pub const TransferFee: Balance = 1 * MILLI;
 	pub const CreationFee: Balance = 1 * MILLI;
 }
@@ -295,10 +295,10 @@ parameter_types! {
 	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
 	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
 	pub const ContractFee: Balance = 1 * MILLI;
-	pub const TombstoneDeposit: Balance = 1 * MILLICENTS;
-	pub const RentByteFee: Balance = 1 * MILLICENTS;
-	pub const RentDepositOffset: Balance = 1000 * MILLICENTS;
-	pub const SurchargeReward: Balance = 150 * MILLICENTS;
+	pub const TombstoneDeposit: Balance = 1 * COIN;
+	pub const RentByteFee: Balance = 1 * COIN;
+	pub const RentDepositOffset: Balance = 1000 * COIN;
+	pub const SurchargeReward: Balance = 150 * COIN;
 }
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
@@ -375,7 +375,7 @@ parameter_types! {
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
-	pub const HardCap: Balance = 10_000_000_000 * MILLICENTS;
+	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
 impl staking::Trait for Runtime {
