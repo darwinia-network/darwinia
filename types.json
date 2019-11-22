@@ -20,18 +20,22 @@
     "expire_time": "Compact<Moment>"
   },
   "NormalLock": {
-    "value": "StakingBalance",
-    "era": "Compact<EraIndex>",
-    "is_time_deposit": "bool"
+    "amount": "u128",
+    "util": "Moment",
+  },
+  "StakingLock": {
+    "staking_amount": "u128",
+    "unbondings": "Vec<NormalLock>"
   },
   "StakingLedger": {
     "stash": "AccountId",
-    "total_deposit_ring": "Compact<RingBalanceOf>",
     "active_ring": "Compact<RingBalanceOf>",
     "active_deposit_ring": "Compact<RingBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",
-    "unbondings": "Vec<NormalLock>"
+    "unbondings": "Vec<NormalLock>",
+    "ring_staking_lock": "StakingLock",
+    "kton_staking_lock": "StakingLock"
   },
   "IndividualExposure": {
     "who": "AccountId",
