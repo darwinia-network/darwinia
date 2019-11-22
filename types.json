@@ -33,7 +33,6 @@
     "active_deposit_ring": "Compact<RingBalanceOf>",
     "active_kton": "Compact<KtonBalanceOf>",
     "deposit_items": "Vec<TimeDepositItem>",
-    "unbondings": "Vec<NormalLock>",
     "ring_staking_lock": "StakingLock",
     "kton_staking_lock": "StakingLock"
   },
