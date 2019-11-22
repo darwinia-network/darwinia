@@ -765,32 +765,26 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	pub fn clear_mature_deposits(who: &T::AccountId) {
-		let mut ledger = if let Some(l) = Self::ledger(&who) {
-			l
-		} else {
-			return;
+	pub fn clear_mature_deposits(controller: &T::AccountId) {
+		if let Some(mut ledger) = Self::ledger(&controller) {
+			let now = <timestamp::Module<T>>::now();
+			let StakingLedger {
+				active_deposit_ring,
+				deposit_items,
+				..
+			} = &mut ledger;
+
+			deposit_items.retain(|item| {
+				if item.expire_time > now {
+					true
+				} else {
+					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+					false
+				}
+			});
+
+			<Ledger<T>>::insert(controller, ledger);
 		};
-
-		//		let mut ledger = Self::ledger(who).ok_or("not a controller")?;
-
-		let StakingLedger {
-			active_deposit_ring,
-			deposit_items,
-			..
-		} = &mut ledger;
-
-		let now = <timestamp::Module<T>>::now();
-
-		deposit_items.retain(|item| {
-			if item.expire_time > now {
-				return true;
-			}
-
-			*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-
-			false
-		});
 	}
 
 	fn bond_helper_in_ring(
