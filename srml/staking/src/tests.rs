@@ -460,34 +460,39 @@ fn transform_to_deposited_ring_should_work() {
 	});
 }
 
-//#[test]
-//fn expired_ring_should_capable_to_promise_again() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let _ = Ring::deposit_creating(&1001, 100 * COIN);
-//		assert_ok!(Staking::bond(
-//			Origin::signed(1001),
-//			1000,
-//			StakingBalance::Ring(10 * COIN),
-//			RewardDestination::Stash,
-//			12
-//		));
-//		let mut ledger = Staking::ledger(&1000).unwrap();
-//		let ts = 13 * MONTH_IN_SECONDS as u64;
-//		let promise_extra_value = 5 * COIN;
-//		Timestamp::set_timestamp(ts);
-//		assert_ok!(Staking::promise_extra(Origin::signed(1000), promise_extra_value, 13));
-//		ledger.total_deposit_ring = promise_extra_value;
-//		ledger.active_deposit_ring = promise_extra_value;
-//		// old deposit_item with 12 months promised removed
-//		ledger.deposit_items = vec![TimeDepositItem {
-//			value: promise_extra_value,
-//			start_time: ts,
-//			expire_time: 2 * ts,
-//		}];
-//		assert_eq!(&Staking::ledger(&1000).unwrap(), &ledger);
-//	});
-//}
-//
+#[test]
+fn expired_ring_should_capable_to_promise_again() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let (stash, controller) = (1001, 1000);
+		let _ = Ring::deposit_creating(&stash, 100 * COIN);
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalance::Ring(10 * COIN),
+			RewardDestination::Stash,
+			12,
+		));
+		let mut ledger = Staking::ledger(&controller).unwrap();
+		let ts = (13 * MONTH_IN_SECONDS) as u64;
+		let promise_extra_value = 5 * COIN;
+
+		Timestamp::set_timestamp(ts);
+		assert_ok!(Staking::deposit_extra(
+			Origin::signed(controller),
+			promise_extra_value,
+			13,
+		));
+		ledger.active_deposit_ring = promise_extra_value;
+		// old deposit_item with 12 months promised removed
+		ledger.deposit_items = vec![TimeDepositItem {
+			value: promise_extra_value,
+			start_time: ts,
+			expire_time: 2 * ts,
+		}];
+		assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
+	});
+}
+
 ////#[test]
 ////fn inflation_should_be_correct() {
 ////	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
