@@ -1,8 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode};
-#[cfg(not(feature = "std"))]
-use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, prelude::*, result};
 #[cfg(feature = "std")]
 use sr_primitives::traits::One;
