@@ -583,13 +583,14 @@ decl_module! {
 		/// called by controller
 		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			if Self::ledger(&controller).is_none() { return Err("not a controller"); }
 
 			ensure!(promise_month >= 3 && promise_month <= 36, "months at least is 3 and at most is 36.");
 
 			Self::clear_mature_deposits(&controller);
 
 			let now = <timestamp::Module<T>>::now();
+			let mut ledger = Self::ledger(&controller).unwrap();
 			let StakingLedger {
 				stash,
 				active_ring,
