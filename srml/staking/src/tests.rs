@@ -409,15 +409,6 @@ fn punished_claim_should_work() {
 		ledger.deposit_items.clear();
 		assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
 		assert_eq!(Kton::free_balance(&stash), kton_free_balance - 3 * kton_punishment);
-
-		//		// if deposit_item.value == 0
-		//		// the whole item should be be dropped
-		//		assert_ok!(Staking::unbond_with_punish(
-		//			Origin::signed(controller),
-		//			5 * COIN,
-		//			promise_month as u64 * MONTH_IN_SECONDS as u64
-		//		));
-		//		assert!(Staking::ledger(&controller).unwrap().deposit_items.is_empty());
 	});
 }
 
