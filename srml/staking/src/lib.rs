@@ -583,40 +583,35 @@ decl_module! {
 		/// called by controller
 		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
-
-			ensure!(promise_month <= 36, "months at most is 36.");
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let StakingLedger {
-				active_ring,
-				active_deposit_ring,
-				deposit_items,
-				stash,
-				..
-			} = &mut ledger;
+
+			ensure!(promise_month >= 3 && promise_month <= 36, "months at least is 3 and at most is 36.");
 
 			Self::clear_mature_deposits(&controller);
 
-			let value = value.min(*active_ring - *active_deposit_ring); // active_normal_ring
-
 			let now = <timestamp::Module<T>>::now();
+			let StakingLedger {
+				stash,
+				active_ring,
+				active_deposit_ring,
+				deposit_items,
+				..
+			} = &mut ledger;
+			let value = value.min(*active_ring - *active_deposit_ring); // active_normal_ring
+			// for now, kton_return is free
+			// mint kton
+			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
+			let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
 
-			if promise_month >= 3 {
-				// update active_deposit_ring
-				*active_deposit_ring += value;
+			T::KtonReward::on_unbalanced(kton_positive_imbalance);
+			*active_deposit_ring += value;
+			deposit_items.push(TimeDepositItem {
+				value,
+				start_time: now,
+				expire_time: now + (MONTH_IN_SECONDS * promise_month).into(),
+			});
 
-				// for now, kton_return is free
-				// mint kton
-				let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
-				let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
-				T::KtonReward::on_unbalanced(kton_positive_imbalance);
-
-				let expire_time = now + (MONTH_IN_SECONDS * promise_month).into();
-				deposit_items.push(TimeDepositItem {
-					value,
-					start_time: now,
-					expire_time,
-				});
-			}
+			<Ledger<T>>::insert(&controller, ledger);
 		}
 
 		fn claim_mature_deposits(origin) {
