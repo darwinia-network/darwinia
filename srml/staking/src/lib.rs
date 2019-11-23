@@ -627,6 +627,10 @@ decl_module! {
 		fn claim_deposits_with_punish(origin, expire_time: T::Moment) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+
+			let now = <timestamp::Module<T>>::now();
+			ensure!(expire_time > now, "use unbond instead.");
+
 			let StakingLedger {
 				stash,
 				active_deposit_ring,
@@ -634,49 +638,47 @@ decl_module! {
 				..
 			} = &mut ledger;
 
-			let now = <timestamp::Module<T>>::now();
-
-			ensure!(expire_time > now, "use unbond instead.");
-
 			deposit_items.retain(|item| {
-				if item.expire_time == expire_time {
-					let passed_duration =
-						(now - item.start_time).saturated_into::<u32>()
-						/ MONTH_IN_SECONDS
-						;
-
-					let plan_duration =
-						(item.expire_time - item.start_time).saturated_into::<u32>()
-						/ MONTH_IN_SECONDS
-						;
-
-					let kton_slash = (inflation::compute_kton_return::<T>(item.value, plan_duration) - inflation::compute_kton_return::<T>(item.value, passed_duration)) * 3.into();
-
-					// check total free balance and locked one
-					// strict on punishing in kton
-					if T::Kton::free_balance(stash).checked_sub(&kton_slash).and_then(
-						|new_balance| {
-								T::Kton::ensure_can_withdraw(
-									stash,
-									kton_slash,
-									WithdrawReason::Transfer.into(),
-									new_balance
-								).ok()
-							}
-						)
-						.is_some()
-					{
-						*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-
-						let (imbalance, _) = T::Kton::slash(stash, kton_slash);
-						T::KtonSlash::on_unbalanced(imbalance);
-
-						return false;
-					}
+				if item.expire_time != expire_time {
+					return true;
 				}
 
-				true
+				let kton_slash = {
+					let passed_duration = (now - item.start_time).saturated_into::<u32>() / MONTH_IN_SECONDS;
+					let plan_duration = (item.expire_time - item.start_time).saturated_into::<u32>() / MONTH_IN_SECONDS;
+
+					(
+						inflation::compute_kton_return::<T>(item.value, plan_duration)
+						-
+						inflation::compute_kton_return::<T>(item.value, passed_duration)
+					) * 3.into()
+				};
+				// check total free balance and locked one
+				// strict on punishing in kton
+				if T::Kton::free_balance(stash)
+					.checked_sub(&kton_slash)
+					.and_then(|new_balance| {
+						T::Kton::ensure_can_withdraw(
+							stash,
+							kton_slash,
+							WithdrawReason::Transfer.into(),
+							new_balance
+						).ok()
+					})
+					.is_some()
+				{
+					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+
+					let (imbalance, _) = T::Kton::slash(stash, kton_slash);
+					T::KtonSlash::on_unbalanced(imbalance);
+
+					false
+				} else {
+					true
+				}
 			});
+
+			<Ledger<T>>::insert(&controller, ledger);
 		}
 
 		fn validate(origin, name: Vec<u8>, ratio: u32, unstake_threshold: u32) {
