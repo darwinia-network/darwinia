@@ -493,20 +493,23 @@ fn expired_ring_should_capable_to_promise_again() {
 	});
 }
 
-////#[test]
-////fn inflation_should_be_correct() {
-////	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-////		let initial_issuance = 1_200_000_000 * COIN;
-////		let surplus_needed = initial_issuance - Ring::total_issuance();
-////		let _ = Ring::deposit_into_existing(&11, surplus_needed);
-////		assert_eq!(Ring::total_issuance(), initial_issuance);
-////		//		assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
-////		start_era(11);
-////		// ErasPerEpoch = 10
-////		//		assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
-////	});
-////}
-//
+#[test]
+fn inflation_should_be_correct() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let initial_issuance = 1_200_000_000 * COIN;
+		let surplus_needed = initial_issuance - Ring::total_issuance();
+		let _ = Ring::deposit_into_existing(&11, surplus_needed);
+
+		assert_eq!(Ring::total_issuance(), initial_issuance);
+		//		assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
+		//
+		//		start_era(11);
+		//
+		//		// ErasPerEpoch = 10
+		//		assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
+	});
+}
+
 //#[test]
 //fn reward_should_work_correctly() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
