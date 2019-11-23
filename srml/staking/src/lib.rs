@@ -529,7 +529,6 @@ decl_module! {
 
 			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let StakingLedger {
-				stash: _,
 				active_ring,
 				active_deposit_ring,
 				active_kton,
@@ -911,7 +910,7 @@ impl<T: Trait> Module<T> {
 
 		journal.push(SlashJournalEntry {
 			who: stash.clone(),
-			own_slash: own_slash.clone(),
+			own_slash,
 			amount: slash,
 		});
 
