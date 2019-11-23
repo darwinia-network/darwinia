@@ -1,4 +1,4 @@
-pub use node_runtime::constants::currency::MILLICENTS;
+pub use node_runtime::constants::currency::COIN;
 
 use std::{cell::RefCell, collections::HashSet};
 
@@ -187,7 +187,7 @@ parameter_types! {
 }
 parameter_types! {
 	// decimal 9
-	pub const CAP: Balance = 10_000_000_000 * MILLICENTS;
+	pub const CAP: Balance = 10_000_000_000 * COIN;
 }
 impl Trait for Test {
 	type Ring = Ring;
@@ -270,9 +270,9 @@ impl ExtBuilder {
 		self.set_associated_consts();
 		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * MILLICENTS
+			1_000 * COIN
 		} else {
-			1 * MILLICENTS
+			1 * COIN
 		};
 		let validators = if self.validator_pool {
 			vec![10, 20, 30, 40]
@@ -322,10 +322,10 @@ impl ExtBuilder {
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			current_era: self.current_era,
-			//			current_era_total_reward: 80_000_000 * MILLICENTS / ErasPerEpoch::get() as u64,
+			//			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
 			stakers: vec![
-				//                (2, 1, 1 * MILLICENTS, StakerStatus::<AccountId>::Validator),
-				(11, 10, 100 * MILLICENTS, StakerStatus::<AccountId>::Validator),
+				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
+				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
 				(21, 20, stake_21, StakerStatus::<AccountId>::Validator),
 				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),

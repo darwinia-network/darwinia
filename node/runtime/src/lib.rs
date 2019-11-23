@@ -19,6 +19,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![recursion_limit = "256"]
 
+/// Constant values used within the runtime.
+pub mod constants;
+/// Implementations of some helper traits passed into runtime modules as associated types.
+pub mod impls;
+
 pub use contracts::Gas;
 pub use timestamp::Call as TimestampCall;
 
@@ -55,16 +60,10 @@ use version::RuntimeVersion;
 //use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
 //use im_online::sr25519::AuthorityId as ImOnlineId;
 
-use darwinia_support::TimeStamp;
-use staking::EraIndex;
-
-/// Constant values used within the runtime.
-pub mod constants;
-/// Implementations of some helper traits passed into runtime modules as associated types.
-pub mod impls;
-
 use constants::{currency::*, time::*};
+use darwinia_support::TimeStamp;
 use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
+use staking::EraIndex;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -151,9 +150,9 @@ impl indices::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * MILLICENTS;
-	pub const TransferFee: Balance = 1 * MILLI;
-	pub const CreationFee: Balance = 1 * MILLI;
+	pub const ExistentialDeposit: Balance = 1 * COIN;
+	pub const TransferFee: Balance = 1 * MICRO;
+	pub const CreationFee: Balance = 1 * MICRO;
 }
 impl balances::Trait for Runtime {
 	type Balance = Balance;
@@ -168,7 +167,7 @@ impl balances::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionBaseFee: Balance = 1 * MICRO;
 	pub const TransactionByteFee: Balance = 10 * MICRO;
 	// setting this to zero will disable the weight fee.
 	pub const WeightFeeCoefficient: Balance = 1_000;
@@ -290,15 +289,15 @@ impl finality_tracker::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ContractTransferFee: Balance = 1 * MILLI;
-	pub const ContractCreationFee: Balance = 1 * MILLI;
-	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
+	pub const ContractTransferFee: Balance = 1 * MICRO;
+	pub const ContractCreationFee: Balance = 1 * MICRO;
+	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
 	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
-	pub const ContractFee: Balance = 1 * MILLI;
-	pub const TombstoneDeposit: Balance = 1 * MILLICENTS;
-	pub const RentByteFee: Balance = 1 * MILLICENTS;
-	pub const RentDepositOffset: Balance = 1000 * MILLICENTS;
-	pub const SurchargeReward: Balance = 150 * MILLICENTS;
+	pub const ContractFee: Balance = 1 * MICRO;
+	pub const TombstoneDeposit: Balance = 1 * COIN;
+	pub const RentByteFee: Balance = 1 * COIN;
+	pub const RentDepositOffset: Balance = 1000 * COIN;
+	pub const SurchargeReward: Balance = 150 * COIN;
 }
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
@@ -375,7 +374,7 @@ parameter_types! {
 	// 365 days * 24 hours * 60 minutes / 5 minutes
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
-	pub const HardCap: Balance = 10_000_000_000 * MILLICENTS;
+	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
 impl staking::Trait for Runtime {

@@ -23,9 +23,7 @@ pub mod currency {
 	pub const NANO: Balance = 1;
 	pub const MICRO: Balance = 1_000 * NANO;
 	pub const MILLI: Balance = 1_000 * MICRO;
-	pub const MILLICENTS: Balance = 1_000 * MILLI;
-	pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
-	pub const DOLLARS: Balance = 100 * CENTS;
+	pub const COIN: Balance = 1_000 * MILLI;
 }
 
 /// Time.

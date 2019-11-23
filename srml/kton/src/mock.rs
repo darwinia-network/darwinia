@@ -1,4 +1,4 @@
-pub use node_runtime::constants::currency::MILLICENTS;
+pub use node_runtime::constants::currency::COIN;
 
 use std::{cell::RefCell, collections::HashSet};
 
@@ -100,9 +100,9 @@ impl ExtBuilder {
 		self.set_associated_consts();
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * MILLICENTS
+			1_000 * COIN
 		} else {
-			1 * MILLICENTS
+			1 * COIN
 		};
 
 		let _ = GenesisConfig::<Test> {
