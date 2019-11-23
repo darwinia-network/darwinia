@@ -602,8 +602,8 @@ decl_module! {
 			// mint kton
 			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
 			let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
-			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 
+			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 			*active_deposit_ring += value;
 			deposit_items.push(TimeDepositItem {
 				value,
