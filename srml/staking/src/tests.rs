@@ -678,28 +678,28 @@ fn set_controller_should_work() {
 //	});
 //}
 
-//#[test]
-//fn bond_over_max_promise_month_should_fail() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		gen_paired_account!(stash(123), controller(456));
-//		assert_err!(
-//			Staking::bond(
-//				Origin::signed(stash),
-//				controller,
-//				StakingBalance::Ring(COIN),
-//				RewardDestination::Stash,
-//				37
-//			),
-//			"months at most is 36."
-//		);
-//
-//		gen_paired_account!(stash(123), controller(456), promise_month(12));
-//		assert_err!(
-//			Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(COIN), 37),
-//			"months at most is 36."
-//		);
-//	});
-//}
+#[test]
+fn bond_over_max_promise_month_should_fail() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		gen_paired_account!(stash(123), controller(456));
+		assert_err!(
+			Staking::bond(
+				Origin::signed(stash),
+				controller,
+				StakingBalance::Ring(COIN),
+				RewardDestination::Stash,
+				37
+			),
+			"months at most is 36."
+		);
+
+		gen_paired_account!(stash(123), controller(456), promise_month(12));
+		assert_err!(
+			Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(COIN), 37),
+			"months at most is 36."
+		);
+	});
+}
 
 #[test]
 fn check_stash_already_bonded_and_controller_already_paired() {
