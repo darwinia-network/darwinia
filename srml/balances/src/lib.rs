@@ -31,7 +31,7 @@ use support::{
 	dispatch::Result,
 	traits::{
 		Currency, ExistenceRequirement, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency,
-		SignedImbalance, UpdateBalanceOutcome, WithdrawReason, WithdrawReasons,
+		SignedImbalance, UpdateBalanceOutcome,
 	},
 	Parameter, StorageValue,
 };
@@ -41,7 +41,7 @@ mod mock;
 mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
-use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock};
+use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
