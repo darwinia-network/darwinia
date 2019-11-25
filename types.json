@@ -2,7 +2,7 @@
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
 
-	"RingBalanceOf": "u128",
+    "RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
 	"StakingBalance": {
@@ -22,7 +22,7 @@
 		"others": "Vec<IndividualExposure>"
 	},
 
-    "ValidatorPrefs": {
+	"ValidatorPrefs": {
 		"unstake_threshold": "Compact<u32>",
 		"validator_payment_ratio": "Perbill"
 	},
@@ -42,7 +42,7 @@
 		"expire_time": "Compact<Moment>"
 	},
 
-    "BalanceLock": {
+	"BalanceLock": {
 		"id": "Vec<u8>",
 		"withdraw_lock": "WithdrawLock",
 		"reasons": "WithdrawReasons"

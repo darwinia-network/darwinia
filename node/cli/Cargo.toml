@@ -12,59 +12,59 @@ tokio = "0.1.22"
 futures = "0.1.29"
 exit-future = "0.1.4"
 jsonrpc-core = "14.0.3"
-cli = { package = "substrate-cli", git = 'https://github.com/darwinia-network/substrate.git' }
+cli = { package = "substrate-cli", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 codec = { package = "parity-scale-codec", version = "1.0.0" }
-runtime-io = { package = "sr-io", git = 'https://github.com/darwinia-network/substrate.git' }
-client = { package = "substrate-client", git = 'https://github.com/darwinia-network/substrate.git' }
-primitives = { package = "substrate-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
-inherents = { package = "substrate-inherents", git = 'https://github.com/darwinia-network/substrate.git' }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 node-primitives = { path = "../primitives" }
 hex-literal = "0.2.1"
-substrate-basic-authorship = { git = 'https://github.com/darwinia-network/substrate.git' }
-substrate-service = { git = 'https://github.com/darwinia-network/substrate.git' }
-transaction_pool = { package = "substrate-transaction-pool", git = 'https://github.com/darwinia-network/substrate.git' }
-network = { package = "substrate-network", git = 'https://github.com/darwinia-network/substrate.git' }
-consensus = { package = "substrate-consensus-aura", git = 'https://github.com/darwinia-network/substrate.git' }
-grandpa = { package = "substrate-finality-grandpa", git = 'https://github.com/darwinia-network/substrate.git' }
-sr-primitives = { git = 'https://github.com/darwinia-network/substrate.git' }
-aura_primitives = { package = "substrate-consensus-aura-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
+substrate-basic-authorship = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+substrate-service = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+consensus = { package = "substrate-consensus-aura", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+grandpa = { package = "substrate-finality-grandpa", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+aura_primitives = { package = "substrate-consensus-aura-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 node-executor = { path = "../executor" }
-substrate-keystore = { git = 'https://github.com/darwinia-network/substrate.git' }
-substrate-telemetry = { package = "substrate-telemetry", git = 'https://github.com/darwinia-network/substrate.git' }
+substrate-keystore = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+substrate-telemetry = { package = "substrate-telemetry", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 structopt = "0.3.3"
-transaction-factory = { git = 'https://github.com/darwinia-network/substrate.git' }
-keyring = { package = "substrate-keyring", git = 'https://github.com/darwinia-network/substrate.git' }
-indices = { package = "srml-indices", git = 'https://github.com/darwinia-network/substrate.git'}
-timestamp = { package = "srml-timestamp", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+transaction-factory = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+keyring = { package = "substrate-keyring", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+indices = { package = "srml-indices", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 rand = "0.7.2"
-finality_tracker = { package = "srml-finality-tracker", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-srml-support = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-contracts = { package = "srml-contracts", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+finality_tracker = { package = "srml-finality-tracker", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+srml-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+contracts = { package = "srml-contracts", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 backtrace = "0.3"
 reqwest = "0.9.5"
 serde = { version = "1.0.101", features = [ "derive" ] }
 serde_json = "1.0"
 #new
-chain-spec = { package = "substrate-chain-spec", git = 'https://github.com/darwinia-network/substrate.git' }
-system = { package = "srml-system", git = 'https://github.com/darwinia-network/substrate.git' }
-transaction-payment = { package = "srml-transaction-payment", git = 'https://github.com/darwinia-network/substrate.git' }
+chain-spec = { package = "substrate-chain-spec", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 node-rpc = { path = "../rpc" }
-substrate-rpc = { package = "substrate-rpc", git = 'https://github.com/darwinia-network/substrate.git' }
-client_db = { package = "substrate-client-db", git = 'https://github.com/darwinia-network/substrate.git', features = ["kvdb-rocksdb"] }
-babe = { package = "substrate-consensus-babe", git = 'https://github.com/darwinia-network/substrate.git' }
-babe-primitives = { package = "substrate-consensus-babe-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
-grandpa_primitives = { package = "substrate-finality-grandpa-primitives", git = 'https://github.com/darwinia-network/substrate.git' }
-im-online = { package = "srml-im-online", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-sr-authority-discovery = { package = "srml-authority-discovery", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-authority-discovery = { package = "substrate-authority-discovery", git = 'https://github.com/darwinia-network/substrate.git' }
-offchain = { package = "substrate-offchain", git = 'https://github.com/darwinia-network/substrate.git' }
+substrate-rpc = { package = "substrate-rpc", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client_db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", features = ["kvdb-rocksdb"] }
+babe = { package = "substrate-consensus-babe", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+grandpa_primitives = { package = "substrate-finality-grandpa-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+im-online = { package = "srml-im-online", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-authority-discovery = { package = "srml-authority-discovery", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+authority-discovery = { package = "substrate-authority-discovery", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+offchain = { package = "substrate-offchain", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
-consensus-common = { package = "substrate-consensus-common", git = 'https://github.com/darwinia-network/substrate.git' }
-service-test = { package = "substrate-service-test", git = 'https://github.com/darwinia-network/substrate.git' }
+consensus-common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+service-test = { package = "substrate-service-test", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 [build-dependencies]
-cli = { package = "substrate-cli", git = 'https://github.com/darwinia-network/substrate.git' }
+cli = { package = "substrate-cli", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 structopt = "0.3.3"
