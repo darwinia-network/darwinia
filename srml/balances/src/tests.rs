@@ -18,18 +18,18 @@
 
 #![cfg(test)]
 
-use super::*;
-use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, CALL};
 use sr_primitives::traits::SignedExtension;
 use support::{
 	assert_err, assert_noop, assert_ok,
-	traits::{
-		Currency, ExistenceRequirement::AllowDeath, LockIdentifier, LockableCurrency, ReservableCurrency,
-		WithdrawReason, WithdrawReasons,
-	},
+	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, ReservableCurrency},
 };
 use system::RawOrigin;
 use transaction_payment::ChargeTransactionPayment;
+
+use darwinia_support::{LockIdentifier, WithdrawReason, WithdrawReasons};
+
+use super::*;
+use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, CALL};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
