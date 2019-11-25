@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-ethereum-bridge"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Xavier Lau <c.estlavie@icloud.com>"]
 edition = "2018"
 
@@ -15,8 +15,8 @@ rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrat
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
-darwinia-support = { path = "../../../support", default-features = false }
-merkle-mountain-range = { path = "../../../../core/merkle-mountain-range", default-features = false }
+darwinia-support = { path = "../support", default-features = false }
+merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
 
 [features]
 default = ["std"]
