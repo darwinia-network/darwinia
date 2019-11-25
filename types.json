@@ -21,7 +21,7 @@
   },
   "NormalLock": {
     "amount": "u128",
-    "util": "Moment"
+    "until": "Moment"
   },
   "StakingLock": {
     "staking_amount": "u128",
