@@ -24,7 +24,7 @@ extern crate test;
 pub mod inflation;
 
 use codec::{Decode, Encode, HasCompact};
-use rstd::{borrow::ToOwned, convert::TryInto, prelude::*, result};
+use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
 	traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
@@ -540,9 +540,17 @@ decl_module! {
 				..
 			} = &mut ledger;
 
+			// due to the macro parser, we've to add a bracket
+			// actually, this's totally wrong:
+			//     `a as u32 + b as u32 < c`
+			// workaround:
+			//     1. `(a as u32 + b as u32) < c`
+			//     2. `let c_ = a as u32 + b as u32; c_ < c`
 			ensure!(
-				ring_staking_lock.unbondings.len() + kton_staking_lock.unbondings.len() < MAX_UNLOCKING_CHUNKS.try_into().unwrap(),
-				"can not schedule more unlock chunks"
+				(ring_staking_lock.unbondings.len() as u32 + kton_staking_lock.unbondings.len() as u32)
+				<
+				MAX_UNLOCKING_CHUNKS,
+				"can not schedule more unlock chunks",
 			);
 
 			let at = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>() + T::BondingDuration::get();
