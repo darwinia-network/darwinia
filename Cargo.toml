@@ -79,7 +79,7 @@ members = [
     "srml/kton",
     "srml/staking",
 
-    "srml/ethereum-bridge",
+    "srml/ethereum-migrate",
 ]
 
 exclude = ["node/runtime/wasm"]

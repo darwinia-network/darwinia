@@ -9,24 +9,66 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use darwinia_support::{LockableCurrency, TimeStamp};
+use web3::types::{Address, BlockId, BlockNumber, H256, U256};
+
+use web3::raw::{Header as EthHeader, Receipt as EthReceipt};
+
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
+	type Hash: {};
 }
 
-// config() require `serde = { version = "1.0.101", optional = true }`
-// tracking issue: https://github.com/rust-lang/rust/issues/27812
-decl_storage! {
-	trait Store for Module<T: Trait> as Bridge {
-		pub DepositPool get(deposit_pool) config(): RingBalanceOf<T>;
-		pub DepositValue get(deposit_value): RingBalanceOf<T>;
+#[derive(Clone)]
+#[cfg_attr(feature = "std", derive(Debug, PartialEq))]
+pub struct Proof {
+	pub nodes: Vec<Vec<u8>>,
+}
 
-		// store Vec<Header> or MPT<Header>?
-		pub VerifiedHeader get(verified_header): Vec<Header>;
-		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
+#[derive(Clone, PartialEq, Eq, Encode, Decode, Default)]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct ActionRecord {
+	pub index: u64,
+	pub proof: Vec<u8>,
+	pub header_hash: H256,
+}
+
+decl_storage! {
+	trait Store for Module<T: Trait> as EthBridge {
+		pub BeginNumber get(begin_number): u64;
+
+		pub BeginHeader get(begin_header): Option<EthHeader>;
+
+		pub BestHeader get(best_header): BestHeaderT;
+
+		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
+
+		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
+
+		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
+
+		/// Block delay for verify transaction
+		pub FinalizeNumber get(finalize_number): Option<u64>;
+
+		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
+
+		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
+	}
+
+	add_extra_genesis {
+		config(header): Option<Vec<u8>>;
+		config(number): u64;
+		build(|config| {
+			if let Some(h) = &config.header {
+				BeginNumber::put(header.number);
+
+				<Module<T>>::::genesis_header(header);
+			} else {
+				BeginNumber::put(config.number);
+			}
+		});
+
 	}
 }
 
@@ -35,23 +77,21 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn submit_header(origin, header: Header) {
+		pub fn store_block_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
 			let _ = Self::verify(&header)?;
+		}
 
+		pub fn relay_receipt(origin, proof: ActionRecord) {
+			// confirm that the block hash is right
+			// get the MPT from the block header
+			// Using MPT to verify the proof and index etc.
+		}
+
+		pub fn submit_header(origin, header: Header) {
 			// if header confirmed then return
 			// if header in unverified header then challenge
 		 }
-
-		// `Darwinia lock` corresponds to `TargetChain redeem`
-		pub fn lock(origin) {
-			let _locker = ensure_signed(origin)?;
-		}
-
-		// `Darwinia redeem` corresponds to `TargetChain lock`
-		pub fn redeem(origin, _header: Header) {
-			let _redeemer = ensure_signed(origin)?;
-		}
 	}
 }
 
@@ -84,10 +124,3 @@ impl<T: Trait> Module<T> {
 		unimplemented!()
 	}
 }
-
-type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-// TODO: type
-type Header = ();
-type PrevHash = ();
-// FIXME: currently, use SPV instead
-// pub type MMR = MerkleMountainRange<Blake2b>;
