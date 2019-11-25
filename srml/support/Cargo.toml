@@ -7,11 +7,11 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0.101", optional = true }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-srml-metadata = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-runtime_io = { package = "sr-io", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-sr-primitives = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-srml-support = { git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+srml-metadata = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+srml-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
 
 [features]

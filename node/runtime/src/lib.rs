@@ -32,7 +32,9 @@ use sr_api::impl_runtime_apis;
 
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
-use sr_primitives::traits::{self, BlakeTwo256, Block as BlockT, NumberFor, SaturatedConversion, StaticLookup};
+use sr_primitives::traits::{
+	self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
+};
 use sr_primitives::transaction_validity::TransactionValidity;
 use sr_primitives::weights::Weight;
 #[cfg(any(feature = "std", test))]
@@ -60,7 +62,7 @@ use substrate_primitives::OpaqueMetadata;
 use system::offchain::TransactionSubmitter;
 use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 
-use darwinia_support::types::{Locks, TimeStamp};
+use darwinia_support::TimeStamp;
 use staking::EraIndex;
 pub use staking::StakerStatus;
 
@@ -182,7 +184,6 @@ impl balances::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
@@ -245,7 +246,6 @@ impl authorship::Trait for Runtime {
 // TODO: Introduce some structure to tie these together to make it a bit less of a footgun. This
 // should be easy, since OneSessionHandler trait provides the `Key` as an associated type. #2858
 
-type SessionHandlers = (Grandpa, Babe, ImOnline, AuthorityDiscovery);
 parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
 }
@@ -255,7 +255,7 @@ impl session::Trait for Runtime {
 	type ValidatorIdOf = staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type OnSessionEnding = Staking;
-	type SessionHandler = SessionHandlers;
+	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 	type SelectInitialValidators = Staking;
@@ -383,7 +383,6 @@ impl kton::Trait for Runtime {
 	type Event = Event;
 	type OnMinted = ();
 	type OnRemoval = ();
-	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {

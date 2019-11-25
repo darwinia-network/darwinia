@@ -10,10 +10,10 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-rstd = { package = "sr-std", git = 'https://github.com/paritytech/substrate.git', default-features = false }
-sr-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
-substrate-primitives = {git = 'https://github.com/paritytech/substrate.git', default-features = false }
-rlp = { version = "0.4.3", default-features = true }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+rlp = { version = "0.4.3", optional = true }
 parity-crypto = { version = "0.4.2", features = ["publickey"] }
 rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git", default-features = false }
 ethereum-types = { version = "0.8.0", default-feature = false, features = ["serialize"] }
@@ -25,7 +25,7 @@ impl-rlp = { version = "0.2", default-features = false, optional = true }
 
 
 [dev-dependencies]
-support = { package = "srml-support", git = 'https://github.com/darwinia-network/substrate.git'}
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
 rustc-hex = "2.0"
 keccak-hasher = "0.1"
 triehash-ethereum = { version = "0.2", git = "https://github.com/paritytech/parity-ethereum.git" }

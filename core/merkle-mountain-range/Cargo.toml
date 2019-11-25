@@ -9,8 +9,8 @@ edition = "2018"
 [dependencies]
 blake2 = { version = "0.8.1", default-features = false }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-rstd = { package = "sr-std", git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
-system = { package = "srml-system",  git = 'https://github.com/darwinia-network/substrate.git', default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
 [features]
 default = ["std"]

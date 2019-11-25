@@ -66,12 +66,12 @@ brew install cmake pkg-config openssl git llvm
 
 Initalize with darwinia-builder: [darwinia-builder](https://github.com/AurevoirXavier/darwinia-builder) which also use for cross compile
 
-Or, you can run scripts step by step, like the following, [WIP](https://github.com/darwinia-network/darwinia/issues/83):
+Or, you can run scripts step by step, like the following:
 ```bash
 curl https://sh.rustup.rs -sSf | sh
-rustup install nightly-2019-10-13
-rustup default nightly-2019-10-13
-rustup target add wasm32-unknown-unknown --toolchain=nightly-2019-10-13
+rustup install nightly
+rustup default nightly
+rustup target add wasm32-unknown-unknown
 cargo install --git https://github.com/alexcrichton/wasm-gc
 ```
 

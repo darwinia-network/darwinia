@@ -14,7 +14,7 @@ use srml_support::{
 use substrate_primitives::{crypto::key_types, H256};
 
 use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
-use darwinia_support::types::{CompositeLock, Locks, TimeStamp};
+use darwinia_support::TimeStamp;
 use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
@@ -133,7 +133,6 @@ impl balances::Trait for Test {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-	type Locks = Locks<Balance, TimeStamp>;
 }
 parameter_types! {
 	pub const Period: BlockNumber = 1;
@@ -171,7 +170,6 @@ impl kton::Trait for Test {
 	type Event = ();
 	type OnMinted = ();
 	type OnRemoval = ();
-	type Locks = Locks<Balance, TimeStamp>;
 }
 
 parameter_types! {
