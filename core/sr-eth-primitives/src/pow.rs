@@ -1,15 +1,32 @@
 /// A simplified prototype for light verification for pow.
 use super::*;
 use crate::keccak::{keccak_256, keccak_512, H256 as BH256};
+use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
+use keccak_hash::KECCAK_EMPTY_LIST_RLP;
+use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
+use sr_primitives::traits::Saturating;
 
 pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
 // it might change due to ethereum's upgrade
 pub const PROGPOW_TRANSITION: u64 = u64::max_value();
+pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = 23001;
+pub const DIFFICULTY_HARDFORK_BOUND_DIVISOR: u128 = 0x0200;
+pub const DIFFICULTY_BOUND_DIVISOR: u128 = 0x0800;
+pub const EXPIP2_TRANSITION: u64 = 0xc3500;
+pub const EXPIP2_DURATION_LIMIT: u64 = 0x1e;
+pub const DURATION_LIMIT: u64 = 0x3C;
+pub const HOMESTEAD_TRANSITION: u64 = 0x30d40;
+pub const EIP100B_TRANSITION: u64 = 0xC3500;
+pub const DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x3C;
+pub const METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x1E;
+pub const BOMB_DEFUSE_TRANSITION: u64 = 0x30d40;
+pub const ECIP1010_PAUSE_TRANSITION: u64 = 3000000;
+pub const ECIP1010_CONTINUE_TRANSITION: u64 = 5000000;
 
 #[derive(Default, PartialEq, Eq, Clone)]
 pub struct EthHeader {
@@ -292,14 +309,142 @@ fn quick_get_difficulty(header_hash: &BH256, nonce: u64, mix_hash: &BH256, progp
 	}
 }
 
+fn calculate_difficulty(header: &EthHeader, parent: &EthHeader) -> U256 {
+	const EXP_DIFF_PERIOD: u64 = 100_000;
+
+	let mut difficulty_bomb_delays = BTreeMap::<BlockNumber, BlockNumber>::new();
+	difficulty_bomb_delays.insert(0xC3500, 3000000);
+	if header.number() == 0 {
+		panic!("Can't calculate genesis block difficulty");
+	}
+
+	let parent_has_uncles = parent.uncles_hash() != &KECCAK_EMPTY_LIST_RLP;
+
+	let min_difficulty = U256::from(MINIMUM_DIFFICULTY);
+
+	let difficulty_hardfork = header.number() >= DIFFICULTY_HARDFORK_TRANSITION;
+	let difficulty_bound_divisor = U256::from(if difficulty_hardfork {
+		DIFFICULTY_HARDFORK_BOUND_DIVISOR
+	} else {
+		DIFFICULTY_BOUND_DIVISOR
+	});
+
+	let expip2_hardfork = header.number() >= EXPIP2_TRANSITION;
+	let duration_limit = if expip2_hardfork {
+		EXPIP2_DURATION_LIMIT
+	} else {
+		DURATION_LIMIT
+	};
+
+	let frontier_limit = HOMESTEAD_TRANSITION;
+
+	let mut target = if header.number() < frontier_limit {
+		if header.timestamp() >= parent.timestamp() + duration_limit {
+			*parent.difficulty() - (*parent.difficulty() / difficulty_bound_divisor)
+		} else {
+			*parent.difficulty() + (*parent.difficulty() / difficulty_bound_divisor)
+		}
+	} else {
+		//		trace!(target: "ethash", "Calculating difficulty parent.difficulty={}, header.timestamp={}, parent.timestamp={}", parent.difficulty(), header.timestamp(), parent.timestamp());
+		//block_diff = parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99)
+		let (increment_divisor, threshold) = if header.number() < EIP100B_TRANSITION {
+			(DIFFICULTY_INCREMENT_DIVISOR, 1)
+		} else if parent_has_uncles {
+			(METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR, 2)
+		} else {
+			(METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR, 1)
+		};
+
+		let diff_inc = (header.timestamp() - parent.timestamp()) / increment_divisor;
+		if diff_inc <= threshold {
+			*parent.difficulty() + *parent.difficulty() / difficulty_bound_divisor * U256::from(threshold - diff_inc)
+		} else {
+			let multiplier: U256 = cmp::min(diff_inc - threshold, 99).into();
+			parent
+				.difficulty()
+				.saturating_sub(*parent.difficulty() / difficulty_bound_divisor * multiplier)
+		}
+	};
+	target = cmp::max(min_difficulty, target);
+	if header.number() < BOMB_DEFUSE_TRANSITION {
+		if header.number() < ECIP1010_PAUSE_TRANSITION {
+			let mut number = header.number();
+			let original_number = number;
+			for (block, delay) in &difficulty_bomb_delays {
+				if original_number >= *block {
+					number = number.saturating_sub(*delay);
+				}
+			}
+			let period = (number / EXP_DIFF_PERIOD) as usize;
+			if period > 1 {
+				target = cmp::max(min_difficulty, target + (U256::from(1) << (period - 2)));
+			}
+		} else if header.number() < ECIP1010_CONTINUE_TRANSITION {
+			let fixed_difficulty = ((ECIP1010_PAUSE_TRANSITION / EXP_DIFF_PERIOD) - 2) as usize;
+			target = cmp::max(min_difficulty, target + (U256::from(1) << fixed_difficulty));
+		} else {
+			let period = ((parent.number() + 1) / EXP_DIFF_PERIOD) as usize;
+			let delay = ((ECIP1010_CONTINUE_TRANSITION - ECIP1010_PAUSE_TRANSITION) / EXP_DIFF_PERIOD) as usize;
+			target = cmp::max(min_difficulty, target + (U256::from(1) << (period - delay - 2)));
+		}
+	}
+	target
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use error::BlockError;
-	use eth_spec as spec;
 	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;
+
+	#[inline]
+	fn sequential_header() -> (EthHeader, EthHeader) {
+		let mixh1 = H256::from(hex!("543bc0769f7d5df30e7633f4a01552c2cee7baace8a6da37fddaa19e49e81209"));
+		let nonce1 = H64::from(hex!("a5d3d0ccc8bb8a29"));
+		// #8996777
+		let header1 = EthHeader {
+			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
+			timestamp: 0x5ddb67a0,
+			number: 0x8947a9,
+			author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
+			transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
+			extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
+			state_root: H256::from(hex!("4ba0fb3e6f4c1af32a799df667d304bcdb7f8154e6f86831f92f5a354c2baf70")),
+			receipts_root: H256::from(hex!("5968afe6026e673df3b9745d925a5648282d2195a46c22771fec48210daf8e23")),
+			log_bloom: Bloom::from_str("0c7b091bc8ec02401ad12491004e3014e8806390031950181c118580ac61c9a00409022c418162002710a991108a11ca5383d4921d1da46346edc3eb8068481118b005c0b20700414c13916c54011a0922904aa6e255406a33494c84a1426410541819070e04852042410b30030d4c88a5103082284c7d9bd42090322ae883e004224e18db4d858a0805d043e44a855400945311cb253001412002ea041a08e30394fc601440310920af2192dc4194a03302191cf2290ac0c12000815324eb96a08000aad914034c1c8eb0cb39422e272808b7a4911989c306381502868820b4b95076fc004b14dd48a0411024218051204d902b80d004c36510400ccb123084").unwrap(),
+			gas_used: 0x986d77.into(),
+			gas_limit: 0x989631.into(),
+			difficulty: 0x92ac28cbc4930_u64.into(),
+			seal: vec![rlp::encode(&mixh1), rlp::encode(&nonce1)],
+			hash: Some(H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b"))),
+		};
+
+		// # 8996778
+		let mixh2 = H256::from(hex!("0ea8027f96c18f474e9bc74ff71d29aacd3f485d5825be0a8dde529eb82a47ed"));
+		let nonce2 = H64::from(hex!("55859dc00728f99a"));
+		let header2 = EthHeader {
+			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
+			timestamp: 0x5ddb67a3,
+			number: 0x8947aa,
+			author: Address::from(hex!("d224ca0c819e8e97ba0136b3b95ceff503b79f53")),
+			transactions_root: H256::from(hex!("efebac0e71cc2de04cf2f509bb038a82bbe92a659e010061b49b5387323b5ea6")),
+			uncles_hash: H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b")),
+			extra_data: "7575706f6f6c2e636e2d3163613037623939".from_hex().unwrap(),
+			state_root: H256::from(hex!("5dfc6357dda61a7f927292509afacd51453ff158342eb9628ccb419fbe91c638")),
+			receipts_root: H256::from(hex!("3fbd99e253ff45045eec1e0011ac1b45fa0bccd641a356727defee3b166dd3bf")),
+			log_bloom: Bloom::from_str("0c0110a00144a0082057622381231d842b8977a98d1029841000a1c21641d91946594605e902a5432000159ad24a0300428d8212bf4d1c81c0f8478402a4a818010011437c07a112080e9a4a14822311a6840436f26585c84cc0d50693c148bf9830cf3e0a08970788a4424824b009080d52372056460dec808041b68ea04050bf116c041f25a3329d281068740ca911c0d4cd7541a1539005521694951c286567942d0024852080268d29850000954188f25151d80e4900002122c01ad53b7396acd34209c24110b81b9278642024603cd45387812b0696d93992829090619cf0b065a201082280812020000430601100cb08a3808204571c0e564d828648fb").unwrap(),
+			gas_used: 0x98254e.into(),
+			gas_limit: 0x98700d.into(),
+			difficulty: 0x92c07e50de0b9_u64.into(),
+			seal: vec![rlp::encode(&mixh2), rlp::encode(&nonce2)],
+			hash: Some(H256::from(hex!("b972df738904edb8adff9734eebdcb1d3b58fdfc68a48918720a4a247170f15e"))),
+		};
+
+		(header1, header2)
+	}
 
 	#[test]
 	fn can_do_proof_of_work_verification_fail() {
@@ -323,28 +468,16 @@ mod tests {
 	}
 
 	#[test]
-	fn can_verify_mainnet_difficulty() {
-		let mix_hash = H256::from(hex!("543bc0769f7d5df30e7633f4a01552c2cee7baace8a6da37fddaa19e49e81209"));
-		let nonce = H64::from(hex!("a5d3d0ccc8bb8a29"));
-		let header = EthHeader {
-			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
-			timestamp: 0x5ddb67a0,
-			number: 0x8947a9,
-			author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
-			transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
-			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
-			extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
-			state_root: H256::from(hex!("4ba0fb3e6f4c1af32a799df667d304bcdb7f8154e6f86831f92f5a354c2baf70")),
-			receipts_root: H256::from(hex!("5968afe6026e673df3b9745d925a5648282d2195a46c22771fec48210daf8e23")),
-			log_bloom: Bloom::from_str("0c7b091bc8ec02401ad12491004e3014e8806390031950181c118580ac61c9a00409022c418162002710a991108a11ca5383d4921d1da46346edc3eb8068481118b005c0b20700414c13916c54011a0922904aa6e255406a33494c84a1426410541819070e04852042410b30030d4c88a5103082284c7d9bd42090322ae883e004224e18db4d858a0805d043e44a855400945311cb253001412002ea041a08e30394fc601440310920af2192dc4194a03302191cf2290ac0c12000815324eb96a08000aad914034c1c8eb0cb39422e272808b7a4911989c306381502868820b4b95076fc004b14dd48a0411024218051204d902b80d004c36510400ccb123084").unwrap(),
-			gas_used: 0x986d77.into(),
-			gas_limit: 0x989631.into(),
-			difficulty: 0x92ac28cbc4930_u64.into(),
-			seal: vec![rlp::encode(&mix_hash), rlp::encode(&nonce)],
-			hash: Some(H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b"))),
-		};
-
+	fn can_verify_basic_difficulty() {
+		let header = sequential_header().0;
 		assert_eq!(verify_block_basic(&header), Ok(()));
+	}
+
+	#[test]
+	fn can_calculate_difficulty() {
+		let (header1, header2) = sequential_header();
+		let expected = U256::from_str("92c07e50de0b9").unwrap();
+		assert_eq!(calculate_difficulty(&header2, &header1), expected);
 	}
 
 }
