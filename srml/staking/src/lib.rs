@@ -1127,6 +1127,9 @@ impl<T: Trait> Module<T> {
 		maybe_new_validators
 	}
 
+	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its
+	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
+	/// pre-payout cut.
 	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) -> RingPositiveImbalanceOf<T> {
 		let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
 		let reward = reward - off_the_table;
