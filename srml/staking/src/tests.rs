@@ -620,23 +620,8 @@ fn inflation_should_be_correct() {
 //	});
 //}
 
-//#[test]
-//fn set_controller_should_remove_old_ledger() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let stash = 11;
-//		let old_controller = 10;
-//		let new_controller = 12;
-//
-//		assert!(Staking::ledger(&old_controller).is_some());
-//		assert_eq!(Staking::bonded(&stash), Some(old_controller));
-//
-//		assert_ok!(Staking::set_controller(Origin::signed(stash), new_controller));
-//		assert!(Staking::ledger(&old_controller).is_none());
-//	});
-//}
-
 #[test]
-fn set_controller_should_not_change_ledger() {
+fn set_controller_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let ledger = Staking::ledger(&10).unwrap();
 		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
