@@ -13,61 +13,61 @@ use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock};
 // promise for `m` month with 50 Ring and 50 Kton
 // `m` can be ignore, and it wont perform `bond` action
 // gen_paired_account!(a(1), b(2));
-//macro_rules! gen_paired_account {
-//	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $promise_month:ident($how_long:expr)) => {
-//		#[allow(non_snake_case, unused)]
-//		let $stash = $stash_id;
-//		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-//		Kton::deposit_creating(&$stash, 100 * COIN);
-//		#[allow(non_snake_case, unused)]
-//		let $controller = $controller_id;
-//		let _ = Ring::deposit_creating(&$controller, COIN);
-//		#[allow(non_snake_case, unused)]
-//		let $promise_month = $how_long;
-//		assert_ok!(Staking::bond(
-//			Origin::signed($stash),
-//			$controller,
-//			StakingBalance::Ring(50 * COIN),
-//			RewardDestination::Stash,
-//			$how_long
-//			));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed($stash),
-//			StakingBalance::Kton(50 * COIN),
-//			$how_long
-//			));
-//	};
-//	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $how_long:expr) => {
-//		#[allow(non_snake_case, unused)]
-//		let $stash = $stash_id;
-//		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-//		Kton::deposit_creating(&$stash, 100 * COIN);
-//		#[allow(non_snake_case, unused)]
-//		let $controller = $controller_id;
-//		let _ = Ring::deposit_creating(&$controller, COIN);
-//		assert_ok!(Staking::bond(
-//			Origin::signed($stash),
-//			$controller,
-//			StakingBalance::Ring(50 * COIN),
-//			RewardDestination::Stash,
-//			$how_long
-//			));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed($stash),
-//			StakingBalance::Kton(50 * COIN),
-//			$how_long
-//			));
-//	};
-//	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr)) => {
-//		#[allow(non_snake_case, unused)]
-//		let $stash = $stash_id;
-//		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-//		Kton::deposit_creating(&$stash, 100 * COIN);
-//		#[allow(non_snake_case, unused)]
-//		let $controller = $controller_id;
-//		let _ = Ring::deposit_creating(&$controller, COIN);
-//	};
-//}
+macro_rules! gen_paired_account {
+	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $promise_month:ident($how_long:expr)) => {
+		#[allow(non_snake_case, unused)]
+		let $stash = $stash_id;
+		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
+		Kton::deposit_creating(&$stash, 100 * COIN);
+		#[allow(non_snake_case, unused)]
+		let $controller = $controller_id;
+		let _ = Ring::deposit_creating(&$controller, COIN);
+		#[allow(non_snake_case, unused)]
+		let $promise_month = $how_long;
+		assert_ok!(Staking::bond(
+			Origin::signed($stash),
+			$controller,
+			StakingBalance::Ring(50 * COIN),
+			RewardDestination::Stash,
+			$how_long
+			));
+		assert_ok!(Staking::bond_extra(
+			Origin::signed($stash),
+			StakingBalance::Kton(50 * COIN),
+			$how_long
+			));
+	};
+	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr), $how_long:expr) => {
+		#[allow(non_snake_case, unused)]
+		let $stash = $stash_id;
+		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
+		Kton::deposit_creating(&$stash, 100 * COIN);
+		#[allow(non_snake_case, unused)]
+		let $controller = $controller_id;
+		let _ = Ring::deposit_creating(&$controller, COIN);
+		assert_ok!(Staking::bond(
+			Origin::signed($stash),
+			$controller,
+			StakingBalance::Ring(50 * COIN),
+			RewardDestination::Stash,
+			$how_long
+			));
+		assert_ok!(Staking::bond_extra(
+			Origin::signed($stash),
+			StakingBalance::Kton(50 * COIN),
+			$how_long
+			));
+	};
+	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr)) => {
+		#[allow(non_snake_case, unused)]
+		let $stash = $stash_id;
+		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
+		Kton::deposit_creating(&$stash, 100 * COIN);
+		#[allow(non_snake_case, unused)]
+		let $controller = $controller_id;
+		let _ = Ring::deposit_creating(&$controller, COIN);
+	};
+}
 
 #[test]
 fn test_env_build() {
@@ -631,7 +631,7 @@ fn set_controller_should_work() {
 }
 
 //#[test]
-//fn slash_should_not_touch_unbondingss() {
+//fn slash_should_not_touch_unbondings() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 //		let old_ledger = Staking::ledger(&10).unwrap();
 //		// only deposit_ring, no normal_ring
@@ -677,7 +677,7 @@ fn set_controller_should_work() {
 //		assert_eq!(ledger.unbondings[0].value, StakingBalance::Ring(10 * COIN));
 //	});
 //}
-//
+
 //#[test]
 //fn bond_over_max_promise_month_should_fail() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -700,34 +700,34 @@ fn set_controller_should_work() {
 //		);
 //	});
 //}
-//
-//#[test]
-//fn stash_already_bonded_and_controller_already_paired_should_fail() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		gen_paired_account!(unpaired_stash(123), unpaired_controller(456));
-//		assert_err!(
-//			Staking::bond(
-//				Origin::signed(11),
-//				unpaired_controller,
-//				StakingBalance::Ring(COIN),
-//				RewardDestination::Stash,
-//				0
-//			),
-//			"stash already bonded"
-//		);
-//		assert_err!(
-//			Staking::bond(
-//				Origin::signed(unpaired_stash),
-//				10,
-//				StakingBalance::Ring(COIN),
-//				RewardDestination::Stash,
-//				0
-//			),
-//			"controller already paired"
-//		);
-//	});
-//}
-//
+
+#[test]
+fn check_stash_already_bonded_and_controller_already_paired() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		gen_paired_account!(unpaired_stash(123), unpaired_controller(456));
+		assert_err!(
+			Staking::bond(
+				Origin::signed(11),
+				unpaired_controller,
+				StakingBalance::Ring(COIN),
+				RewardDestination::Stash,
+				0
+			),
+			"stash already bonded"
+		);
+		assert_err!(
+			Staking::bond(
+				Origin::signed(unpaired_stash),
+				10,
+				StakingBalance::Ring(COIN),
+				RewardDestination::Stash,
+				0
+			),
+			"controller already paired"
+		);
+	});
+}
+
 //#[test]
 //fn pool_should_be_increased_and_decreased_correctly() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
