@@ -856,6 +856,13 @@ impl<T: Trait> Module<T> {
 		<Ledger<T>>::insert(controller, ledger);
 	}
 
+	/// Slash a given validator by a specific amount with given (historical) exposure.
+	///
+	/// Removes the slash from the validator's balance by preference,
+	/// and reduces the nominators' balance if needed.
+	///
+	/// Returns the resulting `NegativeImbalance` to allow distributing the slashed amount and
+	/// pushes an entry onto the slash journal.
 	fn slash_validator(
 		stash: &T::AccountId,
 		slash: ExtendedBalance,
