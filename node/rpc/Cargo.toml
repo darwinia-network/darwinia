@@ -5,12 +5,12 @@ authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2018"
 
 [dependencies]
-client = { package = "substrate-client", git = 'https://github.com/darwinia-network/substrate.git' }
+client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 jsonrpc-core = "14.0.3"
 node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
-sr-primitives = { git = 'https://github.com/darwinia-network/substrate.git' }
-srml-contracts-rpc = { git = 'https://github.com/darwinia-network/substrate.git' }
-srml-transaction-payment-rpc = { git = 'https://github.com/darwinia-network/substrate.git' }
-srml-system-rpc = { git = 'https://github.com/darwinia-network/substrate.git' }
-transaction_pool = { package = "substrate-transaction-pool", git = 'https://github.com/darwinia-network/substrate.git' }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+srml-contracts-rpc = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+srml-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+srml-system-rpc = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
