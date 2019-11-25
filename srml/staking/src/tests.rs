@@ -816,45 +816,22 @@ fn pool_should_be_increased_and_decreased_correctly() {
 	});
 }
 
-//#[test]
-//fn unbond_over_max_unbondings_chunks_should_fail() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		gen_paired_account!(stash(123), controller(456), promise_month(12));
-//		let deposit_items_len = MAX_UNLOCKING_CHUNKS + 1;
-//
-//		for _ in 1..deposit_items_len {
-//			assert_ok!(Staking::bond_extra(
-//				Origin::signed(stash),
-//				StakingBalance::Ring(COIN),
-//				promise_month
-//			));
-//		}
-//		{
-//			let ledger = Staking::ledger(&controller).unwrap();
-//			assert_eq!(ledger.deposit_items.len(), deposit_items_len);
-//			assert_eq!(ledger.unbondings.len(), 0);
-//		}
-//
-//		Timestamp::set_timestamp(promise_month as u64 * MONTH_IN_SECONDS as u64);
-//
-//		for _ in 1..deposit_items_len {
-//			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(COIN)));
-//		}
-//		{
-//			let ledger = Staking::ledger(&controller).unwrap();
-//			assert_eq!(ledger.deposit_items.len(), 1);
-//			assert_eq!(ledger.unbondings.len(), deposit_items_len - 1);
-//		}
-//		assert_err!(
-//			Staking::unbond(
-//				Origin::signed(controller),
-//				StakingBalance::Ring((deposit_items_len - 1) as u64 * COIN)
-//			),
-//			"can not schedule more unlock chunks"
-//		);
-//	});
-//}
-//
+#[test]
+fn unbond_over_max_unbondings_chunks_should_fail() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		gen_paired_account!(stash(123), controller(456), promise_month(12));
+
+		for i in timestamp
+		assert_err!(
+			Staking::unbond(
+				Origin::signed(controller),
+				StakingBalance::Ring((deposit_items_len - 1) as u128 * COIN),
+			),
+			"can not schedule more unlock chunks"
+		);
+	});
+}
+
 //#[test]
 //fn unlock_value_should_be_increased_and_decreased_correctly() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
