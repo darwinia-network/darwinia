@@ -5,7 +5,6 @@
     "RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
-
 	"StakingBalance": {
 		"_enum": {
 			"Ring": "RingBalanceOf",
