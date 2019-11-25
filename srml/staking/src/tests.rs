@@ -510,8 +510,8 @@ fn inflation_should_be_correct() {
 }
 
 //#[test]
-//fn reward_should_work_correctly() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+//fn reward_should_work() {
+//	ExtBuilder::default().nominate(false).build().execute_with(|| {
 //		// create controller account
 //		let _ = Ring::deposit_creating(&2000, COIN);
 //		let _ = Ring::deposit_creating(&1000, COIN);
@@ -521,11 +521,10 @@ fn inflation_should_be_correct() {
 //		Kton::deposit_creating(&2001, 10 * COIN);
 //		// new validator
 //		let _ = Ring::deposit_creating(&1001, 300 * COIN);
-//		Kton::deposit_creating(&1001, 1 * COIN);
+//		Kton::deposit_creating(&1001, COIN);
 //		// handle some dirty work
 //		let _ = Ring::deposit_creating(&201, 2000 * COIN);
 //		Kton::deposit_creating(&201, 10 * COIN);
-//		assert_eq!(Kton::free_balance(&201), 10 * COIN);
 //
 //		// 2001-2000
 //		assert_ok!(Staking::bond(
@@ -535,11 +534,7 @@ fn inflation_should_be_correct() {
 //			RewardDestination::Controller,
 //			12,
 //		));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(2001),
-//			StakingBalance::Kton(1 * COIN),
-//			0
-//		));
+//		assert_ok!(Staking::bond_extra(Origin::signed(2001), StakingBalance::Kton(COIN), 0));
 //		// 1001-1000
 //		assert_ok!(Staking::bond(
 //			Origin::signed(1001),
@@ -548,40 +543,32 @@ fn inflation_should_be_correct() {
 //			RewardDestination::Controller,
 //			12,
 //		));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(1001),
-//			StakingBalance::Kton(1 * COIN),
-//			0
-//		));
-//		let ring_pool = Staking::ring_pool();
-//		let kton_pool = Staking::kton_pool();
+//		assert_ok!(Staking::bond_extra(Origin::signed(1001), StakingBalance::Kton(COIN), 0));
 //		// 201-200
 //		assert_ok!(Staking::bond(
 //			Origin::signed(201),
 //			200,
-//			StakingBalance::Ring(3000 * COIN - ring_pool),
+//			StakingBalance::Ring(3000 * COIN - Staking::ring_pool()),
 //			RewardDestination::Stash,
 //			12,
 //		));
 //		assert_ok!(Staking::bond_extra(
 //			Origin::signed(201),
-//			StakingBalance::Kton(10 * COIN - kton_pool),
+//			StakingBalance::Kton(10 * COIN - Staking::kton_pool()),
 //			0,
 //		));
-//		// ring_pool and kton_pool
 //		assert_eq!(Staking::ring_pool(), 3000 * COIN);
 //		assert_eq!(Staking::kton_pool(), 10 * COIN);
+//
 //		// 1/5 ring_pool and 1/5 kton_pool
-//		assert_ok!(Staking::validate(Origin::signed(2000), [0; 8].to_vec(), 0, 3));
+//		assert_ok!(Staking::validate(Origin::signed(2000), vec![0; 8], 0, 3));
 //		assert_ok!(Staking::nominate(Origin::signed(1000), vec![2001]));
 //
-//		assert_eq!(Staking::ledger(&2000).unwrap().active_kton, 1 * COIN);
-//		assert_eq!(Staking::ledger(&2000).unwrap().active_ring, 300 * COIN);
-//		assert_eq!(Staking::power_of(&2001), 1_000_000_000 / 10 as u128);
+//		assert_eq!(Staking::power_of(&2001), 100_000_000);
 //		// 600COIN for rewarding ring bond-er
 //		// 600COIN for rewarding kton bond-er
-//		Staking::select_validators();
-//		Staking::reward_validator(&2001, 1200 * COIN);
+//		Staking::new_era(Session::current_index());
+//		Staking::reward_validator(&2001, 200);
 //
 //		assert_eq!(
 //			Staking::stakers(2001),
@@ -590,7 +577,7 @@ fn inflation_should_be_correct() {
 //				own: 600000000000,
 //				others: vec![IndividualExposure {
 //					who: 1001,
-//					value: 600000000000
+//					value: 600000000000,
 //				}]
 //			}
 //		);
@@ -598,7 +585,7 @@ fn inflation_should_be_correct() {
 //		assert_eq!(Ring::free_balance(&1000), 601 * COIN);
 //	});
 //}
-//
+
 //#[test]
 //fn slash_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -632,16 +619,7 @@ fn inflation_should_be_correct() {
 //		assert_eq!(Kton::free_balance(&1001), kton_free_balance - slash_value);
 //	});
 //}
-//
-//#[test]
-////fn test_inflation() {
-////	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-////		assert_eq!(Staking::current_era_total_reward(), 80_000_000 * COIN / 10);
-////		start_era(20);
-////		assert_eq!(Staking::epoch_index(), 2);
-////		assert_eq!(Staking::current_era_total_reward(), 9_999_988_266 * COIN / 1000);
-////	});
-////}
+
 //#[test]
 //fn set_controller_should_remove_old_ledger() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -656,16 +634,17 @@ fn inflation_should_be_correct() {
 //		assert!(Staking::ledger(&old_controller).is_none());
 //	});
 //}
-//
-//#[test]
-//fn set_controller_should_not_change_ledger() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 100 * COIN);
-//		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
-//		assert_eq!(Staking::ledger(&12).unwrap().active_ring, 100 * COIN);
-//	});
-//}
-//
+
+#[test]
+fn set_controller_should_not_change_ledger() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let ledger = Staking::ledger(&10).unwrap();
+		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
+		assert_eq!(Staking::ledger(&10), None);
+		assert_eq!(Staking::ledger(&12).unwrap(), ledger);
+	});
+}
+
 //#[test]
 //fn slash_should_not_touch_unbondingss() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -1161,7 +1140,6 @@ fn inflation_should_be_correct() {
 //	assert_ne!(free_balance_with_new_era, 0);
 //	assert!(free_balance > free_balance_with_new_era);
 //}
-
 #[test]
 fn xavier_q1() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
