@@ -623,58 +623,71 @@ fn inflation_should_be_correct() {
 #[test]
 fn set_controller_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-		let ledger = Staking::ledger(&10).unwrap();
-		assert_ok!(Staking::set_controller(Origin::signed(11), 12));
-		assert_eq!(Staking::ledger(&10), None);
-		assert_eq!(Staking::ledger(&12).unwrap(), ledger);
+		let (stash, old_controller, new_controller) = (11, 10, 12);
+		let ledger = Staking::ledger(&old_controller).unwrap();
+
+		assert_ok!(Staking::set_controller(Origin::signed(stash), new_controller));
+		assert_eq!(Staking::ledger(&old_controller), None);
+		assert_eq!(Staking::ledger(&new_controller).unwrap(), ledger);
 	});
 }
 
 //#[test]
 //fn slash_should_not_touch_unbondings() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let old_ledger = Staking::ledger(&10).unwrap();
+//		let (stash, controller) = (11, 10);
+//		let ledger = Staking::ledger(&controller).unwrap();
+//		let unbondings = (
+//			ledger.ring_staking_lock.unbondings.clone(),
+//			ledger.kton_staking_lock.unbondings.clone(),
+//		);
+//
 //		// only deposit_ring, no normal_ring
 //		assert_eq!(
-//			(
-//				old_ledger.active_ring,
-//				old_ledger.active_deposit_ring
-//			),
+//			(ledger.active_ring, ledger.active_deposit_ring),
 //			(100 * COIN, 100 * COIN)
 //		);
 //
 //		assert_ok!(Staking::bond_extra(
-//			Origin::signed(11),
+//			Origin::signed(stash),
 //			StakingBalance::Ring(100 * COIN),
-//			0
+//			0,
 //		));
-//		Kton::deposit_creating(&11, 10 * COIN);
+//		Kton::deposit_creating(&stash, 10 * COIN);
 //		assert_ok!(Staking::bond_extra(
-//			Origin::signed(11),
+//			Origin::signed(stash),
 //			StakingBalance::Kton(10 * COIN),
-//			0
+//			0,
 //		));
 //
-//		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(10 * COIN)));
-//		let new_ledger = Staking::ledger(&10).unwrap();
+//		assert_ok!(Staking::unbond(
+//			Origin::signed(controller),
+//			StakingBalance::Ring(10 * COIN)
+//		));
+//		let ledger = Staking::ledger(&controller).unwrap();
 //		assert_eq!(
-//			(
-//				new_ledger.active_ring,
-//				new_ledger.active_deposit_ring
-//			),
+//			(ledger.active_ring, ledger.active_deposit_ring),
 //			(190 * COIN, 100 * COIN)
 //		);
 //
-//		// slash 100%
-//		Staking::slash_validator(&11, 1_000_000_000);
-//
-//		let ledger = Staking::ledger(&10).unwrap();
-//		assert_eq!(
-//			(ledger.active_ring, ledger.active_deposit_ring),
-//			// 10Ring in unbondings
-//			(0, 0)
+//		// slash all
+//		println!("{:#?}", Staking::ledger(&controller).unwrap());
+//		let _ = Staking::slash_validator(
+//			&stash,
+//			ExtendedBalance::max_value(),
+//			&Staking::stakers(&stash),
+//			&mut vec![],
 //		);
-//		assert_eq!(ledger.unbondings[0].value, StakingBalance::Ring(10 * COIN));
+//		println!("{:#?}", Staking::ledger(&controller).unwrap());
+//		let ledger = Staking::ledger(&controller).unwrap();
+//		assert_eq!((ledger.active_ring, ledger.active_deposit_ring), (0, 0));
+//		assert_eq!(
+//			(
+//				ledger.ring_staking_lock.unbondings.clone(),
+//				ledger.kton_staking_lock.unbondings.clone(),
+//			),
+//			unbondings
+//		);
 //	});
 //}
 
