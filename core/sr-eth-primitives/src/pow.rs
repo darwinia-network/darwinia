@@ -1,12 +1,12 @@
 /// A simplified prototype for light verification for pow.
 use super::*;
-use crate::keccak::{keccak_256, keccak_512};
-use core::convert::TryFrom;
+use crate::keccak::{keccak_256, keccak_512, H256 as BH256};
+use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
 use rstd::mem;
 use rstd::result;
 
-pub const MINIMUM_DIFFICULTY: U256 = 0x20000.into();
+pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
 // it might change due to ethereum's upgrade
 pub const PROGPOW_TRANSITION: u64 = u64::max_value();
@@ -160,6 +160,11 @@ impl EthHeader {
 		change_field(&mut self.hash, &mut self.seal, a)
 	}
 
+	/// Set the difficulty field of the header.
+	pub fn set_difficulty(&mut self, a: U256) {
+		change_field(&mut self.hash, &mut self.difficulty, a);
+	}
+
 	/// Get & memoize the hash of this header (keccak of the RLP with seal).
 	pub fn compute_hash(&mut self) -> H256 {
 		let hash = self.hash();
@@ -224,7 +229,7 @@ pub fn verify_block_basic(header: &EthHeader) -> result::Result<(), error::Block
 	let seal = EthashSeal::parse_seal(header.seal())?;
 
 	// TODO: consider removing these lines.
-	let min_difficulty = MINIMUM_DIFFICULTY;
+	let min_difficulty = MINIMUM_DIFFICULTY.into();
 	if header.difficulty() < &min_difficulty {
 		return Err(BlockError::DifficultyOutOfBounds(OutOfBounds {
 			min: Some(min_difficulty),
@@ -268,9 +273,10 @@ fn difficulty_to_boundary_aux<T: Into<U512>>(difficulty: T) -> ethereum_types::U
 	}
 }
 
-fn quick_get_difficulty(header_hash: &H256, nonce: u64, mix_hash: &H256, progpow: bool) -> H256 {
+fn quick_get_difficulty(header_hash: &BH256, nonce: u64, mix_hash: &BH256, progpow: bool) -> BH256 {
 	let mut buf = [0u8; 64 + 32];
 
+	#[cfg(feature = "std")]
 	unsafe {
 		let hash_len = header_hash.len();
 		buf[..hash_len].copy_from_slice(header_hash);
@@ -291,18 +297,19 @@ mod tests {
 	use super::*;
 	use error::BlockError;
 	use eth_spec as spec;
+	use hex_literal::*;
+	use rustc_hex::FromHex;
 	use std::str::FromStr;
 
 	#[test]
 	fn can_do_proof_of_work_verification_fail() {
-		let engine = test_spec().engine;
 		let mut header: EthHeader = EthHeader::default();
 		header.set_seal(vec![rlp::encode(&H256::zero()), rlp::encode(&H64::zero())]);
 		header.set_difficulty(
 			U256::from_str("ffffffffffffffffffffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaa").unwrap(),
 		);
 
-		let verify_result = engine.verify_block_basic(&header);
+		let verify_result = verify_block_basic(&header);
 
 		match verify_result {
 			Err(BlockError::InvalidProofOfWork(_)) => {}
@@ -313,6 +320,31 @@ mod tests {
 				panic!("Should be error, got Ok");
 			}
 		}
+	}
+
+	#[test]
+	fn can_verify_mainnet_difficulty() {
+		let mix_hash = H256::from(hex!("543bc0769f7d5df30e7633f4a01552c2cee7baace8a6da37fddaa19e49e81209"));
+		let nonce = H64::from(hex!("a5d3d0ccc8bb8a29"));
+		let header = EthHeader {
+			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
+			timestamp: 0x5ddb67a0,
+			number: 0x8947a9,
+			author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
+			transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
+			extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
+			state_root: H256::from(hex!("4ba0fb3e6f4c1af32a799df667d304bcdb7f8154e6f86831f92f5a354c2baf70")),
+			receipts_root: H256::from(hex!("5968afe6026e673df3b9745d925a5648282d2195a46c22771fec48210daf8e23")),
+			log_bloom: Bloom::from_str("0c7b091bc8ec02401ad12491004e3014e8806390031950181c118580ac61c9a00409022c418162002710a991108a11ca5383d4921d1da46346edc3eb8068481118b005c0b20700414c13916c54011a0922904aa6e255406a33494c84a1426410541819070e04852042410b30030d4c88a5103082284c7d9bd42090322ae883e004224e18db4d858a0805d043e44a855400945311cb253001412002ea041a08e30394fc601440310920af2192dc4194a03302191cf2290ac0c12000815324eb96a08000aad914034c1c8eb0cb39422e272808b7a4911989c306381502868820b4b95076fc004b14dd48a0411024218051204d902b80d004c36510400ccb123084").unwrap(),
+			gas_used: 0x986d77.into(),
+			gas_limit: 0x989631.into(),
+			difficulty: 0x92ac28cbc4930_u64.into(),
+			seal: vec![rlp::encode(&mix_hash), rlp::encode(&nonce)],
+			hash: Some(H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b"))),
+		};
+
+		assert_eq!(verify_block_basic(&header), Ok(()));
 	}
 
 }

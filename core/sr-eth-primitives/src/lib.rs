@@ -24,6 +24,7 @@ pub use keccak_hash::keccak;
 pub use rlp::{self, DecoderError, Encodable, Rlp, RlpStream};
 
 pub type Bytes = Vec<u8>;
+
 pub type BlockNumber = u64;
 pub struct BestBLock {
 	height: u64, // enough for ethereum poa network (kovan)
