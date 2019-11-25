@@ -509,6 +509,7 @@ fn inflation_should_be_correct() {
 	});
 }
 
+// TODO
 //#[test]
 //fn reward_should_work() {
 //	ExtBuilder::default().nominate(false).build().execute_with(|| {
@@ -586,6 +587,7 @@ fn inflation_should_be_correct() {
 //	});
 //}
 
+// TODO
 //#[test]
 //fn slash_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -632,6 +634,7 @@ fn set_controller_should_work() {
 	});
 }
 
+// TODO
 //#[test]
 //fn slash_should_not_touch_unbondings() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -741,68 +744,78 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 	});
 }
 
-//#[test]
-//fn pool_should_be_increased_and_decreased_correctly() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let mut ring_pool = Staking::ring_pool();
-//		let mut kton_pool = Staking::kton_pool();
-//
-//		// bond: 100COIN
-//		gen_paired_account!(stash_1(111), controller_1(222), 0);
-//		gen_paired_account!(stash_2(333), controller_2(444), promise_month(12));
-//		ring_pool += 100 * COIN;
-//		kton_pool += 100 * COIN;
-//		assert_eq!(Staking::ring_pool(), ring_pool);
-//		assert_eq!(Staking::kton_pool(), kton_pool);
-//
-//		// unbond: 50Ring 50Kton
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller_1),
-//			StakingBalance::Ring(50 * COIN)
-//		));
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller_1),
-//			StakingBalance::Kton(25 * COIN)
-//		));
-//		// not yet expired: promise for 12 months
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller_2),
-//			StakingBalance::Ring(50 * COIN)
-//		));
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller_2),
-//			StakingBalance::Kton(25 * COIN)
-//		));
-//		ring_pool -= 50 * COIN;
-//		kton_pool -= 50 * COIN;
-//		assert_eq!(Staking::ring_pool(), ring_pool);
-//		assert_eq!(Staking::kton_pool(), kton_pool);
-//
-//		// unbond with punish: 12.5Ring
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller_2),
-//			125 * COIN / 10,
-//			promise_month * MONTH_IN_SECONDS as u64
-//		));
-//		// unbond deposit items: 12.5Ring
-//		Timestamp::set_timestamp(promise_month * MONTH_IN_SECONDS as u64);
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller_2),
-//			StakingBalance::Ring(125 * COIN / 10)
-//		));
-//		ring_pool -= 25 * COIN;
-//		assert_eq!(Staking::ring_pool(), ring_pool);
-//
-//		// slash: 25Ring 50Kton
-//		Staking::slash_validator(&stash_1, 1_000_000_000);
-//		Staking::slash_validator(&stash_2, 1_000_000_000);
-//		ring_pool -= 25 * COIN;
-//		kton_pool -= 50 * COIN;
-//		assert_eq!(Staking::ring_pool(), ring_pool);
-//		assert_eq!(Staking::kton_pool(), kton_pool);
-//	});
-//}
-//
+#[test]
+fn pool_should_be_increased_and_decreased_correctly() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let mut ring_pool = Staking::ring_pool();
+		let mut kton_pool = Staking::kton_pool();
+
+		// bond: 100COIN
+		gen_paired_account!(stash_1(111), controller_1(222), 0);
+		gen_paired_account!(stash_2(333), controller_2(444), promise_month(12));
+		ring_pool += 100 * COIN;
+		kton_pool += 100 * COIN;
+		assert_eq!(Staking::ring_pool(), ring_pool);
+		assert_eq!(Staking::kton_pool(), kton_pool);
+
+		// unbond: 50Ring 50Kton
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller_1),
+			StakingBalance::Ring(50 * COIN)
+		));
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller_1),
+			StakingBalance::Kton(25 * COIN)
+		));
+		// not yet expired: promise for 12 months
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller_2),
+			StakingBalance::Ring(50 * COIN)
+		));
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller_2),
+			StakingBalance::Kton(25 * COIN)
+		));
+		ring_pool -= 50 * COIN;
+		kton_pool -= 50 * COIN;
+		assert_eq!(Staking::ring_pool(), ring_pool);
+		assert_eq!(Staking::kton_pool(), kton_pool);
+
+		// unbond with punish: 12.5Ring
+		assert_ok!(Staking::claim_deposits_with_punish(
+			Origin::signed(controller_2),
+			(promise_month * MONTH_IN_SECONDS) as u64
+		));
+		// unbond deposit items: 12.5Ring
+		Timestamp::set_timestamp((promise_month * MONTH_IN_SECONDS) as u64);
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller_2),
+			StakingBalance::Ring(125 * COIN / 10)
+		));
+		ring_pool -= 125 * COIN / 10;
+		assert_eq!(Staking::ring_pool(), ring_pool);
+
+		// TODO
+		// slash: 25Ring 50Kton
+		//		let _ = Staking::slash_validator(
+		//			&stash_1,
+		//			ExtendedBalance::max_value(),
+		//			&Staking::stakers(&stash_1),
+		//			&mut vec![],
+		//		);
+		//		let _ = Staking::slash_validator(
+		//			&stash_2,
+		//			ExtendedBalance::max_value(),
+		//			&Staking::stakers(&stash_2),
+		//			&mut vec![],
+		//		);
+		//				ring_pool -= 25 * COIN;
+		//		kton_pool -= 50 * COIN;
+		//		assert_eq!(Staking::ring_pool(), ring_pool);
+		//		assert_eq!(Staking::kton_pool(), kton_pool);
+	});
+}
+
 //#[test]
 //fn unbond_over_max_unbondings_chunks_should_fail() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
@@ -1024,6 +1037,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 //	});
 //}
 //
+// TODO
 //// bond 10_000 Ring for 12 months, gain 1 Kton
 //// bond extra 10_000 Ring for 36 months, gain 3 Kton
 //// bond extra 1 Kton
@@ -1089,6 +1103,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 //	});
 //}
 //
+// TODO
 //// how to balance the power and calculate the reward if some validators have been chilled
 //#[test]
 //fn yakio_q2() {
@@ -1138,6 +1153,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 //	assert_ne!(free_balance_with_new_era, 0);
 //	assert!(free_balance > free_balance_with_new_era);
 //}
+
 #[test]
 fn xavier_q1() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
