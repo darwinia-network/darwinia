@@ -819,15 +819,23 @@ fn pool_should_be_increased_and_decreased_correctly() {
 #[test]
 fn unbond_over_max_unbondings_chunks_should_fail() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-		gen_paired_account!(stash(123), controller(456), promise_month(12));
+		gen_paired_account!(stash(123), controller(456));
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalance::Ring(COIN),
+			RewardDestination::Stash,
+			0,
+		));
 
-		for i in timestamp
+		for ts in 0..MAX_UNLOCKING_CHUNKS {
+			Timestamp::set_timestamp(ts as u64);
+			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(1)));
+		}
+
 		assert_err!(
-			Staking::unbond(
-				Origin::signed(controller),
-				StakingBalance::Ring((deposit_items_len - 1) as u128 * COIN),
-			),
-			"can not schedule more unlock chunks"
+			Staking::unbond(Origin::signed(controller), StakingBalance::Ring(1)),
+			"can not schedule more unlock chunks",
 		);
 	});
 }
