@@ -24,7 +24,7 @@ extern crate test;
 pub mod inflation;
 
 use codec::{Decode, Encode, HasCompact};
-use rstd::{convert::TryInto, prelude::*, result};
+use rstd::{borrow::ToOwned, convert::TryInto, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
 	traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
@@ -889,7 +889,7 @@ impl<T: Trait> Module<T> {
 
 		// The amount we'll slash from the validator's stash directly.
 		let own_slash = own_remaining.min(slash);
-		let (mut ring_imbalance, mut kton_imblance, missing) =
+		let (mut ring_imbalance, mut kton_imbalance, missing) =
 			Self::slash_individual(stash, Perbill::from_rational_approximation(own_slash, exposure.own)); // T::Currency::slash(stash, own_slash);
 		let own_slash = own_slash - missing;
 		// The amount remaining that we can't slash from the validator,
@@ -909,21 +909,21 @@ impl<T: Trait> Module<T> {
 					);
 
 					ring_imbalance.subsume(r);
-					kton_imblance.subsume(k);
+					kton_imbalance.subsume(k);
 				}
 			}
 		}
 
 		journal.push(SlashJournalEntry {
-			who: stash.clone(),
+			who: stash.to_owned(),
 			own_slash,
 			amount: slash,
 		});
 
 		// trigger the event
-		Self::deposit_event(RawEvent::Slash(stash.clone(), slash));
+		Self::deposit_event(RawEvent::Slash(stash.to_owned(), slash));
 
-		(ring_imbalance, kton_imblance)
+		(ring_imbalance, kton_imbalance)
 	}
 
 	// TODO: there is reserve balance in Balance.Slash, we assuming it is zero for now.
@@ -942,7 +942,6 @@ impl<T: Trait> Module<T> {
 		} else {
 			(<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
 		};
-
 		let (kton_imbalance, _) = if !ledger.active_kton.is_zero() {
 			let slashable_kton = slash_ratio * ledger.active_kton;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
