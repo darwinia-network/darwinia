@@ -956,7 +956,7 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 //		}
 //	});
 //}
-//
+
 //// #[test]
 //// fn total_deposit_should_be_increased_and_decreased_correctly() {
 //// with_externalities(
@@ -964,44 +964,43 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 //// || body,
 //// );
 //// }
-//
-//#[test]
-//fn promise_extra_should_not_remove_unexpired_items() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		gen_paired_account!(stash(123), controller(456), promise_month(12));
-//
-//		let expired_item_len = 3;
-//		let expiry_date = promise_month as u64 * MONTH_IN_SECONDS as u64;
-//
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(stash),
-//			StakingBalance::Ring(5 * COIN),
-//			0
-//		));
-//		for _ in 0..expired_item_len {
-//			assert_ok!(Staking::promise_extra(Origin::signed(controller), COIN, promise_month));
-//		}
-//
-//		Timestamp::set_timestamp(expiry_date - 1);
-//		assert_ok!(Staking::promise_extra(
-//			Origin::signed(controller),
-//			2 * COIN,
-//			promise_month
-//		));
-//		assert_eq!(
-//			Staking::ledger(&controller).unwrap().deposit_items.len(),
-//			2 + expired_item_len
-//		);
-//
-//		Timestamp::set_timestamp(expiry_date);
-//		assert_ok!(Staking::promise_extra(
-//			Origin::signed(controller),
-//			2 * COIN,
-//			promise_month
-//		));
-//		assert_eq!(Staking::ledger(&controller).unwrap().deposit_items.len(), 2);
-//	});
-//}
+
+#[test]
+fn promise_extra_should_not_remove_unexpired_items() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		gen_paired_account!(stash(123), controller(456), promise_month(12));
+		let expired_items_len = 3;
+		let expiry_date = (promise_month * MONTH_IN_SECONDS) as u64;
+
+		assert_ok!(Staking::bond_extra(
+			Origin::signed(stash),
+			StakingBalance::Ring(5 * COIN),
+			0,
+		));
+		for _ in 0..expired_items_len {
+			assert_ok!(Staking::deposit_extra(Origin::signed(controller), COIN, promise_month));
+		}
+
+		Timestamp::set_timestamp(expiry_date - 1);
+		assert_ok!(Staking::deposit_extra(
+			Origin::signed(controller),
+			2 * COIN,
+			promise_month,
+		));
+		assert_eq!(
+			Staking::ledger(&controller).unwrap().deposit_items.len(),
+			2 + expired_items_len,
+		);
+
+		Timestamp::set_timestamp(expiry_date);
+		assert_ok!(Staking::deposit_extra(
+			Origin::signed(controller),
+			2 * COIN,
+			promise_month,
+		));
+		assert_eq!(Staking::ledger(&controller).unwrap().deposit_items.len(), 2);
+	});
+}
 
 #[test]
 fn unbond_zero() {
