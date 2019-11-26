@@ -1,48 +1,64 @@
 {
-  "EpochDuration": "u64",
-  "EraIndex": "u32",
-  "RingBalanceOf": "u128",
-  "KtonBalanceOf": "u128",
-  "ExtendedBalance": "u128",
-  "ValidatorPrefs": {
-    "unstake_threshold": "Compact<u32>",
-    "validator_payment_ratio": "Perbill"
-  },
-  "StakingBalance": {
-    "_enum": {
-      "Ring": "RingBalanceOf",
-      "Kton": "KtonBalanceOf"
-    }
-  },
-  "TimeDepositItem": {
-    "value": "Compact<RingBalanceOf>",
-    "start_time": "Compact<Moment>",
-    "expire_time": "Compact<Moment>"
-  },
-  "NormalLock": {
-    "amount": "u128",
-    "util": "Moment",
-  },
-  "StakingLock": {
-    "staking_amount": "u128",
-    "unbondings": "Vec<NormalLock>"
-  },
-  "StakingLedger": {
-    "stash": "AccountId",
-    "active_ring": "Compact<RingBalanceOf>",
-    "active_deposit_ring": "Compact<RingBalanceOf>",
-    "active_kton": "Compact<KtonBalanceOf>",
-    "deposit_items": "Vec<TimeDepositItem>",
-    "ring_staking_lock": "StakingLock",
-    "kton_staking_lock": "StakingLock"
-  },
-  "IndividualExposure": {
-    "who": "AccountId",
-    "value": "ExtendedBalance"
-  },
-  "Exposure": {
-    "total": "ExtendedBalance",
-    "own": "ExtendedBalance",
-    "others": "Vec<IndividualExposure>"
-  }
+	"EpochDuration": "u64",
+	"EraIndex": "u32",
+
+    "RingBalanceOf": "u128",
+	"KtonBalanceOf": "u128",
+	"ExtendedBalance": "u128",
+	"StakingBalance": {
+		"_enum": {
+			"Ring": "RingBalanceOf",
+			"Kton": "KtonBalanceOf"
+		}
+	},
+
+	"IndividualExposure": {
+		"who": "AccountId",
+		"value": "ExtendedBalance"
+	},
+	"Exposure": {
+		"total": "ExtendedBalance",
+		"own": "ExtendedBalance",
+		"others": "Vec<IndividualExposure>"
+	},
+
+	"ValidatorPrefs": {
+		"unstake_threshold": "Compact<u32>",
+		"validator_payment_ratio": "Perbill"
+	},
+
+	"StakingLedger": {
+		"stash": "AccountId",
+		"active_ring": "Compact<RingBalanceOf>",
+		"active_deposit_ring": "Compact<RingBalanceOf>",
+		"active_kton": "Compact<KtonBalanceOf>",
+		"deposit_items": "Vec<TimeDepositItem>",
+		"ring_staking_lock": "StakingLock",
+		"kton_staking_lock": "StakingLock"
+	},
+	"TimeDepositItem": {
+		"value": "Compact<RingBalanceOf>",
+		"start_time": "Compact<Moment>",
+		"expire_time": "Compact<Moment>"
+	},
+
+	"BalanceLock": {
+		"id": "LockIdentifier",
+		"withdraw_lock": "WithdrawLock",
+		"reasons": "WithdrawReasons"
+	},
+	"WithdrawLock": {
+		"_enum": {
+			"Normal": "NormalLock",
+			"WithStaking": "StakingLock"
+		}
+	},
+	"NormalLock": {
+		"amount": "u128",
+		"until": "Moment"
+	},
+	"StakingLock": {
+		"staking_amount": "u128",
+		"unbondings": "Vec<NormalLock>"
+	}
 }

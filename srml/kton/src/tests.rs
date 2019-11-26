@@ -1,7 +1,6 @@
-use srml_support::{
-	assert_err, assert_noop, assert_ok,
-	traits::{Currency, LockIdentifier, WithdrawReason, WithdrawReasons},
-};
+use srml_support::{assert_err, assert_noop, assert_ok, traits::Currency};
+
+use darwinia_support::{LockIdentifier, WithdrawReason, WithdrawReasons};
 
 use super::*;
 use crate::mock::*;

@@ -9,10 +9,14 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use web3::types::{
-	Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, RawHeader, RawReceipt, SyncState,
-	Transaction, TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U128, U256,
+use sr_eth_primitives::{
+	pow::EthHeader, Address, BestBLock, BigEndianHash, Bloom, BloomInput, H160, H256, H64, U128, U256, U512,
 };
+
+//use web3::types::{
+//	Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, RawHeader, RawReceipt, SyncState,
+//	Transaction, TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U128, U256,
+//};
 
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
 
@@ -21,14 +25,12 @@ pub trait Trait: system::Trait {
 	//	type Hash: {};
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "std", derive(Debug, PartialEq))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct Proof {
 	pub nodes: Vec<Vec<u8>>,
 }
 
-#[derive(Clone, PartialEq, Eq, Encode, Decode, Default)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct ActionRecord {
 	pub index: u64,
 	pub proof: Vec<u8>,
@@ -39,11 +41,11 @@ decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
 		pub BeginNumber get(begin_number): u64;
 
-		pub BeginHeader get(begin_header): Option<Header>;
+		pub BeginHeader get(begin_header): Option<EthHeader>;
 
-		pub BestHeader get(best_header): BestHeaderT;
+		pub BestHeader get(best_header): BestBLock;
 
-		pub HeaderOf get(header_of): map H256 => Option<Header>;
+		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
 
 		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
 
@@ -77,7 +79,7 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn store_block_header(origin, header: Header) {
+		pub fn store_block_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
 			let _ = Self::verify(&header)?;
 		}
@@ -88,7 +90,7 @@ decl_module! {
 			// Using MPT to verify the proof and index etc.
 		}
 
-		pub fn submit_header(origin, header: Header) {
+		pub fn submit_header(origin, header: EthHeader) {
 			// if header confirmed then return
 			// if header in unverified header then challenge
 		 }
@@ -112,7 +114,7 @@ impl<T: Trait> Module<T> {
 	/// 1. if exists?
 	/// 2. verify (difficulty + prev_hash + nonce)
 	/// 3. challenge
-	fn verify(_: &RawHeader) -> Result {
+	fn verify(_: &EthHeader) -> Result {
 		unimplemented!()
 	}
 
