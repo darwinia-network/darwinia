@@ -31,7 +31,7 @@ pub type Address = H160;
 pub type BlockNumber = u64;
 
 #[derive(Clone, Copy, Eq, PartialEq, Encode, Decode)]
-pub struct BestBLock {
+pub struct BestBlock {
 	height: u64, // enough for ethereum poa network (kovan)
 	hash: H256,
 	total_difficulty: U256,
