@@ -4,20 +4,21 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 // use blake2::Blake2b;
-//use codec::{Decode, Encode};
+use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use web3::types::{Address, BlockId, BlockNumber, H256, U256};
-
-use web3::raw::{Header as EthHeader, Receipt as EthReceipt};
+use web3::types::{
+	Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, RawHeader, RawReceipt, SyncState,
+	Transaction, TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U128, U256,
+};
 
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Hash: {};
+	//	type Hash: {};
 }
 
 #[derive(Clone)]
@@ -38,11 +39,11 @@ decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
 		pub BeginNumber get(begin_number): u64;
 
-		pub BeginHeader get(begin_header): Option<EthHeader>;
+		pub BeginHeader get(begin_header): Option<Header>;
 
 		pub BestHeader get(best_header): BestHeaderT;
 
-		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
+		pub HeaderOf get(header_of): map H256 => Option<Header>;
 
 		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
 
@@ -55,7 +56,6 @@ decl_storage! {
 
 		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
 	}
-
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
 		config(number): u64;
@@ -77,7 +77,7 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn store_block_header(origin, header: EthHeader) {
+		pub fn store_block_header(origin, header: Header) {
 			let _relayer = ensure_signed(origin)?;
 			let _ = Self::verify(&header)?;
 		}
@@ -112,15 +112,11 @@ impl<T: Trait> Module<T> {
 	/// 1. if exists?
 	/// 2. verify (difficulty + prev_hash + nonce)
 	/// 3. challenge
-	fn verify(_: &Header) -> Result {
+	fn verify(_: &RawHeader) -> Result {
 		unimplemented!()
 	}
 
 	fn _punish(_who: &T::AccountId) -> Result {
-		unimplemented!()
-	}
-
-	fn _release(_dest: &T::AccountId, _value: RingBalanceOf<T>) -> Result {
 		unimplemented!()
 	}
 }
