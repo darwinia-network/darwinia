@@ -4,8 +4,9 @@ use rlp::{self, Decodable, DecoderError, Encodable, Rlp, RlpStream};
 use rstd::ops::Deref;
 use rstd::prelude::*;
 use substrate_primitives::RuntimeDebug;
+use types::{Bloom, Input as BloomInput};
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
 pub enum TransactionOutcome {
 	/// Status and state root are unknown under EIP-98 rules.
 	Unknown,
@@ -15,7 +16,7 @@ pub enum TransactionOutcome {
 	StatusCode(u8),
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, RlpEncodable, RlpDecodable)]
+#[derive(PartialEq, Eq, Clone, RuntimeDebug, RlpEncodable, RlpDecodable, Encode, Decode)]
 pub struct LogEntry {
 	/// The address of the contract executing at the point of the `LOG` operation.
 	pub address: Address,
@@ -38,7 +39,7 @@ impl LogEntry {
 }
 
 // TODO: impl Bloom with codec::Encode and codec::Decode
-#[derive(PartialEq, Eq, Clone, RuntimeDebug)]
+#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
 pub struct Receipt {
 	/// The total gas used in the block following execution of the transaction.
 	pub gas_used: U256,
@@ -115,7 +116,8 @@ impl Decodable for Receipt {
 
 #[cfg(test)]
 mod tests {
-	use super::{Address, Bloom, LogEntry, Receipt, TransactionOutcome, H256, U128, U256};
+	use super::{Address, LogEntry, Receipt, TransactionOutcome, H256, U128, U256};
+	use ethbloom::Bloom;
 	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;

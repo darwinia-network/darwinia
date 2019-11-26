@@ -9,6 +9,7 @@ use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
 use sr_primitives::traits::Saturating;
+use types::Bloom;
 
 pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
@@ -33,7 +34,7 @@ pub const ECIP1010_CONTINUE_TRANSITION: u64 = 0x4c4b40;
 
 pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = u64::max_value();
 
-#[derive(Default, PartialEq, Eq, Clone)]
+#[derive(Default, PartialEq, Eq, Clone, Encode, Decode)]
 pub struct EthHeader {
 	parent_hash: H256,
 	timestamp: u64,
@@ -70,7 +71,7 @@ enum Seal {
 	Without,
 }
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub struct EthashSeal {
 	/// Ethash seal mix_hash
 	pub mix_hash: H256,
