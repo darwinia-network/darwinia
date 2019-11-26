@@ -112,7 +112,7 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// 1. if exists?
-	/// 2. verify (difficulty + prev_hash + nonce)
+	/// 2. verify (difficulty + prev_hash + nonce + re-org)
 	/// 3. challenge
 	fn verify(_: &EthHeader) -> Result {
 		unimplemented!()
