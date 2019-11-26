@@ -527,10 +527,7 @@ decl_module! {
 		/// modify time_deposit_items and time_deposit_ring amount
 		fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
 			let controller = ensure_signed(origin)?;
-
-			Self::clear_mature_deposits(&controller);
-
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or("not a controller")?);
 			let StakingLedger {
 				active_ring,
 				active_deposit_ring,
@@ -591,14 +588,12 @@ decl_module! {
 		/// called by controller
 		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
-			if Self::ledger(&controller).is_none() { return Err("not a controller"); }
+			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 
 			ensure!(promise_month >= 3 && promise_month <= 36, "months at least is 3 and at most is 36.");
 
-			Self::clear_mature_deposits(&controller);
-
 			let now = <timestamp::Module<T>>::now();
-			let mut ledger = Self::ledger(&controller).unwrap();
+			let mut ledger = Self::clear_mature_deposits(ledger);
 			let StakingLedger {
 				stash,
 				active_ring,
@@ -625,7 +620,8 @@ decl_module! {
 
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
-			Self::clear_mature_deposits(&controller);
+			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or("not a controller")?);
+			<Ledger<T>>::insert(controller, ledger);
 		}
 
 		fn claim_deposits_with_punish(origin, expire_time: T::Moment) {
@@ -771,26 +767,26 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	pub fn clear_mature_deposits(controller: &T::AccountId) {
-		if let Some(mut ledger) = Self::ledger(&controller) {
-			let now = <timestamp::Module<T>>::now();
-			let StakingLedger {
-				active_deposit_ring,
-				deposit_items,
-				..
-			} = &mut ledger;
+	pub fn clear_mature_deposits(
+		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
+	) -> StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment> {
+		let now = <timestamp::Module<T>>::now();
+		let StakingLedger {
+			active_deposit_ring,
+			deposit_items,
+			..
+		} = &mut ledger;
 
-			deposit_items.retain(|item| {
-				if item.expire_time > now {
-					true
-				} else {
-					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-					false
-				}
-			});
+		deposit_items.retain(|item| {
+			if item.expire_time > now {
+				true
+			} else {
+				*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+				false
+			}
+		});
 
-			<Ledger<T>>::insert(controller, ledger);
-		};
+		ledger
 	}
 
 	fn bond_helper_in_ring(
