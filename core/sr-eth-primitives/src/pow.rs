@@ -4,12 +4,12 @@ use crate::keccak::{keccak_256, keccak_512, H256 as BH256};
 use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
+use hbloom::Bloom;
 use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
 use sr_primitives::traits::Saturating;
-use types::Bloom;
 
 pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
