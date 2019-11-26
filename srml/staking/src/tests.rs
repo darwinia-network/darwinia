@@ -509,43 +509,43 @@ fn inflation_should_be_correct() {
 	});
 }
 
-// TODO
-//#[test]
-//fn reward_and_slash_should_work() {
-//	ExtBuilder::default().build().execute_with(|| {
-//		gen_paired_account!(stash_1(123), _c(456), 12);
-//		gen_paired_account!(stash_2(234), _c(567), 12);
-//
-//		<Stakers<Test>>::insert(
-//			&stash_1,
-//			Exposure {
-//				total: 1,
-//				own: 1,
-//				others: vec![],
-//			},
-//		);
-//		assert_eq!(Ring::total_balance(&stash_1), 100 * COIN);
-//		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
-//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN);
-//
-//		<Stakers<Test>>::insert(
-//			&stash_1,
-//			Exposure {
-//				total: 100 * COIN,
-//				own: 1,
-//				others: vec![IndividualExposure {
-//					who: stash_2,
-//					value: 100 * COIN - 1,
-//				}],
-//			},
-//		);
-//		println!("{:#?}", Ring::total_balance(&stash_1));
-//		let _ = Staking::slash_validator(&stash_1, 1, &Staking::stakers(&stash_1), &mut Vec::new());
-//		println!("{:#?}", Ring::total_balance(&stash_1));
-//		//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN - 1);
-//		//		assert_eq!(Ring::total_balance(&stash_2), 1);
-//	});
-//}
+#[test]
+fn reward_and_slash_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		gen_paired_account!(stash_1(123), _c(456), 12);
+		gen_paired_account!(stash_2(234), _c(567), 12);
+
+		<Stakers<Test>>::insert(
+			&stash_1,
+			Exposure {
+				total: 1,
+				own: 1,
+				others: vec![],
+			},
+		);
+		assert_eq!(Ring::total_balance(&stash_1), 100 * COIN);
+		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
+		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN);
+
+		// TODO
+		//		<Stakers<Test>>::insert(
+		//			&stash_1,
+		//			Exposure {
+		//				total: 100 * COIN,
+		//				own: 1,
+		//				others: vec![IndividualExposure {
+		//					who: stash_2,
+		//					value: 100 * COIN - 1,
+		//				}],
+		//			},
+		//		);
+		//		println!("{:#?}", Ring::total_balance(&stash_1));
+		//		let _ = Staking::slash_validator(&stash_1, 1, &Staking::stakers(&stash_1), &mut Vec::new());
+		//		println!("{:#?}", Ring::total_balance(&stash_1));
+		//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN - 1);
+		//		assert_eq!(Ring::total_balance(&stash_2), 1);
+	});
+}
 
 #[test]
 fn set_controller_should_work() {
@@ -559,65 +559,69 @@ fn set_controller_should_work() {
 	});
 }
 
-// TODO
-//#[test]
-//fn slash_should_not_touch_unbondings() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let (stash, controller) = (11, 10);
-//		let ledger = Staking::ledger(&controller).unwrap();
-//		let unbondings = (
-//			ledger.ring_staking_lock.unbondings.clone(),
-//			ledger.kton_staking_lock.unbondings.clone(),
-//		);
-//
-//		// only deposit_ring, no normal_ring
-//		assert_eq!(
-//			(ledger.active_ring, ledger.active_deposit_ring),
-//			(100 * COIN, 100 * COIN)
-//		);
-//
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(stash),
-//			StakingBalance::Ring(100 * COIN),
-//			0,
-//		));
-//		Kton::deposit_creating(&stash, 10 * COIN);
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(stash),
-//			StakingBalance::Kton(10 * COIN),
-//			0,
-//		));
-//
-//		assert_ok!(Staking::unbond(
-//			Origin::signed(controller),
-//			StakingBalance::Ring(10 * COIN)
-//		));
-//		let ledger = Staking::ledger(&controller).unwrap();
-//		assert_eq!(
-//			(ledger.active_ring, ledger.active_deposit_ring),
-//			(190 * COIN, 100 * COIN)
-//		);
-//
-//		// slash all
-//		println!("{:#?}", Staking::ledger(&controller).unwrap());
-//		let _ = Staking::slash_validator(
-//			&stash,
-//			ExtendedBalance::max_value(),
-//			&Staking::stakers(&stash),
-//			&mut vec![],
-//		);
-//		println!("{:#?}", Staking::ledger(&controller).unwrap());
-//		let ledger = Staking::ledger(&controller).unwrap();
-//		assert_eq!((ledger.active_ring, ledger.active_deposit_ring), (0, 0));
-//		assert_eq!(
-//			(
-//				ledger.ring_staking_lock.unbondings.clone(),
-//				ledger.kton_staking_lock.unbondings.clone(),
-//			),
-//			unbondings
-//		);
-//	});
-//}
+#[test]
+fn slash_should_not_touch_unbondings() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let (stash, controller) = (11, 10);
+		let ledger = Staking::ledger(&controller).unwrap();
+
+		// only deposit_ring, no normal_ring
+		assert_eq!(
+			(ledger.active_ring, ledger.active_deposit_ring),
+			(100 * COIN, 100 * COIN),
+		);
+
+		assert_ok!(Staking::bond_extra(
+			Origin::signed(stash),
+			StakingBalance::Ring(100 * COIN),
+			0,
+		));
+		Kton::deposit_creating(&stash, 10 * COIN);
+		assert_ok!(Staking::bond_extra(
+			Origin::signed(stash),
+			StakingBalance::Kton(10 * COIN),
+			0,
+		));
+
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller),
+			StakingBalance::Ring(10 * COIN),
+		));
+		let ledger = Staking::ledger(&controller).unwrap();
+		let unbondings = (
+			ledger.ring_staking_lock.unbondings.clone(),
+			ledger.kton_staking_lock.unbondings.clone(),
+		);
+		assert_eq!(
+			(ledger.active_ring, ledger.active_deposit_ring),
+			(190 * COIN, 100 * COIN),
+		);
+
+		<Stakers<Test>>::insert(
+			&stash,
+			Exposure {
+				total: 1,
+				own: 1,
+				others: vec![],
+			},
+		);
+		let _ = Staking::slash_validator(
+			&stash,
+			ExtendedBalance::max_value(),
+			&Staking::stakers(&stash),
+			&mut vec![],
+		);
+		let ledger = Staking::ledger(&controller).unwrap();
+		assert_eq!(
+			(
+				ledger.ring_staking_lock.unbondings.clone(),
+				ledger.kton_staking_lock.unbondings.clone(),
+			),
+			unbondings,
+		);
+		assert_eq!((ledger.active_ring, ledger.active_deposit_ring), (0, 0));
+	});
+}
 
 #[test]
 fn bond_over_max_promise_month_should_fail() {
