@@ -2,7 +2,7 @@
 use super::*;
 #[cfg(feature = "std")]
 use std::error::Error;
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Encode, Decode)]
 /// Error indicating value found is outside of a valid range.
 pub struct OutOfBounds<T> {
 	/// Minimum allowed value.
@@ -13,7 +13,7 @@ pub struct OutOfBounds<T> {
 	pub found: T,
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Encode, Decode)]
 /// Error indicating an expected value was not found.
 pub struct Mismatch<T> {
 	/// Value expected.

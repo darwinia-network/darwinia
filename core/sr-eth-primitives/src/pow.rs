@@ -14,7 +14,7 @@ pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
 // it might change due to ethereum's upgrade
 pub const PROGPOW_TRANSITION: u64 = u64::max_value();
-pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = 23001;
+//pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = 0x59d9;
 pub const DIFFICULTY_HARDFORK_BOUND_DIVISOR: u128 = 0x0200;
 pub const DIFFICULTY_BOUND_DIVISOR: u128 = 0x0800;
 pub const EXPIP2_TRANSITION: u64 = 0xc3500;
@@ -24,9 +24,14 @@ pub const HOMESTEAD_TRANSITION: u64 = 0x30d40;
 pub const EIP100B_TRANSITION: u64 = 0xC3500;
 pub const DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x3C;
 pub const METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x1E;
+
 pub const BOMB_DEFUSE_TRANSITION: u64 = 0x30d40;
-pub const ECIP1010_PAUSE_TRANSITION: u64 = 3000000;
-pub const ECIP1010_CONTINUE_TRANSITION: u64 = 5000000;
+// 3,000,000
+pub const ECIP1010_PAUSE_TRANSITION: u64 = 0x2dc6c0;
+// 5,000,000
+pub const ECIP1010_CONTINUE_TRANSITION: u64 = 0x4c4b40;
+
+pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = u64::max_value();
 
 #[derive(Default, PartialEq, Eq, Clone)]
 pub struct EthHeader {
@@ -57,7 +62,7 @@ where
 	}
 }
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, Copy)]
 enum Seal {
 	/// The seal/signature is included.
 	With,
@@ -65,7 +70,7 @@ enum Seal {
 	Without,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct EthashSeal {
 	/// Ethash seal mix_hash
 	pub mix_hash: H256,
@@ -426,12 +431,12 @@ mod tests {
 		let mixh2 = H256::from(hex!("0ea8027f96c18f474e9bc74ff71d29aacd3f485d5825be0a8dde529eb82a47ed"));
 		let nonce2 = H64::from(hex!("55859dc00728f99a"));
 		let header2 = EthHeader {
-			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
+			parent_hash: H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b")),
 			timestamp: 0x5ddb67a3,
 			number: 0x8947aa,
 			author: Address::from(hex!("d224ca0c819e8e97ba0136b3b95ceff503b79f53")),
 			transactions_root: H256::from(hex!("efebac0e71cc2de04cf2f509bb038a82bbe92a659e010061b49b5387323b5ea6")),
-			uncles_hash: H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "7575706f6f6c2e636e2d3163613037623939".from_hex().unwrap(),
 			state_root: H256::from(hex!("5dfc6357dda61a7f927292509afacd51453ff158342eb9628ccb419fbe91c638")),
 			receipts_root: H256::from(hex!("3fbd99e253ff45045eec1e0011ac1b45fa0bccd641a356727defee3b166dd3bf")),
