@@ -20,11 +20,10 @@ rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git", defaul
 primitive-types = { version = "0.6.0", default-feature = false, features = ["codec", "rlp"] }
 ethereum-types = { version = "0.8.0", default-feature = false, features = ["serialize"] }
 keccak-hash = "0.4.0"
-ethbloom = { version = "0.8", default-features = false, features = ["serialize"] }
 impl-codec = { version = "0.4", default-features = false, optional = true }
 fixed-hash = { version = "0.4", default-features = false}
 impl-rlp = { version = "0.2", default-features = false, optional = true }
-hbloom = { package = 'ethbloom', git ="https://github.com/paritytech/parity-common.git", default-features = false}
+hbloom = { package = 'ethbloom', git ="https://github.com/hammeWang/ethbloom.git", default-features = false, features = ["serialize"]}
 crunchy = { version = "0.2.2", default-features = false, features = ["limit_256"] }
 
 [dev-dependencies]
@@ -51,8 +50,6 @@ std = [
     "primitive-types/rustc-hex",
     "primitive-types/libc",
     "parity-crypto/publickey",
-    "ethbloom/std",
-    "ethbloom/serialize",
     "ethereum-types/std",
     "impl-codec/std",
     "fixed-hash/std",

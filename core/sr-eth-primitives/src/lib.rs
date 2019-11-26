@@ -17,7 +17,6 @@ pub mod keccak;
 pub mod pow;
 pub mod receipt;
 pub mod transaction;
-pub mod types;
 
 pub use codec::{Decode, Encode};
 pub use ethereum_types::BigEndianHash;
