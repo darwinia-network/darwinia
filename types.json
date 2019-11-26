@@ -44,7 +44,7 @@
 	},
 
 	"BalanceLock": {
-		"id": "Vec<u8>",
+		"id": "LockIdentifier",
 		"withdraw_lock": "WithdrawLock",
 		"reasons": "WithdrawReasons"
 	},

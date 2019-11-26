@@ -1,11 +1,8 @@
-use srml_support::{
-	assert_err, assert_ok,
-	traits::{Currency, WithdrawReason, WithdrawReasons},
-};
+use srml_support::{assert_err, assert_ok, traits::Currency};
 
 use super::*;
 use crate::mock::*;
-use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock};
+use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 // gen_paired_account!(a(1), b(2), m(12));
 // will create stash `a` and controller `b`

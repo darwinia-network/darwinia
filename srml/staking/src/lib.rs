@@ -38,11 +38,13 @@ use sr_staking_primitives::{
 };
 use srml_support::{
 	decl_event, decl_module, decl_storage, ensure,
-	traits::{Currency, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, Time, WithdrawReason, WithdrawReasons},
+	traits::{Currency, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, Time},
 };
 use system::{ensure_root, ensure_signed};
 
-use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock};
+use darwinia_support::{
+	LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons,
+};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 #[allow(unused)]

@@ -1,12 +1,10 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub use srml_support::traits::{LockIdentifier, WithdrawReason, WithdrawReasons};
+
 pub use structs::*;
 pub use traits::*;
-
-/// An identifier for a lock. Used for disambiguating different locks so that
-/// they can be individually replaced or removed.
-pub type LockIdentifier = [u8; 8];
 
 pub type TimeStamp = u64;
 
@@ -17,9 +15,8 @@ mod structs {
 		traits::{SaturatedConversion, SimpleArithmetic},
 		RuntimeDebug,
 	};
-	use srml_support::traits::WithdrawReasons;
 
-	use super::{LockIdentifier, TimeStamp};
+	use super::{LockIdentifier, TimeStamp, WithdrawReasons};
 
 	#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
 	pub struct BalanceLock<Balance, Moment> {
@@ -97,9 +94,9 @@ mod structs {
 }
 
 mod traits {
-	use srml_support::traits::{Currency, WithdrawReasons};
+	use srml_support::traits::Currency;
 
-	use super::{LockIdentifier, WithdrawLock};
+	use super::{LockIdentifier, WithdrawLock, WithdrawReasons};
 
 	pub trait OnMinted<Balance> {
 		fn on_minted(value: Balance);

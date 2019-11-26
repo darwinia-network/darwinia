@@ -14,15 +14,12 @@ use sr_primitives::{
 use srml_support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
-	traits::{
-		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome, WithdrawReason,
-		WithdrawReasons,
-	},
+	traits::{Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome},
 	Parameter, StorageMap, StorageValue,
 };
 use system::ensure_signed;
 
-use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock};
+use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
 #[cfg(test)]
