@@ -511,114 +511,39 @@ fn inflation_should_be_correct() {
 
 // TODO
 //#[test]
-//fn reward_should_work() {
-//	ExtBuilder::default().nominate(false).build().execute_with(|| {
-//		// create controller account
-//		let _ = Ring::deposit_creating(&2000, COIN);
-//		let _ = Ring::deposit_creating(&1000, COIN);
-//		let _ = Ring::deposit_creating(&200, COIN);
-//		// new validator
-//		let _ = Ring::deposit_creating(&2001, 2000 * COIN);
-//		Kton::deposit_creating(&2001, 10 * COIN);
-//		// new validator
-//		let _ = Ring::deposit_creating(&1001, 300 * COIN);
-//		Kton::deposit_creating(&1001, COIN);
-//		// handle some dirty work
-//		let _ = Ring::deposit_creating(&201, 2000 * COIN);
-//		Kton::deposit_creating(&201, 10 * COIN);
+//fn reward_and_slash_should_work() {
+//	ExtBuilder::default().build().execute_with(|| {
+//		gen_paired_account!(stash_1(123), _c(456), 12);
+//		gen_paired_account!(stash_2(234), _c(567), 12);
 //
-//		// 2001-2000
-//		assert_ok!(Staking::bond(
-//			Origin::signed(2001),
-//			2000,
-//			StakingBalance::Ring(300 * COIN),
-//			RewardDestination::Controller,
-//			12,
-//		));
-//		assert_ok!(Staking::bond_extra(Origin::signed(2001), StakingBalance::Kton(COIN), 0));
-//		// 1001-1000
-//		assert_ok!(Staking::bond(
-//			Origin::signed(1001),
-//			1000,
-//			StakingBalance::Ring(300 * COIN),
-//			RewardDestination::Controller,
-//			12,
-//		));
-//		assert_ok!(Staking::bond_extra(Origin::signed(1001), StakingBalance::Kton(COIN), 0));
-//		// 201-200
-//		assert_ok!(Staking::bond(
-//			Origin::signed(201),
-//			200,
-//			StakingBalance::Ring(3000 * COIN - Staking::ring_pool()),
-//			RewardDestination::Stash,
-//			12,
-//		));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(201),
-//			StakingBalance::Kton(10 * COIN - Staking::kton_pool()),
-//			0,
-//		));
-//		assert_eq!(Staking::ring_pool(), 3000 * COIN);
-//		assert_eq!(Staking::kton_pool(), 10 * COIN);
-//
-//		// 1/5 ring_pool and 1/5 kton_pool
-//		assert_ok!(Staking::validate(Origin::signed(2000), vec![0; 8], 0, 3));
-//		assert_ok!(Staking::nominate(Origin::signed(1000), vec![2001]));
-//
-//		assert_eq!(Staking::power_of(&2001), 100_000_000);
-//		// 600COIN for rewarding ring bond-er
-//		// 600COIN for rewarding kton bond-er
-//		Staking::new_era(Session::current_index());
-//		Staking::reward_validator(&2001, 200);
-//
-//		assert_eq!(
-//			Staking::stakers(2001),
+//		<Stakers<Test>>::insert(
+//			&stash_1,
 //			Exposure {
-//				total: 1200000000000,
-//				own: 600000000000,
-//				others: vec![IndividualExposure {
-//					who: 1001,
-//					value: 600000000000,
-//				}]
-//			}
+//				total: 1,
+//				own: 1,
+//				others: vec![],
+//			},
 //		);
-//		assert_eq!(Ring::free_balance(&2000), 601 * COIN);
-//		assert_eq!(Ring::free_balance(&1000), 601 * COIN);
-//	});
-//}
-
-// TODO
-//#[test]
-//fn slash_should_work() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let _ = Ring::deposit_creating(&1001, 100 * COIN);
-//		Kton::deposit_creating(&1001, 100 * COIN);
+//		assert_eq!(Ring::total_balance(&stash_1), 100 * COIN);
+//		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
+//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN);
 //
-//		assert_ok!(Staking::bond(
-//			Origin::signed(1001),
-//			1000,
-//			StakingBalance::Ring(50 * COIN),
-//			RewardDestination::Controller,
-//			0,
-//		));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(1001),
-//			StakingBalance::Kton(50 * COIN),
-//			0
-//		));
-//		assert_ok!(Staking::validate(Origin::signed(1000), [0; 8].to_vec(), 0, 3));
-//
-//		// slash 1%
-//		let slash_value = 5 * COIN / 10;
-//		let mut ledger = Staking::ledger(&1000).unwrap();
-//		let ring_free_balance = Ring::free_balance(&1001);
-//		let kton_free_balance = Kton::free_balance(&1001);
-//		Staking::slash_validator(&1001, 10_000_000);
-//		ledger.active_ring -= slash_value;
-//		ledger.active_kton -= slash_value;
-//		assert_eq!(&Staking::ledger(&1000).unwrap(), &ledger);
-//		assert_eq!(Ring::free_balance(&1001), ring_free_balance - slash_value);
-//		assert_eq!(Kton::free_balance(&1001), kton_free_balance - slash_value);
+//		<Stakers<Test>>::insert(
+//			&stash_1,
+//			Exposure {
+//				total: 100 * COIN,
+//				own: 1,
+//				others: vec![IndividualExposure {
+//					who: stash_2,
+//					value: 100 * COIN - 1,
+//				}],
+//			},
+//		);
+//		println!("{:#?}", Ring::total_balance(&stash_1));
+//		let _ = Staking::slash_validator(&stash_1, 1, &Staking::stakers(&stash_1), &mut Vec::new());
+//		println!("{:#?}", Ring::total_balance(&stash_1));
+//		//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN - 1);
+//		//		assert_eq!(Ring::total_balance(&stash_2), 1);
 //	});
 //}
 
@@ -937,56 +862,57 @@ fn yakio_q1() {
 	});
 }
 
-// TODO
-//// how to balance the power and calculate the reward if some validators have been chilled
-//#[test]
-//fn yakio_q2() {
-//	fn run(with_new_era: bool) -> u64 {
-//		let mut balance = 0;
-//		ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
-//			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
-//			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
-//
-//			assert_ok!(Staking::validate(
-//				Origin::signed(validator_1_controller),
-//				vec![0; 8],
-//				0,
-//				3
-//			));
-//			assert_ok!(Staking::validate(
-//				Origin::signed(validator_2_controller),
-//				vec![1; 8],
-//				0,
-//				3
-//			));
-//			assert_ok!(Staking::nominate(
-//				Origin::signed(nominator_controller),
-//				vec![validator_1_stash, validator_2_stash]
-//			));
-//
-//			start_era(1);
-//			assert_ok!(Staking::chill(Origin::signed(validator_1_controller)));
-//			// assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
-//			if with_new_era {
-//				start_era(2);
-//			}
-//			Staking::reward_validator(&validator_1_stash, 1000 * COIN);
-//			Staking::reward_validator(&validator_2_stash, 1000 * COIN);
-//
-//			balance = Ring::free_balance(&nominator_stash);
-//		});
-//
-//		balance
-//	}
-//
-//	let free_balance = run(false);
-//	let free_balance_with_new_era = run(true);
-//
-//	assert_ne!(free_balance, 0);
-//	assert_ne!(free_balance_with_new_era, 0);
-//	assert!(free_balance > free_balance_with_new_era);
-//}
+// how to balance the power and calculate the reward if some validators have been chilled
+#[test]
+fn yakio_q2() {
+	fn run(with_new_era: bool) -> Balance {
+		let mut balance = 0;
+		ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
+			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
+			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_1_controller),
+				ValidatorPrefs {
+					node_name: vec![0; 8],
+					..Default::default()
+				},
+			));
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_2_controller),
+				ValidatorPrefs {
+					node_name: vec![1; 8],
+					..Default::default()
+				},
+			));
+			assert_ok!(Staking::nominate(
+				Origin::signed(nominator_controller),
+				vec![validator_1_stash, validator_2_stash]
+			));
+
+			start_era(1);
+			assert_ok!(Staking::chill(Origin::signed(validator_1_controller)));
+			// assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
+			if with_new_era {
+				start_era(2);
+			}
+			let _ = Staking::reward_validator(&validator_1_stash, 1000 * COIN);
+			let _ = Staking::reward_validator(&validator_2_stash, 1000 * COIN);
+
+			balance = Ring::free_balance(&nominator_stash);
+		});
+
+		balance
+	}
+
+	let free_balance = run(false);
+	let free_balance_with_new_era = run(true);
+
+	assert_ne!(free_balance, 0);
+	assert_ne!(free_balance_with_new_era, 0);
+	assert!(free_balance > free_balance_with_new_era);
+}
 
 #[test]
 fn xavier_q1() {

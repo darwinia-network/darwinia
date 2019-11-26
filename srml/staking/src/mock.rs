@@ -1,3 +1,4 @@
+pub use node_primitives::Balance;
 pub use node_runtime::constants::currency::COIN;
 
 use std::{cell::RefCell, collections::HashSet};
@@ -18,7 +19,6 @@ use substrate_primitives::{crypto::key_types, H256};
 
 use crate::*;
 use darwinia_support::TimeStamp;
-use node_primitives::Balance;
 use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
