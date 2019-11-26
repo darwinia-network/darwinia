@@ -17,10 +17,10 @@ pub mod keccak;
 pub mod pow;
 pub mod receipt;
 //pub mod transaction;
-pub mod types;
 
 pub use codec::{Decode, Encode};
 pub use ethereum_types::BigEndianHash;
+pub use hbloom::{Bloom, Input as BloomInput};
 pub use impl_codec::impl_fixed_hash_codec;
 pub use keccak_hash::keccak;
 pub use primitive_types::{H160, H256, U128, U256, U512};
@@ -30,7 +30,7 @@ pub type Bytes = Vec<u8>;
 pub type Address = H160;
 pub type BlockNumber = u64;
 
-#[derive(Clone, Copy, Eq, PartialEq, Encode, Decode)]
+#[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
 pub struct BestBlock {
 	height: u64, // enough for ethereum poa network (kovan)
 	hash: H256,
