@@ -523,11 +523,11 @@ fn reward_and_slash_should_work() {
 				others: vec![],
 			},
 		);
-		assert_eq!(Ring::total_balance(&stash_1), 100 * COIN);
+		assert_eq!(Ring::free_balance(&stash_1), 100 * COIN);
 		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
-		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN);
+		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN);
 
-		// TODO
+		// FIXME: slash strategy
 		//		<Stakers<Test>>::insert(
 		//			&stash_1,
 		//			Exposure {
@@ -539,11 +539,9 @@ fn reward_and_slash_should_work() {
 		//				}],
 		//			},
 		//		);
-		//		println!("{:#?}", Ring::total_balance(&stash_1));
 		//		let _ = Staking::slash_validator(&stash_1, 1, &Staking::stakers(&stash_1), &mut Vec::new());
-		//		println!("{:#?}", Ring::total_balance(&stash_1));
-		//		assert_eq!(Ring::total_balance(&stash_1), 120 * COIN - 1);
-		//		assert_eq!(Ring::total_balance(&stash_2), 1);
+		//		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN - 1);
+		//		assert_eq!(Ring::free_balance(&stash_2), 1);
 	});
 }
 
@@ -605,6 +603,7 @@ fn slash_should_not_touch_unbondings() {
 				others: vec![],
 			},
 		);
+		// FIXME: slash strategy
 		let _ = Staking::slash_validator(
 			&stash,
 			ExtendedBalance::max_value(),
@@ -741,12 +740,14 @@ fn pool_should_be_increased_and_decreased_correctly() {
 				others: vec![],
 			},
 		);
+		// FIXME: slash strategy
 		let _ = Staking::slash_validator(
 			&stash_1,
 			ExtendedBalance::max_value(),
 			&Staking::stakers(&stash_1),
 			&mut vec![],
 		);
+		// FIXME: slash strategy
 		let _ = Staking::slash_validator(
 			&stash_2,
 			ExtendedBalance::max_value(),
