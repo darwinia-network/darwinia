@@ -706,7 +706,7 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		assert_eq!(Staking::ring_pool(), ring_pool);
 		assert_eq!(Staking::kton_pool(), kton_pool);
 
-		// unbond with punish: 12.5Ring
+		// claim: 50Ring
 		assert_ok!(Staking::claim_deposits_with_punish(
 			Origin::signed(controller_2),
 			(promise_month * MONTH_IN_SECONDS) as u64
@@ -720,24 +720,39 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		ring_pool -= 125 * COIN / 10;
 		assert_eq!(Staking::ring_pool(), ring_pool);
 
-		// TODO
-		// slash: 25Ring 50Kton
-		//		let _ = Staking::slash_validator(
-		//			&stash_1,
-		//			ExtendedBalance::max_value(),
-		//			&Staking::stakers(&stash_1),
-		//			&mut vec![],
-		//		);
-		//		let _ = Staking::slash_validator(
-		//			&stash_2,
-		//			ExtendedBalance::max_value(),
-		//			&Staking::stakers(&stash_2),
-		//			&mut vec![],
-		//		);
-		//				ring_pool -= 25 * COIN;
-		//		kton_pool -= 50 * COIN;
-		//		assert_eq!(Staking::ring_pool(), ring_pool);
-		//		assert_eq!(Staking::kton_pool(), kton_pool);
+		// slash: 37.5Ring 50Kton
+		<Stakers<Test>>::insert(
+			&stash_1,
+			Exposure {
+				total: 1,
+				own: 1,
+				others: vec![],
+			},
+		);
+		<Stakers<Test>>::insert(
+			&stash_2,
+			Exposure {
+				total: 1,
+				own: 1,
+				others: vec![],
+			},
+		);
+		let _ = Staking::slash_validator(
+			&stash_1,
+			ExtendedBalance::max_value(),
+			&Staking::stakers(&stash_1),
+			&mut vec![],
+		);
+		let _ = Staking::slash_validator(
+			&stash_2,
+			ExtendedBalance::max_value(),
+			&Staking::stakers(&stash_2),
+			&mut vec![],
+		);
+		ring_pool -= 375 * COIN / 10;
+		kton_pool -= 50 * COIN;
+		assert_eq!(Staking::ring_pool(), ring_pool);
+		assert_eq!(Staking::kton_pool(), kton_pool);
 	});
 }
 
