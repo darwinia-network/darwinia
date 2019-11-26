@@ -1002,26 +1002,20 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 //		assert_eq!(Staking::ledger(&controller).unwrap().deposit_items.len(), 2);
 //	});
 //}
-//
-//#[test]
-//fn unbond_zero_before_expiry() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let expiry_date = 12 * MONTH_IN_SECONDS as u64;
-//		let unbond_value = StakingBalance::Ring(COIN);
-//
-//		Timestamp::set_timestamp(expiry_date - 1);
-//		assert_ok!(Staking::unbond(Origin::signed(10), unbond_value.clone()));
-//		assert_eq!(
-//			Staking::ledger(&10).unwrap().unbondings[0].value,
-//			StakingBalance::Ring(0)
-//		);
-//
-//		Timestamp::set_timestamp(expiry_date);
-//		assert_ok!(Staking::unbond(Origin::signed(10), unbond_value.clone()));
-//		assert_eq!(Staking::ledger(&10).unwrap().unbondings[1].value, unbond_value);
-//	});
-//}
-//
+
+#[test]
+fn unbond_zero() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		gen_paired_account!(stash(123), controller(456), promise_month(12));
+		let ledger = Staking::ledger(&controller).unwrap();
+
+		Timestamp::set_timestamp((promise_month * MONTH_IN_SECONDS) as u64);
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(0)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Kton(0)));
+		assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
+	});
+}
+
 // TODO
 //// bond 10_000 Ring for 12 months, gain 1 Kton
 //// bond extra 10_000 Ring for 36 months, gain 3 Kton
