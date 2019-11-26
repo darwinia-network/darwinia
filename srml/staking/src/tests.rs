@@ -890,72 +890,53 @@ fn unbond_zero() {
 	});
 }
 
-// TODO
-//// bond 10_000 Ring for 12 months, gain 1 Kton
-//// bond extra 10_000 Ring for 36 months, gain 3 Kton
-//// bond extra 1 Kton
-//// nominate
-//// unlock the 12 months deposit item with punish
-//// lost 3 Kton and 10_000 Ring's power for nominate
-//#[test]
-//fn yakio_q1() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let stash = 777;
-//		let controller = 888;
-//		let _ = Ring::deposit_creating(&stash, 20_000);
-//
-//		assert_ok!(Staking::bond(
-//			Origin::signed(stash),
-//			controller,
-//			StakingBalance::Ring(10_000),
-//			RewardDestination::Stash,
-//			12
-//		));
-//		assert_ok!(Staking::bond_extra(
-//			Origin::signed(stash),
-//			StakingBalance::Ring(10_000),
-//			36
-//		));
-//		assert_eq!(Kton::free_balance(&stash), 4);
-//
-//		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 36));
-//		assert_eq!(Staking::ledger(&controller).unwrap().active_kton, 1);
-//
-//		assert_ok!(Staking::nominate(Origin::signed(controller), vec![controller]));
-//
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller),
-//			10_000 * COIN,
-//			12 * MONTH_IN_SECONDS as u64
-//		));
-//		assert_eq!(Kton::free_balance(&stash), 1);
-//
-//		let ledger = StakingLedger {
-//			stash: 777,
-//			total_deposit_ring: 10_000,
-//			active_ring: 10_000,
-//			active_deposit_ring: 10_000,
-//			active_kton: 1,
-//			deposit_items: vec![TimeDepositItem {
-//				value: 10_000,
-//				start_time: 0,
-//				expire_time: 36 * MONTH_IN_SECONDS as u64,
-//			}],
-//			unbondings: vec![],
-//		};
-//		start_era(3);
-//		assert_ok!(Staking::withdraw_unbonded(Origin::signed(controller)));
-//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-//		// not enough Kton to unbond
-//		assert_ok!(Staking::unbond_with_punish(
-//			Origin::signed(controller),
-//			10_000 * COIN,
-//			36 * MONTH_IN_SECONDS as u64
-//		));
-//		assert_eq!(&Staking::ledger(&controller).unwrap(), &ledger);
-//	});
-//}
-//
+// bond 10_000 Ring for 12 months, gain 1 Kton
+// bond extra 10_000 Ring for 36 months, gain 3 Kton
+// bond extra 1 Kton
+// nominate
+// unlock the 12 months deposit item with punish
+// lost 3 Kton and 10_000 Ring's power for nominate
+#[test]
+fn yakio_q1() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let (stash, controller) = (777, 888);
+		let _ = Ring::deposit_creating(&stash, 20_000);
+
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalance::Ring(10_000),
+			RewardDestination::Stash,
+			12
+		));
+		assert_ok!(Staking::bond_extra(
+			Origin::signed(stash),
+			StakingBalance::Ring(10_000),
+			36
+		));
+		assert_eq!(Kton::free_balance(&stash), 4);
+
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 36));
+		assert_eq!(Staking::ledger(&controller).unwrap().active_kton, 1);
+
+		assert_ok!(Staking::nominate(Origin::signed(controller), vec![controller]));
+
+		assert_ok!(Staking::claim_deposits_with_punish(
+			Origin::signed(controller),
+			(12 * MONTH_IN_SECONDS) as u64,
+		));
+		assert_eq!(Kton::free_balance(&stash), 1);
+
+		let ledger = Staking::ledger(&controller).unwrap();
+		// not enough Kton to unbond
+		assert_ok!(Staking::claim_deposits_with_punish(
+			Origin::signed(controller),
+			(36 * MONTH_IN_SECONDS) as u64,
+		));
+		assert_eq!(Staking::ledger(&controller).unwrap(), ledger);
+	});
+}
+
 // TODO
 //// how to balance the power and calculate the reward if some validators have been chilled
 //#[test]
