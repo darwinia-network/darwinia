@@ -16,7 +16,7 @@ use srml_support::{
 };
 use substrate_primitives::{crypto::key_types, H256};
 
-use crate::{EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, StakingBalance, Trait};
+use crate::*;
 use darwinia_support::TimeStamp;
 use node_primitives::Balance;
 use phragmen::ExtendedBalance;
@@ -418,13 +418,15 @@ pub fn bond_validator(acc: u64, val: Balance) {
 		acc,
 		StakingBalance::Ring(val),
 		RewardDestination::Controller,
-		0
+		0,
 	));
 	assert_ok!(Staking::validate(
 		Origin::signed(acc),
-		"test".as_bytes().to_owned(),
-		0,
-		0
+		ValidatorPrefs {
+			node_name: "test".as_bytes().to_vec(),
+			unstake_threshold: 0,
+			validator_payment_ratio: 0,
+		}
 	));
 }
 
@@ -437,7 +439,7 @@ pub fn bond_nominator(acc: u64, val: Balance, target: Vec<u64>) {
 		acc,
 		StakingBalance::Ring(val),
 		RewardDestination::Controller,
-		0
+		0,
 	));
 	assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }

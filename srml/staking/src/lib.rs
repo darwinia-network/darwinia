@@ -105,19 +105,22 @@ pub enum StakerStatus<AccountId> {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct ValidatorPrefs {
+	pub node_name: Vec<u8>,
 	/// Validator should ensure this many more slashes than is necessary before being unstaked.
 	#[codec(compact)]
 	pub unstake_threshold: u32,
 	/// percent of Reward that validator takes up-front; only the rest is split between themselves and
 	/// nominators.
-	pub validator_payment_ratio: Perbill,
+	#[codec(compact)]
+	pub validator_payment_ratio: u32,
 }
 
 impl Default for ValidatorPrefs {
 	fn default() -> Self {
 		ValidatorPrefs {
+			node_name: vec![],
 			unstake_threshold: 3,
-			validator_payment_ratio: Default::default(),
+			validator_payment_ratio: 0,
 		}
 	}
 }
@@ -378,19 +381,15 @@ decl_storage! {
 		/// The rest of the slashed value is handled by the `Slash`.
 		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
-		/// A mapping from still-bonded eras to the first session index of that era.
-		BondedEras: Vec<(EraIndex, SessionIndex)>;
-
-		/// All slashes that have occurred in a given era.
-		EraSlashJournal get(fn era_slash_journal):
-			map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
-
-		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
-
 		pub RingPool get(ring_pool): RingBalanceOf<T>;
 
 		pub KtonPool get(kton_pool): KtonBalanceOf<T>;
 
+		/// A mapping from still-bonded eras to the first session index of that era.
+		BondedEras: Vec<(EraIndex, SessionIndex)>;
+
+		/// All slashes that have occurred in a given era.
+		EraSlashJournal get(fn era_slash_journal): map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
 	}
 	add_extra_genesis {
 		config(stakers):
@@ -403,21 +402,22 @@ decl_storage! {
 						T::Lookup::unlookup(controller.clone()),
 						StakingBalance::Ring(balance),
 						RewardDestination::Stash,
-						12
+						12,
 					);
 					let _ = match status {
 						StakerStatus::Validator => {
 							<Module<T>>::validate(
 								T::Origin::from(Some(controller.clone()).into()),
-								[0;8].to_vec(),
-								0,
-								3
+								ValidatorPrefs {
+									node_name: vec![0; 8],
+									..Default::default()
+								},
 							)
 						},
 						StakerStatus::Nominator(votes) => {
 							<Module<T>>::nominate(
 								T::Origin::from(Some(controller.clone()).into()),
-								votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect()
+								votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect(),
 							)
 						}, _ => Ok(())
 					};
@@ -681,24 +681,32 @@ decl_module! {
 			<Ledger<T>>::insert(&controller, ledger);
 		}
 
-		fn validate(origin, name: Vec<u8>, ratio: u32, unstake_threshold: u32) {
+		fn validate(origin, prefs: ValidatorPrefs) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let stash = &ledger.stash;
+
 			ensure!(
-				unstake_threshold <= MAX_UNSTAKE_THRESHOLD,
-				"unstake threshold too large"
+				!prefs.node_name.is_empty(),
+				"node name can not be empty",
 			);
+			ensure!(
+				prefs.unstake_threshold <= MAX_UNSTAKE_THRESHOLD,
+				"unstake threshold too large",
+			);
+
+			let stash = &ledger.stash;
+			let mut prefs = prefs;
 			// at most 100%
-			let ratio = Perbill::from_percent(ratio.min(100));
-			let prefs = ValidatorPrefs { unstake_threshold: unstake_threshold, validator_payment_ratio: ratio };
+			prefs.validator_payment_ratio = prefs.validator_payment_ratio.min(100);
 
 			<Nominators<T>>::remove(stash);
-			<Validators<T>>::insert(stash, prefs);
-			if !<NodeName<T>>::exists(&controller) {
-				<NodeName<T>>::insert(controller, name);
-				Self::deposit_event(RawEvent::NodeNameUpdated);
-			}
+			<Validators<T>>::mutate(stash, |prefs_| {
+				let exists = !prefs_.node_name.is_empty();
+				*prefs_ = prefs;
+				if exists {
+					Self::deposit_event(RawEvent::NodeNameUpdated);
+				}
+			});
 		}
 
 		fn nominate(origin, targets: Vec<<T::Lookup as StaticLookup>::Source>) {
@@ -1141,7 +1149,7 @@ impl<T: Trait> Module<T> {
 	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
 	/// pre-payout cut.
 	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) -> RingPositiveImbalanceOf<T> {
-		let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
+		let off_the_table = Perbill::from_percent(Self::validators(stash).validator_payment_ratio) * reward;
 		let reward = reward - off_the_table;
 		let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
 		let validator_cut = if reward.is_zero() {
