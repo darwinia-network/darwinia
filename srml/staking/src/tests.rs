@@ -957,14 +957,6 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 //	});
 //}
 
-//// #[test]
-//// fn total_deposit_should_be_increased_and_decreased_correctly() {
-//// with_externalities(
-//// &mut ExtBuilder::default().existential_deposit(0).build(),
-//// || body,
-//// );
-//// }
-
 #[test]
 fn promise_extra_should_not_remove_unexpired_items() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
