@@ -29,7 +29,7 @@ macro_rules! gen_paired_account {
 			$controller,
 			StakingBalance::Ring(50 * COIN),
 			RewardDestination::Stash,
-			$how_long
+			$how_long,
 			));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed($stash),
@@ -50,12 +50,12 @@ macro_rules! gen_paired_account {
 			$controller,
 			StakingBalance::Ring(50 * COIN),
 			RewardDestination::Stash,
-			$how_long
+			$how_long,
 			));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed($stash),
 			StakingBalance::Kton(50 * COIN),
-			$how_long
+			$how_long,
 			));
 	};
 	($stash:ident($stash_id:expr), $controller:ident($controller_id:expr)) => {
@@ -633,15 +633,15 @@ fn bond_over_max_promise_month_should_fail() {
 				controller,
 				StakingBalance::Ring(COIN),
 				RewardDestination::Stash,
-				37
+				37,
 			),
-			"months at most is 36."
+			"months at most is 36.",
 		);
 
 		gen_paired_account!(stash(123), controller(456), promise_month(12));
 		assert_err!(
 			Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(COIN), 37),
-			"months at most is 36."
+			"months at most is 36.",
 		);
 	});
 }
@@ -656,9 +656,9 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 				unpaired_controller,
 				StakingBalance::Ring(COIN),
 				RewardDestination::Stash,
-				0
+				0,
 			),
-			"stash already bonded"
+			"stash already bonded",
 		);
 		assert_err!(
 			Staking::bond(
@@ -666,9 +666,9 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 				10,
 				StakingBalance::Ring(COIN),
 				RewardDestination::Stash,
-				0
+				0,
 			),
-			"controller already paired"
+			"controller already paired",
 		);
 	});
 }
@@ -713,13 +713,13 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		// claim: 50Ring
 		assert_ok!(Staking::claim_deposits_with_punish(
 			Origin::signed(controller_2),
-			(promise_month * MONTH_IN_SECONDS) as u64
+			(promise_month * MONTH_IN_SECONDS) as u64,
 		));
 		// unbond deposit items: 12.5Ring
 		Timestamp::set_timestamp((promise_month * MONTH_IN_SECONDS) as u64);
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_2),
-			StakingBalance::Ring(125 * COIN / 10)
+			StakingBalance::Ring(125 * COIN / 10),
 		));
 		ring_pool -= 125 * COIN / 10;
 		assert_eq!(Staking::ring_pool(), ring_pool);
@@ -851,12 +851,12 @@ fn yakio_q1() {
 			controller,
 			StakingBalance::Ring(10_000),
 			RewardDestination::Stash,
-			12
+			12,
 		));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
 			StakingBalance::Ring(10_000),
-			36
+			36,
 		));
 		assert_eq!(Kton::free_balance(&stash), 4);
 
@@ -907,7 +907,7 @@ fn yakio_q2() {
 			));
 			assert_ok!(Staking::nominate(
 				Origin::signed(nominator_controller),
-				vec![validator_1_stash, validator_2_stash]
+				vec![validator_1_stash, validator_2_stash],
 			));
 
 			start_era(1);
@@ -977,7 +977,7 @@ fn xavier_q1() {
 					staking_amount: 10,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Bond Extra - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1000,7 +1000,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1037,7 +1037,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 
@@ -1055,7 +1055,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		assert_eq!(
@@ -1108,7 +1108,7 @@ fn xavier_q1() {
 					staking_amount: 5,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Init - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1127,7 +1127,7 @@ fn xavier_q1() {
 					staking_amount: 10,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Bond Extra - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1150,7 +1150,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1159,7 +1159,7 @@ fn xavier_q1() {
 
 		assert_err!(
 			Ring::transfer(Origin::signed(stash), controller, 1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Locking Transfer - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1187,7 +1187,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 
@@ -1205,7 +1205,7 @@ fn xavier_q1() {
 						until: BondingDuration::get() + unbond_start,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		assert_eq!(
@@ -1260,7 +1260,7 @@ fn xavier_q2() {
 					staking_amount: 5,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Init - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1279,7 +1279,7 @@ fn xavier_q2() {
 					staking_amount: 9,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Bond Extra - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1290,7 +1290,7 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(unbond_start_1);
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
-			StakingBalance::Kton(unbond_value_1)
+			StakingBalance::Kton(unbond_value_1),
 		));
 		assert_eq!(Timestamp::get(), unbond_start_1);
 		assert_eq!(Kton::free_balance(stash), 10);
@@ -1305,7 +1305,7 @@ fn xavier_q2() {
 						until: BondingDuration::get() + unbond_start_1,
 					}],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1334,7 +1334,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1343,7 +1343,7 @@ fn xavier_q2() {
 
 		assert_err!(
 			Kton::transfer(Origin::signed(stash), controller, unbond_value_1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Locking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1357,7 +1357,7 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(BondingDuration::get() + unbond_start_1);
 		assert_err!(
 			Kton::transfer(Origin::signed(stash), controller, unbond_value_1 + 1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Locking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
@@ -1382,7 +1382,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1409,7 +1409,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1436,7 +1436,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 	});
@@ -1463,7 +1463,7 @@ fn xavier_q2() {
 					staking_amount: 5,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Init - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1482,7 +1482,7 @@ fn xavier_q2() {
 					staking_amount: 9,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Bond Extra - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1508,7 +1508,7 @@ fn xavier_q2() {
 						until: BondingDuration::get() + unbond_start_1,
 					},],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1537,7 +1537,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Unbond - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1546,7 +1546,7 @@ fn xavier_q2() {
 
 		assert_err!(
 			Ring::transfer(Origin::signed(stash), controller, unbond_value_1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Locking Transfer - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1560,7 +1560,7 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(BondingDuration::get() + unbond_start_1);
 		assert_err!(
 			Ring::transfer(Origin::signed(stash), controller, unbond_value_1 + 1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
 		//		println!("Locking Transfer - Ring Locks: {:#?}", Ring::locks(stash));
@@ -1585,7 +1585,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Unlocking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1612,7 +1612,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Unlocking Transfer - Ring Balance: {:?}", Ring::free_balance(stash));
@@ -1639,7 +1639,7 @@ fn xavier_q2() {
 						}
 					],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 	});
@@ -1672,7 +1672,7 @@ fn xavier_q3() {
 				ring_staking_lock: Default::default(),
 				kton_staking_lock: StakingLock {
 					staking_amount: 5,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 			}
 		);
@@ -1692,7 +1692,7 @@ fn xavier_q3() {
 				ring_staking_lock: Default::default(),
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }],
 				},
 			}
 		);
@@ -1714,7 +1714,7 @@ fn xavier_q3() {
 				ring_staking_lock: Default::default(),
 				kton_staking_lock: StakingLock {
 					staking_amount: 1,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }],
 				},
 			}
 		);
@@ -1747,7 +1747,7 @@ fn xavier_q3() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 5,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				kton_staking_lock: Default::default(),
 			}
@@ -1767,7 +1767,7 @@ fn xavier_q3() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }],
 				},
 				kton_staking_lock: Default::default(),
 			}
@@ -1789,7 +1789,7 @@ fn xavier_q3() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }]
+					unbondings: vec![NormalLock { amount: 5, until: 61 }],
 				},
 				kton_staking_lock: Default::default(),
 			}
