@@ -13,9 +13,9 @@ safe-mix = { version = "1.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
+authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false } # staking tests needed
 authority-discovery = { package = "srml-authority-discovery", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 babe = { package = "srml-babe", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
@@ -45,8 +45,8 @@ timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-net
 transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 tx-pool-api = { package = "substrate-transaction-pool-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-version = { package = "sr-version", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 utility = { package = "srml-utility", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+version = { package = "sr-version", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
 # darwinia
 balances = { package = "darwinia-balances", path = '../../srml/balances', default-features = false }
@@ -62,13 +62,13 @@ wasm-builder-runner = { package = "substrate-wasm-builder-runner", version = "1.
 [features]
 default = ["std"]
 std = [
-    # crates.io
+	# crates.io
 	"codec/std",
 	"rustc-hex",
 	"safe-mix/std",
 	"serde",
 
-    # github.com
+	# github.com
 	"authorship/std",
 	"authority-discovery/std",
 	"authority-discovery-primitives/std",
@@ -76,38 +76,39 @@ std = [
 	"babe-primitives/std",
 	"block-builder-api/std",
 	"contracts/std",
-    "contracts-rpc-runtime-api/std",
-   	"executive/std",
-    "im-online/std",
-    "indices/std",
-    "inherents/std",
-    "offchain-primitives/std",
-    "offences/std",
-    "randomness-collective-flip/std",
+	"contracts-rpc-runtime-api/std",
+	"executive/std",
+	"finality-tracker/std",
+	"im-online/std",
+	"indices/std",
+	"inherents/std",
+	"offchain-primitives/std",
+	"offences/std",
+	"randomness-collective-flip/std",
 	"rstd/std",
 	"session/std",
-	"substrate-keyring",
-	"substrate-primitives/std",
-	"substrate-session/std",
 	"sr-api/std",
 	"sr-primitives/std",
 	"sr-staking-primitives/std",
+	"substrate-keyring",
+	"substrate-primitives/std",
+	"substrate-session/std",
 	"sudo/std",
 	"support/std",
 	"system/std",
-    "system-rpc-runtime-api/std",
-    "timestamp/std",
+	"system-rpc-runtime-api/std",
+	"timestamp/std",
 	"transaction-payment/std",
 	"transaction-payment-rpc-runtime-api/std",
-    "tx-pool-api/std",
+	"tx-pool-api/std",
 	"utility/std",
 	"version/std",
 
-    # darwinia
-    "balances/std",
-    "darwinia-support/std",
-    "ethereum-bridge/std",
+	# darwinia
+	"balances/std",
+	"darwinia-support/std",
+	"ethereum-bridge/std",
 	"kton/std",
-    "node-primitives/std",
+	"node-primitives/std",
 	"staking/std",
 ]
