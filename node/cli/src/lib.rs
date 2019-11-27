@@ -18,25 +18,22 @@
 
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
-#[macro_use]
-extern crate serde;
 
 pub use cli::error;
 pub mod chain_spec;
+#[macro_use]
 mod service;
 mod factory_impl;
-mod panic_handle;
 
+use crate::factory_impl::FactoryState;
+use cli::{parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
+pub use cli::{ExecutionStrategyParam, IntoExit, NoCustom, SharedParams, VersionInfo};
+use client::ExecutionStrategies;
+use log::info;
+use structopt::{clap::App, StructOpt};
+use substrate_service::{AbstractService, Configuration, Roles as ServiceRoles};
 use tokio::prelude::Future;
 use tokio::runtime::{Builder as RuntimeBuilder, Runtime};
-pub use cli::{VersionInfo, IntoExit, NoCustom, SharedParams};
-use substrate_service::{ServiceFactory, Roles as ServiceRoles};
-use std::ops::Deref;
-use log::info;
-use structopt::{StructOpt, clap::App};
-use cli::{AugmentClap, GetLogFilter};
-use crate::factory_impl::FactoryState;
-use crate::panic_handle::set as panic_set;
 use transaction_factory::RuntimeAdapter;
 
 /// The chain specification option.
@@ -50,9 +47,9 @@ pub enum ChainSpec {
 	FlamingFir,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
-	/// Crayfish, darwinia network poc-2
+	// TODO: docs
+	#[allow(missing_docs)]
 	CrayfishTestnet,
-	CrayfishTestnetFir,
 }
 
 /// Custom subcommands.
@@ -60,9 +57,9 @@ pub enum ChainSpec {
 pub enum CustomSubcommands {
 	/// The custom factory subcommmand for manufacturing transactions.
 	#[structopt(
-	name = "factory",
-	about = "Manufactures num transactions from Alice to random accounts. \
-		Only supported for development or local testnet."
+		name = "factory",
+		about = "Manufactures num transactions from Alice to random accounts. \
+		         Only supported for development or local testnet."
 	)]
 	Factory(FactoryCmd),
 }
@@ -78,7 +75,7 @@ impl GetLogFilter for CustomSubcommands {
 #[derive(Debug, StructOpt, Clone)]
 pub struct FactoryCmd {
 	/// How often to repeat. This option only has an effect in mode `MasterToNToM`.
-	#[structopt(long="rounds", default_value = "1")]
+	#[structopt(long = "rounds", default_value = "1")]
 	pub rounds: u64,
 
 	/// MasterToN: Manufacture `num` transactions from the master account
@@ -98,17 +95,27 @@ pub struct FactoryCmd {
 	///               ... x `rounds`
 	///
 	/// These three modes control manufacturing.
-	#[structopt(long="mode", default_value = "MasterToN")]
+	#[structopt(long = "mode", default_value = "MasterToN")]
 	pub mode: transaction_factory::Mode,
 
 	/// Number of transactions to generate. In mode `MasterNToNToM` this is
 	/// the number of transactions per round.
-	#[structopt(long="num", default_value = "8")]
+	#[structopt(long = "num", default_value = "8")]
 	pub num: u64,
 
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
 	pub shared_params: SharedParams,
+
+	/// The means of execution used when calling into the runtime while importing blocks.
+	#[structopt(
+	long = "execution",
+	value_name = "STRATEGY",
+	possible_values = &ExecutionStrategyParam::variants(),
+	case_insensitive = true,
+	default_value = "NativeElseWasm"
+	)]
+	pub execution: ExecutionStrategyParam,
 }
 
 impl AugmentClap for FactoryCmd {
@@ -126,18 +133,16 @@ impl ChainSpec {
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
 			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
-			ChainSpec::CrayfishTestnetFir => chain_spec::crayfish_fir_config()?,
 		})
 	}
 
 	pub(crate) fn from(s: &str) -> Option<Self> {
 		match s {
 			"dev" => Some(ChainSpec::Development),
-			"" => Some(ChainSpec::CrayfishTestnetFir),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"crayfish" => Some(ChainSpec::CrayfishTestnet),
-			"flaming-fir" => Some(ChainSpec::FlamingFir),
+			"fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
+			"" => Some(ChainSpec::CrayfishTestnet),
 			_ => None,
 		}
 	}
@@ -151,75 +156,88 @@ fn load_spec(id: &str) -> Result<Option<chain_spec::ChainSpec>, String> {
 }
 
 /// Parse command line arguments into service configuration.
-pub fn run<I, T, E>(args: I, exit: E, version: cli::VersionInfo) -> error::Result<()> where
+pub fn run<I, T, E>(args: I, exit: E, version: cli::VersionInfo) -> error::Result<()>
+where
 	I: IntoIterator<Item = T>,
 	T: Into<std::ffi::OsString> + Clone,
 	E: IntoExit,
 {
-	let ret = cli::parse_and_execute::<service::Factory, CustomSubcommands, NoCustom, _, _, _, _, _>(
-		load_spec, &version, "substrate-node", args, exit,
-		|exit, _cli_args, _custom_args, config| {
-			info!("{}", version.name);
-			info!("  version {}", config.full_version());
-			info!("  by Darwinia Network, 2017-2019");
-			info!("Chain specification: {}", config.chain_spec.name());
-			info!("Node name: {}", config.name);
-			info!("Roles: {:?}", config.roles);
-			let runtime = RuntimeBuilder::new().name_prefix("main-tokio-").build()
-				.map_err(|e| format!("{:?}", e))?;
-			match config.roles {
-				ServiceRoles::LIGHT => run_until_exit(
-					runtime,
-					service::Factory::new_light(config).map_err(|e| format!("{:?}", e))?,
-					exit
-				),
-				_ => run_until_exit(
-					runtime,
-					service::Factory::new_full(config).map_err(|e| format!("{:?}", e))?,
-					exit
-				),
-			}.map_err(|e| format!("{:?}", e))
+	type Config<A, B> = Configuration<(), A, B>;
+
+	match parse_and_prepare::<CustomSubcommands, NoCustom, _>(&version, "substrate-node", args) {
+		ParseAndPrepare::Run(cmd) => cmd.run(
+			load_spec,
+			exit,
+			|exit, _cli_args, _custom_args, config: Config<_, _>| {
+				info!("{}", version.name);
+				info!("  version {}", config.full_version());
+				info!("  _____                      _       _       ");
+				info!(" |  __ \\                    (_)     (_)      ");
+				info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
+				info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
+				info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
+				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
+				info!("Chain specification: {}", config.chain_spec.name());
+				info!("Node name: {}", config.name);
+				info!("Roles: {:?}", cli::display_role(&config));
+				let runtime = RuntimeBuilder::new()
+					.name_prefix("main-tokio-")
+					.build()
+					.map_err(|e| format!("{:?}", e))?;
+				match config.roles {
+					ServiceRoles::LIGHT => run_until_exit(runtime, service::new_light(config)?, exit),
+					_ => run_until_exit(runtime, service::new_full(config)?, exit),
+				}
+			},
+		),
+
+		ParseAndPrepare::BuildSpec(cmd) => cmd.run::<NoCustom, _, _, _>(load_spec),
+		ParseAndPrepare::ExportBlocks(cmd) => {
+			cmd.run_with_builder(|config: Config<_, _>| Ok(new_full_start!(config).0), load_spec, exit)
 		}
-	);
-	panic_set(version.support_url);
-	match &ret {
-		Ok(Some(CustomSubcommands::Factory(cli_args))) => {
-			let config = cli::create_config_with_db_path::<service::Factory, _>(
-				load_spec,
-				&cli_args.shared_params,
-				&version,
-			)?;
+		ParseAndPrepare::ImportBlocks(cmd) => {
+			cmd.run_with_builder(|config: Config<_, _>| Ok(new_full_start!(config).0), load_spec, exit)
+		}
+		ParseAndPrepare::PurgeChain(cmd) => cmd.run(load_spec),
+		ParseAndPrepare::RevertChain(cmd) => {
+			cmd.run_with_builder(|config: Config<_, _>| Ok(new_full_start!(config).0), load_spec)
+		}
+		ParseAndPrepare::CustomCommand(CustomSubcommands::Factory(cli_args)) => {
+			let mut config: Config<_, _> =
+				cli::create_config_with_db_path(load_spec, &cli_args.shared_params, &version)?;
+			config.execution_strategies = ExecutionStrategies {
+				importing: cli_args.execution.into(),
+				block_construction: cli_args.execution.into(),
+				other: cli_args.execution.into(),
+				..Default::default()
+			};
 
 			match ChainSpec::from(config.chain_spec.id()) {
-				Some(ref c) if c == &ChainSpec::Development || c == &ChainSpec::LocalTestnet => {},
+				Some(ref c) if c == &ChainSpec::Development || c == &ChainSpec::LocalTestnet => {}
 				_ => panic!("Factory is only supported for development and local testnet."),
 			}
 
-			let factory_state = FactoryState::new(
-				cli_args.mode.clone(),
-				cli_args.num,
-				cli_args.rounds,
-			);
-			transaction_factory::factory::<service::Factory, FactoryState<_>>(
+			let factory_state = FactoryState::new(cli_args.mode.clone(), cli_args.num, cli_args.rounds);
+
+			let service_builder = new_full_start!(config).0;
+			transaction_factory::factory::<FactoryState<_>, _, _, _, _, _>(
 				factory_state,
-				config,
-			).map_err(|e| format!("Error in transaction factory: {}", e))?;
+				service_builder.client(),
+				service_builder
+					.select_chain()
+					.expect("The select_chain is always initialized by new_full_start!; QED"),
+			)
+			.map_err(|e| format!("Error in transaction factory: {}", e))?;
 
 			Ok(())
-		},
-		_ => ret.map_err(Into::into).map(|_| ())
+		}
 	}
 }
 
-fn run_until_exit<T, C, E>(
-	mut runtime: Runtime,
-	service: T,
-	e: E,
-) -> error::Result<()>
-	where
-		T: Deref<Target=substrate_service::Service<C>> + Future<Item = (), Error = ()> + Send + 'static,
-		C: substrate_service::Components,
-		E: IntoExit,
+fn run_until_exit<T, E>(mut runtime: Runtime, service: T, e: E) -> error::Result<()>
+where
+	T: AbstractService,
+	E: IntoExit,
 {
 	let (exit_send, exit) = exit_future::signal();
 
@@ -230,11 +248,19 @@ fn run_until_exit<T, C, E>(
 	// but we need to keep holding a reference to the global telemetry guard
 	let _telemetry = service.telemetry();
 
-	let _ = runtime.block_on(service.select(e.into_exit()));
+	let service_res = {
+		let exit = e
+			.into_exit()
+			.map_err(|_| error::Error::Other("Exit future failed.".into()));
+		let service = service.map_err(|err| error::Error::Service(err));
+		let select = service.select(exit).map(|_| ()).map_err(|(err, _)| err);
+		runtime.block_on(select)
+	};
+
 	exit_send.fire();
 
 	// TODO [andre]: timeout this future #1318
 	let _ = runtime.shutdown_on_idle().wait();
 
-	Ok(())
+	service_res
 }

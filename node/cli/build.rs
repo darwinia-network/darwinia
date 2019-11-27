@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use cli::{NoCustom, CoreParams};
+use cli::{CoreParams, NoCustom};
 
-use std::{fs, env, path::Path};
+use std::{env, fs, path::Path};
 
-use structopt::{StructOpt, clap::Shell};
+use structopt::{clap::Shell, StructOpt};
 
 fn main() {
 	build_shell_completion();
@@ -39,12 +39,15 @@ fn build_completion(shell: &Shell) {
 		Some(dir) => dir,
 	};
 	let path = Path::new(&outdir)
-		.parent().unwrap()
-		.parent().unwrap()
-		.parent().unwrap()
+		.parent()
+		.unwrap()
+		.parent()
+		.unwrap()
+		.parent()
+		.unwrap()
 		.join("completion-scripts");
 
 	fs::create_dir(&path).ok();
 
-	CoreParams::<NoCustom, NoCustom>::clap().gen_completions("substrate-node", *shell, &path);
+	CoreParams::<NoCustom, NoCustom>::clap().gen_completions("darwinia", *shell, &path);
 }

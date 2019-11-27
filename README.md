@@ -1,20 +1,17 @@
 [![Build Status](https://travis-ci.org/darwinia-network/darwinia.svg?branch=master)](https://travis-ci.org/darwinia-network/darwinia/builds)
 
-
 # Darwinia Relay Chain
 
 ![Darwinia Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
-
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
-It could have two models, the Solo model and the Polkadot model. For more details, go to [RFC-0007](  https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F 
+It could have two models, the Solo model and the Polkadot model. For more details, go to [RFC-0007](https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F 
 )
 
 # Architecture
 
-![Darwinia Architecture](https://github.com/darwinia-network/rfcs/raw/master/zh_CN/images/0007-darwinia-architecture.jpeg)
-
+![Darwinia Architecture](https://github.com/darwinia-network/rfcs/raw/master/RFC/zh_CN/images/0007-darwinia-architecture.jpeg)
 
 # Road Map
 [Road Map](ROADMAP.md)
@@ -24,7 +21,7 @@ Join the community if you have any other questions:
 
 [+darwinia:matrix.org](https://matrix.to/#/+darwinia:matrix.org)
 
-Or
+Or:
 
 [Riot.im](https://riot.im/app/#/group/+darwinia:matrix.org)
 
@@ -35,70 +32,94 @@ Or
 - [Darwinia Bridge](https://github.com/darwinia-network/darwinia-bridge) Darwinia Bridge Parachain and Tools to connect to other chains such as Ethereum, TRON and EOS etc.
 - More are coming...
 
+# Crayfish Testnet
+
+Quick start (professional):
+- Telemetry: [https://telemetry.polkadot.io/#list/Darwinia%20Crayfish%20Testnet](https://telemetry.polkadot.io/#list/Darwinia%20Crayfish%20Testnet)
+- Darwinia Web Wallet: [https://testnet-wallet.darwinia.network](https://testnet-wallet.darwinia.network)
+- Bootnodes: 
+  - `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
+  - `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
+  - `/ip4/35.234.9.96/tcp/20223/p2p/QmdAZq8tFrei8qQAhbAe7NwrZzNVhitvUBp9pw8yLjk81r`
+
+Full tutorial (beginner):
+- en_us: [not yet](#)
+- zh_cn: [https://talk.darwinia.network/topics/147](https://talk.darwinia.network/topics/147)
+
 ## Start
 
 proceed to the Running instructions or follow the instructions below for the manual setup.
 
-### Initial Setup
-```bash
-./init.sh
-```
-Or, you can run scripts step by step, like the following:
-```bash
-curl https://sh.rustup.rs -sSf | sh
-rustup update nightly
-rustup target add wasm32-unknown-unknown --toolchain nightly
-rustup update stable
-cargo install --git https://github.com/alexcrichton/wasm-gc
-```
+### Require Packages
 
-You will also need to install the following packages:
-
-Linux:
+**Linux**:
 ```bash
 sudo apt install cmake pkg-config libssl-dev git clang libclang-dev
 ```
 
-Mac:
+**macOS**:
 ```bash
 brew install cmake pkg-config openssl git llvm
 ```
 
+### Initial Setup
 
-### Building
+Initalize with darwinia-builder: [darwinia-builder](https://github.com/AurevoirXavier/darwinia-builder) which also use for cross compile
+
+Or, you can run scripts step by step, like the following:
 ```bash
-./build.sh
+curl https://sh.rustup.rs -sSf | sh
+rustup install nightly
+rustup default nightly
+rustup target add wasm32-unknown-unknown
+cargo install --git https://github.com/alexcrichton/wasm-gc
+```
+
+### Build
+
+Building with darwinia-builder:
+```bash
+darwinia-builder --release --wasm
+```
+
+Building with script:
+```bash
 cargo build --release
 ```
 
-Running
+### Running
+
 ```bash
 ./target/release/darwinia --dev
 ```
 
-Play with gui, open
-
-[https://polkadot.js.org/apps/#/settings](https://polkadot.js.org/apps/#/settings)
+Play with gui, open [https://polkadot.js.org/apps/#/settings](https://polkadot.js.org/apps/#/settings)
 
 And select the local node (127.0.0.1), please note that for the current GUI version, custom struct&tpyes must be configured before viewing.
 
 Go to [https://polkadot.js.org/apps/#/settings/developer](https://polkadot.js.org/apps/#/settings/developer)
 
-And copy the content in
+And copy the content in:
 ```
 ./types.json
 ```
 
-to the type definitions text area.
+To the type definitions text area.
 
 ### Running Local Testnet (default: Alice and Bob)
-first build:
+
+First build:
+```bash
+darwinia-builder --release --wasm
+```
+Or:
 ```bash
 ./build.sh
 cargo build --release
 ```
 
 #### Alice Starts first
+
 Alice should run t his command from ${PATH_TO_DARWINIA_APPCHAIN_ROOT}:
 ```bash
 cd {path_to_darwinia_appchain_root}
@@ -111,9 +132,11 @@ cd {path_to_darwinia_appchain_root}
 --rpc-external \
 --ws-external
 ```
+
 `rpc-external` and `ws-external` flags are optional.
 
 #### Bob Joins In
+
 Now that Alice's node is up and running, Bob can join the network by bootstrapping from her node. His command will look very similar.
 ```bash
 ./target/release/darwinia \
@@ -135,6 +158,7 @@ Now that Alice's node is up and running, Bob can join the network by bootstrappi
   - Alice's node ID, copied from her log output. (proberbly`Qmc1RbjHGWGY4E4gkEGbSX3RMcfqbmZwZumga1uNaYQvU5` in the output above.)
   
 - How to figure out Alice's Node ID
+
 you can find Alice's node id in terminal outputs when AliceNode starts:
 ```bash
 2019-06-29 18:22:56 Darwinia POC-1 Node
@@ -156,6 +180,7 @@ you can find Alice's node id in terminal outputs when AliceNode starts:
 ```  
 
 If all is going well, after a few seconds, the nodes should peer together and start producing blocks. You should see some lines like:
+
 for Alice:
 ```bash
 2019-06-29 18:25:06 Libp2p => Random Kademlia query has yielded empty results
@@ -196,9 +221,10 @@ for Bob:
 2019-06-29 18:25:27 Idle (1 peers), best: #23 (0xcd96…8a05), finalized #23 (0xcd96…8a05), ⬇ 1.0kiB/s ⬆ 1.1kiB/s
 2019-06-29 18:25:28 Imported #24 (0xe4b1…e584)
 ```
-The first line shows that Bob has discovered Alice on the network. The second shows that he has peered with her (1 peers), they have produced a block (best: #1 (0xf5d0…5549)), and the block is not finalized (finalized #0 (0xe6fe…6664)).
 
+The first line shows that Bob has discovered Alice on the network. The second shows that he has peered with her (1 peers), they have produced a block (best: #1 (0xf5d0…5549)), and the block is not finalized (finalized #0 (0xe6fe…6664)).
 
 #### View On Telemetry
 then you can find your Node displayed on [Telemetry](https://telemetry.polkadot.io/#/Local%20Testnet)
 
+#### For cross compile instructions, vist [darwinia_builder](https://github.com/darwinia-network/darwinia-builder)
