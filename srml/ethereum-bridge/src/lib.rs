@@ -6,9 +6,9 @@
 // use blake2::Blake2b;
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
+use sr_eth_primitives::pow::EthHeader;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
-
 //use sr_eth_primitives::{pow::EthHeader, H160, H256, H64, U128, U256, U512};
 
 //use sr_primitives::RuntimeDebug;
