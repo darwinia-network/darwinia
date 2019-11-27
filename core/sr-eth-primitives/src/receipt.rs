@@ -3,11 +3,12 @@ use ethbloom::{Bloom, Input as BloomInput};
 use rlp::*;
 use rstd::ops::Deref;
 use rstd::prelude::*;
-use substrate_primitives::RuntimeDebug;
+//use substrate_primitives::RuntimeDebug;
 
+use codec::{Decode, Encode};
 use primitive_types::{H160, H256, U128, U256, U512};
 
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub enum TransactionOutcome {
 	/// Status and state root are unknown under EIP-98 rules.
 	Unknown,
@@ -17,7 +18,7 @@ pub enum TransactionOutcome {
 	StatusCode(u8),
 }
 
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, RlpEncodable, RlpDecodable, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, RlpEncodable, RlpDecodable, Encode, Decode)]
 pub struct LogEntry {
 	/// The address of the contract executing at the point of the `LOG` operation.
 	pub address: Address,
@@ -39,8 +40,7 @@ impl LogEntry {
 	}
 }
 
-// TODO: impl Bloom with codec::Encode and codec::Decode
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub struct Receipt {
 	/// The total gas used in the block following execution of the transaction.
 	pub gas_used: U256,

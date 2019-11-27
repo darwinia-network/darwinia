@@ -1,4 +1,3 @@
-use rstd::vec;
 use rstd::vec::Vec;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

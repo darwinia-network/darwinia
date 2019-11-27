@@ -9,9 +9,9 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use sr_eth_primitives::{pow::EthHeader, H160, H256, H64, U128, U256, U512};
+//use sr_eth_primitives::{pow::EthHeader, H160, H256, H64, U128, U256, U512};
 
-use sr_primitives::RuntimeDebug;
+//use sr_primitives::RuntimeDebug;
 
 //use web3::types::{
 //	Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, RawHeader, RawReceipt, SyncState,
@@ -26,17 +26,17 @@ pub trait Trait: system::Trait {
 	//	type Hash: {};
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct Proof {
-	pub nodes: Vec<Vec<u8>>,
-}
+//#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+//pub struct Proof {
+//	pub nodes: Vec<Vec<u8>>,
+//}
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct ActionRecord {
-	pub index: u64,
-	pub proof: Vec<u8>,
-	pub header_hash: H256,
-}
+//#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+//pub struct ActionRecord {
+//	pub index: u64,
+//	pub proof: Vec<u8>,
+//	pub header_hash: H256,
+//}
 
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
@@ -115,9 +115,9 @@ impl<T: Trait> Module<T> {
 	/// 1. if exists?
 	/// 2. verify (difficulty + prev_hash + nonce + re-org)
 	/// 3. challenge
-	fn verify(_: &EthHeader) -> Result {
-		unimplemented!()
-	}
+	//	fn verify(_: &EthHeader) -> Result {
+	//		unimplemented!()
+	//	}
 
 	fn _punish(_who: &T::AccountId) -> Result {
 		unimplemented!()
