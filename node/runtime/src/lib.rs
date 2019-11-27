@@ -33,7 +33,6 @@ pub use staking::StakerStatus;
 use authority_discovery_primitives::{AuthorityId as EncodedAuthorityId, Signature as EncodedSignature};
 use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
 use codec::{Decode, Encode};
-use grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
@@ -45,8 +44,10 @@ use sr_primitives::{
 	weights::Weight,
 	ApplyResult, Perbill,
 };
-use substrate_primitives::u32_trait::{_1, _4};
-use substrate_primitives::OpaqueMetadata;
+use substrate_primitives::{
+	u32_trait::{_1, _4},
+	OpaqueMetadata,
+};
 use support::{
 	construct_runtime, parameter_types,
 	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
@@ -56,9 +57,6 @@ use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 #[cfg(any(feature = "std", test))]
 use version::NativeVersion;
 use version::RuntimeVersion;
-//use grandpa::fg_primitives;
-//use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
-//use im_online::sr25519::AuthorityId as ImOnlineId;
 
 use constants::{currency::*, time::*};
 use darwinia_support::TimeStamp;
@@ -204,7 +202,6 @@ impl timestamp::Trait for Runtime {
 
 impl_opaque_keys! {
 	pub struct SessionKeys {
-		pub grandpa: Grandpa,
 		pub babe: Babe,
 		pub im_online: ImOnline,
 	}
@@ -251,10 +248,6 @@ impl sudo::Trait for Runtime {
 	type Proposal = Call;
 }
 
-impl grandpa::Trait for Runtime {
-	type Event = Event;
-}
-
 impl offences::Trait for Runtime {
 	type Event = Event;
 	type IdentificationTuple = session::historical::IdentificationTuple<Self>;
@@ -281,11 +274,6 @@ impl authority_discovery::Trait for Runtime {
 parameter_types! {
 	pub const WindowSize: BlockNumber = 101;
 	pub const ReportLatency: BlockNumber = 1000;
-}
-impl finality_tracker::Trait for Runtime {
-	type OnFinalizationStalled = Grandpa;
-	type WindowSize = WindowSize;
-	type ReportLatency = ReportLatency;
 }
 
 parameter_types! {
@@ -412,8 +400,6 @@ construct_runtime!(
 		Authorship: authorship::{Module, Call, Storage},
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
 		Contracts: contracts,
-		FinalityTracker: finality_tracker::{Module, Call, Inherent},
-		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
 		Indices: indices,
 		Offences: offences::{Module, Call, Storage, Event},
@@ -516,12 +502,6 @@ impl_runtime_apis! {
 	impl offchain_primitives::OffchainWorkerApi<Block> for Runtime {
 		fn offchain_worker(number: NumberFor<Block>) {
 			Executive::offchain_worker(number)
-		}
-	}
-
-	impl fg_primitives::GrandpaApi<Block> for Runtime {
-		fn grandpa_authorities() -> GrandpaAuthorityList {
-			Grandpa::grandpa_authorities()
 		}
 	}
 

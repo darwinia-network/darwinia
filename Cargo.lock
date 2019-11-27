@@ -627,7 +627,7 @@ dependencies = [
  "ctrlc 3.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fork-tree 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
- "node-cli 2.0.0",
+ "node-cli 0.2.0",
  "sr-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-api-proc-macro 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -710,7 +710,7 @@ version = "0.1.0"
 dependencies = [
  "darwinia-support 0.1.0",
  "node-primitives 2.0.0",
- "node-runtime 0.1.0",
+ "node-runtime 0.2.0",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -732,7 +732,7 @@ dependencies = [
  "darwinia-kton 0.1.0",
  "darwinia-support 0.1.0",
  "node-primitives 2.0.0",
- "node-runtime 0.1.0",
+ "node-runtime 0.2.0",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2559,7 +2559,7 @@ dependencies = [
 
 [[package]]
 name = "node-cli"
-version = "2.0.0"
+version = "0.2.0"
 dependencies = [
  "backtrace 0.3.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "exit-future 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2570,7 +2570,7 @@ dependencies = [
  "node-executor 2.0.0",
  "node-primitives 2.0.0",
  "node-rpc 2.0.0",
- "node-runtime 0.1.0",
+ "node-runtime 0.2.0",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.22 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2578,32 +2578,25 @@ dependencies = [
  "serde_json 1.0.42 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-authority-discovery 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-contracts 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-finality-tracker 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-im-online 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-indices 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-transaction-payment 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "structopt 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "substrate-authority-discovery 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-basic-authorship 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-chain-spec 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-cli 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-client-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-consensus-aura 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-consensus-aura-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-babe-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-common 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-finality-grandpa 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-finality-grandpa-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-inherents 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-keystore 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-network 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-offchain 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -2623,7 +2616,7 @@ dependencies = [
  "darwinia-balances 2.0.0",
  "darwinia-staking 0.2.0",
  "node-primitives 2.0.0",
- "node-runtime 0.1.0",
+ "node-runtime 0.2.0",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -2664,7 +2657,7 @@ version = "2.0.0"
 dependencies = [
  "jsonrpc-core 14.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-primitives 2.0.0",
- "node-runtime 0.1.0",
+ "node-runtime 0.2.0",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-contracts-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -2688,7 +2681,7 @@ dependencies = [
 
 [[package]]
 name = "node-runtime"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "darwinia-balances 2.0.0",
  "darwinia-ethereum-bridge 0.2.0",
@@ -2709,21 +2702,15 @@ dependencies = [
  "srml-authority-discovery 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-authorship 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-collective 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-contracts 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-contracts-rpc-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-democracy 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-elections 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-executive 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-finality-tracker 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-grandpa 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-im-online 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-indices 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-membership 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-offences 1.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-randomness-collective-flip 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-staking-reward-curve 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-sudo 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -2731,11 +2718,9 @@ dependencies = [
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-transaction-payment 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-transaction-payment-rpc-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-treasury 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-utility 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-authority-discovery-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-block-builder-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-consensus-aura-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-babe-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-inherents 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -4232,22 +4217,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "srml-collective"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
-
-[[package]]
 name = "srml-contracts"
 version = "2.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
@@ -4293,37 +4262,6 @@ dependencies = [
  "sr-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
-
-[[package]]
-name = "srml-democracy"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
-
-[[package]]
-name = "srml-elections"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "safe-mix 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 
 [[package]]
@@ -4410,20 +4348,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "srml-membership"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
-
-[[package]]
 name = "srml-metadata"
 version = "2.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
@@ -4479,17 +4403,6 @@ dependencies = [
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-trie 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
-
-[[package]]
-name = "srml-staking-reward-curve"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "proc-macro-crate 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "syn 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -7149,23 +7062,18 @@ dependencies = [
 "checksum srml-authorship 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-balances 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
-"checksum srml-collective 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-contracts 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-contracts-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-contracts-rpc-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
-"checksum srml-democracy 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
-"checksum srml-elections 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-executive 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-finality-tracker 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-grandpa 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-im-online 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-indices 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
-"checksum srml-membership 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-metadata 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-offences 1.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-randomness-collective-flip 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
-"checksum srml-staking-reward-curve 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-sudo 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum srml-support-procedural 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
