@@ -17,7 +17,7 @@ keccak-hash = { git = "https://github.com/darwinia-network/parity-common.git", d
 impl-codec = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 fixed-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 impl-rlp = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
-ethbloom = { package = 'ethbloom', git ="https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"]}
+ethbloom = { git ="https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"]}
 
 [dev-dependencies]
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
