@@ -1,12 +1,14 @@
 use super::*;
-//pub use ethereum_types::{Address, Bloom, BloomInput, H160, H256, U128, U256};
-use hbloom::{Bloom, Input as BloomInput};
-use rlp::{self, Decodable, DecoderError, Encodable, Rlp, RlpStream};
+use ethbloom::{Bloom, Input as BloomInput};
+use rlp::*;
 use rstd::ops::Deref;
 use rstd::prelude::*;
-use substrate_primitives::RuntimeDebug;
+//use substrate_primitives::RuntimeDebug;
 
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
+use codec::{Decode, Encode};
+use primitive_types::{H160, H256, U128, U256, U512};
+
+#[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub enum TransactionOutcome {
 	/// Status and state root are unknown under EIP-98 rules.
 	Unknown,
@@ -16,7 +18,7 @@ pub enum TransactionOutcome {
 	StatusCode(u8),
 }
 
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, RlpEncodable, RlpDecodable, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, RlpEncodable, RlpDecodable, Encode, Decode)]
 pub struct LogEntry {
 	/// The address of the contract executing at the point of the `LOG` operation.
 	pub address: Address,
@@ -38,8 +40,7 @@ impl LogEntry {
 	}
 }
 
-// TODO: impl Bloom with codec::Encode and codec::Decode
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub struct Receipt {
 	/// The total gas used in the block following execution of the transaction.
 	pub gas_used: U256,
@@ -117,10 +118,14 @@ impl Decodable for Receipt {
 #[cfg(test)]
 mod tests {
 	use super::{Address, LogEntry, Receipt, TransactionOutcome, H256, U128, U256};
-	use hbloom::Bloom;
+	use ethbloom::Bloom;
 	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;
+
+	use keccak_hasher::KeccakHasher;
+	use triehash::ordered_trie_root;
+
 	#[inline]
 	fn construct_receipts(
 		root: Option<H256>,
@@ -181,9 +186,12 @@ mod tests {
 			log_entries,
 		)];
 
-		let receipts_root: H256 = triehash_ethereum::ordered_trie_root(receipts.iter().map(|x| ::rlp::encode(x)));
+		let receipts_root: H256 = H256(triehash::ordered_trie_root::<KeccakHasher, _>(
+			receipts.iter().map(|x| ::rlp::encode(x)),
+		));
+
+		//		let receipts_root: H256 = triehash_ethereum::ordered_trie_root<KeccakHasher, _>();
 
 		assert_eq!(receipts_root, expected_root);
 	}
-
 }

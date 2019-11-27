@@ -1,61 +1,51 @@
 [package]
 name = "sr-eth-primitives"
-version = "0.1.0"
-authors = ["hammeWang <dsw0602@foxmail.com>"]
+version = "0.2.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-
 [dependencies]
-tiny-keccak = { version = "1.5", features = ["keccak"] }
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-rlp = { version = "0.4.3", optional = true }
-parity-crypto = { version = "0.4.2", features = ["publickey"] }
-rlp_derive = { git = "https://github.com/paritytech/parity-ethereum.git", default-features = false }
-primitive-types = { version = "0.6.0", default-feature = false, features = ["codec", "rlp"] }
-ethereum-types = { version = "0.8.0", default-feature = false, features = ["serialize"] }
-keccak-hash = "0.4.0"
-impl-codec = { version = "0.4", default-features = false, optional = true }
-fixed-hash = { version = "0.4", default-features = false}
-impl-rlp = { version = "0.2", default-features = false, optional = true }
-hbloom = { package = 'ethbloom', git ="https://github.com/hammeWang/ethbloom.git", default-features = false, features = ["serialize"]}
-crunchy = { version = "0.2.2", default-features = false, features = ["limit_256"] }
+#substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
+primitive-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["codec", "rlp"] }
+ethereum-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"] }
+keccak-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+impl-codec = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+fixed-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+impl-rlp = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+ethbloom = { git ="https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"]}
 
 [dev-dependencies]
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
 rustc-hex = "2.0"
-keccak-hasher = "0.1"
-triehash-ethereum = { version = "0.2", git = "https://github.com/paritytech/parity-ethereum.git" }
+keccak-hasher = "0.15.2"
+triehash = { package = "triehash", git = "https://github.com/darwinia-network/parity-common.git" }
 hex-literal = "0.2.1"
 
 
 [features]
 default = ["std"]
 std = [
-    "serde",
+    "serde/std",
     "codec/std",
     "rstd/std",
-    "sr-primitives/std",
-    "substrate-primitives/std",
+#    "substrate-primitives/std",
     "rlp/std",
     "keccak-hash/std",
     "primitive-types/std",
-    "primitive-types/serde",
-    "primitive-types/byteorder",
-    "primitive-types/rustc-hex",
-    "primitive-types/libc",
-    "parity-crypto/publickey",
+#    "primitive-types/serde",
+#    "primitive-types/byteorder",
+#    "primitive-types/rustc-hex",
+#    "primitive-types/libc",
     "ethereum-types/std",
     "impl-codec/std",
     "fixed-hash/std",
     "impl-rlp/std",
-    "hbloom/std",
-    "hbloom/serialize",
-    "crunchy/std",
+    "ethbloom/std",
+    "ethbloom/serialize",
 ]
 

@@ -1,15 +1,23 @@
 /// A simplified prototype for light verification for pow.
 use super::*;
-use crate::keccak::{keccak_256, keccak_512, H256 as BH256};
+//use crate::keccak::{keccak_256, keccak_512, H256 as BH256};
 use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
-use hbloom::Bloom;
+use ethbloom::Bloom;
 use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
-use sr_primitives::traits::Saturating;
+
+use codec::{Decode, Encode};
+
+use ethereum_types::BigEndianHash;
+use primitive_types::{H160, H256, U128, U256, U512};
+
+use rlp::*;
+
+//use substrate_primitives::RuntimeDebug;
 
 pub const MINIMUM_DIFFICULTY: u128 = 131072;
 // TODO: please keep an eye on this.
@@ -197,12 +205,12 @@ impl EthHeader {
 
 	/// Get the hash of this header (keccak of the RLP with seal).
 	pub fn hash(&self) -> H256 {
-		self.hash.unwrap_or_else(|| keccak(self.rlp(Seal::With)))
+		self.hash.unwrap_or_else(|| keccak_hash::keccak(self.rlp(Seal::With)))
 	}
 
 	/// Get the hash of the header excluding the seal
 	pub fn bare_hash(&self) -> H256 {
-		keccak(self.rlp(Seal::Without))
+		keccak_hash::keccak(self.rlp(Seal::Without))
 	}
 
 	/// Encode the header, getting a type-safe wrapper around the RLP.
@@ -296,23 +304,38 @@ fn difficulty_to_boundary_aux<T: Into<U512>>(difficulty: T) -> ethereum_types::U
 	}
 }
 
-fn quick_get_difficulty(header_hash: &BH256, nonce: u64, mix_hash: &BH256, progpow: bool) -> BH256 {
+fn quick_get_difficulty(header_hash: &[u8; 32], nonce: u64, mix_hash: &[u8; 32], progpow: bool) -> [u8; 32] {
+	let mut first_buf = [0u8; 40];
 	let mut buf = [0u8; 64 + 32];
 
-	#[cfg(feature = "std")]
-	unsafe {
-		let hash_len = header_hash.len();
-		buf[..hash_len].copy_from_slice(header_hash);
-		buf[hash_len..hash_len + mem::size_of::<u64>()].copy_from_slice(&nonce.to_ne_bytes());
+	let hash_len = header_hash.len();
+	first_buf[..hash_len].copy_from_slice(header_hash);
+	first_buf[hash_len..hash_len + mem::size_of::<u64>()].copy_from_slice(&nonce.to_ne_bytes());
 
-		keccak_512::unchecked(buf.as_mut_ptr(), 64, buf.as_ptr(), 40);
-		buf[64..].copy_from_slice(mix_hash);
+	keccak_hash::keccak_512(&first_buf, &mut buf);
+	buf[64..].copy_from_slice(mix_hash);
 
-		let mut hash = [0u8; 32];
-		keccak_256::unchecked(hash.as_mut_ptr(), hash.len(), buf.as_ptr(), buf.len());
+	let mut hash = [0u8; 32];
+	keccak_hash::keccak_256(&buf, &mut hash);
 
-		hash
-	}
+	hash
+
+	//	let mut buf = [0u8; 64 + 32];
+	//
+	//	#[cfg(feature = "std")]
+	//	unsafe {
+	//		let hash_len = header_hash.len();
+	//		buf[..hash_len].copy_from_slice(header_hash);
+	//		buf[hash_len..hash_len + mem::size_of::<u64>()].copy_from_slice(&nonce.to_ne_bytes());
+	//
+	//		keccak_512::unchecked(buf.as_mut_ptr(), 64, buf.as_ptr(), 40);
+	//		buf[64..].copy_from_slice(mix_hash);
+	//
+	//		let mut hash = [0u8; 32];
+	//		keccak_256::unchecked(hash.as_mut_ptr(), hash.len(), buf.as_ptr(), buf.len());
+	//
+	//		hash
+	//	}
 }
 
 fn calculate_difficulty(header: &EthHeader, parent: &EthHeader) -> U256 {
@@ -485,5 +508,4 @@ mod tests {
 		let expected = U256::from_str("92c07e50de0b9").unwrap();
 		assert_eq!(calculate_difficulty(&header2, &header1), expected);
 	}
-
 }
