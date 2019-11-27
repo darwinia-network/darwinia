@@ -67,8 +67,6 @@ balances = { package = "darwinia-balances", path = '../../srml/balances', defaul
 kton = { package = "darwinia-kton", path = '../../srml/kton', default-features = false }
 staking = { package = "darwinia-staking", path = "../../srml/staking", default-features = false }
 
-merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
-
 ethereum-bridge = { package = "darwinia-ethereum-bridge", path = "../../srml/ethereum-bridge", default-features = false }
 
 [build-dependencies]

@@ -12,7 +12,6 @@ tiny-keccak = { version = "1.5", features = ["keccak"] }
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 rlp = { version = "0.4.3", default-features = false, optional = true }
 #parity-crypto = { version = "0.4.2", features = ["publickey"] }
@@ -40,7 +39,6 @@ std = [
     "serde/std",
     "codec/std",
     "rstd/std",
-    "sr-primitives/std",
     "substrate-primitives/std",
     "rlp/std",
     "keccak-hash/std",

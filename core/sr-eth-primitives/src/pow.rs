@@ -9,7 +9,6 @@ use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
-use sr_primitives::traits::Saturating;
 
 use substrate_primitives::RuntimeDebug;
 
