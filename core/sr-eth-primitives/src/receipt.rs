@@ -1,10 +1,10 @@
 use super::*;
-//pub use ethereum_types::{Address, Bloom, BloomInput, H160, H256, U128, U256};
 use hbloom::{Bloom, Input as BloomInput};
 use rlp::{self, Decodable, DecoderError, Encodable, Rlp, RlpStream};
-use rstd::ops::Deref;
 use rstd::prelude::*;
 use substrate_primitives::RuntimeDebug;
+
+use primitive_types::{H160, H256, U128, U256, U512};
 
 #[derive(PartialEq, Eq, Clone, RuntimeDebug, Encode, Decode)]
 pub enum TransactionOutcome {
@@ -121,6 +121,10 @@ mod tests {
 	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;
+
+	use keccak_hasher::KeccakHasher;
+	use triehash::ordered_trie_root;
+
 	#[inline]
 	fn construct_receipts(
 		root: Option<H256>,
@@ -181,9 +185,12 @@ mod tests {
 			log_entries,
 		)];
 
-		let receipts_root: H256 = triehash_ethereum::ordered_trie_root(receipts.iter().map(|x| ::rlp::encode(x)));
+		let receipts_root: H256 = H256(triehash::ordered_trie_root::<KeccakHasher, _>(
+			receipts.iter().map(|x| ::rlp::encode(x)),
+		));
+
+		//		let receipts_root: H256 = triehash_ethereum::ordered_trie_root<KeccakHasher, _>();
 
 		assert_eq!(receipts_root, expected_root);
 	}
-
 }

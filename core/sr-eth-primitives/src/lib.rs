@@ -1,30 +1,32 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[macro_use]
-extern crate impl_codec;
-#[macro_use]
-extern crate fixed_hash;
-#[macro_use]
-extern crate impl_rlp;
+//#[macro_use]
+//extern crate impl_codec;
+//#[macro_use]
+//extern crate fixed_hash;
+//#[macro_use]
+//extern crate impl_rlp;
+//
 
+extern crate rlp;
 #[macro_use]
 extern crate rlp_derive;
 
 pub mod encoded;
 pub mod error;
-pub mod keccak;
+//pub mod keccak;
 pub mod pow;
 pub mod receipt;
 //pub mod transaction;
 
 pub use codec::{Decode, Encode};
 pub use ethereum_types::BigEndianHash;
+pub use fixed_hash::construct_fixed_hash;
 pub use hbloom::{Bloom, Input as BloomInput};
 pub use impl_codec::impl_fixed_hash_codec;
-pub use keccak_hash::keccak;
-pub use primitive_types::{H160, H256, U128, U256, U512};
-pub use rlp::{self, DecoderError, Encodable, Rlp, RlpStream};
+pub use impl_rlp::impl_fixed_hash_rlp;
+use primitive_types::{H160, H256, U128, U256, U512};
 
 pub type Bytes = Vec<u8>;
 pub type Address = H160;
