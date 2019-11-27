@@ -19,60 +19,51 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![recursion_limit = "256"]
 
+/// Constant values used within the runtime.
+pub mod constants;
+/// Implementations of some helper traits passed into runtime modules as associated types.
+pub mod impls;
+
+pub use contracts::Gas;
+pub use timestamp::Call as TimestampCall;
+
+pub use balances::Call as BalancesCall;
+pub use staking::StakerStatus;
+
 use authority_discovery_primitives::{AuthorityId as EncodedAuthorityId, Signature as EncodedSignature};
 use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
-pub use balances::Call as BalancesCall;
 use codec::{Decode, Encode};
-pub use contracts::Gas;
+use grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
+use im_online::sr25519::AuthorityId as ImOnlineId;
+use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
+use rstd::prelude::*;
 use sr_api::impl_runtime_apis;
-
+use sr_primitives::{
+	create_runtime_str, generic, impl_opaque_keys,
+	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
+	transaction_validity::TransactionValidity,
+	weights::Weight,
+	ApplyResult, Perbill,
+};
+use substrate_primitives::u32_trait::{_1, _4};
+use substrate_primitives::OpaqueMetadata;
+use support::{
+	construct_runtime, parameter_types,
+	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
+};
+use system::offchain::TransactionSubmitter;
+use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
+#[cfg(any(feature = "std", test))]
+use version::NativeVersion;
+use version::RuntimeVersion;
 //use grandpa::fg_primitives;
 //use grandpa::{AuthorityId as GrandpaId, AuthorityWeight as GrandpaWeight};
 //use im_online::sr25519::AuthorityId as ImOnlineId;
 
-use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
-use rstd::prelude::*;
-use sr_primitives::traits::{
-	self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
-};
-use sr_primitives::transaction_validity::TransactionValidity;
-use sr_primitives::weights::Weight;
-#[cfg(any(feature = "std", test))]
-pub use sr_primitives::BuildStorage;
-
-use sr_primitives::{create_runtime_str, generic, impl_opaque_keys, ApplyResult, Perbill};
-use substrate_primitives::u32_trait::{_1, _4};
-
-use support::traits::OnUnbalanced;
-pub use support::StorageValue;
-use support::{
-	construct_runtime, parameter_types,
-	traits::{Currency, Randomness, SplitTwoWays},
-};
-
-pub use timestamp::Call as TimestampCall;
-#[cfg(any(feature = "std", test))]
-use version::NativeVersion;
-use version::RuntimeVersion;
-
-use grandpa::fg_primitives;
-use grandpa::AuthorityList as GrandpaAuthorityList;
-use im_online::sr25519::AuthorityId as ImOnlineId;
-use substrate_primitives::OpaqueMetadata;
-use system::offchain::TransactionSubmitter;
-use transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
-
+use constants::{currency::*, time::*};
 use darwinia_support::TimeStamp;
-use staking::EraIndex;
-pub use staking::StakerStatus;
-
-/// Implementations of some helper traits passed into runtime modules as associated types.
-pub mod impls;
 use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
-
-/// Constant values used within the runtime.
-pub mod constants;
-use constants::time::*;
+use staking::EraIndex;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -96,12 +87,15 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-pub const NANO: Balance = 1;
-pub const MICRO: Balance = 1_000 * NANO;
-pub const MILLI: Balance = 1_000 * MICRO;
-pub const COIN: Balance = 1_000 * MILLI;
-
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+type DealWithFees = SplitTwoWays<
+	Balance,
+	NegativeImbalance,
+	_4,
+	MockTreasury, // 4 parts (80%) goes to the treasury.
+	_1,
+	Author, // 1 part (20%) goes to the block author.
+>;
 
 //pub struct Author;
 //
@@ -117,20 +111,6 @@ impl OnUnbalanced<NegativeImbalance> for MockTreasury {
 		Balances::resolve_creating(&Sudo::key(), amount);
 	}
 }
-
-pub type DealWithFees = SplitTwoWays<
-	Balance,
-	NegativeImbalance,
-	_4,
-	MockTreasury, // 4 parts (80%) goes to the treasury.
-	_1,
-	Author, // 1 part (20%) goes to the block author.
->;
-
-pub const SECS_PER_BLOCK: BlockNumber = 6;
-pub const MINUTES: BlockNumber = 60 / SECS_PER_BLOCK;
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
@@ -171,8 +151,8 @@ impl indices::Trait for Runtime {
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
-	pub const TransferFee: Balance = 1 * MILLI;
-	pub const CreationFee: Balance = 1 * MILLI;
+	pub const TransferFee: Balance = 1 * MICRO;
+	pub const CreationFee: Balance = 1 * MICRO;
 }
 impl balances::Trait for Runtime {
 	type Balance = Balance;
@@ -187,7 +167,7 @@ impl balances::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionBaseFee: Balance = 1 * MICRO;
 	pub const TransactionByteFee: Balance = 10 * MICRO;
 	// setting this to zero will disable the weight fee.
 	pub const WeightFeeCoefficient: Balance = 1_000;
@@ -309,11 +289,11 @@ impl finality_tracker::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ContractTransferFee: Balance = 1 * MILLI;
-	pub const ContractCreationFee: Balance = 1 * MILLI;
-	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
+	pub const ContractTransferFee: Balance = 1 * MICRO;
+	pub const ContractCreationFee: Balance = 1 * MICRO;
+	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
 	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
-	pub const ContractFee: Balance = 1 * MILLI;
+	pub const ContractFee: Balance = 1 * MICRO;
 	pub const TombstoneDeposit: Balance = 1 * COIN;
 	pub const RentByteFee: Balance = 1 * COIN;
 	pub const RentDepositOffset: Balance = 1000 * COIN;

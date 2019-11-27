@@ -9,7 +9,7 @@ use substrate_primitives::U256;
 
 //  1 - (99 /100)^sqrt(year)
 // <T: Trait + 'static>() -> RingBalanceOf<T>
-pub fn compute_total_payout<T: Trait + 'static>(
+pub fn compute_total_payout<T: Trait>(
 	era_duration: u64,
 	living_time: u64,
 	total_left: u128,
@@ -48,7 +48,7 @@ pub fn compute_total_payout<T: Trait + 'static>(
 
 // consistent with the formula in smart contract in evolution land which can be found in
 // https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280
-pub fn compute_kton_return<T: Trait + 'static>(value: RingBalanceOf<T>, months: u32) -> KtonBalanceOf<T> {
+pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u32) -> KtonBalanceOf<T> {
 	let value = value.saturated_into::<u64>();
 	let no = U256::from(67).pow(U256::from(months));
 	let de = U256::from(66).pow(U256::from(months));
