@@ -11,8 +11,8 @@ rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrat
 #substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
-primitive-types = { git = "https://github.com/darwinia-network/parity-common.git", default-feature = false, features = ["codec", "rlp"] }
-ethereum-types = { git = "https://github.com/darwinia-network/parity-common.git", default-feature = false, features = ["serialize"] }
+primitive-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["codec", "rlp"] }
+ethereum-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"] }
 keccak-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 impl-codec = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 fixed-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
