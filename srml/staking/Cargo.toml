@@ -29,9 +29,10 @@ substrate-primitives = { git = "https://github.com/darwinia-network/substrate.gi
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 rand = "0.7.2"
 
-balances = { package = "darwinia-balances", path = '../balances', default-features = false }
+balances = { package = "darwinia-balances", path = '../balances' }
 kton = { package = "darwinia-kton", path = "../kton" }
 node-runtime = { path = "../../node/runtime" }
+node-primitives = { path = "../../node/primitives" }
 
 [features]
 equalize = []

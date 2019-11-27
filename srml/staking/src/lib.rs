@@ -24,7 +24,7 @@ extern crate test;
 pub mod inflation;
 
 use codec::{Decode, Encode, HasCompact};
-use rstd::{prelude::*, result};
+use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
 	traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
@@ -46,8 +46,6 @@ use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
-
-use core::convert::TryInto;
 
 #[allow(unused)]
 #[cfg(any(feature = "bench", test))]
@@ -109,19 +107,22 @@ pub enum StakerStatus<AccountId> {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct ValidatorPrefs {
+	pub node_name: Vec<u8>,
 	/// Validator should ensure this many more slashes than is necessary before being unstaked.
 	#[codec(compact)]
 	pub unstake_threshold: u32,
 	/// percent of Reward that validator takes up-front; only the rest is split between themselves and
 	/// nominators.
-	pub validator_payment_ratio: Perbill,
+	#[codec(compact)]
+	pub validator_payment_ratio: u32,
 }
 
 impl Default for ValidatorPrefs {
 	fn default() -> Self {
 		ValidatorPrefs {
+			node_name: vec![],
 			unstake_threshold: 3,
-			validator_payment_ratio: Default::default(),
+			validator_payment_ratio: 0,
 		}
 	}
 }
@@ -382,19 +383,15 @@ decl_storage! {
 		/// The rest of the slashed value is handled by the `Slash`.
 		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
-		/// A mapping from still-bonded eras to the first session index of that era.
-		BondedEras: Vec<(EraIndex, SessionIndex)>;
-
-		/// All slashes that have occurred in a given era.
-		EraSlashJournal get(fn era_slash_journal):
-			map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
-
-		pub NodeName get(node_name): map T::AccountId => Vec<u8>;
-
 		pub RingPool get(ring_pool): RingBalanceOf<T>;
 
 		pub KtonPool get(kton_pool): KtonBalanceOf<T>;
 
+		/// A mapping from still-bonded eras to the first session index of that era.
+		BondedEras: Vec<(EraIndex, SessionIndex)>;
+
+		/// All slashes that have occurred in a given era.
+		EraSlashJournal get(fn era_slash_journal): map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
 	}
 	add_extra_genesis {
 		config(stakers):
@@ -407,21 +404,22 @@ decl_storage! {
 						T::Lookup::unlookup(controller.clone()),
 						StakingBalance::Ring(balance),
 						RewardDestination::Stash,
-						12
+						12,
 					);
 					let _ = match status {
 						StakerStatus::Validator => {
 							<Module<T>>::validate(
 								T::Origin::from(Some(controller.clone()).into()),
-								[0;8].to_vec(),
-								0,
-								3
+								ValidatorPrefs {
+									node_name: vec![0; 8],
+									..Default::default()
+								},
 							)
 						},
 						StakerStatus::Nominator(votes) => {
 							<Module<T>>::nominate(
 								T::Origin::from(Some(controller.clone()).into()),
-								votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect()
+								votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect(),
 							)
 						}, _ => Ok(())
 					};
@@ -454,24 +452,24 @@ decl_module! {
 
 		fn deposit_event() = default;
 
-		fn bond(origin,
+		fn bond(
+			origin,
 			controller: <T::Lookup as StaticLookup>::Source,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 			payee: RewardDestination,
 			promise_month: u32
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!(promise_month <= 36, "months at most is 36.");
-
 			if <Bonded<T>>::exists(&stash) {
 				return Err("stash already bonded")
 			}
 
 			let controller = T::Lookup::lookup(controller)?;
-
 			if <Ledger<T>>::exists(&controller) {
 				return Err("controller already paired")
 			}
+
+			ensure!(promise_month <= 36, "months at most is 36.");
 
 			<Bonded<T>>::insert(&stash, &controller);
 			<Payee<T>>::insert(&stash, payee);
@@ -495,14 +493,17 @@ decl_module! {
 			}
 		}
 
-		fn bond_extra(origin,
+		fn bond_extra(
+			origin,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 			promise_month: u32
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!(promise_month <= 36, "months at most is 36.");
 			let controller = Self::bonded(&stash).ok_or("not a stash")?;
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
+
+			ensure!(promise_month <= 36, "months at most is 36.");
+
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
@@ -528,12 +529,8 @@ decl_module! {
 		/// modify time_deposit_items and time_deposit_ring amount
 		fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
 			let controller = ensure_signed(origin)?;
-
-			Self::clear_mature_deposits(&controller);
-
-			let mut ledger = Self::ledger(&controller).ok_or("not a controller")?;
+			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or("not a controller")?);
 			let StakingLedger {
-				stash: _,
 				active_ring,
 				active_deposit_ring,
 				active_kton,
@@ -542,9 +539,17 @@ decl_module! {
 				..
 			} = &mut ledger;
 
+			// due to the macro parser, we've to add a bracket
+			// actually, this's totally wrong:
+			//     `a as u32 + b as u32 < c`
+			// workaround:
+			//     1. `(a as u32 + b as u32) < c`
+			//     2. `let c_ = a as u32 + b as u32; c_ < c`
 			ensure!(
-				ring_staking_lock.unbondings.len() + kton_staking_lock.unbondings.len() < MAX_UNLOCKING_CHUNKS.try_into().unwrap(),
-				"can not schedule more unlock chunks"
+				(ring_staking_lock.unbondings.len() as u32 + kton_staking_lock.unbondings.len() as u32)
+				<
+				MAX_UNLOCKING_CHUNKS,
+				"can not schedule more unlock chunks",
 			);
 
 			let at = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>() + T::BondingDuration::get();
@@ -585,14 +590,12 @@ decl_module! {
 		/// called by controller
 		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
 			let controller = ensure_signed(origin)?;
-			if Self::ledger(&controller).is_none() { return Err("not a controller"); }
+			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 
 			ensure!(promise_month >= 3 && promise_month <= 36, "months at least is 3 and at most is 36.");
 
-			Self::clear_mature_deposits(&controller);
-
 			let now = <timestamp::Module<T>>::now();
-			let mut ledger = Self::ledger(&controller).unwrap();
+			let mut ledger = Self::clear_mature_deposits(ledger);
 			let StakingLedger {
 				stash,
 				active_ring,
@@ -619,7 +622,8 @@ decl_module! {
 
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
-			Self::clear_mature_deposits(&controller);
+			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or("not a controller")?);
+			<Ledger<T>>::insert(controller, ledger);
 		}
 
 		fn claim_deposits_with_punish(origin, expire_time: T::Moment) {
@@ -679,24 +683,32 @@ decl_module! {
 			<Ledger<T>>::insert(&controller, ledger);
 		}
 
-		fn validate(origin, name: Vec<u8>, ratio: u32, unstake_threshold: u32) {
+		fn validate(origin, prefs: ValidatorPrefs) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
-			let stash = &ledger.stash;
+
 			ensure!(
-				unstake_threshold <= MAX_UNSTAKE_THRESHOLD,
-				"unstake threshold too large"
+				!prefs.node_name.is_empty(),
+				"node name can not be empty",
 			);
+			ensure!(
+				prefs.unstake_threshold <= MAX_UNSTAKE_THRESHOLD,
+				"unstake threshold too large",
+			);
+
+			let stash = &ledger.stash;
+			let mut prefs = prefs;
 			// at most 100%
-			let ratio = Perbill::from_percent(ratio.min(100));
-			let prefs = ValidatorPrefs {unstake_threshold: unstake_threshold, validator_payment_ratio: ratio };
+			prefs.validator_payment_ratio = prefs.validator_payment_ratio.min(100);
 
 			<Nominators<T>>::remove(stash);
-			<Validators<T>>::insert(stash, prefs);
-			if !<NodeName<T>>::exists(&controller) {
-				<NodeName<T>>::insert(controller, name);
-				Self::deposit_event(RawEvent::NodeNameUpdated);
-			}
+			<Validators<T>>::mutate(stash, |prefs_| {
+				let exists = !prefs_.node_name.is_empty();
+				*prefs_ = prefs;
+				if exists {
+					Self::deposit_event(RawEvent::NodeNameUpdated);
+				}
+			});
 		}
 
 		fn nominate(origin, targets: Vec<<T::Lookup as StaticLookup>::Source>) {
@@ -765,26 +777,26 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	pub fn clear_mature_deposits(controller: &T::AccountId) {
-		if let Some(mut ledger) = Self::ledger(&controller) {
-			let now = <timestamp::Module<T>>::now();
-			let StakingLedger {
-				active_deposit_ring,
-				deposit_items,
-				..
-			} = &mut ledger;
+	pub fn clear_mature_deposits(
+		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
+	) -> StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment> {
+		let now = <timestamp::Module<T>>::now();
+		let StakingLedger {
+			active_deposit_ring,
+			deposit_items,
+			..
+		} = &mut ledger;
 
-			deposit_items.retain(|item| {
-				if item.expire_time > now {
-					true
-				} else {
-					*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
-					false
-				}
-			});
+		deposit_items.retain(|item| {
+			if item.expire_time > now {
+				true
+			} else {
+				*active_deposit_ring = active_deposit_ring.saturating_sub(item.value);
+				false
+			}
+		});
 
-			<Ledger<T>>::insert(controller, ledger);
-		};
+		ledger
 	}
 
 	fn bond_helper_in_ring(
@@ -858,6 +870,13 @@ impl<T: Trait> Module<T> {
 		<Ledger<T>>::insert(controller, ledger);
 	}
 
+	/// Slash a given validator by a specific amount with given (historical) exposure.
+	///
+	/// Removes the slash from the validator's balance by preference,
+	/// and reduces the nominators' balance if needed.
+	///
+	/// Returns the resulting `NegativeImbalance` to allow distributing the slashed amount and
+	/// pushes an entry onto the slash journal.
 	fn slash_validator(
 		stash: &T::AccountId,
 		slash: ExtendedBalance,
@@ -884,7 +903,7 @@ impl<T: Trait> Module<T> {
 
 		// The amount we'll slash from the validator's stash directly.
 		let own_slash = own_remaining.min(slash);
-		let (mut ring_imbalance, mut kton_imblance, missing) =
+		let (mut ring_imbalance, mut kton_imbalance, missing) =
 			Self::slash_individual(stash, Perbill::from_rational_approximation(own_slash, exposure.own)); // T::Currency::slash(stash, own_slash);
 		let own_slash = own_slash - missing;
 		// The amount remaining that we can't slash from the validator,
@@ -904,21 +923,21 @@ impl<T: Trait> Module<T> {
 					);
 
 					ring_imbalance.subsume(r);
-					kton_imblance.subsume(k);
+					kton_imbalance.subsume(k);
 				}
 			}
 		}
 
 		journal.push(SlashJournalEntry {
-			who: stash.clone(),
-			own_slash: own_slash.clone(),
+			who: stash.to_owned(),
+			own_slash,
 			amount: slash,
 		});
 
 		// trigger the event
-		Self::deposit_event(RawEvent::Slash(stash.clone(), slash));
+		Self::deposit_event(RawEvent::Slash(stash.to_owned(), slash));
 
-		(ring_imbalance, kton_imblance)
+		(ring_imbalance, kton_imbalance)
 	}
 
 	// TODO: there is reserve balance in Balance.Slash, we assuming it is zero for now.
@@ -937,7 +956,6 @@ impl<T: Trait> Module<T> {
 		} else {
 			(<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
 		};
-
 		let (kton_imbalance, _) = if !ledger.active_kton.is_zero() {
 			let slashable_kton = slash_ratio * ledger.active_kton;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
@@ -1129,8 +1147,11 @@ impl<T: Trait> Module<T> {
 		maybe_new_validators
 	}
 
+	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its
+	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
+	/// pre-payout cut.
 	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) -> RingPositiveImbalanceOf<T> {
-		let off_the_table = Self::validators(stash).validator_payment_ratio * reward;
+		let off_the_table = Perbill::from_percent(Self::validators(stash).validator_payment_ratio) * reward;
 		let reward = reward - off_the_table;
 		let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
 		let validator_cut = if reward.is_zero() {
