@@ -1,3 +1,5 @@
+use rstd::vec::Vec;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header(Vec<u8>);
 impl Header {

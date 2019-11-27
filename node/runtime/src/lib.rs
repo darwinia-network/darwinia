@@ -398,7 +398,8 @@ impl staking::Trait for Runtime {
 
 impl ethereum_bridge::Trait for Runtime {
 	type Event = Event;
-	type Ring = Balances;
+	//	type Ring = Balances;
+	type Hash = Hash;
 }
 
 construct_runtime!(

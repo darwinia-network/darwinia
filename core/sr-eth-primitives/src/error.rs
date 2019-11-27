@@ -1,7 +1,8 @@
 /// Define errors when verifying eth blocks
 use super::*;
-#[cfg(feature = "std")]
-use std::error::Error;
+
+use codec::{Decode, Encode};
+
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Encode, Decode)]
 /// Error indicating value found is outside of a valid range.
 pub struct OutOfBounds<T> {
