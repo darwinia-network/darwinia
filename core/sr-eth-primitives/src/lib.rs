@@ -1,17 +1,11 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-//#[macro_use]
-//extern crate impl_codec;
-//#[macro_use]
-//extern crate fixed_hash;
-//#[macro_use]
-//extern crate impl_rlp;
-//
-
-extern crate rlp;
 #[macro_use]
-extern crate rlp_derive;
+pub extern crate rlp_derive;
+
+use rstd::vec;
+use rstd::vec::Vec;
 
 pub mod encoded;
 pub mod error;
@@ -21,12 +15,12 @@ pub mod receipt;
 //pub mod transaction;
 
 pub use codec::{Decode, Encode};
+pub use ethbloom::{Bloom, Input as BloomInput};
 pub use ethereum_types::BigEndianHash;
 pub use fixed_hash::construct_fixed_hash;
-pub use hbloom::{Bloom, Input as BloomInput};
 pub use impl_codec::impl_fixed_hash_codec;
 pub use impl_rlp::impl_fixed_hash_rlp;
-use primitive_types::{H160, H256, U128, U256, U512};
+pub use primitive_types::{H160, H256, U128, U256, U512};
 
 pub type Bytes = Vec<u8>;
 pub type Address = H160;

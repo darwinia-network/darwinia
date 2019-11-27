@@ -4,7 +4,7 @@ use super::*;
 use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
-use hbloom::Bloom;
+use ethbloom::Bloom;
 use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
@@ -302,22 +302,20 @@ fn difficulty_to_boundary_aux<T: Into<U512>>(difficulty: T) -> ethereum_types::U
 }
 
 fn quick_get_difficulty(header_hash: &[u8; 32], nonce: u64, mix_hash: &[u8; 32], progpow: bool) -> [u8; 32] {
-	unsafe {
-		let mut first_buf = [0u8; 40];
-		let mut buf = [0u8; 64 + 32];
+	let mut first_buf = [0u8; 40];
+	let mut buf = [0u8; 64 + 32];
 
-		let hash_len = header_hash.len();
-		first_buf[..hash_len].copy_from_slice(header_hash);
-		first_buf[hash_len..hash_len + mem::size_of::<u64>()].copy_from_slice(&nonce.to_ne_bytes());
+	let hash_len = header_hash.len();
+	first_buf[..hash_len].copy_from_slice(header_hash);
+	first_buf[hash_len..hash_len + mem::size_of::<u64>()].copy_from_slice(&nonce.to_ne_bytes());
 
-		keccak_hash::keccak_512(&first_buf, &mut buf);
-		buf[64..].copy_from_slice(mix_hash);
+	keccak_hash::keccak_512(&first_buf, &mut buf);
+	buf[64..].copy_from_slice(mix_hash);
 
-		let mut hash = [0u8; 32];
-		keccak_hash::keccak_256(&buf, &mut hash);
+	let mut hash = [0u8; 32];
+	keccak_hash::keccak_256(&buf, &mut hash);
 
-		hash
-	}
+	hash
 
 	//	let mut buf = [0u8; 64 + 32];
 	//

@@ -1,6 +1,7 @@
 use super::*;
-use hbloom::{Bloom, Input as BloomInput};
-use rlp::{self, Decodable, DecoderError, Encodable, Rlp, RlpStream};
+use ethbloom::{Bloom, Input as BloomInput};
+use rlp::*;
+use rstd::ops::Deref;
 use rstd::prelude::*;
 use substrate_primitives::RuntimeDebug;
 
@@ -117,7 +118,7 @@ impl Decodable for Receipt {
 #[cfg(test)]
 mod tests {
 	use super::{Address, LogEntry, Receipt, TransactionOutcome, H256, U128, U256};
-	use hbloom::Bloom;
+	use ethbloom::Bloom;
 	use hex_literal::*;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;

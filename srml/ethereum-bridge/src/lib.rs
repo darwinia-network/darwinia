@@ -9,9 +9,7 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use sr_eth_primitives::{
-	pow::EthHeader, Address, BestBlock, BigEndianHash, Bloom, BloomInput, H160, H256, H64, U128, U256, U512,
-};
+use sr_eth_primitives::{pow::EthHeader, H160, H256, H64, U128, U256, U512};
 
 use sr_primitives::RuntimeDebug;
 
@@ -24,7 +22,7 @@ use sr_primitives::RuntimeDebug;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Hash: MaybeSerializeDeserialize + Debug + rstd::hash::Hash;
+	type Hash: rstd::hash::Hash;
 	//	type Hash: {};
 }
 
@@ -43,6 +41,8 @@ pub struct ActionRecord {
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
 		pub BeginNumber get(begin_number): u64;
+	}
+}
 
 //		pub BeginHeader get(begin_header): Option<EthHeader>;
 
@@ -54,13 +54,13 @@ decl_storage! {
 
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
 
-		/// Block delay for verify transaction
+// Block delay for verify transaction
 //		pub FinalizeNumber get(finalize_number): Option<u64>;
 
 //		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
 
 //		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
-	}
+
 //	add_extra_genesis {
 //		config(header): Option<Vec<u8>>;
 //		config(number): u64;
@@ -73,9 +73,7 @@ decl_storage! {
 //				BeginNumber::put(config.number);
 //			}
 //		});
-//
 //	}
-}
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call
