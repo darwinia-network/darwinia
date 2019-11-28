@@ -119,6 +119,7 @@ impl<T: Trait> Module<T> {
 	/// 3. challenge
 	fn verify(header: &EthHeader) -> Result {
 		let number = header.number();
+		Ok(())
 	}
 
 	fn _punish(_who: &T::AccountId) -> Result {
