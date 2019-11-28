@@ -8,7 +8,6 @@ use rstd::vec::Vec;
 
 pub mod encoded;
 pub mod error;
-//pub mod keccak;
 pub mod header;
 pub mod pow;
 pub mod receipt;

@@ -12,8 +12,7 @@ use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use primitive_types::{H160, H256, U128, U256, U512};
 use rlp::*;
 use rstd::{collections::btree_map::BTreeMap, mem, result};
-
-//use substrate_primitives::RuntimeDebug;
+use sr_primitives::RuntimeDebug;
 
 #[derive(Default, PartialEq, Eq, Clone, Encode, Decode)]
 pub struct EthashPartial {
@@ -178,7 +177,7 @@ impl EthashPartial {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct EthashSeal {
 	/// Ethash seal mix_hash
 	pub mix_hash: H256,

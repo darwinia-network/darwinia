@@ -8,7 +8,7 @@ edition = "2018"
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-#substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git" }
 primitive-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["codec", "rlp"] }
@@ -33,7 +33,7 @@ std = [
     "serde/std",
     "codec/std",
     "rstd/std",
-#    "substrate-primitives/std",
+    "sr-primitives/std",
     "rlp/std",
     "keccak-hash/std",
     "primitive-types/std",
