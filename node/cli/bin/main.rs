@@ -18,15 +18,15 @@
 
 #![warn(missing_docs)]
 
-use cli::VersionInfo;
+use std::cell::RefCell;
+
 use futures::sync::oneshot;
 use futures::{future, Future};
-
-use std::cell::RefCell;
+use substrate_cli::VersionInfo;
 
 // handles ctrl-c
 struct Exit;
-impl cli::IntoExit for Exit {
+impl substrate_cli::IntoExit for Exit {
 	type Exit = future::MapErr<oneshot::Receiver<()>, fn(oneshot::Canceled) -> ()>;
 	fn into_exit(self) -> Self::Exit {
 		// can't use signal directly here because CtrlC takes only `Fn`.
@@ -48,7 +48,7 @@ impl cli::IntoExit for Exit {
 	}
 }
 
-fn main() {
+fn main() -> Result<(), substrate_cli::error::Error> {
 	let version = VersionInfo {
 		name: "Darwinia Crayfish Node",
 		commit: env!("VERGEN_SHA_SHORT"),
@@ -59,8 +59,5 @@ fn main() {
 		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 	};
 
-	if let Err(e) = cli::run(::std::env::args(), Exit, version) {
-		eprintln!("Error starting the node: {}\n\n{:?}", e, e);
-		std::process::exit(1)
-	}
+	node_cli::run(std::env::args(), Exit, version)
 }

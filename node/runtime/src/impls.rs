@@ -16,13 +16,15 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
-use crate::{Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
 use node_primitives::Balance;
-use sr_primitives::traits::{Convert, Saturating};
-
-use sr_primitives::weights::Weight;
-use sr_primitives::{Fixed64, Perbill};
+use sr_primitives::{
+	traits::{Convert, Saturating},
+	weights::Weight,
+	Fixed64, Perbill,
+};
 use support::traits::{Currency, Get, OnUnbalanced};
+
+use crate::{Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
 
 pub struct Author;
 impl OnUnbalanced<NegativeImbalance> for Author {
@@ -53,18 +55,6 @@ impl Convert<u128, Balance> for CurrencyToVoteHandler {
 		x * Self::factor()
 	}
 }
-
-//impl Convert<u128, u64> for CurrencyToVoteHandler {
-//	fn convert(x: u128) -> u64 {
-//		x as u64
-//	}
-//}
-//
-//impl Convert<u128, u128> for CurrencyToVoteHandler {
-//	fn convert(x: u128) -> u128 {
-//		x
-//	}
-//}
 
 /// Convert from weight to balance via a simple coefficient multiplication
 /// The associated type C encapsulates a constant in units of balance per weight
