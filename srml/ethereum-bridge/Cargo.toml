@@ -15,7 +15,7 @@ rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrat
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 #sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-#sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
+sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
 #merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
 
 #web3 = {git = "https://github.com/ABMatrix/rust-web3.git", branch = "develop", default-features = false }
@@ -30,5 +30,5 @@ std = [
 #    "sr-primitives/std",
     "support/std",
     "system/std",
-#    "sr-eth-primitives/std"
+    "sr-eth-primitives/std"
 ]
