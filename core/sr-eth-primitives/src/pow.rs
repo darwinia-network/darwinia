@@ -6,39 +6,177 @@ use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
 use ethbloom::Bloom;
+use ethereum_types::BigEndianHash;
 use header::EthHeader;
 use keccak_hash::KECCAK_EMPTY_LIST_RLP;
-use rstd::collections::btree_map::BTreeMap;
-use rstd::mem;
-use rstd::result;
-
-use ethereum_types::BigEndianHash;
 use primitive_types::{H160, H256, U128, U256, U512};
-
 use rlp::*;
+use rstd::{collections::btree_map::BTreeMap, mem, result};
 
 //use substrate_primitives::RuntimeDebug;
 
-pub const MINIMUM_DIFFICULTY: u128 = 131072;
-// TODO: please keep an eye on this.
-// it might change due to ethereum's upgrade
-pub const PROGPOW_TRANSITION: u64 = u64::max_value();
-pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = 0x59d9;
-pub const DIFFICULTY_HARDFORK_BOUND_DIVISOR: u128 = 0x0200;
-pub const DIFFICULTY_BOUND_DIVISOR: u128 = 0x0800;
-pub const EXPIP2_TRANSITION: u64 = 0xc3500;
-pub const EXPIP2_DURATION_LIMIT: u64 = 0x1e;
-pub const DURATION_LIMIT: u64 = 0x3C;
-pub const HOMESTEAD_TRANSITION: u64 = 0x30d40;
-pub const EIP100B_TRANSITION: u64 = 0xC3500;
-pub const DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x3C;
-pub const METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR: u64 = 0x1E;
+#[derive(Default, PartialEq, Eq, Clone, Encode, Decode)]
+pub struct EthashPartial {
+	pub minimum_difficulty: U256,
+	pub difficulty_bound_divisor: U256,
+	pub difficulty_increment_divisor: u64,
+	pub metropolis_difficulty_increment_divisor: u64,
+	pub duration_limit: u64,
+	pub homestead_transition: u64,
+	pub difficulty_hardfork_transition: u64,
+	pub difficulty_hardfork_bound_divisor: U256,
+	pub bomb_defuse_transition: u64,
+	pub eip100b_transition: u64,
+	pub ecip1010_pause_transition: u64,
+	pub ecip1010_continue_transition: u64,
+	pub difficulty_bomb_delays: BTreeMap<BlockNumber, BlockNumber>,
+	pub expip2_transition: u64,
+	pub expip2_duration_limit: u64,
+	pub progpow_transition: u64,
+}
 
-pub const BOMB_DEFUSE_TRANSITION: u64 = 0x30d40;
-// 3,000,000
-pub const ECIP1010_PAUSE_TRANSITION: u64 = 0x2dc6c0;
-// 5,000,000
-pub const ECIP1010_CONTINUE_TRANSITION: u64 = 0x4c4b40;
+impl EthashPartial {
+	pub fn set_difficulty_bomb_delays(&mut self, key: BlockNumber, value: BlockNumber) {
+		self.difficulty_bomb_delays.insert(key, value);
+	}
+
+	pub fn expanse() -> Self {
+		EthashPartial {
+			minimum_difficulty: U256::from(131072_u128),
+			difficulty_bound_divisor: U256::from(0x0800),
+			difficulty_increment_divisor: 0x3C,
+			metropolis_difficulty_increment_divisor: 0x1E,
+			duration_limit: 0x3C,
+			homestead_transition: 0x30d40,
+			difficulty_hardfork_transition: 0x59d9,
+			difficulty_hardfork_bound_divisor: U256::from(0x0200),
+			bomb_defuse_transition: 0x30d40,
+			eip100b_transition: 0xC3500,
+			ecip1010_pause_transition: 0x2dc6c0,
+			ecip1010_continue_transition: 0x4c4b40,
+			difficulty_bomb_delays: BTreeMap::<BlockNumber, BlockNumber>::default(),
+			expip2_transition: 0xc3500,
+			expip2_duration_limit: 0x1e,
+			progpow_transition: u64::max_value(),
+		}
+	}
+}
+
+impl EthashPartial {
+	pub fn verify_block_basic(&self, header: &EthHeader) -> result::Result<(), error::BlockError> {
+		// check the seal fields.
+		let seal = EthashSeal::parse_seal(header.seal())?;
+
+		// TODO: consider removing these lines.
+		let min_difficulty = self.minimum_difficulty;
+		if header.difficulty() < &min_difficulty {
+			return Err(BlockError::DifficultyOutOfBounds(OutOfBounds {
+				min: Some(min_difficulty),
+				max: None,
+				found: header.difficulty().clone(),
+			}));
+		}
+
+		let difficulty = boundary_to_difficulty(&H256(quick_get_difficulty(
+			&header.bare_hash().0,
+			seal.nonce.to_low_u64_be(),
+			&seal.mix_hash.0,
+			header.number() >= self.progpow_transition,
+		)));
+
+		if &difficulty < header.difficulty() {
+			return Err(BlockError::InvalidProofOfWork(OutOfBounds {
+				min: Some(header.difficulty().clone()),
+				max: None,
+				found: difficulty,
+			}));
+		}
+
+		Ok(())
+	}
+
+	pub fn calculate_difficulty(&self, header: &EthHeader, parent: &EthHeader) -> U256 {
+		const EXP_DIFF_PERIOD: u64 = 100_000;
+
+		if header.number() == 0 {
+			panic!("Can't calculate genesis block difficulty");
+		}
+
+		let parent_has_uncles = parent.uncles_hash() != &KECCAK_EMPTY_LIST_RLP;
+
+		let min_difficulty = self.minimum_difficulty;
+
+		let difficulty_hardfork = header.number() >= self.difficulty_hardfork_transition;
+		let difficulty_bound_divisor = if difficulty_hardfork {
+			self.difficulty_hardfork_bound_divisor
+		} else {
+			self.difficulty_bound_divisor
+		};
+
+		let expip2_hardfork = header.number() >= self.expip2_transition;
+		let duration_limit = if expip2_hardfork {
+			self.expip2_duration_limit
+		} else {
+			self.duration_limit
+		};
+
+		let frontier_limit = self.homestead_transition;
+
+		let mut target = if header.number() < frontier_limit {
+			if header.timestamp() >= parent.timestamp() + duration_limit {
+				*parent.difficulty() - (*parent.difficulty() / difficulty_bound_divisor)
+			} else {
+				*parent.difficulty() + (*parent.difficulty() / difficulty_bound_divisor)
+			}
+		} else {
+			//		trace!(target: "ethash", "Calculating difficulty parent.difficulty={}, header.timestamp={}, parent.timestamp={}", parent.difficulty(), header.timestamp(), parent.timestamp());
+			//block_diff = parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99)
+			let (increment_divisor, threshold) = if header.number() < self.eip100b_transition {
+				(self.difficulty_increment_divisor, 1)
+			} else if parent_has_uncles {
+				(self.metropolis_difficulty_increment_divisor, 2)
+			} else {
+				(self.metropolis_difficulty_increment_divisor, 1)
+			};
+
+			let diff_inc = (header.timestamp() - parent.timestamp()) / increment_divisor;
+			if diff_inc <= threshold {
+				*parent.difficulty()
+					+ *parent.difficulty() / difficulty_bound_divisor * U256::from(threshold - diff_inc)
+			} else {
+				let multiplier: U256 = cmp::min(diff_inc - threshold, 99).into();
+				parent
+					.difficulty()
+					.saturating_sub(*parent.difficulty() / difficulty_bound_divisor * multiplier)
+			}
+		};
+		target = cmp::max(min_difficulty, target);
+		if header.number() < self.bomb_defuse_transition {
+			if header.number() < self.ecip1010_pause_transition {
+				let mut number = header.number();
+				let original_number = number;
+				for (block, delay) in &self.difficulty_bomb_delays {
+					if original_number >= *block {
+						number = number.saturating_sub(*delay);
+					}
+				}
+				let period = (number / EXP_DIFF_PERIOD) as usize;
+				if period > 1 {
+					target = cmp::max(min_difficulty, target + (U256::from(1) << (period - 2)));
+				}
+			} else if header.number() < self.ecip1010_continue_transition {
+				let fixed_difficulty = ((self.ecip1010_pause_transition / EXP_DIFF_PERIOD) - 2) as usize;
+				target = cmp::max(min_difficulty, target + (U256::from(1) << fixed_difficulty));
+			} else {
+				let period = ((parent.number() + 1) / EXP_DIFF_PERIOD) as usize;
+				let delay =
+					((self.ecip1010_continue_transition - self.ecip1010_pause_transition) / EXP_DIFF_PERIOD) as usize;
+				target = cmp::max(min_difficulty, target + (U256::from(1) << (period - delay - 2)));
+			}
+		}
+		target
+	}
+}
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub struct EthashSeal {
@@ -69,38 +207,6 @@ impl EthashSeal {
 			.unwrap();
 		Ok(EthashSeal { mix_hash, nonce })
 	}
-}
-
-pub fn verify_block_basic(header: &EthHeader) -> result::Result<(), error::BlockError> {
-	// check the seal fields.
-	let seal = EthashSeal::parse_seal(header.seal())?;
-
-	// TODO: consider removing these lines.
-	let min_difficulty = MINIMUM_DIFFICULTY.into();
-	if header.difficulty() < &min_difficulty {
-		return Err(BlockError::DifficultyOutOfBounds(OutOfBounds {
-			min: Some(min_difficulty),
-			max: None,
-			found: header.difficulty().clone(),
-		}));
-	}
-
-	let difficulty = boundary_to_difficulty(&H256(quick_get_difficulty(
-		&header.bare_hash().0,
-		seal.nonce.to_low_u64_be(),
-		&seal.mix_hash.0,
-		header.number() >= PROGPOW_TRANSITION,
-	)));
-
-	if &difficulty < header.difficulty() {
-		return Err(BlockError::InvalidProofOfWork(OutOfBounds {
-			min: Some(header.difficulty().clone()),
-			max: None,
-			found: difficulty,
-		}));
-	}
-
-	Ok(())
 }
 
 pub fn boundary_to_difficulty(boundary: &ethereum_types::H256) -> U256 {
@@ -152,86 +258,4 @@ fn quick_get_difficulty(header_hash: &[u8; 32], nonce: u64, mix_hash: &[u8; 32],
 	//
 	//		hash
 	//	}
-}
-
-pub fn calculate_difficulty(header: &EthHeader, parent: &EthHeader) -> U256 {
-	const EXP_DIFF_PERIOD: u64 = 100_000;
-
-	let mut difficulty_bomb_delays = BTreeMap::<BlockNumber, BlockNumber>::new();
-	difficulty_bomb_delays.insert(0xC3500, 3000000);
-	if header.number() == 0 {
-		panic!("Can't calculate genesis block difficulty");
-	}
-
-	let parent_has_uncles = parent.uncles_hash() != &KECCAK_EMPTY_LIST_RLP;
-
-	let min_difficulty = U256::from(MINIMUM_DIFFICULTY);
-
-	let difficulty_hardfork = header.number() >= DIFFICULTY_HARDFORK_TRANSITION;
-	let difficulty_bound_divisor = U256::from(if difficulty_hardfork {
-		DIFFICULTY_HARDFORK_BOUND_DIVISOR
-	} else {
-		DIFFICULTY_BOUND_DIVISOR
-	});
-
-	let expip2_hardfork = header.number() >= EXPIP2_TRANSITION;
-	let duration_limit = if expip2_hardfork {
-		EXPIP2_DURATION_LIMIT
-	} else {
-		DURATION_LIMIT
-	};
-
-	let frontier_limit = HOMESTEAD_TRANSITION;
-
-	let mut target = if header.number() < frontier_limit {
-		if header.timestamp() >= parent.timestamp() + duration_limit {
-			*parent.difficulty() - (*parent.difficulty() / difficulty_bound_divisor)
-		} else {
-			*parent.difficulty() + (*parent.difficulty() / difficulty_bound_divisor)
-		}
-	} else {
-		//		trace!(target: "ethash", "Calculating difficulty parent.difficulty={}, header.timestamp={}, parent.timestamp={}", parent.difficulty(), header.timestamp(), parent.timestamp());
-		//block_diff = parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99)
-		let (increment_divisor, threshold) = if header.number() < EIP100B_TRANSITION {
-			(DIFFICULTY_INCREMENT_DIVISOR, 1)
-		} else if parent_has_uncles {
-			(METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR, 2)
-		} else {
-			(METROPOLIS_DIFFICULTY_INCREMENT_DIVISOR, 1)
-		};
-
-		let diff_inc = (header.timestamp() - parent.timestamp()) / increment_divisor;
-		if diff_inc <= threshold {
-			*parent.difficulty() + *parent.difficulty() / difficulty_bound_divisor * U256::from(threshold - diff_inc)
-		} else {
-			let multiplier: U256 = cmp::min(diff_inc - threshold, 99).into();
-			parent
-				.difficulty()
-				.saturating_sub(*parent.difficulty() / difficulty_bound_divisor * multiplier)
-		}
-	};
-	target = cmp::max(min_difficulty, target);
-	if header.number() < BOMB_DEFUSE_TRANSITION {
-		if header.number() < ECIP1010_PAUSE_TRANSITION {
-			let mut number = header.number();
-			let original_number = number;
-			for (block, delay) in &difficulty_bomb_delays {
-				if original_number >= *block {
-					number = number.saturating_sub(*delay);
-				}
-			}
-			let period = (number / EXP_DIFF_PERIOD) as usize;
-			if period > 1 {
-				target = cmp::max(min_difficulty, target + (U256::from(1) << (period - 2)));
-			}
-		} else if header.number() < ECIP1010_CONTINUE_TRANSITION {
-			let fixed_difficulty = ((ECIP1010_PAUSE_TRANSITION / EXP_DIFF_PERIOD) - 2) as usize;
-			target = cmp::max(min_difficulty, target + (U256::from(1) << fixed_difficulty));
-		} else {
-			let period = ((parent.number() + 1) / EXP_DIFF_PERIOD) as usize;
-			let delay = ((ECIP1010_CONTINUE_TRANSITION - ECIP1010_PAUSE_TRANSITION) / EXP_DIFF_PERIOD) as usize;
-			target = cmp::max(min_difficulty, target + (U256::from(1) << (period - delay - 2)));
-		}
-	}
-	target
 }

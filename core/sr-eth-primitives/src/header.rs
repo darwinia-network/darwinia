@@ -1,6 +1,6 @@
 use super::*;
 use ethbloom::Bloom;
-use pow::{verify_block_basic, EthashSeal};
+use pow::EthashSeal;
 use rlp::RlpStream;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, Copy)]
@@ -191,7 +191,7 @@ mod tests {
 	use super::*;
 	use error::BlockError;
 	use hex_literal::*;
-	use pow::calculate_difficulty;
+	use pow::EthashPartial;
 	use rustc_hex::FromHex;
 	use std::str::FromStr;
 
@@ -250,7 +250,8 @@ mod tests {
 			U256::from_str("ffffffffffffffffffffffffffffffffffffffffffffaaaaaaaaaaaaaaaaaaaa").unwrap(),
 		);
 
-		let verify_result = verify_block_basic(&header);
+		let ethash_params = EthashPartial::expanse();
+		let verify_result = ethash_params.verify_block_basic(&header);
 
 		match verify_result {
 			Err(BlockError::InvalidProofOfWork(_)) => {}
@@ -266,13 +267,16 @@ mod tests {
 	#[test]
 	fn can_verify_basic_difficulty() {
 		let header = sequential_header().0;
-		assert_eq!(verify_block_basic(&header), Ok(()));
+		let ethash_params = EthashPartial::expanse();
+		assert_eq!(ethash_params.verify_block_basic(&header), Ok(()));
 	}
 
 	#[test]
 	fn can_calculate_difficulty() {
 		let (header1, header2) = sequential_header();
 		let expected = U256::from_str("92c07e50de0b9").unwrap();
-		assert_eq!(calculate_difficulty(&header2, &header1), expected);
+		let mut ethash_params = EthashPartial::expanse();
+		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
+		assert_eq!(ethash_params.calculate_difficulty(&header2, &header1), expected);
 	}
 }
