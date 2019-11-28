@@ -87,6 +87,10 @@ decl_module! {
 			// confirm that the block hash is right
 			// get the receipt MPT trie root from the block header
 			// Using receipt MPT trie root to verify the proof and index etc.
+
+			let _relayer = ensure_signed(origin)?;
+
+			<Module<T>>::deposit_event(RawEvent::RelayProof(proof));
 		}
 
 		pub fn submit_header(origin, header: EthHeader) {
@@ -102,6 +106,7 @@ decl_event! {
 		<T as system::Trait>::AccountId
 	{
 		NewHeader(EthHeader),
+		RelayProof(ActionRecord),
 		TODO(AccountId),
 	}
 }
