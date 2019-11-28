@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
+// Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Substrate.
 
 // Substrate is free software: you can redistribute it and/or modify
@@ -14,16 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! A `CodeExecutor` specialization which uses natively compiled runtime when the wasm to be
-//! executed is equivalent to the natively compiled code.
+//! A set of testing utilities for Substrate Node.
 
-use substrate_executor::native_executor_instance;
-pub use substrate_executor::NativeExecutor;
+#![warn(missing_docs)]
 
-// Declare an instance of the native executor named `Executor`. Include the wasm binary as the
-// equivalent wasm code.
-native_executor_instance!(
-	pub Executor,
-	node_runtime::api::dispatch,
-	node_runtime::native_version
-);
+pub mod client;
+pub mod genesis;
+pub mod keyring;
+

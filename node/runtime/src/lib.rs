@@ -30,10 +30,9 @@ pub use timestamp::Call as TimestampCall;
 pub use balances::Call as BalancesCall;
 pub use staking::StakerStatus;
 
-use authority_discovery_primitives::{AuthorityId as EncodedAuthorityId, Signature as EncodedSignature};
-use babe_primitives::{AuthorityId as BabeId, AuthoritySignature as BabeSignature};
-use codec::{Decode, Encode};
+use grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use im_online::sr25519::AuthorityId as ImOnlineId;
+use inherents::{CheckInherentsResult, InherentData};
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use rstd::prelude::*;
 use sr_api::impl_runtime_apis;
@@ -94,14 +93,6 @@ type DealWithFees = SplitTwoWays<
 	_1,
 	Author, // 1 part (20%) goes to the block author.
 >;
-
-//pub struct Author;
-//
-//impl OnUnbalanced<NegativeImbalance> for Author {
-//	fn on_unbalanced(amount: NegativeImbalance) {
-//		Balances::resolve_creating(&Authorship::author(), amount);
-//	}
-//}
 
 pub struct MockTreasury;
 impl OnUnbalanced<NegativeImbalance> for MockTreasury {
@@ -202,6 +193,7 @@ impl timestamp::Trait for Runtime {
 
 impl_opaque_keys! {
 	pub struct SessionKeys {
+		pub grandpa: Grandpa,
 		pub babe: Babe,
 		pub im_online: ImOnline,
 	}
@@ -267,13 +259,18 @@ impl im_online::Trait for Runtime {
 	type ReportUnresponsiveness = Offences;
 }
 
-impl authority_discovery::Trait for Runtime {
-	type AuthorityId = BabeId;
+impl grandpa::Trait for Runtime {
+	type Event = Event;
 }
 
 parameter_types! {
-	pub const WindowSize: BlockNumber = 101;
-	pub const ReportLatency: BlockNumber = 1000;
+	pub const WindowSize: BlockNumber = finality_tracker::DEFAULT_WINDOW_SIZE.into();
+	pub const ReportLatency: BlockNumber = finality_tracker::DEFAULT_REPORT_LATENCY.into();
+}
+impl finality_tracker::Trait for Runtime {
+	type OnFinalizationStalled = ();
+	type WindowSize = WindowSize;
+	type ReportLatency = ReportLatency;
 }
 
 parameter_types! {
@@ -320,7 +317,7 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 	type Public = <Signature as traits::Verify>::Signer;
 	type Signature = Signature;
 
-	fn create_transaction<F: system::offchain::Signer<AccountId, Self::Signature>>(
+	fn create_transaction<F: system::offchain::Signer<Self::Public, Self::Signature>>(
 		call: Call,
 		public: Self::Public,
 		account: AccountId,
@@ -396,24 +393,32 @@ construct_runtime!(
 		NodeBlock = node_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		AuthorityDiscovery: authority_discovery::{Module, Call, Config<T>},
-		Authorship: authorship::{Module, Call, Storage},
-		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
-		Contracts: contracts,
-		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
-		Indices: indices,
-		Offences: offences::{Module, Call, Storage, Event},
+		// Basic stuff; balances is uncallable initially.
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
-		Session: session::{Module, Call, Storage, Event, Config<T>},
-		Sudo: sudo,
 		System: system::{Module, Call, Storage, Config, Event},
-		Timestamp: timestamp::{Module, Call, Storage, Inherent},
-		TransactionPayment: transaction_payment::{Module, Storage},
-		Utility: utility::{Module, Call, Event},
+
+		// Must be before session.
+		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
 
 		Balances: balances::{default, Error},
+		Indices: indices,
 		Kton: kton,
+		Timestamp: timestamp::{Module, Call, Storage, Inherent},
+		TransactionPayment: transaction_payment::{Module, Storage},
+
+		// Consensus support.
+		Authorship: authorship::{Module, Call, Storage, Inherent},
+		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
+		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+		FinalityTracker: finality_tracker::{Module, Call, Inherent},
+		Offences: offences::{Module, Call, Storage, Event},
+		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Staking: staking::{default, OfflineWorker},
+
+		Contracts: contracts,
+		Sudo: sudo,
+		Utility: utility::{Module, Call, Event},
+		
 		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );
@@ -426,6 +431,7 @@ pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
+/// BlockId type as expected by this runtime.
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
@@ -477,14 +483,11 @@ impl_runtime_apis! {
 			Executive::finalize_block()
 		}
 
-		fn inherent_extrinsics(data: inherents::InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
+		fn inherent_extrinsics(data: InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
 			data.create_extrinsics()
 		}
 
-		fn check_inherents(
-			block: Block,
-			data: inherents::InherentData,
-		) -> inherents::CheckInherentsResult {
+		fn check_inherents(block: Block, data: InherentData) -> CheckInherentsResult {
 			data.check_extrinsics(&block)
 		}
 
@@ -505,6 +508,12 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl fg_primitives::GrandpaApi<Block> for Runtime {
+		fn grandpa_authorities() -> GrandpaAuthorityList {
+			Grandpa::grandpa_authorities()
+		}
+	}
+
 	impl babe_primitives::BabeApi<Block> for Runtime {
 		fn configuration() -> babe_primitives::BabeConfiguration {
 			// The choice of `c` parameter (where `1 - c` represents the
@@ -520,35 +529,6 @@ impl_runtime_apis! {
 				randomness: Babe::randomness(),
 				secondary_slots: true,
 			}
-		}
-	}
-
-	impl authority_discovery_primitives::AuthorityDiscoveryApi<Block> for Runtime {
-		fn authorities() -> Vec<EncodedAuthorityId> {
-			AuthorityDiscovery::authorities().into_iter()
-				.map(|id| id.encode())
-				.map(EncodedAuthorityId)
-				.collect()
-		}
-
-		fn sign(payload: &Vec<u8>) -> Option<(EncodedSignature, EncodedAuthorityId)> {
-			  AuthorityDiscovery::sign(payload).map(|(sig, id)| {
-			(EncodedSignature(sig.encode()), EncodedAuthorityId(id.encode()))
-		})
-		}
-
-		fn verify(payload: &Vec<u8>, signature: &EncodedSignature, authority_id: &EncodedAuthorityId) -> bool {
-			let signature = match BabeSignature::decode(&mut &signature.0[..]) {
-				Ok(s) => s,
-				_ => return false,
-			};
-
-			let authority_id = match BabeId::decode(&mut &authority_id.0[..]) {
-				Ok(id) => id,
-				_ => return false,
-			};
-
-			AuthorityDiscovery::verify(payload, signature, authority_id)
 		}
 	}
 

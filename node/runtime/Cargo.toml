@@ -23,6 +23,7 @@ contracts = { package = "srml-contracts", git = "https://github.com/darwinia-net
 contracts-rpc-runtime-api = { package = "srml-contracts-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 executive = { package = "srml-executive", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 finality-tracker = { package = "srml-finality-tracker", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+grandpa = { package = "srml-grandpa", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 im-online = { package = "srml-im-online", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 indices = { package = "srml-indices", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
@@ -79,6 +80,7 @@ std = [
 	"contracts-rpc-runtime-api/std",
 	"executive/std",
 	"finality-tracker/std",
+	"grandpa/std",
 	"im-online/std",
 	"indices/std",
 	"inherents/std",
