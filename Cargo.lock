@@ -698,8 +698,10 @@ name = "darwinia-ethereum-bridge"
 version = "0.2.0"
 dependencies = [
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-eth-primitives 0.2.0",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -4061,6 +4063,7 @@ dependencies = [
  "rlp_derive 0.1.0 (git+https://github.com/darwinia-network/parity-common.git)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "triehash 0.8.1 (git+https://github.com/darwinia-network/parity-common.git)",

@@ -9,11 +9,12 @@ use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use rstd::collections::btree_map::BTreeMap;
 use rstd::mem;
 use rstd::result;
+use sr_primitives::RuntimeDebug;
 
 use codec::{Decode, Encode};
 
 use ethereum_types::BigEndianHash;
-use primitive_types::{H160, H256, U128, U256, U512};
+use primitive_types::{H256, U256, U512};
 
 use rlp::*;
 
@@ -42,7 +43,7 @@ pub const ECIP1010_CONTINUE_TRANSITION: u64 = 0x4c4b40;
 
 pub const DIFFICULTY_HARDFORK_TRANSITION: u64 = u64::max_value();
 
-#[derive(Default, PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RlpDecodable, RlpEncodable, RuntimeDebug)]
 pub struct EthHeader {
 	parent_hash: H256,
 	timestamp: u64,
@@ -71,7 +72,7 @@ where
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, Copy)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, Copy, RuntimeDebug)]
 enum Seal {
 	/// The seal/signature is included.
 	With,
@@ -79,7 +80,7 @@ enum Seal {
 	Without,
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct EthashSeal {
 	/// Ethash seal mix_hash
 	pub mix_hash: H256,
