@@ -35,8 +35,7 @@ use sr_primitives::{
 	traits::{Block as BlockT, Header as HeaderT, IdentifyAccount, SignedExtension, Verify},
 };
 use timestamp;
-use transaction_factory::modes::Mode;
-use transaction_factory::RuntimeAdapter;
+use transaction_factory::{modes::Mode, RuntimeAdapter};
 
 type AccountPublic = <Signature as Verify>::Signer;
 
@@ -71,11 +70,11 @@ impl RuntimeAdapter for FactoryState<Number> {
 	type AccountId = node_primitives::AccountId;
 	type Balance = node_primitives::Balance;
 	type Block = node_primitives::Block;
-	type Phase = sr_primitives::generic::Phase;
-	type Secret = sr25519::Pair;
 	type Index = node_primitives::Index;
-
 	type Number = Number;
+	type Phase = sr_primitives::generic::Phase;
+
+	type Secret = sr25519::Pair;
 
 	fn new(mode: Mode, num: u64, rounds: u64) -> FactoryState<Self::Number> {
 		FactoryState {
@@ -97,12 +96,16 @@ impl RuntimeAdapter for FactoryState<Number> {
 		self.block_in_round
 	}
 
-	fn rounds(&self) -> Self::Number {
-		self.rounds
+	fn mode(&self) -> &Mode {
+		&self.mode
 	}
 
 	fn num(&self) -> Self::Number {
 		self.num
+	}
+
+	fn rounds(&self) -> Self::Number {
+		self.rounds
 	}
 
 	fn round(&self) -> Self::Number {
@@ -113,16 +116,12 @@ impl RuntimeAdapter for FactoryState<Number> {
 		self.start_number
 	}
 
-	fn mode(&self) -> &Mode {
-		&self.mode
+	fn set_block_in_round(&mut self, val: Self::Number) {
+		self.block_in_round = val;
 	}
 
 	fn set_block_no(&mut self, val: Self::Number) {
 		self.block_no = val;
-	}
-
-	fn set_block_in_round(&mut self, val: Self::Number) {
-		self.block_in_round = val;
 	}
 
 	fn set_round(&mut self, val: Self::Number) {
@@ -172,23 +171,11 @@ impl RuntimeAdapter for FactoryState<Number> {
 	}
 
 	fn master_account_id() -> Self::AccountId {
-		Keyring::Alice.pair().public()
+		Keyring::Alice.to_account_id()
 	}
 
 	fn master_account_secret() -> Self::Secret {
 		Keyring::Alice.pair()
-	}
-
-	/// Generates a random `AccountId` from `seed`.
-	fn gen_random_account_id(seed: &Self::Number) -> Self::AccountId {
-		let pair: sr25519::Pair = sr25519::Pair::from_seed(&gen_seed_bytes(*seed));
-		AccountPublic::from(pair.public()).into_account()
-	}
-
-	/// Generates a random `Secret` from `seed`.
-	fn gen_random_account_secret(seed: &Self::Number) -> Self::Secret {
-		let pair: sr25519::Pair = sr25519::Pair::from_seed(&gen_seed_bytes(*seed));
-		pair
 	}
 
 	fn extract_index(&self, _account_id: &Self::AccountId, _block_hash: &<Self::Block as BlockT>::Hash) -> Self::Index {
@@ -219,6 +206,18 @@ impl RuntimeAdapter for FactoryState<Number> {
 		// This currently prevents the factory from being used
 		// without a preceding purge of the database.
 		self.block_no() as Self::Phase
+	}
+
+	/// Generates a random `AccountId` from `seed`.
+	fn gen_random_account_id(seed: &Self::Number) -> Self::AccountId {
+		let pair: sr25519::Pair = sr25519::Pair::from_seed(&gen_seed_bytes(*seed));
+		AccountPublic::from(pair.public()).into_account()
+	}
+
+	/// Generates a random `Secret` from `seed`.
+	fn gen_random_account_secret(seed: &Self::Number) -> Self::Secret {
+		let pair: sr25519::Pair = sr25519::Pair::from_seed(&gen_seed_bytes(*seed));
+		pair
 	}
 }
 
