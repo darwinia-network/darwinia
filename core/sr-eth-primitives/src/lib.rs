@@ -9,6 +9,7 @@ use rstd::vec::Vec;
 pub mod encoded;
 pub mod error;
 //pub mod keccak;
+pub mod header;
 pub mod pow;
 pub mod receipt;
 //pub mod transaction;
@@ -27,7 +28,7 @@ pub type BlockNumber = u64;
 
 #[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
 pub struct BestBlock {
-	height: u64, // enough for ethereum poa network (kovan)
+	height: BlockNumber, // enough for ethereum poa network (kovan)
 	hash: H256,
 	total_difficulty: U256,
 }

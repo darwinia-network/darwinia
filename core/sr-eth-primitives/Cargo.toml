@@ -10,14 +10,14 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 #substrate-primitives = {git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
-rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
+rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git" }
 primitive-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["codec", "rlp"] }
-ethereum-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"] }
+ethereum-types = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
 keccak-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 impl-codec = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 fixed-hash = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 impl-rlp = { git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
-ethbloom = { git ="https://github.com/darwinia-network/parity-common.git", default-features = false, features = ["serialize"]}
+ethbloom = { git ="https://github.com/darwinia-network/parity-common.git", default-features = false}
 
 [dev-dependencies]
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}

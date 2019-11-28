@@ -6,10 +6,11 @@
 // use blake2::Blake2b;
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
+use sr_eth_primitives::{
+	header::EthHeader, BestBlock, BlockNumber as EthBlockNumber, H160, H256, H64, U128, U256, U512,
+};
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
-
-//use sr_eth_primitives::{pow::EthHeader, H160, H256, H64, U128, U256, U512};
 
 //use sr_primitives::RuntimeDebug;
 
@@ -40,18 +41,17 @@ pub trait Trait: system::Trait {
 
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
-		pub BeginNumber get(begin_number): u64;
-	}
-}
+		/// Anchor block that works as genesis block
+		pub BeginHeader get(begin_header): Option<EthHeader>;
+		/// Info of the best block header for now
+		pub BestHeader get(best_header): BestBlock;
+		///
+		pub BlockList get(block_list): map EthBlockNumber => EthHeader;
 
-//		pub BeginHeader get(begin_header): Option<EthHeader>;
-
-//		pub BestHeader get(best_header): BestBlock;
 
 //		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
 
 //		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
-
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
 
 // Block delay for verify transaction
@@ -63,7 +63,7 @@ decl_storage! {
 
 //	add_extra_genesis {
 //		config(header): Option<Vec<u8>>;
-//		config(number): u64;
+//		config(number): u64;z
 //		build(|config| {
 //			if let Some(h) = &config.header {
 //				BeginNumber::put(header.number);
@@ -74,6 +74,8 @@ decl_storage! {
 //			}
 //		});
 //	}
+	}
+}
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call
@@ -115,9 +117,10 @@ impl<T: Trait> Module<T> {
 	/// 1. if exists?
 	/// 2. verify (difficulty + prev_hash + nonce + re-org)
 	/// 3. challenge
-	//	fn verify(_: &EthHeader) -> Result {
-	//		unimplemented!()
-	//	}
+	fn verify(header: &EthHeader) -> Result {
+		let number = header.number();
+		Ok(())
+	}
 
 	fn _punish(_who: &T::AccountId) -> Result {
 		unimplemented!()
