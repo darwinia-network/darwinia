@@ -1,6 +1,7 @@
 {
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
+	"TimeStamp": "u64",
 
     "RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",

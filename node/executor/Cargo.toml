@@ -6,8 +6,9 @@ description = "Substrate node implementation in Rust."
 edition = "2018"
 
 [dependencies]
-trie-root = "0.15.2"
 codec = { package = "parity-scale-codec", version = "1.0.0" }
+trie-root = "0.15.2"
+
 runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 state_machine = { package = "substrate-state-machine", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 substrate-executor = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
@@ -18,21 +19,29 @@ node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 
 [dev-dependencies]
+criterion = "0.3.0"
+wabt = "0.9.2"
+
 test-client = { package = "substrate-test-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-keyring = { package = "substrate-keyring", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-runtime_primitives = { package = "sr-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 runtime_support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 session = { package = "srml-session", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-staking = { package = "darwinia-staking", path = '../../srml/staking' }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-treasury = { package = "srml-treasury", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"  }
 contracts = { package = "srml-contracts", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 grandpa = { package = "srml-grandpa", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 indices = { package = "srml-indices", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-wabt = "0.9.2"
 
-balances = { package = "darwinia-balances", path = '../../srml/balances', default-features = false }
+balances = { package = "darwinia-balances", path = "../../srml/balances" }
+node-testing = { path = "../testing" }
 
 [features]
-benchmarks = []
+wasmtime = [
+    "substrate-executor/wasmtime",
+]
+stress-test = []
+
+[[bench]]
+name = "bench"
+harness = false

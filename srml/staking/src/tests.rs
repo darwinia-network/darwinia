@@ -956,7 +956,7 @@ fn xavier_q1() {
 					staking_amount: 5,
 					unbondings: vec![],
 				}),
-				reasons: WithdrawReasons::all()
+				reasons: WithdrawReasons::all(),
 			}]
 		);
 		//		println!("Ok Init - Kton Balance: {:?}", Kton::free_balance(stash));
@@ -1007,7 +1007,7 @@ fn xavier_q1() {
 
 		assert_err!(
 			Kton::transfer(Origin::signed(stash), controller, 1),
-			"account liquidity restrictions prevent withdrawal"
+			"account liquidity restrictions prevent withdrawal",
 		);
 		//		println!("Locking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Locking Transfer - Kton Locks: {:#?}", Kton::locks(stash));

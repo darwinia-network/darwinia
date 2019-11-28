@@ -15,6 +15,7 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Substrate chain configurations.
+pub use node_primitives::{AccountId, Balance, Signature};
 pub use node_runtime::GenesisConfig;
 
 use babe_primitives::AuthorityId as BabeId;
@@ -22,23 +23,27 @@ use chain_spec::ChainSpecExtension;
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
-use node_primitives::{AccountId, Balance};
 use node_runtime::{
-	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, Block, ContractsConfig,
-	GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig,
-	SudoConfig, SystemConfig, WASM_BINARY,
+	constants::currency::*, BalancesConfig, Block, ContractsConfig, IndicesConfig, KtonConfig, SessionConfig,
+	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
-use primitives::{crypto::UncheckedInto, Pair, Public};
+use primitives::{crypto::UncheckedInto, sr25519, Pair, Public};
 use serde::{Deserialize, Serialize};
-use serde_json::{de::ParserNumber, Number};
-use sr_primitives::Perbill;
-use substrate_service::Properties;
+use sr_primitives::{
+	traits::{IdentifyAccount, Verify},
+	Perbill,
+};
+use substrate_service;
 use substrate_telemetry::TelemetryEndpoints;
+
+type AccountPublic = <Signature as Verify>::Signer;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
-// TODO: docs
-#[allow(missing_docs)]
+/// Node `ChainSpec` extensions.
+///
+/// Additional parameters for some Substrate core modules,
+/// customizable from the chain spec.
 #[derive(Default, Clone, Serialize, Deserialize, ChainSpecExtension)]
 pub struct Extensions {
 	/// Block numbers with known hashes.
@@ -48,12 +53,7 @@ pub struct Extensions {
 /// Specialized `ChainSpec`.
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig, Extensions>;
 
-/// Flaming Fir testnet generator
-pub fn flaming_fir_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/flaming-fir.json")[..])
-}
-
-#[allow(missing_docs)]
+/// Crayfish testnet generator
 pub fn crayfish_fir_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/crayfish-fir.json")[..])
 }
@@ -76,9 +76,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 	let initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)> = vec![
 		(
 			// 5Fbsd6WXDGiLTxunqeK5BATNiocfCqu9bS1yArVjCgeBLkVy
-			hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].unchecked_into(),
+			hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].into(),
 			// 5EnCiV7wSHeNhjW3FSUwiJNkcc2SBkPLn5Nj93FmbLtBjQUq
-			hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].unchecked_into(),
+			hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].into(),
 			// 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
 			hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
 			// 5EZaeQ8djPcq9pheJUhgerXQZt9YaHnMJpiHMRhwQeinqUW8
@@ -88,9 +88,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		),
 		(
 			// 5ERawXCzCWkjVq3xz1W5KGNtVx2VdefvZ62Bw1FEuZW4Vny2
-			hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].unchecked_into(),
+			hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].into(),
 			// 5Gc4vr42hH1uDZc93Nayk5G7i687bAQdHHc9unLuyeawHipF
-			hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].unchecked_into(),
+			hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].into(),
 			// 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
 			hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
 			// 5DhLtiaQd1L1LU9jaNeeu9HJkP6eyg3BwXA7iNMzKm7qqruQ
@@ -100,9 +100,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		),
 		(
 			// 5DyVtKWPidondEu8iHZgi6Ffv9yrJJ1NDNLom3X9cTDi98qp
-			hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].unchecked_into(),
+			hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].into(),
 			// 5FeD54vGVNpFX3PndHPXJ2MDakc462vBCD5mgtWRnWYCpZU9
-			hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].unchecked_into(),
+			hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].into(),
 			// 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
 			hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
 			// 5DhKqkHRkndJu8vq7pi2Q5S3DfftWJHGxbEUNH43b46qNspH
@@ -112,9 +112,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		),
 		(
 			// 5HYZnKWe5FVZQ33ZRJK1rG3WaLMztxWrrNDb1JRwaHHVWyP9
-			hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].unchecked_into(),
+			hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].into(),
 			// 5EPQdAQ39WQNLCRjWsCk5jErsCitHiY5ZmjfWzzbXDoAoYbn
-			hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].unchecked_into(),
+			hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].into(),
 			// 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
 			hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
 			// 5C4vDQxA8LTck2xJEy4Yg1hM9qjDt4LvTQaMo4Y8ne43aU6x
@@ -129,7 +129,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		// 5Ff3iXP75ruzroPWRP2FYBHWnmGGBSb63857BgnzCoXNxfPo
 		"9ee5e5bdc0ec239eb164f865ecc345ce4c88e76ee002e0f7e318097347471809"
 	]
-	.unchecked_into();
+	.into();
 
 	let endowed_accounts: Vec<AccountId> = vec![root_key.clone()];
 
@@ -157,11 +157,19 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
 		.public()
 }
 
+/// Helper function to generate an account ID from seed
+pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
+where
+	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+{
+	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
+}
+
 /// Helper function to generate stash, controller and session key from seed
 pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, GrandpaId, BabeId, ImOnlineId) {
 	(
-		get_from_seed::<AccountId>(&format!("{}//stash", seed)),
-		get_from_seed::<AccountId>(seed),
+		get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
+		get_account_id_from_seed::<sr25519::Public>(seed),
 		get_from_seed::<GrandpaId>(seed),
 		get_from_seed::<BabeId>(seed),
 		get_from_seed::<ImOnlineId>(seed),
@@ -177,38 +185,35 @@ pub fn testnet_genesis(
 ) -> GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
 		vec![
-			get_from_seed::<AccountId>("Alice"),
-			get_from_seed::<AccountId>("Bob"),
-			get_from_seed::<AccountId>("Charlie"),
-			get_from_seed::<AccountId>("Dave"),
-			get_from_seed::<AccountId>("Eve"),
-			get_from_seed::<AccountId>("Ferdie"),
-			get_from_seed::<AccountId>("Alice//stash"),
-			get_from_seed::<AccountId>("Bob//stash"),
-			get_from_seed::<AccountId>("Charlie//stash"),
-			get_from_seed::<AccountId>("Dave//stash"),
-			get_from_seed::<AccountId>("Eve//stash"),
-			get_from_seed::<AccountId>("Ferdie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		]
 	});
 
-	const ENDOWMENT: Balance = 10_000_000 * COIN;
+	const ENDOWMENT: Balance = 1_000_000 * COIN;
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-		system: Some(SystemConfig {
-			code: WASM_BINARY.to_vec(),
-			changes_trie_config: Default::default(),
+		babe: Some(Default::default()),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MICRO,
 		}),
-		balances: Some(BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			vesting: vec![],
-		}),
+		grandpa: Some(Default::default()),
+		im_online: Some(Default::default()),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -222,25 +227,27 @@ pub fn testnet_genesis(
 				.map(|x| (x.0.clone(), session_keys(x.2.clone(), x.3.clone(), x.4.clone())))
 				.collect::<Vec<_>>(),
 		}),
-		contracts: Some(ContractsConfig {
-			current_schedule: contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
-				..Default::default()
-			},
-			gas_price: 1 * MICRO,
-		}),
 		sudo: Some(SudoConfig { key: root_key }),
-		babe: Some(BabeConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
-		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		system: Some(SystemConfig {
+			code: WASM_BINARY.to_vec(),
+			changes_trie_config: Default::default(),
+		}),
 
+		balances: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			vesting: vec![],
+		}),
 		kton: Some(KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 			vesting: vec![],
 		}),
@@ -266,7 +273,7 @@ pub fn testnet_genesis(
 fn development_config_genesis() -> GenesisConfig {
 	testnet_genesis(
 		vec![get_authority_keys_from_seed("Alice")],
-		get_from_seed::<AccountId>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		None,
 		true,
 	)
@@ -292,20 +299,10 @@ fn local_testnet_genesis() -> GenesisConfig {
 			get_authority_keys_from_seed("Alice"),
 			get_authority_keys_from_seed("Bob"),
 		],
-		get_from_seed::<AccountId>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		None,
 		false,
 	)
-}
-
-fn token_properties() -> Option<Properties> {
-	let mut properties = Properties::new();
-	properties.insert(
-		"tokenDecimals".to_owned(),
-		serde_json::Value::Number(Number::from(ParserNumber::U64(9))),
-	);
-	properties.insert("tokenSymbol".to_owned(), serde_json::Value::String("RING".to_owned()));
-	Some(properties)
 }
 
 /// Local testnet config (multivalidator Alice + Bob)
@@ -322,8 +319,7 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-// TODO: docs
-#[allow(missing_docs)]
+/// Helper function to create GenesisConfig for darwinia
 pub fn darwinia_genesis_verbose(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)>,
 	root_key: AccountId,
@@ -332,38 +328,35 @@ pub fn darwinia_genesis_verbose(
 ) -> GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
 		vec![
-			get_from_seed::<AccountId>("Alice"),
-			get_from_seed::<AccountId>("Bob"),
-			get_from_seed::<AccountId>("Charlie"),
-			get_from_seed::<AccountId>("Dave"),
-			get_from_seed::<AccountId>("Eve"),
-			get_from_seed::<AccountId>("Ferdie"),
-			get_from_seed::<AccountId>("Alice//stash"),
-			get_from_seed::<AccountId>("Bob//stash"),
-			get_from_seed::<AccountId>("Charlie//stash"),
-			get_from_seed::<AccountId>("Dave//stash"),
-			get_from_seed::<AccountId>("Eve//stash"),
-			get_from_seed::<AccountId>("Ferdie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		]
 	});
 
-	const ENDOWMENT: Balance = 100_000_000 * COIN;
+	const ENDOWMENT: Balance = 1_000_000 * COIN;
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-		system: Some(SystemConfig {
-			code: WASM_BINARY.to_vec(),
-			changes_trie_config: Default::default(),
+		babe: Some(Default::default()),
+		contracts: Some(ContractsConfig {
+			current_schedule: contracts::Schedule {
+				enable_println, // this should only be enabled on development chains
+				..Default::default()
+			},
+			gas_price: 1 * MICRO,
 		}),
-		balances: Some(BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			vesting: vec![],
-		}),
+		grandpa: Some(Default::default()),
+		im_online: Some(Default::default()),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -377,19 +370,21 @@ pub fn darwinia_genesis_verbose(
 				.map(|x| (x.0.clone(), session_keys(x.2.clone(), x.3.clone(), x.4.clone())))
 				.collect::<Vec<_>>(),
 		}),
-		contracts: Some(ContractsConfig {
-			current_schedule: contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
-				..Default::default()
-			},
-			gas_price: 1 * MICRO,
-		}),
 		sudo: Some(SudoConfig { key: root_key }),
-		babe: Some(BabeConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
-		authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		system: Some(SystemConfig {
+			code: WASM_BINARY.to_vec(),
+			changes_trie_config: Default::default(),
+		}),
 
+		balances: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			vesting: vec![],
+		}),
 		kton: Some(KtonConfig {
 			balances: endowed_accounts
 				.iter()
@@ -421,7 +416,7 @@ pub fn darwinia_genesis_verbose(
 fn crayfish_config_genesis() -> GenesisConfig {
 	darwinia_genesis_verbose(
 		vec![get_authority_keys_from_seed("Alice")],
-		get_from_seed::<AccountId>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		None,
 		true,
 	)
@@ -436,7 +431,7 @@ pub fn crayfish_testnet_config() -> ChainSpec {
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
-		token_properties(),
+		None,
 		Default::default(),
 	)
 }
