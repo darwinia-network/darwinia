@@ -19,6 +19,7 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 
+pub use substrate_cli::error;
 pub mod chain_spec;
 
 #[macro_use]
@@ -48,14 +49,13 @@ pub enum ChainSpec {
 	StagingTestnet,
 }
 
-/// Get a chain config from a spec setting.
 impl ChainSpec {
 	pub(crate) fn load(self) -> Result<chain_spec::ChainSpec, String> {
 		Ok(match self {
-			ChainSpec::CrayfishTestnet => chain_spec::crayfish_fir_config()?,
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
+			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
 		})
 	}
 
@@ -63,8 +63,8 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "crayfish" => Some(ChainSpec::CrayfishTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
+			"" => Some(ChainSpec::CrayfishTestnet),
 			_ => None,
 		}
 	}
