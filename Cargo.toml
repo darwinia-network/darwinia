@@ -3,6 +3,7 @@ panic = 'unwind'
 
 [workspace]
 members = [
+	"core/cli",
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
