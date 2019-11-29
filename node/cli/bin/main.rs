@@ -20,13 +20,13 @@
 
 use std::cell::RefCell;
 
+use darwinia_cli::VersionInfo;
 use futures::sync::oneshot;
 use futures::{future, Future};
-use substrate_cli::VersionInfo;
 
 // handles ctrl-c
 struct Exit;
-impl substrate_cli::IntoExit for Exit {
+impl darwinia_cli::IntoExit for Exit {
 	type Exit = future::MapErr<oneshot::Receiver<()>, fn(oneshot::Canceled) -> ()>;
 	fn into_exit(self) -> Self::Exit {
 		// can't use signal directly here because CtrlC takes only `Fn`.
@@ -48,7 +48,7 @@ impl substrate_cli::IntoExit for Exit {
 	}
 }
 
-fn main() -> Result<(), substrate_cli::error::Error> {
+fn main() -> Result<(), darwinia_cli::error::Error> {
 	let version = VersionInfo {
 		name: "Darwinia Crayfish Node",
 		commit: env!("VERGEN_SHA_SHORT"),
