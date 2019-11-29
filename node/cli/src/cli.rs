@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-pub use substrate_cli::{error, ExecutionStrategyParam, IntoExit, NoCustom, SharedParams, VersionInfo};
+pub use darwinia_cli::{error, ExecutionStrategyParam, IntoExit, NoCustom, SharedParams, VersionInfo};
 
 use client::ExecutionStrategies;
+use darwinia_cli::{parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
 use log::info;
 use structopt::{clap::App, StructOpt};
-use substrate_cli::{parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
 use substrate_service::{AbstractService, Configuration, Roles as ServiceRoles};
 use tokio::{
 	prelude::Future,
@@ -102,7 +102,7 @@ impl AugmentClap for FactoryCmd {
 }
 
 /// Parse command line arguments into service configuration.
-pub fn run<I, T, E>(args: I, exit: E, version: substrate_cli::VersionInfo) -> error::Result<()>
+pub fn run<I, T, E>(args: I, exit: E, version: darwinia_cli::VersionInfo) -> error::Result<()>
 where
 	I: IntoIterator<Item = T>,
 	T: Into<std::ffi::OsString> + Clone,
@@ -125,7 +125,7 @@ where
 				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 				info!("Chain specification: {}", config.chain_spec.name());
 				info!("Node name: {}", config.name);
-				info!("Roles: {:?}", substrate_cli::display_role(&config));
+				info!("Roles: {:?}", darwinia_cli::display_role(&config));
 				let runtime = RuntimeBuilder::new()
 					.name_prefix("main-tokio-")
 					.build()
@@ -150,7 +150,7 @@ where
 		}
 		ParseAndPrepare::CustomCommand(CustomSubcommands::Factory(cli_args)) => {
 			let mut config: Config<_, _> =
-				substrate_cli::create_config_with_db_path(load_spec, &cli_args.shared_params, &version)?;
+				darwinia_cli::create_config_with_db_path(load_spec, &cli_args.shared_params, &version)?;
 			config.execution_strategies = ExecutionStrategies {
 				importing: cli_args.execution.into(),
 				block_construction: cli_args.execution.into(),
@@ -187,7 +187,7 @@ where
 {
 	let (exit_send, exit) = exit_future::signal();
 
-	let informant = substrate_cli::informant::build(&service);
+	let informant = darwinia_cli::informant::build(&service);
 	runtime.executor().spawn(exit.until(informant).map(|_| ()));
 
 	// we eagerly drop the service so that the internal exit future is fired,

@@ -19,7 +19,7 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 
-pub use substrate_cli::error;
+pub use darwinia_cli::error;
 pub mod chain_spec;
 
 #[macro_use]

@@ -16,8 +16,8 @@
 
 use std::{env, fs, path::Path};
 
+use darwinia_cli::{CoreParams, NoCustom};
 use structopt::{clap::Shell, StructOpt};
-use substrate_cli::{CoreParams, NoCustom};
 use vergen::{generate_cargo_keys, ConstantsFlags};
 
 fn main() {
