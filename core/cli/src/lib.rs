@@ -744,7 +744,7 @@ where
 	let base_path = base_path(&cli.shared_params, &version);
 	let mut config = service::Configuration::default_with_spec_and_base_path(spec.clone(), Some(base_path));
 
-	load_config_from_file(&mut cli)?;
+	load_conf_from_file(&mut cli)?;
 
 	fill_config_keystore_password(&mut config, &cli)?;
 
