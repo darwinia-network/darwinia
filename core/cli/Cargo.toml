@@ -2,7 +2,7 @@
 name = "darwinia-cli"
 version = "0.1.0"
 authors = ["Darwinia Network <hello@itering.com>"]
-description = "Substrate CLI interface."
+description = "Darwinia CLI interface."
 edition = "2018"
 
 [dependencies]
