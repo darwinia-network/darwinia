@@ -14,40 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Substrate CLI library.
+pub use substrate_cli::{error, ExecutionStrategyParam, IntoExit, NoCustom, SharedParams, VersionInfo};
 
-#![warn(missing_docs)]
-#![warn(unused_extern_crates)]
-
-pub use substrate_cli::error;
-pub mod chain_spec;
-#[macro_use]
-mod service;
-mod factory_impl;
-
-use crate::factory_impl::FactoryState;
 use client::ExecutionStrategies;
 use log::info;
 use structopt::{clap::App, StructOpt};
-use substrate_cli::{parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
-pub use substrate_cli::{ExecutionStrategyParam, IntoExit, NoCustom, SharedParams, VersionInfo};
+use substrate_cli::{display_role, parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
 use substrate_service::{AbstractService, Configuration, Roles as ServiceRoles};
-use tokio::prelude::Future;
-use tokio::runtime::{Builder as RuntimeBuilder, Runtime};
+use tokio::{
+	prelude::Future,
+	runtime::{Builder as RuntimeBuilder, Runtime},
+};
 use transaction_factory::RuntimeAdapter;
 
-/// The chain specification option.
-#[derive(Clone, Debug, PartialEq)]
-pub enum ChainSpec {
-	/// Whatever the current runtime is, with just Alice as an auth.
-	Development,
-	/// Whatever the current runtime is, with simple Alice/Bob auths.
-	LocalTestnet,
-	/// The Crayfish testnet.
-	CrayfishTestnet,
-	/// Whatever the current runtime is with the "global testnet" defaults.
-	StagingTestnet,
-}
+use crate::{factory_impl::FactoryState, load_spec, service, ChainSpec};
 
 /// Custom subcommands.
 #[derive(Clone, Debug, StructOpt)]
@@ -121,35 +101,6 @@ impl AugmentClap for FactoryCmd {
 	}
 }
 
-/// Get a chain config from a spec setting.
-impl ChainSpec {
-	pub(crate) fn load(self) -> Result<chain_spec::ChainSpec, String> {
-		Ok(match self {
-			ChainSpec::Development => chain_spec::development_config(),
-			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
-			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
-		})
-	}
-
-	pub(crate) fn from(s: &str) -> Option<Self> {
-		match s {
-			"dev" => Some(ChainSpec::Development),
-			"local" => Some(ChainSpec::LocalTestnet),
-			"staging" => Some(ChainSpec::StagingTestnet),
-			"" => Some(ChainSpec::CrayfishTestnet),
-			_ => None,
-		}
-	}
-}
-
-fn load_spec(id: &str) -> Result<Option<chain_spec::ChainSpec>, String> {
-	Ok(match ChainSpec::from(id) {
-		Some(spec) => Some(spec.load()?),
-		None => None,
-	})
-}
-
 /// Parse command line arguments into service configuration.
 pub fn run<I, T, E>(args: I, exit: E, version: substrate_cli::VersionInfo) -> error::Result<()>
 where
@@ -165,7 +116,7 @@ where
 			exit,
 			|exit, _cli_args, _custom_args, config: Config<_, _>| {
 				info!("{}", version.name);
-				info!("  version {}", config.full_version());
+				info!("Version {}", config.full_version());
 				info!("  _____                      _       _       ");
 				info!(" |  __ \\                    (_)     (_)      ");
 				info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
@@ -174,7 +125,7 @@ where
 				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 				info!("Chain specification: {}", config.chain_spec.name());
 				info!("Node name: {}", config.name);
-				info!("Roles: {:?}", substrate_cli::display_role(&config));
+				info!("Roles: {}", display_role(&config));
 				let runtime = RuntimeBuilder::new()
 					.name_prefix("main-tokio-")
 					.build()
@@ -185,7 +136,6 @@ where
 				}
 			},
 		),
-
 		ParseAndPrepare::BuildSpec(cmd) => cmd.run::<NoCustom, _, _, _>(load_spec),
 		ParseAndPrepare::ExportBlocks(cmd) => {
 			cmd.run_with_builder(|config: Config<_, _>| Ok(new_full_start!(config).0), load_spec, exit)
