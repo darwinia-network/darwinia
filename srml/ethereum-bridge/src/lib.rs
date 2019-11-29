@@ -7,9 +7,11 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use sr_eth_primitives::{
-	header::EthHeader, BestBlock, BlockNumber as EthBlockNumber, H160, H256, H64, U128, U256, U512,
+	header::EthHeader, pow::EthashPartial, BestBlock, BlockNumber as EthBlockNumber, H160, H256, H64, U128, U256, U512,
 };
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
+
+use ethash::{EthereumPatch, LightDAG};
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Currency};
 use system::ensure_signed;
 
 //use sr_primitives::RuntimeDebug;
@@ -20,6 +22,8 @@ use system::ensure_signed;
 //};
 
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
+
+type DAG = LightDAG<EthereumPatch>;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -42,11 +46,13 @@ pub trait Trait: system::Trait {
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBridge {
 		/// Anchor block that works as genesis block
-		pub BeginHeader get(begin_header): Option<EthHeader>;
+		pub BeginHeader get(fn begin_header): Option<EthHeader>;
 		/// Info of the best block header for now
-		pub BestHeader get(best_header): BestBlock;
+		pub BestHeader get(fn best_header): BestBlock;
 		///
-		pub BlockList get(block_list): map EthBlockNumber => EthHeader;
+		pub BlockList get(fn block_list): map EthBlockNumber => Option<EthHeader>;
+		/// nonce of each block
+		pub Nonce get(fn nonce): map EthBlockNumber => Option<H64>;
 
 
 //		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
@@ -114,11 +120,28 @@ impl<T: Trait> Module<T> {
 		unimplemented!()
 	}
 
-	/// 1. if exists?
-	/// 2. verify (difficulty + prev_hash + nonce + re-org)
+	/// 1. proof of difficulty
+	/// 2. proof of pow (mixhash)
 	/// 3. challenge
-	fn verify(header: &EthHeader) -> Result {
+	fn verify(header: &EthHeader, nonce: H64) -> Result {
 		let number = header.number();
+		ensure!(
+			number >= Self::begin_header().unwrap().number(),
+			"block nubmer is too small."
+		);
+		let prev_header = Self::block_list(number - 1).ok_or("import ancestor block first.");
+
+		let mut ethash_params = EthashPartial::expanse();
+		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
+		// verify difficulty
+		//		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
+		//		ensure!(difficulty == header.difficulty(), "difficulty verification failed");
+
+		// verify mixhash
+		let light_dag = DAG::new(number.into());
+		let partial_header_hash = header.bare_hash();
+		let mix_hash = light_dag.hashimoto(partial_header_hash, nonce);
+
 		Ok(())
 	}
 

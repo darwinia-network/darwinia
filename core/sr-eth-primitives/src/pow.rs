@@ -60,6 +60,29 @@ impl EthashPartial {
 			progpow_transition: u64::max_value(),
 		}
 	}
+
+	/// TODO: to find out the exact params, only for testing.
+	#[cfg(feature = "std")]
+	pub fn test() -> Self {
+		EthashPartial {
+			minimum_difficulty: U256::from(131072_u128),
+			difficulty_bound_divisor: U256::from(0x0800),
+			difficulty_increment_divisor: 0x3C,
+			metropolis_difficulty_increment_divisor: 0x1E,
+			duration_limit: 0x3C,
+			homestead_transition: 0x30d40,
+			difficulty_hardfork_transition: 0x59d9,
+			difficulty_hardfork_bound_divisor: U256::from(0x0200),
+			bomb_defuse_transition: 0x30d40,
+			eip100b_transition: 0xC3500,
+			ecip1010_pause_transition: 0x2dc6c0,
+			ecip1010_continue_transition: 0x4c4b40,
+			difficulty_bomb_delays: BTreeMap::<BlockNumber, BlockNumber>::default(),
+			expip2_transition: 0xc3500,
+			expip2_duration_limit: 0x1e,
+			progpow_transition: u64::max_value(),
+		}
+	}
 }
 
 impl EthashPartial {

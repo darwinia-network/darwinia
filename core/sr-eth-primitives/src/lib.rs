@@ -20,8 +20,8 @@ use fixed_hash::construct_fixed_hash;
 use impl_codec::impl_fixed_hash_codec;
 use impl_rlp::impl_fixed_hash_rlp;
 
+pub use ethereum_types::H64;
 pub use primitive_types::{H160, H256, U128, U256, U512};
-
 pub type Bytes = Vec<u8>;
 pub type Address = H160;
 pub type BlockNumber = u64;
@@ -33,6 +33,6 @@ pub struct BestBlock {
 	total_difficulty: U256,
 }
 
-construct_fixed_hash! {pub struct H64(8);}
-impl_fixed_hash_rlp!(H64, 8);
-impl_fixed_hash_codec!(H64, 8);
+//construct_fixed_hash! {pub struct H64(8);}
+//impl_fixed_hash_rlp!(H64, 8);
+//impl_fixed_hash_codec!(H64, 8);
