@@ -637,7 +637,7 @@ fn fill_config_keystore_password<C, G, E>(
 }
 
 // TODO: check conflict options
-fn load_config_from_file(cli: &mut RunCmd) -> error::Result<()> {
+fn load_conf_from_file(cli: &mut RunCmd) -> error::Result<()> {
 	if cli.conf.is_none() {
 		return Ok(());
 	}
