@@ -14,15 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::traits::{AugmentClap, GetLogFilter};
+pub use crate::execution_strategy::ExecutionStrategy;
 
 use std::path::PathBuf;
+
+use serde::Deserialize;
 use structopt::{
 	clap::{arg_enum, App, AppSettings, Arg, SubCommand},
 	StructOpt,
 };
 
-pub use crate::execution_strategy::ExecutionStrategy;
+use crate::traits::{AugmentClap, GetLogFilter};
 
 /// Auxiliary macro to implement `GetLogFilter` for all types that have the `shared_params` field.
 macro_rules! impl_get_log_filter {
@@ -49,7 +51,8 @@ impl Into<client::ExecutionStrategy> for ExecutionStrategy {
 arg_enum! {
 	/// How to execute Wasm runtime code
 	#[allow(missing_docs)]
-	#[derive(Debug, Clone)]
+	#[derive(Clone, Debug, Deserialize)]
+	#[serde(rename_all = "kebab-case")]
 	pub enum WasmExecutionMethod {
 		// Uses an interpreter.
 		Interpreted,
@@ -86,7 +89,8 @@ impl Into<service::config::WasmExecutionMethod> for WasmExecutionMethod {
 arg_enum! {
 	/// Whether off-chain workers are enabled.
 	#[allow(missing_docs)]
-	#[derive(Debug, Clone)]
+	#[derive(Clone, Debug, Deserialize)]
+	#[serde(rename_all = "kebab-case")]
 	pub enum OffchainWorkerEnabled {
 		Always,
 		Never,
@@ -95,7 +99,8 @@ arg_enum! {
 }
 
 /// Shared parameters used by all `CoreParams`.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Clone, Default, Debug, StructOpt, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
 pub struct SharedParams {
 	/// Specify the chain specification (one of dev, local or staging).
 	#[structopt(long = "chain", value_name = "CHAIN_SPEC")]
@@ -121,7 +126,8 @@ impl GetLogFilter for SharedParams {
 }
 
 /// Parameters used to create the network configuration.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Clone, Debug, StructOpt, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
 pub struct NetworkConfigurationParams {
 	/// Specify a list of bootnodes.
 	#[structopt(long = "bootnodes", value_name = "URL")]
@@ -181,9 +187,28 @@ pub struct NetworkConfigurationParams {
 	pub node_key_params: NodeKeyParams,
 }
 
+impl Default for NetworkConfigurationParams {
+	fn default() -> Self {
+		Self {
+			bootnodes: vec![],
+			reserved_nodes: vec![],
+			reserved_only: false,
+			listen_addr: vec![],
+			port: None,
+			no_private_ipv4: false,
+			out_peers: 25,
+			in_peers: 25,
+			no_mdns: false,
+			max_parallel_downloads: 5,
+			node_key_params: Default::default(),
+		}
+	}
+}
+
 arg_enum! {
 	#[allow(missing_docs)]
-	#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+	#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+	#[serde(rename_all = "kebab-case")]
 	pub enum NodeKeyType {
 		Ed25519
 	}
@@ -191,7 +216,8 @@ arg_enum! {
 
 /// Parameters used to create the `NodeKeyConfig`, which determines the keypair
 /// used for libp2p networking.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Clone, Debug, StructOpt, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
 pub struct NodeKeyParams {
 	/// The secret key to use for libp2p networking.
 	///
@@ -251,8 +277,19 @@ pub struct NodeKeyParams {
 	pub node_key_file: Option<PathBuf>,
 }
 
+impl Default for NodeKeyParams {
+	fn default() -> Self {
+		Self {
+			node_key: None,
+			node_key_type: NodeKeyType::Ed25519,
+			node_key_file: None,
+		}
+	}
+}
+
 /// Parameters used to create the pool configuration.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Clone, Debug, StructOpt, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
 pub struct TransactionPoolParams {
 	/// Maximum number of transactions in the transaction pool.
 	#[structopt(long = "pool-limit", value_name = "COUNT", default_value = "512")]
@@ -262,8 +299,18 @@ pub struct TransactionPoolParams {
 	pub pool_kbytes: usize,
 }
 
+impl Default for TransactionPoolParams {
+	fn default() -> Self {
+		Self {
+			pool_limit: 512,
+			pool_kbytes: 10240,
+		}
+	}
+}
+
 /// Execution strategies parameters.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Clone, Debug, StructOpt, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct ExecutionStrategies {
 	/// The means of execution used when calling into the runtime while syncing blocks.
 	#[structopt(
@@ -520,6 +567,10 @@ pub struct RunCmd {
 		conflicts_with_all = &[ "password-interactive", "password" ]
 	)]
 	pub password_filename: Option<PathBuf>,
+
+	/// Specify the boot configuration json file <PATH>. All command line input will be overwritten by this.
+	#[structopt(long = "conf", value_name = "PATH")]
+	pub conf: Option<PathBuf>,
 }
 
 /// Stores all required Cli values for a keyring test account.
@@ -616,7 +667,8 @@ fn parse_telemetry_endpoints(s: &str) -> Result<(String, u8), Box<dyn std::error
 ///
 /// The type is introduced to overcome `Option<Option<T>>`
 /// handling of `structopt`.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum Cors {
 	/// All hosts allowed
 	All,
@@ -916,4 +968,52 @@ where
 			right: R::from_clap(matches),
 		}
 	}
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Conf {
+	pub name: Option<String>,
+
+	pub keystore_path: Option<PathBuf>,
+
+	#[serde(rename = "db-cache")]
+	pub database_cache_size: Option<u32>,
+	pub state_cache_size: Option<usize>,
+
+	pub shared: Option<SharedParams>,
+	pub validator: Option<bool>,
+	pub sentry: Option<bool>,
+	// TODO: derive Deserialize
+	//	pub keyring: Option<keyring::Sr25519Keyring>,
+	pub light: Option<bool>,
+
+	pub pruning: Option<String>,
+	pub unsafe_pruning: Option<bool>,
+
+	#[serde(rename = "wasm-execution")]
+	pub wasm_method: Option<WasmExecutionMethod>,
+
+	pub execution_strategies: Option<ExecutionStrategies>,
+
+	pub offchain_worker: Option<OffchainWorkerEnabled>,
+
+	pub no_grandpa: Option<bool>,
+
+	pub network_config: Option<NetworkConfigurationParams>,
+	pub pool_config: Option<TransactionPoolParams>,
+
+	pub rpc_external: Option<bool>,
+	pub rpc_port: Option<u16>,
+
+	pub ws_external: Option<bool>,
+	pub ws_port: Option<u16>,
+	pub ws_max_connections: Option<usize>,
+
+	pub rpc_cors: Option<Cors>,
+
+	pub no_telemetry: Option<bool>,
+	pub telemetry_endpoints: Option<Vec<(String, u8)>>,
+
+	pub force_authoring: Option<bool>,
 }

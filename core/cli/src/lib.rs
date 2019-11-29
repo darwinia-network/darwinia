@@ -19,25 +19,18 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 
+pub mod error;
+pub mod informant;
+
 #[macro_use]
 mod traits;
-pub mod error;
 mod execution_strategy;
-pub mod informant;
 mod params;
 
-use client::ExecutionStrategies;
-use network::{
-	self,
-	config::{build_multiaddr, NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, TransportConfig},
-	multiaddr::Protocol,
-};
-use primitives::H256;
-use service::{
-	config::{Configuration, DatabaseConfig},
-	ChainSpec, ChainSpecExtension, PruningMode, RuntimeGenesis, ServiceBuilderExport, ServiceBuilderImport,
-	ServiceBuilderRevert,
-};
+pub use params::{CoreParams, ExecutionStrategy as ExecutionStrategyParam, NoCustom, SharedParams};
+#[doc(hidden)]
+pub use structopt::clap::App;
+pub use traits::{AugmentClap, GetLogFilter};
 
 use std::{
 	fs::{self, File},
@@ -49,22 +42,30 @@ use std::{
 };
 
 use app_dirs::{AppDataType, AppInfo};
+use client::ExecutionStrategies;
+use futures::Future;
 use lazy_static::lazy_static;
 use log::info;
 use names::{Generator, Name};
-use params::{
-	BuildSpecCmd, Cors, ExportBlocksCmd, ImportBlocksCmd, MergeParameters, NetworkConfigurationParams, NodeKeyParams,
-	NodeKeyType, PurgeChainCmd, RevertCmd, RunCmd, TransactionPoolParams,
+use network::{
+	self,
+	config::{build_multiaddr, NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, TransportConfig},
+	multiaddr::Protocol,
 };
-pub use params::{CoreParams, ExecutionStrategy as ExecutionStrategyParam, NoCustom, SharedParams};
+use primitives::H256;
 use regex::Regex;
-#[doc(hidden)]
-pub use structopt::clap::App;
+use service::{
+	config::{Configuration, DatabaseConfig},
+	ChainSpec, ChainSpecExtension, PruningMode, RuntimeGenesis, ServiceBuilderExport, ServiceBuilderImport,
+	ServiceBuilderRevert,
+};
 use structopt::{clap::AppSettings, StructOpt};
-pub use traits::{AugmentClap, GetLogFilter};
-
-use futures::Future;
 use substrate_telemetry::TelemetryEndpoints;
+
+use params::{
+	BuildSpecCmd, Conf, Cors, ExportBlocksCmd, ImportBlocksCmd, MergeParameters, NetworkConfigurationParams,
+	NodeKeyParams, NodeKeyType, PurgeChainCmd, RevertCmd, RunCmd, TransactionPoolParams,
+};
 
 /// default sub directory to store network config
 const DEFAULT_NETWORK_CONFIG_PATH: &'static str = "network";
@@ -635,8 +636,100 @@ fn fill_config_keystore_password<C, G, E>(
 	Ok(())
 }
 
+// TODO: check conflict options
+fn load_config_from_file(cli: &mut RunCmd) -> error::Result<()> {
+	if cli.conf.is_none() {
+		return Ok(());
+	}
+
+	let conf: Conf = {
+		let f = File::open(cli.conf.as_ref().unwrap())?;
+		serde_json::from_reader(f).map_err(|e| format!("{}", e))?
+	};
+
+	println!("{:#?}", conf);
+
+	cli.name = conf.name;
+
+	cli.keystore_path = conf.keystore_path;
+
+	cli.database_cache_size = conf.database_cache_size;
+	if let Some(state_cache_size) = conf.state_cache_size {
+		cli.state_cache_size = state_cache_size;
+	}
+
+	if let Some(shared_params) = conf.shared {
+		cli.shared_params.dev = shared_params.dev;
+	}
+	if let Some(validator) = conf.validator {
+		cli.validator = validator;
+	}
+	if let Some(sentry) = conf.sentry {
+		cli.sentry = sentry;
+	}
+	// TODO: keyring
+	if let Some(light) = conf.light {
+		cli.light = light;
+	}
+
+	cli.pruning = conf.pruning;
+	if let Some(unsafe_pruning) = conf.unsafe_pruning {
+		cli.unsafe_pruning = unsafe_pruning;
+	}
+
+	if let Some(wasm_method) = conf.wasm_method {
+		cli.wasm_method = wasm_method;
+	}
+
+	if let Some(execution_strategies) = conf.execution_strategies {
+		cli.execution_strategies = execution_strategies;
+	}
+
+	if let Some(offchain_worker) = conf.offchain_worker {
+		cli.offchain_worker = offchain_worker;
+	}
+
+	if let Some(no_grandpa) = conf.no_grandpa {
+		cli.no_grandpa = no_grandpa;
+	}
+
+	if let Some(network_config) = conf.network_config {
+		cli.network_config = network_config;
+	}
+
+	if let Some(pool_config) = conf.pool_config {
+		cli.pool_config = pool_config;
+	}
+
+	if let Some(rpc_external) = conf.rpc_external {
+		cli.rpc_external = rpc_external;
+	}
+	cli.rpc_port = conf.rpc_port;
+
+	if let Some(ws_external) = conf.ws_external {
+		cli.ws_external = ws_external;
+	}
+	cli.ws_port = conf.ws_port;
+	cli.ws_max_connections = conf.ws_max_connections;
+
+	cli.rpc_cors = conf.rpc_cors;
+
+	if let Some(no_telemetry) = conf.no_telemetry {
+		cli.no_telemetry = no_telemetry;
+	}
+	if let Some(telemetry_endpoints) = conf.telemetry_endpoints {
+		cli.telemetry_endpoints = telemetry_endpoints;
+	}
+
+	if let Some(force_authoring) = conf.force_authoring {
+		cli.force_authoring = force_authoring;
+	}
+
+	Ok(())
+}
+
 fn create_run_node_config<C, G, E, S>(
-	cli: RunCmd,
+	mut cli: RunCmd,
 	spec_factory: S,
 	impl_name: &'static str,
 	version: &VersionInfo,
@@ -650,6 +743,8 @@ where
 	let spec = load_spec(&cli.shared_params, spec_factory)?;
 	let base_path = base_path(&cli.shared_params, &version);
 	let mut config = service::Configuration::default_with_spec_and_base_path(spec.clone(), Some(base_path));
+
+	load_config_from_file(&mut cli)?;
 
 	fill_config_keystore_password(&mut config, &cli)?;
 

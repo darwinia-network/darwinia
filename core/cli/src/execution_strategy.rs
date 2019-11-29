@@ -16,11 +16,13 @@
 
 #![allow(missing_docs)]
 
+use serde::Deserialize;
 use structopt::clap::arg_enum;
 
 arg_enum! {
 	/// How to execute blocks
-	#[derive(Debug, Clone, Copy)]
+	#[derive(Clone, Copy, Debug, Deserialize)]
+	#[serde(rename_all = "kebab-case")]
 	pub enum ExecutionStrategy {
 		// Execute with native build (if available, WebAssembly otherwise).
 		Native,

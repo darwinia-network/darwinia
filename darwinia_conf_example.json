@@ -1,0 +1,24 @@
+{
+	"name": "xavier",
+
+	"wasm-execution": "interpreted",
+
+	"execution-strategies":  {
+		"execution-syncing": "native",
+		"execution-import-block": "native",
+		"execution-block-construction": "native",
+		"execution-offchain-worker": "native",
+		"execution-other": "native",
+		"execution": "native"
+	},
+
+	"offchain-worker": "never",
+
+	"no-grandpa": true,
+
+	"rpc-external": false,
+	"rpc-port": 23333,
+
+	"ws-external": false,
+	"ws-port": 23334
+}
