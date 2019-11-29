@@ -1,22 +1,41 @@
+[package]
+authors = ['Darwinia Network <hello@darwinia.network>']
+build = 'build.rs'
+edition = '2018'
+name = 'darwinia'
+version = '0.3.2'
+
+[dependencies]
+cli = { package = "node-cli", path = "node/cli" }
+ctrlc = { version = "3.1.3", features = ["termination"] }
+futures = "0.1.29"
+
+[build-dependencies]
+vergen = "3.0.4"
+
+[profile.release]
+panic = 'unwind'
+
 [workspace]
 members = [
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
-#    "darwinia-client",
+
 	"node/cli",
     "node/executor",
     "node/primitives",
-    "node/rpc",
-    "node/rpc-client",
     "node/runtime",
+    "node/rpc-client",
+
+    "srml/support",
     "srml/balances",
-    "srml/ethereum-bridge",
     "srml/kton",
     "srml/staking",
-    "srml/support",
+    "srml/ethereum-bridge"
 ]
+exclude = ["node/runtime/wasm"]
 
-[profile.release]
-# Substrate runtime requires unwinding.
-panic = "unwind"
+[[bin]]
+name = 'darwinia'
+path = 'node/src/main.rs'
