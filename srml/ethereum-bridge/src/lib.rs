@@ -84,7 +84,7 @@ decl_module! {
 
 		pub fn store_block_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
-			let _ = Self::verify(&header)?;
+//			let _ = Self::verify(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
