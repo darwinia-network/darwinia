@@ -7,8 +7,8 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use sr_eth_primitives::{
-	header::EthHeader, pow::EthashPartial, pow::EthashSeal, BestBlock, BlockNumber as EthBlockNumber, H160, H256, H64,
-	U128, U256, U512,
+	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BestBlock, BlockNumber as EthBlockNumber,
+	H160, H256, H64, U128, U256, U512,
 };
 
 use ethash::{EthereumPatch, LightDAG};
@@ -21,18 +21,13 @@ use sr_primitives::RuntimeDebug;
 
 use rlp::{decode, encode};
 
-use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie};
+use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 	//	type Hash: rstd::hash::Hash;
-}
-
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct Proof {
-	pub nodes: Vec<Vec<u8>>,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -92,31 +87,31 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
 
-		pub fn check_receipt(origin, proof: ActionRecord) {
+		pub fn check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			let header_hash = proof.header_hash;
+			let header_hash = proof_record.header_hash;
 			if !HeaderOf::exists(header_hash) {
 				return Err("This block header does not exist.")
 			}
 
 			let header = HeaderOf::get(header_hash).unwrap();
 
+			let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
+			let key = rlp::encode(&proof_record.index);
 
-	//		let proof: Proof = rlp::decode(&rlp_proof).unwrap();
-	//		let key = rlp::encode(&1usize);
-			let value = MerklePatriciaTrie::verify_proof(header.receipts_root(), proof.index, proof.proof)
+			let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
 				.unwrap();
 			assert!(value.is_some());
 
-//			let expected: Vec<u8> = Vec::from_hex("f9010901835cdb6eb9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0").unwrap();
+			let receipt_encoded = rlp::encode(&receipt);
 
-//			assert_eq!(value.unwrap(), expected);
+			assert_eq!(value.unwrap(), receipt_encoded);
 			// confirm that the block hash is right
 			// get the receipt MPT trie root from the block header
 			// Using receipt MPT trie root to verify the proof and index etc.
 
-			<Module<T>>::deposit_event(RawEvent::RelayProof(proof));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
 		}
 
 		pub fn submit_header(origin, header: EthHeader) {

@@ -7,7 +7,9 @@ use rstd::prelude::*;
 use codec::{Decode, Encode};
 use primitive_types::{H256, U256};
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+use sr_primitives::RuntimeDebug;
+
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub enum TransactionOutcome {
 	/// Status and state root are unknown under EIP-98 rules.
 	Unknown,
@@ -17,7 +19,7 @@ pub enum TransactionOutcome {
 	StatusCode(u8),
 }
 
-#[derive(PartialEq, Eq, Clone, RlpEncodable, RlpDecodable, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, RlpEncodable, RlpDecodable, Encode, Decode, RuntimeDebug)]
 pub struct LogEntry {
 	/// The address of the contract executing at the point of the `LOG` operation.
 	pub address: Address,
@@ -39,7 +41,7 @@ impl LogEntry {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct Receipt {
 	/// The total gas used in the block following execution of the transaction.
 	pub gas_used: U256,
