@@ -16,6 +16,7 @@ sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", bra
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+ethash = { git = "https://github.com/hammeWang/ethash-rs.git", rev = "70a4f078", default-features = false}
 
 [features]
 default = ["std"]
@@ -28,4 +29,5 @@ std = [
     "system/std",
     "sr-eth-primitives/std",
     "rlp/std",
+    "ethash/std",
 ]
