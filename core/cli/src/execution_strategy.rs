@@ -32,4 +32,3 @@ arg_enum! {
 		NativeElseWasm,
 	}
 }
-

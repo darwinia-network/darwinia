@@ -20,8 +20,8 @@ use client::BlockchainEvents;
 use futures::{Future, Stream};
 use futures03::{StreamExt as _, TryStreamExt as _};
 use log::{info, warn};
-use sr_primitives::traits::Header;
 use service::AbstractService;
+use sr_primitives::traits::Header;
 use std::time::Duration;
 
 mod display;
@@ -46,37 +46,39 @@ pub fn build(service: &impl AbstractService) -> impl Future<Item = (), Error = (
 		Some((info.chain.best_number, info.chain.best_hash))
 	};
 
-	let display_block_import = client.import_notification_stream().map(|v| Ok::<_, ()>(v)).compat().for_each(move |n| {
-		// detect and log reorganizations.
-		if let Some((ref last_num, ref last_hash)) = last_best {
-			if n.header.parent_hash() != last_hash && n.is_new_best  {
-				let maybe_ancestor = header_metadata::lowest_common_ancestor(
-					&*client,
-					last_hash.clone(),
-					n.hash,
-				);
+	let display_block_import = client
+		.import_notification_stream()
+		.map(|v| Ok::<_, ()>(v))
+		.compat()
+		.for_each(move |n| {
+			// detect and log reorganizations.
+			if let Some((ref last_num, ref last_hash)) = last_best {
+				if n.header.parent_hash() != last_hash && n.is_new_best {
+					let maybe_ancestor = header_metadata::lowest_common_ancestor(&*client, last_hash.clone(), n.hash);
 
-				match maybe_ancestor {
-					Ok(ref ancestor) if ancestor.hash != *last_hash => info!(
-						"Reorg from #{},{} to #{},{}, common ancestor #{},{}",
-						last_num, last_hash,
-						n.header.number(), n.hash,
-						ancestor.number, ancestor.hash,
-					),
-					Ok(_) => {},
-					Err(e) => warn!("Error computing tree route: {}", e),
+					match maybe_ancestor {
+						Ok(ref ancestor) if ancestor.hash != *last_hash => info!(
+							"Reorg from #{},{} to #{},{}, common ancestor #{},{}",
+							last_num,
+							last_hash,
+							n.header.number(),
+							n.hash,
+							ancestor.number,
+							ancestor.hash,
+						),
+						Ok(_) => {}
+						Err(e) => warn!("Error computing tree route: {}", e),
+					}
 				}
 			}
-		}
 
-		if n.is_new_best {
-			last_best = Some((n.header.number().clone(), n.hash.clone()));
-		}
+			if n.is_new_best {
+				last_best = Some((n.header.number().clone(), n.hash.clone()));
+			}
 
-		info!(target: "substrate", "Imported #{} ({})", n.header.number(), n.hash);
-		Ok(())
-	});
+			info!(target: "substrate", "Imported #{} ({})", n.header.number(), n.hash);
+			Ok(())
+		});
 
-	display_notifications.join(display_block_import)
-		.map(|((), ())| ())
+	display_notifications.join(display_block_import).map(|((), ())| ())
 }

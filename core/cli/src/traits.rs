@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use structopt::{StructOpt, clap::App};
+use structopt::{clap::App, StructOpt};
 
 /// Something that can augment a clap app with further parameters.
 /// `derive(StructOpt)` is implementing this function by default, so a macro `impl_augment_clap!`
@@ -34,7 +34,7 @@ macro_rules! impl_augment_clap {
 				$type::augment_clap(app)
 			}
 		}
-	}
+	};
 }
 
 /// Returns the log filter given by the user as commandline argument.

@@ -17,7 +17,10 @@
 use crate::traits::{AugmentClap, GetLogFilter};
 
 use std::path::PathBuf;
-use structopt::{StructOpt, clap::{arg_enum, App, AppSettings, SubCommand, Arg}};
+use structopt::{
+	clap::{arg_enum, App, AppSettings, Arg, SubCommand},
+	StructOpt,
+};
 
 pub use crate::execution_strategy::ExecutionStrategy;
 
@@ -29,7 +32,7 @@ macro_rules! impl_get_log_filter {
 				self.shared_params.get_log_filter()
 			}
 		}
-	}
+	};
 }
 
 impl Into<client::ExecutionStrategy> for ExecutionStrategy {
@@ -73,9 +76,9 @@ impl Into<service::config::WasmExecutionMethod> for WasmExecutionMethod {
 			#[cfg(feature = "wasmtime")]
 			WasmExecutionMethod::Compiled => service::config::WasmExecutionMethod::Compiled,
 			#[cfg(not(feature = "wasmtime"))]
-			WasmExecutionMethod::Compiled => panic!(
-				"Substrate must be compiled with \"wasmtime\" feature for compiled Wasm execution"
-			),
+			WasmExecutionMethod::Compiled => {
+				panic!("Substrate must be compiled with \"wasmtime\" feature for compiled Wasm execution")
+			}
 		}
 	}
 }
@@ -175,7 +178,7 @@ pub struct NetworkConfigurationParams {
 
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
-	pub node_key_params: NodeKeyParams
+	pub node_key_params: NodeKeyParams,
 }
 
 arg_enum! {
@@ -245,7 +248,7 @@ pub struct NodeKeyParams {
 	/// If the file does not exist, it is created with a newly generated secret key of
 	/// the chosen type.
 	#[structopt(long = "node-key-file", value_name = "FILE")]
-	pub node_key_file: Option<PathBuf>
+	pub node_key_file: Option<PathBuf>,
 }
 
 /// Parameters used to create the pool configuration.
@@ -516,7 +519,7 @@ pub struct RunCmd {
 		parse(from_os_str),
 		conflicts_with_all = &[ "password-interactive", "password" ]
 	)]
-	pub password_filename: Option<PathBuf>
+	pub password_filename: Option<PathBuf>,
 }
 
 /// Stores all required Cli values for a keyring test account.
@@ -566,7 +569,10 @@ impl StructOpt for Keyring {
 
 	fn from_clap(m: &::structopt::clap::ArgMatches) -> Self {
 		Keyring {
-			account: TEST_ACCOUNTS_CLI_VALUES.iter().find(|a| m.is_present(&a.name)).map(|a| a.variant),
+			account: TEST_ACCOUNTS_CLI_VALUES
+				.iter()
+				.find(|a| m.is_present(&a.name))
+				.map(|a| a.variant),
 		}
 	}
 }
@@ -581,7 +587,7 @@ impl AugmentClap for Keyring {
 					.long(&a.name)
 					.help(&a.help)
 					.conflicts_with_all(&conflicts_with_strs)
-					.takes_value(false)
+					.takes_value(false),
 			)
 		})
 	}
@@ -597,9 +603,7 @@ impl Keyring {
 fn parse_telemetry_endpoints(s: &str) -> Result<(String, u8), Box<dyn std::error::Error>> {
 	let pos = s.find(' ');
 	match pos {
-		None => {
-			Ok((s.to_owned(), 0))
-		},
+		None => Ok((s.to_owned(), 0)),
 		Some(pos_) => {
 			let verbosity = s[pos_ + 1..].parse()?;
 			let url = s[..pos_].parse()?;
@@ -638,7 +642,7 @@ fn parse_cors(s: &str) -> Result<Cors, Box<dyn std::error::Error>> {
 			"all" | "*" => {
 				is_all = true;
 				break;
-			},
+			}
 			other => origins.push(other.to_owned()),
 		}
 	}
@@ -801,57 +805,53 @@ pub enum CoreParams<CC, RP> {
 	Custom(CC),
 }
 
-impl<CC, RP> StructOpt for CoreParams<CC, RP> where
+impl<CC, RP> StructOpt for CoreParams<CC, RP>
+where
 	CC: StructOpt + GetLogFilter,
-	RP: StructOpt + AugmentClap
+	RP: StructOpt + AugmentClap,
 {
 	fn clap<'a, 'b>() -> App<'a, 'b> {
-		RP::augment_clap(
-			RunCmd::augment_clap(
-				CC::clap().unset_setting(AppSettings::SubcommandRequiredElseHelp)
-			)
-		).subcommand(
+		RP::augment_clap(RunCmd::augment_clap(
+			CC::clap().unset_setting(AppSettings::SubcommandRequiredElseHelp),
+		))
+		.subcommand(
 			BuildSpecCmd::augment_clap(SubCommand::with_name("build-spec"))
-				.about("Build a spec.json file, outputting to stdout.")
+				.about("Build a spec.json file, outputting to stdout."),
 		)
 		.subcommand(
-			ExportBlocksCmd::augment_clap(SubCommand::with_name("export-blocks"))
-				.about("Export blocks to a file. This file can only be re-imported \
-						if it is in binary format (not JSON!)."
-					)
+			ExportBlocksCmd::augment_clap(SubCommand::with_name("export-blocks")).about(
+				"Export blocks to a file. This file can only be re-imported \
+				 if it is in binary format (not JSON!).",
+			),
 		)
 		.subcommand(
-			ImportBlocksCmd::augment_clap(SubCommand::with_name("import-blocks"))
-				.about("Import blocks from file.")
+			ImportBlocksCmd::augment_clap(SubCommand::with_name("import-blocks")).about("Import blocks from file."),
 		)
 		.subcommand(
-			RevertCmd::augment_clap(SubCommand::with_name("revert"))
-				.about("Revert chain to the previous state.")
+			RevertCmd::augment_clap(SubCommand::with_name("revert")).about("Revert chain to the previous state."),
 		)
 		.subcommand(
-			PurgeChainCmd::augment_clap(SubCommand::with_name("purge-chain"))
-				.about("Remove the whole chain data.")
+			PurgeChainCmd::augment_clap(SubCommand::with_name("purge-chain")).about("Remove the whole chain data."),
 		)
 	}
 
 	fn from_clap(matches: &::structopt::clap::ArgMatches) -> Self {
 		match matches.subcommand() {
-			("build-spec", Some(matches)) =>
-				CoreParams::BuildSpec(BuildSpecCmd::from_clap(matches)),
-			("export-blocks", Some(matches)) =>
-				CoreParams::ExportBlocks(ExportBlocksCmd::from_clap(matches)),
-			("import-blocks", Some(matches)) =>
-				CoreParams::ImportBlocks(ImportBlocksCmd::from_clap(matches)),
+			("build-spec", Some(matches)) => CoreParams::BuildSpec(BuildSpecCmd::from_clap(matches)),
+			("export-blocks", Some(matches)) => CoreParams::ExportBlocks(ExportBlocksCmd::from_clap(matches)),
+			("import-blocks", Some(matches)) => CoreParams::ImportBlocks(ImportBlocksCmd::from_clap(matches)),
 			("revert", Some(matches)) => CoreParams::Revert(RevertCmd::from_clap(matches)),
-			("purge-chain", Some(matches)) =>
-				CoreParams::PurgeChain(PurgeChainCmd::from_clap(matches)),
+			("purge-chain", Some(matches)) => CoreParams::PurgeChain(PurgeChainCmd::from_clap(matches)),
 			(_, None) => CoreParams::Run(MergeParameters::from_clap(matches)),
 			_ => CoreParams::Custom(CC::from_clap(matches)),
 		}
 	}
 }
 
-impl<CC, RP> GetLogFilter for CoreParams<CC, RP> where CC: GetLogFilter {
+impl<CC, RP> GetLogFilter for CoreParams<CC, RP>
+where
+	CC: GetLogFilter,
+{
 	fn get_log_filter(&self) -> Option<String> {
 		match self {
 			CoreParams::Run(c) => c.left.get_log_filter(),
@@ -901,7 +901,11 @@ pub struct MergeParameters<L, R> {
 	pub right: R,
 }
 
-impl<L, R> StructOpt for MergeParameters<L, R> where L: StructOpt + AugmentClap, R: StructOpt {
+impl<L, R> StructOpt for MergeParameters<L, R>
+where
+	L: StructOpt + AugmentClap,
+	R: StructOpt,
+{
 	fn clap<'a, 'b>() -> App<'a, 'b> {
 		L::augment_clap(R::clap())
 	}
