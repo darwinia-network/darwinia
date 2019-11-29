@@ -21,6 +21,8 @@ use sr_primitives::RuntimeDebug;
 
 use rlp::{decode, encode};
 
+use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie};
+
 type DAG = LightDAG<EthereumPatch>;
 
 pub trait Trait: system::Trait {
@@ -91,11 +93,28 @@ decl_module! {
 		}
 
 		pub fn check_receipt(origin, proof: ActionRecord) {
+			let _relayer = ensure_signed(origin)?;
+
+			let header_hash = proof.header_hash;
+			if !HeaderOf::exists(header_hash) {
+				return Err("This block header does not exist.")
+			}
+
+			let header = HeaderOf::get(header_hash).unwrap();
+
+
+	//		let proof: Proof = rlp::decode(&rlp_proof).unwrap();
+	//		let key = rlp::encode(&1usize);
+			let value = MerklePatriciaTrie::verify_proof(header.receipts_root(), proof.index, proof.proof)
+				.unwrap();
+			assert!(value.is_some());
+
+//			let expected: Vec<u8> = Vec::from_hex("f9010901835cdb6eb9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0").unwrap();
+
+//			assert_eq!(value.unwrap(), expected);
 			// confirm that the block hash is right
 			// get the receipt MPT trie root from the block header
 			// Using receipt MPT trie root to verify the proof and index etc.
-
-			let _relayer = ensure_signed(origin)?;
 
 			<Module<T>>::deposit_event(RawEvent::RelayProof(proof));
 		}

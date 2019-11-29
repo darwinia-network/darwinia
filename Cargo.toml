@@ -6,6 +6,7 @@ members = [
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
+    "core/merkle-patricia-trie",
 
 	"node/cli",
     "node/executor",

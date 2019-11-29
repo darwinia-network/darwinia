@@ -19,6 +19,7 @@ sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = 
 
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 ethash = { git = "https://github.com/hammeWang/ethash-rs.git", rev = "70a4f078", default-features = false}
+merkle-patricia-trie = { path = "../../core/merkle-patricia-trie", default-features = false}
 
 [features]
 default = ["std"]
@@ -33,4 +34,5 @@ std = [
     "ethash/std",
     "rlp/std",
     "ethash/std",
+    "merkle-patricia-trie/std",
 ]
