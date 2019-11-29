@@ -276,7 +276,7 @@ mod tests {
 	fn can_calculate_difficulty() {
 		let (header1, header2) = sequential_header();
 		let expected = U256::from_str("92c07e50de0b9").unwrap();
-		let mut ethash_params = EthashPartial::expanse();
+		let mut ethash_params = EthashPartial::test();
 		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
 		assert_eq!(ethash_params.calculate_difficulty(&header2, &header1), expected);
 	}

@@ -771,6 +771,7 @@ dependencies = [
 name = "darwinia-ethereum-bridge"
 version = "0.2.0"
 dependencies = [
+ "ethash 0.4.0 (git+https://github.com/hammeWang/ethash-rs.git?rev=70a4f078)",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1001,9 +1002,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethash"
+version = "0.4.0"
+source = "git+https://github.com/hammeWang/ethash-rs.git?rev=70a4f078#70a4f078475700403f086ffe6286854869157f82"
+dependencies = [
+ "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)",
+ "primitive-types 0.6.1 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha3 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "ethbloom"
 version = "0.8.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "crunchy 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fixed-hash 0.5.1 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -1016,10 +1029,11 @@ dependencies = [
 [[package]]
 name = "ethereum-types"
 version = "0.8.0"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "ethbloom 0.8.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "fixed-hash 0.5.1 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
  "impl-rlp 0.2.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "primitive-types 0.6.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "uint 0.8.2 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -1111,7 +1125,7 @@ dependencies = [
 [[package]]
 name = "fixed-hash"
 version = "0.5.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1700,7 +1714,7 @@ dependencies = [
 [[package]]
 name = "impl-codec"
 version = "0.4.2"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1716,7 +1730,7 @@ dependencies = [
 [[package]]
 name = "impl-rlp"
 version = "0.2.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
 ]
@@ -1724,7 +1738,7 @@ dependencies = [
 [[package]]
 name = "impl-serde"
 version = "0.2.3"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1911,7 +1925,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "keccak-hash"
 version = "0.4.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "primitive-types 0.6.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "tiny-keccak 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3259,7 +3273,7 @@ dependencies = [
 [[package]]
 name = "primitive-types"
 version = "0.6.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "fixed-hash 0.5.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -3638,7 +3652,15 @@ dependencies = [
 [[package]]
 name = "rlp"
 version = "0.4.4"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rlp"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -3646,7 +3668,7 @@ dependencies = [
 [[package]]
 name = "rlp_derive"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -6026,7 +6048,7 @@ dependencies = [
 [[package]]
 name = "triehash"
 version = "0.8.1"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "hash-db 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -6068,7 +6090,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "uint"
 version = "0.8.2"
-source = "git+https://github.com/darwinia-network/parity-common.git#b97b8e9c665f3cf4303e341227397d2a68c2431b"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "crunchy 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -6762,6 +6784,7 @@ dependencies = [
 "checksum erased-serde 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)" = "3beee4bc16478a1b26f2e80ad819a52d24745e292f521a63c16eea5f74b7eb60"
 "checksum errno 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "c2a071601ed01b988f896ab14b95e67335d1eeb50190932a1320f7fe3cadc84e"
 "checksum errno-dragonfly 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "14ca354e36190500e1e1fb267c647932382b54053c50b14970856c0b00a35067"
+"checksum ethash 0.4.0 (git+https://github.com/hammeWang/ethash-rs.git?rev=70a4f078)" = "<none>"
 "checksum ethbloom 0.8.1 (git+https://github.com/darwinia-network/parity-common.git)" = "<none>"
 "checksum ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)" = "<none>"
 "checksum exit-future 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "d8013f441e38e31c670e7f34ec8f1d5d3a2bd9d303c1ff83976ca886005e8f48"
@@ -7010,6 +7033,7 @@ dependencies = [
 "checksum remove_dir_all 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4a83fa3702a688b9359eccba92d153ac33fd2e8462f9e0e3fdf155239ea7792e"
 "checksum ring 0.16.9 (registry+https://github.com/rust-lang/crates.io-index)" = "6747f8da1f2b1fabbee1aaa4eb8a11abf9adef0bf58a41cee45db5d59cecdfac"
 "checksum rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)" = "<none>"
+"checksum rlp 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "3a44d5ae8afcb238af8b75640907edc6c931efcfab2c854e81ed35fa080f84cd"
 "checksum rlp_derive 0.1.0 (git+https://github.com/darwinia-network/parity-common.git)" = "<none>"
 "checksum rocksdb 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f1651697fefd273bfb4fd69466cc2a9d20de557a0213b97233b22b5e95924b5e"
 "checksum rpassword 4.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f072d931f11a96546efd97642e1e75e807345aced86b947f9239102f262d0fcd"
