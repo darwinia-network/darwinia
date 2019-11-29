@@ -1,22 +1,22 @@
+[profile.release]
+panic = 'unwind'
+
 [workspace]
 members = [
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
-#    "darwinia-client",
+
 	"node/cli",
     "node/executor",
     "node/primitives",
     "node/rpc",
     "node/rpc-client",
     "node/runtime",
+
     "srml/balances",
     "srml/ethereum-bridge",
     "srml/kton",
     "srml/staking",
-    "srml/support",
+    "srml/support"
 ]
-
-[profile.release]
-# Substrate runtime requires unwinding.
-panic = "unwind"

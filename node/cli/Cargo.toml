@@ -125,5 +125,5 @@ wasmtime = [
 	"cli",
 	"node-executor/wasmtime",
 	"substrate-cli/wasmtime",
-	"substrate-service/wasmtime",
+	"substrate-service/wasmtime"
 ]

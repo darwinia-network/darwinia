@@ -19,7 +19,7 @@ pub use substrate_cli::{error, ExecutionStrategyParam, IntoExit, NoCustom, Share
 use client::ExecutionStrategies;
 use log::info;
 use structopt::{clap::App, StructOpt};
-use substrate_cli::{display_role, parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
+use substrate_cli::{parse_and_prepare, AugmentClap, GetLogFilter, ParseAndPrepare};
 use substrate_service::{AbstractService, Configuration, Roles as ServiceRoles};
 use tokio::{
 	prelude::Future,
@@ -116,7 +116,7 @@ where
 			exit,
 			|exit, _cli_args, _custom_args, config: Config<_, _>| {
 				info!("{}", version.name);
-				info!("Version {}", config.full_version());
+				info!("version {}", config.full_version());
 				info!("  _____                      _       _       ");
 				info!(" |  __ \\                    (_)     (_)      ");
 				info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
@@ -125,7 +125,7 @@ where
 				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 				info!("Chain specification: {}", config.chain_spec.name());
 				info!("Node name: {}", config.name);
-				info!("Roles: {}", display_role(&config));
+				info!("Roles: {:?}", substrate_cli::display_role(&config));
 				let runtime = RuntimeBuilder::new()
 					.name_prefix("main-tokio-")
 					.build()
@@ -136,6 +136,7 @@ where
 				}
 			},
 		),
+
 		ParseAndPrepare::BuildSpec(cmd) => cmd.run::<NoCustom, _, _, _>(load_spec),
 		ParseAndPrepare::ExportBlocks(cmd) => {
 			cmd.run_with_builder(|config: Config<_, _>| Ok(new_full_start!(config).0), load_spec, exit)

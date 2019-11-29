@@ -13,7 +13,8 @@ use sr_eth_primitives::{
 
 use ethash::{EthereumPatch, LightDAG};
 
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Currency};
+
 use system::ensure_signed;
 
 use sr_primitives::RuntimeDebug;
@@ -46,7 +47,9 @@ decl_storage! {
 		/// Info of the best block header for now
 		pub BestHeader get(fn best_header): BestBlock;
 		///
-		pub BlockList get(fn block_list): map EthBlockNumber => EthHeader;
+		pub BlockList get(fn block_list): map EthBlockNumber => Option<EthHeader>;
+		/// nonce of each block
+		pub Nonce get(fn nonce): map EthBlockNumber => Option<H64>;
 
 		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
 
@@ -82,7 +85,7 @@ decl_module! {
 
 		pub fn relay_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
-			let _ = Self::verify(&header)?;
+			Self::verify_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -124,17 +127,24 @@ impl<T: Trait> Module<T> {
 		unimplemented!()
 	}
 
-	/// 1. if exists?
-	/// 2. verify (difficulty + prev_hash + nonce + re-org)
+	/// 1. proof of difficulty
+	/// 2. proof of pow (mixhash)
 	/// 3. challenge
 	fn verify_header(header: &EthHeader) -> Result {
 		// check parent hash,
 		let parent_hash = header.parent_hash();
 
-		match <HeaderOf<T>>::get(parent_hash) {
+		let number = header.number();
+		ensure!(
+			number >= Self::begin_header().unwrap().number(),
+			"block nubmer is too small."
+		);
+		let prev_header = Self::block_list(number - 1).ok_or("import ancestor block first.");
+
+		match HeaderOf::get(parent_hash) {
 			None => return Err("Parent Header Not Found."),
 			Some(parent_header) => {
-				if parent_header.hash() != parent_hash {
+				if parent_header.hash() != *parent_hash {
 					return Err("Parent hash does not match.");
 				}
 			}
@@ -145,23 +155,27 @@ impl<T: Trait> Module<T> {
 		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
 		let result = ethash_params.verify_block_basic(header);
 		match result {
-			Ok() => {}
+			Ok(_) => (),
 			Err(e) => {
-				return Err(e);
+				return Err("Block difficulty verification failed.");
 			}
-		}
+		};
 
 		// verify difficulty
 		//		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
 		//		ensure!(difficulty == header.difficulty(), "difficulty verification failed");
 
 		// verify mixhash
-		let number = header.number();
-		let seal = EthashSeal::parse_seal(header.seal())?;
+		let seal = match EthashSeal::parse_seal(header.seal()) {
+			Err(e) => {
+				return Err("Seal parse error.");
+			}
+			Ok(x) => x,
+		};
 
 		let light_dag = DAG::new(number.into());
 		let partial_header_hash = header.bare_hash();
-		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce);
+		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
 		if mix_hash != seal.mix_hash {
 			return Err("Mixhash does not match.");
@@ -169,9 +183,8 @@ impl<T: Trait> Module<T> {
 
 		let header_hash = header.hash();
 
-		<HeaderOf<I>>::insert(header_hash, header);
+		HeaderOf::insert(header_hash, header);
 
-		let number = header.number();
 		Ok(())
 	}
 
