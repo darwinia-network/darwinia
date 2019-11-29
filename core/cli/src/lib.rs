@@ -647,7 +647,7 @@ fn load_conf_from_file(cli: &mut RunCmd) -> error::Result<()> {
 		serde_json::from_reader(f).map_err(|e| format!("{}", e))?
 	};
 
-	println!("{:#?}", conf);
+	//	println!("{:#?}", conf);
 
 	cli.name = conf.name;
 
