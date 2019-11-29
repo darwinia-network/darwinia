@@ -14,9 +14,9 @@ members = [
     "node/rpc-client",
     "node/runtime",
 
-    "srml/support",
     "srml/balances",
+    "srml/ethereum-bridge",
     "srml/kton",
     "srml/staking",
-    "srml/ethereum-bridge"
+    "srml/support"
 ]
