@@ -1,12 +1,11 @@
 use super::*;
 use ethbloom::{Bloom, Input as BloomInput};
 use rlp::*;
-use rstd::ops::Deref;
 use rstd::prelude::*;
 //use substrate_primitives::RuntimeDebug;
 
 use codec::{Decode, Encode};
-use primitive_types::{H160, H256, U128, U256, U512};
+use primitive_types::{H256, U256};
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode)]
 pub enum TransactionOutcome {

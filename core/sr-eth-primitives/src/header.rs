@@ -2,8 +2,9 @@ use super::*;
 use ethbloom::Bloom;
 use pow::EthashSeal;
 use rlp::RlpStream;
+use sr_primitives::RuntimeDebug;
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, Copy)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, Copy, RuntimeDebug)]
 enum Seal {
 	/// The seal/signature is included.
 	With,
@@ -11,7 +12,7 @@ enum Seal {
 	Without,
 }
 
-#[derive(Default, PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RlpEncodable, RlpDecodable, RuntimeDebug)]
 pub struct EthHeader {
 	parent_hash: H256,
 	timestamp: u64,

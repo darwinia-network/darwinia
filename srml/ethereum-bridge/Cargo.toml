@@ -7,30 +7,36 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-#blake2 = { version = "0.8.1", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-#sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
+<<<<<<< HEAD
 ethash = { git = "https://github.com/hammeWang/ethash-rs.git", rev = "70a4f078", default-features = false}
 #merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
 
 #web3 = {git = "https://github.com/ABMatrix/rust-web3.git", branch = "develop", default-features = false }
+=======
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
+>>>>>>> upstream/develop
 
 [features]
 default = ["std"]
 std = [
-#    "blake2/std",
     "serde/std",
 	"codec/std",
     "rstd/std",
-#    "sr-primitives/std",
+    "sr-primitives/std",
     "support/std",
     "system/std",
     "sr-eth-primitives/std",
+<<<<<<< HEAD
     "ethash/std"
+=======
+    "rlp/std",
+>>>>>>> upstream/develop
 ]
