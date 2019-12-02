@@ -6,7 +6,6 @@
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
 	"Address": "H160",
-	"BlockNumber": "u64",
 	"EthBlockNumber": "u64",
 	"StakingBalance": {
 		"_enum": {
@@ -68,7 +67,7 @@
 	"EthHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
-		"number": "BlockNumber",
+		"number": "EthBlockNumber",
 		"auth": "Address",
 		"transaction_root": "H256",
 		"uncles_hash": "H256",
@@ -88,11 +87,16 @@
 		"header_hash": "H256"
 	},
 	"BestBlock": {
-		"height": "BlockNumber",
+		"height": "EthBlockNumber",
 		"hash": "H256",
 		"total_difficulty": "U256"
 	},
 	"H64": {
 		"_struct": "[u8; 8]"
+	},
+	"BlockDetails": {
+		"height": "EthBlockNumber",
+		"hash": "H256",
+		"total_difficulty": "U256"
 	}
 }

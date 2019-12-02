@@ -29,11 +29,20 @@ pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 }
 
+/// Familial details concerning a block
 #[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
-pub struct BestBlock {
-	height: EthBlockNumber, // enough for ethereum poa network (kovan)
-	hash: H256,
-	total_difficulty: U256,
+pub struct BlockDetails {
+	/// Block number
+	pub height: EthBlockNumber,
+	pub hash: H256,
+	/// Total difficulty of the block and all its parents
+	pub total_difficulty: U256,
+	//	/// Parent block hash
+	//	pub parent: H256,
+	//	/// List of children block hashes
+	//	pub children: Vec<H256>,
+	//	/// Whether the block is considered finalized
+	//	pub is_finalized: bool,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -49,29 +58,32 @@ decl_storage! {
 		pub BeginHeader get(fn begin_header): Option<EthHeader>;
 
 		/// Info of the best block header for now
-		pub BestHeader get(fn best_header): BestBlock;
+		pub BestHeaderHash get(fn best_header_hash): H256;
 
 		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
 
-//		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
-
-//		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
+		pub HeaderDetailsOf get(header_details_of): map H256 => Option<BlockDetails>;
 
 		/// Block delay for verify transaction
 		pub FinalizeNumber get(finalize_number): Option<u64>;
 
 		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
 
-		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
+
+//		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
+
+//		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
+
+//		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
 		build(|config| {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("can't deserialize the header");
-				BeginHeader::put(header.clone());
 
-				<Module<T>>::genesis_header(header);
+				// TODO: initilize other parameters.
+				<Module<T>>::genesis_header(&header);
 			}
 		});
 	}
@@ -102,18 +114,24 @@ decl_module! {
 
 			HeaderOf::insert(header_hash, &header);
 
-//			HashsOf::insert(block_number, header_hash);
+			let prev_total_difficulty = Self::header_details_of(header.parent_hash()).unwrap().total_difficulty;
+
+			HeaderDetailsOf::insert(header_hash, BlockDetails {
+				height: block_number,
+				hash: header_hash,
+				total_difficulty: prev_total_difficulty + header.difficulty()
+			});
+
+			let best_header_hash = Self::best_header_hash();
+			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
+			let best_header_details = Self::header_details_of(best_header_hash).unwrap();
 
 			// TODO: Check total difficulty and reorg if necessary.
-			let best_block = Self::best_header();
-
-			ensure!(best_block.height == block_number, "Block height does not match.");
-			ensure!(best_block.hash == *header.parent_hash(), "Block hash does not match.");
-
-
-			BestHeader::mutate(|best_block| {
-				(*best_block).total_difficulty += *header.difficulty();
-			});
+			if prev_total_difficulty + header.difficulty() > best_header_details.total_difficulty {
+				BestHeaderHash::mutate(|hash| {
+					*hash = header_hash;
+				});
+			}
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -151,7 +169,9 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
 		}
 
-		pub fn deprecated_submit_header(origin, header: EthHeader) {
+		// Assuming that there are at least one honest worker submiting headers
+		// This method may be merged together with relay_header
+		pub fn challenge_header(origin, header: EthHeader) {
 			// if header confirmed then return
 			// if header in unverified header then challenge
 		}
@@ -170,17 +190,22 @@ decl_event! {
 }
 
 impl<T: Trait> Module<T> {
-	pub fn genesis_header(header: EthHeader) {
+	// TOOD: what is the total difficulty for genesis/begin header
+	pub fn genesis_header(header: &EthHeader) {
 		let header_hash = header.hash();
 		//		let block_number = header.number();
 
 		HeaderOf::insert(header_hash, header);
 
-		//		HashsOf::insert(block_number, header_hash);
-	}
+		// TODO: initialize the header details, including total difficulty.
 
-	pub fn adjust_deposit_value() {
-		unimplemented!()
+		// Initialize the the best hash.
+		BestHeaderHash::mutate(|hash| {
+			*hash = header_hash;
+		});
+
+		// Initialize the header.
+		BeginHeader::put(header.clone());
 	}
 
 	/// 1. proof of difficulty
@@ -235,6 +260,9 @@ impl<T: Trait> Module<T> {
 		if mix_hash != seal.mix_hash {
 			return Err("Mixhash does not match.");
 		}
+
+		//			ensure!(best_header.height == block_number, "Block height does not match.");
+		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
 
 		Ok(())
 	}
