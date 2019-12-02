@@ -3,14 +3,7 @@
 
 	"wasm-execution": "interpreted",
 
-	"execution-strategies":  {
-		"execution-syncing": "native",
-		"execution-import-block": "native",
-		"execution-block-construction": "native",
-		"execution-offchain-worker": "native",
-		"execution-other": "native",
-		"execution": "native"
-	},
+	"execution": "native-else-wasm",
 
 	"offchain-worker": "never",
 
@@ -22,7 +15,7 @@
 	"ws-external": true,
 	"ws-port": 23334,
 
-	"network-configuration-params": {
-		"port": 23335
-	}
+	"port": 23335,
+
+	"base-path": "/Users/xavier/Downloads/t"
 }

@@ -310,7 +310,7 @@ impl Default for TransactionPoolParams {
 
 /// Execution strategies parameters.
 #[derive(Clone, Debug, StructOpt, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct ExecutionStrategies {
 	/// The means of execution used when calling into the runtime while syncing blocks.
 	#[structopt(
@@ -377,6 +377,19 @@ pub struct ExecutionStrategies {
 		]
 	)]
 	pub execution: Option<ExecutionStrategy>,
+}
+
+impl Default for ExecutionStrategies {
+	fn default() -> Self {
+		Self {
+			execution_syncing: ExecutionStrategy::NativeElseWasm,
+			execution_import_block: ExecutionStrategy::NativeElseWasm,
+			execution_block_construction: ExecutionStrategy::Wasm,
+			execution_offchain_worker: ExecutionStrategy::Native,
+			execution_other: ExecutionStrategy::Native,
+			execution: None,
+		}
+	}
 }
 
 /// The `run` command used to run a node.
@@ -981,6 +994,7 @@ pub struct Conf {
 	pub database_cache_size: Option<u32>,
 	pub state_cache_size: Option<usize>,
 
+	#[serde(flatten)]
 	pub shared: Option<SharedParams>,
 	pub validator: Option<bool>,
 	pub sentry: Option<bool>,
@@ -994,13 +1008,16 @@ pub struct Conf {
 	#[serde(rename = "wasm-execution")]
 	pub wasm_method: Option<WasmExecutionMethod>,
 
+	#[serde(flatten)]
 	pub execution_strategies: Option<ExecutionStrategies>,
 
 	pub offchain_worker: Option<OffchainWorkerEnabled>,
 
 	pub no_grandpa: Option<bool>,
 
+	#[serde(flatten)]
 	pub network_config: Option<NetworkConfigurationParams>,
+	#[serde(flatten)]
 	pub pool_config: Option<TransactionPoolParams>,
 
 	pub rpc_external: Option<bool>,
