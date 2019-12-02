@@ -5,7 +5,7 @@ use rstd::prelude::*;
 //use substrate_primitives::RuntimeDebug;
 
 use codec::{Decode, Encode};
-use ethereum_types::{H256, U256};
+use primitive_types::{H256, U256};
 
 use sr_primitives::RuntimeDebug;
 
