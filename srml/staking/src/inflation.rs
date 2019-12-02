@@ -23,7 +23,7 @@ pub fn compute_total_payout<T: Trait>(
 
 	let maximum = portion * total_left;
 
-	//	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
+	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
 
 	let payout = maximum * 1; // TODO: add treasury ratio: Perbill::from_rational_approximation(npos_token_staked, total_tokens);
 
