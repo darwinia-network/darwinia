@@ -16,9 +16,13 @@
 
 	"no-grandpa": true,
 
-	"rpc-external": false,
+	"rpc-external": true,
 	"rpc-port": 23333,
 
-	"ws-external": false,
-	"ws-port": 23334
+	"ws-external": true,
+	"ws-port": 23334,
+
+	"network-configuration-params": {
+		"port": 23335
+	}
 }
