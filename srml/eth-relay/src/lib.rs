@@ -231,8 +231,8 @@ impl<T: Trait> Module<T> {
 		}
 
 		// check difficulty
-		let mut ethash_params = EthashPartial::expanse();
-		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
+		let mut ethash_params = EthashPartial::production();
+		//		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
 		let result = ethash_params.verify_block_basic(header);
 		match result {
 			Ok(_) => (),
@@ -242,8 +242,8 @@ impl<T: Trait> Module<T> {
 		};
 
 		// verify difficulty
-		//		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
-		//		ensure!(difficulty == header.difficulty(), "difficulty verification failed");
+		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
+		ensure!(difficulty == header.difficulty(), "difficulty verification failed");
 
 		// verify mixhash
 		let seal = match EthashSeal::parse_seal(header.seal()) {
