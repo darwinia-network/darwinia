@@ -17,7 +17,7 @@ members = [
     "node/runtime",
 
     "srml/balances",
-    "srml/ethereum-bridge",
+    "srml/eth-relay",
     "srml/kton",
     "srml/staking",
     "srml/support"

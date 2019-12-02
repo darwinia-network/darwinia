@@ -7,8 +7,8 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use sr_eth_primitives::{
-	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BestBlock, BlockNumber as EthBlockNumber,
-	H160, H256, H64, U128, U256, U512,
+	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H160,
+	H256, H64, U128, U256, U512,
 };
 
 use ethash::{EthereumPatch, LightDAG};
@@ -27,7 +27,13 @@ type DAG = LightDAG<EthereumPatch>;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	//	type Hash: rstd::hash::Hash;
+}
+
+#[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
+pub struct BestBlock {
+	height: EthBlockNumber, // enough for ethereum poa network (kovan)
+	hash: H256,
+	total_difficulty: U256,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -38,19 +44,17 @@ pub struct ActionRecord {
 }
 
 decl_storage! {
-	trait Store for Module<T: Trait> as EthBridge {
+	trait Store for Module<T: Trait> as EthRelay {
 		/// Anchor block that works as genesis block
 		pub BeginHeader get(fn begin_header): Option<EthHeader>;
+
 		/// Info of the best block header for now
 		pub BestHeader get(fn best_header): BestBlock;
-		///
-		pub BlockList get(fn block_list): map EthBlockNumber => Option<EthHeader>;
-		/// nonce of each block
-		pub Nonce get(fn nonce): map EthBlockNumber => Option<H64>;
 
 		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
 
 //		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
+
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
 
 		/// Block delay for verify transaction
@@ -80,11 +84,44 @@ decl_module! {
 	{
 		fn deposit_event() = default;
 
-		pub fn relay_header(origin, header: EthHeader) {
+		pub fn test_relay_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
-			Self::verify_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+		}
+
+		pub fn relay_header(origin, header: EthHeader) {
+			let _relayer = ensure_signed(origin)?;
+			// 1. There must be a corresponding parent hash
+			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
+
+			Self::verify_header(&header)?;
+
+			let header_hash = header.hash();
+			let block_number = header.number();
+
+			HeaderOf::insert(header_hash, &header);
+
+//			HashsOf::insert(block_number, header_hash);
+
+			// TODO: Check total difficulty and reorg if necessary.
+			let best_block = Self::best_header();
+
+			ensure!(best_block.height == block_number, "Block height does not match.");
+			ensure!(best_block.hash == *header.parent_hash(), "Block hash does not match.");
+
+
+			BestHeader::mutate(|best_block| {
+				(*best_block).total_difficulty += *header.difficulty();
+			});
+
+			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+		}
+
+		pub fn test_check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
+			let _relayer = ensure_signed(origin)?;
+
+			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
 		}
 
 		pub fn check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
@@ -114,7 +151,7 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
 		}
 
-		pub fn submit_header(origin, header: EthHeader) {
+		pub fn deprecated_submit_header(origin, header: EthHeader) {
 			// if header confirmed then return
 			// if header in unverified header then challenge
 		}
@@ -134,7 +171,12 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	pub fn genesis_header(header: EthHeader) {
-		unimplemented!()
+		let header_hash = header.hash();
+		//		let block_number = header.number();
+
+		HeaderOf::insert(header_hash, header);
+
+		//		HashsOf::insert(block_number, header_hash);
 	}
 
 	pub fn adjust_deposit_value() {
@@ -153,13 +195,12 @@ impl<T: Trait> Module<T> {
 			number >= Self::begin_header().unwrap().number(),
 			"block nubmer is too small."
 		);
-		let prev_header = Self::block_list(number - 1).ok_or("import ancestor block first.");
 
-		match HeaderOf::get(parent_hash) {
+		match Self::header_of(parent_hash) {
 			None => return Err("Parent Header Not Found."),
 			Some(parent_header) => {
-				if parent_header.hash() != *parent_hash {
-					return Err("Parent hash does not match.");
+				if (parent_header.number() + 1) != number {
+					return Err("Block number does not match.");
 				}
 			}
 		}
@@ -194,10 +235,6 @@ impl<T: Trait> Module<T> {
 		if mix_hash != seal.mix_hash {
 			return Err("Mixhash does not match.");
 		}
-
-		let header_hash = header.hash();
-
-		HeaderOf::insert(header_hash, header);
 
 		Ok(())
 	}

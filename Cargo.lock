@@ -835,7 +835,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-ethereum-bridge"
+name = "darwinia-eth-relay"
 version = "0.2.0"
 dependencies = [
  "ethash 0.4.0 (git+https://github.com/hammeWang/ethash-rs.git?rev=70a4f078)",
@@ -2949,7 +2949,7 @@ name = "node-runtime"
 version = "0.2.0"
 dependencies = [
  "darwinia-balances 2.0.0",
- "darwinia-ethereum-bridge 0.2.0",
+ "darwinia-eth-relay 0.2.0",
  "darwinia-kton 0.1.0",
  "darwinia-staking 0.2.0",
  "darwinia-support 0.1.0",

@@ -1,7 +1,7 @@
 [package]
-name = "darwinia-ethereum-bridge"
+name = "darwinia-eth-relay"
 version = "0.2.0"
-authors = ["Xavier Lau <c.estlavie@icloud.com>"]
+authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,7 +15,6 @@ system = { package = "srml-system",  git = "https://github.com/darwinia-network/
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
-#merkle-mountain-range = { path = "../../core/merkle-mountain-range", default-features = false }
 
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false}
 ethash = { git = "https://github.com/hammeWang/ethash-rs.git", rev = "70a4f078", default-features = false}
