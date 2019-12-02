@@ -200,7 +200,7 @@ pub fn testnet_genesis(
 		]
 	});
 
-	const ENDOWMENT: Balance = 1_000_000 * COIN;
+	const ENDOWMENT: Balance = 10_000_000 * COIN;
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
@@ -263,7 +263,7 @@ pub fn testnet_genesis(
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
 				.collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
 		}),
