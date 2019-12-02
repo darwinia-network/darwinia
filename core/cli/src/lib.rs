@@ -659,7 +659,7 @@ fn load_conf_from_file(cli: &mut RunCmd) -> error::Result<()> {
 	}
 
 	if let Some(shared_params) = conf.shared {
-		cli.shared_params.dev = shared_params.dev;
+		cli.shared_params = shared_params;
 	}
 	if let Some(validator) = conf.validator {
 		cli.validator = validator;
