@@ -1,8 +1,8 @@
 {
 	"BlockNumber": "u64",
-	"EthBlockNumber": "u64",
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
+	"EthBlockNumber": "u64",
 	"TimeStamp": "u64",
 
     "RingBalanceOf": "u128",
