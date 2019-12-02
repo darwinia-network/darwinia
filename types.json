@@ -1,4 +1,6 @@
 {
+	"BlockNumber": "u64",
+	"EthBlockNumber": "u64",
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
 	"TimeStamp": "u64",
@@ -62,5 +64,36 @@
 	"StakingLock": {
 		"staking_amount": "u128",
 		"unbondings": "Vec<NormalLock>"
+	},
+
+	"EthHeader": {
+		"parent_hash": "H256",
+		"timestamp": "u64",
+		"number": "BlockNumber",
+		"author": "Address",
+		"transactions_root": "H256",
+		"uncles_hash": "H256",
+		"extra_data": "Bytes",
+		"state_root": "H256",
+		"receipts_root": "H256",
+		"log_bloom": "Bloom",
+		"gas_used": "U256",
+		"gas_limit": "U256",
+		"difficulty": "U256",
+		"seal": "Vec<Bytes>",
+		"hash": "Option<H256>"
+	},
+	"ActionRecord": {
+		"index": "u64",
+		"proof": "Vec<u8>",
+		"header_hash": "H256"
+	},
+	"BestBlock": {
+		"height": "BlockNumber",
+		"hash": "H256",
+		"total_difficulty": "U256"
+	},
+	"H64": {
+		"_struct": "[u8; 8]"
 	}
 }
