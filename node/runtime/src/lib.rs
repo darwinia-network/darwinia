@@ -381,11 +381,11 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-//impl ethereum_bridge::Trait for Runtime {
-//	type Event = Event;
-//	type Ring = Balances;
-//	type Hash = Hash;
-//}
+impl ethereum_bridge::Trait for Runtime {
+	type Event = Event;
+	//	type Ring = Balances;
+	//	type Hash = Hash;
+}
 
 construct_runtime!(
 	pub enum Runtime where
@@ -419,7 +419,7 @@ construct_runtime!(
 		Sudo: sudo,
 		Utility: utility::{Module, Call, Event},
 		
-//		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
+		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
 	}
 );
 
@@ -431,7 +431,6 @@ pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
-/// BlockId type as expected by this runtime.
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
