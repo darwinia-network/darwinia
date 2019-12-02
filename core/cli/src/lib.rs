@@ -740,11 +740,11 @@ where
 	E: ChainSpecExtension,
 	S: FnOnce(&str) -> Result<Option<ChainSpec<G, E>>, String>,
 {
+	load_conf_from_file(&mut cli)?;
+
 	let spec = load_spec(&cli.shared_params, spec_factory)?;
 	let base_path = base_path(&cli.shared_params, &version);
 	let mut config = service::Configuration::default_with_spec_and_base_path(spec.clone(), Some(base_path));
-
-	load_conf_from_file(&mut cli)?;
 
 	fill_config_keystore_password(&mut config, &cli)?;
 
