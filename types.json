@@ -2,13 +2,12 @@
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
 	"TimeStamp": "u64",
-
     "RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
-	"Bytes": "Vec<u8>",
 	"Address": "H160",
 	"BlockNumber": "u64",
+	"EthBlockNumber": "u64",
 	"StakingBalance": {
 		"_enum": {
 			"Ring": "RingBalanceOf",
@@ -92,5 +91,8 @@
 		"height": "BlockNumber",
 		"hash": "H256",
 		"total_difficulty": "U256"
+	},
+	"H64": {
+		"_struct": "[u8; 8]"
 	}
 }
