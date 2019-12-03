@@ -1,3 +1,4 @@
+pub use node_primitives::Balance;
 pub use node_runtime::constants::currency::COIN;
 
 use std::{cell::RefCell, collections::HashSet};
@@ -13,7 +14,6 @@ use substrate_primitives::H256;
 
 use super::*;
 use crate::{GenesisConfig, Module};
-use node_primitives::Balance;
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());

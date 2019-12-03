@@ -62,7 +62,7 @@ mod structs {
 
 		#[inline]
 		fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
-			self.valid_at(at) && self.amount > new_balance
+			!self.valid_at(at) && self.amount <= new_balance
 		}
 	}
 
