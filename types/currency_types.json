@@ -1,0 +1,21 @@
+{
+	"BalanceLock": {
+		"id": "LockIdentifier",
+		"withdraw_lock": "WithdrawLock",
+		"reasons": "WithdrawReasons"
+	},
+	"NormalLock": {
+		"amount": "u128",
+		"until": "Moment"
+	},
+	"StakingLock": {
+		"staking_amount": "u128",
+		"unbondings": "Vec<NormalLock>"
+	},
+	"WithdrawLock": {
+		"_enum": {
+			"Normal": "NormalLock",
+			"WithStaking": "StakingLock"
+		}
+	}
+}

@@ -1,0 +1,40 @@
+{
+	"EraIndex": "u32",
+	"Exposure": {
+		"total": "ExtendedBalance",
+		"own": "ExtendedBalance",
+		"others": "Vec<IndividualExposure>"
+	},
+	"ExtendedBalance": "u128",
+	"IndividualExposure": {
+		"who": "AccountId",
+		"value": "ExtendedBalance"
+	},
+	"KtonBalanceOf": "u128",
+	"RingBalanceOf": "u128",
+	"StakingBalance": {
+		"_enum": {
+			"Ring": "RingBalanceOf",
+			"Kton": "KtonBalanceOf"
+		}
+	},
+	"StakingLedger": {
+		"stash": "AccountId",
+		"active_ring": "Compact<RingBalanceOf>",
+		"active_deposit_ring": "Compact<RingBalanceOf>",
+		"active_kton": "Compact<KtonBalanceOf>",
+		"deposit_items": "Vec<TimeDepositItem>",
+		"ring_staking_lock": "StakingLock",
+		"kton_staking_lock": "StakingLock"
+	},
+	"TimeDepositItem": {
+		"value": "Compact<RingBalanceOf>",
+		"start_time": "Compact<Moment>",
+		"expire_time": "Compact<Moment>"
+	},
+	"ValidatorPrefs": {
+		"node_name": "Vec<u8>",
+		"unstake_threshold": "Compact<u32>",
+		"validator_payment_ratio": "Compact<u32>"
+	}
+}

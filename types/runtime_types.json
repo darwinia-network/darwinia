@@ -1,0 +1,4 @@
+{
+	"EpochDuration": "u64",
+	"TimeStamp": "u64"
+}
