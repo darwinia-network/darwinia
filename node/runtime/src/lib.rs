@@ -69,9 +69,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
-	authoring_version: 2,
-	spec_version: 79,
-	impl_version: 79,
+	authoring_version: 3,
+	spec_version: 80,
+	impl_version: 80,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -145,7 +145,7 @@ parameter_types! {
 }
 impl balances::Trait for Runtime {
 	type Balance = Balance;
-	type OnFreeBalanceZero = (Staking, Session);
+	type OnFreeBalanceZero = ((Staking, Contracts), Session);
 	type OnNewAccount = Indices;
 	type TransferPayment = ();
 	type DustRemoval = ();
@@ -186,7 +186,7 @@ parameter_types! {
 	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
 }
 impl timestamp::Trait for Runtime {
-	type Moment = u64;
+	type Moment = Moment;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
 }
@@ -206,7 +206,7 @@ impl authorship::Trait for Runtime {
 	type FindAuthor = session::FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
-	type EventHandler = Staking;
+	type EventHandler = (Staking, ImOnline);
 }
 
 // NOTE: `SessionHandler` and `SessionKeys` are co-dependent: One key will be used for each handler.
@@ -243,7 +243,7 @@ impl sudo::Trait for Runtime {
 impl offences::Trait for Runtime {
 	type Event = Event;
 	type IdentificationTuple = session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = ();
+	type OnOffenceHandler = Staking;
 }
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
@@ -264,11 +264,11 @@ impl grandpa::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const WindowSize: BlockNumber = finality_tracker::DEFAULT_WINDOW_SIZE.into();
-	pub const ReportLatency: BlockNumber = finality_tracker::DEFAULT_REPORT_LATENCY.into();
+	pub const WindowSize: BlockNumber = 101;
+	pub const ReportLatency: BlockNumber = 1000;
 }
 impl finality_tracker::Trait for Runtime {
-	type OnFinalizationStalled = ();
+	type OnFinalizationStalled = Grandpa;
 	type WindowSize = WindowSize;
 	type ReportLatency = ReportLatency;
 }
@@ -352,7 +352,6 @@ impl kton::Trait for Runtime {
 
 parameter_types! {
 	pub const Period: BlockNumber = 1 * MINUTES;
-//	pub const Offset: BlockNumber = 0;
 	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 5;
 	// about 14 days = 14 * 24 * 60 * 60
 	pub const BondingDuration: TimeStamp = 1209600;
@@ -360,6 +359,10 @@ parameter_types! {
 	pub const ErasPerEpoch: EraIndex = 105120;
 	// decimal 9
 	pub const HardCap: Balance = 10_000_000_000 * COIN;
+	// date in Los Angeles*: 11/19/2019, 2:33:20 AM
+	// date in Berlin* :11/19/2019, 5:33:20 PM
+	// date in Beijing*: 11/19/2019, 4:33:20 PM
+	// date in New York* :11/19/2019, 4:33:20 AM
 	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
 impl staking::Trait for Runtime {
@@ -429,7 +432,6 @@ pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
-/// BlockId type as expected by this runtime.
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
