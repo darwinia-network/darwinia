@@ -3,22 +3,19 @@
 
 	"wasm-execution": "interpreted",
 
-	"execution-strategies":  {
-		"execution-syncing": "native",
-		"execution-import-block": "native",
-		"execution-block-construction": "native",
-		"execution-offchain-worker": "native",
-		"execution-other": "native",
-		"execution": "native"
-	},
+	"execution": "native-else-wasm",
 
 	"offchain-worker": "never",
 
 	"no-grandpa": true,
 
-	"rpc-external": false,
+	"rpc-external": true,
 	"rpc-port": 23333,
 
-	"ws-external": false,
-	"ws-port": 23334
+	"ws-external": true,
+	"ws-port": 23334,
+
+	"port": 23335,
+
+	"base-path": "/tmp"
 }

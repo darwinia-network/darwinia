@@ -659,7 +659,7 @@ fn load_conf_from_file(cli: &mut RunCmd) -> error::Result<()> {
 	}
 
 	if let Some(shared_params) = conf.shared {
-		cli.shared_params.dev = shared_params.dev;
+		cli.shared_params = shared_params;
 	}
 	if let Some(validator) = conf.validator {
 		cli.validator = validator;
@@ -740,11 +740,11 @@ where
 	E: ChainSpecExtension,
 	S: FnOnce(&str) -> Result<Option<ChainSpec<G, E>>, String>,
 {
+	load_conf_from_file(&mut cli)?;
+
 	let spec = load_spec(&cli.shared_params, spec_factory)?;
 	let base_path = base_path(&cli.shared_params, &version);
 	let mut config = service::Configuration::default_with_spec_and_base_path(spec.clone(), Some(base_path));
-
-	load_conf_from_file(&mut cli)?;
 
 	fill_config_keystore_password(&mut config, &cli)?;
 

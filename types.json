@@ -2,7 +2,7 @@
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
 	"TimeStamp": "u64",
-    "RingBalanceOf": "u128",
+	"RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
 	"Address": "H160",
@@ -13,7 +13,6 @@
 			"Kton": "KtonBalanceOf"
 		}
 	},
-
 	"IndividualExposure": {
 		"who": "AccountId",
 		"value": "ExtendedBalance"
@@ -23,13 +22,11 @@
 		"own": "ExtendedBalance",
 		"others": "Vec<IndividualExposure>"
 	},
-
 	"ValidatorPrefs": {
 		"node_name": "Vec<u8>",
 		"unstake_threshold": "Compact<u32>",
 		"validator_payment_ratio": "Compact<u32>"
 	},
-
 	"StakingLedger": {
 		"stash": "AccountId",
 		"active_ring": "Compact<RingBalanceOf>",
@@ -44,7 +41,6 @@
 		"start_time": "Compact<Moment>",
 		"expire_time": "Compact<Moment>"
 	},
-
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"withdraw_lock": "WithdrawLock",

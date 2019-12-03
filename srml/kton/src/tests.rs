@@ -1,56 +1,68 @@
 use srml_support::{assert_err, assert_noop, assert_ok, traits::Currency};
 
-use darwinia_support::{LockIdentifier, WithdrawReason, WithdrawReasons};
+use darwinia_support::{LockIdentifier, NormalLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 use super::*;
 use crate::mock::*;
 
+const ID_1: LockIdentifier = *b"1       ";
+const ID_2: LockIdentifier = *b"2       ";
+const ID_3: LockIdentifier = *b"3       ";
+
+#[test]
+fn transfer_should_work() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let _ = Kton::deposit_creating(&666, 100);
+
+		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
+		assert_eq!(Kton::total_balance(&666), 50);
+		assert_eq!(Kton::total_balance(&777), 50);
+
+		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
+		assert_eq!(Kton::total_balance(&666), 0);
+		assert_eq!(Kton::total_balance(&777), 100);
+
+		assert_ok!(Kton::transfer(Origin::signed(666), 777, 0));
+	});
+}
+
 // TODO
-//#[test]
-//fn transfer_should_work() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let _ = Kton::deposit_creating(&666, 100);
-//
-//		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
-//		assert_eq!(Kton::total_balance(&666), 50);
-//		assert_eq!(Kton::total_balance(&777), 50);
-//
-//		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
-//		assert_eq!(Kton::total_balance(&666), 0);
-//		assert_eq!(Kton::total_balance(&777), 100);
-//
-//		assert_ok!(Kton::transfer(Origin::signed(666), 777, 0));
-//	});
-//}
-//
-//#[test]
-//fn transfer_should_fail() {
-//	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-//		let _ = Kton::deposit_creating(&777, 1);
-//		assert_err!(
-//			Kton::transfer(Origin::signed(666), 777, 50),
-//			"balance too low to send value"
-//		);
-//
-//		let _ = Kton::deposit_creating(&666, u64::max_value());
-//		assert_err!(
-//			Kton::transfer(Origin::signed(777), 666, 1),
-//			"destination balance too high to receive value"
-//		);
-//
-//		assert_err!(
-//			Kton::transfer(Origin::signed(1), 777, Kton::vesting_balance(&1)),
-//			"vesting balance too high to send value"
-//		);
-//
-//		Kton::set_lock(ID_1, &777, 1, u64::max_value(), WithdrawReasons::all());
-//		assert_err!(
-//			Kton::transfer(Origin::signed(777), 1, 1),
-//			"account liquidity restrictions prevent withdrawal"
-//		);
-//	});
-//}
-//
+#[test]
+fn transfer_should_fail() {
+	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		let _ = Kton::deposit_creating(&777, 1);
+		assert_err!(
+			Kton::transfer(Origin::signed(666), 777, 50),
+			"balance too low to send value",
+		);
+
+		let _ = Kton::deposit_creating(&666, Balance::max_value());
+		assert_err!(
+			Kton::transfer(Origin::signed(777), 666, 1),
+			"destination balance too high to receive value",
+		);
+
+		assert_err!(
+			Kton::transfer(Origin::signed(1), 777, Kton::vesting_balance(&1)),
+			"vesting balance too high to send value",
+		);
+
+		Kton::set_lock(
+			ID_1,
+			&777,
+			WithdrawLock::Normal(NormalLock {
+				amount: Balance::max_value(),
+				until: TimeStamp::max_value(),
+			}),
+			WithdrawReasons::all(),
+		);
+		assert_err!(
+			Kton::transfer(Origin::signed(777), 1, 1),
+			"account liquidity restrictions prevent withdrawal",
+		);
+	});
+}
+
 //#[test]
 //fn set_lock_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
