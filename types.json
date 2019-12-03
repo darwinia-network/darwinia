@@ -1,20 +1,18 @@
 {
-	"BlockNumber": "u64",
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
-	"EthBlockNumber": "u64",
 	"TimeStamp": "u64",
-
-    "RingBalanceOf": "u128",
+	"RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
+	"Address": "H160",
+	"EthBlockNumber": "u64",
 	"StakingBalance": {
 		"_enum": {
 			"Ring": "RingBalanceOf",
 			"Kton": "KtonBalanceOf"
 		}
 	},
-
 	"IndividualExposure": {
 		"who": "AccountId",
 		"value": "ExtendedBalance"
@@ -24,13 +22,11 @@
 		"own": "ExtendedBalance",
 		"others": "Vec<IndividualExposure>"
 	},
-
 	"ValidatorPrefs": {
 		"node_name": "Vec<u8>",
 		"unstake_threshold": "Compact<u32>",
 		"validator_payment_ratio": "Compact<u32>"
 	},
-
 	"StakingLedger": {
 		"stash": "AccountId",
 		"active_ring": "Compact<RingBalanceOf>",
@@ -45,7 +41,6 @@
 		"start_time": "Compact<Moment>",
 		"expire_time": "Compact<Moment>"
 	},
-
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"withdraw_lock": "WithdrawLock",
@@ -65,13 +60,12 @@
 		"staking_amount": "u128",
 		"unbondings": "Vec<NormalLock>"
 	},
-
 	"EthHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
-		"number": "BlockNumber",
-		"author": "Address",
-		"transactions_root": "H256",
+		"number": "EthBlockNumber",
+		"auth": "Address",
+		"transaction_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
 		"state_root": "H256",
@@ -89,11 +83,16 @@
 		"header_hash": "H256"
 	},
 	"BestBlock": {
-		"height": "BlockNumber",
+		"height": "EthBlockNumber",
 		"hash": "H256",
 		"total_difficulty": "U256"
 	},
 	"H64": {
 		"_struct": "[u8; 8]"
+	},
+	"BlockDetails": {
+		"height": "EthBlockNumber",
+		"hash": "H256",
+		"total_difficulty": "U256"
 	}
 }

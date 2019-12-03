@@ -69,9 +69,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
-	authoring_version: 3,
-	spec_version: 80,
-	impl_version: 80,
+	authoring_version: 2,
+	spec_version: 79,
+	impl_version: 79,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -145,7 +145,7 @@ parameter_types! {
 }
 impl balances::Trait for Runtime {
 	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnFreeBalanceZero = (Staking, Session);
 	type OnNewAccount = Indices;
 	type TransferPayment = ();
 	type DustRemoval = ();
@@ -186,7 +186,7 @@ parameter_types! {
 	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
 }
 impl timestamp::Trait for Runtime {
-	type Moment = Moment;
+	type Moment = u64;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
 }
@@ -206,7 +206,7 @@ impl authorship::Trait for Runtime {
 	type FindAuthor = session::FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
-	type EventHandler = (Staking, ImOnline);
+	type EventHandler = Staking;
 }
 
 // NOTE: `SessionHandler` and `SessionKeys` are co-dependent: One key will be used for each handler.
@@ -243,7 +243,7 @@ impl sudo::Trait for Runtime {
 impl offences::Trait for Runtime {
 	type Event = Event;
 	type IdentificationTuple = session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = Staking;
+	type OnOffenceHandler = ();
 }
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
@@ -264,11 +264,11 @@ impl grandpa::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const WindowSize: BlockNumber = 101;
-	pub const ReportLatency: BlockNumber = 1000;
+	pub const WindowSize: BlockNumber = finality_tracker::DEFAULT_WINDOW_SIZE.into();
+	pub const ReportLatency: BlockNumber = finality_tracker::DEFAULT_REPORT_LATENCY.into();
 }
 impl finality_tracker::Trait for Runtime {
-	type OnFinalizationStalled = Grandpa;
+	type OnFinalizationStalled = ();
 	type WindowSize = WindowSize;
 	type ReportLatency = ReportLatency;
 }
@@ -381,10 +381,8 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-impl ethereum_bridge::Trait for Runtime {
+impl eth_relay::Trait for Runtime {
 	type Event = Event;
-	//	type Ring = Balances;
-	//	type Hash = Hash;
 }
 
 construct_runtime!(
@@ -419,7 +417,7 @@ construct_runtime!(
 		Sudo: sudo,
 		Utility: utility::{Module, Call, Event},
 		
-		EthereumBridge: ethereum_bridge::{Storage, Module, Event<T>, Call},
+		EthRelay: eth_relay::{Storage, Module, Event<T>, Call},
 	}
 );
 
@@ -431,6 +429,7 @@ pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
+/// BlockId type as expected by this runtime.
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
