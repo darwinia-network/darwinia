@@ -1,6 +1,7 @@
 use super::*;
+
+use codec::{Decode, Encode};
 use ethbloom::Bloom;
-use pow::EthashSeal;
 use rlp::RlpStream;
 use sr_primitives::RuntimeDebug;
 

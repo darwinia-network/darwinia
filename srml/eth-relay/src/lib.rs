@@ -221,17 +221,12 @@ impl<T: Trait> Module<T> {
 			"block nubmer is too small."
 		);
 
-		match Self::header_of(parent_hash) {
-			None => return Err("Parent Header Not Found."),
-			Some(parent_header) => {
-				if (parent_header.number() + 1) != number {
-					return Err("Block number does not match.");
-				}
-			}
-		}
+		let prev_header = Self::header_of(parent_hash).unwrap();
+
+		ensure!((prev_header.number() + 1) == number, "Block number does not match.");
 
 		// check difficulty
-		let mut ethash_params = EthashPartial::production();
+		let ethash_params = EthashPartial::production();
 		//		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
 		let result = ethash_params.verify_block_basic(header);
 		match result {
@@ -243,7 +238,7 @@ impl<T: Trait> Module<T> {
 
 		// verify difficulty
 		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
-		ensure!(difficulty == header.difficulty(), "difficulty verification failed");
+		ensure!(difficulty == *header.difficulty(), "difficulty verification failed");
 
 		// verify mixhash
 		let seal = match EthashSeal::parse_seal(header.seal()) {
