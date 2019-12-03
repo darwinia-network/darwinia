@@ -47,7 +47,6 @@ fn transfer_should_fail() {
 			"vesting balance too high to send value",
 		);
 
-		println!("{:#?}", Kton::locks(&777));
 		Kton::set_lock(
 			ID_1,
 			&777,
@@ -57,7 +56,6 @@ fn transfer_should_fail() {
 			}),
 			WithdrawReasons::all(),
 		);
-		println!("{:#?}", Kton::locks(&777));
 		assert_err!(
 			Kton::transfer(Origin::signed(777), 1, 1),
 			"account liquidity restrictions prevent withdrawal",
