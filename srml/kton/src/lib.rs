@@ -1,5 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod imbalance;
+
 use codec::{Codec, Decode, Encode};
 use rstd::{cmp, fmt::Debug, prelude::*, result};
 #[cfg(feature = "std")]
@@ -22,13 +24,10 @@ use system::ensure_signed;
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalance::{NegativeImbalance, PositiveImbalance};
 
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod mock;
-
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod tests;
-
-mod imbalance;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
