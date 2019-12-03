@@ -2,10 +2,11 @@
 	"EpochDuration": "u64",
 	"EraIndex": "u32",
 	"TimeStamp": "u64",
-
     "RingBalanceOf": "u128",
 	"KtonBalanceOf": "u128",
 	"ExtendedBalance": "u128",
+	"Address": "H160",
+	"EthBlockNumber": "u64",
 	"StakingBalance": {
 		"_enum": {
 			"Ring": "RingBalanceOf",
@@ -62,5 +63,40 @@
 	"StakingLock": {
 		"staking_amount": "u128",
 		"unbondings": "Vec<NormalLock>"
+	},
+	"EthHeader": {
+		"parent_hash": "H256",
+		"timestamp": "u64",
+		"number": "EthBlockNumber",
+		"auth": "Address",
+		"transaction_root": "H256",
+		"uncles_hash": "H256",
+		"extra_data": "Bytes",
+		"state_root": "H256",
+		"receipts_root": "H256",
+		"log_bloom": "Bloom",
+		"gas_used": "U256",
+		"gas_limit": "U256",
+		"difficulty": "U256",
+		"seal": "Vec<Bytes>",
+		"hash": "Option<H256>"
+	},
+	"ActionRecord": {
+		"index": "u64",
+		"proof": "Vec<u8>",
+		"header_hash": "H256"
+	},
+	"BestBlock": {
+		"height": "EthBlockNumber",
+		"hash": "H256",
+		"total_difficulty": "U256"
+	},
+	"H64": {
+		"_struct": "[u8; 8]"
+	},
+	"BlockDetails": {
+		"height": "EthBlockNumber",
+		"hash": "H256",
+		"total_difficulty": "U256"
 	}
 }

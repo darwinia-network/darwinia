@@ -1,6 +1,7 @@
 use super::*;
+
+use codec::{Decode, Encode};
 use ethbloom::Bloom;
-use pow::EthashSeal;
 use rlp::RlpStream;
 use sr_primitives::RuntimeDebug;
 
@@ -243,6 +244,54 @@ mod tests {
 		(header1, header2)
 	}
 
+	fn ropsten_sequential_header() -> (EthHeader, EthHeader) {
+		let mixh1 = H256::from(hex!("c4b28f4b671b2e675634f596840d3115ce3df0ab38b6608a69371da16a3455aa"));
+		let nonce1 = H64::from(hex!("7afbefa403b138fa"));
+		// #6890091
+		// https://api-ropsten.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x69226b&boolean=true&apikey=YourApiKeyToken
+		// https://jsoneditoronline.org/
+		let header1 = EthHeader {
+			parent_hash: H256::from(hex!("8a18726cacb45b078bfe6491510cfa2dd578a70be2a217f416253cf3e94adbd2")),
+			timestamp: 0x5de5246c,
+			number: 0x69226b,
+			author: Address::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
+			transactions_root: H256::from(hex!("e3ab46e9eeb65fea6b0b1ffd07587f3ee7741b66f16a0b63a3b0c01900387833")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
+			extra_data: "d983010906846765746889676f312e31312e3133856c696e7578".from_hex().unwrap(),
+			state_root: H256::from(hex!("de1df18f7da776a86119d17373d252d3591b5a4270e14113701d27c852d25313")),
+			receipts_root: H256::from(hex!("9c9eb20b6f9176864630f84aa11f33969a355efa85b2eb1e386a5b1ea3599089")),
+			log_bloom: Bloom::from_str("0420000400000018000400400402044000088100000088000000010000040800202000002000a0000000000200004000800100000200000000000020003400000000000004002000000000080102004400000000010400008001000000000020000000009200100000000000004408040100000010000010022002130002000600048200000000000000004000002410000008000000000008021800100000000704010008080000200081000000004002000000009010c000010082000040400104020200000000040180000000000a803000000000002212000000000061000010000001010000400020000000002000020008008100040000005200000000").unwrap(),
+			gas_used: 0x769975.into(),
+			gas_limit: 0x7a1200.into(),
+			difficulty: 0xf4009f4b_u64.into(),
+			seal: vec![rlp::encode(&mixh1), rlp::encode(&nonce1)],
+			hash: Some(H256::from(hex!("1dafbf6a9825241ea5dfa7c3a54781c0784428f2ef3b588748521f83209d3caa"))),
+		};
+
+		// # 6890092
+		let mixh2 = H256::from(hex!("5a85e328a8bb041a386ffb25db029b7f0df4665a8a55b331b30a576761404fa6"));
+		let nonce2 = H64::from(hex!("650ea83006bb108d"));
+		let header2 = EthHeader {
+			parent_hash: H256::from(hex!("1dafbf6a9825241ea5dfa7c3a54781c0784428f2ef3b588748521f83209d3caa")),
+			timestamp: 0x5de52488,
+			number: 0x69226c,
+			author: Address::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
+			transactions_root: H256::from(hex!("cd2672df775af7bcb2b93a478666d500dee3d78e6970c71071dc79642db24719")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
+			extra_data: "d983010906846765746889676f312e31312e3133856c696e7578".from_hex().unwrap(),
+			state_root: H256::from(hex!("ee6ad25ad26e79004f15b8d423a9952859983ad740924fd13165d6e20953ff3e")),
+			receipts_root: H256::from(hex!("b2f020ce6615246a711bed61f2f485833943adb734d8e1cddd93d7ae8a641451")),
+			log_bloom: Bloom::from_str("8211a0050000250240000000010200402002800012890000600004000208230500042a400000000001000040c00080001001100000002000001004004012000010006200800900a03002510844010014a0000000010408600444200000200080000410001a00140004008000150108108000003010126a0110828010810000000200010000800011001000062040221422249420c1040a940002000000400840080000810000800000400000010408000002001018002200020040000000a00000804002800008000000000080800020082002000000002810054100500020000288240880290000510020000204c0304000000000000820088c800200000000").unwrap(),
+			gas_used: 0x702566.into(),
+			gas_limit: 0x7a1200.into(),
+			difficulty: 0xf3c49f25_u64.into(),
+			seal: vec![rlp::encode(&mixh2), rlp::encode(&nonce2)],
+			hash: Some(H256::from(hex!("21fe7ebfb3639254a0867995f3d490e186576b42aeea8c60f8e3360c256f7974"))),
+		};
+
+		(header1, header2)
+	}
+
 	#[test]
 	fn can_do_proof_of_work_verification_fail() {
 		let mut header: EthHeader = EthHeader::default();
@@ -273,11 +322,26 @@ mod tests {
 	}
 
 	#[test]
-	fn can_calculate_difficulty() {
+	fn can_calculate_difficulty_ropsten() {
+		let (header1, header2) = ropsten_sequential_header();
+		let expected = U256::from_str("f3c49f25").unwrap();
+		let mut ethash_params = EthashPartial::ropsten_test();
+		//		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
+		assert_eq!(ethash_params.calculate_difficulty(&header2, &header1), expected);
+	}
+
+	#[test]
+	fn can_calculate_difficulty_production() {
 		let (header1, header2) = sequential_header();
 		let expected = U256::from_str("92c07e50de0b9").unwrap();
-		let mut ethash_params = EthashPartial::test();
-		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
+		let mut ethash_params = EthashPartial::production();
 		assert_eq!(ethash_params.calculate_difficulty(&header2, &header1), expected);
+	}
+
+	#[test]
+	fn can_verify_basic_difficulty_production() {
+		let header = sequential_header().0;
+		let ethash_params = EthashPartial::production();
+		assert_eq!(ethash_params.verify_block_basic(&header), Ok(()));
 	}
 }

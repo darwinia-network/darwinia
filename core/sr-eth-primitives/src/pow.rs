@@ -60,25 +60,56 @@ impl EthashPartial {
 		}
 	}
 
-	/// TODO: to find out the exact params, only for testing.
-	#[cfg(feature = "std")]
-	pub fn test() -> Self {
+	pub fn production() -> Self {
 		EthashPartial {
 			minimum_difficulty: U256::from(131072_u128),
 			difficulty_bound_divisor: U256::from(0x0800),
-			difficulty_increment_divisor: 0x3C,
-			metropolis_difficulty_increment_divisor: 0x1E,
-			duration_limit: 0x3C,
-			homestead_transition: 0x30d40,
+			difficulty_increment_divisor: 10,
+			metropolis_difficulty_increment_divisor: 9,
+			duration_limit: 13,
+			homestead_transition: 1150000,
+			difficulty_hardfork_transition: u64::max_value(),
+			difficulty_hardfork_bound_divisor: U256::from(2048),
+			bomb_defuse_transition: u64::max_value(),
+			eip100b_transition: 4370000,
+			ecip1010_pause_transition: u64::max_value(),
+			ecip1010_continue_transition: u64::max_value(),
+			difficulty_bomb_delays: {
+				let mut m = BTreeMap::new();
+				m.insert(4370000, 3000000);
+				m.insert(7280000, 2000000);
+				m
+			},
+			expip2_transition: u64::max_value(),
+			expip2_duration_limit: 30,
+			progpow_transition: u64::max_value(),
+		}
+	}
+
+	/// TODO: to find out the exact ropsten params, only for testing.
+	#[cfg(feature = "std")]
+	pub fn ropsten_test() -> Self {
+		EthashPartial {
+			minimum_difficulty: U256::from(0x20000),
+			difficulty_bound_divisor: U256::from(0x0800),
+			difficulty_increment_divisor: 10,
+			metropolis_difficulty_increment_divisor: 9,
+			duration_limit: 0xd,
+			homestead_transition: 0x0,
 			difficulty_hardfork_transition: 0x59d9,
-			difficulty_hardfork_bound_divisor: U256::from(0x0200),
-			bomb_defuse_transition: 0x30d40,
-			eip100b_transition: 0xC3500,
-			ecip1010_pause_transition: 0x2dc6c0,
-			ecip1010_continue_transition: 0x4c4b40,
-			difficulty_bomb_delays: BTreeMap::<BlockNumber, BlockNumber>::default(),
-			expip2_transition: 0xc3500,
-			expip2_duration_limit: 0x1e,
+			difficulty_hardfork_bound_divisor: U256::from(0x0800),
+			bomb_defuse_transition: u64::max_value(),
+			eip100b_transition: 0x19f0a0,
+			ecip1010_pause_transition: u64::max_value(),
+			ecip1010_continue_transition: u64::max_value(),
+			difficulty_bomb_delays: {
+				let mut m = BTreeMap::new();
+				m.insert(0x19f0a0, 0x2dc6c0);
+				m.insert(0x408b70, 0x1e8480);
+				m
+			},
+			expip2_transition: u64::max_value(),
+			expip2_duration_limit: 30,
 			progpow_transition: u64::max_value(),
 		}
 	}
