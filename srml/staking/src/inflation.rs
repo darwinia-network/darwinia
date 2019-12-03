@@ -1,29 +1,29 @@
-use sr_primitives::Perbill;
-
-use sr_primitives::traits::{IntegerSquareRoot, SaturatedConversion};
-
-/// utility in staking
-use crate::{KtonBalanceOf, RingBalanceOf, Trait};
 use rstd::convert::TryInto;
+use sr_primitives::{
+	traits::{IntegerSquareRoot, SaturatedConversion},
+	Perbill,
+};
 use substrate_primitives::U256;
 
-//  1 - (99 /100)^sqrt(year)
+use super::{KtonBalanceOf, RingBalanceOf, TimeStamp, Trait};
+
+//  1 - (99 / 100) ^ sqrt(year)
 // <T: Trait + 'static>() -> RingBalanceOf<T>
 pub fn compute_total_payout<T: Trait>(
-	era_duration: u64,
-	living_time: u64,
+	era_duration: TimeStamp,
+	living_time: TimeStamp,
 	total_left: u128,
 ) -> (RingBalanceOf<T>, RingBalanceOf<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
-	const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
+	const MILLISECONDS_PER_YEAR: TimeStamp = 1000 * 3600 * 24 * 36525 / 100;
 
 	let year: u32 = (living_time / MILLISECONDS_PER_YEAR + 1).saturated_into::<u32>();
 
-	let portion = Perbill::from_rational_approximation(era_duration as u64, MILLISECONDS_PER_YEAR);
+	let portion = Perbill::from_rational_approximation(era_duration, MILLISECONDS_PER_YEAR);
 
 	let maximum = portion * total_left;
 
-	//	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
+	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
 
 	let payout = maximum * 1; // TODO: add treasury ratio: Perbill::from_rational_approximation(npos_token_staked, total_tokens);
 
@@ -58,4 +58,12 @@ pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u32) -> Kt
 	let res = U256::from(value) * (U256::from(1000) * (quotient - 1) + U256::from(1000) * remainder / de)
 		/ U256::from(1_970_000);
 	res.as_u128().try_into().unwrap_or_default()
+}
+
+#[cfg(any(feature = "std", test))]
+mod test {
+	//	use super::*;
+
+	#[test]
+	fn _test() {}
 }
