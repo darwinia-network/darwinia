@@ -300,8 +300,6 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
 	type GenesisTime: Get<MomentOf<Self>>;
 
-	type ErasPerEpoch: Get<EraIndex>;
-
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
 }
