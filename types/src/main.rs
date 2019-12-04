@@ -5,6 +5,8 @@ use std::{
 	path::Path,
 };
 
+use regex::Regex;
+
 mod native_types {
 	const ARRAY: &[&str] = &["Bytes", "H160", "H256", "U128", "U256", "U512"];
 
