@@ -413,7 +413,8 @@ decl_storage! {
 							T::Origin::from(Some(controller.clone()).into()),
 							votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect(),
 						)
-					}, _ => Ok(())
+					},
+					_ => Ok(())
 				};
 			}
 		});
