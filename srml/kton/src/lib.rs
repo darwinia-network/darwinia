@@ -267,9 +267,9 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 			Self::set_free_balance(transactor, new_from_balance);
 			Self::set_free_balance(dest, new_to_balance);
+			Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
 		}
 
-		Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
 		Ok(())
 	}
 
