@@ -60,7 +60,6 @@ use version::RuntimeVersion;
 use constants::{currency::*, time::*};
 use darwinia_support::TimeStamp;
 use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
-use staking::EraIndex;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
