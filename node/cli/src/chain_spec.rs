@@ -24,8 +24,9 @@ use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_runtime::{
-	constants::currency::*, BalancesConfig, Block, ContractsConfig, IndicesConfig, KtonConfig, SessionConfig,
-	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
+	constants::currency::*, BabeConfig, BalancesConfig, Block, ContractsConfig, GrandpaConfig, ImOnlineConfig,
+	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, sr25519, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -133,7 +134,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 
 	let endowed_accounts: Vec<AccountId> = vec![root_key.clone()];
 
-	testnet_genesis(initial_authorities, root_key, Some(endowed_accounts), false)
+	darwinia_genesis(initial_authorities, root_key, Some(endowed_accounts), false)
 }
 
 /// Staging testnet config.
@@ -176,151 +177,8 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, Grandp
 	)
 }
 
-/// Helper function to create GenesisConfig for testing
-pub fn testnet_genesis(
-	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)>,
-	root_key: AccountId,
-	endowed_accounts: Option<Vec<AccountId>>,
-	enable_println: bool,
-) -> GenesisConfig {
-	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
-		vec![
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-		]
-	});
-
-	const ENDOWMENT: Balance = 10_000_000 * COIN;
-	const STASH: Balance = 100 * COIN;
-
-	GenesisConfig {
-		babe: Some(Default::default()),
-		contracts: Some(ContractsConfig {
-			current_schedule: contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
-				..Default::default()
-			},
-			gas_price: 1 * MICRO,
-		}),
-		grandpa: Some(Default::default()),
-		im_online: Some(Default::default()),
-		indices: Some(IndicesConfig {
-			ids: endowed_accounts
-				.iter()
-				.cloned()
-				.chain(initial_authorities.iter().map(|x| x.0.clone()))
-				.collect::<Vec<_>>(),
-		}),
-		session: Some(SessionConfig {
-			keys: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), session_keys(x.2.clone(), x.3.clone(), x.4.clone())))
-				.collect::<Vec<_>>(),
-		}),
-		sudo: Some(SudoConfig { key: root_key }),
-		system: Some(SystemConfig {
-			code: WASM_BINARY.to_vec(),
-			changes_trie_config: Default::default(),
-		}),
-
-		balances: Some(BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			vesting: vec![],
-		}),
-		kton: Some(KtonConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			vesting: vec![],
-		}),
-		staking: Some(StakingConfig {
-			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * COIN / 63720,
-			//			offline_slash: Perbill::from_parts(1_000_000),
-			session_reward: Perbill::from_percent(90),
-			validator_count: 7,
-			//			offline_slash_grace: 4,
-			minimum_validator_count: 4,
-			stakers: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
-				.collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
-			slash_reward_fraction: Perbill::from_percent(10),
-			..Default::default()
-		}),
-	}
-}
-
-fn development_config_genesis() -> GenesisConfig {
-	testnet_genesis(
-		vec![get_authority_keys_from_seed("Alice")],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		None,
-		true,
-	)
-}
-
-/// Development config (single validator Alice)
-pub fn development_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		"Development",
-		"dev",
-		development_config_genesis,
-		vec![],
-		None,
-		None,
-		None,
-		Default::default(),
-	)
-}
-
-fn local_testnet_genesis() -> GenesisConfig {
-	testnet_genesis(
-		vec![
-			get_authority_keys_from_seed("Alice"),
-			get_authority_keys_from_seed("Bob"),
-		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		None,
-		false,
-	)
-}
-
-/// Local testnet config (multivalidator Alice + Bob)
-pub fn local_testnet_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		"Local Testnet",
-		"local_testnet",
-		local_testnet_genesis,
-		vec![],
-		None,
-		None,
-		None,
-		Default::default(),
-	)
-}
-
 /// Helper function to create GenesisConfig for darwinia
-pub fn darwinia_genesis_verbose(
+pub fn darwinia_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)>,
 	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
@@ -347,7 +205,7 @@ pub fn darwinia_genesis_verbose(
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-		babe: Some(Default::default()),
+		babe: Some(BabeConfig { authorities: vec![] }),
 		contracts: Some(ContractsConfig {
 			current_schedule: contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -355,8 +213,8 @@ pub fn darwinia_genesis_verbose(
 			},
 			gas_price: 1 * MICRO,
 		}),
-		grandpa: Some(Default::default()),
-		im_online: Some(Default::default()),
+		grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		im_online: Some(ImOnlineConfig { keys: vec![] }),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -396,34 +254,79 @@ pub fn darwinia_genesis_verbose(
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			//			current_era_total_reward: 80_000_000 * COIN / 63720,
-			//			offline_slash: Perbill::from_parts(1_000_000),
-			session_reward: Perbill::from_percent(90),
-			validator_count: 7,
-			//			offline_slash_grace: 4,
-			minimum_validator_count: 4,
+			validator_count: initial_authorities.len() as u32 * 2,
+			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
 				.collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
 		}),
 	}
 }
 
-fn crayfish_config_genesis() -> GenesisConfig {
-	darwinia_genesis_verbose(
-		vec![get_authority_keys_from_seed("Alice")],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+/// Development config (single validator Alice)
+pub fn development_config() -> ChainSpec {
+	fn development_config_genesis() -> GenesisConfig {
+		darwinia_genesis(
+			vec![get_authority_keys_from_seed("Alice")],
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			None,
+			true,
+		)
+	}
+
+	ChainSpec::from_genesis(
+		"Development",
+		"dev",
+		development_config_genesis,
+		vec![],
 		None,
-		true,
+		None,
+		None,
+		Default::default(),
+	)
+}
+
+/// Local testnet config (multivalidator Alice + Bob)
+pub fn local_testnet_config() -> ChainSpec {
+	fn local_testnet_genesis() -> GenesisConfig {
+		darwinia_genesis(
+			vec![
+				get_authority_keys_from_seed("Alice"),
+				get_authority_keys_from_seed("Bob"),
+			],
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			None,
+			false,
+		)
+	}
+
+	ChainSpec::from_genesis(
+		"Local Testnet",
+		"local_testnet",
+		local_testnet_genesis,
+		vec![],
+		None,
+		None,
+		None,
+		Default::default(),
 	)
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
 pub fn crayfish_testnet_config() -> ChainSpec {
+	fn crayfish_config_genesis() -> GenesisConfig {
+		darwinia_genesis(
+			vec![get_authority_keys_from_seed("Alice")],
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			None,
+			true,
+		)
+	}
+
 	ChainSpec::from_genesis(
 		"Darwinia Crayfish Testnet",
 		"crayfish_testnet",
