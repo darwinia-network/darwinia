@@ -6,7 +6,7 @@ use std::{
 };
 
 mod native_types {
-	const ARRAY: &[&str] = &["Bytes", "H64", "H160", "H256", "U128", "U256", "U512"];
+	const ARRAY: &[&str] = &["Bytes", "H160", "H256", "U128", "U256", "U512"];
 
 	const NUMERIC: &[&str] = &[
 		"i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "i128", "u128", "i268", "u256",
