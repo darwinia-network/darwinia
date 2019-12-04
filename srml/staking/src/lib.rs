@@ -433,7 +433,7 @@ decl_event!(
 	    NodeNameUpdated,
 	    
 	    // Develop
-	    Print(u128),
+		//	    Print(u128),
     }
 );
 
@@ -1078,6 +1078,10 @@ impl<T: Trait> Module<T> {
 			//			let validator_len: ExtendedBalance = (validators.len() as u32).into();
 			//			let total_rewarded_stake = Self::slot_stake() * validator_len;
 
+			//			Self::deposit_event(RawEvent::Print(era_duration.saturated_into::<u128>()));
+			//			Self::deposit_event(RawEvent::Print((T::Time::now() - T::GenesisTime::get()).saturated_into::<u128>()));
+			//			Self::deposit_event(RawEvent::Print((T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>()));
+
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration.saturated_into::<TimeStamp>(),
 				(T::Time::now() - T::GenesisTime::get()).saturated_into::<TimeStamp>(),
@@ -1319,7 +1323,6 @@ impl<T: Trait> Module<T> {
 			// and let the chain keep producing blocks until we can decide on a sufficiently
 			// substantial set.
 			// TODO: #2494
-			Self::deposit_event(RawEvent::Print(111));
 			(Self::slot_stake(), None)
 		}
 	}
