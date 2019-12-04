@@ -387,37 +387,37 @@ decl_storage! {
 		EraSlashJournal get(fn era_slash_journal): map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
 	}
 	add_extra_genesis {
-		config(stakers):
-			Vec<(T::AccountId, T::AccountId, RingBalanceOf<T>, StakerStatus<T::AccountId>)>;
-		build(| config: &GenesisConfig<T>| {
-				for &(ref stash, ref controller, balance, ref status) in &config.stakers {
-					assert!(T::Ring::free_balance(&stash) >= balance);
-					let _ = <Module<T>>::bond(
-						T::Origin::from(Some(stash.clone()).into()),
-						T::Lookup::unlookup(controller.clone()),
-						StakingBalance::Ring(balance),
-						RewardDestination::Stash,
-						12,
-					);
-					let _ = match status {
-						StakerStatus::Validator => {
-							<Module<T>>::validate(
-								T::Origin::from(Some(controller.clone()).into()),
-								ValidatorPrefs {
-									node_name: vec![0; 8],
-									..Default::default()
-								},
-							)
-						},
-						StakerStatus::Nominator(votes) => {
-							<Module<T>>::nominate(
-								T::Origin::from(Some(controller.clone()).into()),
-								votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect(),
-							)
-						}, _ => Ok(())
-					};
-				}
-			});
+		config(stakers): Vec<(T::AccountId, T::AccountId, RingBalanceOf<T>, StakerStatus<T::AccountId>)>;
+		build(|config: &GenesisConfig<T>| {
+			for &(ref stash, ref controller, balance, ref status) in &config.stakers {
+				assert!(T::Ring::free_balance(&stash) >= balance);
+				let _ = <Module<T>>::bond(
+					T::Origin::from(Some(stash.clone()).into()),
+					T::Lookup::unlookup(controller.clone()),
+					StakingBalance::Ring(balance),
+					RewardDestination::Stash,
+					12,
+				);
+				let _ = match status {
+					StakerStatus::Validator => {
+						<Module<T>>::validate(
+							T::Origin::from(Some(controller.clone()).into()),
+							ValidatorPrefs {
+								node_name: "Darwinia-Alice".bytes().collect(),
+								..Default::default()
+							},
+						)
+					},
+					StakerStatus::Nominator(votes) => {
+						<Module<T>>::nominate(
+							T::Origin::from(Some(controller.clone()).into()),
+							votes.iter().map(|l| {T::Lookup::unlookup(l.clone())}).collect(),
+						)
+					},
+					_ => Ok(())
+				};
+			}
+		});
 	}
 }
 
@@ -432,6 +432,9 @@ decl_event!(
 
 		/// NodeName changed
 	    NodeNameUpdated,
+	    
+	    // Develop
+		//	    Print(u128),
     }
 );
 
@@ -1072,19 +1075,21 @@ impl<T: Trait> Module<T> {
 		if !era_duration.is_zero() {
 			let validators = Self::current_elected();
 
-			// TODO:All reward will give to payouts.
+			// TODO: All reward will give to payouts.
 			//			let validator_len: ExtendedBalance = (validators.len() as u32).into();
 			//			let total_rewarded_stake = Self::slot_stake() * validator_len;
 
-			let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>();
+			//			Self::deposit_event(RawEvent::Print(era_duration.saturated_into::<u128>()));
+			//			Self::deposit_event(RawEvent::Print((T::Time::now() - T::GenesisTime::get()).saturated_into::<u128>()));
+			//			Self::deposit_event(RawEvent::Print((T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>()));
+
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration.saturated_into::<TimeStamp>(),
 				(T::Time::now() - T::GenesisTime::get()).saturated_into::<TimeStamp>(),
-				total_left,
+				(T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>(),
 			);
 
 			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();
-
 			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
 				if p != 0 {
 					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
@@ -1092,7 +1097,7 @@ impl<T: Trait> Module<T> {
 				}
 			}
 
-			// assert!(total_imbalance.peek() == total_payout)
+			//			assert!(total_imbalance.peek() == total_payout);
 			let total_payout = total_imbalance.peek();
 
 			let rest = max_payout.saturating_sub(total_payout);

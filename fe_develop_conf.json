@@ -1,0 +1,10 @@
+{
+	"name": "Darwinia-Alice",
+	"rpc-external": true,
+	"rpc-port": 23333,
+	"ws-external": true,
+	"ws-port": 23334,
+	"rpc-cors": "all",
+	"port": 23335,
+	"base-path": "/tmp/darwinia-alice"
+}

@@ -3,6 +3,8 @@
 mod imbalance;
 
 use codec::{Codec, Decode, Encode};
+#[cfg(not(feature = "std"))]
+use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, prelude::*, result};
 #[cfg(feature = "std")]
 use sr_primitives::traits::One;
@@ -113,7 +115,7 @@ decl_storage! {
 						let per_block = balance / length.max(One::one());
 						let offset = begin * per_block + balance;
 
-						(who.clone(), VestingSchedule { offset, per_block })
+						(who.to_owned(), VestingSchedule { offset, per_block })
 					})
 			}).collect::<Vec<_>>()
 		}): map T::AccountId => Option<VestingSchedule<T::Balance>>;
@@ -267,9 +269,9 @@ impl<T: Trait> Currency<T::AccountId> for Module<T> {
 
 			Self::set_free_balance(transactor, new_from_balance);
 			Self::set_free_balance(dest, new_to_balance);
+			Self::deposit_event(RawEvent::TokenTransfer(transactor.to_owned(), dest.to_owned(), value));
 		}
 
-		Self::deposit_event(RawEvent::TokenTransfer(transactor.clone(), dest.clone(), value));
 		Ok(())
 	}
 

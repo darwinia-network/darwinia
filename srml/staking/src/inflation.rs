@@ -15,7 +15,7 @@ pub fn compute_total_payout<T: Trait>(
 	total_left: u128,
 ) -> (RingBalanceOf<T>, RingBalanceOf<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
-	const MILLISECONDS_PER_YEAR: TimeStamp = 1000 * 3600 * 24 * 36525 / 100;
+	const MILLISECONDS_PER_YEAR: TimeStamp = ((36525 * 24 * 60 * 60) / 100) * 1000;
 
 	let year: u32 = (living_time / MILLISECONDS_PER_YEAR + 1).saturated_into::<u32>();
 
@@ -46,12 +46,4 @@ pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u32) -> Kt
 	let res = U256::from(value) * (U256::from(1000) * (quotient - 1) + U256::from(1000) * remainder / de)
 		/ U256::from(1_970_000);
 	res.as_u128().try_into().unwrap_or_default()
-}
-
-#[cfg(any(feature = "std", test))]
-mod test {
-	//	use super::*;
-
-	#[test]
-	fn _test() {}
 }
