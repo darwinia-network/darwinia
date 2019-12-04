@@ -33,7 +33,7 @@ use sr_primitives::{
 	traits::{IdentifyAccount, Verify},
 	Perbill,
 };
-use substrate_service;
+use substrate_service::Properties;
 use substrate_telemetry::TelemetryEndpoints;
 
 type AccountPublic = <Signature as Verify>::Signer;
@@ -431,7 +431,13 @@ pub fn crayfish_testnet_config() -> ChainSpec {
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
-		None,
+		{
+			let mut properties = Properties::new();
+			properties.insert("tokenDecimals".into(), 9.into());
+			properties.insert("tokenSymbol".into(), "RING".into());
+
+			Some(properties)
+		},
 		Default::default(),
 	)
 }

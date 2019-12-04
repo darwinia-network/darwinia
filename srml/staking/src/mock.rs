@@ -183,7 +183,6 @@ impl kton::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDuration: TimeStamp = 60;
-	pub const ErasPerEpoch: EraIndex = 10;
 }
 parameter_types! {
 	// decimal 9
@@ -204,7 +203,6 @@ impl Trait for Test {
 	type BondingDuration = BondingDuration;
 	type Cap = CAP;
 	type GenesisTime = ();
-	type ErasPerEpoch = ErasPerEpoch;
 	type SessionInterface = Self;
 }
 
@@ -322,7 +320,6 @@ impl ExtBuilder {
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			current_era: self.current_era,
-			//			current_era_total_reward: 80_000_000 * COIN / ErasPerEpoch::get() as u64,
 			stakers: vec![
 				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
 				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
