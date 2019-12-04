@@ -47,15 +47,10 @@ use darwinia_support::{
 };
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
-#[allow(unused)]
-#[cfg(any(feature = "bench", test))]
+#[cfg(test)]
 mod mock;
-//
 #[cfg(test)]
 mod tests;
-
-//#[cfg(all(feature = "bench", test))]
-//mod benches;
 
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
@@ -999,8 +994,9 @@ impl<T: Trait> Module<T> {
 				// from the nearest expire time
 				if !value_left.is_zero() {
 					// sorted by expire_time from far to near
-					deposit_items
-						.sort_unstable_by_key(|item| u64::max_value() - item.expire_time.saturated_into::<u64>());
+					deposit_items.sort_unstable_by_key(|item| {
+						TimeStamp::max_value() - item.expire_time.saturated_into::<TimeStamp>()
+					});
 					deposit_items.drain_filter(|item| {
 						if value_left.is_zero() {
 							return false;
@@ -1084,8 +1080,8 @@ impl<T: Trait> Module<T> {
 
 			let total_left: u128 = (T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>();
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
-				era_duration.saturated_into::<u64>(),
-				(T::GenesisTime::get() - T::Time::now()).saturated_into::<u64>(),
+				era_duration.saturated_into::<TimeStamp>(),
+				(T::Time::now() - T::GenesisTime::get()).saturated_into::<TimeStamp>(),
 				total_left,
 			);
 
