@@ -492,18 +492,52 @@ fn expired_ring_should_capable_to_promise_again() {
 
 #[test]
 fn inflation_should_be_correct() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let initial_issuance = 1_200_000_000 * COIN;
 		let surplus_needed = initial_issuance - Ring::total_issuance();
 		let _ = Ring::deposit_into_existing(&11, surplus_needed);
 
 		assert_eq!(Ring::total_issuance(), initial_issuance);
-		// TODO
-		//		assert_eq!(Staking::current_era_total_reward(), 80000000 * COIN / 10);
-		//		start_era(11);
-		//		// ErasPerEpoch = 10
-		//		assert_eq!(Staking::current_era_total_reward(), 88000000 * COIN / 10);
 	});
+
+	//	// breakpoint test
+	//	ExtBuilder::default().build().execute_with(|| {
+	//		gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
+	//		gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
+	//		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+	//
+	//		assert_ok!(Staking::validate(
+	//			Origin::signed(validator_1_controller),
+	//			ValidatorPrefs {
+	//				node_name: vec![0; 8],
+	//				..Default::default()
+	//			},
+	//		));
+	//		assert_ok!(Staking::validate(
+	//			Origin::signed(validator_2_controller),
+	//			ValidatorPrefs {
+	//				node_name: vec![1; 8],
+	//				..Default::default()
+	//			},
+	//		));
+	//		assert_ok!(Staking::nominate(
+	//			Origin::signed(nominator_controller),
+	//			vec![validator_1_stash, validator_2_stash],
+	//		));
+	//
+	//		Timestamp::set_timestamp(1_575_448_345_000 - 12_000);
+	//		// breakpoint here
+	//		Staking::new_era(1);
+	//
+	//		Timestamp::set_timestamp(1_575_448_345_000);
+	//		// breakpoint here
+	//		Staking::new_era(2);
+	//
+	//		// breakpoint here
+	//		inflation::compute_total_payout::<Test>(11_999, 1_295_225_000, 9_987_999_900_000_000_000);
+	//
+	//		loop {}
+	//	});
 }
 
 #[test]
@@ -621,7 +655,7 @@ fn slash_should_not_touch_unbondings() {
 
 #[test]
 fn bond_over_max_promise_month_should_fail() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456));
 		assert_err!(
 			Staking::bond(
@@ -644,7 +678,7 @@ fn bond_over_max_promise_month_should_fail() {
 
 #[test]
 fn check_stash_already_bonded_and_controller_already_paired() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		gen_paired_account!(unpaired_stash(123), unpaired_controller(456));
 		assert_err!(
 			Staking::bond(
@@ -671,7 +705,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 
 #[test]
 fn pool_should_be_increased_and_decreased_correctly() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let mut ring_pool = Staking::ring_pool();
 		let mut kton_pool = Staking::kton_pool();
 
@@ -784,7 +818,7 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 
 #[test]
 fn promise_extra_should_not_remove_unexpired_items() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456), promise_month(12));
 		let expired_items_len = 3;
 		let expiry_date = (promise_month * MONTH_IN_SECONDS) as u64;
@@ -821,7 +855,7 @@ fn promise_extra_should_not_remove_unexpired_items() {
 
 #[test]
 fn unbond_zero() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		gen_paired_account!(stash(123), controller(456), promise_month(12));
 		let ledger = Staking::ledger(&controller).unwrap();
 
@@ -840,7 +874,7 @@ fn unbond_zero() {
 // lost 3 Kton and 10_000 Ring's power for nominate
 #[test]
 fn yakio_q1() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let (stash, controller) = (777, 888);
 		let _ = Ring::deposit_creating(&stash, 20_000);
 
@@ -884,7 +918,7 @@ fn yakio_q1() {
 fn yakio_q2() {
 	fn run(with_new_era: bool) -> Balance {
 		let mut balance = 0;
-		ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+		ExtBuilder::default().build().execute_with(|| {
 			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
 			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
 			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
@@ -933,7 +967,7 @@ fn yakio_q2() {
 
 #[test]
 fn xavier_q1() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		Kton::deposit_creating(&stash, 10);
@@ -1083,7 +1117,7 @@ fn xavier_q1() {
 		//		println!();
 	});
 
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		let _ = Ring::deposit_creating(&stash, 10);
@@ -1236,7 +1270,7 @@ fn xavier_q1() {
 
 #[test]
 fn xavier_q2() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		Kton::deposit_creating(&stash, 10);
@@ -1439,7 +1473,7 @@ fn xavier_q2() {
 		);
 	});
 
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		let _ = Ring::deposit_creating(&stash, 10);
@@ -1645,7 +1679,7 @@ fn xavier_q2() {
 
 #[test]
 fn xavier_q3() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		Kton::deposit_creating(&stash, 10);
@@ -1721,7 +1755,7 @@ fn xavier_q3() {
 		//		println!();
 	});
 
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
 		let _ = Ring::deposit_creating(&stash, 10);
