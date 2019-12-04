@@ -48,10 +48,10 @@ pub mod time {
 	///
 	/// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
 
-	// Test
-	//	pub const MILLISECS_PER_BLOCK: Moment = 1000;
+	// Develop
+	pub const MILLISECS_PER_BLOCK: Moment = 1000;
 	// Production
-	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	//	pub const MILLISECS_PER_BLOCK: Moment = 3000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
@@ -63,7 +63,10 @@ pub mod time {
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
-		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
+		// Develop
+		10
+		// Production
+		//		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 	};
 
 	// These time units are defined in number of blocks.
