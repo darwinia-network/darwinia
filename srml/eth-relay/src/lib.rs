@@ -25,6 +25,9 @@ use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
 
+mod mock;
+mod tests;
+
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 }
@@ -139,34 +142,15 @@ decl_module! {
 		pub fn test_check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(receipt, proof_record));
 		}
 
 		pub fn check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			let header_hash = proof_record.header_hash;
-			if !HeaderOf::exists(header_hash) {
-				return Err("This block header does not exist.")
-			}
+			ensure!(Self::verify_receipt(&receipt, &proof_record), "Receipt proof verification failed.");
 
-			let header = HeaderOf::get(header_hash).unwrap();
-
-			let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
-			let key = rlp::encode(&proof_record.index);
-
-			let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
-				.unwrap();
-			assert!(value.is_some());
-
-			let receipt_encoded = rlp::encode(&receipt);
-
-			assert_eq!(value.unwrap(), receipt_encoded);
-			// confirm that the block hash is right
-			// get the receipt MPT trie root from the block header
-			// Using receipt MPT trie root to verify the proof and index etc.
-
-			<Module<T>>::deposit_event(RawEvent::RelayProof(proof_record));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -184,7 +168,7 @@ decl_event! {
 		<T as system::Trait>::AccountId
 	{
 		NewHeader(EthHeader),
-		RelayProof(ActionRecord),
+		RelayProof(Receipt, ActionRecord),
 		TODO(AccountId),
 	}
 }
@@ -206,6 +190,34 @@ impl<T: Trait> Module<T> {
 
 		// Initialize the header.
 		BeginHeader::put(header.clone());
+	}
+
+	fn verify_receipt(receipt: &Receipt, proof_record: &ActionRecord) -> bool {
+		let header_hash = proof_record.header_hash;
+		if !HeaderOf::exists(header_hash) {
+			return false; //Err("This block header does not exist.");
+		}
+
+		let header = HeaderOf::get(header_hash).unwrap();
+
+		let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
+		let key = rlp::encode(&proof_record.index);
+
+		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof).unwrap();
+		if !value.is_some() {
+			return false;
+		}
+
+		let receipt_encoded = rlp::encode(receipt);
+
+		if value.unwrap() != receipt_encoded {
+			return false;
+		}
+		// confirm that the block hash is right
+		// get the receipt MPT trie root from the block header
+		// Using receipt MPT trie root to verify the proof and index etc.
+
+		true
 	}
 
 	/// 1. proof of difficulty
