@@ -15,21 +15,21 @@ enum Seal {
 
 #[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RlpEncodable, RlpDecodable, RuntimeDebug)]
 pub struct EthHeader {
-	parent_hash: H256,
-	timestamp: u64,
-	number: BlockNumber,
-	author: Address,
-	transactions_root: H256,
-	uncles_hash: H256,
-	extra_data: Bytes,
-	state_root: H256,
-	receipts_root: H256,
-	log_bloom: Bloom,
-	gas_used: U256,
-	gas_limit: U256,
-	difficulty: U256,
-	seal: Vec<Bytes>,
-	hash: Option<H256>,
+	pub parent_hash: H256,
+	pub timestamp: u64,
+	pub number: BlockNumber,
+	pub author: Address,
+	pub transactions_root: H256,
+	pub uncles_hash: H256,
+	pub extra_data: Bytes,
+	pub state_root: H256,
+	pub receipts_root: H256,
+	pub log_bloom: Bloom,
+	pub gas_used: U256,
+	pub gas_limit: U256,
+	pub difficulty: U256,
+	pub seal: Vec<Bytes>,
+	pub hash: Option<H256>,
 }
 
 /// Alter value of given field, reset memoised hash if changed.

@@ -148,7 +148,7 @@ decl_module! {
 		pub fn check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			ensure!(Self::verify_receipt(&receipt, &proof_record), "Receipt proof verification failed.");
+			ensure!(Self::verify_receipt(&proof_record).is_some(), "Receipt proof verification failed.");
 
 			<Module<T>>::deposit_event(RawEvent::RelayProof(receipt, proof_record));
 		}
@@ -192,10 +192,10 @@ impl<T: Trait> Module<T> {
 		BeginHeader::put(header.clone());
 	}
 
-	fn verify_receipt(receipt: &Receipt, proof_record: &ActionRecord) -> bool {
+	fn verify_receipt(proof_record: &ActionRecord) -> Option<Receipt> {
 		let header_hash = proof_record.header_hash;
 		if !HeaderOf::exists(header_hash) {
-			return false; //Err("This block header does not exist.");
+			return None; //Err("This block header does not exist.");
 		}
 
 		let header = HeaderOf::get(header_hash).unwrap();
@@ -205,19 +205,21 @@ impl<T: Trait> Module<T> {
 
 		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof).unwrap();
 		if !value.is_some() {
-			return false;
+			return None;
 		}
 
-		let receipt_encoded = rlp::encode(receipt);
+		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("can't deserialize the receipt");
 
-		if value.unwrap() != receipt_encoded {
-			return false;
-		}
+		Some(proof_receipt)
+
+		//		let receipt_encoded = rlp::encode(receipt);
+
+		//		if value.unwrap() != receipt_encoded {
+		//			return false;
+		//		}
 		// confirm that the block hash is right
 		// get the receipt MPT trie root from the block header
 		// Using receipt MPT trie root to verify the proof and index etc.
-
-		true
 	}
 
 	/// 1. proof of difficulty
@@ -240,13 +242,9 @@ impl<T: Trait> Module<T> {
 		// check difficulty
 		let ethash_params = EthashPartial::production();
 		//		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
-		let result = ethash_params.verify_block_basic(header);
-		match result {
-			Ok(_) => (),
-			Err(e) => {
-				return Err("Block difficulty verification failed.");
-			}
-		};
+		let result = ethash_params
+			.verify_block_basic(header)
+			.expect("Block difficulty verification failed.");
 
 		// verify difficulty
 		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
