@@ -199,6 +199,7 @@ impl ExtBuilder {
 }
 
 pub type System = system::Module<Runtime>;
+pub type Timestamp = timestamp::Module<Runtime>;
 pub type Balances = Module<Runtime>;
 
 pub const CALL: &<Runtime as system::Trait>::Call = &();
