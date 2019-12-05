@@ -5,11 +5,10 @@ use codec::{Decode, Encode};
 use core::cmp;
 use core::convert::{From, Into, TryFrom};
 use error::{BlockError, Mismatch, OutOfBounds};
-use ethbloom::Bloom;
 use ethereum_types::BigEndianHash;
 use header::EthHeader;
 use keccak_hash::KECCAK_EMPTY_LIST_RLP;
-use primitive_types::{H160, H256, U128, U256, U512};
+use primitive_types::{H256, U256, U512};
 use rlp::*;
 use rstd::{collections::btree_map::BTreeMap, mem, result};
 use sr_primitives::RuntimeDebug;
@@ -279,7 +278,7 @@ fn difficulty_to_boundary_aux<T: Into<U512>>(difficulty: T) -> ethereum_types::U
 	}
 }
 
-fn quick_get_difficulty(header_hash: &[u8; 32], nonce: u64, mix_hash: &[u8; 32], progpow: bool) -> [u8; 32] {
+fn quick_get_difficulty(header_hash: &[u8; 32], nonce: u64, mix_hash: &[u8; 32], _progpow: bool) -> [u8; 32] {
 	let mut first_buf = [0u8; 40];
 	let mut buf = [0u8; 64 + 32];
 

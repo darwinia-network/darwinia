@@ -2,20 +2,21 @@
 
 #![cfg(test)]
 
-use sr_primitives::traits::SignedExtension;
-use support::{
-	assert_err, assert_noop, assert_ok,
-	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, ReservableCurrency},
-};
-use system::RawOrigin;
-
 use super::*;
-use mock::{info_from_weight, EthRelay, ExtBuilder, Runtime, System, CALL};
+//use sr_primitives::traits::SignedExtension;
+//use support::{
+//	assert_err, assert_noop, assert_ok,
+//	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, ReservableCurrency},
+//};
+//use system::RawOrigin;
 
-use rstd::prelude::*;
+use mock::{EthRelay, ExtBuilder, System};
+//use mock::{info_from_weight, EthRelay, ExtBuilder, Runtime, System, CALL};
+
+//use rstd::prelude::*;
 use sr_eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
-	Address, Bloom, Bytes,
+	Address, Bloom, H64, U128,
 };
 
 use hex_literal::hex;

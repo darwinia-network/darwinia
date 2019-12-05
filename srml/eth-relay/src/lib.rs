@@ -7,19 +7,18 @@
 use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use sr_eth_primitives::{
-	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H160,
-	H256, H64, U128, U256, U512,
+	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
 };
 
 use ethash::{EthereumPatch, LightDAG};
 
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Currency};
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure};
 
 use system::ensure_signed;
 
 use sr_primitives::RuntimeDebug;
 
-use rlp::{decode, encode};
+//use rlp::{decode, encode};
 
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
@@ -129,7 +128,7 @@ decl_module! {
 			});
 
 			let best_header_hash = Self::best_header_hash();
-			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
+//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
 			let best_header_details = Self::header_details_of(best_header_hash).unwrap();
 
 			// TODO: Check total difficulty and reorg if necessary.
@@ -154,7 +153,8 @@ decl_module! {
 
 		// Assuming that there are at least one honest worker submiting headers
 		// This method may be merged together with relay_header
-		pub fn challenge_header(origin, header: EthHeader) {
+		pub fn challenge_header(origin, _header: EthHeader) {
+			let _relayer = ensure_signed(origin)?;
 			// if header confirmed then return
 			// if header in unverified header then challenge
 		}
@@ -234,8 +234,7 @@ impl<T: Trait> Module<T> {
 
 		// check difficulty
 		let ethash_params = EthashPartial::production();
-		//		ethash_params.set_difficulty_bomb_delays(0xc3500, 5000000);
-		let result = ethash_params
+		ethash_params
 			.verify_block_basic(header)
 			.expect("Block difficulty verification failed.");
 
@@ -244,12 +243,7 @@ impl<T: Trait> Module<T> {
 		ensure!(difficulty == *header.difficulty(), "difficulty verification failed");
 
 		// verify mixhash
-		let seal = match EthashSeal::parse_seal(header.seal()) {
-			Err(e) => {
-				return Err("Seal parse error.");
-			}
-			Ok(x) => x,
-		};
+		let seal = EthashSeal::parse_seal(header.seal()).unwrap();
 
 		let light_dag = DAG::new(number.into());
 		let partial_header_hash = header.bare_hash();

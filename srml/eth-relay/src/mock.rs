@@ -2,17 +2,17 @@
 
 #![cfg(test)]
 
-use crate::{GenesisConfig, Module, Trait};
+use crate::{Module, Trait};
 use primitives::H256;
 use runtime_io;
 use sr_primitives::{
 	testing::Header,
-	traits::{ConvertInto, IdentityLookup},
-	weights::{DispatchInfo, Weight},
+	traits::IdentityLookup,
+	//	weights::{DispatchInfo, Weight},
 	Perbill,
 };
 use std::cell::RefCell;
-use support::traits::Get;
+//use support::traits::Get;
 use support::{impl_outer_origin, parameter_types};
 
 impl_outer_origin! {
@@ -25,26 +25,26 @@ thread_local! {
 	static CREATION_FEE: RefCell<u64> = RefCell::new(0);
 }
 
-pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-	fn get() -> u64 {
-		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-	}
-}
-
-pub struct TransferFee;
-impl Get<u64> for TransferFee {
-	fn get() -> u64 {
-		TRANSFER_FEE.with(|v| *v.borrow())
-	}
-}
-
-pub struct CreationFee;
-impl Get<u64> for CreationFee {
-	fn get() -> u64 {
-		CREATION_FEE.with(|v| *v.borrow())
-	}
-}
+//pub struct ExistentialDeposit;
+//impl Get<u64> for ExistentialDeposit {
+//	fn get() -> u64 {
+//		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
+//	}
+//}
+//
+//pub struct TransferFee;
+//impl Get<u64> for TransferFee {
+//	fn get() -> u64 {
+//		TRANSFER_FEE.with(|v| *v.borrow())
+//	}
+//}
+//
+//pub struct CreationFee;
+//impl Get<u64> for CreationFee {
+//	fn get() -> u64 {
+//		CREATION_FEE.with(|v| *v.borrow())
+//	}
+//}
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -113,10 +113,12 @@ impl ExtBuilder {
 		self.transfer_fee = transfer_fee;
 		self
 	}
+	#[allow(dead_code)]
 	pub fn creation_fee(mut self, creation_fee: u64) -> Self {
 		self.creation_fee = creation_fee;
 		self
 	}
+	#[allow(dead_code)]
 	pub fn monied(mut self, monied: bool) -> Self {
 		self.monied = monied;
 		if self.existential_deposit == 0 {
@@ -124,6 +126,7 @@ impl ExtBuilder {
 		}
 		self
 	}
+	#[allow(dead_code)]
 	pub fn vesting(mut self, vesting: bool) -> Self {
 		self.vesting = vesting;
 		self
@@ -135,7 +138,7 @@ impl ExtBuilder {
 	}
 	pub fn build(self) -> runtime_io::TestExternalities {
 		self.set_associated_consts();
-		let mut t = system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+		let t = system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 
 		t.into()
 	}
@@ -144,12 +147,12 @@ impl ExtBuilder {
 pub type System = system::Module<Runtime>;
 pub type EthRelay = Module<Runtime>;
 
-pub const CALL: &<Runtime as system::Trait>::Call = &();
+//pub const CALL: &<Runtime as system::Trait>::Call = &();
 
-/// create a transaction info struct from weight. Handy to avoid building the whole struct.
-pub fn info_from_weight(w: Weight) -> DispatchInfo {
-	DispatchInfo {
-		weight: w,
-		..Default::default()
-	}
-}
+// create a transaction info struct from weight. Handy to avoid building the whole struct.
+//pub fn info_from_weight(w: Weight) -> DispatchInfo {
+//	DispatchInfo {
+//		weight: w,
+//		..Default::default()
+//	}
+//}
