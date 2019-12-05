@@ -37,7 +37,9 @@ use support::{
 };
 use system::{ensure_root, ensure_signed, IsDeadAccount, OnNewAccount};
 
+#[cfg(all(feature = "std", test))]
 mod mock;
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
