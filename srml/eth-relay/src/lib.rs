@@ -102,6 +102,9 @@ decl_module! {
 		pub fn test_relay_header(origin, header: EthHeader) {
 			let _relayer = ensure_signed(origin)?;
 
+			// TODO: Just for easy testing.
+			Self::genesis_header(&header);
+
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
 
@@ -139,18 +142,14 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
 
-		pub fn test_check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
+		pub fn check_receipt(origin, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			<Module<T>>::deposit_event(RawEvent::RelayProof(receipt, proof_record));
-		}
+			let verified_receipt = Self::verify_receipt(&proof_record);
 
-		pub fn check_receipt(origin, receipt: Receipt, proof_record: ActionRecord) {
-			let _relayer = ensure_signed(origin)?;
+			ensure!(verified_receipt.is_some(), "Receipt proof verification failed.");
 
-			ensure!(Self::verify_receipt(&proof_record).is_some(), "Receipt proof verification failed.");
-
-			<Module<T>>::deposit_event(RawEvent::RelayProof(receipt, proof_record));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt.unwrap(), proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -211,12 +210,6 @@ impl<T: Trait> Module<T> {
 		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("can't deserialize the receipt");
 
 		Some(proof_receipt)
-
-		//		let receipt_encoded = rlp::encode(receipt);
-
-		//		if value.unwrap() != receipt_encoded {
-		//			return false;
-		//		}
 		// confirm that the block hash is right
 		// get the receipt MPT trie root from the block header
 		// Using receipt MPT trie root to verify the proof and index etc.
