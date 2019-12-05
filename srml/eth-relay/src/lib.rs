@@ -82,12 +82,14 @@ decl_storage! {
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
+		config(genesis_difficulty): u64;
 		build(|config| {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("can't deserialize the header");
 
+				<Module<T>>::genesis_header(&header,config.genesis_difficulty);
+
 				// TODO: initilize other parameters.
-				<Module<T>>::genesis_header(&header);
 			}
 		});
 	}
@@ -100,11 +102,12 @@ decl_module! {
 	{
 		fn deposit_event() = default;
 
-		pub fn test_relay_header(origin, header: EthHeader) {
+		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
 			let _relayer = ensure_signed(origin)?;
+			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::genesis_header(&header);
+			Self::genesis_header(&header, genesis_difficulty);
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -116,29 +119,7 @@ decl_module! {
 
 			Self::verify_header(&header)?;
 
-			let header_hash = header.hash();
-			let block_number = header.number();
-
-			HeaderOf::insert(header_hash, &header);
-
-			let prev_total_difficulty = Self::header_details_of(header.parent_hash()).unwrap().total_difficulty;
-
-			HeaderDetailsOf::insert(header_hash, BlockDetails {
-				height: block_number,
-				hash: header_hash,
-				total_difficulty: prev_total_difficulty + header.difficulty()
-			});
-
-			let best_header_hash = Self::best_header_hash();
-//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
-			let best_header_details = Self::header_details_of(best_header_hash).unwrap();
-
-			// TODO: Check total difficulty and reorg if necessary.
-			if prev_total_difficulty + header.difficulty() > best_header_details.total_difficulty {
-				BestHeaderHash::mutate(|hash| {
-					*hash = header_hash;
-				});
-			}
+			Self::store_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -176,13 +157,21 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn genesis_header(header: &EthHeader) {
+	pub fn genesis_header(header: &EthHeader, genesis_difficulty: u64) {
 		let header_hash = header.hash();
-		//		let block_number = header.number();
+		let block_number = header.number();
 
-		HeaderOf::insert(header_hash, header);
+		HeaderOf::insert(&header_hash, header);
 
-		// TODO: initialize the header details, including total difficulty.
+		// initialize the header details, including total difficulty.
+		HeaderDetailsOf::insert(
+			&header_hash,
+			BlockDetails {
+				height: block_number,
+				hash: header_hash,
+				total_difficulty: genesis_difficulty.into(),
+			},
+		);
 
 		// Initialize the the best hash.
 		BestHeaderHash::mutate(|hash| {
@@ -261,6 +250,37 @@ impl<T: Trait> Module<T> {
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
 		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
+
+		Ok(())
+	}
+
+	fn store_header(header: &EthHeader) -> Result {
+		let header_hash = header.hash();
+		let block_number = header.number();
+
+		HeaderOf::insert(header_hash, header);
+
+		let prev_total_difficulty = Self::header_details_of(header.parent_hash()).unwrap().total_difficulty;
+
+		HeaderDetailsOf::insert(
+			header_hash,
+			BlockDetails {
+				height: block_number,
+				hash: header_hash,
+				total_difficulty: prev_total_difficulty + header.difficulty(),
+			},
+		);
+
+		let best_header_hash = Self::best_header_hash();
+		//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
+		let best_header_details = Self::header_details_of(best_header_hash).unwrap();
+
+		// TODO: Check total difficulty and reorg if necessary.
+		if prev_total_difficulty + header.difficulty() > best_header_details.total_difficulty {
+			BestHeaderHash::mutate(|hash| {
+				*hash = header_hash;
+			});
+		}
 
 		Ok(())
 	}

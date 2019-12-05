@@ -76,7 +76,7 @@ fn verify_receipt_proof() {
 				hash: Some(H256::from(hex!("f1a5bc27877e219b859b0bb1f2f440134553019f9bb5a2eca7a4703263e736c9"))),
 			};
 
-			EthRelay::genesis_header(&header);
+			EthRelay::genesis_header(&header, 0x624c22d93f8e59_u64);
 
 			assert_eq!(EthRelay::verify_receipt(&proof_record), Some(receipt));
 		});
@@ -131,8 +131,37 @@ fn relay_header() {
 		};
 
 
-		EthRelay::genesis_header(&header1);
+		EthRelay::genesis_header(&header1, 0x624c22d93f8e59_u64);
 
 		EthRelay::verify_header(&header2).expect("Verify Failed.");
+
+		EthRelay::store_header(&header2).expect("Store Failed.");
+
+
+		// 6760581
+		let mixh3 = H256::from(hex!("019b6a52120a8769d34fe6348bdfa400ab4886576287f5ef11d9105875280c7e"));
+		let nonce3 = H64::from(hex!("f43d6b58a23b7065"));
+
+		let header3 = EthHeader {
+			parent_hash: H256::from(hex!("12734378d3e4ad7050f7baf629d6eda161e911865d77c10e44c1f7e8e31fd7a7")),
+			timestamp: 0x5dcaa1ae,
+			number: 6760581,
+			author: Address::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
+			transactions_root: H256::from(hex!("aaccb1d4b2dc847eefa50681d3096522a41f7c27031ead7a0ad51b50632218dc")),
+			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
+			extra_data: "41746c616e7469632043727970746f".from_hex().unwrap(),
+			state_root: H256::from(hex!("8106951604cc1305eedb3b7df1c2cf9c2d0ba9e792f645386d3a2fdffd2e9d96")),
+			receipts_root: H256::from(hex!("e39a6c035914d6544db6d3653101740625e7608c747ea87b9784261e5d94a7ea")),
+			log_bloom: Bloom::from_str("00000000000001000000000000000000000000000000000000000000000000000000000000000020000000000000000000200020400000000000000000000000000000000000000000000008000000000000080000000000000000000200000000000000000000000000000000008100000000000000000000000010010000000000020000000000000000000000040000000010040000002000204000000000000000000000000000000100000000000000000000000050002000000000000000800002800000000400000000000000000040000000100000000200000000080000000400002000000000000000000000002000000000000000000002020000").unwrap(),
+			gas_used: 0x3ea15.into(),
+			gas_limit: 0x7a121d.into(),
+			difficulty: 0x26945e2fe_u64.into(),
+			seal: vec![rlp::encode(&mixh3), rlp::encode(&nonce3)],
+			hash: Some(H256::from(hex!("c86b090d12fa61c34f075530618e40a89654d8d85ac6aaa26149fb56b596a15a"))),
+		};
+
+		EthRelay::verify_header(&header3).expect("Verify Failed.");
+
+		EthRelay::store_header(&header3).expect("Store Failed.");
 	});
 }
