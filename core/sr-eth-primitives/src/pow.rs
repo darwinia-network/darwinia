@@ -85,9 +85,7 @@ impl EthashPartial {
 		}
 	}
 
-	/// TODO: to find out the exact ropsten params, only for testing.
-	#[cfg(feature = "std")]
-	pub fn ropsten_test() -> Self {
+	pub fn ropsten_testnet() -> Self {
 		EthashPartial {
 			minimum_difficulty: U256::from(0x20000),
 			difficulty_bound_divisor: U256::from(0x0800),

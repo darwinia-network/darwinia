@@ -12,13 +12,11 @@ use sr_eth_primitives::{
 
 use ethash::{EthereumPatch, LightDAG};
 
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure};
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
 
 use system::ensure_signed;
 
 use sr_primitives::RuntimeDebug;
-
-//use rlp::{decode, encode};
 
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
@@ -31,6 +29,8 @@ mod tests;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+
+	type EthNetwork: Get<u64>;
 }
 
 /// Familial details concerning a block
@@ -235,7 +235,11 @@ impl<T: Trait> Module<T> {
 		ensure!((prev_header.number() + 1) == number, "Block number does not match.");
 
 		// check difficulty
-		let ethash_params = EthashPartial::production();
+		let ethash_params = match T::EthNetwork::get() {
+			0 => EthashPartial::production(),
+			1 => EthashPartial::ropsten_testnet(),
+			_ => EthashPartial::production(), // others
+		};
 		ethash_params
 			.verify_block_basic(header)
 			.expect("Block difficulty verification failed.");

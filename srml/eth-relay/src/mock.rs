@@ -75,8 +75,14 @@ parameter_types! {
 	pub const TransactionByteFee: u64 = 1;
 }
 
+parameter_types! {
+	pub const ETH_MAINET: u64 = 0;
+	pub const ETH_ROPSTEN: u64 = 1;
+}
+
 impl Trait for Runtime {
 	type Event = ();
+	type EthNetwork = ETH_ROPSTEN;
 }
 
 parameter_types! {
