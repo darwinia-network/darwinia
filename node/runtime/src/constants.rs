@@ -64,7 +64,7 @@ pub mod time {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
 		// Develop
-		2
+		5
 		// Production
 		//		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 	};
