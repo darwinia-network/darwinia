@@ -15,9 +15,6 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Tests for the module.
-
-#![cfg(test)]
-
 use sr_primitives::traits::SignedExtension;
 use support::{
 	assert_err, assert_noop, assert_ok,

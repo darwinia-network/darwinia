@@ -1,7 +1,4 @@
 //! Tests for the module.
-
-#![cfg(test)]
-
 use super::*;
 //use sr_primitives::traits::SignedExtension;
 //use support::{

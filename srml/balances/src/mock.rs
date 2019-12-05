@@ -15,9 +15,6 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Test utilities
-
-#![cfg(test)]
-
 use crate::{GenesisConfig, Module, Trait};
 use primitives::H256;
 use runtime_io;

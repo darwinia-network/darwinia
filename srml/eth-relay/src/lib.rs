@@ -24,7 +24,9 @@ use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
 
+#[cfg(test)]
 mod mock;
+#[cfg(test)]
 mod tests;
 
 pub trait Trait: system::Trait {

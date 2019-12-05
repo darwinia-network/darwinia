@@ -1,7 +1,5 @@
 //! Test utilities
 
-#![cfg(test)]
-
 use crate::{Module, Trait};
 use primitives::H256;
 use runtime_io;
