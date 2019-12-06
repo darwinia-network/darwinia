@@ -1,5 +1,5 @@
-use crate::std::*;
 use rlp::{Decodable, DecoderError, Encodable, Rlp, RlpStream};
+use rstd::vec::Vec;
 
 #[derive(Clone)]
 #[cfg_attr(feature = "std", derive(Debug, PartialEq))]

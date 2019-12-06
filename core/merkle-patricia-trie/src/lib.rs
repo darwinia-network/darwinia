@@ -1,30 +1,7 @@
 // Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature = "std"))]
-extern crate alloc;
-#[cfg(not(feature = "std"))]
-extern crate core;
-
-#[cfg(not(feature = "std"))]
-mod std {
-	pub use alloc::borrow::ToOwned;
-	pub use alloc::format;
-	pub use alloc::rc::Rc;
-	pub use alloc::string::String;
-	pub use alloc::vec;
-	pub use alloc::vec::Vec;
-
-	pub use core::cell::RefCell;
-	pub use core::fmt;
-}
-
-#[cfg(feature = "std")]
-mod std {
-	pub use std::cell::RefCell;
-	pub use std::fmt;
-	pub use std::rc::Rc;
-}
+use rstd::rc::Rc;
 
 mod db;
 mod error;
@@ -65,7 +42,7 @@ where
 	A: AsRef<[u8]> + Ord,
 	B: AsRef<[u8]>,
 {
-	let memdb = std::Rc::new(MemoryDB::new());
+	let memdb = Rc::new(MemoryDB::new());
 	let mut trie = MerklePatriciaTrie::new(memdb.clone());
 	data.into_iter().for_each(|(key, value)| {
 		// TODO  the `?` operator can only be used in a function that returns `Result` or `Option` (or another type that implements `core::ops::Try`)

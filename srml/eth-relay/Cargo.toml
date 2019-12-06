@@ -20,6 +20,15 @@ rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-commo
 ethash = { git = "https://github.com/hammeWang/ethash-rs.git", rev = "70a4f078", default-features = false}
 merkle-patricia-trie = { path = "../../core/merkle-patricia-trie", default-features = false}
 
+[dev-dependencies]
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rustc-hex = "2.0"
+keccak-hasher = "0.15.2"
+triehash = { package = "triehash", git = "https://github.com/darwinia-network/parity-common.git" }
+hex-literal = "0.2.1"
+
 [features]
 default = ["std"]
 std = [
