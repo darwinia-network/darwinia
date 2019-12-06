@@ -1,5 +1,13 @@
-use crate::std::*;
 use rlp::DecoderError;
+use rstd::{borrow::ToOwned, fmt};
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
+#[cfg(not(feature = "std"))]
+use alloc::format;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 #[derive(Debug)]
 pub enum TrieError {

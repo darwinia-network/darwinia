@@ -379,8 +379,14 @@ impl staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
+parameter_types! {
+	pub const ETH_MAINET: u64 = 0;
+	pub const ETH_ROPSTEN: u64 = 1;
+}
+
 impl eth_relay::Trait for Runtime {
 	type Event = Event;
+	type EthNetwork = ETH_ROPSTEN;
 }
 
 construct_runtime!(
