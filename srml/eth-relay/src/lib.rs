@@ -153,7 +153,7 @@ decl_event! {
 		TODO(AccountId),
 
 //		 Develop
-		Print(u64),
+		//		Print(u64),
 	}
 }
 
