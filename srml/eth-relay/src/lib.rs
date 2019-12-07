@@ -239,13 +239,13 @@ impl<T: Trait> Module<T> {
 		// verify mixhash
 		let seal = EthashSeal::parse_seal(header.seal())?;
 
-		let light_dag = DAG::new(Default::default());
-		//		let partial_header_hash = header.bare_hash();
-		//		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
-		//
-		//		if mix_hash != seal.mix_hash {
-		//			return Err("Mixhash - NOT MATCHED");
-		//		}
+		let light_dag = DAG::new(number.into());
+		let partial_header_hash = header.bare_hash();
+		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
+
+		if mix_hash != seal.mix_hash {
+			return Err("Mixhash - NOT MATCHED");
+		}
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
 		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
