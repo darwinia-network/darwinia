@@ -57,7 +57,7 @@ fn start_inner(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, Box<dyn std
 	};
 
 	info!("Darwinia browser node");
-	info!("Version {}", config.full_version());
+	info!("Version: {}", config.full_version());
 	info!("  _____                      _       _       ");
 	info!(" |  __ \\                    (_)     (_)      ");
 	info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
