@@ -846,6 +846,7 @@ dependencies = [
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha3 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-eth-primitives 0.2.0",
  "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",

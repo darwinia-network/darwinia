@@ -28,6 +28,7 @@ rustc-hex = "2.0"
 keccak-hasher = "0.15.2"
 triehash = { package = "triehash", git = "https://github.com/darwinia-network/parity-common.git" }
 hex-literal = "0.2.1"
+sha3 = { version = "0.8", default-features = false }
 
 [features]
 default = ["std"]
