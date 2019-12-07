@@ -2,8 +2,11 @@ use super::*;
 
 use codec::{Decode, Encode};
 use ethbloom::Bloom;
-use rlp::RlpStream;
+use keccak_hash::{keccak, KECCAK_EMPTY_LIST_RLP, KECCAK_NULL_RLP};
+use rlp::{Decodable, DecoderError, Encodable, Rlp, RlpStream};
 use sr_primitives::RuntimeDebug;
+
+use rstd::prelude::*;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, Copy, RuntimeDebug)]
 enum Seal {
@@ -13,7 +16,7 @@ enum Seal {
 	Without,
 }
 
-#[derive(Default, PartialEq, Eq, Clone, Encode, Decode, RlpEncodable, RlpDecodable, RuntimeDebug)]
+#[derive(Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct EthHeader {
 	pub parent_hash: H256,
 	pub timestamp: u64,
@@ -30,6 +33,90 @@ pub struct EthHeader {
 	pub difficulty: U256,
 	pub seal: Vec<Bytes>,
 	pub hash: Option<H256>,
+}
+
+impl PartialEq for EthHeader {
+	fn eq(&self, c: &EthHeader) -> bool {
+		if let (&Some(ref h1), &Some(ref h2)) = (&self.hash, &c.hash) {
+			if h1 == h2 {
+				return true;
+			}
+		}
+
+		self.parent_hash == c.parent_hash
+			&& self.timestamp == c.timestamp
+			&& self.number == c.number
+			&& self.author == c.author
+			&& self.transactions_root == c.transactions_root
+			&& self.uncles_hash == c.uncles_hash
+			&& self.extra_data == c.extra_data
+			&& self.state_root == c.state_root
+			&& self.receipts_root == c.receipts_root
+			&& self.log_bloom == c.log_bloom
+			&& self.gas_used == c.gas_used
+			&& self.gas_limit == c.gas_limit
+			&& self.difficulty == c.difficulty
+			&& self.seal == c.seal
+	}
+}
+
+impl Default for EthHeader {
+	fn default() -> Self {
+		EthHeader {
+			parent_hash: H256::zero(),
+			timestamp: 0,
+			number: 0,
+			author: Address::zero(),
+
+			transactions_root: KECCAK_NULL_RLP,
+			uncles_hash: KECCAK_EMPTY_LIST_RLP,
+			extra_data: vec![],
+
+			state_root: KECCAK_NULL_RLP,
+			receipts_root: KECCAK_NULL_RLP,
+			log_bloom: Bloom::default(),
+			gas_used: U256::default(),
+			gas_limit: U256::default(),
+
+			difficulty: U256::default(),
+			seal: vec![],
+			hash: None,
+		}
+	}
+}
+
+impl Decodable for EthHeader {
+	fn decode(r: &Rlp) -> Result<Self, DecoderError> {
+		let mut blockheader = EthHeader {
+			parent_hash: r.val_at(0)?,
+			uncles_hash: r.val_at(1)?,
+			author: r.val_at(2)?,
+			state_root: r.val_at(3)?,
+			transactions_root: r.val_at(4)?,
+			receipts_root: r.val_at(5)?,
+			log_bloom: r.val_at(6)?,
+			difficulty: r.val_at(7)?,
+			number: r.val_at(8)?,
+			gas_limit: r.val_at(9)?,
+			gas_used: r.val_at(10)?,
+			timestamp: r.val_at(11)?,
+			extra_data: r.val_at(12)?,
+			seal: vec![],
+			hash: keccak(r.as_raw()).into(),
+		};
+
+		for i in 13..r.item_count()? {
+			blockheader.seal.push(r.at(i)?.as_raw().to_vec())
+		}
+
+		Ok(blockheader)
+	}
+}
+
+impl Encodable for EthHeader {
+	fn rlp_append(&self, s: &mut RlpStream) {
+		self.stream_rlp(s, Seal::With);
+	}
 }
 
 /// Alter value of given field, reset memoised hash if changed.

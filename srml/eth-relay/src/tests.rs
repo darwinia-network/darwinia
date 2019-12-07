@@ -249,7 +249,7 @@ fn test_mainet_header_bare_hash() {
 		hash: None,
 	};
 
-	let partial_header_hash2 = &header2.bare_hash();
+	let partial_header_hash2 = header2.bare_hash();
 
 	assert_eq!(
 		header2.hash(),
