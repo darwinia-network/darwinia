@@ -152,6 +152,9 @@ decl_event! {
 		NewHeader(EthHeader),
 		RelayProof(Receipt, ActionRecord),
 		TODO(AccountId),
+
+		// Develop
+		//		Print(u128),
 	}
 }
 
@@ -216,7 +219,7 @@ impl<T: Trait> Module<T> {
 		let number = header.number();
 		ensure!(
 			number >= Self::begin_header().unwrap().number(),
-			"block nubmer is too small."
+			"Block number is too small."
 		);
 
 		let prev_header = Self::header_of(parent_hash).unwrap();
@@ -235,7 +238,7 @@ impl<T: Trait> Module<T> {
 
 		// verify difficulty
 		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
-		ensure!(difficulty == *header.difficulty(), "difficulty verification failed");
+		ensure!(difficulty == *header.difficulty(), "Difficulty verification failed");
 
 		// verify mixhash
 		let seal = EthashSeal::parse_seal(header.seal()).unwrap();
