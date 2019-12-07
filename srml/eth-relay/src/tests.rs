@@ -76,7 +76,7 @@ fn verify_receipt_proof() {
 				hash: Some(H256::from(hex!("f1a5bc27877e219b859b0bb1f2f440134553019f9bb5a2eca7a4703263e736c9"))),
 			};
 
-			EthRelay::genesis_header(&header, 0x624c22d93f8e59_u64);
+			EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64);
 
 			assert_eq!(EthRelay::verify_receipt(&proof_record), Some(receipt));
 		});
@@ -131,7 +131,7 @@ fn relay_header() {
 		};
 
 
-		EthRelay::genesis_header(&header1, 0x624c22d93f8e59_u64);
+		EthRelay::init_genesis_header(&header1, 0x624c22d93f8e59_u64);
 
 		EthRelay::verify_header(&header2).expect("Verify Failed.");
 

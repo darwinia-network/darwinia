@@ -86,7 +86,7 @@ decl_storage! {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("Deserialize Header - FAILED");
 
-				<Module<T>>::genesis_header(&header,config.genesis_difficulty);
+				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
 				// TODO: initilize other parameters.
 			}
@@ -106,7 +106,7 @@ decl_module! {
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::genesis_header(&header, genesis_difficulty);
+			Self::init_genesis_header(&header, genesis_difficulty);
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -159,7 +159,7 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn genesis_header(header: &EthHeader, genesis_difficulty: u64) {
+	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
 		let header_hash = header.hash();
 		let block_number = header.number();
 
@@ -216,6 +216,7 @@ impl<T: Trait> Module<T> {
 		let parent_hash = header.parent_hash();
 
 		let number = header.number();
+
 		ensure!(
 			number >= Self::begin_header().expect("Begin Header - NOT EXISTED").number(),
 			"Block Number - TOO SMALL"
