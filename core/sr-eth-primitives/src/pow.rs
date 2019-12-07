@@ -249,11 +249,11 @@ impl EthashSeal {
 
 		let mix_hash = Rlp::new(seal[0].as_ref())
 			.as_val::<H256>()
-			.map_err(|_e| BlockError::Rlp("wrong rlp"))
+			.map_err(|_e| BlockError::Rlp("Rlp - INVALID"))
 			.unwrap();
 		let nonce = Rlp::new(seal[1].as_ref())
 			.as_val::<H64>()
-			.map_err(|_e| BlockError::Rlp("wrong rlp"))
+			.map_err(|_e| BlockError::Rlp("Rlp - INVALID"))
 			.unwrap();
 		Ok(EthashSeal { mix_hash, nonce })
 	}
