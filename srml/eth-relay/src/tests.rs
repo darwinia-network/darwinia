@@ -172,7 +172,7 @@ fn relay_header() {
 		let light_dag2 = DAG::new(header2.number().into());
 		let partial_header_hash2 = header2.bare_hash();
 
-//		println!("partial_header_hash2: {:?}", rlp::encode(&mixh2));
+		println!("partial_header_hash2: {:?}", partial_header_hash2);
 
 		let mixhash2 = light_dag2
 			.hashimoto(partial_header_hash2, nonce2)
@@ -223,44 +223,4 @@ fn relay_header() {
 
 		EthRelay::store_header(&header3).expect("Store Failed.");
 	});
-}
-
-#[test]
-fn test_mainet_header_bare_hash() {
-	// 8996777
-	let mixh2 = H256::from(hex!("543bc0769f7d5df30e7633f4a01552c2cee7baace8a6da37fddaa19e49e81209"));
-	let nonce2 = H64::from(hex!("a5d3d0ccc8bb8a29"));
-
-	let header2 = EthHeader {
-		parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
-		timestamp: 0x5ddb67a0,
-		number: 0x8947a9,
-		author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
-		transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
-		uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
-		extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
-		state_root: H256::from(hex!("4ba0fb3e6f4c1af32a799df667d304bcdb7f8154e6f86831f92f5a354c2baf70")),
-		receipts_root: H256::from(hex!("5968afe6026e673df3b9745d925a5648282d2195a46c22771fec48210daf8e23")),
-		log_bloom: Bloom::from_str("0c7b091bc8ec02401ad12491004e3014e8806390031950181c118580ac61c9a00409022c418162002710a991108a11ca5383d4921d1da46346edc3eb8068481118b005c0b20700414c13916c54011a0922904aa6e255406a33494c84a1426410541819070e04852042410b30030d4c88a5103082284c7d9bd42090322ae883e004224e18db4d858a0805d043e44a855400945311cb253001412002ea041a08e30394fc601440310920af2192dc4194a03302191cf2290ac0c12000815324eb96a08000aad914034c1c8eb0cb39422e272808b7a4911989c306381502868820b4b95076fc004b14dd48a0411024218051204d902b80d004c36510400ccb123084").unwrap(),
-		gas_used: 0x986d77.into(),
-		gas_limit: 0x989631.into(),
-		difficulty: 0x92ac28cbc4930_u64.into(),
-		seal: vec![rlp::encode(&mixh2), rlp::encode(&nonce2)],
-		hash: None,
-	};
-
-	let partial_header_hash2 = header2.bare_hash();
-
-	assert_eq!(
-		header2.hash(),
-		H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b"))
-	);
-
-	//	println!("partial_header_hash2: {:?}", partial_header_hash2);
-
-	assert_eq!(
-		//		H256::from_slice(Keccak256::digest(&rlp::encode(&header2).to_vec()).as_slice()),
-		partial_header_hash2,
-		H256::from(hex!("9cb3d16b788bfc7f2569db2d1fedb5b1e9633acfe84a4eca44a9fa50979a9887"))
-	);
 }
