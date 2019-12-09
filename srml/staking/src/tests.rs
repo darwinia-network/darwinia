@@ -67,69 +67,155 @@ macro_rules! gen_paired_account {
 }
 
 #[test]
-fn test_env_build() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+fn basic_setup_works() {
+	// Verifies initial conditions of mock
+	ExtBuilder::default().build().execute_with(|| {
+		// Account 11 is stashed and locked, and account 10 is the controller
+		assert_eq!(Staking::bonded(&11), Some(10));
+		// Account 21 is stashed and locked, and account 20 is the controller
+		assert_eq!(Staking::bonded(&21), Some(20));
+		// Account 1 is not a stashed
+		assert_eq!(Staking::bonded(&1), None);
+
+		// Account 10 controls the stash from account 11, which is 100 * balance_factor units
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000,
+					unbondings: vec![]
+				},
+				kton_staking_lock: Default::default()
+			})
+		);
+		// Account 20 controls the stash from account 21, which is 200 * balance_factor units
+		assert_eq!(
+			Staking::ledger(&20),
+			Some(StakingLedger {
+				stash: 21,
+				active_ring: 1000,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000,
+					unbondings: vec![]
+				},
+				kton_staking_lock: Default::default()
+			})
+		);
+		// Account 1 does not control any stash
+		assert_eq!(Staking::ledger(&1), None);
+
+		// ValidatorPrefs are default
+		{
+			let validator_prefs = ValidatorPrefs {
+				node_name: "Darwinia-Staking".bytes().collect(),
+				..Default::default()
+			};
+			assert_eq!(
+				<Validators<Test>>::enumerate().collect::<Vec<_>>(),
+				vec![
+					(31, validator_prefs.clone()),
+					(21, validator_prefs.clone()),
+					(11, validator_prefs.clone())
+				]
+			);
+		}
+
+		assert_eq!(
+			Staking::ledger(100),
+			Some(StakingLedger {
+				stash: 101,
+				active_ring: 500,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 500,
+					unbondings: vec![]
+				},
+				kton_staking_lock: Default::default()
+			})
+		);
+		assert_eq!(Staking::nominators(101), vec![11, 21]);
+
+		if cfg!(feature = "equalize") {
+			{
+				let half_power_of_11 = Staking::power_of(&101) / 2;
+				{
+					let power_of_11 = Staking::power_of(&11);
+					assert_eq!(
+						Staking::stakers(11),
+						Exposure {
+							total: power_of_11 + half_power_of_11,
+							own: power_of_11,
+							others: vec![IndividualExposure {
+								who: 101,
+								value: half_power_of_11
+							}]
+						}
+					);
+				}
+				{
+					let power_of_21 = Staking::power_of(&21);
+					assert_eq!(
+						Staking::stakers(21),
+						Exposure {
+							total: power_of_21 + half_power_of_11,
+							own: power_of_21,
+							others: vec![IndividualExposure {
+								who: 101,
+								value: half_power_of_11
+							}]
+						}
+					);
+				}
+			}
+			// initial slot_stake
+			assert_eq!(Staking::slot_stake(), 1250);
+		} else {
+			assert_eq!(
+				Staking::stakers(11),
+				Exposure {
+					total: 1125,
+					own: 1000,
+					others: vec![IndividualExposure { who: 101, value: 125 }]
+				}
+			);
+			assert_eq!(
+				Staking::stakers(21),
+				Exposure {
+					total: 1375,
+					own: 1000,
+					others: vec![IndividualExposure { who: 101, value: 375 }]
+				}
+			);
+			// initial slot_stake
+			assert_eq!(Staking::slot_stake(), 1125);
+		}
+
+		// The number of validators required.
+		assert_eq!(Staking::validator_count(), 2);
+
+		// Initial Era and session
+		assert_eq!(Staking::current_era(), 0);
+
+		// Account 10 has `balance_factor` free balance
+		assert_eq!(Ring::free_balance(&10), 1);
+		assert_eq!(Ring::free_balance(&10), 1);
+
+		// New era is not being forced
+		assert_eq!(Staking::force_era(), Forcing::NotForcing);
+
+		// All exposures must be correct.
 		check_exposure_all();
-
-		let (stash, controller) = (11, 10);
-
-		assert_eq!(Staking::bonded(&stash), Some(controller));
-		assert_eq!(
-			Staking::ledger(&controller).unwrap(),
-			StakingLedger {
-				stash,
-				active_ring: 100 * COIN,
-				active_deposit_ring: 100 * COIN,
-				active_kton: 0,
-				deposit_items: vec![TimeDepositItem {
-					value: 100 * COIN,
-					start_time: 0,
-					expire_time: (12 * MONTH_IN_SECONDS) as _,
-				}],
-				ring_staking_lock: StakingLock {
-					staking_amount: 100 * COIN,
-					unbondings: vec![],
-				},
-				kton_staking_lock: Default::default(),
-			}
-		);
-
-		assert_eq!(Kton::free_balance(&11), COIN / 100);
-		assert_eq!(Kton::total_issuance(), 16 * COIN / 100);
-
-		let origin_ledger = Staking::ledger(&controller).unwrap();
-		let _ = Ring::deposit_creating(&stash, 100 * COIN);
-		assert_ok!(Staking::bond_extra(
-			Origin::signed(stash),
-			StakingBalance::Ring(20 * COIN),
-			13,
-		));
-		assert_eq!(
-			Staking::ledger(&controller).unwrap(),
-			StakingLedger {
-				stash,
-				active_ring: origin_ledger.active_ring + 20 * COIN,
-				active_deposit_ring: origin_ledger.active_deposit_ring + 20 * COIN,
-				active_kton: 0,
-				deposit_items: vec![
-					TimeDepositItem {
-						value: 100 * COIN,
-						start_time: 0,
-						expire_time: (12 * MONTH_IN_SECONDS) as _,
-					},
-					TimeDepositItem {
-						value: 20 * COIN,
-						start_time: 0,
-						expire_time: (13 * MONTH_IN_SECONDS) as _,
-					},
-				],
-				ring_staking_lock: StakingLock {
-					staking_amount: origin_ledger.active_ring + 20 * COIN,
-					unbondings: vec![],
-				},
-				kton_staking_lock: Default::default(),
-			}
-		);
+		check_nominator_all();
 	});
 }
 
@@ -541,38 +627,93 @@ fn inflation_should_be_correct() {
 }
 
 #[test]
-fn reward_and_slash_should_work() {
+fn validator_prefs_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		gen_paired_account!(stash_1(123), _c(456), 12);
-		gen_paired_account!(stash_2(234), _c(567), 12);
+		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
+		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
 
-		<Stakers<Test>>::insert(
-			&stash_1,
-			Exposure {
-				total: 1,
-				own: 1,
-				others: vec![],
-			},
-		);
-		assert_eq!(Ring::free_balance(&stash_1), 100 * COIN);
-		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
-		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN);
-
-		// FIXME: slash strategy
-		//		<Stakers<Test>>::insert(
-		//			&stash_1,
-		//			Exposure {
-		//				total: 100 * COIN,
-		//				own: 1,
-		//				others: vec![IndividualExposure {
-		//					who: stash_2,
-		//					value: 100 * COIN - 1,
-		//				}],
-		//			},
+		//		println!(
+		//			"{}, {}",
+		//			Ring::free_balance(&validator_stash),
+		//			Kton::free_balance(&validator_stash)
 		//		);
-		//		let _ = Staking::slash_validator(&stash_1, 1, &Staking::stakers(&stash_1), &mut Vec::new());
-		//		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN - 1);
-		//		assert_eq!(Ring::free_balance(&stash_2), 1);
+		//		println!("{:#?}", Staking::ledger(&validator_controller));
+		//		println!(
+		//			"{}, {}",
+		//			Ring::free_balance(&nominator_stash),
+		//			Kton::free_balance(&nominator_stash)
+		//		);
+		//		println!("{:#?}", Staking::ledger(&nominator_controller));
+
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_controller),
+			ValidatorPrefs {
+				node_name: vec![0; 8],
+				validator_payment_ratio: 50,
+			},
+		));
+		assert_ok!(Staking::nominate(
+			Origin::signed(nominator_controller),
+			vec![validator_stash],
+		));
+
+		println!("{:#?}", Staking::stakers(validator_stash));
+		Staking::new_era(1);
+		println!("{:#?}", Staking::stakers(validator_stash));
+	});
+}
+
+#[test]
+fn reward_and_slash_should_work() {
+	//	ExtBuilder::default().build().execute_with(|| {
+	//		gen_paired_account!(stash_1(123), _c(456), 12);
+	//		gen_paired_account!(stash_2(234), _c(567), 12);
+	//
+	//		<Stakers<Test>>::insert(
+	//			&stash_1,
+	//			Exposure {
+	//				total: 1,
+	//				own: 1,
+	//				others: vec![],
+	//			},
+	//		);
+	//		assert_eq!(Ring::free_balance(&stash_1), 100 * COIN);
+	//		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
+	//		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN);
+	//	});
+
+	ExtBuilder::default().build().execute_with(|| {
+		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
+		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+
+		println!(
+			"{}, {}",
+			Ring::free_balance(&validator_stash),
+			Kton::free_balance(&validator_stash)
+		);
+		println!("{:#?}", Staking::ledger(&validator_controller));
+		println!(
+			"{}, {}",
+			Ring::free_balance(&nominator_stash),
+			Kton::free_balance(&nominator_stash)
+		);
+		println!("{:#?}", Staking::ledger(&nominator_controller));
+
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_controller),
+			ValidatorPrefs {
+				node_name: vec![0; 8],
+				..Default::default()
+			},
+		));
+		assert_ok!(Staking::nominate(
+			Origin::signed(nominator_controller),
+			vec![validator_stash],
+		));
+
+		println!("{:#?}", Staking::stakers(validator_stash));
+		start_era(1);
+		println!("{:#?}", Staking::stakers(validator_stash));
 	});
 }
 
@@ -595,36 +736,19 @@ fn slash_should_not_touch_unbondings() {
 		let ledger = Staking::ledger(&controller).unwrap();
 
 		// only deposit_ring, no normal_ring
-		assert_eq!(
-			(ledger.active_ring, ledger.active_deposit_ring),
-			(100 * COIN, 100 * COIN),
-		);
+		assert_eq!((ledger.active_ring, ledger.active_deposit_ring), (1000, 1000));
 
-		assert_ok!(Staking::bond_extra(
-			Origin::signed(stash),
-			StakingBalance::Ring(100 * COIN),
-			0,
-		));
-		Kton::deposit_creating(&stash, 10 * COIN);
-		assert_ok!(Staking::bond_extra(
-			Origin::signed(stash),
-			StakingBalance::Kton(10 * COIN),
-			0,
-		));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(100), 0));
+		Kton::deposit_creating(&stash, 10);
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(10), 0));
 
-		assert_ok!(Staking::unbond(
-			Origin::signed(controller),
-			StakingBalance::Ring(10 * COIN),
-		));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(10)));
 		let ledger = Staking::ledger(&controller).unwrap();
 		let unbondings = (
 			ledger.ring_staking_lock.unbondings.clone(),
 			ledger.kton_staking_lock.unbondings.clone(),
 		);
-		assert_eq!(
-			(ledger.active_ring, ledger.active_deposit_ring),
-			(190 * COIN, 100 * COIN),
-		);
+		assert_eq!((ledger.active_ring, ledger.active_deposit_ring), (190, 100));
 
 		<Stakers<Test>>::insert(
 			&stash,
@@ -1253,7 +1377,7 @@ fn xavier_q1() {
 					unbondings: vec![NormalLock {
 						amount: 9,
 						until: BondingDuration::get() + unbond_start,
-					}]
+					}],
 				},
 				kton_staking_lock: Default::default(),
 			}
