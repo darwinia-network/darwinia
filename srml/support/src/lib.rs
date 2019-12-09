@@ -90,6 +90,11 @@ mod structs {
 
 			new_balance >= locked_amount
 		}
+
+		#[inline]
+		pub fn shrink(&mut self, at: Moment) {
+			self.unbondings.retain(|unbonding| unbonding.valid_at(at));
+		}
 	}
 }
 
