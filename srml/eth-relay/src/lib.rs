@@ -5,7 +5,7 @@
 
 // use blake2::Blake2b;
 use codec::{Decode, Encode};
-use rstd::vec::Vec;
+use rstd::{result, vec::Vec};
 use sr_eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
 };
@@ -84,7 +84,7 @@ decl_storage! {
 		config(genesis_difficulty): u64;
 		build(|config| {
 			if let Some(h) = &config.header {
-				let header: EthHeader = rlp::decode(&h).expect("Deserialize Header - FAILED");
+				let header: EthHeader = rlp::decode(&h).expect("Deserialize Genesis Header - FAILED");
 
 				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
@@ -126,11 +126,9 @@ decl_module! {
 		pub fn check_receipt(origin, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			let verified_receipt = Self::verify_receipt(&proof_record);
+			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
-			ensure!(verified_receipt.is_some(), "Receipt Proof Verification - FAILED");
-
-			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt.unwrap(), proof_record));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -184,25 +182,16 @@ impl<T: Trait> Module<T> {
 		BeginHeader::put(header.clone());
 	}
 
-	fn verify_receipt(proof_record: &ActionRecord) -> Option<Receipt> {
-		let header_hash = proof_record.header_hash;
-		if !HeaderOf::exists(header_hash) {
-			return None; //Err("This block header does not exist.");
-		}
-
-		let header = HeaderOf::get(header_hash).unwrap();
-
-		let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
+	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
+		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
 		let key = rlp::encode(&proof_record.index);
+		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
+			.map_err(|_| "Verify Proof - FAILED")?
+			.ok_or("Trie Key - NOT EXISTED")?;
+		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
 
-		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof).unwrap();
-		if !value.is_some() {
-			return None;
-		}
-
-		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("Deserialize Receipt - FAILED");
-
-		Some(proof_receipt)
+		Ok(receipt)
 		// confirm that the block hash is right
 		// get the receipt MPT trie root from the block header
 		// Using receipt MPT trie root to verify the proof and index etc.
@@ -218,11 +207,11 @@ impl<T: Trait> Module<T> {
 		let number = header.number();
 
 		ensure!(
-			number >= Self::begin_header().expect("Begin Header - NOT EXISTED").number(),
+			number >= Self::begin_header().ok_or("Begin Header - NOT EXISTED")?.number(),
 			"Block Number - TOO SMALL"
 		);
 
-		let prev_header = Self::header_of(parent_hash).expect("Previous Header - NOT EXISTED");
+		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
 		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
 
 		// check difficulty
@@ -239,7 +228,9 @@ impl<T: Trait> Module<T> {
 
 		// verify mixhash
 		match T::EthNetwork::get() {
-			1 => {},	// TODO: Ropsten have issues, do not verify mixhash.
+			1 => {
+				// TODO: Ropsten have issues, do not verify mixhash
+			}
 			_ => {
 				let seal = EthashSeal::parse_seal(header.seal())?;
 
@@ -250,7 +241,7 @@ impl<T: Trait> Module<T> {
 				if mix_hash != seal.mix_hash {
 					return Err("Mixhash - NOT MATCHED");
 				}
-			},
+			}
 		};
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
