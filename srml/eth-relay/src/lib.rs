@@ -113,7 +113,6 @@ decl_module! {
 			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
 
 			Self::verify_header(&header)?;
-
 			Self::store_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
@@ -122,11 +121,9 @@ decl_module! {
 		pub fn check_receipt(origin, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
-			let verified_receipt = Self::verify_receipt(&proof_record);
+			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
-			ensure!(verified_receipt.is_some(), "Receipt Proof Verification - FAILED");
-
-			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt.unwrap(), proof_record));
+			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -227,7 +224,9 @@ impl<T: Trait> Module<T> {
 
 		// verify mixhash
 		match T::EthNetwork::get() {
-			1 => {},	// TODO: Ropsten have issues, do not verify mixhash.
+			1 => {
+				// TODO: Ropsten have issues, do not verify mixhash
+			}
 			_ => {
 				let seal = EthashSeal::parse_seal(header.seal())?;
 
@@ -238,7 +237,7 @@ impl<T: Trait> Module<T> {
 				if mix_hash != seal.mix_hash {
 					return Err("Mixhash - NOT MATCHED");
 				}
-			},
+			}
 		};
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
