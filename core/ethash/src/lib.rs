@@ -35,7 +35,7 @@ pub const ACCESSES: usize = 64;
 pub fn get_cache_size(epoch: usize) -> usize {
 	let mut sz = CACHE_BYTES_INIT + CACHE_BYTES_GROWTH * epoch;
 	sz -= HASH_BYTES;
-	while !is_prime(sz / HASH_BYTES) {
+	while !is_prime((sz / MIX_BYTES) as u64) {
 		sz -= 2 * HASH_BYTES;
 	}
 	sz
@@ -45,7 +45,7 @@ pub fn get_cache_size(epoch: usize) -> usize {
 pub fn get_full_size(epoch: usize) -> usize {
 	let mut sz = DATASET_BYTES_INIT + DATASET_BYTES_GROWTH * epoch;
 	sz -= MIX_BYTES;
-	while !is_prime(sz / MIX_BYTES) {
+	while !is_prime((sz / MIX_BYTES) as u64) {
 		sz -= 2 * MIX_BYTES
 	}
 	sz
@@ -327,6 +327,34 @@ mod tests {
 		assert_eq!(
 			mixh,
 			H256::from(hex!("543bc0769f7d5df30e7633f4a01552c2cee7baace8a6da37fddaa19e49e81209"))
+		);
+	}
+
+	#[test]
+	fn hashimoto_should_work_on_ropsten() {
+		type DAG = LightDAG<EthereumPatch>;
+		let light_dag = DAG::new(0x672884.into());
+		let partial_header_hash = H256::from(hex!("9cb3d16b788bfc7f2569db2d1fedb5b1e9633acfe84a4eca44a9fa50979a9887"));
+		let mixh = light_dag
+			.hashimoto(partial_header_hash, H64::from(hex!("9348d06003756cff")))
+			.0;
+		assert_eq!(
+			mixh,
+			H256::from(hex!("e06f0c107dcc91e9e82de0b42d0e22d5c2cfae5209422fda88cff4f810f4bffb"))
+		);
+	}
+
+	#[test]
+	fn hashimoto_should_work_on_ropsten_earlier() {
+		type DAG = LightDAG<EthereumPatch>;
+		let light_dag = DAG::new(0x11170.into());
+		let partial_header_hash = H256::from(hex!("bb698ea6e304a7a88a6cd8238f0e766b4f7bf70dc0869bd2e4a76a8e93fffc80"));
+		let mixh = light_dag
+			.hashimoto(partial_header_hash, H64::from(hex!("475ddd90b151f305")))
+			.0;
+		assert_eq!(
+			mixh,
+			H256::from(hex!("341e3bcf01c921963933253e0cf937020db69206f633e31e0d1c959cdd1188f5"))
 		);
 	}
 }

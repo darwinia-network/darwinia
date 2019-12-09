@@ -82,7 +82,7 @@ decl_storage! {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("Deserialize Header - FAILED");
 
-				<Module<T>>::genesis_header(&header,config.genesis_difficulty);
+				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
 				// TODO: initilize other parameters.
 			}
@@ -102,7 +102,7 @@ decl_module! {
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::genesis_header(&header, genesis_difficulty);
+			Self::init_genesis_header(&header, genesis_difficulty);
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -155,7 +155,7 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn genesis_header(header: &EthHeader, genesis_difficulty: u64) {
+	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
 		let header_hash = header.hash();
 		let block_number = header.number();
 
@@ -204,6 +204,7 @@ impl<T: Trait> Module<T> {
 		let parent_hash = header.parent_hash();
 
 		let number = header.number();
+
 		ensure!(
 			number >= Self::begin_header().expect("Begin Header - NOT EXISTED").number(),
 			"Block Number - TOO SMALL"
@@ -225,15 +226,20 @@ impl<T: Trait> Module<T> {
 		ensure!(difficulty == *header.difficulty(), "Difficulty Verification - FAILED");
 
 		// verify mixhash
-		let seal = EthashSeal::parse_seal(header.seal())?;
+		match T::EthNetwork::get() {
+			1 => {},	// TODO: Ropsten have issues, do not verify mixhash.
+			_ => {
+				let seal = EthashSeal::parse_seal(header.seal())?;
 
-		let light_dag = DAG::new(number.into());
-		let partial_header_hash = header.bare_hash();
-		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
+				let light_dag = DAG::new(number.into());
+				let partial_header_hash = header.bare_hash();
+				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
-		if mix_hash != seal.mix_hash {
-			return Err("Mixhash - NOT MATCHED");
-		}
+				if mix_hash != seal.mix_hash {
+					return Err("Mixhash - NOT MATCHED");
+				}
+			},
+		};
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
 		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
