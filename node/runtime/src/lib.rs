@@ -368,25 +368,25 @@ impl staking::Trait for Runtime {
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type RingRewardRemainder = ();
 	type Event = Event;
-	type RingSlash = ();
 	type RingReward = ();
-	type KtonSlash = ();
 	type KtonReward = ();
+	type RingSlash = ();
+	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	type SessionInterface = Self;
+
 	type Cap = HardCap;
 	type GenesisTime = GenesisTime;
-	type SessionInterface = Self;
 }
 
 parameter_types! {
-	pub const ETH_MAINET: u64 = 0;
-	pub const ETH_ROPSTEN: u64 = 1;
+	pub const EthMainet: u64 = 0;
+	pub const EthRopsten: u64 = 1;
 }
-
 impl eth_relay::Trait for Runtime {
 	type Event = Event;
-	type EthNetwork = ETH_ROPSTEN;
+	type EthNetwork = EthRopsten;
 }
 
 construct_runtime!(

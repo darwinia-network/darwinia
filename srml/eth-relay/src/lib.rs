@@ -73,7 +73,6 @@ decl_storage! {
 
 		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
 
-
 //		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
 
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
@@ -85,9 +84,9 @@ decl_storage! {
 		config(genesis_difficulty): u64;
 		build(|config| {
 			if let Some(h) = &config.header {
-				let header: EthHeader = rlp::decode(&h).expect("can't deserialize the header");
+				let header: EthHeader = rlp::decode(&h).expect("Deserialize Header - FAILED");
 
-				<Module<T>>::genesis_header(&header,config.genesis_difficulty);
+				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
 				// TODO: initilize other parameters.
 			}
@@ -107,7 +106,7 @@ decl_module! {
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::genesis_header(&header, genesis_difficulty);
+			Self::init_genesis_header(&header, genesis_difficulty);
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -129,7 +128,7 @@ decl_module! {
 
 			let verified_receipt = Self::verify_receipt(&proof_record);
 
-			ensure!(verified_receipt.is_some(), "Receipt proof verification failed.");
+			ensure!(verified_receipt.is_some(), "Receipt Proof Verification - FAILED");
 
 			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt.unwrap(), proof_record));
 		}
@@ -152,12 +151,15 @@ decl_event! {
 		NewHeader(EthHeader),
 		RelayProof(Receipt, ActionRecord),
 		TODO(AccountId),
+
+//		 Develop
+		//		Print(u64),
 	}
 }
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn genesis_header(header: &EthHeader, genesis_difficulty: u64) {
+	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
 		let header_hash = header.hash();
 		let block_number = header.number();
 
@@ -198,7 +200,7 @@ impl<T: Trait> Module<T> {
 			return None;
 		}
 
-		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("can't deserialize the receipt");
+		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("Deserialize Receipt - FAILED");
 
 		Some(proof_receipt)
 		// confirm that the block hash is right
@@ -210,18 +212,18 @@ impl<T: Trait> Module<T> {
 	/// 2. proof of pow (mixhash)
 	/// 3. challenge
 	fn verify_header(header: &EthHeader) -> Result {
-		// check parent hash,
+		// TODO: check parent hash,
 		let parent_hash = header.parent_hash();
 
 		let number = header.number();
+
 		ensure!(
-			number >= Self::begin_header().unwrap().number(),
-			"block nubmer is too small."
+			number >= Self::begin_header().expect("Begin Header - NOT EXISTED").number(),
+			"Block Number - TOO SMALL"
 		);
 
-		let prev_header = Self::header_of(parent_hash).unwrap();
-
-		ensure!((prev_header.number() + 1) == number, "Block number does not match.");
+		let prev_header = Self::header_of(parent_hash).expect("Previous Header - NOT EXISTED");
+		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
 
 		// check difficulty
 		let ethash_params = match T::EthNetwork::get() {
@@ -229,24 +231,27 @@ impl<T: Trait> Module<T> {
 			1 => EthashPartial::ropsten_testnet(),
 			_ => EthashPartial::production(), // others
 		};
-		ethash_params
-			.verify_block_basic(header)
-			.expect("Block difficulty verification failed.");
+		ethash_params.verify_block_basic(header)?;
 
 		// verify difficulty
 		let difficulty = ethash_params.calculate_difficulty(header, &prev_header);
-		ensure!(difficulty == *header.difficulty(), "difficulty verification failed");
+		ensure!(difficulty == *header.difficulty(), "Difficulty Verification - FAILED");
 
 		// verify mixhash
-		let seal = EthashSeal::parse_seal(header.seal()).unwrap();
+		match T::EthNetwork::get() {
+			1 => {},	// TODO: Ropsten have issues, do not verify mixhash.
+			_ => {
+				let seal = EthashSeal::parse_seal(header.seal())?;
 
-		let light_dag = DAG::new(number.into());
-		let partial_header_hash = header.bare_hash();
-		let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
+				let light_dag = DAG::new(number.into());
+				let partial_header_hash = header.bare_hash();
+				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
-		if mix_hash != seal.mix_hash {
-			return Err("Mixhash does not match.");
-		}
+				if mix_hash != seal.mix_hash {
+					return Err("Mixhash - NOT MATCHED");
+				}
+			},
+		};
 
 		//			ensure!(best_header.height == block_number, "Block height does not match.");
 		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");

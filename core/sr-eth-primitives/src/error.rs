@@ -1,7 +1,7 @@
+use codec::{Decode, Encode};
+
 /// Define errors when verifying eth blocks
 use super::*;
-
-use codec::{Decode, Encode};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Encode, Decode)]
 /// Error indicating value found is outside of a valid range.
@@ -29,6 +29,19 @@ pub enum BlockError {
 	DifficultyOutOfBounds(OutOfBounds<U256>),
 	InvalidSealArity(Mismatch<usize>),
 	Rlp(&'static str),
+}
+
+impl From<BlockError> for &str {
+	fn from(e: BlockError) -> Self {
+		use BlockError::*;
+
+		match e {
+			InvalidProofOfWork(_) => "Proof Of Work - INVALID",
+			DifficultyOutOfBounds(_) => "Difficulty - OUT OF BOUNDS",
+			InvalidSealArity(_) => "Seal Arity - INVALID",
+			Rlp(msg) => msg,
+		}
+	}
 }
 
 //#[cfg(feature = "std")]
