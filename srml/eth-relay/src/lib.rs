@@ -5,19 +5,15 @@
 
 // use blake2::Blake2b;
 use codec::{Decode, Encode};
-use rstd::vec::Vec;
+use rstd::{result, vec::Vec};
 use sr_eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
 };
-
-use ethash::{EthereumPatch, LightDAG};
-
+use sr_primitives::RuntimeDebug;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-
 use system::ensure_signed;
 
-use sr_primitives::RuntimeDebug;
-
+use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
@@ -184,25 +180,17 @@ impl<T: Trait> Module<T> {
 		BeginHeader::put(header.clone());
 	}
 
-	fn verify_receipt(proof_record: &ActionRecord) -> Option<Receipt> {
+	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
 		let header_hash = proof_record.header_hash;
-		if !HeaderOf::exists(header_hash) {
-			return None; //Err("This block header does not exist.");
-		}
+		let header = Self::header_of(header_hash).expect("Header - NOT EXISTED");
 
-		let header = HeaderOf::get(header_hash).unwrap();
-
-		let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
+		let proof: Proof = rlp::decode(&proof_record.proof).expect("Rlp Decode - FAILED");
 		let key = rlp::encode(&proof_record.index);
+		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
+			.expect("Verify Proof - FAILED")
+			.expect("Trie Key - NOT EXISTED");
 
-		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof).unwrap();
-		if !value.is_some() {
-			return None;
-		}
-
-		let proof_receipt: Receipt = rlp::decode(&value.unwrap()).expect("Deserialize Receipt - FAILED");
-
-		Some(proof_receipt)
+		Ok(rlp::decode(&value).expect("Deserialize Receipt - FAILED"))
 		// confirm that the block hash is right
 		// get the receipt MPT trie root from the block header
 		// Using receipt MPT trie root to verify the proof and index etc.

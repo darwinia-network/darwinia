@@ -160,9 +160,9 @@ impl Trie for MerklePatriciaTrie {
 				memdb.insert(hash, node_encoded);
 			}
 		}
-		let trie = MerklePatriciaTrie::from(memdb, &root_hash).or(Err(TrieError::InvalidProof))?;
+		let trie = MerklePatriciaTrie::from(memdb, &root_hash)?;
 
-		trie.get(key).or(Err(TrieError::InvalidProof))
+		trie.get(key)
 	}
 }
 
