@@ -45,10 +45,11 @@ use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
 	traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
+	weights::SimpleDispatchInfo,
 	Perbill, Perquintill, RuntimeDebug,
 };
 #[cfg(feature = "std")]
-use sr_primitives::{weights::SimpleDispatchInfo, Deserialize, Serialize};
+use sr_primitives::{Deserialize, Serialize};
 use sr_staking_primitives::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
 	SessionIndex,
