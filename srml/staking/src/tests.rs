@@ -2201,6 +2201,25 @@ fn invulnerables_are_not_slashed() {
 	});
 }
 
+#[test]
+fn dont_slash_if_fraction_is_zero() {
+	// Don't slash if the fraction is zero.
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Ring::free_balance(&11), 1000);
+
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(0)],
+		);
+
+		// The validator hasn't been slashed. The new era is not forced.
+		assert_eq!(Ring::free_balance(&11), 1000);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
