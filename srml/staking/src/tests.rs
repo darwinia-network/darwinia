@@ -1,4 +1,4 @@
-use sr_primitives::traits::OnInitialize;
+use sr_primitives::{assert_eq_error_rate, traits::OnInitialize};
 use srml_support::{
 	assert_eq_uvec, assert_err, assert_noop, assert_ok,
 	traits::{Currency, ReservableCurrency},
@@ -1918,6 +1918,52 @@ fn bond_with_no_staked_value() {
 //			check_exposure_all();
 //			check_nominator_all();
 //		});
+//}
+
+// TODO
+//#[cfg(feature = "equalize")]
+//#[test]
+//fn phragmen_linear_worse_case_equalize() {
+//	ExtBuilder::default()
+//		.nominate(false)
+//		.validator_pool(true)
+//		.fair(true)
+//		.build()
+//		.execute_with(|| {
+//			bond_validator(50, 1000);
+//			bond_validator(60, 1000);
+//			bond_validator(70, 1000);
+//
+//			bond_nominator(2, 2000, vec![11]);
+//			bond_nominator(4, 1000, vec![11, 21]);
+//			bond_nominator(6, 1000, vec![21, 31]);
+//			bond_nominator(8, 1000, vec![31, 41]);
+//			bond_nominator(110, 1000, vec![41, 51]);
+//			bond_nominator(120, 1000, vec![51, 61]);
+//			bond_nominator(130, 1000, vec![61, 71]);
+//
+//			for i in &[10, 20, 30, 40, 50, 60, 70] {
+//				assert_ok!(Staking::set_payee(Origin::signed(*i), RewardDestination::Controller));
+//			}
+//
+//			assert_eq_uvec!(validator_controllers(), vec![40, 30]);
+//			assert_ok!(Staking::set_validator_count(Origin::ROOT, 7));
+//
+//			start_era(1);
+//
+//			assert_eq_uvec!(validator_controllers(), vec![10, 60, 40, 20, 50, 30, 70]);
+//
+//			assert_eq_error_rate!(Staking::stakers(11).total, 3000, 2);
+//			assert_eq_error_rate!(Staking::stakers(21).total, 2255, 2);
+//			assert_eq_error_rate!(Staking::stakers(31).total, 2255, 2);
+//			assert_eq_error_rate!(Staking::stakers(41).total, 1925, 2);
+//			assert_eq_error_rate!(Staking::stakers(51).total, 1870, 2);
+//			assert_eq_error_rate!(Staking::stakers(61).total, 1890, 2);
+//			assert_eq_error_rate!(Staking::stakers(71).total, 1800, 2);
+//
+//			check_exposure_all();
+//			check_nominator_all();
+//		})
 //}
 
 //#[test]
