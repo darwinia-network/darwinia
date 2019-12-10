@@ -4,8 +4,7 @@ use srml_support::{
 	traits::{Currency, ReservableCurrency},
 };
 
-use super::*;
-use crate::mock::*;
+use crate::{mock::*, *};
 use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 /// gen_paired_account!(a(1), b(2), m(12));
@@ -1279,7 +1278,7 @@ fn bond_extra_works() {
 				deposit_items: vec![TimeDepositItem {
 					value: 100,
 					start_time: 0,
-					expire_time: 31104000
+					expire_time: 31104000000,
 				}],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + 100,
@@ -1306,7 +1305,7 @@ fn bond_extra_works() {
 				deposit_items: vec![TimeDepositItem {
 					value: 100,
 					start_time: 0,
-					expire_time: 31104000
+					expire_time: 31104000000,
 				}],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000000,
@@ -1477,14 +1476,14 @@ fn bond_extra_works() {
 #[test]
 fn too_many_unbond_calls_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		// Locked at TimeStamp(60).
+		// Locked at Moment(60).
 		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
 			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
 		}
 
 		Timestamp::set_timestamp(1);
 
-		// Locked at TimeStamp(61).
+		// Locked at MomentT(61).
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
 
 		// Can't do more.
@@ -1845,7 +1844,7 @@ fn bond_with_no_staked_value() {
 					deposit_items: vec![],
 					ring_staking_lock: StakingLock {
 						staking_amount: 0,
-						unbondings: vec![NormalLock { amount: 5, until: 60 }]
+						unbondings: vec![NormalLock { amount: 5, until: 60 }],
 					},
 					kton_staking_lock: Default::default(),
 				}),

@@ -1,8 +1,7 @@
 use srml_support::{assert_err, assert_ok, traits::Currency};
 
-use super::*;
-use crate::mock::*;
-use darwinia_support::{LockIdentifier, NormalLock, TimeStamp, WithdrawLock, WithdrawReasons};
+use crate::{mock::*, *};
+use darwinia_support::{LockIdentifier, NormalLock, WithdrawLock, WithdrawReasons};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
@@ -50,7 +49,7 @@ fn transfer_should_fail() {
 			&777,
 			WithdrawLock::Normal(NormalLock {
 				amount: Balance::max_value(),
-				until: TimeStamp::max_value(),
+				until: Moment::max_value(),
 			}),
 			WithdrawReasons::all(),
 		);
@@ -65,7 +64,7 @@ fn transfer_should_fail() {
 fn set_lock_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		let lock_ids = [[0; 8], [1; 8], [2; 8], [3; 8]];
-		let balance_per_lock = Kton::free_balance(&1) / (lock_ids.len() as u128);
+		let balance_per_lock = Kton::free_balance(&1) / (lock_ids.len() as Balance);
 
 		// account `1`'s vesting length
 		System::set_block_number(4);
@@ -78,7 +77,7 @@ fn set_lock_should_work() {
 					&1,
 					WithdrawLock::Normal(NormalLock {
 						amount: balance_per_lock,
-						until: TimeStamp::max_value(),
+						until: Moment::max_value(),
 					}),
 					WithdrawReasons::all(),
 				);
@@ -86,7 +85,7 @@ fn set_lock_should_work() {
 					id: *lock_id,
 					withdraw_lock: WithdrawLock::Normal(NormalLock {
 						amount: balance_per_lock,
-						until: TimeStamp::max_value(),
+						until: Moment::max_value(),
 					}),
 					reasons: WithdrawReasons::all(),
 				});
@@ -114,7 +113,7 @@ fn remove_lock_should_work() {
 			&2,
 			WithdrawLock::Normal(NormalLock {
 				amount: Balance::max_value(),
-				until: TimeStamp::max_value(),
+				until: Moment::max_value(),
 			}),
 			WithdrawReasons::all(),
 		);
@@ -175,23 +174,17 @@ fn update_lock_should_work() {
 			);
 		}
 		let update_id = 4;
-		for amount in 32767u64..65535 {
-			let until = amount + 1;
+		for amount in 32767..65535 {
+			let until = amount as Moment + 1;
 			locks[update_id as usize] = BalanceLock {
 				id: [update_id; 8],
-				withdraw_lock: WithdrawLock::Normal(NormalLock {
-					amount: amount as u128,
-					until: until,
-				}),
+				withdraw_lock: WithdrawLock::Normal(NormalLock { amount, until }),
 				reasons: WithdrawReasons::all(),
 			};
 			Kton::set_lock(
 				[update_id; 8],
 				&1,
-				WithdrawLock::Normal(NormalLock {
-					amount: amount as u128,
-					until: until,
-				}),
+				WithdrawLock::Normal(NormalLock { amount, until }),
 				WithdrawReasons::all(),
 			);
 			assert_eq!(Kton::locks(&1), locks);
@@ -217,7 +210,7 @@ fn combination_locking_should_work() {
 			&1001,
 			WithdrawLock::Normal(NormalLock {
 				amount: 0,
-				until: TimeStamp::max_value(),
+				until: Moment::max_value(),
 			}),
 			WithdrawReasons::none(),
 		);

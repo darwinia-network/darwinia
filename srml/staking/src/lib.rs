@@ -45,7 +45,7 @@ use codec::{Decode, Encode, HasCompact};
 use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
-	traits::{CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
+	traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
 	weights::SimpleDispatchInfo,
 	Perbill, Perquintill, RuntimeDebug,
 };
@@ -62,15 +62,18 @@ use srml_support::{
 use system::{ensure_root, ensure_signed};
 
 use darwinia_support::{
-	LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons,
+	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNLOCKING_CHUNKS: u32 = 32;
-const MONTH_IN_SECONDS: u32 = 2_592_000;
+const MONTH_IN_MILLISECONDS: u64 = 30 * 24 * 60 * 60 * 1000;
 const STAKING_ID: LockIdentifier = *b"staking ";
+
+pub type Balance = u128;
+pub type Moment = u64;
 
 /// Counter for the number of eras that have passed.
 pub type EraIndex = u32;
@@ -218,8 +221,8 @@ pub struct StakingLedger<AccountId, Ring: HasCompact, Kton: HasCompact, Moment> 
 	// which can also be used for staking
 	pub deposit_items: Vec<TimeDepositItem<Ring, Moment>>,
 
-	pub ring_staking_lock: StakingLock<Ring, TimeStamp>,
-	pub kton_staking_lock: StakingLock<Kton, TimeStamp>,
+	pub ring_staking_lock: StakingLock<Ring, Moment>,
+	pub kton_staking_lock: StakingLock<Kton, Moment>,
 }
 
 /// The amount of exposure (to slashing) than an individual nominator has.
@@ -343,7 +346,7 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	type SessionsPerEra: Get<SessionIndex>;
 
 	/// Number of seconds that staked funds must remain bonded for.
-	type BondingDuration: Get<TimeStamp>;
+	type BondingDuration: Get<Self::Moment>;
 
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
@@ -511,7 +514,7 @@ decl_module! {
 		const SessionsPerEra: SessionIndex = T::SessionsPerEra::get();
 
 		/// Number of eras that staked funds must remain bonded for.
-		const BondingDuration: TimeStamp = T::BondingDuration::get();
+		const BondingDuration: T::Moment = T::BondingDuration::get();
 
 		fn deposit_event() = default;
 
@@ -543,7 +546,7 @@ decl_module! {
 			controller: <T::Lookup as StaticLookup>::Source,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 			payee: RewardDestination,
-			promise_month: u32
+			promise_month: u64
 		) {
 			let stash = ensure_signed(origin)?;
 			ensure!(!<Bonded<T>>::exists(&stash), err::STASH_ALREADY_BONDED);
@@ -596,7 +599,7 @@ decl_module! {
 		fn bond_extra(
 			origin,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
-			promise_month: u32
+			promise_month: u64
 		) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(err::STASH_INVALID)?;
@@ -657,7 +660,7 @@ decl_module! {
 				kton_staking_lock,
 				..
 			} = &mut ledger;
-			let now = <timestamp::Module<T>>::now().saturated_into::<TimeStamp>();
+			let now = <timestamp::Module<T>>::now();
 
 			ring_staking_lock.shrink(now);
 			kton_staking_lock.shrink(now);
@@ -673,7 +676,6 @@ decl_module! {
 				err::UNLOCK_CHUNKS_REACH_MAX,
 			);
 
-			let at = now + T::BondingDuration::get();
 			match value {
 				StakingBalance::Ring(r) => {
 					// only active normal ring can be unbond
@@ -685,7 +687,7 @@ decl_module! {
 						*active_ring -= available_unbond_ring;
 						ring_staking_lock.unbondings.push(NormalLock {
 							amount: available_unbond_ring,
-							until: at,
+							until: now + T::BondingDuration::get(),
 						});
 
 						<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
@@ -699,7 +701,7 @@ decl_module! {
 						*active_kton -= unbond_kton;
 						kton_staking_lock.unbondings.push(NormalLock {
 							amount: unbond_kton,
-							until: at,
+							until: now + T::BondingDuration::get(),
 						});
 
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
@@ -710,7 +712,7 @@ decl_module! {
 		}
 
 		// TODO: doc
-		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u32) {
+		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u64) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
 			let promise_month = promise_month.max(3).min(36);
@@ -735,7 +737,7 @@ decl_module! {
 			deposit_items.push(TimeDepositItem {
 				value,
 				start_time: now,
-				expire_time: now + (MONTH_IN_SECONDS * promise_month).into(),
+				expire_time: now + T::Moment::saturated_from((MONTH_IN_MILLISECONDS * promise_month).into()),
 			});
 
 			<Ledger<T>>::insert(&controller, ledger);
@@ -770,8 +772,8 @@ decl_module! {
 				}
 
 				let kton_slash = {
-					let passed_duration = (now - item.start_time).saturated_into::<u32>() / MONTH_IN_SECONDS;
-					let plan_duration = (item.expire_time - item.start_time).saturated_into::<u32>() / MONTH_IN_SECONDS;
+					let passed_duration = (now - item.start_time).saturated_into::<Moment>() / MONTH_IN_MILLISECONDS;
+					let plan_duration = (item.expire_time - item.start_time).saturated_into::<Moment>() / MONTH_IN_MILLISECONDS;
 
 					(
 						inflation::compute_kton_return::<T>(item.value, plan_duration)
@@ -1030,7 +1032,7 @@ impl<T: Trait> Module<T> {
 		stash: &T::AccountId,
 		controller: &T::AccountId,
 		value: RingBalanceOf<T>,
-		promise_month: u32,
+		promise_month: u64,
 		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
 	) {
 		let promise_month = promise_month.min(36);
@@ -1046,11 +1048,10 @@ impl<T: Trait> Module<T> {
 			let kton_positive_imbalance = T::Kton::deposit_creating(&stash, kton_return);
 			T::KtonReward::on_unbalanced(kton_positive_imbalance);
 			let now = <timestamp::Module<T>>::now();
-			let expire_time = now + (MONTH_IN_SECONDS * promise_month).into();
 			ledger.deposit_items.push(TimeDepositItem {
 				value,
 				start_time: now,
-				expire_time,
+				expire_time: now + T::Moment::saturated_from((MONTH_IN_MILLISECONDS * promise_month).into()),
 			});
 		}
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
@@ -1252,9 +1253,7 @@ impl<T: Trait> Module<T> {
 				// from the nearest expire time
 				if !value_left.is_zero() {
 					// sorted by expire_time from far to near
-					deposit_items.sort_unstable_by_key(|item| {
-						TimeStamp::max_value() - item.expire_time.saturated_into::<TimeStamp>()
-					});
+					deposit_items.sort_unstable_by_key(|item| T::Moment::max_value() - item.expire_time);
 					deposit_items.drain_filter(|item| {
 						if value_left.is_zero() {
 							return false;
@@ -1381,9 +1380,9 @@ impl<T: Trait> Module<T> {
 			//			Self::deposit_event(RawEvent::Print((T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>()));
 
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
-				era_duration.saturated_into::<TimeStamp>(),
-				(T::Time::now() - T::GenesisTime::get()).saturated_into::<TimeStamp>(),
-				(T::Cap::get() - T::Ring::total_issuance()).saturated_into::<u128>(),
+				era_duration.saturated_into::<Moment>(),
+				(T::Time::now() - T::GenesisTime::get()).saturated_into::<Moment>(),
+				(T::Cap::get() - T::Ring::total_issuance()).saturated_into::<Balance>(),
 			);
 
 			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();
@@ -1417,8 +1416,8 @@ impl<T: Trait> Module<T> {
 			*v = start_session_index;
 		});
 		let bonding_era = {
-			const BONDING_DURATION_ERA_TO_SECS_RATIO: TimeStamp = 300;
-			(T::BondingDuration::get() / BONDING_DURATION_ERA_TO_SECS_RATIO) as _
+			const BONDING_DURATION_ERA_TO_SECS_RATIO: Moment = 300;
+			(T::BondingDuration::get().saturated_into::<Moment>() / BONDING_DURATION_ERA_TO_SECS_RATIO) as EraIndex
 		};
 
 		if current_era > bonding_era {

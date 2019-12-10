@@ -1,6 +1,3 @@
-pub use node_primitives::Balance;
-pub use node_runtime::constants::currency::COIN;
-
 use std::{cell::RefCell, collections::HashSet};
 
 use sr_primitives::{
@@ -18,16 +15,10 @@ use srml_support::{
 use substrate_primitives::{crypto::key_types, H256};
 
 use crate::*;
-use darwinia_support::TimeStamp;
 use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-// FIXME:
-//     replace
-//     	  testing::Header.number: u64
-//     with
-//         node_primitives::BlockNumber
 pub type BlockNumber = u64;
 
 /// Module alias
@@ -37,6 +28,11 @@ pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
 pub type Staking = Module<Test>;
+
+pub const NANO: Balance = 1;
+pub const MICRO: Balance = 1_000 * NANO;
+pub const MILLI: Balance = 1_000 * MICRO;
+pub const COIN: Balance = 1_000 * MILLI;
 
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
@@ -202,9 +198,9 @@ impl kton::Trait for Test {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
-	pub const BondingDuration: TimeStamp = 60;
+	pub const BondingDuration: Moment = 60;
 	pub const CAP: Balance = 10_000_000_000 * COIN;
-	pub const GenesisTime: TimeStamp = 0;
+	pub const GenesisTime: Moment = 0;
 }
 impl Trait for Test {
 	type Ring = Ring;
@@ -487,8 +483,8 @@ pub fn start_era(era_index: EraIndex) {
 // TODO
 pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	//	inflation::compute_total_payout(
-	//		era_duration.saturated_into::<TimeStamp>(),
-	//		(<Module<Test>>::Time::now() - <Module<Test>>::GenesisTime::get()).saturated_into::<TimeStamp>(),
+	//		era_duration.saturated_into::<Moment>(),
+	//		(<Module<Test>>::Time::now() - <Module<Test>>::GenesisTime::get()).saturated_into::<Moment>(),
 	//		(<Module<Test>>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
 	//	)
 	//	.0
