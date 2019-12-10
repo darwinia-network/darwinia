@@ -2028,6 +2028,19 @@ fn add_reward_points_fns_works() {
 	})
 }
 
+#[test]
+fn unbonded_balance_is_not_slashable() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Total amount staked is slashable.
+		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 1000);
+
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(800)));
+
+		// Only the active portion.
+		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 200);
+	})
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
