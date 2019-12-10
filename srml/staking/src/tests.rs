@@ -1674,6 +1674,108 @@ fn on_free_balance_zero_stash_removes_nominator() {
 	});
 }
 
+#[test]
+fn switching_roles() {
+	// Test that it should be possible to switch between roles (nominator, validator, idle) with minimal overhead.
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		// Initialize time.
+		Timestamp::set_timestamp(1);
+
+		// Reset reward destination
+		for i in &[10, 20] {
+			assert_ok!(Staking::set_payee(Origin::signed(*i), RewardDestination::Controller));
+		}
+
+		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+		// put some money in account that we'll use.
+		for i in 1..7 {
+			let _ = Ring::deposit_creating(&i, 5000);
+		}
+
+		// add 2 nominators
+		assert_ok!(Staking::bond(
+			Origin::signed(1),
+			2,
+			StakingBalance::Ring(2000),
+			RewardDestination::Controller,
+			0,
+		));
+		assert_ok!(Staking::nominate(Origin::signed(2), vec![11, 5]));
+
+		assert_ok!(Staking::bond(
+			Origin::signed(3),
+			4,
+			StakingBalance::Ring(500),
+			RewardDestination::Controller,
+			0,
+		));
+		assert_ok!(Staking::nominate(Origin::signed(4), vec![21, 1]));
+
+		// add a new validator candidate
+		assert_ok!(Staking::bond(
+			Origin::signed(5),
+			6,
+			StakingBalance::Ring(1000),
+			RewardDestination::Controller,
+			0,
+		));
+		assert_ok!(Staking::validate(
+			Origin::signed(6),
+			ValidatorPrefs {
+				node_name: "Darwinia Node".bytes().collect(),
+				..Default::default()
+			},
+		));
+
+		// new block
+		start_session(1);
+
+		// no change
+		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+		// new block
+		start_session(2);
+
+		// no change
+		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+		// new block --> ne era --> new validators
+		start_session(3);
+
+		// with current nominators 10 and 5 have the most stake
+		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
+
+		// 2 decides to be a validator. Consequences:
+		assert_ok!(Staking::validate(
+			Origin::signed(2),
+			ValidatorPrefs {
+				node_name: "Darwinia Node".bytes().collect(),
+				..Default::default()
+			},
+		));
+		// new stakes:
+		// 10: 1000 self vote
+		// 20: 1000 self vote + 250 vote
+		// 6 : 1000 self vote
+		// 2 : 2000 self vote + 250 vote.
+		// Winners: 20 and 2
+
+		start_session(4);
+		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
+
+		start_session(5);
+		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
+
+		// ne era
+		start_session(6);
+		assert_eq_uvec!(validator_controllers(), vec![2, 20]);
+
+		check_exposure_all();
+		check_nominator_all();
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
