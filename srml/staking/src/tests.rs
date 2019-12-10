@@ -2168,6 +2168,39 @@ fn reporters_receive_their_slice() {
 	});
 }
 
+#[test]
+fn invulnerables_are_not_slashed() {
+	// For invulnerable validators no slashing is performed.
+	ExtBuilder::default().invulnerables(vec![11]).build().execute_with(|| {
+		#[cfg(feature = "equalize")]
+		let initial_balance = 1250;
+		#[cfg(not(feature = "equalize"))]
+		let initial_balance = 1375;
+
+		assert_eq!(Ring::free_balance(&11), 1000);
+		assert_eq!(Ring::free_balance(&21), 2000);
+
+		Staking::on_offence(
+			&[
+				OffenceDetails {
+					offender: (11, Staking::stakers(&11)),
+					reporters: vec![],
+				},
+				OffenceDetails {
+					offender: (21, Staking::stakers(&21)),
+					reporters: vec![],
+				},
+			],
+			&[Perbill::from_percent(50), Perbill::from_percent(20)],
+		);
+
+		// The validator 11 hasn't been slashed, but 21 has been.
+		assert_eq!(Ring::free_balance(&11), 1000);
+		// 2000 - (0.2 * initial_balance)
+		assert_eq!(Ring::free_balance(&21), 2000 - (2 * initial_balance / 10));
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
