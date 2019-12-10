@@ -1621,6 +1621,59 @@ fn on_free_balance_zero_stash_removes_validator() {
 	});
 }
 
+#[test]
+fn on_free_balance_zero_stash_removes_nominator() {
+	// Tests that nominator storage items are cleaned up when stash is empty
+	// Tests that storage items are untouched when controller is empty
+	ExtBuilder::default().existential_deposit(10).build().execute_with(|| {
+		// Make 10 a nominator
+		assert_ok!(Staking::nominate(Origin::signed(10), vec![20]));
+		// Check that account 10 is a nominator
+		assert!(<Nominators<Test>>::exists(11));
+		// Check the balance of the nominator account
+		assert_eq!(Ring::free_balance(&10), 256);
+		// Check the balance of the stash account
+		assert_eq!(Ring::free_balance(&11), 256000);
+
+		// Set payee information
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Stash));
+
+		// Check storage items that should be cleaned up
+		assert!(<Ledger<Test>>::exists(&10));
+		assert!(<Bonded<Test>>::exists(&11));
+		assert!(<Nominators<Test>>::exists(&11));
+		assert!(<Payee<Test>>::exists(&11));
+
+		// Reduce free_balance of controller to 0
+		let _ = Ring::slash(&10, Balance::max_value());
+		// Check total balance of account 10
+		assert_eq!(Ring::total_balance(&10), 0);
+
+		// Check the balance of the stash account has not been touched
+		assert_eq!(Ring::free_balance(&11), 256000);
+		// Check these two accounts are still bonded
+		assert_eq!(Staking::bonded(&11), Some(10));
+
+		// Check storage items have not changed
+		assert!(<Ledger<Test>>::exists(&10));
+		assert!(<Bonded<Test>>::exists(&11));
+		assert!(<Nominators<Test>>::exists(&11));
+		assert!(<Payee<Test>>::exists(&11));
+
+		// Reduce free_balance of stash to 0
+		let _ = Ring::slash(&11, Balance::max_value());
+		// Check total balance of stash
+		assert_eq!(Ring::total_balance(&11), 0);
+
+		// Check storage items do not exist
+		assert!(!<Ledger<Test>>::exists(&10));
+		assert!(!<Bonded<Test>>::exists(&11));
+		assert!(!<Validators<Test>>::exists(&11));
+		assert!(!<Nominators<Test>>::exists(&11));
+		assert!(!<Payee<Test>>::exists(&11));
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
