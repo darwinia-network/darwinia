@@ -23,9 +23,8 @@ use support::{
 use system::RawOrigin;
 use transaction_payment::ChargeTransactionPayment;
 
-use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
-
 use super::*;
+use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, Timestamp, CALL};
 
 const ID_1: LockIdentifier = *b"1       ";

@@ -1,9 +1,8 @@
-use srml_support::{assert_err, assert_noop, assert_ok, traits::Currency};
-
-use darwinia_support::{LockIdentifier, NormalLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons};
+use srml_support::{assert_err, assert_ok, traits::Currency};
 
 use super::*;
 use crate::mock::*;
+use darwinia_support::{LockIdentifier, NormalLock, TimeStamp, WithdrawLock, WithdrawReasons};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
