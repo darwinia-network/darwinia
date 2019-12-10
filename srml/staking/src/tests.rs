@@ -541,6 +541,36 @@ fn less_than_needed_candidates_works() {
 		});
 }
 
+#[test]
+fn no_candidate_emergency_condition() {
+	ExtBuilder::default()
+		.minimum_validator_count(10)
+		.validator_count(15)
+		.num_validators(4)
+		.validator_pool(true)
+		.nominate(false)
+		.build()
+		.execute_with(|| {
+			// initial validators
+			assert_eq_uvec!(validator_controllers(), vec![10, 20, 30, 40]);
+
+			// set the minimum validator count.
+			<Staking as crate::Store>::MinimumValidatorCount::put(10);
+			<Staking as crate::Store>::ValidatorCount::put(15);
+			assert_eq!(Staking::validator_count(), 15);
+
+			let _ = Staking::chill(Origin::signed(10));
+
+			// trigger era
+			System::set_block_number(1);
+			Session::on_initialize(System::block_number());
+
+			// Previous ones are elected. chill is invalidates. TODO: #2494
+			assert_eq_uvec!(validator_controllers(), vec![10, 20, 30, 40]);
+			assert_eq!(Staking::current_elected().len(), 0);
+		});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
