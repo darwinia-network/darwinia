@@ -1,3 +1,4 @@
+use sr_primitives::traits::OnInitialize;
 use srml_support::{assert_err, assert_noop, assert_ok, traits::Currency};
 
 use super::*;
@@ -118,9 +119,9 @@ fn basic_setup_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
-				kton_staking_lock: Default::default()
+				kton_staking_lock: Default::default(),
 			})
 		);
 		// Account 20 controls the stash from account 21, which is 200 * balance_factor units
@@ -134,9 +135,9 @@ fn basic_setup_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
-				kton_staking_lock: Default::default()
+				kton_staking_lock: Default::default(),
 			})
 		);
 		// Account 1 does not control any stash
@@ -145,7 +146,7 @@ fn basic_setup_works() {
 		// ValidatorPrefs are default
 		{
 			let validator_prefs = ValidatorPrefs {
-				node_name: "Darwinia-Staking".bytes().collect(),
+				node_name: "Darwinia Node".bytes().collect(),
 				..Default::default()
 			};
 			assert_eq!(
@@ -153,7 +154,7 @@ fn basic_setup_works() {
 				vec![
 					(31, validator_prefs.clone()),
 					(21, validator_prefs.clone()),
-					(11, validator_prefs.clone())
+					(11, validator_prefs.clone()),
 				]
 			);
 		}
@@ -168,9 +169,9 @@ fn basic_setup_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 500,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
-				kton_staking_lock: Default::default()
+				kton_staking_lock: Default::default(),
 			})
 		);
 		assert_eq!(Staking::nominators(101), vec![11, 21]);
@@ -191,7 +192,7 @@ fn basic_setup_works() {
 					own: exposure_own_of_11,
 					others: vec![IndividualExposure {
 						who: 101,
-						value: vote_form_101_per_validator
+						value: vote_form_101_per_validator,
 					}]
 				}
 			);
@@ -202,7 +203,7 @@ fn basic_setup_works() {
 					own: exposure_own_of_21,
 					others: vec![IndividualExposure {
 						who: 101,
-						value: vote_form_101_per_validator
+						value: vote_form_101_per_validator,
 					}]
 				}
 			);
@@ -216,10 +217,6 @@ fn basic_setup_works() {
 			let exposure_others_of_11 = vote_of_101 * 4 / 1;
 			let exposure_total_of_11 = exposure_own_of_11 + exposure_others_of_11;
 
-			let exposure_own_of_21 = Staking::power_of(&21);
-			let exposure_others_of_21 = vote_of_101 * 4 / 3;
-			let exposure_total_of_21 = exposure_own_of_21 + exposure_others_of_21;
-
 			assert_eq!(
 				Staking::stakers(11),
 				Exposure {
@@ -227,18 +224,18 @@ fn basic_setup_works() {
 					own: exposure_own_of_11,
 					others: vec![IndividualExposure {
 						who: 101,
-						value: exposure_others_of_11
+						value: exposure_others_of_11,
 					}]
 				}
 			);
 			assert_eq!(
 				Staking::stakers(21),
 				Exposure {
-					total: exposure_own_of_21,
+					total: Staking::power_of(&21),
 					own: 1000,
 					others: vec![IndividualExposure {
 						who: 101,
-						value: exposure_others_of_21
+						value: vote_of_101 * 4 / 3,
 					}]
 				}
 			);
@@ -262,6 +259,128 @@ fn basic_setup_works() {
 		// All exposures must be correct.
 		check_exposure_all();
 		check_nominator_all();
+	});
+}
+
+#[test]
+fn change_controller_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Staking::bonded(&11), Some(10));
+
+		assert!(<Validators<Test>>::enumerate()
+			.map(|(c, _)| c)
+			.collect::<Vec<AccountId>>()
+			.contains(&11));
+		// 10 can control 11 who is initially a validator.
+		assert_ok!(Staking::chill(Origin::signed(10)));
+		assert!(!<Validators<Test>>::enumerate()
+			.map(|(c, _)| c)
+			.collect::<Vec<AccountId>>()
+			.contains(&11));
+
+		assert_ok!(Staking::set_controller(Origin::signed(11), 5));
+
+		start_era(1);
+
+		assert_noop!(
+			Staking::validate(
+				Origin::signed(10),
+				ValidatorPrefs {
+					node_name: "Darwinia Node".bytes().collect(),
+					..Default::default()
+				}
+			),
+			err::CONTROLLER_INVALID,
+		);
+		assert_ok!(Staking::validate(
+			Origin::signed(5),
+			ValidatorPrefs {
+				node_name: "Darwinia Node".bytes().collect(),
+				..Default::default()
+			}
+		));
+	})
+}
+
+#[test]
+fn rewards_should_work() {
+	// should check that:
+	// * rewards get recorded per session
+	// * rewards get paid per Era
+	// * Check that nominators are also rewarded
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		// Init some balances
+		let _ = Ring::make_free_balance_be(&2, 500);
+
+		let delay = 1000;
+		let init_balance_2 = Ring::total_balance(&2);
+		let init_balance_10 = Ring::total_balance(&10);
+		let init_balance_11 = Ring::total_balance(&11);
+
+		// Set payee to controller
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		// Initial config should be correct
+		assert_eq!(Staking::current_era(), 0);
+		assert_eq!(Session::current_index(), 0);
+
+		// Add a dummy nominator.
+		//
+		// Equal division indicates that the reward will be equally divided among validator and
+		// nominator.
+		<Stakers<Test>>::insert(
+			&11,
+			Exposure {
+				own: 500,
+				total: 1000,
+				others: vec![IndividualExposure { who: 2, value: 500 }],
+			},
+		);
+
+		<Payee<Test>>::insert(&2, RewardDestination::Stash);
+		assert_eq!(Staking::payee(2), RewardDestination::Stash);
+		assert_eq!(Staking::payee(11), RewardDestination::Controller);
+
+		let mut block = 3; // Block 3 => Session 1 => Era 0
+		System::set_block_number(block);
+		Timestamp::set_timestamp(block * 5000); // on time.
+		Session::on_initialize(System::block_number());
+		assert_eq!(Staking::current_era(), 0);
+		assert_eq!(Session::current_index(), 1);
+		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
+		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
+		// This is the second validator of the current elected set.
+		<Module<Test>>::reward_by_ids(vec![(21, 50)]);
+		// This must be no-op as it is not an elected validator.
+		<Module<Test>>::reward_by_ids(vec![(1001, 10_000)]);
+
+		// Compute total payout now for whole duration as other parameter won't change
+		//		let total_payout = current_total_payout_for_duration(9 * 5 * 1000);
+		//		assert!(total_payout > 10); // Test is meaningful if reward something
+
+		// No reward yet
+		assert_eq!(Ring::total_balance(&2), init_balance_2);
+		assert_eq!(Ring::total_balance(&10), init_balance_10);
+		assert_eq!(Ring::total_balance(&11), init_balance_11);
+
+		block = 6; // Block 6 => Session 2 => Era 0
+		System::set_block_number(block);
+		Timestamp::set_timestamp(block * 5000 + delay); // a little late.
+		Session::on_initialize(System::block_number());
+		assert_eq!(Staking::current_era(), 0);
+		assert_eq!(Session::current_index(), 2);
+
+		block = 9; // Block 9 => Session 3 => Era 1
+		System::set_block_number(block);
+		Timestamp::set_timestamp(block * 5000); // back to being on time. no delays
+		Session::on_initialize(System::block_number());
+		assert_eq!(Staking::current_era(), 1);
+		assert_eq!(Session::current_index(), 3);
+
+		// 11 validator has 2/3 of the total rewards and half half for it and its nominator
+		//		assert_eq_error_rate!(Balances::total_balance(&2), init_balance_2 + total_payout / 3, 1);
+		//		assert_eq_error_rate!(Balances::total_balance(&10), init_balance_10 + total_payout / 3, 1);
+		assert_eq!(Ring::total_balance(&11), init_balance_11);
 	});
 }
 
