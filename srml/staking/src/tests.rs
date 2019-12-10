@@ -847,6 +847,40 @@ fn no_candidate_emergency_condition() {
 //	});
 //}
 
+#[test]
+fn double_staking_should_fail() {
+	// should test (in the same order):
+	// * an account already bonded as stash cannot be be stashed again.
+	// * an account already bonded as stash cannot nominate.
+	// * an account already bonded as controller can nominate.
+	ExtBuilder::default().build().execute_with(|| {
+		let arbitrary_value = 5;
+		// 2 = controller, 1 stashed => ok
+		assert_ok!(Staking::bond(
+			Origin::signed(1),
+			2,
+			StakingBalance::Ring(arbitrary_value),
+			RewardDestination::default(),
+			0,
+		));
+		// 4 = not used so far, 1 stashed => not allowed.
+		assert_noop!(
+			Staking::bond(
+				Origin::signed(1),
+				4,
+				StakingBalance::Ring(arbitrary_value),
+				RewardDestination::default(),
+				0,
+			),
+			err::STASH_ALREADY_BONDED,
+		);
+		// 1 = stashed => attempting to nominate should fail.
+		assert_noop!(Staking::nominate(Origin::signed(1), vec![1]), err::CONTROLLER_INVALID);
+		// 2 = controller  => nominating should work.
+		assert_ok!(Staking::nominate(Origin::signed(2), vec![1]));
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
