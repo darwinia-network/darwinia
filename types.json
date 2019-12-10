@@ -1,6 +1,5 @@
 {
 	"EpochDuration": "u64",
-	"TimeStamp": "u64",
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"withdraw_lock": "WithdrawLock",
