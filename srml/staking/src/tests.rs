@@ -2080,6 +2080,23 @@ fn offence_forces_new_era() {
 	});
 }
 
+#[test]
+fn offence_ensures_new_era_without_clobbering() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Staking::force_new_era_always(Origin::ROOT));
+
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(5)],
+		);
+
+		assert_eq!(Staking::force_era(), Forcing::ForceAlways);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
