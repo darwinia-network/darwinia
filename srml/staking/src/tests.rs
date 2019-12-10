@@ -302,6 +302,7 @@ fn change_controller_works() {
 	})
 }
 
+// TODO
 #[test]
 fn rewards_should_work() {
 	// should check that:
