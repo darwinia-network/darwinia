@@ -1681,19 +1681,19 @@ fn switching_roles() {
 		// Initialize time.
 		Timestamp::set_timestamp(1);
 
-		// Reset reward destination
+		// Reset reward destination.
 		for i in &[10, 20] {
 			assert_ok!(Staking::set_payee(Origin::signed(*i), RewardDestination::Controller));
 		}
 
 		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-		// put some money in account that we'll use.
+		// Put some money in account that we'll use.
 		for i in 1..7 {
 			let _ = Ring::deposit_creating(&i, 5000);
 		}
 
-		// add 2 nominators
+		// Add 2 nominators.
 		assert_ok!(Staking::bond(
 			Origin::signed(1),
 			2,
@@ -1712,7 +1712,7 @@ fn switching_roles() {
 		));
 		assert_ok!(Staking::nominate(Origin::signed(4), vec![21, 1]));
 
-		// add a new validator candidate
+		// Add a new validator candidate.
 		assert_ok!(Staking::bond(
 			Origin::signed(5),
 			6,
@@ -1728,22 +1728,22 @@ fn switching_roles() {
 			},
 		));
 
-		// new block
+		// New block.
 		start_session(1);
 
-		// no change
+		// No change.
 		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-		// new block
+		// New block.
 		start_session(2);
 
-		// no change
+		// No change.
 		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-		// new block --> ne era --> new validators
+		// new block --> ne era --> new validators.
 		start_session(3);
 
-		// with current nominators 10 and 5 have the most stake
+		// With current nominators 10 and 5 have the most stake.
 		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
 
 		// 2 decides to be a validator. Consequences:
@@ -1754,7 +1754,7 @@ fn switching_roles() {
 				..Default::default()
 			},
 		));
-		// new stakes:
+		// New stakes:
 		// 10: 1000 self vote
 		// 20: 1000 self vote + 250 vote
 		// 6 : 1000 self vote
@@ -1767,7 +1767,7 @@ fn switching_roles() {
 		start_session(5);
 		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
 
-		// ne era
+		// ne era.
 		start_session(6);
 		assert_eq_uvec!(validator_controllers(), vec![2, 20]);
 
@@ -1785,12 +1785,12 @@ fn wrong_vote_is_null() {
 		.execute_with(|| {
 			assert_eq_uvec!(validator_controllers(), vec![40, 30]);
 
-			// put some money in account that we'll use.
+			// Put some money in account that we'll use.
 			for i in 1..3 {
 				let _ = Ring::deposit_creating(&i, 5000);
 			}
 
-			// add 1 nominators
+			// Add 1 nominators
 			assert_ok!(Staking::bond(
 				Origin::signed(1),
 				2,
@@ -1801,15 +1801,68 @@ fn wrong_vote_is_null() {
 			assert_ok!(Staking::nominate(
 				Origin::signed(2),
 				vec![
-					11, 21, // good votes
-					1, 2, 15, 1000, 25 // crap votes. No effect.
+					11, 21, // Good votes.
+					1, 2, 15, 1000, 25 // Crap votes. No effect.
 				],
 			));
 
-			// new block
+			// New block.
 			start_era(1);
 
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+		});
+}
+
+#[test]
+fn bond_with_no_staked_value() {
+	// Behavior when someone bonds with no staked value.
+	// Particularly when she votes and the candidate is elected.
+	ExtBuilder::default()
+		.validator_count(3)
+		.existential_deposit(5)
+		.nominate(false)
+		.minimum_validator_count(1)
+		.build()
+		.execute_with(|| {
+			// Bonded with absolute minimum value possible.
+			assert_ok!(Staking::bond(
+				Origin::signed(1),
+				2,
+				StakingBalance::Ring(5),
+				RewardDestination::Controller,
+				0,
+			));
+			//			assert_eq!(Ring::locks(&1)[0].amount, 5);
+
+			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::Ring(5)));
+			assert_eq!(
+				Staking::ledger(2),
+				Some(StakingLedger {
+					stash: 1,
+					active_ring: 0,
+					active_deposit_ring: 0,
+					active_kton: 0,
+					deposit_items: vec![],
+					ring_staking_lock: StakingLock {
+						staking_amount: 0,
+						unbondings: vec![NormalLock { amount: 5, until: 60 }]
+					},
+					kton_staking_lock: Default::default(),
+				}),
+			);
+
+			Timestamp::set_timestamp(BondingDuration::get() - 1);
+
+			// Not yet removed.
+			assert!(Staking::ledger(2).is_some());
+			//			assert_eq!(Ring::locks(&1)[0].amount, 5);
+
+			Timestamp::set_timestamp(BondingDuration::get());
+
+			// FIXME
+			// Poof. Account 1 is removed from the staking system.
+			//			assert!(Staking::ledger(2).is_none());
+			//			assert_eq!(Ring::locks(&1).len(), 0);
 		});
 }
 
