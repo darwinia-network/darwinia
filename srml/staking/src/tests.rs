@@ -1,5 +1,8 @@
 use sr_primitives::traits::OnInitialize;
-use srml_support::{assert_err, assert_noop, assert_ok, traits::Currency};
+use srml_support::{
+	assert_eq_uvec, assert_err, assert_noop, assert_ok,
+	traits::{Currency, ReservableCurrency},
+};
 
 use super::*;
 use crate::mock::*;
@@ -425,6 +428,89 @@ fn multi_era_reward_should_work() {
 		//			init_balance_10 + total_payout_0 + total_payout_1
 		//		);
 	});
+}
+
+#[test]
+fn staking_should_work() {
+	// should test:
+	// * new validators can be added to the default set
+	// * new ones will be chosen per era
+	// * either one can unlock the stash and back-down from being a validator via `chill`ing.
+	ExtBuilder::default()
+		.nominate(false)
+		.fair(false) // to give 20 more staked value
+		.build()
+		.execute_with(|| {
+			Timestamp::set_timestamp(1); // Initialize time.
+
+			// remember + compare this along with the test.
+			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+			// put some money in account that we'll use.
+			for i in 1..5 { let _ = Ring::make_free_balance_be(&i, 2000); }
+
+			// --- Block 1:
+			start_session(1);
+			// add a new candidate for being a validator. account 3 controlled by 4.
+			assert_ok!(Staking::bond(Origin::signed(3), 4, StakingBalance::Ring(1500), RewardDestination::Controller, 0));
+			assert_ok!(Staking::validate(
+				Origin::signed(4),
+				ValidatorPrefs {
+					node_name: "Darwinia Node".bytes().collect(),
+					..Default::default()
+				},
+			));
+
+			// No effects will be seen so far.
+			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+			// --- Block 2:
+			start_session(2);
+
+			// No effects will be seen so far. Era has not been yet triggered.
+			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+
+			// --- Block 3: the validators will now be queued.
+			start_session(3);
+			assert_eq!(Staking::current_era(), 1);
+
+			// --- Block 4: the validators will now be changed.
+			start_session(4);
+
+			assert_eq_uvec!(validator_controllers(), vec![20, 4]);
+			// --- Block 4: Unstake 4 as a validator, freeing up the balance stashed in 3
+			// 4 will chill
+			Staking::chill(Origin::signed(4)).unwrap();
+
+			// --- Block 5: nothing. 4 is still there.
+			start_session(5);
+			assert_eq_uvec!(validator_controllers(), vec![20, 4]);
+
+			// --- Block 6: 4 will not be a validator.
+			start_session(7);
+			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+			// Note: the stashed value of 4 is still lock
+			assert_eq!(
+				Staking::ledger(&4).unwrap(),
+				StakingLedger {
+					stash: 3,
+					active_ring: 1500,
+					active_deposit_ring: 0,
+					active_kton: 0,
+					deposit_items: vec![],
+					ring_staking_lock: StakingLock {
+						staking_amount: 1500,
+						unbondings: vec![],
+					},
+					kton_staking_lock: Default::default(),
+				},
+			);
+			// e.g. it cannot spend more than 500 that it has free from the total 2000
+			assert_noop!(Ring::reserve(&3, 501), "account liquidity restrictions prevent withdrawal");
+			assert_ok!(Ring::reserve(&3, 409));
+		});
 }
 
 //#[test]
