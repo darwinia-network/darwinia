@@ -80,18 +80,18 @@ macro_rules! gen_paired_account {
 
 #[test]
 fn force_unstake_works() {
-	// Verifies initial conditions of mock
+	// Verifies initial conditions of mock.
 	ExtBuilder::default().build().execute_with(|| {
-		// Account 11 is stashed and locked, and account 10 is the controller
+		// Account 11 is stashed and locked, and account 10 is the controller.
 		assert_eq!(Staking::bonded(&11), Some(10));
-		// Cant transfer
+		// Cant transfer.
 		assert_noop!(
 			Ring::transfer(Origin::signed(11), 1, 10),
 			"account liquidity restrictions prevent withdrawal",
 		);
 		// Force unstake requires root.
 		assert_noop!(Staking::force_unstake(Origin::signed(11), 11), "RequireRootOrigin");
-		// We now force them to unstake
+		// We now force them to unstake.
 		assert_ok!(Staking::force_unstake(Origin::ROOT, 11));
 		// No longer bonded.
 		assert_eq!(Staking::bonded(&11), None);
@@ -102,16 +102,16 @@ fn force_unstake_works() {
 
 #[test]
 fn basic_setup_works() {
-	// Verifies initial conditions of mock
+	// Verifies initial conditions of mock.
 	ExtBuilder::default().build().execute_with(|| {
-		// Account 11 is stashed and locked, and account 10 is the controller
+		// Account 11 is stashed and locked, and account 10 is the controller.
 		assert_eq!(Staking::bonded(&11), Some(10));
-		// Account 21 is stashed and locked, and account 20 is the controller
+		// Account 21 is stashed and locked, and account 20 is the controller.
 		assert_eq!(Staking::bonded(&21), Some(20));
-		// Account 1 is not a stashed
+		// Account 1 is not a stashed.
 		assert_eq!(Staking::bonded(&1), None);
 
-		// Account 10 controls the stash from account 11, which is 100 * balance_factor units
+		// Account 10 controls the stash from account 11, which is 100 * balance_factor units.
 		assert_eq!(
 			Staking::ledger(&10),
 			Some(StakingLedger {
@@ -127,7 +127,7 @@ fn basic_setup_works() {
 				kton_staking_lock: Default::default(),
 			})
 		);
-		// Account 20 controls the stash from account 21, which is 200 * balance_factor units
+		// Account 20 controls the stash from account 21, which is 200 * balance_factor units.
 		assert_eq!(
 			Staking::ledger(&20),
 			Some(StakingLedger {
@@ -143,10 +143,10 @@ fn basic_setup_works() {
 				kton_staking_lock: Default::default(),
 			})
 		);
-		// Account 1 does not control any stash
+		// Account 1 does not control any stash.
 		assert_eq!(Staking::ledger(&1), None);
 
-		// ValidatorPrefs are default
+		// ValidatorPrefs are default.
 		{
 			let validator_prefs = ValidatorPrefs {
 				node_name: "Darwinia Node".bytes().collect(),
@@ -210,7 +210,7 @@ fn basic_setup_works() {
 					}],
 				}
 			);
-			// initial slot_stake
+			// initial slot_stake.
 			assert_eq!(exposure_total_of_11, exposure_total_of_21);
 			assert_eq!(Staking::slot_stake(), exposure_total_of_11);
 		} else {
@@ -242,21 +242,21 @@ fn basic_setup_works() {
 					}],
 				}
 			);
-			// initial slot_stake
+			// initial slot_stake.
 			assert_eq!(Staking::slot_stake(), exposure_total_of_11);
 		}
 
 		// The number of validators required.
 		assert_eq!(Staking::validator_count(), 2);
 
-		// Initial Era and session
+		// Initial Era and session.
 		assert_eq!(Staking::current_era(), 0);
 
-		// Account 10 has `balance_factor` free balance
+		// Account 10 has `balance_factor` free balance.
 		assert_eq!(Ring::free_balance(&10), 1);
 		assert_eq!(Ring::free_balance(&10), 1);
 
-		// New era is not being forced
+		// New era is not being forced.
 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
 
 		// All exposures must be correct.
@@ -313,7 +313,7 @@ fn rewards_should_work() {
 	// * rewards get paid per Era
 	// * Check that nominators are also rewarded
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-		// Init some balances
+		// Init some balances.
 		let _ = Ring::make_free_balance_be(&2, 500);
 
 		let delay = 1000;
@@ -321,10 +321,10 @@ fn rewards_should_work() {
 		let init_balance_10 = Ring::total_balance(&10);
 		let init_balance_11 = Ring::total_balance(&11);
 
-		// Set payee to controller
+		// Set payee to controller.
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
-		// Initial config should be correct
+		// Initial config should be correct.
 		assert_eq!(Staking::current_era(), 0);
 		assert_eq!(Session::current_index(), 0);
 
@@ -345,7 +345,7 @@ fn rewards_should_work() {
 		assert_eq!(Staking::payee(2), RewardDestination::Stash);
 		assert_eq!(Staking::payee(11), RewardDestination::Controller);
 
-		let mut block = 3; // Block 3 => Session 1 => Era 0
+		let mut block = 3; // Block 3 => Session 1 => Era 0.
 		System::set_block_number(block);
 		Timestamp::set_timestamp(block * 5000); // on time.
 		Session::on_initialize(System::block_number());
@@ -358,7 +358,7 @@ fn rewards_should_work() {
 		// This must be no-op as it is not an elected validator.
 		<Module<Test>>::reward_by_ids(vec![(1001, 10_000)]);
 
-		// Compute total payout now for whole duration as other parameter won't change
+		// Compute total payout now for whole duration as other parameter won't change.
 		//		let total_payout = current_total_payout_for_duration(9 * 5 * 1000);
 		//		assert!(total_payout > 10); // Test is meaningful if reward something
 
@@ -367,21 +367,21 @@ fn rewards_should_work() {
 		assert_eq!(Ring::total_balance(&10), init_balance_10);
 		assert_eq!(Ring::total_balance(&11), init_balance_11);
 
-		block = 6; // Block 6 => Session 2 => Era 0
+		block = 6; // Block 6 => Session 2 => Era 0.
 		System::set_block_number(block);
 		Timestamp::set_timestamp(block * 5000 + delay); // a little late.
 		Session::on_initialize(System::block_number());
 		assert_eq!(Staking::current_era(), 0);
 		assert_eq!(Session::current_index(), 2);
 
-		block = 9; // Block 9 => Session 3 => Era 1
+		block = 9; // Block 9 => Session 3 => Era 1.
 		System::set_block_number(block);
-		Timestamp::set_timestamp(block * 5000); // back to being on time. no delays
+		Timestamp::set_timestamp(block * 5000); // back to being on time. no delays.
 		Session::on_initialize(System::block_number());
 		assert_eq!(Staking::current_era(), 1);
 		assert_eq!(Session::current_index(), 3);
 
-		// 11 validator has 2/3 of the total rewards and half half for it and its nominator
+		// 11 validator has 2/3 of the total rewards and half half for it and its nominator.
 		//		assert_eq_error_rate!(Balances::total_balance(&2), init_balance_2 + total_payout / 3, 1);
 		//		assert_eq_error_rate!(Balances::total_balance(&10), init_balance_10 + total_payout / 3, 1);
 		assert_eq!(Ring::total_balance(&11), init_balance_11);
@@ -397,7 +397,7 @@ fn multi_era_reward_should_work() {
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
 		let init_balance_10 = Ring::total_balance(&10);
 
-		// Set payee to controller
+		// Set payee to controller.
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
 		// Compute now as other parameter won't change
@@ -419,10 +419,10 @@ fn multi_era_reward_should_work() {
 		//		assert!(total_payout_1 > 10); // Test is meaningfull if reward something
 		<Module<Test>>::reward_by_ids(vec![(11, 101)]);
 
-		// new era is triggered here.
+		// New era is triggered here.
 		start_session(5);
 
-		// pay time
+		// Pay time.
 		//		assert_eq!(
 		//			Ring::total_balance(&10),
 		//			init_balance_10 + total_payout_0 + total_payout_1
@@ -446,12 +446,12 @@ fn staking_should_work() {
 			// remember + compare this along with the test.
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-			// put some money in account that we'll use.
+			// Put some money in account that we'll use.
 			for i in 1..5 { let _ = Ring::make_free_balance_be(&i, 2000); }
 
 			// --- Block 1:
 			start_session(1);
-			// add a new candidate for being a validator. account 3 controlled by 4.
+			// Add a new candidate for being a validator. account 3 controlled by 4.
 			assert_ok!(Staking::bond(Origin::signed(3), 4, StakingBalance::Ring(1500), RewardDestination::Controller, 0));
 			assert_ok!(Staking::validate(
 				Origin::signed(4),
@@ -479,8 +479,8 @@ fn staking_should_work() {
 			start_session(4);
 
 			assert_eq_uvec!(validator_controllers(), vec![20, 4]);
-			// --- Block 4: Unstake 4 as a validator, freeing up the balance stashed in 3
-			// 4 will chill
+			// --- Block 4: Unstake 4 as a validator, freeing up the balance stashed in 3.
+			// 4 will chill.
 			Staking::chill(Origin::signed(4)).unwrap();
 
 			// --- Block 5: nothing. 4 is still there.
@@ -491,7 +491,7 @@ fn staking_should_work() {
 			start_session(7);
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-			// Note: the stashed value of 4 is still lock
+			// Note: the stashed value of 4 is still lock.
 			assert_eq!(
 				Staking::ledger(&4).unwrap(),
 				StakingLedger {
@@ -507,7 +507,7 @@ fn staking_should_work() {
 					kton_staking_lock: Default::default(),
 				},
 			);
-			// e.g. it cannot spend more than 500 that it has free from the total 2000
+			// e.g. It cannot spend more than 500 that it has free from the total 2000.
 			assert_noop!(Ring::reserve(&3, 501), "account liquidity restrictions prevent withdrawal");
 			assert_ok!(Ring::reserve(&3, 409));
 		});
@@ -551,17 +551,17 @@ fn no_candidate_emergency_condition() {
 		.nominate(false)
 		.build()
 		.execute_with(|| {
-			// initial validators
+			// Initial validators.
 			assert_eq_uvec!(validator_controllers(), vec![10, 20, 30, 40]);
 
-			// set the minimum validator count.
+			// Set the minimum validator count.
 			<Staking as crate::Store>::MinimumValidatorCount::put(10);
 			<Staking as crate::Store>::ValidatorCount::put(15);
 			assert_eq!(Staking::validator_count(), 15);
 
 			let _ = Staking::chill(Origin::signed(10));
 
-			// trigger era
+			// Trigger era.
 			System::set_block_number(1);
 			Session::on_initialize(System::block_number());
 
@@ -1473,6 +1473,34 @@ fn bond_extra_works() {
 //		);
 //	})
 //}
+
+#[test]
+fn too_many_unbond_calls_should_not_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Locked at TimeStamp(60).
+		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
+			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+		}
+
+		Timestamp::set_timestamp(1);
+
+		// Locked at TimeStamp(61).
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+
+		// Can't do more.
+		assert_noop!(
+			Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)),
+			err::UNLOCK_CHUNKS_REACH_MAX,
+		);
+
+		// Free up automatically.
+		Timestamp::set_timestamp(BondingDuration::get());
+
+		// Can add again.
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+		assert_eq!(Staking::ledger(&10).unwrap().ring_staking_lock.unbondings.len(), 2);
+	})
+}
 
 //#[test]
 //fn normal_kton_should_work() {
