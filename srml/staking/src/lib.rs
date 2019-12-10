@@ -35,6 +35,7 @@ mod err {
 	pub const TARGETS_INVALID: &'static str = "Targets - CAN NOT BE EMPTY";
 }
 
+#[allow(unused)]
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
