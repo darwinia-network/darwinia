@@ -193,7 +193,7 @@ fn basic_setup_works() {
 					others: vec![IndividualExposure {
 						who: 101,
 						value: vote_form_101_per_validator,
-					}]
+					}],
 				}
 			);
 			assert_eq!(
@@ -204,7 +204,7 @@ fn basic_setup_works() {
 					others: vec![IndividualExposure {
 						who: 101,
 						value: vote_form_101_per_validator,
-					}]
+					}],
 				}
 			);
 			// initial slot_stake
@@ -225,7 +225,7 @@ fn basic_setup_works() {
 					others: vec![IndividualExposure {
 						who: 101,
 						value: exposure_others_of_11,
-					}]
+					}],
 				}
 			);
 			assert_eq!(
@@ -236,7 +236,7 @@ fn basic_setup_works() {
 					others: vec![IndividualExposure {
 						who: 101,
 						value: vote_of_101 * 4 / 3,
-					}]
+					}],
 				}
 			);
 			// initial slot_stake
@@ -382,6 +382,48 @@ fn rewards_should_work() {
 		//		assert_eq_error_rate!(Balances::total_balance(&2), init_balance_2 + total_payout / 3, 1);
 		//		assert_eq_error_rate!(Balances::total_balance(&10), init_balance_10 + total_payout / 3, 1);
 		assert_eq!(Ring::total_balance(&11), init_balance_11);
+	});
+}
+
+// TODO
+#[test]
+fn multi_era_reward_should_work() {
+	// Should check that:
+	// The value of current_session_reward is set at the end of each era, based on
+	// slot_stake and session_reward.
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		let init_balance_10 = Ring::total_balance(&10);
+
+		// Set payee to controller
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		// Compute now as other parameter won't change
+		//		let total_payout_0 = current_total_payout_for_duration(3000);
+		//		assert!(total_payout_0 > 10); // Test is meaningfull if reward something
+		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+
+		start_session(0);
+		start_session(1);
+		start_session(2);
+		start_session(3);
+
+		assert_eq!(Staking::current_era(), 1);
+		//		assert_eq!(Ring::total_balance(&10), init_balance_10 + total_payout_0);
+
+		start_session(4);
+
+		//		let total_payout_1 = current_total_payout_for_duration(3000);
+		//		assert!(total_payout_1 > 10); // Test is meaningfull if reward something
+		<Module<Test>>::reward_by_ids(vec![(11, 101)]);
+
+		// new era is triggered here.
+		start_session(5);
+
+		// pay time
+		//		assert_eq!(
+		//			Ring::total_balance(&10),
+		//			init_balance_10 + total_payout_0 + total_payout_1
+		//		);
 	});
 }
 
