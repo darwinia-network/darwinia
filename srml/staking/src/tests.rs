@@ -1073,6 +1073,97 @@ fn cannot_reserve_staked_balance() {
 	});
 }
 
+// TODO
+//#[test]
+//fn reward_destination_works() {
+//	// Rewards go to the correct destination as determined in Payee
+//	ExtBuilder::default().nominate(false).build().execute_with(|| {
+//		// Check that account 11 is a validator
+//		assert!(Staking::current_elected().contains(&11));
+//		// Check the balance of the validator account
+//		assert_eq!(Balances::free_balance(&10), 1);
+//		// Check the balance of the stash account
+//		assert_eq!(Balances::free_balance(&11), 1000);
+//		// Check how much is at stake
+//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
+//			stash: 11,
+//			total: 1000,
+//			active: 1000,
+//			unlocking: vec![],
+//		}));
+//
+//		// Compute total payout now for whole duration as other parameter won't change
+//		let total_payout_0 = current_total_payout_for_duration(3000);
+//		assert!(total_payout_0 > 100); // Test is meaningfull if reward something
+//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+//
+//		start_era(1);
+//
+//		// Check that RewardDestination is Staked (default)
+//		assert_eq!(Staking::payee(&11), RewardDestination::Staked);
+//		// Check that reward went to the stash account of validator
+//		assert_eq!(Balances::free_balance(&11), 1000 + total_payout_0);
+//		// Check that amount at stake increased accordingly
+//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
+//			stash: 11,
+//			total: 1000 + total_payout_0,
+//			active: 1000 + total_payout_0,
+//			unlocking: vec![],
+//		}));
+//
+//		//Change RewardDestination to Stash
+//		<Payee<Test>>::insert(&11, RewardDestination::Stash);
+//
+//		// Compute total payout now for whole duration as other parameter won't change
+//		let total_payout_1 = current_total_payout_for_duration(3000);
+//		assert!(total_payout_1 > 100); // Test is meaningfull if reward something
+//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+//
+//		start_era(2);
+//
+//		// Check that RewardDestination is Stash
+//		assert_eq!(Staking::payee(&11), RewardDestination::Stash);
+//		// Check that reward went to the stash account
+//		assert_eq!(Balances::free_balance(&11), 1000 + total_payout_0 + total_payout_1);
+//		// Record this value
+//		let recorded_stash_balance = 1000 + total_payout_0 + total_payout_1;
+//		// Check that amount at stake is NOT increased
+//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
+//			stash: 11,
+//			total: 1000 + total_payout_0,
+//			active: 1000 + total_payout_0,
+//			unlocking: vec![],
+//		}));
+//
+//		// Change RewardDestination to Controller
+//		<Payee<Test>>::insert(&11, RewardDestination::Controller);
+//
+//		// Check controller balance
+//		assert_eq!(Balances::free_balance(&10), 1);
+//
+//		// Compute total payout now for whole duration as other parameter won't change
+//		let total_payout_2 = current_total_payout_for_duration(3000);
+//		assert!(total_payout_2 > 100); // Test is meaningfull if reward something
+//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+//
+//		start_era(3);
+//
+//		// Check that RewardDestination is Controller
+//		assert_eq!(Staking::payee(&11), RewardDestination::Controller);
+//		// Check that reward went to the controller account
+//		assert_eq!(Balances::free_balance(&10), 1 + total_payout_2);
+//		// Check that amount at stake is NOT increased
+//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
+//			stash: 11,
+//			total: 1000 + total_payout_0,
+//			active: 1000 + total_payout_0,
+//			unlocking: vec![],
+//		}));
+//		// Check that amount in staked account is NOT increased.
+//		assert_eq!(Balances::free_balance(&11), recorded_stash_balance);
+//	});
+//}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
