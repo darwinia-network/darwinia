@@ -350,7 +350,10 @@ impl kton::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 6;
+	// Develop
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 1;
+	// Production
+	//	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 6;
 	// about 14 days = 14 * 24 * 60 * 60
 	pub const BondingDuration: TimeStamp = 1_209_600;
 	// decimal 9
