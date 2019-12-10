@@ -951,6 +951,57 @@ fn session_and_eras_work() {
 	});
 }
 
+#[test]
+fn forcing_new_era_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// normal flow of session.
+		assert_eq!(Staking::current_era(), 0);
+		start_session(0);
+		assert_eq!(Staking::current_era(), 0);
+		start_session(1);
+		assert_eq!(Staking::current_era(), 0);
+		start_session(2);
+		assert_eq!(Staking::current_era(), 1);
+
+		// no era change.
+		ForceEra::put(Forcing::ForceNone);
+		start_session(3);
+		assert_eq!(Staking::current_era(), 1);
+		start_session(4);
+		assert_eq!(Staking::current_era(), 1);
+		start_session(5);
+		assert_eq!(Staking::current_era(), 1);
+		start_session(6);
+		assert_eq!(Staking::current_era(), 1);
+
+		// back to normal.
+		// this immediately starts a new session.
+		ForceEra::put(Forcing::NotForcing);
+		start_session(7);
+		assert_eq!(Staking::current_era(), 2);
+		start_session(8);
+		assert_eq!(Staking::current_era(), 2);
+
+		// forceful change
+		ForceEra::put(Forcing::ForceAlways);
+		start_session(9);
+		assert_eq!(Staking::current_era(), 3);
+		start_session(10);
+		assert_eq!(Staking::current_era(), 4);
+		start_session(11);
+		assert_eq!(Staking::current_era(), 5);
+
+		// just one forceful change
+		ForceEra::put(Forcing::ForceNew);
+		start_session(12);
+		assert_eq!(Staking::current_era(), 6);
+
+		assert_eq!(ForceEra::get(), Forcing::NotForcing);
+		start_session(13);
+		assert_eq!(Staking::current_era(), 6);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
