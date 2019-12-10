@@ -9,11 +9,15 @@ use rstd::{result, vec::Vec};
 use sr_eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
 };
-use sr_primitives::RuntimeDebug;
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-use system::ensure_signed;
 
 use ethash::{EthereumPatch, LightDAG};
+
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
+
+use system::ensure_signed;
+
+use sr_primitives::RuntimeDebug;
+
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
@@ -80,7 +84,7 @@ decl_storage! {
 		config(genesis_difficulty): u64;
 		build(|config| {
 			if let Some(h) = &config.header {
-				let header: EthHeader = rlp::decode(&h).expect("Deserialize Header - FAILED");
+				let header: EthHeader = rlp::decode(&h).expect("Deserialize Genesis Header - FAILED");
 
 				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
@@ -113,6 +117,7 @@ decl_module! {
 			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
 
 			Self::verify_header(&header)?;
+
 			Self::store_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
@@ -178,16 +183,15 @@ impl<T: Trait> Module<T> {
 	}
 
 	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
-		let header_hash = proof_record.header_hash;
-		let header = Self::header_of(header_hash).expect("Header - NOT EXISTED");
-
-		let proof: Proof = rlp::decode(&proof_record.proof).expect("Rlp Decode - FAILED");
+		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
 		let key = rlp::encode(&proof_record.index);
 		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
-			.expect("Verify Proof - FAILED")
-			.expect("Trie Key - NOT EXISTED");
+			.map_err(|_| "Verify Proof - FAILED")?
+			.ok_or("Trie Key - NOT EXISTED")?;
+		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
 
-		Ok(rlp::decode(&value).expect("Deserialize Receipt - FAILED"))
+		Ok(receipt)
 		// confirm that the block hash is right
 		// get the receipt MPT trie root from the block header
 		// Using receipt MPT trie root to verify the proof and index etc.
@@ -203,11 +207,11 @@ impl<T: Trait> Module<T> {
 		let number = header.number();
 
 		ensure!(
-			number >= Self::begin_header().expect("Begin Header - NOT EXISTED").number(),
+			number >= Self::begin_header().ok_or("Begin Header - NOT EXISTED")?.number(),
 			"Block Number - TOO SMALL"
 		);
 
-		let prev_header = Self::header_of(parent_hash).expect("Previous Header - NOT EXISTED");
+		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
 		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
 
 		// check difficulty
