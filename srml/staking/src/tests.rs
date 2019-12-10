@@ -1025,6 +1025,31 @@ fn cannot_transfer_staked_balance() {
 	});
 }
 
+#[test]
+fn cannot_transfer_staked_balance_2() {
+	// Tests that a stash account cannot transfer funds
+	// Same test as above but with 20, and more accurate.
+	// 21 has 2000 free balance but 1000 at stake
+	ExtBuilder::default()
+		.nominate(false)
+		.fair(true)
+		.build()
+		.execute_with(|| {
+			// Confirm account 21 is stashed
+			assert_eq!(Staking::bonded(&21), Some(20));
+			// Confirm account 21 has some free balance
+			assert_eq!(Ring::free_balance(&21), 2000);
+			// Confirm account 21 (via controller 20) is totally staked
+			assert_eq!(Staking::stakers(&21).total, Staking::power_of(&11));
+			// Confirm account 21 can transfer at most 1000
+			assert_noop!(
+				Ring::transfer(Origin::signed(21), 20, 1001),
+				"account liquidity restrictions prevent withdrawal",
+			);
+			assert_ok!(Ring::transfer(Origin::signed(21), 20, 1000));
+		});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
