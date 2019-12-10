@@ -1050,6 +1050,29 @@ fn cannot_transfer_staked_balance_2() {
 		});
 }
 
+#[test]
+fn cannot_reserve_staked_balance() {
+	// Checks that a bonded account cannot reserve balance from free balance
+	ExtBuilder::default().build().execute_with(|| {
+		// Confirm account 11 is stashed
+		assert_eq!(Staking::bonded(&11), Some(10));
+		// Confirm account 11 has some free balance
+		assert_eq!(Ring::free_balance(&11), 1000);
+		// Confirm account 11 (via controller 10) is totally staked
+		assert_eq!(Staking::stakers(&11).own, Staking::power_of(&11));
+		// Confirm account 11 cannot transfer as a result
+		assert_noop!(
+			Ring::reserve(&11, 1),
+			"account liquidity restrictions prevent withdrawal"
+		);
+
+		// Give account 11 extra free balance
+		let _ = Ring::make_free_balance_be(&11, 10000);
+		// Confirm account 11 can now reserve balance
+		assert_ok!(Ring::reserve(&11, 1));
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
