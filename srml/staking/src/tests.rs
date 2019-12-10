@@ -2002,13 +2002,29 @@ fn reward_from_authorship_event_handler_works() {
 		// Rewarding the same two times works.
 		<Module<Test>>::note_uncle(11, 1);
 
-		// Not mandatory but must be coherent with rewards
+		// Not mandatory but must be coherent with rewards.
 		assert_eq!(<CurrentElected<Test>>::get(), vec![21, 11]);
 
-		// 21 is rewarded as an uncle producer
-		// 11 is rewarded as a block producer and uncle referencer and uncle producer
+		// 21 is rewarded as an uncle producer.
+		// 11 is rewarded as a block producer and uncle referencer and uncle producer.
 		assert_eq!(CurrentEraPointsEarned::get().individual, vec![1, 20 + 2 * 3 + 1]);
 		assert_eq!(CurrentEraPointsEarned::get().total, 28);
+	})
+}
+
+#[test]
+fn add_reward_points_fns_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let validators = <Module<Test>>::current_elected();
+		// Not mandatory but must be coherent with rewards.
+		assert_eq!(validators, vec![21, 11]);
+
+		<Module<Test>>::reward_by_indices(vec![(0, 1), (1, 1), (2, 1), (1, 1)]);
+
+		<Module<Test>>::reward_by_ids(vec![(21, 1), (11, 1), (31, 1), (11, 1)]);
+
+		assert_eq!(CurrentEraPointsEarned::get().individual, vec![2, 4]);
+		assert_eq!(CurrentEraPointsEarned::get().total, 6);
 	})
 }
 
