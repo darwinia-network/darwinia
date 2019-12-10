@@ -466,7 +466,7 @@ decl_storage! {
 						<Module<T>>::validate(
 							T::Origin::from(Some(controller.clone()).into()),
 							ValidatorPrefs {
-								node_name: "Darwinia-Staking".bytes().collect(),
+								node_name: "Darwinia Node".bytes().collect(),
 								..Default::default()
 							},
 						)
