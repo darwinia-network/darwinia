@@ -2040,6 +2040,31 @@ fn unbonded_balance_is_not_slashable() {
 	})
 }
 
+#[test]
+fn era_is_always_same_length() {
+	// This ensures that the sessions is always of the same length if there is no forcing no
+	// session changes.
+	ExtBuilder::default().build().execute_with(|| {
+		start_era(1);
+		assert_eq!(Staking::current_era_start_session_index(), SessionsPerEra::get());
+
+		start_era(2);
+		assert_eq!(Staking::current_era_start_session_index(), SessionsPerEra::get() * 2);
+
+		let session = Session::current_index();
+		ForceEra::put(Forcing::ForceNew);
+		advance_session();
+		assert_eq!(Staking::current_era(), 3);
+		assert_eq!(Staking::current_era_start_session_index(), session + 1);
+
+		start_era(4);
+		assert_eq!(
+			Staking::current_era_start_session_index(),
+			session + SessionsPerEra::get() + 1
+		);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
