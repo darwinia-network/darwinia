@@ -2097,6 +2097,22 @@ fn offence_ensures_new_era_without_clobbering() {
 	});
 }
 
+#[test]
+fn offence_deselects_validator_when_slash_is_zero() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert!(<Validators<Test>>::exists(11));
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(0)],
+		);
+		assert_eq!(Staking::force_era(), Forcing::ForceNew);
+		assert!(!<Validators<Test>>::exists(11));
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
