@@ -2113,6 +2113,35 @@ fn offence_deselects_validator_when_slash_is_zero() {
 	});
 }
 
+// TODO
+//#[test]
+//fn slashing_performed_according_exposure() {
+//	// This test checks that slashing is performed according the exposure (or more precisely,
+//	// historical exposure), not the current balance.
+//	ExtBuilder::default().build().execute_with(|| {
+//		assert_eq!(Staking::stakers(&11).own, 1000);
+//
+//		// Handle an offence with a historical exposure.
+//		Staking::on_offence(
+//			&[OffenceDetails {
+//				offender: (
+//					11,
+//					Exposure {
+//						total: 500,
+//						own: 500,
+//						others: vec![],
+//					},
+//				),
+//				reporters: vec![],
+//			}],
+//			&[Perbill::from_percent(50)],
+//		);
+//
+//		// The stash account should be slashed for 250 (50% of 500).
+//		assert_eq!(Balances::free_balance(&11), 1000 - 250);
+//	});
+//}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
