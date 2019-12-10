@@ -909,6 +909,48 @@ fn double_controlling_should_fail() {
 	});
 }
 
+#[test]
+fn session_and_eras_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Staking::current_era(), 0);
+
+		// Block 1: No change.
+		start_session(0);
+		assert_eq!(Session::current_index(), 1);
+		assert_eq!(Staking::current_era(), 0);
+
+		// Block 2: Simple era change.
+		start_session(2);
+		assert_eq!(Session::current_index(), 3);
+		assert_eq!(Staking::current_era(), 1);
+
+		// Block 3: Schedule an era length change; no visible changes.
+		start_session(3);
+		assert_eq!(Session::current_index(), 4);
+		assert_eq!(Staking::current_era(), 1);
+
+		// Block 4: Era change kicks in.
+		start_session(5);
+		assert_eq!(Session::current_index(), 6);
+		assert_eq!(Staking::current_era(), 2);
+
+		// Block 5: No change.
+		start_session(6);
+		assert_eq!(Session::current_index(), 7);
+		assert_eq!(Staking::current_era(), 2);
+
+		// Block 6: No change.
+		start_session(7);
+		assert_eq!(Session::current_index(), 8);
+		assert_eq!(Staking::current_era(), 2);
+
+		// Block 7: Era increment.
+		start_session(8);
+		assert_eq!(Session::current_index(), 9);
+		assert_eq!(Staking::current_era(), 3);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
