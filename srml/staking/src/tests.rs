@@ -513,6 +513,34 @@ fn staking_should_work() {
 		});
 }
 
+#[test]
+fn less_than_needed_candidates_works() {
+	ExtBuilder::default()
+		.minimum_validator_count(1)
+		.validator_count(4)
+		.nominate(false)
+		.num_validators(3)
+		.build()
+		.execute_with(|| {
+			assert_eq!(Staking::validator_count(), 4);
+			assert_eq!(Staking::minimum_validator_count(), 1);
+			assert_eq_uvec!(validator_controllers(), vec![30, 20, 10]);
+
+			start_era(1);
+
+			// Previous set is selected. NO election algorithm is even executed.
+			assert_eq_uvec!(validator_controllers(), vec![30, 20, 10]);
+
+			// But the exposure is updated in a simple way. No external votes exists.
+			// This is purely self-vote.
+			assert_eq!(Staking::stakers(10).others.len(), 0);
+			assert_eq!(Staking::stakers(20).others.len(), 0);
+			assert_eq!(Staking::stakers(30).others.len(), 0);
+			check_exposure_all();
+			check_nominator_all();
+		});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
