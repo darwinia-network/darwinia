@@ -1236,6 +1236,88 @@ fn cannot_reserve_staked_balance() {
 //	});
 //}
 
+#[test]
+fn bond_extra_works() {
+	// Tests that extra `free_balance` in the stash can be added to stake
+	// NOTE: this tests only verifies `StakingLedger` for correct updates
+	// See `bond_extra_and_withdraw_unbonded_works` for more details and updates on `Exposure`.
+	ExtBuilder::default().build().execute_with(|| {
+		// Check that account 10 is a validator
+		assert!(<Validators<Test>>::exists(11));
+		// Check that account 10 is bonded to account 11
+		assert_eq!(Staking::bonded(&11), Some(10));
+		// Check how much is at stake
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				active_ring: 1000,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			},
+		);
+
+		// Give account 11 some large free balance greater than total
+		let _ = Ring::make_free_balance_be(&11, 1000000);
+
+		// Call the bond_extra function from controller, add only 100
+		assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(100), 12));
+		// There should be 100 more `total` and `active` in the ledger
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				active_ring: 1000 + 100,
+				active_deposit_ring: 100,
+				active_kton: 0,
+				deposit_items: vec![TimeDepositItem {
+					value: 100,
+					start_time: 0,
+					expire_time: 31104000
+				}],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000 + 100,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			},
+		);
+
+		// Call the bond_extra function with a large number, should handle it
+		assert_ok!(Staking::bond_extra(
+			Origin::signed(11),
+			StakingBalance::Ring(Balance::max_value()),
+			0,
+		));
+		// The full amount of the funds should now be in the total and active
+		assert_eq!(
+			Staking::ledger(&10).unwrap(),
+			StakingLedger {
+				stash: 11,
+				active_ring: 1000000,
+				active_deposit_ring: 100,
+				active_kton: 0,
+				deposit_items: vec![TimeDepositItem {
+					value: 100,
+					start_time: 0,
+					expire_time: 31104000
+				}],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000000,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			},
+		);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
