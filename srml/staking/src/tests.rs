@@ -1507,50 +1507,119 @@ fn too_many_unbond_calls_should_not_work() {
 //fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
 //	// Test that slot_stake is determined by the least staked validator
 //	// Test that slot_stake is the maximum punishment that can happen to a validator
-//	ExtBuilder::default().nominate(false).fair(false).build().execute_with(|| {
-//		// Confirm validator count is 2
-//		assert_eq!(Staking::validator_count(), 2);
-//		// Confirm account 10 and 20 are validators
-//		assert!(<Validators<Test>>::exists(&11) && <Validators<Test>>::exists(&21));
+//	ExtBuilder::default()
+//		.nominate(false)
+//		.fair(false)
+//		.build()
+//		.execute_with(|| {
+//			// Confirm validator count is 2
+//			assert_eq!(Staking::validator_count(), 2);
+//			// Confirm account 10 and 20 are validators
+//			assert!(<Validators<Test>>::exists(&11) && <Validators<Test>>::exists(&21));
 //
-//		assert_eq!(Staking::stakers(&11).total, 1000);
-//		assert_eq!(Staking::stakers(&21).total, 2000);
+//			assert_eq!(Staking::stakers(&11).total, 1000);
+//			assert_eq!(Staking::stakers(&21).total, 2000);
 //
-//		// Give the man some money.
-//		let _ = Balances::make_free_balance_be(&10, 1000);
-//		let _ = Balances::make_free_balance_be(&20, 1000);
+//			// Give the man some money.
+//			let _ = Balances::make_free_balance_be(&10, 1000);
+//			let _ = Balances::make_free_balance_be(&20, 1000);
 //
-//		// We confirm initialized slot_stake is this value
-//		assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total);
+//			// We confirm initialized slot_stake is this value
+//			assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total);
 //
-//		// Now lets lower account 20 stake
-//		<Stakers<Test>>::insert(&21, Exposure { total: 69, own: 69, others: vec![] });
-//		assert_eq!(Staking::stakers(&21).total, 69);
-//		<Ledger<Test>>::insert(&20, StakingLedger { stash: 22, total: 69, active: 69, unlocking: vec![] });
+//			// Now lets lower account 20 stake
+//			<Stakers<Test>>::insert(
+//				&21,
+//				Exposure {
+//					total: 69,
+//					own: 69,
+//					others: vec![],
+//				},
+//			);
+//			assert_eq!(Staking::stakers(&21).total, 69);
+//			<Ledger<Test>>::insert(
+//				&20,
+//				StakingLedger {
+//					stash: 22,
+//					total: 69,
+//					active: 69,
+//					unlocking: vec![],
+//				},
+//			);
 //
-//		// Compute total payout now for whole duration as other parameter won't change
-//		let total_payout_0 = current_total_payout_for_duration(3000);
-//		assert!(total_payout_0 > 100); // Test is meaningfull if reward something
-//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-//		<Module<Test>>::reward_by_ids(vec![(21, 1)]);
+//			// Compute total payout now for whole duration as other parameter won't change
+//			let total_payout_0 = current_total_payout_for_duration(3000);
+//			assert!(total_payout_0 > 100); // Test is meaningfull if reward something
+//			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+//			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
 //
-//		// New era --> rewards are paid --> stakes are changed
-//		start_era(1);
+//			// New era --> rewards are paid --> stakes are changed
+//			start_era(1);
 //
-//		// -- new balances + reward
-//		assert_eq!(Staking::stakers(&11).total, 1000 + total_payout_0 / 2);
-//		assert_eq!(Staking::stakers(&21).total, 69 + total_payout_0 / 2);
+//			// -- new balances + reward
+//			assert_eq!(Staking::stakers(&11).total, 1000 + total_payout_0 / 2);
+//			assert_eq!(Staking::stakers(&21).total, 69 + total_payout_0 / 2);
 //
-//		let _11_balance = Balances::free_balance(&11);
-//		assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
+//			let _11_balance = Balances::free_balance(&11);
+//			assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
 //
-//		// -- slot stake should also be updated.
-//		assert_eq!(Staking::slot_stake(), 69 + total_payout_0 / 2);
+//			// -- slot stake should also be updated.
+//			assert_eq!(Staking::slot_stake(), 69 + total_payout_0 / 2);
 //
-//		check_exposure_all();
-//		check_nominator_all();
-//	});
+//			check_exposure_all();
+//			check_nominator_all();
+//		});
 //}
+
+#[test]
+fn on_free_balance_zero_stash_removes_validator() {
+	// Tests that validator storage items are cleaned up when stash is empty
+	// Tests that storage items are untouched when controller is empty
+	ExtBuilder::default().existential_deposit(10).build().execute_with(|| {
+		// Check the balance of the validator account
+		assert_eq!(Ring::free_balance(&10), 256);
+		// Check the balance of the stash account
+		assert_eq!(Ring::free_balance(&11), 256000);
+		// Check these two accounts are bonded
+		assert_eq!(Staking::bonded(&11), Some(10));
+
+		// Set some storage items which we expect to be cleaned up
+		// Set payee information
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Stash));
+
+		// Check storage items that should be cleaned up
+		assert!(<Ledger<Test>>::exists(&10));
+		assert!(<Bonded<Test>>::exists(&11));
+		assert!(<Validators<Test>>::exists(&11));
+		assert!(<Payee<Test>>::exists(&11));
+
+		// Reduce free_balance of controller to 0
+		let _ = Ring::slash(&10, Balance::max_value());
+
+		// Check the balance of the stash account has not been touched
+		assert_eq!(Ring::free_balance(&11), 256000);
+		// Check these two accounts are still bonded
+		assert_eq!(Staking::bonded(&11), Some(10));
+
+		// Check storage items have not changed
+		assert!(<Ledger<Test>>::exists(&10));
+		assert!(<Bonded<Test>>::exists(&11));
+		assert!(<Validators<Test>>::exists(&11));
+		assert!(<Payee<Test>>::exists(&11));
+
+		// Reduce free_balance of stash to 0
+		let _ = Ring::slash(&11, Balance::max_value());
+		// Check total balance of stash
+		assert_eq!(Ring::total_balance(&11), 0);
+
+		// Check storage items do not exist
+		assert!(!<Ledger<Test>>::exists(&10));
+		assert!(!<Bonded<Test>>::exists(&11));
+		assert!(!<Validators<Test>>::exists(&11));
+		assert!(!<Nominators<Test>>::exists(&11));
+		assert!(!<Payee<Test>>::exists(&11));
+	});
+}
 
 //#[test]
 //fn normal_kton_should_work() {
