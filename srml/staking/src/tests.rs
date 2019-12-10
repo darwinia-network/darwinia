@@ -1776,6 +1776,43 @@ fn switching_roles() {
 	});
 }
 
+#[test]
+fn wrong_vote_is_null() {
+	ExtBuilder::default()
+		.nominate(false)
+		.validator_pool(true)
+		.build()
+		.execute_with(|| {
+			assert_eq_uvec!(validator_controllers(), vec![40, 30]);
+
+			// put some money in account that we'll use.
+			for i in 1..3 {
+				let _ = Ring::deposit_creating(&i, 5000);
+			}
+
+			// add 1 nominators
+			assert_ok!(Staking::bond(
+				Origin::signed(1),
+				2,
+				StakingBalance::Ring(2000),
+				RewardDestination::default(),
+				0,
+			));
+			assert_ok!(Staking::nominate(
+				Origin::signed(2),
+				vec![
+					11, 21, // good votes
+					1, 2, 15, 1000, 25 // crap votes. No effect.
+				],
+			));
+
+			// new block
+			start_era(1);
+
+			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+		});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
