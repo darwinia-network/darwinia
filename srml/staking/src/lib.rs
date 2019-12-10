@@ -1540,10 +1540,9 @@ impl<T: Trait> Module<T> {
 						})
 						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
-				if exposure.total < slot_stake {
-					slot_stake = exposure.total;
-				}
-				<Stakers<T>>::insert(&c, exposure.clone());
+				slot_stake = slot_stake.min(exposure.total);
+
+				<Stakers<T>>::insert(&c, exposure);
 			}
 
 			// Update slot stake.

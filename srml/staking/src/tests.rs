@@ -176,58 +176,74 @@ fn basic_setup_works() {
 		assert_eq!(Staking::nominators(101), vec![11, 21]);
 
 		if cfg!(feature = "equalize") {
-			{
-				let vote_form_101_per_validator = Staking::power_of(&101) / 2;
-				{
-					let power_of_11 = Staking::power_of(&11);
-					assert_eq!(
-						Staking::stakers(11),
-						Exposure {
-							total: power_of_11 + vote_form_101_per_validator,
-							own: power_of_11,
-							others: vec![IndividualExposure {
-								who: 101,
-								value: vote_form_101_per_validator
-							}]
-						}
-					);
-				}
-				{
-					let power_of_21 = Staking::power_of(&21);
-					assert_eq!(
-						Staking::stakers(21),
-						Exposure {
-							total: power_of_21 + vote_form_101_per_validator,
-							own: power_of_21,
-							others: vec![IndividualExposure {
-								who: 101,
-								value: vote_form_101_per_validator
-							}]
-						}
-					);
-				}
-			}
-			// initial slot_stake
-			assert_eq!(Staking::slot_stake(), vote_form_101_per_validator);
-		} else {
+			let vote_form_101_per_validator = Staking::power_of(&101) / 2;
+
+			let exposure_own_of_11 = Staking::power_of(&11);
+			let exposure_total_of_11 = exposure_own_of_11 + vote_form_101_per_validator;
+
+			let exposure_own_of_21 = Staking::power_of(&21);
+			let exposure_total_of_21 = exposure_own_of_21 + vote_form_101_per_validator;
+
 			assert_eq!(
 				Staking::stakers(11),
 				Exposure {
-					total: 1125,
-					own: 1000,
-					others: vec![IndividualExposure { who: 101, value: 125 }]
+					total: exposure_total_of_11,
+					own: exposure_own_of_11,
+					others: vec![IndividualExposure {
+						who: 101,
+						value: vote_form_101_per_validator
+					}]
 				}
 			);
 			assert_eq!(
 				Staking::stakers(21),
 				Exposure {
-					total: 1375,
-					own: 1000,
-					others: vec![IndividualExposure { who: 101, value: 375 }]
+					total: exposure_total_of_21,
+					own: exposure_own_of_21,
+					others: vec![IndividualExposure {
+						who: 101,
+						value: vote_form_101_per_validator
+					}]
 				}
 			);
 			// initial slot_stake
-			assert_eq!(Staking::slot_stake(), 1125);
+			assert_eq!(exposure_total_of_11, exposure_total_of_21);
+			assert_eq!(Staking::slot_stake(), exposure_total_of_11);
+		} else {
+			let vote_of_101 = Staking::power_of(&101);
+
+			let exposure_own_of_11 = Staking::power_of(&11);
+			let exposure_others_of_11 = vote_of_101 * 4 / 1;
+			let exposure_total_of_11 = exposure_own_of_11 + exposure_others_of_11;
+
+			let exposure_own_of_21 = Staking::power_of(&21);
+			let exposure_others_of_21 = vote_of_101 * 4 / 3;
+			let exposure_total_of_21 = exposure_own_of_21 + exposure_others_of_21;
+
+			assert_eq!(
+				Staking::stakers(11),
+				Exposure {
+					total: exposure_total_of_11,
+					own: exposure_own_of_11,
+					others: vec![IndividualExposure {
+						who: 101,
+						value: exposure_others_of_11
+					}]
+				}
+			);
+			assert_eq!(
+				Staking::stakers(21),
+				Exposure {
+					total: exposure_own_of_21,
+					own: 1000,
+					others: vec![IndividualExposure {
+						who: 101,
+						value: exposure_others_of_21
+					}]
+				}
+			);
+			// initial slot_stake
+			assert_eq!(Staking::slot_stake(), exposure_total_of_11);
 		}
 
 		// The number of validators required.
