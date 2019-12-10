@@ -1966,6 +1966,27 @@ fn bond_with_no_staked_value() {
 //		})
 //}
 
+#[test]
+fn new_era_elects_correct_number_of_validators() {
+	ExtBuilder::default()
+		.nominate(true)
+		.validator_pool(true)
+		.fair(true)
+		.validator_count(1)
+		.build()
+		.execute_with(|| {
+			assert_eq!(Staking::validator_count(), 1);
+			assert_eq!(validator_controllers().len(), 1);
+
+			System::set_block_number(1);
+			Session::on_initialize(System::block_number());
+
+			assert_eq!(validator_controllers().len(), 1);
+			check_exposure_all();
+			check_nominator_all();
+		})
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
