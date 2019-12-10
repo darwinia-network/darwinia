@@ -785,7 +785,8 @@ fn no_candidate_emergency_condition() {
 //			check_nominator_all();
 //		});
 //}
-//
+
+// TODO
 //#[test]
 //fn nominators_also_get_slashed() {
 //	// A nominator should be slashed if the validator they nominated is slashed
@@ -1085,12 +1086,15 @@ fn cannot_reserve_staked_balance() {
 //		// Check the balance of the stash account
 //		assert_eq!(Balances::free_balance(&11), 1000);
 //		// Check how much is at stake
-//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
-//			stash: 11,
-//			total: 1000,
-//			active: 1000,
-//			unlocking: vec![],
-//		}));
+//		assert_eq!(
+//			Staking::ledger(&10),
+//			Some(StakingLedger {
+//				stash: 11,
+//				total: 1000,
+//				active: 1000,
+//				unlocking: vec![],
+//			})
+//		);
 //
 //		// Compute total payout now for whole duration as other parameter won't change
 //		let total_payout_0 = current_total_payout_for_duration(3000);
@@ -1104,12 +1108,15 @@ fn cannot_reserve_staked_balance() {
 //		// Check that reward went to the stash account of validator
 //		assert_eq!(Balances::free_balance(&11), 1000 + total_payout_0);
 //		// Check that amount at stake increased accordingly
-//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
-//			stash: 11,
-//			total: 1000 + total_payout_0,
-//			active: 1000 + total_payout_0,
-//			unlocking: vec![],
-//		}));
+//		assert_eq!(
+//			Staking::ledger(&10),
+//			Some(StakingLedger {
+//				stash: 11,
+//				total: 1000 + total_payout_0,
+//				active: 1000 + total_payout_0,
+//				unlocking: vec![],
+//			})
+//		);
 //
 //		//Change RewardDestination to Stash
 //		<Payee<Test>>::insert(&11, RewardDestination::Stash);
@@ -1128,12 +1135,15 @@ fn cannot_reserve_staked_balance() {
 //		// Record this value
 //		let recorded_stash_balance = 1000 + total_payout_0 + total_payout_1;
 //		// Check that amount at stake is NOT increased
-//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
-//			stash: 11,
-//			total: 1000 + total_payout_0,
-//			active: 1000 + total_payout_0,
-//			unlocking: vec![],
-//		}));
+//		assert_eq!(
+//			Staking::ledger(&10),
+//			Some(StakingLedger {
+//				stash: 11,
+//				total: 1000 + total_payout_0,
+//				active: 1000 + total_payout_0,
+//				unlocking: vec![],
+//			})
+//		);
 //
 //		// Change RewardDestination to Controller
 //		<Payee<Test>>::insert(&11, RewardDestination::Controller);
@@ -1153,14 +1163,76 @@ fn cannot_reserve_staked_balance() {
 //		// Check that reward went to the controller account
 //		assert_eq!(Balances::free_balance(&10), 1 + total_payout_2);
 //		// Check that amount at stake is NOT increased
-//		assert_eq!(Staking::ledger(&10), Some(StakingLedger {
-//			stash: 11,
-//			total: 1000 + total_payout_0,
-//			active: 1000 + total_payout_0,
-//			unlocking: vec![],
-//		}));
+//		assert_eq!(
+//			Staking::ledger(&10),
+//			Some(StakingLedger {
+//				stash: 11,
+//				total: 1000 + total_payout_0,
+//				active: 1000 + total_payout_0,
+//				unlocking: vec![],
+//			})
+//		);
 //		// Check that amount in staked account is NOT increased.
 //		assert_eq!(Balances::free_balance(&11), recorded_stash_balance);
+//	});
+//}
+
+// TODO
+//#[test]
+//fn validator_payment_prefs_work() {
+//	// Test that validator preferences are correctly honored
+//	// Note: unstake threshold is being directly tested in slashing tests.
+//	// This test will focus on validator payment.
+//	ExtBuilder::default().build().execute_with(|| {
+//		// Initial config
+//		let validator_cut = 5;
+//		let stash_initial_balance = Balances::total_balance(&11);
+//
+//		// check the balance of a validator accounts.
+//		assert_eq!(Balances::total_balance(&10), 1);
+//		// check the balance of a validator's stash accounts.
+//		assert_eq!(Balances::total_balance(&11), stash_initial_balance);
+//		// and the nominator (to-be)
+//		let _ = Balances::make_free_balance_be(&2, 500);
+//
+//		// add a dummy nominator.
+//		<Stakers<Test>>::insert(
+//			&11,
+//			Exposure {
+//				own: 500, // equal division indicates that the reward will be equally divided among validator and nominator.
+//				total: 1000,
+//				others: vec![IndividualExposure { who: 2, value: 500 }],
+//			},
+//		);
+//		<Payee<Test>>::insert(&2, RewardDestination::Stash);
+//		<Validators<Test>>::insert(
+//			&11,
+//			ValidatorPrefs {
+//				validator_payment: validator_cut,
+//			},
+//		);
+//
+//		// Compute total payout now for whole duration as other parameter won't change
+//		let total_payout_0 = current_total_payout_for_duration(3000);
+//		assert!(total_payout_0 > 100); // Test is meaningfull if reward something
+//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+//
+//		start_era(1);
+//
+//		// whats left to be shared is the sum of 3 rounds minus the validator's cut.
+//		let shared_cut = total_payout_0 - validator_cut;
+//		// Validator's payee is Staked account, 11, reward will be paid here.
+//		assert_eq!(
+//			Balances::total_balance(&11),
+//			stash_initial_balance + shared_cut / 2 + validator_cut
+//		);
+//		// Controller account will not get any reward.
+//		assert_eq!(Balances::total_balance(&10), 1);
+//		// Rest of the reward will be shared and paid to the nominator in stake.
+//		assert_eq!(Balances::total_balance(&2), 500 + shared_cut / 2);
+//
+//		check_exposure_all();
+//		check_nominator_all();
 //	});
 //}
 
