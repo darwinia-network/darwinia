@@ -2142,6 +2142,32 @@ fn offence_deselects_validator_when_slash_is_zero() {
 //	});
 //}
 
+#[test]
+fn reporters_receive_their_slice() {
+	// This test verifies that the reporters of the offence receive their slice from the slashed
+	// amount.
+	ExtBuilder::default().build().execute_with(|| {
+		// The reporters' reward is calculated from the total exposure.
+		#[cfg(feature = "equalize")]
+		let initial_balance = 1250;
+		#[cfg(not(feature = "equalize"))]
+		let initial_balance = 1125;
+
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![1, 2],
+			}],
+			&[Perbill::from_percent(50)],
+		);
+
+		// initial_balance x 50% (slash fraction) x 10% (rewards slice)
+		let reward = initial_balance / 20 / 2;
+		assert_eq!(Ring::free_balance(&1), 10 + reward);
+		assert_eq!(Ring::free_balance(&2), 20 + reward);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
