@@ -23,10 +23,10 @@ use support::{
 use system::RawOrigin;
 use transaction_payment::ChargeTransactionPayment;
 
-use darwinia_support::{LockIdentifier, WithdrawReason, WithdrawReasons, WithdrawLock, NormalLock, LockableCurrency};
+use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 use super::*;
-use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, CALL, Timestamp};
+use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, Timestamp, CALL};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
@@ -41,13 +41,13 @@ fn basic_locking_should_work() {
 		.execute_with(|| {
 			assert_eq!(Balances::free_balance(&1), 10);
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 9,
 					until: u64::max_value(),
-				}), 
-				WithdrawReasons::all()
+				}),
+				WithdrawReasons::all(),
 			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 5, AllowDeath),
@@ -64,13 +64,13 @@ fn partial_locking_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 5, 
+					amount: 5,
 					until: u64::max_value(),
-				}), 
-				WithdrawReasons::all()
+				}),
+				WithdrawReasons::all(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
@@ -84,13 +84,13 @@ fn lock_removal_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(), 
+					amount: u64::max_value(),
 					until: u64::max_value(),
-				}), 
-				WithdrawReasons::all()
+				}),
+				WithdrawReasons::all(),
 			);
 			Balances::remove_lock(ID_1, &1);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
@@ -105,22 +105,22 @@ fn lock_replacement_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
+				ID_1,
 				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(), 
-					until: u64::max_value(),
-				}), 
-				WithdrawReasons::all()
-			);
-			Balances::set_lock(
-				ID_1, 
-				&1, 
-				WithdrawLock::Normal(NormalLock {
-					amount: 5, 
+					amount: u64::max_value(),
 					until: u64::max_value(),
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
+			);
+			Balances::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 5,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
@@ -134,22 +134,22 @@ fn double_locking_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 5, 
+					amount: 5,
 					until: u64::max_value(),
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
 			);
 			Balances::set_lock(
-				ID_2, 
-				&1, 
+				ID_2,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 5, 
+					amount: 5,
 					until: u64::max_value(),
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
@@ -163,31 +163,28 @@ fn combination_locking_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(), 
+					amount: u64::max_value(),
 					until: 0,
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
 			);
 			Balances::set_lock(
-				ID_2, 
-				&1, 
+				ID_2,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 0, 
+					amount: 0,
 					until: u64::max_value(),
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
 			);
 			Balances::set_lock(
-				ID_3, 
-				&1, 
-				WithdrawLock::Normal(NormalLock {
-					amount: 0, 
-					until: 0,
-				}),
-				WithdrawReasons::all()
+				ID_3,
+				&1,
+				WithdrawLock::Normal(NormalLock { amount: 0, until: 0 }),
+				WithdrawReasons::all(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
@@ -202,10 +199,10 @@ fn combination_locking_should_work() {
 // 		.build()
 // 		.execute_with(|| {
 // 			Balances::set_lock(
-// 				ID_1, 
-// 				&1, 
+// 				ID_1,
+// 				&1,
 // 				WithdrawLock::Normal(NormalLock {
-// 					amount: 5, 
+// 					amount: 5,
 // 					until: u64::max_value(),
 // 				}),
 // 				WithdrawReasons::all()
@@ -225,13 +222,13 @@ fn lock_reasons_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 10, 
+					amount: 10,
 					until: u64::max_value(),
 				}),
-				WithdrawReason::Transfer.into()
+				WithdrawReason::Transfer.into(),
 			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath),
@@ -249,13 +246,13 @@ fn lock_reasons_should_work() {
 			.is_ok());
 
 			Balances::set_lock(
-				ID_1, 
-				&1, 
+				ID_1,
+				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: 10, 
+					amount: 10,
 					until: u64::max_value(),
 				}),
-				WithdrawReason::Reserve.into()
+				WithdrawReason::Reserve.into(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 			assert_noop!(
@@ -301,13 +298,10 @@ fn lock_block_number_should_work() {
 		.build()
 		.execute_with(|| {
 			Balances::set_lock(
-				ID_1, 
-				&1, 
-				WithdrawLock::Normal(NormalLock {
-					amount: 10, 
-					until: 2,
-				}),
-				WithdrawReasons::all()
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock { amount: 10, until: 2 }),
+				WithdrawReasons::all(),
 			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath),
@@ -328,10 +322,10 @@ fn lock_block_number_should_work() {
 // 		.build()
 // 		.execute_with(|| {
 // 			Balances::set_lock(
-// 				ID_1, 
-// 				&1, 
+// 				ID_1,
+// 				&1,
 // 				WithdrawLock::Normal(NormalLock {
-// 					amount: 10, 
+// 					amount: 10,
 // 					until: u64::max_value(),
 // 				}),
 // 				WithdrawReasons::all()

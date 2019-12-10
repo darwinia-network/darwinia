@@ -75,13 +75,13 @@ fn set_lock_should_work() {
 			let mut locks = vec![];
 			for lock_id in lock_ids.iter() {
 				Kton::set_lock(
-					*lock_id, 
-					&1, 
+					*lock_id,
+					&1,
 					WithdrawLock::Normal(NormalLock {
 						amount: balance_per_lock,
 						until: TimeStamp::max_value(),
-					}),  
-					WithdrawReasons::all()
+					}),
+					WithdrawReasons::all(),
 				);
 				locks.push(BalanceLock {
 					id: *lock_id,
@@ -111,13 +111,13 @@ fn remove_lock_should_work() {
 		Timestamp::set_timestamp(0);
 		let ts: u64 = Timestamp::now().into();
 		Kton::set_lock(
-			ID_1, 
-			&2, 
+			ID_1,
+			&2,
 			WithdrawLock::Normal(NormalLock {
-				amount: Balance::max_value(), 
-				until: TimeStamp::max_value(), 
+				amount: Balance::max_value(),
+				until: TimeStamp::max_value(),
 			}),
-			WithdrawReasons::all()
+			WithdrawReasons::all(),
 		);
 		assert_err!(
 			Kton::transfer(Origin::signed(2), 1, 1),
@@ -126,13 +126,13 @@ fn remove_lock_should_work() {
 
 		// unexpired
 		Kton::set_lock(
-			ID_2, 
-			&2, 
+			ID_2,
+			&2,
 			WithdrawLock::Normal(NormalLock {
-				amount: Balance::max_value(), 
+				amount: Balance::max_value(),
 				until: ts + 1,
-			}), 
-			WithdrawReasons::all()
+			}),
+			WithdrawReasons::all(),
 		);
 		Kton::remove_lock(ID_1, &2);
 		Timestamp::set_timestamp(ts);
@@ -145,13 +145,13 @@ fn remove_lock_should_work() {
 
 		// expired
 		Kton::set_lock(
-			ID_3, 
-			&2, 
+			ID_3,
+			&2,
 			WithdrawLock::Normal(NormalLock {
-				amount: Balance::max_value(), 
-				until: ts, 
+				amount: Balance::max_value(),
+				until: ts,
 			}),
-			WithdrawReasons::all()
+			WithdrawReasons::all(),
 		);
 		assert_ok!(Kton::transfer(Origin::signed(2), 1, 1));
 	});
@@ -165,20 +165,14 @@ fn update_lock_should_work() {
 			// until > 1
 			locks.push(BalanceLock {
 				id: [id; 8],
-				withdraw_lock: WithdrawLock::Normal(NormalLock {
-					amount: 1,
-					until: 2,
-				}),
+				withdraw_lock: WithdrawLock::Normal(NormalLock { amount: 1, until: 2 }),
 				reasons: WithdrawReasons::none(),
 			});
 			Kton::set_lock(
-				[id; 8], 
+				[id; 8],
 				&1,
-				WithdrawLock::Normal(NormalLock {
-					amount: 1, 
-					until: 2,
-				}), 
-				WithdrawReasons::none()
+				WithdrawLock::Normal(NormalLock { amount: 1, until: 2 }),
+				WithdrawReasons::none(),
 			);
 		}
 		let update_id = 4;
@@ -193,13 +187,13 @@ fn update_lock_should_work() {
 				reasons: WithdrawReasons::all(),
 			};
 			Kton::set_lock(
-				[update_id; 8], 
+				[update_id; 8],
 				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: amount as u128, 
+					amount: amount as u128,
 					until: until,
 				}),
-				WithdrawReasons::all()
+				WithdrawReasons::all(),
 			);
 			assert_eq!(Kton::locks(&1), locks);
 		}
@@ -211,31 +205,28 @@ fn combination_locking_should_work() {
 	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
 		Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(
-			ID_1, 
-			&1001, 
+			ID_1,
+			&1001,
 			WithdrawLock::Normal(NormalLock {
-				amount: Balance::max_value(), 
+				amount: Balance::max_value(),
 				until: 0,
 			}),
-			WithdrawReasons::none()
+			WithdrawReasons::none(),
 		);
 		Kton::set_lock(
-			ID_2, 
-			&1001, 
+			ID_2,
+			&1001,
 			WithdrawLock::Normal(NormalLock {
 				amount: 0,
 				until: TimeStamp::max_value(),
-			}), 
-			WithdrawReasons::none()
+			}),
+			WithdrawReasons::none(),
 		);
 		Kton::set_lock(
-			ID_3, 
-			&1001, 
-			WithdrawLock::Normal(NormalLock {
-				amount: 0,
-				until: 0,
-			}),
-			WithdrawReasons::all()
+			ID_3,
+			&1001,
+			WithdrawLock::Normal(NormalLock { amount: 0, until: 0 }),
+			WithdrawReasons::all(),
 		);
 		assert_ok!(Kton::transfer(Origin::signed(1001), 1002, 1));
 	});

@@ -484,6 +484,7 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::current_era(), era_index);
 }
 
+// TODO
 pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	//	inflation::compute_total_payout(
 	//		era_duration.saturated_into::<TimeStamp>(),
