@@ -881,6 +881,34 @@ fn double_staking_should_fail() {
 	});
 }
 
+#[test]
+fn double_controlling_should_fail() {
+	// should test (in the same order):
+	// * an account already bonded as controller CANNOT be reused as the controller of another account.
+	ExtBuilder::default().build().execute_with(|| {
+		let arbitrary_value = 5;
+		// 2 = controller, 1 stashed => ok
+		assert_ok!(Staking::bond(
+			Origin::signed(1),
+			2,
+			StakingBalance::Ring(arbitrary_value),
+			RewardDestination::default(),
+			0,
+		));
+		// 2 = controller, 3 stashed (Note that 2 is reused.) => no-op
+		assert_noop!(
+			Staking::bond(
+				Origin::signed(3),
+				2,
+				StakingBalance::Ring(arbitrary_value),
+				RewardDestination::default(),
+				0,
+			),
+			err::CONTROLLER_ALREADY_PAIRED,
+		);
+	});
+}
+
 //#[test]
 //fn normal_kton_should_work() {
 //	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
