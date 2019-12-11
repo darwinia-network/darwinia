@@ -737,7 +737,7 @@ decl_module! {
 			deposit_items.push(TimeDepositItem {
 				value,
 				start_time: now,
-				expire_time: now + T::Moment::saturated_from((MONTH_IN_MILLISECONDS * promise_month).into()),
+				expire_time: now + T::Moment::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into()),
 			});
 
 			<Ledger<T>>::insert(&controller, ledger);
@@ -779,7 +779,7 @@ decl_module! {
 						inflation::compute_kton_return::<T>(item.value, plan_duration)
 						-
 						inflation::compute_kton_return::<T>(item.value, passed_duration)
-					) * 3.into()
+					).max(1.into()) * 3.into()
 				};
 
 				// check total free balance and locked one
@@ -873,7 +873,7 @@ decl_module! {
 
 		/// Declare no desire to either validate or nominate.
 		///
-		/// Effects will be felt at the beginning of the next era.
+		/// Effects will be felt at the beginning of the next era.、
 		///
 		/// The dispatch origin for this call must be _Signed_ by the controller, not the stash.
 		///
@@ -1051,7 +1051,7 @@ impl<T: Trait> Module<T> {
 			ledger.deposit_items.push(TimeDepositItem {
 				value,
 				start_time: now,
-				expire_time: now + T::Moment::saturated_from((MONTH_IN_MILLISECONDS * promise_month).into()),
+				expire_time: now + T::Moment::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into()),
 			});
 		}
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
