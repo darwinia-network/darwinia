@@ -85,7 +85,7 @@ fn relay_header() {
 			parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
 			timestamp: 1573560715,
 			number: 6760579,
-			author: Addrxess::from(hxex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
+			author: Address::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
 			transactions_root: H256::from(hex!("c2b9e612bdac9d73d53ab38cafa959e5703dc078a9d5b184c65ee38bc471b5bf")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "41746c616e7469632043727970746f".from_hex().unwrap(),
