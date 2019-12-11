@@ -6,5 +6,5 @@
 	"ws-port": 23334,
 	"rpc-cors": "all",
 	"port": 23335,
-	"base-path": "../../develop-data/alice"
+	"base-path": "/tmp/darwinia-develop/alice"
 }

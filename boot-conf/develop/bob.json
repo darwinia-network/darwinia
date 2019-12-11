@@ -6,5 +6,5 @@
 	"ws-port": 23337,
 	"rpc-cors": "all",
 	"port": 23338,
-	"base-path": "../../develop-data/bob"
+	"base-path": "/tmp/darwinia-develop/bob"
 }
