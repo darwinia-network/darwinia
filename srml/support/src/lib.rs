@@ -127,4 +127,18 @@ mod traits {
 		/// Remove an existing lock.
 		fn remove_lock(id: LockIdentifier, who: &AccountId);
 	}
+
+	// callback on eth-backing module
+	pub trait OnDepositRedeem<AccountId> {
+		type Moment;
+
+		fn on_deposit_redeem(
+			deposit_id: u64,
+			months: u64,
+			startAt: u64,
+			_unitInterest: u64,
+			value: u128,
+			who: &AccountId,
+		);
+	}
 }

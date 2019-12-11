@@ -19,7 +19,7 @@ members = [
 
     "srml/balances",
     "srml/eth-relay",
-#    "srml/eth-backing",
+    "srml/eth-backing",
     "srml/kton",
     "srml/staking",
     "srml/support"

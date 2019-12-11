@@ -835,6 +835,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-eth-backing"
+version = "0.1.0"
+dependencies = [
+ "darwinia-eth-relay 0.2.0",
+ "darwinia-support 0.1.0",
+ "hex-literal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-eth-primitives 0.2.0",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+]
+
+[[package]]
 name = "darwinia-eth-relay"
 version = "0.2.0"
 dependencies = [
@@ -2958,6 +2974,7 @@ name = "node-runtime"
 version = "0.2.0"
 dependencies = [
  "darwinia-balances 2.0.0",
+ "darwinia-eth-backing 0.1.0",
  "darwinia-eth-relay 0.2.0",
  "darwinia-kton 0.1.0",
  "darwinia-staking 0.2.0",

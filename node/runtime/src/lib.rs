@@ -384,9 +384,18 @@ parameter_types! {
 	pub const EthMainet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
+
 impl eth_relay::Trait for Runtime {
 	type Event = Event;
 	type EthNetwork = EthRopsten;
+}
+
+impl eth_backing::Trait for Runtime {
+	type Event = Event;
+	type EthRelay = EthRelay;
+	type Ring = Balances;
+	type Kton = Kton;
+	type OnDepositRedeem = Staking;
 }
 
 construct_runtime!(
@@ -422,6 +431,7 @@ construct_runtime!(
 		Utility: utility::{Module, Call, Event},
 		
 		EthRelay: eth_relay::{Storage, Module, Event<T>, Call},
+		EthBacking: eth_backing::{Storage, Module, Event<T>, Call},
 	}
 );
 

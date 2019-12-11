@@ -78,6 +78,7 @@ decl_storage! {
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
 
 //		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
+//		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
@@ -155,6 +156,11 @@ decl_event! {
 	}
 }
 
+/// Handler for selecting the genesis validator set.
+pub trait VerifyEthReceipts {
+	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str>;
+}
+
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
 	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
@@ -180,21 +186,6 @@ impl<T: Trait> Module<T> {
 
 		// Initialize the header.
 		BeginHeader::put(header.clone());
-	}
-
-	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
-		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
-		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
-		let key = rlp::encode(&proof_record.index);
-		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
-			.map_err(|_| "Verify Proof - FAILED")?
-			.ok_or("Trie Key - NOT EXISTED")?;
-		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
-
-		Ok(receipt)
-		// confirm that the block hash is right
-		// get the receipt MPT trie root from the block header
-		// Using receipt MPT trie root to verify the proof and index etc.
 	}
 
 	/// 1. proof of difficulty
@@ -283,5 +274,22 @@ impl<T: Trait> Module<T> {
 
 	fn _punish(_who: &T::AccountId) -> Result {
 		unimplemented!()
+	}
+}
+
+impl<T: Trait> VerifyEthReceipts for Module<T> {
+	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
+		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
+		let key = rlp::encode(&proof_record.index);
+		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
+			.map_err(|_| "Verify Proof - FAILED")?
+			.ok_or("Trie Key - NOT EXISTED")?;
+		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
+
+		Ok(receipt)
+		// confirm that the block hash is right
+		// get the receipt MPT trie root from the block header
+		// Using receipt MPT trie root to verify the proof and index etc.
 	}
 }

@@ -43,7 +43,8 @@ use srml_support::{
 use system::{ensure_root, ensure_signed};
 
 use darwinia_support::{
-	LockIdentifier, LockableCurrency, NormalLock, StakingLock, TimeStamp, WithdrawLock, WithdrawReason, WithdrawReasons,
+	LockIdentifier, LockableCurrency, NormalLock, OnDepositRedeem, StakingLock, TimeStamp, WithdrawLock,
+	WithdrawReason, WithdrawReasons,
 };
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
@@ -1546,5 +1547,20 @@ where
 		} else {
 			<Module<T>>::deposit_event(RawEvent::OldSlashingReportDiscarded(offence_session))
 		}
+	}
+}
+
+impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
+	type Moment = T::Moment;
+
+	fn on_deposit_redeem(
+		deposit_id: u64,
+		months: u64,
+		startAt: u64,
+		_unitInterest: u64,
+		value: u128,
+		who: &T::AccountId,
+	) {
+		unimplemented!()
 	}
 }
