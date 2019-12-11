@@ -13,6 +13,7 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
 darwinia-eth-relay = { package = "darwinia-eth-relay", path = "../eth-relay", default-features = false }
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
@@ -29,6 +30,7 @@ std = [
     "rstd/std",
     "support/std",
     "system/std",
+    "timestamp/std",
     "darwinia-support/std",
     "darwinia-eth-relay/std",
     "sr-eth-primitives/std",

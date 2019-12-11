@@ -1,6 +1,8 @@
-//TODO: move this into lib.rs to be a inner mod
-use super::{result, Imbalance, Saturating, StorageValue, Trait, Zero};
+// TODO: move this into lib.rs to be a inner mod
+
 use rstd::mem;
+
+use crate::{result, Imbalance, Saturating, StorageValue, Trait, Zero};
 
 pub struct PositiveImbalance<T: Trait>(T::Balance);
 

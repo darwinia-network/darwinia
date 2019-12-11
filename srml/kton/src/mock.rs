@@ -1,6 +1,3 @@
-pub use node_primitives::Balance;
-pub use node_runtime::constants::currency::COIN;
-
 use std::{cell::RefCell, collections::HashSet};
 
 use sr_primitives::{
@@ -12,8 +9,7 @@ use sr_primitives::{
 use srml_support::{impl_outer_origin, parameter_types};
 use substrate_primitives::H256;
 
-use super::*;
-use crate::{GenesisConfig, Module};
+use crate::*;
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
@@ -22,12 +18,14 @@ thread_local! {
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-// FIXME:
-//     replace
-//     	  testing::Header.number: u64
-//     with
-//         node_primitives::BlockNumber
+pub type Balance = u128;
 pub type BlockNumber = u64;
+pub type Moment = u64;
+
+pub const NANO: Balance = 1;
+pub const MICRO: Balance = 1_000 * NANO;
+pub const MILLI: Balance = 1_000 * MICRO;
+pub const COIN: Balance = 1_000 * MILLI;
 
 impl_outer_origin! {
 	pub enum Origin for Test {}

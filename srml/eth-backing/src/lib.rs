@@ -11,7 +11,7 @@ use system::ensure_signed;
 use sr_primitives::RuntimeDebug;
 
 use darwinia_eth_relay::{ActionRecord, VerifyEthReceipts};
-use darwinia_support::{LockableCurrency, OnDepositRedeem, TimeStamp};
+use darwinia_support::{LockableCurrency, OnDepositRedeem};
 use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, Address, H256, U256};
 
 //#[cfg(feature = "std")]
@@ -19,12 +19,14 @@ use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, Address, H256, U256
 
 use hex_literal::hex;
 
-pub trait Trait: system::Trait {
+pub type Moment = u64;
+
+pub trait Trait: timestamp::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 	type EthRelay: VerifyEthReceipts;
-	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
-	type Kton: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
-	type OnDepositRedeem: OnDepositRedeem<Self::AccountId, Moment = TimeStamp>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
+	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
+	type OnDepositRedeem: OnDepositRedeem<Self::AccountId, Moment = Self::Moment>;
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]

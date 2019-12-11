@@ -1,6 +1,3 @@
-pub use node_primitives::Balance;
-pub use node_runtime::constants::currency::COIN;
-
 use std::{cell::RefCell, collections::HashSet};
 
 use sr_primitives::{
@@ -12,22 +9,16 @@ use sr_primitives::{
 use sr_staking_primitives::SessionIndex;
 use srml_support::{
 	assert_ok, impl_outer_origin, parameter_types,
-	traits::{Currency, Get},
-	StorageLinkedMap,
+	traits::{Currency, FindAuthor, Get},
+	ConsensusEngineId, StorageLinkedMap,
 };
 use substrate_primitives::{crypto::key_types, H256};
 
 use crate::*;
-use darwinia_support::TimeStamp;
 use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-// FIXME:
-//     replace
-//     	  testing::Header.number: u64
-//     with
-//         node_primitives::BlockNumber
 pub type BlockNumber = u64;
 
 /// Module alias
@@ -37,6 +28,11 @@ pub type Kton = kton::Module<Test>;
 pub type Session = session::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
 pub type Staking = Module<Test>;
+
+pub const NANO: Balance = 1;
+pub const MICRO: Balance = 1_000 * NANO;
+pub const MILLI: Balance = 1_000 * MICRO;
+pub const COIN: Balance = 1_000 * MILLI;
 
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
@@ -84,8 +80,9 @@ impl session::SessionHandler<AccountId> for TestSessionHandler {
 	}
 }
 
-pub fn is_disabled(validator: AccountId) -> bool {
-	SESSION.with(|d| d.borrow().1.contains(&validator))
+pub fn is_disabled(controller: AccountId) -> bool {
+	let stash = Staking::ledger(&controller).unwrap().stash;
+	SESSION.with(|d| d.borrow().1.contains(&stash))
 }
 
 pub struct ExistentialDeposit;
@@ -97,6 +94,17 @@ impl Get<Balance> for ExistentialDeposit {
 
 impl_outer_origin! {
 	pub enum Origin for Test {}
+}
+
+/// Author of block is always 11
+pub struct Author11;
+impl FindAuthor<u64> for Author11 {
+	fn find_author<'a, I>(_digests: I) -> Option<u64>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		Some(11)
+	}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -125,11 +133,10 @@ impl system::Trait for Test {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 }
+
 parameter_types! {
-	pub const TransferFee: u64 = 0;
-	pub const CreationFee: u64 = 0;
-	pub const TransactionBaseFee: u64 = 0;
-	pub const TransactionByteFee: u64 = 0;
+	pub const TransferFee: Balance = 0;
+	pub const CreationFee: Balance = 0;
 }
 impl balances::Trait for Test {
 	type Balance = Balance;
@@ -142,6 +149,7 @@ impl balances::Trait for Test {
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
 }
+
 parameter_types! {
 	pub const Period: BlockNumber = 1;
 	pub const Offset: BlockNumber = 0;
@@ -164,6 +172,14 @@ impl session::historical::Trait for Test {
 	type FullIdentification = crate::Exposure<AccountId, ExtendedBalance>;
 	type FullIdentificationOf = crate::ExposureOf<Test>;
 }
+
+impl authorship::Trait for Test {
+	type FindAuthor = Author11;
+	type UncleGenerations = UncleGenerations;
+	type FilterUncle = ();
+	type EventHandler = Module<Test>;
+}
+
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
 }
@@ -182,11 +198,9 @@ impl kton::Trait for Test {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
-	pub const BondingDuration: TimeStamp = 60;
-}
-parameter_types! {
-	// decimal 9
+	pub const BondingDuration: Moment = 60;
 	pub const CAP: Balance = 10_000_000_000 * COIN;
+	pub const GenesisTime: Moment = 0;
 }
 impl Trait for Test {
 	type Ring = Ring;
@@ -195,39 +209,44 @@ impl Trait for Test {
 	type CurrencyToVote = CurrencyToVoteHandler;
 	type RingRewardRemainder = ();
 	type Event = ();
-	type RingSlash = ();
 	type RingReward = ();
-	type KtonSlash = ();
 	type KtonReward = ();
+	type RingSlash = ();
+	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
-	type Cap = CAP;
-	type GenesisTime = ();
 	type SessionInterface = Self;
+
+	type Cap = CAP;
+	type GenesisTime = GenesisTime;
 }
 
 pub struct ExtBuilder {
 	existential_deposit: Balance,
-	current_era: EraIndex,
-	reward: Balance,
 	validator_pool: bool,
 	nominate: bool,
 	validator_count: u32,
 	minimum_validator_count: u32,
 	fair: bool,
+	num_validators: Option<u32>,
+	invulnerables: Vec<u64>,
+
+	current_era: EraIndex,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			existential_deposit: 0,
-			current_era: 0,
-			reward: 10,
 			validator_pool: false,
 			nominate: true,
-			validator_count: 3,
+			validator_count: 2,
 			minimum_validator_count: 0,
 			fair: true,
+			num_validators: None,
+			invulnerables: vec![],
+
+			current_era: 0,
 		}
 	}
 }
@@ -235,10 +254,6 @@ impl Default for ExtBuilder {
 impl ExtBuilder {
 	pub fn existential_deposit(mut self, existential_deposit: Balance) -> Self {
 		self.existential_deposit = existential_deposit;
-		self
-	}
-	pub fn _current_era(mut self, current_era: EraIndex) -> Self {
-		self.current_era = current_era;
 		self
 	}
 	pub fn validator_pool(mut self, validator_pool: bool) -> Self {
@@ -261,27 +276,32 @@ impl ExtBuilder {
 		self.fair = is_fair;
 		self
 	}
+	pub fn num_validators(mut self, num_validators: u32) -> Self {
+		self.num_validators = Some(num_validators);
+		self
+	}
+	pub fn invulnerables(mut self, invulnerables: Vec<u64>) -> Self {
+		self.invulnerables = invulnerables;
+		self
+	}
+
+	fn current_era(mut self, current_era: EraIndex) -> Self {
+		self.current_era = current_era;
+		self
+	}
+
 	pub fn set_associated_consts(&self) {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
 	}
 	pub fn build(self) -> runtime_io::TestExternalities {
 		self.set_associated_consts();
 		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * COIN
-		} else {
-			1 * COIN
-		};
-		let validators = if self.validator_pool {
-			vec![10, 20, 30, 40]
-		} else {
-			vec![10, 20]
-		};
+		let balance_factor = if self.existential_deposit > 0 { 256 } else { 1 };
 
-		let _ = session::GenesisConfig::<Test> {
-			keys: validators.iter().map(|x| (*x, UintAuthorityId(*x))).collect(),
-		}
-		.assimilate_storage(&mut storage);
+		let num_validators = self.num_validators.unwrap_or(self.validator_count);
+		let validators = (0..num_validators)
+			.map(|x| ((x + 1) * 10 + 1) as u64)
+			.collect::<Vec<_>>();
 
 		let _ = balances::GenesisConfig::<Test> {
 			balances: vec![
@@ -299,11 +319,12 @@ impl ExtBuilder {
 				(41, balance_factor * 2000),
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
+				// This allow us to have a total_payout different from 0.
+				(999, 1_000_000_000_000),
 			],
 			vesting: vec![],
 		}
 		.assimilate_storage(&mut storage);
-
 		let _ = kton::GenesisConfig::<Test> {
 			balances: vec![],
 			vesting: vec![],
@@ -319,10 +340,10 @@ impl ExtBuilder {
 		};
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
-			current_era: self.current_era,
+			current_era: 0,
 			stakers: vec![
-				//                (2, 1, 1 * COIN, StakerStatus::<AccountId>::Validator),
-				(11, 10, 100 * COIN, StakerStatus::<AccountId>::Validator),
+				// (stash, controller, staked_amount, status)
+				(11, 10, balance_factor * 1000, StakerStatus::<AccountId>::Validator),
 				(21, 20, stake_21, StakerStatus::<AccountId>::Validator),
 				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
@@ -336,12 +357,14 @@ impl ExtBuilder {
 			],
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
-			session_reward: Perbill::from_rational_approximation(1_000_000 * self.reward / balance_factor, 1_000_000),
-			//			offline_slash: Perbill::from_percent(5),
-			//			offline_slash_grace: 0,
-			invulnerables: vec![],
+			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
+		}
+		.assimilate_storage(&mut storage);
+
+		let _ = session::GenesisConfig::<Test> {
+			keys: validators.iter().map(|x| (*x, UintAuthorityId(*x))).collect(),
 		}
 		.assimilate_storage(&mut storage);
 
@@ -397,11 +420,6 @@ pub fn check_nominator_exposure(stash: u64) {
 	);
 }
 
-pub fn assert_total_expo(stash: u64, val: Balance) {
-	let expo = Staking::stakers(&stash);
-	assert_eq!(expo.total, val);
-}
-
 pub fn assert_is_stash(acc: u64) {
 	assert!(Staking::bonded(&acc).is_some(), "Not a stash.");
 }
@@ -420,9 +438,8 @@ pub fn bond_validator(acc: u64, val: Balance) {
 	assert_ok!(Staking::validate(
 		Origin::signed(acc),
 		ValidatorPrefs {
-			node_name: "test".as_bytes().to_vec(),
-			unstake_threshold: 0,
-			validator_payment_ratio: 0,
+			node_name: "StakingTest".as_bytes().to_vec(),
+			..Default::default()
 		}
 	));
 }
@@ -441,15 +458,51 @@ pub fn bond_nominator(acc: u64, val: Balance, target: Vec<u64>) {
 	assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }
 
+pub fn advance_session() {
+	let current_index = Session::current_index();
+	start_session(current_index + 1);
+}
+
 pub fn start_session(session_index: SessionIndex) {
-	for i in 0..(session_index - Session::current_index()) {
+	// Compensate for session delay
+	let session_index = session_index + 1;
+	for i in Session::current_index()..session_index {
 		System::set_block_number((i + 1).into());
+		Timestamp::set_timestamp(System::block_number() * 1000);
 		Session::on_initialize(System::block_number());
 	}
+
 	assert_eq!(Session::current_index(), session_index);
 }
 
 pub fn start_era(era_index: EraIndex) {
 	start_session((era_index * 3).into());
 	assert_eq!(Staking::current_era(), era_index);
+}
+
+// TODO
+pub fn current_total_payout_for_duration(duration: u64) -> Balance {
+	//	inflation::compute_total_payout(
+	//		era_duration.saturated_into::<Moment>(),
+	//		(<Module<Test>>::Time::now() - <Module<Test>>::GenesisTime::get()).saturated_into::<Moment>(),
+	//		(<Module<Test>>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+	//	)
+	//	.0
+	unimplemented!()
+}
+
+pub fn reward_all_elected() {
+	let rewards = <Module<Test>>::current_elected()
+		.iter()
+		.map(|v| (*v, 1))
+		.collect::<Vec<_>>();
+
+	<Module<Test>>::reward_by_ids(rewards)
+}
+
+pub fn validator_controllers() -> Vec<AccountId> {
+	Session::validators()
+		.into_iter()
+		.map(|s| Staking::bonded(&s).expect("no controller for validator"))
+		.collect()
 }

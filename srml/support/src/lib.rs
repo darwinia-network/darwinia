@@ -6,17 +6,12 @@ pub use srml_support::traits::{LockIdentifier, WithdrawReason, WithdrawReasons};
 pub use structs::*;
 pub use traits::*;
 
-pub type TimeStamp = u64;
-
 mod structs {
 	use codec::{Decode, Encode};
-	use rstd::{convert::TryInto, vec::Vec};
-	use sr_primitives::{
-		traits::{SaturatedConversion, SimpleArithmetic},
-		RuntimeDebug,
-	};
+	use rstd::vec::Vec;
+	use sr_primitives::{traits::SimpleArithmetic, RuntimeDebug};
 
-	use super::{LockIdentifier, TimeStamp, WithdrawReasons};
+	use crate::{LockIdentifier, WithdrawReasons};
 
 	#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
 	pub struct BalanceLock<Balance, Moment> {
@@ -28,18 +23,18 @@ mod structs {
 	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 	pub enum WithdrawLock<Balance, Moment> {
 		Normal(NormalLock<Balance, Moment>),
-		WithStaking(StakingLock<Balance, TimeStamp>),
+		WithStaking(StakingLock<Balance, Moment>),
 	}
 
 	impl<Balance, Moment> WithdrawLock<Balance, Moment>
 	where
 		Balance: Copy + Default + SimpleArithmetic,
-		Moment: Copy + PartialOrd + TryInto<TimeStamp>,
+		Moment: Copy + PartialOrd,
 	{
 		pub fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
 			match self {
 				WithdrawLock::Normal(lock) => lock.can_withdraw(at, new_balance),
-				WithdrawLock::WithStaking(lock) => lock.can_withdraw(at.saturated_into::<TimeStamp>(), new_balance),
+				WithdrawLock::WithStaking(lock) => lock.can_withdraw(at, new_balance),
 			}
 		}
 	}
@@ -90,13 +85,18 @@ mod structs {
 
 			new_balance >= locked_amount
 		}
+
+		#[inline]
+		pub fn shrink(&mut self, at: Moment) {
+			self.unbondings.retain(|unbonding| unbonding.valid_at(at));
+		}
 	}
 }
 
 mod traits {
 	use srml_support::traits::Currency;
 
-	use super::{LockIdentifier, WithdrawLock, WithdrawReasons};
+	use crate::{LockIdentifier, WithdrawLock, WithdrawReasons};
 
 	pub trait OnMinted<Balance> {
 		fn on_minted(value: Balance);
@@ -135,8 +135,8 @@ mod traits {
 		fn on_deposit_redeem(
 			deposit_id: u64,
 			months: u64,
-			startAt: u64,
-			_unitInterest: u64,
+			start_at: u64,
+			_unit_interest: u64,
 			value: u128,
 			who: &AccountId,
 		);

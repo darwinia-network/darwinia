@@ -1,13 +1,11 @@
-use super::*;
+use codec::{Decode, Encode};
 use ethbloom::{Bloom, Input as BloomInput};
+use primitive_types::{H256, U256};
 use rlp::*;
 use rstd::prelude::*;
-//use substrate_primitives::RuntimeDebug;
-
-use codec::{Decode, Encode};
-use primitive_types::{H256, U256};
-
 use sr_primitives::RuntimeDebug;
+
+use super::*;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub enum TransactionOutcome {
@@ -118,14 +116,13 @@ impl Decodable for Receipt {
 
 #[cfg(test)]
 mod tests {
-	use super::{Address, LogEntry, Receipt, TransactionOutcome, H256, U128, U256};
-	use ethbloom::Bloom;
-	use hex_literal::*;
-	use rustc_hex::FromHex;
 	use std::str::FromStr;
 
+	use hex_literal::*;
 	use keccak_hasher::KeccakHasher;
-	use triehash::ordered_trie_root;
+	use rustc_hex::FromHex;
+
+	use super::*;
 
 	#[inline]
 	fn construct_receipts(
@@ -159,7 +156,7 @@ mod tests {
 			data: vec![],
 		}];
 
-		let r = construct_receipts(None, U256::from(U128::from(21000)), Some(1), log_entries);
+		let _r = construct_receipts(None, U256::from(U128::from(21000)), Some(1), log_entries);
 		//		let rs = &rlp::encode(&r)[..];
 		// TODO: fix logbloom not match here!
 		//		assert_eq!(r.log_bloom, Bloom::from_str(

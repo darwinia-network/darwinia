@@ -44,10 +44,9 @@ where
 {
 	let memdb = Rc::new(MemoryDB::new());
 	let mut trie = MerklePatriciaTrie::new(memdb.clone());
-	data.into_iter().for_each(|(key, value)| {
-		// TODO  the `?` operator can only be used in a function that returns `Result` or `Option` (or another type that implements `core::ops::Try`)
-		trie.insert(key.as_ref().to_vec(), value.as_ref().to_vec());
-	});
+	for (k, v) in data {
+		trie.insert(k.as_ref().to_vec(), v.as_ref().to_vec())?;
+	}
 	trie.root()?;
 	Ok(trie)
 }

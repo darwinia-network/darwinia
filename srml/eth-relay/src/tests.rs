@@ -1,25 +1,16 @@
 //! Tests for the module.
-use super::*;
-//use sr_primitives::traits::SignedExtension;
-//use support::{
-//	assert_err, assert_noop, assert_ok,
-//	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, ReservableCurrency},
-//};
-//use system::RawOrigin;
 
-use mock::{EthRelay, ExtBuilder, System};
-//use mock::{info_from_weight, EthRelay, ExtBuilder, Runtime, System, CALL};
+use std::str::FromStr;
 
-//use rstd::prelude::*;
+use hex_literal::hex;
+use rustc_hex::FromHex;
 use sr_eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
 	Address, Bloom, H64, U128,
 };
 
-use hex_literal::hex;
-use rustc_hex::FromHex;
-use sha3::Keccak256;
-use std::str::FromStr;
+use super::*;
+use mock::{EthRelay, ExtBuilder, System};
 
 #[test]
 fn verify_receipt_proof() {
@@ -79,7 +70,7 @@ fn verify_receipt_proof() {
 
 			EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64);
 
-			assert_eq!(EthRelay::verify_receipt(&proof_record), Some(receipt));
+			assert_eq!(EthRelay::verify_receipt(&proof_record), Ok(receipt));
 		});
 }
 
@@ -111,8 +102,6 @@ fn relay_header() {
 		// #6890091
 		// https://api-ropsten.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x69226b&boolean=true&apikey=YourApiKeyToken
 		// https://jsoneditoronline.org/
-
-		type DAG = LightDAG<EthereumPatch>;
 
 		// 6760580
 		let mixh2 = H256::from(hex!("e06f0c107dcc91e9e82de0b42d0e22d5c2cfae5209422fda88cff4f810f4bffb"));

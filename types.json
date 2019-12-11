@@ -1,6 +1,5 @@
 {
 	"EpochDuration": "u64",
-	"TimeStamp": "u64",
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"withdraw_lock": "WithdrawLock",
@@ -113,7 +112,6 @@
 	},
 	"ValidatorPrefs": {
 		"node_name": "Vec<u8>",
-		"unstake_threshold": "Compact<u32>",
 		"validator_payment_ratio": "Compact<u32>"
 	}
 }

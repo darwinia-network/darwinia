@@ -58,7 +58,6 @@ use version::NativeVersion;
 use version::RuntimeVersion;
 
 use constants::{currency::*, time::*};
-use darwinia_support::TimeStamp;
 use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
 
 // Make the WASM binary available.
@@ -350,9 +349,12 @@ impl kton::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 6;
-	// about 14 days = 14 * 24 * 60 * 60
-	pub const BondingDuration: TimeStamp = 1_209_600;
+	// Develop
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 1;
+	// Production
+	//	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 6;
+	// about 14 days = 14 * 24 * 60 * 60 * 1000
+	pub const BondingDuration: Moment = 1_209_600_000;
 	// decimal 9
 	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	// date in Los Angeles*: 11/19/2019, 2:33:20 AM
