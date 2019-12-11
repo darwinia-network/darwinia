@@ -54,7 +54,7 @@ fn main() -> Result<(), darwinia_cli::error::Error> {
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
 		executable_name: "darwinia",
-		author: "Darwinia Network <hello@itering.com>",
+		author: ["Darwinia Network <hello@darwinia.network>"],
 		description: "Darwinia poc-1 node",
 		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 	};
