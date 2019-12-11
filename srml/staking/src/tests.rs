@@ -1,11 +1,11 @@
-use sr_primitives::{assert_eq_error_rate, traits::OnInitialize};
+use sr_primitives::traits::OnInitialize;
 use srml_support::{
 	assert_eq_uvec, assert_err, assert_noop, assert_ok,
 	traits::{Currency, ReservableCurrency},
 };
 
 use crate::{mock::*, *};
-use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons};
+use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReasons};
 
 /// gen_paired_account!(a(1), b(2), m(12));
 /// will create stash `a` and controller `b`
@@ -394,7 +394,7 @@ fn multi_era_reward_should_work() {
 	// The value of current_session_reward is set at the end of each era, based on
 	// slot_stake and session_reward.
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-		let init_balance_10 = Ring::total_balance(&10);
+		let _init_balance_10 = Ring::total_balance(&10);
 
 		// Set payee to controller.
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
@@ -2501,7 +2501,6 @@ fn punished_claim_should_work() {
 
 		// Set more kton balance to make it work.
 		Kton::deposit_creating(&stash, COIN);
-		let kton_free_balance = Kton::free_balance(&stash);
 		assert_ok!(Staking::try_claim_deposits_with_punish(
 			Origin::signed(controller),
 			promise_month * MONTH_IN_MILLISECONDS,
