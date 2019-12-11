@@ -55,9 +55,9 @@ parameter_types! {
 }
 impl system::Trait for Runtime {
 	type Origin = Origin;
+	type Call = ();
 	type Index = u64;
 	type BlockNumber = u64;
-	type Call = ();
 	type Hash = H256;
 	type Hashing = ::sr_primitives::traits::BlakeTwo256;
 	type AccountId = u64;
@@ -76,13 +76,13 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub const ETH_MAINET: u64 = 0;
-	pub const ETH_ROPSTEN: u64 = 1;
+//	pub const EthMainet: u64 = 0;
+	pub const EthRopsten: u64 = 1;
 }
 
 impl Trait for Runtime {
 	type Event = ();
-	type EthNetwork = ETH_ROPSTEN;
+	type EthNetwork = EthRopsten;
 }
 
 parameter_types! {

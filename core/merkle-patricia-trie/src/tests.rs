@@ -1,13 +1,14 @@
 #[cfg(test)]
 mod trie_tests {
+	use std::rc::Rc;
+
 	use hex::FromHex;
 	use rand::Rng;
-	use std::rc::Rc;
+	use rlp::{self};
 
 	use crate::db::MemoryDB;
 	use crate::proof::Proof;
 	use crate::trie::*;
-	use rlp::{self, Rlp};
 
 	fn assert_root(data: Vec<(&[u8], &[u8])>, hash: &str) {
 		let memdb = Rc::new(MemoryDB::new());

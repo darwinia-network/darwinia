@@ -22,9 +22,6 @@ darwinia-support = { path = "../support", default-features = false }
 runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
-node-runtime = { path = "../../node/runtime" }
-node-primitives = { path = "../../node/primitives" }
-
 [features]
 default = ["std"]
 std = [

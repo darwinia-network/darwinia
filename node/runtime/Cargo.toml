@@ -51,7 +51,6 @@ version = { package = "sr-version", git = "https://github.com/darwinia-network/s
 
 # darwinia
 balances = { package = "darwinia-balances", path = '../../srml/balances', default-features = false }
-darwinia-support = { path = "../../srml/support", default-features = false }
 eth-relay = { package = "darwinia-eth-relay", path = "../../srml/eth-relay", default-features = false }
 kton = { package = "darwinia-kton", path = '../../srml/kton', default-features = false }
 node-primitives = { path = "../primitives", default-features = false }
@@ -108,7 +107,6 @@ std = [
 
 	# darwinia
 	"balances/std",
-	"darwinia-support/std",
 	"eth-relay/std",
 	"kton/std",
 	"node-primitives/std",

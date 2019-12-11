@@ -88,7 +88,7 @@ decl_storage! {
 
 				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
-				// TODO: initilize other parameters.
+				// TODO: initialize other parameters.
 			}
 		});
 	}
@@ -208,7 +208,7 @@ impl<T: Trait> Module<T> {
 
 		ensure!(
 			number >= Self::begin_header().ok_or("Begin Header - NOT EXISTED")?.number(),
-			"Block Number - TOO SMALL"
+			"Block Number - TOO SMALL",
 		);
 
 		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;

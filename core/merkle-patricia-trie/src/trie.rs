@@ -765,17 +765,16 @@ impl<'a> Iterator for TrieIterator<'a> {
 
 #[cfg(test)]
 mod tests {
-	use rand::distributions::Alphanumeric;
-	use rand::seq::SliceRandom;
-	use rand::{thread_rng, Rng};
 	use std::collections::{HashMap, HashSet};
 	use std::rc::Rc;
 
 	use ethereum_types;
+	use rand::distributions::Alphanumeric;
+	use rand::seq::SliceRandom;
+	use rand::{thread_rng, Rng};
 
 	use super::*;
 	use crate::db::MemoryDB;
-	use core::borrow::Borrow;
 
 	#[test]
 	fn test_trie_insert() {
@@ -996,7 +995,7 @@ mod tests {
 	#[test]
 	fn iterator_trie() {
 		let memdb = Rc::new(MemoryDB::new());
-		let mut root1;
+		let root1;
 		let mut kv = HashMap::new();
 		kv.insert(b"test".to_vec(), b"test".to_vec());
 		kv.insert(b"test1".to_vec(), b"test1".to_vec());

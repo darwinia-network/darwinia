@@ -9,12 +9,13 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use darwinia_support::{LockableCurrency, TimeStamp};
+use darwinia_support::LockableCurrency;
+use node_primitives::Moment;
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = Moment>;
 }
 
 // config() require `serde = { version = "1.0.101", optional = true }`
