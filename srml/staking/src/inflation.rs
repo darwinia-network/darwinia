@@ -5,17 +5,17 @@ use sr_primitives::{
 };
 use substrate_primitives::U256;
 
-use super::{KtonBalanceOf, RingBalanceOf, TimeStamp, Trait};
+use crate::{KtonBalanceOf, Moment, RingBalanceOf, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
 // <T: Trait + 'static>() -> RingBalanceOf<T>
 pub fn compute_total_payout<T: Trait>(
-	era_duration: TimeStamp,
-	living_time: TimeStamp,
+	era_duration: Moment,
+	living_time: Moment,
 	total_left: u128,
 ) -> (RingBalanceOf<T>, RingBalanceOf<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
-	const MILLISECONDS_PER_YEAR: TimeStamp = ((36525 * 24 * 60 * 60) / 100) * 1000;
+	const MILLISECONDS_PER_YEAR: Moment = ((36525 * 24 * 60 * 60) / 100) * 1000;
 
 	let year: u32 = (living_time / MILLISECONDS_PER_YEAR + 1).saturated_into::<u32>();
 
@@ -36,7 +36,7 @@ pub fn compute_total_payout<T: Trait>(
 
 // consistent with the formula in smart contract in evolution land which can be found in
 // https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280
-pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u32) -> KtonBalanceOf<T> {
+pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u64) -> KtonBalanceOf<T> {
 	let value = value.saturated_into::<u64>();
 	let no = U256::from(67).pow(U256::from(months));
 	let de = U256::from(66).pow(U256::from(months));

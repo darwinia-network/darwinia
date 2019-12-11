@@ -1,5 +1,5 @@
 [package]
-name = "darwinia-ethereum-migrate"
+name = "darwinia-eth-backing"
 version = "0.1.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
@@ -26,5 +26,6 @@ std = [
     "rstd/std",
     "support/std",
     "system/std",
+
     "darwinia-support/std",
 ]

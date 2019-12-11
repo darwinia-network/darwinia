@@ -9,18 +9,20 @@ use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use darwinia_support::{LockableCurrency, TimeStamp};
+use darwinia_support::LockableCurrency;
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
+
+pub type Moment = u64;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Ring: LockableCurrency<Self::AccountId, Moment = TimeStamp>;
+	type Ring: LockableCurrency<Self::AccountId, Moment = Moment>;
 }
 
 // config() require `serde = { version = "1.0.101", optional = true }`
 // tracking issue: https://github.com/rust-lang/rust/issues/27812
 decl_storage! {
-	trait Store for Module<T: Trait> as EthMigrate {
+	trait Store for Module<T: Trait> as EthBacking {
 		pub DepositPool get(deposit_pool) config(): RingBalanceOf<T>;
 		pub DepositValue get(deposit_value): RingBalanceOf<T>;
 
@@ -66,13 +68,6 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	pub fn adjust_deposit_value() {
-		unimplemented!()
-	}
-
-	/// 1. if exists?
-	/// 2. verify (difficulty + prev_hash + nonce)
-	/// 3. challenge
-	fn verify(_: &Header) -> Result {
 		unimplemented!()
 	}
 

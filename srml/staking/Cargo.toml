@@ -31,8 +31,6 @@ rand = "0.7.2"
 
 balances = { package = "darwinia-balances", path = '../balances' }
 kton = { package = "darwinia-kton", path = "../kton" }
-node-runtime = { path = "../../node/runtime" }
-node-primitives = { path = "../../node/primitives" }
 
 [features]
 equalize = []

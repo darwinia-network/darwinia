@@ -4,6 +4,7 @@ panic = 'unwind'
 [workspace]
 members = [
 	"core/cli",
+	"core/ethash",
     "core/merkle-mountain-range",
     "core/fly-client",
     "core/sr-eth-primitives",
@@ -18,6 +19,7 @@ members = [
 
     "srml/balances",
     "srml/eth-relay",
+#    "srml/eth-backing",
     "srml/kton",
     "srml/staking",
     "srml/support"
