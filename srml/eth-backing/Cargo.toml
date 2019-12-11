@@ -16,7 +16,6 @@ support = { package = "srml-support", git = "https://github.com/darwinia-network
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
-node-primitives = { path = "../primitives", default-features = false }
 
 [features]
 default = ["std"]
@@ -29,5 +28,4 @@ std = [
     "system/std",
 
     "darwinia-support/std",
-    "node-primitives/std",
 ]

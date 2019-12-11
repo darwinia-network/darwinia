@@ -10,8 +10,9 @@ use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::C
 use system::ensure_signed;
 
 use darwinia_support::LockableCurrency;
-use node_primitives::Moment;
 //use merkle_mountain_range::{Hash, MerkleMountainRange};
+
+pub type Moment = u64;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
