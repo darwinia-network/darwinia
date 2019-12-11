@@ -15,18 +15,18 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Test utilities
-use crate::{GenesisConfig, Module, Trait};
+use std::cell::RefCell;
+
 use primitives::H256;
-use runtime_io;
 use sr_primitives::{
 	testing::Header,
 	traits::{ConvertInto, IdentityLookup},
 	weights::{DispatchInfo, Weight},
 	Perbill,
 };
-use std::cell::RefCell;
-use support::traits::Get;
-use support::{impl_outer_origin, parameter_types};
+use support::{impl_outer_origin, parameter_types, traits::Get};
+
+use crate::*;
 
 impl_outer_origin! {
 	pub enum Origin for Runtime {}

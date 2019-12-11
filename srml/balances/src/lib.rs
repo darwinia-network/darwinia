@@ -42,8 +42,8 @@ mod mock;
 #[cfg(all(feature = "std", test))]
 mod tests;
 
-pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
+use imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
