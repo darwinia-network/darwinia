@@ -1,5 +1,4 @@
 {
-	"name": "Darwinia-Alice",
 	"rpc-external": true,
 	"rpc-port": 23333,
 	"ws-external": true,
