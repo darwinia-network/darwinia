@@ -161,10 +161,7 @@ impl<T: Trait> Module<T> {
 	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) -> result::Result<(), &'static str> {
 		let header_hash = header.hash();
 
-		ensure!(
-			header_hash == header.re_compute_hash(),
-			"Header Hash Check Failed - Hash NOT MATCH",
-		);
+		ensure!(header_hash == header.re_compute_hash(), "Header Hash - MISMATCHED");
 
 		let block_number = header.number();
 
@@ -210,10 +207,7 @@ impl<T: Trait> Module<T> {
 	/// 2. proof of pow (mixhash)
 	/// 3. challenge
 	fn verify_header(header: &EthHeader) -> Result {
-		ensure!(
-			header.hash() == header.re_compute_hash(),
-			"Header Hash Check Failed - Hash NOT MATCH",
-		);
+		ensure!(header.hash() == header.re_compute_hash(), "Header Hash - MISMATCHED");
 
 		let parent_hash = header.parent_hash();
 
@@ -226,7 +220,7 @@ impl<T: Trait> Module<T> {
 
 		// TODO: check parent hash is the last header, ignore or reorg
 		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
-		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
+		ensure!((prev_header.number() + 1) == number, "Block Number - MISMATCHED");
 
 		// check difficulty
 		let ethash_params = match T::EthNetwork::get() {
@@ -253,13 +247,10 @@ impl<T: Trait> Module<T> {
 				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
 				if mix_hash != seal.mix_hash {
-					return Err("Mixhash - NOT MATCHED");
+					return Err("Mixhash - MISMATCHED");
 				}
 			}
 		};
-
-		//			ensure!(best_header.height == block_number, "Block height does not match.");
-		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
 
 		Ok(())
 	}

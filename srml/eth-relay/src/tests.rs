@@ -9,6 +9,8 @@ use sr_eth_primitives::{
 	Address, Bloom, H64, U128,
 };
 
+use support::assert_ok;
+
 use super::*;
 use mock::{EthRelay, ExtBuilder, System};
 
@@ -21,6 +23,7 @@ fn verify_receipt_proof() {
 		.execute_with(|| {
 			System::inc_account_nonce(&2);
 
+			// https://ropsten.etherscan.io/tx/0xce62c3d1d2a43cfcc39707b98de53e61a7ef7b7f8853e943d85e511b3451aa7e#eventlog
 			let log_entries = vec![LogEntry {
 				address: Address::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
 				topics: vec![
@@ -68,7 +71,7 @@ fn verify_receipt_proof() {
 				hash: Some(H256::from(hex!("f1a5bc27877e219b859b0bb1f2f440134553019f9bb5a2eca7a4703263e736c9"))),
 			};
 
-			EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64).expect("Initialize Genesis Failed.");
+			assert_ok!(EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64));
 
 			assert_eq!(EthRelay::verify_receipt(&proof_record), Ok(receipt));
 		});
@@ -126,7 +129,7 @@ fn relay_header() {
 		};
 
 
-		EthRelay::init_genesis_header(&header1, 0x624c22d93f8e59_u64).expect("Initialize Genesis Failed.");
+		assert_ok!(EthRelay::init_genesis_header(&header1, 0x624c22d93f8e59_u64));
 
 //		let light_dag2 = DAG::new(header2.number().into());
 //		let partial_header_hash2 = header2.bare_hash();
@@ -141,9 +144,9 @@ fn relay_header() {
 //			mixh2
 //		);
 
-		EthRelay::verify_header(&header2).expect("Verify Failed.");
+		assert_ok!(EthRelay::verify_header(&header2));
 
-		EthRelay::store_header(&header2).expect("Store Failed.");
+		assert_ok!(EthRelay::store_header(&header2));
 
 
 		// 6760581
@@ -168,8 +171,8 @@ fn relay_header() {
 			hash: Some(H256::from(hex!("c86b090d12fa61c34f075530618e40a89654d8d85ac6aaa26149fb56b596a15a"))),
 		};
 
-		EthRelay::verify_header(&header3).expect("Verify Failed.");
+		assert_ok!(EthRelay::verify_header(&header3));
 
-		EthRelay::store_header(&header3).expect("Store Failed.");
+		assert_ok!(EthRelay::store_header(&header3));
 	});
 }
