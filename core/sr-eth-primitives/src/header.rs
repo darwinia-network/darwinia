@@ -223,6 +223,10 @@ impl EthHeader {
 		hash
 	}
 
+	pub fn re_compute_hash(&self) -> H256 {
+		keccak_hash::keccak(self.rlp(Seal::With))
+	}
+
 	/// Get the hash of this header (keccak of the RLP with seal).
 	pub fn hash(&self) -> H256 {
 		self.hash.unwrap_or_else(|| keccak_hash::keccak(self.rlp(Seal::With)))
