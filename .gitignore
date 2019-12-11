@@ -27,4 +27,5 @@ windows-x86_64.tar.gz
 expand.rs
 
 # For develop
+develop-data
 purge_run.sh
