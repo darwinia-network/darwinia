@@ -88,7 +88,7 @@ decl_storage! {
 
 				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
-				// TODO: initilize other parameters.
+				// TODO: initialize other parameters.
 			}
 		});
 	}
