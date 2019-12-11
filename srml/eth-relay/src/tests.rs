@@ -47,8 +47,8 @@ fn verify_receipt_proof() {
 
 //			let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
 
-			let mixh = H256::from(hex!("5a85e328a8bb041a386ffb25db029b7f0df4665a8a55b331b30a576761404fa6"));
-			let nonce = H64::from(hex!("650ea83006bb108d"));
+			let mixh = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
+			let nonce = H64::from(hex!("339140bca72c49cd"));
 
 			let header = EthHeader {
 				parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
@@ -78,8 +78,8 @@ fn verify_receipt_proof() {
 fn relay_header() {
 	ExtBuilder::default().monied(true).build().execute_with(|| {
 		// 6760579
-		let mixh1 = H256::from(hex!("5a85e328a8bb041a386ffb25db029b7f0df4665a8a55b331b30a576761404fa6"));
-		let nonce1 = H64::from(hex!("650ea83006bb108d"));
+		let mixh1 = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
+		let nonce1 = H64::from(hex!("339140bca72c49cd"));
 
 		let header1 = EthHeader {
 			parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
