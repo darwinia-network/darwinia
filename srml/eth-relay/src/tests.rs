@@ -9,6 +9,8 @@ use sr_eth_primitives::{
 	Address, Bloom, H64, U128,
 };
 
+use support::assert_ok;
+
 use super::*;
 use mock::{EthRelay, ExtBuilder, System};
 
@@ -21,6 +23,7 @@ fn verify_receipt_proof() {
 		.execute_with(|| {
 			System::inc_account_nonce(&2);
 
+			// https://ropsten.etherscan.io/tx/0xce62c3d1d2a43cfcc39707b98de53e61a7ef7b7f8853e943d85e511b3451aa7e#eventlog
 			let log_entries = vec![LogEntry {
 				address: Address::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
 				topics: vec![
@@ -47,8 +50,8 @@ fn verify_receipt_proof() {
 
 //			let proof: Proof = rlp::decode(&proof_record.proof).unwrap();
 
-			let mixh = H256::from(hex!("5a85e328a8bb041a386ffb25db029b7f0df4665a8a55b331b30a576761404fa6"));
-			let nonce = H64::from(hex!("650ea83006bb108d"));
+			let mixh = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
+			let nonce = H64::from(hex!("339140bca72c49cd"));
 
 			let header = EthHeader {
 				parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
@@ -68,7 +71,7 @@ fn verify_receipt_proof() {
 				hash: Some(H256::from(hex!("f1a5bc27877e219b859b0bb1f2f440134553019f9bb5a2eca7a4703263e736c9"))),
 			};
 
-			EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64);
+			assert_ok!(EthRelay::init_genesis_header(&header, 0x624c22d93f8e59_u64));
 
 			assert_eq!(EthRelay::verify_receipt(&proof_record), Ok(receipt));
 		});
@@ -78,8 +81,8 @@ fn verify_receipt_proof() {
 fn relay_header() {
 	ExtBuilder::default().monied(true).build().execute_with(|| {
 		// 6760579
-		let mixh1 = H256::from(hex!("5a85e328a8bb041a386ffb25db029b7f0df4665a8a55b331b30a576761404fa6"));
-		let nonce1 = H64::from(hex!("650ea83006bb108d"));
+		let mixh1 = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
+		let nonce1 = H64::from(hex!("339140bca72c49cd"));
 
 		let header1 = EthHeader {
 			parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
@@ -126,7 +129,7 @@ fn relay_header() {
 		};
 
 
-		EthRelay::init_genesis_header(&header1, 0x624c22d93f8e59_u64);
+		assert_ok!(EthRelay::init_genesis_header(&header1, 0x624c22d93f8e59_u64));
 
 //		let light_dag2 = DAG::new(header2.number().into());
 //		let partial_header_hash2 = header2.bare_hash();
@@ -141,9 +144,9 @@ fn relay_header() {
 //			mixh2
 //		);
 
-		EthRelay::verify_header(&header2).expect("Verify Failed.");
+		assert_ok!(EthRelay::verify_header(&header2));
 
-		EthRelay::store_header(&header2).expect("Store Failed.");
+		assert_ok!(EthRelay::store_header(&header2));
 
 
 		// 6760581
@@ -168,8 +171,8 @@ fn relay_header() {
 			hash: Some(H256::from(hex!("c86b090d12fa61c34f075530618e40a89654d8d85ac6aaa26149fb56b596a15a"))),
 		};
 
-		EthRelay::verify_header(&header3).expect("Verify Failed.");
+		assert_ok!(EthRelay::verify_header(&header3));
 
-		EthRelay::store_header(&header3).expect("Store Failed.");
+		assert_ok!(EthRelay::store_header(&header3));
 	});
 }

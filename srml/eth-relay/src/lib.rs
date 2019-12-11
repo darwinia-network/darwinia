@@ -81,7 +81,8 @@ decl_storage! {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("Deserialize Genesis Header - FAILED");
 
-				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
+				// Discard the result even it fail.
+				let _ = <Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
 				// TODO: initialize other parameters.
 			}
@@ -101,7 +102,7 @@ decl_module! {
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::init_genesis_header(&header, genesis_difficulty);
+			Self::init_genesis_header(&header, genesis_difficulty)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -152,8 +153,11 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
+	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) -> result::Result<(), &'static str> {
 		let header_hash = header.hash();
+
+		ensure!(header_hash == header.re_compute_hash(), "Header Hash - MISMATCHED");
+
 		let block_number = header.number();
 
 		HeaderOf::insert(&header_hash, header);
@@ -175,6 +179,8 @@ impl<T: Trait> Module<T> {
 
 		// Initialize the header.
 		BeginHeader::put(header.clone());
+
+		Ok(())
 	}
 
 	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
@@ -196,7 +202,8 @@ impl<T: Trait> Module<T> {
 	/// 2. proof of pow (mixhash)
 	/// 3. challenge
 	fn verify_header(header: &EthHeader) -> Result {
-		// TODO: check parent hash,
+		ensure!(header.hash() == header.re_compute_hash(), "Header Hash - MISMATCHED");
+
 		let parent_hash = header.parent_hash();
 
 		let number = header.number();
@@ -206,8 +213,9 @@ impl<T: Trait> Module<T> {
 			"Block Number - TOO SMALL",
 		);
 
+		// TODO: check parent hash is the last header, ignore or reorg
 		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
-		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
+		ensure!((prev_header.number() + 1) == number, "Block Number - MISMATCHED");
 
 		// check difficulty
 		let ethash_params = match T::EthNetwork::get() {
@@ -234,13 +242,10 @@ impl<T: Trait> Module<T> {
 				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
 				if mix_hash != seal.mix_hash {
-					return Err("Mixhash - NOT MATCHED");
+					return Err("Mixhash - MISMATCHED");
 				}
 			}
 		};
-
-		//			ensure!(best_header.height == block_number, "Block height does not match.");
-		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
 
 		Ok(())
 	}
