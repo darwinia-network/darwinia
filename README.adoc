@@ -220,22 +220,7 @@ Each project can be skipped individually by using the environment variable `SKIP
 Where `PROJECT_NAME` needs to be replaced by the name of the cargo project, e.g. `node-runtime` will
 be `NODE_RUNTIME`.
 
-== IceFrog Testnet
-
-=== Quick start (professional):
-  * https://telemetry.polkadot.io/#list/Darwinia%20IceFrog%20Testnet/[Telemetry]
-  * https://testnet-wallet.darwinia.network/[Darwinia Web Wallet]
-  * Bootnodes: 
-    ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
-    ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
-    ** `/ip4/35.234.9.96/tcp/20223/p2p/QmdAZq8tFrei8qQAhbAe7NwrZzNVhitvUBp9pw8yLjk81r`
-
-=== Full tutorial (beginner):
-  * en_us: [not yet](#)
-  * zh_cn: [https://talk.darwinia.network/topics/147](https://talk.darwinia.network/topics/147)
-
-[[IceFrog]]
-=== Joining the IceFrog Testnet
+== Joining the IceFrog Testnet
 
 // Latest known working version: ``
 
