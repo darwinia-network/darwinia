@@ -7,42 +7,43 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0.101", optional = true }
 
-codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+# github.com
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
+system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
-rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
+# darwinia
 ethash = { path = "../../core/ethash", default-features = false }
 merkle-patricia-trie = { path = "../../core/merkle-patricia-trie", default-features = false }
+sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
 
 [dev-dependencies]
-runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-rustc-hex = "2.0"
-keccak-hasher = "0.15.2"
-triehash = { package = "triehash", git = "https://github.com/darwinia-network/parity-common.git" }
 hex-literal = "0.2.1"
-sha3 = { version = "0.8", default-features = false }
+keccak-hasher = "0.15.2"
+rustc-hex = "2.0"
+
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 [features]
 default = ["std"]
 std = [
+	"codec/std",
     "serde/std",
 
-	"codec/std",
+    "rlp/std",
     "rstd/std",
-    "sr-eth-primitives/std",
     "sr-primitives/std",
     "support/std",
     "system/std",
 
     "ethash/std",
     "merkle-patricia-trie/std",
-    "rlp/std",
+    "sr-eth-primitives/std",
 ]

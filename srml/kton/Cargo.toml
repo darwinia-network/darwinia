@@ -1,21 +1,22 @@
 [package]
 name = "darwinia-kton"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Darwinia Network <hello@itering.com>"]
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.101", optional = true }
-safe-mix = { version = "1.0.0", default-features = false }
+# crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-substrate-keyring = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 srml-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
+# darwinia
 darwinia-support = { path = "../support", default-features = false }
 
 [dev-dependencies]
@@ -25,16 +26,14 @@ substrate-primitives = { git = "https://github.com/darwinia-network/substrate.gi
 [features]
 default = ["std"]
 std = [
-	"serde",
-	"safe-mix/std",
 	"codec/std",
-	"substrate-keyring",
+	"serde",
+
 	"rstd/std",
 	"srml-support/std",
 	"sr-primitives/std",
 	"system/std",
 	"timestamp/std",
-	"substrate-primitives/std",
 
 	"darwinia-support/std",
 ]

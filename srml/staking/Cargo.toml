@@ -1,58 +1,52 @@
 [package]
 name = "darwinia-staking"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.101", optional = true }
-safe-mix = { version = "1.0.0", default-features = false }
+# crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-substrate-keyring = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
-rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
+authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 phragmen = { package = "substrate-phragmen", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+session = { package = "srml-session",git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false, features = ["historical"] }
 srml-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-session = { package = "srml-session",git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false, features = ["historical"] }
-substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-arithmetic = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
+# darwinia
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
 
 [dev-dependencies]
-substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-rand = "0.7.2"
+runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 balances = { package = "darwinia-balances", path = '../balances' }
 kton = { package = "darwinia-kton", path = "../kton" }
 
 [features]
 equalize = []
-bench = []
 default = ["std", "equalize"]
 std = [
-	"serde",
-	"safe-mix/std",
-	"substrate-keyring",
 	"codec/std",
-	"rstd/std",
+	"serde",
+
+	"authorship/std",
 	"phragmen/std",
-	"runtime_io/std",
+	"rstd/std",
+	"session/std",
 	"srml-support/std",
 	"sr-primitives/std",
+    "sr-staking-primitives/std",
 	"substrate-primitives/std",
-	"session/std",
 	"system/std",
 	"timestamp/std",
-	"sr-arithmetic/std",
-	"sr-staking-primitives/std",
-	"authorship/std",
 
 	"darwinia-support/std",
 ]
