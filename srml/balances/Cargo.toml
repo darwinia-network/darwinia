@@ -1,7 +1,7 @@
 [package]
 name = "darwinia-balances"
 version = "0.2.0"
-authors = [["Darwinia Network <hello@darwinia.network>"]]
+authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
