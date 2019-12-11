@@ -54,9 +54,9 @@ pub struct Extensions {
 /// Specialized `ChainSpec`.
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig, Extensions>;
 
-/// Crayfish testnet generator
-pub fn crayfish_fir_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/crayfish-fir.json")[..])
+/// IceFrog testnet generator
+pub fn icefrog_fir_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
 }
 
 fn session_keys(grandpa: GrandpaId, babe: BabeId, im_online: ImOnlineId) -> SessionKeys {
@@ -317,8 +317,8 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
-pub fn crayfish_testnet_config() -> ChainSpec {
-	fn crayfish_config_genesis() -> GenesisConfig {
+pub fn icefrog_testnet_config() -> ChainSpec {
+	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -328,9 +328,9 @@ pub fn crayfish_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Crayfish Testnet",
-		"crayfish_testnet",
-		crayfish_config_genesis,
+		"Darwinia IceFrog Testnet",
+		"icefrog_testnet",
+		icefrog_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
