@@ -1,30 +1,25 @@
-//!  prototype module for bridging in ethereum poa blockcahin
+//!  prototype module for bridging in ethereum poa blockchain
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// use blake2::Blake2b;
 use codec::{Decode, Encode};
 use rstd::{result, vec::Vec};
+use sr_primitives::RuntimeDebug;
+use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
+use system::ensure_signed;
+
+use ethash::{EthereumPatch, LightDAG};
+use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 use sr_eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
 };
 
-use ethash::{EthereumPatch, LightDAG};
-
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-
-use system::ensure_signed;
-
-use sr_primitives::RuntimeDebug;
-
-use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
-
 type DAG = LightDAG<EthereumPatch>;
 
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod mock;
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 pub trait Trait: system::Trait {

@@ -1,17 +1,12 @@
 //! Test utilities
 
-use crate::{Module, Trait};
-use primitives::H256;
-use runtime_io;
-use sr_primitives::{
-	testing::Header,
-	traits::IdentityLookup,
-	//	weights::{DispatchInfo, Weight},
-	Perbill,
-};
 use std::cell::RefCell;
-//use support::traits::Get;
+
+use primitives::H256;
+use sr_primitives::{testing::Header, traits::IdentityLookup, Perbill};
 use support::{impl_outer_origin, parameter_types};
+
+use crate::*;
 
 impl_outer_origin! {
 	pub enum Origin for Runtime {}

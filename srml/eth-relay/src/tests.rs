@@ -8,11 +8,9 @@ use sr_eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
 	Address, Bloom, H64, U128,
 };
-
 use support::assert_ok;
 
-use super::*;
-use mock::{EthRelay, ExtBuilder, System};
+use crate::{mock::*, *};
 
 #[test]
 fn verify_receipt_proof() {
