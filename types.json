@@ -79,17 +79,22 @@
 	},
 	"EraIndex": "u32",
 	"Exposure": {
-		"total": "ExtendedBalance",
-		"own": "ExtendedBalance",
+		"total": "Compact<ExtendedBalance>",
+		"own": "Compact<ExtendedBalance>",
 		"others": "Vec<IndividualExposure>"
 	},
 	"ExtendedBalance": "u128",
 	"IndividualExposure": {
 		"who": "AccountId",
-		"value": "ExtendedBalance"
+		"value": "Compact<ExtendedBalance>"
 	},
 	"KtonBalanceOf": "u128",
 	"RingBalanceOf": "u128",
+	"SlashJournalEntry": {
+		"who": "AccountId",
+		"amount": "Compact<ExtendedBalance>",
+		"own_slash": "Compact<ExtendedBalance>"
+	},
 	"StakingBalance": {
 		"_enum": {
 			"Ring": "RingBalanceOf",
