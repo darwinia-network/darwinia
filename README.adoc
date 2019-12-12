@@ -233,8 +233,8 @@ be `NODE_RUNTIME`.
     ** `/ip4/35.234.9.96/tcp/20223/p2p/QmdAZq8tFrei8qQAhbAe7NwrZzNVhitvUBp9pw8yLjk81r`
 
 === Full tutorial (beginner):
-  * en_us: [not yet](#)
-  * zh_cn: [https://talk.darwinia.network/topics/147](https://talk.darwinia.network/topics/147)
+  * EN-US (not yet)
+  * https://talk.darwinia.network/topics/147/[ZH-CN]
 
 // [source, shell]
 // ----
