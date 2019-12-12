@@ -1,5 +1,4 @@
 {
-	"name": "Darwinia-Bob",
 	"rpc-external": true,
 	"rpc-port": 23336,
 	"ws-external": true,

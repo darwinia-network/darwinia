@@ -6,7 +6,7 @@ use hex_literal::hex;
 use rustc_hex::FromHex;
 use sr_eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
-	Address, Bloom, H64, U128,
+	Bloom, EthAddress, H64, U128,
 };
 use support::assert_ok;
 
@@ -23,7 +23,7 @@ fn verify_receipt_proof() {
 
 			// https://ropsten.etherscan.io/tx/0xce62c3d1d2a43cfcc39707b98de53e61a7ef7b7f8853e943d85e511b3451aa7e#eventlog
 			let log_entries = vec![LogEntry {
-				address: Address::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
+				address: EthAddress::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
 				topics: vec![
 					H256::from(hex!("6775ce244ff81f0a82f87d6fd2cf885affb38416e3a04355f713c6f008dd126a")),
 					H256::from(hex!("0000000000000000000000000000000000000000000000000000000000000006")),
@@ -55,7 +55,7 @@ fn verify_receipt_proof() {
 				parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
 				timestamp: 1573560715,
 				number: 6760579,
-				author: Address::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
+				author: EthAddress::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
 				transactions_root: H256::from(hex!("c2b9e612bdac9d73d53ab38cafa959e5703dc078a9d5b184c65ee38bc471b5bf")),
 				uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 				extra_data: "41746c616e7469632043727970746f".from_hex().unwrap(),
@@ -86,7 +86,7 @@ fn relay_header() {
 			parent_hash: H256::from(hex!("91553997d11a1d978f2ea363f230f5f525aee914a726d01e1deb4ea51de315cd")),
 			timestamp: 1573560715,
 			number: 6760579,
-			author: Address::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
+			author: EthAddress::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
 			transactions_root: H256::from(hex!("c2b9e612bdac9d73d53ab38cafa959e5703dc078a9d5b184c65ee38bc471b5bf")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "41746c616e7469632043727970746f".from_hex().unwrap(),
@@ -112,7 +112,7 @@ fn relay_header() {
 			parent_hash: H256::from(hex!("f1a5bc27877e219b859b0bb1f2f440134553019f9bb5a2eca7a4703263e736c9")),
 			timestamp: 0x5dcaa1a3,
 			number: 6760580,
-			author: Address::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
+			author: EthAddress::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
 			transactions_root: H256::from(hex!("bd4f8075fcdf01d3be2b8ae4a0a7195107429f34361e278e8760cc0f08e35d7a")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "d983010906846765746889676f312e31312e3133856c696e7578".from_hex().unwrap(),
@@ -155,7 +155,7 @@ fn relay_header() {
 			parent_hash: H256::from(hex!("12734378d3e4ad7050f7baf629d6eda161e911865d77c10e44c1f7e8e31fd7a7")),
 			timestamp: 0x5dcaa1ae,
 			number: 6760581,
-			author: Address::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
+			author: EthAddress::from(hex!("d7a15baeb7ea05c9660cbe03fb7999c2c2e57625")),
 			transactions_root: H256::from(hex!("aaccb1d4b2dc847eefa50681d3096522a41f7c27031ead7a0ad51b50632218dc")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "41746c616e7469632043727970746f".from_hex().unwrap(),

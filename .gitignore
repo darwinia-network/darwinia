@@ -25,6 +25,3 @@ windows-x86_64.tar.gz
 
 # Macro expand file
 expand.rs
-
-# For develop
-purge_run.sh

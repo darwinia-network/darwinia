@@ -20,8 +20,8 @@ enum Seal {
 pub struct EthHeader {
 	pub parent_hash: H256,
 	pub timestamp: u64,
-	pub number: BlockNumber,
-	pub author: Address,
+	pub number: EthBlockNumber,
+	pub author: EthAddress,
 	pub transactions_root: H256,
 	pub uncles_hash: H256,
 	pub extra_data: Bytes,
@@ -66,7 +66,7 @@ impl Default for EthHeader {
 			parent_hash: H256::zero(),
 			timestamp: 0,
 			number: 0,
-			author: Address::zero(),
+			author: EthAddress::zero(),
 
 			transactions_root: KECCAK_NULL_RLP,
 			uncles_hash: KECCAK_EMPTY_LIST_RLP,
@@ -147,12 +147,12 @@ impl EthHeader {
 	}
 
 	/// Get the number field of the header.
-	pub fn number(&self) -> BlockNumber {
+	pub fn number(&self) -> EthBlockNumber {
 		self.number
 	}
 
 	/// Get the author field of the header.
-	pub fn author(&self) -> &Address {
+	pub fn author(&self) -> &EthAddress {
 		&self.author
 	}
 
@@ -297,7 +297,7 @@ mod tests {
 			parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
 			timestamp: 0x5ddb67a0,
 			number: 0x8947a9,
-			author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
+			author: EthAddress::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
 			transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
@@ -318,7 +318,7 @@ mod tests {
 			parent_hash: H256::from(hex!("b80bf91d6f459227a9c617c5d9823ff0b07f1098ea16788676f0b804ecd42f3b")),
 			timestamp: 0x5ddb67a3,
 			number: 0x8947aa,
-			author: Address::from(hex!("d224ca0c819e8e97ba0136b3b95ceff503b79f53")),
+			author: EthAddress::from(hex!("d224ca0c819e8e97ba0136b3b95ceff503b79f53")),
 			transactions_root: H256::from(hex!("efebac0e71cc2de04cf2f509bb038a82bbe92a659e010061b49b5387323b5ea6")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "7575706f6f6c2e636e2d3163613037623939".from_hex().unwrap(),
@@ -345,7 +345,7 @@ mod tests {
 			parent_hash: H256::from(hex!("8a18726cacb45b078bfe6491510cfa2dd578a70be2a217f416253cf3e94adbd2")),
 			timestamp: 0x5de5246c,
 			number: 0x69226b,
-			author: Address::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
+			author: EthAddress::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
 			transactions_root: H256::from(hex!("e3ab46e9eeb65fea6b0b1ffd07587f3ee7741b66f16a0b63a3b0c01900387833")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "d983010906846765746889676f312e31312e3133856c696e7578".from_hex().unwrap(),
@@ -366,7 +366,7 @@ mod tests {
 			parent_hash: H256::from(hex!("1dafbf6a9825241ea5dfa7c3a54781c0784428f2ef3b588748521f83209d3caa")),
 			timestamp: 0x5de52488,
 			number: 0x69226c,
-			author: Address::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
+			author: EthAddress::from(hex!("4ccfb3039b78d3938588157564c9ad559bafab94")),
 			transactions_root: H256::from(hex!("cd2672df775af7bcb2b93a478666d500dee3d78e6970c71071dc79642db24719")),
 			uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
 			extra_data: "d983010906846765746889676f312e31312e3133856c696e7578".from_hex().unwrap(),
@@ -393,7 +393,7 @@ mod tests {
             parent_hash: H256::from(hex!("0b2d720b8d3b6601e4207ef926b0c228735aa1d58301a23d58f9cb51ac2288d8")),
             timestamp: 0x5ddb67a0,
             number: 0x8947a9,
-            author: Address::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
+            author: EthAddress::from(hex!("4c549990a7ef3fea8784406c1eecc98bf4211fa5")),
             transactions_root: H256::from(hex!("07d44fadb4aca78c81698710211c5399c1408bb3f0aa3a687d091d230fcaddc6")),
             uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
             extra_data: "5050594520686976656f6e2d6574682d6672".from_hex().unwrap(),
@@ -433,7 +433,7 @@ mod tests {
             parent_hash: H256::from(hex!("e7a8c03a03f7c055599def00f21686d3b9179d272c8110162f012c191d303dad")),
             timestamp: 0x583f2778,
             number: 0x11170,
-            author: Address::from(hex!("1ad857f27200aec56ebb68283f91e6ac1086ad62")),
+            author: EthAddress::from(hex!("1ad857f27200aec56ebb68283f91e6ac1086ad62")),
             transactions_root: H256::from(hex!("35ecd6e29d0b8d161bd7863cfa3198e979b451fa637834b96b0da3d8d5d081cf")),
             uncles_hash: H256::from(hex!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347")),
             extra_data: "d783010503846765746887676f312e372e33856c696e7578".from_hex().unwrap(),

@@ -1,8 +1,8 @@
 [package]
 name = "node-cli"
-version = "2.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-description = "Substrate node implementation in Rust."
+version = "0.2.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node implementation in Rust."
 build = "build.rs"
 edition = "2018"
 default-run = "darwinia"

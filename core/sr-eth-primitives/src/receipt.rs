@@ -20,7 +20,7 @@ pub enum TransactionOutcome {
 #[derive(PartialEq, Eq, Clone, RlpEncodable, RlpDecodable, Encode, Decode, RuntimeDebug)]
 pub struct LogEntry {
 	/// The address of the contract executing at the point of the `LOG` operation.
-	pub address: Address,
+	pub address: EthAddress,
 	/// The topics associated with the `LOG` operation.
 	pub topics: Vec<H256>,
 	/// The data associated with the `LOG` operation.
@@ -147,7 +147,7 @@ mod tests {
 	fn test_basic() {
 		// https://ropsten.etherscan.io/tx/0xce62c3d1d2a43cfcc39707b98de53e61a7ef7b7f8853e943d85e511b3451aa7e#eventlog
 		let log_entries = vec![LogEntry {
-			address: Address::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
+			address: EthAddress::from_str("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b").unwrap(),
 			topics: vec![
 				H256::from(hex!("6775ce244ff81f0a82f87d6fd2cf885affb38416e3a04355f713c6f008dd126a")),
 				H256::from(hex!("0000000000000000000000000000000000000000000000000000000000000006")),
@@ -181,7 +181,7 @@ mod tests {
 	fn check_receipts() {
 		let expected_root = H256::from(hex!("c789eb8b7f5876f4df4f8ae16f95c9881eabfb700ee7d8a00a51fb4a71afbac9"));
 		let log_entries = vec![LogEntry {
-			address: Address::from_str("a24df0420de1f3b8d740a52aaeb9d55d6d64478e").unwrap(),
+			address: EthAddress::from_str("a24df0420de1f3b8d740a52aaeb9d55d6d64478e").unwrap(),
 			topics: vec![H256::from(hex!("f36406321d51f9ba55d04e900c1d56caac28601524e09d53e9010e03f83d7d00"))],
 			data: "0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000363384a3868b9000000000000000000000000000000000000000000000000000000005d75f54f0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000e53504f5450582f4241542d455448000000000000000000000000000000000000".from_hex().unwrap(),
 		}];
