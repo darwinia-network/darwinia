@@ -336,6 +336,7 @@ pub fn icefrog_testnet_config() -> ChainSpec {
 		Some("DAR"),
 		{
 			let mut properties = Properties::new();
+			properties.insert("ss58Format".into(), 42.into());
 			properties.insert("tokenDecimals".into(), 9.into());
 			properties.insert("tokenSymbol".into(), "RING".into());
 
