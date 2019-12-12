@@ -12,7 +12,7 @@ use system::ensure_signed;
 use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 use sr_eth_primitives::{
-	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
+	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
 };
 
 type DAG = LightDAG<EthereumPatch>;

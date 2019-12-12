@@ -18,5 +18,5 @@ pub use primitive_types::{H160, H256, U128, U256, U512};
 use rstd::vec::Vec;
 
 pub type Bytes = Vec<u8>;
-pub type Address = H160;
-pub type BlockNumber = u64;
+pub type EthAddress = H160;
+pub type EthBlockNumber = u64;

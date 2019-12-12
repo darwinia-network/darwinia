@@ -24,7 +24,6 @@
 		"proof": "Vec<u8>",
 		"header_hash": "H256"
 	},
-	"Address": "H160",
 	"BestBlock": {
 		"height": "EthBlockNumber",
 		"hash": "H256",
@@ -38,12 +37,13 @@
 	"Bloom": {
 		"_struct": "[u8; 256]"
 	},
+	"EthAddress": "H160",
 	"EthBlockNumber": "u64",
 	"EthHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
 		"number": "EthBlockNumber",
-		"auth": "Address",
+		"auth": "EthAddress",
 		"transaction_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
@@ -60,7 +60,7 @@
 		"_struct": "[u8; 8]"
 	},
 	"LogEntry": {
-		"address": "Address",
+		"address": "EthAddress",
 		"topics": "Vec<H256>",
 		"data": "Bytes"
 	},
