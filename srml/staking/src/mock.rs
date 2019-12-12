@@ -22,11 +22,13 @@ pub type AccountId = u64;
 pub type BlockNumber = u64;
 
 /// Module alias
+pub type Session = session::Module<Test>;
 pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
+
 pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
-pub type Session = session::Module<Test>;
-pub type Timestamp = timestamp::Module<Test>;
+
 pub type Staking = Module<Test>;
 
 pub const NANO: Balance = 1;
