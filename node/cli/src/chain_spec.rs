@@ -24,9 +24,8 @@ use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_runtime::{
-	constants::currency::*, BabeConfig, BalancesConfig, Block, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-	WASM_BINARY,
+	constants::currency::*, BalancesConfig, Block, ContractsConfig, IndicesConfig, KtonConfig, SessionConfig,
+	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, sr25519, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -205,7 +204,7 @@ pub fn darwinia_genesis(
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-		babe: Some(BabeConfig { authorities: vec![] }),
+		babe: Some(Default::default()),
 		contracts: Some(ContractsConfig {
 			current_schedule: contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -213,8 +212,8 @@ pub fn darwinia_genesis(
 			},
 			gas_price: 1 * MICRO,
 		}),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
+		grandpa: Some(Default::default()),
+		im_online: Some(Default::default()),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
