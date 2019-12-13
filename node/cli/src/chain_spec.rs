@@ -24,9 +24,8 @@ use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_runtime::{
-	constants::currency::*, BabeConfig, BalancesConfig, Block, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-	WASM_BINARY,
+	constants::currency::*, BalancesConfig, Block, ContractsConfig, IndicesConfig, KtonConfig, SessionConfig,
+	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, sr25519, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -54,9 +53,9 @@ pub struct Extensions {
 /// Specialized `ChainSpec`.
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig, Extensions>;
 
-/// Crayfish testnet generator
-pub fn crayfish_fir_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/crayfish-fir.json")[..])
+/// IceFrog testnet generator
+pub fn icefrog_fir_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
 }
 
 fn session_keys(grandpa: GrandpaId, babe: BabeId, im_online: ImOnlineId) -> SessionKeys {
@@ -205,7 +204,7 @@ pub fn darwinia_genesis(
 	const STASH: Balance = 100 * COIN;
 
 	GenesisConfig {
-		babe: Some(BabeConfig { authorities: vec![] }),
+		babe: Some(Default::default()),
 		contracts: Some(ContractsConfig {
 			current_schedule: contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -213,8 +212,8 @@ pub fn darwinia_genesis(
 			},
 			gas_price: 1 * MICRO,
 		}),
-		grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		im_online: Some(ImOnlineConfig { keys: vec![] }),
+		grandpa: Some(Default::default()),
+		im_online: Some(Default::default()),
 		indices: Some(IndicesConfig {
 			ids: endowed_accounts
 				.iter()
@@ -317,8 +316,8 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
-pub fn crayfish_testnet_config() -> ChainSpec {
-	fn crayfish_config_genesis() -> GenesisConfig {
+pub fn icefrog_testnet_config() -> ChainSpec {
+	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -328,14 +327,15 @@ pub fn crayfish_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Crayfish Testnet",
-		"crayfish_testnet",
-		crayfish_config_genesis,
+		"Darwinia IceFrog Testnet",
+		"icefrog_testnet",
+		icefrog_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
 		{
 			let mut properties = Properties::new();
+			properties.insert("ss58Format".into(), 42.into());
 			properties.insert("tokenDecimals".into(), 9.into());
 			properties.insert("tokenSymbol".into(), "RING".into());
 

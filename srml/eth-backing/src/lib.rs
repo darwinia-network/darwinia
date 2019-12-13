@@ -1,4 +1,4 @@
-//!  prototype module for bridging in ethereum poa blockcahin
+//!  prototype module for bridging in ethereum poa blockchain
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -17,12 +17,14 @@ use core::convert::TryFrom;
 use darwinia_eth_relay::{ActionRecord, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
-use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, Address, H256, U256};
+use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, EthAddress, H256, U256};
 
 //#[cfg(feature = "std")]
 //use sr_primitives::{Deserialize, Serialize};
 
 use hex_literal::hex;
+
+use rstd::vec::Vec;
 
 pub type Moment = u64;
 
@@ -45,13 +47,11 @@ pub trait Trait: timestamp::Trait {
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct EventTopic {
 	/// The address of the contract executing at the point of the `LOG` operation.
-	pub address: Address,
+	pub address: EthAddress,
 	/// The signature of the log event, matches the first topic from the topic vector, the following topic are the indexed parameters.
 	pub signature: H256,
 }
 
-// config() require `serde = { version = "1.0.101", optional = true }`
-// tracking issue: https://github.com/rust-lang/rust/issues/27812
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
 		pub RingRedeemTopic get(ring_redeem_topic): Option<EventTopic>;
@@ -75,17 +75,17 @@ decl_storage! {
 
 			// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
 			RingRedeemTopic::put(EventTopic {
-				address: Address::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e")),
+				address: EthAddress::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e")),
 				signature: H256::from(hex!("38045eaef0a21b74ff176350f18df02d9041a25d6694b5f63e9474b7b6cd6b94")),
 			});
 
 			//pub const KtonRedeemTopic : EventTopic  = EventTopic {
-			//	address: Address::from_str("dbc888d701167cbfb86486c516aafbefc3a4de6e").unwrap(),
+			//	address: EthAddress::from_str("dbc888d701167cbfb86486c516aafbefc3a4de6e").unwrap(),
 			//	signature: H256::from(hex!(""))
 			//};
 
 			DepositRedeemTopic::put(EventTopic {
-				address: Address::from(hex!("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b")),
+				address: EthAddress::from(hex!("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b")),
 				signature: H256::from(hex!("455d5fda67197daa1239477da37301be9abb7771027186e589d8c341c609d285")),
 			});
 
@@ -123,7 +123,7 @@ decl_module! {
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
 
 			let log_entry = verified_receipt.logs.iter().find(
-				|&x| x.address == Address::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e"))
+				|&x| x.address == EthAddress::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e"))
 					 && x.topics[0] == H256::from(hex!("38045eaef0a21b74ff176350f18df02d9041a25d6694b5f63e9474b7b6cd6b94"))
 			).expect("Log Entry Not Found");
 

@@ -23,9 +23,8 @@ use support::{
 use system::RawOrigin;
 use transaction_payment::ChargeTransactionPayment;
 
-use super::*;
+use crate::{mock::*, *};
 use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
-use mock::{info_from_weight, Balances, ExtBuilder, Runtime, System, Timestamp, CALL};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
@@ -235,7 +234,7 @@ fn lock_reasons_should_work() {
 			);
 			assert_ok!(<Balances as ReservableCurrency<_>>::reserve(&1, 1));
 			// NOTE: this causes a fee payment.
-			assert!(<ChargeTransactionPayment<Runtime> as SignedExtension>::pre_dispatch(
+			assert!(<ChargeTransactionPayment<Test> as SignedExtension>::pre_dispatch(
 				ChargeTransactionPayment::from(1),
 				&1,
 				CALL,
@@ -258,7 +257,7 @@ fn lock_reasons_should_work() {
 				<Balances as ReservableCurrency<_>>::reserve(&1, 1),
 				"account liquidity restrictions prevent withdrawal"
 			);
-			assert!(<ChargeTransactionPayment<Runtime> as SignedExtension>::pre_dispatch(
+			assert!(<ChargeTransactionPayment<Test> as SignedExtension>::pre_dispatch(
 				ChargeTransactionPayment::from(1),
 				&1,
 				CALL,
@@ -278,7 +277,7 @@ fn lock_reasons_should_work() {
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 			assert_ok!(<Balances as ReservableCurrency<_>>::reserve(&1, 1));
-			assert!(<ChargeTransactionPayment<Runtime> as SignedExtension>::pre_dispatch(
+			assert!(<ChargeTransactionPayment<Test> as SignedExtension>::pre_dispatch(
 				ChargeTransactionPayment::from(1),
 				&1,
 				CALL,
@@ -397,7 +396,7 @@ fn reward_should_work() {
 		assert_eq!(Balances::total_balance(&1), 10);
 		assert_ok!(Balances::deposit_into_existing(&1, 10).map(drop));
 		assert_eq!(Balances::total_balance(&1), 20);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 120);
+		assert_eq!(<TotalIssuance<Test>>::get(), 120);
 	});
 }
 
@@ -529,7 +528,7 @@ fn slashing_balance_should_work() {
 		assert!(Balances::slash(&1, 69).1.is_zero());
 		assert_eq!(Balances::free_balance(&1), 0);
 		assert_eq!(Balances::reserved_balance(&1), 42);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 42);
+		assert_eq!(<TotalIssuance<Test>>::get(), 42);
 	});
 }
 
@@ -541,7 +540,7 @@ fn slashing_incomplete_balance_should_work() {
 		assert_eq!(Balances::slash(&1, 69).1, 27);
 		assert_eq!(Balances::free_balance(&1), 0);
 		assert_eq!(Balances::reserved_balance(&1), 0);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 0);
+		assert_eq!(<TotalIssuance<Test>>::get(), 0);
 	});
 }
 
@@ -564,7 +563,7 @@ fn slashing_reserved_balance_should_work() {
 		assert_eq!(Balances::slash_reserved(&1, 42).1, 0);
 		assert_eq!(Balances::reserved_balance(&1), 69);
 		assert_eq!(Balances::free_balance(&1), 0);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 69);
+		assert_eq!(<TotalIssuance<Test>>::get(), 69);
 	});
 }
 
@@ -576,7 +575,7 @@ fn slashing_incomplete_reserved_balance_should_work() {
 		assert_eq!(Balances::slash_reserved(&1, 69).1, 27);
 		assert_eq!(Balances::free_balance(&1), 69);
 		assert_eq!(Balances::reserved_balance(&1), 0);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 69);
+		assert_eq!(<TotalIssuance<Test>>::get(), 69);
 	});
 }
 
@@ -623,8 +622,8 @@ fn transferring_incomplete_reserved_balance_should_work() {
 #[test]
 fn transferring_too_high_value_should_not_panic() {
 	ExtBuilder::default().build().execute_with(|| {
-		<FreeBalance<Runtime>>::insert(1, u64::max_value());
-		<FreeBalance<Runtime>>::insert(2, 1);
+		<FreeBalance<Test>>::insert(1, u64::max_value());
+		<FreeBalance<Test>>::insert(2, 1);
 
 		assert_err!(
 			Balances::transfer(Some(1).into(), 2, u64::max_value()),
@@ -640,12 +639,12 @@ fn transferring_too_high_value_should_not_panic() {
 fn account_create_on_free_too_low_with_other() {
 	ExtBuilder::default().existential_deposit(100).build().execute_with(|| {
 		let _ = Balances::deposit_creating(&1, 100);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 100);
+		assert_eq!(<TotalIssuance<Test>>::get(), 100);
 
 		// No-op.
 		let _ = Balances::deposit_creating(&2, 50);
 		assert_eq!(Balances::free_balance(&2), 0);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 100);
+		assert_eq!(<TotalIssuance<Test>>::get(), 100);
 	})
 }
 
@@ -655,14 +654,14 @@ fn account_create_on_free_too_low() {
 		// No-op.
 		let _ = Balances::deposit_creating(&2, 50);
 		assert_eq!(Balances::free_balance(&2), 0);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 0);
+		assert_eq!(<TotalIssuance<Test>>::get(), 0);
 	})
 }
 
 #[test]
 fn account_removal_on_free_too_low() {
 	ExtBuilder::default().existential_deposit(100).build().execute_with(|| {
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 0);
+		assert_eq!(<TotalIssuance<Test>>::get(), 0);
 
 		// Setup two accounts with free balance above the existential threshold.
 		let _ = Balances::deposit_creating(&1, 110);
@@ -670,7 +669,7 @@ fn account_removal_on_free_too_low() {
 
 		assert_eq!(Balances::free_balance(&1), 110);
 		assert_eq!(Balances::free_balance(&2), 110);
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 220);
+		assert_eq!(<TotalIssuance<Test>>::get(), 220);
 
 		// Transfer funds from account 1 of such amount that after this transfer
 		// the balance of account 1 will be below the existential threshold.
@@ -682,7 +681,7 @@ fn account_removal_on_free_too_low() {
 		assert_eq!(Balances::free_balance(&2), 130);
 
 		// Verify that TotalIssuance tracks balance removal when free balance is too low.
-		assert_eq!(<TotalIssuance<Runtime>>::get(), 130);
+		assert_eq!(<TotalIssuance<Test>>::get(), 130);
 	});
 }
 

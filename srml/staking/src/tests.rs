@@ -26,7 +26,7 @@ macro_rules! gen_paired_account {
 		#[allow(non_snake_case, unused)]
 		let $stash = $stash_id;
 		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-		Kton::deposit_creating(&$stash, 100 * COIN);
+		let _ = Kton::deposit_creating(&$stash, 100 * COIN);
 		#[allow(non_snake_case, unused)]
 		let $controller = $controller_id;
 		let _ = Ring::deposit_creating(&$controller, COIN);
@@ -49,7 +49,7 @@ macro_rules! gen_paired_account {
 		#[allow(non_snake_case, unused)]
 		let $stash = $stash_id;
 		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-		Kton::deposit_creating(&$stash, 100 * COIN);
+		let _ = Kton::deposit_creating(&$stash, 100 * COIN);
 		#[allow(non_snake_case, unused)]
 		let $controller = $controller_id;
 		let _ = Ring::deposit_creating(&$controller, COIN);
@@ -70,7 +70,7 @@ macro_rules! gen_paired_account {
 		#[allow(non_snake_case, unused)]
 		let $stash = $stash_id;
 		let _ = Ring::deposit_creating(&$stash, 100 * COIN);
-		Kton::deposit_creating(&$stash, 100 * COIN);
+		let _ = Kton::deposit_creating(&$stash, 100 * COIN);
 		#[allow(non_snake_case, unused)]
 		let $controller = $controller_id;
 		let _ = Ring::deposit_creating(&$controller, COIN);
@@ -2228,7 +2228,7 @@ fn normal_kton_should_work() {
 		{
 			let (stash, controller) = (1001, 1000);
 
-			Kton::deposit_creating(&stash, 10 * COIN);
+			let _ = Kton::deposit_creating(&stash, 10 * COIN);
 			assert_ok!(Staking::bond(
 				Origin::signed(stash),
 				controller,
@@ -2268,7 +2268,7 @@ fn normal_kton_should_work() {
 			let (stash, controller) = (2001, 2000);
 
 			// promise_month should not work for kton
-			Kton::deposit_creating(&stash, 10 * COIN);
+			let _ = Kton::deposit_creating(&stash, 10 * COIN);
 			assert_ok!(Staking::bond(
 				Origin::signed(stash),
 				controller,
@@ -2500,7 +2500,7 @@ fn punished_claim_should_work() {
 		assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 
 		// Set more kton balance to make it work.
-		Kton::deposit_creating(&stash, COIN);
+		let _ = Kton::deposit_creating(&stash, COIN);
 		assert_ok!(Staking::try_claim_deposits_with_punish(
 			Origin::signed(controller),
 			promise_month * MONTH_IN_MILLISECONDS,
@@ -2731,7 +2731,7 @@ fn slash_should_not_touch_unbondings() {
 			StakingBalance::Ring(1000),
 			0,
 		));
-		Kton::deposit_creating(&stash, 1000);
+		let _ = Kton::deposit_creating(&stash, 1000);
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
 			StakingBalance::Kton(1000),
@@ -2758,12 +2758,7 @@ fn slash_should_not_touch_unbondings() {
 			},
 		);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash, Power::max_value(), &Staking::stakers(&stash), &mut vec![]);
 		let ledger = Staking::ledger(controller).unwrap();
 		assert_eq!(
 			(
@@ -2872,19 +2867,9 @@ fn pool_should_be_increased_and_decreased_correctly() {
 			},
 		);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash_1,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash_1),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash_1, Power::max_value(), &Staking::stakers(&stash_1), &mut vec![]);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash_2,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash_2),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash_2, Power::max_value(), &Staking::stakers(&stash_2), &mut vec![]);
 		ring_pool -= 375 * COIN / 10;
 		kton_pool -= 50 * COIN;
 		assert_eq!(Staking::ring_pool(), ring_pool);
@@ -3070,7 +3055,7 @@ fn xavier_q1() {
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
-		Kton::deposit_creating(&stash, 10);
+		let _ = Kton::deposit_creating(&stash, 10);
 
 		Timestamp::set_timestamp(0);
 		assert_ok!(Staking::bond(
@@ -3173,7 +3158,7 @@ fn xavier_q1() {
 			}]
 		);
 
-		Kton::deposit_creating(&stash, 20);
+		let _ = Kton::deposit_creating(&stash, 20);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(19), 0));
 		assert_eq!(Kton::free_balance(stash), 29);
 		assert_eq!(
@@ -3373,7 +3358,7 @@ fn xavier_q2() {
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
-		Kton::deposit_creating(&stash, 10);
+		let _ = Kton::deposit_creating(&stash, 10);
 
 		Timestamp::set_timestamp(1);
 		assert_ok!(Staking::bond(
@@ -3547,7 +3532,7 @@ fn xavier_q2() {
 		//		println!("Unlocking Transfer - Kton Balance: {:?}", Kton::free_balance(stash));
 		//		println!("Unlocking Transfer - Kton Locks: {:#?}", Kton::locks(stash));
 
-		Kton::deposit_creating(&stash, 1);
+		let _ = Kton::deposit_creating(&stash, 1);
 		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
 		assert_eq!(Kton::free_balance(stash), 2);
 		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 0));
@@ -3782,7 +3767,7 @@ fn xavier_q3() {
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
-		Kton::deposit_creating(&stash, 10);
+		let _ = Kton::deposit_creating(&stash, 10);
 
 		Timestamp::set_timestamp(1);
 		assert_ok!(Staking::bond(

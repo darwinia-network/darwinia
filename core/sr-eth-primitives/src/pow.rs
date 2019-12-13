@@ -27,14 +27,14 @@ pub struct EthashPartial {
 	pub eip100b_transition: u64,
 	pub ecip1010_pause_transition: u64,
 	pub ecip1010_continue_transition: u64,
-	pub difficulty_bomb_delays: BTreeMap<BlockNumber, BlockNumber>,
+	pub difficulty_bomb_delays: BTreeMap<EthBlockNumber, EthBlockNumber>,
 	pub expip2_transition: u64,
 	pub expip2_duration_limit: u64,
 	pub progpow_transition: u64,
 }
 
 impl EthashPartial {
-	pub fn set_difficulty_bomb_delays(&mut self, key: BlockNumber, value: BlockNumber) {
+	pub fn set_difficulty_bomb_delays(&mut self, key: EthBlockNumber, value: EthBlockNumber) {
 		self.difficulty_bomb_delays.insert(key, value);
 	}
 
@@ -52,7 +52,7 @@ impl EthashPartial {
 			eip100b_transition: 0xC3500,
 			ecip1010_pause_transition: 0x2dc6c0,
 			ecip1010_continue_transition: 0x4c4b40,
-			difficulty_bomb_delays: BTreeMap::<BlockNumber, BlockNumber>::default(),
+			difficulty_bomb_delays: BTreeMap::<EthBlockNumber, EthBlockNumber>::default(),
 			expip2_transition: 0xc3500,
 			expip2_duration_limit: 0x1e,
 			progpow_transition: u64::max_value(),

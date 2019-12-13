@@ -9,7 +9,7 @@ const ID_3: LockIdentifier = *b"3       ";
 
 #[test]
 fn transfer_should_work() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let _ = Kton::deposit_creating(&666, 100);
 
 		assert_ok!(Kton::transfer(Origin::signed(666), 777, 50));
@@ -27,7 +27,7 @@ fn transfer_should_work() {
 // TODO
 #[test]
 fn transfer_should_fail() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().vesting(true).build().execute_with(|| {
 		let _ = Kton::deposit_creating(&777, 1);
 		assert_err!(
 			Kton::transfer(Origin::signed(666), 777, 50),
@@ -41,7 +41,7 @@ fn transfer_should_fail() {
 		);
 
 		assert_err!(
-			Kton::transfer(Origin::signed(1), 777, Kton::vesting_balance(&1)),
+			Kton::transfer(Origin::signed(2), 777, Kton::vesting_balance(&2)),
 			"vesting balance too high to send value",
 		);
 		Kton::set_lock(
@@ -62,7 +62,7 @@ fn transfer_should_fail() {
 
 #[test]
 fn set_lock_should_work() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let lock_ids = [[0; 8], [1; 8], [2; 8], [3; 8]];
 		let balance_per_lock = Kton::free_balance(&1) / (lock_ids.len() as Balance);
 
@@ -105,7 +105,7 @@ fn set_lock_should_work() {
 
 #[test]
 fn remove_lock_should_work() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		Timestamp::set_timestamp(0);
 		let ts: u64 = Timestamp::now().into();
 		Kton::set_lock(
@@ -157,7 +157,7 @@ fn remove_lock_should_work() {
 
 #[test]
 fn update_lock_should_work() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let mut locks = vec![];
 		for id in 0..10 {
 			// until > 1
@@ -194,8 +194,8 @@ fn update_lock_should_work() {
 
 #[test]
 fn combination_locking_should_work() {
-	ExtBuilder::default().existential_deposit(0).build().execute_with(|| {
-		Kton::deposit_creating(&1001, 10);
+	ExtBuilder::default().build().execute_with(|| {
+		let _ = Kton::deposit_creating(&1001, 10);
 		Kton::set_lock(
 			ID_1,
 			&1001,

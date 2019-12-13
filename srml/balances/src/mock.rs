@@ -15,18 +15,18 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Test utilities
-use crate::{GenesisConfig, Module, Trait};
+use std::cell::RefCell;
+
 use primitives::H256;
-use runtime_io;
 use sr_primitives::{
 	testing::Header,
-	traits::{ConvertInto, IdentityLookup},
+	traits::{BlakeTwo256, ConvertInto, IdentityLookup},
 	weights::{DispatchInfo, Weight},
 	Perbill,
 };
-use std::cell::RefCell;
-use support::traits::Get;
-use support::{impl_outer_origin, parameter_types};
+use support::{impl_outer_origin, parameter_types, traits::Get};
+
+use crate::*;
 
 impl_outer_origin! {
 	pub enum Origin for Runtime {}
@@ -61,21 +61,21 @@ impl Get<u64> for CreationFee {
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct Runtime;
+pub struct Test;
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: u32 = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl system::Trait for Runtime {
+impl system::Trait for Test {
 	type Origin = Origin;
-	type Index = u64;
-	type BlockNumber = u64;
 	type Call = ();
+	type Index = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
-	type Hashing = ::sr_primitives::traits::BlakeTwo256;
-	type AccountId = u64;
+	type Hashing = BlakeTwo256;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = ();
@@ -85,38 +85,40 @@ impl system::Trait for Runtime {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 }
+
 parameter_types! {
 	pub const TransactionBaseFee: u64 = 0;
 	pub const TransactionByteFee: u64 = 1;
 }
-impl transaction_payment::Trait for Runtime {
-	type Currency = Module<Runtime>;
+impl transaction_payment::Trait for Test {
+	type Currency = Module<Test>;
 	type OnTransactionPayment = ();
 	type TransactionBaseFee = TransactionBaseFee;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = ConvertInto;
 	type FeeMultiplierUpdate = ();
 }
-impl Trait for Runtime {
-	type Balance = u64;
-	type OnFreeBalanceZero = ();
-	type OnNewAccount = ();
-	type Event = ();
-	type DustRemoval = ();
-	type TransferPayment = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
-}
 
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
 }
 
-impl timestamp::Trait for Runtime {
+impl timestamp::Trait for Test {
 	type Moment = u64;
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
+}
+
+impl Trait for Test {
+	type Balance = Balance;
+	type OnFreeBalanceZero = ();
+	type OnNewAccount = ();
+	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+	type CreationFee = CreationFee;
 }
 
 pub struct ExtBuilder {
@@ -169,8 +171,8 @@ impl ExtBuilder {
 	}
 	pub fn build(self) -> runtime_io::TestExternalities {
 		self.set_associated_consts();
-		let mut t = system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
-		GenesisConfig::<Runtime> {
+		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		GenesisConfig::<Test> {
 			balances: if self.monied {
 				vec![
 					(1, 10 * self.existential_deposit),
@@ -198,11 +200,12 @@ impl ExtBuilder {
 	}
 }
 
-pub type System = system::Module<Runtime>;
-pub type Timestamp = timestamp::Module<Runtime>;
-pub type Balances = Module<Runtime>;
+pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
 
-pub const CALL: &<Runtime as system::Trait>::Call = &();
+pub type Balances = Module<Test>;
+
+pub const CALL: &<Test as system::Trait>::Call = &();
 
 /// create a transaction info struct from weight. Handy to avoid building the whole struct.
 pub fn info_from_weight(w: Weight) -> DispatchInfo {

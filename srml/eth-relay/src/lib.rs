@@ -1,30 +1,25 @@
-//!  prototype module for bridging in ethereum poa blockcahin
+//!  prototype module for bridging in ethereum poa blockchain
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// use blake2::Blake2b;
 use codec::{Decode, Encode};
 use rstd::{result, vec::Vec};
-use sr_eth_primitives::{
-	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, BlockNumber as EthBlockNumber, H256, U256,
-};
-
-use ethash::{EthereumPatch, LightDAG};
-
+use sr_primitives::RuntimeDebug;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-
 use system::ensure_signed;
 
-use sr_primitives::RuntimeDebug;
-
+use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
+use sr_eth_primitives::{
+	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
+};
 
 type DAG = LightDAG<EthereumPatch>;
 
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod mock;
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 pub trait Trait: system::Trait {
@@ -87,7 +82,8 @@ decl_storage! {
 			if let Some(h) = &config.header {
 				let header: EthHeader = rlp::decode(&h).expect("Deserialize Genesis Header - FAILED");
 
-				<Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
+				// Discard the result even it fail.
+				let _ = <Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
 
 				// TODO: initialize other parameters.
 			}
@@ -107,7 +103,7 @@ decl_module! {
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
-			Self::init_genesis_header(&header, genesis_difficulty);
+			Self::init_genesis_header(&header, genesis_difficulty)?;
 
 			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
 		}
@@ -163,8 +159,11 @@ pub trait VerifyEthReceipts {
 
 impl<T: Trait> Module<T> {
 	// TOOD: what is the total difficulty for genesis/begin header
-	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) {
+	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) -> result::Result<(), &'static str> {
 		let header_hash = header.hash();
+
+		ensure!(header_hash == header.re_compute_hash(), "Header Hash - MISMATCHED");
+
 		let block_number = header.number();
 
 		HeaderOf::insert(&header_hash, header);
@@ -186,13 +185,16 @@ impl<T: Trait> Module<T> {
 
 		// Initialize the header.
 		BeginHeader::put(header.clone());
+
+		Ok(())
 	}
 
 	/// 1. proof of difficulty
 	/// 2. proof of pow (mixhash)
 	/// 3. challenge
 	fn verify_header(header: &EthHeader) -> Result {
-		// TODO: check parent hash,
+		ensure!(header.hash() == header.re_compute_hash(), "Header Hash - MISMATCHED");
+
 		let parent_hash = header.parent_hash();
 
 		let number = header.number();
@@ -202,8 +204,9 @@ impl<T: Trait> Module<T> {
 			"Block Number - TOO SMALL",
 		);
 
+		// TODO: check parent hash is the last header, ignore or reorg
 		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
-		ensure!((prev_header.number() + 1) == number, "Block Number - NOT MATCHED");
+		ensure!((prev_header.number() + 1) == number, "Block Number - MISMATCHED");
 
 		// check difficulty
 		let ethash_params = match T::EthNetwork::get() {
@@ -230,13 +233,10 @@ impl<T: Trait> Module<T> {
 				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
 				if mix_hash != seal.mix_hash {
-					return Err("Mixhash - NOT MATCHED");
+					return Err("Mixhash - MISMATCHED");
 				}
 			}
 		};
-
-		//			ensure!(best_header.height == block_number, "Block height does not match.");
-		//			ensure!(best_header.hash == *header.parent_hash(), "Block hash does not match.");
 
 		Ok(())
 	}

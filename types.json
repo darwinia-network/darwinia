@@ -6,11 +6,11 @@
 		"reasons": "WithdrawReasons"
 	},
 	"NormalLock": {
-		"amount": "u128",
+		"amount": "Balance",
 		"until": "Moment"
 	},
 	"StakingLock": {
-		"staking_amount": "u128",
+		"staking_amount": "Balance",
 		"unbondings": "Vec<NormalLock>"
 	},
 	"WithdrawLock": {
@@ -21,10 +21,9 @@
 	},
 	"ActionRecord": {
 		"index": "u64",
-		"proof": "Vec<u8>",
+		"proof": "Bytes",
 		"header_hash": "H256"
 	},
-	"Address": "H160",
 	"BestBlock": {
 		"height": "EthBlockNumber",
 		"hash": "H256",
@@ -38,12 +37,13 @@
 	"Bloom": {
 		"_struct": "[u8; 256]"
 	},
+	"EthAddress": "H160",
 	"EthBlockNumber": "u64",
 	"EthHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
 		"number": "EthBlockNumber",
-		"auth": "Address",
+		"auth": "EthAddress",
 		"transaction_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
@@ -60,7 +60,7 @@
 		"_struct": "[u8; 8]"
 	},
 	"LogEntry": {
-		"address": "Address",
+		"address": "EthAddress",
 		"topics": "Vec<H256>",
 		"data": "Bytes"
 	},
@@ -79,39 +79,44 @@
 	},
 	"EraIndex": "u32",
 	"Exposure": {
-		"total": "ExtendedBalance",
-		"own": "ExtendedBalance",
+		"total": "Compact<Power>",
+		"own": "Compact<Power>",
 		"others": "Vec<IndividualExposure>"
 	},
-	"ExtendedBalance": "u128",
 	"IndividualExposure": {
 		"who": "AccountId",
-		"value": "ExtendedBalance"
+		"value": "Compact<Power>"
 	},
-	"KtonBalanceOf": "u128",
-	"RingBalanceOf": "u128",
+	"Ring": "Balance",
+	"Power": "Balance",
+	"Kton": "Balance",
+	"SlashJournalEntry": {
+		"who": "AccountId",
+		"amount": "Compact<Power>",
+		"own_slash": "Compact<Power>"
+	},
 	"StakingBalance": {
 		"_enum": {
-			"Ring": "RingBalanceOf",
-			"Kton": "KtonBalanceOf"
+			"Ring": "Balance",
+			"Kton": "Balance"
 		}
 	},
 	"StakingLedger": {
 		"stash": "AccountId",
-		"active_ring": "Compact<RingBalanceOf>",
-		"active_deposit_ring": "Compact<RingBalanceOf>",
-		"active_kton": "Compact<KtonBalanceOf>",
+		"active_ring": "Compact<Balance>",
+		"active_deposit_ring": "Compact<Balance>",
+		"active_kton": "Compact<Balance>",
 		"deposit_items": "Vec<TimeDepositItem>",
 		"ring_staking_lock": "StakingLock",
 		"kton_staking_lock": "StakingLock"
 	},
 	"TimeDepositItem": {
-		"value": "Compact<RingBalanceOf>",
+		"value": "Compact<Balance>",
 		"start_time": "Compact<Moment>",
 		"expire_time": "Compact<Moment>"
 	},
 	"ValidatorPrefs": {
-		"node_name": "Vec<u8>",
+		"node_name": "Bytes",
 		"validator_payment_ratio": "Compact<u32>"
 	}
 }
