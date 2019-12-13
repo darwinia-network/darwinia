@@ -4,7 +4,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
-use rstd::vec::Vec;
+use rstd::borrow::ToOwned;
+use rstd::prelude::*;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
@@ -12,6 +13,7 @@ use sr_primitives::RuntimeDebug;
 
 use darwinia_eth_relay::{ActionRecord, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
+use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType};
 use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, Address, H256, U256};
 
 //#[cfg(feature = "std")]
@@ -88,6 +90,40 @@ decl_module! {
 			let _relayer = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
+
+			let event = EthEvent {
+				name: "foo".to_owned(),
+				inputs: vec![EthEventParam {
+					name: "a".to_owned(),
+					kind: ParamType::Int(256),
+					indexed: false,
+				}, EthEventParam {
+					name: "b".to_owned(),
+					kind: ParamType::Int(256),
+					indexed: true,
+				}, EthEventParam {
+					name: "c".to_owned(),
+					kind: ParamType::Address,
+					indexed: false,
+				}, EthEventParam {
+					name: "d".to_owned(),
+					kind: ParamType::Address,
+					indexed: true,
+				}, EthEventParam {
+					name: "e".to_owned(),
+					kind: ParamType::String,
+					indexed: true,
+				}, EthEventParam {
+					name: "f".to_owned(),
+					kind: ParamType::Array(Box::new(ParamType::Int(256))),
+					indexed: true
+				}, EthEventParam {
+					name: "g".to_owned(),
+					kind: ParamType::FixedArray(Box::new(ParamType::Address), 5),
+					indexed: true,
+				}],
+				anonymous: false,
+			};
 
 			// if header confirmed then return
 			// if header in unverified header then challenge

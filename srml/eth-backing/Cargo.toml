@@ -19,6 +19,9 @@ darwinia-eth-relay = { package = "darwinia-eth-relay", path = "../eth-relay", de
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
 
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+
+ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std", default-features = false }
+
 hex-literal = "0.2.1"
 
 [features]
@@ -34,5 +37,6 @@ std = [
     "darwinia-support/std",
     "darwinia-eth-relay/std",
     "sr-eth-primitives/std",
+    "ethabi/std",
     "sr-primitives/std",
 ]
