@@ -440,7 +440,7 @@ pub fn bond_validator(acc: u64, val: Balance) {
 	assert_ok!(Staking::validate(
 		Origin::signed(acc),
 		ValidatorPrefs {
-			node_name: "StakingTest".as_bytes().to_vec(),
+			node_name: "Staking Test".into(),
 			..Default::default()
 		}
 	));

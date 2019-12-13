@@ -31,8 +31,11 @@ mod err {
 
 	pub const CLAIM_DEPOSITS_EXPIRE_TIME_INVALID: &'static str =
 		"Claim Deposits With Punish - NOTHING TO CLAIM AT THIS TIME";
-	pub const NODE_NAME_INVALID: &'static str = "Node Name - INVALID";
 	pub const TARGETS_INVALID: &'static str = "Targets - CAN NOT BE EMPTY";
+
+	pub const NODE_NAME_REACH_MAX: &'static str = "Node Name - REACH MAX LENGTH 32";
+	pub const NODE_NAME_CONTAINS_INVALID_CHARS: &'static str = "Node Name - CONTAINS INVALID CHARS SUCH AS '.' AND '@'";
+	pub const NODE_NAME_CONTAINS_URLS: &'static str = "Node Name - CONTAINS URLS";
 }
 
 #[allow(unused)]
@@ -43,6 +46,7 @@ mod tests;
 
 use codec::{Decode, Encode, HasCompact};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance as Power, PhragmenStakedAssignment};
+use regex::bytes::Regex;
 use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
@@ -89,6 +93,7 @@ const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNLOCKING_CHUNKS: u32 = 32;
 const MONTH_IN_MILLISECONDS: Moment = 30 * 24 * 60 * 60 * 1000;
+const NODE_NAME_MAX_LENGTH: usize = 32;
 const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Reward points of an era. Used to split era total payout between validators.
@@ -155,14 +160,39 @@ pub struct ValidatorPrefs {
 }
 
 impl ValidatorPrefs {
-	// TODO
-	/// Filter Ad, curse words...
-	fn node_name_is_valid(&self) -> bool {
-		if self.node_name.is_empty() {
-			return false;
+	/// Check whether a node name is considered as valid
+	fn check_node_name(&self) -> result::Result<(), &'static str> {
+		let name = self.node_name.as_slice();
+
+		{
+			if name.len() >= NODE_NAME_MAX_LENGTH {
+				return Err(err::NODE_NAME_REACH_MAX);
+			}
 		}
 
-		true
+		{
+			let invalid_chars = r"[\\.@]";
+			let re = Regex::new(invalid_chars).unwrap();
+			if re.is_match(&name) {
+				return Err(err::NODE_NAME_CONTAINS_INVALID_CHARS);
+			}
+		}
+
+		{
+			let invalid_patterns = r"^(https?|www)";
+			let re = Regex::new(invalid_patterns).unwrap();
+			if re.is_match(&name) {
+				return Err(err::NODE_NAME_CONTAINS_URLS);
+			}
+
+			let invalid_patterns = r"(com|cn|io|org|xyz)$";
+			let re = Regex::new(invalid_patterns).unwrap();
+			if re.is_match(&name) {
+				return Err(err::NODE_NAME_CONTAINS_URLS);
+			}
+		}
+
+		Ok(())
 	}
 }
 
@@ -469,7 +499,7 @@ decl_storage! {
 						<Module<T>>::validate(
 							T::Origin::from(Some(controller.clone()).into()),
 							ValidatorPrefs {
-								node_name: "Darwinia Node".bytes().collect(),
+								node_name: "Darwinia Node".into(),
 								..Default::default()
 							},
 						)
@@ -860,7 +890,7 @@ decl_module! {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
 
-			ensure!(prefs.node_name_is_valid(), err::NODE_NAME_INVALID);
+			prefs.check_node_name()?;
 
 			let stash = &ledger.stash;
 			let mut prefs = prefs;

@@ -4,7 +4,11 @@ use srml_support::{
 	traits::{Currency, ReservableCurrency},
 };
 
-use crate::{mock::*, *};
+use crate::{
+	// Explicit import `Kton` and `Ring` to overwrite same name in crate.
+	mock::{Kton, Ring, *},
+	*,
+};
 use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReasons};
 
 /// gen_paired_account!(a(1), b(2), m(12));
@@ -148,7 +152,7 @@ fn basic_setup_works() {
 		// ValidatorPrefs are default.
 		{
 			let validator_prefs = ValidatorPrefs {
-				node_name: "Darwinia Node".bytes().collect(),
+				node_name: "Darwinia Node".into(),
 				..Default::default()
 			};
 			assert_eq!(
@@ -288,7 +292,7 @@ fn change_controller_works() {
 			Staking::validate(
 				Origin::signed(10),
 				ValidatorPrefs {
-					node_name: "Darwinia Node".bytes().collect(),
+					node_name: "Darwinia Node".into(),
 					..Default::default()
 				}
 			),
@@ -297,7 +301,7 @@ fn change_controller_works() {
 		assert_ok!(Staking::validate(
 			Origin::signed(5),
 			ValidatorPrefs {
-				node_name: "Darwinia Node".bytes().collect(),
+				node_name: "Darwinia Node".into(),
 				..Default::default()
 			}
 		));
@@ -455,7 +459,7 @@ fn staking_should_work() {
 			assert_ok!(Staking::validate(
 				Origin::signed(4),
 				ValidatorPrefs {
-					node_name: "Darwinia Node".bytes().collect(),
+					node_name: "Darwinia Node".into(),
 					..Default::default()
 				},
 			));
@@ -1722,7 +1726,7 @@ fn switching_roles() {
 		assert_ok!(Staking::validate(
 			Origin::signed(6),
 			ValidatorPrefs {
-				node_name: "Darwinia Node".bytes().collect(),
+				node_name: "Darwinia Node".into(),
 				..Default::default()
 			},
 		));
@@ -1749,7 +1753,7 @@ fn switching_roles() {
 		assert_ok!(Staking::validate(
 			Origin::signed(2),
 			ValidatorPrefs {
-				node_name: "Darwinia Node".bytes().collect(),
+				node_name: "Darwinia Node".into(),
 				..Default::default()
 			},
 		));
@@ -2623,7 +2627,7 @@ fn inflation_should_be_correct() {
 }
 
 #[test]
-fn validator_prefs_should_work() {
+fn validator_payment_ratio_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
 		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
@@ -2659,6 +2663,52 @@ fn validator_prefs_should_work() {
 
 		assert_eq!(Staking::reward_validator(&validator_stash, COIN).peek(), COIN);
 	});
+}
+
+#[test]
+fn check_node_name_should_work() {
+	for node_name in [[0; 33].as_ref(), &[1; 34], &[2; 35]].iter() {
+		let validator_prefs = ValidatorPrefs {
+			node_name: (*node_name).to_vec(),
+			..Default::default()
+		};
+		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_REACH_MAX);
+	}
+
+	for node_name in ["hello@darwinia.network"].iter() {
+		let validator_prefs = ValidatorPrefs {
+			node_name: (*node_name).into(),
+			..Default::default()
+		};
+		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_CONTAINS_INVALID_CHARS);
+	}
+
+	for node_name in [
+		"com",
+		"http",
+		"https",
+		"itering com",
+		"http darwinia",
+		"https darwinia",
+		"http darwinia network",
+		"https darwinia network",
+	]
+	.iter()
+	{
+		let validator_prefs = ValidatorPrefs {
+			node_name: (*node_name).into(),
+			..Default::default()
+		};
+		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_CONTAINS_URLS);
+	}
+
+	for node_name in ["Darwinia Node"].iter() {
+		let validator_prefs = ValidatorPrefs {
+			node_name: (*node_name).into(),
+			..Default::default()
+		};
+		assert_ok!(validator_prefs.check_node_name());
+	}
 }
 
 //#[test]
