@@ -46,6 +46,7 @@ mod tests;
 
 use codec::{Decode, Encode, HasCompact};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance as Power, PhragmenStakedAssignment};
+#[cfg(feature = "std")]
 use regex::bytes::Regex;
 use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
@@ -170,15 +171,34 @@ impl ValidatorPrefs {
 			}
 		}
 
+		#[cfg(not(feature = "std"))]
+		{
+			if name.contains(&b'.') || name.contains(&b'@') {
+				return Err(err::NODE_NAME_CONTAINS_INVALID_CHARS);
+			}
+
+			if name.starts_with("http".as_bytes())
+				|| name.starts_with("https".as_bytes())
+				|| name.starts_with("www".as_bytes())
+				|| name.ends_with("com".as_bytes())
+				|| name.ends_with("cn".as_bytes())
+				|| name.ends_with("io".as_bytes())
+				|| name.ends_with("org".as_bytes())
+				|| name.ends_with("xyz".as_bytes())
+			{
+				return Err(err::NODE_NAME_CONTAINS_URLS);
+			}
+		}
+
+		// TODO: https://github.com/rust-lang/regex/issues/476
+		#[cfg(feature = "std")]
 		{
 			let invalid_chars = r"[\\.@]";
 			let re = Regex::new(invalid_chars).unwrap();
 			if re.is_match(&name) {
 				return Err(err::NODE_NAME_CONTAINS_INVALID_CHARS);
 			}
-		}
 
-		{
 			let invalid_patterns = r"^(https?|www)";
 			let re = Regex::new(invalid_patterns).unwrap();
 			if re.is_match(&name) {
