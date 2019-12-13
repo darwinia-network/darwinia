@@ -66,12 +66,6 @@ use darwinia_support::{
 };
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
-const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
-const MAX_NOMINATIONS: usize = 16;
-const MAX_UNLOCKING_CHUNKS: u32 = 32;
-const MONTH_IN_MILLISECONDS: u64 = 30 * 24 * 60 * 60 * 1000;
-const STAKING_ID: LockIdentifier = *b"staking ";
-
 pub type Balance = u128;
 pub type Moment = u64;
 
@@ -80,6 +74,12 @@ pub type EraIndex = u32;
 
 /// Counter for the number of "reward" points earned by a given validator.
 pub type Points = u32;
+
+const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
+const MAX_NOMINATIONS: usize = 16;
+const MAX_UNLOCKING_CHUNKS: u32 = 32;
+const MONTH_IN_MILLISECONDS: Moment = 30 * 24 * 60 * 60 * 1000;
+const STAKING_ID: LockIdentifier = *b"staking ";
 
 /// Reward points of an era. Used to split era total payout between validators.
 #[derive(Encode, Decode, Default)]
@@ -488,7 +488,10 @@ decl_storage! {
 }
 
 decl_event!(
-    pub enum Event<T> where Balance = RingBalanceOf<T>, <T as system::Trait>::AccountId {
+    pub enum Event<T> 
+    where
+    	<T as system::Trait>::AccountId
+    {
 		/// All validators have been rewarded by the first balance; the second is the remainder
 		/// from the maximum amount of reward.
 		Reward(Balance, Balance),
@@ -502,6 +505,14 @@ decl_event!(
 
 		/// NodeName changed.
 	    NodeNameUpdated,
+	    
+	    /// Bond succeed.
+	    /// `amount`, `now`, `duration` in month
+	    Bond(Balance, Moment, Moment),
+	    
+	    /// Unbond succeed.
+	    /// `amount`, `now`
+		Unbond(Balance, Moment),
 	    
 	    // Develop
 		//	    Print(u128),
@@ -546,7 +557,7 @@ decl_module! {
 			controller: <T::Lookup as StaticLookup>::Source,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
 			payee: RewardDestination,
-			promise_month: u64
+			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
 			ensure!(!<Bonded<T>>::exists(&stash), err::STASH_ALREADY_BONDED);
@@ -563,22 +574,32 @@ decl_module! {
 				stash: stash.clone(),
 				..Default::default()
 			};
+			let bond_amount;
+			let now = <timestamp::Module<T>>::now().saturated_into::<Moment>();
+			let promise_month = promise_month.min(36);
+
 			match value {
 				StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
 					let value = r.min(stash_balance);
-					// increase ring pool
-					<RingPool<T>>::mutate(|r| *r += value);
+					bond_amount = value.saturated_into();
+
 					Self::bond_helper_in_ring(&stash, &controller, value, promise_month, ledger);
+
+					<RingPool<T>>::mutate(|r| *r += value);
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
-					let value: KtonBalanceOf<T> = k.min(stash_balance);
-					// increase kton pool
-					<KtonPool<T>>::mutate(|k| *k += value);
+					let value = k.min(stash_balance);
+					bond_amount = value.saturated_into();
+
 					Self::bond_helper_in_kton(&controller, value, ledger);
+
+					<KtonPool<T>>::mutate(|k| *k += value);
 				},
 			}
+
+			<Module<T>>::deposit_event(RawEvent::Bond(bond_amount, now, promise_month));
 		}
 
 		/// Add some extra amount that have appeared in the stash `free_balance` into the balance up
@@ -599,30 +620,71 @@ decl_module! {
 		fn bond_extra(
 			origin,
 			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
-			promise_month: u64
+			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(err::STASH_INVALID)?;
 			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
+			let now = <timestamp::Module<T>>::now().saturated_into::<Moment>();
+			let promise_month = promise_month.min(36);
 
 			match value {
 				 StakingBalance::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
 						let extra = extra.min(r);
-						<RingPool<T>>::mutate(|r| *r += extra);
+
 						Self::bond_helper_in_ring(&stash, &controller, extra, promise_month, ledger);
+
+						<RingPool<T>>::mutate(|r| *r += extra);
+						<Module<T>>::deposit_event(RawEvent::Bond(extra.saturated_into(), now, promise_month));
 					}
 				},
 				StakingBalance::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_kton) {
 						let extra = extra.min(k);
-						<KtonPool<T>>::mutate(|k| *k += extra);
+
 						Self::bond_helper_in_kton(&controller, extra, ledger);
+
+						<KtonPool<T>>::mutate(|k| *k += extra);
+						<Module<T>>::deposit_event(RawEvent::Bond(extra.saturated_into(), now, promise_month));
 					}
 				},
 			}
+		}
+
+		// TODO: doc
+		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: Moment) {
+			let controller = ensure_signed(origin)?;
+			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
+			let promise_month = promise_month.max(3).min(36);
+
+			let now = <timestamp::Module<T>>::now();
+			let mut ledger = Self::clear_mature_deposits(ledger);
+			let StakingLedger {
+				stash,
+				active_ring,
+				active_deposit_ring,
+				deposit_items,
+				..
+			} = &mut ledger;
+			let value = value.min(*active_ring - *active_deposit_ring);
+			// for now, kton_return is free
+			// mint kton
+			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
+			let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
+
+			T::KtonReward::on_unbalanced(kton_positive_imbalance);
+			*active_deposit_ring += value;
+			deposit_items.push(TimeDepositItem {
+				value,
+				start_time: now,
+				expire_time: now + T::Moment::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into()),
+			});
+
+			<Ledger<T>>::insert(&controller, ledger);
+			<Module<T>>::deposit_event(RawEvent::Bond(value.saturated_into(), now.saturated_into::<Moment>(), promise_month));
 		}
 
 		/// for normal_ring or normal_kton, follow the original substrate pattern
@@ -645,7 +707,7 @@ decl_module! {
 		/// - Independent of the arguments. Limited but potentially exploitable complexity.
 		/// - Contains a limited number of reads.
 		/// - Each call (requires the remainder of the bonded balance to be above `minimum_balance`)
-		///   will cause a new entry to be inserted into a vector (`StakingLock.unlockings`) kept in storage.
+		///   will cause a new entry to be inserted into a vector (`StakingLock.unbondings`) kept in storage.
 		/// - One DB entry.
 		/// </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
@@ -690,8 +752,10 @@ decl_module! {
 							until: now + T::BondingDuration::get(),
 						});
 
-						<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
 						Self::update_ledger(&controller, &mut ledger, value);
+
+						<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
+						<Module<T>>::deposit_event(RawEvent::Unbond(available_unbond_ring.saturated_into(), now.saturated_into::<Moment>()));
 					}
 				},
 				StakingBalance::Kton(k) => {
@@ -704,43 +768,13 @@ decl_module! {
 							until: now + T::BondingDuration::get(),
 						});
 
-						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 						Self::update_ledger(&controller, &mut ledger, value);
+
+						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
+						<Module<T>>::deposit_event(RawEvent::Unbond(unbond_kton.saturated_into(), now.saturated_into::<Moment>()));
 					}
 				},
 			}
-		}
-
-		// TODO: doc
-		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: u64) {
-			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
-			let promise_month = promise_month.max(3).min(36);
-
-			let now = <timestamp::Module<T>>::now();
-			let mut ledger = Self::clear_mature_deposits(ledger);
-			let StakingLedger {
-				stash,
-				active_ring,
-				active_deposit_ring,
-				deposit_items,
-				..
-			} = &mut ledger;
-			let value = value.min(*active_ring - *active_deposit_ring);
-			// for now, kton_return is free
-			// mint kton
-			let kton_return = inflation::compute_kton_return::<T>(value, promise_month);
-			let kton_positive_imbalance = T::Kton::deposit_creating(stash, kton_return);
-
-			T::KtonReward::on_unbalanced(kton_positive_imbalance);
-			*active_deposit_ring += value;
-			deposit_items.push(TimeDepositItem {
-				value,
-				start_time: now,
-				expire_time: now + T::Moment::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into()),
-			});
-
-			<Ledger<T>>::insert(&controller, ledger);
 		}
 
 		// TODO: doc
@@ -1032,11 +1066,9 @@ impl<T: Trait> Module<T> {
 		stash: &T::AccountId,
 		controller: &T::AccountId,
 		value: RingBalanceOf<T>,
-		promise_month: u64,
+		promise_month: Moment,
 		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
 	) {
-		let promise_month = promise_month.min(36);
-
 		// if stash promise to a extra-lock
 		// there will be extra reward, kton, which
 		// can also be use to stake.
@@ -1397,7 +1429,7 @@ impl<T: Trait> Module<T> {
 			let total_payout = total_imbalance.peek();
 
 			let rest = max_payout.saturating_sub(total_payout);
-			Self::deposit_event(RawEvent::Reward(total_payout, rest));
+			Self::deposit_event(RawEvent::Reward(total_payout.saturated_into(), rest.saturated_into()));
 
 			T::RingReward::on_unbalanced(total_imbalance);
 			T::RingRewardRemainder::on_unbalanced(T::Ring::issue(rest));
