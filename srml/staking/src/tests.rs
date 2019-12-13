@@ -2758,12 +2758,7 @@ fn slash_should_not_touch_unbondings() {
 			},
 		);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash, Power::max_value(), &Staking::stakers(&stash), &mut vec![]);
 		let ledger = Staking::ledger(controller).unwrap();
 		assert_eq!(
 			(
@@ -2872,19 +2867,9 @@ fn pool_should_be_increased_and_decreased_correctly() {
 			},
 		);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash_1,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash_1),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash_1, Power::max_value(), &Staking::stakers(&stash_1), &mut vec![]);
 		// FIXME: slash strategy
-		let _ = Staking::slash_validator(
-			&stash_2,
-			ExtendedBalance::max_value(),
-			&Staking::stakers(&stash_2),
-			&mut vec![],
-		);
+		let _ = Staking::slash_validator(&stash_2, Power::max_value(), &Staking::stakers(&stash_2), &mut vec![]);
 		ring_pool -= 375 * COIN / 10;
 		kton_pool -= 50 * COIN;
 		assert_eq!(Staking::ring_pool(), ring_pool);

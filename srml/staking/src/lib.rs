@@ -42,6 +42,7 @@ mod mock;
 mod tests;
 
 use codec::{Decode, Encode, HasCompact};
+use phragmen::{build_support_map, elect, equalize, ExtendedBalance as Power, PhragmenStakedAssignment};
 use rstd::{borrow::ToOwned, prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
@@ -64,7 +65,6 @@ use system::{ensure_root, ensure_signed};
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
-use phragmen::{build_support_map, elect, equalize, ExtendedBalance, PhragmenStakedAssignment};
 
 pub type Balance = u128;
 pub type Moment = u64;
@@ -74,6 +74,16 @@ pub type EraIndex = u32;
 
 /// Counter for the number of "reward" points earned by a given validator.
 pub type Points = u32;
+
+type Ring<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
+type PositiveImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type NegativeImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+
+type Kton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
+type PositiveImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type NegativeImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+
+type MomentOf<T> = <<T as Trait>::Time as Time>::Moment;
 
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
 const MAX_NOMINATIONS: usize = 16;
@@ -259,16 +269,6 @@ pub struct SlashJournalEntry<AccountId, Power: HasCompact> {
 	own_slash: Power,
 }
 
-type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-type RingPositiveImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
-
-type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
-type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
-
-type MomentOf<T> = <<T as Trait>::Time as Time>::Moment;
-
 /// Means for interacting with a specialized version of the `session` trait.
 ///
 /// This is needed because `Staking` sets the `ValidatorIdOf` of the `session::Trait`
@@ -289,7 +289,7 @@ impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
 where
 	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: session::historical::Trait<
-		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, Power>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,
@@ -324,23 +324,23 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	/// TODO: #1377
 	/// The backward convert should be removed as the new Phragmen API returns ratio.
 	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	type CurrencyToVote: Convert<ExtendedBalance, u64> + Convert<u128, ExtendedBalance>;
+	type CurrencyToVote: Convert<Power, u64> + Convert<u128, Power>;
 
 	/// Tokens have been minted and are unused for validator-reward.
-	type RingRewardRemainder: OnUnbalanced<RingNegativeImbalanceOf<Self>>;
+	type RingRewardRemainder: OnUnbalanced<NegativeImbalanceRing<Self>>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
 	/// Handler for the unbalanced increment when rewarding a staker.
-	type RingReward: OnUnbalanced<RingPositiveImbalanceOf<Self>>;
+	type RingReward: OnUnbalanced<PositiveImbalanceRing<Self>>;
 	/// Handler for the unbalanced increment when rewarding a staker.
-	type KtonReward: OnUnbalanced<KtonPositiveImbalanceOf<Self>>;
+	type KtonReward: OnUnbalanced<PositiveImbalanceKton<Self>>;
 
 	/// Handler for the unbalanced reduction when slashing a staker.
-	type RingSlash: OnUnbalanced<RingNegativeImbalanceOf<Self>>;
+	type RingSlash: OnUnbalanced<NegativeImbalanceRing<Self>>;
 	/// Handler for the unbalanced reduction when slashing a staker.
-	type KtonSlash: OnUnbalanced<KtonNegativeImbalanceOf<Self>>;
+	type KtonSlash: OnUnbalanced<NegativeImbalanceKton<Self>>;
 
 	/// Number of sessions per era.
 	type SessionsPerEra: Get<SessionIndex>;
@@ -393,7 +393,7 @@ decl_storage! {
 		pub Bonded get(fn bonded): map T::AccountId => Option<T::AccountId>;
 
 		/// Map from all (unlocked) "controller" accounts to the info regarding the staking.
-		pub Ledger get(fn ledger): map T::AccountId => Option<StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>>;
+		pub Ledger get(fn ledger): map T::AccountId => Option<StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>>;
 
 		/// Where the reward payment should be made. Keyed by stash.
 		pub Payee get(fn payee): map T::AccountId => RewardDestination;
@@ -408,7 +408,7 @@ decl_storage! {
 		/// through validators here, but you can find them in the Session module.
 		///
 		/// This is keyed by the stash account.
-		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, ExtendedBalance>;
+		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, Power>;
 
 		/// The currently elected validator set keyed by stash account ID.
 		pub CurrentElected get(fn current_elected): Vec<T::AccountId>;
@@ -430,7 +430,7 @@ decl_storage! {
 		/// This is used to derive rewards and punishments.
 		pub SlotStake get(fn slot_stake) build(|config: &GenesisConfig<T>| {
 			config.stakers.iter().map(|&(_, _, value, _)| value.saturated_into()).min().unwrap_or_default()
-		}): ExtendedBalance;
+		}): Power;
 
 		/// True if the next session change will be a new era regardless of index.
 		pub ForceEra get(fn force_era) config(): Forcing;
@@ -441,19 +441,19 @@ decl_storage! {
 		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
 		/// Total *Ring* in pool.
-		pub RingPool get(fn ring_pool): RingBalanceOf<T>;
+		pub RingPool get(fn ring_pool): Ring<T>;
 		/// Total *Kton* in pool.
-		pub KtonPool get(fn kton_pool): KtonBalanceOf<T>;
+		pub KtonPool get(fn kton_pool): Kton<T>;
 
 		/// A mapping from still-bonded eras to the first session index of that era.
 		BondedEras: Vec<(EraIndex, SessionIndex)>;
 
 		/// All slashes that have occurred in a given era.
-		EraSlashJournal get(fn era_slash_journal): map EraIndex => Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>;
+		EraSlashJournal get(fn era_slash_journal): map EraIndex => Vec<SlashJournalEntry<T::AccountId, Power>>;
 	}
 
 	add_extra_genesis {
-		config(stakers): Vec<(T::AccountId, T::AccountId, RingBalanceOf<T>, StakerStatus<T::AccountId>)>;
+		config(stakers): Vec<(T::AccountId, T::AccountId, Ring<T>, StakerStatus<T::AccountId>)>;
 		build(|config: &GenesisConfig<T>| {
 			for &(ref stash, ref controller, ring, ref status) in &config.stakers {
 				assert!(T::Ring::free_balance(&stash) >= ring);
@@ -498,7 +498,7 @@ decl_event!(
 
 		// TODO: refactor to Balance later?
 		/// One validator (and its nominators) has been slashed by the given amount.
-		Slash(AccountId, ExtendedBalance),
+		Slash(AccountId, Power),
 		/// An old slashing report from a prior era was discarded because it could
 		/// not be processed.
 		OldSlashingReportDiscarded(SessionIndex),
@@ -555,7 +555,7 @@ decl_module! {
 		fn bond(
 			origin,
 			controller: <T::Lookup as StaticLookup>::Source,
-			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
+			value: StakingBalance<Ring<T>, Kton<T>>,
 			payee: RewardDestination,
 			promise_month: Moment
 		) {
@@ -619,7 +619,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn bond_extra(
 			origin,
-			value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
+			value: StakingBalance<Ring<T>, Kton<T>>,
 			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
@@ -655,7 +655,7 @@ decl_module! {
 		}
 
 		// TODO: doc
-		fn deposit_extra(origin, value: RingBalanceOf<T>, promise_month: Moment) {
+		fn deposit_extra(origin, value: Ring<T>, promise_month: Moment) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
 			let promise_month = promise_month.max(3).min(36);
@@ -711,7 +711,7 @@ decl_module! {
 		/// - One DB entry.
 		/// </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
-		fn unbond(origin, value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>) {
+		fn unbond(origin, value: StakingBalance<Ring<T>, Kton<T>>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?);
 			let StakingLedger {
@@ -1040,8 +1040,8 @@ impl<T: Trait> Module<T> {
 
 	// TODO: doc
 	pub fn clear_mature_deposits(
-		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
-	) -> StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment> {
+		mut ledger: StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
+	) -> StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment> {
 		let now = <timestamp::Module<T>>::now();
 		let StakingLedger {
 			active_deposit_ring,
@@ -1065,9 +1065,9 @@ impl<T: Trait> Module<T> {
 	fn bond_helper_in_ring(
 		stash: &T::AccountId,
 		controller: &T::AccountId,
-		value: RingBalanceOf<T>,
+		value: Ring<T>,
 		promise_month: Moment,
-		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
+		mut ledger: StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
 	) {
 		// if stash promise to a extra-lock
 		// there will be extra reward, kton, which
@@ -1094,8 +1094,8 @@ impl<T: Trait> Module<T> {
 	// TODO: doc
 	fn bond_helper_in_kton(
 		controller: &T::AccountId,
-		value: KtonBalanceOf<T>,
-		mut ledger: StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
+		value: Kton<T>,
+		mut ledger: StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
 	) {
 		ledger.active_kton += value;
 
@@ -1106,7 +1106,7 @@ impl<T: Trait> Module<T> {
 	fn slash_individual(
 		stash: &T::AccountId,
 		slash_ratio: Perbill,
-	) -> (RingNegativeImbalanceOf<T>, KtonNegativeImbalanceOf<T>, ExtendedBalance) {
+	) -> (NegativeImbalanceRing<T>, NegativeImbalanceKton<T>, Power) {
 		let controller = Self::bonded(stash).unwrap();
 		let mut ledger = Self::ledger(&controller).unwrap();
 
@@ -1115,29 +1115,29 @@ impl<T: Trait> Module<T> {
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
 			T::Ring::slash(stash, value_slashed.0)
 		} else {
-			(<RingNegativeImbalanceOf<T>>::zero(), Zero::zero())
+			(<NegativeImbalanceRing<T>>::zero(), Zero::zero())
 		};
 		let (kton_imbalance, _) = if !ledger.active_kton.is_zero() {
 			let slashable_kton = slash_ratio * ledger.active_kton;
 			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
 			T::Kton::slash(stash, value_slashed.1)
 		} else {
-			(<KtonNegativeImbalanceOf<T>>::zero(), Zero::zero())
+			(<NegativeImbalanceKton<T>>::zero(), Zero::zero())
 		};
 
 		(ring_imbalance, kton_imbalance, 0)
 	}
 
 	// TODO: doc
-	fn power_of(stash: &T::AccountId) -> ExtendedBalance {
+	fn power_of(stash: &T::AccountId) -> Power {
 		// power is a mixture of ring and kton
 		// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
-		fn calc_power<S: rstd::convert::TryInto<u128>>(active: S, pool: S) -> ExtendedBalance {
+		fn calc_power<S: rstd::convert::TryInto<u128>>(active: S, pool: S) -> Power {
 			const HALF_POWER_COUNT: u128 = 1_000_000_000 / 2;
 
 			Perquintill::from_rational_approximation(
-				active.saturated_into::<ExtendedBalance>(),
-				pool.saturated_into::<ExtendedBalance>().max(1),
+				active.saturated_into::<Power>(),
+				pool.saturated_into::<Power>().max(1),
 			) * HALF_POWER_COUNT
 		}
 
@@ -1153,8 +1153,8 @@ impl<T: Trait> Module<T> {
 	/// will lock the entire funds except paying for further transactions.
 	fn update_ledger(
 		controller: &T::AccountId,
-		ledger: &mut StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
-		staking_balance: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
+		ledger: &mut StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
+		staking_balance: StakingBalance<Ring<T>, Kton<T>>,
 	) {
 		match staking_balance {
 			StakingBalance::Ring(_r) => {
@@ -1191,10 +1191,10 @@ impl<T: Trait> Module<T> {
 	/// pushes an entry onto the slash journal.
 	fn slash_validator(
 		stash: &T::AccountId,
-		slash: ExtendedBalance,
-		exposure: &Exposure<T::AccountId, ExtendedBalance>,
-		journal: &mut Vec<SlashJournalEntry<T::AccountId, ExtendedBalance>>,
-	) -> (RingNegativeImbalanceOf<T>, KtonNegativeImbalanceOf<T>) {
+		slash: Power,
+		exposure: &Exposure<T::AccountId, Power>,
+		journal: &mut Vec<SlashJournalEntry<T::AccountId, Power>>,
+	) -> (NegativeImbalanceRing<T>, NegativeImbalanceKton<T>) {
 		// The amount we are actually going to slash (can't be bigger than the validator's total
 		// exposure)
 		let slash = slash.min(exposure.total);
@@ -1209,7 +1209,7 @@ impl<T: Trait> Module<T> {
 			.iter()
 			.filter(|entry| &entry.who == stash)
 			.map(|entry| entry.own_slash)
-			.fold(ExtendedBalance::zero(), |a, c| a.saturating_add(c));
+			.fold(Power::zero(), |a, c| a.saturating_add(c));
 
 		let own_remaining = exposure.own.saturating_sub(already_slashed_own);
 
@@ -1255,9 +1255,9 @@ impl<T: Trait> Module<T> {
 	// TODO: doc
 	fn slash_helper(
 		controller: &T::AccountId,
-		ledger: &mut StakingLedger<T::AccountId, RingBalanceOf<T>, KtonBalanceOf<T>, T::Moment>,
-		value: StakingBalance<RingBalanceOf<T>, KtonBalanceOf<T>>,
-	) -> (RingBalanceOf<T>, KtonBalanceOf<T>) {
+		ledger: &mut StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
+		value: StakingBalance<Ring<T>, Kton<T>>,
+	) -> (Ring<T>, Kton<T>) {
 		match value {
 			StakingBalance::Ring(r) => {
 				let StakingLedger {
@@ -1325,7 +1325,7 @@ impl<T: Trait> Module<T> {
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
 	/// to pay the right payee for the given staker account.
-	fn make_payout(stash: &T::AccountId, amount: RingBalanceOf<T>) -> Option<RingPositiveImbalanceOf<T>> {
+	fn make_payout(stash: &T::AccountId, amount: Ring<T>) -> Option<PositiveImbalanceRing<T>> {
 		let dest = Self::payee(stash);
 		match dest {
 			RewardDestination::Controller => {
@@ -1338,10 +1338,10 @@ impl<T: Trait> Module<T> {
 	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its
 	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
 	/// pre-payout cut.
-	fn reward_validator(stash: &T::AccountId, reward: RingBalanceOf<T>) -> RingPositiveImbalanceOf<T> {
+	fn reward_validator(stash: &T::AccountId, reward: Ring<T>) -> PositiveImbalanceRing<T> {
 		let off_the_table = Perbill::from_percent(Self::validators(stash).validator_payment_ratio) * reward;
 		let reward = reward - off_the_table;
-		let mut imbalance = <RingPositiveImbalanceOf<T>>::zero();
+		let mut imbalance = <PositiveImbalanceRing<T>>::zero();
 		let validator_cut = if reward.is_zero() {
 			Zero::zero()
 		} else {
@@ -1365,10 +1365,7 @@ impl<T: Trait> Module<T> {
 	/// with the exposure of the prior validator set.
 	fn new_session(
 		session_index: SessionIndex,
-	) -> Option<(
-		Vec<T::AccountId>,
-		Vec<(T::AccountId, Exposure<T::AccountId, ExtendedBalance>)>,
-	)> {
+	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
 		let era_length = session_index
 			.checked_sub(Self::current_era_start_session_index())
 			.unwrap_or(0);
@@ -1417,7 +1414,7 @@ impl<T: Trait> Module<T> {
 				(T::Cap::get() - T::Ring::total_issuance()).saturated_into::<Balance>(),
 			);
 
-			let mut total_imbalance = <RingPositiveImbalanceOf<T>>::zero();
+			let mut total_imbalance = <PositiveImbalanceRing<T>>::zero();
 			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
 				if p != 0 {
 					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
@@ -1477,7 +1474,7 @@ impl<T: Trait> Module<T> {
 	/// Select a new validator set from the assembled stakers and their role preferences.
 	///
 	/// Returns the new `SlotStake` value.
-	fn select_validators() -> (ExtendedBalance, Option<Vec<T::AccountId>>) {
+	fn select_validators() -> (Power, Option<Vec<T::AccountId>>) {
 		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = Vec::new();
 		let all_validator_candidates_iter = <Validators<T>>::enumerate();
 		let all_validators = all_validator_candidates_iter
@@ -1505,11 +1502,8 @@ impl<T: Trait> Module<T> {
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
 
-			let to_votes = |b: ExtendedBalance| {
-				<T::CurrencyToVote as Convert<ExtendedBalance, u64>>::convert(b) as ExtendedBalance
-			};
-			let to_balance =
-				|e: ExtendedBalance| <T::CurrencyToVote as Convert<ExtendedBalance, ExtendedBalance>>::convert(e);
+			let to_votes = |b: Power| <T::CurrencyToVote as Convert<Power, u64>>::convert(b) as Power;
+			let to_balance = |e: Power| <T::CurrencyToVote as Convert<Power, Power>>::convert(e);
 
 			let mut supports =
 				build_support_map::<_, _, _, T::CurrencyToVote>(&elected_stashes, &assignments, Self::power_of);
@@ -1552,7 +1546,7 @@ impl<T: Trait> Module<T> {
 			}
 
 			// Populate Stakers and figure out the minimum stake behind a slot.
-			let mut slot_stake = ExtendedBalance::max_value();
+			let mut slot_stake = Power::max_value();
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
@@ -1667,14 +1661,11 @@ impl<T: Trait> session::OnSessionEnding<T::AccountId> for Module<T> {
 	}
 }
 
-impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, ExtendedBalance>> for Module<T> {
+impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, Power>> for Module<T> {
 	fn on_session_ending(
 		_ending: SessionIndex,
 		start_session: SessionIndex,
-	) -> Option<(
-		Vec<T::AccountId>,
-		Vec<(T::AccountId, Exposure<T::AccountId, ExtendedBalance>)>,
-	)> {
+	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
 		Self::new_session(start_session - 1)
 	}
 }
@@ -1710,8 +1701,8 @@ impl<T: Trait> Convert<T::AccountId, Option<T::AccountId>> for StashOf<T> {
 /// on that account.
 pub struct ExposureOf<T>(rstd::marker::PhantomData<T>);
 
-impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, ExtendedBalance>>> for ExposureOf<T> {
-	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, ExtendedBalance>> {
+impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, Power>>> for ExposureOf<T> {
+	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, Power>> {
 		Some(<Module<T>>::stakers(&validator))
 	}
 }
@@ -1727,7 +1718,7 @@ impl<T: Trait> OnOffenceHandler<T::AccountId, session::historical::Identificatio
 where
 	T: session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: session::historical::Trait<
-		FullIdentification = Exposure<<T as system::Trait>::AccountId, ExtendedBalance>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, Power>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: session::SessionHandler<<T as system::Trait>::AccountId>,
@@ -1739,8 +1730,8 @@ where
 		offenders: &[OffenceDetails<T::AccountId, session::historical::IdentificationTuple<T>>],
 		slash_fraction: &[Perbill],
 	) {
-		let mut ring_remaining_imbalance = <RingNegativeImbalanceOf<T>>::zero();
-		let mut kton_remaining_imbalance = <KtonNegativeImbalanceOf<T>>::zero();
+		let mut ring_remaining_imbalance = <NegativeImbalanceRing<T>>::zero();
+		let mut kton_remaining_imbalance = <NegativeImbalanceKton<T>>::zero();
 		let slash_reward_fraction = SlashRewardFraction::get();
 
 		let era_now = Self::current_era();
