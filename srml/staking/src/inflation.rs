@@ -5,7 +5,7 @@ use sr_primitives::{
 };
 use substrate_primitives::U256;
 
-use crate::{KtonBalanceOf, Moment, RingBalanceOf, Trait};
+use crate::{Kton, Moment, Ring, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
 // <T: Trait + 'static>() -> RingBalanceOf<T>
@@ -13,7 +13,7 @@ pub fn compute_total_payout<T: Trait>(
 	era_duration: Moment,
 	living_time: Moment,
 	total_left: u128,
-) -> (RingBalanceOf<T>, RingBalanceOf<T>) {
+) -> (Ring<T>, Ring<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
 	const MILLISECONDS_PER_YEAR: Moment = ((36525 * 24 * 60 * 60) / 100) * 1000;
 
@@ -27,16 +27,16 @@ pub fn compute_total_payout<T: Trait>(
 
 	let payout = maximum * 1; // TODO: add treasury ratio: Perbill::from_rational_approximation(npos_token_staked, total_tokens);
 
-	let payout: RingBalanceOf<T> = <RingBalanceOf<T>>::saturated_from::<u128>(payout);
+	let payout: Ring<T> = <Ring<T>>::saturated_from::<u128>(payout);
 
-	let maximum: RingBalanceOf<T> = <RingBalanceOf<T>>::saturated_from::<u128>(maximum);
+	let maximum: Ring<T> = <Ring<T>>::saturated_from::<u128>(maximum);
 
 	(payout, maximum)
 }
 
 // consistent with the formula in smart contract in evolution land which can be found in
 // https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280
-pub fn compute_kton_return<T: Trait>(value: RingBalanceOf<T>, months: u64) -> KtonBalanceOf<T> {
+pub fn compute_kton_return<T: Trait>(value: Ring<T>, months: u64) -> Kton<T> {
 	let value = value.saturated_into::<u64>();
 	let no = U256::from(67).pow(U256::from(months));
 	let de = U256::from(66).pow(U256::from(months));
