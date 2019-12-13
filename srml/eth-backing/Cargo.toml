@@ -24,6 +24,8 @@ sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = 
 
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+
 ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std", default-features = false }
 
 hex-literal = "0.2.1"

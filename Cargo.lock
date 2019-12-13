@@ -859,6 +859,7 @@ dependencies = [
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 
 [[package]]

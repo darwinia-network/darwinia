@@ -4,13 +4,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
-use rstd::borrow::ToOwned;
 use rstd::prelude::*;
+use rstd::{borrow::ToOwned, result};
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
-use sr_primitives::AccountId32;
 use sr_primitives::RuntimeDebug;
+use sr_primitives::{
+	traits::{Convert, SaturatedConversion},
+	AccountId32,
+};
+
+use primitives::crypto::UncheckedFrom;
 
 use core::convert::TryFrom;
 
@@ -117,7 +122,7 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn redeem_ring(origin, proof_record: ActionRecord) {
+		pub fn redeem_ring(origin, proof_record: ActionRecord) { // where T::AccountId: AccountId32
 			let _relayer = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
@@ -160,13 +165,16 @@ decl_module! {
 			let amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
 			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
 
-			let darwinia_account: AccountId32 = AccountId32::try_from(raw_sub_key.as_slice()).expect("Account Parse Failed.");
+			let darwinia_account = Self::extract_account(&raw_sub_key)?;
+
+//			let darwinia_addesss = darwinia_account.to_ss58check();
 //			let mut r = T::AccountId::default();
 //			r.0.copy_from_slice(raw_sub_key.as_slice());
 
 //			let darwinia_account: AccountId32 = hex!["d7b504ddbe25a05647312daa8d0bbbafba360686241b7e193ca90f9b01f95faa"].into();
 
-// Self::Ring::issue(raw_sub_key, amount);
+			 T::Ring::deposit_into_existing(&darwinia_account, (amount.as_u128() as u64).saturated_into());
+//			T::Ring::deposit_into_existing(&darwinia_account.into(), 1.into());
 		}
 
 		pub fn redeem_kton(origin, proof_record: ActionRecord) {
@@ -183,7 +191,15 @@ decl_module! {
 	}
 }
 
-impl<T: Trait> Module<T> {
+impl<'a, T: Trait> Module<T>
+where
+	T::AccountId: rstd::convert::TryFrom<&'a [u8]>,
+{
+	fn extract_account(raw_sub_key: &'a Vec<u8>) -> result::Result<T::AccountId, &'static str> {
+		let darwinia_account = T::AccountId::try_from(&raw_sub_key[..]).map_err(|_| "Account Parse Failed.")?;
+		////		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
+		Ok(darwinia_account)
+	}
 	//	pub fn to_hex_string(bytes: Vec<u8>) -> String {
 	//		let strs: Vec<String> = bytes.iter().map(|b| format!("{:02x}", b)).collect();
 	//		strs.join("")
