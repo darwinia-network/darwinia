@@ -1,0 +1,9 @@
+{
+	"rpc-external": true,
+	"rpc-port": 23336,
+	"ws-external": true,
+	"ws-port": 23337,
+	"rpc-cors": "all",
+	"port": 23338,
+	"base-path": "/tmp/darwinia-develop/bob"
+}

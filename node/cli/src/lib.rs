@@ -43,8 +43,8 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// The Crayfish testnet.
-	CrayfishTestnet,
+	/// The IceFrog testnet.
+	IceFrogTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -55,7 +55,7 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::CrayfishTestnet => chain_spec::crayfish_testnet_config(),
+			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config(),
 		})
 	}
 
@@ -64,7 +64,7 @@ impl ChainSpec {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
-			"" => Some(ChainSpec::CrayfishTestnet),
+			"" => Some(ChainSpec::IceFrogTestnet),
 			_ => None,
 		}
 	}

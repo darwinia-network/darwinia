@@ -36,9 +36,9 @@ mod err {
 }
 
 #[allow(unused)]
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod mock;
-#[cfg(test)]
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 use codec::{Decode, Encode, HasCompact};

@@ -1,16 +1,13 @@
-//!  prototype module for bridging in ethereum poa blockcahin
+//!  prototype module for bridging in ethereum poa blockchain
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// use blake2::Blake2b;
-//use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
 use darwinia_support::LockableCurrency;
-//use merkle_mountain_range::{Hash, MerkleMountainRange};
 
 pub type Moment = u64;
 
@@ -19,8 +16,6 @@ pub trait Trait: system::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Moment>;
 }
 
-// config() require `serde = { version = "1.0.101", optional = true }`
-// tracking issue: https://github.com/rust-lang/rust/issues/27812
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
 		pub DepositPool get(deposit_pool) config(): RingBalanceOf<T>;

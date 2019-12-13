@@ -1,5 +1,3 @@
-use std::{cell::RefCell, collections::HashSet};
-
 use sr_primitives::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -11,16 +9,16 @@ use substrate_primitives::H256;
 
 use crate::*;
 
-thread_local! {
-	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
-}
-
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
 pub type Balance = u128;
 pub type BlockNumber = u64;
 pub type Moment = u64;
+
+pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
+
+pub type Kton = Module<Test>;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
@@ -75,59 +73,59 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder {
-	existential_deposit: Balance,
+	balance_factor: Balance,
+	vesting: bool,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self { existential_deposit: 0 }
+		Self {
+			balance_factor: COIN,
+			vesting: false,
+		}
 	}
 }
 
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: Balance) -> Self {
-		self.existential_deposit = existential_deposit;
+	pub fn balance_factor(mut self, balance_factor: Balance) -> Self {
+		self.balance_factor = balance_factor;
 		self
 	}
-
-	pub fn set_associated_consts(&self) {
-		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
+	pub fn vesting(mut self, vesting: bool) -> Self {
+		self.vesting = vesting;
+		self
 	}
-
 	pub fn build(self) -> runtime_io::TestExternalities {
-		self.set_associated_consts();
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		let balance_factor = if self.existential_deposit > 0 {
-			1_000 * COIN
-		} else {
-			1 * COIN
-		};
-
-		let _ = GenesisConfig::<Test> {
+		GenesisConfig::<Test> {
 			balances: vec![
-				(1, 10 * balance_factor),
-				(2, 20 * balance_factor),
-				(3, 300 * balance_factor),
-				(4, 400 * balance_factor),
-				(10, balance_factor),
-				(11, balance_factor * 1000),
-				(20, balance_factor),
-				(21, balance_factor * 2000),
-				(30, balance_factor),
-				(31, balance_factor * 2000),
-				(40, balance_factor),
-				(41, balance_factor * 2000),
-				(100, 2000 * balance_factor),
-				(101, 2000 * balance_factor),
+				(1, 10 * self.balance_factor),
+				(2, 20 * self.balance_factor),
+				(3, 300 * self.balance_factor),
+				(4, 400 * self.balance_factor),
+				(10, self.balance_factor),
+				(11, 1000 * self.balance_factor),
+				(20, self.balance_factor),
+				(21, 2000 * self.balance_factor),
+				(30, self.balance_factor),
+				(31, 2000 * self.balance_factor),
+				(40, self.balance_factor),
+				(41, 2000 * self.balance_factor),
+				(100, 2000 * self.balance_factor),
+				(101, 2000 * self.balance_factor),
 			],
-			vesting: vec![(1, 0, 4)],
+			vesting: if self.vesting {
+				vec![
+					(1, 0, 10, 5 * self.balance_factor),
+					(2, 10, 20, 0),
+					(12, 10, 20, 5 * self.balance_factor),
+				]
+			} else {
+				vec![]
+			},
 		}
-		.assimilate_storage(&mut t);
-
+		.assimilate_storage(&mut t)
+		.unwrap();
 		t.into()
 	}
 }
-
-pub type Timestamp = timestamp::Module<Test>;
-pub type System = system::Module<Test>;
-pub type Kton = Module<Test>;
