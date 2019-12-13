@@ -1,5 +1,6 @@
 use std::{cell::RefCell, collections::HashSet};
 
+use phragmen::ExtendedBalance as Power;
 use sr_primitives::{
 	testing::{Header, UintAuthorityId},
 	traits::{BlakeTwo256, Convert, IdentityLookup, OnInitialize, OpaqueKeys},
@@ -15,7 +16,6 @@ use srml_support::{
 use substrate_primitives::{crypto::key_types, H256};
 
 use crate::*;
-use phragmen::ExtendedBalance;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -171,7 +171,7 @@ impl session::Trait for Test {
 }
 
 impl session::historical::Trait for Test {
-	type FullIdentification = crate::Exposure<AccountId, ExtendedBalance>;
+	type FullIdentification = crate::Exposure<AccountId, Power>;
 	type FullIdentificationOf = crate::ExposureOf<Test>;
 }
 
