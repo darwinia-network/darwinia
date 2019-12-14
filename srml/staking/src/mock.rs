@@ -183,7 +183,7 @@ impl authorship::Trait for Test {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = 5;
+	pub const MinimumPeriod: Moment = 5;
 }
 impl timestamp::Trait for Test {
 	type Moment = u64;

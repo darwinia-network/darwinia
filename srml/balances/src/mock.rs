@@ -28,33 +28,46 @@ use support::{impl_outer_origin, parameter_types, traits::Get};
 
 use crate::*;
 
+/// The AccountId alias in this test module.
+pub type AccountId = u64;
+pub type Balance = u128;
+pub type BlockNumber = u64;
+pub type Moment = u64;
+
+pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
+
+pub type Balances = Module<Test>;
+
+pub const CALL: &<Test as system::Trait>::Call = &();
+
 impl_outer_origin! {
-	pub enum Origin for Runtime {}
+	pub enum Origin for Test {}
 }
 
 thread_local! {
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
-	static TRANSFER_FEE: RefCell<u64> = RefCell::new(0);
-	static CREATION_FEE: RefCell<u64> = RefCell::new(0);
+	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
+	static TRANSFER_FEE: RefCell<Balance> = RefCell::new(0);
+	static CREATION_FEE: RefCell<Balance> = RefCell::new(0);
 }
 
 pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-	fn get() -> u64 {
+impl Get<Balance> for ExistentialDeposit {
+	fn get() -> Balance {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
 	}
 }
 
 pub struct TransferFee;
-impl Get<u64> for TransferFee {
-	fn get() -> u64 {
+impl Get<Balance> for TransferFee {
+	fn get() -> Balance {
 		TRANSFER_FEE.with(|v| *v.borrow())
 	}
 }
 
 pub struct CreationFee;
-impl Get<u64> for CreationFee {
-	fn get() -> u64 {
+impl Get<Balance> for CreationFee {
+	fn get() -> Balance {
 		CREATION_FEE.with(|v| *v.borrow())
 	}
 }
@@ -63,8 +76,8 @@ impl Get<u64> for CreationFee {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: u32 = 1024;
+	pub const BlockHashCount: BlockNumber = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -87,8 +100,8 @@ impl system::Trait for Test {
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: u64 = 0;
-	pub const TransactionByteFee: u64 = 1;
+	pub const TransactionBaseFee: Balance = 0;
+	pub const TransactionByteFee: Balance = 1;
 }
 impl transaction_payment::Trait for Test {
 	type Currency = Module<Test>;
@@ -100,11 +113,11 @@ impl transaction_payment::Trait for Test {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = 5;
+	pub const MinimumPeriod: Moment = 5;
 }
 
 impl timestamp::Trait for Test {
-	type Moment = u64;
+	type Moment = Moment;
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
 }
@@ -122,9 +135,9 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder {
-	existential_deposit: u64,
-	transfer_fee: u64,
-	creation_fee: u64,
+	existential_deposit: Balance,
+	transfer_fee: Balance,
+	creation_fee: Balance,
 	monied: bool,
 	vesting: bool,
 }
@@ -140,16 +153,16 @@ impl Default for ExtBuilder {
 	}
 }
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
+	pub fn existential_deposit(mut self, existential_deposit: Balance) -> Self {
 		self.existential_deposit = existential_deposit;
 		self
 	}
 	#[allow(dead_code)]
-	pub fn transfer_fee(mut self, transfer_fee: u64) -> Self {
+	pub fn transfer_fee(mut self, transfer_fee: Balance) -> Self {
 		self.transfer_fee = transfer_fee;
 		self
 	}
-	pub fn creation_fee(mut self, creation_fee: u64) -> Self {
+	pub fn creation_fee(mut self, creation_fee: Balance) -> Self {
 		self.creation_fee = creation_fee;
 		self
 	}
@@ -199,13 +212,6 @@ impl ExtBuilder {
 		t.into()
 	}
 }
-
-pub type System = system::Module<Test>;
-pub type Timestamp = timestamp::Module<Test>;
-
-pub type Balances = Module<Test>;
-
-pub const CALL: &<Test as system::Trait>::Call = &();
 
 /// create a transaction info struct from weight. Handy to avoid building the whole struct.
 pub fn info_from_weight(w: Weight) -> DispatchInfo {

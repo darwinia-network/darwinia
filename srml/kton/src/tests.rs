@@ -1,4 +1,4 @@
-use srml_support::{assert_err, assert_ok, traits::Currency};
+use support::{assert_err, assert_ok, traits::Currency};
 
 use crate::{mock::*, *};
 use darwinia_support::{LockIdentifier, NormalLock, WithdrawLock, WithdrawReasons};
