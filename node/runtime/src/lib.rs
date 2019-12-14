@@ -398,6 +398,7 @@ impl eth_backing::Trait for Runtime {
 	type Ring = Balances;
 	type Kton = Kton;
 	type OnDepositRedeem = Staking;
+	type DetermineAccountId = eth_backing::AccountIdDeterminator<Runtime>;
 }
 
 construct_runtime!(

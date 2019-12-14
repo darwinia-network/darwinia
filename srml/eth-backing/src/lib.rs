@@ -1,11 +1,12 @@
+#![feature(in_band_lifetimes)]
 //!  prototype module for bridging in ethereum poa blockchain
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
-use rstd::prelude::*;
 use rstd::{borrow::ToOwned, result};
+use rstd::{fmt::Debug, marker::PhantomData, prelude::*};
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
 use system::ensure_signed;
 
@@ -29,6 +30,8 @@ use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, EthAddress, H256, U
 
 use hex_literal::hex;
 
+use hex as xhex;
+
 use rstd::vec::Vec;
 
 pub type Moment = u64;
@@ -47,6 +50,7 @@ pub trait Trait: timestamp::Trait {
 	type Ring: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
 	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
 	type OnDepositRedeem: OnDepositRedeem<Self::AccountId, Moment = Self::Moment>;
+	type DetermineAccountId: AccountIdFor<Self::AccountId>;
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -165,7 +169,9 @@ decl_module! {
 			let amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
 			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
 
-			let darwinia_account = Self::extract_account(&raw_sub_key)?;
+			let decoded_sub_key = xhex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
+
+			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
 
 //			let darwinia_addesss = darwinia_account.to_ss58check();
 //			let mut r = T::AccountId::default();
@@ -191,15 +197,27 @@ decl_module! {
 	}
 }
 
+pub trait AccountIdFor<AccountId> {
+	//	fn contract_address_for(code_hash: &CodeHash, data: &[u8], origin: &AccountId) -> AccountId;
+	fn account_id_for(raw_sub_key: &[u8]) -> result::Result<AccountId, &'static str>;
+}
+
+pub struct AccountIdDeterminator<T: Trait>(PhantomData<T>);
+impl<T: Trait> AccountIdFor<T::AccountId> for AccountIdDeterminator<T>
+where
+	T::AccountId: rstd::convert::TryFrom<&'a [u8]> + AsRef<[u8]>,
+{
+	fn account_id_for(raw_sub_key: &[u8]) -> result::Result<T::AccountId, &'static str> {
+		let darwinia_account = T::AccountId::try_from(raw_sub_key).map_err(|_| "Account Parse Failed.")?;
+		////		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
+		Ok(darwinia_account)
+	}
+}
+
 impl<'a, T: Trait> Module<T>
 where
 	T::AccountId: rstd::convert::TryFrom<&'a [u8]>,
 {
-	fn extract_account(raw_sub_key: &'a Vec<u8>) -> result::Result<T::AccountId, &'static str> {
-		let darwinia_account = T::AccountId::try_from(&raw_sub_key[..]).map_err(|_| "Account Parse Failed.")?;
-		////		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
-		Ok(darwinia_account)
-	}
 	//	pub fn to_hex_string(bytes: Vec<u8>) -> String {
 	//		let strs: Vec<String> = bytes.iter().map(|b| format!("{:02x}", b)).collect();
 	//		strs.join("")

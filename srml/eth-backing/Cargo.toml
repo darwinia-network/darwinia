@@ -30,12 +30,14 @@ ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "wit
 
 hex-literal = "0.2.1"
 
+hex = { version = "0.4", default-features = false}
+
 [features]
 default = ["std"]
 std = [
 	"codec/std",
     "serde/std",
-
+    "hex/std",
     "rstd/std",
     "support/std",
     "system/std",
