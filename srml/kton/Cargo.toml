@@ -11,7 +11,7 @@ serde = { version = "1.0.101", optional = true }
 
 # github.com
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-srml-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
@@ -30,8 +30,8 @@ std = [
 	"serde",
 
 	"rstd/std",
-	"srml-support/std",
 	"sr-primitives/std",
+	"support/std",
 	"system/std",
 	"timestamp/std",
 

@@ -344,8 +344,6 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 impl kton::Trait for Runtime {
 	type Balance = Balance;
 	type Event = Event;
-	type OnMinted = ();
-	type OnRemoval = ();
 }
 
 parameter_types! {

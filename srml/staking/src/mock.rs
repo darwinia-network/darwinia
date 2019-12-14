@@ -194,8 +194,6 @@ impl timestamp::Trait for Test {
 impl kton::Trait for Test {
 	type Balance = Balance;
 	type Event = ();
-	type OnMinted = ();
-	type OnRemoval = ();
 }
 
 parameter_types! {

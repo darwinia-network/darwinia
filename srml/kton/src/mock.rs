@@ -68,8 +68,6 @@ impl timestamp::Trait for Test {
 impl Trait for Test {
 	type Balance = Balance;
 	type Event = ();
-	type OnMinted = ();
-	type OnRemoval = ();
 }
 
 pub struct ExtBuilder {

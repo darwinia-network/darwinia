@@ -16,6 +16,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
 use codec::{Codec, Decode, Encode};
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
@@ -36,11 +41,6 @@ use support::{
 	Parameter, StorageValue,
 };
 use system::{ensure_root, ensure_signed, IsDeadAccount, OnNewAccount};
-
-#[cfg(all(feature = "std", test))]
-mod mock;
-#[cfg(all(feature = "std", test))]
-mod tests;
 
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalances::{NegativeImbalance, PositiveImbalance};

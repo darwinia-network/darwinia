@@ -361,11 +361,6 @@ where
 }
 
 pub trait Trait: timestamp::Trait + session::Trait {
-	/// The staking balances.
-	type Ring: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
-	/// The staking balances.
-	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
-
 	/// Time used for computing era duration.
 	type Time: Time;
 
@@ -376,21 +371,8 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
 	type CurrencyToVote: Convert<Power, u64> + Convert<u128, Power>;
 
-	/// Tokens have been minted and are unused for validator-reward.
-	type RingRewardRemainder: OnUnbalanced<NegativeImbalanceRing<Self>>;
-
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-
-	/// Handler for the unbalanced increment when rewarding a staker.
-	type RingReward: OnUnbalanced<PositiveImbalanceRing<Self>>;
-	/// Handler for the unbalanced increment when rewarding a staker.
-	type KtonReward: OnUnbalanced<PositiveImbalanceKton<Self>>;
-
-	/// Handler for the unbalanced reduction when slashing a staker.
-	type RingSlash: OnUnbalanced<NegativeImbalanceRing<Self>>;
-	/// Handler for the unbalanced reduction when slashing a staker.
-	type KtonSlash: OnUnbalanced<NegativeImbalanceKton<Self>>;
 
 	/// Number of sessions per era.
 	type SessionsPerEra: Get<SessionIndex>;
@@ -401,8 +383,25 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
 
-	// custom
+	/// The staking balances.
+	type Ring: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
+	/// Tokens have been minted and are unused for validator-reward.
+	type RingRewardRemainder: OnUnbalanced<NegativeImbalanceRing<Self>>;
+	/// Handler for the unbalanced reduction when slashing a staker.
+	type RingSlash: OnUnbalanced<NegativeImbalanceRing<Self>>;
+	/// Handler for the unbalanced increment when rewarding a staker.
+	type RingReward: OnUnbalanced<PositiveImbalanceRing<Self>>;
+
+	/// The staking balances.
+	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
+	/// Handler for the unbalanced reduction when slashing a staker.
+	type KtonSlash: OnUnbalanced<NegativeImbalanceKton<Self>>;
+	/// Handler for the unbalanced increment when rewarding a staker.
+	type KtonReward: OnUnbalanced<PositiveImbalanceKton<Self>>;
+
+	// TODO: doc
 	type Cap: Get<<Self::Ring as Currency<Self::AccountId>>::Balance>;
+	// TODO: doc
 	type GenesisTime: Get<MomentOf<Self>>;
 }
 

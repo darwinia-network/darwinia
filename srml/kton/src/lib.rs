@@ -1,5 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[allow(unused)]
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
 use codec::{Codec, Decode, Encode};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
@@ -12,10 +18,10 @@ use sr_primitives::{
 	weights::SimpleDispatchInfo,
 	RuntimeDebug,
 };
-use srml_support::{
+use support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
-	traits::{Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome},
+	traits::{Currency, ExistenceRequirement, Imbalance, SignedImbalance, UpdateBalanceOutcome},
 	Parameter, StorageMap, StorageValue,
 };
 use system::{ensure_root, ensure_signed};
@@ -23,13 +29,8 @@ use system::{ensure_root, ensure_signed};
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalances::{NegativeImbalance, PositiveImbalance};
 
-#[allow(unused)]
-#[cfg(all(feature = "std", test))]
-mod mock;
-#[cfg(all(feature = "std", test))]
-mod tests;
-
 pub trait Trait: timestamp::Trait {
+	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
 		+ SimpleArithmetic
@@ -40,9 +41,6 @@ pub trait Trait: timestamp::Trait {
 		+ From<Self::BlockNumber>;
 
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-
-	type OnMinted: OnUnbalanced<PositiveImbalance<Self>>;
-	type OnRemoval: OnUnbalanced<NegativeImbalance<Self>>;
 }
 
 decl_event!(
@@ -51,7 +49,7 @@ decl_event!(
         < T as Trait>::Balance,
     {
         /// Transfer succeeded (from, to, value, fees).
-        TokenTransfer(AccountId, AccountId, Balance),
+        Transfer(AccountId, AccountId, Balance),
     }
 );
 
@@ -534,7 +532,7 @@ where
 		if transactor != dest {
 			Self::set_free_balance(transactor, new_from_balance);
 			Self::set_free_balance(dest, new_to_balance);
-			Self::deposit_event(RawEvent::TokenTransfer(transactor.to_owned(), dest.to_owned(), value));
+			Self::deposit_event(RawEvent::Transfer(transactor.to_owned(), dest.to_owned(), value));
 		}
 
 		Ok(())
