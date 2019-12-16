@@ -72,7 +72,7 @@ parameter_types! {
 }
 #[cfg(not(feature = "transfer-fee"))]
 parameter_types! {
-	pub const TransferFee: Balance = 0 * MICRO;
+	pub const TransferFee: Balance = 0;
 }
 impl ring::Trait for Test {
 	type Balance = Balance;
