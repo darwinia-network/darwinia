@@ -1169,6 +1169,30 @@ impl<T: Trait> Module<T> {
 		Self::update_ledger(&controller, &mut ledger, StakingBalances::Ring(value));
 	}
 
+	fn bond_helper_in_ring_for_deposit_redeem(
+		_stash: &T::AccountId, // TODO: Not used
+		controller: &T::AccountId,
+		value: Ring<T>,
+		start: Moment,
+		promise_month: Moment,
+		mut ledger: StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
+	) {
+		ledger.active_deposit_ring += value;
+
+		// NO KTON Reward.
+
+		ledger.deposit_items.push(TimeDepositItem {
+			value,
+			start_time: T::Moment::saturated_from(start.into()),
+			expire_time: T::Moment::saturated_from(start.into())
+				+ T::Moment::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into()),
+		});
+
+		ledger.active_ring = ledger.active_ring.saturating_add(value);
+
+		Self::update_ledger(&controller, &mut ledger, StakingBalances::Ring(value));
+	}
+
 	// TODO: doc
 	fn bond_helper_in_kton(
 		controller: &T::AccountId,
@@ -1918,13 +1942,36 @@ impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
 	type Moment = T::Moment;
 
 	fn on_deposit_redeem(
-		deposit_id: u64,
 		months: u64,
 		start_at: u64,
-		_unit_interest: u64,
-		value: u128,
-		who: &T::AccountId,
-	) {
-		unimplemented!()
+		amount: u128,
+		stash: &T::AccountId,
+	) -> result::Result<(), &'static str> {
+		let controller = Self::bonded(&stash).ok_or(err::STASH_INVALID)?;
+		let ledger = Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?;
+
+		// TODO: Issue #169, checking the timestamp unit difference between Ethereum and Darwinia
+		let start = start_at * 1000;
+		let promise_month = months.min(36);
+
+		let stash_balance = T::Ring::free_balance(&stash);
+		let r = amount.saturated_into();
+
+		// TODO: Lock but no kton reward because this is a deposit redeem
+		if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
+			let extra = extra.min(r);
+
+			Self::bond_helper_in_ring_for_deposit_redeem(&stash, &controller, extra, start, promise_month, ledger);
+
+			<RingPool<T>>::mutate(|r| *r += extra);
+			// TODO: Should we deposit an different event?
+			<Module<T>>::deposit_event(RawEvent::Bond(
+				StakingBalances::Ring(extra.saturated_into()),
+				start,
+				promise_month,
+			));
+		}
+
+		Ok(())
 	}
 }

@@ -94,6 +94,7 @@ mod structs {
 }
 
 mod traits {
+	use rstd::result;
 	use srml_support::traits::Currency;
 
 	use crate::{LockIdentifier, WithdrawLock, WithdrawReasons};
@@ -133,12 +134,10 @@ mod traits {
 		type Moment;
 
 		fn on_deposit_redeem(
-			deposit_id: u64,
 			months: u64,
 			start_at: u64,
-			_unit_interest: u64,
-			value: u128,
-			who: &AccountId,
-		);
+			amount: u128,
+			stash: &AccountId,
+		) -> result::Result<(), &'static str>;
 	}
 }

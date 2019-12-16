@@ -1,31 +1,25 @@
 #![feature(in_band_lifetimes)]
-//!  prototype module for bridging in ethereum poa blockchain
+//!  prototype module for cross chain assets backing
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Decode, Encode};
+//use codec::{Decode, Encode};
 use rstd::{borrow::ToOwned, result};
-use rstd::{fmt::Debug, marker::PhantomData, prelude::*};
-use support::{
-	decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Currency, traits::OnUnbalanced,
-};
+use rstd::{marker::PhantomData, prelude::*}; // fmt::Debug,
+use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
 use system::ensure_signed;
 
-use sr_primitives::RuntimeDebug;
-use sr_primitives::{
-	traits::{Convert, SaturatedConversion, Saturating},
-	AccountId32,
-};
+use sr_primitives::traits::{SaturatedConversion, Saturating}; // Convert,
 
-use primitives::crypto::UncheckedFrom;
-
-use core::convert::TryFrom;
+//use sr_primitives::RuntimeDebug;
+//use primitives::crypto::UncheckedFrom;
+//use core::convert::TryFrom;
 
 use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
-use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, EthAddress, H256, U256};
+use sr_eth_primitives::{EthAddress, H256, U256}; // receipt::LogEntry, receipt::Receipt,
 
 //#[cfg(feature = "std")]
 //use sr_primitives::{Deserialize, Serialize};
@@ -125,7 +119,10 @@ decl_module! {
 
 			let result = eth_event.parse_log(log).expect("Parse Eth Log Error");
 
-			let amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			// TODO: div 10**18 and mul 10**9
+			let mut amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			amount = amount / U256::from(1_000_000_000u64);
+
 			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
 
 			let decoded_sub_key = hex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
@@ -146,18 +143,125 @@ decl_module! {
 
 		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
 		pub fn redeem_kton(origin, proof_record: EthReceiptProof) {
-			let _locker = ensure_signed(origin)?;
+			let _relayer = ensure_signed(origin)?;
+
+			ensure!(!<KtonProofVerified>::exists((proof_record.header_hash, proof_record.index)), "Kton for this proof has already been redeemed.");
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
+
+			// event RingBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
+			// https://ropsten.etherscan.io/tx/0x81f699c93b00ab0b7db701f87b6f6045c1e0692862fcaaf8f06755abb0536800
+			let eth_event = EthEvent {
+				name: "KtonBurndropTokens".to_owned(),
+				inputs: vec![
+					EthEventParam {name: "token".to_owned(), kind: ParamType::Address, indexed: true,},
+					EthEventParam {name: "owner".to_owned(), kind: ParamType::Address, indexed: true,},
+					EthEventParam {name: "amount".to_owned(), kind: ParamType::Uint(256), indexed: false,},
+					EthEventParam {name: "data".to_owned(), kind: ParamType::Bytes, indexed: false,}
+				],
+				anonymous: false,
+			};
+
+			let log_entry = verified_receipt.logs.iter().find(
+				|&x| x.address == Self::kton_redeem_address()
+					 && x.topics[0] == eth_event.signature()
+			).expect("Log Entry Not Found");
+
+			let log = RawLog {
+				topics: [log_entry.topics[0],log_entry.topics[1],log_entry.topics[2]].to_vec(),
+				data: log_entry.data.clone()
+			};
+
+			let result = eth_event.parse_log(log).expect("Parse Eth Log Error");
+			// TODO: div 10**18 and mul 10**9
+			let mut amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			amount = amount / U256::from(1_000_000_000u64);
+			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
+
+			let decoded_sub_key = hex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
+			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
+
+			let redeemed_amount = amount.as_u128().saturated_into();
+
+			<KtonLocked<T>>::mutate(|l| {
+				*l = l.saturating_sub(redeemed_amount);
+			});
+
+			<KtonProofVerified>::insert((proof_record.header_hash, proof_record.index), proof_record);
+
+			let redeemed_kton = T::Kton::deposit_into_existing(&darwinia_account, redeemed_amount).expect("Deposit into existing failed.");
+
+			T::KtonReward::on_unbalanced(redeemed_kton);
 		}
 
 		// https://github.com/evolutionlandorg/bank
 		// event Burndrop(uint256 indexed _depositID,  address _depositor, uint48 _months, uint48 _startAt, uint64 _unitInterest, uint128 _value, bytes _data);
 		// https://ropsten.etherscan.io/tx/0xfd2cac791bb0c0bee7c5711f17ef93401061d314f4eb84e1bc91f32b73134ca1
 		pub fn redeem_deposit(origin, proof_record: EthReceiptProof) {
-			let _redeemer = ensure_signed(origin)?;
+			let _relayer = ensure_signed(origin)?;
+
+			ensure!(!<DepositProofVerified>::exists((proof_record.header_hash, proof_record.index)), "Deposit for this proof has already been redeemed.");
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
+
+			// event RingBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
+			// https://ropsten.etherscan.io/tx/0x81f699c93b00ab0b7db701f87b6f6045c1e0692862fcaaf8f06755abb0536800
+			let eth_event = EthEvent {
+				name: "Burndrop".to_owned(),
+				inputs: vec![
+					EthEventParam {name: "_depositID".to_owned(), kind: ParamType::Uint(256), indexed: true,},
+					EthEventParam {name: "_depositor".to_owned(), kind: ParamType::Address, indexed: false,},
+					EthEventParam {name: "_months".to_owned(), kind: ParamType::Uint(48), indexed: false,},
+					EthEventParam {name: "_startAt".to_owned(), kind: ParamType::Uint(48), indexed: false,},
+					EthEventParam {name: "_unitInterest".to_owned(), kind: ParamType::Uint(64), indexed: false,},
+					EthEventParam {name: "_value".to_owned(), kind: ParamType::Uint(128), indexed: false,},
+					EthEventParam {name: "_data".to_owned(), kind: ParamType::Bytes, indexed: false,}
+				],
+				anonymous: false,
+			};
+
+			let log_entry = verified_receipt.logs.iter().find(
+				|&x| x.address == Self::deposit_redeem_address()
+					 && x.topics[0] == eth_event.signature()
+			).expect("Log Entry Not Found");
+
+			let log = RawLog {
+				topics: [log_entry.topics[0],log_entry.topics[1]].to_vec(),
+				data: log_entry.data.clone()
+			};
+
+			let result = eth_event.parse_log(log).expect("Parse Eth Log Error");
+
+			let _deposit_id : U256 = result.params[0].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			let month : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
+
+			// TODO: Check the time unit in seconds or milliseconds
+			let start_at : U256 = result.params[3].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			// TODO: div 10**18 and mul 10**9
+			let mut amount: U256 = result.params[5].value.clone().to_uint().expect("Param Convert to Int Failed.");
+			amount = amount / U256::from(1_000_000_000u64);
+			let raw_sub_key : Vec<u8> = result.params[6].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
+
+			let decoded_sub_key = hex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
+			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
+
+			let redeemed_amount = amount.as_u128().saturated_into();
+
+			<RingLocked<T>>::mutate(|l| {
+				*l = l.saturating_sub(redeemed_amount);
+			});
+
+			<DepositProofVerified>::insert((proof_record.header_hash, proof_record.index), proof_record);
+
+			let redeemed_kton = T::Ring::deposit_into_existing(&darwinia_account, redeemed_amount).expect("Deposit into existing failed.");
+
+			T::RingReward::on_unbalanced(redeemed_kton);
+
+			// TODO: check deposit_id duplication
+
+			// TODO: Ignore Unit Interest for now
+
+			T::OnDepositRedeem::on_deposit_redeem(month.saturated_into(), start_at.saturated_into(), amount.as_u128(), &darwinia_account)?;
 		}
 	}
 }

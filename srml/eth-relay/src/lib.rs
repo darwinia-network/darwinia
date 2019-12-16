@@ -1,4 +1,4 @@
-//!  prototype module for bridging in ethereum poa blockchain
+//!  prototype module for bridging in ethereum pow blockchain, including mainet and ropsten
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
