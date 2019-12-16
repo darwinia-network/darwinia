@@ -377,8 +377,10 @@ pub trait Trait: timestamp::Trait + session::Trait {
 	/// Number of sessions per era.
 	type SessionsPerEra: Get<SessionIndex>;
 
-	/// Number of seconds that staked funds must remain bonded for.
+	/// Number of `Moment` that staked funds must remain bonded for.
 	type BondingDuration: Get<Self::Moment>;
+	/// Number of eras that staked funds must remain bonded for.
+	type BondingDurationInEra: Get<EraIndex>;
 
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
@@ -573,8 +575,11 @@ decl_module! {
 		/// Number of sessions per era.
 		const SessionsPerEra: SessionIndex = T::SessionsPerEra::get();
 
-		/// Number of eras that staked funds must remain bonded for.
+		/// Number of milliseconds that staked funds must remain bonded for.
 		const BondingDuration: T::Moment = T::BondingDuration::get();
+
+		/// Number of eras that staked funds must remain bonded for.
+		const BondingDurationInEra: EraIndex = T::BondingDurationInEra::get();
 
 		fn deposit_event() = default;
 
@@ -1516,10 +1521,7 @@ impl<T: Trait> Module<T> {
 		CurrentEraStartSessionIndex::mutate(|v| {
 			*v = start_session_index;
 		});
-		let bonding_era = {
-			const BONDING_DURATION_ERA_TO_MILLISECS_RATIO: Moment = 300_000;
-			(T::BondingDuration::get().saturated_into::<Moment>() / BONDING_DURATION_ERA_TO_MILLISECS_RATIO) as EraIndex
-		};
+		let bonding_era = T::BondingDurationInEra::get();
 
 		if current_era > bonding_era {
 			let first_kept = current_era - bonding_era;

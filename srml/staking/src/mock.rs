@@ -197,6 +197,7 @@ impl kton::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDuration: Moment = 60;
+	pub const BondingDurationInEra: EraIndex = 60;
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 	pub const GenesisTime: Moment = 0;
 }
@@ -206,6 +207,7 @@ impl Trait for Test {
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	type BondingDurationInEra = BondingDurationInEra;
 	type SessionInterface = Self;
 	type Ring = Ring;
 	type RingRewardRemainder = ();

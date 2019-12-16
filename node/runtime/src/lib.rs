@@ -237,7 +237,7 @@ impl offences::Trait for Runtime {
 
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
 parameter_types! {
-	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	pub const SessionDuration: BlockNumber = SESSION_DURATION;
 }
 impl im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
@@ -365,12 +365,9 @@ impl kton::Trait for Runtime {
 }
 
 parameter_types! {
-	// Develop
-	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 1;
-	// Production
-	//	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = 6;
-	// about 14 days = 14 * 24 * 60 * 60 * 1000
-	pub const BondingDuration: Moment = 1_209_600_000;
+	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = SESSION_PER_ERA;
+	pub const BondingDuration: Moment = SESSION_PER_ERA as Moment * SESSION_DURATION as Moment * MILLISECS_PER_BLOCK;
+	pub const BondingDurationInEra: staking::EraIndex = SESSION_PER_ERA * SESSION_DURATION;
 	// decimal 9
 	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	// date in Los Angeles*: 11/19/2019, 2:33:20 AM
@@ -385,6 +382,7 @@ impl staking::Trait for Runtime {
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	type BondingDurationInEra = BondingDurationInEra;
 	type SessionInterface = Self;
 	type Ring = Balances;
 	type RingRewardRemainder = ();

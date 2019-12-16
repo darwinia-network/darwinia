@@ -73,6 +73,12 @@ pub mod time {
 	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
+
+	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	// Develop
+	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 1;
+	// Production
+	//	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 6;
 }
 
 // CRITICAL NOTE: The system module maintains two constants: a _maximum_ block weight and a _ratio_
