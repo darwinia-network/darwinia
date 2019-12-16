@@ -6,81 +6,40 @@ mod mock;
 #[cfg(all(feature = "std", test))]
 mod tests;
 
-use codec::{Codec, Decode, Encode};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
-		Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, SaturatedConversion, Saturating, StaticLookup, Zero,
 	},
 	weights::SimpleDispatchInfo,
-	RuntimeDebug,
 };
 use support::{
 	decl_event, decl_module, decl_storage,
 	dispatch::Result,
-	traits::{Currency, ExistenceRequirement, Imbalance, SignedImbalance, UpdateBalanceOutcome},
-	Parameter, StorageMap, StorageValue,
+	traits::{Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, SignedImbalance, UpdateBalanceOutcome},
+	StorageMap, StorageValue,
 };
 use system::{ensure_root, ensure_signed};
 
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalances::{NegativeImbalance, PositiveImbalance};
+use ring::{imbalances::NegativeImbalance as NegativeImbalanceRing, Balance, VestingSchedule};
 
-pub trait Trait: timestamp::Trait {
-	/// The balance of an account.
-	type Balance: Parameter
-		+ Member
-		+ SimpleArithmetic
-		+ Codec
-		+ Default
-		+ Copy
-		+ MaybeSerializeDeserialize
-		+ From<Self::BlockNumber>;
-
+pub trait Trait: ring::Trait {
+	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 }
 
 decl_event!(
     pub enum Event<T> where
-        < T as system::Trait>::AccountId,
-        < T as Trait>::Balance,
+        <T as system::Trait>::AccountId,
     {
         /// Transfer succeeded (from, to, value, fees).
-        Transfer(AccountId, AccountId, Balance),
+        Transfer(AccountId, AccountId, Balance, Balance),
     }
 );
-
-/// Struct to encode the vesting schedule of an individual account.
-#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct VestingSchedule<Balance, BlockNumber> {
-	/// Locked amount at genesis.
-	pub locked: Balance,
-	/// Amount that gets unlocked every block after `starting_block`.
-	pub per_block: Balance,
-	/// Starting block for unbondings(vesting).
-	pub starting_block: BlockNumber,
-}
-
-impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> VestingSchedule<Balance, BlockNumber> {
-	/// Amount locked at block `n`.
-	pub fn locked_at(&self, n: BlockNumber) -> Balance
-	where
-		Balance: From<BlockNumber>,
-	{
-		// Number of blocks that count toward vesting
-		// Saturating to 0 when n < starting_block
-		let vested_block_count = n.saturating_sub(self.starting_block);
-		// Return amount that is still locked in vesting
-		if let Some(x) = Balance::from(vested_block_count).checked_mul(&self.per_block) {
-			self.locked.max(x) - x
-		} else {
-			Zero::zero()
-		}
-	}
-}
 
 decl_storage! {
 	trait Store for Module<T: Trait> as Kton {
@@ -513,26 +472,39 @@ where
 		value: Self::Balance,
 		_existence_requirement: ExistenceRequirement,
 	) -> Result {
-		let new_from_balance = if let Some(b) = Self::free_balance(transactor).checked_sub(&value) {
-			b
-		} else {
-			return Err("balance too low to send value");
-		};
+		let fee = <T as ring::Trait>::TransferFee::get();
 
-		Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer.into(), new_from_balance)?;
+		let new_from_ring = <ring::FreeBalance<T>>::get(transactor)
+			.checked_sub(&fee)
+			.ok_or("Transfer Fee - NOT ENOUGH RING")?;
+		<ring::Module<T>>::ensure_can_withdraw(transactor, fee, WithdrawReason::Fee.into(), new_from_ring)?;
 
-		// NOTE: total stake being stored in the same type means that this could never overflow
-		// but better to be safe than sorry.
-		let new_to_balance = if let Some(b) = Self::free_balance(dest).checked_add(&value) {
-			b
-		} else {
-			return Err("destination balance too high to receive value");
-		};
+		let new_from_kton = Self::free_balance(transactor)
+			.checked_sub(&value)
+			.ok_or("balance too low to send value")?;
+		Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer.into(), new_from_kton)?;
+
+		let new_to_kton = Self::free_balance(dest)
+			.checked_add(&value)
+			.ok_or("destination balance too high to receive value")?;
 
 		if transactor != dest {
-			Self::set_free_balance(transactor, new_from_balance);
-			Self::set_free_balance(dest, new_to_balance);
-			Self::deposit_event(RawEvent::Transfer(transactor.to_owned(), dest.to_owned(), value));
+			if new_from_ring < <ring::Module<T> as Currency<<T as system::Trait>::AccountId>>::minimum_balance() {
+				return Err("transfer would kill account");
+			}
+
+			<ring::Module<T>>::set_free_balance(transactor, new_from_ring);
+			Self::set_free_balance(transactor, new_from_kton);
+			Self::set_free_balance(dest, new_to_kton);
+
+			<T as ring::Trait>::TransferPayment::on_unbalanced(NegativeImbalanceRing::new(fee));
+
+			Self::deposit_event(RawEvent::Transfer(
+				transactor.to_owned(),
+				dest.to_owned(),
+				value.saturated_into(),
+				fee.saturated_into(),
+			));
 		}
 
 		Ok(())

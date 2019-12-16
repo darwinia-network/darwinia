@@ -11,13 +11,14 @@ use crate::*;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-pub type Balance = u128;
 pub type BlockNumber = u64;
 pub type Moment = u64;
 
 pub type System = system::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
 
+#[cfg(feature = "transfer-fee")]
+pub type Ring = ring::Module<Test>;
 pub type Kton = Module<Test>;
 
 pub const NANO: Balance = 1;
@@ -65,8 +66,27 @@ impl timestamp::Trait for Test {
 	type MinimumPeriod = MinimumPeriod;
 }
 
-impl Trait for Test {
+#[cfg(feature = "transfer-fee")]
+parameter_types! {
+	pub const TransferFee: Balance = 1 * MICRO;
+}
+#[cfg(not(feature = "transfer-fee"))]
+parameter_types! {
+	pub const TransferFee: Balance = 0 * MICRO;
+}
+impl ring::Trait for Test {
 	type Balance = Balance;
+	type OnFreeBalanceZero = ();
+	type OnNewAccount = ();
+	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ();
+	type TransferFee = TransferFee;
+	type CreationFee = ();
+}
+
+impl Trait for Test {
 	type Event = ();
 }
 

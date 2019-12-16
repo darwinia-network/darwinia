@@ -30,7 +30,6 @@ use crate::*;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-pub type Balance = u128;
 pub type BlockNumber = u64;
 pub type Moment = u64;
 

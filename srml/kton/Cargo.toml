@@ -18,6 +18,7 @@ timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-net
 
 # darwinia
 darwinia-support = { path = "../support", default-features = false }
+ring = { package = "darwinia-balances", path = "../balances", default-features = false }
 
 [dev-dependencies]
 runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
@@ -36,4 +37,8 @@ std = [
 	"timestamp/std",
 
 	"darwinia-support/std",
+	"ring/std",
 ]
+
+# test
+transfer-fee = ["std"]

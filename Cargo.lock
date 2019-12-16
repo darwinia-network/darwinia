@@ -868,6 +868,7 @@ dependencies = [
 name = "darwinia-kton"
 version = "0.2.0"
 dependencies = [
+ "darwinia-balances 0.2.0",
  "darwinia-support 0.2.0",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
