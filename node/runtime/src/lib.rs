@@ -433,8 +433,8 @@ construct_runtime!(
 		Sudo: sudo,
 		Utility: utility::{Module, Call, Event},
 		
-		EthRelay: eth_relay::{Storage, Module, Event<T>, Call},
-		EthBacking: eth_backing::{Storage, Module, Event<T>, Call},
+		EthRelay: eth_relay::{Module, Call, Storage, Event<T>, Config},
+		EthBacking: eth_backing::{Module, Call, Storage, Event<T>, Config<T>},
 	}
 );
 

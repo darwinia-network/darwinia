@@ -53,53 +53,36 @@ pub trait Trait: timestamp::Trait {
 	type DetermineAccountId: AccountIdFor<Self::AccountId>;
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct EventTopic {
-	/// The address of the contract executing at the point of the `LOG` operation.
-	pub address: EthAddress,
-	/// The signature of the log event, matches the first topic from the topic vector, the following topic are the indexed parameters.
-	pub signature: H256,
-}
-
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
-		pub RingRedeemTopic get(ring_redeem_topic): Option<EventTopic>;
-		pub KtonRedeemTopic get(kton_redeem_topic): Option<EventTopic>;
-		pub DepositRedeemTopic get(deposit_redeem_topic): Option<EventTopic>;
+		pub RingRedeemAddress get(ring_redeem_address) build(|config: &GenesisConfig<T>| {
+//			let mut r = [0u8; 20];
+//			r.copy_from_slice(&config.ring_redeem_address_vec[..]);
+//			r.into()
+			config.ring_redeem_address_vec
+		}): EthAddress;
+		pub KtonRedeemAddress get(kton_redeem_address) build(|config: &GenesisConfig<T>| {
+//			let mut r = [0u8; 20];
+//			r.copy_from_slice(&config.kton_redeem_address_vec[..]);
+//			r.into()
+			config.kton_redeem_address_vec
+		} ): EthAddress;
+		pub DepositRedeemAddress get(deposit_redeem_address) build(|config: &GenesisConfig<T>| {
+//			let mut r = [0u8; 20];
+//			r.copy_from_slice(&config.deposit_redeem_address_vec[..]);
+//			r.into()
+			config.deposit_redeem_address_vec
+		} ): EthAddress;
 
-		pub RingLocked get(fn ring_locked): RingBalanceOf<T>;
-		pub KtonLocked get(fn kton_locked): KtonBalanceOf<T>;
+		pub RingLocked get(fn ring_locked) config(): RingBalanceOf<T>;
+		pub KtonLocked get(fn kton_locked) config(): KtonBalanceOf<T>;
 	}
 	add_extra_genesis {
-		config(genesis_ring_redeem_topic): Option<Vec<u8>>;
-		config(genesis_kton_redeem_topic): Option<Vec<u8>>;
-		config(genesis_deposit_redeem_topic): Option<Vec<u8>>;
-		build(|config| {
-			// https://github.com/evolutionlandorg/bank
-			// event Burndrop(uint256 indexed _depositID,  address _depositor, uint48 _months, uint48 _startAt, uint64 _unitInterest, uint128 _value, bytes _data);
-			// https://ropsten.etherscan.io/tx/0xfd2cac791bb0c0bee7c5711f17ef93401061d314f4eb84e1bc91f32b73134ca1
-
-			// event RingBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
-			// https://ropsten.etherscan.io/tx/0x81f699c93b00ab0b7db701f87b6f6045c1e0692862fcaaf8f06755abb0536800
-
-			// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
-			RingRedeemTopic::put(EventTopic {
-				address: EthAddress::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e")),
-				signature: H256::from(hex!("38045eaef0a21b74ff176350f18df02d9041a25d6694b5f63e9474b7b6cd6b94")),
-			});
-
-			//pub const KtonRedeemTopic : EventTopic  = EventTopic {
-			//	address: EthAddress::from_str("dbc888d701167cbfb86486c516aafbefc3a4de6e").unwrap(),
-			//	signature: H256::from(hex!(""))
-			//};
-
-			DepositRedeemTopic::put(EventTopic {
-				address: EthAddress::from(hex!("ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b")),
-				signature: H256::from(hex!("455d5fda67197daa1239477da37301be9abb7771027186e589d8c341c609d285")),
-			});
-
-		});
-	}
+		// The smallest (atomic) number of points worth considering
+		config(ring_redeem_address_vec): EthAddress;
+		config(kton_redeem_address_vec): EthAddress;
+		config(deposit_redeem_address_vec): EthAddress;
+	  }
 }
 
 decl_event! {
@@ -126,20 +109,17 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn redeem_ring(origin, proof_record: ActionRecord) { // where T::AccountId: AccountId32
+		pub fn redeem_ring(origin, proof_record: ActionRecord) {
 			let _relayer = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
 
-			let log_entry = verified_receipt.logs.iter().find(
-				|&x| x.address == EthAddress::from(hex!("dbc888d701167cbfb86486c516aafbefc3a4de6e"))
-					 && x.topics[0] == H256::from(hex!("38045eaef0a21b74ff176350f18df02d9041a25d6694b5f63e9474b7b6cd6b94"))
-			).expect("Log Entry Not Found");
-
 			// event RingBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
+			// https://ropsten.etherscan.io/tx/0x81f699c93b00ab0b7db701f87b6f6045c1e0692862fcaaf8f06755abb0536800
 			let eth_event = EthEvent {
 				name: "RingBurndropTokens".to_owned(),
-				inputs: vec![EthEventParam {
+				inputs: vec![
+				EthEventParam {
 					name: "token".to_owned(),
 					kind: ParamType::Address,
 					indexed: true,
@@ -159,6 +139,12 @@ decl_module! {
 				anonymous: false,
 			};
 
+			// H256::from(hex!("38045eaef0a21b74ff176350f18df02d9041a25d6694b5f63e9474b7b6cd6b94")
+			let log_entry = verified_receipt.logs.iter().find(
+				|&x| x.address == Self::ring_redeem_address()
+					 && x.topics[0] == eth_event.signature()
+			).expect("Log Entry Not Found");
+
 			let log = RawLog {
 				topics: [log_entry.topics[0],log_entry.topics[1],log_entry.topics[2]].to_vec(),
 				data: log_entry.data.clone()
@@ -170,25 +156,24 @@ decl_module! {
 			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
 
 			let decoded_sub_key = xhex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
-
 			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
 
-//			let darwinia_addesss = darwinia_account.to_ss58check();
-//			let mut r = T::AccountId::default();
-//			r.0.copy_from_slice(raw_sub_key.as_slice());
-
-//			let darwinia_account: AccountId32 = hex!["d7b504ddbe25a05647312daa8d0bbbafba360686241b7e193ca90f9b01f95faa"].into();
-
 			 T::Ring::deposit_into_existing(&darwinia_account, (amount.as_u128() as u64).saturated_into());
-//			T::Ring::deposit_into_existing(&darwinia_account.into(), 1.into());
+
+//			 T::RingReward::on_unbalanced(total_imbalance);
+//			 T::RingRewardRemainder::on_unbalanced(T::Ring::issue(rest));
 		}
 
+		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
 		pub fn redeem_kton(origin, proof_record: ActionRecord) {
 			let _locker = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
 		}
 
+		// https://github.com/evolutionlandorg/bank
+		// event Burndrop(uint256 indexed _depositID,  address _depositor, uint48 _months, uint48 _startAt, uint64 _unitInterest, uint128 _value, bytes _data);
+		// https://ropsten.etherscan.io/tx/0xfd2cac791bb0c0bee7c5711f17ef93401061d314f4eb84e1bc91f32b73134ca1
 		pub fn redeem_deposit(origin, proof_record: ActionRecord) {
 			let _redeemer = ensure_signed(origin)?;
 
@@ -199,27 +184,27 @@ decl_module! {
 
 pub trait AccountIdFor<AccountId> {
 	//	fn contract_address_for(code_hash: &CodeHash, data: &[u8], origin: &AccountId) -> AccountId;
-	fn account_id_for(raw_sub_key: &[u8]) -> result::Result<AccountId, &'static str>;
+	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<AccountId, &'static str>;
 }
 
 pub struct AccountIdDeterminator<T: Trait>(PhantomData<T>);
+
 impl<T: Trait> AccountIdFor<T::AccountId> for AccountIdDeterminator<T>
 where
-	T::AccountId: rstd::convert::TryFrom<&'a [u8]> + AsRef<[u8]>,
+	T::AccountId: rstd::convert::From<[u8; 32]> + AsRef<[u8]>,
 {
-	fn account_id_for(raw_sub_key: &[u8]) -> result::Result<T::AccountId, &'static str> {
-		let darwinia_account = T::AccountId::try_from(raw_sub_key).map_err(|_| "Account Parse Failed.")?;
-		////		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
+	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<T::AccountId, &'static str> {
+		if decoded_sub_key.len() != 32 {
+			return Err("Address Length - MISMATCHED");
+		}
+
+		let mut r = [0u8; 32];
+		r.copy_from_slice(&decoded_sub_key[..]);
+
+		let darwinia_account = r.into();
+
+		//		let darwinia_account = T::AccountId::try_from(raw_sub_key).map_err(|_| "Account Parse Failed.")?;
+		//		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
 		Ok(darwinia_account)
 	}
-}
-
-impl<'a, T: Trait> Module<T>
-where
-	T::AccountId: rstd::convert::TryFrom<&'a [u8]>,
-{
-	//	pub fn to_hex_string(bytes: Vec<u8>) -> String {
-	//		let strs: Vec<String> = bytes.iter().map(|b| format!("{:02x}", b)).collect();
-	//		strs.join("")
-	//	}
 }

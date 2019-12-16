@@ -38,6 +38,7 @@ std = [
     "keccak-hash/std",
     "primitive-types/std",
     "ethereum-types/std",
+    "ethereum-types/serialize",
     "impl-codec/std",
     "fixed-hash/std",
     "impl-rlp/std",

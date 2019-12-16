@@ -24,8 +24,8 @@ use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use im_online::sr25519::AuthorityId as ImOnlineId;
 use node_runtime::{
-	constants::currency::*, BalancesConfig, Block, ContractsConfig, IndicesConfig, KtonConfig, SessionConfig,
-	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
+	constants::currency::*, BalancesConfig, Block, ContractsConfig, EthBackingConfig, EthRelayConfig, IndicesConfig,
+	KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use primitives::{crypto::UncheckedInto, sr25519, Pair, Public};
 use serde::{Deserialize, Serialize};
@@ -261,6 +261,15 @@ pub fn darwinia_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
+		}),
+		eth_relay: Some(EthRelayConfig { ..Default::default() }),
+		eth_backing: Some(EthBackingConfig {
+			ring_redeem_address_vec: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			kton_redeem_address_vec: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			deposit_redeem_address_vec: hex!["ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b"].into(),
+			ring_locked: 2000000000,
+			kton_locked: 50000,
 			..Default::default()
 		}),
 	}
