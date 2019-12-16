@@ -138,10 +138,10 @@ impl indices::Trait for Runtime {
 
 parameter_types! {
 	// Develop
-	pub const TransactionBaseFee: Balance = 0;
-	pub const TransactionByteFee: Balance = 0;
+	pub const TransactionBaseFee: Balance = MICRO;
+	pub const TransactionByteFee: Balance = MICRO;
 	// setting this to zero will disable the weight fee.
-	pub const WeightFeeCoefficient: Balance = 0;
+	pub const WeightFeeCoefficient: Balance = MICRO;
 
 	// Production
 //	pub const TransactionBaseFee: Balance = 1 * MICRO;
@@ -264,15 +264,15 @@ impl finality_tracker::Trait for Runtime {
 
 parameter_types! {
 	// Develop
-	pub const ContractTransferFee: Balance = 0;
-	pub const ContractCreationFee: Balance = 0;
-	pub const ContractTransactionBaseFee: Balance = 0;
-	pub const ContractTransactionByteFee: Balance = 0;
-	pub const ContractFee: Balance = 0;
-	pub const TombstoneDeposit: Balance = 0;
-	pub const RentByteFee: Balance = 0;
-	pub const RentDepositOffset: Balance = 0;
-	pub const SurchargeReward: Balance = 0;
+	pub const ContractTransferFee: Balance = MICRO;
+	pub const ContractCreationFee: Balance = MICRO;
+	pub const ContractTransactionBaseFee: Balance = MICRO;
+	pub const ContractTransactionByteFee: Balance = MICRO;
+	pub const ContractFee: Balance = MICRO;
+	pub const TombstoneDeposit: Balance = MICRO;
+	pub const RentByteFee: Balance = MICRO;
+	pub const RentDepositOffset: Balance = MICRO;
+	pub const SurchargeReward: Balance = MICRO;
 
 	// Production
 //	pub const ContractTransferFee: Balance = 1 * MICRO;
@@ -366,8 +366,9 @@ impl kton::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: sr_staking_primitives::SessionIndex = SESSION_PER_ERA;
-	pub const BondingDuration: Moment = SESSION_PER_ERA as Moment * SESSION_DURATION as Moment * MILLISECS_PER_BLOCK;
-	pub const BondingDurationInEra: staking::EraIndex = SESSION_PER_ERA * SESSION_DURATION;
+	// about 14 days = 14 * 24 * 60 * 60 * 1000
+	pub const BondingDuration: Moment = 1_209_600_000;
+	pub const BondingDurationInEra: staking::EraIndex = 4032;
 	// decimal 9
 	pub const HardCap: Balance = 10_000_000_000 * COIN;
 	// date in Los Angeles*: 11/19/2019, 2:33:20 AM
