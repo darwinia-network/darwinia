@@ -28,9 +28,10 @@ primitives = { package = "substrate-primitives",  git = "https://github.com/darw
 
 ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std", default-features = false }
 
-hex-literal = "0.2.1"
-
 hex = { version = "0.4", default-features = false}
+
+[dev-dependencies]
+hex-literal = "0.2.1"
 
 [features]
 default = ["std"]

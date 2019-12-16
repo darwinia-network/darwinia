@@ -30,10 +30,6 @@ use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, EthAddress, H256, U
 //#[cfg(feature = "std")]
 //use sr_primitives::{Deserialize, Serialize};
 
-use hex_literal::hex;
-
-use hex as xhex;
-
 use rstd::vec::Vec;
 
 pub type Moment = u64;
@@ -132,20 +128,20 @@ decl_module! {
 			let amount : U256 = result.params[2].value.clone().to_uint().expect("Param Convert to Int Failed.");
 			let raw_sub_key : Vec<u8> = result.params[3].value.clone().to_bytes().expect("Param Convert to Bytes Failed.");
 
-			let decoded_sub_key = xhex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
+			let decoded_sub_key = hex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
 			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
 
-			let withdrawed_amount = amount.as_u128().saturated_into();
+			let redeemed_amount = amount.as_u128().saturated_into();
 
 			<RingLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(withdrawed_amount);
+				*l = l.saturating_sub(redeemed_amount);
 			});
 
 			<RingProofVerified>::insert((proof_record.header_hash, proof_record.index), proof_record);
 
-			let withdrawed_ring = T::Ring::deposit_into_existing(&darwinia_account, withdrawed_amount).expect("Deposit into existing failed.");
+			let redeemed_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_amount).expect("Deposit into existing failed.");
 
-			T::RingReward::on_unbalanced(withdrawed_ring);
+			T::RingReward::on_unbalanced(redeemed_ring);
 		}
 
 		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
