@@ -1517,8 +1517,8 @@ impl<T: Trait> Module<T> {
 			*v = start_session_index;
 		});
 		let bonding_era = {
-			const BONDING_DURATION_ERA_TO_SECS_RATIO: Moment = 300;
-			(T::BondingDuration::get().saturated_into::<Moment>() / BONDING_DURATION_ERA_TO_SECS_RATIO) as EraIndex
+			const BONDING_DURATION_ERA_TO_MILLISECS_RATIO: Moment = 300_000;
+			(T::BondingDuration::get().saturated_into::<Moment>() / BONDING_DURATION_ERA_TO_MILLISECS_RATIO) as EraIndex
 		};
 
 		if current_era > bonding_era {
