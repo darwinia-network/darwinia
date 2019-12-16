@@ -1,61 +1,40 @@
 //! Test utilities
 
-use std::cell::RefCell;
-
 use primitives::H256;
-use sr_primitives::{testing::Header, traits::IdentityLookup, Perbill};
+use sr_primitives::{testing::Header, traits::IdentityLookup, weights::Weight, Perbill};
 use support::{impl_outer_origin, parameter_types};
 
 use crate::*;
 
+/// The AccountId alias in this test module.
+pub type AccountId = u64;
+pub type BlockNumber = u64;
+
+pub type System = system::Module<Test>;
+
+pub type EthRelay = Module<Test>;
+
 impl_outer_origin! {
-	pub enum Origin for Runtime {}
+	pub enum Origin for Test {}
 }
-
-thread_local! {
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
-	static TRANSFER_FEE: RefCell<u64> = RefCell::new(0);
-	static CREATION_FEE: RefCell<u64> = RefCell::new(0);
-}
-
-//pub struct ExistentialDeposit;
-//impl Get<u64> for ExistentialDeposit {
-//	fn get() -> u64 {
-//		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-//	}
-//}
-//
-//pub struct TransferFee;
-//impl Get<u64> for TransferFee {
-//	fn get() -> u64 {
-//		TRANSFER_FEE.with(|v| *v.borrow())
-//	}
-//}
-//
-//pub struct CreationFee;
-//impl Get<u64> for CreationFee {
-//	fn get() -> u64 {
-//		CREATION_FEE.with(|v| *v.borrow())
-//	}
-//}
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct Runtime;
+pub struct Test;
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: u32 = 1024;
+	pub const BlockHashCount: BlockNumber = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl system::Trait for Runtime {
+impl system::Trait for Test {
 	type Origin = Origin;
 	type Call = ();
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
 	type Hashing = ::sr_primitives::traits::BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = ();
@@ -65,93 +44,27 @@ impl system::Trait for Runtime {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 }
-parameter_types! {
-	pub const TransactionBaseFee: u64 = 0;
-	pub const TransactionByteFee: u64 = 1;
-}
 
 parameter_types! {
 //	pub const EthMainet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
 
-impl Trait for Runtime {
+impl Trait for Test {
 	type Event = ();
 	type EthNetwork = EthRopsten;
 }
 
-parameter_types! {
-	pub const MinimumPeriod: u64 = 5;
-}
-
-pub struct ExtBuilder {
-	existential_deposit: u64,
-	transfer_fee: u64,
-	creation_fee: u64,
-	monied: bool,
-	vesting: bool,
-}
+pub struct ExtBuilder;
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			existential_deposit: 0,
-			transfer_fee: 0,
-			creation_fee: 0,
-			monied: false,
-			vesting: false,
-		}
+		Self
 	}
 }
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
-		self.existential_deposit = existential_deposit;
-		self
-	}
-	#[allow(dead_code)]
-	pub fn transfer_fee(mut self, transfer_fee: u64) -> Self {
-		self.transfer_fee = transfer_fee;
-		self
-	}
-	#[allow(dead_code)]
-	pub fn creation_fee(mut self, creation_fee: u64) -> Self {
-		self.creation_fee = creation_fee;
-		self
-	}
-	#[allow(dead_code)]
-	pub fn monied(mut self, monied: bool) -> Self {
-		self.monied = monied;
-		if self.existential_deposit == 0 {
-			self.existential_deposit = 1;
-		}
-		self
-	}
-	#[allow(dead_code)]
-	pub fn vesting(mut self, vesting: bool) -> Self {
-		self.vesting = vesting;
-		self
-	}
-	pub fn set_associated_consts(&self) {
-		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
-		TRANSFER_FEE.with(|v| *v.borrow_mut() = self.transfer_fee);
-		CREATION_FEE.with(|v| *v.borrow_mut() = self.creation_fee);
-	}
 	pub fn build(self) -> runtime_io::TestExternalities {
-		self.set_associated_consts();
-		let t = system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+		let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 		t.into()
 	}
 }
-
-pub type System = system::Module<Runtime>;
-pub type EthRelay = Module<Runtime>;
-
-//pub const CALL: &<Runtime as system::Trait>::Call = &();
-
-// create a transaction info struct from weight. Handy to avoid building the whole struct.
-//pub fn info_from_weight(w: Weight) -> DispatchInfo {
-//	DispatchInfo {
-//		weight: w,
-//		..Default::default()
-//	}
-//}

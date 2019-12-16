@@ -1,5 +1,4 @@
 //! Tests for the module.
-
 use std::str::FromStr;
 
 use hex_literal::hex;
@@ -15,8 +14,6 @@ use crate::{mock::*, *};
 #[test]
 fn verify_receipt_proof() {
 	ExtBuilder::default()
-		.existential_deposit(256 * 1)
-		.monied(true)
 		.build()
 		.execute_with(|| {
 			System::inc_account_nonce(&2);
@@ -77,7 +74,7 @@ fn verify_receipt_proof() {
 
 #[test]
 fn relay_header() {
-	ExtBuilder::default().monied(true).build().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		// 6760579
 		let mixh1 = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
 		let nonce1 = H64::from(hex!("339140bca72c49cd"));

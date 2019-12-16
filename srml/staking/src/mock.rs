@@ -137,22 +137,6 @@ impl system::Trait for Test {
 }
 
 parameter_types! {
-	pub const TransferFee: Balance = 0;
-	pub const CreationFee: Balance = 0;
-}
-impl balances::Trait for Test {
-	type Balance = Balance;
-	type OnFreeBalanceZero = Staking;
-	type OnNewAccount = ();
-	type TransferPayment = ();
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
-}
-
-parameter_types! {
 	pub const Period: BlockNumber = 1;
 	pub const Offset: BlockNumber = 0;
 	pub const UncleGenerations: u64 = 0;
@@ -183,7 +167,7 @@ impl authorship::Trait for Test {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = 5;
+	pub const MinimumPeriod: Moment = 5;
 }
 impl timestamp::Trait for Test {
 	type Moment = u64;
@@ -191,33 +175,47 @@ impl timestamp::Trait for Test {
 	type MinimumPeriod = MinimumPeriod;
 }
 
-impl kton::Trait for Test {
+parameter_types! {
+	pub const TransferFee: Balance = 0;
+	pub const CreationFee: Balance = 0;
+}
+impl balances::Trait for Test {
 	type Balance = Balance;
+	type OnFreeBalanceZero = Staking;
+	type OnNewAccount = ();
+	type TransferPayment = ();
+	type DustRemoval = ();
 	type Event = ();
-	type OnMinted = ();
-	type OnRemoval = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+	type CreationFee = CreationFee;
+}
+impl kton::Trait for Test {
+	type Event = ();
 }
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDuration: Moment = 60;
+	pub const BondingDurationInEra: EraIndex = 60;
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 	pub const GenesisTime: Moment = 0;
 }
 impl Trait for Test {
-	type Ring = Ring;
-	type Kton = Kton;
 	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type RingRewardRemainder = ();
 	type Event = ();
-	type RingReward = ();
-	type KtonReward = ();
-	type RingSlash = ();
-	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
+	type BondingDurationInEra = BondingDurationInEra;
 	type SessionInterface = Self;
+	type Ring = Ring;
+	type RingRewardRemainder = ();
+	type RingSlash = ();
+	type RingReward = ();
+	type Kton = Kton;
+	type KtonSlash = ();
+	type KtonReward = ();
 
 	type Cap = CAP;
 	type GenesisTime = GenesisTime;
@@ -433,14 +431,14 @@ pub fn bond_validator(acc: u64, val: Balance) {
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
 		acc,
-		StakingBalance::Ring(val),
+		StakingBalances::Ring(val),
 		RewardDestination::Controller,
 		0,
 	));
 	assert_ok!(Staking::validate(
 		Origin::signed(acc),
 		ValidatorPrefs {
-			node_name: "StakingTest".as_bytes().to_vec(),
+			node_name: "Staking Test".into(),
 			..Default::default()
 		}
 	));
@@ -453,7 +451,7 @@ pub fn bond_nominator(acc: u64, val: Balance, target: Vec<u64>) {
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
 		acc,
-		StakingBalance::Ring(val),
+		StakingBalances::Ring(val),
 		RewardDestination::Controller,
 		0,
 	));

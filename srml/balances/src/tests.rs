@@ -43,7 +43,7 @@ fn basic_locking_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 9,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -66,7 +66,7 @@ fn partial_locking_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 5,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -85,8 +85,8 @@ fn lock_removal_should_work() {
 				ID_1,
 				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(),
-					until: u64::max_value(),
+					amount: Balance::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -106,8 +106,8 @@ fn lock_replacement_should_work() {
 				ID_1,
 				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(),
-					until: u64::max_value(),
+					amount: Balance::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -116,7 +116,7 @@ fn lock_replacement_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 5,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -136,7 +136,7 @@ fn double_locking_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 5,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -145,7 +145,7 @@ fn double_locking_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 5,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -164,7 +164,7 @@ fn combination_locking_should_work() {
 				ID_1,
 				&1,
 				WithdrawLock::Normal(NormalLock {
-					amount: u64::max_value(),
+					amount: Balance::max_value(),
 					until: 0,
 				}),
 				WithdrawReasons::all(),
@@ -174,7 +174,7 @@ fn combination_locking_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 0,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReasons::all(),
 			);
@@ -201,7 +201,7 @@ fn combination_locking_should_work() {
 // 				&1,
 // 				WithdrawLock::Normal(NormalLock {
 // 					amount: 5,
-// 					until: u64::max_value(),
+// 					until: Moment::max_value(),
 // 				}),
 // 				WithdrawReasons::all()
 // 			);
@@ -224,7 +224,7 @@ fn lock_reasons_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 10,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReason::Transfer.into(),
 			);
@@ -248,7 +248,7 @@ fn lock_reasons_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 10,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReason::Reserve.into(),
 			);
@@ -271,7 +271,7 @@ fn lock_reasons_should_work() {
 				&1,
 				WithdrawLock::Normal(NormalLock {
 					amount: 10,
-					until: u64::max_value(),
+					until: Moment::max_value(),
 				}),
 				WithdrawReason::TransactionPayment.into(),
 			);
@@ -324,7 +324,7 @@ fn lock_block_number_should_work() {
 // 				&1,
 // 				WithdrawLock::Normal(NormalLock {
 // 					amount: 10,
-// 					until: u64::max_value(),
+// 					until: Moment::max_value(),
 // 				}),
 // 				WithdrawReasons::all()
 // 			);
@@ -622,15 +622,15 @@ fn transferring_incomplete_reserved_balance_should_work() {
 #[test]
 fn transferring_too_high_value_should_not_panic() {
 	ExtBuilder::default().build().execute_with(|| {
-		<FreeBalance<Test>>::insert(1, u64::max_value());
+		<FreeBalance<Test>>::insert(1, Balance::max_value());
 		<FreeBalance<Test>>::insert(2, 1);
 
 		assert_err!(
-			Balances::transfer(Some(1).into(), 2, u64::max_value()),
+			Balances::transfer(Some(1).into(), 2, Balance::max_value()),
 			"destination balance too high to receive value",
 		);
 
-		assert_eq!(Balances::free_balance(&1), u64::max_value());
+		assert_eq!(Balances::free_balance(&1), Balance::max_value());
 		assert_eq!(Balances::free_balance(&2), 1);
 	});
 }
@@ -689,7 +689,7 @@ fn account_removal_on_free_too_low() {
 fn transfer_overflow_isnt_exploitable() {
 	ExtBuilder::default().creation_fee(50).build().execute_with(|| {
 		// Craft a value that will overflow if summed with `creation_fee`.
-		let evil_value = u64::max_value() - 49;
+		let evil_value = Balance::max_value() - 49;
 
 		assert_err!(
 			Balances::transfer(Some(1).into(), 5, evil_value),
