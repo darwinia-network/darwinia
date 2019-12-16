@@ -575,7 +575,7 @@ decl_module! {
 		/// Number of sessions per era.
 		const SessionsPerEra: SessionIndex = T::SessionsPerEra::get();
 
-		/// Number of milliseconds that staked funds must remain bonded for.
+		/// Number of `Moment` that staked funds must remain bonded for.
 		const BondingDuration: T::Moment = T::BondingDuration::get();
 
 		/// Number of eras that staked funds must remain bonded for.
