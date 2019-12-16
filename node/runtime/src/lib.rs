@@ -137,27 +137,18 @@ impl indices::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * COIN;
-	pub const TransferFee: Balance = 1 * MICRO;
-	pub const CreationFee: Balance = 1 * MICRO;
-}
-impl balances::Trait for Runtime {
-	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
-	type OnNewAccount = Indices;
-	type TransferPayment = ();
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
-}
-
-parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * MICRO;
-	pub const TransactionByteFee: Balance = 10 * MICRO;
+	// Develop
+	pub const TransactionBaseFee: Balance = 0;
+	pub const TransactionByteFee: Balance = 0;
 	// setting this to zero will disable the weight fee.
-	pub const WeightFeeCoefficient: Balance = 1_000;
+	pub const WeightFeeCoefficient: Balance = 0;
+
+	// Production
+//	pub const TransactionBaseFee: Balance = 1 * MICRO;
+//	pub const TransactionByteFee: Balance = 10 * MICRO;
+//	// setting this to zero will disable the weight fee.
+//	pub const WeightFeeCoefficient: Balance = 1 * MICRO;
+
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perbill = Perbill::from_percent(25);
 }
@@ -272,15 +263,27 @@ impl finality_tracker::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ContractTransferFee: Balance = 1 * MICRO;
-	pub const ContractCreationFee: Balance = 1 * MICRO;
-	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
-	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
-	pub const ContractFee: Balance = 1 * MICRO;
-	pub const TombstoneDeposit: Balance = 1 * COIN;
-	pub const RentByteFee: Balance = 1 * COIN;
-	pub const RentDepositOffset: Balance = 1000 * COIN;
-	pub const SurchargeReward: Balance = 150 * COIN;
+	// Develop
+	pub const ContractTransferFee: Balance = 0;
+	pub const ContractCreationFee: Balance = 0;
+	pub const ContractTransactionBaseFee: Balance = 0;
+	pub const ContractTransactionByteFee: Balance = 0;
+	pub const ContractFee: Balance = 0;
+	pub const TombstoneDeposit: Balance = 0;
+	pub const RentByteFee: Balance = 0;
+	pub const RentDepositOffset: Balance = 0;
+	pub const SurchargeReward: Balance = 0;
+
+	// Production
+//	pub const ContractTransferFee: Balance = 1 * MICRO;
+//	pub const ContractCreationFee: Balance = 1 * MICRO;
+//	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
+//	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
+//	pub const ContractFee: Balance = 1 * MICRO;
+//	pub const TombstoneDeposit: Balance = 1 * COIN;
+//	pub const RentByteFee: Balance = 1 * COIN;
+//	pub const RentDepositOffset: Balance = 1000 * COIN;
+//	pub const SurchargeReward: Balance = 150 * COIN;
 }
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
@@ -341,8 +344,23 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 	}
 }
 
-impl kton::Trait for Runtime {
+parameter_types! {
+	pub const ExistentialDeposit: Balance = 1 * COIN;
+	pub const TransferFee: Balance = 1 * MICRO;
+	pub const CreationFee: Balance = 1 * MICRO;
+}
+impl balances::Trait for Runtime {
 	type Balance = Balance;
+	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnNewAccount = Indices;
+	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+	type CreationFee = CreationFee;
+}
+impl kton::Trait for Runtime {
 	type Event = Event;
 }
 
@@ -362,19 +380,19 @@ parameter_types! {
 	pub const GenesisTime: Moment = 1_574_156_000_000;
 }
 impl staking::Trait for Runtime {
-	type Ring = Balances;
-	type Kton = Kton;
 	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type RingRewardRemainder = ();
 	type Event = Event;
-	type RingReward = ();
-	type KtonReward = ();
-	type RingSlash = ();
-	type KtonSlash = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type SessionInterface = Self;
+	type Ring = Balances;
+	type RingRewardRemainder = ();
+	type RingSlash = ();
+	type RingReward = ();
+	type Kton = Kton;
+	type KtonSlash = ();
+	type KtonReward = ();
 
 	type Cap = HardCap;
 	type GenesisTime = GenesisTime;
