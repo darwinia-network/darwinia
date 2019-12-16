@@ -95,7 +95,7 @@
 		"amount": "Compact<Power>",
 		"own_slash": "Compact<Power>"
 	},
-	"StakingBalance": {
+	"StakingBalances": {
 		"_enum": {
 			"Ring": "Balance",
 			"Kton": "Balance"

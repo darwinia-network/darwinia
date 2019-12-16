@@ -225,9 +225,9 @@ impl Default for ValidatorPrefs {
 	}
 }
 
-/// To unify *Ring* and *Kton* balance.
+/// To unify *Ring* and *Kton* balances.
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub enum StakingBalance<Ring, Kton>
+pub enum StakingBalances<Ring, Kton>
 where
 	Ring: HasCompact,
 	Kton: HasCompact,
@@ -236,13 +236,13 @@ where
 	Kton(Kton),
 }
 
-impl<Ring, Kton> Default for StakingBalance<Ring, Kton>
+impl<Ring, Kton> Default for StakingBalances<Ring, Kton>
 where
 	Ring: Default + HasCompact,
 	Kton: Default + HasCompact,
 {
 	fn default() -> Self {
-		StakingBalance::Ring(Default::default())
+		StakingBalances::Ring(Default::default())
 	}
 }
 
@@ -509,7 +509,7 @@ decl_storage! {
 				let _ = <Module<T>>::bond(
 					T::Origin::from(Some(stash.clone()).into()),
 					T::Lookup::unlookup(controller.clone()),
-					StakingBalance::Ring(ring),
+					StakingBalances::Ring(ring),
 					RewardDestination::Stash,
 					0,
 				);
@@ -557,11 +557,11 @@ decl_event!(
 	    
 	    /// Bond succeed.
 	    /// `amount`, `now`, `duration` in month
-	    Bond(Balance, Moment, Moment),
+	    Bond(StakingBalances<Balance, Balance>, Moment, Moment),
 	    
 	    /// Unbond succeed.
 	    /// `amount`, `now`
-		Unbond(Balance, Moment),
+		Unbond(StakingBalances<Balance, Balance>, Moment),
 	    
 	    // Develop
 		//	    Print(u128),
@@ -604,7 +604,7 @@ decl_module! {
 		fn bond(
 			origin,
 			controller: <T::Lookup as StaticLookup>::Source,
-			value: StakingBalance<Ring<T>, Kton<T>>,
+			value: StakingBalances<Ring<T>, Kton<T>>,
 			payee: RewardDestination,
 			promise_month: Moment
 		) {
@@ -623,32 +623,37 @@ decl_module! {
 				stash: stash.clone(),
 				..Default::default()
 			};
-			let bond_amount;
 			let now = <timestamp::Module<T>>::now().saturated_into::<Moment>();
 			let promise_month = promise_month.min(36);
 
 			match value {
-				StakingBalance::Ring(r) => {
+				StakingBalances::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
 					let value = r.min(stash_balance);
-					bond_amount = value.saturated_into();
 
 					Self::bond_helper_in_ring(&stash, &controller, value, promise_month, ledger);
 
 					<RingPool<T>>::mutate(|r| *r += value);
+					<Module<T>>::deposit_event(RawEvent::Bond(
+						StakingBalances::Ring(value.saturated_into()),
+						now,
+						promise_month,
+					));
 				},
-				StakingBalance::Kton(k) => {
+				StakingBalances::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
 					let value = k.min(stash_balance);
-					bond_amount = value.saturated_into();
 
 					Self::bond_helper_in_kton(&controller, value, ledger);
 
 					<KtonPool<T>>::mutate(|k| *k += value);
+					<Module<T>>::deposit_event(RawEvent::Bond(
+						StakingBalances::Kton(value.saturated_into()),
+						now,
+						promise_month,
+					));
 				},
 			}
-
-			<Module<T>>::deposit_event(RawEvent::Bond(bond_amount, now, promise_month));
 		}
 
 		/// Add some extra amount that have appeared in the stash `free_balance` into the balance up
@@ -668,7 +673,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn bond_extra(
 			origin,
-			value: StakingBalance<Ring<T>, Kton<T>>,
+			value: StakingBalances<Ring<T>, Kton<T>>,
 			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
@@ -678,7 +683,7 @@ decl_module! {
 			let promise_month = promise_month.min(36);
 
 			match value {
-				 StakingBalance::Ring(r) => {
+				 StakingBalances::Ring(r) => {
 					let stash_balance = T::Ring::free_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
 						let extra = extra.min(r);
@@ -686,10 +691,14 @@ decl_module! {
 						Self::bond_helper_in_ring(&stash, &controller, extra, promise_month, ledger);
 
 						<RingPool<T>>::mutate(|r| *r += extra);
-						<Module<T>>::deposit_event(RawEvent::Bond(extra.saturated_into(), now, promise_month));
+						<Module<T>>::deposit_event(RawEvent::Bond(
+							StakingBalances::Ring(extra.saturated_into()),
+							now,
+							promise_month,
+						));
 					}
 				},
-				StakingBalance::Kton(k) => {
+				StakingBalances::Kton(k) => {
 					let stash_balance = T::Kton::free_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_kton) {
 						let extra = extra.min(k);
@@ -697,7 +706,11 @@ decl_module! {
 						Self::bond_helper_in_kton(&controller, extra, ledger);
 
 						<KtonPool<T>>::mutate(|k| *k += extra);
-						<Module<T>>::deposit_event(RawEvent::Bond(extra.saturated_into(), now, promise_month));
+						<Module<T>>::deposit_event(RawEvent::Bond(
+							StakingBalances::Kton(extra.saturated_into()),
+							now,
+							promise_month,
+						));
 					}
 				},
 			}
@@ -733,7 +746,11 @@ decl_module! {
 			});
 
 			<Ledger<T>>::insert(&controller, ledger);
-			<Module<T>>::deposit_event(RawEvent::Bond(value.saturated_into(), now.saturated_into::<Moment>(), promise_month));
+			<Module<T>>::deposit_event(RawEvent::Bond(
+				StakingBalances::Ring(value.saturated_into()),
+				now.saturated_into::<Moment>(),
+				promise_month,
+			));
 		}
 
 		/// for normal_ring or normal_kton, follow the original substrate pattern
@@ -760,7 +777,7 @@ decl_module! {
 		/// - One DB entry.
 		/// </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
-		fn unbond(origin, value: StakingBalance<Ring<T>, Kton<T>>) {
+		fn unbond(origin, value: StakingBalances<Ring<T>, Kton<T>>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(err::CONTROLLER_INVALID)?);
 			let StakingLedger {
@@ -788,7 +805,7 @@ decl_module! {
 			);
 
 			match value {
-				StakingBalance::Ring(r) => {
+				StakingBalances::Ring(r) => {
 					// only active normal ring can be unbond
 					// active_ring = active_normal_ring + active_deposit_ring
 					let active_normal_ring = *active_ring - *active_deposit_ring;
@@ -804,10 +821,13 @@ decl_module! {
 						Self::update_ledger(&controller, &mut ledger, value);
 
 						<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
-						<Module<T>>::deposit_event(RawEvent::Unbond(available_unbond_ring.saturated_into(), now.saturated_into::<Moment>()));
+						<Module<T>>::deposit_event(RawEvent::Unbond(
+							StakingBalances::Ring(available_unbond_ring.saturated_into()),
+							now.saturated_into::<Moment>(),
+						));
 					}
 				},
-				StakingBalance::Kton(k) => {
+				StakingBalances::Kton(k) => {
 					let unbond_kton = k.min(*active_kton);
 
 					if !unbond_kton.is_zero() {
@@ -820,7 +840,10 @@ decl_module! {
 						Self::update_ledger(&controller, &mut ledger, value);
 
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
-						<Module<T>>::deposit_event(RawEvent::Unbond(unbond_kton.saturated_into(), now.saturated_into::<Moment>()));
+						<Module<T>>::deposit_event(RawEvent::Unbond(
+							StakingBalances::Kton(unbond_kton.saturated_into()),
+							now.saturated_into::<Moment>(),
+						));
 					}
 				},
 			}
@@ -1137,7 +1160,7 @@ impl<T: Trait> Module<T> {
 		}
 		ledger.active_ring = ledger.active_ring.saturating_add(value);
 
-		Self::update_ledger(&controller, &mut ledger, StakingBalance::Ring(value));
+		Self::update_ledger(&controller, &mut ledger, StakingBalances::Ring(value));
 	}
 
 	// TODO: doc
@@ -1148,7 +1171,7 @@ impl<T: Trait> Module<T> {
 	) {
 		ledger.active_kton += value;
 
-		Self::update_ledger(&controller, &mut ledger, StakingBalance::Kton(value));
+		Self::update_ledger(&controller, &mut ledger, StakingBalances::Kton(value));
 	}
 
 	// TODO: there is reserve balance in Balance.Slash, we assuming it is zero for now.
@@ -1161,14 +1184,14 @@ impl<T: Trait> Module<T> {
 
 		let (ring_imbalance, _) = if !ledger.active_ring.is_zero() {
 			let slashable_ring = slash_ratio * ledger.active_ring;
-			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Ring(slashable_ring));
+			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalances::Ring(slashable_ring));
 			T::Ring::slash(stash, value_slashed.0)
 		} else {
 			(<NegativeImbalanceRing<T>>::zero(), Zero::zero())
 		};
 		let (kton_imbalance, _) = if !ledger.active_kton.is_zero() {
 			let slashable_kton = slash_ratio * ledger.active_kton;
-			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalance::Kton(slashable_kton));
+			let value_slashed = Self::slash_helper(&controller, &mut ledger, StakingBalances::Kton(slashable_kton));
 			T::Kton::slash(stash, value_slashed.1)
 		} else {
 			(<NegativeImbalanceKton<T>>::zero(), Zero::zero())
@@ -1203,10 +1226,10 @@ impl<T: Trait> Module<T> {
 	fn update_ledger(
 		controller: &T::AccountId,
 		ledger: &mut StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
-		staking_balance: StakingBalance<Ring<T>, Kton<T>>,
+		staking_balance: StakingBalances<Ring<T>, Kton<T>>,
 	) {
 		match staking_balance {
-			StakingBalance::Ring(_r) => {
+			StakingBalances::Ring(_r) => {
 				ledger.ring_staking_lock.staking_amount = ledger.active_ring;
 
 				T::Ring::set_lock(
@@ -1216,7 +1239,7 @@ impl<T: Trait> Module<T> {
 					WithdrawReasons::all(),
 				);
 			}
-			StakingBalance::Kton(_k) => {
+			StakingBalances::Kton(_k) => {
 				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
 
 				T::Kton::set_lock(
@@ -1305,10 +1328,10 @@ impl<T: Trait> Module<T> {
 	fn slash_helper(
 		controller: &T::AccountId,
 		ledger: &mut StakingLedger<T::AccountId, Ring<T>, Kton<T>, T::Moment>,
-		value: StakingBalance<Ring<T>, Kton<T>>,
+		value: StakingBalances<Ring<T>, Kton<T>>,
 	) -> (Ring<T>, Kton<T>) {
 		match value {
-			StakingBalance::Ring(r) => {
+			StakingBalances::Ring(r) => {
 				let StakingLedger {
 					active_ring,
 					active_deposit_ring,
@@ -1354,10 +1377,10 @@ impl<T: Trait> Module<T> {
 					});
 				}
 
-				Self::update_ledger(controller, ledger, StakingBalance::Ring(0.into()));
+				Self::update_ledger(controller, ledger, StakingBalances::Ring(0.into()));
 				(total_value, 0.into())
 			}
-			StakingBalance::Kton(k) => {
+			StakingBalances::Kton(k) => {
 				// check one more time
 				// TODO: may be removed later
 				let active_value = k.min(ledger.active_kton);
@@ -1366,7 +1389,7 @@ impl<T: Trait> Module<T> {
 
 				<KtonPool<T>>::mutate(|k| *k -= active_value);
 
-				Self::update_ledger(controller, ledger, StakingBalance::Kton(0.into()));
+				Self::update_ledger(controller, ledger, StakingBalances::Kton(0.into()));
 				(0.into(), active_value)
 			}
 		}

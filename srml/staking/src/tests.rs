@@ -39,13 +39,13 @@ macro_rules! gen_paired_account {
 		assert_ok!(Staking::bond(
 			Origin::signed($stash),
 			$controller,
-			StakingBalance::Ring(50 * COIN),
+			StakingBalances::Ring(50 * COIN),
 			RewardDestination::Stash,
 			$how_long,
 			));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed($stash),
-			StakingBalance::Kton(50 * COIN),
+			StakingBalances::Kton(50 * COIN),
 			$how_long
 			));
 	};
@@ -60,13 +60,13 @@ macro_rules! gen_paired_account {
 		assert_ok!(Staking::bond(
 			Origin::signed($stash),
 			$controller,
-			StakingBalance::Ring(50 * COIN),
+			StakingBalances::Ring(50 * COIN),
 			RewardDestination::Stash,
 			$how_long,
 			));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed($stash),
-			StakingBalance::Kton(50 * COIN),
+			StakingBalances::Kton(50 * COIN),
 			$how_long,
 			));
 	};
@@ -455,7 +455,7 @@ fn staking_should_work() {
 			// --- Block 1:
 			start_session(1);
 			// Add a new candidate for being a validator. account 3 controlled by 4.
-			assert_ok!(Staking::bond(Origin::signed(3), 4, StakingBalance::Ring(1500), RewardDestination::Controller, 0));
+			assert_ok!(Staking::bond(Origin::signed(3), 4, StakingBalances::Ring(1500), RewardDestination::Controller, 0));
 			assert_ok!(Staking::validate(
 				Origin::signed(4),
 				ValidatorPrefs {
@@ -863,7 +863,7 @@ fn double_staking_should_fail() {
 		assert_ok!(Staking::bond(
 			Origin::signed(1),
 			2,
-			StakingBalance::Ring(arbitrary_value),
+			StakingBalances::Ring(arbitrary_value),
 			RewardDestination::default(),
 			0,
 		));
@@ -872,7 +872,7 @@ fn double_staking_should_fail() {
 			Staking::bond(
 				Origin::signed(1),
 				4,
-				StakingBalance::Ring(arbitrary_value),
+				StakingBalances::Ring(arbitrary_value),
 				RewardDestination::default(),
 				0,
 			),
@@ -895,7 +895,7 @@ fn double_controlling_should_fail() {
 		assert_ok!(Staking::bond(
 			Origin::signed(1),
 			2,
-			StakingBalance::Ring(arbitrary_value),
+			StakingBalances::Ring(arbitrary_value),
 			RewardDestination::default(),
 			0,
 		));
@@ -904,7 +904,7 @@ fn double_controlling_should_fail() {
 			Staking::bond(
 				Origin::signed(3),
 				2,
-				StakingBalance::Ring(arbitrary_value),
+				StakingBalances::Ring(arbitrary_value),
 				RewardDestination::default(),
 				0,
 			),
@@ -1270,7 +1270,7 @@ fn bond_extra_works() {
 		let _ = Ring::make_free_balance_be(&11, 1000000);
 
 		// Call the bond_extra function from controller, add only 100
-		assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalance::Ring(100), 12));
+		assert_ok!(Staking::bond_extra(Origin::signed(11), StakingBalances::Ring(100), 12));
 		// There should be 100 more `total` and `active` in the ledger
 		assert_eq!(
 			Staking::ledger(&10).unwrap(),
@@ -1295,7 +1295,7 @@ fn bond_extra_works() {
 		// Call the bond_extra function with a large number, should handle it
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(11),
-			StakingBalance::Ring(Balance::max_value()),
+			StakingBalances::Ring(Balance::max_value()),
 			0,
 		));
 		// The full amount of the funds should now be in the total and active
@@ -1482,17 +1482,17 @@ fn too_many_unbond_calls_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Locked at Moment(60).
 		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
-			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Ring(1)));
 		}
 
 		Timestamp::set_timestamp(1);
 
 		// Locked at MomentT(61).
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Ring(1)));
 
 		// Can't do more.
 		assert_noop!(
-			Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)),
+			Staking::unbond(Origin::signed(10), StakingBalances::Ring(1)),
 			err::UNLOCK_CHUNKS_REACH_MAX,
 		);
 
@@ -1500,7 +1500,7 @@ fn too_many_unbond_calls_should_not_work() {
 		Timestamp::set_timestamp(BondingDuration::get());
 
 		// Can add again.
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(1)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Ring(1)));
 		assert_eq!(Staking::ledger(&10).unwrap().ring_staking_lock.unbondings.len(), 2);
 	})
 }
@@ -1700,7 +1700,7 @@ fn switching_roles() {
 		assert_ok!(Staking::bond(
 			Origin::signed(1),
 			2,
-			StakingBalance::Ring(2000),
+			StakingBalances::Ring(2000),
 			RewardDestination::Controller,
 			0,
 		));
@@ -1709,7 +1709,7 @@ fn switching_roles() {
 		assert_ok!(Staking::bond(
 			Origin::signed(3),
 			4,
-			StakingBalance::Ring(500),
+			StakingBalances::Ring(500),
 			RewardDestination::Controller,
 			0,
 		));
@@ -1719,7 +1719,7 @@ fn switching_roles() {
 		assert_ok!(Staking::bond(
 			Origin::signed(5),
 			6,
-			StakingBalance::Ring(1000),
+			StakingBalances::Ring(1000),
 			RewardDestination::Controller,
 			0,
 		));
@@ -1797,7 +1797,7 @@ fn wrong_vote_is_null() {
 			assert_ok!(Staking::bond(
 				Origin::signed(1),
 				2,
-				StakingBalance::Ring(2000),
+				StakingBalances::Ring(2000),
 				RewardDestination::default(),
 				0,
 			));
@@ -1831,13 +1831,13 @@ fn bond_with_no_staked_value() {
 			assert_ok!(Staking::bond(
 				Origin::signed(1),
 				2,
-				StakingBalance::Ring(5),
+				StakingBalances::Ring(5),
 				RewardDestination::Controller,
 				0,
 			));
 			//			assert_eq!(Ring::locks(&1)[0].amount, 5);
 
-			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::Ring(5)));
+			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalances::Ring(5)));
 			assert_eq!(
 				Staking::ledger(2),
 				Some(StakingLedger {
@@ -2037,7 +2037,7 @@ fn unbonded_balance_is_not_slashable() {
 		// Total amount staked is slashable.
 		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 1000);
 
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(800)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Ring(800)));
 
 		// Only the active portion.
 		assert_eq!(Staking::ledger(&10).unwrap().active_ring, 200);
@@ -2236,7 +2236,7 @@ fn normal_kton_should_work() {
 			assert_ok!(Staking::bond(
 				Origin::signed(stash),
 				controller,
-				StakingBalance::Kton(10 * COIN),
+				StakingBalances::Kton(10 * COIN),
 				RewardDestination::Stash,
 				0,
 			));
@@ -2276,7 +2276,7 @@ fn normal_kton_should_work() {
 			assert_ok!(Staking::bond(
 				Origin::signed(stash),
 				controller,
-				StakingBalance::Kton(10 * COIN),
+				StakingBalances::Kton(10 * COIN),
 				RewardDestination::Stash,
 				12,
 			));
@@ -2307,7 +2307,7 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 		let unbond_value = 10;
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
-			StakingBalance::Ring(unbond_value),
+			StakingBalances::Ring(unbond_value),
 		));
 		assert_eq!(
 			Ring::locks(stash),
@@ -2344,7 +2344,7 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 
 		let unbond_start = 30;
 		Timestamp::set_timestamp(unbond_start);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(COIN)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(COIN)));
 
 		assert_eq!(
 			Ring::locks(stash),
@@ -2415,7 +2415,7 @@ fn normal_unbond_should_work() {
 
 			assert_ok!(Staking::bond_extra(
 				Origin::signed(stash),
-				StakingBalance::Ring(value),
+				StakingBalances::Ring(value),
 				promise_month,
 			));
 			assert_eq!(
@@ -2442,7 +2442,7 @@ fn normal_unbond_should_work() {
 			// bond += 20_000_000
 			assert_ok!(Staking::bond_extra(
 				Origin::signed(stash),
-				StakingBalance::Kton(COIN),
+				StakingBalances::Kton(COIN),
 				0,
 			));
 			ledger.active_kton += kton_free_balance;
@@ -2451,7 +2451,7 @@ fn normal_unbond_should_work() {
 
 			assert_ok!(Staking::unbond(
 				Origin::signed(controller),
-				StakingBalance::Kton(kton_free_balance)
+				StakingBalances::Kton(kton_free_balance)
 			));
 			ledger.active_kton = 0;
 			ledger.kton_staking_lock.staking_amount = 0;
@@ -2491,7 +2491,7 @@ fn punished_claim_should_work() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(bond_value),
+			StakingBalances::Ring(bond_value),
 			RewardDestination::Stash,
 			promise_month,
 		));
@@ -2524,7 +2524,7 @@ fn transform_to_deposited_ring_should_work() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(COIN),
+			StakingBalances::Ring(COIN),
 			RewardDestination::Stash,
 			0,
 		));
@@ -2551,7 +2551,7 @@ fn expired_ring_should_capable_to_promise_again() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(10),
+			StakingBalances::Ring(10),
 			RewardDestination::Stash,
 			12,
 		));
@@ -2778,17 +2778,17 @@ fn slash_should_not_touch_unbondings() {
 		let _ = Ring::deposit_creating(&stash, 1000);
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
-			StakingBalance::Ring(1000),
+			StakingBalances::Ring(1000),
 			0,
 		));
 		let _ = Kton::deposit_creating(&stash, 1000);
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
-			StakingBalance::Kton(1000),
+			StakingBalances::Kton(1000),
 			0,
 		));
 
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(10)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(10)));
 		let ledger = Staking::ledger(controller).unwrap();
 		let unbondings = (
 			ledger.ring_staking_lock.unbondings.clone(),
@@ -2829,7 +2829,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 			Staking::bond(
 				Origin::signed(11),
 				unpaired_controller,
-				StakingBalance::Ring(COIN),
+				StakingBalances::Ring(COIN),
 				RewardDestination::Stash,
 				0,
 			),
@@ -2839,7 +2839,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 			Staking::bond(
 				Origin::signed(unpaired_stash),
 				10,
-				StakingBalance::Ring(COIN),
+				StakingBalances::Ring(COIN),
 				RewardDestination::Stash,
 				0,
 			),
@@ -2865,20 +2865,20 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		// unbond: 50Ring 50Kton
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_1),
-			StakingBalance::Ring(50 * COIN)
+			StakingBalances::Ring(50 * COIN)
 		));
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_1),
-			StakingBalance::Kton(25 * COIN)
+			StakingBalances::Kton(25 * COIN)
 		));
 		// not yet expired: promise for 12 months
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_2),
-			StakingBalance::Ring(50 * COIN)
+			StakingBalances::Ring(50 * COIN)
 		));
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_2),
-			StakingBalance::Kton(25 * COIN)
+			StakingBalances::Kton(25 * COIN)
 		));
 		ring_pool -= 50 * COIN;
 		kton_pool -= 50 * COIN;
@@ -2894,7 +2894,7 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		Timestamp::set_timestamp(promise_month * MONTH_IN_MILLISECONDS);
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_2),
-			StakingBalance::Ring(125 * COIN / 10),
+			StakingBalances::Ring(125 * COIN / 10),
 		));
 		ring_pool -= 125 * COIN / 10;
 		assert_eq!(Staking::ring_pool(), ring_pool);
@@ -2934,18 +2934,18 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(COIN),
+			StakingBalances::Ring(COIN),
 			RewardDestination::Stash,
 			0,
 		));
 
 		for ts in 0..MAX_UNLOCKING_CHUNKS {
 			Timestamp::set_timestamp(ts as u64);
-			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(1)));
+			assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(1)));
 		}
 
 		assert_err!(
-			Staking::unbond(Origin::signed(controller), StakingBalance::Ring(1)),
+			Staking::unbond(Origin::signed(controller), StakingBalances::Ring(1)),
 			err::UNLOCK_CHUNKS_REACH_MAX,
 		);
 	});
@@ -2960,7 +2960,7 @@ fn promise_extra_should_not_remove_unexpired_items() {
 
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
-			StakingBalance::Ring(5 * COIN),
+			StakingBalances::Ring(5 * COIN),
 			0,
 		));
 		for _ in 0..expired_items_len {
@@ -2995,8 +2995,8 @@ fn unbond_zero() {
 		let ledger = Staking::ledger(controller).unwrap();
 
 		Timestamp::set_timestamp(promise_month * MONTH_IN_MILLISECONDS);
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Ring(0)));
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::Kton(0)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Ring(0)));
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalances::Kton(0)));
 		assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 	});
 }
@@ -3016,18 +3016,18 @@ fn yakio_q1() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(10_000),
+			StakingBalances::Ring(10_000),
 			RewardDestination::Stash,
 			12,
 		));
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
-			StakingBalance::Ring(10_000),
+			StakingBalances::Ring(10_000),
 			36,
 		));
 		assert_eq!(Kton::free_balance(&stash), 4);
 
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 36));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(1), 36));
 		assert_eq!(Staking::ledger(controller).unwrap().active_kton, 1);
 
 		assert_ok!(Staking::nominate(Origin::signed(controller), vec![controller]));
@@ -3111,7 +3111,7 @@ fn xavier_q1() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Kton(5),
+			StakingBalances::Kton(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3133,7 +3133,7 @@ fn xavier_q1() {
 		//		println!();
 
 		Timestamp::set_timestamp(1);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(5), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(5), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
@@ -3153,7 +3153,7 @@ fn xavier_q1() {
 
 		let unbond_start = 2;
 		Timestamp::set_timestamp(unbond_start);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(9)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Kton(9)));
 		assert_eq!(Timestamp::get(), 2);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
@@ -3209,7 +3209,7 @@ fn xavier_q1() {
 		);
 
 		let _ = Kton::deposit_creating(&stash, 20);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(19), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(19), 0));
 		assert_eq!(Kton::free_balance(stash), 29);
 		assert_eq!(
 			Kton::locks(stash),
@@ -3261,7 +3261,7 @@ fn xavier_q1() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(5),
+			StakingBalances::Ring(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3283,7 +3283,7 @@ fn xavier_q1() {
 		//		println!();
 
 		Timestamp::set_timestamp(1);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(5), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Ring(5), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
@@ -3303,7 +3303,7 @@ fn xavier_q1() {
 
 		let unbond_start = 2;
 		Timestamp::set_timestamp(unbond_start);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(9)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(9)));
 		assert_eq!(Timestamp::get(), 2);
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
@@ -3359,7 +3359,7 @@ fn xavier_q1() {
 		);
 
 		let _ = Ring::deposit_creating(&stash, 20);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(19), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Ring(19), 0));
 		assert_eq!(Ring::free_balance(stash), 29);
 		assert_eq!(
 			Ring::locks(stash),
@@ -3414,7 +3414,7 @@ fn xavier_q2() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Kton(5),
+			StakingBalances::Kton(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3435,7 +3435,7 @@ fn xavier_q2() {
 		//		println!();
 
 		Timestamp::set_timestamp(1);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(4), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(4), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
@@ -3457,7 +3457,7 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(unbond_start_1);
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
-			StakingBalance::Kton(unbond_value_1),
+			StakingBalances::Kton(unbond_value_1),
 		));
 		assert_eq!(Timestamp::get(), unbond_start_1);
 		assert_eq!(Kton::free_balance(stash), 10);
@@ -3481,7 +3481,7 @@ fn xavier_q2() {
 
 		let (unbond_start_2, unbond_value_2) = (3, 6);
 		Timestamp::set_timestamp(unbond_start_2);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(6)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Kton(6)));
 		assert_eq!(Timestamp::get(), unbond_start_2);
 		assert_eq!(Kton::free_balance(stash), 10);
 		assert_eq!(
@@ -3585,7 +3585,7 @@ fn xavier_q2() {
 		let _ = Kton::deposit_creating(&stash, 1);
 		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
 		assert_eq!(Kton::free_balance(stash), 2);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(1), 0));
 		assert_eq!(
 			Kton::locks(stash),
 			vec![BalanceLock {
@@ -3617,7 +3617,7 @@ fn xavier_q2() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(5),
+			StakingBalances::Ring(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3638,7 +3638,7 @@ fn xavier_q2() {
 		//		println!();
 
 		Timestamp::set_timestamp(1);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(4), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Ring(4), 0));
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
@@ -3660,7 +3660,7 @@ fn xavier_q2() {
 		Timestamp::set_timestamp(unbond_start_1);
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
-			StakingBalance::Ring(unbond_value_1)
+			StakingBalances::Ring(unbond_value_1)
 		));
 		assert_eq!(Timestamp::get(), unbond_start_1);
 		assert_eq!(Ring::free_balance(stash), 10);
@@ -3684,7 +3684,7 @@ fn xavier_q2() {
 
 		let (unbond_start_2, unbond_value_2) = (3, 6);
 		Timestamp::set_timestamp(unbond_start_2);
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(6)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(6)));
 		assert_eq!(Timestamp::get(), unbond_start_2);
 		assert_eq!(Ring::free_balance(stash), 10);
 		assert_eq!(
@@ -3788,7 +3788,7 @@ fn xavier_q2() {
 		let _ = Ring::deposit_creating(&stash, 1);
 		//		println!("Staking Ledger: {:#?}", Staking::ledger(controller).unwrap());
 		assert_eq!(Ring::free_balance(stash), 2);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(1), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Ring(1), 0));
 		assert_eq!(
 			Ring::locks(stash),
 			vec![BalanceLock {
@@ -3823,7 +3823,7 @@ fn xavier_q3() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Kton(5),
+			StakingBalances::Kton(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3847,7 +3847,7 @@ fn xavier_q3() {
 		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
 		//		println!();
 
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Kton(5)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Kton(5)));
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
 			StakingLedger {
@@ -3868,7 +3868,7 @@ fn xavier_q3() {
 		//		println!();
 
 		Timestamp::set_timestamp(61);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Kton(1), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Kton(1), 0));
 		assert_eq!(Timestamp::get(), 61);
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
@@ -3899,7 +3899,7 @@ fn xavier_q3() {
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
-			StakingBalance::Ring(5),
+			StakingBalances::Ring(5),
 			RewardDestination::Stash,
 			0,
 		));
@@ -3923,7 +3923,7 @@ fn xavier_q3() {
 		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
 		//		println!();
 
-		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalance::Ring(5)));
+		assert_ok!(Staking::unbond(Origin::signed(controller), StakingBalances::Ring(5)));
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
 			StakingLedger {
@@ -3944,7 +3944,7 @@ fn xavier_q3() {
 		//		println!();
 
 		Timestamp::set_timestamp(61);
-		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalance::Ring(1), 0));
+		assert_ok!(Staking::bond_extra(Origin::signed(stash), StakingBalances::Ring(1), 0));
 		assert_eq!(Timestamp::get(), 61);
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
