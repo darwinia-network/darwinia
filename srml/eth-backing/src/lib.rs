@@ -7,12 +7,14 @@
 use codec::{Decode, Encode};
 use rstd::{borrow::ToOwned, result};
 use rstd::{fmt::Debug, marker::PhantomData, prelude::*};
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, traits::Currency};
+use support::{
+	decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Currency, traits::OnUnbalanced,
+};
 use system::ensure_signed;
 
 use sr_primitives::RuntimeDebug;
 use sr_primitives::{
-	traits::{Convert, SaturatedConversion},
+	traits::{Convert, SaturatedConversion, Saturating},
 	AccountId32,
 };
 
@@ -20,7 +22,7 @@ use primitives::crypto::UncheckedFrom;
 
 use core::convert::TryFrom;
 
-use darwinia_eth_relay::{ActionRecord, VerifyEthReceipts};
+use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
 use sr_eth_primitives::{receipt::LogEntry, receipt::Receipt, EthAddress, H256, U256};
@@ -37,12 +39,12 @@ use rstd::vec::Vec;
 pub type Moment = u64;
 
 type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-type RingPositiveImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type RingNegativeImbalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+type PositiveImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+//type NegativeImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
-type KtonPositiveImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
-type KtonNegativeImbalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+type PositiveImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+//type NegativeImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
 pub trait Trait: timestamp::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -51,38 +53,23 @@ pub trait Trait: timestamp::Trait {
 	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
 	type OnDepositRedeem: OnDepositRedeem<Self::AccountId, Moment = Self::Moment>;
 	type DetermineAccountId: AccountIdFor<Self::AccountId>;
+	type RingReward: OnUnbalanced<PositiveImbalanceRing<Self>>;
+	type KtonReward: OnUnbalanced<PositiveImbalanceKton<Self>>;
 }
 
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
-		pub RingRedeemAddress get(ring_redeem_address) build(|config: &GenesisConfig<T>| {
-//			let mut r = [0u8; 20];
-//			r.copy_from_slice(&config.ring_redeem_address_vec[..]);
-//			r.into()
-			config.ring_redeem_address_vec
-		}): EthAddress;
-		pub KtonRedeemAddress get(kton_redeem_address) build(|config: &GenesisConfig<T>| {
-//			let mut r = [0u8; 20];
-//			r.copy_from_slice(&config.kton_redeem_address_vec[..]);
-//			r.into()
-			config.kton_redeem_address_vec
-		} ): EthAddress;
-		pub DepositRedeemAddress get(deposit_redeem_address) build(|config: &GenesisConfig<T>| {
-//			let mut r = [0u8; 20];
-//			r.copy_from_slice(&config.deposit_redeem_address_vec[..]);
-//			r.into()
-			config.deposit_redeem_address_vec
-		} ): EthAddress;
+		pub RingRedeemAddress get(ring_redeem_address) config(): EthAddress;
+		pub KtonRedeemAddress get(kton_redeem_address) config(): EthAddress;
+		pub DepositRedeemAddress get(deposit_redeem_address) config(): EthAddress;
 
 		pub RingLocked get(fn ring_locked) config(): RingBalanceOf<T>;
 		pub KtonLocked get(fn kton_locked) config(): KtonBalanceOf<T>;
+
+		pub RingProofVerified get(ring_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
+		pub KtonProofVerified get(kton_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
+		pub DepositProofVerified get(deposit_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
 	}
-	add_extra_genesis {
-		// The smallest (atomic) number of points worth considering
-		config(ring_redeem_address_vec): EthAddress;
-		config(kton_redeem_address_vec): EthAddress;
-		config(deposit_redeem_address_vec): EthAddress;
-	  }
 }
 
 decl_event! {
@@ -109,8 +96,10 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
-		pub fn redeem_ring(origin, proof_record: ActionRecord) {
+		pub fn redeem_ring(origin, proof_record: EthReceiptProof) {
 			let _relayer = ensure_signed(origin)?;
+
+			ensure!(!<RingProofVerified>::exists((proof_record.header_hash, proof_record.index)), "Ring for this proof has already been redeemed.");
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
 
@@ -119,23 +108,11 @@ decl_module! {
 			let eth_event = EthEvent {
 				name: "RingBurndropTokens".to_owned(),
 				inputs: vec![
-				EthEventParam {
-					name: "token".to_owned(),
-					kind: ParamType::Address,
-					indexed: true,
-				}, EthEventParam {
-					name: "owner".to_owned(),
-					kind: ParamType::Address,
-					indexed: true,
-				}, EthEventParam {
-					name: "amount".to_owned(),
-					kind: ParamType::Uint(256),
-					indexed: false,
-				}, EthEventParam {
-					name: "data".to_owned(),
-					kind: ParamType::Bytes,
-					indexed: false,
-				}],
+					EthEventParam {name: "token".to_owned(), kind: ParamType::Address, indexed: true,},
+					EthEventParam {name: "owner".to_owned(), kind: ParamType::Address, indexed: true,},
+					EthEventParam {name: "amount".to_owned(), kind: ParamType::Uint(256), indexed: false,},
+					EthEventParam {name: "data".to_owned(), kind: ParamType::Bytes, indexed: false,}
+				],
 				anonymous: false,
 			};
 
@@ -158,14 +135,21 @@ decl_module! {
 			let decoded_sub_key = xhex::decode(&raw_sub_key[..]).expect("Address Hex decode Failed.");
 			let darwinia_account = T::DetermineAccountId::account_id_for(&decoded_sub_key[..])?;
 
-			 T::Ring::deposit_into_existing(&darwinia_account, (amount.as_u128() as u64).saturated_into());
+			let withdrawed_amount = amount.as_u128().saturated_into();
 
-//			 T::RingReward::on_unbalanced(total_imbalance);
-//			 T::RingRewardRemainder::on_unbalanced(T::Ring::issue(rest));
+			<RingLocked<T>>::mutate(|l| {
+				*l = l.saturating_sub(withdrawed_amount);
+			});
+
+			<RingProofVerified>::insert((proof_record.header_hash, proof_record.index), proof_record);
+
+			let withdrawed_ring = T::Ring::deposit_into_existing(&darwinia_account, withdrawed_amount).expect("Deposit into existing failed.");
+
+			T::RingReward::on_unbalanced(withdrawed_ring);
 		}
 
 		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data);
-		pub fn redeem_kton(origin, proof_record: ActionRecord) {
+		pub fn redeem_kton(origin, proof_record: EthReceiptProof) {
 			let _locker = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;
@@ -174,7 +158,7 @@ decl_module! {
 		// https://github.com/evolutionlandorg/bank
 		// event Burndrop(uint256 indexed _depositID,  address _depositor, uint48 _months, uint48 _startAt, uint64 _unitInterest, uint128 _value, bytes _data);
 		// https://ropsten.etherscan.io/tx/0xfd2cac791bb0c0bee7c5711f17ef93401061d314f4eb84e1bc91f32b73134ca1
-		pub fn redeem_deposit(origin, proof_record: ActionRecord) {
+		pub fn redeem_deposit(origin, proof_record: EthReceiptProof) {
 			let _redeemer = ensure_signed(origin)?;
 
 			let verified_receipt = T::EthRelay::verify_receipt(&proof_record)?;

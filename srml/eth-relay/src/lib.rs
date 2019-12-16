@@ -45,7 +45,7 @@ pub struct BlockDetails {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct ActionRecord {
+pub struct EthReceiptProof {
 	pub index: u64,
 	pub proof: Vec<u8>,
 	pub header_hash: H256,
@@ -65,8 +65,6 @@ decl_storage! {
 
 		/// Block delay for verify transaction
 		pub FinalizeNumber get(finalize_number): Option<u64>;
-
-		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
 
 //		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
 
@@ -105,7 +103,7 @@ decl_module! {
 			// TODO: Just for easy testing.
 			Self::init_genesis_header(&header, genesis_difficulty)?;
 
-			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(header, genesis_difficulty));
 		}
 
 		pub fn relay_header(origin, header: EthHeader) {
@@ -117,15 +115,15 @@ decl_module! {
 
 			Self::store_header(&header)?;
 
-			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+			<Module<T>>::deposit_event(RawEvent::RelayHeader(header));
 		}
 
-		pub fn check_receipt(origin, proof_record: ActionRecord) {
+		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
 			let _relayer = ensure_signed(origin)?;
 
 			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
-			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt, proof_record));
+			<Module<T>>::deposit_event(RawEvent::VerifyProof(verified_receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -143,18 +141,19 @@ decl_event! {
 	where
 		<T as system::Trait>::AccountId
 	{
-		NewHeader(EthHeader),
-		RelayProof(Receipt, ActionRecord),
+		SetGenesisHeader(EthHeader, u64),
+		RelayHeader(EthHeader),
+		VerifyProof(Receipt, EthReceiptProof),
 		TODO(AccountId),
 
-//		 Develop
-		//		Print(u64),
+		// Develop
+		// Print(u64),
 	}
 }
 
 /// Handler for selecting the genesis validator set.
 pub trait VerifyEthReceipts {
-	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str>;
+	fn verify_receipt(proof_record: &EthReceiptProof) -> result::Result<Receipt, &'static str>;
 }
 
 impl<T: Trait> Module<T> {
@@ -278,7 +277,7 @@ impl<T: Trait> Module<T> {
 }
 
 impl<T: Trait> VerifyEthReceipts for Module<T> {
-	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
+	fn verify_receipt(proof_record: &EthReceiptProof) -> result::Result<Receipt, &'static str> {
 		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
 		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
 		let key = rlp::encode(&proof_record.index);

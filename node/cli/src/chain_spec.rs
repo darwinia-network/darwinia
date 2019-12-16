@@ -265,9 +265,9 @@ pub fn darwinia_genesis(
 		}),
 		eth_relay: Some(EthRelayConfig { ..Default::default() }),
 		eth_backing: Some(EthBackingConfig {
-			ring_redeem_address_vec: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
-			kton_redeem_address_vec: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
-			deposit_redeem_address_vec: hex!["ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b"].into(),
+			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			deposit_redeem_address: hex!["ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b"].into(),
 			ring_locked: 2000000000,
 			kton_locked: 50000,
 			..Default::default()

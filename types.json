@@ -19,7 +19,7 @@
 			"WithStaking": "StakingLock"
 		}
 	},
-	"ActionRecord": {
+	"EthReceiptProof": {
 		"index": "u64",
 		"proof": "Bytes",
 		"header_hash": "H256"
