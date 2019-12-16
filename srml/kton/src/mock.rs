@@ -4,20 +4,21 @@ use sr_primitives::{
 	weights::Weight,
 	Perbill,
 };
-use srml_support::{impl_outer_origin, parameter_types};
 use substrate_primitives::H256;
+use support::{impl_outer_origin, parameter_types};
 
 use crate::*;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
-pub type Balance = u128;
 pub type BlockNumber = u64;
 pub type Moment = u64;
 
 pub type System = system::Module<Test>;
 pub type Timestamp = timestamp::Module<Test>;
 
+#[cfg(feature = "transfer-fee")]
+pub type Ring = ring::Module<Test>;
 pub type Kton = Module<Test>;
 
 pub const NANO: Balance = 1;
@@ -57,7 +58,7 @@ impl system::Trait for Test {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = 5;
+	pub const MinimumPeriod: Moment = 5;
 }
 impl timestamp::Trait for Test {
 	type Moment = u64;
@@ -65,11 +66,28 @@ impl timestamp::Trait for Test {
 	type MinimumPeriod = MinimumPeriod;
 }
 
-impl Trait for Test {
+#[cfg(feature = "transfer-fee")]
+parameter_types! {
+	pub const TransferFee: Balance = 1 * MICRO;
+}
+#[cfg(not(feature = "transfer-fee"))]
+parameter_types! {
+	pub const TransferFee: Balance = 0;
+}
+impl ring::Trait for Test {
 	type Balance = Balance;
+	type OnFreeBalanceZero = ();
+	type OnNewAccount = ();
+	type TransferPayment = ();
+	type DustRemoval = ();
 	type Event = ();
-	type OnMinted = ();
-	type OnRemoval = ();
+	type ExistentialDeposit = ();
+	type TransferFee = TransferFee;
+	type CreationFee = ();
+}
+
+impl Trait for Test {
+	type Event = ();
 }
 
 pub struct ExtBuilder {

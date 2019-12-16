@@ -16,6 +16,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
 use codec::{Codec, Decode, Encode};
 use rstd::{cmp, fmt::Debug, mem, prelude::*, result};
 use sr_primitives::{
@@ -37,13 +42,10 @@ use support::{
 };
 use system::{ensure_root, ensure_signed, IsDeadAccount, OnNewAccount};
 
-#[cfg(all(feature = "std", test))]
-mod mock;
-#[cfg(all(feature = "std", test))]
-mod tests;
-
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 use imbalances::{NegativeImbalance, PositiveImbalance};
+
+pub type Balance = u128;
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait + timestamp::Trait {
 	/// The balance of an account.
@@ -387,7 +389,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// NOTE: LOW-LEVEL: This will not attempt to maintain total issuance. It is expected that
 	/// the caller will do this.
-	fn set_reserved_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+	pub fn set_reserved_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
 		if balance < T::ExistentialDeposit::get() {
 			<ReservedBalance<T, I>>::insert(who, balance);
 			Self::on_reserved_too_low(who);
@@ -406,7 +408,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// NOTE: LOW-LEVEL: This will not attempt to maintain total issuance. It is expected that
 	/// the caller will do this.
-	fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+	pub fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
 		// Commented out for now - but consider it instructive.
 		// assert!(!Self::total_balance(who).is_zero());
 		// assert!(Self::free_balance(who) > T::ExistentialDeposit::get());
@@ -423,7 +425,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// Register a new account (with existential balance).
 	///
 	/// This just calls appropriate hooks. It doesn't (necessarily) make any state changes.
-	fn new_account(who: &T::AccountId, balance: T::Balance) {
+	pub fn new_account(who: &T::AccountId, balance: T::Balance) {
 		T::OnNewAccount::on_new_account(&who);
 		Self::deposit_event(RawEvent::NewAccount(who.clone(), balance.clone()));
 	}
@@ -431,7 +433,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// Unregister an account.
 	///
 	/// This just removes the nonce and leaves an event.
-	fn reap_account(who: &T::AccountId) {
+	pub fn reap_account(who: &T::AccountId) {
 		<system::AccountNonce<T>>::remove(who);
 		Self::deposit_event(RawEvent::ReapedAccount(who.clone()));
 	}
@@ -440,7 +442,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// free side and the account completely if its reserved size is already dead.
 	///
 	/// Will maintain total issuance.
-	fn on_free_too_low(who: &T::AccountId) {
+	pub fn on_free_too_low(who: &T::AccountId) {
 		let dust = <FreeBalance<T, I>>::take(who);
 		<Locks<T, I>>::remove(who);
 
@@ -460,7 +462,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// reserved side and the account completely if its free size is already dead.
 	///
 	/// Will maintain total issuance.
-	fn on_reserved_too_low(who: &T::AccountId) {
+	pub fn on_reserved_too_low(who: &T::AccountId) {
 		let dust = <ReservedBalance<T, I>>::take(who);
 
 		// underflow should never happen, but it if does, there's nothing to be done here.
@@ -476,7 +478,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 
 // wrapping these imbalances in a private module is necessary to ensure absolute privacy
 // of the inner member.
-mod imbalances {
+pub mod imbalances {
 	use super::{result, DefaultInstance, Imbalance, Instance, Saturating, StorageValue, Subtrait, Trait, Zero};
 	use rstd::mem;
 
