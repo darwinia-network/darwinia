@@ -109,7 +109,7 @@ decl_module! {
 
 			ensure!(
 				!KtonProofVerified::exists((proof_record.header_hash, proof_record.index)),
-				"Kton for this proof has already been redeemed.",
+				"Kton For This Proof - ALREADY BEEN REDEEMED",
 			);
 
 			let (darwinia_account, redeemed_amount) = Self::parse_proof(&proof_record, "KtonBurndropTokens")?;
