@@ -401,9 +401,21 @@ parameter_types! {
 	pub const EthMainet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
+
 impl eth_relay::Trait for Runtime {
 	type Event = Event;
 	type EthNetwork = EthRopsten;
+}
+
+impl eth_backing::Trait for Runtime {
+	type Event = Event;
+	type EthRelay = EthRelay;
+	type Ring = Balances;
+	type Kton = Kton;
+	type OnDepositRedeem = Staking;
+	type DetermineAccountId = eth_backing::AccountIdDeterminator<Runtime>;
+	type RingReward = ();
+	type KtonReward = ();
 }
 
 construct_runtime!(
@@ -414,7 +426,7 @@ construct_runtime!(
 	{
 		// Basic stuff; balances is uncallable initially.
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
-		System: system::{Module, Call, Storage, Config, Event},
+		System: system::{Module, Call, Storage, Event, Config},
 
 		// Must be before session.
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
@@ -427,8 +439,8 @@ construct_runtime!(
 
 		// Consensus support.
 		Authorship: authorship::{Module, Call, Storage, Inherent},
-		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+		Grandpa: grandpa::{Module, Call, Storage, Event, Config},
+		ImOnline: im_online::{default, ValidateUnsigned},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Offences: offences::{Module, Call, Storage, Event},
 		Session: session::{Module, Call, Storage, Event, Config<T>},
@@ -438,7 +450,8 @@ construct_runtime!(
 		Sudo: sudo,
 		Utility: utility::{Module, Call, Event},
 		
-		EthRelay: eth_relay::{Storage, Module, Event<T>, Call},
+		EthRelay: eth_relay::{Module, Call, Storage, Event<T>, Config},
+		EthBacking: eth_backing,
 	}
 );
 

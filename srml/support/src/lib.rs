@@ -94,6 +94,7 @@ mod structs {
 }
 
 mod traits {
+	use rstd::result;
 	use srml_support::traits::Currency;
 
 	use crate::{LockIdentifier, WithdrawLock, WithdrawReasons};
@@ -126,5 +127,17 @@ mod traits {
 
 		/// Remove an existing lock.
 		fn remove_lock(id: LockIdentifier, who: &AccountId);
+	}
+
+	// callback on eth-backing module
+	pub trait OnDepositRedeem<AccountId> {
+		type Moment;
+
+		fn on_deposit_redeem(
+			months: u64,
+			start_at: u64,
+			amount: u128,
+			stash: &AccountId,
+		) -> result::Result<(), &'static str>;
 	}
 }

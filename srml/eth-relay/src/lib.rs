@@ -1,4 +1,4 @@
-//!  prototype module for bridging in ethereum poa blockchain
+//!  prototype module for bridging in ethereum pow blockchain, including mainet and ropsten
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -45,7 +45,7 @@ pub struct BlockDetails {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct ActionRecord {
+pub struct EthReceiptProof {
 	pub index: u64,
 	pub proof: Vec<u8>,
 	pub header_hash: H256,
@@ -66,13 +66,12 @@ decl_storage! {
 		/// Block delay for verify transaction
 		pub FinalizeNumber get(finalize_number): Option<u64>;
 
-		pub ActionOf get(action_of): map T::Hash => Option<ActionRecord>;
-
 //		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
 
 //		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
 
 //		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
+//		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
@@ -104,7 +103,7 @@ decl_module! {
 			// TODO: Just for easy testing.
 			Self::init_genesis_header(&header, genesis_difficulty)?;
 
-			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(header, genesis_difficulty));
 		}
 
 		pub fn relay_header(origin, header: EthHeader) {
@@ -116,15 +115,15 @@ decl_module! {
 
 			Self::store_header(&header)?;
 
-			<Module<T>>::deposit_event(RawEvent::NewHeader(header));
+			<Module<T>>::deposit_event(RawEvent::RelayHeader(header));
 		}
 
-		pub fn check_receipt(origin, proof_record: ActionRecord) {
+		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
 			let _relayer = ensure_signed(origin)?;
 
 			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
-			<Module<T>>::deposit_event(RawEvent::RelayProof(verified_receipt, proof_record));
+			<Module<T>>::deposit_event(RawEvent::VerifyProof(verified_receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -142,13 +141,19 @@ decl_event! {
 	where
 		<T as system::Trait>::AccountId
 	{
-		NewHeader(EthHeader),
-		RelayProof(Receipt, ActionRecord),
+		SetGenesisHeader(EthHeader, u64),
+		RelayHeader(EthHeader),
+		VerifyProof(Receipt, EthReceiptProof),
 		TODO(AccountId),
 
-//		 Develop
-		//		Print(u64),
+		// Develop
+		// Print(u64),
 	}
+}
+
+/// Handler for selecting the genesis validator set.
+pub trait VerifyEthReceipts {
+	fn verify_receipt(proof_record: &EthReceiptProof) -> result::Result<Receipt, &'static str>;
 }
 
 impl<T: Trait> Module<T> {
@@ -181,21 +186,6 @@ impl<T: Trait> Module<T> {
 		BeginHeader::put(header.clone());
 
 		Ok(())
-	}
-
-	fn verify_receipt(proof_record: &ActionRecord) -> result::Result<Receipt, &'static str> {
-		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
-		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
-		let key = rlp::encode(&proof_record.index);
-		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
-			.map_err(|_| "Verify Proof - FAILED")?
-			.ok_or("Trie Key - NOT EXISTED")?;
-		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
-
-		Ok(receipt)
-		// confirm that the block hash is right
-		// get the receipt MPT trie root from the block header
-		// Using receipt MPT trie root to verify the proof and index etc.
 	}
 
 	/// 1. proof of difficulty
@@ -283,5 +273,22 @@ impl<T: Trait> Module<T> {
 
 	fn _punish(_who: &T::AccountId) -> Result {
 		unimplemented!()
+	}
+}
+
+impl<T: Trait> VerifyEthReceipts for Module<T> {
+	fn verify_receipt(proof_record: &EthReceiptProof) -> result::Result<Receipt, &'static str> {
+		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
+		let key = rlp::encode(&proof_record.index);
+		let value = MerklePatriciaTrie::verify_proof(header.receipts_root().0.to_vec(), &key, proof)
+			.map_err(|_| "Verify Proof - FAILED")?
+			.ok_or("Trie Key - NOT EXISTED")?;
+		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
+
+		Ok(receipt)
+		// confirm that the block hash is right
+		// get the receipt MPT trie root from the block header
+		// Using receipt MPT trie root to verify the proof and index etc.
 	}
 }
