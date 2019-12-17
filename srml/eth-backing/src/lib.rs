@@ -6,7 +6,7 @@
 
 //use codec::{Decode, Encode};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
-use rstd::{borrow::ToOwned, convert::TryFrom, marker::PhantomData, result, vec::Vec}; // fmt::Debug
+use rstd::{borrow::ToOwned, convert::TryFrom, marker::PhantomData, result, vec, vec::Vec}; // fmt::Debug
 use sr_primitives::traits::{SaturatedConversion, Saturating};
 use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
 use system::ensure_signed; // Convert,

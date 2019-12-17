@@ -8,27 +8,23 @@ edition = "2018"
 
 [dependencies]
 # crates.io
-serde = { version = "1.0.101", optional = true }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+hex = { version = "0.4", default-features = false }
+serde = { version = "1.0.101", optional = true }
 
 # github.com
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std", default-features = false }
 
 # darwinia
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
 darwinia-eth-relay = { package = "darwinia-eth-relay", path = "../eth-relay", default-features = false }
 sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
-
-sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-
-primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-
-ethabi = { git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std", default-features = false }
-
-hex = { version = "0.4", default-features = false}
 
 [dev-dependencies]
 hex-literal = "0.2.1"
@@ -37,15 +33,17 @@ hex-literal = "0.2.1"
 default = ["std"]
 std = [
 	"codec/std",
+	"hex/std",
     "serde/std",
-    "hex/std",
+
+   	"ethabi/std",
     "rstd/std",
+    "sr-primitives/std",
     "support/std",
     "system/std",
     "timestamp/std",
+
     "darwinia-support/std",
     "darwinia-eth-relay/std",
     "sr-eth-primitives/std",
-    "ethabi/std",
-    "sr-primitives/std",
 ]
