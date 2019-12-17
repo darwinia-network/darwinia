@@ -847,7 +847,10 @@ dependencies = [
 name = "darwinia-eth-backing"
 version = "0.2.0"
 dependencies = [
+ "darwinia-balances 0.2.0",
  "darwinia-eth-relay 0.2.0",
+ "darwinia-kton 0.2.0",
+ "darwinia-staking 0.3.0",
  "darwinia-support 0.2.0",
  "ethabi 9.0.1 (git+https://github.com/darwinia-network/ethabi.git?branch=with_no_std)",
  "hex 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -855,11 +858,16 @@ dependencies = [
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-eth-primitives 0.2.0",
+ "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-staking-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-authorship 0.1.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-phragmen 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 

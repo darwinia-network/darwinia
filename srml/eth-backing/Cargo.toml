@@ -33,6 +33,17 @@ hex = { version = "0.4", default-features = false}
 [dev-dependencies]
 hex-literal = "0.2.1"
 
+balances = { package = "darwinia-balances", path = '../balances' }
+kton = { package = "darwinia-kton", path = "../kton" }
+staking = { package = "darwinia-staking", path = "../staking" }
+
+authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+session = { package = "srml-session",git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+phragmen = { package = "substrate-phragmen", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
+
 [features]
 default = ["std"]
 std = [
