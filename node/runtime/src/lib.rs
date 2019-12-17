@@ -426,7 +426,7 @@ construct_runtime!(
 	{
 		// Basic stuff; balances is uncallable initially.
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
-		System: system::{Module, Call, Storage, Config, Event},
+		System: system::{Module, Call, Storage, Event, Config},
 
 		// Must be before session.
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
@@ -439,8 +439,8 @@ construct_runtime!(
 
 		// Consensus support.
 		Authorship: authorship::{Module, Call, Storage, Inherent},
-		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
-		ImOnline: im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+		Grandpa: grandpa::{Module, Call, Storage, Event, Config},
+		ImOnline: im_online::{default, ValidateUnsigned},
 		FinalityTracker: finality_tracker::{Module, Call, Inherent},
 		Offences: offences::{Module, Call, Storage, Event},
 		Session: session::{Module, Call, Storage, Event, Config<T>},
@@ -451,7 +451,7 @@ construct_runtime!(
 		Utility: utility::{Module, Call, Event},
 		
 		EthRelay: eth_relay::{Module, Call, Storage, Event<T>, Config},
-		EthBacking: eth_backing::{Module, Call, Storage, Event<T>, Config<T>},
+		EthBacking: eth_backing,
 	}
 );
 
