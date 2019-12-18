@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-hex = { version = "0.4", default-features = false }
+#hex = { version = "0.4", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
@@ -46,7 +46,7 @@ rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-commo
 default = ["std"]
 std = [
 	"codec/std",
-	"hex/std",
+#	"hex/std",
     "serde/std",
 
    	"ethabi/std",
