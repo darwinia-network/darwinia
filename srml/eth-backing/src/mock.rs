@@ -20,6 +20,9 @@ use support::{
 
 use primitives::{crypto::key_types, H256};
 
+use hex_literal::hex;
+use rustc_hex::FromHex;
+
 /// The AccountId alias in this test module.
 pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
@@ -254,7 +257,17 @@ impl Default for ExtBuilder {
 }
 impl ExtBuilder {
 	pub fn build(self) -> runtime_io::TestExternalities {
-		let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+		let _ = GenesisConfig::<Test> {
+			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			deposit_redeem_address: hex!["ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b"].into(),
+			ring_locked: 2000000000,
+			kton_locked: 50000,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 		t.into()
 	}

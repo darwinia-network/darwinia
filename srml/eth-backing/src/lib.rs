@@ -295,9 +295,11 @@ impl<T: Trait> Module<T> {
 				.clone()
 				.to_bytes()
 				.ok_or("Convert to Bytes - FAILED")?;
+
+			//			println!("raw_sub_key: {:?}", raw_sub_key);
 			let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
 
-			T::DetermineAccountId::account_id_for(&decoded_sub_key)?
+			T::DetermineAccountId::account_id_for(&raw_sub_key)?
 		};
 
 		Ok((darwinia_account, redeemed_amount))
