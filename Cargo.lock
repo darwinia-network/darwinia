@@ -853,7 +853,6 @@ dependencies = [
  "darwinia-staking 0.3.0",
  "darwinia-support 0.2.0",
  "ethabi 9.0.1 (git+https://github.com/darwinia-network/ethabi.git?branch=with_no_std)",
- "hex 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",

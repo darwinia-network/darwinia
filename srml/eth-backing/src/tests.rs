@@ -50,6 +50,8 @@ fn verify_parse_token_redeem_proof() {
 
 			assert_ok!(EthRelay::init_genesis_header(&header, 0x68de130d2c02a8_u64));
 
-			assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "RingBurndropTokens"), Ok((AccountId::default(), 0)));
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).ok().unwrap();
+
+			assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "RingBurndropTokens"), Ok((expect_account_id, 1234567891)));
 		});
 }
