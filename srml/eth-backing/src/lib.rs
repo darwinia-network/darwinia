@@ -190,7 +190,7 @@ decl_module! {
 				.ok_or("Convert to Int - FAILED")?;
 			let redeemed_amount = {
 				// TODO: div 10**18 and mul 10**9
-				let amount = result.params[2]
+				let amount = result.params[5]
 					.value
 					.clone()
 					.to_uint()
@@ -200,7 +200,7 @@ decl_module! {
 				Balance::try_from(amount)?
 			};
 			let darwinia_account = {
-				let raw_sub_key = result.params[3]
+				let raw_sub_key = result.params[6]
 					.value
 					.clone()
 					.to_bytes()
