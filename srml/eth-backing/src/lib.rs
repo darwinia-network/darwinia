@@ -190,7 +190,7 @@ decl_module! {
 				.ok_or("Convert to Int - FAILED")?;
 			let redeemed_amount = {
 				// TODO: div 10**18 and mul 10**9
-				let amount = result.params[2]
+				let amount = result.params[5]
 					.value
 					.clone()
 					.to_uint()
@@ -200,14 +200,14 @@ decl_module! {
 				Balance::try_from(amount)?
 			};
 			let darwinia_account = {
-				let raw_sub_key = result.params[3]
+				let raw_sub_key = result.params[6]
 					.value
 					.clone()
 					.to_bytes()
 					.ok_or("Convert to Bytes - FAILED")?;
 //				let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
 
-				T::DetermineAccountId::account_id_for(&raw_sub_key[..])?
+				T::DetermineAccountId::account_id_for(&raw_sub_key)?
 			};
 			let redeemed_ring = <RingBalanceOf<T>>::saturated_from(redeemed_amount);
 			let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_ring)?;
@@ -298,8 +298,7 @@ impl<T: Trait> Module<T> {
 
 			//			let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
 
-			// println!("raw_sub_key: {:?}", raw_sub_key);
-			T::DetermineAccountId::account_id_for(&raw_sub_key[..])?
+			T::DetermineAccountId::account_id_for(&raw_sub_key)?
 		};
 
 		Ok((darwinia_account, redeemed_amount))
@@ -307,7 +306,6 @@ impl<T: Trait> Module<T> {
 }
 
 pub trait AccountIdFor<AccountId> {
-	//	fn contract_address_for(code_hash: &CodeHash, data: &[u8], origin: &AccountId) -> AccountId;
 	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<AccountId, &'static str>;
 }
 
@@ -318,13 +316,9 @@ where
 	T::AccountId: rstd::convert::From<[u8; 32]> + AsRef<[u8]>,
 {
 	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<T::AccountId, &'static str> {
-		if decoded_sub_key.len() != 33 {
-			return Err("Address Length - MISMATCHED");
-		}
+		ensure!(decoded_sub_key.len() == 33, "Address Length - MISMATCHED");
 
-		if decoded_sub_key[0] != 42 {
-			return Err("Pubkey Prefix - MISMATCHED");
-		}
+		ensure!(decoded_sub_key[0] == 42, "Pubkey Prefix - MISMATCHED");
 
 		let mut r = [0u8; 32];
 		r.copy_from_slice(&decoded_sub_key[1..]);
