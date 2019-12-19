@@ -7,8 +7,8 @@
 //use codec::{Decode, Encode};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
 use rstd::{borrow::ToOwned, convert::TryFrom, marker::PhantomData, result, vec}; // fmt::Debug
-use sr_primitives::traits::{SaturatedConversion, Saturating};
-use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
+use sr_primitives::traits::{CheckedSub, SaturatedConversion};
+use support::{decl_event, decl_module, decl_storage, ensure, fail, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
 use system::ensure_signed; // Convert,
 
 //use sr_primitives::RuntimeDebug;
@@ -73,16 +73,6 @@ decl_event! {
 	}
 }
 
-impl<T: Trait> Module<T> {
-	pub fn adjust_deposit_value() {
-		unimplemented!()
-	}
-
-	//	fn _release(_dest: &T::AccountId, _value: RingBalanceOf<T>) -> Result {
-	//		unimplemented!()
-	//	}
-}
-
 decl_module! {
 	pub struct Module<T: Trait> for enum Call
 	where
@@ -105,9 +95,14 @@ decl_module! {
 			T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
 
 			RingProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
-			<RingLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_ring);
-			});
+
+			if let Some(new_ring_locked) = Self::ring_locked().checked_sub(&redeemed_ring) {
+				<RingLocked<T>>::mutate(|l| {
+					*l = new_ring_locked;
+				});
+			} else {
+				fail!("RING Locked - NO SUFFICIENT BACKING ASSETS")
+			}
 		}
 
 		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data)
@@ -126,9 +121,14 @@ decl_module! {
 			T::KtonReward::on_unbalanced(redeemed_positive_imbalance_kton);
 
 			KtonProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
-			<KtonLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_kton);
-			});
+
+			if let Some(new_kton_locked) = Self::kton_locked().checked_sub(&redeemed_kton) {
+				<KtonLocked<T>>::mutate(|l| {
+					*l = new_kton_locked;
+				});
+			} else {
+				fail!("KTON Locked - NO SUFFICIENT BACKING ASSETS")
+			}
 		}
 
 		// https://github.com/evolutionlandorg/bank
@@ -226,9 +226,13 @@ decl_module! {
 			)?;
 
 			DepositProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
-			<RingLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_ring);
-			});
+			if let Some(new_ring_locked) = Self::ring_locked().checked_sub(&redeemed_ring) {
+				<RingLocked<T>>::mutate(|l| {
+					*l = new_ring_locked;
+				});
+			} else {
+				fail!("RING Locked - NO SUFFICIENT BACKING ASSETS")
+			}
 		}
 	}
 }
@@ -328,5 +332,11 @@ where
 		//		let darwinia_account = T::AccountId::try_from(raw_sub_key).map_err(|_| "Account Parse Failed.")?;
 		//		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
 		Ok(darwinia_account)
+	}
+}
+
+impl<T: Trait> Module<T> {
+	pub fn adjust_deposit_value() {
+		unimplemented!()
 	}
 }

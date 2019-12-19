@@ -251,11 +251,11 @@ where
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct TimeDepositItem<Ring: HasCompact, Moment> {
 	#[codec(compact)]
-	value: Ring,
+	pub value: Ring,
 	#[codec(compact)]
-	start_time: Moment,
+	pub start_time: Moment,
 	#[codec(compact)]
-	expire_time: Moment,
+	pub expire_time: Moment,
 }
 
 /// The ledger of a (bonded) stash.
