@@ -262,7 +262,7 @@ impl ExtBuilder {
 		let _ = GenesisConfig::<Test> {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
-			deposit_redeem_address: hex!["ad52e0f67b6f44cd5b9a6f4fbc7c0f78f37e094b"].into(),
+			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
 			ring_locked: 2000000000,
 			kton_locked: 50000,
 		}
