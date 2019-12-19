@@ -263,8 +263,8 @@ impl ExtBuilder {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
-			ring_locked: 2000000000,
-			kton_locked: 50000,
+			ring_locked: 20000000000000,
+			kton_locked: 5000000000000,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
