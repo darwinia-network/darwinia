@@ -247,14 +247,14 @@ pub fn darwinia_genesis(
 				.iter()
 				.cloned()
 				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), ENDOWMENT)))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 			vesting: vec![],
 		}),
 		staking: Some(StakingConfig {
 			current_era: 0,
-			validator_count: initial_authorities.len() as u32 * 2,
-			minimum_validator_count: initial_authorities.len() as u32,
+			validator_count: 7,
+			minimum_validator_count: 1,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
