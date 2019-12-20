@@ -251,11 +251,11 @@ where
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct TimeDepositItem<Ring: HasCompact, Moment> {
 	#[codec(compact)]
-	value: Ring,
+	pub value: Ring,
 	#[codec(compact)]
-	start_time: Moment,
+	pub start_time: Moment,
 	#[codec(compact)]
-	expire_time: Moment,
+	pub expire_time: Moment,
 }
 
 /// The ledger of a (bonded) stash.
@@ -1954,23 +1954,25 @@ impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
 		let start = start_at * 1000;
 		let promise_month = months.min(36);
 
-		let stash_balance = T::Ring::free_balance(&stash);
-		let r = amount.saturated_into();
+		//		let stash_balance = T::Ring::free_balance(&stash);
+		let value = amount.saturated_into();
 
 		// TODO: Lock but no kton reward because this is a deposit redeem
-		if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
-			let extra = extra.min(r);
+		//		let extra = extra.min(r);
 
-			Self::bond_helper_in_ring_for_deposit_redeem(&stash, &controller, extra, start, promise_month, ledger);
+		let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&stash, value)?;
 
-			<RingPool<T>>::mutate(|r| *r += extra);
-			// TODO: Should we deposit an different event?
-			<Module<T>>::deposit_event(RawEvent::Bond(
-				StakingBalances::Ring(extra.saturated_into()),
-				start,
-				promise_month,
-			));
-		}
+		T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
+
+		Self::bond_helper_in_ring_for_deposit_redeem(&stash, &controller, value, start, promise_month, ledger);
+
+		<RingPool<T>>::mutate(|r| *r += value);
+		// TODO: Should we deposit an different event?
+		<Module<T>>::deposit_event(RawEvent::Bond(
+			StakingBalances::Ring(value.saturated_into()),
+			start,
+			promise_month,
+		));
 
 		Ok(())
 	}
