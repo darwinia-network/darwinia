@@ -1961,6 +1961,10 @@ impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
 		if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
 			let extra = extra.min(r);
 
+			let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&stash, r)?;
+
+			T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
+
 			Self::bond_helper_in_ring_for_deposit_redeem(&stash, &controller, extra, start, promise_month, ledger);
 
 			<RingPool<T>>::mutate(|r| *r += extra);
