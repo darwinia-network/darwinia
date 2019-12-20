@@ -56,6 +56,7 @@
 		"seal": "Vec<Bytes>",
 		"hash": "Option<H256>"
 	},
+	"EthTransactionIndex": "(H256, u64)",
 	"H64": {
 		"_struct": "[u8; 8]"
 	},
