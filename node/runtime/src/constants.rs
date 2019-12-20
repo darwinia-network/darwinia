@@ -49,9 +49,9 @@ pub mod time {
 	/// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
 
 	// Develop
-	//	pub const MILLISECS_PER_BLOCK: Moment = 1000;
+	pub const MILLISECS_PER_BLOCK: Moment = 1000;
 	// Production
-	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	//	pub const MILLISECS_PER_BLOCK: Moment = 3000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
@@ -60,9 +60,9 @@ pub mod time {
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
 	// Develop
-	//	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = MINUTES;
+	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = MINUTES;
 	// Production
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+	//	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
@@ -76,9 +76,9 @@ pub mod time {
 
 	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
 	// Develop
-	//	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 1;
+	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 3;
 	// Production
-	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 5;
+	//	pub const SESSION_PER_ERA: sr_staking_primitives::SessionIndex = 5;
 }
 
 // CRITICAL NOTE: The system module maintains two constants: a _maximum_ block weight and a _ratio_
