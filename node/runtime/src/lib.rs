@@ -68,8 +68,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
 	authoring_version: 3,
-	spec_version: 80,
-	impl_version: 80,
+	spec_version: 81,
+	impl_version: 81,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -129,6 +129,16 @@ impl utility::Trait for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
+	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
+}
+impl babe::Trait for Runtime {
+	type EpochDuration = EpochDuration;
+	type ExpectedBlockTime = ExpectedBlockTime;
+	type EpochChangeTrigger = babe::ExternalTrigger;
+}
+
 impl indices::Trait for Runtime {
 	type AccountIndex = AccountIndex;
 	type IsDeadAccount = Balances;
@@ -159,16 +169,6 @@ impl transaction_payment::Trait for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = LinearWeightToFee<WeightFeeCoefficient>;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<TargetBlockFullness>;
-}
-
-parameter_types! {
-	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
-	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
-}
-impl babe::Trait for Runtime {
-	type EpochDuration = EpochDuration;
-	type ExpectedBlockTime = ExpectedBlockTime;
-	type EpochChangeTrigger = babe::ExternalTrigger;
 }
 
 parameter_types! {
@@ -224,44 +224,6 @@ impl session::historical::Trait for Runtime {
 	type FullIdentificationOf = staking::ExposureOf<Runtime>;
 }
 
-impl sudo::Trait for Runtime {
-	type Event = Event;
-	type Proposal = Call;
-}
-
-impl offences::Trait for Runtime {
-	type Event = Event;
-	type IdentificationTuple = session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = Staking;
-}
-
-type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
-parameter_types! {
-	pub const SessionDuration: BlockNumber = SESSION_DURATION;
-}
-impl im_online::Trait for Runtime {
-	type AuthorityId = ImOnlineId;
-	type Event = Event;
-	type Call = Call;
-	type SubmitTransaction = SubmitTransaction;
-	type SessionDuration = SessionDuration;
-	type ReportUnresponsiveness = Offences;
-}
-
-impl grandpa::Trait for Runtime {
-	type Event = Event;
-}
-
-parameter_types! {
-	pub const WindowSize: BlockNumber = 101;
-	pub const ReportLatency: BlockNumber = 1000;
-}
-impl finality_tracker::Trait for Runtime {
-	type OnFinalizationStalled = Grandpa;
-	type WindowSize = WindowSize;
-	type ReportLatency = ReportLatency;
-}
-
 parameter_types! {
 	// Develop
 	pub const ContractTransferFee: Balance = MICRO;
@@ -314,6 +276,44 @@ impl contracts::Trait for Runtime {
 	type BlockGasLimit = contracts::DefaultBlockGasLimit;
 }
 
+impl sudo::Trait for Runtime {
+	type Event = Event;
+	type Proposal = Call;
+}
+
+type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
+parameter_types! {
+	pub const SessionDuration: BlockNumber = SESSION_DURATION;
+}
+impl im_online::Trait for Runtime {
+	type AuthorityId = ImOnlineId;
+	type Event = Event;
+	type Call = Call;
+	type SubmitTransaction = SubmitTransaction;
+	type SessionDuration = SessionDuration;
+	type ReportUnresponsiveness = Offences;
+}
+
+impl offences::Trait for Runtime {
+	type Event = Event;
+	type IdentificationTuple = session::historical::IdentificationTuple<Self>;
+	type OnOffenceHandler = Staking;
+}
+
+impl grandpa::Trait for Runtime {
+	type Event = Event;
+}
+
+parameter_types! {
+	pub const WindowSize: BlockNumber = 101;
+	pub const ReportLatency: BlockNumber = 1000;
+}
+impl finality_tracker::Trait for Runtime {
+	type OnFinalizationStalled = Grandpa;
+	type WindowSize = WindowSize;
+	type ReportLatency = ReportLatency;
+}
+
 impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
 	type Public = <Signature as traits::Verify>::Signer;
 	type Signature = Signature;
@@ -345,9 +345,9 @@ impl system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtim
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * COIN;
-	pub const TransferFee: Balance = 1 * MICRO;
-	pub const CreationFee: Balance = 1 * MICRO;
+	pub const ExistentialDeposit: Balance = COIN;
+	pub const TransferFee: Balance = MICRO;
+	pub const CreationFee: Balance = MICRO;
 }
 impl balances::Trait for Runtime {
 	type Balance = Balance;
