@@ -87,9 +87,13 @@
 		"who": "AccountId",
 		"value": "Compact<Power>"
 	},
-	"Ring": "Balance",
-	"Power": "Balance",
 	"Kton": "Balance",
+	"NominatorReward": {
+		"who": "AccountId",
+		"amount": "Compact<Balance>"
+	},
+	"Power": "Balance",
+	"Ring": "Balance",
 	"SlashJournalEntry": {
 		"who": "AccountId",
 		"amount": "Compact<Power>",
@@ -118,5 +122,10 @@
 	"ValidatorPrefs": {
 		"node_name": "Bytes",
 		"validator_payment_ratio": "Compact<u32>"
+	},
+	"ValidatorReward": {
+		"who": "AccountId",
+		"amount": "Compact<Balance>",
+		"nominators_reward": "Vec<NominatorReward>"
 	}
 }
