@@ -97,17 +97,17 @@ decl_module! {
 		fn deposit_event() = default;
 
 		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
-			let _relayer = ensure_signed(origin)?;
+			let relayer = ensure_signed(origin)?;
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
 			Self::init_genesis_header(&header, genesis_difficulty)?;
 
-			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(header, genesis_difficulty));
+			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(relayer, header, genesis_difficulty));
 		}
 
 		pub fn relay_header(origin, header: EthHeader) {
-			let _relayer = ensure_signed(origin)?;
+			let relayer = ensure_signed(origin)?;
 			// 1. There must be a corresponding parent hash
 			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
 
@@ -115,15 +115,15 @@ decl_module! {
 
 			Self::store_header(&header)?;
 
-			<Module<T>>::deposit_event(RawEvent::RelayHeader(header));
+			<Module<T>>::deposit_event(RawEvent::RelayHeader(relayer, header));
 		}
 
 		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
-			let _relayer = ensure_signed(origin)?;
+			let relayer = ensure_signed(origin)?;
 
 			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
-			<Module<T>>::deposit_event(RawEvent::VerifyProof(verified_receipt, proof_record));
+			<Module<T>>::deposit_event(RawEvent::VerifyProof(relayer, verified_receipt, proof_record));
 		}
 
 		// Assuming that there are at least one honest worker submiting headers
@@ -141,10 +141,9 @@ decl_event! {
 	where
 		<T as system::Trait>::AccountId
 	{
-		SetGenesisHeader(EthHeader, u64),
-		RelayHeader(EthHeader),
-		VerifyProof(Receipt, EthReceiptProof),
-		TODO(AccountId),
+		SetGenesisHeader(AccountId, EthHeader, u64),
+		RelayHeader(AccountId, EthHeader),
+		VerifyProof(AccountId, Receipt, EthReceiptProof),
 
 		// Develop
 		// Print(u64),
