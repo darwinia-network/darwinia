@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-hex = { version = "0.4", default-features = false }
+#hex = { version = "0.4", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
@@ -28,12 +28,25 @@ sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = 
 
 [dev-dependencies]
 hex-literal = "0.2.1"
+rustc-hex = "2.0"
+
+balances = { package = "darwinia-balances", path = '../balances' }
+kton = { package = "darwinia-kton", path = "../kton" }
+staking = { package = "darwinia-staking", path = "../staking" }
+
+authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+session = { package = "srml-session",git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+phragmen = { package = "substrate-phragmen", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git"}
+
 
 [features]
 default = ["std"]
 std = [
 	"codec/std",
-	"hex/std",
+#	"hex/std",
     "serde/std",
 
    	"ethabi/std",

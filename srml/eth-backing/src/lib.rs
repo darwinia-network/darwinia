@@ -7,31 +7,31 @@
 //use codec::{Decode, Encode};
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
 use rstd::{borrow::ToOwned, convert::TryFrom, marker::PhantomData, result, vec}; // fmt::Debug
-use sr_primitives::traits::{SaturatedConversion, Saturating};
+use sr_primitives::traits::{CheckedSub, SaturatedConversion};
 use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
 use system::ensure_signed; // Convert,
 
-//use sr_primitives::RuntimeDebug;
-//use primitives::crypto::UncheckedFrom;
-//use core::convert::TryFrom;
-
 use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
-use sr_eth_primitives::{EthAddress, H256, U256}; // receipt::LogEntry, receipt::Receipt,
-
-//#[cfg(feature = "std")]
-//use sr_primitives::{Deserialize, Serialize};
+use sr_eth_primitives::{EthAddress, H256, U256};
 
 pub type Balance = u128;
 pub type Moment = u64;
 
-type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
+type Ring<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
 type PositiveImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 //type NegativeImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
-type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
+type Kton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
 type PositiveImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 //type NegativeImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
+
+type EthTransactionIndex = (H256, u64);
+
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
 
 pub trait Trait: timestamp::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -50,12 +50,12 @@ decl_storage! {
 		pub KtonRedeemAddress get(kton_redeem_address) config(): EthAddress;
 		pub DepositRedeemAddress get(deposit_redeem_address) config(): EthAddress;
 
-		pub RingLocked get(fn ring_locked) config(): RingBalanceOf<T>;
-		pub KtonLocked get(fn kton_locked) config(): KtonBalanceOf<T>;
+		pub RingLocked get(fn ring_locked) config(): Ring<T>;
+		pub KtonLocked get(fn kton_locked) config(): Kton<T>;
 
-		pub RingProofVerified get(ring_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
-		pub KtonProofVerified get(kton_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
-		pub DepositProofVerified get(deposit_proof_verfied): map (H256, u64) => Option<EthReceiptProof>;
+		pub RingProofVerified get(ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub KtonProofVerified get(kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub DepositProofVerified get(deposit_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
 	}
 }
 
@@ -64,18 +64,10 @@ decl_event! {
 	where
 		<T as system::Trait>::AccountId
 	{
-		TODO(AccountId),
+		RedeemRing(AccountId, Balance, EthTransactionIndex),
+		RedeemKton(AccountId, Balance, EthTransactionIndex),
+		RedeemDeposit(AccountId, Balance, EthTransactionIndex),
 	}
-}
-
-impl<T: Trait> Module<T> {
-	pub fn adjust_deposit_value() {
-		unimplemented!()
-	}
-
-	//	fn _release(_dest: &T::AccountId, _value: RingBalanceOf<T>) -> Result {
-	//		unimplemented!()
-	//	}
 }
 
 decl_module! {
@@ -83,6 +75,8 @@ decl_module! {
 	where
 		origin: T::Origin
 	{
+		fn deposit_event() = default;
+
 		// event RingBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data)
 		// https://ropsten.etherscan.io/tx/0x81f699c93b00ab0b7db701f87b6f6045c1e0692862fcaaf8f06755abb0536800
 		pub fn redeem_ring(origin, proof_record: EthReceiptProof) {
@@ -94,15 +88,21 @@ decl_module! {
 			);
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "RingBurndropTokens")?;
-			let redeemed_ring = <RingBalanceOf<T>>::saturated_from(redeemed_amount);
+
+			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
+
+			let new_ring_locked = Self::ring_locked().checked_sub(&redeemed_ring).ok_or("RING Locked - NO SUFFICIENT BACKING ASSETS")?;
 			let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_ring)?;
 
 			T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
 
-			RingProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
+			RingProofVerified::insert((proof_record.header_hash, proof_record.index), &proof_record);
+
 			<RingLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_ring);
+				*l = new_ring_locked;
 			});
+
+			<Module<T>>::deposit_event(RawEvent::RedeemRing(darwinia_account, redeemed_amount, (proof_record.header_hash, proof_record.index)));
 		}
 
 		// event KtonBurndropTokens(address indexed token, address indexed owner, uint amount, bytes data)
@@ -115,15 +115,20 @@ decl_module! {
 			);
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens")?;
-			let redeemed_kton = <KtonBalanceOf<T>>::saturated_from(redeemed_amount);
-			let redeemed_positive_imbalance_kton = T::Kton::deposit_into_existing(&darwinia_account, redeemed_kton)?;
 
+			let redeemed_kton = <Kton<T>>::saturated_from(redeemed_amount);
+			let new_kton_locked = Self::kton_locked().checked_sub(&redeemed_kton).ok_or("KTON Locked - NO SUFFICIENT BACKING ASSETS")?;
+
+			let redeemed_positive_imbalance_kton = T::Kton::deposit_into_existing(&darwinia_account, redeemed_kton)?;
 			T::KtonReward::on_unbalanced(redeemed_positive_imbalance_kton);
 
-			KtonProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
+			KtonProofVerified::insert((proof_record.header_hash, proof_record.index), &proof_record);
+
 			<KtonLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_kton);
+				*l = new_kton_locked;
 			});
+
+			<Module<T>>::deposit_event(RawEvent::RedeemKton(darwinia_account, redeemed_amount, (proof_record.header_hash, proof_record.index)));
 		}
 
 		// https://github.com/evolutionlandorg/bank
@@ -185,7 +190,7 @@ decl_module! {
 				.ok_or("Convert to Int - FAILED")?;
 			let redeemed_amount = {
 				// TODO: div 10**18 and mul 10**9
-				let amount = result.params[2]
+				let amount = result.params[5]
 					.value
 					.clone()
 					.to_uint()
@@ -195,35 +200,35 @@ decl_module! {
 				Balance::try_from(amount)?
 			};
 			let darwinia_account = {
-				let raw_sub_key = result.params[3]
+				let raw_sub_key = result.params[6]
 					.value
 					.clone()
 					.to_bytes()
 					.ok_or("Convert to Bytes - FAILED")?;
-				let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
+//				let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
 
-				T::DetermineAccountId::account_id_for(&decoded_sub_key)?
+				T::DetermineAccountId::account_id_for(&raw_sub_key)?
 			};
-			let redeemed_ring = <RingBalanceOf<T>>::saturated_from(redeemed_amount);
-			let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_ring)?;
-
-			T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
+			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
+			let new_ring_locked = Self::ring_locked().checked_sub(&redeemed_ring).ok_or("RING Locked - NO SUFFICIENT BACKING ASSETS")?;
+			T::OnDepositRedeem::on_deposit_redeem(
+					month.saturated_into(),
+					start_at.saturated_into(),
+					redeemed_amount,
+					&darwinia_account,
+				)?;
 
 			// TODO: check deposit_id duplication
 
 			// TODO: Ignore Unit Interest for now
 
-			T::OnDepositRedeem::on_deposit_redeem(
-				month.saturated_into(),
-				start_at.saturated_into(),
-				redeemed_amount,
-				&darwinia_account,
-			)?;
+			DepositProofVerified::insert((proof_record.header_hash, proof_record.index), &proof_record);
 
-			DepositProofVerified::insert((proof_record.header_hash, proof_record.index), proof_record);
 			<RingLocked<T>>::mutate(|l| {
-				*l = l.saturating_sub(redeemed_ring);
+				*l = new_ring_locked;
 			});
+
+			<Module<T>>::deposit_event(RawEvent::RedeemDeposit(darwinia_account, redeemed_amount, (proof_record.header_hash, proof_record.index)));
 		}
 	}
 }
@@ -290,9 +295,10 @@ impl<T: Trait> Module<T> {
 				.clone()
 				.to_bytes()
 				.ok_or("Convert to Bytes - FAILED")?;
-			let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
 
-			T::DetermineAccountId::account_id_for(&decoded_sub_key)?
+			//			let decoded_sub_key = hex::decode(&raw_sub_key).map_err(|_| "Decode Address - FAILED")?;
+
+			T::DetermineAccountId::account_id_for(&raw_sub_key)?
 		};
 
 		Ok((darwinia_account, redeemed_amount))
@@ -300,7 +306,6 @@ impl<T: Trait> Module<T> {
 }
 
 pub trait AccountIdFor<AccountId> {
-	//	fn contract_address_for(code_hash: &CodeHash, data: &[u8], origin: &AccountId) -> AccountId;
 	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<AccountId, &'static str>;
 }
 
@@ -311,17 +316,23 @@ where
 	T::AccountId: rstd::convert::From<[u8; 32]> + AsRef<[u8]>,
 {
 	fn account_id_for(decoded_sub_key: &[u8]) -> result::Result<T::AccountId, &'static str> {
-		if decoded_sub_key.len() != 32 {
-			return Err("Address Length - MISMATCHED");
-		}
+		ensure!(decoded_sub_key.len() == 33, "Address Length - MISMATCHED");
+
+		ensure!(decoded_sub_key[0] == 42, "Pubkey Prefix - MISMATCHED");
 
 		let mut r = [0u8; 32];
-		r.copy_from_slice(&decoded_sub_key[..]);
+		r.copy_from_slice(&decoded_sub_key[1..]);
 
 		let darwinia_account = r.into();
 
 		//		let darwinia_account = T::AccountId::try_from(raw_sub_key).map_err(|_| "Account Parse Failed.")?;
 		//		let darwinia_account = UncheckedFrom::unchecked_from(raw_sub_key[..]);
 		Ok(darwinia_account)
+	}
+}
+
+impl<T: Trait> Module<T> {
+	pub fn adjust_deposit_value() {
+		unimplemented!()
 	}
 }
