@@ -110,10 +110,10 @@ fn verify_redeem_ring() {
 
 			let ring_locked_before = EthBacking::ring_locked();
 
-			let _ = Ring::deposit_creating(&expect_account_id, 1);	
+			let _ = RingModule::deposit_creating(&expect_account_id, 1);
 			assert_ok!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()));
 
-			assert_eq!(Ring::free_balance(&expect_account_id), 1234567891 + 1);
+			assert_eq!(RingModule::free_balance(&expect_account_id), 1234567891 + 1);
 
 			let ring_locked_after = EthBacking::ring_locked();
 
@@ -178,10 +178,10 @@ fn verify_redeem_kton() {
 
 			let kton_locked_before = EthBacking::kton_locked();
 			
-		 	let _ = Kton::deposit_creating(&expect_account_id, 1);	
+		 	let _ = KtonModule::deposit_creating(&expect_account_id, 1);
 		 	assert_ok!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()));
 
-		 	assert_eq!(Kton::free_balance(&expect_account_id), 123456789 + 1);
+		 	assert_eq!(KtonModule::free_balance(&expect_account_id), 123456789 + 1);
 
 			let kton_locked_after = EthBacking::kton_locked();
 			assert_eq!(kton_locked_after + 123456789, kton_locked_before);
@@ -249,7 +249,7 @@ fn verify_redeem_deposit() {
 
 			let controller = AccountId32::from([1; 32]);
 			
-			let _ = Ring::deposit_creating(&expect_account_id, 1);
+			let _ = RingModule::deposit_creating(&expect_account_id, 1);
 			assert_ok!(
 				staking::Call::<Test>::bond(
 					controller.clone(),
@@ -259,7 +259,7 @@ fn verify_redeem_deposit() {
 			); 	
 		 	assert_ok!(EthBacking::redeem_deposit(Origin::signed(id1.clone()), proof_record.clone()));
 
-		 	assert_eq!(Ring::free_balance(&expect_account_id), 1234000000000 + 1);
+		 	assert_eq!(RingModule::free_balance(&expect_account_id), 1234000000000 + 1);
 
 			let ring_locked_after = EthBacking::ring_locked();
 			assert_eq!(ring_locked_after + 1234000000000, ring_locked_before);

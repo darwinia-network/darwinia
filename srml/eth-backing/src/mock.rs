@@ -33,8 +33,8 @@ pub type EthRelay = darwinia_eth_relay::Module<Test>;
 
 pub type EthBacking = Module<Test>;
 
-pub type Ring = balances::Module<Test>;
-pub type Kton = kton::Module<Test>;
+pub type RingModule = balances::Module<Test>;
+pub type KtonModule = kton::Module<Test>;
 
 pub type Timestamp = timestamp::Module<Test>;
 
@@ -216,11 +216,11 @@ impl staking::Trait for Test {
 	type BondingDuration = ();
 	type BondingDurationInEra = ();
 	type SessionInterface = Self;
-	type Ring = Ring;
+	type Ring = RingModule;
 	type RingRewardRemainder = ();
 	type RingSlash = ();
 	type RingReward = ();
-	type Kton = Kton;
+	type Kton = KtonModule;
 	type KtonSlash = ();
 	type KtonReward = ();
 
@@ -241,8 +241,8 @@ impl darwinia_eth_relay::Trait for Test {
 impl Trait for Test {
 	type Event = ();
 	type EthRelay = EthRelay;
-	type Ring = Ring;
-	type Kton = Kton;
+	type Ring = RingModule;
+	type Kton = KtonModule;
 	type OnDepositRedeem = Staking;
 	type DetermineAccountId = AccountIdDeterminator<Test>;
 	type RingReward = ();
