@@ -25,11 +25,11 @@ use sr_eth_primitives::{EthAddress, H256, U256}; // receipt::LogEntry, receipt::
 pub type Balance = u128;
 pub type Moment = u64;
 
-type RingBalanceOf<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
+type Ring<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
 type PositiveImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 //type NegativeImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
-type KtonBalanceOf<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
+type Kton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
 type PositiveImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 //type NegativeImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 
@@ -57,8 +57,8 @@ decl_storage! {
 		pub KtonRedeemAddress get(kton_redeem_address) config(): EthAddress;
 		pub DepositRedeemAddress get(deposit_redeem_address) config(): EthAddress;
 
-		pub RingLocked get(fn ring_locked) config(): RingBalanceOf<T>;
-		pub KtonLocked get(fn kton_locked) config(): KtonBalanceOf<T>;
+		pub RingLocked get(fn ring_locked) config(): Ring<T>;
+		pub KtonLocked get(fn kton_locked) config(): Kton<T>;
 
 		pub RingProofVerified get(ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
 		pub KtonProofVerified get(kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
@@ -96,7 +96,7 @@ decl_module! {
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "RingBurndropTokens")?;
 
-			let redeemed_ring = <RingBalanceOf<T>>::saturated_from(redeemed_amount);
+			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
 			if let Some(new_ring_locked) = Self::ring_locked().checked_sub(&redeemed_ring) {
 
 				let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_ring)?;
@@ -126,7 +126,7 @@ decl_module! {
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens")?;
 
-			let redeemed_kton = <KtonBalanceOf<T>>::saturated_from(redeemed_amount);
+			let redeemed_kton = <Kton<T>>::saturated_from(redeemed_amount);
 			if let Some(new_kton_locked) = Self::kton_locked().checked_sub(&redeemed_kton) {
 				let redeemed_positive_imbalance_kton = T::Kton::deposit_into_existing(&darwinia_account, redeemed_kton)?;
 
@@ -222,7 +222,7 @@ decl_module! {
 
 				T::DetermineAccountId::account_id_for(&raw_sub_key)?
 			};
-			let redeemed_ring = <RingBalanceOf<T>>::saturated_from(redeemed_amount);
+			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
 
 			if let Some(new_ring_locked) = Self::ring_locked().checked_sub(&redeemed_ring) {
 				T::OnDepositRedeem::on_deposit_redeem(

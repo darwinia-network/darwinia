@@ -8,7 +8,7 @@ use substrate_primitives::U256;
 use crate::{Kton, Moment, Ring, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
-// <T: Trait + 'static>() -> RingBalanceOf<T>
+// <T: Trait + 'static>() -> Ring<T>
 pub fn compute_total_payout<T: Trait>(
 	era_duration: Moment,
 	living_time: Moment,
