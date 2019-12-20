@@ -1309,10 +1309,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fly-client"
-version = "0.1.0"
-
-[[package]]
 name = "fnv"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2705,16 +2701,6 @@ dependencies = [
 name = "memory_units"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "merkle-mountain-range"
-version = "0.1.0"
-dependencies = [
- "blake2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
-]
 
 [[package]]
 name = "merkle-patricia-trie"
