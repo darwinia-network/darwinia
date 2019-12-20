@@ -48,7 +48,9 @@ use codec::{Decode, Encode, HasCompact};
 use phragmen::{build_support_map, elect, equalize, ExtendedBalance as Power, PhragmenStakedAssignment};
 #[cfg(feature = "std")]
 use regex::bytes::Regex;
-use rstd::{borrow::ToOwned, prelude::*, result};
+#[cfg(not(feature = "std"))]
+use rstd::borrow::ToOwned;
+use rstd::{prelude::*, result};
 use session::{historical::OnSessionEnding, SelectInitialValidators};
 use sr_primitives::{
 	traits::{Bounded, CheckedSub, Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
@@ -309,6 +311,23 @@ pub struct Exposure<AccountId, Power: HasCompact> {
 	pub others: Vec<IndividualExposure<AccountId, Power>>,
 }
 
+// TODO: doc
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+pub struct ValidatorReward<AccountId, Ring: HasCompact> {
+	who: AccountId,
+	#[codec(compact)]
+	amount: Ring,
+	nominators_reward: Vec<NominatorReward<AccountId, Ring>>,
+}
+
+// TODO: doc
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+pub struct NominatorReward<AccountId, Ring: HasCompact> {
+	who: AccountId,
+	#[codec(compact)]
+	amount: Ring,
+}
+
 /// A slashing event occurred, slashing a validator for a given amount of balance.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
 pub struct SlashJournalEntry<AccountId, Power: HasCompact> {
@@ -545,8 +564,8 @@ decl_event!(
     	<T as system::Trait>::AccountId
     {
 		/// All validators have been rewarded by the first balance; the second is the remainder
-		/// from the maximum amount of reward.
-		Reward(Balance, Balance),
+		/// from the maximum amount of reward; the third is validator and nominators' reward.
+		Reward(Balance, Balance, Vec<ValidatorReward<AccountId, Balance>>),
 
 		// TODO: refactor to Balance later?
 		/// One validator (and its nominators) has been slashed by the given amount.
@@ -1440,10 +1459,17 @@ impl<T: Trait> Module<T> {
 	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its
 	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
 	/// pre-payout cut.
-	fn reward_validator(stash: &T::AccountId, reward: Ring<T>) -> PositiveImbalanceRing<T> {
+	fn reward_validator(
+		stash: &T::AccountId,
+		reward: Ring<T>,
+	) -> (
+		PositiveImbalanceRing<T>,
+		(Balance, Vec<NominatorReward<T::AccountId, Balance>>),
+	) {
 		let off_the_table = Perbill::from_percent(Self::validators(stash).validator_payment_ratio) * reward;
 		let reward = reward - off_the_table;
 		let mut imbalance = <PositiveImbalanceRing<T>>::zero();
+		let mut nominators_reward = vec![];
 		let validator_cut = if reward.is_zero() {
 			Zero::zero()
 		} else {
@@ -1452,15 +1478,22 @@ impl<T: Trait> Module<T> {
 
 			for i in &exposures.others {
 				let per_u64 = Perbill::from_rational_approximation(i.value, total);
-				imbalance.maybe_subsume(Self::make_payout(&i.who, per_u64 * reward));
+				let nominator_reward = per_u64 * reward;
+
+				imbalance.maybe_subsume(Self::make_payout(&i.who, nominator_reward));
+				nominators_reward.push(NominatorReward {
+					who: i.who.to_owned(),
+					amount: nominator_reward.saturated_into(),
+				});
 			}
 
 			let per_u64 = Perbill::from_rational_approximation(exposures.own, total);
 			per_u64 * reward
 		};
-		imbalance.maybe_subsume(Self::make_payout(stash, validator_cut + off_the_table));
+		let validator_reward = validator_cut + off_the_table;
+		imbalance.maybe_subsume(Self::make_payout(stash, validator_reward));
 
-		imbalance
+		(imbalance, (validator_reward.saturated_into(), nominators_reward))
 	}
 
 	/// Session has just ended. Provide the validator set for the next session if it's an era-end, along
@@ -1517,10 +1550,18 @@ impl<T: Trait> Module<T> {
 			);
 
 			let mut total_imbalance = <PositiveImbalanceRing<T>>::zero();
+			let mut validators_reward = vec![];
 			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
 				if p != 0 {
 					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
-					total_imbalance.subsume(Self::reward_validator(v, reward));
+					let (imbalance, (validator_reward, nominators_reward)) = Self::reward_validator(v, reward);
+
+					total_imbalance.subsume(imbalance);
+					validators_reward.push(ValidatorReward {
+						who: v.to_owned(),
+						amount: validator_reward,
+						nominators_reward,
+					});
 				}
 			}
 
@@ -1528,7 +1569,11 @@ impl<T: Trait> Module<T> {
 			let total_payout = total_imbalance.peek();
 
 			let rest = max_payout.saturating_sub(total_payout);
-			Self::deposit_event(RawEvent::Reward(total_payout.saturated_into(), rest.saturated_into()));
+			Self::deposit_event(RawEvent::Reward(
+				total_payout.saturated_into(),
+				rest.saturated_into(),
+				validators_reward,
+			));
 
 			T::RingReward::on_unbalanced(total_imbalance);
 			T::RingRewardRemainder::on_unbalanced(T::Ring::issue(rest));
