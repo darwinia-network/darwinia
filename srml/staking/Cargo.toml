@@ -26,7 +26,7 @@ timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-net
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }
 
 [dev-dependencies]
-runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 balances = { package = "darwinia-balances", path = '../balances' }
 kton = { package = "darwinia-kton", path = "../kton" }
