@@ -639,11 +639,6 @@ decl_module! {
 			let controller = T::Lookup::lookup(controller)?;
 			ensure!(!<Ledger<T>>::exists(&controller), err::CONTROLLER_ALREADY_PAIRED);
 
-			// You're auto-bonded forever, here. We might improve this by only bonding when
-			// you actually validate/nominate and remove once you unbond __everything__.
-			<Bonded<T>>::insert(&stash, &controller);
-			<Payee<T>>::insert(&stash, payee);
-
 			let ledger = StakingLedger {
 				stash: stash.clone(),
 				..Default::default()
@@ -657,6 +652,11 @@ decl_module! {
 					let value = r.min(stash_balance);
 
 					Self::bond_helper_in_ring(&stash, &controller, value, promise_month, ledger);
+
+					// You're auto-bonded forever, here. We might improve this by only bonding when
+					// you actually validate/nominate and remove once you unbond __everything__.
+					<Bonded<T>>::insert(&stash, &controller);
+					<Payee<T>>::insert(&stash, payee);
 
 					<RingPool<T>>::mutate(|r| *r += value);
 					<Module<T>>::deposit_event(RawEvent::Bond(
