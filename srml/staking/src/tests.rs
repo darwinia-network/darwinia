@@ -2644,7 +2644,7 @@ fn validator_payment_ratio_should_work() {
 			vec![validator_stash],
 		));
 
-		assert_eq!(Staking::reward_validator(&validator_stash, COIN).peek(), 0);
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), 0);
 
 		assert_ok!(Staking::chill(Origin::signed(validator_controller)));
 		assert_ok!(Staking::chill(Origin::signed(nominator_controller)));
@@ -2661,7 +2661,7 @@ fn validator_payment_ratio_should_work() {
 			vec![validator_stash],
 		));
 
-		assert_eq!(Staking::reward_validator(&validator_stash, COIN).peek(), COIN);
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), COIN);
 	});
 }
 
@@ -3966,3 +3966,28 @@ fn xavier_q3() {
 		//		println!();
 	});
 }
+
+// breakpoint test
+//#[test]
+//fn xavier_q4() {
+//	ExtBuilder::default().build().execute_with(|| {
+//		let (stash, _controller) = (11, 10);
+//		let _ = Kton::deposit_creating(&stash, 1000);
+//		assert_ok!(Staking::bond_extra(
+//			Origin::signed(stash),
+//			StakingBalances::Kton(1000),
+//			0,
+//		));
+//
+//		let power = Staking::power_of(&11);
+//		<Stakers<Test>>::insert(
+//			&stash,
+//			Exposure {
+//				total: power,
+//				own: power,
+//				others: vec![],
+//			},
+//		);
+//		let _ = Staking::slash_validator(&stash, power / 2, &Staking::stakers(&stash), &mut vec![]);
+//	});
+//}
