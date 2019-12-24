@@ -243,9 +243,12 @@ impl<T: Trait> Module<T> {
 		let header_hash = header.hash();
 		let block_number = header.number();
 
-		HeaderOf::insert(header_hash, header);
+		let prev_total_difficulty = Self::header_details_of(header.parent_hash()).ok_or("Previous Header Detail - NOT EXISTED")?.total_difficulty;
+		let best_header_hash = Self::best_header_hash();
+		//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
+		let best_header_details = Self::header_details_of(best_header_hash).ok_or("Best Header Detail - NOT EXISTED")?;
 
-		let prev_total_difficulty = Self::header_details_of(header.parent_hash()).unwrap().total_difficulty;
+		HeaderOf::insert(header_hash, header);
 
 		HeaderDetailsOf::insert(
 			header_hash,
@@ -255,10 +258,6 @@ impl<T: Trait> Module<T> {
 				total_difficulty: prev_total_difficulty + header.difficulty(),
 			},
 		);
-
-		let best_header_hash = Self::best_header_hash();
-		//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
-		let best_header_details = Self::header_details_of(best_header_hash).unwrap();
 
 		// TODO: Check total difficulty and reorg if necessary.
 		if prev_total_difficulty + header.difficulty() > best_header_details.total_difficulty {
