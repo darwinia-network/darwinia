@@ -93,7 +93,7 @@
 		"who": "AccountId",
 		"amount": "Compact<Balance>"
 	},
-	"Power": "Balance",
+	"Power": "u128",
 	"Ring": "Balance",
 	"SlashJournalEntry": {
 		"who": "AccountId",

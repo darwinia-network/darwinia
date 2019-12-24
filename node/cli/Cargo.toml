@@ -57,9 +57,9 @@ contracts = { package = "srml-contracts", git = "https://github.com/darwinia-net
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-im_online = { package = "srml-im-online", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 balances = { package = "darwinia-balances", path = "../../srml/balances" }
+im-online = { package = "srml-im-online", path = "../../srml/im-online" }
 
 # node-specific dependencies
 node-runtime = { path = "../runtime" }
