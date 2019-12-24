@@ -7,7 +7,7 @@ use codec::{Decode, Encode};
 use rstd::{result, vec::Vec};
 use sr_primitives::RuntimeDebug;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-use system::ensure_signed;
+use system::{ensure_signed, ensure_root};
 
 use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
@@ -73,7 +73,8 @@ decl_storage! {
 //		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
 //		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
 
-		pub Whitelist get(fn whitelist) config(): Vec<T::AccountId>;
+		pub CheckAuthorities get(fn check_authorities) config(): bool = true;
+		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
@@ -100,8 +101,9 @@ decl_module! {
 
 		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
 			let relayer = ensure_signed(origin)?;
-			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
-			// TODO: Check authority
+			if Self::check_authorities() {
+				ensure!(Self::authorities().contains(&relayer), "Your account is not on the authorities!");
+			}
 
 			// TODO: Just for easy testing.
 			Self::init_genesis_header(&header, genesis_difficulty)?;
@@ -111,7 +113,9 @@ decl_module! {
 
 		pub fn relay_header(origin, header: EthHeader) {
 			let relayer = ensure_signed(origin)?;
-			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
+			if Self::check_authorities() {
+				ensure!(Self::authorities().contains(&relayer), "Your account is not on the authorities!");
+			}
 			// 1. There must be a corresponding parent hash
 			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
 
@@ -124,7 +128,9 @@ decl_module! {
 
 		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
 			let relayer = ensure_signed(origin)?;
-			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
+			if Self::check_authorities() {
+				ensure!(Self::authorities().contains(&relayer), "Your account is not on the authorities!");
+			}
 
 			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
@@ -137,6 +143,35 @@ decl_module! {
 			let _relayer = ensure_signed(origin)?;
 			// if header confirmed then return
 			// if header in unverified header then challenge
+		}
+
+		pub fn add_authority(origin, who: T::AccountId) -> Result {
+			let _me = ensure_root(origin)?;
+
+			if !Self::authorities().contains(&who) {
+				<Authorities<T>>::mutate(|l| l.push(who));
+			}
+
+			Ok(())
+		}
+
+		pub fn remove_authority(origin, who: T::AccountId) -> Result {
+			let _me = ensure_root(origin)?;
+
+			if Self::authorities().contains(&who) {
+				let index = Self::authorities().iter().position(|x| *x == who).ok_or("Authority - NOT EXISTED")?;
+				<Authorities<T>>::mutate(|l| l.remove(index));
+			}
+
+			Ok(())
+		}
+
+		pub fn toggle_check_authorities(origin) -> Result {
+			let _me = ensure_root(origin)?;
+
+			CheckAuthorities::put(!Self::check_authorities());
+
+			Ok(())
 		}
 	}
 }

@@ -200,7 +200,7 @@ pub fn darwinia_genesis(
 		]
 	});
 
-	let eth_relay_whitelist: Vec<AccountId> = vec![
+	let eth_relay_authorities: Vec<AccountId> = vec![
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		get_account_id_from_seed::<sr25519::Public>("Bob"),
 	];
@@ -269,7 +269,7 @@ pub fn darwinia_genesis(
 			..Default::default()
 		}),
 		eth_relay: Some(EthRelayConfig { 
-			whitelist: eth_relay_whitelist,
+			authorities: eth_relay_authorities,
 			..Default::default()
 		}),
 		eth_backing: Some(EthBackingConfig {
