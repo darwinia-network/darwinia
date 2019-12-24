@@ -72,6 +72,8 @@ decl_storage! {
 
 //		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
 //		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
+
+		pub Whitelist get(fn whitelist) config(): Vec<T::AccountId>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;
@@ -98,6 +100,7 @@ decl_module! {
 
 		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
 			let relayer = ensure_signed(origin)?;
+			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
 			// TODO: Check authority
 
 			// TODO: Just for easy testing.
@@ -108,6 +111,7 @@ decl_module! {
 
 		pub fn relay_header(origin, header: EthHeader) {
 			let relayer = ensure_signed(origin)?;
+			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
 			// 1. There must be a corresponding parent hash
 			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
 
@@ -120,6 +124,7 @@ decl_module! {
 
 		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
 			let relayer = ensure_signed(origin)?;
+			ensure!(Self::whitelist().contains(&relayer), "Your account is not on the whitelist!");
 
 			let verified_receipt = Self::verify_receipt(&proof_record)?;
 
