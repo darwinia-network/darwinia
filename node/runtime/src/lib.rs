@@ -68,8 +68,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
 	authoring_version: 3,
-	spec_version: 81,
-	impl_version: 81,
+	spec_version: 82,
+	impl_version: 82,
 	apis: RUNTIME_API_VERSIONS,
 };
 
