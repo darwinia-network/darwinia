@@ -158,9 +158,10 @@ decl_module! {
 		pub fn remove_authority(origin, who: T::AccountId) -> Result {
 			let _me = ensure_root(origin)?;
 
-			if Self::authorities().contains(&who) {
-				let index = Self::authorities().iter().position(|x| *x == who).ok_or("Authority - NOT EXISTED")?;
-				<Authorities<T>>::mutate(|l| l.remove(index));
+			if let Some(i) = Self::authorities()
+				.into_iter()
+				.position(|who_| who_ == who) {
+				<Authorities<T>>::mutate(|l| l.remove(i));
 			}
 
 			Ok(())
