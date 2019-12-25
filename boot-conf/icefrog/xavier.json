@@ -1,8 +1,0 @@
-{
-	"base-path": "/tmp/icefrog/xavier",
-	"bootnodes": [
-		"/ip4/121.199.60.87/tcp/30333/p2p/QmVM65wHJTxmung5J96wt7aULcts785dyJ6xPUMTtBwVXn"
-	],
-	"name": "Xavier",
-	"validator": true
-}

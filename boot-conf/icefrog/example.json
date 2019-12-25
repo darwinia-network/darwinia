@@ -1,0 +1,18 @@
+{
+	"base-path": "/tmp/icefrog",
+	"bootnodes": [
+		"/ip4/35.234.35.49/tcp/6666/p2p/QmTcrvB4n4swcsc8UHQ9vDPNRoA7dUBRCUzs3j1FTubC2g",
+		"/ip4/35.234.35.49/tcp/30333/p2p/QmQweyUQArGKdiYKfKGWdixSrrLh61D9j7L6HrZHoh7z4D",
+		"/ip4/121.199.60.87/tcp/20222/p2p/Qmb7mhcWY8ReQ9MPEfGnvV4tVSrcR6ehcoGoLViFAAp4un"
+	],
+
+	"name": "IceFrog",
+	"validator": true,
+
+	"rpc-external": true,
+	"rpc-port": 23332,
+	"ws-external": true,
+	"ws-port": 23333,
+	"rpc-cors": "all",
+	"port": 23334
+}
