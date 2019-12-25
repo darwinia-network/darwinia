@@ -254,7 +254,7 @@ pub fn darwinia_genesis(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			validator_count: 7,
-			minimum_validator_count: 1,
+			minimum_validator_count: 2,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
@@ -328,7 +328,10 @@ pub fn local_testnet_config() -> ChainSpec {
 pub fn icefrog_testnet_config() -> ChainSpec {
 	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
-			vec![get_authority_keys_from_seed("Alice")],
+			vec![
+				get_authority_keys_from_seed("Alice"),
+				get_authority_keys_from_seed("Bob"),
+			],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
 			None,
 			true,
