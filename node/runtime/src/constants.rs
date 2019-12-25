@@ -60,7 +60,8 @@ pub mod time {
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
 	// Develop
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10;
+	//	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10;
+	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = MINUTES;
 	// Production
 	//	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
