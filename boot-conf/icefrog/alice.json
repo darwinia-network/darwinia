@@ -1,5 +1,5 @@
 {
-	"base-path": "/tmp/darwinia-testnet/alice",
+	"base-path": "/tmp/icefrog/alice",
 	"rpc-external": true,
 	"rpc-port": 23332,
 	"ws-external": true,
