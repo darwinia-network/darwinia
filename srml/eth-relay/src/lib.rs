@@ -59,19 +59,19 @@ decl_storage! {
 		/// Info of the best block header for now
 		pub BestHeaderHash get(fn best_header_hash): H256;
 
-		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
+		pub HeaderOf get(fn header_of): map H256 => Option<EthHeader>;
 
-		pub HeaderDetailsOf get(header_details_of): map H256 => Option<BlockDetails>;
+		pub HeaderDetailsOf get(fn header_details_of): map H256 => Option<BlockDetails>;
 
 		/// Block delay for verify transaction
-		pub FinalizeNumber get(finalize_number): Option<u64>;
+		pub FinalizeNumber get(fn finalize_number): Option<u64>;
 
-//		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
+//		pub BestHashOf get(fn best_hash_of): map u64 => Option<H256>;
 
-//		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
+//		pub HashsOf get(fn hashs_of): map u64 => Vec<H256>;
 
-//		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
-//		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
+//		pub HeaderForIndex get(fn header_for_index): map H256 => Vec<(u64, T::Hash)>;
+//		pub UnverifiedHeader get(fn unverified_header): map PrevHash => Vec<Header>;
 	}
 	add_extra_genesis {
 		config(header): Option<Vec<u8>>;

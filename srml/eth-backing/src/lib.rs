@@ -44,16 +44,16 @@ pub trait Trait: timestamp::Trait {
 
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
-		pub RingRedeemAddress get(ring_redeem_address) config(): EthAddress;
-		pub KtonRedeemAddress get(kton_redeem_address) config(): EthAddress;
-		pub DepositRedeemAddress get(deposit_redeem_address) config(): EthAddress;
-
 		pub RingLocked get(fn ring_locked) config(): Ring<T>;
-		pub KtonLocked get(fn kton_locked) config(): Kton<T>;
+		pub RingProofVerified get(fn ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub RingRedeemAddress get(fn ring_redeem_address) config(): EthAddress;
 
-		pub RingProofVerified get(ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
-		pub KtonProofVerified get(kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
-		pub DepositProofVerified get(deposit_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub KtonLocked get(fn kton_locked) config(): Kton<T>;
+		pub KtonProofVerified get(fn kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub KtonRedeemAddress get(fn kton_redeem_address) config(): EthAddress;
+
+		pub DepositProofVerified get(fn deposit_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub DepositRedeemAddress get(fn deposit_redeem_address) config(): EthAddress;
 	}
 }
 
