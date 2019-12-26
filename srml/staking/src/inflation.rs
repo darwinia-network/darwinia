@@ -13,6 +13,7 @@ pub fn compute_total_payout<T: Trait>(
 	era_duration: Moment,
 	living_time: Moment,
 	total_left: u128,
+	payout_fraction: Perbill,
 ) -> (Ring<T>, Ring<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
 	const MILLISECONDS_PER_YEAR: Moment = ((36525 * 24 * 60 * 60) / 100) * 1000;
@@ -25,7 +26,7 @@ pub fn compute_total_payout<T: Trait>(
 
 	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
 
-	let payout = maximum * 1; // TODO: add treasury ratio: Perbill::from_rational_approximation(npos_token_staked, total_tokens);
+	let payout = payout_fraction * maximum;
 
 	let payout: Ring<T> = <Ring<T>>::saturated_from::<u128>(payout);
 
