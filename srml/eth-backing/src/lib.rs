@@ -3,33 +3,32 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
 use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
 #[cfg(not(feature = "std"))]
 use rstd::borrow::ToOwned;
 use rstd::{convert::TryFrom, marker::PhantomData, result, vec};
 use sr_primitives::traits::{CheckedSub, SaturatedConversion};
-use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced}; // dispatch::Result,
+use support::{decl_event, decl_module, decl_storage, ensure, traits::Currency, traits::OnUnbalanced};
 use system::ensure_signed;
 
 use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
 use sr_eth_primitives::{EthAddress, H256, U256};
 
-pub type Balance = u128;
-pub type Moment = u64;
+type Balance = u128;
 
-type Ring<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceRing<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type RingBalance<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::Balance;
+type RingPositiveImbalance<T> = <<T as Trait>::Ring as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 
-type Kton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceKton<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
+type KtonBalance<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::Balance;
+type KtonPositiveImbalance<T> = <<T as Trait>::Kton as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;
 
 type EthTransactionIndex = (H256, u64);
-
-#[cfg(all(feature = "std", test))]
-mod mock;
-#[cfg(all(feature = "std", test))]
-mod tests;
 
 pub trait Trait: timestamp::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -38,17 +37,17 @@ pub trait Trait: timestamp::Trait {
 	type Kton: LockableCurrency<Self::AccountId, Moment = Self::Moment>;
 	type OnDepositRedeem: OnDepositRedeem<Self::AccountId, Moment = Self::Moment>;
 	type DetermineAccountId: AccountIdFor<Self::AccountId>;
-	type RingReward: OnUnbalanced<PositiveImbalanceRing<Self>>;
-	type KtonReward: OnUnbalanced<PositiveImbalanceKton<Self>>;
+	type RingReward: OnUnbalanced<RingPositiveImbalance<Self>>;
+	type KtonReward: OnUnbalanced<KtonPositiveImbalance<Self>>;
 }
 
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
-		pub RingLocked get(fn ring_locked) config(): Ring<T>;
+		pub RingLocked get(fn ring_locked) config(): RingBalance<T>;
 		pub RingProofVerified get(fn ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
 		pub RingRedeemAddress get(fn ring_redeem_address) config(): EthAddress;
 
-		pub KtonLocked get(fn kton_locked) config(): Kton<T>;
+		pub KtonLocked get(fn kton_locked) config(): KtonBalance<T>;
 		pub KtonProofVerified get(fn kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
 		pub KtonRedeemAddress get(fn kton_redeem_address) config(): EthAddress;
 
@@ -87,7 +86,7 @@ decl_module! {
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "RingBurndropTokens")?;
 
-			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
+			let redeemed_ring = <RingBalance<T>>::saturated_from(redeemed_amount);
 
 			let new_ring_locked = Self::ring_locked()
 				.checked_sub(&redeemed_ring)
@@ -120,7 +119,7 @@ decl_module! {
 
 			let (darwinia_account, redeemed_amount) = Self::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens")?;
 
-			let redeemed_kton = <Kton<T>>::saturated_from(redeemed_amount);
+			let redeemed_kton = <KtonBalance<T>>::saturated_from(redeemed_amount);
 			let new_kton_locked = Self::kton_locked()
 				.checked_sub(&redeemed_kton)
 				.ok_or("KTON Locked - NO SUFFICIENT BACKING ASSETS")?;
@@ -220,7 +219,7 @@ decl_module! {
 
 				T::DetermineAccountId::account_id_for(&raw_sub_key)?
 			};
-			let redeemed_ring = <Ring<T>>::saturated_from(redeemed_amount);
+			let redeemed_ring = <RingBalance<T>>::saturated_from(redeemed_amount);
 			let new_ring_locked = Self::ring_locked()
 				.checked_sub(&redeemed_ring)
 				.ok_or("RING Locked - NO SUFFICIENT BACKING ASSETS")?;
