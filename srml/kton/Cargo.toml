@@ -21,7 +21,7 @@ darwinia-support = { path = "../support", default-features = false }
 ring = { package = "darwinia-balances", path = "../balances", default-features = false }
 
 [dev-dependencies]
-runtime_io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 [features]

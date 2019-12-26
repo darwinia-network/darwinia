@@ -200,6 +200,11 @@ pub fn darwinia_genesis(
 		]
 	});
 
+	let eth_relay_authorities: Vec<AccountId> = vec![
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Bob"),
+	];
+
 	const ENDOWMENT: Balance = 1_000_000 * COIN;
 	const STASH: Balance = 100 * COIN;
 
@@ -263,7 +268,10 @@ pub fn darwinia_genesis(
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
 		}),
-		eth_relay: Some(EthRelayConfig { ..Default::default() }),
+		eth_relay: Some(EthRelayConfig { 
+			authorities: eth_relay_authorities,
+			..Default::default()
+		}),
 		eth_backing: Some(EthBackingConfig {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),

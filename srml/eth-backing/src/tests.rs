@@ -8,13 +8,11 @@ use sr_eth_primitives::{
 	Bloom, EthAddress, H64, U128,
 };
 use std::str::FromStr;
-use support::{assert_ok, assert_err};
+use support::{assert_err, assert_ok};
 
-use sr_primitives::{AccountId32, traits::Dispatchable};
+use sr_primitives::{traits::Dispatchable, AccountId32};
 
-use staking::{
-	RewardDestination, StakingBalances, StakingLedger, TimeDepositItem
-};
+use staking::{RewardDestination, StakingBalances, StakingLedger, TimeDepositItem};
 
 use darwinia_support::StakingLock;
 
@@ -167,27 +165,27 @@ fn verify_redeem_kton() {
 			// totalDifficulty
 			assert_ok!(EthRelay::init_genesis_header(&header, 0x68e4ea361f7a78_u64));
 
-		 	let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
 
 			// 0.123456789123456789 KTON
-			 assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens"), Ok((expect_account_id.clone(), 123456789))); 
-			
+			assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens"), Ok((expect_account_id.clone(), 123456789))); 
+
 			let id1 = AccountId32::from([0; 32]);
-		 	// If expect_account_id doesn't exist, redeem should fail
-		 	assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "beneficiary account must pre-exist");
+			// If expect_account_id doesn't exist, redeem should fail
+			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "beneficiary account must pre-exist");
 
 			let kton_locked_before = EthBacking::kton_locked();
-			
-		 	let _ = KtonModule::deposit_creating(&expect_account_id, 1);
-		 	assert_ok!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()));
 
-		 	assert_eq!(KtonModule::free_balance(&expect_account_id), 123456789 + 1);
+			let _ = KtonModule::deposit_creating(&expect_account_id, 1);
+			assert_ok!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()));
+
+			assert_eq!(KtonModule::free_balance(&expect_account_id), 123456789 + 1);
 
 			let kton_locked_after = EthBacking::kton_locked();
 			assert_eq!(kton_locked_after + 123456789, kton_locked_before);
 
-		 	// shouldn't redeem twice
-		 	assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "Kton For This Proof - ALREADY BEEN REDEEMED");
+			// shouldn't redeem twice
+			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "Kton For This Proof - ALREADY BEEN REDEEMED");
 		});
 }
 
@@ -248,7 +246,7 @@ fn verify_redeem_deposit() {
 			let id1 = AccountId32::from([0; 32]);
 
 			let controller = AccountId32::from([1; 32]);
-			
+
 			let _ = RingModule::deposit_creating(&expect_account_id, 1);
 			assert_ok!(
 				staking::Call::<Test>::bond(
@@ -256,7 +254,7 @@ fn verify_redeem_deposit() {
 					StakingBalances::Ring(1),
 					RewardDestination::Controller,
 					0).dispatch(Origin::signed(expect_account_id.clone()))
-			); 	
+			);
 		 	assert_ok!(EthBacking::redeem_deposit(Origin::signed(id1.clone()), proof_record.clone()));
 
 		 	assert_eq!(RingModule::free_balance(&expect_account_id), 1234000000000 + 1);
@@ -284,4 +282,3 @@ fn verify_redeem_deposit() {
 fn verify_insurficient_backing_assets() {
 	// TODO
 }
-
