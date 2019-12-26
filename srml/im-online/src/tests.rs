@@ -28,7 +28,7 @@ use support::{assert_noop, dispatch};
 #[test]
 fn test_unresponsiveness_slash_fraction() {
 	// A single case of unresponsiveness is not slashed.
-	assert_eq!(UnresponsivenessOffence::<()>::slash_fraction(1, 50), Perbill::zero(),);
+	assert_eq!(UnresponsivenessOffence::<()>::slash_fraction(1, 50), Perbill::zero());
 
 	assert_eq!(
 		UnresponsivenessOffence::<()>::slash_fraction(3, 50),
@@ -68,7 +68,7 @@ fn should_report_offline_validators() {
 				UnresponsivenessOffence {
 					session_index: 2,
 					validator_set_count: 3,
-					offenders: vec![(1, 1), (2, 2), (3, 3),],
+					offenders: vec![(1, 1), (2, 2), (3, 3)],
 				}
 			)]
 		);
@@ -88,7 +88,7 @@ fn should_report_offline_validators() {
 				UnresponsivenessOffence {
 					session_index: 3,
 					validator_set_count: 6,
-					offenders: vec![(5, 5), (6, 6),],
+					offenders: vec![(5, 5), (6, 6)],
 				}
 			)]
 		);
