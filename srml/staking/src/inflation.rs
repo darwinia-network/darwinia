@@ -25,7 +25,9 @@ pub fn compute_total_payout<T: Trait>(
 
 	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
 
-	let payout = maximum * 1; // TODO: add treasury ratio: Perbill::from_rational_approximation(npos_token_staked, total_tokens);
+	// treasury ratio = npos token staked / total tokens
+	// 50%
+	let payout = maximum / 2;
 
 	let payout: Ring<T> = <Ring<T>>::saturated_from::<u128>(payout);
 
