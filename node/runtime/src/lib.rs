@@ -226,15 +226,15 @@ impl session::historical::Trait for Runtime {
 
 parameter_types! {
 	// Develop
-//	pub const ContractTransferFee: Balance = MICRO;
-//	pub const ContractCreationFee: Balance = MICRO;
-//	pub const ContractTransactionBaseFee: Balance = MICRO;
-//	pub const ContractTransactionByteFee: Balance = MICRO;
-//	pub const ContractFee: Balance = MICRO;
-//	pub const TombstoneDeposit: Balance = MICRO;
-//	pub const RentByteFee: Balance = MICRO;
-//	pub const RentDepositOffset: Balance = MICRO;
-//	pub const SurchargeReward: Balance = MICRO;
+	//	pub const ContractTransferFee: Balance = MICRO;
+	//	pub const ContractCreationFee: Balance = MICRO;
+	//	pub const ContractTransactionBaseFee: Balance = MICRO;
+	//	pub const ContractTransactionByteFee: Balance = MICRO;
+	//	pub const ContractFee: Balance = MICRO;
+	//	pub const TombstoneDeposit: Balance = MICRO;
+	//	pub const RentByteFee: Balance = MICRO;
+	//	pub const RentDepositOffset: Balance = MICRO;
+	//	pub const SurchargeReward: Balance = MICRO;
 
 	// Production
 	pub const ContractTransferFee: Balance = 1 * MICRO;
