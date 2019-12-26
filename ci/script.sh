@@ -19,16 +19,16 @@ cargo --version
 rustc --version
 
 case $2 in
-  "native")
-    sudo apt-get -y update
-    sudo apt-get install -y cmake pkg-config libssl-dev
+	"native")
+		sudo apt-get -y update
+		sudo apt-get install -y cmake pkg-config libssl-dev
 
-    # Unit test
-    cargo test --release --all --locked
-    ;;
+		# Unit test
+		cargo test --release --all --locked
+		;;
 
-  "wasm")
-    # Build test
-    cargo build
-    ;;
+	"wasm")
+		# Build test
+		cargo build
+		;;
 esac

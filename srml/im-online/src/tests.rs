@@ -21,17 +21,14 @@
 use super::*;
 use crate::mock::*;
 use offchain::testing::TestOffchainExt;
-use primitives::offchain::{OpaquePeerId, OffchainExt};
-use support::{dispatch, assert_noop};
+use primitives::offchain::{OffchainExt, OpaquePeerId};
 use sr_primitives::testing::UintAuthorityId;
+use support::{assert_noop, dispatch};
 
 #[test]
 fn test_unresponsiveness_slash_fraction() {
 	// A single case of unresponsiveness is not slashed.
-	assert_eq!(
-		UnresponsivenessOffence::<()>::slash_fraction(1, 50),
-		Perbill::zero(),
-	);
+	assert_eq!(UnresponsivenessOffence::<()>::slash_fraction(1, 50), Perbill::zero(),);
 
 	assert_eq!(
 		UnresponsivenessOffence::<()>::slash_fraction(3, 50),
@@ -64,17 +61,17 @@ fn should_report_offline_validators() {
 
 		// then
 		let offences = OFFENCES.with(|l| l.replace(vec![]));
-		assert_eq!(offences, vec![
-			(vec![], UnresponsivenessOffence {
-				session_index: 2,
-				validator_set_count: 3,
-				offenders: vec![
-					(1, 1),
-					(2, 2),
-					(3, 3),
-				],
-			})
-		]);
+		assert_eq!(
+			offences,
+			vec![(
+				vec![],
+				UnresponsivenessOffence {
+					session_index: 2,
+					validator_set_count: 3,
+					offenders: vec![(1, 1), (2, 2), (3, 3),],
+				}
+			)]
+		);
 
 		// should not report when heartbeat is sent
 		for (idx, v) in validators.into_iter().take(4).enumerate() {
@@ -84,25 +81,21 @@ fn should_report_offline_validators() {
 
 		// then
 		let offences = OFFENCES.with(|l| l.replace(vec![]));
-		assert_eq!(offences, vec![
-			(vec![], UnresponsivenessOffence {
-				session_index: 3,
-				validator_set_count: 6,
-				offenders: vec![
-					(5, 5),
-					(6, 6),
-				],
-			})
-		]);
+		assert_eq!(
+			offences,
+			vec![(
+				vec![],
+				UnresponsivenessOffence {
+					session_index: 3,
+					validator_set_count: 6,
+					offenders: vec![(5, 5), (6, 6),],
+				}
+			)]
+		);
 	});
 }
 
-fn heartbeat(
-	block_number: u64,
-	session_index: u32,
-	authority_index: u32,
-	id: UintAuthorityId,
-) -> dispatch::Result {
+fn heartbeat(block_number: u64, session_index: u32, authority_index: u32, id: UintAuthorityId) -> dispatch::Result {
 	#[allow(deprecated)]
 	use support::unsigned::ValidateUnsigned;
 
@@ -119,11 +112,7 @@ fn heartbeat(
 
 	#[allow(deprecated)] // Allow ValidateUnsigned
 	ImOnline::pre_dispatch(&crate::Call::heartbeat(heartbeat.clone(), signature.clone()))?;
-	ImOnline::heartbeat(
-		Origin::system(system::RawOrigin::None),
-		heartbeat,
-		signature
-	)
+	ImOnline::heartbeat(Origin::system(system::RawOrigin::None), heartbeat, signature)
 }
 
 #[test]
@@ -211,12 +200,15 @@ fn should_generate_heartbeats() {
 			e => panic!("Unexpected call: {:?}", e),
 		};
 
-		assert_eq!(heartbeat, Heartbeat {
-			block_number: 2,
-			network_state: runtime_io::offchain::network_state().unwrap(),
-			session_index: 2,
-			authority_index: 2,
-		});
+		assert_eq!(
+			heartbeat,
+			Heartbeat {
+				block_number: 2,
+				network_state: runtime_io::offchain::network_state().unwrap(),
+				session_index: 2,
+				authority_index: 2,
+			}
+		);
 	});
 }
 
@@ -314,11 +306,14 @@ fn should_not_send_a_report_if_already_online() {
 			e => panic!("Unexpected call: {:?}", e),
 		};
 
-		assert_eq!(heartbeat, Heartbeat {
-			block_number: 4,
-			network_state: runtime_io::offchain::network_state().unwrap(),
-			session_index: 2,
-			authority_index: 0,
-		});
+		assert_eq!(
+			heartbeat,
+			Heartbeat {
+				block_number: 4,
+				network_state: runtime_io::offchain::network_state().unwrap(),
+				session_index: 2,
+				authority_index: 0,
+			}
+		);
 	});
 }
