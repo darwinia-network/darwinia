@@ -1,0 +1,49 @@
+[package]
+name = "darwinia-eth-relay"
+version = "0.2.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+system = { package = "srml-system",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+
+# darwinia
+ethash = { path = "../../core/ethash", default-features = false }
+merkle-patricia-trie = { path = "../../core/merkle-patricia-trie", default-features = false }
+sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = false }
+
+[dev-dependencies]
+hex-literal = "0.2.1"
+keccak-hasher = "0.15.2"
+rustc-hex = "2.0"
+
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+    "serde/std",
+
+    "rlp/std",
+    "rstd/std",
+    "sr-primitives/std",
+    "support/std",
+    "system/std",
+
+    "ethash/std",
+    "merkle-patricia-trie/std",
+    "sr-eth-primitives/std",
+]

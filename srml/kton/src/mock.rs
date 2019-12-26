@@ -1,133 +1,149 @@
+use sr_primitives::{
+	testing::Header,
+	traits::{BlakeTwo256, IdentityLookup},
+	weights::Weight,
+	Perbill,
+};
+use substrate_primitives::H256;
+use support::{impl_outer_origin, parameter_types};
 
-
-use std::{collections::HashSet, cell::RefCell};
-use primitives::Perbill;
-use primitives::traits::{IdentityLookup, Convert, OpaqueKeys, OnInitialize};
-use primitives::testing::{Header, UintAuthorityId};
-use substrate_primitives::{H256, Blake2Hasher};
-use runtime_io;
-use srml_support::{assert_ok, impl_outer_origin, parameter_types, EnumerableStorageMap};
-use srml_support::traits::{Currency, Get};
-use crate::{Module, GenesisConfig };
-use super::*;
-
-const COIN: u64 = 1000000000;
-
+use crate::*;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
 pub type BlockNumber = u64;
-pub type Balance = u64;
+pub type Moment = u64;
 
-/// Simple structure that exposes how u64 currency can be represented as... u64.
-pub struct CurrencyToVoteHandler;
-impl Convert<u64, u64> for CurrencyToVoteHandler {
-    fn convert(x: u64) -> u64 { x }
-}
-impl Convert<u128, u64> for CurrencyToVoteHandler {
-    fn convert(x: u128) -> u64 {
-        x as u64
-    }
-}
+pub type System = system::Module<Test>;
+pub type Timestamp = timestamp::Module<Test>;
 
-thread_local! {
-	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<u64> = RefCell::new(0);
-}
+#[cfg(feature = "transfer-fee")]
+pub type Ring = ring::Module<Test>;
+pub type Kton = Module<Test>;
 
-pub struct ExistentialDeposit;
-impl Get<u64> for ExistentialDeposit {
-    fn get() -> u64 {
-        EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-    }
-}
+pub const NANO: Balance = 1;
+pub const MICRO: Balance = 1_000 * NANO;
+pub const MILLI: Balance = 1_000 * MICRO;
+pub const COIN: Balance = 1_000 * MILLI;
 
-impl_outer_origin!{
+impl_outer_origin! {
 	pub enum Origin for Test {}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
-
+parameter_types! {
+	pub const BlockHashCount: BlockNumber = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const AvailableBlockRatio: Perbill = Perbill::one();
+}
 impl system::Trait for Test {
-    type Origin = Origin;
-    type Index = u64;
-    type BlockNumber = u64;
-    type Hash = H256;
-    type Hashing = ::primitives::traits::BlakeTwo256;
-    type AccountId = AccountId;
-    type Lookup = IdentityLookup<Self::AccountId>;
-    type Header = Header;
-    type Event = ();
+	type Origin = Origin;
+	type Call = ();
+	type Index = u64;
+	type BlockNumber = BlockNumber;
+	type Hash = H256;
+	type Hashing = BlakeTwo256;
+	type AccountId = AccountId;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type Header = Header;
+	type Event = ();
+	type BlockHashCount = BlockHashCount;
+	type MaximumBlockWeight = MaximumBlockWeight;
+	type MaximumBlockLength = MaximumBlockLength;
+	type AvailableBlockRatio = AvailableBlockRatio;
+	type Version = ();
 }
 
-
+parameter_types! {
+	pub const MinimumPeriod: Moment = 5;
+}
 impl timestamp::Trait for Test {
-    type Moment = u64;
-    type OnTimestampSet = ();
+	type Moment = u64;
+	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
 }
 
+#[cfg(feature = "transfer-fee")]
+parameter_types! {
+	pub const TransferFee: Balance = 1 * MICRO;
+}
+#[cfg(not(feature = "transfer-fee"))]
+parameter_types! {
+	pub const TransferFee: Balance = 0;
+}
+impl ring::Trait for Test {
+	type Balance = Balance;
+	type OnFreeBalanceZero = ();
+	type OnNewAccount = ();
+	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ();
+	type TransferFee = TransferFee;
+	type CreationFee = ();
+}
 
 impl Trait for Test {
-    type Balance = Balance;
-    type Event = ();
-    type OnMinted = ();
-    type OnRemoval = ();
+	type Event = ();
 }
 
 pub struct ExtBuilder {
-    existential_deposit: u64,
+	balance_factor: Balance,
+	vesting: bool,
 }
 
 impl Default for ExtBuilder {
-    fn default() -> Self {
-        Self {
-            existential_deposit: 0
-        }
-    }
+	fn default() -> Self {
+		Self {
+			balance_factor: COIN,
+			vesting: false,
+		}
+	}
 }
 
 impl ExtBuilder {
-    pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
-        self.existential_deposit = existential_deposit;
-        self
-    }
-
-    pub fn set_associated_consts(&self) {
-        EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
-    }
-
-    pub fn build(self) -> runtime_io::TestExternalities<Blake2Hasher> {
-        self.set_associated_consts();
-        let (mut t, mut c) = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-        let balance_factor = if self.existential_deposit > 0 {
-            1_000 * COIN
-        } else {
-            1 * COIN
-        };
-        let _ = GenesisConfig::<Test>{
-            balances: vec![
-                (1, 10 * balance_factor),
-                (2, 20 * balance_factor),
-                (3, 300 * balance_factor),
-                (4, 400 * balance_factor),
-                (10, balance_factor),
-                (11, balance_factor * 1000),
-                (20, balance_factor),
-                (21, balance_factor * 2000),
-                (30, balance_factor),
-                (31, balance_factor * 2000),
-                (40, balance_factor),
-                (41, balance_factor * 2000),
-                (100, 2000 * balance_factor),
-                (101, 2000 * balance_factor),
-            ],
-            vesting: vec![],
-        }.assimilate_storage(&mut t, &mut c);
-        t.into()
-    }
+	pub fn balance_factor(mut self, balance_factor: Balance) -> Self {
+		self.balance_factor = balance_factor;
+		self
+	}
+	pub fn vesting(mut self, vesting: bool) -> Self {
+		self.vesting = vesting;
+		self
+	}
+	pub fn build(self) -> runtime_io::TestExternalities {
+		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		GenesisConfig::<Test> {
+			balances: vec![
+				(1, 10 * self.balance_factor),
+				(2, 20 * self.balance_factor),
+				(3, 300 * self.balance_factor),
+				(4, 400 * self.balance_factor),
+				(10, self.balance_factor),
+				(11, 1000 * self.balance_factor),
+				(20, self.balance_factor),
+				(21, 2000 * self.balance_factor),
+				(30, self.balance_factor),
+				(31, 2000 * self.balance_factor),
+				(40, self.balance_factor),
+				(41, 2000 * self.balance_factor),
+				(100, 2000 * self.balance_factor),
+				(101, 2000 * self.balance_factor),
+			],
+			vesting: if self.vesting {
+				vec![
+					(1, 0, 10, 5 * self.balance_factor),
+					(2, 10, 20, 0),
+					(12, 10, 20, 5 * self.balance_factor),
+				]
+			} else {
+				vec![]
+			},
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+		t.into()
+	}
 }
-pub type System = system::Module<Test>;
-pub type Kton = Module<Test>;
-pub type Timestamp = timestamp::Module<Test>;

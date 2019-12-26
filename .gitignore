@@ -7,8 +7,21 @@
 **/*.rs.bk
 
 .idea
-!node/runtime/wasm/target/wasm32-unknown-unknown/release/*.compact.wasm
+.vscode
+.DS_Store
 
 test-client
+node_runtime.wasm
 
-.DS_Store
+
+# For cross compile
+osxcross
+darwin-x86_64
+darwin-x86_64.tar.gz
+linux-x86_64
+linux-x86_64.tar.gz
+windows-x86_64
+windows-x86_64.tar.gz
+
+# Macro expand file
+expand.rs
