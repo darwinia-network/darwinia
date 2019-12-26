@@ -88,13 +88,13 @@
 		"who": "AccountId",
 		"value": "Compact<Power>"
 	},
-	"IKton": "Balance",
+	"KtonBalance": "Balance",
 	"NominatorReward": {
 		"who": "AccountId",
 		"amount": "Compact<Balance>"
 	},
 	"Power": "u128",
-	"IRing": "Balance",
+	"RingBalance": "Balance",
 	"SlashJournalEntry": {
 		"who": "AccountId",
 		"amount": "Compact<Power>",
@@ -102,8 +102,8 @@
 	},
 	"StakingBalances": {
 		"_enum": {
-			"IRing": "Balance",
-			"IKton": "Balance"
+			"RingBalance": "Balance",
+			"KtonBalance": "Balance"
 		}
 	},
 	"StakingLedger": {
