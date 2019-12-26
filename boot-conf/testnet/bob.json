@@ -1,0 +1,9 @@
+{
+	"base-path": "/tmp/testnet/bob",
+	"rpc-external": true,
+	"rpc-port": 23335,
+	"ws-external": true,
+	"ws-port": 23336,
+	"rpc-cors": "all",
+	"port": 23337
+}

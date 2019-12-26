@@ -28,7 +28,6 @@ pub type Timestamp = timestamp::Module<Test>;
 
 pub type Ring = balances::Module<Test>;
 pub type Kton = kton::Module<Test>;
-
 pub type Staking = Module<Test>;
 
 pub const NANO: Balance = 1;
@@ -432,7 +431,7 @@ pub fn bond_validator(acc: u64, val: Balance) {
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
 		acc,
-		StakingBalances::Ring(val),
+		StakingBalances::RingBalance(val),
 		RewardDestination::Controller,
 		0,
 	));
@@ -452,7 +451,7 @@ pub fn bond_nominator(acc: u64, val: Balance, target: Vec<u64>) {
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
 		acc,
-		StakingBalances::Ring(val),
+		StakingBalances::RingBalance(val),
 		RewardDestination::Controller,
 		0,
 	));

@@ -68,8 +68,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
 	impl_name: create_runtime_str!("darwinia-node"),
 	authoring_version: 3,
-	spec_version: 81,
-	impl_version: 81,
+	spec_version: 83,
+	impl_version: 83,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -148,16 +148,16 @@ impl indices::Trait for Runtime {
 
 parameter_types! {
 	// Develop
-	pub const TransactionBaseFee: Balance = MICRO;
-	pub const TransactionByteFee: Balance = MICRO;
+	//	pub const TransactionBaseFee: Balance = MICRO;
+	//	pub const TransactionByteFee: Balance = MICRO;
 	// setting this to zero will disable the weight fee.
-	pub const WeightFeeCoefficient: Balance = MICRO;
+	//	pub const WeightFeeCoefficient: Balance = MICRO;
 
 	// Production
-//	pub const TransactionBaseFee: Balance = 1 * MICRO;
-//	pub const TransactionByteFee: Balance = 10 * MICRO;
-//	// setting this to zero will disable the weight fee.
-//	pub const WeightFeeCoefficient: Balance = 1 * MICRO;
+	pub const TransactionBaseFee: Balance = 1 * MICRO;
+	pub const TransactionByteFee: Balance = 10 * MICRO;
+	// setting this to zero will disable the weight fee.
+	pub const WeightFeeCoefficient: Balance = 50 * NANO;
 
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perbill = Perbill::from_percent(25);
@@ -226,26 +226,26 @@ impl session::historical::Trait for Runtime {
 
 parameter_types! {
 	// Develop
-	pub const ContractTransferFee: Balance = MICRO;
-	pub const ContractCreationFee: Balance = MICRO;
-	pub const ContractTransactionBaseFee: Balance = MICRO;
-	pub const ContractTransactionByteFee: Balance = MICRO;
-	pub const ContractFee: Balance = MICRO;
-	pub const TombstoneDeposit: Balance = MICRO;
-	pub const RentByteFee: Balance = MICRO;
-	pub const RentDepositOffset: Balance = MICRO;
-	pub const SurchargeReward: Balance = MICRO;
+	//	pub const ContractTransferFee: Balance = MICRO;
+	//	pub const ContractCreationFee: Balance = MICRO;
+	//	pub const ContractTransactionBaseFee: Balance = MICRO;
+	//	pub const ContractTransactionByteFee: Balance = MICRO;
+	//	pub const ContractFee: Balance = MICRO;
+	//	pub const TombstoneDeposit: Balance = MICRO;
+	//	pub const RentByteFee: Balance = MICRO;
+	//	pub const RentDepositOffset: Balance = MICRO;
+	//	pub const SurchargeReward: Balance = MICRO;
 
 	// Production
-//	pub const ContractTransferFee: Balance = 1 * MICRO;
-//	pub const ContractCreationFee: Balance = 1 * MICRO;
-//	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
-//	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
-//	pub const ContractFee: Balance = 1 * MICRO;
-//	pub const TombstoneDeposit: Balance = 1 * COIN;
-//	pub const RentByteFee: Balance = 1 * COIN;
-//	pub const RentDepositOffset: Balance = 1000 * COIN;
-//	pub const SurchargeReward: Balance = 150 * COIN;
+	pub const ContractTransferFee: Balance = 1 * MICRO;
+	pub const ContractCreationFee: Balance = 1 * MICRO;
+	pub const ContractTransactionBaseFee: Balance = 1 * MICRO;
+	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
+	pub const ContractFee: Balance = 1 * MICRO;
+	pub const TombstoneDeposit: Balance = 1 * COIN;
+	pub const RentByteFee: Balance = 1 * COIN;
+	pub const RentDepositOffset: Balance = 1000 * COIN;
+	pub const SurchargeReward: Balance = 150 * COIN;
 }
 impl contracts::Trait for Runtime {
 	type Currency = Balances;
@@ -370,12 +370,12 @@ parameter_types! {
 	pub const BondingDuration: Moment = 1_209_600_000;
 	pub const BondingDurationInEra: staking::EraIndex = 4032;
 	// decimal 9
-	pub const HardCap: Balance = 1_000_000_000 * COIN;
-	// date in Los Angeles*: 11/19/2019, 2:33:20 AM
-	// date in Berlin* :11/19/2019, 5:33:20 PM
-	// date in Beijing*: 11/19/2019, 4:33:20 PM
-	// date in New York* :11/19/2019, 4:33:20 AM
-	pub const GenesisTime: Moment = 1_574_156_000_000;
+	pub const HardCap: Balance = 10_000_000_000 * COIN;
+	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
+	// Date in Berlin* :12/26/2019, 1:58:29 PM
+	// Date in Beijing*: 12/26/2019, 12:58:29 PM
+	// Date in New York* :12/26/2019, 12:58:29 AM
+	pub const GenesisTime: Moment = 1_577_339_909_000;
 }
 impl staking::Trait for Runtime {
 	type Time = Timestamp;

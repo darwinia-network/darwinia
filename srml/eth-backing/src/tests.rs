@@ -1,22 +1,16 @@
 //! Tests for the module.
+
+use std::str::FromStr;
+
 use hex_literal::hex;
 use rustc_hex::FromHex;
-
-use sr_eth_primitives::{
-	header::EthHeader,
-	receipt::{LogEntry, TransactionOutcome},
-	Bloom, EthAddress, H64, U128,
-};
-use std::str::FromStr;
+use sr_primitives::{traits::Dispatchable, AccountId32};
 use support::{assert_err, assert_ok};
 
-use sr_primitives::{traits::Dispatchable, AccountId32};
-
-use staking::{RewardDestination, StakingBalances, StakingLedger, TimeDepositItem};
-
-use darwinia_support::StakingLock;
-
 use crate::{mock::*, *};
+use darwinia_support::StakingLock;
+use sr_eth_primitives::{header::EthHeader, Bloom, EthAddress, H64};
+use staking::{RewardDestination, StakingBalances, StakingLedger, TimeDepositItem};
 
 #[test]
 fn verify_parse_token_redeem_proof() {
@@ -108,10 +102,10 @@ fn verify_redeem_ring() {
 
 			let ring_locked_before = EthBacking::ring_locked();
 
-			let _ = RingModule::deposit_creating(&expect_account_id, 1);
+			let _ = Ring::deposit_creating(&expect_account_id, 1);
 			assert_ok!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()));
 
-			assert_eq!(RingModule::free_balance(&expect_account_id), 1234567891 + 1);
+			assert_eq!(Ring::free_balance(&expect_account_id), 1234567891 + 1);
 
 			let ring_locked_after = EthBacking::ring_locked();
 
@@ -176,10 +170,10 @@ fn verify_redeem_kton() {
 
 			let kton_locked_before = EthBacking::kton_locked();
 
-			let _ = KtonModule::deposit_creating(&expect_account_id, 1);
+			let _ = Kton::deposit_creating(&expect_account_id, 1);
 			assert_ok!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()));
 
-			assert_eq!(KtonModule::free_balance(&expect_account_id), 123456789 + 1);
+			assert_eq!(Kton::free_balance(&expect_account_id), 123456789 + 1);
 
 			let kton_locked_after = EthBacking::kton_locked();
 			assert_eq!(kton_locked_after + 123456789, kton_locked_before);
@@ -247,17 +241,16 @@ fn verify_redeem_deposit() {
 
 			let controller = AccountId32::from([1; 32]);
 
-			let _ = RingModule::deposit_creating(&expect_account_id, 1);
-			assert_ok!(
-				staking::Call::<Test>::bond(
-					controller.clone(),
-					StakingBalances::Ring(1),
-					RewardDestination::Controller,
-					0).dispatch(Origin::signed(expect_account_id.clone()))
-			);
+			let _ = Ring::deposit_creating(&expect_account_id, 1);
+			assert_ok!(staking::Call::<Test>::bond(
+				controller.clone(),
+				StakingBalances::RingBalance(1),
+				RewardDestination::Controller,
+				0,
+			).dispatch(Origin::signed(expect_account_id.clone())));
 		 	assert_ok!(EthBacking::redeem_deposit(Origin::signed(id1.clone()), proof_record.clone()));
 
-		 	assert_eq!(RingModule::free_balance(&expect_account_id), 1234000000000 + 1);
+		 	assert_eq!(Ring::free_balance(&expect_account_id), 1234000000000 + 1);
 
 			let ring_locked_after = EthBacking::ring_locked();
 			assert_eq!(ring_locked_after + 1234000000000, ring_locked_before);
@@ -279,6 +272,6 @@ fn verify_redeem_deposit() {
 }
 
 #[test]
-fn verify_insurficient_backing_assets() {
+fn verify_insufficient_backing_assets() {
 	// TODO
 }

@@ -260,7 +260,7 @@ pub fn darwinia_genesis(
 		staking: Some(StakingConfig {
 			current_era: 0,
 			validator_count: 7,
-			minimum_validator_count: 1,
+			minimum_validator_count: 2,
 			stakers: initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
@@ -368,9 +368,13 @@ pub fn icefrog_testnet_config() -> ChainSpec {
 		Some("DAR"),
 		{
 			let mut properties = Properties::new();
+
 			properties.insert("ss58Format".into(), 42.into());
+
 			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "RING".into());
+			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("ktonTokenDecimals".into(), 9.into());
+			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
 
 			Some(properties)
 		},
