@@ -205,7 +205,7 @@ pub fn darwinia_genesis(
 		get_account_id_from_seed::<sr25519::Public>("Bob"),
 	];
 
-	const RING_ENDOWMENT: Balance = 10_000_000 * COIN;
+	const RING_ENDOWMENT: Balance = 20_000_000 * COIN;
 	const KTON_ENDOWMENT: Balance = 10 * COIN;
 	const STASH: Balance = 1000 * COIN;
 
