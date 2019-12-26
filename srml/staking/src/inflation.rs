@@ -8,11 +8,12 @@ use substrate_primitives::U256;
 use crate::{KtonBalance, Moment, RingBalance, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
-// <T: Trait + 'static>() -> Ring<T>
+// <T: Trait + 'static>() -> RingBalance<T>
 pub fn compute_total_payout<T: Trait>(
 	era_duration: Moment,
 	living_time: Moment,
 	total_left: u128,
+	payout_fraction: Perbill,
 ) -> (RingBalance<T>, RingBalance<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
 	const MILLISECONDS_PER_YEAR: Moment = ((36525 * 24 * 60 * 60) / 100) * 1000;
@@ -25,9 +26,7 @@ pub fn compute_total_payout<T: Trait>(
 
 	let maximum = maximum - maximum * 99_u128.pow(year.integer_sqrt()) / 100_u128.pow(year.integer_sqrt());
 
-	// treasury ratio = npos token staked / total tokens
-	// 50%
-	let payout = maximum / 2;
+	let payout = payout_fraction * maximum;
 
 	let payout: RingBalance<T> = <RingBalance<T>>::saturated_from::<u128>(payout);
 

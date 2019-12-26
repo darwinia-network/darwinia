@@ -511,6 +511,11 @@ decl_storage! {
 		/// The rest of the slashed value is handled by the `Slash`.
 		pub SlashRewardFraction get(fn slash_reward_fraction) config(): Perbill;
 
+		/// The percentage of the total payout that is distributed to validators and nominators
+		///
+		/// The reset might go to Treasury or something else.
+		pub PayoutFraction get(fn payout_fraction) config(): Perbill;
+
 		/// Total *Ring* in pool.
 		pub RingPool get(fn ring_pool): RingBalance<T>;
 		/// Total *Kton* in pool.
@@ -1549,6 +1554,7 @@ impl<T: Trait> Module<T> {
 				era_duration.saturated_into::<Moment>(),
 				(T::Time::now() - T::GenesisTime::get()).saturated_into::<Moment>(),
 				(T::Cap::get() - T::Ring::total_issuance()).saturated_into::<Balance>(),
+				PayoutFraction::get(),
 			);
 
 			let mut total_imbalance = <RingPositiveImbalance<T>>::zero();
