@@ -27,8 +27,15 @@ use support::{assert_noop, dispatch};
 
 #[test]
 fn test_unresponsiveness_slash_fraction() {
-	// A single case of unresponsiveness is not slashed.
-	assert_eq!(UnresponsivenessOffence::<()>::slash_fraction(1, 50), Perbill::zero());
+	// 1 ~ 2 offline should be punished 0.3%.
+	assert_eq!(
+		UnresponsivenessOffence::<()>::slash_fraction(1, 50),
+		Perbill::from_parts(3000000), // 0.3%
+	);
+	assert_eq!(
+		UnresponsivenessOffence::<()>::slash_fraction(2, 50),
+		Perbill::from_parts(3000000), // 0.3%
+	);
 
 	assert_eq!(
 		UnresponsivenessOffence::<()>::slash_fraction(3, 50),
