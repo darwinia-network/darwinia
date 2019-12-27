@@ -355,7 +355,7 @@ fn rewards_should_work() {
 		assert_eq!(Staking::current_era(), 0);
 		assert_eq!(Session::current_index(), 1);
 		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
-		//<Module<Test>>::reward_by_ids(vec![(11, 50)]);
+		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
 		// This is the second validator of the current elected set.
 		<Module<Test>>::reward_by_ids(vec![(21, 50)]);
 		// This must be no-op as it is not an elected validator.
@@ -385,8 +385,8 @@ fn rewards_should_work() {
 		assert_eq!(Session::current_index(), 3);
 		
 		// 11 validator has 2/3 of the total rewards and half half for it and its nominator. (should fix)
-		assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout / 4, 1);
-		assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout / 4, 1);
+		assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout / 3, 100);
+		assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout / 3, 100);
 		assert_eq!(Ring::total_balance(&11), init_balance_11);		
 	});
 }
@@ -4066,13 +4066,13 @@ fn test_payout() {
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
 		let total_pay_out_now = current_total_payout_for_duration(180 * 1000);
-		assert_eq!(total_pay_out_now, 456240000000 / 2);
+		assert_eq!(total_pay_out_now, 456308464522 / 2);
 		
-		// for one year, Note: this test will take over 60s
-		for i in 0..175320 {
-			start_session(i);
-		}
-		assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 8 * 10_000_000 * COIN / 2);
+		// // for one year, Note: this test will take over 60s
+		// for i in 0..175320 {
+		// 	start_session(i);
+		// }
+		// assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 79601332265494830 / 2);
 	});
 }
 // breakpoint test
