@@ -7,7 +7,7 @@ use codec::{Decode, Encode};
 use rstd::{result, vec::Vec};
 use sr_primitives::RuntimeDebug;
 use support::{decl_event, decl_module, decl_storage, dispatch::Result, ensure, traits::Get};
-use system::{ensure_signed, ensure_root};
+use system::{ensure_root, ensure_signed};
 
 use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};

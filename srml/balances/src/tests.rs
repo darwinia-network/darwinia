@@ -464,7 +464,7 @@ fn balance_transfer_works() {
 fn force_transfer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let _ = Balances::deposit_creating(&1, 111);
-		assert_noop!(Balances::force_transfer(Some(2).into(), 1, 2, 69), "RequireRootOrigin",);
+		assert_noop!(Balances::force_transfer(Some(2).into(), 1, 2, 69), "RequireRootOrigin");
 		assert_ok!(Balances::force_transfer(RawOrigin::Root.into(), 1, 2, 69));
 		assert_eq!(Balances::total_balance(&1), 42);
 		assert_eq!(Balances::total_balance(&2), 69);

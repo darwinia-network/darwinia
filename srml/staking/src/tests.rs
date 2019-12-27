@@ -450,12 +450,20 @@ fn staking_should_work() {
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
 			// Put some money in account that we'll use.
-			for i in 1..5 { let _ = Ring::make_free_balance_be(&i, 2000); }
+			for i in 1..5 {
+				let _ = Ring::make_free_balance_be(&i, 2000);
+			}
 
 			// --- Block 1:
 			start_session(1);
 			// Add a new candidate for being a validator. account 3 controlled by 4.
-			assert_ok!(Staking::bond(Origin::signed(3), 4, StakingBalances::RingBalance(1500), RewardDestination::Controller, 0));
+			assert_ok!(Staking::bond(
+				Origin::signed(3),
+				4,
+				StakingBalances::RingBalance(1500),
+				RewardDestination::Controller,
+				0,
+			));
 			assert_ok!(Staking::validate(
 				Origin::signed(4),
 				ValidatorPrefs {
@@ -472,7 +480,6 @@ fn staking_should_work() {
 
 			// No effects will be seen so far. Era has not been yet triggered.
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
-
 
 			// --- Block 3: the validators will now be queued.
 			start_session(3);
@@ -511,7 +518,10 @@ fn staking_should_work() {
 				},
 			);
 			// e.g. It cannot spend more than 500 that it has free from the total 2000.
-			assert_noop!(Ring::reserve(&3, 501), "account liquidity restrictions prevent withdrawal");
+			assert_noop!(
+				Ring::reserve(&3, 501),
+				"account liquidity restrictions prevent withdrawal",
+			);
 			assert_ok!(Ring::reserve(&3, 409));
 		});
 }
@@ -2231,6 +2241,29 @@ fn dont_slash_if_fraction_is_zero() {
 // custom tests
 
 #[test]
+fn bond_zero_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		let (stash, controller) = (123, 456);
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalances::RingBalance(0),
+			RewardDestination::Stash,
+			0,
+		));
+
+		let (stash, controller) = (234, 567);
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalances::KtonBalance(0),
+			RewardDestination::Stash,
+			0,
+		));
+	});
+}
+
+#[test]
 fn normal_kton_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		{
@@ -3727,7 +3760,7 @@ fn xavier_q2() {
 					unbondings: vec![NormalLock {
 						amount: 2,
 						until: BondingDuration::get() + unbond_start_1,
-					},],
+					}],
 				}),
 				reasons: WithdrawReasons::all(),
 			}]
