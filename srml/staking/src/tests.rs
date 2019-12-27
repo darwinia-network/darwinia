@@ -3964,16 +3964,39 @@ fn xavier_q3() {
 }
 
 #[test]
-fn test_current_total_payout_for_duration() {
+fn test_payout() {
 	ExtBuilder::default().build().execute_with(|| {
-		let duration = 9 * 5 * 1000;
-		assert_eq!(
-			inflation::compute_total_payout::<Test>(
-				duration.saturated_into::<Moment>(),
-				(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
-				(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
-			),
-			(0, 0)
+		// Set payee to controller
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		assert_eq!(Ring::total_issuance(), 
+			Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
+			+ Ring::total_balance(&10) + Ring::total_balance(&11)
+			+ Ring::total_balance(&20) + Ring::total_balance(&21)
+			+ Ring::total_balance(&30) + Ring::total_balance(&31)
+			+ Ring::total_balance(&40) + Ring::total_balance(&41)
+			+ Ring::total_balance(&100) + Ring::total_balance(&101)
+			+ Ring::total_balance(&999)
 		);
+		let left = 2000_000_000 * COIN - (Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
+		+ Ring::total_balance(&10) + Ring::total_balance(&11)
+		+ Ring::total_balance(&20) + Ring::total_balance(&21)
+		+ Ring::total_balance(&30) + Ring::total_balance(&31)
+		+ Ring::total_balance(&40) + Ring::total_balance(&41)
+		+ Ring::total_balance(&100) + Ring::total_balance(&101)
+		+ Ring::total_balance(&999));
+		let _ = Ring::deposit_creating(&9999, left);
+		assert_eq!(Ring::total_issuance(), 2000_000_000 * COIN);
+
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		let total_pay_out_now = current_total_payout_for_duration(180 * 1000);
+		assert_eq!(total_pay_out_now, 456240000000);
+		
+		// // for one year, Note: this test will take over 60s
+		// for i in 0..175320 {
+		// 	start_session(i);
+		// }
+		// assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 8 * 10_000_000 * COIN);
 	});
 }
