@@ -9,6 +9,8 @@ image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=ht
 
 == Darwinia Relay Chain
 
+image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
+
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
 It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
