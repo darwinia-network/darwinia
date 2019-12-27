@@ -43,7 +43,7 @@ mod tests {
 	#[test]
 	fn test_encode_decode() {
 		let nodes = vec![vec![0u8], vec![1], vec![2]];
-		let expected = Proof { nodes: nodes };
+		let expected = Proof { nodes };
 		let rlp_proof = rlp::encode(&expected);
 		let out_proof: Proof = rlp::decode(&rlp_proof).unwrap();
 		println!("{:?}", out_proof);

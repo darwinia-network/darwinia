@@ -112,7 +112,8 @@ impl<T: Get<Perbill>> Convert<Fixed64, Fixed64> for TargetedFeeAdjustment<T> {
 		} else {
 			// Proof: first_term > second_term. Safe subtraction.
 			let negative = first_term - second_term;
-			multiplier.saturating_sub(negative)
+			multiplier
+				.saturating_sub(negative)
 				// despite the fact that apply_to saturates weight (final fee cannot go below 0)
 				// it is crucially important to stop here and don't further reduce the weight fee
 				// multiplier. While at -1, it means that the network is so un-congested that all
