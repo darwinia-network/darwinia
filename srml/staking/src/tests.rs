@@ -2231,6 +2231,29 @@ fn dont_slash_if_fraction_is_zero() {
 // custom tests
 
 #[test]
+fn bond_zero_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		let (stash, controller) = (123, 456);
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalances::RingBalance(0),
+			RewardDestination::Stash,
+			0,
+		));
+
+		let (stash, controller) = (234, 567);
+		assert_ok!(Staking::bond(
+			Origin::signed(stash),
+			controller,
+			StakingBalances::KtonBalance(0),
+			RewardDestination::Stash,
+			0,
+		));
+	});
+}
+
+#[test]
 fn normal_kton_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		{
