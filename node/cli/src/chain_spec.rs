@@ -334,7 +334,7 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-/// c￿rayfish testnet config (multivalidator Alice + Bob)
+/// IceFrog testnet config (multivalidator Alice + Bob)
 pub fn icefrog_testnet_config() -> ChainSpec {
 	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
