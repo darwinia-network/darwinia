@@ -370,7 +370,7 @@ parameter_types! {
 	pub const BondingDuration: Moment = 1_209_600_000;
 	pub const BondingDurationInEra: staking::EraIndex = 4032;
 	// decimal 9
-	pub const HardCap: Balance = 10_000_000_000 * COIN;
+	pub const HardCap: Balance = 1_000_000_000 * COIN;
 	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
 	// Date in Berlin* :12/26/2019, 1:58:29 PM
 	// Date in Beijing*: 12/26/2019, 12:58:29 PM

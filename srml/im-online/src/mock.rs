@@ -21,15 +21,15 @@
 use std::cell::RefCell;
 
 use crate::{Module, Trait};
-use sr_primitives::Perbill;
-use sr_staking_primitives::{SessionIndex, offence::ReportOffence};
-use sr_primitives::testing::{Header, UintAuthorityId, TestXt};
-use sr_primitives::traits::{IdentityLookup, BlakeTwo256, ConvertInto};
 use primitives::H256;
-use support::{impl_outer_origin, impl_outer_dispatch, parameter_types};
+use sr_primitives::testing::{Header, TestXt, UintAuthorityId};
+use sr_primitives::traits::{BlakeTwo256, ConvertInto, IdentityLookup};
+use sr_primitives::Perbill;
+use sr_staking_primitives::{offence::ReportOffence, SessionIndex};
+use support::{impl_outer_dispatch, impl_outer_origin, parameter_types};
 use {runtime_io, system};
 
-impl_outer_origin!{
+impl_outer_origin! {
 	pub enum Origin for Runtime {}
 }
 
@@ -45,25 +45,22 @@ thread_local! {
 
 pub struct TestOnSessionEnding;
 impl session::OnSessionEnding<u64> for TestOnSessionEnding {
-	fn on_session_ending(_ending_index: SessionIndex, _will_apply_at: SessionIndex)
-		-> Option<Vec<u64>>
-	{
+	fn on_session_ending(_ending_index: SessionIndex, _will_apply_at: SessionIndex) -> Option<Vec<u64>> {
 		VALIDATORS.with(|l| l.borrow_mut().take())
 	}
 }
 
 impl session::historical::OnSessionEnding<u64, u64> for TestOnSessionEnding {
-	fn on_session_ending(_ending_index: SessionIndex, _will_apply_at: SessionIndex)
-		-> Option<(Vec<u64>, Vec<(u64, u64)>)>
-	{
-		VALIDATORS.with(|l| l
-			.borrow_mut()
-			.take()
-			.map(|validators| {
+	fn on_session_ending(
+		_ending_index: SessionIndex,
+		_will_apply_at: SessionIndex,
+	) -> Option<(Vec<u64>, Vec<(u64, u64)>)> {
+		VALIDATORS.with(|l| {
+			l.borrow_mut().take().map(|validators| {
 				let full_identification = validators.iter().map(|v| (*v, *v)).collect();
 				(validators, full_identification)
 			})
-		)
+		})
 	}
 }
 
@@ -89,7 +86,6 @@ pub fn new_test_ext() -> runtime_io::TestExternalities {
 	let t = system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 	t.into()
 }
-
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Runtime;
@@ -131,7 +127,7 @@ parameter_types! {
 impl session::Trait for Runtime {
 	type ShouldEndSession = session::PeriodicSessions<Period, Offset>;
 	type OnSessionEnding = session::historical::NoteHistoricalRoot<Runtime, TestOnSessionEnding>;
-	type SessionHandler = (ImOnline, );
+	type SessionHandler = (ImOnline,);
 	type ValidatorId = u64;
 	type ValidatorIdOf = ConvertInto;
 	type Keys = UintAuthorityId;

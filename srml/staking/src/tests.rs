@@ -3727,7 +3727,7 @@ fn xavier_q2() {
 					unbondings: vec![NormalLock {
 						amount: 2,
 						until: BondingDuration::get() + unbond_start_1,
-					},],
+					}],
 				}),
 				reasons: WithdrawReasons::all(),
 			}]
