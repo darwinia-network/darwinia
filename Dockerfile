@@ -1,5 +1,7 @@
 FROM iteringops/darwinia-builder:latest as builder
 
+RUN rustup update
+
 COPY . /source
 WORKDIR /source
 
