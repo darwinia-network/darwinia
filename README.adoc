@@ -4,11 +4,10 @@
 :toc:
 :sectnums:
 
-image:https://travis-ci.org/AurevoirXavier/darwinia.svg["Build Status", link="https://travis-ci.org/AurevoirXavier/darwinia"]
+image:https://travis-ci.org/AurevoirXavier/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/AurevoirXavier/darwinia]
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=https://opensource.org/licenses/Apache-2.0]
 
 == Darwinia Relay Chain
-
-image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
 
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
