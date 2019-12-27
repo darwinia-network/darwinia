@@ -166,8 +166,8 @@ decl_module! {
 					],
 					anonymous: false,
 				};
-				let log_entry = verified_receipt.
-					logs
+				let log_entry = verified_receipt
+					.logs
 					.iter()
 					.find(|&x| x.address == Self::deposit_redeem_address() && x.topics[0] == eth_event.signature())
 					.ok_or("Log Entry - NOT FOUND")?;
