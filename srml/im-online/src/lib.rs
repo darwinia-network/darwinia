@@ -77,7 +77,7 @@ use rstd::convert::TryInto;
 use rstd::prelude::*;
 use session::historical::IdentificationTuple;
 use sr_primitives::{
-	traits::{Convert, Member, Printable},
+	traits::{Convert, Member, Printable, Saturating},
 	transaction_validity::{InvalidTransaction, TransactionPriority, TransactionValidity, ValidTransaction},
 	Perbill, RuntimeDebug,
 };
@@ -626,7 +626,9 @@ impl<Offender: Clone> Offence<Offender> for UnresponsivenessOffence<Offender> {
 		self.session_index
 	}
 
-	fn slash_fraction(_offenders: u32, _validator_set_count: u32) -> Perbill {
-		Perbill::from_percent(5)
+	fn slash_fraction(offenders: u32, validator_set_count: u32) -> Perbill {
+		// the formula is min((3 * max((k - 1), 1)) / n, 1) * 0.05
+		let x = Perbill::from_rational_approximation(3 * (offenders - 1).max(1), validator_set_count);
+		x.saturating_mul(Perbill::from_percent(5))
 	}
 }

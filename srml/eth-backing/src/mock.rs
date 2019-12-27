@@ -1,79 +1,45 @@
 //! Test utilities
 
-use crate::*;
-use phragmen::{build_support_map, elect, equalize, ExtendedBalance as Power, PhragmenStakedAssignment};
-use sr_primitives::{
-	impl_opaque_keys,
-	testing::{Header, UintAuthorityId},
-	traits::{Convert, IdentityLookup, OpaqueKeys},
-	weights::Weight,
-	AccountId32, KeyTypeId, Perbill,
-};
-use std::{cell::RefCell, collections::HashSet};
-
-use sr_staking_primitives::SessionIndex;
-use support::{
-	impl_outer_origin, parameter_types,
-	traits::{Currency, FindAuthor, Get},
-	ConsensusEngineId, StorageLinkedMap,
-};
-
-use primitives::{crypto::key_types, H256};
-
 use hex_literal::hex;
-use rustc_hex::FromHex;
+use phragmen::ExtendedBalance as Power;
+use primitives::{crypto::key_types, H256};
+use sr_primitives::{
+	testing::{Header, UintAuthorityId},
+	traits::{IdentifyAccount, IdentityLookup, OpaqueKeys, Verify},
+	weights::Weight,
+	KeyTypeId, MultiSignature, Perbill,
+};
+use sr_staking_primitives::SessionIndex;
+use support::{impl_outer_origin, parameter_types};
 
-/// The AccountId alias in this test module.
-pub type AccountId = AccountId32;
+use crate::*;
+use staking::EraIndex;
+
+pub type Balance = u128;
 pub type BlockNumber = u64;
+pub type Moment = u64;
 
-pub type System = system::Module<Test>;
-
-pub type EthRelay = darwinia_eth_relay::Module<Test>;
-
-pub type EthBacking = Module<Test>;
-
-pub type RingModule = balances::Module<Test>;
-pub type KtonModule = kton::Module<Test>;
+/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
+pub type Signature = MultiSignature;
+/// Some way of identifying an account on the chain. We intentionally make it equivalent
+/// to the public key of our transaction signing scheme.
+pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
 pub type Timestamp = timestamp::Module<Test>;
 
+pub type EthBacking = Module<Test>;
+pub type EthRelay = darwinia_eth_relay::Module<Test>;
+pub type Kton = kton::Module<Test>;
+pub type Ring = ring::Module<Test>;
 pub type Staking = staking::Module<Test>;
-
-pub type Balance = u128;
-pub type Moment = u64;
-
-/// Counter for the number of eras that have passed.
-pub type EraIndex = u32;
-
-pub type Points = u32;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
 pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
-/// Simple structure that exposes how u64 currency can be represented as... u64.
-pub struct CurrencyToVoteHandler;
-impl Convert<u64, u64> for CurrencyToVoteHandler {
-	fn convert(x: u64) -> u64 {
-		x
-	}
-}
-impl Convert<u128, u128> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> u128 {
-		x
-	}
-}
-impl Convert<u128, u64> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> u64 {
-		x as u64
-	}
-}
-
-thread_local! {
-//	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
-	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
+impl_outer_origin! {
+	pub enum Origin for Test {}
 }
 
 pub struct TestSessionHandler;
@@ -84,36 +50,12 @@ impl session::SessionHandler<AccountId> for TestSessionHandler {
 
 	fn on_new_session<Ks: OpaqueKeys>(
 		_changed: bool,
-		validators: &[(AccountId, Ks)],
+		_validators: &[(AccountId, Ks)],
 		_queued_validators: &[(AccountId, Ks)],
 	) {
-		//		SESSION.with(|x| *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new()));
 	}
 
-	fn on_disabled(validator_index: usize) {
-		//		SESSION.with(|d| {
-		//			let mut d = d.borrow_mut();
-		//			let value = d.0[validator_index];
-		//			d.1.insert(value);
-		//		})
-	}
-}
-
-pub fn is_disabled(controller: AccountId) -> bool {
-	//	let stash = Staking::ledger(&controller).unwrap().stash;
-	//	SESSION.with(|d| d.borrow().1.contains(&stash))
-	false
-}
-
-pub struct ExistentialDeposit;
-impl Get<Balance> for ExistentialDeposit {
-	fn get() -> Balance {
-		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
-	}
-}
-
-impl_outer_origin! {
-	pub enum Origin for Test {}
+	fn on_disabled(_validator_index: usize) {}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -155,7 +97,7 @@ impl session::Trait for Test {
 	type ValidatorIdOf = staking::StashOf<Test>;
 	type ShouldEndSession = session::PeriodicSessions<Period, Offset>;
 	type OnSessionEnding = session::historical::NoteHistoricalRoot<Test, Staking>;
-	type SessionHandler = TestSessionHandler; // <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type SessionHandler = TestSessionHandler;
 	type Keys = UintAuthorityId;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 	type SelectInitialValidators = Staking;
@@ -164,13 +106,6 @@ impl session::Trait for Test {
 impl session::historical::Trait for Test {
 	type FullIdentification = staking::Exposure<AccountId, Power>;
 	type FullIdentificationOf = staking::ExposureOf<Test>;
-}
-
-impl authorship::Trait for Test {
-	type FindAuthor = ();
-	type UncleGenerations = UncleGenerations;
-	type FilterUncle = ();
-	type EventHandler = Staking;
 }
 
 parameter_types! {
@@ -186,14 +121,14 @@ parameter_types! {
 	pub const TransferFee: Balance = 0;
 	pub const CreationFee: Balance = 0;
 }
-impl balances::Trait for Test {
+impl ring::Trait for Test {
 	type Balance = Balance;
 	type OnFreeBalanceZero = Staking;
 	type OnNewAccount = ();
 	type TransferPayment = ();
 	type DustRemoval = ();
 	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
+	type ExistentialDeposit = ();
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
 }
@@ -216,11 +151,11 @@ impl staking::Trait for Test {
 	type BondingDuration = ();
 	type BondingDurationInEra = ();
 	type SessionInterface = Self;
-	type Ring = RingModule;
+	type Ring = Ring;
 	type RingRewardRemainder = ();
 	type RingSlash = ();
 	type RingReward = ();
-	type Kton = KtonModule;
+	type Kton = Kton;
 	type KtonSlash = ();
 	type KtonReward = ();
 
@@ -229,7 +164,6 @@ impl staking::Trait for Test {
 }
 
 parameter_types! {
-//	pub const EthMainet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
 
@@ -241,8 +175,8 @@ impl darwinia_eth_relay::Trait for Test {
 impl Trait for Test {
 	type Event = ();
 	type EthRelay = EthRelay;
-	type Ring = RingModule;
-	type Kton = KtonModule;
+	type Ring = Ring;
+	type Kton = Kton;
 	type OnDepositRedeem = Staking;
 	type DetermineAccountId = AccountIdDeterminator<Test>;
 	type RingReward = ();
@@ -250,11 +184,6 @@ impl Trait for Test {
 }
 
 pub struct ExtBuilder;
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self
-	}
-}
 impl ExtBuilder {
 	pub fn build(self) -> runtime_io::TestExternalities {
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
@@ -270,5 +199,10 @@ impl ExtBuilder {
 		.unwrap();
 
 		t.into()
+	}
+}
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self
 	}
 }

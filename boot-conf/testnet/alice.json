@@ -1,7 +1,9 @@
 {
-	"base-path": "/tmp/darwinia-testnet/alice",
+	"base-path": "/tmp/testnet/alice",
 	"rpc-external": true,
+	"rpc-port": 23332,
 	"ws-external": true,
 	"ws-port": 23333,
-	"rpc-cors": "all"
+	"rpc-cors": "all",
+	"port": 23334
 }

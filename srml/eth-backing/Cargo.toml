@@ -30,17 +30,15 @@ sr-eth-primitives = { path = "../../core/sr-eth-primitives", default-features = 
 hex-literal = "0.2.1"
 rustc-hex = "2.0"
 
-balances = { package = "darwinia-balances", path = '../balances' }
-kton = { package = "darwinia-kton", path = "../kton" }
-staking = { package = "darwinia-staking", path = "../staking" }
-
-authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+phragmen = { package = "substrate-phragmen", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
+runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 session = { package = "srml-session",git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
 sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
-phragmen = { package = "substrate-phragmen", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
-runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git"}
 
+kton = { package = "darwinia-kton", path = "../kton" }
+ring = { package = "darwinia-balances", path = '../balances' }
+staking = { package = "darwinia-staking", path = "../staking" }
 
 [features]
 default = ["std"]
