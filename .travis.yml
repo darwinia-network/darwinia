@@ -3,32 +3,27 @@
 sudo: true
 language: minimal
 
-cache:
-  cargo: true
-  directories:
-    - $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target/wasm32-unknown-unknown/release
+cache: cargo
 
 branches:
-  only:
-    - master
-    - develop
+    only:
+        - master
+        - develop
 
 env:
-  global:
-    - RUST_BACKTRACE=1
+    global:
+        - RUST_BACKTRACE=1
+    matrix:
+        - RUST_TOOLCHAIN=nightly TARGET=wasm
+        - RUST_TOOLCHAIN=nightly TARGET=native
 
 before_install:
-  # Check how much space we've got on this machine.
-  - df -h
-  - ls $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target/wasm32-unknown-unknown/release
+    # Check how much space we've got on this machine.
+    - df -h
 
-jobs:
-  include:
-    - stage: Install
-      script: ./ci/script.sh nightly wasm
-    - stage: Test
-      script: ./ci/script.sh stable native
+script:
+    - ./ci/script.sh
 
 after_script:
-  # Check how much free disk space left after the build
-  - df -h
+    # Check how much free disk space left after the build
+    - df -h
