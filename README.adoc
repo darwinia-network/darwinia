@@ -4,6 +4,8 @@
 :toc:
 :sectnums:
 
+image:https://travis-ci.org/AurevoirXavier/darwinia.svg["Build Status", link="https://travis-ci.org/AurevoirXavier/darwinia"]
+
 == Darwinia Relay Chain
 
 image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
