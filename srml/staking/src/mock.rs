@@ -486,6 +486,7 @@ pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 		duration.saturated_into::<Moment>(), 
 		(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
 		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		Perbill::from_percent(50)
 	).0
 }
 

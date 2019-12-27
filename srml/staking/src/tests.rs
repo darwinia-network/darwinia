@@ -4066,13 +4066,13 @@ fn test_payout() {
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
 		let total_pay_out_now = current_total_payout_for_duration(180 * 1000);
-		assert_eq!(total_pay_out_now, 456240000000);
+		assert_eq!(total_pay_out_now, 456240000000 / 2);
 		
-		// // for one year, Note: this test will take over 60s
-		// for i in 0..175320 {
-		// 	start_session(i);
-		// }
-		// assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 8 * 10_000_000 * COIN);
+		// for one year, Note: this test will take over 60s
+		for i in 0..175320 {
+			start_session(i);
+		}
+		assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 8 * 10_000_000 * COIN / 2);
 	});
 }
 // breakpoint test
