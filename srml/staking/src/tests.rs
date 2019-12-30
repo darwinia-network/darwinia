@@ -2647,7 +2647,7 @@ fn validator_payment_ratio_should_work() {
 			vec![validator_stash],
 		));
 
-		//assert_eq!(Staking::reward_validator(&validator_stash, COIN).peek(), 0);
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), 0);
 
 		assert_ok!(Staking::chill(Origin::signed(validator_controller)));
 		assert_ok!(Staking::chill(Origin::signed(nominator_controller)));
@@ -2664,7 +2664,7 @@ fn validator_payment_ratio_should_work() {
 			vec![validator_stash],
 		));
 
-		//assert_eq!(Staking::reward_validator(&validator_stash, COIN).peek(), COIN);
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), COIN);
 	});
 }
 
@@ -4069,8 +4069,9 @@ fn test_payout() {
 		assert_eq!(total_pay_out_now, 456308464522 / 2);
 		
 		// // for one year, Note: this test will take over 60s
-		// for i in 0..175320 {
+		// for i in 0..175319 {
 		// 	start_session(i);
+		// 	<Module<Test>>::reward_by_ids(vec![(11, 101)]);
 		// }
 		// assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 79601332265494830 / 2);
 	});
