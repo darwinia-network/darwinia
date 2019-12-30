@@ -1,7 +1,7 @@
 use rstd::convert::TryInto;
 use sr_primitives::{
 	traits::{IntegerSquareRoot, SaturatedConversion},
-	Perbill,
+	Perbill, Perquintill,
 };
 use substrate_primitives::U256;
 
@@ -20,7 +20,7 @@ pub fn compute_total_payout<T: Trait>(
 
 	let year: u32 = (living_time / MILLISECONDS_PER_YEAR + 1).saturated_into::<u32>();
 
-	let portion = Perbill::from_rational_approximation(era_duration, MILLISECONDS_PER_YEAR);
+	let portion = Perquintill::from_rational_approximation(era_duration, MILLISECONDS_PER_YEAR);
 
 	let maximum = portion * total_left;
 

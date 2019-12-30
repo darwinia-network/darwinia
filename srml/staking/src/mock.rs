@@ -480,15 +480,14 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::current_era(), era_index);
 }
 
-// TODO
+
 pub fn current_total_payout_for_duration(duration: u64) -> Balance {
-	//	inflation::compute_total_payout(
-	//		era_duration.saturated_into::<Moment>(),
-	//		(<Module<Test>>::Time::now() - <Module<Test>>::GenesisTime::get()).saturated_into::<Moment>(),
-	//		(<Module<Test>>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
-	//	)
-	//	.0
-	unimplemented!()
+	inflation::compute_total_payout::<Test>(
+		duration.saturated_into::<Moment>(), 
+		(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
+		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		Perbill::from_percent(50)
+	).0
 }
 
 pub fn reward_all_elected() {
