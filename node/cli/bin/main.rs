@@ -55,7 +55,7 @@ fn main() -> Result<(), darwinia_cli::error::Error> {
 		version: env!("CARGO_PKG_VERSION"),
 		executable_name: "darwinia",
 		author: "Darwinia Network <hello@darwinia.network>",
-		description: "Darwinia poc-1 node",
+		description: "Darwinia Icefrog Node",
 		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 	};
 
