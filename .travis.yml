@@ -6,24 +6,24 @@ language: minimal
 cache: cargo
 
 branches:
-	only:
-		- master
-		- develop
+    only:
+        - master
+        - develop
 
 env:
-	global:
-		- RUST_BACKTRACE=1
-	matrix:
-		- RUST_TOOLCHAIN=nightly TARGET=wasm
-		- RUST_TOOLCHAIN=stable TARGET=native
+    global:
+        - RUST_BACKTRACE=1
+    matrix:
+        - RUST_TOOLCHAIN=nightly TARGET=wasm
+        - RUST_TOOLCHAIN=stable TARGET=native
 
 before_install:
-	# Check how much space we've got on this machine.
-	- df -h
+    # Check how much space we've got on this machine.
+    - df -h
 
 script:
-	- ./ci/script.sh
+    - ./ci/script.sh
 
 after_script:
-	# Check how much free disk space left after the build
-	- df -h
+    # Check how much free disk space left after the build
+    - df -h
