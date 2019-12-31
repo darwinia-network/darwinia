@@ -4,7 +4,7 @@
 :toc:
 :sectnums:
 
-image:https://travis-ci.org/AurevoirXavier/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/AurevoirXavier/darwinia]
+image:https://travis-ci.org/darwinia-network/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/darwinia-network/darwinia]
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=https://opensource.org/licenses/Apache-2.0]
 
 == Darwinia Relay Chain

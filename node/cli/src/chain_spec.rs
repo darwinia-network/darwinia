@@ -54,7 +54,7 @@ pub struct Extensions {
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig, Extensions>;
 
 /// IceFrog testnet generator
-pub fn icefrog_fir_config() -> Result<ChainSpec, String> {
+pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
 }
 
@@ -308,34 +308,8 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-/// Local testnet config (multivalidator Alice + Bob)
+/// IceFrog local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	fn local_testnet_genesis() -> GenesisConfig {
-		darwinia_genesis(
-			vec![
-				get_authority_keys_from_seed("Alice"),
-				get_authority_keys_from_seed("Bob"),
-			],
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
-			false,
-		)
-	}
-
-	ChainSpec::from_genesis(
-		"Local Testnet",
-		"local_testnet",
-		local_testnet_genesis,
-		vec![],
-		None,
-		None,
-		None,
-		Default::default(),
-	)
-}
-
-/// IceFrog testnet config (multivalidator Alice + Bob)
-pub fn icefrog_testnet_config() -> ChainSpec {
 	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![

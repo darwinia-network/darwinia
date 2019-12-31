@@ -1,4 +1,4 @@
-use sr_primitives::traits::OnInitialize;
+use sr_primitives::{assert_eq_error_rate, traits::OnInitialize};
 use srml_support::{
 	assert_eq_uvec, assert_err, assert_noop, assert_ok,
 	traits::{Currency, ReservableCurrency},
@@ -308,7 +308,7 @@ fn change_controller_works() {
 	})
 }
 
-// TODO
+// TODO: https://github.com/darwinia-network/darwinia/issues/191 need discuss
 #[test]
 fn rewards_should_work() {
 	// should check that:
@@ -362,8 +362,8 @@ fn rewards_should_work() {
 		<Module<Test>>::reward_by_ids(vec![(1001, 10_000)]);
 
 		// Compute total payout now for whole duration as other parameter won't change.
-		//		let total_payout = current_total_payout_for_duration(9 * 5 * 1000);
-		//		assert!(total_payout > 10); // Test is meaningful if reward something
+		let total_payout = current_total_payout_for_duration(9 * 5 * 1000);
+		assert!(total_payout > 10); // Test is meaningful if reward something
 
 		// No reward yet
 		assert_eq!(Ring::total_balance(&2), init_balance_2);
@@ -383,11 +383,11 @@ fn rewards_should_work() {
 		Session::on_initialize(System::block_number());
 		assert_eq!(Staking::current_era(), 1);
 		assert_eq!(Session::current_index(), 3);
-
-		// 11 validator has 2/3 of the total rewards and half half for it and its nominator.
-		//		assert_eq_error_rate!(Balances::total_balance(&2), init_balance_2 + total_payout / 3, 1);
-		//		assert_eq_error_rate!(Balances::total_balance(&10), init_balance_10 + total_payout / 3, 1);
-		assert_eq!(Ring::total_balance(&11), init_balance_11);
+		
+		// 11 validator has 2/3 of the total rewards and half half for it and its nominator. (should fix)
+		assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout / 3, 100);
+		assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout / 3, 100);
+		assert_eq!(Ring::total_balance(&11), init_balance_11);		
 	});
 }
 
@@ -398,14 +398,14 @@ fn multi_era_reward_should_work() {
 	// The value of current_session_reward is set at the end of each era, based on
 	// slot_stake and session_reward.
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-		let _init_balance_10 = Ring::total_balance(&10);
+		let init_balance_10 = Ring::total_balance(&10);
 
 		// Set payee to controller.
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
 		// Compute now as other parameter won't change
-		//		let total_payout_0 = current_total_payout_for_duration(3000);
-		//		assert!(total_payout_0 > 10); // Test is meaningfull if reward something
+		let total_payout_0 = current_total_payout_for_duration(3000);
+		assert!(total_payout_0 > 10); // Test is meaningfull if reward something
 		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 		start_session(0);
@@ -414,22 +414,22 @@ fn multi_era_reward_should_work() {
 		start_session(3);
 
 		assert_eq!(Staking::current_era(), 1);
-		//		assert_eq!(Ring::total_balance(&10), init_balance_10 + total_payout_0);
+		assert_eq!(Ring::total_balance(&10), init_balance_10 + total_payout_0);
 
 		start_session(4);
 
-		//		let total_payout_1 = current_total_payout_for_duration(3000);
-		//		assert!(total_payout_1 > 10); // Test is meaningfull if reward something
+		let total_payout_1 = current_total_payout_for_duration(3000);
+		assert!(total_payout_1 > 10); // Test is meaningfull if reward something
 		<Module<Test>>::reward_by_ids(vec![(11, 101)]);
 
 		// New era is triggered here.
 		start_session(5);
 
 		// Pay time.
-		//		assert_eq!(
-		//			Ring::total_balance(&10),
-		//			init_balance_10 + total_payout_0 + total_payout_1
-		//		);
+		assert_eq!(
+			Ring::total_balance(&10),
+			init_balance_10 + total_payout_0 + total_payout_1
+		);
 	});
 }
 
@@ -585,219 +585,215 @@ fn no_candidate_emergency_condition() {
 }
 
 // TODO
-//#[test]
-//fn nominating_and_rewards_should_work() {
-//	// PHRAGMEN OUTPUT: running this test with the reference impl gives:
-//	//
-//	// Sequential Phragmén gives
-//	// 10  is elected with stake  2200.0 and score  0.0003333333333333333
-//	// 20  is elected with stake  1800.0 and score  0.0005555555555555556
-//
-//	// 10  has load  0.0003333333333333333 and supported
-//	// 10  with stake  1000.0
-//	// 20  has load  0.0005555555555555556 and supported
-//	// 20  with stake  1000.0
-//	// 30  has load  0 and supported
-//	// 30  with stake  0
-//	// 40  has load  0 and supported
-//	// 40  with stake  0
-//	// 2  has load  0.0005555555555555556 and supported
-//	// 10  with stake  600.0 20  with stake  400.0 30  with stake  0.0
-//	// 4  has load  0.0005555555555555556 and supported
-//	// 10  with stake  600.0 20  with stake  400.0 40  with stake  0.0
-//
-//	// Sequential Phragmén with post processing gives
-//	// 10  is elected with stake  2000.0 and score  0.0003333333333333333
-//	// 20  is elected with stake  2000.0 and score  0.0005555555555555556
-//
-//	// 10  has load  0.0003333333333333333 and supported
-//	// 10  with stake  1000.0
-//	// 20  has load  0.0005555555555555556 and supported
-//	// 20  with stake  1000.0
-//	// 30  has load  0 and supported
-//	// 30  with stake  0
-//	// 40  has load  0 and supported
-//	// 40  with stake  0
-//	// 2  has load  0.0005555555555555556 and supported
-//	// 10  with stake  400.0 20  with stake  600.0 30  with stake  0
-//	// 4  has load  0.0005555555555555556 and supported
-//	// 10  with stake  600.0 20  with stake  400.0 40  with stake  0.0
-//	ExtBuilder::default()
-//		.nominate(false)
-//		.validator_pool(true)
-//		.build()
-//		.execute_with(|| {
-//			// initial validators -- everyone is actually even.
-//			assert_eq_uvec!(validator_controllers(), vec![40, 30]);
-//
-//			// Set payee to controller
-//			assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
-//			assert_ok!(Staking::set_payee(Origin::signed(20), RewardDestination::Controller));
-//			assert_ok!(Staking::set_payee(Origin::signed(30), RewardDestination::Controller));
-//			assert_ok!(Staking::set_payee(Origin::signed(40), RewardDestination::Controller));
-//
-//			// give the man some money
-//			let initial_balance = 1000;
-//			for i in [1, 2, 3, 4, 5, 10, 11, 20, 21].iter() {
-//				let _ = Balances::make_free_balance_be(i, initial_balance);
-//			}
-//
-//			// bond two account pairs and state interest in nomination.
-//			// 2 will nominate for 10, 20, 30
-//			assert_ok!(Staking::bond(Origin::signed(1), 2, 1000, RewardDestination::Controller));
-//			assert_ok!(Staking::nominate(Origin::signed(2), vec![11, 21, 31]));
-//			// 4 will nominate for 10, 20, 40
-//			assert_ok!(Staking::bond(Origin::signed(3), 4, 1000, RewardDestination::Controller));
-//			assert_ok!(Staking::nominate(Origin::signed(4), vec![11, 21, 41]));
-//
-//			// the total reward for era 0
-//			let total_payout_0 = current_total_payout_for_duration(3000);
-//			assert!(total_payout_0 > 100); // Test is meaningfull if reward something
-//			<Module<Test>>::reward_by_ids(vec![(41, 1)]);
-//			<Module<Test>>::reward_by_ids(vec![(31, 1)]);
-//			<Module<Test>>::reward_by_ids(vec![(21, 10)]); // must be no-op
-//			<Module<Test>>::reward_by_ids(vec![(11, 10)]); // must be no-op
-//
-//			start_era(1);
-//
-//			// 10 and 20 have more votes, they will be chosen by phragmen.
-//			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
-//
-//			// OLD validators must have already received some rewards.
-//			assert_eq!(Balances::total_balance(&40), 1 + total_payout_0 / 2);
-//			assert_eq!(Balances::total_balance(&30), 1 + total_payout_0 / 2);
-//
-//			// ------ check the staked value of all parties.
-//
-//			if cfg!(feature = "equalize") {
-//				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
-//				assert_eq!(Staking::stakers(11).own, 1000);
-//				assert_eq_error_rate!(Staking::stakers(11).total, 1000 + 1000, 2);
-//				// 2 and 4 supported 10, each with stake 600, according to phragmen.
-//				assert_eq!(
-//					Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
-//					vec![600, 400]
-//				);
-//				assert_eq!(
-//					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
-//					vec![3, 1]
-//				);
-//				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
-//				assert_eq!(Staking::stakers(21).own, 1000);
-//				assert_eq_error_rate!(Staking::stakers(21).total, 1000 + 1000, 2);
-//				// 2 and 4 supported 20, each with stake 250, according to phragmen.
-//				assert_eq!(
-//					Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
-//					vec![400, 600]
-//				);
-//				assert_eq!(
-//					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
-//					vec![3, 1]
-//				);
-//			} else {
-//				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
-//				assert_eq!(Staking::stakers(11).own, 1000);
-//				assert_eq!(Staking::stakers(11).total, 1000 + 800);
-//				// 2 and 4 supported 10, each with stake 600, according to phragmen.
-//				assert_eq!(
-//					Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
-//					vec![400, 400]
-//				);
-//				assert_eq!(
-//					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
-//					vec![3, 1]
-//				);
-//				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
-//				assert_eq!(Staking::stakers(21).own, 1000);
-//				assert_eq_error_rate!(Staking::stakers(21).total, 1000 + 1200, 2);
-//				// 2 and 4 supported 20, each with stake 250, according to phragmen.
-//				assert_eq!(
-//					Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
-//					vec![600, 600]
-//				);
-//				assert_eq!(
-//					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
-//					vec![3, 1]
-//				);
-//			}
-//
-//			// They are not chosen anymore
-//			assert_eq!(Staking::stakers(31).total, 0);
-//			assert_eq!(Staking::stakers(41).total, 0);
-//
-//			// the total reward for era 1
-//			let total_payout_1 = current_total_payout_for_duration(3000);
-//			assert!(total_payout_1 > 100); // Test is meaningfull if reward something
-//			<Module<Test>>::reward_by_ids(vec![(41, 10)]); // must be no-op
-//			<Module<Test>>::reward_by_ids(vec![(31, 10)]); // must be no-op
-//			<Module<Test>>::reward_by_ids(vec![(21, 2)]);
-//			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-//
-//			start_era(2);
-//
-//			// nothing else will happen, era ends and rewards are paid again,
-//			// it is expected that nominators will also be paid. See below
-//
-//			let payout_for_10 = total_payout_1 / 3;
-//			let payout_for_20 = 2 * total_payout_1 / 3;
-//			if cfg!(feature = "equalize") {
-//				// Nominator 2: has [400 / 2000 ~ 1 / 5 from 10] + [600 / 2000 ~ 3 / 10 from 20]'s reward.
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&2),
-//					initial_balance + payout_for_10 / 5 + payout_for_20 * 3 / 10,
-//					2,
-//				);
-//				// Nominator 4: has [400 / 2000 ~ 1 / 5 from 20] + [600 / 2000 ~ 3 / 10 from 10]'s reward.
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&4),
-//					initial_balance + payout_for_20 / 5 + payout_for_10 * 3 / 10,
-//					2,
-//				);
-//
-//				// Validator 10: got 1000 / 2000 external stake.
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&10),
-//					initial_balance + payout_for_10 / 2,
-//					1,
-//				);
-//				// Validator 20: got 1000 / 2000 external stake.
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&20),
-//					initial_balance + payout_for_20 / 2,
-//					1,
-//				);
-//			} else {
-//				// Nominator 2: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&2),
-//					initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
-//					1,
-//				);
-//				// Nominator 4: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&4),
-//					initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
-//					1,
-//				);
-//
-//				// Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&10),
-//					initial_balance + 5 * payout_for_10 / 9,
-//					1,
-//				);
-//				// Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
-//				assert_eq_error_rate!(
-//					Balances::total_balance(&20),
-//					initial_balance + 5 * payout_for_20 / 11,
-//					1,
-//				);
-//			}
-//
-//			check_exposure_all();
-//			check_nominator_all();
-//		});
-//}
+// #[test]
+// fn nominating_and_rewards_should_work() {
+// 	// PHRAGMEN OUTPUT: running this test with the reference impl gives:
+// 	//
+// 	// Sequential Phragmén gives
+// 	// 10  is elected with stake  2200.0 and score  0.0003333333333333333
+// 	// 20  is elected with stake  1800.0 and score  0.0005555555555555556
+
+// 	// 10  has load  0.0003333333333333333 and supported
+// 	// 10  with stake  1000.0
+// 	// 20  has load  0.0005555555555555556 and supported
+// 	// 20  with stake  1000.0
+// 	// 30  has load  0 and supported
+// 	// 30  with stake  0
+// 	// 40  has load  0 and supported
+// 	// 40  with stake  0
+// 	// 2  has load  0.0005555555555555556 and supported
+// 	// 10  with stake  600.0 20  with stake  400.0 30  with stake  0.0
+// 	// 4  has load  0.0005555555555555556 and supported
+// 	// 10  with stake  600.0 20  with stake  400.0 40  with stake  0.0
+
+// 	// Sequential Phragmén with post processing gives
+// 	// 10  is elected with stake  2000.0 and score  0.0003333333333333333
+// 	// 20  is elected with stake  2000.0 and score  0.0005555555555555556
+
+// 	// 10  has load  0.0003333333333333333 and supported
+// 	// 10  with stake  1000.0
+// 	// 20  has load  0.0005555555555555556 and supported
+// 	// 20  with stake  1000.0
+// 	// 30  has load  0 and supported
+// 	// 30  with stake  0
+// 	// 40  has load  0 and supported
+// 	// 40  with stake  0
+// 	// 2  has load  0.0005555555555555556 and supported
+// 	// 10  with stake  400.0 20  with stake  600.0 30  with stake  0
+// 	// 4  has load  0.0005555555555555556 and supported
+// 	// 10  with stake  600.0 20  with stake  400.0 40  with stake  0.0
+// 	ExtBuilder::default()
+// 		.nominate(false)
+// 		.validator_pool(true)
+// 		.build()
+// 		.execute_with(|| {
+// 			// initial validators -- everyone is actually even.
+// 			assert_eq_uvec!(validator_controllers(), vec![40, 30]);
+
+// 			// Set payee to controller
+// 			assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+// 			assert_ok!(Staking::set_payee(Origin::signed(20), RewardDestination::Controller));
+// 			assert_ok!(Staking::set_payee(Origin::signed(30), RewardDestination::Controller));
+// 			assert_ok!(Staking::set_payee(Origin::signed(40), RewardDestination::Controller));
+
+// 			// give the man some money
+// 			let initial_balance = 1000;
+// 			for i in [1, 2, 3, 4, 5, 10, 11, 20, 21].iter() {
+// 				let _ = Ring::make_free_balance_be(i, initial_balance);
+// 			}
+
+// 			// bond two account pairs and state interest in nomination.
+// 			// 2 will nominate for 10, 20, 30
+// 			assert_ok!(Staking::bond(
+// 				Origin::signed(1),
+// 				2,
+// 				StakingBalances::Ring(1000),
+// 				RewardDestination::Controller,
+// 				0
+// 			));
+// 			assert_ok!(Staking::nominate(Origin::signed(2), vec![11, 21, 31]));
+// 			// 4 will nominate for 10, 20, 40
+// 			assert_ok!(Staking::bond(
+// 				Origin::signed(3),
+// 				4,
+// 				StakingBalances::Ring(1000),
+// 				RewardDestination::Controller,
+// 				0
+// 			));
+// 			assert_ok!(Staking::nominate(Origin::signed(4), vec![11, 21, 41]));
+
+// 			// the total reward for era 0
+// 			let total_payout_0 = current_total_payout_for_duration(3000);
+// 			assert!(total_payout_0 > 100); // Test is meaningfull if reward something
+// 			<Module<Test>>::reward_by_ids(vec![(41, 1)]);
+// 			<Module<Test>>::reward_by_ids(vec![(31, 1)]);
+// 			<Module<Test>>::reward_by_ids(vec![(21, 10)]); // must be no-op
+// 			<Module<Test>>::reward_by_ids(vec![(11, 10)]); // must be no-op
+
+// 			start_era(1);
+
+// 			// 10 and 20 have more votes, they will be chosen by phragmen.
+// 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
+
+// 			// OLD validators must have already received some rewards.
+// 			assert_eq!(Ring::total_balance(&40), 1 + total_payout_0 / 2);
+// 			assert_eq!(Ring::total_balance(&30), 1 + total_payout_0 / 2);
+
+// 			// ------ check the staked value of all parties.
+
+// 			if cfg!(feature = "equalize") {
+// 				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
+// 				assert_eq!(Staking::stakers(11).own, 1000); // test failed here (TODO)
+// 				assert_eq_error_rate!(Staking::stakers(11).total, 1000 + 1000, 2);
+// 				// 2 and 4 supported 10, each with stake 600, according to phragmen. (TODO)
+// 				// assert_eq!(
+// 				// 	Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
+// 				// 	vec![600, 400]
+// 				// );
+// 				assert_eq!(
+// 					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
+// 					vec![3, 1]
+// 				);
+// 				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
+// 				assert_eq!(Staking::stakers(21).own, 1000);
+// 				assert_eq_error_rate!(Staking::stakers(21).total, 1000 + 1000, 2);
+// 				// 2 and 4 supported 20, each with stake 250, according to phragmen. (TODO)
+// 				// assert_eq!(
+// 				// 	Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
+// 				// 	vec![400, 600]
+// 				// );
+// 				assert_eq!(
+// 					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
+// 					vec![3, 1]
+// 				);
+// 			} else {
+// 				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
+// 				assert_eq!(Staking::stakers(11).own, 1000);
+// 				assert_eq!(Staking::stakers(11).total, 1000 + 800);
+// 				// 2 and 4 supported 10, each with stake 600, according to phragmen. (TODO)
+// 				// assert_eq!(
+// 				// 	Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
+// 				// 	vec![400, 400]
+// 				// );
+// 				assert_eq!(
+// 					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
+// 					vec![3, 1]
+// 				);
+// 				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
+// 				assert_eq!(Staking::stakers(21).own, 1000);
+// 				assert_eq_error_rate!(Staking::stakers(21).total, 1000 + 1200, 2);
+// 				// 2 and 4 supported 20, each with stake 250, according to phragmen. (TODO)
+// 				// assert_eq!(
+// 				// 	Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<BalanceOf<Test>>>(),
+// 				// 	vec![600, 600]
+// 				// );
+// 				assert_eq!(
+// 					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
+// 					vec![3, 1]
+// 				);
+// 			}
+
+// 			// They are not chosen anymore
+// 			assert_eq!(Staking::stakers(31).total, 0);
+// 			assert_eq!(Staking::stakers(41).total, 0);
+
+// 			// the total reward for era 1
+// 			let total_payout_1 = current_total_payout_for_duration(3000);
+// 			assert!(total_payout_1 > 100); // Test is meaningfull if reward something
+// 			<Module<Test>>::reward_by_ids(vec![(41, 10)]); // must be no-op
+// 			<Module<Test>>::reward_by_ids(vec![(31, 10)]); // must be no-op
+// 			<Module<Test>>::reward_by_ids(vec![(21, 2)]);
+// 			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+
+// 			start_era(2);
+
+// 			// nothing else will happen, era ends and rewards are paid again,
+// 			// it is expected that nominators will also be paid. See below
+
+// 			let payout_for_10 = total_payout_1 / 3;
+// 			let payout_for_20 = 2 * total_payout_1 / 3;
+// 			if cfg!(feature = "equalize") {
+// 				// Nominator 2: has [400 / 2000 ~ 1 / 5 from 10] + [600 / 2000 ~ 3 / 10 from 20]'s reward.
+// 				assert_eq_error_rate!(
+// 					Ring::total_balance(&2),
+// 					initial_balance + payout_for_10 / 5 + payout_for_20 * 3 / 10,
+// 					2,
+// 				);
+// 				// Nominator 4: has [400 / 2000 ~ 1 / 5 from 20] + [600 / 2000 ~ 3 / 10 from 10]'s reward.
+// 				assert_eq_error_rate!(
+// 					Ring::total_balance(&4),
+// 					initial_balance + payout_for_20 / 5 + payout_for_10 * 3 / 10,
+// 					2,
+// 				);
+
+// 				// Validator 10: got 1000 / 2000 external stake.
+// 				assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + payout_for_10 / 2, 1,);
+// 				// Validator 20: got 1000 / 2000 external stake.
+// 				assert_eq_error_rate!(Ring::total_balance(&20), initial_balance + payout_for_20 / 2, 1,);
+// 			} else {
+// 				// Nominator 2: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
+// 				assert_eq_error_rate!(
+// 					Ring::total_balance(&2),
+// 					initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
+// 					1,
+// 				);
+// 				// Nominator 4: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
+// 				assert_eq_error_rate!(
+// 					Ring::total_balance(&4),
+// 					initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
+// 					1,
+// 				);
+
+// 				// Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
+// 				assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + 5 * payout_for_10 / 9, 1,);
+// 				// Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
+// 				assert_eq_error_rate!(Ring::total_balance(&20), initial_balance + 5 * payout_for_20 / 11, 1,);
+// 			}
+
+// 			check_exposure_all();
+// 			check_nominator_all();
+// 		});
+// }
 
 // TODO
 //#[test]
@@ -4075,6 +4071,44 @@ fn xavier_q3() {
 	});
 }
 
+#[test]
+fn test_payout() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Set payee to controller
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		assert_eq!(Ring::total_issuance(), 
+			Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
+			+ Ring::total_balance(&10) + Ring::total_balance(&11)
+			+ Ring::total_balance(&20) + Ring::total_balance(&21)
+			+ Ring::total_balance(&30) + Ring::total_balance(&31)
+			+ Ring::total_balance(&40) + Ring::total_balance(&41)
+			+ Ring::total_balance(&100) + Ring::total_balance(&101)
+			+ Ring::total_balance(&999)
+		);
+		let left = 2000_000_000 * COIN - (Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
+		+ Ring::total_balance(&10) + Ring::total_balance(&11)
+		+ Ring::total_balance(&20) + Ring::total_balance(&21)
+		+ Ring::total_balance(&30) + Ring::total_balance(&31)
+		+ Ring::total_balance(&40) + Ring::total_balance(&41)
+		+ Ring::total_balance(&100) + Ring::total_balance(&101)
+		+ Ring::total_balance(&999));
+		let _ = Ring::deposit_creating(&9999, left);
+		assert_eq!(Ring::total_issuance(), 2000_000_000 * COIN);
+
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		let total_pay_out_now = current_total_payout_for_duration(180 * 1000);
+		assert_eq!(total_pay_out_now, 456308464522 / 2);
+		
+		// // for one year, Note: this test will take over 60s
+		// for i in 0..175319 {
+		// 	start_session(i);
+		// 	<Module<Test>>::reward_by_ids(vec![(11, 101)]);
+		// }
+		// assert_eq!(current_total_payout_for_duration(1000 * 3600 * 24 * 36525 / 100), 79601332265494830 / 2);
+	});
+}
 // breakpoint test
 //#[test]
 //fn xavier_q4() {
