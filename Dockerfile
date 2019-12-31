@@ -5,7 +5,7 @@ WORKDIR /source
 
 ENV TERM="xterm-256color"
 
-RUN ./build.sh && cargo build --release
+RUN cargo build --release
 
 FROM debian:stable-slim
 
