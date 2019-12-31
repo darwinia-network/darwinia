@@ -54,7 +54,7 @@ pub struct Extensions {
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig, Extensions>;
 
 /// IceFrog testnet generator
-pub fn icefrog_fir_config() -> Result<ChainSpec, String> {
+pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
 }
 
@@ -308,77 +308,50 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-/// Local testnet config (multivalidator Alice + Bob)
+/// IceFrog local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	fn local_testnet_genesis() -> GenesisConfig {
+	fn icefrog_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				get_authority_keys_from_seed("Alice"),
 				get_authority_keys_from_seed("Bob"),
 			],
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
-			false,
+			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(), // 5FpQFHfKd1xQ9HLZLQoG1JAQSCJoUEVBELnKsKNcuRLZejJR
+			Some(vec![
+				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
+				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
+				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
+				hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
+				hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
+				hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
+				hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
+				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
+				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
+				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
+			]),
+			true,
 		)
 	}
 
 	ChainSpec::from_genesis(
-		"Local Testnet",
-		"local_testnet",
-		local_testnet_genesis,
+		"Darwinia IceFrog Testnet",
+		"icefrog_testnet",
+		icefrog_config_genesis,
 		vec![],
-		None,
-		None,
-		None,
+		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
+		Some("DAR"),
+		{
+			let mut properties = Properties::new();
+
+			properties.insert("ss58Format".into(), 42.into());
+
+			properties.insert("tokenDecimals".into(), 9.into());
+			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("ktonTokenDecimals".into(), 9.into());
+			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+
+			Some(properties)
+		},
 		Default::default(),
 	)
-}
-
-/// IceFrog testnet config (multivalidator Alice + Bob)
-pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
-	//	fn icefrog_config_genesis() -> GenesisConfig {
-	//		darwinia_genesis(
-	//			vec![
-	//				get_authority_keys_from_seed("Alice"),
-	//				get_authority_keys_from_seed("Bob"),
-	//			],
-	//			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(), // 5FpQFHfKd1xQ9HLZLQoG1JAQSCJoUEVBELnKsKNcuRLZejJR
-	//			Some(vec![
-	//				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
-	//				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
-	//				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
-	//				hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
-	//				hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
-	//				hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
-	//				hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
-	//				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
-	//				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
-	//				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
-	//			]),
-	//			true,
-	//		)
-	//	}
-	//
-	//	ChainSpec::from_genesis(
-	//		"Darwinia IceFrog Testnet",
-	//		"icefrog_testnet",
-	//		icefrog_config_genesis,
-	//		vec![],
-	//		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
-	//		Some("DAR"),
-	//		{
-	//			let mut properties = Properties::new();
-	//
-	//			properties.insert("ss58Format".into(), 42.into());
-	//
-	//			properties.insert("tokenDecimals".into(), 9.into());
-	//			properties.insert("tokenSymbol".into(), "IRING".into());
-	//			properties.insert("ktonTokenDecimals".into(), 9.into());
-	//			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
-	//
-	//			Some(properties)
-	//		},
-	//		Default::default(),
-	//	)
 }
