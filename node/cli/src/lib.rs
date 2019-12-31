@@ -55,7 +55,7 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config(),
+			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config()?,
 		})
 	}
 

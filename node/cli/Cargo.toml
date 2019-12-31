@@ -1,6 +1,6 @@
 [package]
 name = "node-cli"
-version = "0.2.0"
+version = "0.4.6"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust."
 build = "build.rs"
