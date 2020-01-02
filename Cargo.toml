@@ -1,27 +1,12 @@
-[profile.release]
-panic = 'unwind'
-
 [workspace]
 members = [
-	"core/cli",
-	"core/ethash",
-#    "core/merkle-mountain-range",
-#    "core/fly-client",
-    "core/sr-eth-primitives",
-    "core/merkle-patricia-trie",
-
-	"node/cli",
-    "node/executor",
-    "node/primitives",
-    "node/rpc",
-    "node/rpc-client",
-    "node/runtime",
-
-    "srml/balances",
-    "srml/eth-relay",
-    "srml/eth-backing",
-    "srml/im-online",
-    "srml/kton",
-    "srml/staking",
-    "srml/support",
+	"bin/node/cli",
+	"bin/node/runtime",
+	"frame/balances",
+	"frame/staking",
+	"frame/support",
 ]
+
+[profile.release]
+# Substrate runtime requires unwinding.
+panic = "unwind"
