@@ -1,14 +1,16 @@
 [package]
 name = "darwinia-staking"
-version = "2.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+version = "0.3.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
+# crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
+# github.com
 frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
@@ -22,10 +24,11 @@ sp-runtime = { version = "2.0.0", default-features = false, git = "https://githu
 sp-staking = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
+# darwinia
 darwinia-support = { path = "../support", default-features = false }
 
 [dev-dependencies]
-pallet-balances = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+pallet-balances = { package = "darwinia-balances", path = "../../frame/balances" }
 pallet-staking-reward-curve = { version = "2.0.0",  git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 

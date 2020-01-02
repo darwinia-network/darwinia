@@ -172,8 +172,8 @@ use frame_support::{
 use frame_system::{self as system, ensure_root, ensure_signed, IsDeadAccount, OnNewAccount};
 use sp_runtime::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
-		Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
+		StaticLookup, Zero,
 	},
 	DispatchError, DispatchResult, RuntimeDebug,
 };
@@ -188,7 +188,7 @@ mod tests;
 pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
 
-pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait + timestamp::Trait {
+pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_timestamp::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -219,7 +219,7 @@ pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait + timesta
 	type CreationFee: Get<Self::Balance>;
 }
 
-pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait + timestamp::Trait {
+pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_timestamp::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -360,12 +360,12 @@ decl_storage! {
 						// Total genesis `balance` minus `liquid` equals funds locked for vesting
 						let locked = balance.saturating_sub(liquid);
 						// Number of units unlocked per block after `begin`
-						let per_block = locked / length.max(sp_runtime::traits::One::one());
+						let per_block = locked / length.max(One::one());
 
 						(who.clone(), VestingSchedule {
 							locked: locked,
 							per_block: per_block,
-							starting_block: begin
+							starting_block: begin,
 						})
 					})
 			}).collect::<Vec<_>>()
@@ -579,7 +579,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// NOTE: LOW-LEVEL: This will not attempt to maintain total issuance. It is expected that
 	/// the caller will do this.
-	fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+	pub fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
 		// Commented out for now - but consider it instructive.
 		// assert!(!Self::total_balance(who).is_zero());
 		// assert!(Self::free_balance(who) > T::ExistentialDeposit::get());
@@ -665,7 +665,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 
 // wrapping these imbalances in a private module is necessary to ensure absolute privacy
 // of the inner member.
-mod imbalances {
+pub mod imbalances {
 	use super::{
 		result, DefaultInstance, Imbalance, Instance, Saturating, StorageValue, Subtrait, Trait, TryDrop, Zero,
 	};
@@ -854,7 +854,7 @@ impl<T: Subtrait<I>, I: Instance> frame_system::Trait for ElevatedTrait<T, I> {
 	type Version = T::Version;
 	type ModuleToIndex = T::ModuleToIndex;
 }
-impl<T: Subtrait<I>, I: Instance> timestamp::Trait for ElevatedTrait<T, I> {
+impl<T: Subtrait<I>, I: Instance> pallet_timestamp::Trait for ElevatedTrait<T, I> {
 	type Moment = T::Moment;
 	type OnTimestampSet = ();
 	type MinimumPeriod = T::MinimumPeriod;
@@ -939,7 +939,7 @@ where
 			return Ok(());
 		}
 
-		let now = <timestamp::Module<T>>::now();
+		let now = <pallet_timestamp::Module<T>>::now();
 		if locks
 			.into_iter()
 			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
