@@ -795,67 +795,72 @@ fn nominating_and_rewards_should_work() {
 		});
 }
 
-// TODO
-//#[test]
-//fn nominators_also_get_slashed() {
-//	// A nominator should be slashed if the validator they nominated is slashed
-//	// Here is the breakdown of roles:
-//	// 10 - is the controller of 11
-//	// 11 - is the stash.
-//	// 2 - is the nominator of 20, 10
-//	ExtBuilder::default().nominate(false).build().execute_with(|| {
-//		assert_eq!(Staking::validator_count(), 2);
-//
-//		// Set payee to controller
-//		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
-//
-//		// give the man some money.
-//		let initial_balance = 1000;
-//		for i in [1, 2, 3, 10].iter() {
-//			let _ = Balances::make_free_balance_be(i, initial_balance);
-//		}
-//
-//		// 2 will nominate for 10, 20
-//		let nominator_stake = 500;
-//		assert_ok!(Staking::bond(Origin::signed(1), 2, nominator_stake, RewardDestination::default()));
-//		assert_ok!(Staking::nominate(Origin::signed(2), vec![20, 10]));
-//
-//		let total_payout = current_total_payout_for_duration(3000);
-//		assert!(total_payout > 100); // Test is meaningfull if reward something
-//		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-//
-//		// new era, pay rewards,
-//		start_era(1);
-//
-//		// Nominator stash didn't collect any.
-//		assert_eq!(Balances::total_balance(&2), initial_balance);
-//
-//		// 10 goes offline
-//		Staking::on_offence(
-//			&[OffenceDetails {
-//				offender: (
-//					11,
-//					Staking::stakers(&11),
-//				),
-//				reporters: vec![],
-//			}],
-//			&[Perbill::from_percent(5)],
-//		);
-//		let expo = Staking::stakers(11);
-//		let slash_value = 50;
-//		let total_slash = expo.total.min(slash_value);
-//		let validator_slash = expo.own.min(total_slash);
-//		let nominator_slash = nominator_stake.min(total_slash - validator_slash);
-//
-//		// initial + first era reward + slash
-//		assert_eq!(Balances::total_balance(&11), initial_balance - validator_slash);
-//		assert_eq!(Balances::total_balance(&2), initial_balance - nominator_slash);
-//		check_exposure_all();
-//		check_nominator_all();
-//		// Because slashing happened.
-//		assert!(is_disabled(10));
-//	});
-//}
+#[test]
+fn nominators_also_get_slashed() {
+	// A nominator should be slashed if the validator they nominated is slashed
+	// Here is the breakdown of roles:
+	// 10 - is the controller of 11
+	// 11 - is the stash.
+	// 2 - is the nominator of 20, 10
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		assert_eq!(Staking::validator_count(), 2);
+
+		// Set payee to controller
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		// give the man some money.
+		let initial_balance = 1000;
+		for i in [1, 2, 3, 10].iter() {
+			let _ = Ring::make_free_balance_be(i, initial_balance);
+		}
+
+		// 2 will nominate for 10, 20
+		let nominator_stake = 500;
+		assert_ok!(Staking::bond(
+			Origin::signed(1),
+			2,
+			StakingBalances::RingBalance(nominator_stake),
+			RewardDestination::default(),
+			0
+		));
+		assert_ok!(Staking::nominate(Origin::signed(2), vec![20, 10]));
+
+		let total_payout = current_total_payout_for_duration(3000);
+		assert!(total_payout > 100); // Test is meaningfull if reward something
+		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+
+		// new era, pay rewards,
+		start_era(1);
+
+		// Nominator stash didn't collect any.
+		assert_eq!(Ring::total_balance(&2), initial_balance);
+
+		// 10 goes offline
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (
+					11,
+					Staking::stakers(&11),
+				),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(5)],
+		);
+		let expo = Staking::stakers(11);
+		let slash_value = 50;
+		let total_slash = expo.total.min(slash_value);
+		let validator_slash = expo.own.min(total_slash);
+		let nominator_slash = nominator_stake.min(total_slash - validator_slash);
+
+		// initial + first era reward + slash
+		assert_eq!(Ring::total_balance(&11), initial_balance - validator_slash);
+		assert_eq!(Ring::total_balance(&2), initial_balance - nominator_slash);
+		check_exposure_all();
+		check_nominator_all();
+		// Because slashing happened.
+		assert!(is_disabled(10));
+	});
+}
 
 #[test]
 fn double_staking_should_fail() {
