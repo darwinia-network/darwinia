@@ -1163,7 +1163,7 @@ impl<T: Trait> Module<T> {
 		ledger
 	}
 
-	// TODO: doc
+	// update the ledger while bonding ring and compute the kton should return
 	fn bond_helper_in_ring(
 		stash: &T::AccountId,
 		controller: &T::AccountId,
@@ -1217,7 +1217,7 @@ impl<T: Trait> Module<T> {
 		Self::update_ledger(&controller, &mut ledger, StakingBalances::RingBalance(value));
 	}
 
-	// TODO: doc
+	// update the ledger while bonding controller with kton
 	fn bond_helper_in_kton(
 		controller: &T::AccountId,
 		value: KtonBalance<T>,
