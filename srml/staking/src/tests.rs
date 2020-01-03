@@ -383,15 +383,13 @@ fn rewards_should_work() {
 		Session::on_initialize(System::block_number());
 		assert_eq!(Staking::current_era(), 1);
 		assert_eq!(Session::current_index(), 3);
-		
 		// 11 validator has 2/3 of the total rewards and half half for it and its nominator. (should fix)
 		assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout / 3, 100);
 		assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout / 3, 100);
-		assert_eq!(Ring::total_balance(&11), init_balance_11);		
+		assert_eq!(Ring::total_balance(&11), init_balance_11);
 	});
 }
 
-// TODO
 #[test]
 fn multi_era_reward_should_work() {
 	// Should check that:
@@ -584,7 +582,6 @@ fn no_candidate_emergency_condition() {
 		});
 }
 
-// TODO
 #[test]
 fn nominating_and_rewards_should_work() {
 	// PHRAGMEN OUTPUT: running this test with the reference impl gives:
@@ -684,11 +681,22 @@ fn nominating_and_rewards_should_work() {
 			if cfg!(feature = "equalize") {
 				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
 				assert_eq!(Staking::stakers(11).own, Staking::power_of(&11));
-				assert_eq_error_rate!(Staking::stakers(11).total, Staking::power_of(&11) + Staking::power_of(&1) * 6 / 10 + Staking::power_of(&3) * 4 / 10, 2);
-				// 2 and 4 supported 10, each with stake 600, according to phragmen. (TODO)
+				assert_eq_error_rate!(
+					Staking::stakers(11).total,
+					Staking::power_of(&11) + Staking::power_of(&1) * 6 / 10 + Staking::power_of(&3) * 4 / 10,
+					2
+				);
+				// 2 and 4 supported 10, each with stake 600, according to phragmen. (Question: what does phragmen really do?)
 				assert_eq!(
-					Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<RingBalance<Test>>>(),
-					vec![Perquintill::from_percent(60) * Staking::power_of(&1),  Perquintill::from_percent(40) * Staking::power_of(&3)]
+					Staking::stakers(11)
+						.others
+						.iter()
+						.map(|e| e.value)
+						.collect::<Vec<RingBalance<Test>>>(),
+					vec![
+						Perquintill::from_percent(60) * Staking::power_of(&1),
+						Perquintill::from_percent(40) * Staking::power_of(&3)
+					]
 				);
 				assert_eq!(
 					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
@@ -696,11 +704,22 @@ fn nominating_and_rewards_should_work() {
 				);
 				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
 				assert_eq!(Staking::stakers(21).own, Staking::power_of(&21));
-				assert_eq_error_rate!(Staking::stakers(21).total, Staking::power_of(&21) + Staking::power_of(&1) * 4 / 10 + Staking::power_of(&3) * 6 / 10, 2);
+				assert_eq_error_rate!(
+					Staking::stakers(21).total,
+					Staking::power_of(&21) + Staking::power_of(&1) * 4 / 10 + Staking::power_of(&3) * 6 / 10,
+					2
+				);
 				// 2 and 4 supported 20, each with stake 250, according to phragmen.
 				assert_eq!(
-					Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<RingBalance<Test>>>(),
-					vec![Perquintill::from_percent(40) * Staking::power_of(&1),  Perquintill::from_percent(60) * Staking::power_of(&3)]
+					Staking::stakers(21)
+						.others
+						.iter()
+						.map(|e| e.value)
+						.collect::<Vec<RingBalance<Test>>>(),
+					vec![
+						Perquintill::from_percent(40) * Staking::power_of(&1),
+						Perquintill::from_percent(60) * Staking::power_of(&3)
+					]
 				);
 				assert_eq!(
 					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
@@ -709,11 +728,21 @@ fn nominating_and_rewards_should_work() {
 			} else {
 				// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
 				assert_eq!(Staking::stakers(11).own, Staking::power_of(&11));
-				assert_eq!(Staking::stakers(11).total, Staking::power_of(&11) + Staking::power_of(&1) * 4 / 10 + Staking::power_of(&3) * 4 / 10);
+				assert_eq!(
+					Staking::stakers(11).total,
+					Staking::power_of(&11) + Staking::power_of(&1) * 4 / 10 + Staking::power_of(&3) * 4 / 10
+				);
 				// 2 and 4 supported 10, each with stake 600, according to phragmen.
 				assert_eq!(
-					Staking::stakers(11).others.iter().map(|e| e.value).collect::<Vec<RingBalance<Test>>>(),
-					vec![Perquintill::from_percent(40) * Staking::power_of(&1),  Perquintill::from_percent(40) * Staking::power_of(&3)]
+					Staking::stakers(11)
+						.others
+						.iter()
+						.map(|e| e.value)
+						.collect::<Vec<RingBalance<Test>>>(),
+					vec![
+						Perquintill::from_percent(40) * Staking::power_of(&1),
+						Perquintill::from_percent(40) * Staking::power_of(&3)
+					]
 				);
 				assert_eq!(
 					Staking::stakers(11).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
@@ -721,11 +750,22 @@ fn nominating_and_rewards_should_work() {
 				);
 				// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
 				assert_eq!(Staking::stakers(21).own, Staking::power_of(&21));
-				assert_eq_error_rate!(Staking::stakers(21).total, Staking::power_of(&11) + Staking::power_of(&1) * 6 / 10 + Staking::power_of(&3) * 6 / 10, 2);
+				assert_eq_error_rate!(
+					Staking::stakers(21).total,
+					Staking::power_of(&11) + Staking::power_of(&1) * 6 / 10 + Staking::power_of(&3) * 6 / 10,
+					2
+				);
 				// 2 and 4 supported 20, each with stake 250, according to phragmen.
 				assert_eq!(
-					Staking::stakers(21).others.iter().map(|e| e.value).collect::<Vec<RingBalance<Test>>>(),
-					vec![Perquintill::from_percent(60) * Staking::power_of(&1),  Perquintill::from_percent(60) * Staking::power_of(&3)]
+					Staking::stakers(21)
+						.others
+						.iter()
+						.map(|e| e.value)
+						.collect::<Vec<RingBalance<Test>>>(),
+					vec![
+						Perquintill::from_percent(60) * Staking::power_of(&1),
+						Perquintill::from_percent(60) * Staking::power_of(&3)
+					]
 				);
 				assert_eq!(
 					Staking::stakers(21).others.iter().map(|e| e.who).collect::<Vec<u64>>(),
@@ -838,10 +878,7 @@ fn nominators_also_get_slashed() {
 		// 10 goes offline
 		Staking::on_offence(
 			&[OffenceDetails {
-				offender: (
-					11,
-					Staking::stakers(&11),
-				),
+				offender: (11, Staking::stakers(&11)),
 				reporters: vec![],
 			}],
 			&[Perbill::from_percent(5)],
@@ -1090,7 +1127,7 @@ fn cannot_reserve_staked_balance() {
 
 // Question: should we add `Staked` to reward destination
 // Now our reward destination only has two states:
-// - Stash 
+// - Stash
 // - Controller
 // Add test if we add `Staked` to reward destination.
 #[test]
@@ -1407,161 +1444,207 @@ fn bond_extra_works() {
 	});
 }
 
-// TODO
-//#[test]
-//fn bond_extra_and_withdraw_unbonded_automatically_works() {
-//	// * Should test
-//	// * Given an account being bonded [and chosen as a validator](not mandatory)
-//	// * It can add extra funds to the bonded account.
-//	// * it can unbond a portion of its funds from the stash account.
-//	// * Once the unbonding period is done, it can actually take the funds out of the stash.
-//	ExtBuilder::default().nominate(false).build().execute_with(|| {
-//		// Set payee to controller. avoids confusion
-//		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
-//
-//		// Give account 11 some large free balance greater than total
-//		let _ = Balances::make_free_balance_be(&11, 1000000);
-//
-//		// Initial config should be correct
-//		assert_eq!(Staking::current_era(), 0);
-//		assert_eq!(Session::current_index(), 0);
-//
-//		// check the balance of a validator accounts.
-//		assert_eq!(Balances::total_balance(&10), 1);
-//
-//		// confirm that 10 is a normal validator and gets paid at the end of the era.
-//		start_era(1);
-//
-//		// Initial state of 10
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000,
-//				active: 1000,
-//				unlocking: vec![],
-//			})
-//		);
-//		assert_eq!(
-//			Staking::stakers(&11),
-//			Exposure {
-//				total: 1000,
-//				own: 1000,
-//				others: vec![]
-//			}
-//		);
-//
-//		// deposit the extra 100 units
-//		Staking::bond_extra(Origin::signed(11), 100).unwrap();
-//
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000 + 100,
-//				active: 1000 + 100,
-//				unlocking: vec![],
-//			})
-//		);
-//		// Exposure is a snapshot! only updated after the next era update.
-//		assert_ne!(
-//			Staking::stakers(&11),
-//			Exposure {
-//				total: 1000 + 100,
-//				own: 1000 + 100,
-//				others: vec![]
-//			}
-//		);
-//
-//		// trigger next era.
-//		Timestamp::set_timestamp(10);
-//		start_era(2);
-//		assert_eq!(Staking::current_era(), 2);
-//
-//		// ledger should be the same.
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000 + 100,
-//				active: 1000 + 100,
-//				unlocking: vec![],
-//			})
-//		);
-//		// Exposure is now updated.
-//		assert_eq!(
-//			Staking::stakers(&11),
-//			Exposure {
-//				total: 1000 + 100,
-//				own: 1000 + 100,
-//				others: vec![]
-//			}
-//		);
-//
-//		// Unbond almost all of the funds in stash.
-//		Staking::unbond(Origin::signed(10), 1000).unwrap();
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000 + 100,
-//				active: 100,
-//				unlocking: vec![UnlockChunk {
-//					value: 1000,
-//					era: 2 + 3
-//				}]
-//			})
-//		);
-//
-//		// Attempting to free the balances now will fail. 2 eras need to pass.
-//		Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000 + 100,
-//				active: 100,
-//				unlocking: vec![UnlockChunk {
-//					value: 1000,
-//					era: 2 + 3
-//				}]
-//			})
-//		);
-//
-//		// trigger next era.
-//		start_era(3);
-//
-//		// nothing yet
-//		Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 1000 + 100,
-//				active: 100,
-//				unlocking: vec![UnlockChunk {
-//					value: 1000,
-//					era: 2 + 3
-//				}]
-//			})
-//		);
-//
-//		// trigger next era.
-//		start_era(5);
-//
-//		Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-//		// Now the value is free and the staking ledger is updated.
-//		assert_eq!(
-//			Staking::ledger(&10),
-//			Some(StakingLedger {
-//				stash: 11,
-//				total: 100,
-//				active: 100,
-//				unlocking: vec![]
-//			})
-//		);
-//	})
-//}
+// TODO: Not sure how to trigger withdraw_unbonded
+#[test]
+fn bond_extra_and_withdraw_unbonded_automatically_works() {
+	// * Should test
+	// * Given an account being bonded [and chosen as a validator](not mandatory)
+	// * It can add extra funds to the bonded account.
+	// * it can unbond a portion of its funds from the stash account.
+	// * Once the unbonding period is done, it can actually take the funds out of the stash.
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		// Set payee to controller. avoids confusion
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		// Give account 11 some large free balance greater than total
+		let _ = Ring::make_free_balance_be(&11, 1000000);
+
+		// Initial config should be correct
+		assert_eq!(Staking::current_era(), 0);
+		assert_eq!(Session::current_index(), 0);
+
+		// check the balance of a validator accounts.
+		assert_eq!(Ring::total_balance(&10), 1);
+
+		// confirm that 10 is a normal validator and gets paid at the end of the era.
+		start_era(1);
+
+		// Initial state of 10
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			},)
+		);
+		assert_eq!(
+			Staking::stakers(&11),
+			Exposure {
+				total: Staking::power_of(&11),
+				own: Staking::power_of(&11),
+				others: vec![]
+			}
+		);
+
+		// deposit the extra 100 units
+		Staking::bond_extra(Origin::signed(11), StakingBalances::RingBalance(100), 0).unwrap();
+
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000 + 100,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000  + 100,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			})
+		);
+		// Exposure is a snapshot! only updated after the next era update.
+		assert_ne!(
+			Staking::stakers(&11),
+			Exposure {
+				total: Staking::power_of(&11),
+				own: Staking::power_of(&11),
+				others: vec![]
+			}
+		);
+
+		// trigger next era.
+		Timestamp::set_timestamp(10);
+		start_era(2);
+		assert_eq!(Staking::current_era(), 2);
+
+		// ledger should be the same.
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000 + 100,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000  + 100,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			})
+		);
+		// Exposure is now updated.
+		assert_eq!(
+			Staking::stakers(&11),
+			Exposure {
+				total: Staking::power_of(&11),
+				own: Staking::power_of(&11),
+				others: vec![]
+			}
+		);
+
+		// Unbond almost all of the funds in stash.
+		let until = <timestamp::Module<Test>>::now() + BondingDuration::get();
+		Staking::unbond(Origin::signed(10), StakingBalances::RingBalance(1000)).unwrap();
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 100,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 100,
+					unbondings: vec![NormalLock {
+						amount: 1000,
+						until: until,
+					}],
+				},
+				kton_staking_lock: Default::default(),
+			})
+		);
+
+		// // Attempting to free the balances now will fail. 2 eras need to pass.
+		// Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
+		// assert_eq!(
+		// 	Staking::ledger(&10),
+		// 	Some(StakingLedger {
+		// 		stash: 11,
+		// 		total: 1000 + 100,
+		// 		active: 100,
+		// 		unlocking: vec![UnlockChunk {
+		// 			value: 1000,
+		// 			era: 2 + 3
+		// 		}]
+		// 	})
+		// );
+
+		// trigger next era.
+		start_era(3);
+
+		// nothing yet
+		//Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 100,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 100,
+					unbondings: vec![NormalLock {
+						amount: 1000,
+						until: until,
+					}],
+				},
+				kton_staking_lock: Default::default(),
+			})
+		);
+
+		// trigger next era.
+		start_era(5);
+
+		//Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
+		// Now the value is free and the staking ledger is updated.
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 100,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 100,
+					unbondings: vec![NormalLock {
+						amount: 1000,
+						until: until,
+					}],
+				},
+				kton_staking_lock: Default::default(),
+			})
+			// Some(StakingLedger {
+			// 	stash: 11,
+			// 	total: 100,
+			// 	active: 100,
+			// 	unlocking: vec![]
+			// })
+		);
+	})
+}
 
 #[test]
 fn too_many_unbond_calls_should_not_work() {
@@ -4099,22 +4182,40 @@ fn test_payout() {
 		// Set payee to controller
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
 
-		assert_eq!(Ring::total_issuance(), 
-			Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
-			+ Ring::total_balance(&10) + Ring::total_balance(&11)
-			+ Ring::total_balance(&20) + Ring::total_balance(&21)
-			+ Ring::total_balance(&30) + Ring::total_balance(&31)
-			+ Ring::total_balance(&40) + Ring::total_balance(&41)
-			+ Ring::total_balance(&100) + Ring::total_balance(&101)
-			+ Ring::total_balance(&999)
+		assert_eq!(
+			Ring::total_issuance(),
+			Ring::total_balance(&1)
+				+ Ring::total_balance(&2)
+				+ Ring::total_balance(&3)
+				+ Ring::total_balance(&4)
+				+ Ring::total_balance(&10)
+				+ Ring::total_balance(&11)
+				+ Ring::total_balance(&20)
+				+ Ring::total_balance(&21)
+				+ Ring::total_balance(&30)
+				+ Ring::total_balance(&31)
+				+ Ring::total_balance(&40)
+				+ Ring::total_balance(&41)
+				+ Ring::total_balance(&100)
+				+ Ring::total_balance(&101)
+				+ Ring::total_balance(&999)
 		);
-		let left = 2000_000_000 * COIN - (Ring::total_balance(&1) + Ring::total_balance(&2) + Ring::total_balance(&3) + Ring::total_balance(&4)
-		+ Ring::total_balance(&10) + Ring::total_balance(&11)
-		+ Ring::total_balance(&20) + Ring::total_balance(&21)
-		+ Ring::total_balance(&30) + Ring::total_balance(&31)
-		+ Ring::total_balance(&40) + Ring::total_balance(&41)
-		+ Ring::total_balance(&100) + Ring::total_balance(&101)
-		+ Ring::total_balance(&999));
+		let left = 2000_000_000 * COIN
+			- (Ring::total_balance(&1)
+				+ Ring::total_balance(&2)
+				+ Ring::total_balance(&3)
+				+ Ring::total_balance(&4)
+				+ Ring::total_balance(&10)
+				+ Ring::total_balance(&11)
+				+ Ring::total_balance(&20)
+				+ Ring::total_balance(&21)
+				+ Ring::total_balance(&30)
+				+ Ring::total_balance(&31)
+				+ Ring::total_balance(&40)
+				+ Ring::total_balance(&41)
+				+ Ring::total_balance(&100)
+				+ Ring::total_balance(&101)
+				+ Ring::total_balance(&999));
 		let _ = Ring::deposit_creating(&9999, left);
 		assert_eq!(Ring::total_issuance(), 2000_000_000 * COIN);
 
@@ -4122,7 +4223,6 @@ fn test_payout() {
 
 		let total_pay_out_now = current_total_payout_for_duration(180 * 1000);
 		assert_eq!(total_pay_out_now, 456308464522 / 2);
-		
 		// // for one year, Note: this test will take over 60s
 		// for i in 0..175319 {
 		// 	start_session(i);
