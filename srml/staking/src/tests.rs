@@ -1088,6 +1088,7 @@ fn cannot_reserve_staked_balance() {
 	});
 }
 
+// Question: should we add `Staked` to reward destination
 // Now our reward destination only has two states:
 // - Stash 
 // - Controller
@@ -2821,60 +2822,6 @@ fn check_node_name_should_work() {
 		assert_ok!(validator_prefs.check_node_name());
 	}
 }
-
-//#[test]
-//fn reward_and_slash_should_work() {
-//	//	ExtBuilder::default().build().execute_with(|| {
-//	//		gen_paired_account!(stash_1(123), _c(456), 12);
-//	//		gen_paired_account!(stash_2(234), _c(567), 12);
-//	//
-//	//		<Stakers<Test>>::insert(
-//	//			&stash_1,
-//	//			Exposure {
-//	//				total: 1,
-//	//				own: 1,
-//	//				others: vec![],
-//	//			},
-//	//		);
-//	//		assert_eq!(Ring::free_balance(&stash_1), 100 * COIN);
-//	//		let _ = Staking::reward_validator(&stash_1, 20 * COIN);
-//	//		assert_eq!(Ring::free_balance(&stash_1), 120 * COIN);
-//	//	});
-//
-//	ExtBuilder::default().build().execute_with(|| {
-//		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
-//		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
-//
-//		println!(
-//			"{}, {}",
-//			Ring::free_balance(&validator_stash),
-//			Kton::free_balance(&validator_stash)
-//		);
-//		println!("{:#?}", Staking::ledger(&validator_controller));
-//		println!(
-//			"{}, {}",
-//			Ring::free_balance(&nominator_stash),
-//			Kton::free_balance(&nominator_stash)
-//		);
-//		println!("{:#?}", Staking::ledger(&nominator_controller));
-//
-//		assert_ok!(Staking::validate(
-//			Origin::signed(validator_controller),
-//			ValidatorPrefs {
-//				node_name: vec![0; 8],
-//				..Default::default()
-//			},
-//		));
-//		assert_ok!(Staking::nominate(
-//			Origin::signed(nominator_controller),
-//			vec![validator_stash],
-//		));
-//
-//		println!("{:#?}", Staking::stakers(validator_stash));
-//		start_era(1);
-//		println!("{:#?}", Staking::stakers(validator_stash));
-//	});
-//}
 
 #[test]
 fn slash_should_not_touch_unbondings() {
