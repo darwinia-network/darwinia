@@ -1662,75 +1662,82 @@ fn too_many_unbond_calls_should_not_work() {
 		assert_eq!(Staking::ledger(&10).unwrap().ring_staking_lock.unbondings.len(), 2);
 	})
 }
+// TODO: need fix if we add `Stake` to reward destination
+#[test]
+fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
+	// Test that slot_stake is determined by the least staked validator
+	// Test that slot_stake is the maximum punishment that can happen to a validator
+	ExtBuilder::default()
+		.nominate(false)
+		.fair(false)
+		.build()
+		.execute_with(|| {
+			// Confirm validator count is 2
+			assert_eq!(Staking::validator_count(), 2);
+			// Confirm account 10 and 20 are validators
+			assert!(<Validators<Test>>::exists(&11) && <Validators<Test>>::exists(&21));
 
-// TODO
-//#[test]
-//fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
-//	// Test that slot_stake is determined by the least staked validator
-//	// Test that slot_stake is the maximum punishment that can happen to a validator
-//	ExtBuilder::default()
-//		.nominate(false)
-//		.fair(false)
-//		.build()
-//		.execute_with(|| {
-//			// Confirm validator count is 2
-//			assert_eq!(Staking::validator_count(), 2);
-//			// Confirm account 10 and 20 are validators
-//			assert!(<Validators<Test>>::exists(&11) && <Validators<Test>>::exists(&21));
-//
-//			assert_eq!(Staking::stakers(&11).total, 1000);
-//			assert_eq!(Staking::stakers(&21).total, 2000);
-//
-//			// Give the man some money.
-//			let _ = Balances::make_free_balance_be(&10, 1000);
-//			let _ = Balances::make_free_balance_be(&20, 1000);
-//
-//			// We confirm initialized slot_stake is this value
-//			assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total);
-//
-//			// Now lets lower account 20 stake
-//			<Stakers<Test>>::insert(
-//				&21,
-//				Exposure {
-//					total: 69,
-//					own: 69,
-//					others: vec![],
-//				},
-//			);
-//			assert_eq!(Staking::stakers(&21).total, 69);
-//			<Ledger<Test>>::insert(
-//				&20,
-//				StakingLedger {
-//					stash: 22,
-//					total: 69,
-//					active: 69,
-//					unlocking: vec![],
-//				},
-//			);
-//
-//			// Compute total payout now for whole duration as other parameter won't change
-//			let total_payout_0 = current_total_payout_for_duration(3000);
-//			assert!(total_payout_0 > 100); // Test is meaningfull if reward something
-//			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-//			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
-//
-//			// New era --> rewards are paid --> stakes are changed
-//			start_era(1);
-//
-//			// -- new balances + reward
-//			assert_eq!(Staking::stakers(&11).total, 1000 + total_payout_0 / 2);
-//			assert_eq!(Staking::stakers(&21).total, 69 + total_payout_0 / 2);
-//
-//			let _11_balance = Balances::free_balance(&11);
-//			assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
-//
-//			// -- slot stake should also be updated.
-//			assert_eq!(Staking::slot_stake(), 69 + total_payout_0 / 2);
-//
-//			check_exposure_all();
-//			check_nominator_all();
-//		});
-//}
+			assert_eq!(Staking::stakers(&11).total, compute_power(1000, 0));
+			assert_eq!(Staking::stakers(&21).total, compute_power(2000, 0));
+			println!("shdjshdjkfhkjfh");
+
+			// Give the man some money.
+			let _ = Ring::make_free_balance_be(&10, 1000);
+			let _ = Ring::make_free_balance_be(&20, 1000);
+
+			// We confirm initialized slot_stake is this value
+			assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total);
+
+			// Now lets lower account 20 stake
+			<Stakers<Test>>::insert(
+				&21,
+				Exposure {
+					total: 69,
+					own: 69,
+					others: vec![],
+				},
+			);
+			assert_eq!(Staking::stakers(&21).total, 69);
+			<Ledger<Test>>::insert(
+				&20,
+				StakingLedger {
+					stash: 22,
+					active_ring: 69,
+					active_deposit_ring: 0,
+					active_kton: 0,
+					deposit_items: vec![],
+					ring_staking_lock: StakingLock {
+						staking_amount: 69,
+						unbondings: vec![]
+					},
+					kton_staking_lock: Default::default(),
+				},
+			);
+
+			// Note: In our situation rewards won't change stakes
+			// // Compute total payout now for whole duration as other parameter won't change
+			// let total_payout_0 = current_total_payout_for_duration(3000);
+			// assert!(total_payout_0 > 100); // Test is meaningfull if reward something
+			// <Module<Test>>::reward_by_ids(vec![(11, 1)]);
+			// <Module<Test>>::reward_by_ids(vec![(21, 1)]);
+
+			// New era --> rewards are paid --> stakes are changed
+			start_era(1);
+
+			// -- new balances + reward
+			assert_eq!(Staking::stakers(&11).total, compute_power(1000, 0));
+			assert_eq!(Staking::stakers(&21).total, compute_power(69, 0));
+
+			// let _11_balance = Ring::free_balance(&11);
+			// assert_eq!(_11_balance, compute_power(1000 + total_payout_0 / 2, 0) );
+
+			// -- slot stake should also be updated.
+			assert_eq!(Staking::slot_stake(),  compute_power(69, 0));
+
+			check_exposure_all();
+			check_nominator_all();
+		});
+}
 
 #[test]
 fn on_free_balance_zero_stash_removes_validator() {
