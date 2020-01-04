@@ -1444,14 +1444,10 @@ fn bond_extra_works() {
 	});
 }
 
-// TODO: Not sure how to trigger withdraw_unbonded
 #[test]
-fn bond_extra_and_withdraw_unbonded_automatically_works() {
-	// * Should test
+fn bond_extra_should_works() {
 	// * Given an account being bonded [and chosen as a validator](not mandatory)
 	// * It can add extra funds to the bonded account.
-	// * it can unbond a portion of its funds from the stash account.
-	// * Once the unbonding period is done, it can actually take the funds out of the stash.
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
 		// Set payee to controller. avoids confusion
 		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
@@ -1523,7 +1519,7 @@ fn bond_extra_and_withdraw_unbonded_automatically_works() {
 		);
 
 		// trigger next era.
-		Timestamp::set_timestamp(10);
+		//Timestamp::set_timestamp(10);
 		start_era(2);
 		assert_eq!(Staking::current_era(), 2);
 
@@ -1553,9 +1549,52 @@ fn bond_extra_and_withdraw_unbonded_automatically_works() {
 			}
 		);
 
+	})
+}
+
+#[test]
+// The `unbond` is only relevant to the timestamp, it's no business of era.
+fn withdraw_unbonded_automatically_works() {
+	// * it can unbond a portion of its funds from the stash account.
+	// * Once the unbonding period is done, it can actually take the funds out of the stash.
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		// Set payee to controller. avoids confusion
+		assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
+
+		assert_eq!(Ring::free_balance(&11), 1000);
+
+		// Initial config should be correct
+		Timestamp::set_timestamp(0);
+
+		// check the balance of a validator accounts.
+		assert_eq!(Ring::total_balance(&10), 1);
+
+		// confirm that 10 is a normal validator and gets paid at the end of the era.
+		//start_era(1);
+
+		// Initial state of 10
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000,
+					unbondings: vec![],
+				},
+				kton_staking_lock: Default::default(),
+			},)
+		);
+
+
 		// Unbond almost all of the funds in stash.
 		let until = <timestamp::Module<Test>>::now() + BondingDuration::get();
-		Staking::unbond(Origin::signed(10), StakingBalances::RingBalance(1000)).unwrap();
+		assert_eq!(until, 60);
+		//println!("{:#?}", until);
+		Staking::unbond(Origin::signed(10), StakingBalances::RingBalance(900)).unwrap();
 		assert_eq!(
 			Staking::ledger(&10),
 			Some(StakingLedger {
@@ -1567,7 +1606,7 @@ fn bond_extra_and_withdraw_unbonded_automatically_works() {
 				ring_staking_lock: StakingLock {
 					staking_amount: 100,
 					unbondings: vec![NormalLock {
-						amount: 1000,
+						amount: 900,
 						until: until,
 					}],
 				},
@@ -1575,74 +1614,24 @@ fn bond_extra_and_withdraw_unbonded_automatically_works() {
 			})
 		);
 
-		// // Attempting to free the balances now will fail. 2 eras need to pass.
-		// Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-		// assert_eq!(
-		// 	Staking::ledger(&10),
-		// 	Some(StakingLedger {
-		// 		stash: 11,
-		// 		total: 1000 + 100,
-		// 		active: 100,
-		// 		unlocking: vec![UnlockChunk {
-		// 			value: 1000,
-		// 			era: 2 + 3
-		// 		}]
-		// 	})
-		// );
-
-		// trigger next era.
-		start_era(3);
-
-		// nothing yet
-		//Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-		assert_eq!(
-			Staking::ledger(&10),
-			Some(StakingLedger {
-				stash: 11,
-				active_ring: 100,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: StakingLock {
-					staking_amount: 100,
-					unbondings: vec![NormalLock {
-						amount: 1000,
-						until: until,
-					}],
-				},
-				kton_staking_lock: Default::default(),
-			})
+		// Attempting to transfer the balances will fail until `until time`.
+		assert_err!(
+			Ring::transfer(Origin::signed(11), 10, 900),
+			"account liquidity restrictions prevent withdrawal",
 		);
 
-		// trigger next era.
-		start_era(5);
 
-		//Staking::withdraw_unbonded(Origin::signed(10)).unwrap();
-		// Now the value is free and the staking ledger is updated.
-		assert_eq!(
-			Staking::ledger(&10),
-			Some(StakingLedger {
-				stash: 11,
-				active_ring: 100,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: StakingLock {
-					staking_amount: 100,
-					unbondings: vec![NormalLock {
-						amount: 1000,
-						until: until,
-					}],
-				},
-				kton_staking_lock: Default::default(),
-			})
-			// Some(StakingLedger {
-			// 	stash: 11,
-			// 	total: 100,
-			// 	active: 100,
-			// 	unlocking: vec![]
-			// })
+		Timestamp::set_timestamp(until);
+
+		assert_err!(
+			Ring::transfer(Origin::signed(11), 10, 1000),
+			"account liquidity restrictions prevent withdrawal",
 		);
+		// Now the 900 ring is free and the transfer should success.
+		assert_ok!(Ring::transfer(Origin::signed(11), 10, 900));
+		assert_eq!(Ring::free_balance(10), 900 + 1);
+		assert_eq!(Ring::free_balance(11), 100);
+		
 	})
 }
 
