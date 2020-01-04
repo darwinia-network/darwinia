@@ -2282,34 +2282,36 @@ fn offence_deselects_validator_when_slash_is_zero() {
 	});
 }
 
-// TODO
-//#[test]
-//fn slashing_performed_according_exposure() {
-//	// This test checks that slashing is performed according the exposure (or more precisely,
-//	// historical exposure), not the current balance.
-//	ExtBuilder::default().build().execute_with(|| {
-//		assert_eq!(Staking::stakers(&11).own, 1000);
-//
-//		// Handle an offence with a historical exposure.
-//		Staking::on_offence(
-//			&[OffenceDetails {
-//				offender: (
-//					11,
-//					Exposure {
-//						total: 500,
-//						own: 500,
-//						others: vec![],
-//					},
-//				),
-//				reporters: vec![],
-//			}],
-//			&[Perbill::from_percent(50)],
-//		);
-//
-//		// The stash account should be slashed for 250 (50% of 500).
-//		assert_eq!(Balances::free_balance(&11), 1000 - 250);
-//	});
-//}
+// Question: our slashing is performed according to the current balance, not the exposure, is this what we want? 
+#[test]
+fn slashing_performed_according_exposure() {
+	// This test checks that slashing is performed according the exposure (or more precisely,
+	// historical exposure), not the current balance.
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Staking::stakers(&11).own, compute_power(1000, 0));
+
+		//println!("{:#?}", compute_power(500, 0));
+		// Handle an offence with a historical exposure.
+		Staking::on_offence(
+			&[OffenceDetails {
+				offender: (
+					11,
+					Exposure {
+						total: compute_power(500, 0),
+						own: compute_power(500, 0),
+						others: vec![],
+					},
+				),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(40)],
+		);
+
+		// The stash account should be slashed for 250 (50% of 500).
+		//assert_eq!(Ring::free_balance(&11), 1000 - 250);
+		assert_eq!(Ring::free_balance(&11), 1000 - Perbill::from_percent(40) * 1000);
+	});
+}
 
 #[test]
 fn reporters_receive_their_slice() {
