@@ -20,6 +20,22 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
+/// Implementations of some helper traits passed into runtime modules as associated types.
+pub mod impls;
+use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
+/// Constant values used within the runtime.
+pub mod constants;
+use constants::{currency::*, time::*};
+
+pub use frame_support::StorageValue;
+pub use pallet_contracts::Gas;
+pub use pallet_timestamp::Call as TimestampCall;
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
+
+pub use pallet_ring::Call as BalancesCall;
+pub use pallet_staking::StakerStatus;
+
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Currency, Randomness, SplitTwoWays},
@@ -28,41 +44,28 @@ use frame_support::{
 use frame_system::offchain::TransactionSubmitter;
 use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use pallet_contracts_rpc_runtime_api::ContractExecResult;
-use pallet_grandpa::fg_primitives;
-use pallet_grandpa::AuthorityList as GrandpaAuthorityList;
+use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-use sp_core::u32_trait::{_1, _2, _3, _4};
-use sp_core::OpaqueMetadata;
-use sp_inherents::{CheckInherentsResult, InherentData};
-use sp_runtime::curve::PiecewiseLinear;
-use sp_runtime::traits::{
-	self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
+use sp_core::{
+	u32_trait::{_1, _2, _3, _4},
+	OpaqueMetadata,
 };
+use sp_inherents::{CheckInherentsResult, InherentData};
 use sp_runtime::transaction_validity::TransactionValidity;
-use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, ApplyExtrinsicResult, Perbill, Permill};
-use sp_std::prelude::*;
+use sp_runtime::{
+	create_runtime_str,
+	curve::PiecewiseLinear,
+	generic, impl_opaque_keys,
+	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
+	ApplyExtrinsicResult, Perbill, Permill,
+};
+use sp_std::vec::Vec;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
-pub use frame_support::StorageValue;
-pub use pallet_balances::Call as BalancesCall;
-pub use pallet_contracts::Gas;
-pub use pallet_staking::StakerStatus;
-pub use pallet_timestamp::Call as TimestampCall;
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-
-/// Implementations of some helper traits passed into runtime modules as associated types.
-pub mod impls;
-use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
-
-/// Constant values used within the runtime.
-pub mod constants;
-use constants::{currency::*, time::*};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -170,7 +173,7 @@ parameter_types! {
 	pub const CreationFee: Balance = 1 * CENTS;
 }
 
-impl pallet_balances::Trait for Runtime {
+impl pallet_ring::Trait for Runtime {
 	type Balance = Balance;
 	type OnFreeBalanceZero = ((Staking, Contracts), Session);
 	type OnNewAccount = Indices;
@@ -180,6 +183,17 @@ impl pallet_balances::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
+
+	type Time = Timestamp;
+}
+impl pallet_kton::Trait for Runtime {
+	type Balance = Balance;
+	type Event = Event;
+	type RingCurrency = Balances;
+	type TransferPayment = Balances;
+	type TransferFee = TransferFee;
+
+	type Time = Timestamp;
 }
 
 parameter_types! {
@@ -283,75 +297,12 @@ impl pallet_staking::Trait for Runtime {
 	type SessionInterface = Self;
 }
 
-//parameter_types! {
-//	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-//	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-//	pub const EmergencyVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-//	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-//	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-//	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-//	// One cent: $10,000 / MB
-//	pub const PreimageByteDeposit: Balance = 1 * CENTS;
-//}
-//
-//impl pallet_democracy::Trait for Runtime {
-//	type Proposal = Call;
-//	type Event = Event;
-//	type Currency = Balances;
-//	type EnactmentPeriod = EnactmentPeriod;
-//	type LaunchPeriod = LaunchPeriod;
-//	type VotingPeriod = VotingPeriod;
-//	type MinimumDeposit = MinimumDeposit;
-//	/// A straight majority of the council can decide what their next motion is.
-//	type ExternalOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
-//	/// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
-//	type ExternalMajorityOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
-//	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-//	/// (NTB) vote.
-//	type ExternalDefaultOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
-//	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-//	/// be tabled immediately and with a shorter voting/enactment period.
-//	type FastTrackOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
-//	type EmergencyVotingPeriod = EmergencyVotingPeriod;
-//	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-//	type CancellationOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
-//	// Any single technical committee member may veto a coming council proposal, however they can
-//	// only do it once and it lasts only for the cooloff period.
-//	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-//	type CooloffPeriod = CooloffPeriod;
-//	type PreimageByteDeposit = PreimageByteDeposit;
-//	type Slash = Treasury;
-//}
-
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
 }
-
-//parameter_types! {
-//	pub const CandidacyBond: Balance = 10 * DOLLARS;
-//	pub const VotingBond: Balance = 1 * DOLLARS;
-//	pub const TermDuration: BlockNumber = 7 * DAYS;
-//	pub const DesiredMembers: u32 = 13;
-//	pub const DesiredRunnersUp: u32 = 7;
-//}
-//
-//impl pallet_elections_phragmen::Trait for Runtime {
-//	type Event = Event;
-//	type Currency = Balances;
-//	type ChangeMembers = Council;
-//	type CurrencyToVote = CurrencyToVoteHandler;
-//	type CandidacyBond = CandidacyBond;
-//	type VotingBond = VotingBond;
-//	type LoserCandidate = ();
-//	type BadReport = ();
-//	type KickedMember = ();
-//	type DesiredMembers = DesiredMembers;
-//	type DesiredRunnersUp = DesiredRunnersUp;
-//	type TermDuration = TermDuration;
-//}
 
 type TechnicalCollective = pallet_collective::Instance2;
 impl pallet_collective::Trait<TechnicalCollective> for Runtime {
@@ -531,14 +482,10 @@ construct_runtime!(
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent},
 		Indices: pallet_indices,
-		Balances: pallet_balances::{default, Error},
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
-		Staking: pallet_staking::{default, OfflineWorker},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
-//		Democracy: pallet_democracy::{Module, Call, Storage, Config, Event<T>},
 		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-//		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
@@ -550,6 +497,10 @@ construct_runtime!(
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
+		
+		Balances: pallet_ring::{default, Error},
+		Kton: pallet_kton::{default, Error},
+		Staking: pallet_staking::{default, OfflineWorker},
 	}
 );
 

@@ -159,12 +159,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 use codec::{Codec, Decode, Encode};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage,
 	traits::{
 		Currency, ExistenceRequirement, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency,
-		SignedImbalance, TryDrop, UpdateBalanceOutcome, VestingCurrency,
+		SignedImbalance, Time, TryDrop, UpdateBalanceOutcome, VestingCurrency,
 	},
 	weights::SimpleDispatchInfo,
 	Parameter, StorageValue,
@@ -177,18 +182,45 @@ use sp_runtime::{
 	},
 	DispatchError, DispatchResult, RuntimeDebug,
 };
-use sp_std::prelude::*;
-use sp_std::{cmp, fmt::Debug, mem, result};
+use sp_std::{cmp, fmt::Debug, mem, prelude::*, result};
 
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
+use self::imbalances::{NegativeImbalance, PositiveImbalance};
+use darwinia_support::{
+	BalanceLock, Fee, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons,
+};
 
-pub use self::imbalances::{NegativeImbalance, PositiveImbalance};
-use darwinia_support::{BalanceLock, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons};
+type MomentOf<T, I> = <<T as Subtrait<I>>::Time as Time>::Moment;
 
-pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_timestamp::Trait {
+/// Struct to encode the vesting schedule of an individual account.
+#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug)]
+pub struct VestingSchedule<Balance, BlockNumber> {
+	/// Locked amount at genesis.
+	pub locked: Balance,
+	/// Amount that gets unlocked every block after `starting_block`.
+	pub per_block: Balance,
+	/// Starting block for unlocking(vesting).
+	pub starting_block: BlockNumber,
+}
+
+impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> VestingSchedule<Balance, BlockNumber> {
+	/// Amount locked at block `n`.
+	pub fn locked_at(&self, n: BlockNumber) -> Balance
+	where
+		Balance: From<BlockNumber>,
+	{
+		// Number of blocks that count toward vesting
+		// Saturating to 0 when n < starting_block
+		let vested_block_count = n.saturating_sub(self.starting_block);
+		// Return amount that is still locked in vesting
+		if let Some(x) = Balance::from(vested_block_count).checked_mul(&self.per_block) {
+			self.locked.max(x) - x
+		} else {
+			Zero::zero()
+		}
+	}
+}
+
+pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -217,9 +249,12 @@ pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
+
+	// TODO doc
+	type Time: Time;
 }
 
-pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_timestamp::Trait {
+pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -258,6 +293,9 @@ pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait + pallet_tim
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
+
+	// TODO doc
+	type Time: Time;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
@@ -267,6 +305,8 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
+
+	type Time = T::Time;
 }
 
 decl_event!(
@@ -308,35 +348,6 @@ decl_error! {
 	}
 }
 
-/// Struct to encode the vesting schedule of an individual account.
-#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct VestingSchedule<Balance, BlockNumber> {
-	/// Locked amount at genesis.
-	pub locked: Balance,
-	/// Amount that gets unlocked every block after `starting_block`.
-	pub per_block: Balance,
-	/// Starting block for unlocking(vesting).
-	pub starting_block: BlockNumber,
-}
-
-impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> VestingSchedule<Balance, BlockNumber> {
-	/// Amount locked at block `n`.
-	pub fn locked_at(&self, n: BlockNumber) -> Balance
-	where
-		Balance: From<BlockNumber>,
-	{
-		// Number of blocks that count toward vesting
-		// Saturating to 0 when n < starting_block
-		let vested_block_count = n.saturating_sub(self.starting_block);
-		// Return amount that is still locked in vesting
-		if let Some(x) = Balance::from(vested_block_count).checked_mul(&self.per_block) {
-			self.locked.max(x) - x
-		} else {
-			Zero::zero()
-		}
-	}
-}
-
 decl_storage! {
 	trait Store for Module<T: Trait<I>, I: Instance=DefaultInstance> as Balances {
 		/// The total units issued in the system.
@@ -362,7 +373,7 @@ decl_storage! {
 						// Number of units unlocked per block after `begin`
 						let per_block = locked / length.max(One::one());
 
-						(who.clone(), VestingSchedule {
+						(who.to_owned(), VestingSchedule {
 							locked: locked,
 							per_block: per_block,
 							starting_block: begin,
@@ -400,7 +411,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::Moment>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, MomentOf<T, I>>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -579,7 +590,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// NOTE: LOW-LEVEL: This will not attempt to maintain total issuance. It is expected that
 	/// the caller will do this.
-	pub fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
+	fn set_free_balance(who: &T::AccountId, balance: T::Balance) -> UpdateBalanceOutcome {
 		// Commented out for now - but consider it instructive.
 		// assert!(!Self::total_balance(who).is_zero());
 		// assert!(Self::free_balance(who) > T::ExistentialDeposit::get());
@@ -598,7 +609,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// This just calls appropriate hooks. It doesn't (necessarily) make any state changes.
 	fn new_account(who: &T::AccountId, balance: T::Balance) {
 		T::OnNewAccount::on_new_account(&who);
-		Self::deposit_event(RawEvent::NewAccount(who.clone(), balance.clone()));
+		Self::deposit_event(RawEvent::NewAccount(who.to_owned(), balance));
 	}
 
 	/// Unregister an account.
@@ -606,7 +617,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// This just removes the nonce and leaves an event.
 	fn reap_account(who: &T::AccountId, dust: T::Balance) {
 		<frame_system::AccountNonce<T>>::remove(who);
-		Self::deposit_event(RawEvent::ReapedAccount(who.clone(), dust));
+		Self::deposit_event(RawEvent::ReapedAccount(who.to_owned(), dust));
 	}
 
 	/// Account's free balance has dropped below existential deposit. Kill its
@@ -665,7 +676,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 
 // wrapping these imbalances in a private module is necessary to ensure absolute privacy
 // of the inner member.
-pub mod imbalances {
+mod imbalances {
 	use super::{
 		result, DefaultInstance, Imbalance, Instance, Saturating, StorageValue, Subtrait, Trait, TryDrop, Zero,
 	};
@@ -854,11 +865,6 @@ impl<T: Subtrait<I>, I: Instance> frame_system::Trait for ElevatedTrait<T, I> {
 	type Version = T::Version;
 	type ModuleToIndex = T::ModuleToIndex;
 }
-impl<T: Subtrait<I>, I: Instance> pallet_timestamp::Trait for ElevatedTrait<T, I> {
-	type Moment = T::Moment;
-	type OnTimestampSet = ();
-	type MinimumPeriod = T::MinimumPeriod;
-}
 impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type Balance = T::Balance;
 	type OnFreeBalanceZero = T::OnFreeBalanceZero;
@@ -869,6 +875,8 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
+
+	type Time = T::Time;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
@@ -939,7 +947,7 @@ where
 			return Ok(());
 		}
 
-		let now = <pallet_timestamp::Module<T>>::now();
+		let now = T::Time::now();
 		if locks
 			.into_iter()
 			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
@@ -991,7 +999,7 @@ where
 			}
 
 			// Emit transfer event.
-			Self::deposit_event(RawEvent::Transfer(transactor.clone(), dest.clone(), value, fee));
+			Self::deposit_event(RawEvent::Transfer(transactor.to_owned(), dest.to_owned(), value, fee));
 
 			// Take action on the set_free_balance call.
 			// This will emit events that _resulted_ from the transfer.
@@ -1183,7 +1191,7 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = T::Moment;
+	type Moment = MomentOf<T, I>;
 
 	fn set_lock(
 		id: LockIdentifier,
@@ -1264,5 +1272,27 @@ where
 {
 	fn is_dead_account(who: &T::AccountId) -> bool {
 		Self::total_balance(who).is_zero()
+	}
+}
+
+impl<T: Trait<I>, I: Instance> Fee<T::AccountId, T::Balance> for Module<T, I> {
+	fn pay_transfer_fee(
+		transactor: &T::AccountId,
+		transfer_fee: T::Balance,
+		existence_requirement: ExistenceRequirement,
+	) -> DispatchResult {
+		let new_balance = Self::free_balance(transactor)
+			.checked_sub(&transfer_fee)
+			.ok_or(Error::<T, I>::InsufficientBalance)?;
+
+		if existence_requirement == ExistenceRequirement::KeepAlive && new_balance < T::ExistentialDeposit::get() {
+			Err(Error::<T, I>::KeepAlive)?;
+		}
+		Self::ensure_can_withdraw(transactor, transfer_fee, WithdrawReason::Fee.into(), new_balance)?;
+
+		Self::set_free_balance(transactor, new_balance);
+		T::TransferPayment::on_unbalanced(NegativeImbalance::new(transfer_fee));
+
+		Ok(())
 	}
 }

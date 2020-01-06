@@ -273,7 +273,7 @@ use sp_staking::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
 	SessionIndex,
 };
-use sp_std::{prelude::*, result};
+use sp_std::{result, vec::Vec};
 
 use sp_phragmen::{ExtendedBalance, PhragmenStakedAssignment};
 

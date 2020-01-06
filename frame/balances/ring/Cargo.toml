@@ -1,5 +1,5 @@
 [package]
-name = "darwinia-balances"
+name = "darwinia-ring"
 version = "0.4.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
@@ -13,12 +13,11 @@ serde = { version = "1.0.101", optional = true }
 # github.com
 frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-timestamp = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
 # darwinia
-darwinia-support = { path = "../support", default-features = false }
+darwinia-support = { default-features = false, path = "../../support" }
 
 [dev-dependencies]
 sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
@@ -34,7 +33,6 @@ std = [
 
 	"frame-support/std",
     "frame-system/std",
-    "pallet-timestamp/std",
 	"sp-runtime/std",
 	"sp-std/std",
 

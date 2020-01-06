@@ -2,8 +2,8 @@
 members = [
 	"bin/node/cli",
 	"bin/node/runtime",
-	"frame/balances",
-	"frame/kton",
+	"frame/balances/kton",
+	"frame/balances/ring",
 	"frame/staking",
 	"frame/support",
 ]

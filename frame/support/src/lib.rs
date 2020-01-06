@@ -94,18 +94,10 @@ mod structs {
 }
 
 mod traits {
-	use frame_support::traits::Currency;
-	use sp_std::result;
+	use frame_support::traits::{Currency, ExistenceRequirement};
+	use sp_runtime::DispatchResult;
 
 	use crate::{LockIdentifier, WithdrawLock, WithdrawReasons};
-
-	pub trait OnMinted<Balance> {
-		fn on_minted(value: Balance);
-	}
-
-	pub trait OnAccountBalanceChanged<AccountId, Balance> {
-		fn on_changed(who: &AccountId, old: Balance, new: Balance);
-	}
 
 	/// A currency whose accounts can have liquidity restrictions.
 	pub trait LockableCurrency<AccountId>: Currency<AccountId> {
@@ -129,15 +121,18 @@ mod traits {
 		fn remove_lock(id: LockIdentifier, who: &AccountId);
 	}
 
+	pub trait Fee<AccountId, Balance> {
+		fn pay_transfer_fee(
+			transactor: &AccountId,
+			transfer_fee: Balance,
+			existence_requirement: ExistenceRequirement,
+		) -> DispatchResult;
+	}
+
 	// callback on eth-backing module
 	pub trait OnDepositRedeem<AccountId> {
 		type Moment;
 
-		fn on_deposit_redeem(
-			months: u64,
-			start_at: u64,
-			amount: u128,
-			stash: &AccountId,
-		) -> result::Result<(), &'static str>;
+		fn on_deposit_redeem(months: u64, start_at: u64, amount: u128, stash: &AccountId) -> Result<(), &'static str>;
 	}
 }

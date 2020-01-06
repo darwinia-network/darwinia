@@ -60,7 +60,8 @@ pallet-utility = { version = "2.0.0", default-features = false, git = "https://g
 pallet-transaction-payment = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 pallet-transaction-payment-rpc-runtime-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
-pallet-balances = { package = "darwinia-balances", default-features = false, path = "../../../frame/balances" }
+pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
+pallet-ring = { package = "darwinia-ring", default-features = false, path = "../../../frame/balances/ring" }
 pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
 
 [build-dependencies]
@@ -77,16 +78,11 @@ std = [
 	"pallet-authorship/std",
 	"sp-consensus-babe/std",
 	"pallet-babe/std",
-	"pallet-balances/std",
 	"sp-block-builder/std",
 	"codec/std",
 	"pallet-collective/std",
 	"pallet-contracts-rpc-runtime-api/std",
 	"pallet-contracts/std",
-
-#	"pallet-democracy/std",
-#	"pallet-elections-phragmen/std",
-
 	"frame-executive/std",
 	"pallet-finality-tracker/std",
 	"pallet-grandpa/std",
@@ -108,7 +104,6 @@ std = [
 	"sp-api/std",
 	"sp-runtime/std",
 	"sp-staking/std",
-	"pallet-staking/std",
 	"sp-keyring",
 	"sp-session/std",
 	"pallet-sudo/std",
@@ -122,4 +117,8 @@ std = [
 	"sp-transaction-pool/std",
 	"pallet-utility/std",
 	"sp-version/std",
+
+	"pallet-kton/std",
+	"pallet-ring/std",
+	"pallet-staking/std",
 ]

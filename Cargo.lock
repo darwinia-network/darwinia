@@ -836,13 +836,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-balances"
-version = "0.4.0"
+name = "darwinia-kton"
+version = "0.3.0"
 dependencies = [
  "darwinia-support",
  "frame-support",
  "frame-system",
- "pallet-timestamp",
  "pallet-transaction-payment",
  "parity-scale-codec",
  "safe-mix",
@@ -854,28 +853,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-kton"
-version = "0.3.0"
+name = "darwinia-ring"
+version = "0.4.0"
 dependencies = [
- "darwinia-balances",
  "darwinia-support",
  "frame-support",
  "frame-system",
- "pallet-timestamp",
+ "pallet-transaction-payment",
  "parity-scale-codec",
  "safe-mix",
  "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
- "sr-io",
- "substrate-primitives",
 ]
 
 [[package]]
 name = "darwinia-staking"
 version = "0.3.0"
 dependencies = [
- "darwinia-balances",
+ "darwinia-ring",
  "darwinia-support",
  "frame-support",
  "frame-system",
@@ -969,18 +967,6 @@ name = "doc-comment"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "923dea538cea0aa3025e8685b20d6ee21ef99c4f77e954a30febbaac5ec73a97"
-
-[[package]]
-name = "ed25519-dalek"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d07e8b8a8386c3b89a7a4b329fdfa4cb545de2545e9e2ebbc3dd3929253e426"
-dependencies = [
- "clear_on_drop",
- "curve25519-dalek 1.2.3",
- "failure",
- "rand 0.6.5",
-]
 
 [[package]]
 name = "ed25519-dalek"
@@ -2280,7 +2266,7 @@ dependencies = [
  "asn1_der",
  "bs58 0.3.0",
  "bytes 0.4.12",
- "ed25519-dalek 1.0.0-pre.3",
+ "ed25519-dalek",
  "failure",
  "fnv",
  "futures 0.1.29",
@@ -3106,7 +3092,8 @@ dependencies = [
 name = "node-runtime"
 version = "2.0.0"
 dependencies = [
- "darwinia-balances",
+ "darwinia-kton",
+ "darwinia-ring",
  "darwinia-staking",
  "frame-executive",
  "frame-support",
@@ -3391,7 +3378,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
- "parity-wasm 0.41.0",
+ "parity-wasm",
  "pwasm-utils",
  "serde",
  "sp-core",
@@ -3399,7 +3386,7 @@ dependencies = [
  "sp-runtime",
  "sp-sandbox",
  "sp-std",
- "wasmi-validation 0.3.0",
+ "wasmi-validation",
 ]
 
 [[package]]
@@ -3852,12 +3839,6 @@ dependencies = [
 
 [[package]]
 name = "parity-wasm"
-version = "0.40.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e39faaa292a687ea15120b1ac31899b13586446521df6c149e46f1584671e0f"
-
-[[package]]
-name = "parity-wasm"
 version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc878dac00da22f8f61e7af3157988424567ab01d9920b962ef7dcbd7cd865"
@@ -4201,7 +4182,7 @@ checksum = "4f7a12f176deee919f4ba55326ee17491c8b707d0987aed822682c821b660192"
 dependencies = [
  "byteorder 1.3.2",
  "log",
- "parity-wasm 0.41.0",
+ "parity-wasm",
 ]
 
 [[package]]
@@ -4909,7 +4890,7 @@ dependencies = [
  "libsecp256k1",
  "log",
  "parity-scale-codec",
- "parity-wasm 0.41.0",
+ "parity-wasm",
  "parking_lot 0.9.0",
  "sc-executor-common",
  "sc-executor-wasmi",
@@ -4923,7 +4904,7 @@ dependencies = [
  "sp-trie",
  "sp-version",
  "sp-wasm-interface",
- "wasmi 0.6.2",
+ "wasmi",
 ]
 
 [[package]]
@@ -4938,7 +4919,7 @@ dependencies = [
  "sp-runtime-interface",
  "sp-serializer",
  "sp-wasm-interface",
- "wasmi 0.6.2",
+ "wasmi",
 ]
 
 [[package]]
@@ -4948,13 +4929,13 @@ source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc
 dependencies = [
  "log",
  "parity-scale-codec",
- "parity-wasm 0.41.0",
+ "parity-wasm",
  "sc-executor-common",
  "sp-core",
  "sp-externalities",
  "sp-runtime-interface",
  "sp-wasm-interface",
- "wasmi 0.6.2",
+ "wasmi",
 ]
 
 [[package]]
@@ -4969,13 +4950,13 @@ dependencies = [
  "cranelift-wasm",
  "log",
  "parity-scale-codec",
- "parity-wasm 0.41.0",
+ "parity-wasm",
  "sc-executor-common",
  "sp-core",
  "sp-externalities",
  "sp-runtime-interface",
  "sp-wasm-interface",
- "wasmi 0.6.2",
+ "wasmi",
  "wasmtime-environ",
  "wasmtime-jit",
  "wasmtime-runtime",
@@ -5761,7 +5742,7 @@ dependencies = [
  "base58",
  "blake2-rfc",
  "byteorder 1.3.2",
- "ed25519-dalek 1.0.0-pre.3",
+ "ed25519-dalek",
  "hash-db",
  "hash256-std-hasher",
  "hex",
@@ -5786,9 +5767,9 @@ dependencies = [
  "sp-storage",
  "substrate-bip39",
  "tiny-bip39",
- "tiny-keccak 2.0.1",
+ "tiny-keccak",
  "twox-hash",
- "wasmi 0.6.2",
+ "wasmi",
  "zeroize 1.1.0",
 ]
 
@@ -5967,7 +5948,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-std",
- "wasmi 0.6.2",
+ "wasmi",
 ]
 
 [[package]]
@@ -6014,7 +5995,7 @@ dependencies = [
  "sp-externalities",
  "sp-panic-handler",
  "sp-trie",
- "trie-db 0.16.0",
+ "trie-db",
  "trie-root",
 ]
 
@@ -6071,7 +6052,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-core",
  "sp-std",
- "trie-db 0.16.0",
+ "trie-db",
  "trie-root",
 ]
 
@@ -6093,7 +6074,7 @@ version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
 dependencies = [
  "impl-trait-for-tuples",
- "wasmi 0.6.2",
+ "wasmi",
 ]
 
 [[package]]
@@ -6101,29 +6082,6 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
-
-[[package]]
-name = "sr-io"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "hash-db",
- "libsecp256k1",
- "log",
- "parity-scale-codec",
- "sr-std",
- "substrate-externalities",
- "substrate-primitives",
- "substrate-runtime-interface",
- "substrate-state-machine",
- "substrate-trie",
- "tiny-keccak 1.5.0",
-]
-
-[[package]]
-name = "sr-std"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 
 [[package]]
 name = "stable_deref_trait"
@@ -6232,27 +6190,6 @@ version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
 
 [[package]]
-name = "substrate-debug-derive"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "proc-macro2 1.0.6",
- "quote 1.0.2",
- "syn 1.0.11",
-]
-
-[[package]]
-name = "substrate-externalities"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "environmental",
- "primitive-types",
- "sr-std",
- "substrate-primitives-storage",
-]
-
-[[package]]
 name = "substrate-frame-rpc-system"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
@@ -6273,142 +6210,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "substrate-panic-handler"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "backtrace",
- "log",
-]
-
-[[package]]
-name = "substrate-primitives"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "base58",
- "blake2-rfc",
- "byteorder 1.3.2",
- "ed25519-dalek 0.9.1",
- "hash-db",
- "hash256-std-hasher",
- "hex",
- "impl-serde",
- "lazy_static",
- "libsecp256k1",
- "log",
- "num-traits",
- "parity-scale-codec",
- "parking_lot 0.9.0",
- "primitive-types",
- "rand 0.7.2",
- "regex",
- "rustc-hex",
- "schnorrkel",
- "serde",
- "sha2",
- "sr-std",
- "substrate-bip39",
- "substrate-debug-derive",
- "substrate-externalities",
- "substrate-primitives-storage",
- "substrate-runtime-interface",
- "tiny-bip39",
- "tiny-keccak 1.5.0",
- "twox-hash",
- "wasmi 0.5.1",
- "zeroize 0.10.1",
-]
-
-[[package]]
-name = "substrate-primitives-storage"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "impl-serde",
- "serde",
- "sr-std",
- "substrate-debug-derive",
-]
-
-[[package]]
-name = "substrate-runtime-interface"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "environmental",
- "parity-scale-codec",
- "primitive-types",
- "sr-std",
- "static_assertions",
- "substrate-externalities",
- "substrate-runtime-interface-proc-macro",
- "substrate-wasm-interface",
-]
-
-[[package]]
-name = "substrate-runtime-interface-proc-macro"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "Inflector",
- "proc-macro-crate",
- "proc-macro2 1.0.6",
- "quote 1.0.2",
- "syn 1.0.11",
-]
-
-[[package]]
-name = "substrate-state-machine"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "hash-db",
- "log",
- "num-traits",
- "parity-scale-codec",
- "parking_lot 0.9.0",
- "rand 0.7.2",
- "substrate-externalities",
- "substrate-panic-handler",
- "substrate-primitives",
- "substrate-trie",
- "trie-db 0.15.2",
- "trie-root",
-]
-
-[[package]]
 name = "substrate-test-utils"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
 
 [[package]]
-name = "substrate-trie"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "hash-db",
- "memory-db",
- "parity-scale-codec",
- "sr-std",
- "substrate-primitives",
- "trie-db 0.15.2",
- "trie-root",
-]
-
-[[package]]
 name = "substrate-wasm-builder-runner"
 version = "1.0.4"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
-
-[[package]]
-name = "substrate-wasm-interface"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "impl-trait-for-tuples",
- "wasmi 0.5.1",
-]
 
 [[package]]
 name = "subtle"
@@ -6592,15 +6401,6 @@ dependencies = [
  "pbkdf2",
  "rand 0.6.5",
  "sha2",
-]
-
-[[package]]
-name = "tiny-keccak"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d8a021c69bb74a44ccedb824a046447e2c84a01df9e5c20779750acb38e11b2"
-dependencies = [
- "crunchy",
 ]
 
 [[package]]
@@ -6926,19 +6726,6 @@ dependencies = [
 
 [[package]]
 name = "trie-db"
-version = "0.15.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0b62d27e8aa1c07414549ac872480ac82380bab39e730242ab08d82d7cc098a"
-dependencies = [
- "elastic-array",
- "hash-db",
- "hashbrown 0.6.3",
- "log",
- "rand 0.6.5",
-]
-
-[[package]]
-name = "trie-db"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "784a9813d23f18bccab728ab039c39b8a87d0d6956dcdece39e92f5cffe5076e"
@@ -7259,20 +7046,6 @@ dependencies = [
 
 [[package]]
 name = "wasmi"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f31d26deb2d9a37e6cfed420edce3ed604eab49735ba89035e13c98f9a528313"
-dependencies = [
- "libc",
- "memory_units",
- "num-rational",
- "num-traits",
- "parity-wasm 0.40.3",
- "wasmi-validation 0.2.0",
-]
-
-[[package]]
-name = "wasmi"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf617d864d25af3587aa745529f7aaa541066c876d57e050c0d0c85c61c92aff"
@@ -7282,17 +7055,8 @@ dependencies = [
  "memory_units",
  "num-rational",
  "num-traits",
- "parity-wasm 0.41.0",
- "wasmi-validation 0.3.0",
-]
-
-[[package]]
-name = "wasmi-validation"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bc0356e3df56e639fc7f7d8a99741915531e27ed735d911ed83d7e1339c8188"
-dependencies = [
- "parity-wasm 0.40.3",
+ "parity-wasm",
+ "wasmi-validation",
 ]
 
 [[package]]
@@ -7301,7 +7065,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea78c597064ba73596099281e2f4cfc019075122a65cdda3205af94f0b264d93"
 dependencies = [
- "parity-wasm 0.41.0",
+ "parity-wasm",
 ]
 
 [[package]]
@@ -7582,12 +7346,6 @@ name = "zeroize"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "45af6a010d13e4cf5b54c94ba5a2b2eba5596b9e46bf5875612d332a1f2b3f86"
-
-[[package]]
-name = "zeroize"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4090487fa66630f7b166fba2bbb525e247a5449f41c468cc1d98f8ae6ac03120"
 
 [[package]]
 name = "zeroize"

@@ -13,17 +13,16 @@ serde = { version = "1.0.101", optional = true }
 # github.com
 frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-timestamp = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
 # darwinia
-darwinia-support = { default-features = false, path = "../support" }
-ring = { package = "darwinia-balances", default-features = false, path = "../balances" }
+darwinia-support = { default-features = false, path = "../../support" }
 
 [dev-dependencies]
-runtime-io = { package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
 [features]
 default = ["std"]
@@ -34,12 +33,10 @@ std = [
 
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-timestamp/std",
 	"sp-runtime/std",
 	"sp-std/std",
 
 	"darwinia-support/std",
-	"ring/std",
 ]
 # test
 transfer-fee = ["std"]
