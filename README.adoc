@@ -223,6 +223,14 @@ Each project can be skipped individually by using the environment variable `SKIP
 Where `PROJECT_NAME` needs to be replaced by the name of the cargo project, e.g. `node-runtime` will
 be `NODE_RUNTIME`.
 
+=== Precautions
+
+If you run into problems when building this project, 
+please kindly check following things before making an issue.
+
+* using the latest nightly Rust
+* build without `sccache`
+
 == Joining the IceFrog Testnet
 
 // Latest known working version: ``
