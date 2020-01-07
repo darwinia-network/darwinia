@@ -13,7 +13,7 @@ image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[imag
 
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
-It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
+It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/RFC/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
 
 == Architecture
 
@@ -222,6 +222,14 @@ we support multiple environment variables:
 Each project can be skipped individually by using the environment variable `SKIP_PROJECT_NAME_WASM_BUILD`.
 Where `PROJECT_NAME` needs to be replaced by the name of the cargo project, e.g. `node-runtime` will
 be `NODE_RUNTIME`.
+
+=== Precautions
+
+If you run into problems when building this project, 
+please kindly check following things before making an issue.
+
+* using the latest nightly Rust
+* build without `sccache`
 
 == Joining the IceFrog Testnet
 
