@@ -495,7 +495,7 @@ where
 	}
 
 	fn minimum_balance() -> Self::Balance {
-		Zero::zero()
+		T::ExistentialDeposit::get()
 	}
 
 	fn burn(mut amount: Self::Balance) -> Self::PositiveImbalance {
