@@ -1502,7 +1502,7 @@ fn bond_extra_should_works() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 1000  + 100,
+					staking_amount: 1000 + 100,
 					unbondings: vec![],
 				},
 				kton_staking_lock: Default::default(),
@@ -1533,7 +1533,7 @@ fn bond_extra_should_works() {
 				active_kton: 0,
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					staking_amount: 1000  + 100,
+					staking_amount: 1000 + 100,
 					unbondings: vec![],
 				},
 				kton_staking_lock: Default::default(),
@@ -1548,7 +1548,6 @@ fn bond_extra_should_works() {
 				others: vec![]
 			}
 		);
-
 	})
 }
 
@@ -1589,7 +1588,6 @@ fn withdraw_unbonded_automatically_works() {
 			},)
 		);
 
-
 		// Unbond almost all of the funds in stash.
 		let until = <timestamp::Module<Test>>::now() + BondingDuration::get();
 		assert_eq!(until, 60);
@@ -1605,10 +1603,7 @@ fn withdraw_unbonded_automatically_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 100,
-					unbondings: vec![NormalLock {
-						amount: 900,
-						until: until,
-					}],
+					unbondings: vec![NormalLock { amount: 900, until }],
 				},
 				kton_staking_lock: Default::default(),
 			})
@@ -1620,7 +1615,6 @@ fn withdraw_unbonded_automatically_works() {
 			"account liquidity restrictions prevent withdrawal",
 		);
 
-
 		Timestamp::set_timestamp(until);
 
 		assert_err!(
@@ -1631,7 +1625,6 @@ fn withdraw_unbonded_automatically_works() {
 		assert_ok!(Ring::transfer(Origin::signed(11), 10, 900));
 		assert_eq!(Ring::free_balance(10), 900 + 1);
 		assert_eq!(Ring::free_balance(11), 100);
-		
 	})
 }
 
@@ -1708,7 +1701,7 @@ fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment(
 					deposit_items: vec![],
 					ring_staking_lock: StakingLock {
 						staking_amount: 69,
-						unbondings: vec![]
+						unbondings: vec![],
 					},
 					kton_staking_lock: Default::default(),
 				},
@@ -1732,7 +1725,7 @@ fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment(
 			// assert_eq!(_11_balance, compute_power(1000 + total_payout_0 / 2, 0) );
 
 			// -- slot stake should also be updated.
-			assert_eq!(Staking::slot_stake(),  compute_power(69, 0));
+			assert_eq!(Staking::slot_stake(), compute_power(69, 0));
 
 			check_exposure_all();
 			check_nominator_all();
@@ -2282,7 +2275,7 @@ fn offence_deselects_validator_when_slash_is_zero() {
 	});
 }
 
-// Question: our slashing is performed according to the current balance, not the exposure, is this what we want? 
+// Question: our slashing is performed according to the current balance, not the exposure, is this what we want?
 #[test]
 fn slashing_performed_according_exposure() {
 	// This test checks that slashing is performed according the exposure (or more precisely,
