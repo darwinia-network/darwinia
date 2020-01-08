@@ -339,6 +339,17 @@ node-cli, node-executor, node-primitives, node-rpc, node-rpc-client, node-runtim
 
 == Contributing
 
+=== Environment
+
+If you are using Ubuntu, 
+you may use the `scripts/bootstrap.sh` to set up your develop environment.
+In this script, the nightly `Rust`, `cargo`, `rustfmt` will be installed,
+the git hooks will be set, and ready to code.
+We will appreciate your contribution.
+
+If you are using different environment, you may copy the git hooks mannually.
+`$ cp .hooks/* .git/hooks`
+
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
