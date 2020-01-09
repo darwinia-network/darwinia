@@ -16,23 +16,26 @@
 
 //! Test utilities
 
-use std::{collections::HashSet, cell::RefCell};
-use sp_runtime::{Perbill, KeyTypeId};
-use sp_runtime::curve::PiecewiseLinear;
-use sp_runtime::traits::{IdentityLookup, Convert, OpaqueKeys, OnInitialize, SaturatedConversion};
-use sp_runtime::testing::{Header, UintAuthorityId};
-use sp_staking::{SessionIndex, offence::{OffenceDetails, OnOffenceHandler}};
-use sp_core::{H256, crypto::key_types};
-use sp_io;
-use frame_support::{
-	assert_ok, impl_outer_origin, parameter_types, StorageLinkedMap, StorageValue,
-	traits::{Currency, Get, FindAuthor},
-	weights::Weight,
-};
 use crate::{
-	EraIndex, GenesisConfig, Module, Trait, StakerStatus, ValidatorPrefs, RewardDestination,
-	Nominators, inflation
+	inflation, EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, Trait, ValidatorPrefs,
 };
+use frame_support::{
+	assert_ok, impl_outer_origin, parameter_types,
+	traits::{Currency, FindAuthor, Get},
+	weights::Weight,
+	StorageLinkedMap, StorageValue,
+};
+use sp_core::{crypto::key_types, H256};
+use sp_io;
+use sp_runtime::curve::PiecewiseLinear;
+use sp_runtime::testing::{Header, UintAuthorityId};
+use sp_runtime::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion};
+use sp_runtime::{KeyTypeId, Perbill};
+use sp_staking::{
+	offence::{OffenceDetails, OnOffenceHandler},
+	SessionIndex,
+};
+use std::{cell::RefCell, collections::HashSet};
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -42,10 +45,14 @@ pub type Balance = u64;
 /// Simple structure that exposes how u64 currency can be represented as... u64.
 pub struct CurrencyToVoteHandler;
 impl Convert<u64, u64> for CurrencyToVoteHandler {
-	fn convert(x: u64) -> u64 { x }
+	fn convert(x: u64) -> u64 {
+		x
+	}
 }
 impl Convert<u128, u64> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> u64 { x.saturated_into() }
+	fn convert(x: u128) -> u64 {
+		x.saturated_into()
+	}
 }
 
 thread_local! {
@@ -65,9 +72,7 @@ impl pallet_session::SessionHandler<AccountId> for TestSessionHandler {
 		validators: &[(AccountId, Ks)],
 		_queued_validators: &[(AccountId, Ks)],
 	) {
-		SESSION.with(|x|
-			*x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new())
-		);
+		SESSION.with(|x| *x.borrow_mut() = (validators.iter().map(|x| x.0.clone()).collect(), HashSet::new()));
 	}
 
 	fn on_disabled(validator_index: usize) {
@@ -98,7 +103,7 @@ impl Get<EraIndex> for SlashDeferDuration {
 	}
 }
 
-impl_outer_origin!{
+impl_outer_origin! {
 	pub enum Origin for Test  where system = frame_system {}
 }
 
@@ -106,7 +111,8 @@ impl_outer_origin!{
 pub struct Author11;
 impl FindAuthor<u64> for Author11 {
 	fn find_author<'a, I>(_digests: I) -> Option<u64>
-		where I: 'a + IntoIterator<Item=(frame_support::ConsensusEngineId, &'a [u8])>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		Some(11)
 	}
@@ -293,38 +299,35 @@ impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
 		self.set_associated_consts();
 		let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		let balance_factor = if self.existential_deposit > 0 {
-			256
-		} else {
-			1
-		};
+		let balance_factor = if self.existential_deposit > 0 { 256 } else { 1 };
 
 		let num_validators = self.num_validators.unwrap_or(self.validator_count);
 		let validators = (0..num_validators)
 			.map(|x| ((x + 1) * 10 + 1) as u64)
 			.collect::<Vec<_>>();
 
-		let _ = pallet_balances::GenesisConfig::<Test>{
+		let _ = pallet_balances::GenesisConfig::<Test> {
 			balances: vec![
-					(1, 10 * balance_factor),
-					(2, 20 * balance_factor),
-					(3, 300 * balance_factor),
-					(4, 400 * balance_factor),
-					(10, balance_factor),
-					(11, balance_factor * 1000),
-					(20, balance_factor),
-					(21, balance_factor * 2000),
-					(30, balance_factor),
-					(31, balance_factor * 2000),
-					(40, balance_factor),
-					(41, balance_factor * 2000),
-					(100, 2000 * balance_factor),
-					(101, 2000 * balance_factor),
-					// This allow us to have a total_payout different from 0.
-					(999, 1_000_000_000_000),
+				(1, 10 * balance_factor),
+				(2, 20 * balance_factor),
+				(3, 300 * balance_factor),
+				(4, 400 * balance_factor),
+				(10, balance_factor),
+				(11, balance_factor * 1000),
+				(20, balance_factor),
+				(21, balance_factor * 2000),
+				(30, balance_factor),
+				(31, balance_factor * 2000),
+				(40, balance_factor),
+				(41, balance_factor * 2000),
+				(100, 2000 * balance_factor),
+				(101, 2000 * balance_factor),
+				// This allow us to have a total_payout different from 0.
+				(999, 1_000_000_000_000),
 			],
 			vesting: vec![],
-		}.assimilate_storage(&mut storage);
+		}
+		.assimilate_storage(&mut storage);
 
 		let stake_21 = if self.fair { 1000 } else { 2000 };
 		let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
@@ -334,7 +337,7 @@ impl ExtBuilder {
 			StakerStatus::<AccountId>::Idle
 		};
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
-		let _ = GenesisConfig::<Test>{
+		let _ = GenesisConfig::<Test> {
 			current_era: 0,
 			stakers: vec![
 				// (stash, controller, staked_amount, status)
@@ -343,25 +346,30 @@ impl ExtBuilder {
 				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
 				// nominator
-				(101, 100, balance_factor * 500, StakerStatus::<AccountId>::Nominator(nominated))
+				(
+					101,
+					100,
+					balance_factor * 500,
+					StakerStatus::<AccountId>::Nominator(nominated),
+				),
 			],
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
-		}.assimilate_storage(&mut storage);
+		}
+		.assimilate_storage(&mut storage);
 
 		let _ = pallet_session::GenesisConfig::<Test> {
 			keys: validators.iter().map(|x| (*x, UintAuthorityId(*x))).collect(),
-		}.assimilate_storage(&mut storage);
+		}
+		.assimilate_storage(&mut storage);
 
 		let mut ext = sp_io::TestExternalities::from(storage);
 		ext.execute_with(|| {
 			let validators = Session::validators();
-			SESSION.with(|x|
-				*x.borrow_mut() = (validators.clone(), HashSet::new())
-			);
+			SESSION.with(|x| *x.borrow_mut() = (validators.clone(), HashSet::new()));
 		});
 		ext
 	}
@@ -374,7 +382,9 @@ pub type Timestamp = pallet_timestamp::Module<Test>;
 pub type Staking = Module<Test>;
 
 pub fn check_exposure_all() {
-	Staking::current_elected().into_iter().for_each(|acc| check_exposure(acc));
+	Staking::current_elected()
+		.into_iter()
+		.for_each(|acc| check_exposure(acc));
 }
 
 pub fn check_nominator_all() {
@@ -386,8 +396,11 @@ pub fn check_exposure(stash: u64) {
 	assert_is_stash(stash);
 	let expo = Staking::stakers(&stash);
 	assert_eq!(
-		expo.total as u128, expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
-		"wrong total exposure for {:?}: {:?}", stash, expo,
+		expo.total as u128,
+		expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
+		"wrong total exposure for {:?}: {:?}",
+		stash,
+		expo,
 	);
 }
 
@@ -399,14 +412,15 @@ pub fn check_nominator_exposure(stash: u64) {
 	Staking::current_elected()
 		.iter()
 		.map(|v| Staking::stakers(v))
-		.for_each(|e| e.others.iter()
-			.filter(|i| i.who == stash)
-			.for_each(|i| sum += i.value));
+		.for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.value));
 	let nominator_stake = Staking::slashable_balance_of(&stash);
 	// a nominator cannot over-spend.
 	assert!(
 		nominator_stake >= sum,
-		"failed: Nominator({}) stake({}) >= sum divided({})", stash, nominator_stake, sum,
+		"failed: Nominator({}) stake({}) >= sum divided({})",
+		stash,
+		nominator_stake,
+		sum,
 	);
 }
 
@@ -426,7 +440,12 @@ pub fn bond_validator(acc: u64, val: u64) {
 	// a = controller
 	// a + 1 = stash
 	let _ = Balances::make_free_balance_be(&(acc + 1), val);
-	assert_ok!(Staking::bond(Origin::signed(acc + 1), acc, val, RewardDestination::Controller));
+	assert_ok!(Staking::bond(
+		Origin::signed(acc + 1),
+		acc,
+		val,
+		RewardDestination::Controller
+	));
 	assert_ok!(Staking::validate(Origin::signed(acc), ValidatorPrefs::default()));
 }
 
@@ -434,7 +453,12 @@ pub fn bond_nominator(acc: u64, val: u64, target: Vec<u64>) {
 	// a = controller
 	// a + 1 = stash
 	let _ = Balances::make_free_balance_be(&(acc + 1), val);
-	assert_ok!(Staking::bond(Origin::signed(acc + 1), acc, val, RewardDestination::Controller));
+	assert_ok!(Staking::bond(
+		Origin::signed(acc + 1),
+		acc,
+		val,
+		RewardDestination::Controller
+	));
 	assert_ok!(Staking::nominate(Origin::signed(acc), target));
 }
 
@@ -460,17 +484,19 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::current_era(), era_index);
 }
 
-pub fn current_total_payout_for_duration(duration: u64) -> u64 {
-	inflation::compute_total_payout(
-		<Test as Trait>::RewardCurve::get(),
-		<Module<Test>>::slot_stake() * 2,
-		Balances::total_issuance(),
-		duration,
-	).0
+pub fn current_total_payout_for_duration(duration: u64) -> Balance {
+	inflation::compute_total_payout::<Test>(
+		duration.saturated_into::<Moment>(),
+		(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
+		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		Perbill::from_percent(50),
+	)
+	.0
 }
 
 pub fn reward_all_elected() {
-	let rewards = <Module<Test>>::current_elected().iter()
+	let rewards = <Module<Test>>::current_elected()
+		.iter()
 		.map(|v| (*v, 1))
 		.collect::<Vec<_>>();
 
@@ -478,7 +504,10 @@ pub fn reward_all_elected() {
 }
 
 pub fn validator_controllers() -> Vec<AccountId> {
-	Session::validators().into_iter().map(|s| Staking::bonded(&s).expect("no controller for validator")).collect()
+	Session::validators()
+		.into_iter()
+		.map(|s| Staking::bonded(&s).expect("no controller for validator"))
+		.collect()
 }
 
 pub fn on_offence_in_era(
@@ -490,9 +519,9 @@ pub fn on_offence_in_era(
 	for &(bonded_era, start_session) in bonded_eras.iter() {
 		if bonded_era == era {
 			Staking::on_offence(offenders, slash_fraction, start_session);
-			return
+			return;
 		} else if bonded_era > era {
-			break
+			break;
 		}
 	}
 

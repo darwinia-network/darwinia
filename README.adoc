@@ -237,7 +237,7 @@ please kindly check following things before making an issue.
 
 === Quick start (professional):
   * https://telemetry.polkadot.io/#list/Darwinia%20IceFrog%20Testnet[Telemetry]
-  * https://testnet-wallet.darwinia.network[Darwinia Web Wallet]
+  * https://icefrog-wallet.darwinia.network[Darwinia Web Wallet]
   * Bootnodes: 
     ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
     ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
@@ -335,10 +335,22 @@ darwinia-balances, darwinia-eth-backing, darwinia-eth-relay,
 darwinia-kton, darwinia-staking, darwinia-support
 * Node
 [source, shell]
-node-cli, node-executor, node-primitives, node-rpc, node-rpc-client, node-runtime
+node-cli, node-runtime
 
 == Contributing
 
+=== Environment
+
+If you are using Ubuntu, 
+you may use the `.maintain/bootstrap.sh` to set up your develop environment.
+In this script, the nightly `Rust`, `cargo`, `rustfmt` will be installed,
+the git hooks will be set, and ready to code.
+We will appreciate your contribution.
+
+If you are using different environment, you may copy the git hooks mannually.
+```
+$ cp .maintain/hooks/* .git/hooks
+```
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
