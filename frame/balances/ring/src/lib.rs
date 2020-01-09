@@ -169,7 +169,7 @@ use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage,
 	traits::{
 		Currency, ExistenceRequirement, Get, Imbalance, OnFreeBalanceZero, OnUnbalanced, ReservableCurrency,
-		SignedImbalance, Time, TryDrop, UpdateBalanceOutcome, VestingCurrency,
+		SignedImbalance, TryDrop, UpdateBalanceOutcome, VestingCurrency,
 	},
 	weights::SimpleDispatchInfo,
 	Parameter, StorageValue,
@@ -188,8 +188,6 @@ use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{
 	BalanceLock, Fee, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
-
-type MomentOf<T, I> = <<T as Subtrait<I>>::Time as Time>::Moment;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug)]
@@ -249,9 +247,6 @@ pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait {
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
-
-	// TODO doc
-	type Time: Time;
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait {
@@ -293,9 +288,6 @@ pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait {
 
 	/// The fee required to create an account.
 	type CreationFee: Get<Self::Balance>;
-
-	// TODO doc
-	type Time: Time;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
@@ -305,8 +297,6 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-
-	type Time = T::Time;
 }
 
 decl_event!(
@@ -411,7 +401,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, MomentOf<T, I>>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -875,8 +865,6 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type TransferFee = T::TransferFee;
 	type CreationFee = T::CreationFee;
-
-	type Time = T::Time;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
@@ -947,7 +935,7 @@ where
 			return Ok(());
 		}
 
-		let now = T::Time::now();
+		let now = <frame_system::Module<T>>::block_number();
 		if locks
 			.into_iter()
 			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
@@ -1191,7 +1179,7 @@ impl<T: Trait<I>, I: Instance> LockableCurrency<T::AccountId> for Module<T, I>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = MomentOf<T, I>;
+	type Moment = T::BlockNumber;
 
 	fn set_lock(
 		id: LockIdentifier,

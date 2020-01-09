@@ -9,7 +9,7 @@ use codec::{Codec, Decode, Encode};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage,
 	traits::{
-		Currency, ExistenceRequirement, Get, Imbalance, ReservableCurrency, SignedImbalance, Time, TryDrop,
+		Currency, ExistenceRequirement, Get, Imbalance, ReservableCurrency, SignedImbalance, TryDrop,
 		UpdateBalanceOutcome, VestingCurrency,
 	},
 	weights::SimpleDispatchInfo,
@@ -30,7 +30,6 @@ use darwinia_support::{
 	BalanceLock, Fee, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
 
-type MomentOf<T> = <<T as Trait>::Time as Time>::Moment;
 type RingBalance<T> = <<T as Trait>::RingCurrency as Currency<<T as frame_system::Trait>::AccountId>>::Balance;
 
 /// Struct to encode the vesting schedule of an individual account.
@@ -81,10 +80,11 @@ pub trait Trait: frame_system::Trait {
 	type RingCurrency: Currency<Self::AccountId>;
 	// TODO doc
 	type TransferPayment: Fee<Self::AccountId, RingBalance<Self>>;
+	/// The minimum amount required to keep an account open.
+	type ExistentialDeposit: Get<Self::Balance>;
+
 	/// The fee required to make a transfer.
 	type TransferFee: Get<RingBalance<Self>>;
-	// TODO doc
-	type Time: Time;
 }
 
 decl_event!(
@@ -180,7 +180,7 @@ decl_storage! {
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
 		/// Any liquidity locks on some account balances.
-		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, MomentOf<T>>>;
+		pub Locks get(fn locks): map T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -542,7 +542,7 @@ where
 			return Ok(());
 		}
 
-		let now = T::Time::now();
+		let now = <frame_system::Module<T>>::block_number();
 		if locks
 			.into_iter()
 			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
@@ -737,7 +737,7 @@ impl<T: Trait> LockableCurrency<T::AccountId> for Module<T>
 where
 	T::Balance: MaybeSerializeDeserialize + Debug,
 {
-	type Moment = MomentOf<T>;
+	type Moment = T::BlockNumber;
 
 	fn set_lock(
 		id: LockIdentifier,

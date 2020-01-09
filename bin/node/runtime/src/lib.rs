@@ -46,6 +46,7 @@ use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index
 use pallet_contracts_rpc_runtime_api::ContractExecResult;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use pallet_staking::{EraIndex, Exposure, ExposureOf, StashOf};
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
@@ -62,6 +63,7 @@ use sp_runtime::{
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
 	ApplyExtrinsicResult, Perbill, Permill,
 };
+use sp_staking::SessionIndex;
 use sp_std::vec::Vec;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
@@ -134,9 +136,9 @@ impl frame_system::Trait for Runtime {
 
 parameter_types! {
 	// One storage item; value is size 4+4+16+32 bytes = 56 bytes.
-	pub const MultisigDepositBase: Balance = 30 * CENTS;
+	pub const MultisigDepositBase: Balance = 30 * MILLI;
 	// Additional storage item size of 32 bytes.
-	pub const MultisigDepositFactor: Balance = 5 * CENTS;
+	pub const MultisigDepositFactor: Balance = 5 * MILLI;
 	pub const MaxSignatories: u16 = 100;
 }
 
@@ -168,9 +170,9 @@ impl pallet_indices::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * DOLLARS;
-	pub const TransferFee: Balance = 1 * CENTS;
-	pub const CreationFee: Balance = 1 * CENTS;
+	pub const ExistentialDeposit: Balance = 1 * COIN;
+	pub const TransferFee: Balance = 1 * MILLI;
+	pub const CreationFee: Balance = 1 * MILLI;
 }
 
 impl pallet_ring::Trait for Runtime {
@@ -183,22 +185,19 @@ impl pallet_ring::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-
-	type Time = Timestamp;
 }
 impl pallet_kton::Trait for Runtime {
 	type Balance = Balance;
 	type Event = Event;
 	type RingCurrency = Balances;
 	type TransferPayment = Balances;
+	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
-
-	type Time = Timestamp;
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * CENTS;
-	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
+	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionByteFee: Balance = 10 * MICRO;
 	// setting this to zero will disable the weight fee.
 	pub const WeightFeeCoefficient: Balance = 1_000;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
@@ -250,7 +249,7 @@ parameter_types! {
 impl pallet_session::Trait for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Trait>::AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ValidatorIdOf = StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type OnSessionEnding = Staking;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
@@ -260,8 +259,8 @@ impl pallet_session::Trait for Runtime {
 }
 
 impl pallet_session::historical::Trait for Runtime {
-	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+	type FullIdentification = Exposure<AccountId, Balance>;
+	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
 pallet_staking_reward_curve::build! {
@@ -276,25 +275,41 @@ pallet_staking_reward_curve::build! {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 6;
-	pub const BondingDuration: pallet_staking::EraIndex = 24 * 28;
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 24 * 7; // 1/4 the bonding duration.
+	pub const BlocksPerSession: BlockNumber = EPOCH_DURATION_IN_BLOCKS;
+	pub const SessionsPerEra: SessionIndex = ERA_DURATION;
+	pub const BondingDurationInEra: EraIndex = 24 * 28;
+	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
+	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
+
+	// decimal 9
+	pub const Cap: Balance = 1_000_000_000 * COIN;
+	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
+	// Date in Berlin* :12/26/2019, 1:58:29 PM
+	// Date in Beijing*: 12/26/2019, 12:58:29 PM
+	// Date in New York* :12/26/2019, 12:58:29 AM
+	pub const GenesisTime: Moment = 1_577_339_909_000;
 }
 
 impl pallet_staking::Trait for Runtime {
-	type Currency = Balances;
 	type Time = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type RewardRemainder = Treasury;
 	type Event = Event;
-	type Slash = Treasury; // send the slashed funds to the treasury.
-	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = SlashDeferDuration;
 	/// A super-majority of the council can cancel the slash.
 	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 	type SessionInterface = Self;
+	type RingCurrency = Balances;
+	type RingRewardRemainder = Treasury;
+	type RingSlash = ();
+	type RingReward = ();
+	type KtonCurrency = Kton;
+	type KtonSlash = ();
+	type KtonReward = ();
+	type Cap = Cap;
+	type GenesisTime = GenesisTime;
 }
 
 type CouncilCollective = pallet_collective::Instance1;
@@ -323,7 +338,7 @@ impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
+	pub const ProposalBondMinimum: Balance = 1 * COIN;
 	pub const SpendPeriod: BlockNumber = 1 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(50);
 }
@@ -341,15 +356,15 @@ impl pallet_treasury::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ContractTransferFee: Balance = 1 * CENTS;
-	pub const ContractCreationFee: Balance = 1 * CENTS;
-	pub const ContractTransactionBaseFee: Balance = 1 * CENTS;
-	pub const ContractTransactionByteFee: Balance = 10 * MILLICENTS;
-	pub const ContractFee: Balance = 1 * CENTS;
-	pub const TombstoneDeposit: Balance = 1 * DOLLARS;
-	pub const RentByteFee: Balance = 1 * DOLLARS;
-	pub const RentDepositOffset: Balance = 1000 * DOLLARS;
-	pub const SurchargeReward: Balance = 150 * DOLLARS;
+	pub const ContractTransferFee: Balance = 1 * MILLI;
+	pub const ContractCreationFee: Balance = 1 * MILLI;
+	pub const ContractTransactionBaseFee: Balance = 1 * MILLI;
+	pub const ContractTransactionByteFee: Balance = 10 * MICRO;
+	pub const ContractFee: Balance = 1 * MILLI;
+	pub const TombstoneDeposit: Balance = 1 * COIN;
+	pub const RentByteFee: Balance = 1 * COIN;
+	pub const RentDepositOffset: Balance = 1000 * COIN;
+	pub const SurchargeReward: Balance = 150 * COIN;
 }
 
 impl pallet_contracts::Trait for Runtime {
@@ -389,7 +404,7 @@ impl pallet_sudo::Trait for Runtime {
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
 
 parameter_types! {
-	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	pub const SessionDuration: BlockNumber = SESSION_DURATION;
 }
 
 impl pallet_im_online::Trait for Runtime {
@@ -425,7 +440,7 @@ impl pallet_finality_tracker::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ReservationFee: Balance = 1 * DOLLARS;
+	pub const ReservationFee: Balance = 1 * COIN;
 	pub const MinLength: usize = 3;
 	pub const MaxLength: usize = 16;
 }

@@ -20,14 +20,16 @@
 pub mod currency {
 	use node_primitives::Balance;
 
-	pub const MILLICENTS: Balance = 1_000_000_000;
-	pub const CENTS: Balance = 1_000 * MILLICENTS;    // assume this is worth about a cent.
-	pub const DOLLARS: Balance = 100 * CENTS;
+	pub const NANO: Balance = 1;
+	pub const MICRO: Balance = 1_000 * NANO;
+	pub const MILLI: Balance = 1_000 * MICRO;
+	pub const COIN: Balance = 1_000 * MILLI;
 }
 
 /// Time.
 pub mod time {
-	use node_primitives::{Moment, BlockNumber};
+	use node_primitives::{BlockNumber, Moment};
+	use sp_staking::SessionIndex;
 
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
@@ -65,4 +67,10 @@ pub mod time {
 	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
+
+	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	// Develop
+	//	pub const ERA_DURATION: SessionIndex = 3;
+	// Production
+	pub const ERA_DURATION: SessionIndex = 6;
 }
