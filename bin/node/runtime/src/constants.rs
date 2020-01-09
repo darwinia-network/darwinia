@@ -73,4 +73,18 @@ pub mod time {
 	//	pub const ERA_DURATION: SessionIndex = 3;
 	// Production
 	pub const ERA_DURATION: SessionIndex = 6;
+
+	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
+	// Date in Berlin* :12/26/2019, 1:58:29 PM
+	// Date in Beijing*: 12/26/2019, 12:58:29 PM
+	// Date in New York* :12/26/2019, 12:58:29 AM
+	pub const GENESIS_TIME: Moment = 1_577_339_909_000;
+}
+
+pub mod supply {
+	use crate::constants::currency::COIN;
+	use node_primitives::{Balance, Power};
+
+	pub const CAP: Balance = 1_000_000_000 * COIN;
+	pub const TOTAL_POWER: Power = 1_000_000_000;
 }

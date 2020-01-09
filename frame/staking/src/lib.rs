@@ -248,7 +248,7 @@
 
 mod inflation;
 mod migration;
-//mod slashing;
+mod slashing;
 
 mod types {
 	use crate::{system, Currency, NominatorReward, StakingBalance, StakingLedger, Time, Trait};
@@ -257,8 +257,10 @@ mod types {
 	pub type EraIndex = u32;
 	/// Counter for the number of "reward" points earned by a given validator.
 	pub type Points = u32;
-	/// TODO: doc
-	pub type TimeStamp = u64;
+	/// Type used for expressing timestamp.
+	pub type Moment = Timestamp;
+	/// Power of an account.
+	pub type Power = u128;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -275,6 +277,11 @@ mod types {
 	pub type MomentOf<T> = <TimeT<T> as Time>::Moment;
 
 	pub type Rewards<T> = (RingBalance<T>, Vec<NominatorReward<AccountId<T>, RingBalance<T>>>);
+
+	/// A timestamp: milliseconds since the unix epoch.
+	/// `u64` is enough to represent a duration of half a billion years, when the
+	/// time scale is milliseconds.
+	type Timestamp = u64;
 
 	type AccountId<T> = <T as system::Trait>::AccountId;
 	type BlockNumber<T> = <T as system::Trait>::BlockNumber;
@@ -298,7 +305,7 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use pallet_session::{historical::OnSessionEnding, SelectInitialValidators};
-use sp_phragmen::{ExtendedBalance as Power, PhragmenStakedAssignment};
+use sp_phragmen::{ExtendedBalance as Votes, PhragmenStakedAssignment};
 use sp_runtime::{
 	traits::{
 		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
@@ -320,8 +327,8 @@ use darwinia_support::{
 use types::*;
 
 const DEFAULT_MINIMUM_VALIDATOR_COUNT: u32 = 4;
-const MONTH_IN_MINUTES: TimeStamp = 30 * 24 * 60;
-const MONTH_IN_MILLISECONDS: TimeStamp = MONTH_IN_MINUTES * 60 * 1000;
+const MONTH_IN_MINUTES: Moment = 30 * 24 * 60;
+const MONTH_IN_MILLISECONDS: Moment = MONTH_IN_MINUTES * 60 * 1000;
 const MAX_NOMINATIONS: usize = 16;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
 const STAKING_ID: LockIdentifier = *b"staking ";
@@ -365,7 +372,7 @@ pub enum StakerStatus<AccountId> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug)]
 pub enum RewardDestination {
 	/// Pay into the stash account, increasing the amount at stake accordingly.
-	Staked { promise_month: TimeStamp },
+	Staked { promise_month: Moment },
 	/// Pay into the stash account, not increasing the amount at stake.
 	Stash,
 	/// Pay into the controller account.
@@ -429,7 +436,7 @@ pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
 
 /// The ledger of a (bonded) stash.
 #[derive(PartialEq, Eq, Clone, Default, Encode, Decode, RuntimeDebug)]
-pub struct StakingLedger<AccountId, RingBalance, KtonBalance, BlockNumber, TimeStamp>
+pub struct StakingLedger<AccountId, RingBalance, KtonBalance, BlockNumber, Timestamp>
 where
 	RingBalance: HasCompact,
 	KtonBalance: HasCompact,
@@ -452,7 +459,7 @@ where
 
 	// If you deposit *RING* for a minimum period,
 	// you can get *KTON* as bonus which can also be used for staking.
-	pub deposit_items: Vec<TimeDepositItem<RingBalance, TimeStamp>>,
+	pub deposit_items: Vec<TimeDepositItem<RingBalance, Timestamp>>,
 
 	// TODO doc
 	pub ring_staking_lock: StakingLock<RingBalance, BlockNumber>,
@@ -460,8 +467,8 @@ where
 	pub kton_staking_lock: StakingLock<KtonBalance, BlockNumber>,
 }
 
-impl<AccountId, RingBalance, KtonBalance, BlockNumber, TimeStamp>
-	StakingLedger<AccountId, RingBalance, KtonBalance, BlockNumber, TimeStamp>
+impl<AccountId, RingBalance, KtonBalance, BlockNumber, Timestamp>
+	StakingLedger<AccountId, RingBalance, KtonBalance, BlockNumber, Timestamp>
 where
 	RingBalance: SimpleArithmetic + Saturating + Copy,
 	KtonBalance: SimpleArithmetic + Saturating + Copy,
@@ -642,7 +649,7 @@ pub trait Trait: frame_system::Trait {
 	/// TODO: #1377
 	/// The backward convert should be removed as the new Phragmen API returns ratio.
 	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	type CurrencyToVote: Convert<Power, u64> + Convert<u128, Power>;
+	type PowerToVote: Convert<Power, u64> + Convert<u128, Power>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -684,6 +691,8 @@ pub trait Trait: frame_system::Trait {
 
 	// TODO: doc
 	type Cap: Get<RingBalance<Self>>;
+	// TODO: doc
+	type TotalPower: Get<Power>;
 
 	// TODO: doc
 	type GenesisTime: Get<MomentOf<Self>>;
@@ -768,7 +777,7 @@ decl_storage! {
 			config
 				.stakers
 				.iter()
-				.map(|&(_, _, r, _)| inflation::compute_balance_power(r, <Module<T>>::ring_pool()))
+				.map(|&(_, _, r, _)| inflation::compute_balance_power::<T, _>(r, <Module<T>>::ring_pool()))
 				.min()
 				.unwrap_or_default()
 		}): Power;
@@ -808,12 +817,12 @@ decl_storage! {
 		/// All slashing events on nominators, mapped by era to the highest slash value of the era.
 		NominatorSlashInEra: double_map EraIndex, twox_128(T::AccountId) => Option<Power>;
 
-//		/// Slashing spans for stash accounts.
-//		SlashingSpans: map T::AccountId => Option<slashing::SlashingSpans>;
-//
-//		/// Records information about the maximum slash of a stash within a slashing span,
-//		/// as well as how much reward has been paid out.
-//		SpanSlash: map (T::AccountId, slashing::SpanIndex) => slashing::SpanRecord<BalanceOf<T>>;
+		/// Slashing spans for stash accounts.
+		SlashingSpans: map T::AccountId => Option<slashing::SlashingSpans>;
+
+		/// Records information about the maximum slash of a stash within a slashing span,
+		/// as well as how much reward has been paid out.
+		SpanSlash: map (T::AccountId, slashing::SpanIndex) => slashing::SpanRecord<Power>;
 
 		/// The earliest era for which we have a pending, unapplied slash.
 		EarliestUnappliedSlash: Option<EraIndex>;
@@ -930,6 +939,9 @@ decl_module! {
 		const Cap: RingBalance<T> = T::Cap::get();
 
 		// TODO: doc
+		const TotalPower: Power = T::TotalPower::get();
+
+		// TODO: doc
 		const GenesisTime: MomentOf<T> = T::GenesisTime::get();
 
 		type Error = Error<T>;
@@ -968,7 +980,7 @@ decl_module! {
 			controller: <T::Lookup as StaticLookup>::Source,
 			value: StakingBalanceT<T>,
 			payee: RewardDestination,
-			promise_month: TimeStamp
+			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
 			ensure!(!<Bonded<T>>::exists(&stash), Error::<T>::AlreadyBonded);
@@ -1041,7 +1053,7 @@ decl_module! {
 		/// - One DB entry.
 		/// # </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
-		fn bond_extra(origin, max_additional: StakingBalanceT<T>, promise_month: TimeStamp) {
+		fn bond_extra(origin, max_additional: StakingBalanceT<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
 			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
@@ -1079,7 +1091,7 @@ decl_module! {
 		}
 
 		// TODO: doc
-		fn deposit_extra(origin, value: RingBalance<T>, promise_month: TimeStamp) {
+		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
 			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
@@ -1228,11 +1240,11 @@ decl_module! {
 
 				let kton_slash = {
 					let plan_duration_in_months = {
-						let plan_duration_in_ts = (item.expire_time - item.start_time).saturated_into::<TimeStamp>();
+						let plan_duration_in_ts = (item.expire_time - item.start_time).saturated_into::<Moment>();
 						plan_duration_in_ts / MONTH_IN_MILLISECONDS
 					};
 					let passed_duration_in_months = {
-						let passed_duration_in_ts = (now - item.start_time).saturated_into::<TimeStamp>();
+						let passed_duration_in_ts = (now - item.start_time).saturated_into::<Moment>();
 						passed_duration_in_ts / MONTH_IN_MILLISECONDS
 					};
 
@@ -1497,14 +1509,15 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	// PUBLIC IMMUTABLES
 
-	// FIXME
-	/// The total balance that can be slashed from a stash account as of right now.
+	/// The total power that can be slashed from a stash account as of right now.
 	pub fn slashable_power_of(stash: &T::AccountId) -> Power {
-		//		Self::bonded(stash)
-		//			.and_then(Self::ledger)
-		//			.map(|l| l.active)
-		//			.unwrap_or_default()
-		unimplemented!()
+		Self::bonded(stash)
+			.and_then(Self::ledger)
+			.map(|l| {
+				inflation::compute_balance_power::<T, _>(l.active_ring, Self::ring_pool())
+					+ inflation::compute_balance_power::<T, _>(l.active_kton, Self::kton_pool())
+			})
+			.unwrap_or_default()
 	}
 
 	// Update the ledger while bonding ring and compute the kton should return.
@@ -1512,7 +1525,7 @@ impl<T: Trait> Module<T> {
 		stash: &T::AccountId,
 		controller: &T::AccountId,
 		value: RingBalance<T>,
-		promise_month: TimeStamp,
+		promise_month: Moment,
 		mut ledger: StakingLedgerT<T>,
 	) -> (MomentOf<T>, MomentOf<T>) {
 		let start_time = T::Time::now();
@@ -1707,89 +1720,93 @@ impl<T: Trait> Module<T> {
 		let era_duration = now - previous_era_start;
 		if !era_duration.is_zero() {
 			let validators = Self::current_elected();
-
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration,
 				T::Time::now() - T::GenesisTime::get(),
 				T::Cap::get() - T::RingCurrency::total_issuance(),
 				PayoutFraction::get(),
 			);
+			let mut total_imbalance = <RingPositiveImbalance<T>>::zero();
+			let mut validators_reward = vec![];
 
-			//			let mut total_imbalance = <PositiveImbalanceOf<T>>::zero();
-			//
-			//			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
-			//				if p != 0 {
-			//					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
-			//					total_imbalance.subsume(Self::reward_validator(v, reward));
-			//				}
-			//			}
-			//
-			//			// assert!(total_imbalance.peek() == total_payout)
-			//			let total_payout = total_imbalance.peek();
-			//
-			//			let rest = max_payout.saturating_sub(total_payout);
-			//			Self::deposit_event(RawEvent::Reward(total_payout, rest));
-			//
-			//			T::Reward::on_unbalanced(total_imbalance);
-			//			T::RewardRemainder::on_unbalanced(T::Currency::issue(rest));
+			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
+				if p != 0 {
+					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
+					let (imbalance, (validator_reward, nominators_reward)) = Self::reward_validator(v, reward);
+
+					total_imbalance.subsume(imbalance);
+					validators_reward.push(ValidatorReward {
+						who: v.to_owned(),
+						amount: validator_reward,
+						nominators_reward,
+					});
+				}
+			}
+
+			// assert!(total_imbalance.peek() == total_payout)
+			let total_payout = total_imbalance.peek();
+			let rest = max_payout.saturating_sub(total_payout);
+
+			Self::deposit_event(RawEvent::Reward(total_payout, rest, validators_reward));
+
+			T::RingReward::on_unbalanced(total_imbalance);
+			T::RingRewardRemainder::on_unbalanced(T::RingCurrency::issue(rest));
 		}
-		//
-		//		// Increment current era.
-		//		let current_era = CurrentEra::mutate(|s| {
-		//			*s += 1;
-		//			*s
-		//		});
-		//
-		//		CurrentEraStartSessionIndex::mutate(|v| {
-		//			*v = start_session_index;
-		//		});
-		//		let bonding_duration = T::BondingDurationInEra::get();
-		//
-		//		BondedEras::mutate(|bonded| {
-		//			bonded.push((current_era, start_session_index));
-		//
-		//			if current_era > bonding_duration {
-		//				let first_kept = current_era - bonding_duration;
-		//
-		//				// prune out everything that's from before the first-kept index.
-		//				let n_to_prune = bonded.iter().take_while(|&&(era_idx, _)| era_idx < first_kept).count();
-		//
-		//				// kill slashing metadata.
-		//				for (pruned_era, _) in bonded.drain(..n_to_prune) {
-		//					slashing::clear_era_metadata::<T>(pruned_era);
-		//				}
-		//
-		//				if let Some(&(_, first_session)) = bonded.first() {
-		//					T::SessionInterface::prune_historical_up_to(first_session);
-		//				}
-		//			}
-		//		});
-		//
-		//		// Reassign all Stakers.
-		//		let (_slot_stake, maybe_new_validators) = Self::select_validators();
-		//		Self::apply_unapplied_slashes(current_era);
-		//
-		//		maybe_new_validators
-		unimplemented!()
+
+		// Increment current era.
+		let current_era = CurrentEra::mutate(|s| {
+			*s += 1;
+			*s
+		});
+
+		CurrentEraStartSessionIndex::mutate(|v| {
+			*v = start_session_index;
+		});
+		let bonding_duration_in_era = T::BondingDurationInEra::get();
+
+		BondedEras::mutate(|bonded| {
+			bonded.push((current_era, start_session_index));
+
+			if current_era > bonding_duration_in_era {
+				let first_kept = current_era - bonding_duration_in_era;
+
+				// prune out everything that's from before the first-kept index.
+				let n_to_prune = bonded.iter().take_while(|&&(era_idx, _)| era_idx < first_kept).count();
+
+				// kill slashing metadata.
+				for (pruned_era, _) in bonded.drain(..n_to_prune) {
+					slashing::clear_era_metadata::<T>(pruned_era);
+				}
+
+				if let Some(&(_, first_session)) = bonded.first() {
+					T::SessionInterface::prune_historical_up_to(first_session);
+				}
+			}
+		});
+
+		// Reassign all Stakers.
+		let (_slot_stake, maybe_new_validators) = Self::select_validators();
+		Self::apply_unapplied_slashes(current_era);
+
+		maybe_new_validators
 	}
 
 	/// Apply previously-unapplied slashes on the beginning of a new era, after a delay.
 	fn apply_unapplied_slashes(current_era: EraIndex) {
-		//		let slash_defer_duration = T::SlashDeferDuration::get();
-		//		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
-		//			if let Some(ref mut earliest) = earliest {
-		//				let keep_from = current_era.saturating_sub(slash_defer_duration);
-		//				for era in (*earliest)..keep_from {
-		//					let era_slashes = <Self as Store>::UnappliedSlashes::take(&era);
-		//					for slash in era_slashes {
-		//						slashing::apply_slash::<T>(slash);
-		//					}
-		//				}
-		//
-		//				*earliest = (*earliest).max(keep_from)
-		//			}
-		//		})
-		unimplemented!()
+		let slash_defer_duration = T::SlashDeferDuration::get();
+		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
+			if let Some(ref mut earliest) = earliest {
+				let keep_from = current_era.saturating_sub(slash_defer_duration);
+				for era in (*earliest)..keep_from {
+					let era_slashes = <Self as Store>::UnappliedSlashes::take(&era);
+					for slash in era_slashes {
+						slashing::apply_slash::<T>(slash);
+					}
+				}
+
+				*earliest = (*earliest).max(keep_from)
+			}
+		})
 	}
 
 	/// Select a new validator set from the assembled stakers and their role preferences.
@@ -1798,142 +1815,139 @@ impl<T: Trait> Module<T> {
 	///
 	/// Assumes storage is coherent with the declaration.
 	fn select_validators() -> (Power, Option<Vec<T::AccountId>>) {
-		//		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = Vec::new();
-		//		let all_validator_candidates_iter = <Validators<T>>::enumerate();
-		//		let all_validators = all_validator_candidates_iter
-		//			.map(|(who, _pref)| {
-		//				let self_vote = (who.clone(), vec![who.clone()]);
-		//				all_nominators.push(self_vote);
-		//				who
-		//			})
-		//			.collect::<Vec<T::AccountId>>();
-		//		let nominator_votes = <Nominators<T>>::enumerate().map(|(nominator, nominations)| {
-		//			let Nominations {
-		//				submitted_in,
-		//				mut targets,
-		//				suppressed: _,
-		//			} = nominations;
-		//
-		//			// Filter out nomination targets which were nominated before the most recent
-		//			// slashing span.
-		//			targets.retain(|stash| {
-		//				<Self as Store>::SlashingSpans::get(&stash).map_or(true, |spans| submitted_in >= spans.last_start())
-		//			});
-		//
-		//			(nominator, targets)
-		//		});
-		//
-		//		all_nominators.extend(nominator_votes);
-		//
-		//		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::CurrencyToVote>(
-		//			Self::validator_count() as usize,
-		//			Self::minimum_validator_count().max(1) as usize,
-		//			all_validators,
-		//			all_nominators,
-		//			Self::slashable_balance_of,
-		//		);
-		//
-		//		if let Some(phragmen_result) = maybe_phragmen_result {
-		//			let elected_stashes = phragmen_result
-		//				.winners
-		//				.iter()
-		//				.map(|(s, _)| s.clone())
-		//				.collect::<Vec<T::AccountId>>();
-		//			let assignments = phragmen_result.assignments;
-		//			let to_votes =
-		//				|b: BalanceOf<T>| <T::CurrencyToVote as Convert<BalanceOf<T>, u64>>::convert(b) as ExtendedBalance;
-		//			let to_balance =
-		//				|e: ExtendedBalance| <T::CurrencyToVote as Convert<ExtendedBalance, BalanceOf<T>>>::convert(e);
-		//			let mut supports = sp_phragmen::build_support_map::<_, _, _, T::CurrencyToVote>(
-		//				&elected_stashes,
-		//				&assignments,
-		//				Self::slashable_balance_of,
-		//			);
-		//
-		//			if cfg!(feature = "equalize") {
-		//				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
-		//					Vec::with_capacity(assignments.len());
-		//				for (n, assignment) in assignments.iter() {
-		//					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
-		//						Vec::with_capacity(assignment.len());
-		//
-		//					// If this is a self vote, then we don't need to equalise it at all. While the
-		//					// staking system does not allow nomination and validation at the same time,
-		//					// this must always be 100% support.
-		//					if assignment.len() == 1 && assignment[0].0 == *n {
-		//						continue;
-		//					}
-		//					for (c, per_thing) in assignment.iter() {
-		//						let nominator_stake = to_votes(Self::slashable_balance_of(n));
-		//						let other_stake = *per_thing * nominator_stake;
-		//						staked_assignment.push((c.clone(), other_stake));
-		//					}
-		//					staked_assignments.push((n.clone(), staked_assignment));
-		//				}
-		//
-		//				let tolerance = 0_u128;
-		//				let iterations = 2_usize;
-		//				sp_phragmen::equalize::<_, _, T::CurrencyToVote, _>(
-		//					staked_assignments,
-		//					&mut supports,
-		//					tolerance,
-		//					iterations,
-		//					Self::slashable_balance_of,
-		//				);
-		//			}
-		//
-		//			// Clear Stakers.
-		//			for v in Self::current_elected().iter() {
-		//				<Stakers<T>>::remove(v);
-		//			}
-		//
-		//			// Populate Stakers and figure out the minimum stake behind a slot.
-		//			let mut slot_stake = BalanceOf::<T>::max_value();
-		//			for (c, s) in supports.into_iter() {
-		//				// build `struct exposure` from `support`
-		//				let exposure = Exposure {
-		//					own: to_balance(s.own),
-		//					// This might reasonably saturate and we cannot do much about it. The sum of
-		//					// someone's stake might exceed the balance type if they have the maximum amount
-		//					// of balance and receive some support. This is super unlikely to happen, yet
-		//					// we simulate it in some tests.
-		//					total: to_balance(s.total),
-		//					others: s
-		//						.others
-		//						.into_iter()
-		//						.map(|(who, value)| IndividualExposure {
-		//							who,
-		//							value: to_balance(value),
-		//						})
-		//						.collect::<Vec<IndividualExposure<_, _>>>(),
-		//				};
-		//				if exposure.total < slot_stake {
-		//					slot_stake = exposure.total;
-		//				}
-		//
-		//				<Stakers<T>>::insert(&c, exposure.clone());
-		//			}
-		//
-		//			// Update slot stake.
-		//			<SlotStake<T>>::put(&slot_stake);
-		//			// Set the new validator set in sessions.
-		//			<CurrentElected<T>>::put(&elected_stashes);
-		//
-		//			// In order to keep the property required by `n_session_ending`
-		//			// that we must return the new validator set even if it's the same as the old,
-		//			// as long as any underlying economic conditions have changed, we don't attempt
-		//			// to do any optimization where we compare against the prior set.
-		//			(slot_stake, Some(elected_stashes))
-		//		} else {
-		//			// There were not enough candidates for even our minimal level of functionality.
-		//			// This is bad.
-		//			// We should probably disable all functionality except for block production
-		//			// and let the chain keep producing blocks until we can decide on a sufficiently
-		//			// substantial set.
-		//			// TODO: #2494
-		//			(Self::slot_stake(), None)
-		//		}
-		unimplemented!()
+		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = Vec::new();
+		let all_validator_candidates_iter = <Validators<T>>::enumerate();
+		let all_validators = all_validator_candidates_iter
+			.map(|(who, _pref)| {
+				let self_vote = (who.clone(), vec![who.clone()]);
+				all_nominators.push(self_vote);
+				who
+			})
+			.collect::<Vec<T::AccountId>>();
+		let nominator_votes = <Nominators<T>>::enumerate().map(|(nominator, nominations)| {
+			let Nominations {
+				submitted_in,
+				mut targets,
+				suppressed: _,
+			} = nominations;
+
+			// Filter out nomination targets which were nominated before the most recent
+			// slashing span.
+			targets.retain(|stash| {
+				<Self as Store>::SlashingSpans::get(&stash).map_or(true, |spans| submitted_in >= spans.last_start())
+			});
+
+			(nominator, targets)
+		});
+
+		all_nominators.extend(nominator_votes);
+
+		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::PowerToVote>(
+			Self::validator_count() as usize,
+			Self::minimum_validator_count().max(1) as usize,
+			all_validators,
+			all_nominators,
+			Self::slashable_power_of,
+		);
+
+		if let Some(phragmen_result) = maybe_phragmen_result {
+			let elected_stashes = phragmen_result
+				.winners
+				.iter()
+				.map(|(s, _)| s.clone())
+				.collect::<Vec<T::AccountId>>();
+			let assignments = phragmen_result.assignments;
+			let to_votes = |p: Power| <T::PowerToVote as Convert<Power, u64>>::convert(p) as Votes;
+			let to_power = |v: Votes| <T::PowerToVote as Convert<Votes, Power>>::convert(v);
+			let mut supports = sp_phragmen::build_support_map::<_, _, _, T::PowerToVote>(
+				&elected_stashes,
+				&assignments,
+				Self::slashable_power_of,
+			);
+
+			if cfg!(feature = "equalize") {
+				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
+					Vec::with_capacity(assignments.len());
+				for (n, assignment) in assignments.iter() {
+					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
+						Vec::with_capacity(assignment.len());
+
+					// If this is a self vote, then we don't need to equalise it at all. While the
+					// staking system does not allow nomination and validation at the same time,
+					// this must always be 100% support.
+					if assignment.len() == 1 && assignment[0].0 == *n {
+						continue;
+					}
+					for (c, per_thing) in assignment.iter() {
+						let nominator_stake = to_votes(Self::slashable_power_of(n));
+						let other_stake = *per_thing * nominator_stake;
+						staked_assignment.push((c.clone(), other_stake));
+					}
+					staked_assignments.push((n.clone(), staked_assignment));
+				}
+
+				let tolerance = 0_u128;
+				let iterations = 2_usize;
+				sp_phragmen::equalize::<_, _, T::PowerToVote, _>(
+					staked_assignments,
+					&mut supports,
+					tolerance,
+					iterations,
+					Self::slashable_power_of,
+				);
+			}
+
+			// Clear Stakers.
+			for v in Self::current_elected().iter() {
+				<Stakers<T>>::remove(v);
+			}
+
+			// Populate Stakers and figure out the minimum stake behind a slot.
+			let mut slot_stake = Power::max_value();
+			for (c, s) in supports.into_iter() {
+				// build `struct exposure` from `support`
+				let exposure = Exposure {
+					own: to_power(s.own),
+					// This might reasonably saturate and we cannot do much about it. The sum of
+					// someone's stake might exceed the balance type if they have the maximum amount
+					// of balance and receive some support. This is super unlikely to happen, yet
+					// we simulate it in some tests.
+					total: to_power(s.total),
+					others: s
+						.others
+						.into_iter()
+						.map(|(who, value)| IndividualExposure {
+							who,
+							value: to_power(value),
+						})
+						.collect::<Vec<IndividualExposure<_, _>>>(),
+				};
+				if exposure.total < slot_stake {
+					slot_stake = exposure.total;
+				}
+
+				<Stakers<T>>::insert(&c, exposure.clone());
+			}
+
+			// Update slot stake.
+			SlotStake::put(&slot_stake);
+			// Set the new validator set in sessions.
+			<CurrentElected<T>>::put(&elected_stashes);
+
+			// In order to keep the property required by `n_session_ending`
+			// that we must return the new validator set even if it's the same as the old,
+			// as long as any underlying economic conditions have changed, we don't attempt
+			// to do any optimization where we compare against the prior set.
+			(slot_stake, Some(elected_stashes))
+		} else {
+			// There were not enough candidates for even our minimal level of functionality.
+			// This is bad.
+			// We should probably disable all functionality except for block production
+			// and let the chain keep producing blocks until we can decide on a sufficiently
+			// substantial set.
+			// TODO: #2494
+			(Self::slot_stake(), None)
+		}
 	}
 
 	/// Remove all associated data of a stash account from the staking system.
@@ -1951,7 +1965,7 @@ impl<T: Trait> Module<T> {
 			<Ledger<T>>::remove(&controller);
 		}
 
-		//		slashing::clear_stash_metadata::<T>(stash);
+		slashing::clear_stash_metadata::<T>(stash);
 	}
 
 	/// Add reward points to validators using their stash account ID.

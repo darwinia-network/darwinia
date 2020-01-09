@@ -1,3 +1,4 @@
+use frame_support::traits::Get;
 use sp_core::U256;
 use sp_runtime::{
 	traits::{IntegerSquareRoot, SaturatedConversion},
@@ -5,17 +6,19 @@ use sp_runtime::{
 };
 use sp_std::convert::TryInto;
 
-use crate::{KtonBalance, MomentOf, Power, RingBalance, TimeStamp, Trait};
+use crate::{KtonBalance, Moment, MomentOf, Power, RingBalance, Trait};
 
 type Balance = u128;
 
 // power is a mixture of ring and kton
 // power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
-pub fn compute_balance_power<S: TryInto<Balance>>(active: S, pool: S) -> Power {
-	const HALF_POWER_COUNT: Power = 1_000_000_000 / 2;
-
+pub fn compute_balance_power<T, S>(active: S, pool: S) -> Power
+where
+	T: Trait,
+	S: TryInto<Balance>,
+{
 	Perquintill::from_rational_approximation(active.saturated_into::<Power>(), pool.saturated_into::<Power>().max(1))
-		* HALF_POWER_COUNT
+		* (T::TotalPower::get() / 2)
 }
 
 //  1 - (99 / 100) ^ sqrt(year)
@@ -27,18 +30,18 @@ pub fn compute_total_payout<T: Trait>(
 	payout_fraction: Perbill,
 ) -> (RingBalance<T>, RingBalance<T>) {
 	// Milliseconds per year for the Julian year (365.25 days).
-	const MILLISECONDS_PER_YEAR: TimeStamp = ((36525 * 24 * 60 * 60) / 100) * 1000;
+	const MILLISECONDS_PER_YEAR: Moment = ((36525 * 24 * 60 * 60) / 100) * 1000;
 
 	let maximum = {
 		let maximum = {
-			let era_duration = era_duration.saturated_into::<TimeStamp>();
+			let era_duration = era_duration.saturated_into::<Moment>();
 			let portion = Perquintill::from_rational_approximation(era_duration, MILLISECONDS_PER_YEAR);
 			let total_left = total_left.saturated_into::<Balance>();
 
 			portion * total_left
 		};
 		let year = {
-			let living_time = living_time.saturated_into::<TimeStamp>();
+			let living_time = living_time.saturated_into::<Moment>();
 			let year = living_time / MILLISECONDS_PER_YEAR + 1;
 
 			year.saturated_into::<u32>()
@@ -56,7 +59,7 @@ pub fn compute_total_payout<T: Trait>(
 
 // consistent with the formula in smart contract in evolution land which can be found in
 // https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280
-pub fn compute_kton_return<T: Trait>(value: RingBalance<T>, months: TimeStamp) -> KtonBalance<T> {
+pub fn compute_kton_return<T: Trait>(value: RingBalance<T>, months: Moment) -> KtonBalance<T> {
 	let value = value.saturated_into::<u64>();
 	let no = U256::from(67).pow(U256::from(months));
 	let de = U256::from(66).pow(U256::from(months));

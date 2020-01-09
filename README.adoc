@@ -335,7 +335,7 @@ darwinia-balances, darwinia-eth-backing, darwinia-eth-relay,
 darwinia-kton, darwinia-staking, darwinia-support
 * Node
 [source, shell]
-node-cli, node-runtime
+node-cli, node-primitives, node-runtime
 
 == Contributing
 

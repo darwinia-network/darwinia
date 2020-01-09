@@ -16,14 +16,17 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
-use crate::{Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
 use frame_support::{
 	traits::{Currency, Get, OnUnbalanced},
 	weights::Weight,
 };
-use node_primitives::Balance;
-use sp_runtime::traits::{Convert, Saturating};
-use sp_runtime::{Fixed64, Perbill};
+use sp_runtime::{
+	traits::{Convert, Saturating},
+	{Fixed64, Perbill},
+};
+
+use crate::{constants::supply::TOTAL_POWER, Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
+use node_primitives::{Balance, Power};
 
 pub struct Author;
 impl OnUnbalanced<NegativeImbalance> for Author {
@@ -34,22 +37,22 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 
 /// Struct that handles the conversion of Balance -> `u64`. This is used for staking's election
 /// calculation.
-pub struct CurrencyToVoteHandler;
+pub struct PowerToVoteHandler;
 
-impl CurrencyToVoteHandler {
-	fn factor() -> Balance {
-		(Balances::total_issuance() / u64::max_value() as Balance).max(1)
+impl PowerToVoteHandler {
+	fn factor() -> Power {
+		(TOTAL_POWER / u64::max_value() as Power).max(1)
 	}
 }
 
-impl Convert<Balance, u64> for CurrencyToVoteHandler {
-	fn convert(x: Balance) -> u64 {
+impl Convert<Power, u64> for PowerToVoteHandler {
+	fn convert(x: Power) -> u64 {
 		(x / Self::factor()) as u64
 	}
 }
 
-impl Convert<u128, Balance> for CurrencyToVoteHandler {
-	fn convert(x: u128) -> Balance {
+impl Convert<u128, Power> for PowerToVoteHandler {
+	fn convert(x: u128) -> Power {
 		x * Self::factor()
 	}
 }

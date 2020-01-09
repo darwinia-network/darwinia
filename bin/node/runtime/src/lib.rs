@@ -22,10 +22,10 @@
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
-use impls::{Author, CurrencyToVoteHandler, LinearWeightToFee, TargetedFeeAdjustment};
+use impls::{Author, LinearWeightToFee, PowerToVoteHandler, TargetedFeeAdjustment};
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, time::*};
+use constants::{currency::*, supply::*, time::*};
 
 pub use frame_support::StorageValue;
 pub use pallet_contracts::Gas;
@@ -42,11 +42,9 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
-use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature};
 use pallet_contracts_rpc_runtime_api::ContractExecResult;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
-use pallet_staking::{EraIndex, Exposure, ExposureOf, StashOf};
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
@@ -68,6 +66,9 @@ use sp_std::vec::Vec;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+
+use node_primitives::*;
+use pallet_staking::{EraIndex, Exposure, ExposureOf, StashOf};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -281,18 +282,14 @@ parameter_types! {
 	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
 	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
 
-	// decimal 9
-	pub const Cap: Balance = 1_000_000_000 * COIN;
-	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
-	// Date in Berlin* :12/26/2019, 1:58:29 PM
-	// Date in Beijing*: 12/26/2019, 12:58:29 PM
-	// Date in New York* :12/26/2019, 12:58:29 AM
-	pub const GenesisTime: Moment = 1_577_339_909_000;
+	pub const Cap: Balance = CAP;
+	pub const TotalPower: Power = TOTAL_POWER;
+	pub const GenesisTime: Moment = GENESIS_TIME;
 }
 
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
-	type CurrencyToVote = CurrencyToVoteHandler;
+	type PowerToVote = PowerToVoteHandler;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
@@ -309,6 +306,7 @@ impl pallet_staking::Trait for Runtime {
 	type KtonSlash = ();
 	type KtonReward = ();
 	type Cap = Cap;
+	type TotalPower = TotalPower;
 	type GenesisTime = GenesisTime;
 }
 
