@@ -317,17 +317,20 @@ You can generate documentation for a Darwinia Rust package and have it automatic
 (of the The Rustdoc Book), by running the following command:
 
 ```
+cargo doc --open
+```
+
+If you just want to generate document from specific package, you may use following command:
+
+```
 cargo doc --package <spec> --open
 ```
 
-Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia --open`):
+Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
 
-* All Darwinia Packages
-[source, shell]
-darwinia
 * Darwinia Core
 [source, shell]
-darwinia, darwinia-cli, ethash, fly-client,
+darwinia-cli, ethash, fly-client,
 merkle-mountain-range, merkle-patricia-trie, sr-eth-primitives
 * Darwinia Runtime Module Library
 [source, shell]
