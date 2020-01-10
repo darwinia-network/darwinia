@@ -53,7 +53,8 @@ Darwinia Network provides game developers the scalability, cross-chain interoper
 === Hacking on Darwinia
 
 If you'd actually like to hack on Darwinia, you can just grab the source code and
-build it. Ensure you have Rust and the support software installed:
+build it. We also provide the script to help you setup your developing environment in bellow sections.
+Please ensure you have Rust and the support software installed:
 
 ==== Linux and Mac
 
@@ -344,16 +345,14 @@ node-cli, node-executor, node-primitives, node-rpc, node-rpc-client, node-runtim
 
 === Environment
 
-If you are using Ubuntu, 
-you may use the `scripts/bootstrap.sh` to set up your develop environment.
-In this script, the nightly `Rust`, `cargo`, `rustfmt` will be installed,
+The `scripts/bootstrap.sh` help set up your develop environment.
+The nightly `Rust`, `cargo`, `rustfmt` will be installed,
 the git hooks will be set, and ready to code.
+
+Besides, the script will install some essential packages depends on your OS,
+if you want to do it manually, use the `--fast` option to skip.
 We will appreciate your contribution.
 
-If you are using different environment, you may copy the git hooks mannually.
-```
-$ cp .hooks/* .git/hooks
-```
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
