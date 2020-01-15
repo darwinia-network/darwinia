@@ -16,10 +16,13 @@ cargo --version
 rustc --version
 
 case $TARGET in
-	"native")
+	"rustfmt")
 		sudo apt-get -y update
 		sudo apt-get install -y cmake pkg-config libssl-dev
+		cargo fmt --all
+		;;
 
+	"native")
 		# Unit test
 		cargo test --release --all --locked "$@"
 		;;

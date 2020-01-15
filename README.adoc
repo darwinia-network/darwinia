@@ -13,7 +13,7 @@ image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[imag
 
 Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
 
-It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
+It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/RFC/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
 
 == Architecture
 
@@ -53,7 +53,8 @@ Darwinia Network provides game developers the scalability, cross-chain interoper
 === Hacking on Darwinia
 
 If you'd actually like to hack on Darwinia, you can just grab the source code and
-build it. Ensure you have Rust and the support software installed:
+build it. We also provide the script to help you setup your developing environment in bellow sections.
+Please ensure you have Rust and the support software installed:
 
 ==== Linux and Mac
 
@@ -223,13 +224,21 @@ Each project can be skipped individually by using the environment variable `SKIP
 Where `PROJECT_NAME` needs to be replaced by the name of the cargo project, e.g. `node-runtime` will
 be `NODE_RUNTIME`.
 
+=== Precautions
+
+If you run into problems when building this project, 
+please kindly check following things before making an issue.
+
+* using the latest nightly Rust
+* build without `sccache`
+
 == Joining the IceFrog Testnet
 
 // Latest known working version: ``
 
 === Quick start (professional):
   * https://telemetry.polkadot.io/#list/Darwinia%20IceFrog%20Testnet[Telemetry]
-  * https://testnet-wallet.darwinia.network[Darwinia Web Wallet]
+  * https://icefrog-wallet.darwinia.network[Darwinia Web Wallet]
   * Bootnodes: 
     ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
     ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
@@ -309,17 +318,20 @@ You can generate documentation for a Darwinia Rust package and have it automatic
 (of the The Rustdoc Book), by running the following command:
 
 ```
+cargo doc --open
+```
+
+If you just want to generate document from specific package, you may use following command:
+
+```
 cargo doc --package <spec> --open
 ```
 
-Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia --open`):
+Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
 
-* All Darwinia Packages
-[source, shell]
-darwinia
 * Darwinia Core
 [source, shell]
-darwinia, darwinia-cli, ethash, fly-client,
+darwinia-cli, ethash, fly-client,
 merkle-mountain-range, merkle-patricia-trie, sr-eth-primitives
 * Darwinia Runtime Module Library
 [source, shell]
@@ -330,6 +342,16 @@ darwinia-kton, darwinia-staking, darwinia-support
 node-cli, node-executor, node-primitives, node-rpc, node-rpc-client, node-runtime
 
 == Contributing
+
+=== Environment
+
+The `scripts/bootstrap.sh` help set up your develop environment.
+The nightly `Rust`, `cargo`, `rustfmt` will be installed,
+the git hooks will be set, and ready to code.
+
+Besides, the script will install some essential packages depends on your OS,
+if you want to do it manually, use the `--fast` option to skip.
+We will appreciate your contribution.
 
 === Contributing Guidelines
 

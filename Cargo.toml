@@ -3,14 +3,14 @@ panic = 'unwind'
 
 [workspace]
 members = [
-	"core/cli",
-	"core/ethash",
+    "core/cli",
+    "core/ethash",
 #    "core/merkle-mountain-range",
 #    "core/fly-client",
     "core/sr-eth-primitives",
     "core/merkle-patricia-trie",
 
-	"node/cli",
+    "node/cli",
     "node/executor",
     "node/primitives",
     "node/rpc",

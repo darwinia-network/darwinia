@@ -480,14 +480,27 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::current_era(), era_index);
 }
 
-
 pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	inflation::compute_total_payout::<Test>(
-		duration.saturated_into::<Moment>(), 
+		duration.saturated_into::<Moment>(),
 		(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
 		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
-		Perbill::from_percent(50)
-	).0
+		Perbill::from_percent(50),
+	)
+	.0
+}
+
+pub fn compute_power(ring_amount: u128, kton_amount: u128) -> Power {
+	fn calc_power<S: rstd::convert::TryInto<u128>>(active: S, pool: S) -> Power {
+		const HALF_POWER_COUNT: u128 = 1_000_000_000 / 2;
+
+		Perquintill::from_rational_approximation(
+			active.saturated_into::<Power>(),
+			pool.saturated_into::<Power>().max(1),
+		) * HALF_POWER_COUNT
+	}
+
+	calc_power(ring_amount, Staking::ring_pool()) + calc_power(kton_amount, Staking::kton_pool())
 }
 
 pub fn reward_all_elected() {
