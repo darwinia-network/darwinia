@@ -45,6 +45,8 @@ pub enum ChainSpec {
 	LocalTestnet,
 	/// The IceFrog testnet.
 	IceFrogTestnet,
+	/// Generate Iceforg testnet config.
+	GenIceFrogTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -56,6 +58,7 @@ impl ChainSpec {
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
 			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config()?,
+			ChainSpec::GenIceFrogTestnet => chain_spec::gen_icefrog_testnet_config(),
 		})
 	}
 
@@ -65,6 +68,7 @@ impl ChainSpec {
 			"local" => Some(ChainSpec::LocalTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
 			"" => Some(ChainSpec::IceFrogTestnet),
+			"gen" => Some(ChainSpec::GenIceFrogTestnet),
 			_ => None,
 		}
 	}

@@ -58,6 +58,66 @@ pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
 }
 
+/// IceFrog testnet config generator
+pub fn gen_icefrog_testnet_config() -> ChainSpec {
+	fn icefrog_config_genesis() -> GenesisConfig {
+		darwinia_genesis(
+			vec![
+				(
+					hex!["be3fd892bf0e2b33dbfcf298c99a9f71e631a57af6c017dc5ac078c5d5b3494b"].into(), //stash
+					hex!["70bf51d123581d6e51af70b342cac75ae0a0fc71d1a8d388719139af9c042b18"].into(),
+					get_from_seed::<GrandpaId>("Alice"),
+					get_from_seed::<BabeId>("Alice"),
+					get_from_seed::<ImOnlineId>("Alice"),
+				),
+				(
+					hex!["e2f560c01a2d8e98d313d6799185c28a39e10896332b56304ff46392f585024c"].into(), //stash
+					hex!["94c51178449c09eec77918ea951fa3244f7b841eea1dd1489d2b5f2a53f8840f"].into(),
+					get_from_seed::<GrandpaId>("Bob"),
+					get_from_seed::<BabeId>("Bob"),
+					get_from_seed::<ImOnlineId>("Bob"),
+				),
+			],
+			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
+			vec![
+				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
+				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
+				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
+				hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
+				hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
+				hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
+				hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
+				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
+				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
+				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
+			],
+			true,
+			false,
+		)
+	}
+
+	ChainSpec::from_genesis(
+		"Darwinia IceFrog Testnet",
+		"icefrog_testnet",
+		icefrog_config_genesis,
+		vec![],
+		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
+		Some("DAR"),
+		{
+			let mut properties = Properties::new();
+
+			properties.insert("ss58Format".into(), 42.into());
+			properties.insert("tokenDecimals".into(), 9.into());
+			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("ktonTokenDecimals".into(), 9.into());
+			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+
+			Some(properties)
+		},
+		Default::default(),
+	)
+}
+
 fn session_keys(grandpa: GrandpaId, babe: BabeId, im_online: ImOnlineId) -> SessionKeys {
 	SessionKeys {
 		grandpa,
@@ -133,7 +193,7 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 
 	let endowed_accounts: Vec<AccountId> = vec![root_key.clone()];
 
-	darwinia_genesis(initial_authorities, root_key, Some(endowed_accounts), false)
+	darwinia_genesis(initial_authorities, root_key, endowed_accounts, false, true)
 }
 
 /// Staging testnet config.
@@ -177,33 +237,23 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, Grandp
 }
 
 /// Helper function to create GenesisConfig for darwinia
+/// is_testnet: under test net we will use Alice & Bob as seed to generate keys,
+///             but in production enviroment, these accounts will use preset keys
 pub fn darwinia_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId)>,
 	root_key: AccountId,
-	endowed_accounts: Option<Vec<AccountId>>,
+	endowed_accounts: Vec<AccountId>,
 	enable_println: bool,
+	is_testnet: bool,
 ) -> GenesisConfig {
-	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
+	let eth_relay_authorities: Vec<AccountId> = if is_testnet {
 		vec![
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
 			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		]
-	});
-
-	let eth_relay_authorities: Vec<AccountId> = vec![
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		get_account_id_from_seed::<sr25519::Public>("Bob"),
-	];
+	} else {
+		vec![initial_authorities[0].clone().1, initial_authorities[1].clone().1]
+	};
 
 	const RING_ENDOWMENT: Balance = 20_000_000 * COIN;
 	const KTON_ENDOWMENT: Balance = 10 * COIN;
@@ -291,7 +341,21 @@ pub fn development_config() -> ChainSpec {
 		darwinia_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
+			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
+				get_account_id_from_seed::<sr25519::Public>("Eve"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			],
+			true,
 			true,
 		)
 	}
@@ -317,7 +381,7 @@ pub fn local_testnet_config() -> ChainSpec {
 				get_authority_keys_from_seed("Bob"),
 			],
 			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(), // 5FpQFHfKd1xQ9HLZLQoG1JAQSCJoUEVBELnKsKNcuRLZejJR
-			Some(vec![
+			vec![
 				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
 				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
 				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
@@ -328,7 +392,8 @@ pub fn local_testnet_config() -> ChainSpec {
 				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
 				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
 				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
-			]),
+			],
+			true,
 			true,
 		)
 	}
