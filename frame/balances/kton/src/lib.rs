@@ -16,14 +16,16 @@ use frame_support::{
 	Parameter, StorageValue,
 };
 use frame_system::{self as system, ensure_root, ensure_signed, IsDeadAccount};
+#[cfg(feature = "std")]
+use sp_runtime::traits::One;
 use sp_runtime::{
 	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Saturating, SimpleArithmetic,
-		StaticLookup, Zero,
+		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
+		Zero,
 	},
 	DispatchError, DispatchResult, RuntimeDebug,
 };
-use sp_std::{cmp, fmt::Debug, mem, vec::Vec};
+use sp_std::{borrow::ToOwned, cmp, fmt::Debug, mem, vec::Vec};
 
 use self::imbalances::{NegativeImbalance, PositiveImbalance};
 use darwinia_support::{

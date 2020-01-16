@@ -251,6 +251,8 @@ mod migration;
 mod slashing;
 
 mod types {
+	use sp_std::vec::Vec;
+
 	use crate::{system, Currency, NominatorReward, StakingBalance, StakingLedger, Time, Trait};
 
 	/// Counter for the number of eras that have passed.
@@ -319,7 +321,7 @@ use sp_staking::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
 	SessionIndex,
 };
-use sp_std::{marker::PhantomData, vec::Vec};
+use sp_std::{borrow::ToOwned, marker::PhantomData, vec, vec::Vec};
 
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
@@ -473,7 +475,6 @@ where
 	RingBalance: SimpleArithmetic + Saturating + Copy,
 	KtonBalance: SimpleArithmetic + Saturating + Copy,
 {
-	// FIXME
 	//	/// Slash the validator for a given amount of balance. This can grow the value
 	//	/// of the slash in the case that the validator has less than `minimum_balance`
 	//	/// active funds. Returns the amount of funds actually slashed.
@@ -1815,7 +1816,7 @@ impl<T: Trait> Module<T> {
 	///
 	/// Assumes storage is coherent with the declaration.
 	fn select_validators() -> (Power, Option<Vec<T::AccountId>>) {
-		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = Vec::new();
+		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = vec![];
 		let all_validator_candidates_iter = <Validators<T>>::enumerate();
 		let all_validators = all_validator_candidates_iter
 			.map(|(who, _pref)| {
@@ -2091,68 +2092,63 @@ where
 		Self::ensure_storage_upgraded();
 
 		let reward_proportion = SlashRewardFraction::get();
-
 		let era_now = Self::current_era();
-		//		let window_start = era_now.saturating_sub(T::BondingDurationInEra::get());
+		let window_start = era_now.saturating_sub(T::BondingDurationInEra::get());
 		let current_era_start_session = CurrentEraStartSessionIndex::get();
+		// fast path for current-era report - most likely.
+		let slash_era = if slash_session >= current_era_start_session {
+			era_now
+		} else {
+			// reverse because it's more likely to find reports from recent eras.
+			match BondedEras::get()
+				.iter()
+				.rev()
+				.filter(|&&(_, ref sesh)| sesh <= &slash_session)
+				.next()
+			{
+				None => return, // before bonding period. defensive - should be filtered out.
+				Some(&(ref slash_era, _)) => *slash_era,
+			}
+		};
 
-		//		// fast path for current-era report - most likely.
-		//		let slash_era = if slash_session >= current_era_start_session {
-		//			era_now
-		//		} else {
-		//			let eras = BondedEras::get();
-		//
-		//			// reverse because it's more likely to find reports from recent eras.
-		//			match eras
-		//				.iter()
-		//				.rev()
-		//				.filter(|&&(_, ref sesh)| sesh <= &slash_session)
-		//				.next()
-		//			{
-		//				None => return, // before bonding period. defensive - should be filtered out.
-		//				Some(&(ref slash_era, _)) => *slash_era,
-		//			}
-		//		};
-		//
-		//		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
-		//			if earliest.is_none() {
-		//				*earliest = Some(era_now)
-		//			}
-		//		});
-		//
-		//		let slash_defer_duration = T::SlashDeferDuration::get();
-		//
-		//		for (details, slash_fraction) in offenders.iter().zip(slash_fraction) {
-		//			let stash = &details.offender.0;
-		//			let exposure = &details.offender.1;
-		//
-		//			// Skip if the validator is invulnerable.
-		//			if Self::invulnerables().contains(stash) {
-		//				continue;
-		//			}
-		//
-		//			let unapplied = slashing::compute_slash::<T>(slashing::SlashParams {
-		//				stash,
-		//				slash: *slash_fraction,
-		//				exposure,
-		//				slash_era,
-		//				window_start,
-		//				now: era_now,
-		//				reward_proportion,
-		//			});
-		//
-		//			if let Some(mut unapplied) = unapplied {
-		//				unapplied.reporters = details.reporters.clone();
-		//				if slash_defer_duration == 0 {
-		//					// apply right away.
-		//					slashing::apply_slash::<T>(unapplied);
-		//				} else {
-		//					// defer to end of some `slash_defer_duration` from now.
-		//					<Self as Store>::UnappliedSlashes::mutate(era_now, move |for_later| for_later.push(unapplied));
-		//				}
-		//			}
-		//		}
-		unimplemented!()
+		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
+			if earliest.is_none() {
+				*earliest = Some(era_now)
+			}
+		});
+
+		let slash_defer_duration = T::SlashDeferDuration::get();
+
+		for (details, slash_fraction) in offenders.iter().zip(slash_fraction) {
+			let stash = &details.offender.0;
+			let exposure = &details.offender.1;
+
+			// Skip if the validator is invulnerable.
+			if Self::invulnerables().contains(stash) {
+				continue;
+			}
+
+			let unapplied = slashing::compute_slash::<T>(slashing::SlashParams {
+				stash,
+				slash: *slash_fraction,
+				exposure,
+				slash_era,
+				window_start,
+				now: era_now,
+				reward_proportion,
+			});
+
+			if let Some(mut unapplied) = unapplied {
+				unapplied.reporters = details.reporters.clone();
+				if slash_defer_duration == 0 {
+					// apply right away.
+					slashing::apply_slash::<T>(unapplied);
+				} else {
+					// defer to end of some `slash_defer_duration` from now.
+					<Self as Store>::UnappliedSlashes::mutate(era_now, move |for_later| for_later.push(unapplied));
+				}
+			}
+		}
 	}
 }
 

@@ -863,6 +863,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-phragmen"
+version = "0.4.0"
+dependencies = [
+ "rand 0.7.2",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "substrate-test-utils",
+]
+
+[[package]]
 name = "darwinia-ring"
 version = "0.4.0"
 dependencies = [
@@ -883,6 +895,7 @@ dependencies = [
 name = "darwinia-staking"
 version = "0.3.0"
 dependencies = [
+ "darwinia-phragmen",
  "darwinia-ring",
  "darwinia-support",
  "frame-support",
@@ -897,7 +910,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-keyring",
- "sp-phragmen",
  "sp-runtime",
  "sp-staking",
  "sp-std",

@@ -24,10 +24,10 @@ pub const CURRENT_VERSION: VersionNumber = 1;
 
 #[cfg(any(test, feature = "migrate"))]
 mod inner {
-	use crate::{Store, Module, Trait};
+	use super::{VersionNumber, CURRENT_VERSION};
+	use crate::{Module, Store, Trait};
 	use frame_support::{StorageLinkedMap, StorageValue};
 	use sp_std::vec::Vec;
-	use super::{CURRENT_VERSION, VersionNumber};
 
 	// the minimum supported version of the migration logic.
 	const MIN_SUPPORTED_VERSION: VersionNumber = 0;
@@ -37,7 +37,9 @@ mod inner {
 	// this upgrades the `Nominators` linked_map value type from `Vec<T::AccountId>` to
 	// `Option<Nominations<T::AccountId>>`
 	pub fn to_v1<T: Trait>(version: &mut VersionNumber) {
-		if *version != 0 { return }
+		if *version != 0 {
+			return;
+		}
 		*version += 1;
 
 		let now = <Module<T>>::current_era();
@@ -63,13 +65,17 @@ mod inner {
 	pub(super) fn perform_migrations<T: Trait>() {
 		<Module<T> as Store>::StorageVersion::mutate(|version| {
 			if *version < MIN_SUPPORTED_VERSION {
-				frame_support::print("Cannot migrate staking storage because version is less than\
-					minimum.");
+				frame_support::print(
+					"Cannot migrate staking storage because version is less than\
+					minimum.",
+				);
 				frame_support::print(*version);
-				return
+				return;
 			}
 
-			if *version == CURRENT_VERSION { return }
+			if *version == CURRENT_VERSION {
+				return;
+			}
 
 			to_v1::<T>(version);
 		});
@@ -78,7 +84,7 @@ mod inner {
 
 #[cfg(not(any(test, feature = "migrate")))]
 mod inner {
-	pub(super) fn perform_migrations<T>() { }
+	pub(super) fn perform_migrations<T>() {}
 }
 
 /// Perform all necessary storage migrations to get storage into the expected stsate for current
