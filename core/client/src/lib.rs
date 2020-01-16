@@ -74,33 +74,29 @@
 //!
 
 #![warn(missing_docs)]
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
-pub mod error;
-pub mod blockchain;
 pub mod backend;
-pub mod cht;
-pub mod in_mem;
-pub mod genesis;
-pub mod light;
-pub mod leaves;
-pub mod children;
+pub mod blockchain;
 mod call_executor;
+pub mod children;
+pub mod cht;
 mod client;
+pub mod error;
+pub mod genesis;
+pub mod in_mem;
+pub mod leaves;
+pub mod light;
 mod notifications;
 
-
+pub use crate::blockchain::well_known_cache_keys;
 pub use crate::blockchain::Info as ChainInfo;
 pub use crate::call_executor::{CallExecutor, LocalCallExecutor};
 pub use crate::client::{
-	new_with_backend,
-	new_in_mem,
-	BlockBody, ImportNotifications, FinalityNotifications, BlockchainEvents,
-	BlockImportNotification, Client, ClientInfo, ExecutionStrategies, FinalityNotification,
-	LongestChain, BlockOf, ProvideUncles, ForkBlocks,
-	utils, apply_aux,
+	apply_aux, new_in_mem, new_with_backend, utils, BlockBody, BlockImportNotification, BlockOf, BlockchainEvents,
+	Client, ClientInfo, ExecutionStrategies, FinalityNotification, FinalityNotifications, ForkBlocks,
+	ImportNotifications, LongestChain, ProvideUncles,
 };
-pub use crate::notifications::{StorageEventStream, StorageChangeSet};
-pub use state_machine::{ExecutionStrategy, StorageProof};
 pub use crate::leaves::LeafSet;
-pub use crate::blockchain::well_known_cache_keys;
+pub use crate::notifications::{StorageChangeSet, StorageEventStream};
+pub use state_machine::{ExecutionStrategy, StorageProof};

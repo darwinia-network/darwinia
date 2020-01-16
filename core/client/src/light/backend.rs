@@ -17,22 +17,22 @@
 //! Light client backend. Only stores headers and justifications of blocks.
 //! Everything else is requested from full nodes on demand.
 
+use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;
-use parking_lot::{RwLock, Mutex};
 
-use sr_primitives::{generic::BlockId, Justification, StorageOverlay, ChildrenStorageOverlay};
-use state_machine::{Backend as StateBackend, TrieBackend, backend::InMemory as InMemoryState, ChangesTrieTransaction};
-use sr_primitives::traits::{Block as BlockT, NumberFor, Zero, Header};
-use crate::in_mem::{self, check_genesis_storage};
 use crate::backend::{
-	AuxStore, Backend as ClientBackend, BlockImportOperation, RemoteBackend, NewBlockState,
-	StorageCollection, ChildStorageCollection,
+	AuxStore, Backend as ClientBackend, BlockImportOperation, ChildStorageCollection, NewBlockState, RemoteBackend,
+	StorageCollection,
 };
-use crate::blockchain::{HeaderBackend as BlockchainHeaderBackend, well_known_cache_keys};
+use crate::blockchain::{well_known_cache_keys, HeaderBackend as BlockchainHeaderBackend};
 use crate::error::{Error as ClientError, Result as ClientResult};
+use crate::in_mem::{self, check_genesis_storage};
 use crate::light::blockchain::{Blockchain, Storage as BlockchainStorage};
 use hash_db::Hasher;
+use sr_primitives::traits::{Block as BlockT, Header, NumberFor, Zero};
+use sr_primitives::{generic::BlockId, ChildrenStorageOverlay, Justification, StorageOverlay};
+use state_machine::{backend::InMemory as InMemoryState, Backend as StateBackend, ChangesTrieTransaction, TrieBackend};
 use trie::MemoryDB;
 
 const IN_MEMORY_EXPECT_PROOF: &str = "InMemory state backend has Void error type and always succeeds; qed";
@@ -86,9 +86,13 @@ impl<S: AuxStore, H: Hasher> AuxStore for Backend<S, H> {
 		'a,
 		'b: 'a,
 		'c: 'a,
-		I: IntoIterator<Item=&'a(&'c [u8], &'c [u8])>,
-		D: IntoIterator<Item=&'a &'b [u8]>,
-	>(&self, insert: I, delete: D) -> ClientResult<()> {
+		I: IntoIterator<Item = &'a (&'c [u8], &'c [u8])>,
+		D: IntoIterator<Item = &'a &'b [u8]>,
+	>(
+		&self,
+		insert: I,
+		delete: D,
+	) -> ClientResult<()> {
 		self.blockchain.storage().insert_aux(insert, delete)
 	}
 
@@ -97,10 +101,11 @@ impl<S: AuxStore, H: Hasher> AuxStore for Backend<S, H> {
 	}
 }
 
-impl<S, Block, H> ClientBackend<Block, H> for Backend<S, H> where
+impl<S, Block, H> ClientBackend<Block, H> for Backend<S, H>
+where
 	Block: BlockT,
 	S: BlockchainStorage<Block>,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 	H::Out: Ord,
 {
 	type BlockImportOperation = ImportOperation<Block, S, H>;
@@ -125,7 +130,7 @@ impl<S, Block, H> ClientBackend<Block, H> for Backend<S, H> where
 	fn begin_state_operation(
 		&self,
 		_operation: &mut Self::BlockImportOperation,
-		_block: BlockId<Block>
+		_block: BlockId<Block>,
 	) -> ClientResult<()> {
 		Ok(())
 	}
@@ -153,11 +158,14 @@ impl<S, Block, H> ClientBackend<Block, H> for Backend<S, H> where
 		} else {
 			for (key, maybe_val) in operation.aux_ops {
 				match maybe_val {
-					Some(val) => self.blockchain.storage().insert_aux(
-						&[(&key[..], &val[..])],
-						::std::iter::empty(),
-					)?,
-					None => self.blockchain.storage().insert_aux(::std::iter::empty(), &[&key[..]])?,
+					Some(val) => self
+						.blockchain
+						.storage()
+						.insert_aux(&[(&key[..], &val[..])], ::std::iter::empty())?,
+					None => self
+						.blockchain
+						.storage()
+						.insert_aux(::std::iter::empty(), &[&key[..]])?,
 				}
 			}
 		}
@@ -217,12 +225,14 @@ impl<S, Block, H> RemoteBackend<Block, H> for Backend<S, H>
 where
 	Block: BlockT,
 	S: BlockchainStorage<Block> + 'static,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 	H::Out: Ord,
 {
 	fn is_local_state_available(&self, block: &BlockId<Block>) -> bool {
 		self.genesis_state.read().is_some()
-			&& self.blockchain.expect_block_number_from_id(block)
+			&& self
+				.blockchain
+				.expect_block_number_from_id(block)
 				.map(|num| num.is_zero())
 				.unwrap_or(false)
 	}
@@ -236,7 +246,7 @@ impl<S, Block, H> BlockImportOperation<Block, H> for ImportOperation<Block, S, H
 where
 	Block: BlockT,
 	S: BlockchainStorage<Block>,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 	H::Out: Ord,
 {
 	type State = GenesisOrUnavailableState<H>;
@@ -280,7 +290,8 @@ where
 		storage.insert(None, top);
 
 		// create a list of children keys to re-compute roots for
-		let child_delta = children.keys()
+		let child_delta = children
+			.keys()
 			.cloned()
 			.map(|storage_key| (storage_key, None))
 			.collect::<Vec<_>>();
@@ -298,7 +309,8 @@ where
 	}
 
 	fn insert_aux<I>(&mut self, ops: I) -> ClientResult<()>
-		where I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>
+	where
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>,
 	{
 		self.aux_ops.append(&mut ops.into_iter().collect());
 		Ok(())
@@ -334,8 +346,8 @@ impl<H: Hasher> std::fmt::Debug for GenesisOrUnavailableState<H> {
 }
 
 impl<H: Hasher> StateBackend<H> for GenesisOrUnavailableState<H>
-	where
-		H::Out: Ord,
+where
+	H::Out: Ord,
 {
 	type Error = ClientError;
 	type Transaction = ();
@@ -343,16 +355,16 @@ impl<H: Hasher> StateBackend<H> for GenesisOrUnavailableState<H>
 
 	fn storage(&self, key: &[u8]) -> ClientResult<Option<Vec<u8>>> {
 		match *self {
-			GenesisOrUnavailableState::Genesis(ref state) =>
-				Ok(state.storage(key).expect(IN_MEMORY_EXPECT_PROOF)),
+			GenesisOrUnavailableState::Genesis(ref state) => Ok(state.storage(key).expect(IN_MEMORY_EXPECT_PROOF)),
 			GenesisOrUnavailableState::Unavailable => Err(ClientError::NotAvailableOnLightClient),
 		}
 	}
 
 	fn child_storage(&self, storage_key: &[u8], key: &[u8]) -> ClientResult<Option<Vec<u8>>> {
 		match *self {
-			GenesisOrUnavailableState::Genesis(ref state) =>
-				Ok(state.child_storage(storage_key, key).expect(IN_MEMORY_EXPECT_PROOF)),
+			GenesisOrUnavailableState::Genesis(ref state) => {
+				Ok(state.child_storage(storage_key, key).expect(IN_MEMORY_EXPECT_PROOF))
+			}
 			GenesisOrUnavailableState::Unavailable => Err(ClientError::NotAvailableOnLightClient),
 		}
 	}
@@ -371,7 +383,6 @@ impl<H: Hasher> StateBackend<H> for GenesisOrUnavailableState<H>
 		}
 	}
 
-
 	fn for_keys_in_child_storage<A: FnMut(&[u8])>(&self, storage_key: &[u8], action: A) {
 		match *self {
 			GenesisOrUnavailableState::Genesis(ref state) => state.for_keys_in_child_storage(storage_key, action),
@@ -379,39 +390,34 @@ impl<H: Hasher> StateBackend<H> for GenesisOrUnavailableState<H>
 		}
 	}
 
-	fn for_child_keys_with_prefix<A: FnMut(&[u8])>(
-		&self,
-		storage_key: &[u8],
-		prefix: &[u8],
-		action: A,
-	) {
+	fn for_child_keys_with_prefix<A: FnMut(&[u8])>(&self, storage_key: &[u8], prefix: &[u8], action: A) {
 		match *self {
-			GenesisOrUnavailableState::Genesis(ref state) =>
-				state.for_child_keys_with_prefix(storage_key, prefix, action),
+			GenesisOrUnavailableState::Genesis(ref state) => {
+				state.for_child_keys_with_prefix(storage_key, prefix, action)
+			}
 			GenesisOrUnavailableState::Unavailable => (),
 		}
 	}
 
 	fn storage_root<I>(&self, delta: I) -> (H::Out, Self::Transaction)
 	where
-		I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>,
 	{
 		match *self {
-			GenesisOrUnavailableState::Genesis(ref state) =>
-				(state.storage_root(delta).0, ()),
+			GenesisOrUnavailableState::Genesis(ref state) => (state.storage_root(delta).0, ()),
 			GenesisOrUnavailableState::Unavailable => (H::Out::default(), ()),
 		}
 	}
 
 	fn child_storage_root<I>(&self, key: &[u8], delta: I) -> (Vec<u8>, bool, Self::Transaction)
 	where
-		I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>,
 	{
 		match *self {
 			GenesisOrUnavailableState::Genesis(ref state) => {
 				let (root, is_equal, _) = state.child_storage_root(key, delta);
 				(root, is_equal, ())
-			},
+			}
 			GenesisOrUnavailableState::Unavailable => (H::Out::default().as_ref().to_vec(), true, ()),
 		}
 	}
@@ -440,11 +446,11 @@ impl<H: Hasher> StateBackend<H> for GenesisOrUnavailableState<H>
 
 #[cfg(test)]
 mod tests {
-	use primitives::Blake2Hasher;
-	use test_client::{self, runtime::Block};
+	use super::*;
 	use crate::backend::NewBlockState;
 	use crate::light::blockchain::tests::{DummyBlockchain, DummyStorage};
-	use super::*;
+	use primitives::Blake2Hasher;
+	use test_client::{self, runtime::Block};
 
 	#[test]
 	fn local_state_is_created_when_genesis_state_is_available() {

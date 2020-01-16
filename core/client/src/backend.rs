@@ -16,19 +16,19 @@
 
 //! Substrate Client data backend
 
-use std::sync::Arc;
-use std::collections::HashMap;
+use crate::blockchain::well_known_cache_keys;
 use crate::error;
 use crate::light::blockchain::RemoteBlockchain;
-use primitives::ChangesTrieConfiguration;
-use sr_primitives::{generic::BlockId, Justification, StorageOverlay, ChildrenStorageOverlay};
-use sr_primitives::traits::{Block as BlockT, NumberFor};
-use state_machine::backend::Backend as StateBackend;
-use state_machine::{ChangesTrieStorage as StateChangesTrieStorage, ChangesTrieTransaction};
-use crate::blockchain::well_known_cache_keys;
 use consensus::BlockOrigin;
 use hash_db::Hasher;
 use parking_lot::Mutex;
+use primitives::ChangesTrieConfiguration;
+use sr_primitives::traits::{Block as BlockT, NumberFor};
+use sr_primitives::{generic::BlockId, ChildrenStorageOverlay, Justification, StorageOverlay};
+use state_machine::backend::Backend as StateBackend;
+use state_machine::{ChangesTrieStorage as StateChangesTrieStorage, ChangesTrieTransaction};
+use std::collections::HashMap;
+use std::sync::Arc;
 
 /// In memory array of storage values.
 pub type StorageCollection = Vec<(Vec<u8>, Option<Vec<u8>>)>;
@@ -46,11 +46,7 @@ pub(crate) struct ImportSummary<Block: BlockT> {
 }
 
 /// Import operation wrapper
-pub struct ClientImportOperation<
-	Block: BlockT,
-	H: Hasher<Out=Block::Hash>,
-	B: Backend<Block, H>,
-> {
+pub struct ClientImportOperation<Block: BlockT, H: Hasher<Out = Block::Hash>, B: Backend<Block, H>> {
 	pub(crate) op: B::BlockImportOperation,
 	pub(crate) notify_imported: Option<ImportSummary<Block>>,
 	pub(crate) notify_finalized: Vec<Block::Hash>,
@@ -88,9 +84,10 @@ impl NewBlockState {
 /// Block insertion operation.
 ///
 /// Keeps hold if the inserted block state and data.
-pub trait BlockImportOperation<Block, H> where
+pub trait BlockImportOperation<Block, H>
+where
 	Block: BlockT,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 {
 	/// Associated state backend type.
 	type State: StateBackend<H>;
@@ -119,11 +116,7 @@ pub trait BlockImportOperation<Block, H> where
 	fn reset_storage(&mut self, top: StorageOverlay, children: ChildrenStorageOverlay) -> error::Result<H::Out>;
 
 	/// Set storage changes.
-	fn update_storage(
-		&mut self,
-		update: StorageCollection,
-		child_update: ChildStorageCollection,
-	) -> error::Result<()>;
+	fn update_storage(&mut self, update: StorageCollection, child_update: ChildStorageCollection) -> error::Result<()>;
 
 	/// Inject changes trie data into the database.
 	fn update_changes_trie(&mut self, update: ChangesTrieTransaction<H, NumberFor<Block>>) -> error::Result<()>;
@@ -132,7 +125,8 @@ pub trait BlockImportOperation<Block, H> where
 	///
 	/// Values are `None` if should be deleted.
 	fn insert_aux<I>(&mut self, ops: I) -> error::Result<()>
-		where I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>;
+	where
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>;
 
 	/// Mark a block as finalized.
 	fn mark_finalized(&mut self, id: BlockId<Block>, justification: Option<Justification>) -> error::Result<()>;
@@ -141,7 +135,7 @@ pub trait BlockImportOperation<Block, H> where
 }
 
 /// Finalize Facilities
-pub trait Finalizer<Block: BlockT, H: Hasher<Out=Block::Hash>, B: Backend<Block, H>> {
+pub trait Finalizer<Block: BlockT, H: Hasher<Out = Block::Hash>, B: Backend<Block, H>> {
 	/// Mark all blocks up to given as finalized in operation.
 	///
 	/// If `justification` is provided it is stored with the given finalized
@@ -158,7 +152,6 @@ pub trait Finalizer<Block: BlockT, H: Hasher<Out=Block::Hash>, B: Backend<Block,
 		justification: Option<Justification>,
 		notify: bool,
 	) -> error::Result<()>;
-
 
 	/// Finalize a block.
 	///
@@ -179,7 +172,6 @@ pub trait Finalizer<Block: BlockT, H: Hasher<Out=Block::Hash>, B: Backend<Block,
 		justification: Option<Justification>,
 		notify: bool,
 	) -> error::Result<()>;
-
 }
 
 /// Provides access to an auxiliary database.
@@ -191,9 +183,13 @@ pub trait AuxStore {
 		'a,
 		'b: 'a,
 		'c: 'a,
-		I: IntoIterator<Item=&'a(&'c [u8], &'c [u8])>,
-		D: IntoIterator<Item=&'a &'b [u8]>,
-	>(&self, insert: I, delete: D) -> error::Result<()>;
+		I: IntoIterator<Item = &'a (&'c [u8], &'c [u8])>,
+		D: IntoIterator<Item = &'a &'b [u8]>,
+	>(
+		&self,
+		insert: I,
+		delete: D,
+	) -> error::Result<()>;
 
 	/// Query auxiliary data from key-value store.
 	fn get_aux(&self, key: &[u8]) -> error::Result<Option<Vec<u8>>>;
@@ -209,12 +205,13 @@ pub trait AuxStore {
 ///
 /// The same applies for live `BlockImportOperation`s: while an import operation building on a parent `P`
 /// is alive, the state for `P` should not be pruned.
-pub trait Backend<Block, H>: AuxStore + Send + Sync where
+pub trait Backend<Block, H>: AuxStore + Send + Sync
+where
 	Block: BlockT,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 {
 	/// Associated block insertion operation type.
-	type BlockImportOperation: BlockImportOperation<Block, H, State=Self::State>;
+	type BlockImportOperation: BlockImportOperation<Block, H, State = Self::State>;
 	/// Associated blockchain backend type.
 	type Blockchain: crate::blockchain::Backend<Block>;
 	/// Associated state backend type.
@@ -230,7 +227,11 @@ pub trait Backend<Block, H>: AuxStore + Send + Sync where
 	fn begin_operation(&self) -> error::Result<Self::BlockImportOperation>;
 
 	/// Note an operation to contain state transition.
-	fn begin_state_operation(&self, operation: &mut Self::BlockImportOperation, block: BlockId<Block>) -> error::Result<()>;
+	fn begin_state_operation(
+		&self,
+		operation: &mut Self::BlockImportOperation,
+		block: BlockId<Block>,
+	) -> error::Result<()>;
 
 	/// Commit block insertion.
 	fn commit_operation(&self, transaction: Self::BlockImportOperation) -> error::Result<()>;
@@ -275,10 +276,13 @@ pub trait Backend<Block, H>: AuxStore + Send + Sync where
 		'a,
 		'b: 'a,
 		'c: 'a,
-		I: IntoIterator<Item=&'a(&'c [u8], &'c [u8])>,
-		D: IntoIterator<Item=&'a &'b [u8]>,
-	>(&self, insert: I, delete: D) -> error::Result<()>
-	{
+		I: IntoIterator<Item = &'a (&'c [u8], &'c [u8])>,
+		D: IntoIterator<Item = &'a &'b [u8]>,
+	>(
+		&self,
+		insert: I,
+		delete: D,
+	) -> error::Result<()> {
 		AuxStore::insert_aux(self, insert, delete)
 	}
 	/// Query auxiliary data from key-value store.
@@ -306,13 +310,7 @@ pub trait OffchainStorage: Clone + Send + Sync {
 	/// Replace the value in storage if given old_value matches the current one.
 	///
 	/// Returns `true` if the value has been set and false otherwise.
-	fn compare_and_set(
-		&mut self,
-		prefix: &[u8],
-		key: &[u8],
-		old_value: Option<&[u8]>,
-		new_value: &[u8],
-	) -> bool;
+	fn compare_and_set(&mut self, prefix: &[u8], key: &[u8], old_value: Option<&[u8]>, new_value: &[u8]) -> bool;
 }
 
 /// Changes trie storage that supports pruning.
@@ -331,14 +329,15 @@ pub trait PrunableStateChangesTrieStorage<Block: BlockT, H: Hasher>:
 pub trait LocalBackend<Block, H>: Backend<Block, H>
 where
 	Block: BlockT,
-	H: Hasher<Out=Block::Hash>,
-{}
+	H: Hasher<Out = Block::Hash>,
+{
+}
 
 /// Mark for all Backend implementations, that are fetching required state data from remote nodes.
 pub trait RemoteBackend<Block, H>: Backend<Block, H>
 where
 	Block: BlockT,
-	H: Hasher<Out=Block::Hash>,
+	H: Hasher<Out = Block::Hash>,
 {
 	/// Returns true if the state for given block is available locally.
 	fn is_local_state_available(&self, block: &BlockId<Block>) -> bool;

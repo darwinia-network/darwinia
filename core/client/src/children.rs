@@ -16,17 +16,18 @@
 
 //! Functionality for reading and storing children hashes from db.
 
-use kvdb::{KeyValueDB, DBTransaction};
-use codec::{Encode, Decode};
 use crate::error;
+use codec::{Decode, Encode};
+use kvdb::{DBTransaction, KeyValueDB};
 use std::hash::Hash;
 
-
 /// Returns the hashes of the children blocks of the block with `parent_hash`.
-pub fn read_children<
-	K: Eq + Hash + Clone + Encode + Decode,
-	V: Eq + Hash + Clone + Encode + Decode,
->(db: &dyn KeyValueDB, column: Option<u32>, prefix: &[u8], parent_hash: K) -> error::Result<Vec<V>> {
+pub fn read_children<K: Eq + Hash + Clone + Encode + Decode, V: Eq + Hash + Clone + Encode + Decode>(
+	db: &dyn KeyValueDB,
+	column: Option<u32>,
+	prefix: &[u8],
+	parent_hash: K,
+) -> error::Result<Vec<V>> {
 	let mut buf = prefix.to_vec();
 	parent_hash.using_encoded(|s| buf.extend(s));
 
@@ -50,10 +51,7 @@ pub fn read_children<
 
 /// Insert the key-value pair (`parent_hash`, `children_hashes`) in the transaction.
 /// Any existing value is overwritten upon write.
-pub fn write_children<
-	K: Eq + Hash + Clone + Encode + Decode,
-	V: Eq + Hash + Clone + Encode + Decode,
->(
+pub fn write_children<K: Eq + Hash + Clone + Encode + Decode, V: Eq + Hash + Clone + Encode + Decode>(
 	tx: &mut DBTransaction,
 	column: Option<u32>,
 	prefix: &[u8],
@@ -66,9 +64,7 @@ pub fn write_children<
 }
 
 /// Prepare transaction to remove the children of `parent_hash`.
-pub fn remove_children<
-	K: Eq + Hash + Clone + Encode + Decode,
->(
+pub fn remove_children<K: Eq + Hash + Clone + Encode + Decode>(
 	tx: &mut DBTransaction,
 	column: Option<u32>,
 	prefix: &[u8],
@@ -78,7 +74,6 @@ pub fn remove_children<
 	parent_hash.using_encoded(|s| key.extend(s));
 	tx.delete(column, &key[..]);
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -18,11 +18,11 @@
 
 use std::sync::Arc;
 
-use sr_primitives::traits::{Block as BlockT, Header as HeaderT, NumberFor};
-use sr_primitives::generic::BlockId;
-use sr_primitives::Justification;
 use log::warn;
 use parking_lot::Mutex;
+use sr_primitives::generic::BlockId;
+use sr_primitives::traits::{Block as BlockT, Header as HeaderT, NumberFor};
+use sr_primitives::Justification;
 
 use header_metadata::HeaderMetadata;
 
@@ -76,7 +76,7 @@ pub trait HeaderBackend<Block: BlockT>: Send + Sync {
 }
 
 /// Blockchain database backend. Does not perform any validation.
-pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, Error=Error> {
+pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, Error = Error> {
 	/// Get block body. Returns `None` if block is not found.
 	fn body(&self, id: BlockId<Block>) -> Result<Option<Vec<<Block as BlockT>::Extrinsic>>>;
 	/// Get block justification. Returns `None` if justification does not exist.
@@ -115,7 +115,9 @@ pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, E
 			match self.header(BlockId::Hash(target_hash))? {
 				Some(x) => x,
 				// target not in blockchain
-				None => { return Ok(None); },
+				None => {
+					return Ok(None);
+				}
 			}
 		};
 
@@ -166,7 +168,8 @@ pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, E
 			// waiting until we are <= max_number
 			if let Some(max_number) = maybe_max_number {
 				loop {
-					let current_header = self.header(BlockId::Hash(current_hash.clone()))?
+					let current_header = self
+						.header(BlockId::Hash(current_hash.clone()))?
 						.ok_or_else(|| Error::from(format!("failed to get header for hash {}", current_hash)))?;
 
 					if current_header.number() <= &max_number {
@@ -185,7 +188,8 @@ pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, E
 					return Ok(Some(best_hash));
 				}
 
-				let current_header = self.header(BlockId::Hash(current_hash.clone()))?
+				let current_header = self
+					.header(BlockId::Hash(current_hash.clone()))?
 					.ok_or_else(|| Error::from(format!("failed to get header for hash {}", current_hash)))?;
 
 				// stop search in this chain once we go below the target's block number
@@ -204,8 +208,7 @@ pub trait Backend<Block: BlockT>: HeaderBackend<Block> + HeaderMetadata<Block, E
 		warn!(
 			"Block {:?} exists in chain but not found when following all \
 			leaves backwards. Number limit = {:?}",
-			target_hash,
-			maybe_max_number,
+			target_hash, maybe_max_number,
 		);
 
 		Ok(None)
@@ -232,7 +235,11 @@ pub trait Cache<Block: BlockT>: Send + Sync {
 		&self,
 		key: &well_known_cache_keys::Id,
 		block: &BlockId<Block>,
-	) -> Option<((NumberFor<Block>, Block::Hash), Option<(NumberFor<Block>, Block::Hash)>, Vec<u8>)>;
+	) -> Option<(
+		(NumberFor<Block>, Block::Hash),
+		Option<(NumberFor<Block>, Block::Hash)>,
+		Vec<u8>,
+	)>;
 }
 
 /// Blockchain info

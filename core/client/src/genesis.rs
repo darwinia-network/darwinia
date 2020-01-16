@@ -16,17 +16,11 @@
 
 //! Tool for creating the genesis block.
 
-use sr_primitives::traits::{Block as BlockT, Header as HeaderT, Hash as HashT, Zero};
+use sr_primitives::traits::{Block as BlockT, Hash as HashT, Header as HeaderT, Zero};
 
 /// Create a genesis block, given the initial storage.
-pub fn construct_genesis_block<
-	Block: BlockT
-> (
-	state_root: Block::Hash
-) -> Block {
-	let extrinsics_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(
-		Vec::new(),
-	);
+pub fn construct_genesis_block<Block: BlockT>(state_root: Block::Hash) -> Block {
+	let extrinsics_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(Vec::new());
 
 	Block::new(
 		<<Block as BlockT>::Header as HeaderT>::new(
@@ -34,27 +28,25 @@ pub fn construct_genesis_block<
 			extrinsics_root,
 			state_root,
 			Default::default(),
-			Default::default()
+			Default::default(),
 		),
-		Default::default()
+		Default::default(),
 	)
 }
 
 #[cfg(test)]
 mod tests {
-	use codec::{Encode, Decode, Joiner};
+	use codec::{Decode, Encode, Joiner};
 	use executor::native_executor_instance;
-	use state_machine::{
-		StateMachine, OverlayedChanges, ExecutionStrategy, InMemoryChangesTrieStorage,
-	};
+	use hex_literal::*;
+	use primitives::{map, Blake2Hasher};
 	use state_machine::backend::InMemory;
+	use state_machine::{ExecutionStrategy, InMemoryChangesTrieStorage, OverlayedChanges, StateMachine};
 	use test_client::{
-		runtime::genesismap::{GenesisConfig, insert_genesis_block},
-		runtime::{Hash, Transfer, Block, BlockNumber, Header, Digest},
+		runtime::genesismap::{insert_genesis_block, GenesisConfig},
+		runtime::{Block, BlockNumber, Digest, Hash, Header, Transfer},
 		AccountKeyring, Sr25519Keyring,
 	};
-	use primitives::{Blake2Hasher, map};
-	use hex_literal::*;
 
 	native_executor_instance!(
 		Executor,
@@ -71,9 +63,9 @@ mod tests {
 		number: BlockNumber,
 		parent_hash: Hash,
 		state_root: Hash,
-		txs: Vec<Transfer>
+		txs: Vec<Transfer>,
 	) -> (Vec<u8>, Hash) {
-		use trie::{TrieConfiguration, trie_types::Layout};
+		use trie::{trie_types::Layout, TrieConfiguration};
 
 		let transactions = txs.into_iter().map(|tx| tx.into_signed_tx()).collect::<Vec<_>>();
 
@@ -85,7 +77,7 @@ mod tests {
 			number,
 			state_root,
 			extrinsics_root,
-			digest: Digest { logs: vec![], },
+			digest: Digest { logs: vec![] },
 		};
 		let hash = header.hash();
 		let mut overlay = OverlayedChanges::default();
@@ -99,9 +91,9 @@ mod tests {
 			"Core_initialize_block",
 			&header.encode(),
 			None,
-		).execute(
-			ExecutionStrategy::NativeElseWasm,
-		).unwrap();
+		)
+		.execute(ExecutionStrategy::NativeElseWasm)
+		.unwrap();
 
 		for tx in transactions.iter() {
 			StateMachine::new(
@@ -113,9 +105,9 @@ mod tests {
 				"BlockBuilder_apply_extrinsic",
 				&tx.encode(),
 				None,
-			).execute(
-				ExecutionStrategy::NativeElseWasm,
-			).unwrap();
+			)
+			.execute(ExecutionStrategy::NativeElseWasm)
+			.unwrap();
 		}
 
 		let (ret_data, _, _) = StateMachine::new(
@@ -127,12 +119,18 @@ mod tests {
 			"BlockBuilder_finalize_block",
 			&[],
 			None,
-		).execute(
-			ExecutionStrategy::NativeElseWasm,
-		).unwrap();
+		)
+		.execute(ExecutionStrategy::NativeElseWasm)
+		.unwrap();
 		header = Header::decode(&mut &ret_data[..]).unwrap();
 
-		(vec![].and(&Block { header, extrinsics: transactions }), hash)
+		(
+			vec![].and(&Block {
+				header,
+				extrinsics: transactions,
+			}),
+			hash,
+		)
 	}
 
 	fn block1(genesis_hash: Hash, backend: &InMemory<Blake2Hasher>) -> (Vec<u8>, Hash) {
@@ -146,20 +144,22 @@ mod tests {
 				to: AccountKeyring::Two.into(),
 				amount: 69,
 				nonce: 0,
-			}]
+			}],
 		)
 	}
 
 	#[test]
 	fn construct_genesis_should_work_with_native() {
-		let mut storage = GenesisConfig::new(false,
+		let mut storage = GenesisConfig::new(
+			false,
 			vec![Sr25519Keyring::One.public().into(), Sr25519Keyring::Two.public().into()],
 			vec![AccountKeyring::One.into(), AccountKeyring::Two.into()],
 			1000,
 			None,
 			map![],
 			map![],
-		).genesis_map();
+		)
+		.genesis_map();
 		let genesis_hash = insert_genesis_block(&mut storage);
 
 		let backend = InMemory::from(storage);
@@ -175,21 +175,23 @@ mod tests {
 			"Core_execute_block",
 			&b1data,
 			None,
-		).execute(
-			ExecutionStrategy::NativeElseWasm,
-		).unwrap();
+		)
+		.execute(ExecutionStrategy::NativeElseWasm)
+		.unwrap();
 	}
 
 	#[test]
 	fn construct_genesis_should_work_with_wasm() {
-		let mut storage = GenesisConfig::new(false,
+		let mut storage = GenesisConfig::new(
+			false,
 			vec![Sr25519Keyring::One.public().into(), Sr25519Keyring::Two.public().into()],
 			vec![AccountKeyring::One.into(), AccountKeyring::Two.into()],
 			1000,
 			None,
 			map![],
 			map![],
-		).genesis_map();
+		)
+		.genesis_map();
 		let genesis_hash = insert_genesis_block(&mut storage);
 
 		let backend = InMemory::from(storage);
@@ -205,21 +207,23 @@ mod tests {
 			"Core_execute_block",
 			&b1data,
 			None,
-		).execute(
-			ExecutionStrategy::AlwaysWasm,
-		).unwrap();
+		)
+		.execute(ExecutionStrategy::AlwaysWasm)
+		.unwrap();
 	}
 
 	#[test]
 	fn construct_genesis_with_bad_transaction_should_panic() {
-		let mut storage = GenesisConfig::new(false,
+		let mut storage = GenesisConfig::new(
+			false,
 			vec![Sr25519Keyring::One.public().into(), Sr25519Keyring::Two.public().into()],
 			vec![AccountKeyring::One.into(), AccountKeyring::Two.into()],
 			68,
 			None,
 			map![],
 			map![],
-		).genesis_map();
+		)
+		.genesis_map();
 		let genesis_hash = insert_genesis_block(&mut storage);
 
 		let backend = InMemory::from(storage);
@@ -235,9 +239,8 @@ mod tests {
 			"Core_execute_block",
 			&b1data,
 			None,
-		).execute(
-			ExecutionStrategy::NativeElseWasm,
-		);
+		)
+		.execute(ExecutionStrategy::NativeElseWasm);
 		assert!(r.is_err());
 	}
 }

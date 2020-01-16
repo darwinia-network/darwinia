@@ -14,31 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{sync::Arc, cmp::Ord, panic::UnwindSafe, result, cell::RefCell, rc::Rc};
-use codec::{Encode, Decode};
-use sr_primitives::{
-	generic::BlockId, traits::Block as BlockT, traits::NumberFor,
-};
-use state_machine::{
-	self, OverlayedChanges, Ext, ExecutionManager, StateMachine, ExecutionStrategy,
-	backend::Backend as _, ChangesTrieTransaction, StorageProof,
-};
-use executor::{RuntimeVersion, RuntimeInfo, NativeVersion};
+use codec::{Decode, Encode};
+use executor::{NativeVersion, RuntimeInfo, RuntimeVersion};
 use hash_db::Hasher;
 use primitives::{
-	offchain::OffchainExt, H256, Blake2Hasher, NativeOrEncoded, NeverNativeValue,
+	offchain::OffchainExt,
 	traits::{CodeExecutor, KeystoreExt},
+	Blake2Hasher, NativeOrEncoded, NeverNativeValue, H256,
 };
+use sr_primitives::{generic::BlockId, traits::Block as BlockT, traits::NumberFor};
+use state_machine::{
+	self, backend::Backend as _, ChangesTrieTransaction, ExecutionManager, ExecutionStrategy, Ext, OverlayedChanges,
+	StateMachine, StorageProof,
+};
+use std::{cell::RefCell, cmp::Ord, panic::UnwindSafe, rc::Rc, result, sync::Arc};
 
-use sr_api::{ProofRecorder, InitializeBlock};
 use crate::backend;
 use crate::error;
+use sr_api::{InitializeBlock, ProofRecorder};
 
 /// Method call executor.
 pub trait CallExecutor<B, H>
 where
 	B: BlockT,
-	H: Hasher<Out=B::Hash>,
+	H: Hasher<Out = B::Hash>,
 	H::Out: Ord,
 {
 	/// Externalities error type.
@@ -66,7 +65,7 @@ where
 		IB: Fn() -> error::Result<()>,
 		EM: Fn(
 			Result<NativeOrEncoded<R>, Self::Error>,
-			Result<NativeOrEncoded<R>, Self::Error>
+			Result<NativeOrEncoded<R>, Self::Error>,
 		) -> Result<NativeOrEncoded<R>, Self::Error>,
 		R: Encode + Decode + PartialEq,
 		NC: FnOnce() -> result::Result<R, String> + UnwindSafe,
@@ -83,7 +82,9 @@ where
 		side_effects_handler: Option<OffchainExt>,
 		proof_recorder: &Option<Rc<RefCell<ProofRecorder<B>>>>,
 		enable_keystore: bool,
-	) -> error::Result<NativeOrEncoded<R>> where ExecutionManager<EM>: Clone;
+	) -> error::Result<NativeOrEncoded<R>>
+	where
+		ExecutionManager<EM>: Clone;
 
 	/// Extract RuntimeVersion of given block
 	///
@@ -101,7 +102,8 @@ where
 		) -> Result<NativeOrEncoded<R>, Self::Error>,
 		R: Encode + Decode + PartialEq,
 		NC: FnOnce() -> result::Result<R, String> + UnwindSafe,
-	>(&self,
+	>(
+		&self,
 		state: &S,
 		overlay: &mut OverlayedChanges,
 		method: &str,
@@ -113,7 +115,7 @@ where
 		(
 			NativeOrEncoded<R>,
 			(S::Transaction, H::Out),
-			Option<ChangesTrieTransaction<Blake2Hasher, NumberFor<B>>>
+			Option<ChangesTrieTransaction<Blake2Hasher, NumberFor<B>>>,
 		),
 		error::Error,
 	>;
@@ -126,13 +128,11 @@ where
 		mut state: S,
 		overlay: &mut OverlayedChanges,
 		method: &str,
-		call_data: &[u8]
+		call_data: &[u8],
 	) -> Result<(Vec<u8>, StorageProof), error::Error> {
-		let trie_state = state.as_trie_backend()
-			.ok_or_else(||
-				Box::new(state_machine::ExecutionError::UnableToGenerateProof)
-					as Box<dyn state_machine::Error>
-			)?;
+		let trie_state = state.as_trie_backend().ok_or_else(|| {
+			Box::new(state_machine::ExecutionError::UnableToGenerateProof) as Box<dyn state_machine::Error>
+		})?;
 		self.prove_at_trie_state(trie_state, overlay, method, call_data)
 	}
 
@@ -144,7 +144,7 @@ where
 		trie_state: &state_machine::TrieBackend<S, H>,
 		overlay: &mut OverlayedChanges,
 		method: &str,
-		call_data: &[u8]
+		call_data: &[u8],
 	) -> Result<(Vec<u8>, StorageProof), error::Error>;
 
 	/// Get runtime version if supported.
@@ -161,11 +161,7 @@ pub struct LocalCallExecutor<B, E> {
 
 impl<B, E> LocalCallExecutor<B, E> {
 	/// Creates new instance of local call executor.
-	pub fn new(
-		backend: Arc<B>,
-		executor: E,
-		keystore: Option<primitives::traits::BareCryptoStorePtr>,
-	) -> Self {
+	pub fn new(backend: Arc<B>, executor: E, keystore: Option<primitives::traits::BareCryptoStorePtr>) -> Self {
 		LocalCallExecutor {
 			backend,
 			executor,
@@ -174,7 +170,10 @@ impl<B, E> LocalCallExecutor<B, E> {
 	}
 }
 
-impl<B, E> Clone for LocalCallExecutor<B, E> where E: Clone {
+impl<B, E> Clone for LocalCallExecutor<B, E>
+where
+	E: Clone,
+{
 	fn clone(&self) -> Self {
 		LocalCallExecutor {
 			backend: self.backend.clone(),
@@ -188,7 +187,7 @@ impl<B, E, Block> CallExecutor<Block, Blake2Hasher> for LocalCallExecutor<B, E>
 where
 	B: backend::Backend<Block, Blake2Hasher>,
 	E: CodeExecutor + RuntimeInfo,
-	Block: BlockT<Hash=H256>,
+	Block: BlockT<Hash = H256>,
 {
 	type Error = E::Error;
 
@@ -211,11 +210,8 @@ where
 			method,
 			call_data,
 			self.keystore.clone().map(KeystoreExt),
-		).execute_using_consensus_failure_handler::<_, NeverNativeValue, fn() -> _>(
-			strategy.get_manager(),
-			false,
-			None,
 		)
+		.execute_using_consensus_failure_handler::<_, NeverNativeValue, fn() -> _>(strategy.get_manager(), false, None)
 		.map(|(result, _, _)| result)?;
 		self.backend.destroy_state(state)?;
 		Ok(return_data.into_encoded())
@@ -226,7 +222,7 @@ where
 		IB: Fn() -> error::Result<()>,
 		EM: Fn(
 			Result<NativeOrEncoded<R>, Self::Error>,
-			Result<NativeOrEncoded<R>, Self::Error>
+			Result<NativeOrEncoded<R>, Self::Error>,
 		) -> Result<NativeOrEncoded<R>, Self::Error>,
 		R: Encode + Decode + PartialEq,
 		NC: FnOnce() -> result::Result<R, String> + UnwindSafe,
@@ -243,14 +239,16 @@ where
 		side_effects_handler: Option<OffchainExt>,
 		recorder: &Option<Rc<RefCell<ProofRecorder<Block>>>>,
 		enable_keystore: bool,
-	) -> Result<NativeOrEncoded<R>, error::Error> where ExecutionManager<EM>: Clone {
+	) -> Result<NativeOrEncoded<R>, error::Error>
+	where
+		ExecutionManager<EM>: Clone,
+	{
 		match initialize_block {
-			InitializeBlock::Do(ref init_block)
-				if init_block.borrow().as_ref().map(|id| id != at).unwrap_or(true) => {
+			InitializeBlock::Do(ref init_block) if init_block.borrow().as_ref().map(|id| id != at).unwrap_or(true) => {
 				initialize_block_fn()?;
-			},
+			}
 			// We don't need to initialize the runtime at a block.
-			_ => {},
+			_ => {}
 		}
 
 		let keystore = if enable_keystore {
@@ -263,16 +261,11 @@ where
 
 		let result = match recorder {
 			Some(recorder) => {
-				let trie_state = state.as_trie_backend()
-					.ok_or_else(||
-						Box::new(state_machine::ExecutionError::UnableToGenerateProof)
-							as Box<dyn state_machine::Error>
-					)?;
+				let trie_state = state.as_trie_backend().ok_or_else(|| {
+					Box::new(state_machine::ExecutionError::UnableToGenerateProof) as Box<dyn state_machine::Error>
+				})?;
 
-				let backend = state_machine::ProvingBackend::new_with_recorder(
-					trie_state,
-					recorder.clone()
-				);
+				let backend = state_machine::ProvingBackend::new_with_recorder(trie_state, recorder.clone());
 
 				StateMachine::new(
 					&backend,
@@ -284,11 +277,7 @@ where
 					call_data,
 					keystore,
 				)
-				.execute_using_consensus_failure_handler(
-					execution_manager,
-					false,
-					native_call,
-				)
+				.execute_using_consensus_failure_handler(execution_manager, false, native_call)
 				.map(|(result, _, _)| result)
 				.map_err(Into::into)
 			}
@@ -302,12 +291,8 @@ where
 				call_data,
 				keystore,
 			)
-			.execute_using_consensus_failure_handler(
-				execution_manager,
-				false,
-				native_call,
-			)
-			.map(|(result, _, _)| result)
+			.execute_using_consensus_failure_handler(execution_manager, false, native_call)
+			.map(|(result, _, _)| result),
 		}?;
 		self.backend.destroy_state(state)?;
 		Ok(result)
@@ -317,12 +302,7 @@ where
 		let mut overlay = OverlayedChanges::default();
 		let state = self.backend.state_at(*id)?;
 
-		let mut ext = Ext::new(
-			&mut overlay,
-			&state,
-			self.backend.changes_trie_storage(),
-			None,
-		);
+		let mut ext = Ext::new(&mut overlay, &state, self.backend.changes_trie_storage(), None);
 		let version = self.executor.runtime_version(&mut ext);
 		self.backend.destroy_state(state)?;
 		version.ok_or(error::Error::VersionInvalid.into())
@@ -336,7 +316,8 @@ where
 		) -> Result<NativeOrEncoded<R>, Self::Error>,
 		R: Encode + Decode + PartialEq,
 		NC: FnOnce() -> result::Result<R, String> + UnwindSafe,
-	>(&self,
+	>(
+		&self,
 		state: &S,
 		changes: &mut OverlayedChanges,
 		method: &str,
@@ -358,16 +339,15 @@ where
 			method,
 			call_data,
 			self.keystore.clone().map(KeystoreExt),
-		).execute_using_consensus_failure_handler(
-			manager,
-			true,
-			native_call,
 		)
-		.map(|(result, storage_tx, changes_tx)| (
-			result,
-			storage_tx.expect("storage_tx is always computed when compute_tx is true; qed"),
-			changes_tx,
-		))
+		.execute_using_consensus_failure_handler(manager, true, native_call)
+		.map(|(result, storage_tx, changes_tx)| {
+			(
+				result,
+				storage_tx.expect("storage_tx is always computed when compute_tx is true; qed"),
+				changes_tx,
+			)
+		})
 		.map_err(Into::into)
 	}
 
@@ -376,7 +356,7 @@ where
 		trie_state: &state_machine::TrieBackend<S, Blake2Hasher>,
 		overlay: &mut OverlayedChanges,
 		method: &str,
-		call_data: &[u8]
+		call_data: &[u8],
 	) -> Result<(Vec<u8>, StorageProof), error::Error> {
 		state_machine::prove_execution_on_trie_backend(
 			trie_state,

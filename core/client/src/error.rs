@@ -16,11 +16,11 @@
 
 //! Substrate client possible errors.
 
-use std::{self, error, result};
-use state_machine;
-use sr_primitives::ApplyError;
 use consensus;
 use derive_more::{Display, From};
+use sr_primitives::ApplyError;
+use state_machine;
+use std::{self, error, result};
 
 /// Client Result type alias
 pub type Result<T> = result::Result<T, Error>;

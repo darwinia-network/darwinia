@@ -18,25 +18,26 @@
 //! blocks. CHT roots are stored for headers of ancient blocks.
 
 use std::future::Future;
-use std::{sync::Arc, collections::HashMap};
+use std::{collections::HashMap, sync::Arc};
 
-use sr_primitives::{Justification, generic::BlockId};
 use sr_primitives::traits::{Block as BlockT, Header as HeaderT, NumberFor, Zero};
+use sr_primitives::{generic::BlockId, Justification};
 
-use header_metadata::{HeaderMetadata, CachedHeaderMetadata};
+use header_metadata::{CachedHeaderMetadata, HeaderMetadata};
 
 use crate::backend::{AuxStore, NewBlockState};
 use crate::blockchain::{
-	Backend as BlockchainBackend, BlockStatus, Cache as BlockchainCache,
+	well_known_cache_keys, Backend as BlockchainBackend, BlockStatus, Cache as BlockchainCache,
 	HeaderBackend as BlockchainHeaderBackend, Info as BlockchainInfo, ProvideCache,
-	well_known_cache_keys
 };
 use crate::cht;
 use crate::error::{Error as ClientError, Result as ClientResult};
 use crate::light::fetcher::{Fetcher, RemoteHeaderRequest};
 
 /// Light client blockchain storage.
-pub trait Storage<Block: BlockT>: AuxStore + BlockchainHeaderBackend<Block> + HeaderMetadata<Block, Error=ClientError> {
+pub trait Storage<Block: BlockT>:
+	AuxStore + BlockchainHeaderBackend<Block> + HeaderMetadata<Block, Error = ClientError>
+{
 	/// Store new header. Should refuse to revert any finalized blocks.
 	///
 	/// Takes new authorities, the leaf state of the new block, and
@@ -59,18 +60,10 @@ pub trait Storage<Block: BlockT>: AuxStore + BlockchainHeaderBackend<Block> + He
 	fn last_finalized(&self) -> ClientResult<Block::Hash>;
 
 	/// Get headers CHT root for given block. Fails if the block is not pruned (not a part of any CHT).
-	fn header_cht_root(
-		&self,
-		cht_size: NumberFor<Block>,
-		block: NumberFor<Block>,
-	) -> ClientResult<Block::Hash>;
+	fn header_cht_root(&self, cht_size: NumberFor<Block>, block: NumberFor<Block>) -> ClientResult<Block::Hash>;
 
 	/// Get changes trie CHT root for given block. Fails if the block is not pruned (not a part of any CHT).
-	fn changes_trie_cht_root(
-		&self,
-		cht_size: NumberFor<Block>,
-		block: NumberFor<Block>,
-	) -> ClientResult<Block::Hash>;
+	fn changes_trie_cht_root(&self, cht_size: NumberFor<Block>, block: NumberFor<Block>) -> ClientResult<Block::Hash>;
 
 	/// Get storage cache.
 	fn cache(&self) -> Option<Arc<dyn BlockchainCache<Block>>>;
@@ -91,10 +84,10 @@ pub enum LocalOrRemote<Data, Request> {
 /// locally, or fetches required data from remote node.
 pub trait RemoteBlockchain<Block: BlockT>: Send + Sync {
 	/// Get block header.
-	fn header(&self, id: BlockId<Block>) -> ClientResult<LocalOrRemote<
-		Block::Header,
-		RemoteHeaderRequest<Block::Header>,
-	>>;
+	fn header(
+		&self,
+		id: BlockId<Block>,
+	) -> ClientResult<LocalOrRemote<Block::Header, RemoteHeaderRequest<Block::Header>>>;
 }
 
 /// Light client blockchain.
@@ -105,9 +98,7 @@ pub struct Blockchain<S> {
 impl<S> Blockchain<S> {
 	/// Create new light blockchain backed with given storage.
 	pub fn new(storage: S) -> Self {
-		Self {
-			storage,
-		}
+		Self { storage }
 	}
 
 	/// Get storage reference.
@@ -116,7 +107,11 @@ impl<S> Blockchain<S> {
 	}
 }
 
-impl<S, Block> BlockchainHeaderBackend<Block> for Blockchain<S> where Block: BlockT, S: Storage<Block> {
+impl<S, Block> BlockchainHeaderBackend<Block> for Blockchain<S>
+where
+	Block: BlockT,
+	S: Storage<Block>,
+{
 	fn header(&self, id: BlockId<Block>) -> ClientResult<Option<Block::Header>> {
 		match RemoteBlockchain::header(self, id)? {
 			LocalOrRemote::Local(header) => Ok(Some(header)),
@@ -142,7 +137,11 @@ impl<S, Block> BlockchainHeaderBackend<Block> for Blockchain<S> where Block: Blo
 	}
 }
 
-impl<S, Block> HeaderMetadata<Block> for Blockchain<S> where Block: BlockT, S: Storage<Block> {
+impl<S, Block> HeaderMetadata<Block> for Blockchain<S>
+where
+	Block: BlockT,
+	S: Storage<Block>,
+{
 	type Error = ClientError;
 
 	fn header_metadata(&self, hash: Block::Hash) -> Result<CachedHeaderMetadata<Block>, Self::Error> {
@@ -158,7 +157,11 @@ impl<S, Block> HeaderMetadata<Block> for Blockchain<S> where Block: BlockT, S: S
 	}
 }
 
-impl<S, Block> BlockchainBackend<Block> for Blockchain<S> where Block: BlockT, S: Storage<Block> {
+impl<S, Block> BlockchainBackend<Block> for Blockchain<S>
+where
+	Block: BlockT,
+	S: Storage<Block>,
+{
 	fn body(&self, _id: BlockId<Block>) -> ClientResult<Option<Vec<Block::Extrinsic>>> {
 		Err(ClientError::NotAvailableOnLightClient)
 	}
@@ -191,13 +194,13 @@ impl<S: Storage<Block>, Block: BlockT> ProvideCache<Block> for Blockchain<S> {
 }
 
 impl<S, Block: BlockT> RemoteBlockchain<Block> for Blockchain<S>
-	where
-		S: Storage<Block>,
+where
+	S: Storage<Block>,
 {
-	fn header(&self, id: BlockId<Block>) -> ClientResult<LocalOrRemote<
-		Block::Header,
-		RemoteHeaderRequest<Block::Header>,
-	>> {
+	fn header(
+		&self,
+		id: BlockId<Block>,
+	) -> ClientResult<LocalOrRemote<Block::Header, RemoteHeaderRequest<Block::Header>>> {
 		// first, try to read header from local storage
 		if let Some(local_header) = self.storage.header(id)? {
 			return Ok(LocalOrRemote::Local(local_header));
@@ -234,11 +237,9 @@ pub fn future_header<Block: BlockT, F: Fetcher<Block>>(
 	use futures03::future::{ready, Either, FutureExt};
 
 	match blockchain.header(id) {
-		Ok(LocalOrRemote::Remote(request)) => Either::Left(
-			fetcher
-				.remote_header(request)
-				.then(|header| ready(header.map(Some)))
-		),
+		Ok(LocalOrRemote::Remote(request)) => {
+			Either::Left(fetcher.remote_header(request).then(|header| ready(header.map(Some))))
+		}
 		Ok(LocalOrRemote::Unknown) => Either::Right(ready(Ok(None))),
 		Ok(LocalOrRemote::Local(local_header)) => Either::Right(ready(Ok(Some(local_header)))),
 		Err(err) => Either::Right(ready(Err(err))),
@@ -247,11 +248,11 @@ pub fn future_header<Block: BlockT, F: Fetcher<Block>>(
 
 #[cfg(test)]
 pub mod tests {
-	use std::collections::HashMap;
-	use parking_lot::Mutex;
-	use test_client::runtime::{Hash, Block, Header};
-	use crate::blockchain::Info;
 	use super::*;
+	use crate::blockchain::Info;
+	use parking_lot::Mutex;
+	use std::collections::HashMap;
+	use test_client::runtime::{Block, Hash, Header};
 
 	pub type DummyBlockchain = Blockchain<DummyStorage>;
 
@@ -303,7 +304,8 @@ pub mod tests {
 		type Error = ClientError;
 
 		fn header_metadata(&self, hash: Hash) -> Result<CachedHeaderMetadata<Block>, Self::Error> {
-			self.header(BlockId::hash(hash))?.map(|header| CachedHeaderMetadata::from(&header))
+			self.header(BlockId::hash(hash))?
+				.map(|header| CachedHeaderMetadata::from(&header))
 				.ok_or(ClientError::UnknownBlock("header not found".to_owned()))
 		}
 		fn insert_header_metadata(&self, _hash: Hash, _metadata: CachedHeaderMetadata<Block>) {}
@@ -315,9 +317,13 @@ pub mod tests {
 			'a,
 			'b: 'a,
 			'c: 'a,
-			I: IntoIterator<Item=&'a(&'c [u8], &'c [u8])>,
-			D: IntoIterator<Item=&'a &'b [u8]>,
-		>(&self, insert: I, _delete: D) -> ClientResult<()> {
+			I: IntoIterator<Item = &'a (&'c [u8], &'c [u8])>,
+			D: IntoIterator<Item = &'a &'b [u8]>,
+		>(
+			&self,
+			insert: I,
+			_delete: D,
+		) -> ClientResult<()> {
 			for (k, v) in insert.into_iter() {
 				self.aux_store.lock().insert(k.to_vec(), v.to_vec());
 			}
@@ -360,9 +366,7 @@ pub mod tests {
 			cht::block_to_cht_number(cht_size, block)
 				.and_then(|cht_num| self.changes_tries_cht_roots.get(&cht_num))
 				.cloned()
-				.ok_or_else(|| ClientError::Backend(
-					format!("Test error: CHT for block #{} not found", block)
-				).into())
+				.ok_or_else(|| ClientError::Backend(format!("Test error: CHT for block #{} not found", block)).into())
 		}
 
 		fn cache(&self) -> Option<Arc<dyn BlockchainCache<Block>>> {
