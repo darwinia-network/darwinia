@@ -2905,7 +2905,7 @@ dependencies = [
  "substrate-basic-authorship 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-build-script-utils 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-chain-spec 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client 2.0.0",
  "substrate-client-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-consensus-babe-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
@@ -2960,7 +2960,7 @@ dependencies = [
  "srml-contracts-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-system-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "srml-transaction-payment-rpc 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
- "substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client 2.0.0",
  "substrate-transaction-pool 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 
@@ -5089,6 +5089,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "substrate-client"
+version = "2.0.0"
+dependencies = [
+ "derive_more 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hash-db 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hex-literal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "kvdb 0.1.0 (git+https://github.com/paritytech/parity-common?rev=b0317f649ab2c665b7987b8475878fc4d2e1f81d)",
+ "kvdb-memorydb 0.1.0 (git+https://github.com/paritytech/parity-common?rev=b0317f649ab2c665b7987b8475878fc4d2e1f81d)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parking_lot 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-version 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-block-builder 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-consensus-common 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-executor 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-header-metadata 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-inherents 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-panic-handler 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-state-machine 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-telemetry 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-test-runtime-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-trie 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "substrate-client-db"
 version = "2.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
@@ -5110,6 +5146,18 @@ dependencies = [
  "substrate-state-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-state-machine 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-trie 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+]
+
+[[package]]
+name = "substrate-consensus-aura-primitives"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-application-crypto 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 
 [[package]]
@@ -5755,6 +5803,75 @@ dependencies = [
  "slog-scope 4.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-io 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "substrate-test-client"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "futures-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hash-db 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-consensus-common 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-executor 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-state-machine 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+]
+
+[[package]]
+name = "substrate-test-runtime"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "cfg-if 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "memory-db 0.15.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-io 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sr-version 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-executive 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-support 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-system 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-system-rpc-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-application-crypto 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-block-builder-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-consensus-aura-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-consensus-babe-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-inherents 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-keyring 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-offchain-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-runtime-interface 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-session 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-transaction-pool-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-trie 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-wasm-builder-runner 1.0.4 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "trie-db 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "substrate-test-runtime-client"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "parity-scale-codec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-block-builder 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-test-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "substrate-test-runtime 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
 ]
 
 [[package]]
@@ -7419,6 +7536,7 @@ dependencies = [
 "checksum substrate-cli 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-client-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
+"checksum substrate-consensus-aura-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-consensus-babe 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-consensus-babe-primitives 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-consensus-common 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
@@ -7454,6 +7572,9 @@ dependencies = [
 "checksum substrate-state-db 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-state-machine 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-telemetry 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
+"checksum substrate-test-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
+"checksum substrate-test-runtime 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
+"checksum substrate-test-runtime-client 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-transaction-graph 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-transaction-pool 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"
 "checksum substrate-transaction-pool-runtime-api 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)" = "<none>"

@@ -1,0 +1,40 @@
+[package]
+name = "substrate-client"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+derive_more = { version = "0.15.0" }
+fnv = { version = "1.0.6" }
+log = { version = "0.4.8" }
+parking_lot = { version = "0.9.0" }
+hex-literal = { version = "0.2.1" }
+futures = { version = "0.1.29" }
+futures03 = { package = "futures-preview", version = "0.3.0-alpha.19", features = ["compat"] }
+consensus = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+executor = { package = "substrate-executor", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+state-machine = { package = "substrate-state-machine", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+keyring = { package = "substrate-keyring", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+trie = { package = "substrate-trie", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+substrate-telemetry = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+hash-db = { version = "0.15.2" }
+kvdb = { git = "https://github.com/paritytech/parity-common", rev="b0317f649ab2c665b7987b8475878fc4d2e1f81d" }
+codec = { package = "parity-scale-codec", version = "1.0.0", features = ["derive"] }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime-version = { package = "sr-version", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+block-builder = { package = "substrate-block-builder", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
+[dev-dependencies]
+env_logger = "0.7.0"
+tempfile = "3.1.0"
+client-db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", features = ["kvdb-rocksdb"] }
+test-client = { package = "substrate-test-runtime-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+kvdb-memorydb = { git = "https://github.com/paritytech/parity-common", rev="b0317f649ab2c665b7987b8475878fc4d2e1f81d" }
+panic-handler = { package = "substrate-panic-handler", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
