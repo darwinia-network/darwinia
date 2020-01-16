@@ -29,12 +29,3 @@ inherents = { package = "substrate-inherents", git = "https://github.com/darwini
 sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 block-builder = { package = "substrate-block-builder", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-
-[dev-dependencies]
-env_logger = "0.7.0"
-tempfile = "3.1.0"
-client-db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", features = ["kvdb-rocksdb"] }
-test-client = { package = "substrate-test-runtime-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-kvdb-memorydb = { git = "https://github.com/paritytech/parity-common", rev="b0317f649ab2c665b7987b8475878fc4d2e1f81d" }
-panic-handler = { package = "substrate-panic-handler", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-

@@ -1,0 +1,26 @@
+[package]
+name = "transaction-factory"
+version = "0.0.1"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+cli = { package = "darwinia-cli", path = "../../core/cli" }
+client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#client = { package = "substrate-client", path = "../../core/client" }
+sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+consensus_common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+log = "0.4.8"
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#substrate-service = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+substrate-service = { path = "../../core/service" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"sr-primitives/std",
+]

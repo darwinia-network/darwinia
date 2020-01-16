@@ -29,11 +29,14 @@ tokio = "0.1.22"
 
 panic-handler = { package = "substrate-panic-handler", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#client = { package = "substrate-client", path = "../client" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#network = { package = "substrate-network", path = "../../core/network" }
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-service = { package = "substrate-service", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#service = { package = "substrate-service", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+service = { package = "substrate-service", path = "../../core/service", default-features = false }
 state-machine = { package = "substrate-state-machine", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 substrate-telemetry = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 keyring = { package = "substrate-keyring", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

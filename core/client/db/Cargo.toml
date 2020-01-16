@@ -13,21 +13,17 @@ kvdb-rocksdb = { git = "https://github.com/paritytech/parity-common", rev="b0317
 kvdb-memorydb = { git = "https://github.com/paritytech/parity-common", rev="b0317f649ab2c665b7987b8475878fc4d2e1f81d" }
 linked-hash-map = "0.5.2"
 hash-db = "0.15.2"
-primitives = { package = "substrate-primitives", path = "../../primitives" }
-sr-primitives = {  path = "../../sr-primitives" }
-client = { package = "substrate-client", path = "../../client" }
-state-machine = { package = "substrate-state-machine", path = "../../state-machine" }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#client = { package = "substrate-client", path = "../../client" }
+state-machine = { package = "substrate-state-machine", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 codec = { package = "parity-scale-codec", version = "1.0.0", features = ["derive"] }
-executor = { package = "substrate-executor", path = "../../executor" }
-state_db = { package = "substrate-state-db", path = "../../state-db" }
-trie = { package = "substrate-trie", path = "../../trie" }
-consensus_common = { package = "substrate-consensus-common", path = "../../consensus/common" }
-header_metadata = { package = "substrate-header-metadata", path = "../header-metadata" }
-
-[dev-dependencies]
-substrate-keyring = { path = "../../keyring" }
-test-client = { package = "substrate-test-runtime-client", path = "../../test-runtime/client" }
-env_logger = "0.7.0"
+executor = { package = "substrate-executor", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+state_db = { package = "substrate-state-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+trie = { package = "substrate-trie", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+consensus_common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+header_metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 [features]
 default = []

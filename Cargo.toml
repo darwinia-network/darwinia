@@ -4,7 +4,6 @@ panic = 'unwind'
 [workspace]
 members = [
     "core/cli",
-    "core/client",
     "core/ethash",
 #    "core/merkle-mountain-range",
 #    "core/fly-client",

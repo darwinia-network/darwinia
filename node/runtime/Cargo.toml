@@ -18,6 +18,7 @@ authority-discovery-primitives = { package = "substrate-authority-discovery-prim
 authority-discovery = { package = "srml-authority-discovery", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 babe = { package = "srml-babe", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#babe-primitives = { package = "substrate-consensus-babe-primitives", path = "../../core/consensus/babe/primitives", default-features = false }
 block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 contracts = { package = "srml-contracts", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 contracts-rpc-runtime-api = { package = "srml-contracts-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }

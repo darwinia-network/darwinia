@@ -1,0 +1,53 @@
+[package]
+name = "substrate-service"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[features]
+default = ["rocksdb"]
+# The RocksDB feature activates the RocksDB database backend. If it is not activated, and you pass
+# a path to a database, an error will be produced at runtime.
+rocksdb = ["client_db/kvdb-rocksdb"]
+wasmtime = [
+	"substrate-executor/wasmtime",
+]
+
+[dependencies]
+derive_more = "0.15.0"
+futures = "0.1.29"
+futures03 = { package = "futures-preview", version = "0.3.0-alpha.19", features = ["compat"] }
+parking_lot = "0.9.0"
+lazy_static = "1.4.0"
+log = "0.4.8"
+slog = { version = "2.5.2", features = ["nested-values"] }
+tokio-executor = "0.1.8"
+tokio-timer = "0.2.11"
+exit-future = "0.1.4"
+serde = "1.0.101"
+serde_json = "1.0.41"
+sysinfo = "0.9.5"
+target_info = "0.1.0"
+keystore = { package = "substrate-keystore", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-io = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+session = { package = "substrate-session", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+app-crypto = { package = "substrate-application-crypto", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+consensus_common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#network = { package = "substrate-network", path = "../../core/network" }
+chain-spec = { package = "substrate-chain-spec", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#client = { package = "substrate-client", path = "../client" }
+sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+tx-pool-api = { package = "substrate-transaction-pool-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client_db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+codec = { package = "parity-scale-codec", version = "1.0.0" }
+substrate-executor = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rpc-servers = { package = "substrate-rpc-servers", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rpc = { package = "substrate-rpc", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+tel = { package = "substrate-telemetry", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+offchain = { package = "substrate-offchain", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+parity-multiaddr = { package = "parity-multiaddr", version = "0.5.0" }
