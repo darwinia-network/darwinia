@@ -16,9 +16,10 @@ serde = { version = "1.0.101", optional = true }
 authorship = { package = "srml-authorship", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 authority-discovery-primitives = { package = "substrate-authority-discovery-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false } # staking tests needed
 authority-discovery = { package = "srml-authority-discovery", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-babe = { package = "srml-babe", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-#babe-primitives = { package = "substrate-consensus-babe-primitives", path = "../../core/consensus/babe/primitives", default-features = false }
+#babe = { package = "srml-babe", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+babe = { package = "srml-babe", path = "../../srml/babe", default-features = false }
+#babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+babe-primitives = { package = "substrate-consensus-babe-primitives", path = "../../core/consensus/babe/primitives", default-features = false }
 block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 contracts = { package = "srml-contracts", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 contracts-rpc-runtime-api = { package = "srml-contracts-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
@@ -42,7 +43,8 @@ sudo = { package = "srml-sudo", git = "https://github.com/darwinia-network/subst
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system-rpc-runtime-api = { package = "srml-system-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+timestamp = { package = "srml-timestamp", path = "../../srml/timestamp", default-features = false }
 transaction-payment = { package = "srml-transaction-payment", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 transaction-payment-rpc-runtime-api = { package = "srml-transaction-payment-rpc-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 tx-pool-api = { package = "substrate-transaction-pool-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }

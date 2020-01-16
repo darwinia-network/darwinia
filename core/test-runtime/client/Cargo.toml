@@ -1,0 +1,16 @@
+[package]
+name = "substrate-test-runtime-client"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+#generic-test-client = { package = "substrate-test-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+generic-test-client = { package = "substrate-test-client", path = "../../test-client" }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+block-builder = { package = "substrate-block-builder", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#runtime = { package = "substrate-test-runtime", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+runtime = { package = "substrate-test-runtime", path = "../" }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+codec = { package = "parity-scale-codec", version = "1.0.0" }
+

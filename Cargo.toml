@@ -3,12 +3,21 @@ panic = 'unwind'
 
 [workspace]
 members = [
+    "core/chain-spec",
     "core/cli",
     "core/ethash",
+    "core/consensus/babe",
+    "core/consensus/babe/primitives",
+    "core/finality-grandpa",
+    "core/consensus/slots",
 #    "core/merkle-mountain-range",
-#    "core/fly-client",
-    "core/sr-eth-primitives",
     "core/merkle-patricia-trie",
+#    "core/fly-client",
+    "core/service",
+    "core/sr-eth-primitives",
+    "core/test-client",
+    "core/test-runtime",
+    "core/test-runtime/client",
 
     "node/cli",
     "node/executor",
@@ -17,6 +26,7 @@ members = [
     "node/rpc-client",
     "node/runtime",
 
+    "srml/babe",
     "srml/balances",
     "srml/eth-relay",
     "srml/eth-backing",
@@ -24,4 +34,6 @@ members = [
     "srml/kton",
     "srml/staking",
     "srml/support",
+
+    "test-utils/transaction-factory",
 ]

@@ -10,8 +10,8 @@ sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "
 rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 sr-primitives = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 app-crypto = { package = "substrate-application-crypto", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-slots = { package = "substrate-consensus-slots", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
-#slots = { package = "substrate-consensus-slots", path = "../../slots", optional = true }
+#slots = { package = "substrate-consensus-slots", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
+slots = { package = "substrate-consensus-slots", path = "../../slots", optional = true }
 schnorrkel = { version = "0.8.5", features = ["preaudit_deprecated"], optional = true }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false }
 

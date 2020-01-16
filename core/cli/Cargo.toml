@@ -31,8 +31,8 @@ panic-handler = { package = "substrate-panic-handler", git = "https://github.com
 client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #client = { package = "substrate-client", path = "../client" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#network = { package = "substrate-network", path = "../../core/network" }
+#network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+network = { package = "substrate-network", path = "../../core/network" }
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #service = { package = "substrate-service", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }

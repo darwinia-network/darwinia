@@ -893,7 +893,7 @@ dependencies = [
  "sr-std",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "srml-transaction-payment",
  "substrate-primitives",
 ]
@@ -958,7 +958,7 @@ dependencies = [
  "srml-session",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "substrate-phragmen",
  "substrate-primitives",
 ]
@@ -997,7 +997,7 @@ dependencies = [
  "sr-std",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "substrate-primitives",
 ]
 
@@ -1019,7 +1019,7 @@ dependencies = [
  "srml-session",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "substrate-phragmen",
  "substrate-primitives",
 ]
@@ -3161,7 +3161,7 @@ dependencies = [
  "srml-indices",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "srml-transaction-payment",
  "structopt",
  "substrate-basic-authorship",
@@ -3272,7 +3272,7 @@ dependencies = [
  "srml-support",
  "srml-system",
  "srml-system-rpc-runtime-api",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "srml-transaction-payment",
  "srml-transaction-payment-rpc-runtime-api",
  "srml-utility",
@@ -4818,7 +4818,6 @@ dependencies = [
 [[package]]
 name = "srml-babe"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "hex-literal",
  "parity-scale-codec",
@@ -4830,7 +4829,7 @@ dependencies = [
  "srml-session",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0",
  "substrate-consensus-babe-primitives",
  "substrate-inherents",
 ]
@@ -4960,7 +4959,6 @@ dependencies = [
  "srml-support",
  "srml-system",
  "substrate-application-crypto",
- "substrate-offchain",
  "substrate-primitives",
 ]
 
@@ -5035,7 +5033,7 @@ dependencies = [
  "sr-std",
  "srml-support",
  "srml-system",
- "srml-timestamp",
+ "srml-timestamp 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
  "substrate-trie",
 ]
 
@@ -5165,6 +5163,22 @@ dependencies = [
  "srml-support",
  "srml-system",
  "substrate-inherents",
+]
+
+[[package]]
+name = "srml-timestamp"
+version = "2.0.0"
+dependencies = [
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "serde",
+ "sr-io",
+ "sr-primitives",
+ "sr-std",
+ "srml-support",
+ "srml-system",
+ "substrate-inherents",
+ "substrate-primitives",
 ]
 
 [[package]]
@@ -5400,7 +5414,6 @@ source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-
 [[package]]
 name = "substrate-chain-spec"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "impl-trait-for-tuples",
  "serde",
@@ -5415,7 +5428,6 @@ dependencies = [
 [[package]]
 name = "substrate-chain-spec-derive"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2 1.0.6",
@@ -5479,9 +5491,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "substrate-consensus-babe"
+name = "substrate-consensus-aura-primitives"
 version = "2.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
+dependencies = [
+ "parity-scale-codec",
+ "sr-api",
+ "sr-primitives",
+ "sr-std",
+ "substrate-application-crypto",
+]
+
+[[package]]
+name = "substrate-consensus-babe"
+version = "2.0.0"
 dependencies = [
  "derive_more",
  "fork-tree",
@@ -5521,7 +5544,6 @@ dependencies = [
 [[package]]
 name = "substrate-consensus-babe-primitives"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "parity-scale-codec",
  "schnorrkel",
@@ -5554,7 +5576,6 @@ dependencies = [
 [[package]]
 name = "substrate-consensus-slots"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "futures-preview",
  "futures-timer",
@@ -5640,7 +5661,6 @@ dependencies = [
 [[package]]
 name = "substrate-finality-grandpa"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "finality-grandpa",
  "fork-tree",
@@ -5731,7 +5751,6 @@ dependencies = [
 [[package]]
 name = "substrate-network"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "bitflags",
  "bytes",
@@ -5763,8 +5782,12 @@ dependencies = [
  "substrate-consensus-babe-primitives",
  "substrate-consensus-common",
  "substrate-header-metadata",
+ "substrate-keyring",
  "substrate-peerset",
  "substrate-primitives",
+ "substrate-test-client",
+ "substrate-test-runtime-client",
+ "tokio",
  "tokio-io",
  "unsigned-varint",
  "void",
@@ -5774,7 +5797,6 @@ dependencies = [
 [[package]]
 name = "substrate-offchain"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "bytes",
  "fnv",
@@ -6100,6 +6122,72 @@ dependencies = [
  "slog-scope",
  "tokio-io",
  "void",
+]
+
+[[package]]
+name = "substrate-test-client"
+version = "2.0.0"
+dependencies = [
+ "futures-preview",
+ "hash-db",
+ "parity-scale-codec",
+ "sr-primitives",
+ "substrate-client",
+ "substrate-client-db",
+ "substrate-consensus-common",
+ "substrate-executor",
+ "substrate-keyring",
+ "substrate-primitives",
+ "substrate-state-machine",
+]
+
+[[package]]
+name = "substrate-test-runtime"
+version = "2.0.0"
+dependencies = [
+ "cfg-if",
+ "log 0.4.8",
+ "memory-db",
+ "parity-scale-codec",
+ "serde",
+ "sr-api",
+ "sr-io",
+ "sr-primitives",
+ "sr-std",
+ "sr-version",
+ "srml-babe",
+ "srml-executive",
+ "srml-support",
+ "srml-system",
+ "srml-system-rpc-runtime-api",
+ "srml-timestamp 2.0.0",
+ "substrate-application-crypto",
+ "substrate-block-builder-runtime-api",
+ "substrate-client",
+ "substrate-consensus-aura-primitives",
+ "substrate-consensus-babe-primitives",
+ "substrate-inherents",
+ "substrate-keyring",
+ "substrate-offchain-primitives",
+ "substrate-primitives",
+ "substrate-runtime-interface",
+ "substrate-session",
+ "substrate-transaction-pool-runtime-api",
+ "substrate-trie",
+ "substrate-wasm-builder-runner",
+ "trie-db",
+]
+
+[[package]]
+name = "substrate-test-runtime-client"
+version = "2.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "sr-primitives",
+ "substrate-block-builder",
+ "substrate-primitives",
+ "substrate-test-client",
+ "substrate-test-runtime",
 ]
 
 [[package]]
