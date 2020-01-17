@@ -35,15 +35,18 @@
 
 use std::{fmt, marker::PhantomData, sync::Arc};
 
-use parking_lot::Mutex;
-use threadpool::ThreadPool;
-use sr_api::ApiExt;
 use futures::future::Future;
 use log::{debug, warn};
 use network::NetworkStateInfo;
+use parking_lot::Mutex;
 use primitives::{offchain, ExecutionContext};
-use sr_primitives::{generic::BlockId, traits::{self, ProvideRuntimeApi}};
-use transaction_pool::txpool::{Pool, ChainApi};
+use sr_api::ApiExt;
+use sr_primitives::{
+	generic::BlockId,
+	traits::{self, ProvideRuntimeApi},
+};
+use threadpool::ThreadPool;
+use transaction_pool::txpool::{ChainApi, Pool};
 
 mod api;
 
@@ -71,21 +74,14 @@ impl<Client, Storage, Block: traits::Block> OffchainWorkers<Client, Storage, Blo
 	}
 }
 
-impl<Client, Storage, Block: traits::Block> fmt::Debug for OffchainWorkers<
-	Client,
-	Storage,
-	Block,
-> {
+impl<Client, Storage, Block: traits::Block> fmt::Debug for OffchainWorkers<Client, Storage, Block> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.debug_tuple("OffchainWorkers").finish()
 	}
 }
 
-impl<Client, Storage, Block> OffchainWorkers<
-	Client,
-	Storage,
-	Block,
-> where
+impl<Client, Storage, Block> OffchainWorkers<Client, Storage, Block>
+where
 	Block: traits::Block,
 	Client: ProvideRuntimeApi + Send + Sync + 'static,
 	Client::Api: OffchainWorkerApi<Block>,
@@ -99,7 +95,10 @@ impl<Client, Storage, Block> OffchainWorkers<
 		pool: &Arc<Pool<A>>,
 		network_state: Arc<dyn NetworkStateInfo + Send + Sync>,
 		is_validator: bool,
-	) -> impl Future<Output = ()> where A: ChainApi<Block=Block> + 'static {
+	) -> impl Future<Output = ()>
+	where
+		A: ChainApi<Block = Block> + 'static,
+	{
 		let runtime = self.client.runtime_api();
 		let at = BlockId::number(*number);
 		let has_api = runtime.has_api::<dyn OffchainWorkerApi<Block, Error = ()>>(&at);
@@ -125,7 +124,7 @@ impl<Client, Storage, Block> OffchainWorkers<
 					ExecutionContext::OffchainCall(Some((api, offchain::Capabilities::all()))),
 					number,
 				);
-				if let Err(e) =	run {
+				if let Err(e) = run {
 					log::error!("Error running offchain workers at {:?}: {:?}", at, e);
 				}
 			});
@@ -170,7 +169,10 @@ mod tests {
 		// given
 		let _ = env_logger::try_init();
 		let client = Arc::new(test_client::new());
-		let pool = Arc::new(Pool::new(Default::default(), transaction_pool::FullChainApi::new(client.clone())));
+		let pool = Arc::new(Pool::new(
+			Default::default(),
+			transaction_pool::FullChainApi::new(client.clone()),
+		));
 		let db = client_db::offchain::LocalStorage::new_test();
 		let network_state = Arc::new(MockNetworkStateInfo());
 

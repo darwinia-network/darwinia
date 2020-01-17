@@ -16,28 +16,24 @@
 
 //! RPC interface for the transaction payment module.
 
-use std::sync::Arc;
-use codec::{Codec, Decode};
+pub use self::gen_client::Client as TransactionPaymentClient;
 use client::blockchain::HeaderBackend;
+use codec::{Codec, Decode};
 use jsonrpc_core::{Error as RpcError, ErrorCode, Result};
 use jsonrpc_derive::rpc;
+use primitives::Bytes;
 use sr_primitives::{
 	generic::BlockId,
 	traits::{Block as BlockT, ProvideRuntimeApi},
 };
-use primitives::Bytes;
 use srml_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 pub use srml_transaction_payment_rpc_runtime_api::TransactionPaymentApi as TransactionPaymentRuntimeApi;
-pub use self::gen_client::Client as TransactionPaymentClient;
+use std::sync::Arc;
 
 #[rpc]
 pub trait TransactionPaymentApi<BlockHash, Balance> {
 	#[rpc(name = "payment_queryInfo")]
-	fn query_info(
-		&self,
-		encoded_xt: Bytes,
-		at: Option<BlockHash>
-	) -> Result<RuntimeDispatchInfo<Balance>>;
+	fn query_info(&self, encoded_xt: Bytes, at: Option<BlockHash>) -> Result<RuntimeDispatchInfo<Balance>>;
 }
 
 /// A struct that implements the [`TransactionPaymentApi`].
@@ -49,7 +45,10 @@ pub struct TransactionPayment<C, P> {
 impl<C, P> TransactionPayment<C, P> {
 	/// Create new `TransactionPayment` with the given reference to the client.
 	pub fn new(client: Arc<C>) -> Self {
-		TransactionPayment { client, _marker: Default::default() }
+		TransactionPayment {
+			client,
+			_marker: Default::default(),
+		}
 	}
 }
 
@@ -84,13 +83,12 @@ where
 	fn query_info(
 		&self,
 		encoded_xt: Bytes,
-		at: Option<<Block as BlockT>::Hash>
+		at: Option<<Block as BlockT>::Hash>,
 	) -> Result<RuntimeDispatchInfo<Balance>> {
 		let api = self.client.runtime_api();
 		let at = BlockId::hash(at.unwrap_or_else(||
 			// If the block hash is not supplied assume the best block.
-			self.client.info().best_hash
-		));
+			self.client.info().best_hash));
 
 		let encoded_len = encoded_xt.len() as u32;
 

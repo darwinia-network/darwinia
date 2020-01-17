@@ -18,22 +18,19 @@
 //! full and light storages.
 
 use std::sync::Arc;
-use std::{io, convert::TryInto};
+use std::{convert::TryInto, io};
 
-use kvdb::{KeyValueDB, DBTransaction};
+use kvdb::{DBTransaction, KeyValueDB};
 #[cfg(feature = "kvdb-rocksdb")]
 use kvdb_rocksdb::{Database, DatabaseConfig};
 use log::debug;
 
+use crate::{DatabaseSettings, DatabaseSettingsSrc};
 use client;
 use codec::Decode;
-use trie::DBValue;
 use sr_primitives::generic::BlockId;
-use sr_primitives::traits::{
-	Block as BlockT, Header as HeaderT, Zero,
-	UniqueSaturatedFrom, UniqueSaturatedInto,
-};
-use crate::{DatabaseSettings, DatabaseSettingsSrc};
+use sr_primitives::traits::{Block as BlockT, Header as HeaderT, UniqueSaturatedFrom, UniqueSaturatedInto, Zero};
+use trie::DBValue;
 
 /// Number of columns in the db. Must be the same for both full && light dbs.
 /// Otherwise RocksDb will fail to open database && check its type.
@@ -83,24 +80,22 @@ pub type NumberIndexKey = [u8; 4];
 /// In the current database schema, this kind of key is only used for
 /// lookups into an index, NOT for storing header data or others.
 pub fn number_index_key<N: TryInto<u32>>(n: N) -> client::error::Result<NumberIndexKey> {
-	let n = n.try_into().map_err(|_|
-		client::error::Error::Backend("Block number cannot be converted to u32".into())
-	)?;
+	let n = n
+		.try_into()
+		.map_err(|_| client::error::Error::Backend("Block number cannot be converted to u32".into()))?;
 
 	Ok([
 		(n >> 24) as u8,
 		((n >> 16) & 0xff) as u8,
 		((n >> 8) & 0xff) as u8,
-		(n & 0xff) as u8
+		(n & 0xff) as u8,
 	])
 }
 
 /// Convert number and hash into long lookup key for blocks that are
 /// not in the canonical chain.
-pub fn number_and_hash_to_lookup_key<N, H>(
-	number: N,
-	hash: H,
-) -> client::error::Result<Vec<u8>>	where
+pub fn number_and_hash_to_lookup_key<N, H>(number: N, hash: H) -> client::error::Result<Vec<u8>>
+where
 	N: TryInto<u32>,
 	H: AsRef<[u8]>,
 {
@@ -111,16 +106,14 @@ pub fn number_and_hash_to_lookup_key<N, H>(
 
 /// Convert block lookup key into block number.
 /// all block lookup keys start with the block number.
-pub fn lookup_key_to_number<N>(key: &[u8]) -> client::error::Result<N> where
-	N: From<u32>
+pub fn lookup_key_to_number<N>(key: &[u8]) -> client::error::Result<N>
+where
+	N: From<u32>,
 {
 	if key.len() < 4 {
 		return Err(client::error::Error::Backend("Invalid block key".into()));
 	}
-	Ok((key[0] as u32) << 24
-		| (key[1] as u32) << 16
-		| (key[2] as u32) << 8
-		| (key[3] as u32)).map(Into::into)
+	Ok((key[0] as u32) << 24 | (key[1] as u32) << 16 | (key[2] as u32) << 8 | (key[3] as u32)).map(Into::into)
 }
 
 /// Delete number to hash mapping in DB transaction.
@@ -182,16 +175,14 @@ pub fn insert_hash_to_key_mapping<N: TryInto<u32>, H: AsRef<[u8]> + Clone>(
 pub fn block_id_to_lookup_key<Block>(
 	db: &dyn KeyValueDB,
 	key_lookup_col: Option<u32>,
-	id: BlockId<Block>
-) -> Result<Option<Vec<u8>>, client::error::Error> where
+	id: BlockId<Block>,
+) -> Result<Option<Vec<u8>>, client::error::Error>
+where
 	Block: BlockT,
 	::sr_primitives::traits::NumberFor<Block>: UniqueSaturatedFrom<u64> + UniqueSaturatedInto<u64>,
 {
 	let res = match id {
-		BlockId::Number(n) => db.get(
-			key_lookup_col,
-			number_index_key(n)?.as_ref(),
-		),
+		BlockId::Number(n) => db.get(key_lookup_col, number_index_key(n)?.as_ref()),
 		BlockId::Hash(h) => db.get(key_lookup_col, h.as_ref()),
 	};
 
@@ -207,21 +198,23 @@ pub fn db_err(err: io::Error) -> client::error::Error {
 pub fn open_database(
 	config: &DatabaseSettings,
 	col_meta: Option<u32>,
-	db_type: &str
+	db_type: &str,
 ) -> client::error::Result<Arc<dyn KeyValueDB>> {
 	let db: Arc<dyn KeyValueDB> = match &config.source {
 		#[cfg(feature = "kvdb-rocksdb")]
 		DatabaseSettingsSrc::Path { path, cache_size } => {
 			let mut db_config = DatabaseConfig::with_columns(Some(NUM_COLUMNS));
 			db_config.memory_budget = *cache_size;
-			let path = path.to_str().ok_or_else(|| client::error::Error::Backend("Invalid database path".into()))?;
+			let path = path
+				.to_str()
+				.ok_or_else(|| client::error::Error::Backend("Invalid database path".into()))?;
 			Arc::new(Database::open(&db_config, &path).map_err(db_err)?)
-		},
+		}
 		#[cfg(not(feature = "kvdb-rocksdb"))]
 		DatabaseSettingsSrc::Path { .. } => {
 			let msg = "Try to open RocksDB database with RocksDB disabled".into();
 			return Err(client::error::Error::Backend(msg));
-		},
+		}
 		DatabaseSettingsSrc::Custom(db) => db.clone(),
 	};
 
@@ -229,15 +222,16 @@ pub fn open_database(
 	match db.get(col_meta, meta_keys::TYPE).map_err(db_err)? {
 		Some(stored_type) => {
 			if db_type.as_bytes() != &*stored_type {
-				return Err(client::error::Error::Backend(
-					format!("Unexpected database type. Expected: {}", db_type)).into());
+				return Err(
+					client::error::Error::Backend(format!("Unexpected database type. Expected: {}", db_type)).into(),
+				);
 			}
-		},
+		}
 		None => {
 			let mut transaction = DBTransaction::new();
 			transaction.put(col_meta, meta_keys::TYPE, db_type.as_bytes());
 			db.write(transaction).map_err(db_err)?;
-		},
+		}
 	}
 
 	Ok(db)
@@ -248,10 +242,10 @@ pub fn read_db<Block>(
 	db: &dyn KeyValueDB,
 	col_index: Option<u32>,
 	col: Option<u32>,
-	id: BlockId<Block>
+	id: BlockId<Block>,
 ) -> client::error::Result<Option<DBValue>>
-	where
-		Block: BlockT,
+where
+	Block: BlockT,
 {
 	block_id_to_lookup_key(db, col_index, id).and_then(|key| match key {
 		Some(key) => db.get(col, key.as_ref()).map_err(db_err),
@@ -269,10 +263,8 @@ pub fn read_header<Block: BlockT>(
 	match read_db(db, col_index, col, id)? {
 		Some(header) => match Block::Header::decode(&mut &header[..]) {
 			Ok(header) => Ok(Some(header)),
-			Err(_) => return Err(
-				client::error::Error::Backend("Error decoding header".into())
-			),
-		}
+			Err(_) => return Err(client::error::Error::Backend("Error decoding header".into())),
+		},
 		None => Ok(None),
 	}
 }
@@ -289,38 +281,53 @@ pub fn require_header<Block: BlockT>(
 }
 
 /// Read meta from the database.
-pub fn read_meta<Block>(db: &dyn KeyValueDB, col_meta: Option<u32>, col_header: Option<u32>) -> Result<
-	Meta<<<Block as BlockT>::Header as HeaderT>::Number, Block::Hash>,
-	client::error::Error,
->
-	where
-		Block: BlockT,
+pub fn read_meta<Block>(
+	db: &dyn KeyValueDB,
+	col_meta: Option<u32>,
+	col_header: Option<u32>,
+) -> Result<Meta<<<Block as BlockT>::Header as HeaderT>::Number, Block::Hash>, client::error::Error>
+where
+	Block: BlockT,
 {
 	let genesis_hash: Block::Hash = match db.get(col_meta, meta_keys::GENESIS_HASH).map_err(db_err)? {
 		Some(h) => match Decode::decode(&mut &h[..]) {
 			Ok(h) => h,
-			Err(err) => return Err(client::error::Error::Backend(
-				format!("Error decoding genesis hash: {}", err)
-			)),
+			Err(err) => {
+				return Err(client::error::Error::Backend(format!(
+					"Error decoding genesis hash: {}",
+					err
+				)))
+			}
 		},
-		None => return Ok(Meta {
-			best_hash: Default::default(),
-			best_number: Zero::zero(),
-			finalized_hash: Default::default(),
-			finalized_number: Zero::zero(),
-			genesis_hash: Default::default(),
-		}),
+		None => {
+			return Ok(Meta {
+				best_hash: Default::default(),
+				best_number: Zero::zero(),
+				finalized_hash: Default::default(),
+				finalized_number: Zero::zero(),
+				genesis_hash: Default::default(),
+			})
+		}
 	};
 
 	let load_meta_block = |desc, key| -> Result<_, client::error::Error> {
-		if let Some(Some(header)) = db.get(col_meta, key).and_then(|id|
-			match id {
-				Some(id) => db.get(col_header, &id).map(|h| h.map(|b| Block::Header::decode(&mut &b[..]).ok())),
+		if let Some(Some(header)) = db
+			.get(col_meta, key)
+			.and_then(|id| match id {
+				Some(id) => db
+					.get(col_header, &id)
+					.map(|h| h.map(|b| Block::Header::decode(&mut &b[..]).ok())),
 				None => Ok(None),
-			}).map_err(db_err)?
+			})
+			.map_err(db_err)?
 		{
 			let hash = header.hash();
-			debug!("DB Opened blockchain db, fetched {} = {:?} ({})", desc, hash, header.number());
+			debug!(
+				"DB Opened blockchain db, fetched {} = {:?} ({})",
+				desc,
+				hash,
+				header.number()
+			);
 			Ok((hash, *header.number()))
 		} else {
 			Ok((genesis_hash.clone(), Zero::zero()))

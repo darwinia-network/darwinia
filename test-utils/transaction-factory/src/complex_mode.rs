@@ -37,18 +37,17 @@
 ///   G -> J
 ///   ...
 ///   ... x `rounds`
-
 use std::sync::Arc;
 
-use log::info;
-use client::Client;
 use block_builder_api::BlockBuilder;
-use sr_api::ConstructRuntimeApi;
+use client::Client;
+use log::info;
 use primitives::{Blake2Hasher, Hasher};
+use sr_api::ConstructRuntimeApi;
 use sr_primitives::generic::BlockId;
-use sr_primitives::traits::{Block as BlockT, ProvideRuntimeApi, One, Zero};
+use sr_primitives::traits::{Block as BlockT, One, ProvideRuntimeApi, Zero};
 
-use crate::{RuntimeAdapter, create_block};
+use crate::{create_block, RuntimeAdapter};
 
 pub fn next<RA, Backend, Exec, Block, RtApi>(
 	factory_state: &mut RA,
@@ -63,8 +62,7 @@ where
 	Exec: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + Clone,
 	Backend: client::backend::Backend<Block, Blake2Hasher> + Send,
 	Client<Backend, Exec, Block, RtApi>: ProvideRuntimeApi,
-	<Client<Backend, Exec, Block, RtApi> as ProvideRuntimeApi>::Api:
-		BlockBuilder<Block, Error = client::error::Error>,
+	<Client<Backend, Exec, Block, RtApi> as ProvideRuntimeApi>::Api: BlockBuilder<Block, Error = client::error::Error>,
 	RtApi: ConstructRuntimeApi<Block, Client<Backend, Exec, Block, RtApi>> + Send + Sync,
 	RA: RuntimeAdapter,
 {
@@ -101,7 +99,9 @@ where
 	);
 
 	let inherents = factory_state.inherent_extrinsics();
-	let inherents = client.runtime_api().inherent_extrinsics(&prior_block_id, inherents)
+	let inherents = client
+		.runtime_api()
+		.inherent_extrinsics(&prior_block_id, inherents)
 		.expect("Failed to create inherent extrinsics");
 
 	let block = create_block::<RA, _, _, _, _>(&client, transfer, inherents);
@@ -129,29 +129,28 @@ where
 }
 
 /// Return the account which received tokens at this point in the previous round.
-fn from<RA>(
-	factory_state: &mut RA
-) -> (<RA as RuntimeAdapter>::AccountId, <RA as RuntimeAdapter>::Secret)
-where RA: RuntimeAdapter
+fn from<RA>(factory_state: &mut RA) -> (<RA as RuntimeAdapter>::AccountId, <RA as RuntimeAdapter>::Secret)
+where
+	RA: RuntimeAdapter,
 {
 	let is_first_round = factory_state.round() == RA::Number::zero();
 	match is_first_round {
 		true => {
 			// first round always uses master account
 			(RA::master_account_id(), RA::master_account_secret())
-		},
+		}
 		_ => {
 			// the account to which was sent in the last round
 			let is_round_one = factory_state.round() == RA::Number::one();
 			let seed = match is_round_one {
 				true => factory_state.start_number() + factory_state.block_in_round(),
 				_ => {
-					let block_no_in_prior_round =
-						factory_state.num() * (factory_state.round() - RA::Number::one()) + factory_state.block_in_round();
+					let block_no_in_prior_round = factory_state.num() * (factory_state.round() - RA::Number::one())
+						+ factory_state.block_in_round();
 					factory_state.start_number() + block_no_in_prior_round
 				}
 			};
 			(RA::gen_random_account_id(&seed), RA::gen_random_account_secret(&seed))
-		},
+		}
 	}
 }

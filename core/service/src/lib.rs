@@ -27,47 +27,46 @@ pub mod error;
 mod builder;
 mod status_sinks;
 
+use futures::sync::mpsc;
+use parking_lot::Mutex;
+use std::collections::HashMap;
 use std::io;
 use std::marker::PhantomData;
 use std::net::SocketAddr;
-use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
-use futures::sync::mpsc;
-use parking_lot::Mutex;
 
 use client::Client;
+use codec::{Decode, Encode};
 use exit_future::Signal;
 use futures::prelude::*;
 use futures03::{
 	future::{ready, FutureExt as _, TryFutureExt as _},
 	stream::{StreamExt as _, TryStreamExt as _},
 };
+use log::{debug, error, log, warn, Level};
 use network::{
-	NetworkService, NetworkState, specialization::NetworkSpecialization,
-	Event, DhtEvent, PeerId, ReportHandle,
+	specialization::NetworkSpecialization, DhtEvent, Event, NetworkService, NetworkState, PeerId, ReportHandle,
 };
-use log::{log, warn, debug, error, Level};
-use codec::{Encode, Decode};
 use primitives::{Blake2Hasher, H256};
 use sr_primitives::generic::BlockId;
-use sr_primitives::traits::{NumberFor, Block as BlockT};
+use sr_primitives::traits::{Block as BlockT, NumberFor};
 
-pub use self::error::Error;
 pub use self::builder::{ServiceBuilder, ServiceBuilderExport, ServiceBuilderImport, ServiceBuilderRevert};
-pub use config::{Configuration, Roles, PruningMode};
-pub use chain_spec::{ChainSpec, Properties, RuntimeGenesis, Extension as ChainSpecExtension};
-pub use transaction_pool::txpool::{
-	self, Pool as TransactionPool, Options as TransactionPoolOptions, ChainApi, IntoPoolError
-};
+pub use self::error::Error;
+pub use chain_spec::{ChainSpec, Extension as ChainSpecExtension, Properties, RuntimeGenesis};
 pub use client::FinalityNotifications;
+pub use config::{Configuration, PruningMode, Roles};
+#[doc(hidden)]
+pub use futures::future::Executor;
+#[doc(hidden)]
+pub use network::{config::BoxFinalityProofRequestBuilder, FinalityProofProvider, OnDemand};
 pub use rpc::Metadata as RpcMetadata;
 #[doc(hidden)]
 pub use std::{ops::Deref, result::Result, sync::Arc};
-#[doc(hidden)]
-pub use network::{FinalityProofProvider, OnDemand, config::BoxFinalityProofRequestBuilder};
-#[doc(hidden)]
-pub use futures::future::Executor;
+pub use transaction_pool::txpool::{
+	self, ChainApi, IntoPoolError, Options as TransactionPoolOptions, Pool as TransactionPool,
+};
 
 const DEFAULT_PROTOCOL_ID: &str = "sup";
 
@@ -131,8 +130,9 @@ impl Executor<Box<dyn Future<Item = (), Error = ()> + Send>> for SpawnTaskHandle
 }
 
 /// Abstraction over a Substrate service.
-pub trait AbstractService: 'static + Future<Item = (), Error = Error> +
-	Executor<Box<dyn Future<Item = (), Error = ()> + Send>> + Send {
+pub trait AbstractService:
+	'static + Future<Item = (), Error = Error> + Executor<Box<dyn Future<Item = (), Error = ()> + Send>> + Send
+{
 	/// Type of block of this chain.
 	type Block: BlockT<Hash = H256>;
 	/// Backend storage for the client.
@@ -189,7 +189,8 @@ pub trait AbstractService: 'static + Future<Item = (), Error = Error> +
 	fn network(&self) -> Arc<NetworkService<Self::Block, Self::NetworkSpecialization, H256>>;
 
 	/// Returns a receiver that periodically receives a status of the network.
-	fn network_status(&self, interval: Duration) -> mpsc::UnboundedReceiver<(NetworkStatus<Self::Block>, NetworkState)>;
+	fn network_status(&self, interval: Duration)
+		-> mpsc::UnboundedReceiver<(NetworkStatus<Self::Block>, NetworkState)>;
 
 	/// Get shared transaction pool instance.
 	fn transaction_pool(&self) -> Arc<TransactionPool<Self::TransactionPoolApi>>;
@@ -198,10 +199,16 @@ pub trait AbstractService: 'static + Future<Item = (), Error = Error> +
 	fn on_exit(&self) -> ::exit_future::Exit;
 }
 
-impl<TBl, TBackend, TExec, TRtApi, TSc, TNetSpec, TExPoolApi, TOc> AbstractService for
-	Service<TBl, Client<TBackend, TExec, TBl, TRtApi>, TSc, NetworkStatus<TBl>,
-		NetworkService<TBl, TNetSpec, H256>, TransactionPool<TExPoolApi>, TOc>
-where
+impl<TBl, TBackend, TExec, TRtApi, TSc, TNetSpec, TExPoolApi, TOc> AbstractService
+	for Service<
+		TBl,
+		Client<TBackend, TExec, TBl, TRtApi>,
+		TSc,
+		NetworkStatus<TBl>,
+		NetworkService<TBl, TNetSpec, H256>,
+		TransactionPool<TExPoolApi>,
+		TOc,
+	> where
 	TBl: BlockT<Hash = H256>,
 	TBackend: 'static + client::backend::Backend<TBl, Blake2Hasher>,
 	TExec: 'static + client::CallExecutor<TBl, Blake2Hasher> + Send + Sync + Clone,
@@ -272,7 +279,10 @@ where
 		self.network.clone()
 	}
 
-	fn network_status(&self, interval: Duration) -> mpsc::UnboundedReceiver<(NetworkStatus<Self::Block>, NetworkState)> {
+	fn network_status(
+		&self,
+		interval: Duration,
+	) -> mpsc::UnboundedReceiver<(NetworkStatus<Self::Block>, NetworkState)> {
 		let (sink, stream) = mpsc::unbounded();
 		self.network_status_sinks.lock().push(interval, sink);
 		stream
@@ -287,9 +297,7 @@ where
 	}
 }
 
-impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Future for
-	Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc>
-{
+impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Future for Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> {
 	type Item = ();
 	type Error = Error;
 
@@ -311,7 +319,11 @@ impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Future for
 		}
 
 		// Polling all the `to_poll` futures.
-		while let Some(pos) = self.to_poll.iter_mut().position(|t| t.poll().map(|t| t.is_ready()).unwrap_or(true)) {
+		while let Some(pos) = self
+			.to_poll
+			.iter_mut()
+			.position(|t| t.poll().map(|t| t.is_ready()).unwrap_or(true))
+		{
 			let _ = self.to_poll.remove(pos);
 		}
 
@@ -320,12 +332,12 @@ impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Future for
 	}
 }
 
-impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Executor<Box<dyn Future<Item = (), Error = ()> + Send>> for
-	Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc>
+impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Executor<Box<dyn Future<Item = (), Error = ()> + Send>>
+	for Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc>
 {
 	fn execute(
 		&self,
-		future: Box<dyn Future<Item = (), Error = ()> + Send>
+		future: Box<dyn Future<Item = (), Error = ()> + Send>,
 	) -> Result<(), futures::future::ExecuteError<Box<dyn Future<Item = (), Error = ()> + Send>>> {
 		if let Err(err) = self.to_spawn_tx.unbounded_send(future) {
 			let kind = futures::future::ExecuteErrorKind::Shutdown;
@@ -343,8 +355,8 @@ fn build_network_future<
 	B: BlockT,
 	C: client::BlockchainEvents<B>,
 	S: network::specialization::NetworkSpecialization<B>,
-	H: network::ExHashT
-> (
+	H: network::ExHashT,
+>(
 	roles: Roles,
 	mut network: network::NetworkWorker<B, S, H>,
 	client: Arc<C>,
@@ -357,17 +369,28 @@ fn build_network_future<
 	// See https://github.com/paritytech/substrate/issues/3099
 	let mut rpc_rx = futures03::compat::Compat::new(rpc_rx.map(|v| Ok::<_, ()>(v)));
 
-	let mut imported_blocks_stream = client.import_notification_stream().fuse()
-		.map(|v| Ok::<_, ()>(v)).compat();
-	let mut finality_notification_stream = client.finality_notification_stream().fuse()
-		.map(|v| Ok::<_, ()>(v)).compat();
+	let mut imported_blocks_stream = client
+		.import_notification_stream()
+		.fuse()
+		.map(|v| Ok::<_, ()>(v))
+		.compat();
+	let mut finality_notification_stream = client
+		.finality_notification_stream()
+		.fuse()
+		.map(|v| Ok::<_, ()>(v))
+		.compat();
 
 	futures::future::poll_fn(move || {
 		let before_polling = Instant::now();
 
 		// We poll `imported_blocks_stream`.
 		while let Ok(Async::Ready(Some(notification))) = imported_blocks_stream.poll() {
-			network.on_block_imported(notification.hash, notification.header, Vec::new(), notification.is_new_best);
+			network.on_block_imported(
+				notification.hash,
+				notification.header,
+				Vec::new(),
+				notification.is_new_best,
+			);
 		}
 
 		// We poll `finality_notification_stream`, but we only take the last event.
@@ -388,17 +411,21 @@ fn build_network_future<
 						is_syncing: network.service().is_major_syncing(),
 						should_have_peers,
 					});
-				},
+				}
 				rpc::system::Request::Peers(sender) => {
-					let _ = sender.send(network.peers_debug_info().into_iter().map(|(peer_id, p)|
-						rpc::system::PeerInfo {
-							peer_id: peer_id.to_base58(),
-							roles: format!("{:?}", p.roles),
-							protocol_version: p.protocol_version,
-							best_hash: p.best_hash,
-							best_number: p.best_number,
-						}
-					).collect());
+					let _ = sender.send(
+						network
+							.peers_debug_info()
+							.into_iter()
+							.map(|(peer_id, p)| rpc::system::PeerInfo {
+								peer_id: peer_id.to_base58(),
+								roles: format!("{:?}", p.roles),
+								protocol_version: p.protocol_version,
+								best_hash: p.best_hash,
+								best_number: p.best_number,
+							})
+							.collect(),
+					);
 				}
 				rpc::system::Request::NetworkState(sender) => {
 					if let Some(network_state) = serde_json::to_value(&network.network_state()).ok() {
@@ -408,7 +435,7 @@ fn build_network_future<
 				rpc::system::Request::NodeRoles(sender) => {
 					use rpc::system::NodeRole;
 
-					let node_roles = (0 .. 8)
+					let node_roles = (0..8)
 						.filter(|&bit_number| (roles.bits() >> bit_number) & 1 == 1)
 						.map(|bit_number| match Roles::from_bits(1 << bit_number) {
 							Some(Roles::AUTHORITY) => NodeRole::Authority,
@@ -453,7 +480,7 @@ fn build_network_future<
 					warn!(target: "service", "Dht event channel to authority discovery is disconnected, dropping event.");
 				}
 			}
-		};
+		}
 
 		// Now some diagnostic for performances.
 		let polling_dur = before_polling.elapsed();
@@ -487,9 +514,7 @@ pub struct NetworkStatus<B: BlockT> {
 	pub average_upload_per_sec: u64,
 }
 
-impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Drop for
-	Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc>
-{
+impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Drop for Service<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> {
 	fn drop(&mut self) {
 		debug!(target: "service", "Substrate service shutdown");
 		if let Some(signal) = self.signal.take() {
@@ -502,40 +527,38 @@ impl<TBl, TCl, TSc, TNetStatus, TNet, TTxPool, TOc> Drop for
 #[cfg(not(target_os = "unknown"))]
 fn start_rpc_servers<C, G, E, H: FnMut() -> rpc_servers::RpcHandler<rpc::Metadata>>(
 	config: &Configuration<C, G, E>,
-	mut gen_handler: H
+	mut gen_handler: H,
 ) -> Result<Box<dyn std::any::Any + Send + Sync>, error::Error> {
 	fn maybe_start_server<T, F>(address: Option<SocketAddr>, mut start: F) -> Result<Option<T>, io::Error>
-		where F: FnMut(&SocketAddr) -> Result<T, io::Error>,
+	where
+		F: FnMut(&SocketAddr) -> Result<T, io::Error>,
 	{
 		Ok(match address {
-			Some(mut address) => Some(start(&address)
-				.or_else(|e| match e.kind() {
-					io::ErrorKind::AddrInUse |
-					io::ErrorKind::PermissionDenied => {
-						warn!("Unable to bind server to {}. Trying random port.", address);
-						address.set_port(0);
-						start(&address)
-					},
-					_ => Err(e),
-				})?),
+			Some(mut address) => Some(start(&address).or_else(|e| match e.kind() {
+				io::ErrorKind::AddrInUse | io::ErrorKind::PermissionDenied => {
+					warn!("Unable to bind server to {}. Trying random port.", address);
+					address.set_port(0);
+					start(&address)
+				}
+				_ => Err(e),
+			})?),
 			None => None,
 		})
 	}
 
 	Ok(Box::new((
-		maybe_start_server(
-			config.rpc_http,
-			|address| rpc_servers::start_http(address, config.rpc_cors.as_ref(), gen_handler()),
-		)?,
-		maybe_start_server(
-			config.rpc_ws,
-			|address| rpc_servers::start_ws(
+		maybe_start_server(config.rpc_http, |address| {
+			rpc_servers::start_http(address, config.rpc_cors.as_ref(), gen_handler())
+		})?,
+		maybe_start_server(config.rpc_ws, |address| {
+			rpc_servers::start_ws(
 				address,
 				config.rpc_ws_max_connections,
 				config.rpc_cors.as_ref(),
 				gen_handler(),
-			),
-		)?.map(Mutex::new),
+			)
+		})?
+		.map(Mutex::new),
 	)))
 }
 
@@ -543,7 +566,7 @@ fn start_rpc_servers<C, G, E, H: FnMut() -> rpc_servers::RpcHandler<rpc::Metadat
 #[cfg(target_os = "unknown")]
 fn start_rpc_servers<C, G, E, H: FnMut() -> rpc_servers::RpcHandler<rpc::Metadata>>(
 	_: &Configuration<C, G, E>,
-	_: H
+	_: H,
 ) -> Result<Box<dyn std::any::Any + Send + Sync>, error::Error> {
 	Ok(Box::new(()))
 }
@@ -580,10 +603,9 @@ pub struct TransactionPoolAdapter<C, P> {
 /// Get transactions for propagation.
 ///
 /// Function extracted to simplify the test and prevent creating `ServiceFactory`.
-fn transactions_to_propagate<PoolApi, B, H, E>(pool: &TransactionPool<PoolApi>)
-	-> Vec<(H, B::Extrinsic)>
+fn transactions_to_propagate<PoolApi, B, H, E>(pool: &TransactionPool<PoolApi>) -> Vec<(H, B::Extrinsic)>
 where
-	PoolApi: ChainApi<Block=B, Hash=H, Error=E>,
+	PoolApi: ChainApi<Block = B, Hash = H, Error = E>,
 	B: BlockT,
 	H: std::hash::Hash + Eq + sr_primitives::traits::Member + sr_primitives::traits::MaybeSerialize,
 	E: txpool::error::IntoPoolError + From<txpool::error::Error>,
@@ -598,11 +620,10 @@ where
 		.collect()
 }
 
-impl<B, H, C, PoolApi, E> network::TransactionPool<H, B> for
-	TransactionPoolAdapter<C, TransactionPool<PoolApi>>
+impl<B, H, C, PoolApi, E> network::TransactionPool<H, B> for TransactionPoolAdapter<C, TransactionPool<PoolApi>>
 where
 	C: network::ClientHandle<B> + Send + Sync,
-	PoolApi: 'static + ChainApi<Block=B, Hash=H, Error=E>,
+	PoolApi: 'static + ChainApi<Block = B, Hash = H, Error = E>,
 	B: BlockT,
 	H: std::hash::Hash + Eq + sr_primitives::traits::Member + sr_primitives::traits::MaybeSerialize,
 	E: txpool::error::IntoPoolError + From<txpool::error::Error>,
@@ -621,7 +642,7 @@ where
 		who: PeerId,
 		reputation_change_good: i32,
 		reputation_change_bad: i32,
-		transaction: B::Extrinsic
+		transaction: B::Extrinsic,
 	) {
 		if !self.imports_external_transactions {
 			debug!("Transaction rejected");
@@ -644,7 +665,7 @@ where
 									debug!("Error adding transaction to the pool: {:?}", e)
 								}
 								Err(e) => debug!("Error converting pool error: {:?}", e),
-							}
+							},
 						}
 						ready(Ok(()))
 					})
@@ -666,10 +687,13 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use futures03::executor::block_on;
 	use consensus_common::SelectChain;
+	use futures03::executor::block_on;
 	use sr_primitives::traits::BlindCheckable;
-	use substrate_test_runtime_client::{prelude::*, runtime::{Extrinsic, Transfer}};
+	use substrate_test_runtime_client::{
+		prelude::*,
+		runtime::{Extrinsic, Transfer},
+	};
 
 	#[test]
 	fn should_not_propagate_transactions_that_are_marked_as_such() {
@@ -678,7 +702,7 @@ mod tests {
 		let client = Arc::new(client);
 		let pool = Arc::new(TransactionPool::new(
 			Default::default(),
-			transaction_pool::FullChainApi::new(client.clone())
+			transaction_pool::FullChainApi::new(client.clone()),
 		));
 		let best = longest_chain.best_chain().unwrap();
 		let transaction = Transfer {
@@ -686,7 +710,8 @@ mod tests {
 			nonce: 0,
 			from: AccountKeyring::Alice.into(),
 			to: Default::default(),
-		}.into_signed_tx();
+		}
+		.into_signed_tx();
 		block_on(pool.submit_one(&BlockId::hash(best.hash()), transaction.clone())).unwrap();
 		block_on(pool.submit_one(&BlockId::hash(best.hash()), Extrinsic::IncludeData(vec![1]))).unwrap();
 		assert_eq!(pool.status().ready, 2);

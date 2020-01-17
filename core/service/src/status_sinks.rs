@@ -15,8 +15,8 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 use futures::prelude::*;
-use futures::sync::mpsc;
 use futures::stream::futures_unordered::FuturesUnordered;
+use futures::sync::mpsc;
 use std::time::{Duration, Instant};
 use tokio_timer::Delay;
 
@@ -80,9 +80,7 @@ impl<T> StatusSinks<T> {
 						});
 					}
 				}
-				Err(()) |
-				Ok(Async::Ready(None)) |
-				Ok(Async::NotReady) => break,
+				Err(()) | Ok(Async::Ready(None)) | Ok(Async::NotReady) => break,
 			}
 		}
 	}
@@ -96,10 +94,12 @@ impl<T> Future for YieldAfter<T> {
 		match self.delay.poll() {
 			Ok(Async::NotReady) => Ok(Async::NotReady),
 			Ok(Async::Ready(())) => {
-				let sender = self.sender.take()
+				let sender = self
+					.sender
+					.take()
 					.expect("sender is always Some unless the future is finished; qed");
 				Ok(Async::Ready((sender, self.interval)))
-			},
+			}
 			Err(_) => Err(()),
 		}
 	}
@@ -126,7 +126,10 @@ mod tests {
 
 		let mut val_order = 5;
 		runtime.spawn(futures::future::poll_fn(move || {
-			status_sinks.poll(|| { val_order += 1; val_order });
+			status_sinks.poll(|| {
+				val_order += 1;
+				val_order
+			});
 			Ok(Async::NotReady)
 		}));
 

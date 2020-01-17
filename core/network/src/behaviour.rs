@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{
-	debug_info, discovery::DiscoveryBehaviour, discovery::DiscoveryOut, DiscoveryNetBehaviour,
-	protocol::event::DhtEvent
-};
-use crate::{ExHashT, specialization::NetworkSpecialization};
 use crate::protocol::{CustomMessageOutcome, Protocol};
+use crate::{
+	debug_info, discovery::DiscoveryBehaviour, discovery::DiscoveryOut, protocol::event::DhtEvent,
+	DiscoveryNetBehaviour,
+};
+use crate::{specialization::NetworkSpecialization, ExHashT};
 use futures::prelude::*;
-use libp2p::NetworkBehaviour;
+use libp2p::core::{muxing::StreamMuxerBox, nodes::Substream};
 use libp2p::core::{Multiaddr, PeerId, PublicKey};
 use libp2p::kad::record;
 use libp2p::swarm::{NetworkBehaviourAction, NetworkBehaviourEventProcess};
-use libp2p::core::{nodes::Substream, muxing::StreamMuxerBox};
+use libp2p::NetworkBehaviour;
 use log::{debug, warn};
 use sr_primitives::traits::Block as BlockT;
 use std::iter;
@@ -67,12 +67,7 @@ impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> Behaviour<B, S, H> {
 		Behaviour {
 			substrate,
 			debug_info: debug_info::DebugInfoBehaviour::new(user_agent, local_public_key.clone()),
-			discovery: DiscoveryBehaviour::new(
-				local_public_key,
-				known_addresses,
-				enable_mdns,
-				allow_private_ipv4
-			),
+			discovery: DiscoveryBehaviour::new(local_public_key, known_addresses, enable_mdns, allow_private_ipv4),
 			events: Vec::new(),
 		}
 	}
@@ -117,22 +112,25 @@ impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> Behaviour<B, S, H> {
 	}
 }
 
-impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<void::Void> for
-Behaviour<B, S, H> {
+impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<void::Void>
+	for Behaviour<B, S, H>
+{
 	fn inject_event(&mut self, event: void::Void) {
 		void::unreachable(event)
 	}
 }
 
-impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<CustomMessageOutcome<B>> for
-Behaviour<B, S, H> {
+impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<CustomMessageOutcome<B>>
+	for Behaviour<B, S, H>
+{
 	fn inject_event(&mut self, event: CustomMessageOutcome<B>) {
 		self.events.push(BehaviourOut::SubstrateAction(event));
 	}
 }
 
 impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<debug_info::DebugInfoEvent>
-	for Behaviour<B, S, H> {
+	for Behaviour<B, S, H>
+{
 	fn inject_event(&mut self, event: debug_info::DebugInfoEvent) {
 		let debug_info::DebugInfoEvent::Identified { peer_id, mut info } = event;
 		if !info.protocol_version.contains("substrate") {
@@ -153,7 +151,8 @@ impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventPr
 }
 
 impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventProcess<DiscoveryOut>
-	for Behaviour<B, S, H> {
+	for Behaviour<B, S, H>
+{
 	fn inject_event(&mut self, out: DiscoveryOut) {
 		match out {
 			DiscoveryOut::UnroutablePeer(_peer_id) => {
@@ -184,7 +183,7 @@ impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> NetworkBehaviourEventPr
 impl<B: BlockT, S: NetworkSpecialization<B>, H: ExHashT> Behaviour<B, S, H> {
 	fn poll<TEv>(&mut self) -> Async<NetworkBehaviourAction<TEv, BehaviourOut<B>>> {
 		if !self.events.is_empty() {
-			return Async::Ready(NetworkBehaviourAction::GenerateEvent(self.events.remove(0)))
+			return Async::Ready(NetworkBehaviourAction::GenerateEvent(self.events.remove(0)));
 		}
 
 		Async::NotReady

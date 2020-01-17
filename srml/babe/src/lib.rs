@@ -22,26 +22,25 @@
 #![deny(unused_imports)]
 pub use timestamp;
 
-use rstd::{result, prelude::*};
-use support::{decl_storage, decl_module, traits::FindAuthor, traits::Get};
-use timestamp::OnTimestampSet;
-use sr_primitives::{generic::DigestItem, ConsensusEngineId, Perbill};
-use sr_primitives::traits::{IsMember, SaturatedConversion, Saturating, RandomnessBeacon};
-use sr_staking_primitives::{
-	SessionIndex,
-	offence::{Offence, Kind},
+pub use babe_primitives::{AuthorityId, PUBLIC_KEY_LENGTH, VRF_OUTPUT_LENGTH};
+use babe_primitives::{
+	BabeAuthorityWeight, ConsensusLog, NextEpochDescriptor, RawBabePreDigest, SlotNumber, BABE_ENGINE_ID,
 };
-#[cfg(feature = "std")]
-use timestamp::TimestampInherentData;
-use codec::{Encode, Decode};
-use inherents::{InherentIdentifier, InherentData, ProvideInherent, MakeFatalError};
+use codec::{Decode, Encode};
+use inherents::{InherentData, InherentIdentifier, MakeFatalError, ProvideInherent};
 #[cfg(feature = "std")]
 use inherents::{InherentDataProviders, ProvideInherentData};
-use babe_primitives::{
-	BABE_ENGINE_ID, ConsensusLog, BabeAuthorityWeight, NextEpochDescriptor, RawBabePreDigest,
-	SlotNumber,
+use rstd::{prelude::*, result};
+use sr_primitives::traits::{IsMember, RandomnessBeacon, SaturatedConversion, Saturating};
+use sr_primitives::{generic::DigestItem, ConsensusEngineId, Perbill};
+use sr_staking_primitives::{
+	offence::{Kind, Offence},
+	SessionIndex,
 };
-pub use babe_primitives::{AuthorityId, VRF_OUTPUT_LENGTH, PUBLIC_KEY_LENGTH};
+use support::{decl_module, decl_storage, traits::FindAuthor, traits::Get};
+use timestamp::OnTimestampSet;
+#[cfg(feature = "std")]
+use timestamp::TimestampInherentData;
 
 #[cfg(all(feature = "std", test))]
 mod tests;
@@ -83,18 +82,13 @@ pub struct InherentDataProvider {
 impl InherentDataProvider {
 	/// Constructs `Self`
 	pub fn new(slot_duration: u64) -> Self {
-		Self {
-			slot_duration
-		}
+		Self { slot_duration }
 	}
 }
 
 #[cfg(feature = "std")]
 impl ProvideInherentData for InherentDataProvider {
-	fn on_register(
-		&self,
-		providers: &InherentDataProviders,
-	) -> result::Result<(), inherents::Error> {
+	fn on_register(&self, providers: &InherentDataProviders) -> result::Result<(), inherents::Error> {
 		if !providers.has_provider(&timestamp::INHERENT_IDENTIFIER) {
 			// Add the timestamp inherent data provider, as we require it.
 			providers.register_provider(timestamp::InherentDataProvider)
@@ -107,10 +101,7 @@ impl ProvideInherentData for InherentDataProvider {
 		&INHERENT_IDENTIFIER
 	}
 
-	fn provide_inherent_data(
-		&self,
-		inherent_data: &mut InherentData,
-	) -> result::Result<(), inherents::Error> {
+	fn provide_inherent_data(&self, inherent_data: &mut InherentData) -> result::Result<(), inherents::Error> {
 		let timestamp = inherent_data.timestamp_inherent_data()?;
 		let slot_number = timestamp / self.slot_duration;
 		inherent_data.put_data(INHERENT_IDENTIFIER, &slot_number)
@@ -152,7 +143,7 @@ pub trait EpochChangeTrigger {
 pub struct ExternalTrigger;
 
 impl EpochChangeTrigger for ExternalTrigger {
-	fn trigger<T: Trait>(_: T::BlockNumber) { } // nothing - trigger is external.
+	fn trigger<T: Trait>(_: T::BlockNumber) {} // nothing - trigger is external.
 }
 
 /// A type signifying to BABE that it should perform epoch changes
@@ -175,7 +166,7 @@ pub const RANDOMNESS_LENGTH: usize = 32;
 
 const UNDER_CONSTRUCTION_SEGMENT_LENGTH: usize = 256;
 
-type MaybeVrf = Option<[u8; 32 /* VRF_OUTPUT_LENGTH */]>;
+type MaybeVrf = Option<[u8; 32]>;
 
 decl_storage! {
 	trait Store for Module<T: Trait> as Babe {
@@ -275,17 +266,16 @@ impl<T: Trait> RandomnessBeacon for Module<T> {
 pub type BabeKey = [u8; PUBLIC_KEY_LENGTH];
 
 impl<T: Trait> FindAuthor<u32> for Module<T> {
-	fn find_author<'a, I>(digests: I) -> Option<u32> where
-		I: 'a + IntoIterator<Item=(ConsensusEngineId, &'a [u8])>
+	fn find_author<'a, I>(digests: I) -> Option<u32>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
 		for (id, mut data) in digests.into_iter() {
 			if id == BABE_ENGINE_ID {
 				let pre_digest = RawBabePreDigest::decode(&mut data).ok()?;
 				return Some(match pre_digest {
-					RawBabePreDigest::Primary { authority_index, .. } =>
-						authority_index,
-					RawBabePreDigest::Secondary { authority_index, .. } =>
-						authority_index,
+					RawBabePreDigest::Primary { authority_index, .. } => authority_index,
+					RawBabePreDigest::Secondary { authority_index, .. } => authority_index,
 				});
 			}
 		}
@@ -296,9 +286,7 @@ impl<T: Trait> FindAuthor<u32> for Module<T> {
 
 impl<T: Trait> IsMember<AuthorityId> for Module<T> {
 	fn is_member(authority_id: &AuthorityId) -> bool {
-		<Module<T>>::authorities()
-			.iter()
-			.any(|id| &id.0 == authority_id)
+		<Module<T>>::authorities().iter().any(|id| &id.0 == authority_id)
 	}
 }
 
@@ -350,10 +338,7 @@ impl<FullIdentification: Clone> Offence<FullIdentification> for BabeEquivocation
 		self.slot
 	}
 
-	fn slash_fraction(
-		offenders_count: u32,
-		validator_set_count: u32,
-	) -> Perbill {
+	fn slash_fraction(offenders_count: u32, validator_set_count: u32) -> Perbill {
 		// the formula is min((3k / n)^2, 1)
 		let x = Perbill::from_rational_approximation(3 * offenders_count, validator_set_count);
 		// _ ^ 2
@@ -471,10 +456,12 @@ impl<T: Trait> Module<T> {
 			.logs
 			.iter()
 			.filter_map(|s| s.as_pre_runtime())
-			.filter_map(|(id, mut data)| if id == BABE_ENGINE_ID {
-				RawBabePreDigest::decode(&mut data).ok()
-			} else {
-				None
+			.filter_map(|(id, mut data)| {
+				if id == BABE_ENGINE_ID {
+					RawBabePreDigest::decode(&mut data).ok()
+				} else {
+					None
+				}
 			})
 			.next();
 
@@ -543,7 +530,7 @@ impl<T: Trait> Module<T> {
 }
 
 impl<T: Trait> OnTimestampSet<T::Moment> for Module<T> {
-	fn on_timestamp_set(_moment: T::Moment) { }
+	fn on_timestamp_set(_moment: T::Moment) {}
 }
 
 impl<T: Trait> sr_primitives::BoundToRuntimeAppPublic for Module<T> {
@@ -554,22 +541,20 @@ impl<T: Trait> session::OneSessionHandler<T::AccountId> for Module<T> {
 	type Key = AuthorityId;
 
 	fn on_genesis_session<'a, I: 'a>(validators: I)
-		where I: Iterator<Item=(&'a T::AccountId, AuthorityId)>
+	where
+		I: Iterator<Item = (&'a T::AccountId, AuthorityId)>,
 	{
 		let authorities = validators.map(|(_, k)| (k, 1)).collect::<Vec<_>>();
 		Self::initialize_authorities(&authorities);
 	}
 
 	fn on_new_session<'a, I: 'a>(_changed: bool, validators: I, queued_validators: I)
-		where I: Iterator<Item=(&'a T::AccountId, AuthorityId)>
+	where
+		I: Iterator<Item = (&'a T::AccountId, AuthorityId)>,
 	{
-		let authorities = validators.map(|(_account, k)| {
-			(k, 1)
-		}).collect::<Vec<_>>();
+		let authorities = validators.map(|(_account, k)| (k, 1)).collect::<Vec<_>>();
 
-		let next_authorities = queued_validators.map(|(_account, k)| {
-			(k, 1)
-		}).collect::<Vec<_>>();
+		let next_authorities = queued_validators.map(|(_account, k)| (k, 1)).collect::<Vec<_>>();
 
 		Self::enact_epoch_change(authorities, next_authorities)
 	}
@@ -586,7 +571,7 @@ impl<T: Trait> session::OneSessionHandler<T::AccountId> for Module<T> {
 fn compute_randomness(
 	last_epoch_randomness: [u8; RANDOMNESS_LENGTH],
 	epoch_index: u64,
-	rho: impl Iterator<Item=[u8; VRF_OUTPUT_LENGTH]>,
+	rho: impl Iterator<Item = [u8; VRF_OUTPUT_LENGTH]>,
 	rho_size_hint: Option<usize>,
 ) -> [u8; RANDOMNESS_LENGTH] {
 	let mut s = Vec::with_capacity(40 + rho_size_hint.unwrap_or(0) * VRF_OUTPUT_LENGTH);

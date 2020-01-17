@@ -16,17 +16,17 @@
 
 //! Network packet message types. These get serialized and put into the lower level protocol payload.
 
-use bitflags::bitflags;
-use sr_primitives::{ConsensusEngineId, traits::{Block as BlockT, Header as HeaderT}};
-use codec::{Encode, Decode, Input, Output, Error};
 pub use self::generic::{
-	BlockAnnounce, RemoteCallRequest, RemoteReadRequest,
-	RemoteHeaderRequest, RemoteHeaderResponse,
-	RemoteChangesRequest, RemoteChangesResponse,
-	FinalityProofRequest, FinalityProofResponse,
-	FromBlock, RemoteReadChildRequest,
+	BlockAnnounce, FinalityProofRequest, FinalityProofResponse, FromBlock, RemoteCallRequest, RemoteChangesRequest,
+	RemoteChangesResponse, RemoteHeaderRequest, RemoteHeaderResponse, RemoteReadChildRequest, RemoteReadRequest,
 };
+use bitflags::bitflags;
 use client::light::fetcher::StorageProof;
+use codec::{Decode, Encode, Error, Input, Output};
+use sr_primitives::{
+	traits::{Block as BlockT, Header as HeaderT},
+	ConsensusEngineId,
+};
 
 /// A unique ID of a request.
 pub type RequestId = u64;
@@ -40,30 +40,17 @@ pub type Message<B> = generic::Message<
 >;
 
 /// Type alias for using the status type using block type parameters.
-pub type Status<B> = generic::Status<
-	<B as BlockT>::Hash,
-	<<B as BlockT>::Header as HeaderT>::Number,
->;
+pub type Status<B> = generic::Status<<B as BlockT>::Hash, <<B as BlockT>::Header as HeaderT>::Number>;
 
 /// Type alias for using the block request type using block type parameters.
-pub type BlockRequest<B> = generic::BlockRequest<
-	<B as BlockT>::Hash,
-	<<B as BlockT>::Header as HeaderT>::Number,
->;
+pub type BlockRequest<B> = generic::BlockRequest<<B as BlockT>::Hash, <<B as BlockT>::Header as HeaderT>::Number>;
 
 /// Type alias for using the BlockData type using block type parameters.
-pub type BlockData<B> = generic::BlockData<
-	<B as BlockT>::Header,
-	<B as BlockT>::Hash,
-	<B as BlockT>::Extrinsic,
->;
+pub type BlockData<B> = generic::BlockData<<B as BlockT>::Header, <B as BlockT>::Hash, <B as BlockT>::Extrinsic>;
 
 /// Type alias for using the BlockResponse type using block type parameters.
-pub type BlockResponse<B> = generic::BlockResponse<
-	<B as BlockT>::Header,
-	<B as BlockT>::Hash,
-	<B as BlockT>::Extrinsic,
->;
+pub type BlockResponse<B> =
+	generic::BlockResponse<<B as BlockT>::Header, <B as BlockT>::Hash, <B as BlockT>::Extrinsic>;
 
 /// A set of transactions.
 pub type Transactions<E> = Vec<E>;
@@ -137,14 +124,13 @@ pub struct RemoteReadResponse {
 
 /// Generic types.
 pub mod generic {
-	use codec::{Encode, Decode, Input, Output};
-	use sr_primitives::Justification;
-	use crate::config::Roles;
 	use super::{
-		RemoteReadResponse, Transactions, Direction,
-		RequestId, BlockAttributes, RemoteCallResponse, ConsensusEngineId,
-		BlockState, StorageProof,
+		BlockAttributes, BlockState, ConsensusEngineId, Direction, RemoteCallResponse, RemoteReadResponse, RequestId,
+		StorageProof, Transactions,
 	};
+	use crate::config::Roles;
+	use codec::{Decode, Encode, Input, Output};
+	use sr_primitives::Justification;
 	/// Consensus is mostly opaque to us
 	#[derive(Debug, PartialEq, Eq, Clone, Encode, Decode)]
 	pub struct ConsensusMessage {
@@ -327,11 +313,7 @@ pub mod generic {
 			let header = H::decode(input)?;
 			let state = BlockState::decode(input).ok();
 			let data = Vec::decode(input).ok();
-			Ok(BlockAnnounce {
-				header,
-				state,
-				data,
-			})
+			Ok(BlockAnnounce { header, state, data })
 		}
 	}
 

@@ -46,24 +46,24 @@
 //!
 
 use futures::prelude::*;
-use futures_timer::Delay;
 use futures03::{compat::Compat, TryFutureExt as _};
+use futures_timer::Delay;
+#[cfg(not(target_os = "unknown"))]
+use libp2p::core::{muxing::StreamMuxerBox, nodes::Substream};
 use libp2p::core::{ConnectedPoint, Multiaddr, PeerId, PublicKey};
-use libp2p::swarm::{ProtocolsHandler, NetworkBehaviour, NetworkBehaviourAction, PollParameters};
-use libp2p::kad::{Kademlia, KademliaEvent, Quorum, Record};
-use libp2p::kad::GetClosestPeersError;
 use libp2p::kad::record::{self, store::MemoryStore};
-#[cfg(not(target_os = "unknown"))]
-use libp2p::{swarm::toggle::Toggle};
-#[cfg(not(target_os = "unknown"))]
-use libp2p::core::{nodes::Substream, muxing::StreamMuxerBox};
+use libp2p::kad::GetClosestPeersError;
+use libp2p::kad::{Kademlia, KademliaEvent, Quorum, Record};
 #[cfg(not(target_os = "unknown"))]
 use libp2p::mdns::{Mdns, MdnsEvent};
 use libp2p::multiaddr::Protocol;
+#[cfg(not(target_os = "unknown"))]
+use libp2p::swarm::toggle::Toggle;
+use libp2p::swarm::{NetworkBehaviour, NetworkBehaviourAction, PollParameters, ProtocolsHandler};
 use log::{debug, info, trace, warn};
+use primitives::hexdisplay::HexDisplay;
 use std::{cmp, collections::VecDeque, time::Duration};
 use tokio_io::{AsyncRead, AsyncWrite};
-use primitives::hexdisplay::HexDisplay;
 
 /// Implementation of `NetworkBehaviour` that discovers the nodes on the network.
 pub struct DiscoveryBehaviour<TSubstream> {
@@ -216,7 +216,9 @@ where
 	}
 
 	fn addresses_of_peer(&mut self, peer_id: &PeerId) -> Vec<Multiaddr> {
-		let mut list = self.user_defined.iter()
+		let mut list = self
+			.user_defined
+			.iter()
 			.filter_map(|(p, a)| if p == peer_id { Some(a.clone()) } else { None })
 			.collect::<Vec<_>>();
 
@@ -267,17 +269,12 @@ where
 		NetworkBehaviour::inject_replaced(&mut self.kademlia, peer_id, closed, opened)
 	}
 
-	fn inject_node_event(
-		&mut self,
-		peer_id: PeerId,
-		event: <Self::ProtocolsHandler as ProtocolsHandler>::OutEvent,
-	) {
+	fn inject_node_event(&mut self, peer_id: PeerId, event: <Self::ProtocolsHandler as ProtocolsHandler>::OutEvent) {
 		NetworkBehaviour::inject_node_event(&mut self.kademlia, peer_id, event)
 	}
 
 	fn inject_new_external_addr(&mut self, addr: &Multiaddr) {
-		let new_addr = addr.clone()
-			.with(Protocol::P2p(self.local_peer_id.clone().into()));
+		let new_addr = addr.clone().with(Protocol::P2p(self.local_peer_id.clone().into()));
 		info!(target: "sub-libp2p", "Discovered new external address for our node: {}", new_addr);
 	}
 
@@ -288,12 +285,7 @@ where
 	fn poll(
 		&mut self,
 		params: &mut impl PollParameters,
-	) -> Async<
-		NetworkBehaviourAction<
-			<Self::ProtocolsHandler as ProtocolsHandler>::InEvent,
-			Self::OutEvent,
-		>,
-	> {
+	) -> Async<NetworkBehaviourAction<<Self::ProtocolsHandler as ProtocolsHandler>::InEvent, Self::OutEvent>> {
 		// Immediately process the content of `discovered`.
 		if let Some(peer_id) = self.discoveries.pop_front() {
 			let ev = DiscoveryOut::Discovered(peer_id);
@@ -314,12 +306,11 @@ where
 					// Schedule the next random query with exponentially increasing delay,
 					// capped at 60 seconds.
 					self.next_kad_random_query = Delay::new(self.duration_to_next_kad).compat();
-					self.duration_to_next_kad = cmp::min(self.duration_to_next_kad * 2,
-						Duration::from_secs(60));
-				},
+					self.duration_to_next_kad = cmp::min(self.duration_to_next_kad * 2, Duration::from_secs(60));
+				}
 				Err(err) => {
 					warn!(target: "sub-libp2p", "Kademlia query timer errored: {:?}", err);
-					break
+					break;
 				}
 			}
 		}
@@ -337,75 +328,66 @@ where
 						let ev = DiscoveryOut::Discovered(peer);
 						return Async::Ready(NetworkBehaviourAction::GenerateEvent(ev));
 					}
-					KademliaEvent::GetClosestPeersResult(res) => {
-						match res {
-							Err(GetClosestPeersError::Timeout { key, peers }) => {
-								debug!(target: "sub-libp2p",
+					KademliaEvent::GetClosestPeersResult(res) => match res {
+						Err(GetClosestPeersError::Timeout { key, peers }) => {
+							debug!(target: "sub-libp2p",
 									"Libp2p => Query for {:?} timed out with {} results",
 									HexDisplay::from(&key), peers.len());
-							},
-							Ok(ok) => {
-								trace!(target: "sub-libp2p",
+						}
+						Ok(ok) => {
+							trace!(target: "sub-libp2p",
 									"Libp2p => Query for {:?} yielded {:?} results",
 									HexDisplay::from(&ok.key), ok.peers.len());
-								if ok.peers.is_empty() && self.num_connections != 0 {
-									debug!(target: "sub-libp2p", "Libp2p => Random Kademlia query has yielded empty \
+							if ok.peers.is_empty() && self.num_connections != 0 {
+								debug!(target: "sub-libp2p", "Libp2p => Random Kademlia query has yielded empty \
 										results");
-								}
 							}
 						}
-					}
+					},
 					KademliaEvent::GetRecordResult(res) => {
 						let ev = match res {
 							Ok(ok) => {
-								let results = ok.records
-									.into_iter()
-									.map(|r| (r.key, r.value))
-									.collect();
+								let results = ok.records.into_iter().map(|r| (r.key, r.value)).collect();
 
 								DiscoveryOut::ValueFound(results)
 							}
-							Err(e) => {
-								DiscoveryOut::ValueNotFound(e.into_key())
-							}
+							Err(e) => DiscoveryOut::ValueNotFound(e.into_key()),
 						};
 						return Async::Ready(NetworkBehaviourAction::GenerateEvent(ev));
 					}
 					KademliaEvent::PutRecordResult(res) => {
 						let ev = match res {
 							Ok(ok) => DiscoveryOut::ValuePut(ok.key),
-							Err(e) => {
-								DiscoveryOut::ValuePutFailed(e.into_key())
-							}
+							Err(e) => DiscoveryOut::ValuePutFailed(e.into_key()),
 						};
 						return Async::Ready(NetworkBehaviourAction::GenerateEvent(ev));
 					}
-					KademliaEvent::RepublishRecordResult(res) => {
-						match res {
-							Ok(ok) => debug!(target: "sub-libp2p",
+					KademliaEvent::RepublishRecordResult(res) => match res {
+						Ok(ok) => debug!(target: "sub-libp2p",
 								"Libp2p => Record republished: {:?}",
 								ok.key),
-							Err(e) => warn!(target: "sub-libp2p",
+						Err(e) => warn!(target: "sub-libp2p",
 								"Libp2p => Republishing of record {:?} failed with: {:?}",
-								e.key(), e)
-						}
-					}
+								e.key(), e),
+					},
 					KademliaEvent::Discovered { .. } => {
 						// We are not interested in these events at the moment.
 					}
 					// We never start any other type of query.
-					e => {
-						warn!(target: "sub-libp2p", "Libp2p => Unhandled Kademlia event: {:?}", e)
-					}
+					e => warn!(target: "sub-libp2p", "Libp2p => Unhandled Kademlia event: {:?}", e),
 				},
-				Async::Ready(NetworkBehaviourAction::DialAddress { address }) =>
-					return Async::Ready(NetworkBehaviourAction::DialAddress { address }),
-				Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }) =>
-					return Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }),
-				Async::Ready(NetworkBehaviourAction::SendEvent { peer_id, event }) =>
-					return Async::Ready(NetworkBehaviourAction::SendEvent { peer_id, event }),
-				Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }) =>
-					return Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }),
+				Async::Ready(NetworkBehaviourAction::DialAddress { address }) => {
+					return Async::Ready(NetworkBehaviourAction::DialAddress { address })
+				}
+				Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }) => {
+					return Async::Ready(NetworkBehaviourAction::DialPeer { peer_id })
+				}
+				Async::Ready(NetworkBehaviourAction::SendEvent { peer_id, event }) => {
+					return Async::Ready(NetworkBehaviourAction::SendEvent { peer_id, event })
+				}
+				Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }) => {
+					return Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address })
+				}
 			}
 		}
 
@@ -414,26 +396,26 @@ where
 		loop {
 			match self.mdns.poll(params) {
 				Async::NotReady => break,
-				Async::Ready(NetworkBehaviourAction::GenerateEvent(event)) => {
-					match event {
-						MdnsEvent::Discovered(list) => {
-							self.discoveries.extend(list.into_iter().map(|(peer_id, _)| peer_id));
-							if let Some(peer_id) = self.discoveries.pop_front() {
-								let ev = DiscoveryOut::Discovered(peer_id);
-								return Async::Ready(NetworkBehaviourAction::GenerateEvent(ev));
-							}
-						},
-						MdnsEvent::Expired(_) => {}
+				Async::Ready(NetworkBehaviourAction::GenerateEvent(event)) => match event {
+					MdnsEvent::Discovered(list) => {
+						self.discoveries.extend(list.into_iter().map(|(peer_id, _)| peer_id));
+						if let Some(peer_id) = self.discoveries.pop_front() {
+							let ev = DiscoveryOut::Discovered(peer_id);
+							return Async::Ready(NetworkBehaviourAction::GenerateEvent(ev));
+						}
 					}
+					MdnsEvent::Expired(_) => {}
 				},
-				Async::Ready(NetworkBehaviourAction::DialAddress { address }) =>
-					return Async::Ready(NetworkBehaviourAction::DialAddress { address }),
-				Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }) =>
-					return Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }),
-				Async::Ready(NetworkBehaviourAction::SendEvent { event, .. }) =>
-					match event {},		// `event` is an enum with no variant
-				Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }) =>
-					return Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }),
+				Async::Ready(NetworkBehaviourAction::DialAddress { address }) => {
+					return Async::Ready(NetworkBehaviourAction::DialAddress { address })
+				}
+				Async::Ready(NetworkBehaviourAction::DialPeer { peer_id }) => {
+					return Async::Ready(NetworkBehaviourAction::DialPeer { peer_id })
+				}
+				Async::Ready(NetworkBehaviourAction::SendEvent { event, .. }) => match event {}, // `event` is an enum with no variant
+				Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address }) => {
+					return Async::Ready(NetworkBehaviourAction::ReportObservedAddr { address })
+				}
 			}
 		}
 
@@ -443,61 +425,61 @@ where
 
 #[cfg(test)]
 mod tests {
-	use futures::prelude::*;
-	use libp2p::identity::Keypair;
-	use libp2p::Multiaddr;
-	use libp2p::core::upgrade;
-	use libp2p::core::transport::{Transport, MemoryTransport};
-	use libp2p::core::upgrade::{InboundUpgradeExt, OutboundUpgradeExt};
-	use libp2p::swarm::Swarm;
-	use std::collections::HashSet;
 	use super::{DiscoveryBehaviour, DiscoveryOut};
+	use futures::prelude::*;
+	use libp2p::core::transport::{MemoryTransport, Transport};
+	use libp2p::core::upgrade;
+	use libp2p::core::upgrade::{InboundUpgradeExt, OutboundUpgradeExt};
+	use libp2p::identity::Keypair;
+	use libp2p::swarm::Swarm;
+	use libp2p::Multiaddr;
+	use std::collections::HashSet;
 
 	#[test]
 	fn discovery_working() {
 		let mut user_defined = Vec::new();
 
 		// Build swarms whose behaviour is `DiscoveryBehaviour`.
-		let mut swarms = (0..25).map(|_| {
-			let keypair = Keypair::generate_ed25519();
-			let keypair2 = keypair.clone();
+		let mut swarms = (0..25)
+			.map(|_| {
+				let keypair = Keypair::generate_ed25519();
+				let keypair2 = keypair.clone();
 
-			let transport = MemoryTransport
-				.and_then(move |out, endpoint| {
-					let secio = libp2p::secio::SecioConfig::new(keypair2);
-					libp2p::core::upgrade::apply(
-						out,
-						secio,
-						endpoint,
-						libp2p::core::upgrade::Version::V1
-					)
-				})
-				.and_then(move |(peer_id, stream), endpoint| {
-					let peer_id2 = peer_id.clone();
-					let upgrade = libp2p::yamux::Config::default()
-						.map_inbound(move |muxer| (peer_id, muxer))
-						.map_outbound(move |muxer| (peer_id2, muxer));
-					upgrade::apply(stream, upgrade, endpoint, libp2p::core::upgrade::Version::V1)
-				});
+				let transport = MemoryTransport
+					.and_then(move |out, endpoint| {
+						let secio = libp2p::secio::SecioConfig::new(keypair2);
+						libp2p::core::upgrade::apply(out, secio, endpoint, libp2p::core::upgrade::Version::V1)
+					})
+					.and_then(move |(peer_id, stream), endpoint| {
+						let peer_id2 = peer_id.clone();
+						let upgrade = libp2p::yamux::Config::default()
+							.map_inbound(move |muxer| (peer_id, muxer))
+							.map_outbound(move |muxer| (peer_id2, muxer));
+						upgrade::apply(stream, upgrade, endpoint, libp2p::core::upgrade::Version::V1)
+					});
 
-			let behaviour = DiscoveryBehaviour::new(keypair.public(), user_defined.clone(), false, true);
-			let mut swarm = Swarm::new(transport, behaviour, keypair.public().into_peer_id());
-			let listen_addr: Multiaddr = format!("/memory/{}", rand::random::<u64>()).parse().unwrap();
+				let behaviour = DiscoveryBehaviour::new(keypair.public(), user_defined.clone(), false, true);
+				let mut swarm = Swarm::new(transport, behaviour, keypair.public().into_peer_id());
+				let listen_addr: Multiaddr = format!("/memory/{}", rand::random::<u64>()).parse().unwrap();
 
-			if user_defined.is_empty() {
-				user_defined.push((keypair.public().into_peer_id(), listen_addr.clone()));
-			}
+				if user_defined.is_empty() {
+					user_defined.push((keypair.public().into_peer_id(), listen_addr.clone()));
+				}
 
-			Swarm::listen_on(&mut swarm, listen_addr.clone()).unwrap();
-			(swarm, listen_addr)
-		}).collect::<Vec<_>>();
+				Swarm::listen_on(&mut swarm, listen_addr.clone()).unwrap();
+				(swarm, listen_addr)
+			})
+			.collect::<Vec<_>>();
 
 		// Build a `Vec<HashSet<PeerId>>` with the list of nodes remaining to be discovered.
-		let mut to_discover = (0..swarms.len()).map(|n| {
-			(0..swarms.len()).filter(|p| *p != n)
-				.map(|p| Swarm::local_peer_id(&swarms[p].0).clone())
-				.collect::<HashSet<_>>()
-		}).collect::<Vec<_>>();
+		let mut to_discover = (0..swarms.len())
+			.map(|n| {
+				(0..swarms.len())
+					.filter(|p| *p != n)
+					.map(|p| Swarm::local_peer_id(&swarms[p].0).clone())
+					.collect::<HashSet<_>>()
+			})
+			.collect::<Vec<_>>();
 
 		let fut = futures::future::poll_fn::<_, (), _>(move || {
 			'polling: loop {
@@ -507,26 +489,29 @@ mod tests {
 							match e {
 								DiscoveryOut::UnroutablePeer(other) => {
 									// Call `add_self_reported_address` to simulate identify happening.
-									let addr = swarms.iter().find_map(|(s, a)|
-										if s.local_peer_id == other {
-											Some(a.clone())
-										} else {
-											None
+									let addr = swarms
+										.iter()
+										.find_map(|(s, a)| {
+											if s.local_peer_id == other {
+												Some(a.clone())
+											} else {
+												None
+											}
 										})
 										.unwrap();
 									swarms[swarm_n].0.add_self_reported_address(&other, addr);
-								},
+								}
 								DiscoveryOut::Discovered(other) => {
 									to_discover[swarm_n].remove(&other);
 								}
 								_ => {}
 							}
-							continue 'polling
+							continue 'polling;
 						}
 						_ => {}
 					}
 				}
-				break
+				break;
 			}
 
 			if to_discover.iter().all(|l| l.is_empty()) {

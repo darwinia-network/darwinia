@@ -21,12 +21,12 @@ pub use client_db::{kvdb::KeyValueDB, PruningMode};
 pub use network::config::{ExtTransport, NetworkConfiguration, Roles};
 pub use substrate_executor::WasmExecutionMethod;
 
-use std::{path::PathBuf, net::SocketAddr, sync::Arc};
-use transaction_pool;
-use chain_spec::{ChainSpec, RuntimeGenesis, Extension, NoExtension};
+use chain_spec::{ChainSpec, Extension, NoExtension, RuntimeGenesis};
 use primitives::crypto::Protected;
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use target_info::Target;
 use tel::TelemetryEndpoints;
+use transaction_pool;
 
 /// Service configuration.
 #[derive(Clone)]
@@ -115,7 +115,8 @@ pub enum DatabaseConfig {
 	Custom(Arc<dyn KeyValueDB>),
 }
 
-impl<C, G, E> Configuration<C, G, E> where
+impl<C, G, E> Configuration<C, G, E>
+where
 	C: Default,
 	G: RuntimeGenesis,
 	E: Extension,
@@ -163,7 +164,6 @@ impl<C, G, E> Configuration<C, G, E> where
 
 		configuration
 	}
-
 }
 
 impl<C, G, E> Configuration<C, G, E> {

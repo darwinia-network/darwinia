@@ -17,17 +17,20 @@
 //! Test utilities
 #![allow(dead_code, unused_imports)]
 
-use super::{Trait, Module, GenesisConfig};
+use super::{GenesisConfig, Module, Trait};
 use babe_primitives::AuthorityId;
+use primitives::{Blake2Hasher, H256};
+use runtime_io;
 use sr_primitives::{
-	traits::IdentityLookup, Perbill, testing::{Header, UintAuthorityId}, impl_opaque_keys,
+	impl_opaque_keys,
+	testing::{Header, UintAuthorityId},
+	traits::IdentityLookup,
+	Perbill,
 };
 use sr_version::RuntimeVersion;
 use support::{impl_outer_origin, parameter_types};
-use runtime_io;
-use primitives::{H256, Blake2Hasher};
 
-impl_outer_origin!{
+impl_outer_origin! {
 	pub enum Origin for Test {}
 }
 
@@ -77,7 +80,7 @@ impl session::Trait for Test {
 	type Event = ();
 	type ValidatorId = <Self as system::Trait>::AccountId;
 	type ShouldEndSession = Babe;
-	type SessionHandler = (Babe,Babe,);
+	type SessionHandler = (Babe, Babe);
 	type OnSessionEnding = ();
 	type ValidatorIdOf = ();
 	type SelectInitialValidators = ();
@@ -100,8 +103,13 @@ impl Trait for Test {
 pub fn new_test_ext(authorities: Vec<DummyValidatorId>) -> runtime_io::TestExternalities {
 	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	GenesisConfig {
-		authorities: authorities.into_iter().map(|a| (UintAuthorityId(a).to_public_key(), 1)).collect(),
-	}.assimilate_storage::<Test>(&mut t).unwrap();
+		authorities: authorities
+			.into_iter()
+			.map(|a| (UintAuthorityId(a).to_public_key(), 1))
+			.collect(),
+	}
+	.assimilate_storage::<Test>(&mut t)
+	.unwrap();
 	t.into()
 }
 

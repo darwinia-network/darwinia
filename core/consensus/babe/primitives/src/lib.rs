@@ -21,13 +21,13 @@
 
 mod digest;
 
-use codec::{Encode, Decode};
+use codec::{Decode, Encode};
 use rstd::vec::Vec;
 use sr_primitives::{ConsensusEngineId, RuntimeDebug};
 
 #[cfg(feature = "std")]
 pub use digest::{BabePreDigest, CompatibleDigestItem};
-pub use digest::{BABE_VRF_PREFIX, RawBabePreDigest, NextEpochDescriptor};
+pub use digest::{NextEpochDescriptor, RawBabePreDigest, BABE_VRF_PREFIX};
 
 mod app {
 	use app_crypto::{app_crypto, key_types::BABE, sr25519};

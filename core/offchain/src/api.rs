@@ -14,25 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{
-	str::FromStr,
-	sync::Arc,
-	convert::TryFrom,
-	thread::sleep,
-};
+use std::{convert::TryFrom, str::FromStr, sync::Arc, thread::sleep};
 
 use client::backend::OffchainStorage;
-use futures::{StreamExt as _, Future, FutureExt as _, future, channel::mpsc};
-use log::{info, debug, warn, error};
-use network::{PeerId, Multiaddr, NetworkStateInfo};
-use codec::{Encode, Decode};
-use primitives::offchain::{
-	Externalities as OffchainExt, HttpRequestId, Timestamp, HttpRequestStatus, HttpError,
-	OpaqueNetworkState, OpaquePeerId, OpaqueMultiaddr, StorageKind,
-};
+use codec::{Decode, Encode};
+use futures::{channel::mpsc, future, Future, FutureExt as _, StreamExt as _};
+use log::{debug, error, info, warn};
+use network::{Multiaddr, NetworkStateInfo, PeerId};
 pub use offchain_primitives::STORAGE_PREFIX;
-use sr_primitives::{generic::BlockId, traits::{self, Extrinsic}};
-use transaction_pool::txpool::{Pool, ChainApi};
+use primitives::offchain::{
+	Externalities as OffchainExt, HttpError, HttpRequestId, HttpRequestStatus, OpaqueMultiaddr, OpaqueNetworkState,
+	OpaquePeerId, StorageKind, Timestamp,
+};
+use sr_primitives::{
+	generic::BlockId,
+	traits::{self, Extrinsic},
+};
+use transaction_pool::txpool::{ChainApi, Pool};
 
 #[cfg(not(target_os = "unknown"))]
 mod http;
@@ -66,7 +64,8 @@ pub(crate) struct Api<Storage, Block: traits::Block> {
 fn unavailable_yet<R: Default>(name: &str) -> R {
 	error!(
 		"The {:?} API is not available for offchain workers yet. Follow \
-		https://github.com/paritytech/substrate/issues/1458 for details", name
+		https://github.com/paritytech/substrate/issues/1458 for details",
+		name
 	);
 	Default::default()
 }
@@ -92,10 +91,7 @@ where
 	fn network_state(&self) -> Result<OpaqueNetworkState, ()> {
 		let external_addresses = self.network_state.external_addresses();
 
-		let state = NetworkState::new(
-			self.network_state.peer_id(),
-			external_addresses,
-		);
+		let state = NetworkState::new(self.network_state.peer_id(), external_addresses);
 		Ok(OpaqueNetworkState::from(state))
 	}
 
@@ -126,9 +122,7 @@ where
 		new_value: &[u8],
 	) -> bool {
 		match kind {
-			StorageKind::PERSISTENT => {
-				self.db.compare_and_set(STORAGE_PREFIX, key, old_value, new_value)
-			},
+			StorageKind::PERSISTENT => self.db.compare_and_set(STORAGE_PREFIX, key, old_value, new_value),
 			StorageKind::LOCAL => unavailable_yet(LOCAL_DB),
 		}
 	}
@@ -140,21 +134,11 @@ where
 		}
 	}
 
-	fn http_request_start(
-		&mut self,
-		method: &str,
-		uri: &str,
-		_meta: &[u8]
-	) -> Result<HttpRequestId, ()> {
+	fn http_request_start(&mut self, method: &str, uri: &str, _meta: &[u8]) -> Result<HttpRequestId, ()> {
 		self.http.request_start(method, uri)
 	}
 
-	fn http_request_add_header(
-		&mut self,
-		request_id: HttpRequestId,
-		name: &str,
-		value: &str
-	) -> Result<(), ()> {
+	fn http_request_add_header(&mut self, request_id: HttpRequestId, name: &str, value: &str) -> Result<(), ()> {
 		self.http.request_add_header(request_id, name, value)
 	}
 
@@ -162,23 +146,16 @@ where
 		&mut self,
 		request_id: HttpRequestId,
 		chunk: &[u8],
-		deadline: Option<Timestamp>
+		deadline: Option<Timestamp>,
 	) -> Result<(), HttpError> {
 		self.http.request_write_body(request_id, chunk, deadline)
 	}
 
-	fn http_response_wait(
-		&mut self,
-		ids: &[HttpRequestId],
-		deadline: Option<Timestamp>
-	) -> Vec<HttpRequestStatus> {
+	fn http_response_wait(&mut self, ids: &[HttpRequestId], deadline: Option<Timestamp>) -> Vec<HttpRequestStatus> {
 		self.http.response_wait(ids, deadline)
 	}
 
-	fn http_response_headers(
-		&mut self,
-		request_id: HttpRequestId
-	) -> Vec<(Vec<u8>, Vec<u8>)> {
+	fn http_response_headers(&mut self, request_id: HttpRequestId) -> Vec<(Vec<u8>, Vec<u8>)> {
 		self.http.response_headers(request_id)
 	}
 
@@ -186,7 +163,7 @@ where
 		&mut self,
 		request_id: HttpRequestId,
 		buffer: &mut [u8],
-		deadline: Option<Timestamp>
+		deadline: Option<Timestamp>,
 	) -> Result<usize, HttpError> {
 		self.http.response_read_body(request_id, buffer, deadline)
 	}
@@ -238,7 +215,8 @@ impl TryFrom<OpaqueNetworkState> for NetworkState {
 		let bytes: Vec<u8> = Decode::decode(&mut &inner_vec[..]).map_err(|_| ())?;
 		let peer_id = PeerId::from_bytes(bytes).map_err(|_| ())?;
 
-		let external_addresses: Result<Vec<Multiaddr>, Self::Error> = state.external_addresses
+		let external_addresses: Result<Vec<Multiaddr>, Self::Error> = state
+			.external_addresses
 			.iter()
 			.map(|enc_multiaddr| -> Result<Multiaddr, Self::Error> {
 				let inner_vec = &enc_multiaddr.0;
@@ -305,14 +283,11 @@ impl<A: ChainApi> AsyncApi<A> {
 		let receiver = self.receiver.take().expect("Take invoked only once.");
 		let http = self.http.take().expect("Take invoked only once.");
 
-		let extrinsics = receiver.for_each(move |msg| {
-			match msg {
-				ExtMessage::SubmitExtrinsic(ext) => self.submit_extrinsic(ext),
-			}
+		let extrinsics = receiver.for_each(move |msg| match msg {
+			ExtMessage::SubmitExtrinsic(ext) => self.submit_extrinsic(ext),
 		});
 
-		future::join(extrinsics, http)
-			.map(|((), ())| ())
+		future::join(extrinsics, http).map(|((), ())| ())
 	}
 
 	fn submit_extrinsic(&mut self, ext: Vec<u8>) -> impl Future<Output = ()> {
@@ -320,27 +295,40 @@ impl<A: ChainApi> AsyncApi<A> {
 			Ok(xt) => xt,
 			Err(e) => {
 				warn!("Unable to decode extrinsic: {:?}: {}", ext, e.what());
-				return future::Either::Left(future::ready(()))
-			},
+				return future::Either::Left(future::ready(()));
+			}
 		};
 
-		info!("Submitting transaction to the pool: {:?} (isSigned: {:?})", xt, xt.is_signed());
-		future::Either::Right(self.transaction_pool
-			.submit_one(&self.at, xt.clone())
-			.map(|result| match result {
-				Ok(hash) => { debug!("[{:?}] Offchain transaction added to the pool.", hash); },
-				Err(e) => { warn!("Couldn't submit offchain transaction: {:?}", e); },
-			}))
+		info!(
+			"Submitting transaction to the pool: {:?} (isSigned: {:?})",
+			xt,
+			xt.is_signed()
+		);
+		future::Either::Right(
+			self.transaction_pool
+				.submit_one(&self.at, xt.clone())
+				.map(|result| match result {
+					Ok(hash) => {
+						debug!("[{:?}] Offchain transaction added to the pool.", hash);
+					}
+					Err(e) => {
+						warn!("Couldn't submit offchain transaction: {:?}", e);
+					}
+				}),
+		)
 	}
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use std::{convert::{TryFrom, TryInto}, time::SystemTime};
-	use sr_primitives::traits::Zero;
 	use client_db::offchain::LocalStorage;
 	use network::PeerId;
+	use sr_primitives::traits::Zero;
+	use std::{
+		convert::{TryFrom, TryInto},
+		time::SystemTime,
+	};
 	use test_client::runtime::Block;
 
 	struct MockNetworkStateInfo();
@@ -359,18 +347,13 @@ mod tests {
 		let _ = env_logger::try_init();
 		let db = LocalStorage::new_test();
 		let client = Arc::new(test_client::new());
-		let pool = Arc::new(
-			Pool::new(Default::default(), transaction_pool::FullChainApi::new(client.clone()))
-		);
+		let pool = Arc::new(Pool::new(
+			Default::default(),
+			transaction_pool::FullChainApi::new(client.clone()),
+		));
 
 		let mock = Arc::new(MockNetworkStateInfo());
-		AsyncApi::new(
-			pool,
-			db,
-			BlockId::Number(Zero::zero()),
-			mock,
-			false,
-		)
+		AsyncApi::new(pool, db, BlockId::Number(Zero::zero()), mock, false)
 	}
 
 	#[test]
@@ -379,7 +362,12 @@ mod tests {
 
 		// Get timestamp from std.
 		let now = SystemTime::now();
-		let d: u64 = now.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
+		let d: u64 = now
+			.duration_since(SystemTime::UNIX_EPOCH)
+			.unwrap()
+			.as_millis()
+			.try_into()
+			.unwrap();
 
 		// Get timestamp from offchain api.
 		let timestamp = api.timestamp();
@@ -431,11 +419,17 @@ mod tests {
 		api.local_storage_set(kind, key, b"value");
 
 		// when
-		assert_eq!(api.local_storage_compare_and_set(kind, key, Some(b"val"), b"xxx"), false);
+		assert_eq!(
+			api.local_storage_compare_and_set(kind, key, Some(b"val"), b"xxx"),
+			false
+		);
 		assert_eq!(api.local_storage_get(kind, key), Some(b"value".to_vec()));
 
 		// when
-		assert_eq!(api.local_storage_compare_and_set(kind, key, Some(b"value"), b"xxx"), true);
+		assert_eq!(
+			api.local_storage_compare_and_set(kind, key, Some(b"value"), b"xxx"),
+			true
+		);
 		assert_eq!(api.local_storage_get(kind, key), Some(b"xxx".to_vec()));
 	}
 

@@ -18,7 +18,7 @@
 
 use primitives::offchain::Timestamp;
 use std::convert::TryInto;
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 
 /// Returns the current time as a `Timestamp`.
 pub fn now() -> Timestamp {
@@ -28,12 +28,15 @@ pub fn now() -> Timestamp {
 		Err(_) => {
 			// Current time is earlier than UNIX_EPOCH.
 			Timestamp::from_unix_millis(0)
-		},
+		}
 		Ok(d) => {
 			let duration = d.as_millis();
 			// Assuming overflow won't happen for a few hundred years.
-			Timestamp::from_unix_millis(duration.try_into()
-				.expect("epoch milliseconds won't overflow u64 for hundreds of years; qed"))
+			Timestamp::from_unix_millis(
+				duration
+					.try_into()
+					.expect("epoch milliseconds won't overflow u64 for hundreds of years; qed"),
+			)
 		}
 	}
 }
@@ -48,15 +51,11 @@ pub fn timestamp_from_now(timestamp: Timestamp) -> Duration {
 /// Converts the deadline into a `Future` that resolves when the deadline is reached.
 ///
 /// If `None`, returns a never-ending `Future`.
-pub fn deadline_to_future(
-	deadline: Option<Timestamp>,
-) -> futures::future::MaybeDone<impl futures::Future> {
+pub fn deadline_to_future(deadline: Option<Timestamp>) -> futures::future::MaybeDone<impl futures::Future> {
 	use futures::future;
 
 	future::maybe_done(match deadline {
-		Some(deadline) => future::Either::Left(
-			futures_timer::Delay::new(timestamp_from_now(deadline))
-		),
-		None => future::Either::Right(future::pending())
+		Some(deadline) => future::Either::Left(futures_timer::Delay::new(timestamp_from_now(deadline))),
+		None => future::Either::Right(future::pending()),
 	})
 }

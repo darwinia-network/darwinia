@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
+use codec::{Decode, Encode};
 use std::sync::Arc;
-use codec::{Encode, Decode};
 
 /// Consensus-related data changes tracker.
 #[derive(Clone, Debug, Encode, Decode)]
@@ -26,12 +26,13 @@ pub(crate) struct ConsensusChanges<H, N> {
 impl<H, N> ConsensusChanges<H, N> {
 	/// Create empty consensus changes.
 	pub(crate) fn empty() -> Self {
-		ConsensusChanges { pending_changes: Vec::new(), }
+		ConsensusChanges {
+			pending_changes: Vec::new(),
+		}
 	}
 }
 
 impl<H: Copy + PartialEq, N: Copy + Ord> ConsensusChanges<H, N> {
-
 	/// Returns reference to all pending changes.
 	pub fn pending_changes(&self) -> &[(N, H)] {
 		&self.pending_changes
@@ -39,7 +40,8 @@ impl<H: Copy + PartialEq, N: Copy + Ord> ConsensusChanges<H, N> {
 
 	/// Note unfinalized change of consensus-related data.
 	pub(crate) fn note_change(&mut self, at: (N, H)) {
-		let idx = self.pending_changes
+		let idx = self
+			.pending_changes
 			.binary_search_by_key(&at.0, |change| change.0)
 			.unwrap_or_else(|i| i);
 		self.pending_changes.insert(idx, at);
@@ -52,19 +54,23 @@ impl<H: Copy + PartialEq, N: Copy + Ord> ConsensusChanges<H, N> {
 		block: (N, H),
 		canonical_at_height: F,
 	) -> ::client::error::Result<(bool, bool)> {
-		let (split_idx, has_finalized_changes) = self.pending_changes.iter()
+		let (split_idx, has_finalized_changes) = self
+			.pending_changes
+			.iter()
 			.enumerate()
 			.take_while(|(_, &(at_height, _))| at_height <= block.0)
-			.fold((None, Ok(false)), |(_, has_finalized_changes), (idx, ref at)|
+			.fold((None, Ok(false)), |(_, has_finalized_changes), (idx, ref at)| {
 				(
 					Some(idx),
-					has_finalized_changes
-						.and_then(|has_finalized_changes| if has_finalized_changes {
+					has_finalized_changes.and_then(|has_finalized_changes| {
+						if has_finalized_changes {
 							Ok(has_finalized_changes)
 						} else {
 							canonical_at_height(at.0).map(|can_hash| Some(at.1) == can_hash)
-						}),
-				));
+						}
+					}),
+				)
+			});
 
 		let altered_changes = split_idx.is_some();
 		if let Some(split_idx) = split_idx {

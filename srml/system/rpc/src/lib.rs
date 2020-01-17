@@ -18,19 +18,16 @@
 
 use std::sync::Arc;
 
-use codec::{self, Codec, Encode};
 use client::blockchain::HeaderBackend;
-use jsonrpc_core::{Result, Error, ErrorCode};
+use codec::{self, Codec, Encode};
+use jsonrpc_core::{Error, ErrorCode, Result};
 use jsonrpc_derive::rpc;
-use sr_primitives::{
-	generic::BlockId,
-	traits,
-};
+use sr_primitives::{generic::BlockId, traits};
 use substrate_primitives::hexdisplay::HexDisplay;
 use transaction_pool::txpool::{self, Pool};
 
-pub use srml_system_rpc_runtime_api::AccountNonceApi;
 pub use self::gen_client::Client as SystemClient;
+pub use srml_system_rpc_runtime_api::AccountNonceApi;
 
 /// System RPC methods.
 #[rpc]
@@ -120,17 +117,17 @@ mod tests {
 	use super::*;
 
 	use futures03::executor::block_on;
-	use test_client::{
-		runtime::Transfer,
-		AccountKeyring,
-	};
+	use test_client::{runtime::Transfer, AccountKeyring};
 
 	#[test]
 	fn should_return_next_nonce_for_some_account() {
 		// given
 		let _ = env_logger::try_init();
 		let client = Arc::new(test_client::new());
-		let pool = Arc::new(Pool::new(Default::default(), transaction_pool::FullChainApi::new(client.clone())));
+		let pool = Arc::new(Pool::new(
+			Default::default(),
+			transaction_pool::FullChainApi::new(client.clone()),
+		));
 
 		let new_transaction = |nonce: u64| {
 			let t = Transfer {

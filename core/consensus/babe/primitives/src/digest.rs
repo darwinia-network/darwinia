@@ -16,25 +16,25 @@
 
 //! Private implementation details of BABE digests.
 
+use super::{AuthorityId, AuthorityIndex, BabeAuthorityWeight, SlotNumber};
 #[cfg(feature = "std")]
-use super::{BABE_ENGINE_ID, AuthoritySignature};
+use super::{AuthoritySignature, BABE_ENGINE_ID};
 #[cfg(not(feature = "std"))]
 use super::{VRF_OUTPUT_LENGTH, VRF_PROOF_LENGTH};
-use super::{AuthorityId, AuthorityIndex, SlotNumber, BabeAuthorityWeight};
 #[cfg(feature = "std")]
-use sr_primitives::{DigestItem, generic::OpaqueDigestItemId};
-#[cfg(feature = "std")]
-use std::fmt::Debug;
+use codec::{Codec, Error, Input};
 use codec::{Decode, Encode};
-#[cfg(feature = "std")]
-use codec::{Codec, Input, Error};
+use rstd::vec::Vec;
 #[cfg(feature = "std")]
 use schnorrkel::{
-	SignatureError, errors::MultiSignatureStage,
-	vrf::{VRFProof, VRFOutput, VRF_OUTPUT_LENGTH, VRF_PROOF_LENGTH}
+	errors::MultiSignatureStage,
+	vrf::{VRFOutput, VRFProof, VRF_OUTPUT_LENGTH, VRF_PROOF_LENGTH},
+	SignatureError,
 };
-use rstd::vec::Vec;
-
+#[cfg(feature = "std")]
+use sr_primitives::{generic::OpaqueDigestItemId, DigestItem};
+#[cfg(feature = "std")]
+use std::fmt::Debug;
 
 /// A BABE pre-runtime digest. This contains all data required to validate a
 /// block and for the BABE runtime module. Slots can be assigned to a primary
@@ -142,22 +142,18 @@ impl Encode for BabePreDigest {
 				vrf_proof,
 				authority_index,
 				slot_number,
-			} => {
-				RawBabePreDigest::Primary {
-					vrf_output: *vrf_output.as_bytes(),
-					vrf_proof: vrf_proof.to_bytes(),
-					authority_index: *authority_index,
-					slot_number: *slot_number,
-				}
+			} => RawBabePreDigest::Primary {
+				vrf_output: *vrf_output.as_bytes(),
+				vrf_proof: vrf_proof.to_bytes(),
+				authority_index: *authority_index,
+				slot_number: *slot_number,
 			},
 			BabePreDigest::Secondary {
 				authority_index,
 				slot_number,
-			} => {
-				RawBabePreDigest::Secondary {
-					authority_index: *authority_index,
-					slot_number: *slot_number,
-				}
+			} => RawBabePreDigest::Secondary {
+				authority_index: *authority_index,
+				slot_number: *slot_number,
 			},
 		};
 
@@ -172,7 +168,12 @@ impl codec::EncodeLike for BabePreDigest {}
 impl Decode for BabePreDigest {
 	fn decode<R: Input>(i: &mut R) -> Result<Self, Error> {
 		let pre_digest = match Decode::decode(i)? {
-			RawBabePreDigest::Primary { vrf_output, vrf_proof, authority_index, slot_number } => {
+			RawBabePreDigest::Primary {
+				vrf_output,
+				vrf_proof,
+				authority_index,
+				slot_number,
+			} => {
 				// Verify (at compile time) that the sizes in babe_primitives are correct
 				let _: [u8; super::VRF_OUTPUT_LENGTH] = vrf_output;
 				let _: [u8; super::VRF_PROOF_LENGTH] = vrf_proof;
@@ -183,9 +184,13 @@ impl Decode for BabePreDigest {
 					authority_index,
 					slot_number,
 				}
-			},
-			RawBabePreDigest::Secondary { authority_index, slot_number } => {
-				BabePreDigest::Secondary { authority_index, slot_number }
+			}
+			RawBabePreDigest::Secondary {
+				authority_index,
+				slot_number,
+			} => BabePreDigest::Secondary {
+				authority_index,
+				slot_number,
 			},
 		};
 
@@ -224,8 +229,9 @@ pub trait CompatibleDigestItem: Sized {
 }
 
 #[cfg(feature = "std")]
-impl<Hash> CompatibleDigestItem for DigestItem<Hash> where
-	Hash: Debug + Send + Sync + Eq + Clone + Codec + 'static
+impl<Hash> CompatibleDigestItem for DigestItem<Hash>
+where
+	Hash: Debug + Send + Sync + Eq + Clone + Codec + 'static,
 {
 	fn babe_pre_digest(digest: BabePreDigest) -> Self {
 		DigestItem::PreRuntime(BABE_ENGINE_ID, digest.encode())
@@ -254,31 +260,44 @@ impl<Hash> CompatibleDigestItem for DigestItem<Hash> where
 
 #[cfg(feature = "std")]
 fn convert_error(e: SignatureError) -> codec::Error {
-	use SignatureError::*;
 	use MultiSignatureStage::*;
+	use SignatureError::*;
 	match e {
 		EquationFalse => "Signature error: `EquationFalse`".into(),
 		PointDecompressionError => "Signature error: `PointDecompressionError`".into(),
 		ScalarFormatError => "Signature error: `ScalarFormatError`".into(),
 		NotMarkedSchnorrkel => "Signature error: `NotMarkedSchnorrkel`".into(),
 		BytesLengthError { .. } => "Signature error: `BytesLengthError`".into(),
-		MuSigAbsent { musig_stage: Commitment } =>
-			"Signature error: `MuSigAbsent` at stage `Commitment`".into(),
-		MuSigAbsent { musig_stage: Reveal } =>
-			"Signature error: `MuSigAbsent` at stage `Reveal`".into(),
-		MuSigAbsent { musig_stage: Cosignature } =>
-			"Signature error: `MuSigAbsent` at stage `Commitment`".into(),
-		MuSigInconsistent { musig_stage: Commitment, duplicate: true } =>
-			"Signature error: `MuSigInconsistent` at stage `Commitment` on duplicate".into(),
-		MuSigInconsistent { musig_stage: Commitment, duplicate: false } =>
-			"Signature error: `MuSigInconsistent` at stage `Commitment` on not duplicate".into(),
-		MuSigInconsistent { musig_stage: Reveal, duplicate: true } =>
-			"Signature error: `MuSigInconsistent` at stage `Reveal` on duplicate".into(),
-		MuSigInconsistent { musig_stage: Reveal, duplicate: false } =>
-			"Signature error: `MuSigInconsistent` at stage `Reveal` on not duplicate".into(),
-		MuSigInconsistent { musig_stage: Cosignature, duplicate: true } =>
-			"Signature error: `MuSigInconsistent` at stage `Cosignature` on duplicate".into(),
-		MuSigInconsistent { musig_stage: Cosignature, duplicate: false } =>
-			"Signature error: `MuSigInconsistent` at stage `Cosignature` on not duplicate".into(),
+		MuSigAbsent {
+			musig_stage: Commitment,
+		} => "Signature error: `MuSigAbsent` at stage `Commitment`".into(),
+		MuSigAbsent { musig_stage: Reveal } => "Signature error: `MuSigAbsent` at stage `Reveal`".into(),
+		MuSigAbsent {
+			musig_stage: Cosignature,
+		} => "Signature error: `MuSigAbsent` at stage `Commitment`".into(),
+		MuSigInconsistent {
+			musig_stage: Commitment,
+			duplicate: true,
+		} => "Signature error: `MuSigInconsistent` at stage `Commitment` on duplicate".into(),
+		MuSigInconsistent {
+			musig_stage: Commitment,
+			duplicate: false,
+		} => "Signature error: `MuSigInconsistent` at stage `Commitment` on not duplicate".into(),
+		MuSigInconsistent {
+			musig_stage: Reveal,
+			duplicate: true,
+		} => "Signature error: `MuSigInconsistent` at stage `Reveal` on duplicate".into(),
+		MuSigInconsistent {
+			musig_stage: Reveal,
+			duplicate: false,
+		} => "Signature error: `MuSigInconsistent` at stage `Reveal` on not duplicate".into(),
+		MuSigInconsistent {
+			musig_stage: Cosignature,
+			duplicate: true,
+		} => "Signature error: `MuSigInconsistent` at stage `Cosignature` on duplicate".into(),
+		MuSigInconsistent {
+			musig_stage: Cosignature,
+			duplicate: false,
+		} => "Signature error: `MuSigInconsistent` at stage `Cosignature` on not duplicate".into(),
 	}
 }

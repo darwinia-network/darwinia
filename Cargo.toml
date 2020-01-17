@@ -20,9 +20,6 @@ members = [
     "core/rpc",
     "core/service",
     "core/sr-eth-primitives",
-    "core/test-client",
-    "core/test-runtime",
-    "core/test-runtime/client",
 
     "node/cli",
     "node/executor",

@@ -32,18 +32,17 @@
 ///   A -> B
 ///   A -> B
 ///   ... x `num`
-
 use std::sync::Arc;
 
-use log::info;
-use client::Client;
 use block_builder_api::BlockBuilder;
-use sr_api::ConstructRuntimeApi;
+use client::Client;
+use log::info;
 use primitives::{Blake2Hasher, Hasher};
-use sr_primitives::traits::{Block as BlockT, ProvideRuntimeApi, One};
+use sr_api::ConstructRuntimeApi;
 use sr_primitives::generic::BlockId;
+use sr_primitives::traits::{Block as BlockT, One, ProvideRuntimeApi};
 
-use crate::{Mode, RuntimeAdapter, create_block};
+use crate::{create_block, Mode, RuntimeAdapter};
 
 pub fn next<RA, Backend, Exec, Block, RtApi>(
 	factory_state: &mut RA,
@@ -58,8 +57,7 @@ where
 	Exec: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + Clone,
 	Backend: client::backend::Backend<Block, Blake2Hasher> + Send,
 	Client<Backend, Exec, Block, RtApi>: ProvideRuntimeApi,
-	<Client<Backend, Exec, Block, RtApi> as ProvideRuntimeApi>::Api:
-		BlockBuilder<Block, Error = client::error::Error>,
+	<Client<Backend, Exec, Block, RtApi> as ProvideRuntimeApi>::Api: BlockBuilder<Block, Error = client::error::Error>,
 	RtApi: ConstructRuntimeApi<Block, Client<Backend, Exec, Block, RtApi>> + Send + Sync,
 	RA: RuntimeAdapter,
 {
@@ -92,7 +90,9 @@ where
 	);
 
 	let inherents = RA::inherent_extrinsics(&factory_state);
-	let inherents = client.runtime_api().inherent_extrinsics(&prior_block_id, inherents)
+	let inherents = client
+		.runtime_api()
+		.inherent_extrinsics(&prior_block_id, inherents)
 		.expect("Failed to create inherent extrinsics");
 
 	let block = create_block::<RA, _, _, _, _>(&client, transfer, inherents);

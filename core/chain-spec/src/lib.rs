@@ -107,15 +107,14 @@
 //! pub type MyChainSpec<G> = ChainSpec<G, Extension>;
 //! ```
 
-
 mod chain_spec;
 mod extension;
 
-pub use chain_spec::{ChainSpec, Properties, NoExtension};
-pub use extension::{Group, Fork, Forks, Extension};
+pub use chain_spec::{ChainSpec, NoExtension, Properties};
+pub use extension::{Extension, Fork, Forks, Group};
 pub use substrate_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use sr_primitives::BuildStorage;
 
 /// A set of traits for the runtime genesis config.

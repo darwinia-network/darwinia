@@ -23,20 +23,23 @@ use consensus_common::Error;
 use futures::{prelude::*, task::Context, task::Poll};
 use inherents::{InherentData, InherentDataProviders};
 
-use std::{pin::Pin, time::{Duration, Instant}};
 use futures_timer::Delay;
+use std::{
+	pin::Pin,
+	time::{Duration, Instant},
+};
 
 /// Returns current duration since unix epoch.
 pub fn duration_now() -> Duration {
 	use std::time::SystemTime;
 	let now = SystemTime::now();
-	now.duration_since(SystemTime::UNIX_EPOCH).unwrap_or_else(|e| panic!(
-		"Current time {:?} is before unix epoch. Something is wrong: {:?}",
-		now,
-		e,
-	))
+	now.duration_since(SystemTime::UNIX_EPOCH).unwrap_or_else(|e| {
+		panic!(
+			"Current time {:?} is before unix epoch. Something is wrong: {:?}",
+			now, e,
+		)
+	})
 }
-
 
 /// A `Duration` with a sign (before or after).  Immutable.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -57,7 +60,9 @@ impl SignedDuration {
 			duration_now() + self.offset
 		} else {
 			duration_now() - self.offset
-		}.as_millis() as u64) / slot_duration
+		}
+		.as_millis() as u64)
+			/ slot_duration
 	}
 }
 
@@ -104,11 +109,7 @@ pub(crate) struct Slots<SC> {
 
 impl<SC> Slots<SC> {
 	/// Create a new `Slots` stream.
-	pub fn new(
-		slot_duration: u64,
-		inherent_data_providers: InherentDataProviders,
-		timestamp_extractor: SC,
-	) -> Self {
+	pub fn new(slot_duration: u64, inherent_data_providers: InherentDataProviders, timestamp_extractor: SC) -> Self {
 		Slots {
 			last_slot: 0,
 			slot_duration,
@@ -154,8 +155,7 @@ impl<SC: SlotCompatible + Unpin> Stream for Slots<SC> {
 				Err(err) => return Poll::Ready(Some(Err(err))),
 			};
 			// reschedule delay for next slot.
-			let ends_in = offset +
-				time_until_next(Duration::from_millis(timestamp), slot_duration);
+			let ends_in = offset + time_until_next(Duration::from_millis(timestamp), slot_duration);
 			let ends_at = Instant::now() + ends_in;
 			self.inner_delay = Some(Delay::new(ends_in));
 
@@ -169,7 +169,7 @@ impl<SC: SlotCompatible + Unpin> Stream for Slots<SC> {
 					timestamp,
 					ends_at,
 					inherent_data,
-				})))
+				})));
 			}
 		}
 	}

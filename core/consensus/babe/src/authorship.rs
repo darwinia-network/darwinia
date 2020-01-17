@@ -16,14 +16,14 @@
 
 //! BABE authority selection and slot claiming.
 
-use merlin::Transcript;
 use babe_primitives::{AuthorityId, BabeAuthorityWeight, BABE_ENGINE_ID, BABE_VRF_PREFIX};
-use babe_primitives::{Epoch, SlotNumber, AuthorityPair, BabePreDigest, BabeConfiguration};
-use primitives::{U256, blake2_256};
+use babe_primitives::{AuthorityPair, BabeConfiguration, BabePreDigest, Epoch, SlotNumber};
 use codec::Encode;
-use schnorrkel::vrf::VRFInOut;
-use primitives::Pair;
 use keystore::KeyStorePtr;
+use merlin::Transcript;
+use primitives::Pair;
+use primitives::{blake2_256, U256};
+use schnorrkel::vrf::VRFInOut;
 
 /// Calculates the primary selection threshold for a given authority, taking
 /// into account `c` (`1 - c` represents the probability of a slot being empty).
@@ -39,8 +39,7 @@ pub(super) fn calculate_primary_threshold(
 	let c = c.0 as f64 / c.1 as f64;
 
 	let theta =
-		authorities[authority_index].1 as f64 /
-		authorities.iter().map(|(_, weight)| weight).sum::<u64>() as f64;
+		authorities[authority_index].1 as f64 / authorities.iter().map(|(_, weight)| weight).sum::<u64>() as f64;
 
 	let calc = || {
 		let p = BigRational::from_float(1f64 - (1f64 - c).powf(theta))?;
@@ -75,26 +74,22 @@ pub(super) fn secondary_slot_author(
 	let authorities_len = U256::from(authorities.len());
 	let idx = rand % authorities_len;
 
-	let expected_author = authorities.get(idx.as_u32() as usize)
-		.expect("authorities not empty; index constrained to list length; \
-				this is a valid index; qed");
+	let expected_author = authorities.get(idx.as_u32() as usize).expect(
+		"authorities not empty; index constrained to list length; \
+				this is a valid index; qed",
+	);
 
 	Some(&expected_author.0)
 }
 
 #[allow(deprecated)]
-pub(super) fn make_transcript(
-	randomness: &[u8],
-	slot_number: u64,
-	epoch: u64,
-) -> Transcript {
+pub(super) fn make_transcript(randomness: &[u8], slot_number: u64, epoch: u64) -> Transcript {
 	let mut transcript = Transcript::new(&BABE_ENGINE_ID);
 	transcript.commit_bytes(b"slot number", &slot_number.to_le_bytes());
 	transcript.commit_bytes(b"current epoch", &epoch.to_le_bytes());
 	transcript.commit_bytes(b"chain randomness", randomness);
 	transcript
 }
-
 
 /// Claim a secondary slot if it is our turn to propose, returning the
 /// pre-digest to use when authoring the block, or `None` if it is not our turn
@@ -109,19 +104,14 @@ fn claim_secondary_slot(
 		return None;
 	}
 
-	let expected_author = super::authorship::secondary_slot_author(
-		slot_number,
-		authorities,
-		randomness,
-	)?;
+	let expected_author = super::authorship::secondary_slot_author(slot_number, authorities, randomness)?;
 
 	let keystore = keystore.read();
 
-	for (pair, authority_index) in authorities.iter()
+	for (pair, authority_index) in authorities
+		.iter()
 		.enumerate()
-		.flat_map(|(i, a)| {
-			keystore.key_pair::<AuthorityPair>(&a.0).ok().map(|kp| (kp, i))
-		})
+		.flat_map(|(i, a)| keystore.key_pair::<AuthorityPair>(&a.0).ok().map(|kp| (kp, i)))
 	{
 		if pair.public() == *expected_author {
 			let pre_digest = BabePreDigest::Secondary {
@@ -146,19 +136,13 @@ pub(super) fn claim_slot(
 	config: &BabeConfiguration,
 	keystore: &KeyStorePtr,
 ) -> Option<(BabePreDigest, AuthorityPair)> {
-	claim_primary_slot(slot_number, epoch, config.c, keystore)
-		.or_else(|| {
-			if config.secondary_slots {
-				claim_secondary_slot(
-					slot_number,
-					&epoch.authorities,
-					keystore,
-					epoch.randomness,
-				)
-			} else {
-				None
-			}
-		})
+	claim_primary_slot(slot_number, epoch, config.c, keystore).or_else(|| {
+		if config.secondary_slots {
+			claim_secondary_slot(slot_number, &epoch.authorities, keystore, epoch.randomness)
+		} else {
+			None
+		}
+	})
 }
 
 fn get_keypair(q: &AuthorityPair) -> &schnorrkel::Keypair {
@@ -176,14 +160,18 @@ fn claim_primary_slot(
 	c: (u64, u64),
 	keystore: &KeyStorePtr,
 ) -> Option<(BabePreDigest, AuthorityPair)> {
-	let Epoch { authorities, randomness, epoch_index, .. } = epoch;
+	let Epoch {
+		authorities,
+		randomness,
+		epoch_index,
+		..
+	} = epoch;
 	let keystore = keystore.read();
 
-	for (pair, authority_index) in authorities.iter()
+	for (pair, authority_index) in authorities
+		.iter()
 		.enumerate()
-		.flat_map(|(i, a)| {
-			keystore.key_pair::<AuthorityPair>(&a.0).ok().map(|kp| (kp, i))
-		})
+		.flat_map(|(i, a)| keystore.key_pair::<AuthorityPair>(&a.0).ok().map(|kp| (kp, i)))
 	{
 		let transcript = super::authorship::make_transcript(randomness, slot_number, *epoch_index);
 
@@ -194,14 +182,14 @@ fn claim_primary_slot(
 		let threshold = super::authorship::calculate_primary_threshold(c, authorities, authority_index);
 
 		let pre_digest = get_keypair(&pair)
-			.vrf_sign_after_check(transcript, |inout| super::authorship::check_primary_threshold(inout, threshold))
-			.map(|s| {
-				BabePreDigest::Primary {
-					slot_number,
-					vrf_output: s.0.to_output(),
-					vrf_proof: s.1,
-					authority_index: authority_index as u32,
-				}
+			.vrf_sign_after_check(transcript, |inout| {
+				super::authorship::check_primary_threshold(inout, threshold)
+			})
+			.map(|s| BabePreDigest::Primary {
+				slot_number,
+				vrf_output: s.0.to_output(),
+				vrf_proof: s.1,
+				authority_index: authority_index as u32,
 			});
 
 		// early exit on first successful claim

@@ -16,17 +16,17 @@
 
 //! Global cache state.
 
-use std::collections::{VecDeque, HashSet, HashMap};
-use std::sync::Arc;
-use parking_lot::{Mutex, RwLock, RwLockUpgradableReadGuard};
-use linked_hash_map::{LinkedHashMap, Entry};
+use super::{ChildStorageCollection, StorageCollection};
 use hash_db::Hasher;
-use sr_primitives::traits::{Block as BlockT, Header};
-use primitives::hexdisplay::HexDisplay;
-use state_machine::{backend::Backend as StateBackend, TrieBackend};
+use linked_hash_map::{Entry, LinkedHashMap};
 use log::trace;
-use super::{StorageCollection, ChildStorageCollection};
+use parking_lot::{Mutex, RwLock, RwLockUpgradableReadGuard};
+use primitives::hexdisplay::HexDisplay;
+use sr_primitives::traits::{Block as BlockT, Header};
+use state_machine::{backend::Backend as StateBackend, TrieBackend};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::hash::Hash as StdHash;
+use std::sync::Arc;
 const STATE_CACHE_BLOCKS: usize = 12;
 
 type StorageKey = Vec<u8>;
@@ -68,7 +68,7 @@ impl EstimateSize for Vec<u8> {
 
 impl EstimateSize for Option<Vec<u8>> {
 	fn estimate_size(&self) -> usize {
-		self.as_ref().map(|v|v.capacity()).unwrap_or(0)
+		self.as_ref().map(|v| v.capacity()).unwrap_or(0)
 	}
 }
 
@@ -77,7 +77,7 @@ struct OptionHOut<T: AsRef<[u8]>>(Option<T>);
 impl<T: AsRef<[u8]>> EstimateSize for OptionHOut<T> {
 	fn estimate_size(&self) -> usize {
 		// capacity would be better
-		self.0.as_ref().map(|v|v.as_ref().len()).unwrap_or(0)
+		self.0.as_ref().map(|v| v.as_ref().len()).unwrap_or(0)
 	}
 }
 
@@ -110,15 +110,15 @@ impl<K: EstimateSize + Eq + StdHash, V: EstimateSize> LRUMap<K, V> {
 				// it would require to remove first
 				*storage_used_size -= entry.get().estimate_size();
 				entry.insert(v);
-			},
+			}
 			Entry::Vacant(entry) => {
 				*storage_used_size += klen;
 				entry.insert(v);
-			},
+			}
 		};
 
 		while *storage_used_size > limit {
-			if let Some((k,v)) = lmap.pop_front() {
+			if let Some((k, v)) = lmap.pop_front() {
 				*storage_used_size -= k.estimate_size();
 				*storage_used_size -= v.estimate_size();
 			} else {
@@ -129,9 +129,11 @@ impl<K: EstimateSize + Eq + StdHash, V: EstimateSize> LRUMap<K, V> {
 		}
 	}
 
-	fn get<Q:?Sized>(&mut self, k: &Q) -> Option<&mut V>
-		where K: std::borrow::Borrow<Q>,
-			Q: StdHash + Eq {
+	fn get<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut V>
+	where
+		K: std::borrow::Borrow<Q>,
+		Q: StdHash + Eq,
+	{
 		self.0.get_refresh(k)
 	}
 
@@ -142,15 +144,13 @@ impl<K: EstimateSize + Eq + StdHash, V: EstimateSize> LRUMap<K, V> {
 		self.0.clear();
 		self.1 = 0;
 	}
-
 }
 
 impl<B: BlockT, H: Hasher> Cache<B, H> {
 	/// Returns the used memory size of the storage cache in bytes.
 	pub fn used_storage_cache_size(&self) -> usize {
-		self.lru_storage.used_size()
-			+ self.lru_child_storage.used_size()
-			//  ignore small hashes storage and self.lru_hashes.used_size()
+		self.lru_storage.used_size() + self.lru_child_storage.used_size()
+		//  ignore small hashes storage and self.lru_hashes.used_size()
 	}
 
 	/// Synchronize the shared cache with the best block state.
@@ -158,7 +158,11 @@ impl<B: BlockT, H: Hasher> Cache<B, H> {
 	/// that are invalidated by chain reorganization. It should be called
 	/// externally when chain reorg happens without importing a new block.
 	pub fn sync(&mut self, enacted: &[B::Hash], retracted: &[B::Hash]) {
-		trace!("Syncing shared cache, enacted = {:?}, retracted = {:?}", enacted, retracted);
+		trace!(
+			"Syncing shared cache, enacted = {:?}, retracted = {:?}",
+			enacted,
+			retracted
+		);
 
 		// Purge changes from re-enacted and retracted blocks.
 		let mut clear = false;
@@ -224,11 +228,13 @@ pub fn new_shared_cache<B: BlockT, H: Hasher>(
 ) -> SharedCache<B, H> {
 	let top = child_ratio.1.saturating_sub(child_ratio.0);
 	Arc::new(Mutex::new(Cache {
-		lru_storage: LRUMap(LinkedHashMap::new(), 0,
-			shared_cache_size * top / child_ratio.1),
+		lru_storage: LRUMap(LinkedHashMap::new(), 0, shared_cache_size * top / child_ratio.1),
 		lru_hashes: LRUMap(LinkedHashMap::new(), 0, FIX_LRU_HASH_SIZE),
-		lru_child_storage: LRUMap(LinkedHashMap::new(), 0,
-			shared_cache_size * child_ratio.0 / child_ratio.1),
+		lru_child_storage: LRUMap(
+			LinkedHashMap::new(),
+			0,
+			shared_cache_size * child_ratio.0 / child_ratio.1,
+		),
 		modifications: VecDeque::new(),
 	}))
 }
@@ -282,7 +288,7 @@ pub struct CachingState<H: Hasher, S: StateBackend<H>, B: BlockT> {
 	/// Backing state.
 	state: S,
 	/// Cache data.
-	pub cache: CacheChanges<H, B>
+	pub cache: CacheChanges<H, B>,
 }
 
 impl<H: Hasher, S: StateBackend<H>, B: BlockT> std::fmt::Debug for CachingState<H, S, B> {
@@ -298,7 +304,7 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 	/// that are invalidated by chain reorganization. `sync_cache`
 	/// should be called after the block has been committed and the
 	/// blockchain route has been calculated.
-	pub fn sync_cache<F: FnOnce() -> bool> (
+	pub fn sync_cache<F: FnOnce() -> bool>(
 		&mut self,
 		enacted: &[B::Hash],
 		retracted: &[B::Hash],
@@ -310,7 +316,13 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 	) {
 		let mut cache = self.shared_cache.lock();
 		let is_best = is_best();
-		trace!("Syncing cache, id = (#{:?}, {:?}), parent={:?}, best={}", commit_number, commit_hash, self.parent_hash, is_best);
+		trace!(
+			"Syncing cache, id = (#{:?}, {:?}), parent={:?}, best={}",
+			commit_number,
+			commit_hash,
+			self.parent_hash,
+			is_best
+		);
 		let cache = &mut *cache;
 		// Filter out commiting block if any.
 		let enacted: Vec<_> = enacted
@@ -330,7 +342,7 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 					local_cache.storage.len(),
 					local_cache.hashes.len(),
 					changes.len(),
-					child_changes.iter().map(|v|v.1.len()).sum::<usize>(),
+					child_changes.iter().map(|v| v.1.len()).sum::<usize>(),
 				);
 				for (k, v) in local_cache.storage.drain() {
 					cache.lru_storage.add(k, v);
@@ -344,16 +356,13 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 			}
 		}
 
-		if let (
-			Some(ref number), Some(ref hash), Some(ref parent))
-				= (commit_number, commit_hash, self.parent_hash)
-		{
+		if let (Some(ref number), Some(ref hash), Some(ref parent)) = (commit_number, commit_hash, self.parent_hash) {
 			if cache.modifications.len() == STATE_CACHE_BLOCKS {
 				cache.modifications.pop_back();
 			}
 			let mut modifications = HashSet::new();
 			let mut child_modifications = HashSet::new();
-			child_changes.into_iter().for_each(|(sk, changes)|
+			child_changes.into_iter().for_each(|(sk, changes)| {
 				for (k, v) in changes.into_iter() {
 					let k = (sk.clone(), k);
 					if is_best {
@@ -361,7 +370,7 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 					}
 					child_modifications.insert(k);
 				}
-			);
+			});
 			for (k, v) in changes.into_iter() {
 				if is_best {
 					cache.lru_hashes.remove(&k);
@@ -379,7 +388,9 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 				is_canon: is_best,
 				parent: parent.clone(),
 			};
-			let insert_at = cache.modifications.iter()
+			let insert_at = cache
+				.modifications
+				.iter()
 				.enumerate()
 				.find(|&(_, m)| m.number < *number)
 				.map(|(i, _)| i);
@@ -391,7 +402,6 @@ impl<H: Hasher, B: BlockT> CacheChanges<H, B> {
 			}
 		}
 	}
-
 }
 
 impl<H: Hasher, S: StateBackend<H>, B: BlockT> CachingState<H, S, B> {
@@ -406,7 +416,7 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> CachingState<H, S, B> {
 					hashes: Default::default(),
 					child_storage: Default::default(),
 				}),
-				parent_hash: parent_hash,
+				parent_hash,
 			},
 		}
 	}
@@ -417,12 +427,14 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> CachingState<H, S, B> {
 		key: Option<&[u8]>,
 		child_key: Option<&ChildStorageKey>,
 		parent_hash: &Option<B::Hash>,
-		modifications: &VecDeque<BlockChanges<B::Header>>
-	) -> bool
-	{
+		modifications: &VecDeque<BlockChanges<B::Header>>,
+	) -> bool {
 		let mut parent = match *parent_hash {
 			None => {
-				trace!("Cache lookup skipped for {:?}: no parent hash", key.as_ref().map(HexDisplay::from));
+				trace!(
+					"Cache lookup skipped for {:?}: no parent hash",
+					key.as_ref().map(HexDisplay::from)
+				);
 				return false;
 			}
 			Some(ref parent) => parent,
@@ -441,7 +453,10 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> CachingState<H, S, B> {
 			}
 			if let Some(key) = key {
 				if m.storage.contains(key) {
-					trace!("Cache lookup skipped for {:?}: modified in a later block", HexDisplay::from(&key));
+					trace!(
+						"Cache lookup skipped for {:?}: modified in a later block",
+						HexDisplay::from(&key)
+					);
 					return false;
 				}
 			}
@@ -452,7 +467,10 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> CachingState<H, S, B> {
 				}
 			}
 		}
-		trace!("Cache lookup skipped for {:?}: parent hash is unknown", key.as_ref().map(HexDisplay::from));
+		trace!(
+			"Cache lookup skipped for {:?}: parent hash is unknown",
+			key.as_ref().map(HexDisplay::from)
+		);
 		false
 	}
 
@@ -472,18 +490,20 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> StateBackend<H> for CachingState<
 		// Note that local cache makes that lru is not refreshed
 		if let Some(entry) = local_cache.storage.get(key).cloned() {
 			trace!("Found in local cache: {:?}", HexDisplay::from(&key));
-			return Ok(entry)
+			return Ok(entry);
 		}
 		let mut cache = self.cache.shared_cache.lock();
 		if Self::is_allowed(Some(key), None, &self.cache.parent_hash, &cache.modifications) {
 			if let Some(entry) = cache.lru_storage.get(key).map(|a| a.clone()) {
 				trace!("Found in shared cache: {:?}", HexDisplay::from(&key));
-				return Ok(entry)
+				return Ok(entry);
 			}
 		}
 		trace!("Cache miss: {:?}", HexDisplay::from(&key));
 		let value = self.state.storage(key)?;
-		RwLockUpgradableReadGuard::upgrade(local_cache).storage.insert(key.to_vec(), value.clone());
+		RwLockUpgradableReadGuard::upgrade(local_cache)
+			.storage
+			.insert(key.to_vec(), value.clone());
 		Ok(value)
 	}
 
@@ -491,18 +511,20 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> StateBackend<H> for CachingState<
 		let local_cache = self.cache.local_cache.upgradable_read();
 		if let Some(entry) = local_cache.hashes.get(key).cloned() {
 			trace!("Found hash in local cache: {:?}", HexDisplay::from(&key));
-			return Ok(entry)
+			return Ok(entry);
 		}
 		let mut cache = self.cache.shared_cache.lock();
 		if Self::is_allowed(Some(key), None, &self.cache.parent_hash, &cache.modifications) {
 			if let Some(entry) = cache.lru_hashes.get(key).map(|a| a.0.clone()) {
 				trace!("Found hash in shared cache: {:?}", HexDisplay::from(&key));
-				return Ok(entry)
+				return Ok(entry);
 			}
 		}
 		trace!("Cache hash miss: {:?}", HexDisplay::from(&key));
 		let hash = self.state.storage_hash(key)?;
-		RwLockUpgradableReadGuard::upgrade(local_cache).hashes.insert(key.to_vec(), hash.clone());
+		RwLockUpgradableReadGuard::upgrade(local_cache)
+			.hashes
+			.insert(key.to_vec(), hash.clone());
 		Ok(hash)
 	}
 
@@ -511,18 +533,20 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> StateBackend<H> for CachingState<
 		let local_cache = self.cache.local_cache.upgradable_read();
 		if let Some(entry) = local_cache.child_storage.get(&key).cloned() {
 			trace!("Found in local cache: {:?}", key);
-			return Ok(entry)
+			return Ok(entry);
 		}
 		let mut cache = self.cache.shared_cache.lock();
 		if Self::is_allowed(None, Some(&key), &self.cache.parent_hash, &cache.modifications) {
 			if let Some(entry) = cache.lru_child_storage.get(&key).map(|a| a.clone()) {
 				trace!("Found in shared cache: {:?}", key);
-				return Ok(entry)
+				return Ok(entry);
 			}
 		}
 		trace!("Cache miss: {:?}", key);
 		let value = self.state.child_storage(storage_key, &key.1[..])?;
-		RwLockUpgradableReadGuard::upgrade(local_cache).child_storage.insert(key, value.clone());
+		RwLockUpgradableReadGuard::upgrade(local_cache)
+			.child_storage
+			.insert(key, value.clone());
 		Ok(value)
 	}
 
@@ -551,17 +575,17 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> StateBackend<H> for CachingState<
 	}
 
 	fn storage_root<I>(&self, delta: I) -> (H::Out, Self::Transaction)
-		where
-			I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>,
-			H::Out: Ord
+	where
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>,
+		H::Out: Ord,
 	{
 		self.state.storage_root(delta)
 	}
 
 	fn child_storage_root<I>(&self, storage_key: &[u8], delta: I) -> (Vec<u8>, bool, Self::Transaction)
-		where
-			I: IntoIterator<Item=(Vec<u8>, Option<Vec<u8>>)>,
-			H::Out: Ord
+	where
+		I: IntoIterator<Item = (Vec<u8>, Option<Vec<u8>>)>,
+		H::Out: Ord,
 	{
 		self.state.child_storage_root(storage_key, delta)
 	}
@@ -586,9 +610,9 @@ impl<H: Hasher, S: StateBackend<H>, B: BlockT> StateBackend<H> for CachingState<
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use sr_primitives::testing::{H256, Block as RawBlock, ExtrinsicWrapper};
-	use state_machine::backend::InMemory;
 	use primitives::Blake2Hasher;
+	use sr_primitives::testing::{Block as RawBlock, ExtrinsicWrapper, H256};
+	use state_machine::backend::InMemory;
 
 	type Block = RawBlock<ExtrinsicWrapper<u32>>;
 	#[test]
@@ -604,27 +628,65 @@ mod tests {
 		let h3a = H256::random();
 		let h3b = H256::random();
 
-		let shared = new_shared_cache::<Block, Blake2Hasher>(256*1024, (0,1));
+		let shared = new_shared_cache::<Block, Blake2Hasher>(256 * 1024, (0, 1));
 
 		// blocks  [ 3a(c) 2a(c) 2b 1b 1a(c) 0 ]
 		// state   [ 5     5     4  3  2     2 ]
-		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(root_parent.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![2]))], vec![], Some(h0.clone()), Some(0), || true);
+		let mut s = CachingState::new(
+			InMemory::<Blake2Hasher>::default(),
+			shared.clone(),
+			Some(root_parent.clone()),
+		);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![2]))],
+			vec![],
+			Some(h0.clone()),
+			Some(0),
+			|| true,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h0.clone()));
-		s.cache.sync_cache(&[], &[], vec![], vec![], Some(h1a.clone()), Some(1), || true);
+		s.cache
+			.sync_cache(&[], &[], vec![], vec![], Some(h1a.clone()), Some(1), || true);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h0.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![3]))], vec![], Some(h1b.clone()), Some(1), || false);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![3]))],
+			vec![],
+			Some(h1b.clone()),
+			Some(1),
+			|| false,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h1b.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![4]))], vec![], Some(h2b.clone()), Some(2), || false);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![4]))],
+			vec![],
+			Some(h2b.clone()),
+			Some(2),
+			|| false,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h1a.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![5]))], vec![], Some(h2a.clone()), Some(2), || true);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![5]))],
+			vec![],
+			Some(h2a.clone()),
+			Some(2),
+			|| true,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h2a.clone()));
-		s.cache.sync_cache(&[], &[], vec![], vec![], Some(h3a.clone()), Some(3), || true);
+		s.cache
+			.sync_cache(&[], &[], vec![], vec![], Some(h3a.clone()), Some(3), || true);
 
 		let s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h3a.clone()));
 		assert_eq!(s.storage(&key).unwrap().unwrap(), vec![5]);
@@ -657,10 +719,14 @@ mod tests {
 	#[test]
 	fn should_track_used_size_correctly() {
 		let root_parent = H256::random();
-		let shared = new_shared_cache::<Block, Blake2Hasher>(109, ((109-36), 109));
+		let shared = new_shared_cache::<Block, Blake2Hasher>(109, ((109 - 36), 109));
 		let h0 = H256::random();
 
-		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(root_parent.clone()));
+		let mut s = CachingState::new(
+			InMemory::<Blake2Hasher>::default(),
+			shared.clone(),
+			Some(root_parent.clone()),
+		);
 
 		let key = H256::random()[..].to_vec();
 		let s_key = H256::random()[..].to_vec();
@@ -693,10 +759,14 @@ mod tests {
 	#[test]
 	fn should_remove_lru_items_based_on_tracking_used_size() {
 		let root_parent = H256::random();
-		let shared = new_shared_cache::<Block, Blake2Hasher>(36*3, (2,3));
+		let shared = new_shared_cache::<Block, Blake2Hasher>(36 * 3, (2, 3));
 		let h0 = H256::random();
 
-		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(root_parent.clone()));
+		let mut s = CachingState::new(
+			InMemory::<Blake2Hasher>::default(),
+			shared.clone(),
+			Some(root_parent.clone()),
+		);
 
 		let key = H256::random()[..].to_vec();
 		s.cache.sync_cache(
@@ -735,12 +805,32 @@ mod tests {
 		let h0 = H256::random();
 		let h1 = H256::random();
 
-		let shared = new_shared_cache::<Block, Blake2Hasher>(256*1024, (0, 1));
-		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(root_parent.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![2]))], vec![], Some(h0.clone()), Some(0), || true);
+		let shared = new_shared_cache::<Block, Blake2Hasher>(256 * 1024, (0, 1));
+		let mut s = CachingState::new(
+			InMemory::<Blake2Hasher>::default(),
+			shared.clone(),
+			Some(root_parent.clone()),
+		);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![2]))],
+			vec![],
+			Some(h0.clone()),
+			Some(0),
+			|| true,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h0.clone()));
-		s.cache.sync_cache(&[], &[], vec![(key.clone(), Some(vec![3]))], vec![], Some(h1.clone()), Some(1), || true);
+		s.cache.sync_cache(
+			&[],
+			&[],
+			vec![(key.clone(), Some(vec![3]))],
+			vec![],
+			Some(h1.clone()),
+			Some(1),
+			|| true,
+		);
 
 		let mut s = CachingState::new(InMemory::<Blake2Hasher>::default(), shared.clone(), Some(h1.clone()));
 		assert_eq!(s.storage(&key).unwrap(), Some(vec![3]));

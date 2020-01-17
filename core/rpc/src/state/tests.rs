@@ -14,20 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::*;
-use super::state_full::split_range;
 use self::error::Error;
+use super::state_full::split_range;
+use super::*;
 
-use std::sync::Arc;
 use assert_matches::assert_matches;
 use futures::stream::Stream;
 use primitives::storage::well_known_keys;
 use sr_io::hashing::blake2_256;
-use test_client::{
-	prelude::*,
-	consensus::BlockOrigin,
-	runtime,
-};
+use std::sync::Arc;
+use test_client::{consensus::BlockOrigin, prelude::*, runtime};
 
 #[test]
 fn should_return_storage() {
@@ -47,12 +43,18 @@ fn should_return_storage() {
 	let storage_key = StorageKey(STORAGE_KEY.to_vec());
 
 	assert_eq!(
-		client.storage(key.clone(), Some(genesis_hash).into()).wait()
-			.map(|x| x.map(|x| x.0.len())).unwrap().unwrap() as usize,
+		client
+			.storage(key.clone(), Some(genesis_hash).into())
+			.wait()
+			.map(|x| x.map(|x| x.0.len()))
+			.unwrap()
+			.unwrap() as usize,
 		VALUE.len(),
 	);
 	assert_matches!(
-		client.storage_hash(key.clone(), Some(genesis_hash).into()).wait()
+		client
+			.storage_hash(key.clone(), Some(genesis_hash).into())
+			.wait()
 			.map(|x| x.is_some()),
 		Ok(true)
 	);
@@ -62,33 +64,44 @@ fn should_return_storage() {
 	);
 	assert_eq!(
 		core.block_on(
-			client.child_storage(storage_key, key, Some(genesis_hash).into())
+			client
+				.child_storage(storage_key, key, Some(genesis_hash).into())
 				.map(|x| x.map(|x| x.0.len()))
-		).unwrap().unwrap() as usize,
+		)
+		.unwrap()
+		.unwrap() as usize,
 		CHILD_VALUE.len(),
 	);
-
 }
 
 #[test]
 fn should_return_child_storage() {
 	let core = tokio::runtime::Runtime::new().unwrap();
-	let client = Arc::new(test_client::TestClientBuilder::new()
-		.add_child_storage("test", "key", vec![42_u8])
-		.build());
+	let client = Arc::new(
+		test_client::TestClientBuilder::new()
+			.add_child_storage("test", "key", vec![42_u8])
+			.build(),
+	);
 	let genesis_hash = client.genesis_hash();
 	let client = new_full(client, Subscriptions::new(Arc::new(core.executor())));
-	let child_key = StorageKey(well_known_keys::CHILD_STORAGE_KEY_PREFIX.iter().chain(b"test").cloned().collect());
+	let child_key = StorageKey(
+		well_known_keys::CHILD_STORAGE_KEY_PREFIX
+			.iter()
+			.chain(b"test")
+			.cloned()
+			.collect(),
+	);
 	let key = StorageKey(b"key".to_vec());
-
 
 	assert_matches!(
 		client.child_storage(child_key.clone(), key.clone(), Some(genesis_hash).into()).wait(),
 		Ok(Some(StorageData(ref d))) if d[0] == 42 && d.len() == 1
 	);
 	assert_matches!(
-		client.child_storage_hash(child_key.clone(), key.clone(), Some(genesis_hash).into())
-			.wait().map(|x| x.is_some()),
+		client
+			.child_storage_hash(child_key.clone(), key.clone(), Some(genesis_hash).into())
+			.wait()
+			.map(|x| x.is_some()),
 		Ok(true)
 	);
 	assert_matches!(
@@ -105,7 +118,9 @@ fn should_call_contract() {
 	let client = new_full(client, Subscriptions::new(Arc::new(core.executor())));
 
 	assert_matches!(
-		client.call("balanceOf".into(), Bytes(vec![1,2,3]), Some(genesis_hash).into()).wait(),
+		client
+			.call("balanceOf".into(), Bytes(vec![1, 2, 3]), Some(genesis_hash).into())
+			.wait(),
 		Err(Error::Client(_))
 	)
 }
@@ -126,12 +141,14 @@ fn should_notify_about_storage_changes() {
 		assert_eq!(core.block_on(id), Ok(Ok(SubscriptionId::Number(1))));
 
 		let mut builder = client.new_block(Default::default()).unwrap();
-		builder.push_transfer(runtime::Transfer {
-			from: AccountKeyring::Alice.into(),
-			to: AccountKeyring::Ferdie.into(),
-			amount: 42,
-			nonce: 0,
-		}).unwrap();
+		builder
+			.push_transfer(runtime::Transfer {
+				from: AccountKeyring::Alice.into(),
+				to: AccountKeyring::Ferdie.into(),
+				amount: 42,
+				nonce: 0,
+			})
+			.unwrap();
 		client.import(BlockOrigin::Own, builder.bake().unwrap()).unwrap();
 	}
 
@@ -154,20 +171,24 @@ fn should_send_initial_storage_changes_and_notifications() {
 
 		let alice_balance_key = blake2_256(&runtime::system::balance_of_key(AccountKeyring::Alice.into()));
 
-		api.subscribe_storage(Default::default(), subscriber, Some(vec![
-			StorageKey(alice_balance_key.to_vec()),
-		]).into());
+		api.subscribe_storage(
+			Default::default(),
+			subscriber,
+			Some(vec![StorageKey(alice_balance_key.to_vec())]).into(),
+		);
 
 		// assert id assigned
 		assert_eq!(core.block_on(id), Ok(Ok(SubscriptionId::Number(1))));
 
 		let mut builder = client.new_block(Default::default()).unwrap();
-		builder.push_transfer(runtime::Transfer {
-			from: AccountKeyring::Alice.into(),
-			to: AccountKeyring::Ferdie.into(),
-			amount: 42,
-			nonce: 0,
-		}).unwrap();
+		builder
+			.push_transfer(runtime::Transfer {
+				from: AccountKeyring::Alice.into(),
+				to: AccountKeyring::Ferdie.into(),
+				amount: 42,
+				nonce: 0,
+			})
+			.unwrap();
 		client.import(BlockOrigin::Own, builder.bake().unwrap()).unwrap();
 	}
 
@@ -194,9 +215,13 @@ fn should_query_storage() {
 			// fake change: None -> Some(value) -> Some(value)
 			builder.push_storage_change(vec![2], Some(vec![2])).unwrap();
 			// actual change: None -> Some(value) -> None
-			builder.push_storage_change(vec![3], if nonce == 0 { Some(vec![3]) } else { None }).unwrap();
+			builder
+				.push_storage_change(vec![3], if nonce == 0 { Some(vec![3]) } else { None })
+				.unwrap();
 			// actual change: None -> Some(value)
-			builder.push_storage_change(vec![4], if nonce == 0 { None } else { Some(vec![4]) }).unwrap();
+			builder
+				.push_storage_change(vec![4], if nonce == 0 { None } else { Some(vec![4]) })
+				.unwrap();
 			// actual change: Some(value1) -> Some(value2)
 			builder.push_storage_change(vec![5], Some(vec![nonce as u8])).unwrap();
 			let block = builder.bake().unwrap();
@@ -231,20 +256,12 @@ fn should_query_storage() {
 
 		// Query changes only up to block1
 		let keys = (1..6).map(|k| StorageKey(vec![k])).collect::<Vec<_>>();
-		let result = api.query_storage(
-			keys.clone(),
-			genesis_hash,
-			Some(block1_hash).into(),
-		);
+		let result = api.query_storage(keys.clone(), genesis_hash, Some(block1_hash).into());
 
 		assert_eq!(result.wait().unwrap(), expected);
 
 		// Query all changes
-		let result = api.query_storage(
-			keys.clone(),
-			genesis_hash,
-			None.into(),
-		);
+		let result = api.query_storage(keys.clone(), genesis_hash, None.into());
 
 		expected.push(StorageChangeSet {
 			block: block2_hash,
@@ -258,7 +275,9 @@ fn should_query_storage() {
 	}
 
 	run_tests(Arc::new(test_client::new()));
-	run_tests(Arc::new(TestClientBuilder::new().set_support_changes_trie(true).build()));
+	run_tests(Arc::new(
+		TestClientBuilder::new().set_support_changes_trie(true).build(),
+	));
 }
 
 #[test]
@@ -269,7 +288,6 @@ fn should_split_ranges() {
 	assert_eq!(split_range(100, Some(50)), (0..50, Some(50..100)));
 	assert_eq!(split_range(100, Some(99)), (0..99, Some(99..100)));
 }
-
 
 #[test]
 fn should_return_runtime_version() {
@@ -310,7 +328,7 @@ fn should_notify_on_runtime_version_initially() {
 	// assert initial version sent.
 	let (notification, next) = core.block_on(transport.into_future()).unwrap();
 	assert!(notification.is_some());
-		// no more notifications on this channel
+	// no more notifications on this channel
 	assert_eq!(core.block_on(next.into_future()).unwrap().0, None);
 }
 

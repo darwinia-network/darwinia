@@ -5484,18 +5484,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "substrate-consensus-aura-primitives"
-version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
-dependencies = [
- "parity-scale-codec",
- "sr-api",
- "sr-primitives",
- "sr-std",
- "substrate-application-crypto",
-]
-
-[[package]]
 name = "substrate-consensus-babe"
 version = "2.0.0"
 dependencies = [
@@ -5774,12 +5762,8 @@ dependencies = [
  "substrate-consensus-babe-primitives",
  "substrate-consensus-common",
  "substrate-header-metadata",
- "substrate-keyring",
  "substrate-peerset",
  "substrate-primitives",
- "substrate-test-client",
- "substrate-test-runtime-client",
- "tokio",
  "tokio-io",
  "unsigned-varint",
  "void",
@@ -6113,72 +6097,6 @@ dependencies = [
  "slog-scope",
  "tokio-io",
  "void",
-]
-
-[[package]]
-name = "substrate-test-client"
-version = "2.0.0"
-dependencies = [
- "futures-preview",
- "hash-db",
- "parity-scale-codec",
- "sr-primitives",
- "substrate-client",
- "substrate-client-db",
- "substrate-consensus-common",
- "substrate-executor",
- "substrate-keyring",
- "substrate-primitives",
- "substrate-state-machine",
-]
-
-[[package]]
-name = "substrate-test-runtime"
-version = "2.0.0"
-dependencies = [
- "cfg-if",
- "log 0.4.8",
- "memory-db",
- "parity-scale-codec",
- "serde",
- "sr-api",
- "sr-io",
- "sr-primitives",
- "sr-std",
- "sr-version",
- "srml-babe",
- "srml-executive",
- "srml-support",
- "srml-system",
- "srml-system-rpc-runtime-api",
- "srml-timestamp 2.0.0",
- "substrate-application-crypto",
- "substrate-block-builder-runtime-api",
- "substrate-client",
- "substrate-consensus-aura-primitives",
- "substrate-consensus-babe-primitives",
- "substrate-inherents",
- "substrate-keyring",
- "substrate-offchain-primitives",
- "substrate-primitives",
- "substrate-runtime-interface",
- "substrate-session",
- "substrate-transaction-pool-runtime-api",
- "substrate-trie",
- "substrate-wasm-builder-runner",
- "trie-db",
-]
-
-[[package]]
-name = "substrate-test-runtime-client"
-version = "2.0.0"
-dependencies = [
- "parity-scale-codec",
- "sr-primitives",
- "substrate-block-builder",
- "substrate-primitives",
- "substrate-test-client",
- "substrate-test-runtime",
 ]
 
 [[package]]

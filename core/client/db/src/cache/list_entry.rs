@@ -17,11 +17,11 @@
 //! List-cache storage entries.
 
 use client::error::Result as ClientResult;
+use codec::{Decode, Encode};
 use sr_primitives::traits::{Block as BlockT, NumberFor};
-use codec::{Encode, Decode};
 
+use crate::cache::list_storage::Storage;
 use crate::cache::{CacheItemT, ComplexBlockId};
-use crate::cache::list_storage::{Storage};
 
 /// Single list-based cache entry.
 #[derive(Debug)]
@@ -65,7 +65,8 @@ impl<Block: BlockT, T: CacheItemT> Entry<Block, T> {
 		storage: &S,
 		block: NumberFor<Block>,
 	) -> ClientResult<Option<(ComplexBlockId<Block>, Option<ComplexBlockId<Block>>)>> {
-		Ok(self.search_best_before(storage, block)?
+		Ok(self
+			.search_best_before(storage, block)?
 			.map(|(entry, next)| (entry.valid_from, next)))
 	}
 
@@ -84,14 +85,26 @@ impl<Block: BlockT, T: CacheItemT> Entry<Block, T> {
 		let mut current = self.valid_from.clone();
 		if block >= self.valid_from.number {
 			let value = self.value.clone();
-			return Ok(Some((Entry { valid_from: current, value }, next)));
+			return Ok(Some((
+				Entry {
+					valid_from: current,
+					value,
+				},
+				next,
+			)));
 		}
 
 		// else - travel back in time
 		loop {
 			let entry = storage.require_entry(&current)?;
 			if block >= current.number {
-				return Ok(Some((Entry { valid_from: current, value: entry.value }, next)));
+				return Ok(Some((
+					Entry {
+						valid_from: current,
+						value: entry.value,
+					},
+					next,
+				)));
 			}
 
 			next = Some(current);
@@ -115,47 +128,132 @@ impl<Block: BlockT, T: CacheItemT> StorageEntry<Block, T> {
 
 #[cfg(test)]
 mod tests {
+	use super::*;
 	use crate::cache::list_cache::tests::test_id;
 	use crate::cache::list_storage::tests::{DummyStorage, FaultyStorage};
-	use super::*;
 
 	#[test]
 	fn entry_try_update_works() {
 		// when trying to update with None value
-		assert_eq!(Entry::<_, u64> { valid_from: test_id(1), value: 42 }.try_update(None), None);
+		assert_eq!(
+			Entry::<_, u64> {
+				valid_from: test_id(1),
+				value: 42
+			}
+			.try_update(None),
+			None
+		);
 		// when trying to update with the same Some value
-		assert_eq!(Entry { valid_from: test_id(1), value: 1 }.try_update(Some(1)), None);
+		assert_eq!(
+			Entry {
+				valid_from: test_id(1),
+				value: 1
+			}
+			.try_update(Some(1)),
+			None
+		);
 		// when trying to update with different Some value
-		assert_eq!(Entry { valid_from: test_id(1), value: 1 }.try_update(Some(2)),
-			Some(StorageEntry { prev_valid_from: Some(test_id(1)), value: 2 }));
+		assert_eq!(
+			Entry {
+				valid_from: test_id(1),
+				value: 1
+			}
+			.try_update(Some(2)),
+			Some(StorageEntry {
+				prev_valid_from: Some(test_id(1)),
+				value: 2
+			})
+		);
 	}
 
 	#[test]
 	fn entry_search_best_before_fails() {
 		// when storage returns error
-		assert!(Entry::<_, u64> { valid_from: test_id(100), value: 42 }
-			.search_best_before(&FaultyStorage, 50).is_err());
+		assert!(Entry::<_, u64> {
+			valid_from: test_id(100),
+			value: 42
+		}
+		.search_best_before(&FaultyStorage, 50)
+		.is_err());
 	}
 
 	#[test]
 	fn entry_search_best_before_works() {
 		// when block is better than our best block
-		assert_eq!(Entry::<_, u64> { valid_from: test_id(100), value: 100 }
-			.search_best_before(&DummyStorage::new(), 150).unwrap(),
-		Some((Entry::<_, u64> { valid_from: test_id(100), value: 100 }, None)));
+		assert_eq!(
+			Entry::<_, u64> {
+				valid_from: test_id(100),
+				value: 100
+			}
+			.search_best_before(&DummyStorage::new(), 150)
+			.unwrap(),
+			Some((
+				Entry::<_, u64> {
+					valid_from: test_id(100),
+					value: 100
+				},
+				None
+			))
+		);
 		// when block is found between two entries
-		assert_eq!(Entry::<_, u64> { valid_from: test_id(100), value: 100 }
-			.search_best_before(&DummyStorage::new()
-				.with_entry(test_id(100), StorageEntry { prev_valid_from: Some(test_id(50)), value: 100 })
-				.with_entry(test_id(50), StorageEntry { prev_valid_from: Some(test_id(30)), value: 50 }),
-			75).unwrap(),
-		Some((Entry::<_, u64> { valid_from: test_id(50), value: 50 }, Some(test_id(100)))));
+		assert_eq!(
+			Entry::<_, u64> {
+				valid_from: test_id(100),
+				value: 100
+			}
+			.search_best_before(
+				&DummyStorage::new()
+					.with_entry(
+						test_id(100),
+						StorageEntry {
+							prev_valid_from: Some(test_id(50)),
+							value: 100
+						}
+					)
+					.with_entry(
+						test_id(50),
+						StorageEntry {
+							prev_valid_from: Some(test_id(30)),
+							value: 50
+						}
+					),
+				75
+			)
+			.unwrap(),
+			Some((
+				Entry::<_, u64> {
+					valid_from: test_id(50),
+					value: 50
+				},
+				Some(test_id(100))
+			))
+		);
 		// when block is not found
-		assert_eq!(Entry::<_, u64> { valid_from: test_id(100), value: 100 }
-			.search_best_before(&DummyStorage::new()
-				.with_entry(test_id(100), StorageEntry { prev_valid_from: Some(test_id(50)), value: 100 })
-				.with_entry(test_id(50), StorageEntry { prev_valid_from: None, value: 50 }),
-			30).unwrap(),
-		None);
+		assert_eq!(
+			Entry::<_, u64> {
+				valid_from: test_id(100),
+				value: 100
+			}
+			.search_best_before(
+				&DummyStorage::new()
+					.with_entry(
+						test_id(100),
+						StorageEntry {
+							prev_valid_from: Some(test_id(50)),
+							value: 100
+						}
+					)
+					.with_entry(
+						test_id(50),
+						StorageEntry {
+							prev_valid_from: None,
+							value: 50
+						}
+					),
+				30
+			)
+			.unwrap(),
+			None
+		);
 	}
 }

@@ -22,37 +22,38 @@ mod chain_light;
 #[cfg(test)]
 mod tests;
 
-use std::sync::Arc;
 use futures03::{future, StreamExt as _, TryStreamExt as _};
 use log::warn;
 use rpc::{
-	Result as RpcResult,
 	futures::{stream, Future, Sink, Stream},
+	Result as RpcResult,
 };
+use std::sync::Arc;
 
 use api::Subscriptions;
 use client::{
-	self, Client, BlockchainEvents,
-	light::{fetcher::Fetcher, blockchain::RemoteBlockchain},
+	self,
+	light::{blockchain::RemoteBlockchain, fetcher::Fetcher},
+	BlockchainEvents, Client,
 };
 use jsonrpc_pubsub::{typed::Subscriber, SubscriptionId};
-use primitives::{H256, Blake2Hasher};
+use primitives::{Blake2Hasher, H256};
 use rpc_primitives::number;
 use sr_primitives::{
 	generic::{BlockId, SignedBlock},
 	traits::{Block as BlockT, Header, NumberFor},
 };
 
-use self::error::{Result, Error, FutureResult};
+use self::error::{Error, FutureResult, Result};
 
 pub use api::chain::*;
 
 /// Blockchain backend API
 trait ChainBackend<B, E, Block: BlockT, RA>: Send + Sync + 'static
-	where
-		Block: BlockT<Hash=H256> + 'static,
-		B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
-		E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
+where
+	Block: BlockT<Hash = H256> + 'static,
+	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
+	E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
 {
 	/// Get client reference.
 	fn client(&self) -> &Arc<Client<B, E, Block, RA>>;
@@ -77,13 +78,11 @@ trait ChainBackend<B, E, Block: BlockT, RA>: Send + Sync + 'static
 	/// Get hash of the n-th block in the canon chain.
 	///
 	/// By default returns latest block hash.
-	fn block_hash(
-		&self,
-		number: Option<number::NumberOrHex<NumberFor<Block>>>,
-	) -> Result<Option<Block::Hash>> {
+	fn block_hash(&self, number: Option<number::NumberOrHex<NumberFor<Block>>>) -> Result<Option<Block::Hash>> {
 		Ok(match number {
 			None => Some(self.client().info().chain.best_hash),
-			Some(num_or_hex) => self.client()
+			Some(num_or_hex) => self
+				.client()
 				.header(&BlockId::number(num_or_hex.to_number()?))
 				.map_err(client_err)?
 				.map(|h| h.hash()),
@@ -96,20 +95,19 @@ trait ChainBackend<B, E, Block: BlockT, RA>: Send + Sync + 'static
 	}
 
 	/// New head subscription
-	fn subscribe_new_heads(
-		&self,
-		_metadata: crate::metadata::Metadata,
-		subscriber: Subscriber<Block::Header>,
-	) {
+	fn subscribe_new_heads(&self, _metadata: crate::metadata::Metadata, subscriber: Subscriber<Block::Header>) {
 		subscribe_headers(
 			self.client(),
 			self.subscriptions(),
 			subscriber,
 			|| self.client().info().chain.best_hash,
-			|| self.client().import_notification_stream()
-				.filter(|notification| future::ready(notification.is_new_best))
-				.map(|notification| Ok::<_, ()>(notification.header))
-				.compat(),
+			|| {
+				self.client()
+					.import_notification_stream()
+					.filter(|notification| future::ready(notification.is_new_best))
+					.map(|notification| Ok::<_, ()>(notification.header))
+					.compat()
+			},
 		)
 	}
 
@@ -123,19 +121,18 @@ trait ChainBackend<B, E, Block: BlockT, RA>: Send + Sync + 'static
 	}
 
 	/// New head subscription
-	fn subscribe_finalized_heads(
-		&self,
-		_metadata: crate::metadata::Metadata,
-		subscriber: Subscriber<Block::Header>,
-	) {
+	fn subscribe_finalized_heads(&self, _metadata: crate::metadata::Metadata, subscriber: Subscriber<Block::Header>) {
 		subscribe_headers(
 			self.client(),
 			self.subscriptions(),
 			subscriber,
 			|| self.client().info().chain.finalized_hash,
-			|| self.client().finality_notification_stream()
-				.map(|notification| Ok::<_, ()>(notification.header))
-				.compat(),
+			|| {
+				self.client()
+					.finality_notification_stream()
+					.map(|notification| Ok::<_, ()>(notification.header))
+					.compat()
+			},
 		)
 	}
 
@@ -154,11 +151,11 @@ pub fn new_full<B, E, Block: BlockT, RA>(
 	client: Arc<Client<B, E, Block, RA>>,
 	subscriptions: Subscriptions,
 ) -> Chain<B, E, Block, RA>
-	where
-		Block: BlockT<Hash=H256> + 'static,
-		B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
-		E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static + Clone,
-		RA: Send + Sync + 'static,
+where
+	Block: BlockT<Hash = H256> + 'static,
+	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
+	E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static + Clone,
+	RA: Send + Sync + 'static,
 {
 	Chain {
 		backend: Box::new(self::chain_full::FullChain::new(client, subscriptions)),
@@ -172,12 +169,12 @@ pub fn new_light<B, E, Block: BlockT, RA, F: Fetcher<Block>>(
 	remote_blockchain: Arc<dyn RemoteBlockchain<Block>>,
 	fetcher: Arc<F>,
 ) -> Chain<B, E, Block, RA>
-	where
-		Block: BlockT<Hash=H256> + 'static,
-		B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
-		E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static + Clone,
-		RA: Send + Sync + 'static,
-		F: Send + Sync + 'static,
+where
+	Block: BlockT<Hash = H256> + 'static,
+	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
+	E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static + Clone,
+	RA: Send + Sync + 'static,
+	F: Send + Sync + 'static,
 {
 	Chain {
 		backend: Box::new(self::chain_light::LightChain::new(
@@ -194,11 +191,13 @@ pub struct Chain<B, E, Block: BlockT, RA> {
 	backend: Box<dyn ChainBackend<B, E, Block, RA>>,
 }
 
-impl<B, E, Block, RA> ChainApi<NumberFor<Block>, Block::Hash, Block::Header, SignedBlock<Block>> for Chain<B, E, Block, RA> where
-	Block: BlockT<Hash=H256> + 'static,
+impl<B, E, Block, RA> ChainApi<NumberFor<Block>, Block::Hash, Block::Header, SignedBlock<Block>>
+	for Chain<B, E, Block, RA>
+where
+	Block: BlockT<Hash = H256> + 'static,
 	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
 	E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
-	RA: Send + Sync + 'static
+	RA: Send + Sync + 'static,
 {
 	type Metadata = crate::metadata::Metadata;
 
@@ -206,8 +205,7 @@ impl<B, E, Block, RA> ChainApi<NumberFor<Block>, Block::Hash, Block::Header, Sig
 		self.backend.header(hash)
 	}
 
-	fn block(&self, hash: Option<Block::Hash>) -> FutureResult<Option<SignedBlock<Block>>>
-	{
+	fn block(&self, hash: Option<Block::Hash>) -> FutureResult<Option<SignedBlock<Block>>> {
 		self.backend.block(hash)
 	}
 
@@ -244,21 +242,20 @@ fn subscribe_headers<B, E, Block, RA, F, G, S, ERR>(
 	best_block_hash: G,
 	stream: F,
 ) where
-	Block: BlockT<Hash=H256> + 'static,
+	Block: BlockT<Hash = H256> + 'static,
 	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
 	E: client::CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
 	F: FnOnce() -> S,
 	G: FnOnce() -> Block::Hash,
 	ERR: ::std::fmt::Debug,
-	S: Stream<Item=Block::Header, Error=ERR> + Send + 'static,
+	S: Stream<Item = Block::Header, Error = ERR> + Send + 'static,
 {
 	subscriptions.add(subscriber, |sink| {
 		// send current head right at the start.
-		let header = client.header(&BlockId::Hash(best_block_hash()))
+		let header = client
+			.header(&BlockId::Hash(best_block_hash()))
 			.map_err(client_err)
-			.and_then(|header| {
-				header.ok_or_else(|| "Best header missing.".to_owned().into())
-			})
+			.and_then(|header| header.ok_or_else(|| "Best header missing.".to_owned().into()))
 			.map_err(Into::into);
 
 		// send further subscriptions
@@ -266,12 +263,8 @@ fn subscribe_headers<B, E, Block, RA, F, G, S, ERR>(
 			.map(|res| Ok(res))
 			.map_err(|e| warn!("Block notification stream error: {:?}", e));
 
-		sink
-			.sink_map_err(|e| warn!("Error sending notifications: {:?}", e))
-			.send_all(
-				stream::iter_result(vec![Ok(header)])
-					.chain(stream)
-			)
+		sink.sink_map_err(|e| warn!("Error sending notifications: {:?}", e))
+			.send_all(stream::iter_result(vec![Ok(header)]).chain(stream))
 			// we ignore the resulting Stream (if the first stream is over we are unsubscribed)
 			.map(|_| ())
 	});

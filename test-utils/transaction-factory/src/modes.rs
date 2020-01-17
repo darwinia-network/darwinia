@@ -24,7 +24,7 @@ use std::str::FromStr;
 pub enum Mode {
 	MasterToN,
 	MasterTo1,
-	MasterToNToM
+	MasterToNToM,
 }
 
 impl FromStr for Mode {

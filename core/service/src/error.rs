@@ -17,9 +17,9 @@
 //! Errors that can occur during the service operation.
 
 use client;
-use network;
-use keystore;
 use consensus_common;
+use keystore;
+use network;
 
 /// Service Result typedef.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -38,7 +38,7 @@ pub enum Error {
 	/// Keystore error.
 	Keystore(keystore::Error),
 	/// Best chain selection strategy is missing.
-	#[display(fmt="Best chain selection strategy (SelectChain) is not provided.")]
+	#[display(fmt = "Best chain selection strategy (SelectChain) is not provided.")]
 	SelectChainRequired,
 	/// Other error.
 	Other(String),

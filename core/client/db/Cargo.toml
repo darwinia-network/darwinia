@@ -27,4 +27,3 @@ header_metadata = { package = "substrate-header-metadata", git = "https://github
 
 [features]
 default = []
-test-helpers = []

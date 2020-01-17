@@ -16,23 +16,26 @@
 
 use super::*;
 
-use std::sync::Arc;
 use assert_matches::assert_matches;
 use codec::Encode;
 use primitives::{
-	H256, blake2_256, hexdisplay::HexDisplay, testing::{ED25519, SR25519, KeyStore}, traits::BareCryptoStorePtr, ed25519,
+	blake2_256,
 	crypto::Pair,
+	ed25519,
+	hexdisplay::HexDisplay,
+	testing::{KeyStore, ED25519, SR25519},
+	traits::BareCryptoStorePtr,
+	H256,
 };
 use rpc::futures::Stream as _;
+use std::sync::Arc;
 use test_client::{
-	self, AccountKeyring, runtime::{Extrinsic, Transfer, SessionKeys, RuntimeApi, Block}, DefaultTestClientBuilderExt,
-	TestClientBuilderExt, Backend, Client, Executor
-};
-use transaction_pool::{
-	txpool::Pool,
-	FullChainApi,
+	self,
+	runtime::{Block, Extrinsic, RuntimeApi, SessionKeys, Transfer},
+	AccountKeyring, Backend, Client, DefaultTestClientBuilderExt, Executor, TestClientBuilderExt,
 };
 use tokio::runtime;
+use transaction_pool::{txpool::Pool, FullChainApi};
 
 fn uxt(sender: AccountKeyring, nonce: u64) -> Extrinsic {
 	let tx = Transfer {
@@ -54,7 +57,11 @@ struct TestSetup {
 impl Default for TestSetup {
 	fn default() -> Self {
 		let keystore = KeyStore::new();
-		let client = Arc::new(test_client::TestClientBuilder::new().set_keystore(keystore.clone()).build());
+		let client = Arc::new(
+			test_client::TestClientBuilder::new()
+				.set_keystore(keystore.clone())
+				.build(),
+		);
 		let pool = Arc::new(Pool::new(Default::default(), FullChainApi::new(client.clone())));
 		TestSetup {
 			runtime: runtime::Runtime::new().expect("Failed to create runtime in test setup"),
@@ -86,9 +93,7 @@ fn submit_transaction_should_not_cause_error() {
 		AuthorApi::submit_extrinsic(&p, xt.clone().into()).wait(),
 		Ok(h2) if h == h2
 	);
-	assert!(
-		AuthorApi::submit_extrinsic(&p, xt.into()).wait().is_err()
-	);
+	assert!(AuthorApi::submit_extrinsic(&p, xt.into()).wait().is_err());
 }
 
 #[test]
@@ -101,9 +106,7 @@ fn submit_rich_transaction_should_not_cause_error() {
 		AuthorApi::submit_extrinsic(&p, xt.clone().into()).wait(),
 		Ok(h2) if h == h2
 	);
-	assert!(
-		AuthorApi::submit_extrinsic(&p, xt.into()).wait().is_err()
-	);
+	assert!(AuthorApi::submit_extrinsic(&p, xt.into()).wait().is_err());
 }
 
 #[test]
@@ -115,7 +118,11 @@ fn should_watch_extrinsic() {
 	let (subscriber, id_rx, data) = jsonrpc_pubsub::typed::Subscriber::new_test("test");
 
 	// when
-	p.watch_extrinsic(Default::default(), subscriber, uxt(AccountKeyring::Alice, 0).encode().into());
+	p.watch_extrinsic(
+		Default::default(),
+		subscriber,
+		uxt(AccountKeyring::Alice, 0).encode().into(),
+	);
 
 	// then
 	assert_eq!(setup.runtime.block_on(id_rx), Ok(Ok(1.into())));
@@ -129,7 +136,9 @@ fn should_watch_extrinsic() {
 		};
 		tx.into_signed_tx()
 	};
-	AuthorApi::submit_extrinsic(&p, replacement.encode().into()).wait().unwrap();
+	AuthorApi::submit_extrinsic(&p, replacement.encode().into())
+		.wait()
+		.unwrap();
 	let (res, data) = setup.runtime.block_on(data.into_future()).unwrap();
 	assert_eq!(
 		res,
@@ -138,7 +147,10 @@ fn should_watch_extrinsic() {
 	let h = blake2_256(&replacement.encode());
 	assert_eq!(
 		setup.runtime.block_on(data.into_future()).unwrap().0,
-		Some(format!(r#"{{"jsonrpc":"2.0","method":"test","params":{{"result":{{"usurped":"0x{}"}},"subscription":1}}}}"#, HexDisplay::from(&h)))
+		Some(format!(
+			r#"{{"jsonrpc":"2.0","method":"test","params":{{"result":{{"usurped":"0x{}"}},"subscription":1}}}}"#,
+			HexDisplay::from(&h)
+		))
 	);
 }
 
@@ -151,7 +163,11 @@ fn should_return_watch_validation_error() {
 	let (subscriber, id_rx, _data) = jsonrpc_pubsub::typed::Subscriber::new_test("test");
 
 	// when
-	p.watch_extrinsic(Default::default(), subscriber, uxt(AccountKeyring::Alice, 179).encode().into());
+	p.watch_extrinsic(
+		Default::default(),
+		subscriber,
+		uxt(AccountKeyring::Alice, 179).encode().into(),
+	);
 
 	// then
 	let res = setup.runtime.block_on(id_rx).unwrap();
@@ -164,7 +180,7 @@ fn should_return_pending_extrinsics() {
 
 	let ex = uxt(AccountKeyring::Alice, 0);
 	AuthorApi::submit_extrinsic(&p, ex.encode().into()).wait().unwrap();
- 	assert_matches!(
+	assert_matches!(
 		p.pending_extrinsics(),
 		Ok(ref expected) if *expected == vec![Bytes(ex.encode())]
 	);
@@ -184,13 +200,15 @@ fn should_remove_extrinsics() {
 	assert_eq!(setup.pool.status().ready, 3);
 
 	// now remove all 3
-	let removed = p.remove_extrinsic(vec![
-		hash::ExtrinsicOrHash::Hash(hash3),
-		// Removing this one will also remove ex2
-		hash::ExtrinsicOrHash::Extrinsic(ex1.encode().into()),
-	]).unwrap();
+	let removed = p
+		.remove_extrinsic(vec![
+			hash::ExtrinsicOrHash::Hash(hash3),
+			// Removing this one will also remove ex2
+			hash::ExtrinsicOrHash::Extrinsic(ex1.encode().into()),
+		])
+		.unwrap();
 
- 	assert_eq!(removed.len(), 3);
+	assert_eq!(removed.len(), 3);
 }
 
 #[test]
@@ -204,10 +222,14 @@ fn should_insert_key() {
 		String::from_utf8(ED25519.0.to_vec()).expect("Keytype is a valid string"),
 		suri.to_string(),
 		key_pair.public().0.to_vec().into(),
-	).expect("Insert key");
+	)
+	.expect("Insert key");
 
-	let store_key_pair = setup.keystore.read()
-		.ed25519_key_pair(ED25519, &key_pair.public()).expect("Key exists in store");
+	let store_key_pair = setup
+		.keystore
+		.read()
+		.ed25519_key_pair(ED25519, &key_pair.public())
+		.expect("Key exists in store");
 
 	assert_eq!(key_pair.public(), store_key_pair.public());
 }
@@ -219,18 +241,19 @@ fn should_rotate_keys() {
 
 	let new_public_keys = p.rotate_keys().expect("Rotates the keys");
 
-	let session_keys = SessionKeys::decode(&mut &new_public_keys[..])
-		.expect("SessionKeys decode successfully");
+	let session_keys = SessionKeys::decode(&mut &new_public_keys[..]).expect("SessionKeys decode successfully");
 
-	let ed25519_key_pair = setup.keystore.read().ed25519_key_pair(
-		ED25519,
-		&session_keys.ed25519.clone().into(),
-	).expect("ed25519 key exists in store");
+	let ed25519_key_pair = setup
+		.keystore
+		.read()
+		.ed25519_key_pair(ED25519, &session_keys.ed25519.clone().into())
+		.expect("ed25519 key exists in store");
 
-	let sr25519_key_pair = setup.keystore.read().sr25519_key_pair(
-		SR25519,
-		&session_keys.sr25519.clone().into(),
-	).expect("sr25519 key exists in store");
+	let sr25519_key_pair = setup
+		.keystore
+		.read()
+		.sr25519_key_pair(SR25519, &session_keys.sr25519.clone().into())
+		.expect("sr25519 key exists in store");
 
 	assert_eq!(session_keys.ed25519, ed25519_key_pair.public().into());
 	assert_eq!(session_keys.sr25519, sr25519_key_pair.public().into());

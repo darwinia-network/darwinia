@@ -16,14 +16,14 @@
 
 //! Blockchain access trait
 
-use client::{self, Client as SubstrateClient, ClientInfo, CallExecutor};
 use client::error::Error;
 use client::light::fetcher::{ChangesProof, StorageProof};
+use client::{self, CallExecutor, Client as SubstrateClient, ClientInfo};
 use consensus::{BlockImport, BlockStatus, Error as ConsensusError};
+use primitives::{storage::StorageKey, Blake2Hasher, H256};
+use sr_primitives::generic::BlockId;
 use sr_primitives::traits::{Block as BlockT, Header as HeaderT};
-use sr_primitives::generic::{BlockId};
 use sr_primitives::Justification;
-use primitives::{H256, Blake2Hasher, storage::StorageKey};
 
 /// Local client abstraction for the network.
 pub trait Client<Block: BlockT>: Send + Sync {
@@ -46,8 +46,10 @@ pub trait Client<Block: BlockT>: Send + Sync {
 	fn justification(&self, id: &BlockId<Block>) -> Result<Option<Justification>, Error>;
 
 	/// Get block header proof.
-	fn header_proof(&self, block_number: <Block::Header as HeaderT>::Number)
-		-> Result<(Block::Header, StorageProof), Error>;
+	fn header_proof(
+		&self,
+		block_number: <Block::Header as HeaderT>::Number,
+	) -> Result<(Block::Header, StorageProof), Error>;
 
 	/// Get storage read execution proof.
 	fn read_proof(&self, block: &Block::Hash, keys: &[Vec<u8>]) -> Result<StorageProof, Error>;
@@ -61,7 +63,8 @@ pub trait Client<Block: BlockT>: Send + Sync {
 	) -> Result<StorageProof, Error>;
 
 	/// Get method execution proof.
-	fn execution_proof(&self, block: &Block::Hash, method: &str, data: &[u8]) -> Result<(Vec<u8>, StorageProof), Error>;
+	fn execution_proof(&self, block: &Block::Hash, method: &str, data: &[u8])
+		-> Result<(Vec<u8>, StorageProof), Error>;
 
 	/// Get key changes proof.
 	fn key_changes_proof(
@@ -71,7 +74,7 @@ pub trait Client<Block: BlockT>: Send + Sync {
 		min: Block::Hash,
 		max: Block::Hash,
 		storage_key: Option<&StorageKey>,
-		key: &StorageKey
+		key: &StorageKey,
 	) -> Result<ChangesProof<Block::Header>, Error>;
 
 	/// Returns `true` if the given `block` is a descendent of `base`.
@@ -90,12 +93,13 @@ impl<Block: BlockT> FinalityProofProvider<Block> for () {
 	}
 }
 
-impl<B, E, Block, RA> Client<Block> for SubstrateClient<B, E, Block, RA> where
+impl<B, E, Block, RA> Client<Block> for SubstrateClient<B, E, Block, RA>
+where
 	B: client::backend::Backend<Block, Blake2Hasher> + Send + Sync + 'static,
 	E: CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
-	Self: BlockImport<Block, Error=ConsensusError>,
-	Block: BlockT<Hash=H256>,
-	RA: Send + Sync
+	Self: BlockImport<Block, Error = ConsensusError>,
+	Block: BlockT<Hash = H256>,
+	RA: Send + Sync,
 {
 	fn info(&self) -> ClientInfo<Block> {
 		(self as &SubstrateClient<B, E, Block, RA>).info()
@@ -121,9 +125,10 @@ impl<B, E, Block, RA> Client<Block> for SubstrateClient<B, E, Block, RA> where
 		(self as &SubstrateClient<B, E, Block, RA>).justification(id)
 	}
 
-	fn header_proof(&self, block_number: <Block::Header as HeaderT>::Number)
-		-> Result<(Block::Header, StorageProof), Error>
-	{
+	fn header_proof(
+		&self,
+		block_number: <Block::Header as HeaderT>::Number,
+	) -> Result<(Block::Header, StorageProof), Error> {
 		(self as &SubstrateClient<B, E, Block, RA>).header_proof(&BlockId::Number(block_number))
 	}
 
@@ -137,11 +142,15 @@ impl<B, E, Block, RA> Client<Block> for SubstrateClient<B, E, Block, RA> where
 		storage_key: &[u8],
 		keys: &[Vec<u8>],
 	) -> Result<StorageProof, Error> {
-		(self as &SubstrateClient<B, E, Block, RA>)
-			.read_child_proof(&BlockId::Hash(block.clone()), storage_key, keys)
+		(self as &SubstrateClient<B, E, Block, RA>).read_child_proof(&BlockId::Hash(block.clone()), storage_key, keys)
 	}
 
-	fn execution_proof(&self, block: &Block::Hash, method: &str, data: &[u8]) -> Result<(Vec<u8>, StorageProof), Error> {
+	fn execution_proof(
+		&self,
+		block: &Block::Hash,
+		method: &str,
+		data: &[u8],
+	) -> Result<(Vec<u8>, StorageProof), Error> {
 		(self as &SubstrateClient<B, E, Block, RA>).execution_proof(&BlockId::Hash(block.clone()), method, data)
 	}
 

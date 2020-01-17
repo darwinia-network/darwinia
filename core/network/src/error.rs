@@ -18,7 +18,7 @@
 
 use client;
 
-use libp2p::{PeerId, Multiaddr};
+use libp2p::{Multiaddr, PeerId};
 
 use std::fmt;
 
@@ -37,7 +37,7 @@ pub enum Error {
 		fmt = "The same bootnode (`{}`) is registered with two different peer ids: `{}` and `{}`",
 		address,
 		first_id,
-		second_id,
+		second_id
 	)]
 	DuplicateBootnode {
 		/// The address of the bootnode.

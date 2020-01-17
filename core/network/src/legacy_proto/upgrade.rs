@@ -16,10 +16,10 @@
 
 use crate::config::ProtocolId;
 use bytes::{Bytes, BytesMut};
-use libp2p::core::{Negotiated, Endpoint, UpgradeInfo, InboundUpgrade, OutboundUpgrade, upgrade::ProtocolName};
+use futures::{future, prelude::*, stream};
+use libp2p::core::{upgrade::ProtocolName, Endpoint, InboundUpgrade, Negotiated, OutboundUpgrade, UpgradeInfo};
 use libp2p::tokio_codec::Framed;
 use std::{collections::VecDeque, io, vec::IntoIter as VecIntoIter};
-use futures::{prelude::*, future, stream};
 use tokio_io::{AsyncRead, AsyncWrite};
 use unsigned_varint::codec::UviBytes;
 
@@ -41,8 +41,7 @@ pub struct RegisteredProtocol {
 impl RegisteredProtocol {
 	/// Creates a new `RegisteredProtocol`. The `custom_data` parameter will be
 	/// passed inside the `RegisteredProtocolOutput`.
-	pub fn new(protocol: impl Into<ProtocolId>, versions: &[u8])
-		-> Self {
+	pub fn new(protocol: impl Into<ProtocolId>, versions: &[u8]) -> Self {
 		let protocol = protocol.into();
 		let mut base_name = Bytes::from_static(b"/substrate/");
 		base_name.extend_from_slice(protocol.as_bytes());
@@ -116,7 +115,7 @@ impl<TSubstream> RegisteredProtocolSubstream<TSubstream> {
 	/// Sends a message to the substream.
 	pub fn send_message(&mut self, data: Vec<u8>) {
 		if self.is_closing {
-			return
+			return;
 		}
 
 		self.send_queue.push_back(data);
@@ -138,7 +137,9 @@ pub enum RegisteredProtocolEvent {
 }
 
 impl<TSubstream> Stream for RegisteredProtocolSubstream<TSubstream>
-where TSubstream: AsyncRead + AsyncWrite {
+where
+	TSubstream: AsyncRead + AsyncWrite,
+{
 	type Item = RegisteredProtocolEvent;
 	type Error = io::Error;
 
@@ -148,15 +149,15 @@ where TSubstream: AsyncRead + AsyncWrite {
 			match self.inner.start_send(packet)? {
 				AsyncSink::NotReady(packet) => {
 					self.send_queue.push_front(packet);
-					break
-				},
+					break;
+				}
 				AsyncSink::Ready => self.requires_poll_complete = true,
 			}
 		}
 
 		// If we are closing, close as soon as the Sink is closed.
 		if self.is_closing {
-			return Ok(self.inner.close()?.map(|()| None))
+			return Ok(self.inner.close()?.map(|()| None));
 		}
 
 		// Indicating that the remote is clogged if that's the case.
@@ -167,10 +168,8 @@ where TSubstream: AsyncRead + AsyncWrite {
 				//	thus never read any message from the network.
 				self.clogged_fuse = true;
 				return Ok(Async::Ready(Some(RegisteredProtocolEvent::Clogged {
-					messages: self.send_queue.iter()
-						.map(|m| m.clone())
-						.collect(),
-				})))
+					messages: self.send_queue.iter().map(|m| m.clone()).collect(),
+				})));
 			}
 		} else {
 			self.clogged_fuse = false;
@@ -186,15 +185,14 @@ where TSubstream: AsyncRead + AsyncWrite {
 		// Receiving incoming packets.
 		// Note that `inner` is wrapped in a `Fuse`, therefore we can poll it forever.
 		match self.inner.poll()? {
-			Async::Ready(Some(data)) => {
-				Ok(Async::Ready(Some(RegisteredProtocolEvent::Message(data))))
-			}
-			Async::Ready(None) =>
+			Async::Ready(Some(data)) => Ok(Async::Ready(Some(RegisteredProtocolEvent::Message(data)))),
+			Async::Ready(None) => {
 				if !self.requires_poll_complete && self.send_queue.is_empty() {
 					Ok(Async::Ready(None))
 				} else {
 					Ok(Async::NotReady)
 				}
+			}
 			Async::NotReady => Ok(Async::NotReady),
 		}
 	}
@@ -207,16 +205,17 @@ impl UpgradeInfo for RegisteredProtocol {
 	#[inline]
 	fn protocol_info(&self) -> Self::InfoIter {
 		// Report each version as an individual protocol.
-		self.supported_versions.iter().map(|&version| {
-			let num = version.to_string();
+		self.supported_versions
+			.iter()
+			.map(|&version| {
+				let num = version.to_string();
 
-			let mut name = self.base_name.clone();
-			name.extend_from_slice(num.as_bytes());
-			RegisteredProtocolName {
-				name,
-				version,
-			}
-		}).collect::<Vec<_>>().into_iter()
+				let mut name = self.base_name.clone();
+				name.extend_from_slice(num.as_bytes());
+				RegisteredProtocolName { name, version }
+			})
+			.collect::<Vec<_>>()
+			.into_iter()
 	}
 }
 
@@ -236,20 +235,17 @@ impl ProtocolName for RegisteredProtocolName {
 }
 
 impl<TSubstream> InboundUpgrade<TSubstream> for RegisteredProtocol
-where TSubstream: AsyncRead + AsyncWrite,
+where
+	TSubstream: AsyncRead + AsyncWrite,
 {
 	type Output = RegisteredProtocolSubstream<TSubstream>;
 	type Future = future::FutureResult<Self::Output, io::Error>;
 	type Error = io::Error;
 
-	fn upgrade_inbound(
-		self,
-		socket: Negotiated<TSubstream>,
-		info: Self::Info,
-	) -> Self::Future {
+	fn upgrade_inbound(self, socket: Negotiated<TSubstream>, info: Self::Info) -> Self::Future {
 		let framed = {
 			let mut codec = UviBytes::default();
-			codec.set_max_len(16 * 1024 * 1024);		// 16 MiB hard limit for packets.
+			codec.set_max_len(16 * 1024 * 1024); // 16 MiB hard limit for packets.
 			Framed::new(socket, codec)
 		};
 
@@ -266,17 +262,14 @@ where TSubstream: AsyncRead + AsyncWrite,
 }
 
 impl<TSubstream> OutboundUpgrade<TSubstream> for RegisteredProtocol
-where TSubstream: AsyncRead + AsyncWrite,
+where
+	TSubstream: AsyncRead + AsyncWrite,
 {
 	type Output = <Self as InboundUpgrade<TSubstream>>::Output;
 	type Future = <Self as InboundUpgrade<TSubstream>>::Future;
 	type Error = <Self as InboundUpgrade<TSubstream>>::Error;
 
-	fn upgrade_outbound(
-		self,
-		socket: Negotiated<TSubstream>,
-		info: Self::Info,
-	) -> Self::Future {
+	fn upgrade_outbound(self, socket: Negotiated<TSubstream>, info: Self::Info) -> Self::Future {
 		let framed = Framed::new(socket, UviBytes::default());
 
 		future::ok(RegisteredProtocolSubstream {

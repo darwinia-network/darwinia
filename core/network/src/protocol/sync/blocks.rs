@@ -14,15 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::mem;
-use std::cmp;
-use std::ops::Range;
-use std::collections::{HashMap, BTreeMap};
-use std::collections::hash_map::Entry;
-use log::trace;
-use libp2p::PeerId;
-use sr_primitives::traits::{Block as BlockT, NumberFor, One};
 use crate::message;
+use libp2p::PeerId;
+use log::trace;
+use sr_primitives::traits::{Block as BlockT, NumberFor, One};
+use std::cmp;
+use std::collections::hash_map::Entry;
+use std::collections::{BTreeMap, HashMap};
+use std::mem;
+use std::ops::Range;
 
 /// Block data with origin.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,10 +35,7 @@ pub struct BlockData<B: BlockT> {
 
 #[derive(Debug)]
 enum BlockRangeState<B: BlockT> {
-	Downloading {
-		len: NumberFor<B>,
-		downloading: u32,
-	},
+	Downloading { len: NumberFor<B>, downloading: u32 },
 	Complete(Vec<BlockData<B>>),
 }
 
@@ -83,16 +80,26 @@ impl<B: BlockT> BlockCollection<B> {
 		match self.blocks.get(&start) {
 			Some(&BlockRangeState::Downloading { .. }) => {
 				trace!(target: "sync", "Inserting block data still marked as being downloaded: {}", start);
-			},
+			}
 			Some(&BlockRangeState::Complete(ref existing)) if existing.len() >= blocks.len() => {
 				trace!(target: "sync", "Ignored block data already downloaded: {}", start);
 				return;
-			},
+			}
 			_ => (),
 		}
 
-		self.blocks.insert(start, BlockRangeState::Complete(blocks.into_iter()
-			.map(|b| BlockData { origin: Some(who.clone()), block: b }).collect()));
+		self.blocks.insert(
+			start,
+			BlockRangeState::Complete(
+				blocks
+					.into_iter()
+					.map(|b| BlockData {
+						origin: Some(who.clone()),
+						block: b,
+					})
+					.collect(),
+			),
+		);
 	}
 
 	/// Returns a set of block hashes that require a header download. The returned set is marked as being downloaded.
@@ -103,8 +110,7 @@ impl<B: BlockT> BlockCollection<B> {
 		peer_best: NumberFor<B>,
 		common: NumberFor<B>,
 		max_parallel: u32,
-	) -> Option<Range<NumberFor<B>>>
-	{
+	) -> Option<Range<NumberFor<B>>> {
 		if peer_best <= common {
 			// Bail out early
 			return None;
@@ -120,20 +126,22 @@ impl<B: BlockT> BlockCollection<B> {
 				break match &(prev, next) {
 					&(Some((start, &BlockRangeState::Downloading { ref len, downloading })), _)
 						if downloading < max_parallel =>
-						(*start .. *start + *len, downloading),
-					&(Some((start, r)), Some((next_start, _))) if *start + r.len() < *next_start =>
-						(*start + r.len() .. cmp::min(*next_start, *start + r.len() + count), 0), // gap
-					&(Some((start, r)), None) =>
-						(*start + r.len() .. *start + r.len() + count, 0), // last range
-					&(None, None) =>
-						(first_different .. first_different + count, 0), // empty
-					&(None, Some((start, _))) if *start > first_different =>
-						(first_different .. cmp::min(first_different + count, *start), 0), // gap at the start
+					{
+						(*start..*start + *len, downloading)
+					}
+					&(Some((start, r)), Some((next_start, _))) if *start + r.len() < *next_start => {
+						(*start + r.len()..cmp::min(*next_start, *start + r.len() + count), 0)
+					} // gap
+					&(Some((start, r)), None) => (*start + r.len()..*start + r.len() + count, 0), // last range
+					&(None, None) => (first_different..first_different + count, 0),               // empty
+					&(None, Some((start, _))) if *start > first_different => {
+						(first_different..cmp::min(first_different + count, *start), 0)
+					} // gap at the start
 					_ => {
 						prev = next;
-						continue
-					},
-				}
+						continue;
+					}
+				};
 			}
 		};
 		// crop to peers best
@@ -143,13 +151,18 @@ impl<B: BlockT> BlockCollection<B> {
 		}
 		range.end = cmp::min(peer_best + One::one(), range.end);
 		self.peer_requests.insert(who, range.start);
-		self.blocks.insert(range.start, BlockRangeState::Downloading {
-			len: range.end - range.start,
-			downloading: downloading + 1
-		});
+		self.blocks.insert(
+			range.start,
+			BlockRangeState::Downloading {
+				len: range.end - range.start,
+				downloading: downloading + 1,
+			},
+		);
 		if range.end <= range.start {
-			panic!("Empty range {:?}, count={}, peer_best={}, common={}, blocks={:?}",
-				range, count, peer_best, common, self.blocks);
+			panic!(
+				"Empty range {:?}, count={}, peer_best={}, common={}, blocks={:?}",
+				range, count, peer_best, common, self.blocks
+			);
 		}
 		Some(range)
 	}
@@ -163,11 +176,11 @@ impl<B: BlockT> BlockCollection<B> {
 			for (start, range_data) in &mut self.blocks {
 				match range_data {
 					&mut BlockRangeState::Complete(ref mut blocks) if *start <= prev => {
-							prev = *start + (blocks.len() as u32).into();
-							let mut blocks = mem::replace(blocks, Vec::new());
-							drained.append(&mut blocks);
-							ranges.push(*start);
-					},
+						prev = *start + (blocks.len() as u32).into();
+						let mut blocks = mem::replace(blocks, Vec::new());
+						drained.append(&mut blocks);
+						ranges.push(*start);
+					}
 					_ => break,
 				}
 			}
@@ -184,21 +197,19 @@ impl<B: BlockT> BlockCollection<B> {
 			Entry::Occupied(entry) => {
 				let start = entry.remove();
 				let remove = match self.blocks.get_mut(&start) {
-					Some(&mut BlockRangeState::Downloading { ref mut downloading, .. }) if *downloading > 1 => {
+					Some(&mut BlockRangeState::Downloading {
+						ref mut downloading, ..
+					}) if *downloading > 1 => {
 						*downloading = *downloading - 1;
 						false
-					},
-					Some(&mut BlockRangeState::Downloading { .. }) => {
-						true
-					},
-					_ => {
-						false
 					}
+					Some(&mut BlockRangeState::Downloading { .. }) => true,
+					_ => false,
 				};
 				if remove {
 					self.blocks.remove(&start);
 				}
-			},
+			}
 			_ => (),
 		}
 	}
@@ -208,25 +219,26 @@ impl<B: BlockT> BlockCollection<B> {
 mod test {
 	use super::{BlockCollection, BlockData, BlockRangeState};
 	use crate::{message, PeerId};
-	use sr_primitives::testing::{Block as RawBlock, ExtrinsicWrapper};
 	use primitives::H256;
+	use sr_primitives::testing::{Block as RawBlock, ExtrinsicWrapper};
 
 	type Block = RawBlock<ExtrinsicWrapper<u64>>;
 
 	fn is_empty(bc: &BlockCollection<Block>) -> bool {
-		bc.blocks.is_empty() &&
-		bc.peer_requests.is_empty()
+		bc.blocks.is_empty() && bc.peer_requests.is_empty()
 	}
 
 	fn generate_blocks(n: usize) -> Vec<message::BlockData<Block>> {
-		(0 .. n).map(|_| message::generic::BlockData {
-			hash: H256::random(),
-			header: None,
-			body: None,
-			message_queue: None,
-			receipt: None,
-			justification: None,
-		}).collect()
+		(0..n)
+			.map(|_| message::generic::BlockData {
+				hash: H256::random(),
+				header: None,
+				body: None,
+				message_queue: None,
+				receipt: None,
+				justification: None,
+			})
+			.collect()
 	}
 
 	#[test]
@@ -248,32 +260,56 @@ mod test {
 		let peer2 = PeerId::random();
 
 		let blocks = generate_blocks(150);
-		assert_eq!(bc.needed_blocks(peer0.clone(), 40, 150, 0, 1), Some(1 .. 41));
-		assert_eq!(bc.needed_blocks(peer1.clone(), 40, 150, 0, 1), Some(41 .. 81));
-		assert_eq!(bc.needed_blocks(peer2.clone(), 40, 150, 0, 1), Some(81 .. 121));
+		assert_eq!(bc.needed_blocks(peer0.clone(), 40, 150, 0, 1), Some(1..41));
+		assert_eq!(bc.needed_blocks(peer1.clone(), 40, 150, 0, 1), Some(41..81));
+		assert_eq!(bc.needed_blocks(peer2.clone(), 40, 150, 0, 1), Some(81..121));
 
 		bc.clear_peer_download(&peer1);
 		bc.insert(41, blocks[41..81].to_vec(), peer1.clone());
 		assert_eq!(bc.drain(1), vec![]);
-		assert_eq!(bc.needed_blocks(peer1.clone(), 40, 150, 0, 1), Some(121 .. 151));
+		assert_eq!(bc.needed_blocks(peer1.clone(), 40, 150, 0, 1), Some(121..151));
 		bc.clear_peer_download(&peer0);
 		bc.insert(1, blocks[1..11].to_vec(), peer0.clone());
 
-		assert_eq!(bc.needed_blocks(peer0.clone(), 40, 150, 0, 1), Some(11 .. 41));
-		assert_eq!(bc.drain(1), blocks[1..11].iter()
-			.map(|b| BlockData { block: b.clone(), origin: Some(peer0.clone()) }).collect::<Vec<_>>());
+		assert_eq!(bc.needed_blocks(peer0.clone(), 40, 150, 0, 1), Some(11..41));
+		assert_eq!(
+			bc.drain(1),
+			blocks[1..11]
+				.iter()
+				.map(|b| BlockData {
+					block: b.clone(),
+					origin: Some(peer0.clone())
+				})
+				.collect::<Vec<_>>()
+		);
 
 		bc.clear_peer_download(&peer0);
 		bc.insert(11, blocks[11..41].to_vec(), peer0.clone());
 
 		let drained = bc.drain(12);
-		assert_eq!(drained[..30], blocks[11..41].iter()
-			.map(|b| BlockData { block: b.clone(), origin: Some(peer0.clone()) }).collect::<Vec<_>>()[..]);
-		assert_eq!(drained[30..], blocks[41..81].iter()
-			.map(|b| BlockData { block: b.clone(), origin: Some(peer1.clone()) }).collect::<Vec<_>>()[..]);
+		assert_eq!(
+			drained[..30],
+			blocks[11..41]
+				.iter()
+				.map(|b| BlockData {
+					block: b.clone(),
+					origin: Some(peer0.clone())
+				})
+				.collect::<Vec<_>>()[..]
+		);
+		assert_eq!(
+			drained[30..],
+			blocks[41..81]
+				.iter()
+				.map(|b| BlockData {
+					block: b.clone(),
+					origin: Some(peer1.clone())
+				})
+				.collect::<Vec<_>>()[..]
+		);
 
 		bc.clear_peer_download(&peer2);
-		assert_eq!(bc.needed_blocks(peer2.clone(), 40, 150, 80, 1), Some(81 .. 121));
+		assert_eq!(bc.needed_blocks(peer2.clone(), 40, 150, 80, 1), Some(81..121));
 		bc.clear_peer_download(&peer2);
 		bc.insert(81, blocks[81..121].to_vec(), peer2.clone());
 		bc.clear_peer_download(&peer1);
@@ -281,24 +317,49 @@ mod test {
 
 		assert_eq!(bc.drain(80), vec![]);
 		let drained = bc.drain(81);
-		assert_eq!(drained[..40], blocks[81..121].iter()
-			.map(|b| BlockData { block: b.clone(), origin: Some(peer2.clone()) }).collect::<Vec<_>>()[..]);
-		assert_eq!(drained[40..], blocks[121..150].iter()
-			.map(|b| BlockData { block: b.clone(), origin: Some(peer1.clone()) }).collect::<Vec<_>>()[..]);
+		assert_eq!(
+			drained[..40],
+			blocks[81..121]
+				.iter()
+				.map(|b| BlockData {
+					block: b.clone(),
+					origin: Some(peer2.clone())
+				})
+				.collect::<Vec<_>>()[..]
+		);
+		assert_eq!(
+			drained[40..],
+			blocks[121..150]
+				.iter()
+				.map(|b| BlockData {
+					block: b.clone(),
+					origin: Some(peer1.clone())
+				})
+				.collect::<Vec<_>>()[..]
+		);
 	}
 
 	#[test]
 	fn large_gap() {
 		let mut bc: BlockCollection<Block> = BlockCollection::new();
-		bc.blocks.insert(100, BlockRangeState::Downloading {
-			len: 128,
-			downloading: 1,
-		});
-		let blocks = generate_blocks(10).into_iter().map(|b| BlockData { block: b, origin: None }).collect();
+		bc.blocks.insert(
+			100,
+			BlockRangeState::Downloading {
+				len: 128,
+				downloading: 1,
+			},
+		);
+		let blocks = generate_blocks(10)
+			.into_iter()
+			.map(|b| BlockData { block: b, origin: None })
+			.collect();
 		bc.blocks.insert(114305, BlockRangeState::Complete(blocks));
 
 		let peer0 = PeerId::random();
-		assert_eq!(bc.needed_blocks(peer0.clone(), 128, 10000, 000, 1), Some(1 .. 100));
-		assert_eq!(bc.needed_blocks(peer0.clone(), 128, 10000, 600, 1), Some(100 + 128 .. 100 + 128 + 128));
+		assert_eq!(bc.needed_blocks(peer0.clone(), 128, 10000, 000, 1), Some(1..100));
+		assert_eq!(
+			bc.needed_blocks(peer0.clone(), 128, 10000, 600, 1),
+			Some(100 + 128..100 + 128 + 128)
+		);
 	}
 }

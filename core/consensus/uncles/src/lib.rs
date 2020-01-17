@@ -19,10 +19,10 @@
 #![deny(warnings)]
 #![forbid(unsafe_code, missing_docs)]
 
-use consensus_common::SelectChain;
-use inherents::{InherentDataProviders};
-use log::warn;
 use client::ProvideUncles;
+use consensus_common::SelectChain;
+use inherents::InherentDataProviders;
+use log::warn;
 use sr_primitives::traits::{Block as BlockT, Header};
 use std::sync::Arc;
 
@@ -34,7 +34,8 @@ pub fn register_uncles_inherent_data_provider<B, C, SC>(
 	client: Arc<C>,
 	select_chain: SC,
 	inherent_data_providers: &InherentDataProviders,
-) -> Result<(), consensus_common::Error> where
+) -> Result<(), consensus_common::Error>
+where
 	B: BlockT,
 	C: ProvideUncles<B> + Send + Sync + 'static,
 	SC: SelectChain<B> + 'static,
@@ -42,25 +43,22 @@ pub fn register_uncles_inherent_data_provider<B, C, SC>(
 	if !inherent_data_providers.has_provider(&srml_authorship::INHERENT_IDENTIFIER) {
 		inherent_data_providers
 			.register_provider(srml_authorship::InherentDataProvider::new(move || {
-				{
-					let chain_head = match select_chain.best_chain() {
-						Ok(x) => x,
-						Err(e) => {
-							warn!(target: "uncles", "Unable to get chain head: {:?}", e);
-							return Vec::new();
-						}
-					};
-					match client.uncles(chain_head.hash(), MAX_UNCLE_GENERATIONS.into()) {
-						Ok(uncles) => uncles,
-						Err(e) => {
-							warn!(target: "uncles", "Unable to get uncles: {:?}", e);
-							Vec::new()
-						}
+				let chain_head = match select_chain.best_chain() {
+					Ok(x) => x,
+					Err(e) => {
+						warn!(target: "uncles", "Unable to get chain head: {:?}", e);
+						return Vec::new();
+					}
+				};
+				match client.uncles(chain_head.hash(), MAX_UNCLE_GENERATIONS.into()) {
+					Ok(uncles) => uncles,
+					Err(e) => {
+						warn!(target: "uncles", "Unable to get uncles: {:?}", e);
+						Vec::new()
 					}
 				}
 			}))
-		.map_err(|err| consensus_common::Error::InherentData(err.into()))?;
+			.map_err(|err| consensus_common::Error::InherentData(err.into()))?;
 	}
 	Ok(())
 }
-

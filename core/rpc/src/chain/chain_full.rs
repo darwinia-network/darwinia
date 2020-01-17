@@ -16,18 +16,18 @@
 
 //! Blockchain API backend for full nodes.
 
-use std::sync::Arc;
 use rpc::futures::future::result;
+use std::sync::Arc;
 
 use api::Subscriptions;
 use client::{backend::Backend, CallExecutor, Client};
-use primitives::{H256, Blake2Hasher};
+use primitives::{Blake2Hasher, H256};
 use sr_primitives::{
 	generic::{BlockId, SignedBlock},
-	traits::{Block as BlockT},
+	traits::Block as BlockT,
 };
 
-use super::{ChainBackend, client_err, error::FutureResult};
+use super::{client_err, error::FutureResult, ChainBackend};
 
 /// Blockchain API backend for full nodes. Reads all the data from local database.
 pub struct FullChain<B, E, Block: BlockT, RA> {
@@ -40,15 +40,13 @@ pub struct FullChain<B, E, Block: BlockT, RA> {
 impl<B, E, Block: BlockT, RA> FullChain<B, E, Block, RA> {
 	/// Create new Chain API RPC handler.
 	pub fn new(client: Arc<Client<B, E, Block, RA>>, subscriptions: Subscriptions) -> Self {
-		Self {
-			client,
-			subscriptions,
-		}
+		Self { client, subscriptions }
 	}
 }
 
-impl<B, E, Block, RA> ChainBackend<B, E, Block, RA> for FullChain<B, E, Block, RA> where
-	Block: BlockT<Hash=H256> + 'static,
+impl<B, E, Block, RA> ChainBackend<B, E, Block, RA> for FullChain<B, E, Block, RA>
+where
+	Block: BlockT<Hash = H256> + 'static,
 	B: Backend<Block, Blake2Hasher> + Send + Sync + 'static,
 	E: CallExecutor<Block, Blake2Hasher> + Send + Sync + 'static,
 	RA: Send + Sync + 'static,
@@ -62,18 +60,18 @@ impl<B, E, Block, RA> ChainBackend<B, E, Block, RA> for FullChain<B, E, Block, R
 	}
 
 	fn header(&self, hash: Option<Block::Hash>) -> FutureResult<Option<Block::Header>> {
-		Box::new(result(self.client
-			.header(&BlockId::Hash(self.unwrap_or_best(hash)))
-			.map_err(client_err)
+		Box::new(result(
+			self.client
+				.header(&BlockId::Hash(self.unwrap_or_best(hash)))
+				.map_err(client_err),
 		))
 	}
 
-	fn block(&self, hash: Option<Block::Hash>)
-		-> FutureResult<Option<SignedBlock<Block>>>
-	{
-		Box::new(result(self.client
-			.block(&BlockId::Hash(self.unwrap_or_best(hash)))
-			.map_err(client_err)
+	fn block(&self, hash: Option<Block::Hash>) -> FutureResult<Option<SignedBlock<Block>>> {
+		Box::new(result(
+			self.client
+				.block(&BlockId::Hash(self.unwrap_or_best(hash)))
+				.map_err(client_err),
 		))
 	}
 }

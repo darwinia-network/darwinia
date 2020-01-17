@@ -19,14 +19,17 @@
 #[cfg(test)]
 mod tests;
 
-use futures03::{channel::{mpsc, oneshot}, compat::Compat};
-use api::Receiver;
-use sr_primitives::traits::{self, Header as HeaderT};
 use self::error::Result;
+use api::Receiver;
+use futures03::{
+	channel::{mpsc, oneshot},
+	compat::Compat,
+};
+use sr_primitives::traits::{self, Header as HeaderT};
 
-pub use api::system::*;
-pub use self::helpers::{Properties, SystemInfo, Health, PeerInfo, NodeRole};
 pub use self::gen_client::Client as SystemClient;
+pub use self::helpers::{Health, NodeRole, PeerInfo, Properties, SystemInfo};
+pub use api::system::*;
 
 /// System API implementation
 pub struct System<B: traits::Block> {
@@ -43,7 +46,7 @@ pub enum Request<B: traits::Block> {
 	/// Must return the state of the network.
 	NetworkState(oneshot::Sender<rpc::Value>),
 	/// Must return the node role.
-	NodeRoles(oneshot::Sender<Vec<NodeRole>>)
+	NodeRoles(oneshot::Sender<Vec<NodeRole>>),
 }
 
 impl<B: traits::Block> System<B> {
@@ -51,14 +54,8 @@ impl<B: traits::Block> System<B> {
 	///
 	/// The `send_back` will be used to transmit some of the requests. The user is responsible for
 	/// reading from that channel and answering the requests.
-	pub fn new(
-		info: SystemInfo,
-		send_back: mpsc::UnboundedSender<Request<B>>
-	) -> Self {
-		System {
-			info,
-			send_back,
-		}
+	pub fn new(info: SystemInfo, send_back: mpsc::UnboundedSender<Request<B>>) -> Self {
+		System { info, send_back }
 	}
 }
 

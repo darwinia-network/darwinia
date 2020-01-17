@@ -22,8 +22,8 @@
 
 mod metadata;
 
-pub use api::Subscriptions;
 pub use self::metadata::Metadata;
+pub use api::Subscriptions;
 pub use rpc::IoHandlerExtension as RpcExtension;
 
 pub mod author;

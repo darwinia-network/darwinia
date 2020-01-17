@@ -18,14 +18,15 @@
 
 use super::*;
 use mock::{new_test_ext, Babe, Test};
-use sr_primitives::{traits::OnFinalize, testing::{Digest, DigestItem}};
 use session::ShouldEndSession;
+use sr_primitives::{
+	testing::{Digest, DigestItem},
+	traits::OnFinalize,
+};
 
 const EMPTY_RANDOMNESS: [u8; 32] = [
-	74, 25, 49, 128, 53, 97, 244, 49,
-	222, 202, 176, 2, 231, 66, 95, 10,
-	133, 49, 213, 228, 86, 161, 164, 127,
-	217, 153, 138, 37, 48, 192, 248, 0,
+	74, 25, 49, 128, 53, 97, 244, 49, 222, 202, 176, 2, 231, 66, 95, 10, 133, 49, 213, 228, 86, 161, 164, 127, 217,
+	153, 138, 37, 48, 192, 248, 0,
 ];
 
 fn make_pre_digest(
@@ -52,17 +53,17 @@ fn empty_randomness_is_correct() {
 
 #[test]
 fn initial_values() {
-	new_test_ext(vec![0, 1, 2, 3]).execute_with(|| {
-		assert_eq!(Babe::authorities().len(), 4)
-	})
+	new_test_ext(vec![0, 1, 2, 3]).execute_with(|| assert_eq!(Babe::authorities().len(), 4))
 }
 
 #[test]
 fn check_module() {
 	new_test_ext(vec![0, 1, 2, 3]).execute_with(|| {
 		assert!(!Babe::should_end_session(0), "Genesis does not change sessions");
-		assert!(!Babe::should_end_session(200000),
-			"BABE does not include the block number in epoch calculations");
+		assert!(
+			!Babe::should_end_session(200000),
+			"BABE does not include the block number in epoch calculations"
+		);
 	})
 }
 
@@ -73,12 +74,7 @@ fn first_block_epoch_zero_start() {
 	new_test_ext(vec![0, 1, 2, 3]).execute_with(|| {
 		let genesis_slot = 100;
 		let first_vrf = [1; 32];
-		let pre_digest = make_pre_digest(
-			0,
-			genesis_slot,
-			first_vrf,
-			[0xff; 64],
-		);
+		let pre_digest = make_pre_digest(0, genesis_slot, first_vrf, [0xff; 64]);
 
 		assert_eq!(Babe::genesis_slot(), 0);
 		System::initialize(&1, &Default::default(), &Default::default(), &pre_digest);
@@ -103,12 +99,10 @@ fn first_block_epoch_zero_start() {
 		assert_eq!(header.digest.logs[0], pre_digest.logs[0]);
 
 		let authorities = Babe::authorities();
-		let consensus_log = babe_primitives::ConsensusLog::NextEpochData(
-			babe_primitives::NextEpochDescriptor {
-				authorities,
-				randomness: Babe::randomness(),
-			}
-		);
+		let consensus_log = babe_primitives::ConsensusLog::NextEpochData(babe_primitives::NextEpochDescriptor {
+			authorities,
+			randomness: Babe::randomness(),
+		});
 		let consensus_digest = DigestItem::Consensus(BABE_ENGINE_ID, consensus_log.encode());
 
 		// first epoch descriptor has same info as last.
@@ -120,7 +114,9 @@ fn first_block_epoch_zero_start() {
 fn authority_index() {
 	new_test_ext(vec![0, 1, 2, 3]).execute_with(|| {
 		assert_eq!(
-			Babe::find_author((&[(BABE_ENGINE_ID, &[][..])]).into_iter().cloned()), None,
-			"Trivially invalid authorities are ignored")
+			Babe::find_author((&[(BABE_ENGINE_ID, &[][..])]).into_iter().cloned()),
+			None,
+			"Trivially invalid authorities are ignored"
+		)
 	})
 }

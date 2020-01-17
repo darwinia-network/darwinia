@@ -44,6 +44,3 @@ rand = "0.7.2"
 merlin = "1.2.1"
 pdqselect = "0.1.0"
 derive_more = "0.15.0"
-
-[features]
-test-helpers = []

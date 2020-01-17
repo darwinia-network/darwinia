@@ -21,27 +21,26 @@
 //! This is used for votes and commit messages currently.
 
 use super::{
-	BlockStatus as BlockStatusT,
-	BlockSyncRequester as BlockSyncRequesterT,
-	CommunicationIn,
-	Error,
-	SignedMessage,
+	BlockStatus as BlockStatusT, BlockSyncRequester as BlockSyncRequesterT, CommunicationIn, Error, SignedMessage,
 };
 
-use log::{debug, warn};
 use client::{BlockImportNotification, ImportNotifications};
 use futures::prelude::*;
 use futures::stream::Fuse;
 use futures03::{StreamExt as _, TryStreamExt as _};
 use grandpa::voter;
+use log::{debug, warn};
 use parking_lot::Mutex;
 use sr_primitives::traits::{Block as BlockT, Header as HeaderT, NumberFor};
 use tokio_timer::Interval;
 
-use std::collections::{HashMap, VecDeque};
-use std::sync::{atomic::{AtomicUsize, Ordering}, Arc};
-use std::time::{Duration, Instant};
 use fg_primitives::AuthorityId;
+use std::collections::{HashMap, VecDeque};
+use std::sync::{
+	atomic::{AtomicUsize, Ordering},
+	Arc,
+};
+use std::time::{Duration, Instant};
 
 const LOG_PENDING_INTERVAL: Duration = Duration::from_secs(15);
 
@@ -59,7 +58,8 @@ pub(crate) trait BlockUntilImported<Block: BlockT>: Sized {
 		status_check: &S,
 		wait: Wait,
 		ready: Ready,
-	) -> Result<(), Error> where
+	) -> Result<(), Error>
+	where
 		S: BlockStatusT<Block>,
 		Wait: FnMut(Block::Hash, NumberFor<Block>, Self),
 		Ready: FnMut(Self::Blocked);
@@ -84,7 +84,8 @@ pub(crate) struct UntilImported<Block: BlockT, BlockStatus, BlockSyncRequester, 
 	identifier: &'static str,
 }
 
-impl<Block, BlockStatus, BlockSyncRequester, I, M> UntilImported<Block, BlockStatus, BlockSyncRequester, I, M> where
+impl<Block, BlockStatus, BlockSyncRequester, I, M> UntilImported<Block, BlockStatus, BlockSyncRequester, I, M>
+where
 	Block: BlockT,
 	BlockStatus: BlockStatusT<Block>,
 	M: BlockUntilImported<Block>,
@@ -111,7 +112,8 @@ impl<Block, BlockStatus, BlockSyncRequester, I, M> UntilImported<Block, BlockSta
 			import_notifications: {
 				let stream = import_notifications.map::<_, fn(_) -> _>(|v| Ok::<_, ()>(v)).compat();
 				Box::new(stream) as Box<dyn Stream<Item = _, Error = _> + Send>
-			}.fuse(),
+			}
+			.fuse(),
 			block_sync_requester,
 			status_check,
 			inner: stream.fuse(),
@@ -123,11 +125,12 @@ impl<Block, BlockStatus, BlockSyncRequester, I, M> UntilImported<Block, BlockSta
 	}
 }
 
-impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStatus, BSyncRequester, I, M> where
+impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStatus, BSyncRequester, I, M>
+where
 	Block: BlockT,
 	BStatus: BlockStatusT<Block>,
 	BSyncRequester: BlockSyncRequesterT<Block>,
-	I: Stream<Item=M::Blocked,Error=Error>,
+	I: Stream<Item = M::Blocked, Error = Error>,
 	M: BlockUntilImported<Block>,
 {
 	type Item = M::Blocked;
@@ -145,11 +148,13 @@ impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStat
 					M::schedule_wait(
 						input,
 						&self.status_check,
-						|target_hash, target_number, wait| pending
-							.entry(target_hash)
-							.or_insert_with(|| (target_number, Instant::now(), Vec::new()))
-							.2
-							.push(wait),
+						|target_hash, target_number, wait| {
+							pending
+								.entry(target_hash)
+								.or_insert_with(|| (target_number, Instant::now(), Vec::new()))
+								.2
+								.push(wait)
+						},
 						|ready_item| ready.push_back(ready_item),
 					)?;
 				}
@@ -165,11 +170,10 @@ impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStat
 					// new block imported. queue up all messages tied to that hash.
 					if let Some((_, _, messages)) = self.pending.remove(&notification.hash) {
 						let canon_number = notification.header.number().clone();
-						let ready_messages = messages.into_iter()
-							.filter_map(|m| m.wait_completed(canon_number));
+						let ready_messages = messages.into_iter().filter_map(|m| m.wait_completed(canon_number));
 
 						self.ready.extend(ready_messages);
-				 	}
+					}
 				}
 				Ok(Async::NotReady) => break,
 			}
@@ -201,11 +205,8 @@ impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStat
 						// NOTE: when sending an empty vec of peers the
 						// underlying should make a best effort to sync the
 						// block from any peers it knows about.
-						self.block_sync_requester.set_sync_fork_request(
-							vec![],
-							block_hash,
-							block_number,
-						);
+						self.block_sync_requester
+							.set_sync_fork_request(vec![], block_hash, block_number);
 
 						*last_log = next_log;
 					}
@@ -214,7 +215,8 @@ impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStat
 
 			for (known_hash, canon_number) in known_keys {
 				if let Some((_, _, pending_messages)) = self.pending.remove(&known_hash) {
-					let ready_messages = pending_messages.into_iter()
+					let ready_messages = pending_messages
+						.into_iter()
 						.filter_map(|m| m.wait_completed(canon_number));
 
 					self.ready.extend(ready_messages);
@@ -223,7 +225,7 @@ impl<Block, BStatus, BSyncRequester, I, M> Stream for UntilImported<Block, BStat
 		}
 
 		if let Some(ready) = self.ready.pop_front() {
-			return Ok(Async::Ready(Some(ready)))
+			return Ok(Async::Ready(Some(ready)));
 		}
 
 		if self.import_notifications.is_done() && self.inner.is_done() {
@@ -252,7 +254,8 @@ impl<Block: BlockT> BlockUntilImported<Block> for SignedMessage<Block> {
 		status_check: &BlockStatus,
 		mut wait: Wait,
 		mut ready: Ready,
-	) -> Result<(), Error> where
+	) -> Result<(), Error>
+	where
 		BlockStatus: BlockStatusT<Block>,
 		Wait: FnMut(Block::Hash, NumberFor<Block>, Self),
 		Ready: FnMut(Self::Blocked),
@@ -286,13 +289,8 @@ impl<Block: BlockT> BlockUntilImported<Block> for SignedMessage<Block> {
 
 /// Helper type definition for the stream which waits until vote targets for
 /// signed messages are imported.
-pub(crate) type UntilVoteTargetImported<Block, BlockStatus, BlockSyncRequester, I> = UntilImported<
-	Block,
-	BlockStatus,
-	BlockSyncRequester,
-	I,
-	SignedMessage<Block>,
->;
+pub(crate) type UntilVoteTargetImported<Block, BlockStatus, BlockSyncRequester, I> =
+	UntilImported<Block, BlockStatus, BlockSyncRequester, I, SignedMessage<Block>>;
 
 /// This blocks a global message import, i.e. a commit or catch up messages,
 /// until all blocks referenced in its votes are known.
@@ -312,7 +310,8 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 		status_check: &BlockStatus,
 		mut wait: Wait,
 		mut ready: Ready,
-	) -> Result<(), Error> where
+	) -> Result<(), Error>
+	where
 		BlockStatus: BlockStatusT<Block>,
 		Wait: FnMut(Block::Hash, NumberFor<Block>, Self),
 		Ready: FnMut(Self::Blocked),
@@ -346,7 +345,6 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 						if let Some(number) = status_check.block_number(target_hash)? {
 							entry.insert(KnownOrUnknown::Known(number));
 							number
-
 						} else {
 							entry.insert(KnownOrUnknown::Unknown(perceived_number));
 							unknown_count += 1;
@@ -368,23 +366,23 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 			match input {
 				voter::CommunicationIn::Commit(_, ref commit, ..) => {
 					// add known hashes from all precommits.
-					let precommit_targets = commit.precommits
-						.iter()
-						.map(|c| (c.target_number, c.target_hash));
+					let precommit_targets = commit.precommits.iter().map(|c| (c.target_number, c.target_hash));
 
 					for (target_number, target_hash) in precommit_targets {
 						if !query_known(target_hash, target_number)? {
-							return Ok(())
+							return Ok(());
 						}
 					}
-				},
+				}
 				voter::CommunicationIn::CatchUp(ref catch_up, ..) => {
 					// add known hashes from all prevotes and precommits.
-					let prevote_targets = catch_up.prevotes
+					let prevote_targets = catch_up
+						.prevotes
 						.iter()
 						.map(|s| (s.prevote.target_number, s.prevote.target_hash));
 
-					let precommit_targets = catch_up.precommits
+					let precommit_targets = catch_up
+						.precommits
 						.iter()
 						.map(|s| (s.precommit.target_number, s.precommit.target_hash));
 
@@ -392,10 +390,10 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 
 					for (target_number, target_hash) in targets {
 						if !query_known(target_hash, target_number)? {
-							return Ok(())
+							return Ok(());
 						}
 					}
-				},
+				}
 			};
 		}
 
@@ -403,7 +401,7 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 		// we can just return the message directly.
 		if unknown_count == 0 {
 			ready(input);
-			return Ok(())
+			return Ok(());
 		}
 
 		let locked_global = Arc::new((AtomicUsize::new(unknown_count), Mutex::new(Some(input))));
@@ -416,10 +414,14 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 		// if this is taking a long time.
 		for (hash, is_known) in checked_hashes {
 			if let KnownOrUnknown::Unknown(target_number) = is_known {
-				wait(hash, target_number, BlockGlobalMessage {
-					inner: locked_global.clone(),
+				wait(
+					hash,
 					target_number,
-				})
+					BlockGlobalMessage {
+						inner: locked_global.clone(),
+						target_number,
+					},
+				)
 			}
 		}
 
@@ -437,15 +439,15 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 
 		// CAS loop to ensure that we always have a last reader.
 		loop {
-			if last_count == 1 { // we are the last one left.
+			if last_count == 1 {
+				// we are the last one left.
 				return self.inner.1.lock().take();
 			}
 
-			let prev_value = self.inner.0.compare_and_swap(
-				last_count,
-				last_count - 1,
-				Ordering::SeqCst,
-			);
+			let prev_value = self
+				.inner
+				.0
+				.compare_and_swap(last_count, last_count - 1, Ordering::SeqCst);
 
 			if prev_value == last_count {
 				return None;
@@ -458,26 +460,21 @@ impl<Block: BlockT> BlockUntilImported<Block> for BlockGlobalMessage<Block> {
 
 /// A stream which gates off incoming global messages, i.e. commit and catch up
 /// messages, until all referenced block hashes have been imported.
-pub(crate) type UntilGlobalMessageBlocksImported<Block, BlockStatus, BlockSyncRequester, I> = UntilImported<
-	Block,
-	BlockStatus,
-	BlockSyncRequester,
-	I,
-	BlockGlobalMessage<Block>,
->;
+pub(crate) type UntilGlobalMessageBlocksImported<Block, BlockStatus, BlockSyncRequester, I> =
+	UntilImported<Block, BlockStatus, BlockSyncRequester, I, BlockGlobalMessage<Block>>;
 
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use crate::{CatchUp, CompactCommit};
-	use tokio::runtime::current_thread::Runtime;
-	use tokio_timer::Delay;
-	use test_client::runtime::{Block, Hash, Header};
-	use consensus_common::BlockOrigin;
 	use client::BlockImportNotification;
+	use consensus_common::BlockOrigin;
 	use futures::future::Either;
 	use futures03::channel::mpsc;
 	use grandpa::Precommit;
+	use test_client::runtime::{Block, Hash, Header};
+	use tokio::runtime::current_thread::Runtime;
+	use tokio_timer::Delay;
 
 	#[derive(Clone)]
 	struct TestChainState {
@@ -497,7 +494,9 @@ mod tests {
 		}
 
 		fn block_status(&self) -> TestBlockStatus {
-			TestBlockStatus { inner: self.known_blocks.clone() }
+			TestBlockStatus {
+				inner: self.known_blocks.clone(),
+			}
 		}
 
 		fn import_header(&self, header: Header) {
@@ -505,13 +504,15 @@ mod tests {
 			let number = header.number().clone();
 
 			self.known_blocks.lock().insert(hash, number);
-			self.sender.unbounded_send(BlockImportNotification {
-				hash,
-				origin: BlockOrigin::File,
-				header,
-				is_new_best: false,
-				retracted: vec![],
-			}).unwrap();
+			self.sender
+				.unbounded_send(BlockImportNotification {
+					hash,
+					origin: BlockOrigin::File,
+					header,
+					is_new_best: false,
+					retracted: vec![],
+				})
+				.unwrap();
 		}
 	}
 
@@ -556,7 +557,7 @@ mod tests {
 
 	// unwrap the commit from `CommunicationIn` returning its fields in a tuple,
 	// panics if the given message isn't a commit
-	fn unapply_commit(msg: CommunicationIn<Block>) -> (u64, CompactCommit::<Block>) {
+	fn unapply_commit(msg: CommunicationIn<Block>) -> (u64, CompactCommit<Block>) {
 		match msg {
 			voter::CommunicationIn::Commit(round, commit, ..) => (round, commit),
 			_ => panic!("expected commit"),
@@ -575,7 +576,8 @@ mod tests {
 	fn message_all_dependencies_satisfied<F>(
 		msg: CommunicationIn<Block>,
 		enact_dependencies: F,
-	) -> CommunicationIn<Block> where
+	) -> CommunicationIn<Block>
+	where
 		F: FnOnce(&TestChainState),
 	{
 		let (chain_state, import_notifications) = TestChainState::new();
@@ -602,10 +604,8 @@ mod tests {
 		runtime.block_on(work).map_err(|(e, _)| e).unwrap().0.unwrap()
 	}
 
-	fn blocking_message_on_dependencies<F>(
-		msg: CommunicationIn<Block>,
-		enact_dependencies: F,
-	) -> CommunicationIn<Block> where
+	fn blocking_message_on_dependencies<F>(msg: CommunicationIn<Block>, enact_dependencies: F) -> CommunicationIn<Block>
+	where
 		F: FnOnce(&TestChainState),
 	{
 		let (chain_state, import_notifications) = TestChainState::new();
@@ -666,25 +666,15 @@ mod tests {
 			auth_data: Vec::new(), // not used
 		};
 
-		let unknown_commit = || voter::CommunicationIn::Commit(
-			0,
-			unknown_commit.clone(),
-			voter::Callback::Blank,
-		);
+		let unknown_commit = || voter::CommunicationIn::Commit(0, unknown_commit.clone(), voter::Callback::Blank);
 
-		let res = blocking_message_on_dependencies(
-			unknown_commit(),
-			|chain_state| {
-				chain_state.import_header(h1);
-				chain_state.import_header(h2);
-				chain_state.import_header(h3);
-			},
-		);
+		let res = blocking_message_on_dependencies(unknown_commit(), |chain_state| {
+			chain_state.import_header(h1);
+			chain_state.import_header(h2);
+			chain_state.import_header(h3);
+		});
 
-		assert_eq!(
-			unapply_commit(res),
-			unapply_commit(unknown_commit()),
-		);
+		assert_eq!(unapply_commit(res), unapply_commit(unknown_commit()),);
 	}
 
 	#[test]
@@ -709,25 +699,15 @@ mod tests {
 			auth_data: Vec::new(), // not used
 		};
 
-		let known_commit = || voter::CommunicationIn::Commit(
-			0,
-			known_commit.clone(),
-			voter::Callback::Blank,
-		);
+		let known_commit = || voter::CommunicationIn::Commit(0, known_commit.clone(), voter::Callback::Blank);
 
-		let res = message_all_dependencies_satisfied(
-			known_commit(),
-			|chain_state| {
-				chain_state.import_header(h1);
-				chain_state.import_header(h2);
-				chain_state.import_header(h3);
-			},
-		);
+		let res = message_all_dependencies_satisfied(known_commit(), |chain_state| {
+			chain_state.import_header(h1);
+			chain_state.import_header(h2);
+			chain_state.import_header(h3);
+		});
 
-		assert_eq!(
-			unapply_commit(res),
-			unapply_commit(known_commit()),
-		);
+		assert_eq!(unapply_commit(res), unapply_commit(known_commit()),);
 	}
 
 	#[test]
@@ -736,37 +716,27 @@ mod tests {
 		let h2 = make_header(6);
 		let h3 = make_header(7);
 
-		let signed_prevote = |header: &Header| {
-			grandpa::SignedPrevote {
-				id: Default::default(),
-				signature: Default::default(),
-				prevote: grandpa::Prevote {
-					target_hash: header.hash(),
-					target_number: *header.number(),
-				},
-			}
+		let signed_prevote = |header: &Header| grandpa::SignedPrevote {
+			id: Default::default(),
+			signature: Default::default(),
+			prevote: grandpa::Prevote {
+				target_hash: header.hash(),
+				target_number: *header.number(),
+			},
 		};
 
-		let signed_precommit = |header: &Header| {
-			grandpa::SignedPrecommit {
-				id: Default::default(),
-				signature: Default::default(),
-				precommit: grandpa::Precommit {
-					target_hash: header.hash(),
-					target_number: *header.number(),
-				},
-			}
+		let signed_precommit = |header: &Header| grandpa::SignedPrecommit {
+			id: Default::default(),
+			signature: Default::default(),
+			precommit: grandpa::Precommit {
+				target_hash: header.hash(),
+				target_number: *header.number(),
+			},
 		};
 
-		let prevotes = vec![
-			signed_prevote(&h1),
-			signed_prevote(&h3),
-		];
+		let prevotes = vec![signed_prevote(&h1), signed_prevote(&h3)];
 
-		let precommits = vec![
-			signed_precommit(&h1),
-			signed_precommit(&h2),
-		];
+		let precommits = vec![signed_precommit(&h1), signed_precommit(&h2)];
 
 		let unknown_catch_up = grandpa::CatchUp {
 			round_number: 1,
@@ -776,24 +746,15 @@ mod tests {
 			base_number: *h1.number(),
 		};
 
-		let unknown_catch_up = || voter::CommunicationIn::CatchUp(
-			unknown_catch_up.clone(),
-			voter::Callback::Blank,
-		);
+		let unknown_catch_up = || voter::CommunicationIn::CatchUp(unknown_catch_up.clone(), voter::Callback::Blank);
 
-		let res = blocking_message_on_dependencies(
-			unknown_catch_up(),
-			|chain_state| {
-				chain_state.import_header(h1);
-				chain_state.import_header(h2);
-				chain_state.import_header(h3);
-			},
-		);
+		let res = blocking_message_on_dependencies(unknown_catch_up(), |chain_state| {
+			chain_state.import_header(h1);
+			chain_state.import_header(h2);
+			chain_state.import_header(h3);
+		});
 
-		assert_eq!(
-			unapply_catch_up(res),
-			unapply_catch_up(unknown_catch_up()),
-		);
+		assert_eq!(unapply_catch_up(res), unapply_catch_up(unknown_catch_up()),);
 	}
 
 	#[test]
@@ -802,37 +763,27 @@ mod tests {
 		let h2 = make_header(6);
 		let h3 = make_header(7);
 
-		let signed_prevote = |header: &Header| {
-			grandpa::SignedPrevote {
-				id: Default::default(),
-				signature: Default::default(),
-				prevote: grandpa::Prevote {
-					target_hash: header.hash(),
-					target_number: *header.number(),
-				},
-			}
+		let signed_prevote = |header: &Header| grandpa::SignedPrevote {
+			id: Default::default(),
+			signature: Default::default(),
+			prevote: grandpa::Prevote {
+				target_hash: header.hash(),
+				target_number: *header.number(),
+			},
 		};
 
-		let signed_precommit = |header: &Header| {
-			grandpa::SignedPrecommit {
-				id: Default::default(),
-				signature: Default::default(),
-				precommit: grandpa::Precommit {
-					target_hash: header.hash(),
-					target_number: *header.number(),
-				},
-			}
+		let signed_precommit = |header: &Header| grandpa::SignedPrecommit {
+			id: Default::default(),
+			signature: Default::default(),
+			precommit: grandpa::Precommit {
+				target_hash: header.hash(),
+				target_number: *header.number(),
+			},
 		};
 
-		let prevotes = vec![
-			signed_prevote(&h1),
-			signed_prevote(&h3),
-		];
+		let prevotes = vec![signed_prevote(&h1), signed_prevote(&h3)];
 
-		let precommits = vec![
-			signed_precommit(&h1),
-			signed_precommit(&h2),
-		];
+		let precommits = vec![signed_precommit(&h1), signed_precommit(&h2)];
 
 		let unknown_catch_up = grandpa::CatchUp {
 			round_number: 1,
@@ -842,24 +793,15 @@ mod tests {
 			base_number: *h1.number(),
 		};
 
-		let unknown_catch_up = || voter::CommunicationIn::CatchUp(
-			unknown_catch_up.clone(),
-			voter::Callback::Blank,
-		);
+		let unknown_catch_up = || voter::CommunicationIn::CatchUp(unknown_catch_up.clone(), voter::Callback::Blank);
 
-		let res = message_all_dependencies_satisfied(
-			unknown_catch_up(),
-			|chain_state| {
-				chain_state.import_header(h1);
-				chain_state.import_header(h2);
-				chain_state.import_header(h3);
-			},
-		);
+		let res = message_all_dependencies_satisfied(unknown_catch_up(), |chain_state| {
+			chain_state.import_header(h1);
+			chain_state.import_header(h2);
+			chain_state.import_header(h3);
+		});
 
-		assert_eq!(
-			unapply_catch_up(res),
-			unapply_catch_up(unknown_catch_up()),
-		);
+		assert_eq!(unapply_catch_up(res), unapply_catch_up(unknown_catch_up()),);
 	}
 
 	#[test]
@@ -901,11 +843,7 @@ mod tests {
 			auth_data: Vec::new(), // not used
 		};
 
-		let unknown_commit = || voter::CommunicationIn::Commit(
-			0,
-			unknown_commit.clone(),
-			voter::Callback::Blank,
-		);
+		let unknown_commit = || voter::CommunicationIn::Commit(0, unknown_commit.clone(), voter::Callback::Blank);
 
 		// we send the commit message and spawn the until_imported stream
 		global_tx.unbounded_send(unknown_commit()).unwrap();
@@ -918,8 +856,8 @@ mod tests {
 			let block_sync_requests = block_sync_requester.requests.lock();
 
 			// we request blocks targeted by the precommits that aren't imported
-			if block_sync_requests.contains(&(h2.hash(), *h2.number())) &&
-				block_sync_requests.contains(&(h3.hash(), *h3.number()))
+			if block_sync_requests.contains(&(h2.hash(), *h2.number()))
+				&& block_sync_requests.contains(&(h3.hash(), *h3.number()))
 			{
 				return Ok(Async::Ready(()));
 			}
@@ -930,10 +868,13 @@ mod tests {
 		// the `until_imported` stream doesn't request the blocks immediately,
 		// but it should request them after a small timeout
 		let timeout = Delay::new(Instant::now() + Duration::from_secs(60));
-		let test = assert.select2(timeout).map(|res| match res {
-			Either::A(_) => {},
-			Either::B(_) => panic!("timed out waiting for block sync request"),
-		}).map_err(|_| ());
+		let test = assert
+			.select2(timeout)
+			.map(|res| match res {
+				Either::A(_) => {}
+				Either::B(_) => panic!("timed out waiting for block sync request"),
+			})
+			.map_err(|_| ());
 
 		runtime.block_on(test).unwrap();
 	}

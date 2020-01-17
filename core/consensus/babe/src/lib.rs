@@ -1175,39 +1175,3 @@ where
 		finality_proof_import,
 	))
 }
-
-/// BABE test helpers. Utility methods for manually authoring blocks.
-#[cfg(feature = "test-helpers")]
-pub mod test_helpers {
-	use super::*;
-
-	/// Try to claim the given slot and return a `BabePreDigest` if
-	/// successful.
-	pub fn claim_slot<B, C>(
-		slot_number: u64,
-		parent: &B::Header,
-		client: &C,
-		keystore: &KeyStorePtr,
-		link: &BabeLink<B>,
-	) -> Option<BabePreDigest>
-	where
-		B: BlockT<Hash = H256>,
-		C: ProvideRuntimeApi + ProvideCache<B> + HeaderBackend<B> + HeaderMetadata<B, Error = ClientError>,
-		C::Api: BabeApi<B>,
-	{
-		let epoch = link
-			.epoch_changes
-			.lock()
-			.epoch_for_child_of(
-				descendent_query(client),
-				&parent.hash(),
-				parent.number().clone(),
-				slot_number,
-				|slot| link.config.genesis_epoch(slot),
-			)
-			.unwrap()
-			.unwrap();
-
-		authorship::claim_slot(slot_number, epoch.as_ref(), &link.config, keystore).map(|(digest, _)| digest)
-	}
-}

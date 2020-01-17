@@ -16,17 +16,17 @@
 
 //! Chain Spec extensions helpers.
 
-use std::fmt::Debug;
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 
-use serde::{Serialize, Deserialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 /// A `ChainSpec` extension.
 ///
 /// This trait is implemented automatically by `ChainSpecGroup` macro.
 pub trait Group: Clone + Sized {
 	/// An associated type containing fork definition.
-	type Fork: Fork<Base=Self>;
+	type Fork: Fork<Base = Self>;
 
 	/// Convert to fork type.
 	fn to_fork(self) -> Self::Fork;
@@ -41,7 +41,7 @@ pub trait Group: Clone + Sized {
 /// a complete set of parameters
 pub trait Fork: Serialize + DeserializeOwned + Clone + Sized {
 	/// A base `Group` type.
-	type Base: Group<Fork=Self>;
+	type Base: Group<Fork = Self>;
 
 	/// Combine with another struct.
 	///
@@ -101,7 +101,7 @@ impl<T: Fork> Fork for Option<T> {
 			(Some(mut a), Some(b)) => {
 				a.combine_with(b);
 				Some(a)
-			},
+			}
 			(a, b) => a.or(b),
 		};
 	}
@@ -122,7 +122,8 @@ pub trait Extension: Serialize + DeserializeOwned + Clone {
 	fn get<T: 'static>(&self) -> Option<&T>;
 
 	/// Get forkable extensions of specific type.
-	fn forks<BlockNumber, T>(&self) -> Option<Forks<BlockNumber, T>> where
+	fn forks<BlockNumber, T>(&self) -> Option<Forks<BlockNumber, T>>
+	where
 		BlockNumber: Ord + Clone + 'static,
 		T: Group + 'static,
 		<Self::Forks as IsForks>::Extension: Extension,
@@ -136,7 +137,9 @@ pub trait Extension: Serialize + DeserializeOwned + Clone {
 impl Extension for crate::NoExtension {
 	type Forks = Self;
 
-	fn get<T: 'static>(&self) -> Option<&T> { None }
+	fn get<T: 'static>(&self) -> Option<&T> {
+		None
+	}
 }
 
 pub trait IsForks {
@@ -166,7 +169,8 @@ impl<B: Ord, T: Group + Default> Default for Forks<B, T> {
 	}
 }
 
-impl<B: Ord, T: Group> Forks<B, T> where
+impl<B: Ord, T: Group> Forks<B, T>
+where
 	T::Fork: Debug,
 {
 	/// Create new fork definition given the base and the forks.
@@ -188,7 +192,8 @@ impl<B: Ord, T: Group> Forks<B, T> where
 	}
 }
 
-impl<B, T> IsForks for Forks<B, T> where
+impl<B, T> IsForks for Forks<B, T>
+where
 	B: Ord + 'static,
 	T: Group + 'static,
 {
@@ -196,36 +201,38 @@ impl<B, T> IsForks for Forks<B, T> where
 	type Extension = T;
 }
 
-impl<B: Ord + Clone, T: Group + Extension> Forks<B, T> where
+impl<B: Ord + Clone, T: Group + Extension> Forks<B, T>
+where
 	T::Fork: Extension,
 {
 	/// Get forks definition for a subset of this extension.
 	///
 	/// Returns the `Forks` struct, but limited to a particular type
 	/// within the extension.
-	pub fn for_type<X>(&self) -> Option<Forks<B, X>> where
+	pub fn for_type<X>(&self) -> Option<Forks<B, X>>
+	where
 		X: Group + 'static,
 	{
 		let base = self.base.get::<X>()?.clone();
-		let forks = self.forks.iter().filter_map(|(k, v)| {
-			Some((k.clone(), v.get::<Option<X::Fork>>()?.clone()?))
-		}).collect();
+		let forks = self
+			.forks
+			.iter()
+			.filter_map(|(k, v)| Some((k.clone(), v.get::<Option<X::Fork>>()?.clone()?)))
+			.collect();
 
-		Some(Forks {
-			base,
-			forks,
-		})
+		Some(Forks { base, forks })
 	}
 }
 
-impl<B, E> Extension for Forks<B, E> where
+impl<B, E> Extension for Forks<B, E>
+where
 	B: Serialize + DeserializeOwned + Ord + Clone + 'static,
 	E: Extension + Group + 'static,
 {
 	type Forks = Self;
 
 	fn get<T: 'static>(&self) -> Option<&T> {
-		use std::any::{TypeId, Any};
+		use std::any::{Any, TypeId};
 
 		match TypeId::of::<T>() {
 			x if x == TypeId::of::<E>() => Any::downcast_ref(&self.base),
@@ -233,13 +240,14 @@ impl<B, E> Extension for Forks<B, E> where
 		}
 	}
 
-	fn forks<BlockNumber, T>(&self) -> Option<Forks<BlockNumber, T>> where
+	fn forks<BlockNumber, T>(&self) -> Option<Forks<BlockNumber, T>>
+	where
 		BlockNumber: Ord + Clone + 'static,
 		T: Group + 'static,
 		<Self::Forks as IsForks>::Extension: Extension,
 		<<Self::Forks as IsForks>::Extension as Group>::Fork: Extension,
 	{
-		use std::any::{TypeId, Any};
+		use std::any::{Any, TypeId};
 
 		if TypeId::of::<BlockNumber>() == TypeId::of::<B>() {
 			Any::downcast_ref(&self.for_type::<T>()?).cloned()
@@ -253,7 +261,7 @@ impl<B, E> Extension for Forks<B, E> where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use substrate_chain_spec_derive::{ChainSpecGroup, ChainSpecExtension};
+	use substrate_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 	// Make the proc macro work for tests and doc tests.
 	use crate as substrate_chain_spec;
 
@@ -287,9 +295,10 @@ mod tests {
 
 	#[test]
 	fn forks_should_work_correctly() {
-		use super::Extension as _ ;
+		use super::Extension as _;
 
-		let ext: Ext2 = serde_json::from_str(r#"
+		let ext: Ext2 = serde_json::from_str(
+			r#"
 {
 	"test": 11,
 	"forkable": {
@@ -312,38 +321,56 @@ mod tests {
 		}
 	}
 }
-		"#).unwrap();
+		"#,
+		)
+		.unwrap();
 
-		assert_eq!(ext.get::<Extension1>(), Some(&Extension1 {
-			test: 11
-		}));
+		assert_eq!(ext.get::<Extension1>(), Some(&Extension1 { test: 11 }));
 
 		// get forks definition
 		let forks = ext.get::<Forks<u64, Extensions>>().unwrap();
-		assert_eq!(forks.at_block(0), Extensions {
-			ext1: Extension1 { test: 15 },
-			ext2: Extension2 { test: 123 },
-		});
-		assert_eq!(forks.at_block(1), Extensions {
-			ext1: Extension1 { test: 5 },
-			ext2: Extension2 { test: 123 },
-		});
-		assert_eq!(forks.at_block(2), Extensions {
-			ext1: Extension1 { test: 5 },
-			ext2: Extension2 { test: 5 },
-		});
-		assert_eq!(forks.at_block(4), Extensions {
-			ext1: Extension1 { test: 5 },
-			ext2: Extension2 { test: 5 },
-		});
-		assert_eq!(forks.at_block(5), Extensions {
-			ext1: Extension1 { test: 5 },
-			ext2: Extension2 { test: 1 },
-		});
-		assert_eq!(forks.at_block(10), Extensions {
-			ext1: Extension1 { test: 5 },
-			ext2: Extension2 { test: 1 },
-		});
+		assert_eq!(
+			forks.at_block(0),
+			Extensions {
+				ext1: Extension1 { test: 15 },
+				ext2: Extension2 { test: 123 },
+			}
+		);
+		assert_eq!(
+			forks.at_block(1),
+			Extensions {
+				ext1: Extension1 { test: 5 },
+				ext2: Extension2 { test: 123 },
+			}
+		);
+		assert_eq!(
+			forks.at_block(2),
+			Extensions {
+				ext1: Extension1 { test: 5 },
+				ext2: Extension2 { test: 5 },
+			}
+		);
+		assert_eq!(
+			forks.at_block(4),
+			Extensions {
+				ext1: Extension1 { test: 5 },
+				ext2: Extension2 { test: 5 },
+			}
+		);
+		assert_eq!(
+			forks.at_block(5),
+			Extensions {
+				ext1: Extension1 { test: 5 },
+				ext2: Extension2 { test: 1 },
+			}
+		);
+		assert_eq!(
+			forks.at_block(10),
+			Extensions {
+				ext1: Extension1 { test: 5 },
+				ext2: Extension2 { test: 1 },
+			}
+		);
 		assert!(forks.at_block(10).get::<Extension2>().is_some());
 
 		// filter forks for `Extension2`

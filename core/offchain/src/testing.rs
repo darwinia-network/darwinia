@@ -16,21 +16,13 @@
 
 //! Offchain Externalities implementation for tests.
 
-use std::{
-	collections::BTreeMap,
-	sync::Arc,
-};
 use client::backend::OffchainStorage;
 use parking_lot::RwLock;
 use primitives::offchain::{
-	self,
-	HttpError,
-	HttpRequestId as RequestId,
-	HttpRequestStatus as RequestStatus,
+	self, HttpError, HttpRequestId as RequestId, HttpRequestStatus as RequestStatus, OpaqueNetworkState, StorageKind,
 	Timestamp,
-	StorageKind,
-	OpaqueNetworkState,
 };
+use std::{collections::BTreeMap, sync::Arc};
 
 /// Pending request.
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -78,17 +70,14 @@ impl State {
 		id: u16,
 		expected: PendingRequest,
 		response: impl Into<Vec<u8>>,
-		response_headers: impl IntoIterator<Item=(String, String)>,
+		response_headers: impl IntoIterator<Item = (String, String)>,
 	) {
 		match self.requests.get_mut(&RequestId(id)) {
 			None => {
 				panic!("Missing pending request: {:?}.\n\nAll: {:?}", id, self.requests);
 			}
 			Some(req) => {
-				assert_eq!(
-					*req,
-					expected,
-				);
+				assert_eq!(*req, expected,);
 				req.response = Some(response.into());
 				req.response_headers = response_headers.into_iter().collect();
 			}
@@ -174,7 +163,8 @@ impl offchain::Externalities for TestOffchainExt {
 		match kind {
 			StorageKind::LOCAL => &mut state.local_storage,
 			StorageKind::PERSISTENT => &mut state.persistent_storage,
-		}.set(b"", key, value);
+		}
+		.set(b"", key, value);
 	}
 
 	fn local_storage_compare_and_set(
@@ -182,13 +172,14 @@ impl offchain::Externalities for TestOffchainExt {
 		kind: StorageKind,
 		key: &[u8],
 		old_value: Option<&[u8]>,
-		new_value: &[u8]
+		new_value: &[u8],
 	) -> bool {
 		let mut state = self.0.write();
 		match kind {
 			StorageKind::LOCAL => &mut state.local_storage,
 			StorageKind::PERSISTENT => &mut state.persistent_storage,
-		}.compare_and_set(b"", key, old_value, new_value)
+		}
+		.compare_and_set(b"", key, old_value, new_value)
 	}
 
 	fn local_storage_get(&mut self, kind: StorageKind, key: &[u8]) -> Option<Vec<u8>> {
@@ -196,27 +187,26 @@ impl offchain::Externalities for TestOffchainExt {
 		match kind {
 			StorageKind::LOCAL => &state.local_storage,
 			StorageKind::PERSISTENT => &state.persistent_storage,
-		}.get(b"", key)
+		}
+		.get(b"", key)
 	}
 
 	fn http_request_start(&mut self, method: &str, uri: &str, meta: &[u8]) -> Result<RequestId, ()> {
 		let mut state = self.0.write();
 		let id = RequestId(state.requests.len() as u16);
-		state.requests.insert(id.clone(), PendingRequest {
-			method: method.into(),
-			uri: uri.into(),
-			meta: meta.into(),
-			..Default::default()
-		});
+		state.requests.insert(
+			id.clone(),
+			PendingRequest {
+				method: method.into(),
+				uri: uri.into(),
+				meta: meta.into(),
+				..Default::default()
+			},
+		);
 		Ok(id)
 	}
 
-	fn http_request_add_header(
-		&mut self,
-		request_id: RequestId,
-		name: &str,
-		value: &str,
-	) -> Result<(), ()> {
+	fn http_request_add_header(&mut self, request_id: RequestId, name: &str, value: &str) -> Result<(), ()> {
 		let mut state = self.0.write();
 		if let Some(req) = state.requests.get_mut(&request_id) {
 			req.headers.push((name.into(), value.into()));
@@ -230,7 +220,7 @@ impl offchain::Externalities for TestOffchainExt {
 		&mut self,
 		request_id: RequestId,
 		chunk: &[u8],
-		_deadline: Option<Timestamp>
+		_deadline: Option<Timestamp>,
 	) -> Result<(), HttpError> {
 		let mut state = self.0.write();
 
@@ -250,19 +240,16 @@ impl offchain::Externalities for TestOffchainExt {
 		Ok(())
 	}
 
-	fn http_response_wait(
-		&mut self,
-		ids: &[RequestId],
-		_deadline: Option<Timestamp>,
-	) -> Vec<RequestStatus> {
+	fn http_response_wait(&mut self, ids: &[RequestId], _deadline: Option<Timestamp>) -> Vec<RequestStatus> {
 		let state = self.0.read();
 
-		ids.iter().map(|id| match state.requests.get(id) {
-			Some(req) if req.response.is_none() =>
-				panic!("No `response` provided for request with id: {:?}", id),
-			None => RequestStatus::Invalid,
-			_ => RequestStatus::Finished(200),
-		}).collect()
+		ids.iter()
+			.map(|id| match state.requests.get(id) {
+				Some(req) if req.response.is_none() => panic!("No `response` provided for request with id: {:?}", id),
+				None => RequestStatus::Invalid,
+				_ => RequestStatus::Finished(200),
+			})
+			.collect()
 	}
 
 	fn http_response_headers(&mut self, request_id: RequestId) -> Vec<(Vec<u8>, Vec<u8>)> {
@@ -282,11 +269,12 @@ impl offchain::Externalities for TestOffchainExt {
 		&mut self,
 		request_id: RequestId,
 		buffer: &mut [u8],
-		_deadline: Option<Timestamp>
+		_deadline: Option<Timestamp>,
 	) -> Result<usize, HttpError> {
 		let mut state = self.0.write();
 		if let Some(req) = state.requests.get_mut(&request_id) {
-			let response = req.response
+			let response = req
+				.response
 				.as_mut()
 				.expect(&format!("No response provided for request: {:?}", request_id));
 

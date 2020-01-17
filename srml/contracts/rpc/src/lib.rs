@@ -22,7 +22,7 @@ use client::blockchain::HeaderBackend;
 use codec::Codec;
 use jsonrpc_core::{Error, ErrorCode, Result};
 use jsonrpc_derive::rpc;
-use primitives::{H256, Bytes};
+use primitives::{Bytes, H256};
 use rpc_primitives::number;
 use serde::{Deserialize, Serialize};
 use sr_primitives::{
@@ -54,7 +54,7 @@ impl From<GetStorageError> for Error {
 				code: ErrorCode::ServerError(CONTRACT_IS_A_TOMBSTONE),
 				message: "The contract is a tombstone and doesn't have any storage.".into(),
 				data: None,
-			}
+			},
 		}
 	}
 }
@@ -81,21 +81,12 @@ pub trait ContractsApi<BlockHash, AccountId, Balance> {
 	///
 	/// This method is useful for calling getter-like methods on contracts.
 	#[rpc(name = "contracts_call")]
-	fn call(
-		&self,
-		call_request: CallRequest<AccountId, Balance>,
-		at: Option<BlockHash>,
-	) -> Result<ContractExecResult>;
+	fn call(&self, call_request: CallRequest<AccountId, Balance>, at: Option<BlockHash>) -> Result<ContractExecResult>;
 
 	/// Returns the value under a specified storage `key` in a contract given by `address` param,
 	/// or `None` if it is not set.
 	#[rpc(name = "contracts_getStorage")]
-	fn get_storage(
-		&self,
-		address: AccountId,
-		key: H256,
-		at: Option<BlockHash>,
-	) -> Result<Option<Bytes>>;
+	fn get_storage(&self, address: AccountId, key: H256, at: Option<BlockHash>) -> Result<Option<Bytes>>;
 }
 
 /// An implementation of contract specific RPC methods.
@@ -114,8 +105,7 @@ impl<C, B> Contracts<C, B> {
 	}
 }
 
-impl<C, Block, AccountId, Balance> ContractsApi<<Block as BlockT>::Hash, AccountId, Balance>
-	for Contracts<C, Block>
+impl<C, Block, AccountId, Balance> ContractsApi<<Block as BlockT>::Hash, AccountId, Balance> for Contracts<C, Block>
 where
 	Block: BlockT,
 	C: Send + Sync + 'static,
@@ -159,12 +149,7 @@ where
 		Ok(exec_result)
 	}
 
-	fn get_storage(
-		&self,
-		address: AccountId,
-		key: H256,
-		at: Option<<Block as BlockT>::Hash>,
-	) -> Result<Option<Bytes>> {
+	fn get_storage(&self, address: AccountId, key: H256, at: Option<<Block as BlockT>::Hash>) -> Result<Option<Bytes>> {
 		let api = self.client.runtime_api();
 		let at = BlockId::hash(at.unwrap_or_else(||
 			// If the block hash is not supplied assume the best block.

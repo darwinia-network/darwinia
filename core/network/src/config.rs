@@ -20,19 +20,26 @@
 //! See the documentation of [`Params`].
 
 pub use crate::protocol::ProtocolConfig;
-pub use libp2p::{identity, core::PublicKey, wasm_ext::ExtTransport, build_multiaddr};
+pub use libp2p::{build_multiaddr, core::PublicKey, identity, wasm_ext::ExtTransport};
 
 use crate::chain::{Client, FinalityProofProvider};
 use crate::on_demand_layer::OnDemand;
 use crate::service::{ExHashT, TransactionPool};
 use bitflags::bitflags;
 use consensus::{block_validation::BlockAnnounceValidator, import_queue::ImportQueue};
-use sr_primitives::traits::{Block as BlockT};
-use libp2p::identity::{Keypair, ed25519};
-use libp2p::wasm_ext;
-use libp2p::{PeerId, Multiaddr, multiaddr};
 use core::{fmt, iter};
-use std::{error::Error, fs, io::{self, Write}, net::Ipv4Addr, path::{Path, PathBuf}, sync::Arc};
+use libp2p::identity::{ed25519, Keypair};
+use libp2p::wasm_ext;
+use libp2p::{multiaddr, Multiaddr, PeerId};
+use sr_primitives::traits::Block as BlockT;
+use std::{
+	error::Error,
+	fs,
+	io::{self, Write},
+	net::Ipv4Addr,
+	path::{Path, PathBuf},
+	sync::Arc,
+};
 use zeroize::Zeroize;
 
 /// Network initialization parameters.
@@ -185,10 +192,9 @@ pub fn parse_str_addr(addr_str: &str) -> Result<(PeerId, Multiaddr), ParseErr> {
 }
 
 /// Splits a Multiaddress into a Multiaddress and PeerId.
-pub fn parse_addr(mut addr: Multiaddr)-> Result<(PeerId, Multiaddr), ParseErr> {
+pub fn parse_addr(mut addr: Multiaddr) -> Result<(PeerId, Multiaddr), ParseErr> {
 	let who = match addr.pop() {
-		Some(multiaddr::Protocol::P2p(key)) => PeerId::from_multihash(key)
-			.map_err(|_| ParseErr::InvalidPeerId)?,
+		Some(multiaddr::Protocol::P2p(key)) => PeerId::from_multihash(key).map_err(|_| ParseErr::InvalidPeerId)?,
 		_ => return Err(ParseErr::PeerIdMissing),
 	};
 
@@ -299,22 +305,18 @@ impl NetworkConfiguration {
 	/// Create new default configuration for localhost-only connection with random port (useful for testing)
 	pub fn new_local() -> NetworkConfiguration {
 		let mut config = NetworkConfiguration::new();
-		config.listen_addresses = vec![
-			iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
-				.chain(iter::once(multiaddr::Protocol::Tcp(0)))
-				.collect()
-		];
+		config.listen_addresses = vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
+			.chain(iter::once(multiaddr::Protocol::Tcp(0)))
+			.collect()];
 		config
 	}
 
 	/// Create new default configuration for localhost-only connection with random port (useful for testing)
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config = NetworkConfiguration::new();
-		config.listen_addresses = vec![
-			iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
-				.chain(iter::once(multiaddr::Protocol::Tcp(0)))
-				.collect()
-		];
+		config.listen_addresses = vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
+			.chain(iter::once(multiaddr::Protocol::Tcp(0)))
+			.collect()];
 		config
 	}
 }
@@ -373,7 +375,7 @@ impl NonReservedPeerMode {
 #[derive(Clone, Debug)]
 pub enum NodeKeyConfig {
 	/// A Ed25519 secret key configuration.
-	Ed25519(Secret<ed25519::SecretKey>)
+	Ed25519(Secret<ed25519::SecretKey>),
 }
 
 /// The options for obtaining a Ed25519 secret key.
@@ -391,7 +393,7 @@ pub enum Secret<K> {
 	///   * `ed25519::SecretKey`: An unencoded 32 bytes Ed25519 secret key.
 	File(PathBuf),
 	/// Always generate a new secret key `K`.
-	New
+	New,
 }
 
 impl<K> fmt::Debug for Secret<K> {
@@ -418,19 +420,18 @@ impl NodeKeyConfig {
 	pub fn into_keypair(self) -> io::Result<Keypair> {
 		use NodeKeyConfig::*;
 		match self {
-			Ed25519(Secret::New) =>
-				Ok(Keypair::generate_ed25519()),
+			Ed25519(Secret::New) => Ok(Keypair::generate_ed25519()),
 
-			Ed25519(Secret::Input(k)) =>
-				Ok(Keypair::Ed25519(k.into())),
+			Ed25519(Secret::Input(k)) => Ok(Keypair::Ed25519(k.into())),
 
-			Ed25519(Secret::File(f)) =>
-				get_secret(f,
-					|mut b| ed25519::SecretKey::from_bytes(&mut b),
-					ed25519::SecretKey::generate,
-					|b| b.as_ref().to_vec())
-				.map(ed25519::Keypair::from)
-				.map(Keypair::Ed25519),
+			Ed25519(Secret::File(f)) => get_secret(
+				f,
+				|mut b| ed25519::SecretKey::from_bytes(&mut b),
+				ed25519::SecretKey::generate,
+				|b| b.as_ref().to_vec(),
+			)
+			.map(ed25519::Keypair::from)
+			.map(Keypair::Ed25519),
 		}
 	}
 }
@@ -447,9 +448,7 @@ where
 	W: Fn(&K) -> Vec<u8>,
 {
 	std::fs::read(&file)
-		.and_then(|mut sk_bytes|
-			parse(&mut sk_bytes)
-				.map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e)))
+		.and_then(|mut sk_bytes| parse(&mut sk_bytes).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e)))
 		.or_else(|e| {
 			if e.kind() == io::ErrorKind::NotFound {
 				file.as_ref().parent().map_or(Ok(()), fs::create_dir_all)?;
@@ -467,7 +466,7 @@ where
 /// Write secret bytes to a file.
 fn write_secret_file<P>(path: P, sk_bytes: &[u8]) -> io::Result<()>
 where
-	P: AsRef<Path>
+	P: AsRef<Path>,
 {
 	let mut file = open_secret_file(&path)?;
 	file.write_all(sk_bytes)
@@ -477,7 +476,7 @@ where
 #[cfg(unix)]
 fn open_secret_file<P>(path: P) -> io::Result<fs::File>
 where
-	P: AsRef<Path>
+	P: AsRef<Path>,
 {
 	use std::os::unix::fs::OpenOptionsExt;
 	fs::OpenOptions::new()
@@ -491,12 +490,9 @@ where
 #[cfg(not(unix))]
 fn open_secret_file<P>(path: P) -> Result<fs::File, io::Error>
 where
-	P: AsRef<Path>
+	P: AsRef<Path>,
 {
-	fs::OpenOptions::new()
-		.write(true)
-		.create_new(true)
-		.open(path)
+	fs::OpenOptions::new().write(true).create_new(true).open(path)
 }
 
 #[cfg(test)]
@@ -508,7 +504,7 @@ mod tests {
 		match kp {
 			Keypair::Ed25519(p) => p.secret().as_ref().iter().cloned().collect(),
 			Keypair::Secp256k1(p) => p.secret().to_bytes().to_vec(),
-			_ => panic!("Unexpected keypair.")
+			_ => panic!("Unexpected keypair."),
 		}
 	}
 
@@ -517,15 +513,21 @@ mod tests {
 		let tmp = TempDir::new("x").unwrap();
 		std::fs::remove_dir(tmp.path()).unwrap(); // should be recreated
 		let file = tmp.path().join("x").to_path_buf();
-		let kp1 = NodeKeyConfig::Ed25519(Secret::File(file.clone())).into_keypair().unwrap();
-		let kp2 = NodeKeyConfig::Ed25519(Secret::File(file.clone())).into_keypair().unwrap();
+		let kp1 = NodeKeyConfig::Ed25519(Secret::File(file.clone()))
+			.into_keypair()
+			.unwrap();
+		let kp2 = NodeKeyConfig::Ed25519(Secret::File(file.clone()))
+			.into_keypair()
+			.unwrap();
 		assert!(file.is_file() && secret_bytes(&kp1) == secret_bytes(&kp2))
 	}
 
 	#[test]
 	fn test_secret_input() {
 		let sk = ed25519::SecretKey::generate();
-		let kp1 = NodeKeyConfig::Ed25519(Secret::Input(sk.clone())).into_keypair().unwrap();
+		let kp1 = NodeKeyConfig::Ed25519(Secret::Input(sk.clone()))
+			.into_keypair()
+			.unwrap();
 		let kp2 = NodeKeyConfig::Ed25519(Secret::Input(sk)).into_keypair().unwrap();
 		assert!(secret_bytes(&kp1) == secret_bytes(&kp2));
 	}
