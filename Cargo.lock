@@ -5428,6 +5428,7 @@ dependencies = [
 [[package]]
 name = "substrate-chain-spec-derive"
 version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2 1.0.6",
