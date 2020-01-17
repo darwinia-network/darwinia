@@ -11,7 +11,8 @@ serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 keyring = { package = "substrate-keyring", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
 sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-substrate-client = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
+#substrate-client = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", optional = true }
+substrate-client = { path = "../client", optional = true }
 primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 app-crypto = { package = "substrate-application-crypto", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }

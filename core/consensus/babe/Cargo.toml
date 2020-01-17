@@ -22,13 +22,14 @@ substrate-telemetry = { git = "https://github.com/darwinia-network/substrate.git
 keystore = { package = "substrate-keystore", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #srml-babe = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 srml-babe = { path = "../../../srml/babe" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../../client" }
 sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 consensus-common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-uncles = { package = "substrate-consensus-uncles", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#uncles = { package = "substrate-consensus-uncles", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+uncles = { package = "substrate-consensus-uncles", path = "../uncles" }
 #slots = { package = "substrate-consensus-slots", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"  }
 slots = { package = "substrate-consensus-slots", path = "../slots"  }
 sr-primitives = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

@@ -15,8 +15,8 @@ linked-hash-map = "0.5.2"
 hash-db = "0.15.2"
 primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 sr-primitives = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../../client" }
 state-machine = { package = "substrate-state-machine", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 codec = { package = "parity-scale-codec", version = "1.0.0", features = ["derive"] }
 executor = { package = "substrate-executor", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

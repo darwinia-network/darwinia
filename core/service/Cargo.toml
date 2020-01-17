@@ -39,16 +39,18 @@ consensus_common = { package = "substrate-consensus-common", git = "https://gith
 network = { package = "substrate-network", path = "../../core/network" }
 #chain-spec = { package = "substrate-chain-spec", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 chain-spec = { package = "substrate-chain-spec", path = "../chain-spec" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../client" }
 sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 tx-pool-api = { package = "substrate-transaction-pool-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-client_db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#client_db = { package = "substrate-client-db", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client_db = { package = "substrate-client-db", path = "../client/db" }
 codec = { package = "parity-scale-codec", version = "1.0.0" }
 substrate-executor = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 transaction_pool = { package = "substrate-transaction-pool", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 rpc-servers = { package = "substrate-rpc-servers", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-rpc = { package = "substrate-rpc", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+#rpc = { package = "substrate-rpc", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rpc = { package = "substrate-rpc", path = "../rpc" }
 tel = { package = "substrate-telemetry", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #offchain = { package = "substrate-offchain", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 offchain = { package = "substrate-offchain", path = "../../core/offchain" }

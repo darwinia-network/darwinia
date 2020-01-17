@@ -20,8 +20,8 @@ primitives = { package = "substrate-primitives",  git = "https://github.com/darw
 substrate-telemetry = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 keystore = { package = "substrate-keystore", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 serde_json = "1.0.41"
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../client" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

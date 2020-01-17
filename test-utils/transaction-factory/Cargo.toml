@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 cli = { package = "darwinia-cli", path = "../../core/cli" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../../core/client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../../core/client" }
 sr-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 block-builder-api = { package = "substrate-block-builder-runtime-api", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 consensus_common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

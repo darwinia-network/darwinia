@@ -25,8 +25,8 @@ rand = "0.7.2"
 libp2p = { version = "0.13.0", default-features = false, features = ["libp2p-websocket"] }
 fork-tree = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 consensus = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../client" }
 block-builder = { package = "substrate-block-builder", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 header_metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

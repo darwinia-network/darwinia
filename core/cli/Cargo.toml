@@ -28,8 +28,8 @@ time = "0.1.42"
 tokio = "0.1.22"
 
 panic-handler = { package = "substrate-panic-handler", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-#client = { package = "substrate-client", path = "../client" }
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../client" }
 header-metadata = { package = "substrate-header-metadata", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 #network = { package = "substrate-network", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 network = { package = "substrate-network", path = "../../core/network" }

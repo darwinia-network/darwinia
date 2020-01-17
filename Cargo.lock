@@ -4871,7 +4871,6 @@ dependencies = [
 [[package]]
 name = "srml-contracts-rpc"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -5126,7 +5125,6 @@ dependencies = [
 [[package]]
 name = "srml-system-rpc"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -5172,13 +5170,11 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "serde",
- "sr-io",
  "sr-primitives",
  "sr-std",
  "srml-support",
  "srml-system",
  "substrate-inherents",
- "substrate-primitives",
 ]
 
 [[package]]
@@ -5197,7 +5193,6 @@ dependencies = [
 [[package]]
 name = "srml-transaction-payment-rpc"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -5355,7 +5350,6 @@ dependencies = [
 [[package]]
 name = "substrate-basic-authorship"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "futures-preview",
  "log 0.4.8",
@@ -5439,7 +5433,6 @@ dependencies = [
 [[package]]
 name = "substrate-client"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "derive_more",
  "fnv",
@@ -5470,7 +5463,6 @@ dependencies = [
 [[package]]
 name = "substrate-client-db"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "hash-db",
  "kvdb",
@@ -5594,7 +5586,6 @@ dependencies = [
 [[package]]
 name = "substrate-consensus-uncles"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "log 0.4.8",
  "sr-primitives",
@@ -5916,7 +5907,6 @@ dependencies = [
 [[package]]
 name = "substrate-rpc"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 dependencies = [
  "futures-preview",
  "hash-db",
