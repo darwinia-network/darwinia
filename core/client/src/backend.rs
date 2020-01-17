@@ -269,7 +269,8 @@ where
 	/// Attempts to revert the chain by `n` blocks.
 	///
 	/// Returns the number of blocks that were successfully reverted.
-	fn revert(&self, n: NumberFor<Block>) -> error::Result<NumberFor<Block>>;
+	//	fn revert(&self, n: NumberFor<Block>) -> error::Result<NumberFor<Block>>;
+	fn revert(&self, n: NumberFor<Block>, revert_finalized: bool) -> error::Result<NumberFor<Block>>;
 
 	/// Insert auxiliary data into key-value store.
 	fn insert_aux<

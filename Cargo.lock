@@ -5168,6 +5168,7 @@ name = "srml-timestamp"
 version = "2.0.0"
 dependencies = [
  "impl-trait-for-tuples",
+ "log 0.4.8",
  "parity-scale-codec",
  "serde",
  "sr-primitives",

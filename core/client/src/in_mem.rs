@@ -742,7 +742,8 @@ where
 		}
 	}
 
-	fn revert(&self, _n: NumberFor<Block>) -> error::Result<NumberFor<Block>> {
+	//	fn revert(&self, _n: NumberFor<Block>) -> error::Result<NumberFor<Block>> {
+	fn revert(&self, _n: NumberFor<Block>, _revert_finalized: bool) -> error::Result<NumberFor<Block>> {
 		Ok(Zero::zero())
 	}
 

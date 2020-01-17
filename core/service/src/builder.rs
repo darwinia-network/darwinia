@@ -126,6 +126,75 @@ type TLightCallExecutor<TBl, TExecDisp> = client::light::call_executor::GenesisC
 	>,
 >;
 
+type TFullParts<TBl, TRtApi, TExecDisp> = (
+	TFullClient<TBl, TRtApi, TExecDisp>,
+	Arc<TFullBackend<TBl>>,
+	Arc<RwLock<keystore::Store>>,
+);
+
+/// Creates a new full client for the given config.
+pub fn new_full_client<TBl, TRtApi, TExecDisp, TCfg, TGen, TCSExt>(
+	config: &Configuration<TCfg, TGen, TCSExt>,
+) -> Result<TFullClient<TBl, TRtApi, TExecDisp>, Error>
+where
+	TBl: BlockT<Hash = H256>,
+	TExecDisp: NativeExecutionDispatch,
+	TGen: sr_primitives::BuildStorage + serde::Serialize + for<'de> serde::Deserialize<'de>,
+	TCSExt: Extension,
+{
+	new_full_parts(config).map(|parts| parts.0)
+}
+
+fn new_full_parts<TBl, TRtApi, TExecDisp, TCfg, TGen, TCSExt>(
+	config: &Configuration<TCfg, TGen, TCSExt>,
+) -> Result<TFullParts<TBl, TRtApi, TExecDisp>, Error>
+where
+	TBl: BlockT<Hash = H256>,
+	TExecDisp: NativeExecutionDispatch,
+	TGen: sr_primitives::BuildStorage + serde::Serialize + for<'de> serde::Deserialize<'de>,
+	TCSExt: Extension,
+{
+	let keystore = Keystore::open(
+		config.keystore_path.clone().ok_or("No basepath configured")?,
+		config.keystore_password.clone(),
+	)?;
+
+	let executor = NativeExecutor::<TExecDisp>::new(config.wasm_method, config.default_heap_pages);
+
+	let fork_blocks = config
+		.chain_spec
+		.extensions()
+		.get::<client::ForkBlocks<TBl>>()
+		.cloned()
+		.unwrap_or_default();
+
+	let (client, backend) = {
+		let db_config = client_db::DatabaseSettings {
+			state_cache_size: config.state_cache_size,
+			state_cache_child_ratio: config.state_cache_child_ratio.map(|v| (v, 100)),
+			pruning: config.pruning.clone(),
+			source: match &config.database {
+				DatabaseConfig::Path { path, cache_size } => client_db::DatabaseSettingsSrc::Path {
+					path: path.clone(),
+					cache_size: cache_size.clone().map(|u| u as usize),
+				},
+				DatabaseConfig::Custom(db) => client_db::DatabaseSettingsSrc::Custom(db.clone()),
+			},
+		};
+
+		client_db::new_client(
+			db_config,
+			executor,
+			&config.chain_spec,
+			fork_blocks,
+			config.execution_strategies.clone(),
+			Some(keystore.clone()),
+		)?
+	};
+
+	Ok((client, backend, keystore))
+}
+
 impl<TCfg, TGen, TCSExt> ServiceBuilder<(), (), TCfg, TGen, TCSExt, (), (), (), (), (), (), (), (), (), ()>
 where
 	TGen: RuntimeGenesis,
@@ -154,43 +223,44 @@ where
 		>,
 		Error,
 	> {
-		let keystore = Keystore::open(
-			config.keystore_path.clone().ok_or("No basepath configured")?,
-			config.keystore_password.clone(),
-		)?;
-
-		let executor = NativeExecutor::<TExecDisp>::new(config.wasm_method, config.default_heap_pages);
-
-		let fork_blocks = config
-			.chain_spec
-			.extensions()
-			.get::<client::ForkBlocks<TBl>>()
-			.cloned()
-			.unwrap_or_default();
-
-		let (client, backend) = {
-			let db_config = client_db::DatabaseSettings {
-				state_cache_size: config.state_cache_size,
-				state_cache_child_ratio: config.state_cache_child_ratio.map(|v| (v, 100)),
-				pruning: config.pruning.clone(),
-				source: match &config.database {
-					DatabaseConfig::Path { path, cache_size } => client_db::DatabaseSettingsSrc::Path {
-						path: path.clone(),
-						cache_size: cache_size.clone().map(|u| u as usize),
-					},
-					DatabaseConfig::Custom(db) => client_db::DatabaseSettingsSrc::Custom(db.clone()),
-				},
-			};
-
-			client_db::new_client(
-				db_config,
-				executor,
-				&config.chain_spec,
-				fork_blocks,
-				config.execution_strategies.clone(),
-				Some(keystore.clone()),
-			)?
-		};
+		//		let keystore = Keystore::open(
+		//			config.keystore_path.clone().ok_or("No basepath configured")?,
+		//			config.keystore_password.clone(),
+		//		)?;
+		//
+		//		let executor = NativeExecutor::<TExecDisp>::new(config.wasm_method, config.default_heap_pages);
+		//
+		//		let fork_blocks = config
+		//			.chain_spec
+		//			.extensions()
+		//			.get::<client::ForkBlocks<TBl>>()
+		//			.cloned()
+		//			.unwrap_or_default();
+		//
+		//		let (client, backend) = {
+		//			let db_config = client_db::DatabaseSettings {
+		//				state_cache_size: config.state_cache_size,
+		//				state_cache_child_ratio: config.state_cache_child_ratio.map(|v| (v, 100)),
+		//				pruning: config.pruning.clone(),
+		//				source: match &config.database {
+		//					DatabaseConfig::Path { path, cache_size } => client_db::DatabaseSettingsSrc::Path {
+		//						path: path.clone(),
+		//						cache_size: cache_size.clone().map(|u| u as usize),
+		//					},
+		//					DatabaseConfig::Custom(db) => client_db::DatabaseSettingsSrc::Custom(db.clone()),
+		//				},
+		//			};
+		//
+		//			client_db::new_client(
+		//				db_config,
+		//				executor,
+		//				&config.chain_spec,
+		//				fork_blocks,
+		//				config.execution_strategies.clone(),
+		//				Some(keystore.clone()),
+		//			)?
+		//		};
+		let (client, backend, keystore) = new_full_parts(&config)?;
 
 		let client = Arc::new(client);
 

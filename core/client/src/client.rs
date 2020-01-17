@@ -1291,7 +1291,14 @@ where
 	/// Attempts to revert the chain by `n` blocks. Returns the number of blocks that were
 	/// successfully reverted.
 	pub fn revert(&self, n: NumberFor<Block>) -> error::Result<NumberFor<Block>> {
-		Ok(self.backend.revert(n)?)
+		//		Ok(self.backend.revert(n)?)
+		Ok(self.backend.revert(n, false)?)
+	}
+
+	/// Attempts to revert the chain by `n` blocks disregarding finality. Returns the number of
+	/// blocks that were successfully reverted.
+	pub fn unsafe_revert(&self, n: NumberFor<Block>) -> error::Result<NumberFor<Block>> {
+		Ok(self.backend.revert(n, true)?)
 	}
 
 	/// Get blockchain info.

@@ -96,6 +96,8 @@ use codec::Encode;
 #[cfg(feature = "std")]
 use inherents::ProvideInherentData;
 use inherents::{InherentData, InherentIdentifier, IsFatalError, ProvideInherent};
+#[cfg(feature = "std")]
+use log::trace;
 use rstd::{cmp, result};
 use sr_primitives::weights::SimpleDispatchInfo;
 use sr_primitives::{
@@ -172,8 +174,28 @@ impl ProvideInherentData for InherentDataProvider {
 		now.duration_since(SystemTime::UNIX_EPOCH)
 			.map_err(|_| "Current time is before unix epoch".into())
 			.and_then(|d| {
-				let duration: InherentType = d.as_millis() as u64;
-				inherent_data.put_data(INHERENT_IDENTIFIER, &duration)
+//				let duration: InherentType = d.as_millis() as u64;
+//				inherent_data.put_data(INHERENT_IDENTIFIER, &duration)
+				let timestamp: InherentType = d.as_millis() as u64;
+
+				// ICEFROG HOTFIX: mutate timestamp to make it revert back in time and have slots
+				// happen at 2x their speed from then until we have caught up with the present time.
+
+				const REVIVE_TIMESTAMP: u64 = 1579251900000;
+				const FORK_TIMESTAMP: u64 = 1579029915 * 1000;
+				const WARP_FACTOR: u64 = 3;
+
+				let time_since_revival = timestamp.saturating_sub(REVIVE_TIMESTAMP);
+				let warped_timestamp = FORK_TIMESTAMP + WARP_FACTOR * time_since_revival;
+
+				trace!(target: "babe", "timestamp warped: {:?} to {:?} ({:?} since revival)", timestamp, warped_timestamp, time_since_revival);
+
+				// we want to ensure our timestamp is such that slots run monotonically with blocks
+				// at 1/3th of the slot_duration from this slot onwards until we catch up to the
+				// wall-clock time.
+				let timestamp = timestamp.min(warped_timestamp);
+
+				inherent_data.put_data(INHERENT_IDENTIFIER, &timestamp)
 			})
 	}
 

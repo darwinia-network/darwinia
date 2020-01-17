@@ -52,7 +52,9 @@ use primitives::{Blake2Hasher, H256};
 use sr_primitives::generic::BlockId;
 use sr_primitives::traits::{Block as BlockT, NumberFor};
 
-pub use self::builder::{ServiceBuilder, ServiceBuilderExport, ServiceBuilderImport, ServiceBuilderRevert};
+pub use self::builder::{
+	new_full_client, ServiceBuilder, ServiceBuilderExport, ServiceBuilderImport, ServiceBuilderRevert,
+};
 pub use self::error::Error;
 pub use chain_spec::{ChainSpec, Extension as ChainSpecExtension, Properties, RuntimeGenesis};
 pub use client::FinalityNotifications;
