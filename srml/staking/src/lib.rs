@@ -799,6 +799,11 @@ decl_module! {
 		///
 		/// The dispatch origin for this call must be _Signed_ by the controller, not the stash.
 		///
+		/// After all pledged Ring and Kton are unbonded, the bonded accounts, namely stash and
+		/// controller, will also be unbonded.  Once user want to bond again, the `bond` method
+		/// should be called. If there are still pledged Ring or Kton and user want to bond more
+		/// values, the `bond_extra` method should be called.
+		///
 		/// # <weight>
 		/// - Independent of the arguments. Limited but potentially exploitable complexity.
 		/// - Contains a limited number of reads.
@@ -876,6 +881,31 @@ decl_module! {
 						));
 					}
 				},
+			}
+
+			let StakingLedger {
+				active_ring,
+				active_kton,
+				stash,
+				..
+			} = ledger;
+
+			// all bonded rings and ktons is withdrawing, then remove Ledger to save storage
+			if active_ring.is_zero() && active_kton.is_zero() {
+				// TODO:
+				// These locks are still in the system, and should be removed after 14 days
+				//
+				// There two situations should be considered after the 14 days
+				// - the user never bond again, so the locks should be released.
+				// - the user is bonded again in the 14 days, so the after 14 days
+				//   the lock should not be removed
+				//
+				// If the locks are not deleted, this lock will wast the storage in the future
+				// blocks.
+				//
+				// T::Ring::remove_lock(STAKING_ID, &stash);
+				// T::Kton::remove_lock(STAKING_ID, &stash);
+				Self::kill_stash(&stash);
 			}
 		}
 

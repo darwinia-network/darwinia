@@ -1993,37 +1993,17 @@ fn bond_with_no_staked_value() {
 				RewardDestination::Controller,
 				0,
 			));
-			//			assert_eq!(Ring::locks(&1)[0].amount, 5);
-
-			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalances::RingBalance(5)));
-			assert_eq!(
-				Staking::ledger(2),
-				Some(StakingLedger {
-					stash: 1,
-					active_ring: 0,
-					active_deposit_ring: 0,
-					active_kton: 0,
-					deposit_items: vec![],
-					ring_staking_lock: StakingLock {
-						staking_amount: 0,
-						unbondings: vec![NormalLock { amount: 5, until: 60 }],
-					},
-					kton_staking_lock: Default::default(),
-				}),
-			);
-
-			Timestamp::set_timestamp(BondingDuration::get() - 1);
-
 			// Not yet removed.
 			assert!(Staking::ledger(2).is_some());
-			//			assert_eq!(Ring::locks(&1)[0].amount, 5);
+			match Ring::locks(&1)[0].withdraw_lock.clone() {
+				WithdrawLock::Normal(_) => panic!("lock type error"),
+				WithdrawLock::WithStaking(lock) => assert_eq!(lock.staking_amount, 5),
+			}
 
-			Timestamp::set_timestamp(BondingDuration::get());
+			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalances::RingBalance(5)));
 
-			// FIXME
-			// Poof. Account 1 is removed from the staking system.
-			//			assert!(Staking::ledger(2).is_none());
-			//			assert_eq!(Ring::locks(&1).len(), 0);
+			// unbond all, auto remove the ledger
+			assert_eq!(Staking::ledger(2), None);
 		});
 }
 
@@ -2552,30 +2532,7 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 				reasons: WithdrawReasons::all(),
 			}],
 		);
-		assert_eq!(
-			Staking::ledger(controller).unwrap(),
-			StakingLedger {
-				stash,
-				active_ring: 0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![
-						NormalLock {
-							amount: unbond_value,
-							until: BondingDuration::get(),
-						},
-						NormalLock {
-							amount: 1000 - unbond_value,
-							until: unbond_start + BondingDuration::get(),
-						},
-					],
-				},
-				kton_staking_lock: Default::default(),
-			},
-		);
+		assert_eq!(Staking::ledger(controller), None);
 
 		assert_err!(
 			Ring::transfer(Origin::signed(stash), controller, 1),
@@ -3999,7 +3956,8 @@ fn xavier_q2() {
 }
 
 #[test]
-fn xavier_q3() {
+fn bond_values_then_unbond_all_then_bond_again() {
+	// The Kton part
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
@@ -4013,6 +3971,7 @@ fn xavier_q3() {
 			RewardDestination::Stash,
 			0,
 		));
+
 		assert_eq!(Timestamp::get(), 1);
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
@@ -4029,38 +3988,22 @@ fn xavier_q3() {
 				},
 			}
 		);
-		//		println!("Locks: {:#?}", Kton::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
 
+		// all values are unbond
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
 			StakingBalances::KtonBalance(5)
 		));
-		assert_eq!(
-			Staking::ledger(controller).unwrap(),
-			StakingLedger {
-				stash: 123,
-				active_ring: 0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: Default::default(),
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }],
-				},
-			}
-		);
-		//		println!("Locks: {:#?}", Kton::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
+		assert_eq!(Staking::ledger(controller), None);
 
+		// bond again
 		Timestamp::set_timestamp(61);
-		assert_ok!(Staking::bond_extra(
+		assert_ok!(Staking::bond(
 			Origin::signed(stash),
+			controller,
 			StakingBalances::KtonBalance(1),
-			0
+			RewardDestination::Stash,
+			0,
 		));
 		assert_eq!(Timestamp::get(), 61);
 		assert_eq!(
@@ -4074,15 +4017,13 @@ fn xavier_q3() {
 				ring_staking_lock: Default::default(),
 				kton_staking_lock: StakingLock {
 					staking_amount: 1,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }],
+					unbondings: vec![],
 				},
 			}
 		);
-		//		println!("Locks: {:#?}", Kton::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
 	});
 
+	// The Ring part
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
@@ -4112,38 +4053,22 @@ fn xavier_q3() {
 				kton_staking_lock: Default::default(),
 			}
 		);
-		//		println!("Locks: {:#?}", Ring::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
 
+		// all values are unbond
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
 			StakingBalances::RingBalance(5),
 		));
-		assert_eq!(
-			Staking::ledger(controller).unwrap(),
-			StakingLedger {
-				stash: 123,
-				active_ring: 0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
-				ring_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }],
-				},
-				kton_staking_lock: Default::default(),
-			}
-		);
-		//		println!("Locks: {:#?}", Ring::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
+		assert_eq!(Staking::ledger(controller), None);
 
+		// bond again
 		Timestamp::set_timestamp(61);
-		assert_ok!(Staking::bond_extra(
+		assert_ok!(Staking::bond(
 			Origin::signed(stash),
+			controller,
 			StakingBalances::RingBalance(1),
-			0
+			RewardDestination::Stash,
+			0,
 		));
 		assert_eq!(Timestamp::get(), 61);
 		assert_eq!(
@@ -4156,14 +4081,11 @@ fn xavier_q3() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1,
-					unbondings: vec![NormalLock { amount: 5, until: 61 }],
+					unbondings: vec![],
 				},
 				kton_staking_lock: Default::default(),
 			}
 		);
-		//		println!("Locks: {:#?}", Ring::locks(stash));
-		//		println!("StakingLedger: {:#?}", Staking::ledger(controller));
-		//		println!();
 	});
 }
 
