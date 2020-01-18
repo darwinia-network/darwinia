@@ -1103,7 +1103,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FreeOperational]
 		fn force_new_era(origin) {
 			ensure_root(origin)?;
-			ForceEra::put(Forcing::ForceNew);
+			ForceEra::put(Forcing::ForceNone);
 		}
 
 		/// Set the validators who cannot be slashed (if any).

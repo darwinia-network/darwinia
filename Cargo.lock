@@ -3129,7 +3129,7 @@ dependencies = [
 
 [[package]]
 name = "node-cli"
-version = "0.4.7"
+version = "0.4.6"
 dependencies = [
  "clear_on_drop",
  "console_error_panic_hook",
