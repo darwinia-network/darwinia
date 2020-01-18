@@ -1,0 +1,39 @@
+[package]
+name = "srml-babe"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+hex-literal = "0.2.1"
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true }
+inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+timestamp = { package = "srml-timestamp", path = "../timestamp", default-features = false }
+session = { package = "srml-session", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#babe-primitives = { package = "substrate-consensus-babe-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+babe-primitives = { package = "substrate-consensus-babe-primitives", path = "../../core/consensus/babe/primitives", default-features = false }
+runtime-io ={ package = "sr-io", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"rstd/std",
+	"support/std",
+	"sr-primitives/std",
+	"sr-staking-primitives/std",
+	"system/std",
+	"timestamp/std",
+	"inherents/std",
+	"babe-primitives/std",
+	"session/std",
+	"runtime-io/std",
+]

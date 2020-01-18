@@ -20,7 +20,8 @@ sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", bra
 sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 substrate-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
-timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+#timestamp = { package = "srml-timestamp", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+timestamp = { package = "srml-timestamp", path = "../timestamp", default-features = false }
 
 # darwinia
 darwinia-support = { package = "darwinia-support", path = "../support", default-features = false }

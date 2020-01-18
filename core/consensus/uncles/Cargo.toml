@@ -1,0 +1,16 @@
+[package]
+name = "substrate-consensus-uncles"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+description = "Generic uncle inclusion utilities for consensus"
+edition = "2018"
+
+[dependencies]
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../../client" }
+primitives = { package = "substrate-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sr-primitives = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+srml-authorship = {  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+consensus_common = { package = "substrate-consensus-common", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+log = "0.4.8"

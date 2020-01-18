@@ -1,0 +1,18 @@
+[package]
+name = "srml-transaction-payment-rpc"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+#client = { package = "substrate-client", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+client = { package = "substrate-client", path = "../../../core/client" }
+codec = { package = "parity-scale-codec", version = "1.0.0" }
+jsonrpc-core = "14.0.3"
+jsonrpc-core-client = "14.0.3"
+jsonrpc-derive = "14.0.3"
+primitives = { package = "substrate-primitives",  git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+rpc-primitives = { package = "substrate-rpc-primitives", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+serde = { version = "1.0.101", features = ["derive"] }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+srml-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }

@@ -21,9 +21,6 @@ sr-staking-primitives = { git = "https://github.com/darwinia-network/substrate.g
 support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
 
-[dev-dependencies]
-offchain = { package = "substrate-offchain", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-
 [features]
 default = ["std", "session/historical"]
 std = [

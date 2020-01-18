@@ -1,0 +1,29 @@
+[package]
+name = "srml-timestamp"
+version = "2.0.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+rstd = { package = "sr-std", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+sr-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+inherents = { package = "substrate-inherents", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+support = { package = "srml-support", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+system = { package = "srml-system", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop", default-features = false }
+impl-trait-for-tuples = "0.1.3"
+log = { version = "0.4.8", optional = true }
+
+[features]
+default = ["std"]
+std = [
+	"inherents/std",
+	"codec/std",
+	"rstd/std",
+	"sr-primitives/std",
+	"support/std",
+	"serde",
+	"system/std",
+	"log",
+]
