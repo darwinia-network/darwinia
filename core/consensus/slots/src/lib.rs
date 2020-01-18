@@ -117,7 +117,8 @@ pub trait SimpleSlotWorker<B: BlockT> {
 		Self: Send + Sync,
 		<Self::Proposer as Proposer<B>>::Create: Unpin + Send + 'static,
 	{
-		let (timestamp, slot_number, slot_duration) = (slot_info.timestamp, slot_info.number, slot_info.duration);
+		//		let (timestamp, slot_number, slot_duration) = (slot_info.timestamp, slot_info.number, slot_info.duration);
+		let (timestamp, slot_number) = (slot_info.timestamp, slot_info.number);
 
 		let epoch_data = match self.epoch_data(&chain_head, slot_number) {
 			Ok(epoch_data) => epoch_data,
@@ -203,23 +204,24 @@ pub trait SimpleSlotWorker<B: BlockT> {
 		let logging_target = self.logging_target();
 
 		Box::pin(proposal_work.map_ok(move |(block, claim)| {
-			// minor hack since we don't have access to the timestamp
-			// that is actually set by the proposer.
-			let slot_after_building = SignedDuration::default().slot_now(slot_duration);
-			if slot_after_building != slot_number {
-				info!(
-					"Discarding proposal for slot {}; block production took too long",
-					slot_number
-				);
-				// If the node was compiled with debug, tell the user to use release optimizations.
-				#[cfg(build_type = "debug")]
-				info!("Recompile your node in `--release` mode to mitigate this problem.");
-				telemetry!(CONSENSUS_INFO; "slots.discarding_proposal_took_too_long";
-					"slot" => slot_number,
-				);
-
-				return;
-			}
+			// ICEFROG HOTFIX: ignore the timestamp for now since we might be warping.
+			//			// minor hack since we don't have access to the timestamp
+			//			// that is actually set by the proposer.
+			//			let slot_after_building = SignedDuration::default().slot_now(slot_duration);
+			//			if slot_after_building != slot_number {
+			//				info!(
+			//					"Discarding proposal for slot {}; block production took too long",
+			//					slot_number
+			//				);
+			//				// If the node was compiled with debug, tell the user to use release optimizations.
+			//				#[cfg(build_type = "debug")]
+			//				info!("Recompile your node in `--release` mode to mitigate this problem.");
+			//				telemetry!(CONSENSUS_INFO; "slots.discarding_proposal_took_too_long";
+			//					"slot" => slot_number,
+			//				);
+			//
+			//				return;
+			//			}
 
 			let (header, body) = block.deconstruct();
 			let header_num = *header.number();
