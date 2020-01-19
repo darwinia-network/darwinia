@@ -181,8 +181,10 @@ impl ProvideInherentData for InherentDataProvider {
 				// ICEFROG HOTFIX: mutate timestamp to make it revert back in time and have slots
 				// happen at 3x their speed from then until we have caught up with the present time.
 
-				const REVIVE_TIMESTAMP: u64 = 1579320000000;
-				const FORK_TIMESTAMP: u64 = 1579057500 * 1000;
+				// 1/19 2020 09:50:00
+				const REVIVE_TIMESTAMP: u64 = 1_579_398_600_000;
+				// #328000
+				const FORK_TIMESTAMP: u64 = 1_579_055_694_000;
 				const WARP_FACTOR: u64 = 3;
 
 				let time_since_revival = timestamp.saturating_sub(REVIVE_TIMESTAMP);
