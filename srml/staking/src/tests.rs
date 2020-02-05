@@ -3096,6 +3096,7 @@ fn unbond_zero() {
 	});
 }
 
+// Origin test case name is `yakio_q1`
 // bond 10_000 Ring for 12 months, gain 1 Kton
 // bond extra 10_000 Ring for 36 months, gain 3 Kton
 // bond extra 1 Kton
@@ -3103,11 +3104,12 @@ fn unbond_zero() {
 // unlock the 12 months deposit item with punish
 // lost 3 Kton and 10_000 Ring's power for nominate
 #[test]
-fn yakio_q1() {
+fn two_different_bond_then_unbond_specific_one() {
 	ExtBuilder::default().build().execute_with(|| {
 		let (stash, controller) = (777, 888);
 		let _ = Ring::deposit_creating(&stash, 20_000);
 
+		// Earn 1 Kton with bond 10_000 Ring 12 months
 		assert_ok!(Staking::bond(
 			Origin::signed(stash),
 			controller,
@@ -3115,6 +3117,8 @@ fn yakio_q1() {
 			RewardDestination::Stash,
 			12,
 		));
+
+		// Earn 3 Kton with bond 10_000 Ring 36 months
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
 			StakingBalances::RingBalance(10_000),
@@ -3122,6 +3126,7 @@ fn yakio_q1() {
 		));
 		assert_eq!(Kton::free_balance(&stash), 4);
 
+		// Bond 1 Kton
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(stash),
 			StakingBalances::KtonBalance(1),
@@ -3129,8 +3134,12 @@ fn yakio_q1() {
 		));
 		assert_eq!(Staking::ledger(controller).unwrap().active_kton, 1);
 
+		// Become a nominator
 		assert_ok!(Staking::nominate(Origin::signed(controller), vec![controller]));
 
+		// Then unbond the the first 12 months part,
+		// this behavior should be punished 3 times Kton according to the remaining times
+		// 3 times * 1 Kton * 12 months(remaining) / 12 months(promised)
 		assert_ok!(Staking::try_claim_deposits_with_punish(
 			Origin::signed(controller),
 			12 * MONTH_IN_MILLISECONDS,
@@ -3138,7 +3147,9 @@ fn yakio_q1() {
 		assert_eq!(Kton::free_balance(&stash), 1);
 
 		let ledger = Staking::ledger(controller).unwrap();
-		// not enough Kton to unbond
+
+		// Please Note:
+		// not enough Kton to unbond, but the function will not fail
 		assert_ok!(Staking::try_claim_deposits_with_punish(
 			Origin::signed(controller),
 			36 * MONTH_IN_MILLISECONDS,
@@ -3147,9 +3158,11 @@ fn yakio_q1() {
 	});
 }
 
+// Origin test case name is `yakio_q2`
 // how to balance the power and calculate the reward if some validators have been chilled
+// more reward with more validators
 #[test]
-fn yakio_q2() {
+fn nominator_voting_a_validator_before_he_chill() {
 	fn run(with_new_era: bool) -> Balance {
 		let mut balance = 0;
 		ExtBuilder::default().build().execute_with(|| {
@@ -3177,6 +3190,8 @@ fn yakio_q2() {
 			));
 
 			start_era(1);
+
+			// A validator becomes to be chilled after the nominator voting him
 			assert_ok!(Staking::chill(Origin::signed(validator_1_controller)));
 			// assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
 			if with_new_era {
@@ -3199,8 +3214,9 @@ fn yakio_q2() {
 	assert!(free_balance > free_balance_with_new_era);
 }
 
+// Original testcase name is `xavier_q1`
 #[test]
-fn xavier_q1() {
+fn staking_with_kton_with_unbondings() {
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
@@ -3524,8 +3540,11 @@ fn xavier_q1() {
 	});
 }
 
+// Original testcase name is `xavier_q2`
+//
+// The values(KTON, RING) are unbond twice with different amount and times
 #[test]
-fn xavier_q2() {
+fn unbound_values_in_twice() {
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
 		let controller = 456;
@@ -3955,8 +3974,11 @@ fn xavier_q2() {
 	});
 }
 
+// Original testcase name is `xavier_q3`
+//
+// The values(KTON, RING) are unbond in the moment that there are values unbonding
 #[test]
-fn bond_values_then_unbond_all_then_bond_again() {
+fn bond_values_when_some_value_unbonding() {
 	// The Kton part
 	ExtBuilder::default().build().execute_with(|| {
 		let stash = 123;
