@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Substrate CLI library.
+//! Darwinia CLI library.
 //!
 //! This package has two Cargo features:
 //!
@@ -52,8 +52,10 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// The Flaming Fir testnet.
-	FlamingFir,
+	/// Generate Iceforg testnet config.
+	GenIceFrogTestnet,
+	/// The IceFrog testnet.
+	IceFrogTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -62,10 +64,11 @@ pub enum ChainSpec {
 impl ChainSpec {
 	pub(crate) fn load(self) -> Result<chain_spec::ChainSpec, String> {
 		Ok(match self {
-			ChainSpec::FlamingFir => chain_spec::flaming_fir_config()?,
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
+			ChainSpec::GenIceFrogTestnet => chain_spec::gen_icefrog_testnet_config(),
+			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config()?,
 		})
 	}
 
@@ -73,8 +76,9 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"" | "fir" | "flaming-fir" => Some(ChainSpec::FlamingFir),
 			"staging" => Some(ChainSpec::StagingTestnet),
+			"gen" => Some(ChainSpec::GenIceFrogTestnet),
+			"" | "icefrog" => Some(ChainSpec::IceFrogTestnet),
 			_ => None,
 		}
 	}

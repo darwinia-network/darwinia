@@ -53,7 +53,8 @@ Darwinia Network provides game developers the scalability, cross-chain interoper
 === Hacking on Darwinia
 
 If you'd actually like to hack on Darwinia, you can just grab the source code and
-build it. Ensure you have Rust and the support software installed:
+build it. We also provide the script to help you setup your developing environment in bellow sections.
+Please ensure you have Rust and the support software installed:
 
 ==== Linux and Mac
 
@@ -317,17 +318,20 @@ You can generate documentation for a Darwinia Rust package and have it automatic
 (of the The Rustdoc Book), by running the following command:
 
 ```
+cargo doc --open
+```
+
+If you just want to generate document from specific package, you may use following command:
+
+```
 cargo doc --package <spec> --open
 ```
 
-Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia --open`):
+Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
 
-* All Darwinia Packages
-[source, shell]
-darwinia
 * Darwinia Core
 [source, shell]
-darwinia, darwinia-cli, ethash, fly-client,
+darwinia-cli, ethash, fly-client,
 merkle-mountain-range, merkle-patricia-trie, sr-eth-primitives
 * Darwinia Runtime Module Library
 [source, shell]
@@ -341,16 +345,27 @@ node-cli, node-primitives, node-runtime
 
 === Environment
 
+<<<<<<< HEAD
 If you are using Ubuntu, 
 you may use the `.maintain/bootstrap.sh` to set up your develop environment.
 In this script, the nightly `Rust`, `cargo`, `rustfmt` will be installed,
+=======
+The `scripts/bootstrap.sh` help set up your develop environment.
+The nightly `Rust`, `cargo`, `rustfmt` will be installed,
+>>>>>>> upstream/develop
 the git hooks will be set, and ready to code.
+
+Besides, the script will install some essential packages depends on your OS,
+if you want to do it manually, use the `--fast` option to skip.
 We will appreciate your contribution.
 
+<<<<<<< HEAD
 If you are using different environment, you may copy the git hooks mannually.
 ```
 $ cp .maintain/hooks/* .git/hooks
 ```
+=======
+>>>>>>> upstream/develop
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
