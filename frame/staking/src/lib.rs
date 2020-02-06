@@ -668,8 +668,8 @@ pub trait Trait: frame_system::Trait {
 	/// applied immediately, without opportunity for intervention.
 	type SlashDeferDuration: Get<EraIndex>;
 
-	/// The origin which can cancel a deferred slash. Root can always do this.
-	type SlashCancelOrigin: EnsureOrigin<Self::Origin>;
+	//	/// The origin which can cancel a deferred slash. Root can always do this.
+	//	type SlashCancelOrigin: EnsureOrigin<Self::Origin>;
 
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
@@ -1471,39 +1471,39 @@ decl_module! {
 			ForceEra::put(Forcing::ForceAlways);
 		}
 
-		/// Cancel enactment of a deferred slash. Can be called by either the root origin or
-		/// the `T::SlashCancelOrigin`.
-		/// passing the era and indices of the slashes for that era to kill.
-		///
-		/// # <weight>
-		/// - One storage write.
-		/// # </weight>
-		#[weight = SimpleDispatchInfo::FreeOperational]
-		fn cancel_deferred_slash(origin, era: EraIndex, slash_indices: Vec<u32>) {
-			T::SlashCancelOrigin::try_origin(origin)
-				.map(|_| ())
-				.or_else(ensure_root)?;
-
-			let mut slash_indices = slash_indices;
-			slash_indices.sort_unstable();
-			let mut unapplied = <Self as Store>::UnappliedSlashes::get(&era);
-
-			for (removed, index) in slash_indices.into_iter().enumerate() {
-				let index = index as usize;
-
-				// if `index` is not duplicate, `removed` must be <= index.
-				ensure!(removed <= index, Error::<T>::DuplicateIndex);
-
-				// all prior removals were from before this index, since the
-				// list is sorted.
-				let index = index - removed;
-				ensure!(index < unapplied.len(), Error::<T>::InvalidSlashIndex);
-
-				unapplied.remove(index);
-			}
-
-			<Self as Store>::UnappliedSlashes::insert(&era, &unapplied);
-		}
+//		/// Cancel enactment of a deferred slash. Can be called by either the root origin or
+//		/// the `T::SlashCancelOrigin`.
+//		/// passing the era and indices of the slashes for that era to kill.
+//		///
+//		/// # <weight>
+//		/// - One storage write.
+//		/// # </weight>
+//		#[weight = SimpleDispatchInfo::FreeOperational]
+//		fn cancel_deferred_slash(origin, era: EraIndex, slash_indices: Vec<u32>) {
+//			T::SlashCancelOrigin::try_origin(origin)
+//				.map(|_| ())
+//				.or_else(ensure_root)?;
+//
+//			let mut slash_indices = slash_indices;
+//			slash_indices.sort_unstable();
+//			let mut unapplied = <Self as Store>::UnappliedSlashes::get(&era);
+//
+//			for (removed, index) in slash_indices.into_iter().enumerate() {
+//				let index = index as usize;
+//
+//				// if `index` is not duplicate, `removed` must be <= index.
+//				ensure!(removed <= index, Error::<T>::DuplicateIndex);
+//
+//				// all prior removals were from before this index, since the
+//				// list is sorted.
+//				let index = index - removed;
+//				ensure!(index < unapplied.len(), Error::<T>::InvalidSlashIndex);
+//
+//				unapplied.remove(index);
+//			}
+//
+//			<Self as Store>::UnappliedSlashes::insert(&era, &unapplied);
+//		}
 	}
 }
 

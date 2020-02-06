@@ -38,7 +38,7 @@ pub use pallet_staking::StakerStatus;
 
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Currency, Randomness, SplitTwoWays},
+	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
@@ -77,14 +77,14 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node"),
-	impl_name: create_runtime_str!("substrate-node"),
-	authoring_version: 10,
+	impl_name: create_runtime_str!("darwinia-node"),
+	authoring_version: 4,
 	// Per convention: if the runtime behavior changes, increment spec_version
 	// and set impl_version to equal spec_version. If only runtime
 	// implementation changes and behavior does not, then leave spec_version as
 	// is and increment impl_version.
-	spec_version: 198,
-	impl_version: 198,
+	spec_version: 85,
+	impl_version: 85,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -103,10 +103,18 @@ pub type DealWithFees = SplitTwoWays<
 	Balance,
 	NegativeImbalance,
 	_4,
-	Treasury, // 4 parts (80%) goes to the treasury.
+	//	Treasury, // 4 parts (80%) goes to the treasury.
+	MockTreasury,
 	_1,
 	Author, // 1 part (20%) goes to the block author.
 >;
+
+pub struct MockTreasury;
+impl OnUnbalanced<NegativeImbalance> for MockTreasury {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+		Balances::resolve_creating(&Sudo::key(), amount);
+	}
+}
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
@@ -168,32 +176,6 @@ impl pallet_indices::Trait for Runtime {
 	type IsDeadAccount = Balances;
 	type ResolveHint = pallet_indices::SimpleResolveHint<Self::AccountId, Self::AccountIndex>;
 	type Event = Event;
-}
-
-parameter_types! {
-	pub const ExistentialDeposit: Balance = 1 * COIN;
-	pub const TransferFee: Balance = 1 * MILLI;
-	pub const CreationFee: Balance = 1 * MILLI;
-}
-
-impl pallet_ring::Trait for Runtime {
-	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
-	type OnNewAccount = Indices;
-	type TransferPayment = ();
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
-}
-impl pallet_kton::Trait for Runtime {
-	type Balance = Balance;
-	type Event = Event;
-	type RingCurrency = Balances;
-	type TransferPayment = Balances;
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
 }
 
 parameter_types! {
@@ -264,94 +246,48 @@ impl pallet_session::historical::Trait for Runtime {
 	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
-pallet_staking_reward_curve::build! {
-	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
-		min_inflation: 0_025_000,
-		max_inflation: 0_100_000,
-		ideal_stake: 0_500_000,
-		falloff: 0_050_000,
-		max_piece_count: 40,
-		test_precision: 0_005_000,
-	);
-}
+//type CouncilCollective = pallet_collective::Instance1;
+//impl pallet_collective::Trait<CouncilCollective> for Runtime {
+//	type Origin = Origin;
+//	type Proposal = Call;
+//	type Event = Event;
+//}
 
-parameter_types! {
-	pub const BlocksPerSession: BlockNumber = EPOCH_DURATION_IN_BLOCKS;
-	pub const SessionsPerEra: SessionIndex = ERA_DURATION;
-	pub const BondingDurationInEra: EraIndex = 24 * 28;
-	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
-	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
+//type TechnicalCollective = pallet_collective::Instance2;
+//impl pallet_collective::Trait<TechnicalCollective> for Runtime {
+//	type Origin = Origin;
+//	type Proposal = Call;
+//	type Event = Event;
+//}
+//
+//impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
+//	type Event = Event;
+//	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+//	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+//	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+//	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+//	type MembershipInitialized = TechnicalCommittee;
+//	type MembershipChanged = TechnicalCommittee;
+//}
 
-	pub const Cap: Balance = CAP;
-	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = GENESIS_TIME;
-}
-
-impl pallet_staking::Trait for Runtime {
-	type Time = Timestamp;
-	type PowerToVote = PowerToVoteHandler;
-	type Event = Event;
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = BondingDurationInEra;
-	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
-	type SlashDeferDuration = SlashDeferDuration;
-	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
-	type SessionInterface = Self;
-	type RingCurrency = Balances;
-	type RingRewardRemainder = Treasury;
-	type RingSlash = ();
-	type RingReward = ();
-	type KtonCurrency = Kton;
-	type KtonSlash = ();
-	type KtonReward = ();
-	type Cap = Cap;
-	type TotalPower = TotalPower;
-	type GenesisTime = GenesisTime;
-}
-
-type CouncilCollective = pallet_collective::Instance1;
-impl pallet_collective::Trait<CouncilCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-}
-
-type TechnicalCollective = pallet_collective::Instance2;
-impl pallet_collective::Trait<TechnicalCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-}
-
-impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
-	type Event = Event;
-	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-	type MembershipInitialized = TechnicalCommittee;
-	type MembershipChanged = TechnicalCommittee;
-}
-
-parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * COIN;
-	pub const SpendPeriod: BlockNumber = 1 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(50);
-}
-
-impl pallet_treasury::Trait for Runtime {
-	type Currency = Balances;
-	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
-	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
-	type Event = Event;
-	type ProposalRejection = ();
-	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
-	type Burn = Burn;
-}
+//parameter_types! {
+//	pub const ProposalBond: Permill = Permill::from_percent(5);
+//	pub const ProposalBondMinimum: Balance = 1 * COIN;
+//	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+//	pub const Burn: Permill = Permill::from_percent(50);
+//}
+//
+//impl pallet_treasury::Trait for Runtime {
+//	type Currency = Balances;
+//	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
+//	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
+//	type Event = Event;
+//	type ProposalRejection = ();
+//	type ProposalBond = ProposalBond;
+//	type ProposalBondMinimum = ProposalBondMinimum;
+//	type SpendPeriod = SpendPeriod;
+//	type Burn = Burn;
+//}
 
 parameter_types! {
 	pub const ContractTransferFee: Balance = 1 * MILLI;
@@ -443,44 +379,105 @@ parameter_types! {
 	pub const MaxLength: usize = 16;
 }
 
-impl pallet_nicks::Trait for Runtime {
-	type Event = Event;
-	type Currency = Balances;
-	type ReservationFee = ReservationFee;
-	type Slashed = Treasury;
-	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
-	type MinLength = MinLength;
-	type MaxLength = MaxLength;
+//impl pallet_nicks::Trait for Runtime {
+//	type Event = Event;
+//	type Currency = Balances;
+//	type ReservationFee = ReservationFee;
+//	type Slashed = Treasury;
+//	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+//	type MinLength = MinLength;
+//	type MaxLength = MaxLength;
+//}
+
+//impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
+//	type Public = <Signature as traits::Verify>::Signer;
+//	type Signature = Signature;
+//
+//	fn create_transaction<TSigner: frame_system::offchain::Signer<Self::Public, Self::Signature>>(
+//		call: Call,
+//		public: Self::Public,
+//		account: AccountId,
+//		index: Index,
+//	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
+//		let period = 1 << 8;
+//		let current_block = System::block_number().saturated_into::<u64>();
+//		let tip = 0;
+//		let extra: SignedExtra = (
+//			frame_system::CheckVersion::<Runtime>::new(),
+//			frame_system::CheckGenesis::<Runtime>::new(),
+//			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
+//			frame_system::CheckNonce::<Runtime>::from(index),
+//			frame_system::CheckWeight::<Runtime>::new(),
+//			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+//			Default::default(),
+//		);
+//		let raw_payload = SignedPayload::new(call, extra).ok()?;
+//		let signature = TSigner::sign(public, &raw_payload)?;
+//		let address = Indices::unlookup(account);
+//		let (call, extra, _) = raw_payload.deconstruct();
+//		Some((call, (address, signature, extra)))
+//	}
+//}
+
+parameter_types! {
+	pub const ExistentialDeposit: Balance = 1 * COIN;
+	pub const TransferFee: Balance = 1 * MILLI;
+	pub const CreationFee: Balance = 1 * MILLI;
 }
 
-impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
-	type Public = <Signature as traits::Verify>::Signer;
-	type Signature = Signature;
+impl pallet_ring::Trait for Runtime {
+	type Balance = Balance;
+	type OnFreeBalanceZero = ((Staking, Contracts), Session);
+	type OnNewAccount = Indices;
+	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+	type CreationFee = CreationFee;
+}
+impl pallet_kton::Trait for Runtime {
+	type Balance = Balance;
+	type Event = Event;
+	type RingCurrency = Balances;
+	type TransferPayment = Balances;
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
+}
 
-	fn create_transaction<TSigner: frame_system::offchain::Signer<Self::Public, Self::Signature>>(
-		call: Call,
-		public: Self::Public,
-		account: AccountId,
-		index: Index,
-	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
-		let period = 1 << 8;
-		let current_block = System::block_number().saturated_into::<u64>();
-		let tip = 0;
-		let extra: SignedExtra = (
-			frame_system::CheckVersion::<Runtime>::new(),
-			frame_system::CheckGenesis::<Runtime>::new(),
-			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
-			frame_system::CheckNonce::<Runtime>::from(index),
-			frame_system::CheckWeight::<Runtime>::new(),
-			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			Default::default(),
-		);
-		let raw_payload = SignedPayload::new(call, extra).ok()?;
-		let signature = TSigner::sign(public, &raw_payload)?;
-		let address = Indices::unlookup(account);
-		let (call, extra, _) = raw_payload.deconstruct();
-		Some((call, (address, signature, extra)))
-	}
+parameter_types! {
+	pub const BlocksPerSession: BlockNumber = EPOCH_DURATION_IN_BLOCKS;
+	pub const SessionsPerEra: SessionIndex = ERA_DURATION;
+	pub const BondingDurationInEra: EraIndex = 24 * 28;
+	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
+	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
+
+	pub const Cap: Balance = CAP;
+	pub const TotalPower: Power = TOTAL_POWER;
+	pub const GenesisTime: Moment = GENESIS_TIME;
+}
+
+impl pallet_staking::Trait for Runtime {
+	type Time = Timestamp;
+	type PowerToVote = PowerToVoteHandler;
+	type Event = Event;
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
+	type SlashDeferDuration = SlashDeferDuration;
+	//	/// A super-majority of the council can cancel the slash.
+	//	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
+	type SessionInterface = Self;
+	type RingCurrency = Balances;
+	type RingRewardRemainder = ();
+	type RingSlash = ();
+	type RingReward = ();
+	type KtonCurrency = Kton;
+	type KtonSlash = ();
+	type KtonReward = ();
+	type Cap = Cap;
+	type TotalPower = TotalPower;
+	type GenesisTime = GenesisTime;
 }
 
 construct_runtime!(
@@ -497,19 +494,19 @@ construct_runtime!(
 		Indices: pallet_indices,
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
-		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
+//		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+//		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+//		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
-		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
+//		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Contracts: pallet_contracts,
 		Sudo: pallet_sudo,
 		ImOnline: pallet_im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
 		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config},
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
-		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
+//		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
 		
 		Balances: pallet_ring::{default, Error},
 		Kton: pallet_kton::{default, Error},
@@ -596,11 +593,11 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
-		fn offchain_worker(number: NumberFor<Block>) {
-			Executive::offchain_worker(number)
-		}
-	}
+//	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
+//		fn offchain_worker(number: NumberFor<Block>) {
+//			Executive::offchain_worker(number)
+//		}
+//	}
 
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
 		fn grandpa_authorities() -> GrandpaAuthorityList {
