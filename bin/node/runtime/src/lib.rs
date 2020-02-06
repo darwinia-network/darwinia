@@ -389,35 +389,35 @@ parameter_types! {
 //	type MaxLength = MaxLength;
 //}
 
-//impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
-//	type Public = <Signature as traits::Verify>::Signer;
-//	type Signature = Signature;
-//
-//	fn create_transaction<TSigner: frame_system::offchain::Signer<Self::Public, Self::Signature>>(
-//		call: Call,
-//		public: Self::Public,
-//		account: AccountId,
-//		index: Index,
-//	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
-//		let period = 1 << 8;
-//		let current_block = System::block_number().saturated_into::<u64>();
-//		let tip = 0;
-//		let extra: SignedExtra = (
-//			frame_system::CheckVersion::<Runtime>::new(),
-//			frame_system::CheckGenesis::<Runtime>::new(),
-//			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
-//			frame_system::CheckNonce::<Runtime>::from(index),
-//			frame_system::CheckWeight::<Runtime>::new(),
-//			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-//			Default::default(),
-//		);
-//		let raw_payload = SignedPayload::new(call, extra).ok()?;
-//		let signature = TSigner::sign(public, &raw_payload)?;
-//		let address = Indices::unlookup(account);
-//		let (call, extra, _) = raw_payload.deconstruct();
-//		Some((call, (address, signature, extra)))
-//	}
-//}
+impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
+	type Public = <Signature as traits::Verify>::Signer;
+	type Signature = Signature;
+
+	fn create_transaction<TSigner: frame_system::offchain::Signer<Self::Public, Self::Signature>>(
+		call: Call,
+		public: Self::Public,
+		account: AccountId,
+		index: Index,
+	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
+		let period = 1 << 8;
+		let current_block = System::block_number().saturated_into::<u64>();
+		let tip = 0;
+		let extra: SignedExtra = (
+			frame_system::CheckVersion::<Runtime>::new(),
+			frame_system::CheckGenesis::<Runtime>::new(),
+			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
+			frame_system::CheckNonce::<Runtime>::from(index),
+			frame_system::CheckWeight::<Runtime>::new(),
+			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+			Default::default(),
+		);
+		let raw_payload = SignedPayload::new(call, extra).ok()?;
+		let signature = TSigner::sign(public, &raw_payload)?;
+		let address = Indices::unlookup(account);
+		let (call, extra, _) = raw_payload.deconstruct();
+		Some((call, (address, signature, extra)))
+	}
+}
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
@@ -593,11 +593,11 @@ impl_runtime_apis! {
 		}
 	}
 
-//	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
-//		fn offchain_worker(number: NumberFor<Block>) {
-//			Executive::offchain_worker(number)
-//		}
-//	}
+	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
+		fn offchain_worker(number: NumberFor<Block>) {
+			Executive::offchain_worker(number)
+		}
+	}
 
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
 		fn grandpa_authorities() -> GrandpaAuthorityList {
@@ -689,59 +689,5 @@ impl_runtime_apis! {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
 			SessionKeys::generate(seed)
 		}
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use frame_system::offchain::SubmitSignedTransaction;
-
-	fn is_submit_signed_transaction<T>(_arg: T)
-	where
-		T: SubmitSignedTransaction<
-			Runtime,
-			Call,
-			Extrinsic = UncheckedExtrinsic,
-			CreateTransaction = Runtime,
-			Signer = ImOnlineId,
-		>,
-	{
-	}
-
-	#[test]
-	fn validate_bounds() {
-		let x = SubmitTransaction::default();
-		is_submit_signed_transaction(x);
-	}
-
-	#[test]
-	fn block_hooks_weight_should_not_exceed_limits() {
-		use frame_support::weights::WeighBlock;
-		let check_for_block = |b| {
-			let block_hooks_weight = <AllModules as WeighBlock<BlockNumber>>::on_initialize(b)
-				+ <AllModules as WeighBlock<BlockNumber>>::on_finalize(b);
-
-			assert_eq!(
-				block_hooks_weight, 0,
-				"This test might fail simply because the value being compared to has increased to a \
-				module declaring a new weight for a hook or call. In this case update the test and \
-				happily move on.",
-			);
-
-			// Invariant. Always must be like this to have a sane chain.
-			assert!(block_hooks_weight < MaximumBlockWeight::get());
-
-			// Warning.
-			if block_hooks_weight > MaximumBlockWeight::get() / 2 {
-				println!(
-					"block hooks weight is consuming more than a block's capacity. You probably want \
-					to re-think this. This test will fail now."
-				);
-				assert!(false);
-			}
-		};
-
-		let _ = (0..100_000).for_each(check_for_block);
 	}
 }

@@ -1,7 +1,10 @@
 [workspace]
 members = [
 	"bin/node/cli",
-	"bin/node/primitives",
+	"bin/node/executor",
+    "bin/node/primitives",
+    "bin/node/rpc-client",
+    "bin/node/rpc",
 	"bin/node/runtime",
 	"frame/balances/kton",
 	"frame/balances/ring",

@@ -1,7 +1,7 @@
 [package]
 name = "node-runtime"
-version = "2.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+version = "0.4.0"
+authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 build = "build.rs"
 
@@ -18,7 +18,7 @@ sp-authority-discovery = { version = "2.0.0", default-features = false, git = "h
 sp-consensus-babe = { version = "0.8", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-block-builder = { git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402", default-features = false}
 sp-inherents = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-#sp-offchain = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+sp-offchain = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 sp-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
@@ -91,7 +91,7 @@ std = [
 	"pallet-membership/std",
 #	"pallet-nicks/std",
 	"node-primitives/std",
-#	"sp-offchain/std",
+	"sp-offchain/std",
 	"pallet-offences/std",
 	"sp-core/std",
 	"pallet-randomness-collective-flip/std",
