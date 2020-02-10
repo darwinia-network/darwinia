@@ -14,7 +14,7 @@ env:
     global:
         - RUST_BACKTRACE=1
     matrix:
-        - RUST_TOOLCHAIN=nightly TARGET=rustfmt
+        - RUST_TOOLCHAIN=stable TARGET=rustfmt
         - RUST_TOOLCHAIN=nightly TARGET=wasm
         - RUST_TOOLCHAIN=nightly TARGET=native
 
@@ -23,7 +23,7 @@ before_install:
     - df -h
 
 script:
-    - ./ci/script.sh
+    - .maintain/ci/script.sh
 
 after_script:
     # Check how much free disk space left after the build

@@ -56,7 +56,7 @@ Currently we are developing based on Substrate 1.0 rc, to setup the initial POC-
         - A simple blockchain browser.
         - Testnet tokens faucet.
     - Deliverables
-        - Docker container running a substrate node with staking runtime included, can connect to testnet and syncing blocks.
+        - Docker container running a darwinia node with staking runtime included, can connect to testnet and syncing blocks.
         - Running node can get free tokens from faucet, and testing validator functions, running as validators. And normal users can support validators by nominating.
         - Users and view the blockchain data and extrinsics using blockchain browser.
         
@@ -67,7 +67,7 @@ Currently we are developing based on Substrate 1.0 rc, to setup the initial POC-
         - Experimental contract runtime support. (Using pDSL for testing and experimental, only support command line)
         - Upgraded web wallet and blockchain browser with better user experience.
     - Deliverables
-        - Docker container running a substrate node with NFT/Token swapping runtime included, can connect to testnet and syncing blocks.
+        - Docker container running a darwinia node with NFT/Token swapping runtime included, can connect to testnet and syncing blocks.
         - User can use web wallet to test the NFT and token bridging, e.g. transferring a NFT token from Ethereum testnet to Tron testnet. (Evolution Land’s alpha version, can be used as a scenario)
         - Documents about how to deploy a sample contract on the experimental contract model
         - Blockchain browser can view the NFT token’s encoding ids, and search NFT by id.
