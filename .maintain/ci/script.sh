@@ -13,7 +13,7 @@ rustc --version
 case $TARGET in
 	# Format check
 	"rustfmt")
-		rustup component add rustfmt
+		rustup component add rustfmt-preview
 		cargo fmt --all
 		;;
 
