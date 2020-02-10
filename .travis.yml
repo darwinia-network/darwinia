@@ -23,7 +23,7 @@ before_install:
     - df -h
 
 script:
-    - ./ci/script.sh
+    - .maintain/ci/script.sh
 
 after_script:
     # Check how much free disk space left after the build
