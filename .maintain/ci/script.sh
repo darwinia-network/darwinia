@@ -2,33 +2,29 @@
 
 set -eux
 
-# Install rustup and the specified rust toolchain.
 curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=$RUST_TOOLCHAIN -y
 
-# Load cargo environment. Specifically, put cargo into PATH.
 source ~/.cargo/env
-
-# Install wasm toolchain
-rustup target add wasm32-unknown-unknown
 
 rustup --version
 cargo --version
 rustc --version
 
 case $TARGET in
+	# Format check
 	"rustfmt")
-		sudo apt-get -y update
-		sudo apt-get install -y cmake pkg-config libssl-dev
+		rustup component add rustfmt
 		cargo fmt --all
 		;;
 
+	# Unit test
 	"native")
-		# Unit test
 		cargo test --release --all --locked "$@"
 		;;
 
+	# Build test
 	"wasm")
-		# Build test
+		rustup target add wasm32-unknown-unknown
 		cargo build --locked "$@"
 		;;
 esac
