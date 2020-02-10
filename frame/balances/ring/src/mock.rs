@@ -16,17 +16,21 @@
 
 //! Test utilities
 
-use sp_runtime::{Perbill, traits::{ConvertInto, IdentityLookup}, testing::Header};
+use crate::{GenesisConfig, Module, Trait};
+use frame_support::traits::Get;
+use frame_support::weights::{DispatchInfo, Weight};
+use frame_support::{impl_outer_origin, parameter_types};
 use sp_core::H256;
 use sp_io;
-use frame_support::{impl_outer_origin, parameter_types};
-use frame_support::traits::Get;
-use frame_support::weights::{Weight, DispatchInfo};
+use sp_runtime::{
+	testing::Header,
+	traits::{ConvertInto, IdentityLookup},
+	Perbill,
+};
 use std::cell::RefCell;
-use crate::{GenesisConfig, Module, Trait};
 
 use frame_system as system;
-impl_outer_origin!{
+impl_outer_origin! {
 	pub enum Origin for Test {}
 }
 
@@ -38,17 +42,23 @@ thread_local! {
 
 pub struct ExistentialDeposit;
 impl Get<u64> for ExistentialDeposit {
-	fn get() -> u64 { EXISTENTIAL_DEPOSIT.with(|v| *v.borrow()) }
+	fn get() -> u64 {
+		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow())
+	}
 }
 
 pub struct TransferFee;
 impl Get<u64> for TransferFee {
-	fn get() -> u64 { TRANSFER_FEE.with(|v| *v.borrow()) }
+	fn get() -> u64 {
+		TRANSFER_FEE.with(|v| *v.borrow())
+	}
 }
 
 pub struct CreationFee;
 impl Get<u64> for CreationFee {
-	fn get() -> u64 { CREATION_FEE.with(|v| *v.borrow()) }
+	fn get() -> u64 {
+		CREATION_FEE.with(|v| *v.borrow())
+	}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -160,7 +170,7 @@ impl ExtBuilder {
 					(2, 20 * self.existential_deposit),
 					(3, 30 * self.existential_deposit),
 					(4, 40 * self.existential_deposit),
-					(12, 10 * self.existential_deposit)
+					(12, 10 * self.existential_deposit),
 				]
 			} else {
 				vec![]
@@ -169,12 +179,14 @@ impl ExtBuilder {
 				vec![
 					(1, 0, 10, 5 * self.existential_deposit),
 					(2, 10, 20, 0),
-					(12, 10, 20, 5 * self.existential_deposit)
+					(12, 10, 20, 5 * self.existential_deposit),
 				]
 			} else {
 				vec![]
 			},
-		}.assimilate_storage(&mut t).unwrap();
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 		t.into()
 	}
 }
@@ -186,5 +198,8 @@ pub const CALL: &<Test as frame_system::Trait>::Call = &();
 
 /// create a transaction info struct from weight. Handy to avoid building the whole struct.
 pub fn info_from_weight(w: Weight) -> DispatchInfo {
-	DispatchInfo { weight: w, ..Default::default() }
+	DispatchInfo {
+		weight: w,
+		..Default::default()
+	}
 }

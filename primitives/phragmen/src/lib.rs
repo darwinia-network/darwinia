@@ -33,10 +33,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_std::{prelude::*, collections::btree_map::BTreeMap};
+use sp_runtime::traits::{Bounded, Convert, Member, Saturating, SimpleArithmetic, Zero};
 use sp_runtime::RuntimeDebug;
 use sp_runtime::{helpers_128bit::multiply_by_rational, Perbill, Rational128};
-use sp_runtime::traits::{Zero, Convert, Member, SimpleArithmetic, Saturating, Bounded};
+use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 #[cfg(test)]
 mod mock;
@@ -107,7 +107,7 @@ pub struct PhragmenResult<AccountId> {
 	pub winners: Vec<(AccountId, ExtendedBalance)>,
 	/// Individual assignments. for each tuple, the first elements is a voter and the second
 	/// is the list of candidates that it supports.
-	pub assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>
+	pub assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
 }
 
 /// A structure to demonstrate the phragmen result from the perspective of the candidate, i.e. how
@@ -153,7 +153,8 @@ pub fn elect<AccountId, Balance, FS, C>(
 	initial_candidates: Vec<AccountId>,
 	initial_voters: Vec<(AccountId, Vec<AccountId>)>,
 	stake_of: FS,
-) -> Option<PhragmenResult<AccountId>> where
+) -> Option<PhragmenResult<AccountId>>
+where
 	AccountId: Default + Ord + Member,
 	Balance: Default + Copy + SimpleArithmetic,
 	for<'r> FS: Fn(&'r AccountId) -> Balance,
@@ -179,12 +180,17 @@ pub fn elect<AccountId, Balance, FS, C>(
 		.enumerate()
 		.map(|(idx, who)| {
 			c_idx_cache.insert(who.clone(), idx);
-			Candidate { who, ..Default::default() }
+			Candidate {
+				who,
+				..Default::default()
+			}
 		})
 		.collect::<Vec<Candidate<AccountId>>>();
 
 	// early return if we don't have enough candidates
-	if candidates.len() < minimum_candidate_count { return None; }
+	if candidates.len() < minimum_candidate_count {
+		return None;
+	}
 
 	// collect voters. use `c_idx_cache` for fast access and aggregate `approval_stake` of
 	// candidates.
@@ -194,19 +200,21 @@ pub fn elect<AccountId, Balance, FS, C>(
 		for v in votes {
 			if let Some(idx) = c_idx_cache.get(&v) {
 				// This candidate is valid + already cached.
-				candidates[*idx].approval_stake = candidates[*idx].approval_stake
-					.saturating_add(to_votes(voter_stake));
-				edges.push(Edge { who: v.clone(), candidate_index: *idx, ..Default::default() });
+				candidates[*idx].approval_stake = candidates[*idx].approval_stake.saturating_add(to_votes(voter_stake));
+				edges.push(Edge {
+					who: v.clone(),
+					candidate_index: *idx,
+					..Default::default()
+				});
 			} // else {} would be wrong votes. We don't really care about it.
 		}
 		Voter {
 			who,
-			edges: edges,
+			edges,
 			budget: to_votes(voter_stake),
 			load: Rational128::zero(),
 		}
 	}));
-
 
 	// we have already checked that we have more candidates than minimum_candidate_count.
 	// run phragmen.
@@ -234,11 +242,8 @@ pub fn elect<AccountId, Balance, FS, C>(
 			for e in &n.edges {
 				let c = &mut candidates[e.candidate_index];
 				if !c.elected && !c.approval_stake.is_zero() {
-					let temp_n = multiply_by_rational(
-						n.load.n(),
-						n.budget,
-						c.approval_stake,
-					).unwrap_or(Bounded::max_value());
+					let temp_n =
+						multiply_by_rational(n.load.n(), n.budget, c.approval_stake).unwrap_or(Bounded::max_value());
 					let temp_d = n.load.d();
 					let temp = Rational128::from(temp_n, temp_d);
 					c.score = c.score.lazy_saturating_add(temp);
@@ -247,11 +252,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 		}
 
 		// loop 3: find the best
-		if let Some(winner) = candidates
-			.iter_mut()
-			.filter(|c| !c.elected)
-			.min_by_key(|c| c.score)
-		{
+		if let Some(winner) = candidates.iter_mut().filter(|c| !c.elected).min_by_key(|c| c.score) {
 			// loop 3: update voter and edge load
 			winner.elected = true;
 			for n in &mut voters {
@@ -265,7 +266,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 
 			elected_candidates.push((winner.who.clone(), winner.approval_stake));
 		} else {
-			break
+			break;
 		}
 	} // end of all rounds
 
@@ -274,8 +275,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 		let mut assignment = (n.who.clone(), vec![]);
 		for e in &mut n.edges {
 			if elected_candidates.iter().position(|(ref c, _)| *c == e.who).is_some() {
-				let per_bill_parts =
-				{
+				let per_bill_parts = {
 					if n.load == e.load {
 						// Full support. No need to calculate.
 						Perbill::accuracy().into()
@@ -283,11 +283,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 						if e.load.d() == n.load.d() {
 							// return e.load / n.load.
 							let desired_scale: u128 = Perbill::accuracy().into();
-							multiply_by_rational(
-								desired_scale,
-								e.load.n(),
-								n.load.n(),
-							).unwrap_or(Bounded::max_value())
+							multiply_by_rational(desired_scale, e.load.n(), n.load.n()).unwrap_or(Bounded::max_value())
 						} else {
 							// defensive only. Both edge and nominator loads are built from
 							// scores, hence MUST have the same denominator.
@@ -296,9 +292,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 					}
 				};
 				// safer to .min() inside as well to argue as u32 is safe.
-				let per_thing = Perbill::from_parts(
-					per_bill_parts.min(Perbill::accuracy().into()) as u32
-				);
+				let per_thing = Perbill::from_parts(per_bill_parts.min(Perbill::accuracy().into()) as u32);
 				assignment.1.push((e.who.clone(), per_thing));
 			}
 		}
@@ -308,9 +302,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 			// we add a minimal post-processing to equally assign all of the leftover stake ratios.
 			let vote_count = assignment.1.len() as u32;
 			let len = assignment.1.len();
-			let sum = assignment.1.iter()
-				.map(|a| a.1.deconstruct())
-				.sum::<u32>();
+			let sum = assignment.1.iter().map(|a| a.1.deconstruct()).sum::<u32>();
 			let accuracy = Perbill::accuracy();
 			let diff = accuracy.checked_sub(sum).unwrap_or(0);
 			let diff_per_vote = (diff / vote_count).min(accuracy);
@@ -318,8 +310,7 @@ pub fn elect<AccountId, Balance, FS, C>(
 			if diff_per_vote > 0 {
 				for i in 0..len {
 					let current_ratio = assignment.1[i % len].1;
-					let next_ratio = current_ratio
-						.saturating_add(Perbill::from_parts(diff_per_vote));
+					let next_ratio = current_ratio.saturating_add(Perbill::from_parts(diff_per_vote));
 					assignment.1[i % len].1 = next_ratio;
 				}
 			}
@@ -347,7 +338,8 @@ pub fn build_support_map<Balance, AccountId, FS, C>(
 	elected_stashes: &Vec<AccountId>,
 	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
 	stake_of: FS,
-) -> SupportMap<AccountId> where
+) -> SupportMap<AccountId>
+where
 	AccountId: Default + Ord + Member,
 	Balance: Default + Copy + SimpleArithmetic,
 	C: Convert<Balance, u64> + Convert<u128, Balance>,
@@ -356,9 +348,9 @@ pub fn build_support_map<Balance, AccountId, FS, C>(
 	let to_votes = |b: Balance| <C as Convert<Balance, u64>>::convert(b) as ExtendedBalance;
 	// Initialize the support of each candidate.
 	let mut supports = <SupportMap<AccountId>>::new();
-	elected_stashes
-		.iter()
-		.for_each(|e| { supports.insert(e.clone(), Default::default()); });
+	elected_stashes.iter().for_each(|e| {
+		supports.insert(e.clone(), Default::default());
+	});
 
 	// build support struct.
 	for (n, assignment) in assignments.iter() {
@@ -417,14 +409,10 @@ pub fn equalize<Balance, AccountId, C, FS>(
 		for (voter, assignment) in assignments.iter_mut() {
 			let voter_budget = stake_of(&voter);
 
-			let diff = do_equalize::<_, _, C>(
-				voter,
-				voter_budget,
-				assignment,
-				supports,
-				tolerance,
-			);
-			if diff > max_diff { max_diff = diff; }
+			let diff = do_equalize::<_, _, C>(voter, voter_budget, assignment, supports, tolerance);
+			if diff > max_diff {
+				max_diff = diff;
+			}
 		}
 
 		if max_diff < tolerance {
@@ -440,18 +428,20 @@ fn do_equalize<Balance, AccountId, C>(
 	budget_balance: Balance,
 	elected_edges: &mut Vec<PhragmenStakedAssignment<AccountId>>,
 	support_map: &mut SupportMap<AccountId>,
-	tolerance: ExtendedBalance
-) -> ExtendedBalance where
+	tolerance: ExtendedBalance,
+) -> ExtendedBalance
+where
 	C: Convert<Balance, u64> + Convert<u128, Balance>,
 	AccountId: Ord + Clone,
 {
-	let to_votes = |b: Balance|
-		<C as Convert<Balance, u64>>::convert(b) as ExtendedBalance;
+	let to_votes = |b: Balance| <C as Convert<Balance, u64>>::convert(b) as ExtendedBalance;
 	let budget = to_votes(budget_balance);
 
 	// Nothing to do. This voter had nothing useful.
 	// Defensive only. Assignment list should always be populated.
-	if elected_edges.is_empty() { return 0; }
+	if elected_edges.is_empty() {
+		return 0;
+	}
 
 	let stake_used = elected_edges
 		.iter()
@@ -497,9 +487,13 @@ fn do_equalize<Balance, AccountId, C>(
 		e.1 = 0;
 	});
 
-	elected_edges.sort_unstable_by_key(|e|
-		if let Some(e) = support_map.get(&e.0) { e.total } else { Zero::zero() }
-	);
+	elected_edges.sort_unstable_by_key(|e| {
+		if let Some(e) = support_map.get(&e.0) {
+			e.total
+		} else {
+			Zero::zero()
+		}
+	});
 
 	let mut cumulative_stake: ExtendedBalance = 0;
 	let mut last_index = elected_edges.len() - 1;
