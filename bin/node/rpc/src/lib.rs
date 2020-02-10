@@ -16,7 +16,7 @@
 
 //! A collection of node-specific RPC methods.
 //!
-//! Since `substrate` core functionality makes no assumptions
+//! Since `darwinia` core functionality makes no assumptions
 //! about the modules used inside the runtime, so do
 //! RPC methods defined in `sc-rpc` crate.
 //! It means that `client/rpc` can't have any methods that
@@ -31,7 +31,7 @@
 
 use std::sync::Arc;
 
-use node_primitives::{Block, AccountId, Index, Balance};
+use node_primitives::{AccountId, Balance, Block, Index};
 use node_runtime::UncheckedExtrinsic;
 use sp_runtime::traits::ProvideRuntimeApi;
 use sp_transaction_pool::TransactionPool;
@@ -57,11 +57,8 @@ impl<F> LightDeps<F> {
 /// Instantiate all RPC extensions.
 ///
 /// If you provide `LightDeps`, the system is configured for light client.
-pub fn create<C, P, M, F>(
-	client: Arc<C>,
-	pool: Arc<P>,
-	light_deps: Option<LightDeps<F>>,
-) -> jsonrpc_core::IoHandler<M> where
+pub fn create<C, P, M, F>(client: Arc<C>, pool: Arc<P>, light_deps: Option<LightDeps<F>>) -> jsonrpc_core::IoHandler<M>
+where
 	C: ProvideRuntimeApi,
 	C: sc_client::blockchain::HeaderBackend<Block>,
 	C: Send + Sync + 'static,
@@ -72,30 +69,31 @@ pub fn create<C, P, M, F>(
 	P: TransactionPool + 'static,
 	M: jsonrpc_core::Metadata + Default,
 {
-	use substrate_frame_rpc_system::{FullSystem, LightSystem, SystemApi};
 	use pallet_contracts_rpc::{Contracts, ContractsApi};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
+	use substrate_frame_rpc_system::{FullSystem, LightSystem, SystemApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
 
-	if let Some(LightDeps { remote_blockchain, fetcher }) = light_deps {
-		io.extend_with(
-			SystemApi::<AccountId, Index>::to_delegate(LightSystem::new(client, remote_blockchain, fetcher, pool))
-		);
+	if let Some(LightDeps {
+		remote_blockchain,
+		fetcher,
+	}) = light_deps
+	{
+		io.extend_with(SystemApi::<AccountId, Index>::to_delegate(LightSystem::new(
+			client,
+			remote_blockchain,
+			fetcher,
+			pool,
+		)));
 	} else {
-		io.extend_with(
-			SystemApi::to_delegate(FullSystem::new(client.clone(), pool))
-		);
+		io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool)));
 
 		// Making synchronous calls in light client freezes the browser currently,
 		// more context: https://github.com/paritytech/substrate/pull/3480
 		// These RPCs should use an asynchronous caller instead.
-		io.extend_with(
-			ContractsApi::to_delegate(Contracts::new(client.clone()))
-		);
-		io.extend_with(
-			TransactionPaymentApi::to_delegate(TransactionPayment::new(client))
-		);
+		io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
+		io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client)));
 	}
 	io
 }

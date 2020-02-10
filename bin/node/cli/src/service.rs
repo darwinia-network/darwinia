@@ -16,7 +16,7 @@
 
 #![warn(unused_extern_crates)]
 
-//! Service implementation. Specialized wrapper over substrate service.
+//! Service implementation. Specialized wrapper over darwinia service.
 
 use std::sync::Arc;
 
@@ -40,7 +40,7 @@ use sp_core::Blake2Hasher;
 use sp_runtime::traits::Block as BlockT;
 
 construct_simple_protocol! {
-	/// Demo protocol attachment for substrate.
+	/// Demo protocol attachment for darwinia.
 	pub struct NodeProtocol where Block = Block { }
 }
 

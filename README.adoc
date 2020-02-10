@@ -345,27 +345,14 @@ node-cli, node-primitives, node-runtime
 
 === Environment
 
-<<<<<<< HEAD
-If you are using Ubuntu, 
-you may use the `.maintain/bootstrap.sh` to set up your develop environment.
-In this script, the nightly `Rust`, `cargo`, `rustfmt` will be installed,
-=======
 The `scripts/bootstrap.sh` help set up your develop environment.
 The nightly `Rust`, `cargo`, `rustfmt` will be installed,
->>>>>>> upstream/develop
 the git hooks will be set, and ready to code.
 
 Besides, the script will install some essential packages depends on your OS,
 if you want to do it manually, use the `--fast` option to skip.
 We will appreciate your contribution.
 
-<<<<<<< HEAD
-If you are using different environment, you may copy the git hooks mannually.
-```
-$ cp .maintain/hooks/* .git/hooks
-```
-=======
->>>>>>> upstream/develop
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]

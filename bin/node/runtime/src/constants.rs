@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! A set of constant values used in substrate runtime.
+//! A set of constant values used in darwinia runtime.
 
 /// Money matters.
 pub mod currency {

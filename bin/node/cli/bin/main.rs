@@ -34,10 +34,15 @@ impl sc_cli::IntoExit for Exit {
 
 		let exit_send_cell = RefCell::new(Some(exit_send));
 		ctrlc::set_handler(move || {
-			if let Some(exit_send) = exit_send_cell.try_borrow_mut().expect("signal handler not reentrant; qed").take() {
+			if let Some(exit_send) = exit_send_cell
+				.try_borrow_mut()
+				.expect("signal handler not reentrant; qed")
+				.take()
+			{
 				exit_send.send(()).expect("Error sending exit notification");
 			}
-		}).expect("Error setting Ctrl-C handler");
+		})
+		.expect("Error setting Ctrl-C handler");
 
 		exit.map(|_| ())
 	}
@@ -45,13 +50,13 @@ impl sc_cli::IntoExit for Exit {
 
 fn main() -> Result<(), sc_cli::error::Error> {
 	let version = VersionInfo {
-		name: "Substrate Node",
+		name: "Darwinia Node",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
-		executable_name: "substrate",
-		author: "Parity Technologies <admin@parity.io>",
-		description: "Generic substrate node",
-		support_url: "https://github.com/paritytech/substrate/issues/new",
+		executable_name: "darwinia",
+		author: "Darwinia Network <hello@darwinia.network>",
+		description: "Generic darwinia node",
+		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 	};
 
 	node_cli::run(std::env::args(), Exit, version)

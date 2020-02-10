@@ -1,7 +1,7 @@
 [package]
 name = "node-executor"
 version = "2.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Substrate node implementation in Rust."
 edition = "2018"
 

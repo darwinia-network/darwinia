@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Some configurable implementations as associated type for the substrate runtime.
+//! Some configurable implementations as associated type for the darwinia runtime.
 
 use frame_support::{
 	traits::{Currency, Get, OnUnbalanced},
@@ -63,7 +63,7 @@ pub struct LinearWeightToFee<C>(sp_std::marker::PhantomData<C>);
 
 impl<C: Get<Balance>> Convert<Weight, Balance> for LinearWeightToFee<C> {
 	fn convert(w: Weight) -> Balance {
-		// substrate-node a weight of 10_000 (smallest non-zero weight) to be mapped to 10^7 units of
+		// darwinia-node a weight of 10_000 (smallest non-zero weight) to be mapped to 10^7 units of
 		// fees, hence:
 		let coefficient = C::get();
 		Balance::from(w).saturating_mul(coefficient)
@@ -216,7 +216,7 @@ mod tests {
 			assert!(
 				iterations > 50_000,
 				"This assertion is just a warning; Don't panic. \
-				Current substrate/polkadot node are configured with a _slow adjusting fee_ \
+				Current darwinia node are configured with a _slow adjusting fee_ \
 				mechanism. Hence, it is really unlikely that fees collapse to zero even on an \
 				empty chain in less than at least of couple of thousands of empty blocks. But this \
 				simulation indicates that fees collapsed to zero after {} almost-empty blocks. \
@@ -234,7 +234,7 @@ mod tests {
 		// almost full. The entire quota of normal transactions is taken.
 		let block_weight = AvailableBlockRatio::get() * max() - 100;
 
-		// Default substrate minimum.
+		// Default darwinia minimum.
 		let tx_weight = 10_000;
 
 		run_with_system_weight(block_weight, || {

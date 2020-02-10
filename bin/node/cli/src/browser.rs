@@ -15,11 +15,11 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::ChainSpec;
-use futures01::{prelude::*, sync::oneshot, sync::mpsc};
+use futures01::{prelude::*, sync::mpsc, sync::oneshot};
 use libp2p::wasm_ext;
 use log::{debug, info};
+use sc_service::{config::DatabaseConfig, AbstractService, Configuration, Roles as ServiceRoles, RpcSession};
 use std::sync::Arc;
-use sc_service::{AbstractService, RpcSession, Roles as ServiceRoles, Configuration, config::DatabaseConfig};
 use wasm_bindgen::prelude::*;
 
 /// Starts the client.
@@ -27,8 +27,7 @@ use wasm_bindgen::prelude::*;
 /// You must pass a libp2p transport that supports .
 #[wasm_bindgen]
 pub fn start_client(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, JsValue> {
-	start_inner(wasm_ext)
-		.map_err(|err| JsValue::from_str(&err.to_string()))
+	start_inner(wasm_ext).map_err(|err| JsValue::from_str(&err.to_string()))
 }
 
 fn start_inner(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, Box<dyn std::error::Error>> {
@@ -55,9 +54,15 @@ fn start_inner(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, Box<dyn std
 		config
 	};
 
-	info!("Substrate browser node");
+	info!("Darwinia browser node");
 	info!("  version {}", config.full_version());
-	info!("  by Parity Technologies, 2017-2019");
+	info!("  _____                      _       _       ");
+	info!(" |  __ \\                    (_)     (_)      ");
+	info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
+	info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
+	info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
+	info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
+	info!("  by Darwinia Network, 2017-2019");
 	info!("Chain specification: {}", config.chain_spec.name());
 	info!("Node name: {}", config.name);
 	info!("Roles: {:?}", config.roles);
@@ -77,7 +82,7 @@ fn start_inner(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, Box<dyn std
 				Ok(Async::Ready(Some(message))) => {
 					let fut = service.rpc_query(&message.session, &message.rpc_json);
 					let _ = message.send_back.send(Box::new(fut));
-				},
+				}
 				Ok(Async::NotReady) => break,
 				Err(_) | Ok(Async::Ready(None)) => return Ok(Async::Ready(())),
 			}
@@ -86,16 +91,14 @@ fn start_inner(wasm_ext: wasm_ext::ffi::Transport) -> Result<Client, Box<dyn std
 		loop {
 			match service.poll().map_err(|_| ())? {
 				Async::Ready(()) => return Ok(Async::Ready(())),
-				Async::NotReady => break
+				Async::NotReady => break,
 			}
 		}
 
 		Ok(Async::NotReady)
 	}));
 
-	Ok(Client {
-		rpc_send_tx,
-	})
+	Ok(Client { rpc_send_tx })
 }
 
 /// A running client.
@@ -141,20 +144,19 @@ impl Client {
 			session: rpc_session.clone(),
 			send_back: fut_tx,
 		});
-		let fut_rx = fut_rx
-			.map_err(|_| ())
-			.and_then(|fut| fut);
+		let fut_rx = fut_rx.map_err(|_| ()).and_then(|fut| fut);
 		wasm_bindgen_futures::spawn_local(fut_rx.then(|_| Ok(())));
-		wasm_bindgen_futures::spawn_local(rx.for_each(move |s| {
-			match callback.call1(&callback, &JsValue::from_str(&s)) {
+		wasm_bindgen_futures::spawn_local(
+			rx.for_each(move |s| match callback.call1(&callback, &JsValue::from_str(&s)) {
 				Ok(_) => Ok(()),
 				Err(_) => Err(()),
-			}
-		}).then(move |v| {
-			// We need to keep `rpc_session` alive.
-			debug!("RPC subscription has ended");
-			drop(rpc_session);
-			v
-		}));
+			})
+			.then(move |v| {
+				// We need to keep `rpc_session` alive.
+				debug!("RPC subscription has ended");
+				drop(rpc_session);
+				v
+			}),
+		);
 	}
 }
