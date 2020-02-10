@@ -14,7 +14,7 @@ env:
     global:
         - RUST_BACKTRACE=1
     matrix:
-        - RUST_TOOLCHAIN=nightly TARGET=rustfmt
+        - RUST_TOOLCHAIN=stable TARGET=rustfmt
         - RUST_TOOLCHAIN=nightly TARGET=wasm
         - RUST_TOOLCHAIN=nightly TARGET=native
 
