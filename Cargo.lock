@@ -3193,6 +3193,7 @@ dependencies = [
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",
+ "pallet-collective",
  "pallet-contracts",
  "pallet-contracts-rpc-runtime-api",
  "pallet-finality-tracker",
@@ -3200,6 +3201,7 @@ dependencies = [
  "pallet-im-online",
  "pallet-indices",
  "pallet-membership",
+ "pallet-nicks",
  "pallet-offences",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -3483,6 +3485,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-collective"
+version = "2.0.0"
+source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "safe-mix",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-contracts"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
@@ -3601,6 +3619,20 @@ dependencies = [
 
 [[package]]
 name = "pallet-membership"
+version = "2.0.0"
+source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-nicks"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=c2fccb36ffacd118fc3502aa93453580a07dc402#c2fccb36ffacd118fc3502aa93453580a07dc402"
 dependencies = [
