@@ -29,9 +29,13 @@ script:
     - echo -en 'travis_fold:end:build\\r'
 
     # The stage of test darwinia customize model
-    - echo 'Test Darwinia Modules...' && echo -en 'travis_fold:start:darwinia_test\\r'
-    - .maintain/ci/darwinia_test_script.sh
-    - echo -en 'travis_fold:end:darwinia_test\\r'
+    - |
+      for t in kton ring staking;
+      do
+        echo 'Test Darwinia '${t}' ...' && echo -en 'travis_fold:start:darwinia_'${t}'\\r'
+        .maintain/ci/darwinia_test_script.sh ${t}
+        echo -en 'travis_fold:end:darwinia_'${t}'\\r'
+      done
 
     # The stage of test all modules including substrates
     - echo 'Test All Modules...' && echo -en 'travis_fold:start:all_test\\r'

@@ -881,6 +881,7 @@ dependencies = [
 name = "darwinia-kton"
 version = "0.3.0"
 dependencies = [
+ "darwinia-ring",
  "darwinia-support",
  "frame-support",
  "frame-system",
@@ -913,6 +914,7 @@ dependencies = [
  "darwinia-support",
  "frame-support",
  "frame-system",
+ "pallet-balances",
  "pallet-transaction-payment",
  "parity-scale-codec",
  "safe-mix",
