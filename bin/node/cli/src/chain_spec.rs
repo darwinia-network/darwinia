@@ -21,9 +21,9 @@ use hex_literal::hex;
 use node_runtime::constants::currency::*;
 use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, GrandpaConfig, ImOnlineConfig,
-	IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-	WASM_BINARY,
+	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, GrandpaConfig,
+	ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig,
+	SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -137,6 +137,7 @@ pub fn darwinia_genesis(
 	} else {
 		vec![initial_authorities[0].clone().1, initial_authorities[1].clone().1]
 	};
+	let num_endowed_accounts = endowed_accounts.len();
 
 	const RING_ENDOWMENT: Balance = 20_000_000 * COIN;
 	const KTON_ENDOWMENT: Balance = 10 * COIN;
@@ -166,10 +167,10 @@ pub fn darwinia_genesis(
 				.collect::<Vec<_>>(),
 		}),
 		//		pallet_democracy: Some(DemocracyConfig::default()),
-		//		pallet_collective_Instance1: Some(CouncilConfig {
-		//			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
-		//			phantom: Default::default(),
-		//		}),
+		pallet_collective_Instance1: Some(CouncilConfig {
+			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
+			phantom: Default::default(),
+		}),
 		//		pallet_collective_Instance2: Some(TechnicalCommitteeConfig {
 		//			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
 		//			phantom: Default::default(),

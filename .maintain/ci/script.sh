@@ -18,6 +18,7 @@ case $TARGET in
 
 	# Unit test
 	"native")
+		rustup target add wasm32-unknown-unknown
 		cargo test --release --all --locked "$@"
 		;;
 

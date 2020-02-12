@@ -246,12 +246,12 @@ impl pallet_session::historical::Trait for Runtime {
 	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
-//type CouncilCollective = pallet_collective::Instance1;
-//impl pallet_collective::Trait<CouncilCollective> for Runtime {
-//	type Origin = Origin;
-//	type Proposal = Call;
-//	type Event = Event;
-//}
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Trait<CouncilCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+}
 
 //type TechnicalCollective = pallet_collective::Instance2;
 //impl pallet_collective::Trait<TechnicalCollective> for Runtime {
@@ -379,15 +379,15 @@ parameter_types! {
 	pub const MaxLength: usize = 16;
 }
 
-//impl pallet_nicks::Trait for Runtime {
-//	type Event = Event;
-//	type Currency = Balances;
-//	type ReservationFee = ReservationFee;
-//	type Slashed = Treasury;
-//	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
-//	type MinLength = MinLength;
-//	type MaxLength = MaxLength;
-//}
+impl pallet_nicks::Trait for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type ReservationFee = ReservationFee;
+	type Slashed = MockTreasury;
+	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	type MinLength = MinLength;
+	type MaxLength = MaxLength;
+}
 
 impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
 	type Public = <Signature as traits::Verify>::Signer;
@@ -465,8 +465,8 @@ impl pallet_staking::Trait for Runtime {
 	type BondingDurationInEra = BondingDurationInEra;
 	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = SlashDeferDuration;
-	//	/// A super-majority of the council can cancel the slash.
-	//	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
+	/// A super-majority of the council can cancel the slash.
+	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 	type SessionInterface = Self;
 	type RingCurrency = Balances;
 	type RingRewardRemainder = ();
@@ -494,7 +494,7 @@ construct_runtime!(
 		Indices: pallet_indices,
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
-//		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 //		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 //		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
@@ -506,7 +506,7 @@ construct_runtime!(
 		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config},
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
-//		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
+		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
 		
 		Balances: pallet_ring::{default, Error},
 		Kton: pallet_kton::{default, Error},
