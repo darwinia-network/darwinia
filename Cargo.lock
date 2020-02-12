@@ -914,7 +914,6 @@ dependencies = [
  "darwinia-support",
  "frame-support",
  "frame-system",
- "pallet-balances",
  "pallet-transaction-payment",
  "parity-scale-codec",
  "safe-mix",
