@@ -22,7 +22,7 @@
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
-use impls::{Author, LinearWeightToFee, PowerToVotesHandler, TargetedFeeAdjustment};
+use impls::{Author, LinearWeightToFee, TargetedFeeAdjustment};
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, supply::*, time::*};
@@ -457,7 +457,7 @@ parameter_types! {
 
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
-	type PowerToVotes = PowerToVotesHandler;
+	//	type PowerToVotes = PowerToVotesHandler;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;

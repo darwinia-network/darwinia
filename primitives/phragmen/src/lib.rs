@@ -41,15 +41,11 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 use darwinia_support::Rational32;
 
-/// A type in which performing operations on power and stakes of candidates and voters are safe.
-///
-/// This module's functions expect a `Convert` type to convert `Power` to `Vote`.
+/// `Votes` is `Power`.
 pub type Votes = u32;
 
-/// The denominator used for loads. Since votes are collected as u64, the smallest ratio that we
-/// might collect is `1/approval_stake` where approval stake is the sum of votes. Hence, some number
-/// bigger than u64::max_value() is needed. For maximum accuracy we simply use u128;
-const DEN: Votes = Votes::max_value();
+/// The denominator (total power) used for loads.
+const DEN: Votes = 1_000_000_000;
 
 /// A candidate entity for phragmen election.
 #[derive(Clone, Default, RuntimeDebug)]
@@ -142,7 +138,7 @@ pub type SupportMap<A> = BTreeMap<A, Support<A>>;
 /// responsibility of the caller to make sure only those candidates who have a sensible economic
 /// value are passed in. From the perspective of this function, a candidate can easily be among the
 /// winner with no backing stake.
-pub fn elect<AccountId, Power, FS, C>(
+pub fn elect<AccountId, FS>(
 	candidate_count: usize,
 	minimum_candidate_count: usize,
 	initial_candidates: Vec<AccountId>,
@@ -151,12 +147,8 @@ pub fn elect<AccountId, Power, FS, C>(
 ) -> Option<PhragmenResult<AccountId>>
 where
 	AccountId: Default + Ord + Member,
-	Power: Default + Copy + SimpleArithmetic,
-	for<'r> FS: Fn(&'r AccountId) -> Power,
-	C: Convert<Power, Votes>,
+	for<'r> FS: Fn(&'r AccountId) -> Votes,
 {
-	let to_votes = |b: Power| <C as Convert<Power, Votes>>::convert(b);
-
 	// return structures
 	let mut elected_candidates: Vec<(AccountId, Votes)>;
 	let mut assigned: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>;
@@ -195,7 +187,7 @@ where
 		for v in votes {
 			if let Some(idx) = c_idx_cache.get(&v) {
 				// This candidate is valid + already cached.
-				candidates[*idx].approval_stake += to_votes(voter_stake);
+				candidates[*idx].approval_stake += voter_stake;
 				edges.push(Edge {
 					who: v.clone(),
 					candidate_index: *idx,
@@ -206,7 +198,7 @@ where
 		Voter {
 			who,
 			edges,
-			budget: to_votes(voter_stake),
+			budget: voter_stake,
 			load: Rational32::zero(),
 		}
 	}));
@@ -328,18 +320,15 @@ where
 }
 
 /// Build the support map from the given phragmen result.
-pub fn build_support_map<AccountId, Power, FS, C>(
+pub fn build_support_map<AccountId, FS>(
 	elected_stashes: &Vec<AccountId>,
 	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
 	stake_of: FS,
 ) -> SupportMap<AccountId>
 where
 	AccountId: Default + Ord + Member,
-	Power: Default + Copy + SimpleArithmetic,
-	for<'r> FS: Fn(&'r AccountId) -> Power,
-	C: Convert<Power, Votes>,
+	for<'r> FS: Fn(&'r AccountId) -> Votes,
 {
-	let to_votes = |b: Power| <C as Convert<Power, Votes>>::convert(b);
 	// Initialize the support of each candidate.
 	let mut supports = <SupportMap<AccountId>>::new();
 	elected_stashes.iter().for_each(|e| {
@@ -349,7 +338,7 @@ where
 	// build support struct.
 	for (n, assignment) in assignments.iter() {
 		for (c, per_thing) in assignment.iter() {
-			let nominator_stake = to_votes(stake_of(n));
+			let nominator_stake = stake_of(n);
 			// AUDIT: it is crucially important for the `Mul` implementation of all
 			// per-things to be sound.
 			let other_stake = *per_thing * nominator_stake;
@@ -385,7 +374,7 @@ where
 /// * `tolerance`: maximum difference that can occur before an early quite happens.
 /// * `iterations`: maximum number of iterations that will be processed.
 /// * `stake_of`: something that can return the stake stake of a particular candidate or voter.
-pub fn equalize<AccountId, Power, FS, C>(
+pub fn equalize<AccountId, FS>(
 	mut assignments: Vec<(AccountId, Vec<PhragmenStakedAssignment<AccountId>>)>,
 	supports: &mut SupportMap<AccountId>,
 	tolerance: Votes,
@@ -393,8 +382,7 @@ pub fn equalize<AccountId, Power, FS, C>(
 	stake_of: FS,
 ) where
 	AccountId: Ord + Clone,
-	for<'r> FS: Fn(&'r AccountId) -> Power,
-	C: Convert<Power, Votes>,
+	for<'r> FS: Fn(&'r AccountId) -> Votes,
 {
 	// prepare the data for equalise
 	for _i in 0..iterations {
@@ -403,7 +391,7 @@ pub fn equalize<AccountId, Power, FS, C>(
 		for (voter, assignment) in assignments.iter_mut() {
 			let voter_budget = stake_of(&voter);
 
-			let diff = do_equalize::<_, _, C>(voter, voter_budget, assignment, supports, tolerance);
+			let diff = do_equalize::<_>(voter, voter_budget, assignment, supports, tolerance);
 			if diff > max_diff {
 				max_diff = diff;
 			}
@@ -417,19 +405,14 @@ pub fn equalize<AccountId, Power, FS, C>(
 
 /// actually perform equalize. same interface is `equalize`. Just called in loops with a check for
 /// maximum difference.
-fn do_equalize<AccountId, Power, C>(
+fn do_equalize<AccountId: Ord + Clone>(
 	voter: &AccountId,
-	budget_balance: Power,
+	budget_balance: Votes,
 	elected_edges: &mut Vec<PhragmenStakedAssignment<AccountId>>,
 	support_map: &mut SupportMap<AccountId>,
 	tolerance: Votes,
-) -> Votes
-where
-	AccountId: Ord + Clone,
-	C: Convert<Power, Votes>,
-{
-	let to_votes = |b: Power| <C as Convert<Power, Votes>>::convert(b);
-	let budget = to_votes(budget_balance);
+) -> Votes {
+	let budget = budget_balance;
 
 	// Nothing to do. This voter had nothing useful.
 	// Defensive only. Assignment list should always be populated.
