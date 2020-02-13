@@ -19,7 +19,8 @@ case $TARGET in
 	# Without WASM
 	"native")
 		rustup target add wasm32-unknown-unknown
-		SKIP_WASM_BUILD=1 cargo build --release --all --locked "$@"
+		# There is some issue to build on ci server with SKIP_WASM_BUILD=1 
+		cargo build --release --all --locked "$@"
 		echo -e "\e[0;32m +-------------+ \n\e[0;32m | Native Pass | \n\e[0;32m +-------------+ \e[0m"
 		;;
 
