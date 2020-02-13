@@ -1554,7 +1554,7 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// The total power that can be slashed from a stash account as of right now.
-	pub fn slashable_power_of(stash: &T::AccountId) -> Power {
+	pub fn power_of(stash: &T::AccountId) -> Power {
 		Self::bonded(stash)
 			.and_then(Self::ledger)
 			.map(|l| {
@@ -1891,7 +1891,7 @@ impl<T: Trait> Module<T> {
 			Self::minimum_validator_count().max(1) as usize,
 			all_validators,
 			all_nominators,
-			Self::slashable_power_of,
+			Self::power_of,
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {
@@ -1901,8 +1901,7 @@ impl<T: Trait> Module<T> {
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
-			let mut supports =
-				sp_phragmen::build_support_map::<_, _>(&elected_stashes, &assignments, Self::slashable_power_of);
+			let mut supports = sp_phragmen::build_support_map::<_, _>(&elected_stashes, &assignments, Self::power_of);
 
 			if cfg!(feature = "equalize") {
 				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
@@ -1918,7 +1917,7 @@ impl<T: Trait> Module<T> {
 						continue;
 					}
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = Self::slashable_power_of(n);
+						let nominator_stake = Self::power_of(n);
 						let other_stake = *per_thing * nominator_stake;
 						staked_assignment.push((c.clone(), other_stake));
 					}
@@ -1927,13 +1926,7 @@ impl<T: Trait> Module<T> {
 
 				let tolerance: Votes = 0;
 				let iterations = 2_usize;
-				sp_phragmen::equalize::<_, _>(
-					staked_assignments,
-					&mut supports,
-					tolerance,
-					iterations,
-					Self::slashable_power_of,
-				);
+				sp_phragmen::equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
 			}
 
 			// Clear Stakers.
