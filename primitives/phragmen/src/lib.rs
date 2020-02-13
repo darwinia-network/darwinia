@@ -195,7 +195,7 @@ where
 		for v in votes {
 			if let Some(idx) = c_idx_cache.get(&v) {
 				// This candidate is valid + already cached.
-				candidates[*idx].approval_stake = candidates[*idx].approval_stake.saturating_add(to_votes(voter_stake));
+				candidates[*idx].approval_stake += to_votes(voter_stake);
 				edges.push(Edge {
 					who: v.clone(),
 					candidate_index: *idx,
@@ -358,14 +358,14 @@ where
 					// This is a nomination from `n` to themselves. This will increase both the
 					// `own` and `total` field.
 					debug_assert!(*per_thing == Perbill::one()); // TODO: deal with this: do we want it?
-					support.own = support.own.saturating_add(other_stake);
-					support.total = support.total.saturating_add(other_stake);
+					support.own += other_stake;
+					support.total += other_stake;
 				} else {
 					// This is a nomination from `n` to someone else. Increase `total` and add an entry
 					// inside `others`.
 					// For an astronomically rich validator with more astronomically rich
 					// set of nominators, this might saturate.
-					support.total = support.total.saturating_add(other_stake);
+					support.total += other_stake;
 					support.others.push((n.clone(), other_stake));
 				}
 			}
@@ -437,7 +437,7 @@ where
 		return 0;
 	}
 
-	let stake_used = elected_edges.iter().fold(0 as Votes, |s, e| s.saturating_add(e.1));
+	let stake_used = elected_edges.iter().fold(0 as Votes, |s, e| s + e.1);
 
 	let backed_stakes_iter = elected_edges
 		.iter()
@@ -462,7 +462,7 @@ where
 			.expect("iterator with positive length will have a min; qed");
 
 		difference = max_stake.saturating_sub(min_stake);
-		difference = difference.saturating_add(budget.saturating_sub(stake_used));
+		difference += budget.saturating_sub(stake_used);
 		if difference < tolerance {
 			return difference;
 		}
@@ -499,22 +499,18 @@ where
 				last_index = idx.checked_sub(1).unwrap_or(0);
 				break;
 			}
-			cumulative_stake = cumulative_stake.saturating_add(stake);
+			cumulative_stake += stake;
 		}
 		idx += 1;
 	}
 
 	let last_stake = elected_edges[last_index].1;
 	let split_ways = last_index + 1;
-	let excess = budget
-		.saturating_add(cumulative_stake)
-		.saturating_sub(last_stake.saturating_mul(split_ways as Votes));
+	let excess = (budget + cumulative_stake).saturating_sub(last_stake.saturating_mul(split_ways as Votes));
 	elected_edges.iter_mut().take(split_ways).for_each(|e| {
 		if let Some(support) = support_map.get_mut(&e.0) {
-			e.1 = (excess / split_ways as Votes)
-				.saturating_add(last_stake)
-				.saturating_sub(support.total);
-			support.total = support.total.saturating_add(e.1);
+			e.1 = ((excess / split_ways as Votes) + last_stake).saturating_sub(support.total);
+			support.total += e.1;
 			support.others.push((voter.clone(), e.1));
 		}
 	});
