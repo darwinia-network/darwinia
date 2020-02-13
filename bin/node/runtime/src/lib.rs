@@ -49,17 +49,15 @@ use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
-	u32_trait::{_1, _2, _3, _4},
+	u32_trait::{_1, _3, _4},
 	OpaqueMetadata,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
 use sp_runtime::transaction_validity::TransactionValidity;
 use sp_runtime::{
-	create_runtime_str,
-	curve::PiecewiseLinear,
-	generic, impl_opaque_keys,
+	create_runtime_str, generic, impl_opaque_keys,
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
-	ApplyExtrinsicResult, Perbill, Permill,
+	ApplyExtrinsicResult, Perbill,
 };
 use sp_staking::SessionIndex;
 use sp_std::vec::Vec;
