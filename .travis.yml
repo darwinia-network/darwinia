@@ -1,9 +1,11 @@
+language: rust
+rust:
+  - nightly
 
-# Request an environment that provides sudo (that goes with larger containers)
-# and a minimal language environment.
-language: shell
-
-cache: cargo
+cache: 
+  cargo: true
+  directories:
+   - target
 
 branches:
     only:
@@ -17,36 +19,41 @@ env:
 before_install:
     # Check how much space we've got on this machine.
     - df -h
+    # TODO: cache the toolchain 
+    - rustup target add wasm32-unknown-unknown
 
 jobs:
   include:
-    - stage: Fomat Check
-      env: RUST_TOOLCHAIN=stable TARGET=native
+    - stage: Check
       script: .maintain/ci/fmt_script.sh
 
-    - stage: Build Native
+    - stage: Build
       env: RUST_TOOLCHAIN=nightly TARGET=native
       script: .maintain/ci/build_script.sh
 
-    - stage: Build Wasm
+    - stage: Build
       env: RUST_TOOLCHAIN=nightly TARGET=wasm
       script: .maintain/ci/build_script.sh
 
-    - stage: Test Kton
-      env: RUST_TOOLCHAIN=nightly TARGET=native
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native KTON
       script: .maintain/ci/darwinia_test_script.sh kton
 
-    - stage: Test Ring
-      env: RUST_TOOLCHAIN=nightly TARGET=native
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native RING
       script: .maintain/ci/darwinia_test_script.sh ring
 
-    - stage: Test Staking
-      env: RUST_TOOLCHAIN=nightly TARGET=native
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native STAKING
       script: .maintain/ci/darwinia_test_script.sh staking
 
-    - stage: Test Everything
+    - stage: Overall Test 
       env: RUST_TOOLCHAIN=nightly TARGET=native
       script: .maintain/ci/test_script.sh
+
+    # clean up cache 
+    - stage: Cleanup  
+      script: cargo clean
 
 after_script:
     # Check how much free disk space left after the build

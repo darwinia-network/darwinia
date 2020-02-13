@@ -2,7 +2,7 @@
 
 set -eux
 
-curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=$RUST_TOOLCHAIN -y
+rustup default $RUST_TOOLCHAIN 
 
 source ~/.cargo/env
 
@@ -13,7 +13,6 @@ rustc --version
 case $TARGET in
 	# Without WASM
 	"native")
-		rustup target add wasm32-unknown-unknown
 		# There is some issue to build on ci server with SKIP_WASM_BUILD=1 
 		cargo build --release --all --locked "$@"
 		echo -e "\e[0;32m +-------------+ \n\e[0;32m | Native Pass | \n\e[0;32m +-------------+ \e[0m"
@@ -21,7 +20,6 @@ case $TARGET in
 
 	# With WASM
 	"wasm")
-		rustup target add wasm32-unknown-unknown
 		WASM_BUILD_TYPE=release cargo build --locked "$@"
 		echo -e "\e[0;32m +-----------+ \n\e[0;32m | WASM Pass | \n\e[0;32m +-----------+ \e[0m"
 		;;
