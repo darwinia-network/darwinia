@@ -1,7 +1,7 @@
+
 # Request an environment that provides sudo (that goes with larger containers)
 # and a minimal language environment.
-sudo: true
-language: minimal
+language: shell
 
 cache: cargo
 
@@ -13,34 +13,40 @@ branches:
 env:
     global:
         - RUST_BACKTRACE=1
-    matrix:
-        - RUST_TOOLCHAIN=stable TARGET=rustfmt
-        - RUST_TOOLCHAIN=nightly TARGET=wasm
-        - RUST_TOOLCHAIN=nightly TARGET=native
 
 before_install:
     # Check how much space we've got on this machine.
     - df -h
 
-script:
-    # The stage of building  
-    - echo 'Building...' && echo -en 'travis_fold:start:build\\r'
-    - .maintain/ci/build_script.sh
-    - echo -en 'travis_fold:end:build\\r'
+jobs:
+  include:
+    - stage: Fomat Check
+      env: RUST_TOOLCHAIN=stable TARGET=native
+      script: .maintain/ci/fmt_script.sh
 
-    # The stage of test darwinia customize model
-    - |
-      for t in kton ring staking;
-      do
-        echo 'Test Darwinia '${t}' ...' && echo -en 'travis_fold:start:darwinia_'${t}'\\r'
-        .maintain/ci/darwinia_test_script.sh ${t}
-        echo -en 'travis_fold:end:darwinia_'${t}'\\r'
-      done
+    - stage: Build Native
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/build_script.sh
 
-    # The stage of test all modules including substrates
-    - echo 'Test All Modules...' && echo -en 'travis_fold:start:all_test\\r'
-    - .maintain/ci/test_script.sh
-    - echo -en 'travis_fold:end:all_test\\r'
+    - stage: Build Wasm
+      env: RUST_TOOLCHAIN=nightly TARGET=wasm
+      script: .maintain/ci/build_script.sh
+
+    - stage: Test Kton
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/darwinia_test_script.sh kton
+
+    - stage: Test Ring
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/darwinia_test_script.sh ring
+
+    - stage: Test Staking
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/darwinia_test_script.sh staking
+
+    - stage: Test Everything
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/test_script.sh
 
 after_script:
     # Check how much free disk space left after the build

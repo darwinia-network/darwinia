@@ -11,11 +11,6 @@ cargo --version
 rustc --version
 
 case $TARGET in
-	# Format check in stable rust
-	"rustfmt")
-		cargo fmt --all
-		;;
-
 	# Without WASM
 	"native")
 		rustup target add wasm32-unknown-unknown
