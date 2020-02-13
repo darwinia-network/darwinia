@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+num-traits = { version = "0.2.8", default-features = false }
 
 # github.com
 frame-support = { git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402", default-features = false }
@@ -17,6 +18,7 @@ sp-std = { package = "sp-std", git = "https://github.com/paritytech/substrate.gi
 default = ["std"]
 std = [
 	"codec/std",
+	"num-traits/std",
 
 	"frame-support/std",
 	"sp-runtime/std",

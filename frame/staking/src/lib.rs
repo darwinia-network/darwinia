@@ -262,7 +262,9 @@ mod types {
 	/// Type used for expressing timestamp.
 	pub type Moment = Timestamp;
 	/// Power of an account.
-	pub type Power = u128;
+	pub type Power = u32;
+	/// Votes of an account.
+	pub type Votes = u32;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -307,7 +309,7 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use pallet_session::{historical::OnSessionEnding, SelectInitialValidators};
-use sp_phragmen::{ExtendedBalance as Votes, PhragmenStakedAssignment};
+use sp_phragmen::PhragmenStakedAssignment;
 use sp_runtime::{
 	traits::{
 		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
@@ -650,7 +652,7 @@ pub trait Trait: frame_system::Trait {
 	/// TODO: #1377
 	/// The backward convert should be removed as the new Phragmen API returns ratio.
 	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	type PowerToVote: Convert<Power, u64> + Convert<u128, Power>;
+	type PowerToVotes: Convert<Power, Votes>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -1873,7 +1875,7 @@ impl<T: Trait> Module<T> {
 
 		all_nominators.extend(nominator_votes);
 
-		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::PowerToVote>(
+		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::PowerToVotes>(
 			Self::validator_count() as usize,
 			Self::minimum_validator_count().max(1) as usize,
 			all_validators,
@@ -1888,9 +1890,9 @@ impl<T: Trait> Module<T> {
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
-			let to_votes = |p: Power| <T::PowerToVote as Convert<Power, u64>>::convert(p) as Votes;
-			let to_power = |v: Votes| <T::PowerToVote as Convert<Votes, Power>>::convert(v);
-			let mut supports = sp_phragmen::build_support_map::<_, _, _, T::PowerToVote>(
+			let to_votes = |p: Power| <T::PowerToVotes as Convert<Power, Votes>>::convert(p);
+			let to_power = |v: Votes| <T::PowerToVotes as Convert<Votes, Power>>::convert(v);
+			let mut supports = sp_phragmen::build_support_map::<_, _, _, T::PowerToVotes>(
 				&elected_stashes,
 				&assignments,
 				Self::slashable_power_of,
@@ -1917,9 +1919,9 @@ impl<T: Trait> Module<T> {
 					staked_assignments.push((n.clone(), staked_assignment));
 				}
 
-				let tolerance = 0_u128;
+				let tolerance: Votes = 0;
 				let iterations = 2_usize;
-				sp_phragmen::equalize::<_, _, T::PowerToVote, _>(
+				sp_phragmen::equalize::<_, _, _, T::PowerToVotes>(
 					staked_assignments,
 					&mut supports,
 					tolerance,

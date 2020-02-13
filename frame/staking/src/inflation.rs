@@ -17,8 +17,10 @@ where
 	T: Trait,
 	S: TryInto<Balance>,
 {
-	Perquintill::from_rational_approximation(active.saturated_into::<Power>(), pool.saturated_into::<Power>().max(1))
-		* (T::TotalPower::get() / 2)
+	Perbill::from_rational_approximation(
+		active.saturated_into::<Balance>(),
+		pool.saturated_into::<Balance>().max(1),
+	) * (T::TotalPower::get() as Balance / 2) as _
 }
 
 //  1 - (99 / 100) ^ sqrt(year)

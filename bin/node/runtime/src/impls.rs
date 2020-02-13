@@ -25,8 +25,8 @@ use sp_runtime::{
 	{Fixed64, Perbill},
 };
 
-use crate::{constants::supply::TOTAL_POWER, Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
-use node_primitives::{Balance, Power};
+use crate::{Authorship, Balances, MaximumBlockWeight, NegativeImbalance, System};
+use node_primitives::{Balance, Power, Votes};
 
 pub struct Author;
 impl OnUnbalanced<NegativeImbalance> for Author {
@@ -37,25 +37,25 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 
 /// Struct that handles the conversion of Balance -> `u64`. This is used for staking's election
 /// calculation.
-pub struct PowerToVoteHandler;
+pub struct PowerToVotesHandler;
 
-impl PowerToVoteHandler {
+impl PowerToVotesHandler {
 	fn factor() -> Power {
-		(TOTAL_POWER / u64::max_value() as Power).max(1)
+		1
 	}
 }
 
-impl Convert<Power, u64> for PowerToVoteHandler {
-	fn convert(x: Power) -> u64 {
-		(x / Self::factor()) as u64
+impl Convert<Power, Votes> for PowerToVotesHandler {
+	fn convert(x: Power) -> Votes {
+		(x / Self::factor()) as Power
 	}
 }
 
-impl Convert<u128, Power> for PowerToVoteHandler {
-	fn convert(x: u128) -> Power {
-		x * Self::factor()
-	}
-}
+//impl Convert<Vote, Power> for PowerToVoteHandler {
+//	fn convert(x: Vote) -> Power {
+//		x as Vote * Self::factor()
+//	}
+//}
 
 /// Convert from weight to balance via a simple coefficient multiplication
 /// The associated type C encapsulates a constant in units of balance per weight

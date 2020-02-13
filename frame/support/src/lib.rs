@@ -8,8 +8,10 @@ pub use traits::*;
 
 mod structs {
 	use codec::{Decode, Encode};
+	use num_traits::Zero;
+
 	use sp_runtime::{traits::SimpleArithmetic, RuntimeDebug};
-	use sp_std::vec::Vec;
+	use sp_std::{cmp::Ordering, vec::Vec};
 
 	use crate::{LockIdentifier, WithdrawReasons};
 
@@ -89,6 +91,125 @@ mod structs {
 		#[inline]
 		pub fn shrink(&mut self, at: Moment) {
 			self.unbondings.retain(|unbonding| unbonding.valid_at(at));
+		}
+	}
+
+	/// A wrapper for any rational number with a u32 bit numerator and denominator.
+	#[derive(Clone, Copy, Default, Eq, RuntimeDebug)]
+	pub struct Rational32(u32, u32);
+
+	impl Rational32 {
+		/// Nothing.
+		pub fn zero() -> Self {
+			Self(0, 1)
+		}
+
+		/// If it is zero or not
+		pub fn is_zero(&self) -> bool {
+			self.0.is_zero()
+		}
+
+		/// Build from a raw `n/d`.
+		pub fn from(n: u32, d: u32) -> Self {
+			Self(n, d.max(1))
+		}
+
+		/// Build from a raw `n/d`. This could lead to / 0 if not properly handled.
+		pub fn from_unchecked(n: u32, d: u32) -> Self {
+			Self(n, d)
+		}
+
+		/// Return the numerator.
+		pub fn n(&self) -> u32 {
+			self.0
+		}
+
+		/// Return the denominator.
+		pub fn d(&self) -> u32 {
+			self.1
+		}
+
+		/// A saturating add that assumes `self` and `other` have the same denominator.
+		pub fn lazy_add(self, other: Self) -> Self {
+			if other.is_zero() {
+				self
+			} else {
+				Self(self.0 + other.0, self.1)
+			}
+		}
+
+		/// A saturating subtraction that assumes `self` and `other` have the same denominator.
+		pub fn lazy_sub(self, other: Self) -> Self {
+			if other.is_zero() {
+				self
+			} else {
+				Self(self.0 - other.0, self.1)
+			}
+		}
+
+		/// Safely and accurately compute `a * b / c`. The approach is:
+		///   - Simply try `a * b / c`.
+		///   - Else, convert them both into big numbers and re-try.
+		///
+		/// Invariant: c must be greater than or equal to 1.
+		pub fn multiply_by_rational(a: u32, b: u32, mut c: u32) -> u32 {
+			if a.is_zero() || b.is_zero() {
+				return 0;
+			}
+			c = c.max(1);
+
+			// a and b are interchangeable by definition in this function. It always helps to assume the
+			// bigger of which is being multiplied by a `0 < b/c < 1`. Hence, a should be the bigger and
+			// b the smaller one.
+			let (mut a, mut b) = if a > b { (a, b) } else { (b, a) };
+
+			// Attempt to perform the division first
+			if a % c == 0 {
+				a /= c;
+				c = 1;
+			} else if b % c == 0 {
+				b /= c;
+				c = 1;
+			}
+
+			((a as u64 * b as u64) / c as u64) as _
+		}
+	}
+
+	impl PartialOrd for Rational32 {
+		fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+			Some(self.cmp(other))
+		}
+	}
+
+	impl Ord for Rational32 {
+		fn cmp(&self, other: &Self) -> Ordering {
+			// handle some edge cases.
+			if self.1 == other.1 {
+				self.0.cmp(&other.0)
+			} else if self.1.is_zero() {
+				Ordering::Greater
+			} else if other.1.is_zero() {
+				Ordering::Less
+			} else {
+				// Don't even compute gcd.
+				let self_n = self.0 as u64 * other.1 as u64;
+				let other_n = other.0 as u64 * self.1 as u64;
+				self_n.cmp(&other_n)
+			}
+		}
+	}
+
+	impl PartialEq for Rational32 {
+		fn eq(&self, other: &Self) -> bool {
+			// handle some edge cases.
+			if self.1 == other.1 {
+				self.0.eq(&other.0)
+			} else {
+				let self_n = self.0 as u64 * other.1 as u64;
+				let other_n = other.0 as u64 * self.1 as u64;
+				self_n.eq(&other_n)
+			}
 		}
 	}
 }
