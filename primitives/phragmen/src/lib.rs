@@ -44,9 +44,6 @@ use darwinia_support::Rational32;
 /// `Votes` is `Power`.
 pub type Votes = u32;
 
-/// The denominator (total power) used for loads.
-const DEN: Votes = 1_000_000_000;
-
 /// A candidate entity for phragmen election.
 #[derive(Clone, Default, RuntimeDebug)]
 pub struct Candidate<AccountId> {
@@ -132,7 +129,7 @@ pub type SupportMap<A> = BTreeMap<A, Support<A>>;
 ///   `None` is returned.
 /// * `initial_candidates`: candidates list to be elected from.
 /// * `initial_voters`: voters list.
-/// * `stake_of`: something that can return the stake stake of a particular candidate or voter.
+/// * `power_of`: something that can return the stake stake of a particular candidate or voter.
 ///
 /// This function does not strip out candidates who do not have any backing stake. It is the
 /// responsibility of the caller to make sure only those candidates who have a sensible economic
@@ -143,7 +140,8 @@ pub fn elect<AccountId, FS>(
 	minimum_candidate_count: usize,
 	initial_candidates: Vec<AccountId>,
 	initial_voters: Vec<(AccountId, Vec<AccountId>)>,
-	stake_of: FS,
+	power_of: FS,
+	total_power: Votes,
 ) -> Option<PhragmenResult<AccountId>>
 where
 	AccountId: Default + Ord + Member,
@@ -182,7 +180,7 @@ where
 	// collect voters. use `c_idx_cache` for fast access and aggregate `approval_stake` of
 	// candidates.
 	voters.extend(initial_voters.into_iter().map(|(who, votes)| {
-		let voter_stake = stake_of(&who);
+		let voter_stake = power_of(&who);
 		let mut edges: Vec<Edge<AccountId>> = Vec::with_capacity(votes.len());
 		for v in votes {
 			if let Some(idx) = c_idx_cache.get(&v) {
@@ -214,12 +212,12 @@ where
 		// loop 1: initialize score
 		for c in &mut candidates {
 			if !c.elected {
-				// 1 / approval_stake == (DEN / approval_stake) / DEN. If approval_stake is zero,
+				// 1 / approval_stake == (total_power / approval_stake) / total_power. If approval_stake is zero,
 				// then the ratio should be as large as possible, essentially `infinity`.
 				if c.approval_stake.is_zero() {
-					c.score = Rational32::from_unchecked(DEN, 0);
+					c.score = Rational32::from_unchecked(total_power, 0);
 				} else {
-					c.score = Rational32::from(DEN / c.approval_stake, DEN);
+					c.score = Rational32::from(total_power / c.approval_stake, total_power);
 				}
 			}
 		}
@@ -323,7 +321,7 @@ where
 pub fn build_support_map<AccountId, FS>(
 	elected_stashes: &Vec<AccountId>,
 	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
-	stake_of: FS,
+	power_of: FS,
 ) -> SupportMap<AccountId>
 where
 	AccountId: Default + Ord + Member,
@@ -338,7 +336,7 @@ where
 	// build support struct.
 	for (n, assignment) in assignments.iter() {
 		for (c, per_thing) in assignment.iter() {
-			let nominator_stake = stake_of(n);
+			let nominator_stake = power_of(n);
 			// AUDIT: it is crucially important for the `Mul` implementation of all
 			// per-things to be sound.
 			let other_stake = *per_thing * nominator_stake;
@@ -373,13 +371,13 @@ where
 /// * `supports`: mutable reference to s `SupportMap`. This parameter is updated.
 /// * `tolerance`: maximum difference that can occur before an early quite happens.
 /// * `iterations`: maximum number of iterations that will be processed.
-/// * `stake_of`: something that can return the stake stake of a particular candidate or voter.
+/// * `power_of`: something that can return the stake stake of a particular candidate or voter.
 pub fn equalize<AccountId, FS>(
 	mut assignments: Vec<(AccountId, Vec<PhragmenStakedAssignment<AccountId>>)>,
 	supports: &mut SupportMap<AccountId>,
 	tolerance: Votes,
 	iterations: usize,
-	stake_of: FS,
+	power_of: FS,
 ) where
 	AccountId: Ord + Clone,
 	for<'r> FS: Fn(&'r AccountId) -> Votes,
@@ -389,7 +387,7 @@ pub fn equalize<AccountId, FS>(
 		let mut max_diff = 0;
 
 		for (voter, assignment) in assignments.iter_mut() {
-			let voter_budget = stake_of(&voter);
+			let voter_budget = power_of(&voter);
 
 			let diff = do_equalize::<_>(voter, voter_budget, assignment, supports, tolerance);
 			if diff > max_diff {

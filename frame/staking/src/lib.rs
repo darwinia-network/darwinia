@@ -1892,6 +1892,7 @@ impl<T: Trait> Module<T> {
 			all_validators,
 			all_nominators,
 			Self::power_of,
+			T::TotalPower::get(),
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {
