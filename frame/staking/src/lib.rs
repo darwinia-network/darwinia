@@ -261,6 +261,8 @@ mod types {
 	pub type Points = u32;
 	/// Type used for expressing timestamp.
 	pub type Moment = Timestamp;
+	/// Balance of an account.
+	pub type Balance = u128;
 	/// Power of an account.
 	pub type Power = u32;
 	/// Votes of an account.
@@ -315,7 +317,7 @@ use sp_runtime::{
 		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
 		StaticLookup, Zero,
 	},
-	Perbill, RuntimeDebug,
+	Perbill, Perquintill, RuntimeDebug,
 };
 #[cfg(feature = "std")]
 use sp_runtime::{Deserialize, Serialize};
@@ -323,7 +325,7 @@ use sp_staking::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
 	SessionIndex,
 };
-use sp_std::{borrow::ToOwned, marker::PhantomData, vec, vec::Vec};
+use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::Vec};
 
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
@@ -780,7 +782,7 @@ decl_storage! {
 			config
 				.stakers
 				.iter()
-				.map(|&(_, _, r, _)| inflation::compute_balance_power::<T, _>(r, <Module<T>>::ring_pool()))
+				.map(|&(_, _, r, _)| <Module<T>>::currency_to_power::<_>(r, <Module<T>>::ring_pool()))
 				.min()
 				.unwrap_or_default()
 		}): Power;
@@ -1542,13 +1544,22 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	// PUBLIC IMMUTABLES
 
+	// power is a mixture of ring and kton
+	// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
+	pub fn currency_to_power<S: TryInto<Balance>>(active: S, pool: S) -> Power {
+		(Perquintill::from_rational_approximation(
+			active.saturated_into::<Balance>(),
+			pool.saturated_into::<Balance>().max(1),
+		) * (T::TotalPower::get() as Balance / 2)) as _
+	}
+
 	/// The total power that can be slashed from a stash account as of right now.
 	pub fn slashable_power_of(stash: &T::AccountId) -> Power {
 		Self::bonded(stash)
 			.and_then(Self::ledger)
 			.map(|l| {
-				inflation::compute_balance_power::<T, _>(l.active_ring, Self::ring_pool())
-					+ inflation::compute_balance_power::<T, _>(l.active_kton, Self::kton_pool())
+				Self::currency_to_power::<_>(l.active_ring, Self::ring_pool())
+					+ Self::currency_to_power::<_>(l.active_kton, Self::kton_pool())
 			})
 			.unwrap_or_default()
 	}
