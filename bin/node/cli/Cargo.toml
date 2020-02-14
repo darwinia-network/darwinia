@@ -98,12 +98,6 @@ wasm-bindgen-futures = { version = "0.3.22", optional = true }
 kvdb-memorydb = { version = "0.1.1", optional = true }
 rand6 = { package = "rand", version = "0.6", features = ["wasm-bindgen"], optional = true }	# Imported just for the `wasm-bindgen` feature
 
-[build-dependencies]
-sc-cli = { version = "2.0.0", package = "sc-cli", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-build-script-utils = { version = "2.0.0", package = "substrate-build-script-utils", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-structopt = "=0.3.7"
-vergen = "3.0.4"
-
 [features]
 default = ["cli"]
 browser = [
