@@ -261,8 +261,12 @@ mod types {
 	pub type Points = u32;
 	/// Type used for expressing timestamp.
 	pub type Moment = Timestamp;
+	/// Balance of an account.
+	pub type Balance = u128;
 	/// Power of an account.
-	pub type Power = u128;
+	pub type Power = u32;
+	/// Votes of an account.
+	pub type Votes = u32;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -307,13 +311,13 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use pallet_session::{historical::OnSessionEnding, SelectInitialValidators};
-use sp_phragmen::{ExtendedBalance as Votes, PhragmenStakedAssignment};
+use sp_phragmen::PhragmenStakedAssignment;
 use sp_runtime::{
 	traits::{
 		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
 		StaticLookup, Zero,
 	},
-	Perbill, RuntimeDebug,
+	Perbill, Perquintill, RuntimeDebug,
 };
 #[cfg(feature = "std")]
 use sp_runtime::{Deserialize, Serialize};
@@ -321,7 +325,7 @@ use sp_staking::{
 	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
 	SessionIndex,
 };
-use sp_std::{borrow::ToOwned, marker::PhantomData, vec, vec::Vec};
+use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::Vec};
 
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
@@ -645,12 +649,12 @@ pub trait Trait: frame_system::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
 
-	/// Convert a balance into a number used for election calculation.
-	/// This must fit into a `u64` but is allowed to be sensibly lossy.
-	/// TODO: #1377
-	/// The backward convert should be removed as the new Phragmen API returns ratio.
-	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	type PowerToVote: Convert<Power, u64> + Convert<u128, Power>;
+	//	/// Convert a balance into a number used for election calculation.
+	//	/// This must fit into a `u64` but is allowed to be sensibly lossy.
+	//	/// TODO: #1377
+	//	/// The backward convert should be removed as the new Phragmen API returns ratio.
+	//	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
+	//	type PowerToVotes: Convert<Power, Votes>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -778,7 +782,7 @@ decl_storage! {
 			config
 				.stakers
 				.iter()
-				.map(|&(_, _, r, _)| inflation::compute_balance_power::<T, _>(r, <Module<T>>::ring_pool()))
+				.map(|&(_, _, r, _)| <Module<T>>::currency_to_power::<_>(r, <Module<T>>::ring_pool()))
 				.min()
 				.unwrap_or_default()
 		}): Power;
@@ -1540,13 +1544,22 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	// PUBLIC IMMUTABLES
 
+	// power is a mixture of ring and kton
+	// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
+	pub fn currency_to_power<S: TryInto<Balance>>(active: S, pool: S) -> Power {
+		(Perquintill::from_rational_approximation(
+			active.saturated_into::<Balance>(),
+			pool.saturated_into::<Balance>().max(1),
+		) * (T::TotalPower::get() as Balance / 2)) as _
+	}
+
 	/// The total power that can be slashed from a stash account as of right now.
-	pub fn slashable_power_of(stash: &T::AccountId) -> Power {
+	pub fn power_of(stash: &T::AccountId) -> Power {
 		Self::bonded(stash)
 			.and_then(Self::ledger)
 			.map(|l| {
-				inflation::compute_balance_power::<T, _>(l.active_ring, Self::ring_pool())
-					+ inflation::compute_balance_power::<T, _>(l.active_kton, Self::kton_pool())
+				Self::currency_to_power::<_>(l.active_ring, Self::ring_pool())
+					+ Self::currency_to_power::<_>(l.active_kton, Self::kton_pool())
 			})
 			.unwrap_or_default()
 	}
@@ -1873,12 +1886,13 @@ impl<T: Trait> Module<T> {
 
 		all_nominators.extend(nominator_votes);
 
-		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::PowerToVote>(
+		let maybe_phragmen_result = sp_phragmen::elect::<_, _>(
 			Self::validator_count() as usize,
 			Self::minimum_validator_count().max(1) as usize,
 			all_validators,
 			all_nominators,
-			Self::slashable_power_of,
+			Self::power_of,
+			T::TotalPower::get(),
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {
@@ -1888,13 +1902,7 @@ impl<T: Trait> Module<T> {
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
-			let to_votes = |p: Power| <T::PowerToVote as Convert<Power, u64>>::convert(p) as Votes;
-			let to_power = |v: Votes| <T::PowerToVote as Convert<Votes, Power>>::convert(v);
-			let mut supports = sp_phragmen::build_support_map::<_, _, _, T::PowerToVote>(
-				&elected_stashes,
-				&assignments,
-				Self::slashable_power_of,
-			);
+			let mut supports = sp_phragmen::build_support_map::<_, _>(&elected_stashes, &assignments, Self::power_of);
 
 			if cfg!(feature = "equalize") {
 				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
@@ -1910,22 +1918,16 @@ impl<T: Trait> Module<T> {
 						continue;
 					}
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = to_votes(Self::slashable_power_of(n));
+						let nominator_stake = Self::power_of(n);
 						let other_stake = *per_thing * nominator_stake;
 						staked_assignment.push((c.clone(), other_stake));
 					}
 					staked_assignments.push((n.clone(), staked_assignment));
 				}
 
-				let tolerance = 0_u128;
+				let tolerance: Votes = 0;
 				let iterations = 2_usize;
-				sp_phragmen::equalize::<_, _, T::PowerToVote, _>(
-					staked_assignments,
-					&mut supports,
-					tolerance,
-					iterations,
-					Self::slashable_power_of,
-				);
+				sp_phragmen::equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
 			}
 
 			// Clear Stakers.
@@ -1938,19 +1940,16 @@ impl<T: Trait> Module<T> {
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
-					own: to_power(s.own),
+					own: s.own,
 					// This might reasonably saturate and we cannot do much about it. The sum of
 					// someone's stake might exceed the balance type if they have the maximum amount
 					// of balance and receive some support. This is super unlikely to happen, yet
 					// we simulate it in some tests.
-					total: to_power(s.total),
+					total: s.total,
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExposure {
-							who,
-							value: to_power(value),
-						})
+						.map(|(who, value)| IndividualExposure { who, value })
 						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
 				if exposure.total < slot_stake {

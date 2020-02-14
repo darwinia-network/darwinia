@@ -42,7 +42,7 @@ pub type AccountIndex = u32;
 pub type Balance = u128;
 
 /// Power of an account.
-pub type Power = u128;
+pub type Power = u32;
 
 /// Type used for expressing timestamp.
 pub type Moment = u64;

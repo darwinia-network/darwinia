@@ -22,7 +22,7 @@
 
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
-use impls::{Author, LinearWeightToFee, PowerToVoteHandler, TargetedFeeAdjustment};
+use impls::{Author, LinearWeightToFee, TargetedFeeAdjustment};
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, supply::*, time::*};
@@ -49,17 +49,15 @@ use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
-	u32_trait::{_1, _2, _3, _4},
+	u32_trait::{_1, _3, _4},
 	OpaqueMetadata,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
 use sp_runtime::transaction_validity::TransactionValidity;
 use sp_runtime::{
-	create_runtime_str,
-	curve::PiecewiseLinear,
-	generic, impl_opaque_keys,
+	create_runtime_str, generic, impl_opaque_keys,
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
-	ApplyExtrinsicResult, Perbill, Permill,
+	ApplyExtrinsicResult, Perbill,
 };
 use sp_staking::SessionIndex;
 use sp_std::vec::Vec;
@@ -242,7 +240,7 @@ impl pallet_session::Trait for Runtime {
 }
 
 impl pallet_session::historical::Trait for Runtime {
-	type FullIdentification = Exposure<AccountId, Balance>;
+	type FullIdentification = Exposure<AccountId, Power>;
 	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
@@ -459,7 +457,7 @@ parameter_types! {
 
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
-	type PowerToVote = PowerToVoteHandler;
+	//	type PowerToVotes = PowerToVotesHandler;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
@@ -507,7 +505,7 @@ construct_runtime!(
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
-		
+
 		Balances: pallet_ring::{default, Error},
 		Kton: pallet_kton::{default, Error},
 		Staking: pallet_staking::{default, OfflineWorker},

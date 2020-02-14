@@ -1,4 +1,3 @@
-use frame_support::traits::Get;
 use sp_core::U256;
 use sp_runtime::{
 	traits::{IntegerSquareRoot, SaturatedConversion},
@@ -6,20 +5,7 @@ use sp_runtime::{
 };
 use sp_std::convert::TryInto;
 
-use crate::{KtonBalance, Moment, MomentOf, Power, RingBalance, Trait};
-
-type Balance = u128;
-
-// power is a mixture of ring and kton
-// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
-pub fn compute_balance_power<T, S>(active: S, pool: S) -> Power
-where
-	T: Trait,
-	S: TryInto<Balance>,
-{
-	Perquintill::from_rational_approximation(active.saturated_into::<Power>(), pool.saturated_into::<Power>().max(1))
-		* (T::TotalPower::get() / 2)
-}
+use crate::{Balance, KtonBalance, Moment, MomentOf, RingBalance, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
 // <T: Trait + 'static>() -> RingBalance<T>
