@@ -18,6 +18,7 @@ sp-std = { version = "2.0.0", default-features = false, git = "https://github.co
 
 # darwinia
 darwinia-support = { default-features = false, path = "../../support" }
+darwinia-ring = { default-features = false, path = "../ring" }
 
 [dev-dependencies]
 sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
@@ -39,4 +40,4 @@ std = [
 	"darwinia-support/std",
 ]
 # test
-transfer-fee = ["std"]
+with-fee = ["std"]
