@@ -649,13 +649,6 @@ pub trait Trait: frame_system::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
 
-	//	/// Convert a balance into a number used for election calculation.
-	//	/// This must fit into a `u64` but is allowed to be sensibly lossy.
-	//	/// TODO: #1377
-	//	/// The backward convert should be removed as the new Phragmen API returns ratio.
-	//	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	//	type PowerToVotes: Convert<Power, Votes>;
-
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 
@@ -1892,7 +1885,6 @@ impl<T: Trait> Module<T> {
 			all_validators,
 			all_nominators,
 			Self::power_of,
-			T::TotalPower::get(),
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {

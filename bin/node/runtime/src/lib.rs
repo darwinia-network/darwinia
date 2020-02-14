@@ -457,7 +457,6 @@ parameter_types! {
 
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
-	//	type PowerToVotes = PowerToVotesHandler;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
