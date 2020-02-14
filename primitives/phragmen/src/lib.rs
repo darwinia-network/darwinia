@@ -34,7 +34,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use sp_runtime::{
-	traits::{Convert, Member, Saturating, SimpleArithmetic, Zero},
+	traits::{Member, Saturating, Zero},
 	Perbill, RuntimeDebug,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
