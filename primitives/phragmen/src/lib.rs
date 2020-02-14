@@ -33,6 +33,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 use sp_runtime::{
 	traits::{Member, Saturating, Zero},
 	Perbill, RuntimeDebug,
@@ -242,7 +247,7 @@ where
 			for n in &mut voters {
 				for e in &mut n.edges {
 					if e.who == winner.who {
-						e.load = winner.score.lazy_sub(n.load);
+						e.load = winner.score.lazy_saturating_sub(n.load);
 						n.load = winner.score;
 					}
 				}
