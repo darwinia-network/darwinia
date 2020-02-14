@@ -96,9 +96,9 @@ mod structs {
 
 	/// A wrapper for any rational number with a u32 bit numerator and denominator.
 	#[derive(Clone, Copy, Default, Eq, RuntimeDebug)]
-	pub struct Rational32(u32, u32);
+	pub struct Rational64(u64, u64);
 
-	impl Rational32 {
+	impl Rational64 {
 		/// Nothing.
 		pub fn zero() -> Self {
 			Self(0, 1)
@@ -110,22 +110,22 @@ mod structs {
 		}
 
 		/// Build from a raw `n/d`.
-		pub fn from(n: u32, d: u32) -> Self {
+		pub fn from(n: u64, d: u64) -> Self {
 			Self(n, d.max(1))
 		}
 
 		/// Build from a raw `n/d`. This could lead to / 0 if not properly handled.
-		pub fn from_unchecked(n: u32, d: u32) -> Self {
+		pub fn from_unchecked(n: u64, d: u64) -> Self {
 			Self(n, d)
 		}
 
 		/// Return the numerator.
-		pub fn n(&self) -> u32 {
+		pub fn n(&self) -> u64 {
 			self.0
 		}
 
 		/// Return the denominator.
-		pub fn d(&self) -> u32 {
+		pub fn d(&self) -> u64 {
 			self.1
 		}
 
@@ -152,7 +152,7 @@ mod structs {
 		///   - Else, convert them both into big numbers and re-try.
 		///
 		/// Invariant: c must be greater than or equal to 1.
-		pub fn multiply_by_rational(a: u32, b: u32, mut c: u32) -> u32 {
+		pub fn multiply_by_rational(a: u64, b: u64, mut c: u64) -> u64 {
 			if a.is_zero() || b.is_zero() {
 				return 0;
 			}
@@ -172,17 +172,17 @@ mod structs {
 				c = 1;
 			}
 
-			((a as u64 * b as u64) / c as u64) as _
+			((a as u128 * b as u128) / c as u128) as _
 		}
 	}
 
-	impl PartialOrd for Rational32 {
+	impl PartialOrd for Rational64 {
 		fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 			Some(self.cmp(other))
 		}
 	}
 
-	impl Ord for Rational32 {
+	impl Ord for Rational64 {
 		fn cmp(&self, other: &Self) -> Ordering {
 			// handle some edge cases.
 			if self.1 == other.1 {
@@ -200,7 +200,7 @@ mod structs {
 		}
 	}
 
-	impl PartialEq for Rational32 {
+	impl PartialEq for Rational64 {
 		fn eq(&self, other: &Self) -> bool {
 			// handle some edge cases.
 			if self.1 == other.1 {
