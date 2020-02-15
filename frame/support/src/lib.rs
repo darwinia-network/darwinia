@@ -130,11 +130,11 @@ mod structs {
 		}
 
 		/// A saturating add that assumes `self` and `other` have the same denominator.
-		pub fn lazy_add(self, other: Self) -> Self {
+		pub fn lazy_saturating_add(self, other: Self) -> Self {
 			if other.is_zero() {
 				self
 			} else {
-				Self(self.0 + other.0, self.1)
+				Self(self.0.saturating_add(other.0), self.1)
 			}
 		}
 

@@ -246,7 +246,7 @@ where
 					let temp_n = Rational64::multiply_by_rational(n.load.n(), n.budget as _, c.approval_stake as _);
 					let temp_d = n.load.d();
 					let temp = Rational64::from(temp_n, temp_d);
-					c.score = c.score.lazy_add(temp);
+					c.score = c.score.lazy_saturating_add(temp);
 				}
 			}
 		}
