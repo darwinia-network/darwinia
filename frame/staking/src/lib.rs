@@ -263,10 +263,6 @@ mod types {
 	pub type Moment = Timestamp;
 	/// Balance of an account.
 	pub type Balance = u128;
-	/// Power of an account.
-	pub type Power = u32;
-	/// Votes of an account.
-	pub type Votes = u32;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -311,7 +307,6 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use pallet_session::{historical::OnSessionEnding, SelectInitialValidators};
-use sp_phragmen::PhragmenStakedAssignment;
 use sp_runtime::{
 	traits::{
 		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
@@ -327,6 +322,7 @@ use sp_staking::{
 };
 use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::Vec};
 
+use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
@@ -1557,6 +1553,13 @@ impl<T: Trait> Module<T> {
 			.unwrap_or_default()
 	}
 
+	pub fn stake_of(stash: &T::AccountId) -> (RingBalance<T>, KtonBalance<T>) {
+		Self::bonded(stash)
+			.and_then(Self::ledger)
+			.map(|l| (l.active_ring, l.active_kton))
+			.unwrap_or_default()
+	}
+
 	// Update the ledger while bonding ring and compute the kton should return.
 	fn bond_ring(
 		stash: &T::AccountId,
@@ -1879,7 +1882,7 @@ impl<T: Trait> Module<T> {
 
 		all_nominators.extend(nominator_votes);
 
-		let maybe_phragmen_result = sp_phragmen::elect::<_, _>(
+		let maybe_phragmen_result = darwinia_phragmen::elect::<_, _>(
 			Self::validator_count() as usize,
 			Self::minimum_validator_count().max(1) as usize,
 			all_validators,
@@ -1894,14 +1897,26 @@ impl<T: Trait> Module<T> {
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
-			let mut supports = sp_phragmen::build_support_map::<_, _>(&elected_stashes, &assignments, Self::power_of);
+
+			let to_votes = |p: Power| p as Votes;
+			let to_power = |v: Votes| v as Power;
+
+			let mut supports = darwinia_phragmen::build_support_map::<_, _, _, _, _>(
+				&elected_stashes,
+				&assignments,
+				Self::power_of,
+				Self::stake_of,
+			);
 
 			if cfg!(feature = "equalize") {
-				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
-					Vec::with_capacity(assignments.len());
+				let mut staked_assignments: Vec<(
+					T::AccountId,
+					Vec<PhragmenStakedAssignment<T::AccountId, RingBalance<T>, KtonBalance<T>>>,
+				)> = Vec::with_capacity(assignments.len());
 				for (n, assignment) in assignments.iter() {
-					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
-						Vec::with_capacity(assignment.len());
+					let mut staked_assignment: Vec<
+						PhragmenStakedAssignment<T::AccountId, RingBalance<T>, KtonBalance<T>>,
+					> = Vec::with_capacity(assignment.len());
 
 					// If this is a self vote, then we don't need to equalise it at all. While the
 					// staking system does not allow nomination and validation at the same time,
@@ -1910,16 +1925,31 @@ impl<T: Trait> Module<T> {
 						continue;
 					}
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = Self::power_of(n);
+						let nominator_stake = to_votes(Self::power_of(n));
+						let (ring_balance, kton_balance) = {
+							let (r, k) = Self::stake_of(n);
+							(*per_thing * r, *per_thing * k)
+						};
 						let other_stake = *per_thing * nominator_stake;
-						staked_assignment.push((c.clone(), other_stake));
+						staked_assignment.push(PhragmenStakedAssignment {
+							account_id: c.clone(),
+							votes: other_stake,
+							ring_balance,
+							kton_balance,
+						});
 					}
 					staked_assignments.push((n.clone(), staked_assignment));
 				}
 
 				let tolerance: Votes = 0;
 				let iterations = 2_usize;
-				sp_phragmen::equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
+				darwinia_phragmen::equalize::<_, _, _, _>(
+					staked_assignments,
+					&mut supports,
+					tolerance,
+					iterations,
+					Self::power_of,
+				);
 			}
 
 			// Clear Stakers.
@@ -1932,16 +1962,19 @@ impl<T: Trait> Module<T> {
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
-					own: s.own,
+					own: to_power(s.own_votes),
 					// This might reasonably saturate and we cannot do much about it. The sum of
 					// someone's stake might exceed the balance type if they have the maximum amount
 					// of balance and receive some support. This is super unlikely to happen, yet
 					// we simulate it in some tests.
-					total: s.total,
+					total: to_power(s.total_votes),
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExposure { who, value })
+						.map(|assignment| IndividualExposure {
+							who: assignment.account_id,
+							value: to_power(assignment.votes),
+						})
 						.collect::<Vec<IndividualExposure<_, _>>>(),
 				};
 				if exposure.total < slot_stake {

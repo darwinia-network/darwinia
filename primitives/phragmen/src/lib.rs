@@ -39,14 +39,15 @@ mod mock;
 mod tests;
 
 use sp_runtime::{
-	traits::{Member, Saturating, Zero},
+	traits::{Member, Saturating, SimpleArithmetic, Zero},
 	Perbill, RuntimeDebug,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 use darwinia_support::Rational64;
+use sp_runtime::traits::SaturatedConversion;
 
-// TODO doc
+/// Power of an account.
 pub type Power = u32;
 
 /// A type in which performing operations on power and voters are safe.
@@ -100,7 +101,14 @@ pub struct Edge<AccountId> {
 pub type PhragmenAssignment<AccountId> = (AccountId, Perbill);
 
 /// Means a particular `AccountId` was backed by `Votes` of a nominator's stake.
-pub type PhragmenStakedAssignment<AccountId> = (AccountId, Votes);
+#[derive(RuntimeDebug)]
+#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+pub struct PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance> {
+	pub account_id: AccountId,
+	pub votes: Votes,
+	pub ring_balance: RingBalance,
+	pub kton_balance: KtonBalance,
+}
 
 /// Final result of the phragmen election.
 #[derive(RuntimeDebug)]
@@ -122,17 +130,21 @@ pub struct PhragmenResult<AccountId> {
 /// they do not necessarily have to be the same.
 #[derive(Default, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
-pub struct Support<AccountId> {
+pub struct Support<AccountId, RingBalance, KtonBalance> {
 	/// The amount of support as the effect of self-vote.
-	pub own: Votes,
+	pub own_votes: Votes,
+	pub own_ring: RingBalance,
+	pub own_kton: KtonBalance,
 	/// Total support.
-	pub total: Votes,
+	pub total_votes: Votes,
+	pub total_ring: RingBalance,
+	pub total_kton: KtonBalance,
 	/// Support from voters.
-	pub others: Vec<PhragmenStakedAssignment<AccountId>>,
+	pub others: Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
 }
 
 /// A linkage from a candidate and its [`Support`].
-pub type SupportMap<A> = BTreeMap<A, Support<A>>;
+pub type SupportMap<A, R, K> = BTreeMap<A, Support<A, R, K>>;
 
 /// Perform election based on Phragmén algorithm.
 ///
@@ -334,18 +346,22 @@ where
 }
 
 /// Build the support map from the given phragmen result.
-pub fn build_support_map<AccountId, FS>(
+pub fn build_support_map<AccountId, RingBalance, KtonBalance, FS, FSS>(
 	elected_stashes: &Vec<AccountId>,
 	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
 	power_of: FS,
-) -> SupportMap<AccountId>
+	stake_of: FSS,
+) -> SupportMap<AccountId, RingBalance, KtonBalance>
 where
 	AccountId: Default + Ord + Member,
+	RingBalance: Default + Copy + SimpleArithmetic,
+	KtonBalance: Default + Copy + SimpleArithmetic,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
+	for<'r> FSS: Fn(&'r AccountId) -> (RingBalance, KtonBalance),
 {
 	let to_votes = |p: Power| p as Votes;
 	// Initialize the support of each candidate.
-	let mut supports = <SupportMap<AccountId>>::new();
+	let mut supports = <SupportMap<AccountId, RingBalance, KtonBalance>>::new();
 	elected_stashes.iter().for_each(|e| {
 		supports.insert(e.clone(), Default::default());
 	});
@@ -353,24 +369,43 @@ where
 	// build support struct.
 	for (n, assignment) in assignments.iter() {
 		for (c, per_thing) in assignment.iter() {
-			let nominator_stake = to_votes(power_of(n));
-			// AUDIT: it is crucially important for the `Mul` implementation of all
-			// per-things to be sound.
-			let other_stake = *per_thing * nominator_stake;
 			if let Some(support) = supports.get_mut(c) {
+				let nominator_stake = to_votes(power_of(n));
+				let (ring_balance, kton_balance) = {
+					let (r, k) = stake_of(n);
+					(*per_thing * r, *per_thing * k)
+				};
+				// AUDIT: it is crucially important for the `Mul` implementation of all
+				// per-things to be sound.
+				let other_stake = *per_thing * nominator_stake;
 				if c == n {
 					// This is a nomination from `n` to themselves. This will increase both the
 					// `own` and `total` field.
 					debug_assert!(*per_thing == Perbill::one()); // TODO: deal with this: do we want it?
-					support.own = support.own.saturating_add(other_stake);
-					support.total = support.total.saturating_add(other_stake);
+
+					support.own_votes = support.own_votes.saturating_add(other_stake);
+					support.total_votes = support.total_votes.saturating_add(other_stake);
+
+					support.own_ring = support.own_ring.saturating_add(ring_balance);
+					support.total_ring = support.total_ring.saturating_add(ring_balance);
+
+					support.own_kton = support.own_kton.saturating_add(kton_balance);
+					support.total_kton = support.total_kton.saturating_add(kton_balance);
 				} else {
 					// This is a nomination from `n` to someone else. Increase `total` and add an entry
 					// inside `others`.
 					// For an astronomically rich validator with more astronomically rich
 					// set of nominators, this might saturate.
-					support.total = support.total.saturating_add(other_stake);
-					support.others.push((n.clone(), other_stake));
+					support.total_votes = support.total_votes.saturating_add(other_stake);
+					support.total_ring = support.total_ring.saturating_add(ring_balance);
+					support.total_kton = support.total_kton.saturating_add(kton_balance);
+
+					support.others.push(PhragmenStakedAssignment {
+						account_id: n.clone(),
+						votes: other_stake,
+						ring_balance,
+						kton_balance,
+					});
 				}
 			}
 		}
@@ -389,14 +424,19 @@ where
 /// * `tolerance`: maximum difference that can occur before an early quite happens.
 /// * `iterations`: maximum number of iterations that will be processed.
 /// * `power_of`: something that can return the stake stake of a particular candidate or voter.
-pub fn equalize<AccountId, FS>(
-	mut assignments: Vec<(AccountId, Vec<PhragmenStakedAssignment<AccountId>>)>,
-	supports: &mut SupportMap<AccountId>,
+pub fn equalize<AccountId, RingBalance, KtonBalance, FS>(
+	mut assignments: Vec<(
+		AccountId,
+		Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
+	)>,
+	supports: &mut SupportMap<AccountId, RingBalance, KtonBalance>,
 	tolerance: Votes,
 	iterations: usize,
 	power_of: FS,
 ) where
 	AccountId: Ord + Clone,
+	RingBalance: Default + Copy + SimpleArithmetic,
+	KtonBalance: Default + Copy + SimpleArithmetic,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {
 	// prepare the data for equalise
@@ -406,7 +446,7 @@ pub fn equalize<AccountId, FS>(
 		for (voter, assignment) in assignments.iter_mut() {
 			let voter_budget = power_of(&voter);
 
-			let diff = do_equalize::<_>(voter, voter_budget, assignment, supports, tolerance);
+			let diff = do_equalize::<_, _, _>(voter, voter_budget, assignment, supports, tolerance);
 			if diff > max_diff {
 				max_diff = diff;
 			}
@@ -420,13 +460,18 @@ pub fn equalize<AccountId, FS>(
 
 /// actually perform equalize. same interface is `equalize`. Just called in loops with a check for
 /// maximum difference.
-fn do_equalize<AccountId: Ord + Clone>(
+fn do_equalize<AccountId, RingBalance, KtonBalance>(
 	voter: &AccountId,
 	budget_balance: Power,
-	elected_edges: &mut Vec<PhragmenStakedAssignment<AccountId>>,
-	support_map: &mut SupportMap<AccountId>,
+	elected_edges: &mut Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
+	support_map: &mut SupportMap<AccountId, RingBalance, KtonBalance>,
 	tolerance: Votes,
-) -> Votes {
+) -> Votes
+where
+	AccountId: Ord + Clone,
+	RingBalance: Copy + SimpleArithmetic,
+	KtonBalance: Copy + SimpleArithmetic,
+{
 	let to_votes = |p: Power| p as Votes;
 	let budget = to_votes(budget_balance);
 
@@ -436,18 +481,18 @@ fn do_equalize<AccountId: Ord + Clone>(
 		return 0;
 	}
 
-	let stake_used = elected_edges.iter().fold(0 as Votes, |s, e| s.saturating_add(e.1));
+	let stake_used = elected_edges.iter().fold(0 as Votes, |s, e| s.saturating_add(e.votes));
 
 	let backed_stakes_iter = elected_edges
 		.iter()
-		.filter_map(|e| support_map.get(&e.0))
-		.map(|e| e.total);
+		.filter_map(|e| support_map.get(&e.account_id))
+		.map(|e| e.total_votes);
 
 	let backing_backed_stake = elected_edges
 		.iter()
-		.filter(|e| e.1 > 0)
-		.filter_map(|e| support_map.get(&e.0))
-		.map(|e| e.total)
+		.filter(|e| e.votes > 0)
+		.filter_map(|e| support_map.get(&e.account_id))
+		.map(|e| e.total_votes)
 		.collect::<Vec<Votes>>();
 
 	let mut difference;
@@ -471,16 +516,16 @@ fn do_equalize<AccountId: Ord + Clone>(
 
 	// Undo updates to support
 	elected_edges.iter_mut().for_each(|e| {
-		if let Some(support) = support_map.get_mut(&e.0) {
-			support.total = support.total.saturating_sub(e.1);
-			support.others.retain(|i_support| i_support.0 != *voter);
+		if let Some(support) = support_map.get_mut(&e.account_id) {
+			support.total_votes = support.total_votes.saturating_sub(e.votes);
+			support.others.retain(|i_support| i_support.account_id != *voter);
 		}
-		e.1 = 0;
+		e.votes = 0;
 	});
 
 	elected_edges.sort_unstable_by_key(|e| {
-		if let Some(e) = support_map.get(&e.0) {
-			e.total
+		if let Some(e) = support_map.get(&e.account_id) {
+			e.total_votes
 		} else {
 			Zero::zero()
 		}
@@ -490,8 +535,8 @@ fn do_equalize<AccountId: Ord + Clone>(
 	let mut last_index = elected_edges.len() - 1;
 	let mut idx = 0usize;
 	for e in &mut elected_edges[..] {
-		if let Some(support) = support_map.get_mut(&e.0) {
-			let stake = support.total;
+		if let Some(support) = support_map.get_mut(&e.account_id) {
+			let stake = support.total_votes;
 			let stake_mul = stake.saturating_mul(idx as Votes);
 			let stake_sub = stake_mul.saturating_sub(cumulative_stake);
 			if stake_sub > budget {
@@ -503,16 +548,33 @@ fn do_equalize<AccountId: Ord + Clone>(
 		idx += 1;
 	}
 
-	let last_stake = elected_edges[last_index].1;
+	let PhragmenStakedAssignment {
+		votes: last_votes,
+		ring_balance: last_ring_balance,
+		kton_balance: last_kton_balance,
+		..
+	} = elected_edges[last_index];
 	let split_ways = last_index + 1;
 	let excess = budget
 		.saturating_add(cumulative_stake)
-		.saturating_sub(last_stake.saturating_mul(split_ways as Votes));
+		.saturating_sub(last_votes.saturating_mul(split_ways as Votes));
 	elected_edges.iter_mut().take(split_ways).for_each(|e| {
-		if let Some(support) = support_map.get_mut(&e.0) {
-			e.1 = ((excess / split_ways as Votes) + last_stake).saturating_sub(support.total);
-			support.total = support.total.saturating_add(e.1);
-			support.others.push((voter.clone(), e.1));
+		if let Some(support) = support_map.get_mut(&e.account_id) {
+			e.votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
+			e.ring_balance = ((excess.saturated_into::<RingBalance>() / split_ways.saturated_into::<RingBalance>())
+				+ last_ring_balance)
+				.saturating_sub(support.total_ring);
+			e.kton_balance = ((excess.saturated_into::<KtonBalance>() / split_ways.saturated_into::<KtonBalance>())
+				+ last_kton_balance)
+				.saturating_sub(support.total_kton);
+
+			support.total_votes = support.total_votes.saturating_add(e.votes);
+			support.others.push(PhragmenStakedAssignment {
+				account_id: voter.clone(),
+				votes: e.votes,
+				ring_balance: e.ring_balance,
+				kton_balance: e.kton_balance,
+			});
 		}
 	});
 
