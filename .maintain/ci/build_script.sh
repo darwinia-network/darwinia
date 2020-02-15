@@ -14,7 +14,7 @@ case $TARGET in
 	# Without WASM
 	"native")
 		# There is some issue to build on ci server with SKIP_WASM_BUILD=1 
-		cargo build --release --all --locked "$@"
+		cargo build --all --locked "$@"
 		echo -e "\e[0;32m +-------------+ \n\e[0;32m | Native Pass | \n\e[0;32m +-------------+ \e[0m"
 		;;
 

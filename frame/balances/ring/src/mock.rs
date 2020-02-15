@@ -29,6 +29,8 @@ use sp_runtime::{
 };
 use std::cell::RefCell;
 
+pub type Ring = Module<Test>;
+
 use frame_system as system;
 impl_outer_origin! {
 	pub enum Origin for Test {}
@@ -88,6 +90,7 @@ impl frame_system::Trait for Test {
 	type Version = ();
 	type ModuleToIndex = ();
 }
+
 parameter_types! {
 	pub const TransactionBaseFee: u64 = 0;
 	pub const TransactionByteFee: u64 = 1;

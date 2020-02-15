@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 
+use darwinia_ring as ring;
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
 use sp_core::H256;
 use sp_io;
@@ -14,7 +15,6 @@ use sp_runtime::{
 };
 
 use crate::*;
-use darwinia_ring as ring;
 
 pub type AccountId = u64;
 pub type Balance = u128;

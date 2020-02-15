@@ -2,11 +2,6 @@ language: rust
 rust:
   - nightly
 
-cache: 
-  cargo: true
-  directories:
-   - target
-
 branches:
     only:
         - master
@@ -19,12 +14,11 @@ env:
 before_install:
     # Check how much space we've got on this machine.
     - df -h
-    # TODO: cache the toolchain 
     - rustup target add wasm32-unknown-unknown
 
 jobs:
   include:
-    - stage: Check
+    - stage: Check & Prepare
       script: .maintain/ci/fmt_script.sh
 
     - stage: Build
@@ -50,10 +44,6 @@ jobs:
     - stage: Overall Test 
       env: RUST_TOOLCHAIN=nightly TARGET=native
       script: .maintain/ci/test_script.sh
-
-    # clean up cache 
-    - stage: Cleanup  
-      script: cargo clean
 
 after_script:
     # Check how much free disk space left after the build
