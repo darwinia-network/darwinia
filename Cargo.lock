@@ -925,7 +925,6 @@ dependencies = [
  "frame-system",
  "pallet-authorship",
  "pallet-session",
- "pallet-staking-reward-curve",
  "pallet-timestamp",
  "parity-scale-codec",
  "safe-mix",

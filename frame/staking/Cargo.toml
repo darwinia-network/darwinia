@@ -24,13 +24,13 @@ sp-staking = { version = "2.0.0", default-features = false, git = "https://githu
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
 # darwinia
-sp-phragmen = { package = "darwinia-phragmen", default-features = false, path = "../../primitives/phragmen" }
-darwinia-support = { path = "../support", default-features = false }
+darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
+darwinia-support = {  default-features = false, path = "../support" }
 
 [dev-dependencies]
-pallet-ring = { package = "darwinia-ring", path = "../../frame/balances/ring" }
-pallet-staking-reward-curve = { version = "2.0.0",  git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+
+darwinia-ring = { path = "../../frame/balances/ring" }
 
 [features]
 equalize = []
@@ -48,10 +48,10 @@ std = [
     "pallet-timestamp/std",
     "sp-io/std",
 	"sp-keyring",
-	"sp-phragmen/std",
 	"sp-runtime/std",
 	"sp-staking/std",
 	"sp-std/std",
 
+	"darwinia-phragmen/std",
 	"darwinia-support/std",
 ]
