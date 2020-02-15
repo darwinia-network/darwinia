@@ -52,12 +52,12 @@ pub type Power = u32;
 
 /// A type in which performing operations on power and voters are safe.
 ///
-/// `Power` is `u32`. Hence, `u128` is a safe type for arithmetic operations over them.
+/// `Power` is `u32`. Hence, `u64` is a safe type for arithmetic operations over them.
 ///
 /// Power type converted to this is referred to as `Votes`.
 pub type Votes = u64;
 
-/// The denominator used for loads. For maximum accuracy we simply use u128;
+/// The denominator used for loads. For maximum accuracy we simply use u64;
 const DEN: u64 = u64::max_value();
 
 /// A candidate entity for phragmen election.
