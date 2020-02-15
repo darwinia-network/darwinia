@@ -56,7 +56,10 @@ use frame_support::{
 use sp_runtime::traits::{Saturating, Zero};
 use sp_std::{vec, vec::Vec};
 
-use crate::{EraIndex, Exposure, Module, Perbill, Power, SessionInterface, Store, Trait, UnappliedSlash};
+use crate::{
+	EraIndex, Exposure, KtonBalance, Module, Perbill, Power, RingBalance, SessionInterface, Store, Trait,
+	UnappliedSlash,
+};
 
 /// The proportion of the slashing reward to be paid out on the first slashing detection.
 /// This is f_1 in the paper.
@@ -198,7 +201,7 @@ pub(crate) struct SlashParams<'a, T: 'a + Trait> {
 	/// The proportion of the slash.
 	pub(crate) slash: Perbill,
 	/// The exposure of the stash and all nominators.
-	pub(crate) exposure: &'a Exposure<T::AccountId, Power>,
+	pub(crate) exposure: &'a Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
 	/// The era where the offence occurred.
 	pub(crate) slash_era: EraIndex,
 	/// The first era in the current bonding period.
@@ -231,8 +234,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>) -> Option<Unapplie
 	let mut val_slashed = 0;
 
 	// is the slash amount here a maximum for the era?
-	let own_slash = slash * exposure.own;
-	if slash * exposure.total == 0 {
+	let own_slash = slash * exposure.own_power;
+	if slash * exposure.total_power == 0 {
 		// kick out the validator even if they won't be slashed,
 		// as long as the misbehavior is from their most recent slashing span.
 		kick_out_if_recent::<T>(params);
@@ -352,8 +355,8 @@ fn slash_nominators<T: Trait>(
 		// the era slash of a nominator always grows, if the validator
 		// had a new max slash for the era.
 		let era_slash = {
-			let own_slash_prior = prior_slash_p * nominator.value;
-			let own_slash_by_validator = slash * nominator.value;
+			let own_slash_prior = prior_slash_p * nominator.power;
+			let own_slash_by_validator = slash * nominator.power;
 			let own_slash_difference = own_slash_by_validator.saturating_sub(own_slash_prior);
 
 			let mut era_slash = <Module<T> as Store>::NominatorSlashInEra::get(&slash_era, stash).unwrap_or(0);

@@ -105,9 +105,9 @@ pub type PhragmenAssignment<AccountId> = (AccountId, Perbill);
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance> {
 	pub account_id: AccountId,
-	pub votes: Votes,
 	pub ring_balance: RingBalance,
 	pub kton_balance: KtonBalance,
+	pub votes: Votes,
 }
 
 /// Final result of the phragmen election.
@@ -133,12 +133,12 @@ pub struct PhragmenResult<AccountId> {
 pub struct Support<AccountId, RingBalance, KtonBalance> {
 	/// The amount of support as the effect of self-vote.
 	pub own_votes: Votes,
-	pub own_ring: RingBalance,
-	pub own_kton: KtonBalance,
+	pub own_ring_balance: RingBalance,
+	pub own_kton_balance: KtonBalance,
 	/// Total support.
 	pub total_votes: Votes,
-	pub total_ring: RingBalance,
-	pub total_kton: KtonBalance,
+	pub total_ring_balance: RingBalance,
+	pub total_kton_balance: KtonBalance,
 	/// Support from voters.
 	pub others: Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
 }
@@ -383,28 +383,28 @@ where
 					// `own` and `total` field.
 					debug_assert!(*per_thing == Perbill::one()); // TODO: deal with this: do we want it?
 
+					support.own_ring_balance = support.own_ring_balance.saturating_add(ring_balance);
+					support.total_ring_balance = support.total_ring_balance.saturating_add(ring_balance);
+
+					support.own_kton_balance = support.own_kton_balance.saturating_add(kton_balance);
+					support.total_kton_balance = support.total_kton_balance.saturating_add(kton_balance);
+
 					support.own_votes = support.own_votes.saturating_add(other_stake);
 					support.total_votes = support.total_votes.saturating_add(other_stake);
-
-					support.own_ring = support.own_ring.saturating_add(ring_balance);
-					support.total_ring = support.total_ring.saturating_add(ring_balance);
-
-					support.own_kton = support.own_kton.saturating_add(kton_balance);
-					support.total_kton = support.total_kton.saturating_add(kton_balance);
 				} else {
 					// This is a nomination from `n` to someone else. Increase `total` and add an entry
 					// inside `others`.
 					// For an astronomically rich validator with more astronomically rich
 					// set of nominators, this might saturate.
+					support.total_ring_balance = support.total_ring_balance.saturating_add(ring_balance);
+					support.total_kton_balance = support.total_kton_balance.saturating_add(kton_balance);
 					support.total_votes = support.total_votes.saturating_add(other_stake);
-					support.total_ring = support.total_ring.saturating_add(ring_balance);
-					support.total_kton = support.total_kton.saturating_add(kton_balance);
 
 					support.others.push(PhragmenStakedAssignment {
 						account_id: n.clone(),
-						votes: other_stake,
 						ring_balance,
 						kton_balance,
+						votes: other_stake,
 					});
 				}
 			}
@@ -435,8 +435,8 @@ pub fn equalize<AccountId, RingBalance, KtonBalance, FS>(
 	power_of: FS,
 ) where
 	AccountId: Ord + Clone,
-	RingBalance: Default + Copy + SimpleArithmetic,
-	KtonBalance: Default + Copy + SimpleArithmetic,
+	RingBalance: Copy + SimpleArithmetic,
+	KtonBalance: Copy + SimpleArithmetic,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {
 	// prepare the data for equalise
@@ -549,9 +549,9 @@ where
 	}
 
 	let PhragmenStakedAssignment {
-		votes: last_votes,
 		ring_balance: last_ring_balance,
 		kton_balance: last_kton_balance,
+		votes: last_votes,
 		..
 	} = elected_edges[last_index];
 	let split_ways = last_index + 1;
@@ -560,20 +560,20 @@ where
 		.saturating_sub(last_votes.saturating_mul(split_ways as Votes));
 	elected_edges.iter_mut().take(split_ways).for_each(|e| {
 		if let Some(support) = support_map.get_mut(&e.account_id) {
-			e.votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
 			e.ring_balance = ((excess.saturated_into::<RingBalance>() / split_ways.saturated_into::<RingBalance>())
 				+ last_ring_balance)
-				.saturating_sub(support.total_ring);
+				.saturating_sub(support.total_ring_balance);
 			e.kton_balance = ((excess.saturated_into::<KtonBalance>() / split_ways.saturated_into::<KtonBalance>())
 				+ last_kton_balance)
-				.saturating_sub(support.total_kton);
+				.saturating_sub(support.total_kton_balance);
+			e.votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
 
 			support.total_votes = support.total_votes.saturating_add(e.votes);
 			support.others.push(PhragmenStakedAssignment {
 				account_id: voter.clone(),
-				votes: e.votes,
 				ring_balance: e.ring_balance,
 				kton_balance: e.kton_balance,
+				votes: e.votes,
 			});
 		}
 	});

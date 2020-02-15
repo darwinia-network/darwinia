@@ -535,33 +535,57 @@ pub struct Nominations<AccountId> {
 
 /// The amount of exposure (to slashing) than an individual nominator has.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
-pub struct IndividualExposure<AccountId, Power: HasCompact> {
+pub struct IndividualExposure<AccountId, RingBalance, KtonBalance, Power>
+where
+	RingBalance: HasCompact,
+	KtonBalance: HasCompact,
+	Power: HasCompact,
+{
 	/// The stash account of the nominator in question.
 	who: AccountId,
 	/// Amount of funds exposed.
 	#[codec(compact)]
-	value: Power,
+	ring_balance: RingBalance,
+	#[codec(compact)]
+	kton_balance: KtonBalance,
+	#[codec(compact)]
+	power: Power,
 }
 
 /// A snapshot of the stake backing a single validator in the system.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
-pub struct Exposure<AccountId, Power: HasCompact> {
-	/// The total balance backing this validator.
-	#[codec(compact)]
-	pub total: Power,
+pub struct Exposure<AccountId, RingBalance, KtonBalance, Power>
+where
+	RingBalance: HasCompact,
+	KtonBalance: HasCompact,
+	Power: HasCompact,
+{
 	/// The validator's own stash that is exposed.
 	#[codec(compact)]
-	pub own: Power,
+	pub own_ring_balance: RingBalance,
+	#[codec(compact)]
+	pub own_kton_balance: KtonBalance,
+	#[codec(compact)]
+	pub own_power: Power,
+	/// The total balance backing this validator.
+	#[codec(compact)]
+	pub total_ring_balance: RingBalance,
+	#[codec(compact)]
+	pub total_kton_balance: KtonBalance,
+	#[codec(compact)]
+	pub total_power: Power,
 	/// The portions of nominators stashes that are exposed.
-	pub others: Vec<IndividualExposure<AccountId, Power>>,
+	pub others: Vec<IndividualExposure<AccountId, RingBalance, KtonBalance, Power>>,
 }
 
 /// A typed conversion from stash account ID to the current exposure of nominators
 /// on that account.
 pub struct ExposureOf<T>(PhantomData<T>);
 
-impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, Power>>> for ExposureOf<T> {
-	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, Power>> {
+impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>>>
+	for ExposureOf<T>
+{
+	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>> {
 		Some(<Module<T>>::stakers(&validator))
 	}
 }
@@ -620,7 +644,7 @@ impl<T: Trait> SessionInterface<<T as frame_system::Trait>::AccountId> for T
 where
 	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, Power>,
+		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
@@ -747,7 +771,7 @@ decl_storage! {
 		/// through validators here, but you can find them in the Session module.
 		///
 		/// This is keyed by the stash account.
-		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, Power>;
+		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>;
 
 		/// The currently elected validator set keyed by stash account ID.
 		pub CurrentElected get(fn current_elected): Vec<T::AccountId>;
@@ -1697,10 +1721,10 @@ impl<T: Trait> Module<T> {
 			Zero::zero()
 		} else {
 			let exposure = Self::stakers(stash);
-			let total = exposure.total.max(One::one());
+			let total = exposure.total_power.max(One::one());
 
 			for i in &exposure.others {
-				let per_u64 = Perbill::from_rational_approximation(i.value, total);
+				let per_u64 = Perbill::from_rational_approximation(i.power, total);
 				let nominator_reward = per_u64 * reward;
 
 				imbalance.maybe_subsume(Self::make_payout(&i.who, nominator_reward));
@@ -1710,7 +1734,7 @@ impl<T: Trait> Module<T> {
 				});
 			}
 
-			let per_u64 = Perbill::from_rational_approximation(exposure.own, total);
+			let per_u64 = Perbill::from_rational_approximation(exposure.own_power, total);
 			per_u64 * reward
 		};
 		let validator_reward = validator_cut + off_the_table;
@@ -1724,7 +1748,13 @@ impl<T: Trait> Module<T> {
 	/// with the exposure of the prior validator set.
 	fn new_session(
 		session_index: SessionIndex,
-	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
+	) -> Option<(
+		Vec<T::AccountId>,
+		Vec<(
+			T::AccountId,
+			Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
+		)>,
+	)> {
 		let era_length = session_index
 			.checked_sub(Self::current_era_start_session_index())
 			.unwrap_or(0);
@@ -1962,23 +1992,25 @@ impl<T: Trait> Module<T> {
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
-					own: to_power(s.own_votes),
-					// This might reasonably saturate and we cannot do much about it. The sum of
-					// someone's stake might exceed the balance type if they have the maximum amount
-					// of balance and receive some support. This is super unlikely to happen, yet
-					// we simulate it in some tests.
-					total: to_power(s.total_votes),
+					own_ring_balance: s.own_ring_balance,
+					own_kton_balance: s.own_kton_balance,
+					own_power: to_power(s.own_votes),
+					total_ring_balance: s.total_ring_balance,
+					total_kton_balance: s.total_kton_balance,
+					total_power: to_power(s.total_votes),
 					others: s
 						.others
 						.into_iter()
 						.map(|assignment| IndividualExposure {
 							who: assignment.account_id,
-							value: to_power(assignment.votes),
+							ring_balance: assignment.ring_balance,
+							kton_balance: assignment.kton_balance,
+							power: to_power(assignment.votes),
 						})
-						.collect::<Vec<IndividualExposure<_, _>>>(),
+						.collect::<Vec<IndividualExposure<_, _, _, _>>>(),
 				};
-				if exposure.total < slot_stake {
-					slot_stake = exposure.total;
+				if exposure.total_power < slot_stake {
+					slot_stake = exposure.total_power;
 				}
 
 				<Stakers<T>>::insert(&c, exposure.clone());
@@ -2079,11 +2111,19 @@ impl<T: Trait> pallet_session::OnSessionEnding<T::AccountId> for Module<T> {
 	}
 }
 
-impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, Power>> for Module<T> {
+impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>>
+	for Module<T>
+{
 	fn on_session_ending(
 		_ending: SessionIndex,
 		start_session: SessionIndex,
-	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
+	) -> Option<(
+		Vec<T::AccountId>,
+		Vec<(
+			T::AccountId,
+			Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
+		)>,
+	)> {
 		Self::ensure_storage_upgraded();
 		Self::new_session(start_session - 1)
 	}
@@ -2130,7 +2170,7 @@ impl<T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Identi
 where
 	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, Power>,
+		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
