@@ -50,15 +50,22 @@
 
 use codec::{Decode, Encode};
 use frame_support::{
-	traits::{Currency, Imbalance, OnUnbalanced},
+	traits::{Currency, Imbalance, OnUnbalanced, Time},
 	StorageDoubleMap, StorageMap,
 };
-use sp_runtime::traits::{Saturating, Zero};
-use sp_std::{vec, vec::Vec};
+use sp_runtime::{
+	traits::{Saturating, Zero},
+	Perbill, RuntimeDebug,
+};
+use sp_std::{
+	ops::{Add, AddAssign, Sub},
+	vec,
+	vec::Vec,
+};
 
 use crate::{
-	EraIndex, Exposure, KtonBalance, Module, Perbill, Power, RingBalance, SessionInterface, Store, Trait,
-	UnappliedSlash,
+	EraIndex, Exposure, KtonBalance, KtonNegativeImbalance, Module, RawEvent, RingBalance, RingNegativeImbalance,
+	SessionInterface, StakingBalance, Store, Trait, UnappliedSlash,
 };
 
 /// The proportion of the slashing reward to be paid out on the first slashing detection.
@@ -67,6 +74,97 @@ const REWARD_F1: Perbill = Perbill::from_percent(50);
 
 /// The index of a slashing span - unique to each stash.
 pub(crate) type SpanIndex = u32;
+
+// TODO doc
+pub(crate) type RKT<T> = RK<RingBalance<T>, KtonBalance<T>>;
+
+// TODO doc
+#[derive(Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
+pub struct RK<R, K> {
+	pub(crate) r: R,
+	pub(crate) k: K,
+}
+
+impl<R, K> RK<R, K>
+where
+	R: Zero,
+	K: Zero,
+{
+	pub(crate) fn zero() -> Self {
+		Self {
+			r: Zero::zero(),
+			k: Zero::zero(),
+		}
+	}
+}
+
+impl<R, K> Add for RK<R, K>
+where
+	R: Add<Output = R>,
+	K: Add<Output = K>,
+{
+	type Output = Self;
+
+	fn add(self, rhs: Self) -> Self::Output {
+		Self {
+			r: self.r + rhs.r,
+			k: self.k + rhs.k,
+		}
+	}
+}
+
+impl<R, K> AddAssign for RK<R, K>
+where
+	R: AddAssign,
+	K: AddAssign,
+{
+	fn add_assign(&mut self, rhs: Self) {
+		self.r += rhs.r;
+		self.k += rhs.k;
+	}
+}
+
+impl<R, K> Sub for RK<R, K>
+where
+	R: Sub<Output = R>,
+	K: Sub<Output = K>,
+{
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self {
+			r: self.r - rhs.r,
+			k: self.k - rhs.k,
+		}
+	}
+}
+
+impl<R, K> Saturating for RK<R, K>
+where
+	R: Copy + Saturating,
+	K: Copy + Saturating,
+{
+	fn saturating_add(self, o: Self) -> Self {
+		Self {
+			r: self.r.saturating_add(o.r),
+			k: self.k.saturating_add(o.k),
+		}
+	}
+
+	fn saturating_sub(self, o: Self) -> Self {
+		Self {
+			r: self.r.saturating_sub(o.r),
+			k: self.k.saturating_sub(o.k),
+		}
+	}
+
+	fn saturating_mul(self, o: Self) -> Self {
+		Self {
+			r: self.r.saturating_mul(o.r),
+			k: self.k.saturating_mul(o.k),
+		}
+	}
+}
 
 // A range of start..end eras for a slashing span.
 #[derive(Encode, Decode)]
@@ -152,43 +250,43 @@ impl SlashingSpans {
 		self.last_start
 	}
 
-	//	// prune the slashing spans against a window, whose start era index is given.
-	//	//
-	//	// If this returns `Some`, then it includes a range start..end of all the span
-	//	// indices which were pruned.
-	//	fn prune(&mut self, window_start: EraIndex) -> Option<(SpanIndex, SpanIndex)> {
-	//		let old_idx = self
-	//			.iter()
-	//			.skip(1) // skip ongoing span.
-	//			.position(|span| span.length.map_or(false, |len| span.start + len <= window_start));
+	// prune the slashing spans against a window, whose start era index is given.
 	//
-	//		let earliest_span_index = self.span_index - self.prior.len() as SpanIndex;
-	//		let pruned = match old_idx {
-	//			Some(o) => {
-	//				self.prior.truncate(o);
-	//				let new_earliest = self.span_index - self.prior.len() as SpanIndex;
-	//				Some((earliest_span_index, new_earliest))
-	//			}
-	//			None => None,
-	//		};
-	//
-	//		// readjust the ongoing span, if it started before the beginning of the window.
-	//		self.last_start = sp_std::cmp::max(self.last_start, window_start);
-	//		pruned
-	//	}
+	// If this returns `Some`, then it includes a range start..end of all the span
+	// indices which were pruned.
+	fn prune(&mut self, window_start: EraIndex) -> Option<(SpanIndex, SpanIndex)> {
+		let old_idx = self
+			.iter()
+			.skip(1) // skip ongoing span.
+			.position(|span| span.length.map_or(false, |len| span.start + len <= window_start));
+
+		let earliest_span_index = self.span_index - self.prior.len() as SpanIndex;
+		let pruned = match old_idx {
+			Some(o) => {
+				self.prior.truncate(o);
+				let new_earliest = self.span_index - self.prior.len() as SpanIndex;
+				Some((earliest_span_index, new_earliest))
+			}
+			None => None,
+		};
+
+		// readjust the ongoing span, if it started before the beginning of the window.
+		self.last_start = sp_std::cmp::max(self.last_start, window_start);
+		pruned
+	}
 }
 
 /// A slashing-span record for a particular stash.
 #[derive(Encode, Decode, Default)]
-pub(crate) struct SpanRecord<Power> {
-	slashed: Power,
-	paid_out: Power,
+pub(crate) struct SpanRecord<RingBalance, KtonBalance> {
+	slashed: RK<RingBalance, KtonBalance>,
+	paid_out: RK<RingBalance, KtonBalance>,
 }
 
-impl<Power> SpanRecord<Power> {
+impl<RingBalance, KtonBalance> SpanRecord<RingBalance, KtonBalance> {
 	/// The value of stash balance slashed in this span.
 	#[cfg(test)]
-	pub(crate) fn amount_slashed(&self) -> &Power {
+	pub(crate) fn amount_slashed(&self) -> &RK<RingBalance, KtonBalance> {
 		&self.slashed
 	}
 }
@@ -201,7 +299,7 @@ pub(crate) struct SlashParams<'a, T: 'a + Trait> {
 	/// The proportion of the slash.
 	pub(crate) slash: Perbill,
 	/// The exposure of the stash and all nominators.
-	pub(crate) exposure: &'a Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>, Power>,
+	pub(crate) exposure: &'a Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>,
 	/// The era where the offence occurred.
 	pub(crate) slash_era: EraIndex,
 	/// The first era in the current bonding period.
@@ -219,7 +317,9 @@ pub(crate) struct SlashParams<'a, T: 'a + Trait> {
 ///
 /// The pending slash record returned does not have initialized reporters. Those have
 /// to be set at a higher level, if any.
-pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>) -> Option<UnappliedSlash<T::AccountId, Power>> {
+pub(crate) fn compute_slash<T: Trait>(
+	params: SlashParams<T>,
+) -> Option<UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>> {
 	let SlashParams {
 		stash,
 		slash,
@@ -230,20 +330,23 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>) -> Option<Unapplie
 		reward_proportion,
 	} = params.clone();
 
-	let mut reward_payout = 0;
-	let mut val_slashed = 0;
+	let mut reward_payout = <RKT<T>>::zero();
+	let mut val_slashed = <RKT<T>>::zero();
 
 	// is the slash amount here a maximum for the era?
-	let own_slash = slash * exposure.own_power;
-	if slash * exposure.total_power == 0 {
+	let own_slash = RK {
+		r: slash * exposure.own_ring_balance,
+		k: slash * exposure.own_kton_balance,
+	};
+	if (slash * exposure.total_power).is_zero() {
 		// kick out the validator even if they won't be slashed,
 		// as long as the misbehavior is from their most recent slashing span.
 		kick_out_if_recent::<T>(params);
 		return None;
 	}
 
-	let (prior_slash_p, _era_slash) =
-		<Module<T> as Store>::ValidatorSlashInEra::get(&slash_era, stash).unwrap_or((Perbill::zero(), 0));
+	let (prior_slash_p, _era_slash) = <Module<T> as Store>::ValidatorSlashInEra::get(&slash_era, stash)
+		.unwrap_or((Perbill::zero(), <RKT<T>>::zero()));
 
 	// compare slash proportions rather than slash values to avoid issues due to rounding
 	// error.
@@ -305,8 +408,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>) -> Option<Unapplie
 // the most recent slashing span.
 fn kick_out_if_recent<T: Trait>(params: SlashParams<T>) {
 	// these are not updated by era-span or end-span.
-	let mut reward_payout = 0;
-	let mut val_slashed = 0;
+	let mut reward_payout = RK::zero();
+	let mut val_slashed = RK::zero();
 	let mut spans = fetch_spans::<T>(
 		params.stash,
 		params.window_start,
@@ -333,8 +436,8 @@ fn kick_out_if_recent<T: Trait>(params: SlashParams<T>) {
 fn slash_nominators<T: Trait>(
 	params: SlashParams<T>,
 	prior_slash_p: Perbill,
-	nominators_slashed: &mut Vec<(T::AccountId, Power)>,
-) -> Power {
+	nominators_slashed: &mut Vec<(T::AccountId, RKT<T>)>,
+) -> RKT<T> {
 	let SlashParams {
 		stash: _,
 		slash,
@@ -345,21 +448,27 @@ fn slash_nominators<T: Trait>(
 		reward_proportion,
 	} = params;
 
-	let mut reward_payout = 0;
+	let mut reward_payout = <RKT<T>>::zero();
 
 	nominators_slashed.reserve(exposure.others.len());
 	for nominator in &exposure.others {
 		let stash = &nominator.who;
-		let mut nom_slashed = 0;
+		let mut nom_slashed = <RKT<T>>::zero();
 
 		// the era slash of a nominator always grows, if the validator
 		// had a new max slash for the era.
 		let era_slash = {
-			let own_slash_prior = prior_slash_p * nominator.power;
-			let own_slash_by_validator = slash * nominator.power;
+			let own_slash_prior = RK {
+				r: prior_slash_p * nominator.ring_balance,
+				k: prior_slash_p * nominator.kton_balance,
+			};
+			let own_slash_by_validator = RK {
+				r: slash * nominator.ring_balance,
+				k: slash * nominator.kton_balance,
+			};
 			let own_slash_difference = own_slash_by_validator.saturating_sub(own_slash_prior);
 
-			let mut era_slash = <Module<T> as Store>::NominatorSlashInEra::get(&slash_era, stash).unwrap_or(0);
+			let mut era_slash = <Module<T> as Store>::NominatorSlashInEra::get(&slash_era, stash).unwrap_or_default();
 
 			era_slash += own_slash_difference;
 
@@ -405,8 +514,8 @@ struct InspectingSpans<'a, T: Trait + 'a> {
 	window_start: EraIndex,
 	stash: &'a T::AccountId,
 	spans: SlashingSpans,
-	paid_out: &'a mut Power,
-	slash_of: &'a mut Power,
+	paid_out: &'a mut RKT<T>,
+	slash_of: &'a mut RKT<T>,
 	reward_proportion: Perbill,
 	_marker: sp_std::marker::PhantomData<T>,
 }
@@ -415,8 +524,8 @@ struct InspectingSpans<'a, T: Trait + 'a> {
 fn fetch_spans<'a, T: Trait + 'a>(
 	stash: &'a T::AccountId,
 	window_start: EraIndex,
-	paid_out: &'a mut Power,
-	slash_of: &'a mut Power,
+	paid_out: &'a mut RKT<T>,
+	slash_of: &'a mut RKT<T>,
 	reward_proportion: Perbill,
 ) -> InspectingSpans<'a, T> {
 	let spans = <Module<T> as Store>::SlashingSpans::get(stash).unwrap_or_else(|| {
@@ -446,7 +555,7 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 		self.dirty = self.spans.end_span(now) || self.dirty;
 	}
 
-	fn add_slash(&mut self, amount: Power) {
+	fn add_slash(&mut self, amount: RKT<T>) {
 		*self.slash_of += amount;
 	}
 
@@ -459,7 +568,7 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 	// if it's higher, applies the difference of the slashes and then updates the span on disk.
 	//
 	// returns the span index of the era where the slash occurred, if any.
-	fn compare_and_update_span_slash(&mut self, slash_era: EraIndex, slash: Power) -> Option<SpanIndex> {
+	fn compare_and_update_span_slash(&mut self, slash_era: EraIndex, slash: RKT<T>) -> Option<SpanIndex> {
 		let target_span = self.era_span(slash_era)?;
 		let span_slash_key = (self.stash.clone(), target_span.index);
 		let mut span_record = <Module<T> as Store>::SpanSlash::get(&span_slash_key);
@@ -471,7 +580,15 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 			span_record.slashed = slash;
 
 			// compute reward.
-			let reward = REWARD_F1 * (self.reward_proportion * slash).saturating_sub(span_record.paid_out);
+			let slash = RK {
+				r: self.reward_proportion * slash.r,
+				k: self.reward_proportion * slash.k,
+			};
+			let slash = slash.saturating_sub(span_record.paid_out);
+			let reward = RK {
+				r: REWARD_F1 * slash.r,
+				k: REWARD_F1 * slash.k,
+			};
 
 			self.add_slash(difference);
 			changed = true;
@@ -479,12 +596,20 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 			reward
 		} else if span_record.slashed == slash {
 			// compute reward. no slash difference to apply.
-			REWARD_F1 * (self.reward_proportion * slash).saturating_sub(span_record.paid_out)
+			let slash = RK {
+				r: self.reward_proportion * slash.r,
+				k: self.reward_proportion * slash.k,
+			};
+			let slash = slash.saturating_sub(span_record.paid_out);
+			RK {
+				r: REWARD_F1 * slash.r,
+				k: REWARD_F1 * slash.k,
+			}
 		} else {
-			0
+			<RKT<T>>::zero()
 		};
 
-		if !reward.is_zero() {
+		if !reward.r.is_zero() || !reward.k.is_zero() {
 			changed = true;
 			span_record.paid_out += reward;
 			*self.paid_out += reward;
@@ -499,22 +624,22 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 	}
 }
 
-//impl<'a, T: 'a + Trait> Drop for InspectingSpans<'a, T> {
-//	fn drop(&mut self) {
-//		// only update on disk if we slashed this account.
-//		if !self.dirty {
-//			return;
-//		}
-//
-//		if let Some((start, end)) = self.spans.prune(self.window_start) {
-//			for span_index in start..end {
-//				<Module<T> as Store>::SpanSlash::remove(&(self.stash.clone(), span_index));
-//			}
-//		}
-//
-//		<Module<T> as Store>::SlashingSpans::insert(self.stash, &self.spans);
-//	}
-//}
+impl<'a, T: 'a + Trait> Drop for InspectingSpans<'a, T> {
+	fn drop(&mut self) {
+		// only update on disk if we slashed this account.
+		if !self.dirty {
+			return;
+		}
+
+		if let Some((start, end)) = self.spans.prune(self.window_start) {
+			for span_index in start..end {
+				<Module<T> as Store>::SpanSlash::remove(&(self.stash.clone(), span_index));
+			}
+		}
+
+		<Module<T> as Store>::SlashingSpans::insert(self.stash, &self.spans);
+	}
+}
 
 /// Clear slashing metadata for an obsolete era.
 pub(crate) fn clear_era_metadata<T: Trait>(obsolete_era: EraIndex) {
@@ -539,92 +664,179 @@ pub(crate) fn clear_stash_metadata<T: Trait>(stash: &T::AccountId) {
 	}
 }
 
-//// apply the slash to a stash account, deducting any missing funds from the reward
-//// payout, saturating at 0. this is mildly unfair but also an edge-case that
-//// can only occur when overlapping locked funds have been slashed.
-//fn do_slash<T: Trait>(stash: &T::AccountId, value: Power, reward_payout: &mut Power, slashed_imbalance: &mut Power) {
-//	let controller = match <Module<T>>::bonded(stash) {
-//		None => return, // defensive: should always exist.
-//		Some(c) => c,
-//	};
-//
-//	let mut ledger = match <Module<T>>::ledger(&controller) {
-//		Some(ledger) => ledger,
-//		None => return, // nothing to do.
-//	};
-//
-//	let value = ledger.slash(value, T::Currency::minimum_balance());
-//
-//	if !value.is_zero() {
-//		let (imbalance, missing) = T::Currency::slash(stash, value);
-//		slashed_imbalance.subsume(imbalance);
-//
-//		if !missing.is_zero() {
-//			// deduct overslash from the reward payout
-//			*reward_payout = reward_payout.saturating_sub(missing);
-//		}
-//
-//		<Module<T>>::update_ledger(&controller, &ledger);
-//
-//		// trigger the event
-//		<Module<T>>::deposit_event(super::RawEvent::Slash(stash.clone(), value));
-//	}
-//}
+// apply the slash to a stash account, deducting any missing funds from the reward
+// payout, saturating at 0. this is mildly unfair but also an edge-case that
+// can only occur when overlapping locked funds have been slashed.
+fn do_slash<T: Trait>(
+	stash: &T::AccountId,
+	value: RKT<T>,
+	reward_payout: &mut RKT<T>,
+	slashed_ring: &mut RingNegativeImbalance<T>,
+	slashed_kton: &mut KtonNegativeImbalance<T>,
+) {
+	let controller = match <Module<T>>::bonded(stash) {
+		None => return, // defensive: should always exist.
+		Some(c) => c,
+	};
 
-/// Apply a previously-unapplied slash.
-pub(crate) fn apply_slash<T: Trait>(unapplied_slash: UnappliedSlash<T::AccountId, Power>) {
-	let mut slashed_power = 0;
-	let mut reward_payout = unapplied_slash.payout;
+	let mut ledger = match <Module<T>>::ledger(&controller) {
+		Some(ledger) => ledger,
+		None => return, // nothing to do.
+	};
 
-	//	do_slash::<T>(
-	//		&unapplied_slash.validator,
-	//		unapplied_slash.own,
-	//		&mut reward_payout,
-	//		&mut slashed_power,
-	//	);
+	let (slash_ring, slash_kton) = ledger.slash(
+		value.r,
+		value.k,
+		<frame_system::Module<T>>::block_number(),
+		T::Time::now(),
+	);
+	let mut changed = false;
 
-	//	for &(ref nominator, nominator_slash) in &unapplied_slash.others {
-	//		do_slash::<T>(&nominator, nominator_slash, &mut reward_payout, &mut slashed_imbalance);
-	//	}
-	//
-	//	pay_reporters::<T>(reward_payout, slashed_imbalance, &unapplied_slash.reporters);
+	if !slash_ring.is_zero() {
+		changed = true;
+
+		let (imbalance, missing) = T::RingCurrency::slash(stash, slash_ring);
+		slashed_ring.subsume(imbalance);
+
+		if !missing.is_zero() {
+			// deduct overslash from the reward payout
+			reward_payout.r = reward_payout.r.saturating_sub(missing);
+		}
+	}
+
+	if !slash_kton.is_zero() {
+		changed = true;
+
+		let (imbalance, missing) = T::KtonCurrency::slash(stash, slash_kton);
+		slashed_kton.subsume(imbalance);
+
+		if !missing.is_zero() {
+			// deduct overslash from the reward payout
+			reward_payout.k = reward_payout.k.saturating_sub(missing);
+		}
+	}
+
+	if changed {
+		<Module<T>>::update_ledger(&controller, &mut ledger, StakingBalance::All);
+		<Module<T>>::deposit_event(RawEvent::Slash(stash.clone(), value.r, value.k));
+	}
 }
 
-///// Apply a reward payout to some reporters, paying the rewards out of the slashed imbalance.
-//fn pay_reporters<T: Trait>(
-//	reward_payout: BalanceOf<T>,
-//	slashed_imbalance: NegativeImbalanceOf<T>,
-//	reporters: &[T::AccountId],
-//) {
-//	if reward_payout.is_zero() || reporters.is_empty() {
-//		// nobody to pay out to or nothing to pay;
-//		// just treat the whole value as slashed.
-//		T::Slash::on_unbalanced(slashed_imbalance);
-//		return;
-//	}
-//
-//	// take rewards out of the slashed imbalance.
-//	let reward_payout = reward_payout.min(slashed_imbalance.peek());
-//	let (mut reward_payout, mut value_slashed) = slashed_imbalance.split(reward_payout);
-//
-//	let per_reporter = reward_payout.peek() / (reporters.len() as u32).into();
-//	for reporter in reporters {
-//		let (reporter_reward, rest) = reward_payout.split(per_reporter);
-//		reward_payout = rest;
-//
-//		// this cancels out the reporter reward imbalance internally, leading
-//		// to no change in total issuance.
-//		T::Currency::resolve_creating(reporter, reporter_reward);
-//	}
-//
-//	// the rest goes to the on-slash imbalance handler (e.g. treasury)
-//	value_slashed.subsume(reward_payout); // remainder of reward division remains.
-//	T::Slash::on_unbalanced(value_slashed);
-//}
-//
-//// TODO: function for undoing a slash.
-////
-//
+/// Apply a previously-unapplied slash.
+pub(crate) fn apply_slash<T: Trait>(unapplied_slash: UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>) {
+	let mut reward_payout = unapplied_slash.payout;
+	let mut slashed_ring = <RingNegativeImbalance<T>>::zero();
+	let mut slashed_kton = <KtonNegativeImbalance<T>>::zero();
+
+	do_slash::<T>(
+		&unapplied_slash.validator,
+		unapplied_slash.own,
+		&mut reward_payout,
+		&mut slashed_ring,
+		&mut slashed_kton,
+	);
+
+	for &(ref nominator, nominator_slash) in &unapplied_slash.others {
+		do_slash::<T>(
+			&nominator,
+			nominator_slash,
+			&mut reward_payout,
+			&mut slashed_ring,
+			&mut slashed_kton,
+		);
+	}
+
+	pay_reporters::<T>(reward_payout, slashed_ring, slashed_kton, &unapplied_slash.reporters);
+}
+
+/// Apply a reward payout to some reporters, paying the rewards out of the slashed imbalance.
+fn pay_reporters<T: Trait>(
+	reward_payout: RKT<T>,
+	slashed_ring: RingNegativeImbalance<T>,
+	slashed_kton: KtonNegativeImbalance<T>,
+	reporters: &[T::AccountId],
+) {
+	if reporters.is_empty() || (!reward_payout.r.is_zero() && !reward_payout.k.is_zero()) {
+		// nobody to pay out to or nothing to pay;
+		// just treat the whole value as slashed.
+		T::RingSlash::on_unbalanced(slashed_ring);
+		T::KtonSlash::on_unbalanced(slashed_kton);
+
+		return;
+	}
+
+	if !reward_payout.r.is_zero() && reward_payout.k.is_zero() {
+		// take rewards out of the slashed imbalance.
+		let ring_reward_payout = reward_payout.r.min(slashed_ring.peek());
+		let (mut ring_reward_payout, mut ring_slashed) = slashed_ring.split(ring_reward_payout);
+		let ring_per_reporter = ring_reward_payout.peek() / (reporters.len() as u32).into();
+
+		for reporter in reporters {
+			let (ring_reporter_reward, ring_rest) = ring_reward_payout.split(ring_per_reporter);
+			ring_reward_payout = ring_rest;
+
+			// this cancels out the reporter reward imbalance internally, leading
+			// to no change in total issuance.
+			T::RingCurrency::resolve_creating(reporter, ring_reporter_reward);
+		}
+
+		// the rest goes to the on-slash imbalance handler (e.g. treasury)
+		ring_slashed.subsume(ring_reward_payout); // remainder of reward division remains.
+		T::RingSlash::on_unbalanced(ring_slashed);
+	} else if reward_payout.r.is_zero() && !reward_payout.k.is_zero() {
+		let kton_reward_payout = reward_payout.k.min(slashed_kton.peek());
+		let (mut kton_reward_payout, mut kton_slashed) = slashed_kton.split(kton_reward_payout);
+		let kton_per_reporter = kton_reward_payout.peek() / (reporters.len() as u32).into();
+
+		for reporter in reporters {
+			let (kton_reporter_reward, kton_rest) = kton_reward_payout.split(kton_per_reporter);
+			kton_reward_payout = kton_rest;
+
+			// this cancels out the reporter reward imbalance internally, leading
+			// to no change in total issuance.
+			T::KtonCurrency::resolve_creating(reporter, kton_reporter_reward);
+		}
+
+		// the rest goes to the on-slash imbalance handler (e.g. treasury)
+		kton_slashed.subsume(kton_reward_payout); // remainder of reward division remains.
+		T::KtonSlash::on_unbalanced(kton_slashed);
+	} else if !reward_payout.r.is_zero() && !reward_payout.k.is_zero() {
+		// take rewards out of the slashed imbalance.
+		let ring_reward_payout = reward_payout.r.min(slashed_ring.peek());
+		let (mut ring_reward_payout, mut ring_slashed) = slashed_ring.split(ring_reward_payout);
+		let ring_per_reporter = ring_reward_payout.peek() / (reporters.len() as u32).into();
+		let kton_reward_payout = reward_payout.k.min(slashed_kton.peek());
+		let (mut kton_reward_payout, mut kton_slashed) = slashed_kton.split(kton_reward_payout);
+		let kton_per_reporter = kton_reward_payout.peek() / (reporters.len() as u32).into();
+
+		for reporter in reporters {
+			let (ring_reporter_reward, ring_rest) = ring_reward_payout.split(ring_per_reporter);
+			ring_reward_payout = ring_rest;
+
+			// this cancels out the reporter reward imbalance internally, leading
+			// to no change in total issuance.
+			T::RingCurrency::resolve_creating(reporter, ring_reporter_reward);
+
+			let (kton_reporter_reward, kton_rest) = kton_reward_payout.split(kton_per_reporter);
+			kton_reward_payout = kton_rest;
+
+			// this cancels out the reporter reward imbalance internally, leading
+			// to no change in total issuance.
+			T::KtonCurrency::resolve_creating(reporter, kton_reporter_reward);
+		}
+
+		// the rest goes to the on-slash imbalance handler (e.g. treasury)
+		ring_slashed.subsume(ring_reward_payout); // remainder of reward division remains.
+		T::RingSlash::on_unbalanced(ring_slashed);
+
+		// the rest goes to the on-slash imbalance handler (e.g. treasury)
+		kton_slashed.subsume(kton_reward_payout); // remainder of reward division remains.
+		T::KtonSlash::on_unbalanced(kton_slashed);
+	}
+}
+
+// TODO: function for undoing a slash.
+
 //#[cfg(test)]
 //mod tests {
 //	use super::*;
