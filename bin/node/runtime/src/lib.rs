@@ -240,7 +240,7 @@ impl pallet_session::Trait for Runtime {
 }
 
 impl pallet_session::historical::Trait for Runtime {
-	type FullIdentification = Exposure<AccountId, Balance, Balance, Power>;
+	type FullIdentification = Exposure<AccountId, Balance, Balance>;
 	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
