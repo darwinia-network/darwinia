@@ -24,6 +24,8 @@ sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git"
 sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
+ring = { package = "darwinia-ring", path = "../ring" }
+
 [features]
 default = ["std"]
 std = [
@@ -39,4 +41,4 @@ std = [
 	"darwinia-support/std",
 ]
 # test
-transfer-fee = ["std"]
+with-fee = ["std"]

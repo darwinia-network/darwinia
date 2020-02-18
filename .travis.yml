@@ -1,9 +1,6 @@
-# Request an environment that provides sudo (that goes with larger containers)
-# and a minimal language environment.
-sudo: true
-language: minimal
-
-cache: cargo
+language: rust
+rust:
+  - nightly
 
 branches:
     only:
@@ -13,17 +10,40 @@ branches:
 env:
     global:
         - RUST_BACKTRACE=1
-    matrix:
-        - RUST_TOOLCHAIN=stable TARGET=rustfmt
-        - RUST_TOOLCHAIN=nightly TARGET=wasm
-        - RUST_TOOLCHAIN=nightly TARGET=native
 
 before_install:
     # Check how much space we've got on this machine.
     - df -h
+    - rustup target add wasm32-unknown-unknown
 
-script:
-    - .maintain/ci/script.sh
+jobs:
+  include:
+    - stage: Check & Prepare
+      script: .maintain/ci/fmt_script.sh
+
+    - stage: Build
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/build_script.sh
+
+    - stage: Build
+      env: RUST_TOOLCHAIN=nightly TARGET=wasm
+      script: .maintain/ci/build_script.sh
+
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native KTON
+      script: .maintain/ci/darwinia_test_script.sh kton
+
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native RING
+      script: .maintain/ci/darwinia_test_script.sh ring
+
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly TARGET=native STAKING
+      script: .maintain/ci/darwinia_test_script.sh staking
+
+    - stage: Overall Test 
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/test_script.sh
 
 after_script:
     # Check how much free disk space left after the build

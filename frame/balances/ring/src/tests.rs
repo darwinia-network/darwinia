@@ -1,17 +1,15 @@
 //! Tests for the module.
 
-use super::*;
 use frame_support::{
 	assert_err, assert_noop, assert_ok,
-	traits::{
-		Currency, ExistenceRequirement::AllowDeath, LockIdentifier, LockableCurrency, ReservableCurrency,
-		WithdrawReason, WithdrawReasons,
-	},
+	traits::{Currency, ExistenceRequirement::AllowDeath, ReservableCurrency},
 };
 use frame_system::RawOrigin;
-use mock::{info_from_weight, Balances, ExtBuilder, System, Test, CALL};
 use pallet_transaction_payment::ChargeTransactionPayment;
-use sp_runtime::traits::{BadOrigin, SignedExtension};
+use sp_runtime::traits::SignedExtension;
+
+use crate::{mock::*, *};
+use darwinia_support::{LockIdentifier, LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 const ID_1: LockIdentifier = *b"1       ";
 const ID_2: LockIdentifier = *b"2       ";
@@ -25,7 +23,15 @@ fn basic_locking_should_work() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Balances::free_balance(&1), 10);
-			Balances::set_lock(ID_1, &1, 9, u64::max_value(), WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 9,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 5, AllowDeath),
 				Error::<Test, _>::LiquidityRestrictions
@@ -40,7 +46,15 @@ fn partial_locking_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 5, u64::max_value(), WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 5,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
 }
@@ -52,7 +66,15 @@ fn lock_removal_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, u64::max_value(), u64::max_value(), WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: u64::max_value(),
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
 			Balances::remove_lock(ID_1, &1);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
@@ -65,8 +87,24 @@ fn lock_replacement_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, u64::max_value(), u64::max_value(), WithdrawReasons::all());
-			Balances::set_lock(ID_1, &1, 5, u64::max_value(), WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: u64::max_value(),
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 5,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
 }
@@ -78,8 +116,24 @@ fn double_locking_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 5, u64::max_value(), WithdrawReasons::all());
-			Balances::set_lock(ID_2, &1, 5, u64::max_value(), WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 5,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
+			Ring::set_lock(
+				ID_2,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 5,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::all(),
+			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 		});
 }
@@ -91,35 +145,31 @@ fn combination_locking_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, u64::max_value(), 0, WithdrawReasons::none());
-			Balances::set_lock(ID_2, &1, 0, u64::max_value(), WithdrawReasons::none());
-			Balances::set_lock(ID_3, &1, 0, 0, WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: u64::max_value(),
+					until: 0,
+				}),
+				WithdrawReasons::none(),
+			);
+			Ring::set_lock(
+				ID_2,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 0,
+					until: u64::max_value(),
+				}),
+				WithdrawReasons::none(),
+			);
+			Ring::set_lock(
+				ID_3,
+				&1,
+				WithdrawLock::Normal(NormalLock { amount: 0, until: 0 }),
+				WithdrawReasons::all(),
+			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
-		});
-}
-
-#[test]
-fn lock_value_extension_should_work() {
-	ExtBuilder::default()
-		.existential_deposit(1)
-		.monied(true)
-		.build()
-		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 5, u64::max_value(), WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			Balances::extend_lock(ID_1, &1, 2, u64::max_value(), WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			Balances::extend_lock(ID_1, &1, 8, u64::max_value(), WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 3, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
 		});
 }
 
@@ -130,7 +180,15 @@ fn lock_reasons_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 10, u64::max_value(), WithdrawReason::Transfer.into());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 10,
+					until: u64::max_value(),
+				}),
+				WithdrawReason::Transfer.into(),
+			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath),
 				Error::<Test, _>::LiquidityRestrictions
@@ -146,7 +204,15 @@ fn lock_reasons_should_work() {
 			)
 			.is_ok());
 
-			Balances::set_lock(ID_1, &1, 10, u64::max_value(), WithdrawReason::Reserve.into());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock {
+					amount: 10,
+					until: u64::max_value(),
+				}),
+				WithdrawReason::Reserve.into(),
+			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
 			assert_noop!(
 				<Balances as ReservableCurrency<_>>::reserve(&1, 1),
@@ -161,11 +227,13 @@ fn lock_reasons_should_work() {
 			)
 			.is_ok());
 
-			Balances::set_lock(
+			Ring::set_lock(
 				ID_1,
 				&1,
-				10,
-				u64::max_value(),
+				WithdrawLock::Normal(NormalLock {
+					amount: 10,
+					until: u64::max_value(),
+				}),
 				WithdrawReason::TransactionPayment.into(),
 			);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
@@ -188,7 +256,12 @@ fn lock_block_number_should_work() {
 		.monied(true)
 		.build()
 		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 10, 2, WithdrawReasons::all());
+			Ring::set_lock(
+				ID_1,
+				&1,
+				WithdrawLock::Normal(NormalLock { amount: 10, until: 2 }),
+				WithdrawReasons::all(),
+			);
 			assert_noop!(
 				<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath),
 				Error::<Test, _>::LiquidityRestrictions
@@ -196,57 +269,6 @@ fn lock_block_number_should_work() {
 
 			System::set_block_number(2);
 			assert_ok!(<Balances as Currency<_>>::transfer(&1, &2, 1, AllowDeath));
-		});
-}
-
-#[test]
-fn lock_block_number_extension_should_work() {
-	ExtBuilder::default()
-		.existential_deposit(1)
-		.monied(true)
-		.build()
-		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 10, 2, WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			Balances::extend_lock(ID_1, &1, 10, 1, WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			System::set_block_number(2);
-			Balances::extend_lock(ID_1, &1, 10, 8, WithdrawReasons::all());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 3, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-		});
-}
-
-#[test]
-fn lock_reasons_extension_should_work() {
-	ExtBuilder::default()
-		.existential_deposit(1)
-		.monied(true)
-		.build()
-		.execute_with(|| {
-			Balances::set_lock(ID_1, &1, 10, 10, WithdrawReason::Transfer.into());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			Balances::extend_lock(ID_1, &1, 10, 10, WithdrawReasons::none());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
-			Balances::extend_lock(ID_1, &1, 10, 10, WithdrawReason::Reserve.into());
-			assert_noop!(
-				<Balances as Currency<_>>::transfer(&1, &2, 6, AllowDeath),
-				Error::<Test, _>::LiquidityRestrictions
-			);
 		});
 }
 
@@ -379,7 +401,10 @@ fn balance_transfer_works() {
 fn force_transfer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let _ = Balances::deposit_creating(&1, 111);
-		assert_noop!(Balances::force_transfer(Some(2).into(), 1, 2, 69), BadOrigin,);
+		assert_err!(
+			Balances::force_transfer(Some(2).into(), 1, 2, 69),
+			DispatchError::BadOrigin,
+		);
 		assert_ok!(Balances::force_transfer(RawOrigin::Root.into(), 1, 2, 69));
 		assert_eq!(Balances::total_balance(&1), 42);
 		assert_eq!(Balances::total_balance(&2), 69);

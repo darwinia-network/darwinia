@@ -853,6 +853,7 @@ dependencies = [
 name = "darwinia-kton"
 version = "0.3.0"
 dependencies = [
+ "darwinia-ring",
  "darwinia-support",
  "frame-support",
  "frame-system",
