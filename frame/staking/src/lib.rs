@@ -243,8 +243,9 @@
 //! - [Session](../pallet_session/index.html): Used to manage sessions. Also, a list of new validators
 //! is stored in the Session module's `Validators` at the end of each era.
 
-#![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![feature(drain_filter)]
+#![recursion_limit = "128"]
 
 mod inflation;
 mod migration;
@@ -263,10 +264,6 @@ mod types {
 	pub type Moment = Timestamp;
 	/// Balance of an account.
 	pub type Balance = u128;
-	/// Power of an account.
-	pub type Power = u32;
-	/// Votes of an account.
-	pub type Votes = u32;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -311,11 +308,9 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use pallet_session::{historical::OnSessionEnding, SelectInitialValidators};
-use sp_phragmen::PhragmenStakedAssignment;
 use sp_runtime::{
 	traits::{
-		Bounded, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic,
-		StaticLookup, Zero,
+		CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic, StaticLookup, Zero,
 	},
 	Perbill, Perquintill, RuntimeDebug,
 };
@@ -327,6 +322,7 @@ use sp_staking::{
 };
 use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::Vec};
 
+use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
 use darwinia_support::{
 	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
@@ -415,6 +411,7 @@ where
 	RingBalance: HasCompact,
 	KtonBalance: HasCompact,
 {
+	All,
 	RingBalance(RingBalance),
 	KtonBalance(KtonBalance),
 }
@@ -478,52 +475,127 @@ impl<AccountId, RingBalance, KtonBalance, BlockNumber, Timestamp>
 where
 	RingBalance: SimpleArithmetic + Saturating + Copy,
 	KtonBalance: SimpleArithmetic + Saturating + Copy,
+	BlockNumber: PartialOrd,
+	Timestamp: PartialOrd,
 {
-	//	/// Slash the validator for a given amount of balance. This can grow the value
-	//	/// of the slash in the case that the validator has less than `minimum_balance`
-	//	/// active funds. Returns the amount of funds actually slashed.
-	//	///
-	//	/// Slashes from `active` funds first, and then `unlocking`, starting with the
-	//	/// chunks that are closest to unlocking.
-	//	fn slash(&mut self, mut value: Balance, minimum_balance: Balance) -> Balance {
-	//		let pre_total = self.total;
-	//		let total = &mut self.total;
-	//		let active = &mut self.active;
-	//
-	//		let slash_out_of = |total_remaining: &mut Balance, target: &mut Balance, value: &mut Balance| {
-	//			let mut slash_from_target = (*value).min(*target);
-	//
-	//			if !slash_from_target.is_zero() {
-	//				*target -= slash_from_target;
-	//
-	//				// don't leave a dust balance in the staking system.
-	//				if *target <= minimum_balance {
-	//					slash_from_target += *target;
-	//					*value += sp_std::mem::replace(target, Zero::zero());
-	//				}
-	//
-	//				*total_remaining = total_remaining.saturating_sub(slash_from_target);
-	//				*value -= slash_from_target;
-	//			}
-	//		};
-	//
-	//		slash_out_of(total, active, &mut value);
-	//
-	//		let i = self
-	//			.unlocking
-	//			.iter_mut()
-	//			.map(|chunk| {
-	//				slash_out_of(total, &mut chunk.value, &mut value);
-	//				chunk.value
-	//			})
-	//			.take_while(|value| value.is_zero()) // take all fully-consumed chunks out.
-	//			.count();
-	//
-	//		// kill all drained chunks.
-	//		let _ = self.unlocking.drain(..i);
-	//
-	//		pre_total.saturating_sub(*total)
-	//	}
+	/// Slash the validator for a given amount of balance. This can grow the value
+	/// of the slash in the case that the validator has less than `minimum_balance`
+	/// active funds. Returns the amount of funds actually slashed.
+	///
+	/// Slashes from `active` funds first, and then `unlocking`, starting with the
+	/// chunks that are closest to unlocking.
+	fn slash(
+		&mut self,
+		slash_ring: RingBalance,
+		slash_kton: KtonBalance,
+		bn: BlockNumber,
+		ts: Timestamp,
+	) -> (RingBalance, KtonBalance) {
+		let slash_out_of = |active_ring: &mut RingBalance,
+		                    active_deposit_ring: &mut RingBalance,
+		                    deposit_item: &mut Vec<TimeDepositItem<RingBalance, Timestamp>>,
+		                    active_kton: &mut KtonBalance,
+		                    slash_ring: &mut RingBalance,
+		                    slash_kton: &mut KtonBalance| {
+			let slash_from_active_ring = (*slash_ring).min(*active_ring);
+			let slash_from_active_kton = (*slash_kton).min(*active_kton);
+
+			if !slash_from_active_ring.is_zero() {
+				let normal_ring = *active_ring - *active_deposit_ring;
+				if normal_ring < *slash_ring {
+					let mut slash_deposit_ring = *slash_ring - (*active_ring - *active_deposit_ring);
+					*active_deposit_ring -= slash_deposit_ring;
+
+					deposit_item.drain_filter(|item| {
+						if ts >= item.expire_time {
+							true
+						} else {
+							if slash_deposit_ring.is_zero() {
+								false
+							} else {
+								if slash_deposit_ring > item.value {
+									slash_deposit_ring -= item.value;
+									true
+								} else {
+									item.value -= sp_std::mem::replace(&mut slash_deposit_ring, Zero::zero());
+									false
+								}
+							}
+						}
+					});
+				}
+				*active_ring -= slash_from_active_ring;
+				*slash_ring -= slash_from_active_ring;
+			}
+
+			if !slash_from_active_kton.is_zero() {
+				*active_kton -= slash_from_active_kton;
+				*slash_kton -= slash_from_active_kton;
+			}
+		};
+
+		let (mut apply_slash_ring, mut apply_slash_kton) = (slash_ring, slash_kton);
+		let StakingLedger {
+			active_ring,
+			active_deposit_ring,
+			deposit_items,
+			active_kton,
+			ring_staking_lock,
+			kton_staking_lock,
+			..
+		} = self;
+
+		slash_out_of(
+			active_ring,
+			active_deposit_ring,
+			deposit_items,
+			active_kton,
+			&mut apply_slash_ring,
+			&mut apply_slash_kton,
+		);
+
+		if !apply_slash_ring.is_zero() {
+			ring_staking_lock.unbondings.drain_filter(|lock| {
+				if bn >= lock.until {
+					true
+				} else {
+					if apply_slash_ring.is_zero() {
+						false
+					} else {
+						if apply_slash_ring > lock.amount {
+							apply_slash_ring -= lock.amount;
+							true
+						} else {
+							lock.amount -= sp_std::mem::replace(&mut apply_slash_ring, Zero::zero());
+							false
+						}
+					}
+				}
+			});
+		}
+		if !apply_slash_kton.is_zero() {
+			kton_staking_lock.unbondings.drain_filter(|lock| {
+				if bn >= lock.until {
+					true
+				} else {
+					if apply_slash_kton.is_zero() {
+						false
+					} else {
+						if apply_slash_kton > lock.amount {
+							apply_slash_kton -= lock.amount;
+
+							true
+						} else {
+							lock.amount -= sp_std::mem::replace(&mut apply_slash_kton, Zero::zero());
+							false
+						}
+					}
+				}
+			});
+		}
+
+		(slash_ring - apply_slash_ring, slash_kton - apply_slash_kton)
+	}
 }
 
 /// A record of the nominations made by a specific account.
@@ -539,33 +611,50 @@ pub struct Nominations<AccountId> {
 
 /// The amount of exposure (to slashing) than an individual nominator has.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
-pub struct IndividualExposure<AccountId, Power: HasCompact> {
+pub struct IndividualExposure<AccountId, RingBalance, KtonBalance>
+where
+	RingBalance: HasCompact,
+	KtonBalance: HasCompact,
+{
 	/// The stash account of the nominator in question.
 	who: AccountId,
 	/// Amount of funds exposed.
 	#[codec(compact)]
-	value: Power,
+	ring_balance: RingBalance,
+	#[codec(compact)]
+	kton_balance: KtonBalance,
+	power: Power,
 }
 
 /// A snapshot of the stake backing a single validator in the system.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
-pub struct Exposure<AccountId, Power: HasCompact> {
-	/// The total balance backing this validator.
-	#[codec(compact)]
-	pub total: Power,
+pub struct Exposure<AccountId, RingBalance, KtonBalance>
+where
+	RingBalance: HasCompact,
+	KtonBalance: HasCompact,
+{
 	/// The validator's own stash that is exposed.
 	#[codec(compact)]
-	pub own: Power,
+	pub own_ring_balance: RingBalance,
+	#[codec(compact)]
+	pub own_kton_balance: KtonBalance,
+	pub own_power: Power,
+	/// The total balance backing this validator.
+	#[codec(compact)]
+	pub total_ring_balance: RingBalance,
+	#[codec(compact)]
+	pub total_kton_balance: KtonBalance,
+	pub total_power: Power,
 	/// The portions of nominators stashes that are exposed.
-	pub others: Vec<IndividualExposure<AccountId, Power>>,
+	pub others: Vec<IndividualExposure<AccountId, RingBalance, KtonBalance>>,
 }
 
 /// A typed conversion from stash account ID to the current exposure of nominators
 /// on that account.
 pub struct ExposureOf<T>(PhantomData<T>);
 
-impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, Power>>> for ExposureOf<T> {
-	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, Power>> {
+impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>>> for ExposureOf<T> {
+	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>> {
 		Some(<Module<T>>::stakers(&validator))
 	}
 }
@@ -591,17 +680,17 @@ pub struct NominatorReward<AccountId, RingBalance> {
 /// A pending slash record. The value of the slash has been computed but not applied yet,
 /// rather deferred for several eras.
 #[derive(Encode, Decode, Default, RuntimeDebug)]
-pub struct UnappliedSlash<AccountId, Power: HasCompact> {
+pub struct UnappliedSlash<AccountId, RingBalance, KtonBalance> {
 	/// The stash ID of the offending validator.
 	validator: AccountId,
 	/// The validator's own slash.
-	own: Power,
+	own: slashing::RK<RingBalance, KtonBalance>,
 	/// All other slashed stakers and amounts.
-	others: Vec<(AccountId, Power)>,
+	others: Vec<(AccountId, slashing::RK<RingBalance, KtonBalance>)>,
 	/// Reporters of the offence; bounty payout recipients.
 	reporters: Vec<AccountId>,
 	/// The amount of payout.
-	payout: Power,
+	payout: slashing::RK<RingBalance, KtonBalance>,
 }
 
 /// Means for interacting with a specialized version of the `session` trait.
@@ -624,7 +713,7 @@ impl<T: Trait> SessionInterface<<T as frame_system::Trait>::AccountId> for T
 where
 	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, Power>,
+		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
@@ -648,13 +737,6 @@ where
 pub trait Trait: frame_system::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
-
-	//	/// Convert a balance into a number used for election calculation.
-	//	/// This must fit into a `u64` but is allowed to be sensibly lossy.
-	//	/// TODO: #1377
-	//	/// The backward convert should be removed as the new Phragmen API returns ratio.
-	//	/// The post-processing needs it but will be moved to off-chain. TODO: #2908
-	//	type PowerToVotes: Convert<Power, Votes>;
 
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -758,7 +840,7 @@ decl_storage! {
 		/// through validators here, but you can find them in the Session module.
 		///
 		/// This is keyed by the stash account.
-		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, Power>;
+		pub Stakers get(fn stakers): map T::AccountId => Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>;
 
 		/// The currently elected validator set keyed by stash account ID.
 		pub CurrentElected get(fn current_elected): Vec<T::AccountId>;
@@ -800,7 +882,7 @@ decl_storage! {
 		pub CanceledSlashPayout get(fn canceled_payout) config(): Power;
 
 		/// All unapplied slashes that are queued for later.
-		pub UnappliedSlashes: map EraIndex => Vec<UnappliedSlash<T::AccountId, Power>>;
+		pub UnappliedSlashes: map EraIndex => Vec<UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
 
 		/// Total *Ring* in pool.
 		pub RingPool get(fn ring_pool): RingBalance<T>;
@@ -817,17 +899,18 @@ decl_storage! {
 
 		/// All slashing events on validators, mapped by era to the highest slash proportion
 		/// and slash value of the era.
-		ValidatorSlashInEra: double_map EraIndex, twox_128(T::AccountId) => Option<(Perbill, Power)>;
+		ValidatorSlashInEra:
+		double_map EraIndex, twox_128(T::AccountId) => Option<(Perbill, slashing::RKT<T>)>;
 
 		/// All slashing events on nominators, mapped by era to the highest slash value of the era.
-		NominatorSlashInEra: double_map EraIndex, twox_128(T::AccountId) => Option<Power>;
+		NominatorSlashInEra: double_map EraIndex, twox_128(T::AccountId) => Option<slashing::RKT<T>>;
 
 		/// Slashing spans for stash accounts.
 		SlashingSpans: map T::AccountId => Option<slashing::SlashingSpans>;
 
 		/// Records information about the maximum slash of a stash within a slashing span,
 		/// as well as how much reward has been paid out.
-		SpanSlash: map (T::AccountId, slashing::SpanIndex) => slashing::SpanRecord<Power>;
+		SpanSlash: map (T::AccountId, slashing::SpanIndex) => slashing::SpanRecord<RingBalance<T>, KtonBalance<T>>;
 
 		/// The earliest era for which we have a pending, unapplied slash.
 		EarliestUnappliedSlash: Option<EraIndex>;
@@ -899,7 +982,7 @@ decl_event!(
 		Reward(RingBalance, RingBalance, Vec<ValidatorReward<AccountId, RingBalance>>),
 
 		/// One validator (and its nominators) has been slashed by the given amount.
-		Slash(AccountId, Power),
+		Slash(AccountId, RingBalance, KtonBalance),
 		/// An old slashing report from a prior era was discarded because it could
 		/// not be processed.
 		OldSlashingReportDiscarded(SessionIndex),
@@ -1035,6 +1118,7 @@ decl_module! {
 					<KtonPool<T>>::mutate(|k| *k += value);
 					Self::deposit_event(RawEvent::BondKton(value));
 				},
+				_ => (),
 			}
 
 			// You're auto-bonded forever, here. We might improve this by only bonding when
@@ -1092,6 +1176,7 @@ decl_module! {
 						Self::deposit_event(RawEvent::BondKton(extra));
 					}
 				},
+				_ => (),
 			}
 		}
 
@@ -1215,6 +1300,7 @@ decl_module! {
 						Self::deposit_event(RawEvent::UnbondKton(unbond_kton, now));
 					}
 				},
+				_ => (),
 			}
 
 			let StakingLedger {
@@ -1564,6 +1650,13 @@ impl<T: Trait> Module<T> {
 			.unwrap_or_default()
 	}
 
+	pub fn stake_of(stash: &T::AccountId) -> (RingBalance<T>, KtonBalance<T>) {
+		Self::bonded(stash)
+			.and_then(Self::ledger)
+			.map(|l| (l.active_ring, l.active_kton))
+			.unwrap_or_default()
+	}
+
 	// Update the ledger while bonding ring and compute the kton should return.
 	fn bond_ring(
 		stash: &T::AccountId,
@@ -1653,6 +1746,23 @@ impl<T: Trait> Module<T> {
 					WithdrawReasons::all(),
 				);
 			}
+			_ => {
+				ledger.ring_staking_lock.staking_amount = ledger.active_ring;
+				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
+
+				T::RingCurrency::set_lock(
+					STAKING_ID,
+					&ledger.stash,
+					WithdrawLock::WithStaking(ledger.ring_staking_lock.clone()),
+					WithdrawReasons::all(),
+				);
+				T::KtonCurrency::set_lock(
+					STAKING_ID,
+					&ledger.stash,
+					WithdrawLock::WithStaking(ledger.kton_staking_lock.clone()),
+					WithdrawReasons::all(),
+				);
+			}
 		}
 
 		<Ledger<T>>::insert(controller, ledger);
@@ -1677,7 +1787,8 @@ impl<T: Trait> Module<T> {
 			RewardDestination::Controller => Self::bonded(stash)
 				.and_then(|controller| T::RingCurrency::deposit_into_existing(&controller, amount).ok()),
 			RewardDestination::Stash => T::RingCurrency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::Staked { promise_month } => Self::bonded(stash)
+			// TODO month
+			RewardDestination::Staked { promise_month: _ } => Self::bonded(stash)
 				.and_then(|c| Self::ledger(&c).map(|l| (c, l)))
 				.and_then(|(c, mut l)| {
 					l.active_ring += amount;
@@ -1701,10 +1812,10 @@ impl<T: Trait> Module<T> {
 			Zero::zero()
 		} else {
 			let exposure = Self::stakers(stash);
-			let total = exposure.total.max(One::one());
+			let total = exposure.total_power.max(One::one());
 
 			for i in &exposure.others {
-				let per_u64 = Perbill::from_rational_approximation(i.value, total);
+				let per_u64 = Perbill::from_rational_approximation(i.power, total);
 				let nominator_reward = per_u64 * reward;
 
 				imbalance.maybe_subsume(Self::make_payout(&i.who, nominator_reward));
@@ -1714,7 +1825,7 @@ impl<T: Trait> Module<T> {
 				});
 			}
 
-			let per_u64 = Perbill::from_rational_approximation(exposure.own, total);
+			let per_u64 = Perbill::from_rational_approximation(exposure.own_power, total);
 			per_u64 * reward
 		};
 		let validator_reward = validator_cut + off_the_table;
@@ -1728,7 +1839,10 @@ impl<T: Trait> Module<T> {
 	/// with the exposure of the prior validator set.
 	fn new_session(
 		session_index: SessionIndex,
-	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
+	) -> Option<(
+		Vec<T::AccountId>,
+		Vec<(T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>)>,
+	)> {
 		let era_length = session_index
 			.checked_sub(Self::current_era_start_session_index())
 			.unwrap_or(0);
@@ -1886,13 +2000,12 @@ impl<T: Trait> Module<T> {
 
 		all_nominators.extend(nominator_votes);
 
-		let maybe_phragmen_result = sp_phragmen::elect::<_, _>(
+		let maybe_phragmen_result = darwinia_phragmen::elect::<_, _>(
 			Self::validator_count() as usize,
 			Self::minimum_validator_count().max(1) as usize,
 			all_validators,
 			all_nominators,
 			Self::power_of,
-			T::TotalPower::get(),
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {
@@ -1902,14 +2015,26 @@ impl<T: Trait> Module<T> {
 				.map(|(s, _)| s.clone())
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
-			let mut supports = sp_phragmen::build_support_map::<_, _>(&elected_stashes, &assignments, Self::power_of);
+
+			let to_votes = |p: Power| p as Votes;
+			let to_power = |v: Votes| v as Power;
+
+			let mut supports = darwinia_phragmen::build_support_map::<_, _, _, _, _>(
+				&elected_stashes,
+				&assignments,
+				Self::power_of,
+				Self::stake_of,
+			);
 
 			if cfg!(feature = "equalize") {
-				let mut staked_assignments: Vec<(T::AccountId, Vec<PhragmenStakedAssignment<T::AccountId>>)> =
-					Vec::with_capacity(assignments.len());
+				let mut staked_assignments: Vec<(
+					T::AccountId,
+					Vec<PhragmenStakedAssignment<T::AccountId, RingBalance<T>, KtonBalance<T>>>,
+				)> = Vec::with_capacity(assignments.len());
 				for (n, assignment) in assignments.iter() {
-					let mut staked_assignment: Vec<PhragmenStakedAssignment<T::AccountId>> =
-						Vec::with_capacity(assignment.len());
+					let mut staked_assignment: Vec<
+						PhragmenStakedAssignment<T::AccountId, RingBalance<T>, KtonBalance<T>>,
+					> = Vec::with_capacity(assignment.len());
 
 					// If this is a self vote, then we don't need to equalise it at all. While the
 					// staking system does not allow nomination and validation at the same time,
@@ -1918,16 +2043,31 @@ impl<T: Trait> Module<T> {
 						continue;
 					}
 					for (c, per_thing) in assignment.iter() {
-						let nominator_stake = Self::power_of(n);
+						let nominator_stake = to_votes(Self::power_of(n));
+						let (ring_balance, kton_balance) = {
+							let (r, k) = Self::stake_of(n);
+							(*per_thing * r, *per_thing * k)
+						};
 						let other_stake = *per_thing * nominator_stake;
-						staked_assignment.push((c.clone(), other_stake));
+						staked_assignment.push(PhragmenStakedAssignment {
+							account_id: c.clone(),
+							votes: other_stake,
+							ring_balance,
+							kton_balance,
+						});
 					}
 					staked_assignments.push((n.clone(), staked_assignment));
 				}
 
 				let tolerance: Votes = 0;
 				let iterations = 2_usize;
-				sp_phragmen::equalize::<_, _>(staked_assignments, &mut supports, tolerance, iterations, Self::power_of);
+				darwinia_phragmen::equalize::<_, _, _, _>(
+					staked_assignments,
+					&mut supports,
+					tolerance,
+					iterations,
+					Self::power_of,
+				);
 			}
 
 			// Clear Stakers.
@@ -1940,20 +2080,25 @@ impl<T: Trait> Module<T> {
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
-					own: s.own,
-					// This might reasonably saturate and we cannot do much about it. The sum of
-					// someone's stake might exceed the balance type if they have the maximum amount
-					// of balance and receive some support. This is super unlikely to happen, yet
-					// we simulate it in some tests.
-					total: s.total,
+					own_ring_balance: s.own_ring_balance,
+					own_kton_balance: s.own_kton_balance,
+					own_power: to_power(s.own_votes),
+					total_ring_balance: s.total_ring_balance,
+					total_kton_balance: s.total_kton_balance,
+					total_power: to_power(s.total_votes),
 					others: s
 						.others
 						.into_iter()
-						.map(|(who, value)| IndividualExposure { who, value })
-						.collect::<Vec<IndividualExposure<_, _>>>(),
+						.map(|assignment| IndividualExposure {
+							who: assignment.account_id,
+							ring_balance: assignment.ring_balance,
+							kton_balance: assignment.kton_balance,
+							power: to_power(assignment.votes),
+						})
+						.collect::<Vec<IndividualExposure<_, _, _>>>(),
 				};
-				if exposure.total < slot_stake {
-					slot_stake = exposure.total;
+				if exposure.total_power < slot_stake {
+					slot_stake = exposure.total_power;
 				}
 
 				<Stakers<T>>::insert(&c, exposure.clone());
@@ -2054,11 +2199,14 @@ impl<T: Trait> pallet_session::OnSessionEnding<T::AccountId> for Module<T> {
 	}
 }
 
-impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, Power>> for Module<T> {
+impl<T: Trait> OnSessionEnding<T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>> for Module<T> {
 	fn on_session_ending(
 		_ending: SessionIndex,
 		start_session: SessionIndex,
-	) -> Option<(Vec<T::AccountId>, Vec<(T::AccountId, Exposure<T::AccountId, Power>)>)> {
+	) -> Option<(
+		Vec<T::AccountId>,
+		Vec<(T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>)>,
+	)> {
 		Self::ensure_storage_upgraded();
 		Self::new_session(start_session - 1)
 	}
@@ -2105,7 +2253,7 @@ impl<T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Identi
 where
 	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, Power>,
+		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
 	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,

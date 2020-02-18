@@ -74,7 +74,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 /// Runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node"),
+	spec_name: create_runtime_str!("darwinia"),
 	impl_name: create_runtime_str!("darwinia-node"),
 	authoring_version: 4,
 	// Per convention: if the runtime behavior changes, increment spec_version
@@ -240,7 +240,7 @@ impl pallet_session::Trait for Runtime {
 }
 
 impl pallet_session::historical::Trait for Runtime {
-	type FullIdentification = Exposure<AccountId, Power>;
+	type FullIdentification = Exposure<AccountId, Balance, Balance>;
 	type FullIdentificationOf = ExposureOf<Runtime>;
 }
 
@@ -457,7 +457,6 @@ parameter_types! {
 
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
-	//	type PowerToVotes = PowerToVotesHandler;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;

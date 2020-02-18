@@ -66,9 +66,6 @@ pallet-staking = { package = "darwinia-staking", default-features = false, featu
 [build-dependencies]
 wasm-builder-runner = { version = "1.0.4", package = "substrate-wasm-builder-runner", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
 
-[dev-dependencies]
-sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-
 [features]
 default = ["std"]
 std = [
