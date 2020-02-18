@@ -1085,6 +1085,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethash"
+version = "0.4.0"
+dependencies = [
+ "byteorder 1.3.4",
+ "ethereum-types",
+ "hex-literal",
+ "primitive-types 0.6.1",
+ "rlp 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha3",
+]
+
+[[package]]
+name = "ethbloom"
+version = "0.8.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "crunchy",
+ "fixed-hash 0.5.1",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-rlp",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "ethereum-types"
+version = "0.8.0"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "ethbloom",
+ "fixed-hash 0.5.1",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-rlp",
+ "primitive-types 0.6.1",
+ "uint 0.8.2 (git+https://github.com/darwinia-network/parity-common.git)",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1173,6 +1210,17 @@ dependencies = [
  "num-traits",
  "parity-scale-codec",
  "parking_lot 0.9.0",
+]
+
+[[package]]
+name = "fixed-hash"
+version = "0.5.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "byteorder 1.3.4",
+ "rand 0.7.3",
+ "rustc-hex",
+ "static_assertions",
 ]
 
 [[package]]
@@ -1977,10 +2025,26 @@ dependencies = [
 [[package]]
 name = "impl-codec"
 version = "0.4.2"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "parity-scale-codec",
+]
+
+[[package]]
+name = "impl-codec"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1be51a921b067b0eaca2fad532d9400041561aa922221cc65f95a85641c6bf53"
 dependencies = [
  "parity-scale-codec",
+]
+
+[[package]]
+name = "impl-rlp"
+version = "0.2.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
 ]
 
 [[package]]
@@ -2477,7 +2541,7 @@ dependencies = [
  "smallvec 0.6.13",
  "tokio-codec",
  "tokio-io",
- "uint",
+ "uint 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "unsigned-varint 0.2.3",
  "void",
  "wasm-timer",
@@ -3751,6 +3815,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-treasury"
+version = "2.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-utility"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
@@ -4102,14 +4181,25 @@ checksum = "74490b50b9fbe561ac330df47c08f3f33073d2d00c150f719147d7c54522fa1b"
 
 [[package]]
 name = "primitive-types"
+version = "0.6.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "fixed-hash 0.5.1",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-rlp",
+ "uint 0.8.2 (git+https://github.com/darwinia-network/parity-common.git)",
+]
+
+[[package]]
+name = "primitive-types"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4336f4f5d5524fa60bcbd6fe626f9223d8142a50e7053e979acdf0da41ab975"
 dependencies = [
- "fixed-hash",
- "impl-codec",
+ "fixed-hash 0.5.2",
+ "impl-codec 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "impl-serde 0.3.0",
- "uint",
+ "uint 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -4559,6 +4649,23 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi 0.3.8",
+]
+
+[[package]]
+name = "rlp"
+version = "0.4.4"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "rustc-hex",
+]
+
+[[package]]
+name = "rlp"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a44d5ae8afcb238af8b75640907edc6c931efcfab2c854e81ed35fa080f84cd"
+dependencies = [
+ "rustc-hex",
 ]
 
 [[package]]
@@ -5836,7 +5943,7 @@ dependencies = [
  "num-traits",
  "parity-scale-codec",
  "parking_lot 0.9.0",
- "primitive-types",
+ "primitive-types 0.6.2",
  "rand 0.7.3",
  "regex",
  "rustc-hex",
@@ -5992,7 +6099,7 @@ source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa8357
 dependencies = [
  "environmental",
  "parity-scale-codec",
- "primitive-types",
+ "primitive-types 0.6.2",
  "sp-externalities",
  "sp-runtime-interface-proc-macro",
  "sp-std",
@@ -6873,6 +6980,17 @@ name = "typenum"
 version = "1.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d2783fe2d6b8c1101136184eb41be8b1ad379e4657050b8aaff0c79ee7575f9"
+
+[[package]]
+name = "uint"
+version = "0.8.2"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "byteorder 1.3.4",
+ "crunchy",
+ "rustc-hex",
+ "static_assertions",
+]
 
 [[package]]
 name = "uint"

@@ -11,6 +11,7 @@ members = [
 	"frame/staking",
 	"frame/support",
 	"frame/treasury",
+	"primitives/ethash",
 	"primitives/phragmen",
 ]
 
