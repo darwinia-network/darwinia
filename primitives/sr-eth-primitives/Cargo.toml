@@ -1,6 +1,6 @@
 [package]
 name = "sr-eth-primitives"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
