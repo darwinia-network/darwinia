@@ -32,7 +32,7 @@ std = [
 	"serde",
 
 	"frame-support/std",
-    "frame-system/std",
+	"frame-system/std",
 	"sp-runtime/std",
 	"sp-std/std",
 

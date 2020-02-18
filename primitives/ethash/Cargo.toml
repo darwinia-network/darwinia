@@ -22,10 +22,10 @@ hex-literal = "0.2.1"
 [features]
 default = ["std"]
 std = [
-  "byteorder/std",
-  "rlp/std",
-  "sha3/std",
+	"byteorder/std",
+	"rlp/std",
+	"sha3/std",
 
-  "ethereum-types/std",
-  "primitive-types/std",
+	"ethereum-types/std",
+	"primitive-types/std",
 ]
