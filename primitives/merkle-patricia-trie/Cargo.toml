@@ -1,0 +1,34 @@
+[package]
+name = "merkle-patricia-trie"
+version = "0.2.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# crates.io
+hashbrown = { version = "0.6.0" }
+
+# github.com
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+hash = { package = "keccak-hash", default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+
+[dev-dependencies]
+rand = "0.6.3"
+hex = "0.3.2"
+criterion = "0.2.10"
+ethereum-types = "0.5.2"
+uuid = { version = "0.7", features = ["serde", "v4"] }
+
+[features]
+default = ["std"]
+std = [
+	"rlp/std",
+	"hash/std"
+]
+
+[[bench]]
+name = "trie"
+harness = false
