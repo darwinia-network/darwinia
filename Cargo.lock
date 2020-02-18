@@ -1106,7 +1106,8 @@ dependencies = [
  "fixed-hash 0.5.1",
  "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
  "impl-rlp",
- "tiny-keccak",
+ "impl-serde 0.2.3 (git+https://github.com/darwinia-network/parity-common.git)",
+ "tiny-keccak 2.0.1",
 ]
 
 [[package]]
@@ -1118,6 +1119,7 @@ dependencies = [
  "fixed-hash 0.5.1",
  "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
  "impl-rlp",
+ "impl-serde 0.2.3 (git+https://github.com/darwinia-network/parity-common.git)",
  "primitive-types 0.6.1",
  "uint 0.8.2 (git+https://github.com/darwinia-network/parity-common.git)",
 ]
@@ -2051,6 +2053,14 @@ dependencies = [
 [[package]]
 name = "impl-serde"
 version = "0.2.3"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "impl-serde"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "58e3cae7e99c7ff5a995da2cf78dd0a5383740eda71d98cf7b1910c301ac69b8"
 dependencies = [
@@ -2261,6 +2271,26 @@ name = "keccak"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67c21572b4949434e4fc1e1978b99c5f77064153c59d998bf13ecd96fb5ecba7"
+
+[[package]]
+name = "keccak-hash"
+version = "0.4.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "primitive-types 0.6.1",
+ "tiny-keccak 2.0.1",
+]
+
+[[package]]
+name = "keccak-hasher"
+version = "0.15.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3468207deea1359a0e921591ae9b4c928733d94eb9d6a2eeda994cfd59f42cf8"
+dependencies = [
+ "hash-db",
+ "hash256-std-hasher",
+ "tiny-keccak 1.5.0",
+]
 
 [[package]]
 name = "kernel32-sys"
@@ -4188,6 +4218,7 @@ dependencies = [
  "fixed-hash 0.5.1",
  "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
  "impl-rlp",
+ "impl-serde 0.2.3 (git+https://github.com/darwinia-network/parity-common.git)",
  "uint 0.8.2 (git+https://github.com/darwinia-network/parity-common.git)",
 ]
 
@@ -4667,6 +4698,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a44d5ae8afcb238af8b75640907edc6c931efcfab2c854e81ed35fa080f84cd"
 dependencies = [
  "rustc-hex",
+]
+
+[[package]]
+name = "rlp_derive"
+version = "0.1.0"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "proc-macro2 0.4.30",
+ "quote 0.6.13",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -5937,7 +5978,7 @@ dependencies = [
  "hash-db",
  "hash256-std-hasher",
  "hex",
- "impl-serde 0.2.3",
+ "impl-serde 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static",
  "libsecp256k1",
  "log 0.4.8",
@@ -5958,7 +5999,7 @@ dependencies = [
  "sp-storage",
  "substrate-bip39",
  "tiny-bip39",
- "tiny-keccak",
+ "tiny-keccak 2.0.1",
  "twox-hash",
  "wasmi",
  "zeroize 1.1.0",
@@ -6190,7 +6231,7 @@ name = "sp-storage"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
- "impl-serde 0.2.3",
+ "impl-serde 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "sp-debug-derive",
  "sp-std",
@@ -6242,7 +6283,7 @@ name = "sp-version"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
- "impl-serde 0.2.3",
+ "impl-serde 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-scale-codec",
  "serde",
  "sp-runtime",
@@ -6263,6 +6304,30 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "sr-eth-primitives"
+version = "0.2.0"
+dependencies = [
+ "ethbloom",
+ "ethereum-types",
+ "fixed-hash 0.5.1",
+ "frame-support",
+ "hex-literal",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-rlp",
+ "keccak-hash",
+ "keccak-hasher",
+ "parity-scale-codec",
+ "primitive-types 0.6.1",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp_derive",
+ "rustc-hex",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+ "triehash",
+]
 
 [[package]]
 name = "stable_deref_trait"
@@ -6582,6 +6647,15 @@ dependencies = [
  "pbkdf2",
  "rand 0.6.5",
  "sha2",
+]
+
+[[package]]
+name = "tiny-keccak"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d8a021c69bb74a44ccedb824a046447e2c84a01df9e5c20779750acb38e11b2"
+dependencies = [
+ "crunchy",
 ]
 
 [[package]]
@@ -6942,6 +7016,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b779f7c1c8fe9276365d9d5be5c4b5adeacf545117bb3f64c974305789c5c0b"
 dependencies = [
  "hash-db",
+]
+
+[[package]]
+name = "triehash"
+version = "0.8.1"
+source = "git+https://github.com/darwinia-network/parity-common.git#df9eebad700c076c13afe053a6c368a8926d94ff"
+dependencies = [
+ "hash-db",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
 ]
 
 [[package]]

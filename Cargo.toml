@@ -13,6 +13,7 @@ members = [
 	"frame/treasury",
 	"primitives/ethash",
 	"primitives/phragmen",
+	"primitives/sr-eth-primitives",
 ]
 
 [profile.release]
