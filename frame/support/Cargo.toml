@@ -10,9 +10,9 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 num-traits = { version = "0.2.8", default-features = false }
 
 # github.com
-frame-support = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54", default-features = false }
-sp-std = { package = "sp-std", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54", default-features = false }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
 [features]
 default = ["std"]
