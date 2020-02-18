@@ -1,8 +1,9 @@
+//! Test utilities
+
 #![cfg(test)]
 
-use std::collections::BTreeMap;
-
 use sp_runtime::{assert_eq_error_rate, traits::Member, Perbill};
+use sp_std::collections::btree_map::BTreeMap;
 
 use crate::{elect, PhragmenAssignment, PhragmenResult, Power, Votes};
 

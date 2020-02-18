@@ -1,3 +1,5 @@
+//! Tests for the module.
+
 use support::{assert_err, assert_ok, traits::Currency};
 
 use crate::{mock::*, *};
