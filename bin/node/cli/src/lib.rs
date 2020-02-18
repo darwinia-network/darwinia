@@ -52,10 +52,10 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// Generate Iceforg testnet config.
-	GenIceFrogTestnet,
-	/// The IceFrog testnet.
-	IceFrogTestnet,
+	/// Generate Canary testnet config.
+	GenCanaryTestnet,
+	/// The Canary testnet.
+	CanaryTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -67,8 +67,8 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::GenIceFrogTestnet => chain_spec::gen_icefrog_testnet_config(),
-			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config()?,
+			ChainSpec::GenCanaryTestnet => chain_spec::gen_canary_testnet_config(),
+			ChainSpec::CanaryTestnet => chain_spec::canary_testnet_config()?,
 		})
 	}
 
@@ -77,8 +77,8 @@ impl ChainSpec {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
-			"gen" => Some(ChainSpec::GenIceFrogTestnet),
-			"" | "icefrog" => Some(ChainSpec::IceFrogTestnet),
+			"gen" => Some(ChainSpec::GenCanaryTestnet),
+			"" | "canary" | "Canary" => Some(ChainSpec::CanaryTestnet),
 			_ => None,
 		}
 	}

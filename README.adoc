@@ -232,13 +232,13 @@ please kindly check following things before making an issue.
 * using the latest nightly Rust
 * build without `sccache`
 
-== Joining the IceFrog Testnet
+== Joining the Canary Testnet
 
 // Latest known working version: ``
 
 === Quick start (professional):
-  * https://telemetry.polkadot.io/#list/Darwinia%20IceFrog%20Testnet[Telemetry]
-  * https://icefrog-wallet.darwinia.network[Darwinia Web Wallet]
+  * https://telemetry.polkadot.io/#list/Darwinia%20Canary%20Testnet[Telemetry]
+  * https://canary-wallet.darwinia.network[Darwinia Web Wallet]
   * Bootnodes: 
     ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
     ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`

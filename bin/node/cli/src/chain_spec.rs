@@ -57,9 +57,9 @@ pub struct Extensions {
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = sc_service::ChainSpec<GenesisConfig, Extensions>;
-/// IceFrog testnet generator
-pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
+/// Canary testnet generator
+pub fn canary_testnet_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/canary.json")[..])
 }
 
 fn session_keys(
@@ -359,9 +359,9 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-/// IceFrog local testnet config (multivalidator Alice + Bob)
+/// Canary local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	fn icefrog_config_genesis() -> GenesisConfig {
+	fn canary_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				get_authority_keys_from_seed("Alice"),
@@ -386,9 +386,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia IceFrog Testnet",
-		"icefrog_testnet",
-		icefrog_config_genesis,
+		"Darwinia Canary Testnet",
+		"canary_testnet",
+		canary_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
@@ -398,9 +398,9 @@ pub fn local_testnet_config() -> ChainSpec {
 			properties.insert("ss58Format".into(), 42.into());
 
 			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("tokenSymbol".into(), "CRING".into());
 			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
 
 			Some(properties)
 		},
@@ -408,9 +408,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-/// IceFrog testnet config generator
-pub fn gen_icefrog_testnet_config() -> ChainSpec {
-	fn icefrog_config_genesis() -> GenesisConfig {
+/// Canary testnet config generator
+pub fn gen_canary_testnet_config() -> ChainSpec {
+	fn canary_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				(
@@ -449,9 +449,9 @@ pub fn gen_icefrog_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia IceFrog Testnet",
-		"icefrog_testnet",
-		icefrog_config_genesis,
+		"Darwinia Canary Testnet",
+		"canary_testnet",
+		canary_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
@@ -460,9 +460,9 @@ pub fn gen_icefrog_testnet_config() -> ChainSpec {
 
 			properties.insert("ss58Format".into(), 42.into());
 			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("tokenSymbol".into(), "CRING".into());
 			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
 
 			Some(properties)
 		},
