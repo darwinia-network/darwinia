@@ -94,7 +94,7 @@ where
 				info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
 				info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
 				info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
-				info!("  by Darwinia Network, 2017-2019");
+				info!("  by Darwinia Network, 2018-2020");
 				info!("Chain specification: {}", config.chain_spec.name());
 				info!("Node name: {}", config.name);
 				info!("Roles: {}", display_role(&config));

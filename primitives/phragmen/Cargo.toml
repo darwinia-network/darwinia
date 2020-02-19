@@ -5,21 +5,27 @@ authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
+# crates.io
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
+
+# github.com
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
+# darwinia
 darwinia-support = { default-features = false, path = "../../frame/support" }
 
 [dev-dependencies]
-substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-io ={ version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 rand = "0.7.2"
+
+sp-io ={ version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
 [features]
 default = ["std"]
 std = [
 	"serde",
+
 	"sp-std/std",
 	"sp-runtime/std",
 

@@ -1012,9 +1012,9 @@ checksum = "f4f47ca1860a761136924ddd2422ba77b2ea54fe8cc75b9040804a0d9d32ad97"
 
 [[package]]
 name = "derive_more"
-version = "0.99.2"
+version = "0.99.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2159be042979966de68315bce7034bb000c775f22e3e834e1c52ff78f041cae8"
+checksum = "a806e96c59a76a5ba6e18735b6cf833344671e61e7863f2edb5c518ea2cac95c"
 dependencies = [
  "proc-macro2 1.0.8",
  "quote 1.0.2",
@@ -1938,9 +1938,9 @@ checksum = "805026a5d0141ffc30abb3be3173848ad46a1b1664fe632428479619a3644d77"
 
 [[package]]
 name = "hex"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76cdda6bf525062a0c9e8f14ee2b37935c86b8efb6c8b69b3c83dfb518a914af"
+checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
 
 [[package]]
 name = "hex-literal"
@@ -3435,7 +3435,6 @@ dependencies = [
  "pallet-offences",
  "pallet-randomness-collective-flip",
  "pallet-session",
- "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -3910,17 +3909,6 @@ dependencies = [
  "sp-staking",
  "sp-std",
  "sp-trie",
-]
-
-[[package]]
-name = "pallet-staking-reward-curve"
-version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
-dependencies = [
- "proc-macro-crate",
- "proc-macro2 1.0.8",
- "quote 1.0.2",
- "syn 1.0.14",
 ]
 
 [[package]]
@@ -5412,7 +5400,7 @@ version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
- "hex 0.4.1",
+ "hex 0.4.2",
  "parking_lot 0.9.0",
  "rand 0.7.3",
  "serde_json",
@@ -6169,7 +6157,7 @@ dependencies = [
  "ed25519-dalek",
  "hash-db",
  "hash256-std-hasher",
- "hex 0.4.1",
+ "hex 0.4.2",
  "impl-serde 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static",
  "libsecp256k1",

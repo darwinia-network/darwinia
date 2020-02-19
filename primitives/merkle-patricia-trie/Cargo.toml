@@ -11,22 +11,22 @@ edition = "2018"
 hashbrown = { version = "0.6.0" }
 
 # github.com
-rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 hash = { package = "keccak-hash", default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
 [dev-dependencies]
-rand = "0.6.3"
-hex = "0.3.2"
 criterion = "0.2.10"
 ethereum-types = "0.5.2"
+hex = "0.3.2"
+rand = "0.6.3"
 uuid = { version = "0.7", features = ["serde", "v4"] }
 
 [features]
 default = ["std"]
 std = [
+	"hash/std",
 	"rlp/std",
-	"hash/std"
 ]
 
 [[bench]]

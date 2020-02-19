@@ -5,13 +5,17 @@ authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
-sc-client = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+# crates.io
 jsonrpc-core = "14.0.3"
-sp-runtime = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+
+# github.com
 pallet-contracts-rpc = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 pallet-transaction-payment-rpc = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-substrate-frame-rpc-system = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sc-client = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-runtime = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 sp-transaction-pool = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+substrate-frame-rpc-system = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
+# darwinia
 node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
