@@ -150,15 +150,10 @@ pub fn darwinia_genesis(
 				})
 				.collect::<Vec<_>>(),
 		}),
-		//		pallet_democracy: Some(DemocracyConfig::default()),
 		pallet_collective_Instance1: Some(CouncilConfig {
 			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
 			phantom: Default::default(),
 		}),
-		//		pallet_collective_Instance2: Some(TechnicalCommitteeConfig {
-		//			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
-		//			phantom: Default::default(),
-		//		}),
 		pallet_contracts: Some(ContractsConfig {
 			current_schedule: pallet_contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -171,8 +166,6 @@ pub fn darwinia_genesis(
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		//		pallet_membership_Instance1: Some(Default::default()),
-		//		pallet_treasury: Some(Default::default()),
 		pallet_ring: Some(BalancesConfig {
 			balances: endowed_accounts
 				.iter()
