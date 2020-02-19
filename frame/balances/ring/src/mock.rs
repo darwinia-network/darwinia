@@ -1,9 +1,12 @@
 //! Test utilities
 
-use crate::{GenesisConfig, Module, Trait};
-use frame_support::traits::Get;
-use frame_support::weights::{DispatchInfo, Weight};
-use frame_support::{impl_outer_origin, parameter_types};
+use std::cell::RefCell;
+
+use frame_support::{
+	traits::Get,
+	weights::{DispatchInfo, Weight},
+	{impl_outer_origin, parameter_types},
+};
 use sp_core::H256;
 use sp_io;
 use sp_runtime::{
@@ -11,11 +14,15 @@ use sp_runtime::{
 	traits::{ConvertInto, IdentityLookup},
 	Perbill,
 };
-use std::cell::RefCell;
+
+use crate::*;
+
+pub type System = system::Module<Test>;
 
 pub type Ring = Module<Test>;
 
-use frame_system as system;
+pub const CALL: &<Test as system::Trait>::Call = &();
+
 impl_outer_origin! {
 	pub enum Origin for Test {}
 }
@@ -56,11 +63,11 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl frame_system::Trait for Test {
+impl system::Trait for Test {
 	type Origin = Origin;
+	type Call = ();
 	type Index = u64;
 	type BlockNumber = u64;
-	type Call = ();
 	type Hash = H256;
 	type Hashing = ::sp_runtime::traits::BlakeTwo256;
 	type AccountId = u64;
@@ -91,9 +98,9 @@ impl Trait for Test {
 	type Balance = u64;
 	type OnFreeBalanceZero = ();
 	type OnNewAccount = ();
-	type Event = ();
-	type DustRemoval = ();
 	type TransferPayment = ();
+	type DustRemoval = ();
+	type Event = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
@@ -149,7 +156,7 @@ impl ExtBuilder {
 	}
 	pub fn build(self) -> sp_io::TestExternalities {
 		self.set_associated_consts();
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		GenesisConfig::<Test> {
 			balances: if self.monied {
 				vec![
@@ -177,11 +184,6 @@ impl ExtBuilder {
 		t.into()
 	}
 }
-
-pub type System = frame_system::Module<Test>;
-pub type Balances = Module<Test>;
-
-pub const CALL: &<Test as frame_system::Trait>::Call = &();
 
 /// create a transaction info struct from weight. Handy to avoid building the whole struct.
 pub fn info_from_weight(w: Weight) -> DispatchInfo {

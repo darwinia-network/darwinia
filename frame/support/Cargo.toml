@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-support"
-version = "0.2.0"
+version = "0.4.0"
 authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 

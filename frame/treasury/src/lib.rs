@@ -57,23 +57,24 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(feature = "std")]
-use serde::{Serialize, Deserialize};
-use sp_std::prelude::*;
-use frame_support::{decl_module, decl_storage, decl_event, ensure, print, decl_error};
+use codec::{Decode, Encode};
 use frame_support::traits::{
-	Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced,
-	ReservableCurrency, WithdrawReason
+	Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason,
 };
-use sp_runtime::{Permill, ModuleId};
-use sp_runtime::traits::{Zero, EnsureOrigin, StaticLookup, AccountIdConversion, Saturating};
 use frame_support::weights::SimpleDispatchInfo;
-use codec::{Encode, Decode};
+use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure, print};
 use frame_system::{self as system, ensure_signed};
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
+use sp_runtime::traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero};
+use sp_runtime::{ModuleId, Permill};
+use sp_std::prelude::*;
 
 type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::PositiveImbalance;
-type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::NegativeImbalance;
+type PositiveImbalanceOf<T> =
+	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::PositiveImbalance;
+type NegativeImbalanceOf<T> =
+	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::NegativeImbalance;
 
 const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
 
@@ -148,7 +149,7 @@ decl_module! {
 
 			let bond = Self::calculate_bond(value);
 			T::Currency::reserve(&proposer, bond)
-				.map_err(|_| Error::<T>::InsufficientProposersBalance)?;
+				.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 
 			let c = Self::proposal_count();
 			ProposalCount::put(c + 1);
@@ -167,7 +168,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedOperational(100_000)]
 		fn reject_proposal(origin, #[compact] proposal_id: ProposalIndex) {
 			T::RejectOrigin::ensure_origin(origin)?;
-			let proposal = <Proposals<T>>::take(&proposal_id).ok_or(Error::<T>::InvalidProposalIndex)?;
+			let proposal = <Proposals<T>>::take(&proposal_id).ok_or(<Error<T>>::InvalidProposalIndex)?;
 
 			let value = proposal.bond;
 			let imbalance = T::Currency::slash_reserved(&proposal.proposer, value).0;
@@ -188,7 +189,7 @@ decl_module! {
 		fn approve_proposal(origin, #[compact] proposal_id: ProposalIndex) {
 			T::ApproveOrigin::ensure_origin(origin)?;
 
-			ensure!(<Proposals<T>>::exists(proposal_id), Error::<T>::InvalidProposalIndex);
+			ensure!(<Proposals<T>>::exists(proposal_id), <Error<T>>::InvalidProposalIndex);
 
 			Approvals::mutate(|v| v.push(proposal_id));
 		}
@@ -332,7 +333,7 @@ impl<T: Trait> Module<T> {
 			&Self::account_id(),
 			imbalance,
 			WithdrawReason::Transfer.into(),
-			ExistenceRequirement::KeepAlive
+			ExistenceRequirement::KeepAlive,
 		) {
 			print("Inconsistent state - couldn't settle imbalance for funds spent by treasury");
 			// Nothing else to do here.
@@ -369,7 +370,9 @@ mod tests {
 	use frame_support::{assert_noop, assert_ok, impl_outer_origin, parameter_types, weights::Weight};
 	use sp_core::H256;
 	use sp_runtime::{
-		traits::{BlakeTwo256, OnFinalize, IdentityLookup}, testing::Header, Perbill
+		testing::Header,
+		traits::{BlakeTwo256, IdentityLookup, OnFinalize},
+		Perbill,
 	};
 
 	impl_outer_origin! {
@@ -440,11 +443,13 @@ mod tests {
 
 	fn new_test_ext() -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test>{
+		pallet_balances::GenesisConfig::<Test> {
 			// Total issuance will be 200 with treasury account initialized at ED.
 			balances: vec![(0, 100), (1, 98), (2, 1)],
 			vesting: vec![],
-		}.assimilate_storage(&mut t).unwrap();
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 		GenesisConfig::default().assimilate_storage::<Test>(&mut t).unwrap();
 		t.into()
 	}
@@ -542,21 +547,30 @@ mod tests {
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
-			assert_noop!(Treasury::reject_proposal(Origin::ROOT, 0), Error::<Test>::InvalidProposalIndex);
+			assert_noop!(
+				Treasury::reject_proposal(Origin::ROOT, 0),
+				Error::<Test>::InvalidProposalIndex
+			);
 		});
 	}
 
 	#[test]
 	fn reject_non_existant_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			assert_noop!(Treasury::reject_proposal(Origin::ROOT, 0), Error::<Test>::InvalidProposalIndex);
+			assert_noop!(
+				Treasury::reject_proposal(Origin::ROOT, 0),
+				Error::<Test>::InvalidProposalIndex
+			);
 		});
 	}
 
 	#[test]
 	fn accept_non_existant_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			assert_noop!(Treasury::approve_proposal(Origin::ROOT, 0), Error::<Test>::InvalidProposalIndex);
+			assert_noop!(
+				Treasury::approve_proposal(Origin::ROOT, 0),
+				Error::<Test>::InvalidProposalIndex
+			);
 		});
 	}
 
@@ -567,7 +581,10 @@ mod tests {
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
-			assert_noop!(Treasury::approve_proposal(Origin::ROOT, 0), Error::<Test>::InvalidProposalIndex);
+			assert_noop!(
+				Treasury::approve_proposal(Origin::ROOT, 0),
+				Error::<Test>::InvalidProposalIndex
+			);
 		});
 	}
 
@@ -634,10 +651,12 @@ mod tests {
 	#[test]
 	fn inexisting_account_works() {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test>{
+		pallet_balances::GenesisConfig::<Test> {
 			balances: vec![(0, 100), (1, 99), (2, 1)],
 			vesting: vec![],
-		}.assimilate_storage(&mut t).unwrap();
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 		// Treasury genesis config is not build thus treasury account does not exist
 		let mut t: sp_io::TestExternalities = t.into();
 

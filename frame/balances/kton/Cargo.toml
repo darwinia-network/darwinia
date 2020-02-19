@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-kton"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
@@ -24,7 +24,7 @@ sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.gi
 sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 
-ring = { package = "darwinia-ring", path = "../ring" }
+darwinia-ring = { path = "../ring" }
 
 [features]
 default = ["std"]

@@ -680,7 +680,7 @@ pub struct UnappliedSlash<AccountId, RingBalance, KtonBalance> {
 /// Means for interacting with a specialized version of the `session` trait.
 ///
 /// This is needed because `Staking` sets the `ValidatorIdOf` of the `pallet_session::Trait`
-pub trait SessionInterface<AccountId>: frame_system::Trait {
+pub trait SessionInterface<AccountId>: system::Trait {
 	/// Disable a given validator by stash ID.
 	///
 	/// Returns `true` if new era should be forced at the end of this session.
@@ -693,23 +693,23 @@ pub trait SessionInterface<AccountId>: frame_system::Trait {
 	fn prune_historical_up_to(up_to: SessionIndex);
 }
 
-impl<T: Trait> SessionInterface<<T as frame_system::Trait>::AccountId> for T
+impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
 where
-	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
+	T: pallet_session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
-	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
-	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as frame_system::Trait>::AccountId>,
-	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as frame_system::Trait>::AccountId>,
-	T::ValidatorIdOf: Convert<<T as frame_system::Trait>::AccountId, Option<<T as frame_system::Trait>::AccountId>>,
+	T::SessionHandler: pallet_session::SessionHandler<<T as system::Trait>::AccountId>,
+	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as system::Trait>::AccountId>,
+	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as system::Trait>::AccountId>,
+	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
 {
-	fn disable_validator(validator: &<T as frame_system::Trait>::AccountId) -> Result<bool, ()> {
+	fn disable_validator(validator: &<T as system::Trait>::AccountId) -> Result<bool, ()> {
 		<pallet_session::Module<T>>::disable(validator)
 	}
 
-	fn validators() -> Vec<<T as frame_system::Trait>::AccountId> {
+	fn validators() -> Vec<<T as system::Trait>::AccountId> {
 		<pallet_session::Module<T>>::validators()
 	}
 
@@ -718,12 +718,12 @@ where
 	}
 }
 
-pub trait Trait: frame_system::Trait {
+pub trait Trait: system::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
 
 	/// The overarching event type.
-	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
 	/// Number of sessions per era.
 	type SessionsPerEra: Get<SessionIndex>;
@@ -941,8 +941,8 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T>
 	where
-		<T as frame_system::Trait>::AccountId,
-		<T as frame_system::Trait>::BlockNumber,
+		<T as system::Trait>::AccountId,
+		<T as system::Trait>::BlockNumber,
 		RingBalance = RingBalance<T>,
 		KtonBalance = KtonBalance<T>,
 		MomentOf = MomentOf<T>,
@@ -1055,10 +1055,10 @@ decl_module! {
 			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!(!<Bonded<T>>::exists(&stash), Error::<T>::AlreadyBonded);
+			ensure!(!<Bonded<T>>::exists(&stash), <Error<T>>::AlreadyBonded);
 
 			let controller = T::Lookup::lookup(controller)?;
-			ensure!(!<Ledger<T>>::exists(&controller), Error::<T>::AlreadyPaired);
+			ensure!(!<Ledger<T>>::exists(&controller), <Error<T>>::AlreadyPaired);
 
 			let ledger = StakingLedger {
 				stash: stash.clone(),
@@ -1071,7 +1071,7 @@ decl_module! {
 					// reject a bond which is considered to be _dust_.
 					ensure!(
 						r >= T::RingCurrency::minimum_balance(),
-						Error::<T>::InsufficientValue,
+						<Error<T>>::InsufficientValue,
 					);
 
 					let stash_balance = T::RingCurrency::free_balance(&stash);
@@ -1091,7 +1091,7 @@ decl_module! {
 					// reject a bond which is considered to be _dust_.
 					ensure!(
 						k >= T::KtonCurrency::minimum_balance(),
-						Error::<T>::InsufficientValue,
+						<Error<T>>::InsufficientValue,
 					);
 
 					let stash_balance = T::KtonCurrency::free_balance(&stash);
@@ -1128,8 +1128,8 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn bond_extra(origin, max_additional: StakingBalanceT<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
-			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let promise_month = promise_month.min(36);
 
 			match max_additional {
@@ -1167,8 +1167,8 @@ decl_module! {
 		// TODO: doc
 		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
-			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let start_time = T::Time::now();
 			let expire_time = start_time + <MomentOf<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
 			let promise_month = promise_month.max(3).min(36);
@@ -1223,7 +1223,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(Error::<T>::NotController)?);
+			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
 			let StakingLedger {
 				active_ring,
 				active_deposit_ring,
@@ -1232,7 +1232,7 @@ decl_module! {
 				kton_staking_lock,
 				..
 			} = &mut ledger;
-			let now = <frame_system::Module<T>>::block_number();
+			let now = <system::Module<T>>::block_number();
 
 			ring_staking_lock.shrink(now);
 			kton_staking_lock.shrink(now);
@@ -1245,7 +1245,7 @@ decl_module! {
 			//     2. `let c_ = a as u32 + b as u32; c_ < c`
 			ensure!(
 				(ring_staking_lock.unbondings.len() + kton_staking_lock.unbondings.len()) < MAX_UNLOCKING_CHUNKS,
-				Error::<T>::NoMoreChunks,
+				<Error<T>>::NoMoreChunks,
 			);
 
 			match value {
@@ -1316,7 +1316,7 @@ decl_module! {
 		// TODO: doc
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(Error::<T>::NotController)?);
+			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
 
 			<Ledger<T>>::insert(controller, ledger);
 		}
@@ -1324,7 +1324,7 @@ decl_module! {
 		// TODO: doc
 		fn try_claim_deposits_with_punish(origin, expire_time: MomentOf<T>) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let mut ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let now = T::Time::now();
 
 			if expire_time <= now {
@@ -1404,7 +1404,7 @@ decl_module! {
 			Self::ensure_storage_upgraded();
 
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
 			<Nominators<T>>::remove(stash);
@@ -1427,10 +1427,10 @@ decl_module! {
 			Self::ensure_storage_upgraded();
 
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
-			ensure!(!targets.is_empty(), Error::<T>::EmptyTargets);
+			ensure!(!targets.is_empty(), <Error<T>>::EmptyTargets);
 
 			let targets = targets.into_iter()
 				.take(MAX_NOMINATIONS)
@@ -1460,7 +1460,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn chill(origin) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 
 			Self::chill_stash(&ledger.stash);
 		}
@@ -1479,7 +1479,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn set_payee(origin, payee: RewardDestination) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
 			<Payee<T>>::insert(stash, payee);
@@ -1499,10 +1499,10 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn set_controller(origin, controller: <T::Lookup as StaticLookup>::Source) {
 			let stash = ensure_signed(origin)?;
-			let old_controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
+			let old_controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
 			let controller = T::Lookup::lookup(controller)?;
 
-			ensure!(!<Ledger<T>>::exists(&controller), Error::<T>::AlreadyPaired);
+			ensure!(!<Ledger<T>>::exists(&controller), <Error<T>>::AlreadyPaired);
 
 			if controller != old_controller {
 				<Bonded<T>>::insert(&stash, &controller);
@@ -1596,12 +1596,12 @@ decl_module! {
 				let index = index as usize;
 
 				// if `index` is not duplicate, `removed` must be <= index.
-				ensure!(removed <= index, Error::<T>::DuplicateIndex);
+				ensure!(removed <= index, <Error<T>>::DuplicateIndex);
 
 				// all prior removals were from before this index, since the
 				// list is sorted.
 				let index = index - removed;
-				ensure!(index < unapplied.len(), Error::<T>::InvalidSlashIndex);
+				ensure!(index < unapplied.len(), <Error<T>>::InvalidSlashIndex);
 
 				unapplied.remove(index);
 			}
@@ -2236,15 +2236,15 @@ impl<T: Trait> SelectInitialValidators<T::AccountId> for Module<T> {
 /// This is intended to be used with `FilterHistoricalOffences`.
 impl<T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::IdentificationTuple<T>> for Module<T>
 where
-	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
+	T: pallet_session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
-	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
-	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as frame_system::Trait>::AccountId>,
-	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as frame_system::Trait>::AccountId>,
-	T::ValidatorIdOf: Convert<<T as frame_system::Trait>::AccountId, Option<<T as frame_system::Trait>::AccountId>>,
+	T::SessionHandler: pallet_session::SessionHandler<<T as system::Trait>::AccountId>,
+	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as system::Trait>::AccountId>,
+	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as system::Trait>::AccountId>,
+	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
 {
 	fn on_offence(
 		offenders: &[OffenceDetails<T::AccountId, pallet_session::historical::IdentificationTuple<T>>],

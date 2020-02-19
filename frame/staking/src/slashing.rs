@@ -63,10 +63,7 @@ use sp_std::{
 	vec::Vec,
 };
 
-use crate::{
-	EraIndex, Exposure, KtonBalance, KtonNegativeImbalance, Module, RawEvent, RingBalance, RingNegativeImbalance,
-	SessionInterface, StakingBalance, Store, Trait, UnappliedSlash,
-};
+use crate::*;
 
 /// The proportion of the slashing reward to be paid out on the first slashing detection.
 /// This is f_1 in the paper.
@@ -684,12 +681,7 @@ fn do_slash<T: Trait>(
 		None => return, // nothing to do.
 	};
 
-	let (slash_ring, slash_kton) = ledger.slash(
-		value.r,
-		value.k,
-		<frame_system::Module<T>>::block_number(),
-		T::Time::now(),
-	);
+	let (slash_ring, slash_kton) = ledger.slash(value.r, value.k, <system::Module<T>>::block_number(), T::Time::now());
 	let mut changed = false;
 
 	if !slash_ring.is_zero() {
