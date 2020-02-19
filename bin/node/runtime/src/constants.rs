@@ -31,6 +31,12 @@ pub mod time {
 	use node_primitives::{BlockNumber, Moment};
 	use sp_staking::SessionIndex;
 
+	/// Date in Los Angeles*: 19/02/2020, 03:30:00
+	/// Date in Berlin* :19/02/2020, 18:30:00
+	/// Date in Beijing*: 19/02/2020, 17:30:00
+	/// Date in New York* :19/02/2020, 05:30:00
+	pub const GENESIS_TIME: Moment = 1_582_108_200_000;
+
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
 	/// by `SLOT_DURATION`, but some slots will not be allocated to any
@@ -48,7 +54,10 @@ pub mod time {
 	/// `SLOT_DURATION` should have the same value.
 	///
 	/// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
+	// Develop
 	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	// Prodution
+	// pub const MILLISECS_PER_BLOCK: Moment = 6000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
@@ -56,29 +65,20 @@ pub mod time {
 	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
-		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
+		(BLOCKS_PER_SESSION as f64 * SLOT_FILL_RATE) as u64
 	};
+	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+
+	pub const SESSIONS_PER_ERA: SessionIndex = 6;
 
 	// These time units are defined in number of blocks.
 	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
-	pub const HOURS: BlockNumber = MINUTES * 60;
-	pub const DAYS: BlockNumber = HOURS * 24;
-
-	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
-	// Develop
-	//	pub const ERA_DURATION: SessionIndex = 3;
-	// Production
-	pub const ERA_DURATION: SessionIndex = 6;
-
-	// Date in Los Angeles*: 12/25/2019, 10:58:29 PM
-	// Date in Berlin* :12/26/2019, 1:58:29 PM
-	// Date in Beijing*: 12/26/2019, 12:58:29 PM
-	// Date in New York* :12/26/2019, 12:58:29 AM
-	pub const GENESIS_TIME: Moment = 1_577_339_909_000;
+	pub const HOURS: BlockNumber = 60 * MINUTES;
+	pub const DAYS: BlockNumber = 24 * HOURS;
 }
 
 pub mod supply {

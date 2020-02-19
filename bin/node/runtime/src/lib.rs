@@ -448,11 +448,10 @@ impl pallet_kton::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const BlocksPerSession: BlockNumber = EPOCH_DURATION_IN_BLOCKS;
-	pub const SessionsPerEra: SessionIndex = ERA_DURATION;
-	pub const BondingDurationInEra: EraIndex = 24 * 28;
-	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
-	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
+	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
+	pub const BondingDurationInEra: EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
+	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
+	pub const SlashDeferDuration: EraIndex = 7 * 24; // 1/4 the bonding duration.
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
