@@ -61,6 +61,8 @@ pallet-utility = { version = "2.0.0", default-features = false, git = "https://g
 pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
 pallet-ring = { package = "darwinia-ring", default-features = false, path = "../../../frame/balances/ring" }
 pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
+pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
+pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
 
 [build-dependencies]
 wasm-builder-runner = { version = "1.0.4", package = "substrate-wasm-builder-runner", git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
@@ -97,6 +99,8 @@ std = [
 	"pallet-kton/std",
 	"pallet-ring/std",
 	"pallet-staking/std",
+	"pallet-eth-relay/std",
+	"pallet-eth-backing/std",
 
 	"node-primitives/std",
 	"rustc-hex",

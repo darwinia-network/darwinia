@@ -53,10 +53,10 @@ use sp_core::{
 	OpaqueMetadata,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
-use sp_runtime::transaction_validity::TransactionValidity;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
+	transaction_validity::TransactionValidity,
 	ApplyExtrinsicResult, Perbill,
 };
 use sp_staking::SessionIndex;
@@ -480,6 +480,28 @@ impl pallet_staking::Trait for Runtime {
 	type GenesisTime = GenesisTime;
 }
 
+parameter_types! {
+	pub const EthMainet: u64 = 0;
+	pub const EthRopsten: u64 = 1;
+}
+
+impl pallet_eth_relay::Trait for Runtime {
+	type Event = Event;
+	type EthNetwork = EthRopsten;
+}
+
+impl pallet_eth_backing::Trait for Runtime {
+	type Event = Event;
+	type Time = Timestamp;
+	type DetermineAccountId = pallet_eth_backing::AccountIdDeterminator<Runtime>;
+	type EthRelay = EthRelay;
+	type OnDepositRedeem = Staking;
+	type Ring = Balances;
+	type RingReward = ();
+	type Kton = Kton;
+	type KtonReward = ();
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -511,6 +533,8 @@ construct_runtime!(
 		Balances: pallet_ring,
 		Kton: pallet_kton,
 		Staking: pallet_staking,
+		EthRelay: pallet_eth_relay,
+		EthBacking: pallet_eth_backing,
 	}
 );
 

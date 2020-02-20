@@ -3,6 +3,11 @@
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
 use codec::{Decode, Encode};
 use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get};
 use frame_system::{self as system, ensure_root, ensure_signed};
@@ -16,11 +21,6 @@ use sr_eth_primitives::{
 };
 
 type DAG = LightDAG<EthereumPatch>;
-
-#[cfg(all(feature = "std", test))]
-mod mock;
-#[cfg(all(feature = "std", test))]
-mod tests;
 
 pub trait Trait: system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
