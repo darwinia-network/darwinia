@@ -1,0 +1,49 @@
+[package]
+name = "darwinia-eth-relay"
+version = "0.4.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
+frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+
+# darwinia
+ethash = { default-features = false, path = "../../../../primitives/ethash" }
+merkle-patricia-trie = { default-features = false, path = "../../../../primitives/merkle-patricia-trie" }
+sr-eth-primitives = { default-features = false, path = "../../../../primitives/sr-eth-primitives" }
+
+[dev-dependencies]
+hex-literal = "0.2.1"
+keccak-hasher = "0.15.2"
+rustc-hex = "2.0"
+
+sp-core = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-io = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"serde/std",
+
+	"frame-support/std",
+	"frame-system/std",
+	"rlp/std",
+	"sp-runtime/std",
+	"sp-std/std",
+
+	"ethash/std",
+	"merkle-patricia-trie/std",
+	"sr-eth-primitives/std",
+]

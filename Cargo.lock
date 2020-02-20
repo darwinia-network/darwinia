@@ -922,8 +922,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-eth-relay"
+version = "0.4.0"
+dependencies = [
+ "ethash",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "keccak-hasher",
+ "merkle-patricia-trie",
+ "parity-scale-codec",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rustc-hex",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sr-eth-primitives",
+]
+
+[[package]]
 name = "darwinia-kton"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "darwinia-ring",
  "darwinia-support",
@@ -971,7 +992,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "darwinia-phragmen",
  "darwinia-ring",
@@ -995,7 +1016,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-support"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "frame-support",
  "num-traits",
@@ -3114,7 +3135,7 @@ checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 
 [[package]]
 name = "merkle-patricia-trie"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "criterion",
  "ethereum-types 0.5.2",
@@ -6487,7 +6508,7 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "sr-eth-primitives"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "ethbloom 0.8.1",
  "ethereum-types 0.8.0",
