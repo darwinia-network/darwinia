@@ -13,6 +13,7 @@ mod types {
 
 	/// Balance of an account.
 	pub type Balance = u128;
+	pub type DepositId = U256;
 	/// Type used for expressing timestamp.
 	pub type Moment = Timestamp;
 
@@ -94,7 +95,7 @@ decl_event! {
 	{
 		RedeemRing(AccountId, RingBalance, EthTransactionIndex),
 		RedeemKton(AccountId, KtonBalance, EthTransactionIndex),
-		RedeemDeposit(AccountId, RingBalance, EthTransactionIndex),
+		RedeemDeposit(AccountId, DepositId, RingBalance, EthTransactionIndex),
 	}
 }
 
@@ -209,13 +210,12 @@ decl_module! {
 
 				eth_event.parse_log(log).map_err(|_| "Parse Eth Log - FAILED")?
 			};
-			// TODO: unused
-			//			let _deposit_id = result
-			//				.params[0]
-			//				.value
-			//				.clone()
-			//				.to_uint()
-			//				.ok_or("Convert to Int - FAILED")?;
+			let deposit_id = result
+				.params[0]
+				.value
+				.clone()
+				.to_uint()
+				.ok_or("Convert to Int - FAILED")?;
 			let month = {
 				let month = result
 					.params[2]
@@ -276,6 +276,7 @@ decl_module! {
 
 			<Module<T>>::deposit_event(RawEvent::RedeemDeposit(
 				darwinia_account,
+				deposit_id,
 				redeemed_ring,
 				(proof_record.header_hash, proof_record.index),
 			));
