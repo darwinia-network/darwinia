@@ -19,15 +19,15 @@ keccak-hash = { default-features = false, git = "https://github.com/darwinia-net
 primitive-types = { default-features = false, features = ["codec", "rlp"], git = "https://github.com/darwinia-network/parity-common.git" }
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 [dev-dependencies]
 hex-literal = "0.2.1"
 keccak-hasher = "0.15.2"
 rustc-hex = "2.0"
 
-frame-support = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+frame-support = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 triehash = { git = "https://github.com/darwinia-network/parity-common.git" }
 
 

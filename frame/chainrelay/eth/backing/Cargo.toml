@@ -13,11 +13,11 @@ serde = { version = "1.0.101", optional = true }
 
 # github.com
 ethabi = { default-features = false, git = "https://github.com/AurevoirXavier/ethabi.git", branch = "with_no_std" }
-frame-support = { version = "2.0.0", default-features = false , git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+frame-support = { version = "2.0.0", default-features = false , git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 # darwinia
 darwinia-eth-relay = { default-features = false, path = "../relay" }
@@ -28,11 +28,11 @@ sp-eth-primitives = { default-features = false, path = "../../../../primitives/s
 hex-literal = "0.2.1"
 rustc-hex = "2.0"
 
-pallet-session = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+pallet-session = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111"}
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
-sp-io = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-sp-phragmen = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
-sp-staking = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+sp-io = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-phragmen = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111"}
+sp-staking = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111"}
 
 kton = { package = "darwinia-kton", path = "../../../balances/kton" }
 ring = { package = "darwinia-ring", path = '../../../balances/ring' }
