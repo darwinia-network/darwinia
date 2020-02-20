@@ -9,7 +9,7 @@ use keccak_hash::KECCAK_EMPTY_LIST_RLP;
 use primitive_types::{H256, U256, U512};
 use rlp::*;
 use sp_runtime::RuntimeDebug;
-use sp_std::{collections::btree_map::BTreeMap, mem, result};
+use sp_std::{collections::btree_map::BTreeMap, mem};
 
 use crate::{
 	error::{BlockError, Mismatch, OutOfBounds},
@@ -117,7 +117,7 @@ impl EthashPartial {
 }
 
 impl EthashPartial {
-	pub fn verify_block_basic(&self, header: &EthHeader) -> result::Result<(), error::BlockError> {
+	pub fn verify_block_basic(&self, header: &EthHeader) -> Result<(), BlockError> {
 		// check the seal fields.
 		let seal = EthashSeal::parse_seal(header.seal())?;
 
