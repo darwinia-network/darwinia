@@ -926,15 +926,25 @@ name = "darwinia-eth-backing"
 version = "0.4.0"
 dependencies = [
  "darwinia-eth-relay",
+ "darwinia-kton",
+ "darwinia-ring",
+ "darwinia-staking",
  "darwinia-support",
  "ethabi",
  "frame-support",
  "frame-system",
+ "hex-literal",
+ "pallet-session",
  "parity-scale-codec",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rustc-hex",
  "serde",
  "sp-core",
  "sp-eth-primitives",
+ "sp-io",
+ "sp-phragmen",
  "sp-runtime",
+ "sp-staking",
  "sp-std",
 ]
 
@@ -6364,6 +6374,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-phragmen"
+version = "2.0.0"
+source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
+dependencies = [
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "sp-rpc"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
@@ -7304,7 +7324,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfd5b7557925ce778ff9b9ef90e3ade34c524b5ff10e239c69a42d546d2af56"
 dependencies = [
- "rand 0.7.3",
+ "rand 0.5.6",
 ]
 
 [[package]]

@@ -24,19 +24,19 @@ darwinia-eth-relay = { default-features = false, path = "../relay" }
 darwinia-support = { default-features = false, path = "../../../support" }
 sp-eth-primitives = { default-features = false, path = "../../../../primitives/sp-eth-primitives" }
 
-#[dev-dependencies]
-#hex-literal = "0.2.1"
-#rustc-hex = "2.0"
-#
-#pallet-session = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
-#rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
-#sp-io = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-#sp-phragmen = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
-#sp-staking = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
-#
-#kton = { package = "darwinia-kton", path = "../../../balances/kton" }
-#ring = { package = "darwinia-ring", path = '../../../balances/ring' }
-#staking = { package = "darwinia-staking", path = "../../../staking" }
+[dev-dependencies]
+hex-literal = "0.2.1"
+rustc-hex = "2.0"
+
+pallet-session = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
+sp-io = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-phragmen = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+sp-staking = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+
+kton = { package = "darwinia-kton", path = "../../../balances/kton" }
+ring = { package = "darwinia-ring", path = '../../../balances/ring' }
+staking = { package = "darwinia-staking", path = "../../../staking" }
 
 [features]
 default = ["std"]
