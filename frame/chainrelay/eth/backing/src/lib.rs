@@ -49,7 +49,7 @@ use sp_std::{convert::TryFrom, marker::PhantomData, vec};
 
 use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
 use darwinia_support::{LockableCurrency, OnDepositRedeem};
-use sr_eth_primitives::{EthAddress, H256, U256};
+use sp_eth_primitives::{EthAddress, H256, U256};
 use types::*;
 
 pub trait Trait: system::Trait {

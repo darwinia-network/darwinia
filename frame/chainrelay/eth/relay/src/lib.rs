@@ -16,7 +16,7 @@ use sp_std::vec::Vec;
 
 use ethash::{EthereumPatch, LightDAG};
 use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
-use sr_eth_primitives::{
+use sp_eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
 };
 

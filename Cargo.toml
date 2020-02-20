@@ -16,7 +16,7 @@ members = [
 	"primitives/ethash",
 	"primitives/merkle-patricia-trie",
 	"primitives/phragmen",
-	"primitives/sr-eth-primitives",
+	"primitives/sp-eth-primitives",
 ]
 
 [profile.release]

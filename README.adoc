@@ -332,7 +332,7 @@ Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia
 * Darwinia Core
 [source, shell]
 darwinia-cli, ethash, fly-client,
-merkle-mountain-range, merkle-patricia-trie, sr-eth-primitives
+merkle-mountain-range, merkle-patricia-trie, sp-eth-primitives
 * Darwinia Runtime Module Library
 [source, shell]
 darwinia-balances, darwinia-eth-backing, darwinia-eth-relay,

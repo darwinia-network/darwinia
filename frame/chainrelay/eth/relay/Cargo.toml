@@ -21,7 +21,7 @@ sp-std = { version = "2.0.0", default-features = false, git = "https://github.co
 # darwinia
 ethash = { default-features = false, path = "../../../../primitives/ethash" }
 merkle-patricia-trie = { default-features = false, path = "../../../../primitives/merkle-patricia-trie" }
-sr-eth-primitives = { default-features = false, path = "../../../../primitives/sr-eth-primitives" }
+sp-eth-primitives = { default-features = false, path = "../../../../primitives/sp-eth-primitives" }
 
 [dev-dependencies]
 hex-literal = "0.2.1"
@@ -45,5 +45,5 @@ std = [
 
 	"ethash/std",
 	"merkle-patricia-trie/std",
-	"sr-eth-primitives/std",
+	"sp-eth-primitives/std",
 ]

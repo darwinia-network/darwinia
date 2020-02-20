@@ -22,7 +22,7 @@ sp-std = { version = "2.0.0", default-features = false, git = "https://github.co
 # darwinia
 darwinia-eth-relay = { default-features = false, path = "../relay" }
 darwinia-support = { default-features = false, path = "../../../support" }
-sr-eth-primitives = { default-features = false, path = "../../../../primitives/sr-eth-primitives" }
+sp-eth-primitives = { default-features = false, path = "../../../../primitives/sp-eth-primitives" }
 
 #[dev-dependencies]
 #hex-literal = "0.2.1"
@@ -53,5 +53,5 @@ std = [
 
 	"darwinia-support/std",
 	"darwinia-eth-relay/std",
-	"sr-eth-primitives/std",
+	"sp-eth-primitives/std",
 ]

@@ -933,9 +933,9 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-core",
+ "sp-eth-primitives",
  "sp-runtime",
  "sp-std",
- "sr-eth-primitives",
 ]
 
 [[package]]
@@ -953,10 +953,10 @@ dependencies = [
  "rustc-hex",
  "serde",
  "sp-core",
+ "sp-eth-primitives",
  "sp-io",
  "sp-runtime",
  "sp-std",
- "sr-eth-primitives",
 ]
 
 [[package]]
@@ -6249,6 +6249,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-eth-primitives"
+version = "0.4.0"
+dependencies = [
+ "ethbloom 0.8.1",
+ "ethereum-types 0.8.0",
+ "fixed-hash 0.5.1",
+ "frame-support",
+ "hex-literal",
+ "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
+ "impl-rlp 0.2.1 (git+https://github.com/darwinia-network/parity-common.git)",
+ "keccak-hash",
+ "keccak-hasher",
+ "parity-scale-codec",
+ "primitive-types 0.6.1",
+ "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp_derive",
+ "rustc-hex",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+ "triehash",
+]
+
+[[package]]
 name = "sp-externalities"
 version = "2.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=3e651110aa06aa835790df63410a29676243fc54#3e651110aa06aa835790df63410a29676243fc54"
@@ -6537,30 +6561,6 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
-
-[[package]]
-name = "sr-eth-primitives"
-version = "0.4.0"
-dependencies = [
- "ethbloom 0.8.1",
- "ethereum-types 0.8.0",
- "fixed-hash 0.5.1",
- "frame-support",
- "hex-literal",
- "impl-codec 0.4.2 (git+https://github.com/darwinia-network/parity-common.git)",
- "impl-rlp 0.2.1 (git+https://github.com/darwinia-network/parity-common.git)",
- "keccak-hash",
- "keccak-hasher",
- "parity-scale-codec",
- "primitive-types 0.6.1",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
- "rlp_derive",
- "rustc-hex",
- "serde",
- "sp-runtime",
- "sp-std",
- "triehash",
-]
 
 [[package]]
 name = "sr-std"
