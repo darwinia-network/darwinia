@@ -15,7 +15,6 @@ frame-support = { version = "2.0.0", default-features = false, git = "https://gi
 frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 pallet-session = { version = "2.0.0", default-features = false, features = ["historical"], git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
-pallet-timestamp = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 sp-io ={ default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
 sp-keyring = { version = "2.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
@@ -45,7 +44,7 @@ std = [
 	"frame-system/std",
 	"pallet-authorship/std",
 	"pallet-session/std",
-	"pallet-timestamp/std",
+	"sp-core/std",
 	"sp-io/std",
 	"sp-keyring",
 	"sp-runtime/std",

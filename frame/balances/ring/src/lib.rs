@@ -367,7 +367,7 @@ decl_storage! {
 		/// is invoked, giving a chance to external modules to clean up data associated with
 		/// the deleted account.
 		///
-		/// `system::AccountNonce` is also deleted if `ReservedBalance` is also zero (it also gets
+		/// `frame_system::AccountNonce` is also deleted if `ReservedBalance` is also zero (it also gets
 		/// collapsed to zero if it ever becomes less than `ExistentialDeposit`.
 		pub FreeBalance get(fn free_balance)
 			build(|config: &GenesisConfig<T, I>| config.balances.clone()):
@@ -382,7 +382,7 @@ decl_storage! {
 		/// When this balance falls below the value of `ExistentialDeposit`, then this 'reserve account'
 		/// is deleted: specifically, `ReservedBalance`.
 		///
-		/// `system::AccountNonce` is also deleted if `FreeBalance` is also zero (it also gets
+		/// `frame_system::AccountNonce` is also deleted if `FreeBalance` is also zero (it also gets
 		/// collapsed to zero if it ever becomes less than `ExistentialDeposit`.)
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
@@ -460,7 +460,7 @@ decl_module! {
 		/// This will alter `FreeBalance` and `ReservedBalance` in storage. it will
 		/// also decrease the total issuance of the system (`TotalIssuance`).
 		/// If the new free or reserved balance is below the existential deposit,
-		/// it will reset the account nonce (`system::AccountNonce`).
+		/// it will reset the account nonce (`frame_system::AccountNonce`).
 		///
 		/// The dispatch origin for this call is `root`.
 		///

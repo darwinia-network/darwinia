@@ -5,13 +5,13 @@ use sp_runtime::{
 };
 use sp_std::convert::TryInto;
 
-use crate::{Balance, KtonBalance, Moment, MomentOf, RingBalance, Trait};
+use crate::{Balance, KtonBalance, Moment, MomentT, RingBalance, Trait};
 
 //  1 - (99 / 100) ^ sqrt(year)
 // <T: Trait + 'static>() -> RingBalance<T>
 pub fn compute_total_payout<T: Trait>(
-	era_duration: MomentOf<T>,
-	living_time: MomentOf<T>,
+	era_duration: MomentT<T>,
+	living_time: MomentT<T>,
 	total_left: RingBalance<T>,
 	payout_fraction: Perbill,
 ) -> (RingBalance<T>, RingBalance<T>) {
