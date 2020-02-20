@@ -1,0 +1,57 @@
+[package]
+name = "darwinia-eth-backing"
+version = "0.4.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
+ethabi = { default-features = false, git = "https://github.com/AurevoirXavier/ethabi.git", branch = "with_no_std" }
+frame-support = { version = "2.0.0", default-features = false , git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+
+# darwinia
+darwinia-eth-relay = { default-features = false, path = "../relay" }
+darwinia-support = { default-features = false, path = "../../../support" }
+sr-eth-primitives = { default-features = false, path = "../../../../primitives/sr-eth-primitives" }
+
+#[dev-dependencies]
+#hex-literal = "0.2.1"
+#rustc-hex = "2.0"
+#
+#pallet-session = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+#rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
+#sp-io = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54" }
+#sp-phragmen = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+#sp-staking = { git = "https://github.com/paritytech/substrate.git", rev = "3e651110aa06aa835790df63410a29676243fc54"}
+#
+#kton = { package = "darwinia-kton", path = "../../../balances/kton" }
+#ring = { package = "darwinia-ring", path = '../../../balances/ring' }
+#staking = { package = "darwinia-staking", path = "../../../staking" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"serde/std",
+
+	"ethabi/std",
+	"frame-support/std",
+	"frame-system/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"sp-std/std",
+
+	"darwinia-support/std",
+	"darwinia-eth-relay/std",
+	"sr-eth-primitives/std",
+]

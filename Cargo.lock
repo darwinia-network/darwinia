@@ -922,6 +922,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-eth-backing"
+version = "0.4.0"
+dependencies = [
+ "darwinia-eth-relay",
+ "darwinia-support",
+ "ethabi",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "sr-eth-primitives",
+]
+
+[[package]]
 name = "darwinia-eth-relay"
 version = "0.4.0"
 dependencies = [
@@ -1001,7 +1018,6 @@ dependencies = [
  "frame-system",
  "pallet-authorship",
  "pallet-session",
- "pallet-timestamp",
  "parity-scale-codec",
  "safe-mix",
  "serde",
@@ -1176,6 +1192,20 @@ checksum = "14ca354e36190500e1e1fb267c647932382b54053c50b14970856c0b00a35067"
 dependencies = [
  "gcc",
  "libc",
+]
+
+[[package]]
+name = "ethabi"
+version = "9.0.1"
+source = "git+https://github.com/AurevoirXavier/ethabi.git?branch=with_no_std#8c798954130517857c22d26144dfe49a1a00e8ca"
+dependencies = [
+ "ethereum-types 0.8.0",
+ "rustc-hex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sr-std",
+ "tiny-keccak 1.5.0",
 ]
 
 [[package]]
@@ -6529,6 +6559,11 @@ dependencies = [
  "sp-std",
  "triehash",
 ]
+
+[[package]]
+name = "sr-std"
+version = "2.0.0"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#d2c4b0dbd89d9588adcbe97320e27f49ee251411"
 
 [[package]]
 name = "stable_deref_trait"

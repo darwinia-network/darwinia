@@ -8,6 +8,7 @@ members = [
 	"bin/node/runtime",
 	"frame/balances/kton",
 	"frame/balances/ring",
+	"frame/chainrelay/eth/backing",
 	"frame/chainrelay/eth/relay",
 	"frame/staking",
 	"frame/support",
