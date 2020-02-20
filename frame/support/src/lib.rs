@@ -252,8 +252,14 @@ mod traits {
 
 	// callback on eth-backing module
 	pub trait OnDepositRedeem<AccountId> {
+		type Balance;
 		type Moment;
 
-		fn on_deposit_redeem(months: u64, start_at: u64, amount: u128, stash: &AccountId) -> Result<(), &'static str>;
+		fn on_deposit_redeem(
+			start_at: Self::Moment,
+			months: Self::Moment,
+			amount: Self::Balance,
+			stash: &AccountId,
+		) -> DispatchResult;
 	}
 }
