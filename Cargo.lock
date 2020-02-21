@@ -922,6 +922,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-cli"
+version = "2.0.0"
+dependencies = [
+ "ansi_term 0.12.1",
+ "app_dirs",
+ "atty",
+ "clap",
+ "derive_more",
+ "env_logger 0.7.1",
+ "fdlimit",
+ "futures 0.3.4",
+ "lazy_static",
+ "log 0.4.8",
+ "names",
+ "regex",
+ "rpassword",
+ "sc-client-api",
+ "sc-network",
+ "sc-service",
+ "sc-telemetry",
+ "sc-tracing",
+ "serde_json",
+ "sp-blockchain",
+ "sp-core",
+ "sp-keyring",
+ "sp-panic-handler",
+ "sp-runtime",
+ "sp-state-machine",
+ "structopt",
+ "tempfile",
+ "time",
+ "tokio 0.2.11",
+]
+
+[[package]]
 name = "darwinia-eth-backing"
 version = "0.4.0"
 dependencies = [
@@ -3357,6 +3392,7 @@ dependencies = [
  "console_error_panic_hook",
  "console_log",
  "ctrlc",
+ "darwinia-cli",
  "frame-support",
  "frame-system",
  "futures 0.1.29",
@@ -3384,7 +3420,6 @@ dependencies = [
  "sc-authority-discovery",
  "sc-basic-authority",
  "sc-chain-spec",
- "sc-cli",
  "sc-client",
  "sc-client-api",
  "sc-client-db",
