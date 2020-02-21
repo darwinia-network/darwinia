@@ -31,11 +31,8 @@ pub mod time {
 	use node_primitives::{BlockNumber, Moment};
 	use sp_staking::SessionIndex;
 
-	/// Date in Los Angeles*: 19/02/2020, 03:30:00
-	/// Date in Berlin* :19/02/2020, 18:30:00
-	/// Date in Beijing*: 19/02/2020, 17:30:00
-	/// Date in New York* :19/02/2020, 05:30:00
-	pub const GENESIS_TIME: Moment = 1_582_108_200_000;
+	include!(concat!(env!("OUT_DIR"), "/timestamp_now.rs"));
+	pub const GENESIS_TIME: Moment = NOW;
 
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
