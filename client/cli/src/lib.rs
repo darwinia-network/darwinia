@@ -19,24 +19,18 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 
+pub mod error;
+pub mod informant;
+
 #[macro_use]
 mod traits;
-pub mod error;
 mod execution_strategy;
-pub mod informant;
 mod params;
 
-use sc_client_api::execution_extensions::ExecutionStrategies;
-use sc_network::{
-	self,
-	config::{build_multiaddr, NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, TransportConfig},
-	multiaddr::Protocol,
-};
-use sc_service::{
-	config::{Configuration, DatabaseConfig},
-	ChainSpec, ChainSpecExtension, PruningMode, RuntimeGenesis, ServiceBuilderCommand,
-};
-use sp_core::H256;
+pub use params::{CoreParams, ExecutionStrategy, ImportParams, NoCustom, SharedParams};
+#[doc(hidden)]
+pub use structopt::clap::App;
+pub use traits::GetSharedParams;
 
 use std::{
 	fmt::Debug,
@@ -59,15 +53,26 @@ use params::{
 	BuildSpecCmd, CheckBlockCmd, Cors, ExportBlocksCmd, ImportBlocksCmd, MergeParameters, NetworkConfigurationParams,
 	NodeKeyParams, NodeKeyType, PurgeChainCmd, RevertCmd, RunCmd, TransactionPoolParams,
 };
-pub use params::{CoreParams, ExecutionStrategy, ImportParams, NoCustom, SharedParams};
 use regex::Regex;
+use sc_client_api::execution_extensions::ExecutionStrategies;
+use sc_network::{
+	self,
+	config::{build_multiaddr, NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, TransportConfig},
+	multiaddr::Protocol,
+};
+use sc_service::{
+	config::{Configuration, DatabaseConfig},
+	ChainSpec, ChainSpecExtension, PruningMode, RuntimeGenesis, ServiceBuilderCommand,
+};
 use sc_telemetry::TelemetryEndpoints;
-use sp_runtime::generic::BlockId;
-use sp_runtime::traits::{Block as BlockT, Header as HeaderT};
-#[doc(hidden)]
-pub use structopt::clap::App;
+use sp_core::H256;
+use sp_runtime::{
+	generic::BlockId,
+	traits::{Block as BlockT, Header as HeaderT},
+};
 use structopt::{clap::AppSettings, StructOpt, StructOptInternal};
-pub use traits::GetSharedParams;
+
+use params::Conf;
 
 /// default sub directory to store network config
 const DEFAULT_NETWORK_CONFIG_PATH: &'static str = "network";
@@ -806,8 +811,85 @@ where
 	Ok(())
 }
 
+// TODO: check conflict options
+fn load_conf_from_file(cli: &mut RunCmd) -> error::Result<()> {
+	if cli.conf.is_none() {
+		return Ok(());
+	}
+
+	let conf: Conf = {
+		let f = File::open(cli.conf.as_ref().unwrap())?;
+		serde_json::from_reader(f).map_err(|e| format!("{}", e))?
+	};
+
+	//	println!("{:#?}", conf);
+
+	if let Some(shared_params) = conf.shared_params.as_ref() {
+		cli.shared_params.dev = shared_params.dev;
+	}
+	if let Some(validator) = conf.validator {
+		cli.validator = validator;
+	}
+	if let Some(sentry) = conf.sentry {
+		cli.sentry = sentry;
+	}
+	// TODO: keyring
+	if let Some(light) = conf.light {
+		cli.light = light;
+	}
+	cli.name = conf.name;
+	cli.keystore_path = conf.keystore_path;
+	if let Some(offchain_worker) = conf.offchain_worker {
+		cli.offchain_worker = offchain_worker;
+	}
+	if let Some(no_grandpa) = conf.no_grandpa {
+		cli.no_grandpa = no_grandpa;
+	}
+	if let Some(network_config) = conf.network_config {
+		cli.network_config = network_config;
+	}
+	if let Some(pool_config) = conf.pool_config {
+		cli.pool_config = pool_config;
+	}
+	if let Some(rpc_external) = conf.rpc_external {
+		cli.rpc_external = rpc_external;
+	}
+	if let Some(unsafe_rpc_external) = conf.unsafe_rpc_external {
+		cli.unsafe_rpc_external = unsafe_rpc_external;
+	}
+	if let Some(ws_external) = conf.ws_external {
+		cli.ws_external = ws_external;
+	}
+	if let Some(unsafe_ws_external) = conf.unsafe_ws_external {
+		cli.unsafe_ws_external = unsafe_ws_external;
+	}
+	if let Some(grafana_external) = conf.grafana_external {
+		cli.grafana_external = grafana_external;
+	}
+	cli.rpc_port = conf.rpc_port;
+	cli.ws_port = conf.ws_port;
+	cli.grafana_port = conf.grafana_port;
+	cli.ws_max_connections = conf.ws_max_connections;
+	cli.rpc_cors = conf.rpc_cors;
+	if let Some(no_telemetry) = conf.no_telemetry {
+		cli.no_telemetry = no_telemetry;
+	}
+	if let Some(telemetry_endpoints) = conf.telemetry_endpoints {
+		cli.telemetry_endpoints = telemetry_endpoints;
+	}
+	cli.tracing_targets = conf.tracing_targets;
+	if let Some(tracing_receiver) = conf.tracing_receiver {
+		cli.tracing_receiver = tracing_receiver;
+	}
+	if let Some(force_authoring) = conf.force_authoring {
+		cli.force_authoring = force_authoring;
+	}
+
+	Ok(())
+}
+
 fn create_run_node_config<C, G, E, S>(
-	cli: RunCmd,
+	mut cli: RunCmd,
 	spec_factory: S,
 	impl_name: &'static str,
 	version: &VersionInfo,
@@ -819,6 +901,8 @@ where
 	S: FnOnce(&str) -> Result<Option<ChainSpec<G, E>>, String>,
 {
 	let mut config = create_config_with_db_path(spec_factory, &cli.shared_params, &version)?;
+
+	load_conf_from_file(&mut cli)?;
 
 	fill_config_keystore_password(&mut config, &cli)?;
 
