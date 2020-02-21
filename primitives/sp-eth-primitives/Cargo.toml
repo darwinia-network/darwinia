@@ -1,0 +1,52 @@
+[package]
+name = "sp-eth-primitives"
+version = "0.4.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
+
+# github.com
+ethbloom = { default-features = false, git ="https://github.com/darwinia-network/parity-common.git" }
+ethereum-types = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+fixed-hash = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+impl-codec = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+impl-rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+keccak-hash = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+primitive-types = { default-features = false, features = ["codec", "rlp"], git = "https://github.com/darwinia-network/parity-common.git" }
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+
+[dev-dependencies]
+hex-literal = "0.2.1"
+keccak-hasher = "0.15.2"
+rustc-hex = "2.0"
+
+frame-support = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+triehash = { git = "https://github.com/darwinia-network/parity-common.git" }
+
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"serde/std",
+
+	"ethbloom/std",
+	"ethbloom/serialize",
+	"ethereum-types/std",
+	"ethereum-types/serialize",
+	"fixed-hash/std",
+	"impl-codec/std",
+	"impl-rlp/std",
+	"keccak-hash/std",
+	"primitive-types/std",
+	"rlp/std",
+	"sp-std/std",
+	"sp-runtime/std",
+]

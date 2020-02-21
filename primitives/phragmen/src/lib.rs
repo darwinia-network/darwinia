@@ -1,19 +1,3 @@
-// Copyright 2019 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
 //! Rust implementation of the Phragmén election algorithm. This is used in several SRML modules to
 //! optimally distribute the weight of a set of voters among an elected set of candidates. In the
 //! context of staking this is mapped to validators and nominators.
@@ -240,10 +224,10 @@ where
 		// loop 1: initialize score
 		for c in &mut candidates {
 			if !c.elected {
-				// 1 / approval_stake == (total_power / approval_stake) / total_power. If approval_stake is zero,
+				// 1 / approval_stake == (DEN / approval_stake) / DEN. If approval_stake is zero,
 				// then the ratio should be as large as possible, essentially `infinity`.
 				if c.approval_stake.is_zero() {
-					c.score = Rational64::from_unchecked(DEN as _, 0);
+					c.score = Rational64::from_unchecked(DEN, 0);
 				} else {
 					c.score = Rational64::from(DEN / c.approval_stake as u64, DEN);
 				}

@@ -1,19 +1,3 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
 //! Darwinia CLI library.
 //!
 //! This package has two Cargo features:
@@ -52,10 +36,10 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// Generate Iceforg testnet config.
-	GenIceFrogTestnet,
-	/// The IceFrog testnet.
-	IceFrogTestnet,
+	/// Generate Canary testnet config.
+	GenCanaryTestnet,
+	/// The Canary testnet.
+	CanaryTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -67,8 +51,8 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::GenIceFrogTestnet => chain_spec::gen_icefrog_testnet_config(),
-			ChainSpec::IceFrogTestnet => chain_spec::icefrog_testnet_config()?,
+			ChainSpec::GenCanaryTestnet => chain_spec::gen_canary_testnet_config(),
+			ChainSpec::CanaryTestnet => chain_spec::canary_testnet_config()?,
 		})
 	}
 
@@ -77,8 +61,8 @@ impl ChainSpec {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
-			"gen" => Some(ChainSpec::GenIceFrogTestnet),
-			"" | "icefrog" => Some(ChainSpec::IceFrogTestnet),
+			"gen" => Some(ChainSpec::GenCanaryTestnet),
+			"" | "canary" | "Canary" => Some(ChainSpec::CanaryTestnet),
 			_ => None,
 		}
 	}

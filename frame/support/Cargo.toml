@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-support"
-version = "0.2.0"
+version = "0.4.0"
 authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 
@@ -10,9 +10,9 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 num-traits = { version = "0.2.8", default-features = false }
 
 # github.com
-frame-support = { git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402", default-features = false }
-sp-std = { package = "sp-std", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402", default-features = false }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 [features]
 default = ["std"]

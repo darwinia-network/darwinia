@@ -1,19 +1,3 @@
-// Copyright 2017-2019 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
 //! # Staking Module
 //!
 //! The Staking module is used to manage funds at stake by network maintainers.
@@ -247,6 +231,11 @@
 #![feature(drain_filter)]
 #![recursion_limit = "128"]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 mod inflation;
 mod migration;
 mod slashing;
@@ -254,16 +243,17 @@ mod slashing;
 mod types {
 	use sp_std::vec::Vec;
 
-	use crate::{system, Currency, NominatorReward, StakingBalance, StakingLedger, Time, Trait};
+	use crate::*;
 
 	/// Counter for the number of eras that have passed.
 	pub type EraIndex = u32;
 	/// Counter for the number of "reward" points earned by a given validator.
 	pub type Points = u32;
-	/// Type used for expressing timestamp.
-	pub type Moment = Timestamp;
+
 	/// Balance of an account.
 	pub type Balance = u128;
+	/// Type used for expressing timestamp.
+	pub type Moment = Timestamp;
 
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
@@ -274,10 +264,10 @@ mod types {
 	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
 
 	pub type StakingLedgerT<T> =
-		StakingLedger<AccountId<T>, RingBalance<T>, KtonBalance<T>, BlockNumber<T>, MomentOf<T>>;
+		StakingLedger<AccountId<T>, RingBalance<T>, KtonBalance<T>, BlockNumber<T>, MomentT<T>>;
 	pub type StakingBalanceT<T> = StakingBalance<RingBalance<T>, KtonBalance<T>>;
 
-	pub type MomentOf<T> = <TimeT<T> as Time>::Moment;
+	pub type MomentT<T> = <TimeT<T> as Time>::Moment;
 
 	pub type Rewards<T> = (RingBalance<T>, Vec<NominatorReward<AccountId<T>, RingBalance<T>>>);
 
@@ -293,11 +283,6 @@ mod types {
 	type KtonCurrency<T> = <T as Trait>::KtonCurrency;
 }
 
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
-
 pub use types::{EraIndex, Points};
 
 use codec::{Decode, Encode, HasCompact};
@@ -312,7 +297,7 @@ use sp_runtime::{
 	traits::{
 		CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, SimpleArithmetic, StaticLookup, Zero,
 	},
-	Perbill, Perquintill, RuntimeDebug,
+	DispatchResult, Perbill, Perquintill, RuntimeDebug,
 };
 #[cfg(feature = "std")]
 use sp_runtime::{Deserialize, Serialize};
@@ -324,7 +309,8 @@ use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::V
 
 use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
 use darwinia_support::{
-	LockIdentifier, LockableCurrency, NormalLock, StakingLock, WithdrawLock, WithdrawReason, WithdrawReasons,
+	LockIdentifier, LockableCurrency, NormalLock, OnDepositRedeem, StakingLock, WithdrawLock, WithdrawReason,
+	WithdrawReasons,
 };
 use types::*;
 
@@ -696,7 +682,7 @@ pub struct UnappliedSlash<AccountId, RingBalance, KtonBalance> {
 /// Means for interacting with a specialized version of the `session` trait.
 ///
 /// This is needed because `Staking` sets the `ValidatorIdOf` of the `pallet_session::Trait`
-pub trait SessionInterface<AccountId>: frame_system::Trait {
+pub trait SessionInterface<AccountId>: system::Trait {
 	/// Disable a given validator by stash ID.
 	///
 	/// Returns `true` if new era should be forced at the end of this session.
@@ -709,23 +695,23 @@ pub trait SessionInterface<AccountId>: frame_system::Trait {
 	fn prune_historical_up_to(up_to: SessionIndex);
 }
 
-impl<T: Trait> SessionInterface<<T as frame_system::Trait>::AccountId> for T
+impl<T: Trait> SessionInterface<<T as system::Trait>::AccountId> for T
 where
-	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
+	T: pallet_session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
-	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
-	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as frame_system::Trait>::AccountId>,
-	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as frame_system::Trait>::AccountId>,
-	T::ValidatorIdOf: Convert<<T as frame_system::Trait>::AccountId, Option<<T as frame_system::Trait>::AccountId>>,
+	T::SessionHandler: pallet_session::SessionHandler<<T as system::Trait>::AccountId>,
+	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as system::Trait>::AccountId>,
+	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as system::Trait>::AccountId>,
+	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
 {
-	fn disable_validator(validator: &<T as frame_system::Trait>::AccountId) -> Result<bool, ()> {
+	fn disable_validator(validator: &<T as system::Trait>::AccountId) -> Result<bool, ()> {
 		<pallet_session::Module<T>>::disable(validator)
 	}
 
-	fn validators() -> Vec<<T as frame_system::Trait>::AccountId> {
+	fn validators() -> Vec<<T as system::Trait>::AccountId> {
 		<pallet_session::Module<T>>::validators()
 	}
 
@@ -734,12 +720,12 @@ where
 	}
 }
 
-pub trait Trait: frame_system::Trait {
+pub trait Trait: system::Trait {
 	/// Time used for computing era duration.
 	type Time: Time;
 
 	/// The overarching event type.
-	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
 	/// Number of sessions per era.
 	type SessionsPerEra: Get<SessionIndex>;
@@ -782,7 +768,7 @@ pub trait Trait: frame_system::Trait {
 	type TotalPower: Get<Power>;
 
 	// TODO: doc
-	type GenesisTime: Get<MomentOf<Self>>;
+	type GenesisTime: Get<MomentT<Self>>;
 }
 
 /// Mode of era-forcing.
@@ -849,7 +835,7 @@ decl_storage! {
 		pub CurrentEra get(fn current_era) config(): EraIndex;
 
 		/// The start of the current era.
-		pub CurrentEraStart get(fn current_era_start): MomentOf<T>;
+		pub CurrentEraStart get(fn current_era_start): MomentT<T>;
 
 		/// The session index at which the current era started.
 		pub CurrentEraStartSessionIndex get(fn current_era_start_session_index): SessionIndex;
@@ -957,15 +943,15 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T>
 	where
-		<T as frame_system::Trait>::AccountId,
-		<T as frame_system::Trait>::BlockNumber,
+		<T as system::Trait>::AccountId,
+		<T as system::Trait>::BlockNumber,
 		RingBalance = RingBalance<T>,
 		KtonBalance = KtonBalance<T>,
-		MomentOf = MomentOf<T>,
+		MomentT = MomentT<T>,
 	{
 		/// Bond succeed.
-		/// `amount` in `RingBalance<T>`, `start_time` in `MomentOf<T>`, `expired_time` in `MomentOf<T>`
-		BondRing(RingBalance, MomentOf, MomentOf),
+		/// `amount` in `RingBalance<T>`, `start_time` in `MomentT<T>`, `expired_time` in `MomentT<T>`
+		BondRing(RingBalance, MomentT, MomentT),
 		/// Bond succeed.
 		/// `amount`
 		BondKton(KtonBalance),
@@ -1030,7 +1016,7 @@ decl_module! {
 		const TotalPower: Power = T::TotalPower::get();
 
 		// TODO: doc
-		const GenesisTime: MomentOf<T> = T::GenesisTime::get();
+		const GenesisTime: MomentT<T> = T::GenesisTime::get();
 
 		type Error = Error<T>;
 
@@ -1071,10 +1057,10 @@ decl_module! {
 			promise_month: Moment
 		) {
 			let stash = ensure_signed(origin)?;
-			ensure!(!<Bonded<T>>::exists(&stash), Error::<T>::AlreadyBonded);
+			ensure!(!<Bonded<T>>::exists(&stash), <Error<T>>::AlreadyBonded);
 
 			let controller = T::Lookup::lookup(controller)?;
-			ensure!(!<Ledger<T>>::exists(&controller), Error::<T>::AlreadyPaired);
+			ensure!(!<Ledger<T>>::exists(&controller), <Error<T>>::AlreadyPaired);
 
 			let ledger = StakingLedger {
 				stash: stash.clone(),
@@ -1087,7 +1073,7 @@ decl_module! {
 					// reject a bond which is considered to be _dust_.
 					ensure!(
 						r >= T::RingCurrency::minimum_balance(),
-						Error::<T>::InsufficientValue,
+						<Error<T>>::InsufficientValue,
 					);
 
 					let stash_balance = T::RingCurrency::free_balance(&stash);
@@ -1107,7 +1093,7 @@ decl_module! {
 					// reject a bond which is considered to be _dust_.
 					ensure!(
 						k >= T::KtonCurrency::minimum_balance(),
-						Error::<T>::InsufficientValue,
+						<Error<T>>::InsufficientValue,
 					);
 
 					let stash_balance = T::KtonCurrency::free_balance(&stash);
@@ -1144,8 +1130,8 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn bond_extra(origin, max_additional: StakingBalanceT<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
-			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let promise_month = promise_month.min(36);
 
 			match max_additional {
@@ -1183,10 +1169,10 @@ decl_module! {
 		// TODO: doc
 		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
-			let controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let start_time = T::Time::now();
-			let expire_time = start_time + <MomentOf<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
+			let expire_time = start_time + <MomentT<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
 			let promise_month = promise_month.max(3).min(36);
 			let mut ledger = Self::clear_mature_deposits(ledger);
 			let StakingLedger {
@@ -1239,7 +1225,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(Error::<T>::NotController)?);
+			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
 			let StakingLedger {
 				active_ring,
 				active_deposit_ring,
@@ -1248,7 +1234,7 @@ decl_module! {
 				kton_staking_lock,
 				..
 			} = &mut ledger;
-			let now = <frame_system::Module<T>>::block_number();
+			let now = <system::Module<T>>::block_number();
 
 			ring_staking_lock.shrink(now);
 			kton_staking_lock.shrink(now);
@@ -1261,7 +1247,7 @@ decl_module! {
 			//     2. `let c_ = a as u32 + b as u32; c_ < c`
 			ensure!(
 				(ring_staking_lock.unbondings.len() + kton_staking_lock.unbondings.len()) < MAX_UNLOCKING_CHUNKS,
-				Error::<T>::NoMoreChunks,
+				<Error<T>>::NoMoreChunks,
 			);
 
 			match value {
@@ -1332,15 +1318,15 @@ decl_module! {
 		// TODO: doc
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(Error::<T>::NotController)?);
+			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
 
 			<Ledger<T>>::insert(controller, ledger);
 		}
 
 		// TODO: doc
-		fn try_claim_deposits_with_punish(origin, expire_time: MomentOf<T>) {
+		fn try_claim_deposits_with_punish(origin, expire_time: MomentT<T>) {
 			let controller = ensure_signed(origin)?;
-			let mut ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let mut ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let now = T::Time::now();
 
 			if expire_time <= now {
@@ -1420,7 +1406,7 @@ decl_module! {
 			Self::ensure_storage_upgraded();
 
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
 			<Nominators<T>>::remove(stash);
@@ -1443,10 +1429,10 @@ decl_module! {
 			Self::ensure_storage_upgraded();
 
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
-			ensure!(!targets.is_empty(), Error::<T>::EmptyTargets);
+			ensure!(!targets.is_empty(), <Error<T>>::EmptyTargets);
 
 			let targets = targets.into_iter()
 				.take(MAX_NOMINATIONS)
@@ -1476,7 +1462,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn chill(origin) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 
 			Self::chill_stash(&ledger.stash);
 		}
@@ -1495,7 +1481,7 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn set_payee(origin, payee: RewardDestination) {
 			let controller = ensure_signed(origin)?;
-			let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
+			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
 
 			<Payee<T>>::insert(stash, payee);
@@ -1515,10 +1501,10 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn set_controller(origin, controller: <T::Lookup as StaticLookup>::Source) {
 			let stash = ensure_signed(origin)?;
-			let old_controller = Self::bonded(&stash).ok_or(Error::<T>::NotStash)?;
+			let old_controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
 			let controller = T::Lookup::lookup(controller)?;
 
-			ensure!(!<Ledger<T>>::exists(&controller), Error::<T>::AlreadyPaired);
+			ensure!(!<Ledger<T>>::exists(&controller), <Error<T>>::AlreadyPaired);
 
 			if controller != old_controller {
 				<Bonded<T>>::insert(&stash, &controller);
@@ -1612,12 +1598,12 @@ decl_module! {
 				let index = index as usize;
 
 				// if `index` is not duplicate, `removed` must be <= index.
-				ensure!(removed <= index, Error::<T>::DuplicateIndex);
+				ensure!(removed <= index, <Error<T>>::DuplicateIndex);
 
 				// all prior removals were from before this index, since the
 				// list is sorted.
 				let index = index - removed;
-				ensure!(index < unapplied.len(), Error::<T>::InvalidSlashIndex);
+				ensure!(index < unapplied.len(), <Error<T>>::InvalidSlashIndex);
 
 				unapplied.remove(index);
 			}
@@ -1664,7 +1650,7 @@ impl<T: Trait> Module<T> {
 		value: RingBalance<T>,
 		promise_month: Moment,
 		mut ledger: StakingLedgerT<T>,
-	) -> (MomentOf<T>, MomentOf<T>) {
+	) -> (MomentT<T>, MomentT<T>) {
 		let start_time = T::Time::now();
 		let mut expire_time = start_time;
 
@@ -1673,7 +1659,7 @@ impl<T: Trait> Module<T> {
 		// there will be extra reward, kton, which
 		// can also be use to stake.
 		if promise_month >= 3 {
-			expire_time += <MomentOf<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
+			expire_time += <MomentT<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
 			ledger.active_deposit_ring += value;
 			// for now, kton_return is free
 			// mint kton
@@ -1687,6 +1673,29 @@ impl<T: Trait> Module<T> {
 				expire_time,
 			});
 		}
+
+		Self::update_ledger(&controller, &mut ledger, StakingBalance::RingBalance(value));
+
+		(start_time, expire_time)
+	}
+
+	fn bond_ring_for_deposit_redeem(
+		controller: &T::AccountId,
+		value: RingBalance<T>,
+		start: Moment,
+		promise_month: Moment,
+		mut ledger: StakingLedgerT<T>,
+	) -> (MomentT<T>, MomentT<T>) {
+		let start_time = <MomentT<T>>::saturated_from(start.into());
+		let expire_time = start_time + <MomentT<T>>::saturated_from((promise_month * MONTH_IN_MILLISECONDS).into());
+
+		ledger.active_ring = ledger.active_ring.saturating_add(value);
+		ledger.active_deposit_ring = ledger.active_deposit_ring.saturating_add(value);
+		ledger.deposit_items.push(TimeDepositItem {
+			value,
+			start_time,
+			expire_time,
+		});
 
 		Self::update_ledger(&controller, &mut ledger, StakingBalance::RingBalance(value));
 
@@ -2076,7 +2085,7 @@ impl<T: Trait> Module<T> {
 			}
 
 			// Populate Stakers and figure out the minimum stake behind a slot.
-			let mut slot_stake = Power::max_value();
+			let mut slot_stake = T::TotalPower::get();
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let exposure = Exposure {
@@ -2133,12 +2142,13 @@ impl<T: Trait> Module<T> {
 	/// - Immediately when an account's balance falls below existential deposit.
 	/// - after a `withdraw_unbond()` call that frees all of a stash's bonded balance.
 	fn kill_stash(stash: &T::AccountId) {
-		<Payee<T>>::remove(stash);
-		<Validators<T>>::remove(stash);
-		<Nominators<T>>::remove(stash);
 		if let Some(controller) = <Bonded<T>>::take(stash) {
 			<Ledger<T>>::remove(&controller);
 		}
+
+		<Payee<T>>::remove(stash);
+		<Validators<T>>::remove(stash);
+		<Nominators<T>>::remove(stash);
 
 		slashing::clear_stash_metadata::<T>(stash);
 	}
@@ -2251,15 +2261,15 @@ impl<T: Trait> SelectInitialValidators<T::AccountId> for Module<T> {
 /// This is intended to be used with `FilterHistoricalOffences`.
 impl<T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::IdentificationTuple<T>> for Module<T>
 where
-	T: pallet_session::Trait<ValidatorId = <T as frame_system::Trait>::AccountId>,
+	T: pallet_session::Trait<ValidatorId = <T as system::Trait>::AccountId>,
 	T: pallet_session::historical::Trait<
-		FullIdentification = Exposure<<T as frame_system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
+		FullIdentification = Exposure<<T as system::Trait>::AccountId, RingBalance<T>, KtonBalance<T>>,
 		FullIdentificationOf = ExposureOf<T>,
 	>,
-	T::SessionHandler: pallet_session::SessionHandler<<T as frame_system::Trait>::AccountId>,
-	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as frame_system::Trait>::AccountId>,
-	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as frame_system::Trait>::AccountId>,
-	T::ValidatorIdOf: Convert<<T as frame_system::Trait>::AccountId, Option<<T as frame_system::Trait>::AccountId>>,
+	T::SessionHandler: pallet_session::SessionHandler<<T as system::Trait>::AccountId>,
+	T::OnSessionEnding: pallet_session::OnSessionEnding<<T as system::Trait>::AccountId>,
+	T::SelectInitialValidators: pallet_session::SelectInitialValidators<<T as system::Trait>::AccountId>,
+	T::ValidatorIdOf: Convert<<T as system::Trait>::AccountId, Option<<T as system::Trait>::AccountId>>,
 {
 	fn on_offence(
 		offenders: &[OffenceDetails<T::AccountId, pallet_session::historical::IdentificationTuple<T>>],
@@ -2356,5 +2366,42 @@ where
 		} else {
 			<Module<T>>::deposit_event(RawEvent::OldSlashingReportDiscarded(offence_session))
 		}
+	}
+}
+
+impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
+	type Balance = RingBalance<T>;
+	type Moment = Moment;
+
+	fn on_deposit_redeem(
+		start_time: Self::Moment,
+		months: Self::Moment,
+		amount: Self::Balance,
+		stash: &T::AccountId,
+	) -> DispatchResult {
+		let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
+		let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
+
+		// TODO: Issue #169, checking the timestamp unit difference between Ethereum and Darwinia
+		let start_time = start_time * 1000;
+		let promise_month = months.min(36);
+
+		//		let stash_balance = T::Ring::free_balance(&stash);
+
+		// TODO: Lock but no kton reward because this is a deposit redeem
+		//		let extra = extra.min(r);
+
+		let redeemed_positive_imbalance_ring = T::RingCurrency::deposit_into_existing(&stash, amount)?;
+
+		T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
+
+		let (start_time, expire_time) =
+			Self::bond_ring_for_deposit_redeem(&controller, amount, start_time, promise_month, ledger);
+
+		<RingPool<T>>::mutate(|r| *r += amount);
+		// TODO: Should we deposit an different event?
+		<Module<T>>::deposit_event(RawEvent::BondRing(amount, start_time, expire_time));
+
+		Ok(())
 	}
 }

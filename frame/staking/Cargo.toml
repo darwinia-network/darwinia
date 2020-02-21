@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-staking"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
 
@@ -11,24 +11,23 @@ safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-session = { version = "2.0.0", default-features = false, features = ["historical"], git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-timestamp = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-io ={ default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-keyring = { version = "2.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-staking = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+pallet-session = { version = "2.0.0", default-features = false, features = ["historical"], git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-io ={ default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-keyring = { version = "2.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-staking = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 # darwinia
 darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
 darwinia-support = {  default-features = false, path = "../support" }
 
 [dev-dependencies]
-substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 darwinia-ring = { path = "../../frame/balances/ring" }
 
@@ -42,11 +41,11 @@ std = [
 	"serde",
 
 	"frame-support/std",
-    "frame-system/std",
-    "pallet-authorship/std",
-    "pallet-session/std",
-    "pallet-timestamp/std",
-    "sp-io/std",
+	"frame-system/std",
+	"pallet-authorship/std",
+	"pallet-session/std",
+	"sp-core/std",
+	"sp-io/std",
 	"sp-keyring",
 	"sp-runtime/std",
 	"sp-staking/std",

@@ -1,24 +1,7 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
 //! Test utilities
 
-use crate::{
-	inflation, EraIndex, GenesisConfig, Module, Nominators, RewardDestination, StakerStatus, Trait, ValidatorPrefs,
-};
+use std::{cell::RefCell, collections::HashSet};
+
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
 	traits::{Currency, FindAuthor, Get},
@@ -27,15 +10,18 @@ use frame_support::{
 };
 use sp_core::{crypto::key_types, H256};
 use sp_io;
-use sp_runtime::curve::PiecewiseLinear;
-use sp_runtime::testing::{Header, UintAuthorityId};
-use sp_runtime::traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion};
-use sp_runtime::{KeyTypeId, Perbill};
+use sp_runtime::{
+	curve::PiecewiseLinear,
+	testing::{Header, UintAuthorityId},
+	traits::{Convert, IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
+	{KeyTypeId, Perbill},
+};
 use sp_staking::{
 	offence::{OffenceDetails, OnOffenceHandler},
 	SessionIndex,
 };
-use std::{cell::RefCell, collections::HashSet};
+
+use crate::*;
 
 /// The AccountId alias in this test module.
 pub type AccountId = u64;
@@ -104,7 +90,7 @@ impl Get<EraIndex> for SlashDeferDuration {
 }
 
 impl_outer_origin! {
-	pub enum Origin for Test  where system = frame_system {}
+	pub enum Origin for Test  where system = system {}
 }
 
 /// Author of block is always 11
@@ -127,7 +113,7 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl frame_system::Trait for Test {
+impl system::Trait for Test {
 	type Origin = Origin;
 	type Index = u64;
 	type BlockNumber = BlockNumber;
@@ -221,7 +207,7 @@ impl Trait for Test {
 	type Reward = ();
 	type SessionsPerEra = SessionsPerEra;
 	type SlashDeferDuration = SlashDeferDuration;
-	type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type BondingDuration = BondingDuration;
 	type SessionInterface = Self;
 	type RewardCurve = RewardCurve;
@@ -298,7 +284,7 @@ impl ExtBuilder {
 	}
 	pub fn build(self) -> sp_io::TestExternalities {
 		self.set_associated_consts();
-		let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 		let balance_factor = if self.existential_deposit > 0 { 256 } else { 1 };
 
 		let num_validators = self.num_validators.unwrap_or(self.validator_count);
@@ -375,7 +361,7 @@ impl ExtBuilder {
 	}
 }
 
-pub type System = frame_system::Module<Test>;
+pub type System = system::Module<Test>;
 pub type Balances = pallet_balances::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;

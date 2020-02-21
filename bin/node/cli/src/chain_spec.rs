@@ -1,29 +1,13 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
-//! Substrate chain configurations.
+//! Darwinia chain configurations.
 
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_runtime::constants::currency::*;
 use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, GrandpaConfig,
-	ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, SudoConfig,
-	SystemConfig, WASM_BINARY,
+	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, EthBackingConfig,
+	EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus,
+	StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -57,9 +41,9 @@ pub struct Extensions {
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = sc_service::ChainSpec<GenesisConfig, Extensions>;
-/// IceFrog testnet generator
-pub fn icefrog_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/icefrog.json")[..])
+/// Canary testnet generator
+pub fn canary_testnet_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/canary.json")[..])
 }
 
 fn session_keys(
@@ -166,15 +150,10 @@ pub fn darwinia_genesis(
 				})
 				.collect::<Vec<_>>(),
 		}),
-		//		pallet_democracy: Some(DemocracyConfig::default()),
 		pallet_collective_Instance1: Some(CouncilConfig {
 			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
 			phantom: Default::default(),
 		}),
-		//		pallet_collective_Instance2: Some(TechnicalCommitteeConfig {
-		//			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
-		//			phantom: Default::default(),
-		//		}),
 		pallet_contracts: Some(ContractsConfig {
 			current_schedule: pallet_contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -187,8 +166,6 @@ pub fn darwinia_genesis(
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		//		pallet_membership_Instance1: Some(Default::default()),
-		//		pallet_treasury: Some(Default::default()),
 		pallet_ring: Some(BalancesConfig {
 			balances: endowed_accounts
 				.iter()
@@ -217,6 +194,18 @@ pub fn darwinia_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
+		}),
+		pallet_eth_relay: Some(EthRelayConfig {
+			authorities: eth_relay_authorities,
+			..Default::default()
+		}),
+		pallet_eth_backing: Some(EthBackingConfig {
+			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
+			ring_locked: 2_000_000_000 * COIN,
+			kton_locked: 50_000 * COIN,
 			..Default::default()
 		}),
 	}
@@ -359,9 +348,9 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-/// IceFrog local testnet config (multivalidator Alice + Bob)
+/// Canary local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	fn icefrog_config_genesis() -> GenesisConfig {
+	fn canary_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				get_authority_keys_from_seed("Alice"),
@@ -386,9 +375,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia IceFrog Testnet",
-		"icefrog_testnet",
-		icefrog_config_genesis,
+		"Darwinia Canary Testnet",
+		"canary_testnet",
+		canary_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
@@ -398,9 +387,9 @@ pub fn local_testnet_config() -> ChainSpec {
 			properties.insert("ss58Format".into(), 42.into());
 
 			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("tokenSymbol".into(), "CRING".into());
 			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
 
 			Some(properties)
 		},
@@ -408,9 +397,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-/// IceFrog testnet config generator
-pub fn gen_icefrog_testnet_config() -> ChainSpec {
-	fn icefrog_config_genesis() -> GenesisConfig {
+/// Canary testnet config generator
+pub fn gen_canary_testnet_config() -> ChainSpec {
+	fn canary_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				(
@@ -449,9 +438,9 @@ pub fn gen_icefrog_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia IceFrog Testnet",
-		"icefrog_testnet",
-		icefrog_config_genesis,
+		"Darwinia Canary Testnet",
+		"canary_testnet",
+		canary_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
@@ -460,9 +449,9 @@ pub fn gen_icefrog_testnet_config() -> ChainSpec {
 
 			properties.insert("ss58Format".into(), 42.into());
 			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "IRING".into());
+			properties.insert("tokenSymbol".into(), "CRING".into());
 			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "IKTON".into());
+			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
 
 			Some(properties)
 		},

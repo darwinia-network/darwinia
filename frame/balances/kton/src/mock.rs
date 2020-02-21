@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 
-use darwinia_ring as ring;
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
 use sp_core::H256;
 use sp_io;
@@ -24,7 +23,7 @@ pub type Moment = u64;
 
 pub type System = system::Module<Test>;
 
-pub type Ring = ring::Module<Test>;
+pub type Ring = darwinia_ring::Module<Test>;
 pub type Kton = Module<Test>;
 
 impl_outer_origin! {
@@ -92,7 +91,7 @@ impl system::Trait for Test {
 	type Version = ();
 	type ModuleToIndex = ();
 }
-impl ring::Trait for Test {
+impl darwinia_ring::Trait for Test {
 	type Balance = Balance;
 	type OnFreeBalanceZero = ();
 	type OnNewAccount = ();

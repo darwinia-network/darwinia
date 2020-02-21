@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Parity Technologies (UK) Ltd.
+// Copyright 2018-2020 Parity Technologies (UK) Ltd.
 // This file is part of Substrate.
 
 // Substrate is free software: you can redistribute it and/or modify
@@ -20,12 +20,10 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-/// Implementations of some helper traits passed into runtime modules as associated types.
-pub mod impls;
-use impls::{Author, LinearWeightToFee, TargetedFeeAdjustment};
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, supply::*, time::*};
+/// Implementations of some helper traits passed into runtime modules as associated types.
+pub mod impls;
 
 pub use frame_support::StorageValue;
 pub use pallet_contracts::Gas;
@@ -36,12 +34,14 @@ pub use sp_runtime::BuildStorage;
 pub use pallet_ring::Call as BalancesCall;
 pub use pallet_staking::StakerStatus;
 
+use constants::{currency::*, supply::*, time::*};
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
+use impls::{Author, LinearWeightToFee, TargetedFeeAdjustment};
 use pallet_contracts_rpc_runtime_api::ContractExecResult;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -53,10 +53,10 @@ use sp_core::{
 	OpaqueMetadata,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
-use sp_runtime::transaction_validity::TransactionValidity;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
+	transaction_validity::TransactionValidity,
 	ApplyExtrinsicResult, Perbill,
 };
 use sp_staking::SessionIndex;
@@ -397,7 +397,11 @@ impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for 
 		account: AccountId,
 		index: Index,
 	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
-		let period = 1 << 8;
+		// take the biggest period possible.
+		let period = BlockHashCount::get()
+			.checked_next_power_of_two()
+			.map(|c| c / 2)
+			.unwrap_or(2) as u64;
 		let current_block = System::block_number().saturated_into::<u64>();
 		let tip = 0;
 		let extra: SignedExtra = (
@@ -444,11 +448,10 @@ impl pallet_kton::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const BlocksPerSession: BlockNumber = EPOCH_DURATION_IN_BLOCKS;
-	pub const SessionsPerEra: SessionIndex = ERA_DURATION;
-	pub const BondingDurationInEra: EraIndex = 24 * 28;
-	pub const BondingDurationInBlockNumber: BlockNumber = 24 * 28 * ERA_DURATION * EPOCH_DURATION_IN_BLOCKS;
-	pub const SlashDeferDuration: EraIndex = 24 * 7; // 1/4 the bonding duration.
+	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
+	pub const BondingDurationInEra: EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
+	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
+	pub const SlashDeferDuration: EraIndex = 7 * 24; // 1/4 the bonding duration.
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
@@ -477,6 +480,28 @@ impl pallet_staking::Trait for Runtime {
 	type GenesisTime = GenesisTime;
 }
 
+parameter_types! {
+	pub const EthMainet: u64 = 0;
+	pub const EthRopsten: u64 = 1;
+}
+
+impl pallet_eth_relay::Trait for Runtime {
+	type Event = Event;
+	type EthNetwork = EthRopsten;
+}
+
+impl pallet_eth_backing::Trait for Runtime {
+	type Event = Event;
+	type Time = Timestamp;
+	type DetermineAccountId = pallet_eth_backing::AccountIdDeterminator<Runtime>;
+	type EthRelay = EthRelay;
+	type OnDepositRedeem = Staking;
+	type Ring = Balances;
+	type RingReward = ();
+	type Kton = Kton;
+	type KtonReward = ();
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -484,7 +509,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event},
-		Utility: pallet_utility::{Module, Call, Storage, Event<T>, Error},
+		Utility: pallet_utility::{Module, Call, Storage, Event<T>},
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent},
@@ -505,9 +530,11 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
 
-		Balances: pallet_ring::{default, Error},
-		Kton: pallet_kton::{default, Error},
-		Staking: pallet_staking::{default, OfflineWorker},
+		Balances: pallet_ring,
+		Kton: pallet_kton,
+		Staking: pallet_staking,
+		EthRelay: pallet_eth_relay,
+		EthBacking: pallet_eth_backing,
 	}
 );
 

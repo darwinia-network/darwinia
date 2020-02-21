@@ -11,18 +11,18 @@ safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 # darwinia
 darwinia-support = { default-features = false, path = "../../support" }
 
 [dev-dependencies]
-sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
 [features]
 default = ["std"]
@@ -32,7 +32,7 @@ std = [
 	"serde",
 
 	"frame-support/std",
-    "frame-system/std",
+	"frame-system/std",
 	"sp-runtime/std",
 	"sp-std/std",
 

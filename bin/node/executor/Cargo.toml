@@ -6,14 +6,18 @@ description = "Substrate node implementation in Rust."
 edition = "2018"
 
 [dependencies]
-trie-root = "0.15.2"
+# crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0" }
-sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-state-machine = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sc-executor = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
-sp-trie = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", rev = "c2fccb36ffacd118fc3502aa93453580a07dc402" }
+trie-root = "0.15.2"
 
+# github.com
+sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sc-executor = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-io = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-state-machine = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-trie = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+
+# darwinia
 node-primitives = { path = "../primitives" }
 node-runtime = { path = "../runtime" }
 

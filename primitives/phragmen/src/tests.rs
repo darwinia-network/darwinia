@@ -1,3 +1,5 @@
+//! Tests for the module.
+
 #![cfg(test)]
 
 use sp_runtime::Perbill;

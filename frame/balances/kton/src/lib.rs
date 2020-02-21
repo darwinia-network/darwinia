@@ -32,7 +32,7 @@ use darwinia_support::{
 	BalanceLock, Fee, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons,
 };
 
-type RingBalance<T> = <<T as Trait>::RingCurrency as Currency<<T as frame_system::Trait>::AccountId>>::Balance;
+type RingBalance<T> = <<T as Trait>::RingCurrency as Currency<<T as system::Trait>::AccountId>>::Balance;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug)]
@@ -63,7 +63,7 @@ impl<Balance: SimpleArithmetic + Copy, BlockNumber: SimpleArithmetic + Copy> Ves
 	}
 }
 
-pub trait Trait: frame_system::Trait {
+pub trait Trait: system::Trait {
 	/// The balance of an account.
 	type Balance: Parameter
 		+ Member
@@ -76,7 +76,7 @@ pub trait Trait: frame_system::Trait {
 		+ From<Self::BlockNumber>;
 
 	/// The overarching event type.
-	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
 	// TODO doc
 	type RingCurrency: Currency<Self::AccountId>;
@@ -91,7 +91,7 @@ pub trait Trait: frame_system::Trait {
 
 decl_event!(
 	pub enum Event<T> where
-		<T as frame_system::Trait>::AccountId,
+		<T as system::Trait>::AccountId,
 		<T as Trait>::Balance,
 		RingBalance = RingBalance<T>
 	{
@@ -162,7 +162,7 @@ decl_storage! {
 		/// is invoked, giving a chance to external modules to clean up data associated with
 		/// the deleted account.
 		///
-		/// `frame_system::AccountNonce` is also deleted if `ReservedBalance` is also zero (it also gets
+		/// `system::AccountNonce` is also deleted if `ReservedBalance` is also zero (it also gets
 		/// collapsed to zero if it ever becomes less than `ExistentialDeposit`.
 		pub FreeBalance get(fn free_balance)
 			build(|config: &GenesisConfig<T>| config.balances.clone()):
@@ -177,7 +177,7 @@ decl_storage! {
 		/// When this balance falls below the value of `ExistentialDeposit`, then this 'reserve account'
 		/// is deleted: specifically, `ReservedBalance`.
 		///
-		/// `frame_system::AccountNonce` is also deleted if `FreeBalance` is also zero (it also gets
+		/// `system::AccountNonce` is also deleted if `FreeBalance` is also zero (it also gets
 		/// collapsed to zero if it ever becomes less than `ExistentialDeposit`.)
 		pub ReservedBalance get(fn reserved_balance): map T::AccountId => T::Balance;
 
@@ -241,7 +241,7 @@ decl_module! {
 		/// This will alter `FreeBalance` and `ReservedBalance` in storage. it will
 		/// also decrease the total issuance of the system (`TotalIssuance`).
 		/// If the new free or reserved balance is below the existential deposit,
-		/// it will reset the account nonce (`frame_system::AccountNonce`).
+		/// it will reset the account nonce (`system::AccountNonce`).
 		///
 		/// The dispatch origin for this call is `root`.
 		///
@@ -333,7 +333,7 @@ impl<T: Trait> Module<T> {
 mod imbalances {
 	use sp_std::mem;
 
-	use super::{Imbalance, Saturating, StorageValue, Trait, TryDrop, Zero};
+	use crate::*;
 
 	/// Opaque, move-only struct with private fields that serves as a token denoting that
 	/// funds have been created without any equal and opposite accounting.
@@ -537,21 +537,21 @@ where
 		if reasons.intersects(WithdrawReason::Reserve | WithdrawReason::Transfer)
 			&& Self::vesting_balance(who) > new_balance
 		{
-			Err(Error::<T>::VestingBalance)?
+			Err(<Error<T>>::VestingBalance)?
 		}
 		let locks = Self::locks(who);
 		if locks.is_empty() {
 			return Ok(());
 		}
 
-		let now = <frame_system::Module<T>>::block_number();
+		let now = <system::Module<T>>::block_number();
 		if locks
 			.into_iter()
 			.all(|l| l.withdraw_lock.can_withdraw(now, new_balance) || !l.reasons.intersects(reasons))
 		{
 			Ok(())
 		} else {
-			Err(Error::<T>::LiquidityRestrictions.into())
+			Err(<Error<T>>::LiquidityRestrictions.into())
 		}
 	}
 
@@ -569,12 +569,12 @@ where
 
 		let new_from_kton = Self::free_balance(transactor)
 			.checked_sub(&value)
-			.ok_or(Error::<T>::InsufficientBalance)?;
+			.ok_or(<Error<T>>::InsufficientBalance)?;
 		Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer.into(), new_from_kton)?;
 
 		let new_to_kton = Self::free_balance(dest)
 			.checked_add(&value)
-			.ok_or(Error::<T>::Overflow)?;
+			.ok_or(<Error<T>>::Overflow)?;
 
 		T::TransferPayment::pay_transfer_fee(transactor, transfer_fee, existence_requirement)?;
 		Self::set_free_balance(transactor, new_from_kton);
@@ -621,7 +621,7 @@ where
 		value: Self::Balance,
 	) -> Result<Self::PositiveImbalance, DispatchError> {
 		if Self::total_balance(who).is_zero() {
-			Err(Error::<T>::DeadAccount)?
+			Err(<Error<T>>::DeadAccount)?
 		}
 		Self::set_free_balance(who, Self::free_balance(who) + value);
 		Ok(PositiveImbalance::new(value))
@@ -649,7 +649,7 @@ where
 			Self::set_free_balance(who, new_balance);
 			Ok(NegativeImbalance::new(value))
 		} else {
-			Err(Error::<T>::InsufficientBalance)?
+			Err(<Error<T>>::InsufficientBalance)?
 		}
 	}
 
@@ -702,7 +702,7 @@ where
 	fn reserve(who: &T::AccountId, value: Self::Balance) -> Result<(), DispatchError> {
 		let b = Self::free_balance(who);
 		if b < value {
-			Err(Error::<T>::InsufficientBalance)?
+			Err(<Error<T>>::InsufficientBalance)?
 		}
 		let new_balance = b - value;
 		Self::ensure_can_withdraw(who, value, WithdrawReason::Reserve.into(), new_balance)?;
@@ -725,7 +725,7 @@ where
 		value: Self::Balance,
 	) -> Result<Self::Balance, DispatchError> {
 		if Self::total_balance(beneficiary).is_zero() {
-			Err(Error::<T>::DeadAccount)?
+			Err(<Error<T>>::DeadAccount)?
 		}
 		let b = Self::reserved_balance(slashed);
 		let slash = cmp::min(b, value);
@@ -780,7 +780,7 @@ where
 	/// Get the amount that is currently being vested and cannot be transferred out of this account.
 	fn vesting_balance(who: &T::AccountId) -> T::Balance {
 		if let Some(v) = Self::vesting(who) {
-			Self::free_balance(who).min(v.locked_at(<frame_system::Module<T>>::block_number()))
+			Self::free_balance(who).min(v.locked_at(<system::Module<T>>::block_number()))
 		} else {
 			Zero::zero()
 		}
@@ -797,7 +797,7 @@ where
 		starting_block: T::BlockNumber,
 	) -> DispatchResult {
 		if <Vesting<T>>::exists(who) {
-			Err(Error::<T>::ExistingVestingSchedule)?
+			Err(<Error<T>>::ExistingVestingSchedule)?
 		}
 		let vesting_schedule = VestingSchedule {
 			locked,

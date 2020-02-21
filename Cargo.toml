@@ -8,9 +8,15 @@ members = [
 	"bin/node/runtime",
 	"frame/balances/kton",
 	"frame/balances/ring",
+	"frame/chainrelay/eth/backing",
+	"frame/chainrelay/eth/relay",
 	"frame/staking",
 	"frame/support",
+	"frame/treasury",
+	"primitives/ethash",
+	"primitives/merkle-patricia-trie",
 	"primitives/phragmen",
+	"primitives/sp-eth-primitives",
 ]
 
 [profile.release]
