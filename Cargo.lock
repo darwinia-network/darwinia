@@ -1093,10 +1093,11 @@ dependencies = [
 name = "darwinia-treasury"
 version = "2.0.0"
 dependencies = [
+ "darwinia-kton",
+ "darwinia-ring",
  "darwinia-support",
  "frame-support",
  "frame-system",
- "pallet-balances",
  "parity-scale-codec",
  "serde",
  "sp-core",

@@ -396,7 +396,7 @@ impl<T: Trait> OnUnbalancedKton<KtonNegativeImbalance<T>> for Module<T> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use crate::*;
 
 	use frame_support::{assert_noop, assert_ok, impl_outer_origin, parameter_types, weights::Weight};
 	use sp_core::H256;
@@ -405,6 +405,10 @@ mod tests {
 		traits::{BlakeTwo256, IdentityLookup, OnFinalize},
 		Perbill,
 	};
+
+	type Ring = darwinia_ring::Module<Test>;
+	type Kton = darwinia_kton::Module<Test>;
+	type Treasury = Module<Test>;
 
 	impl_outer_origin! {
 		pub enum Origin for Test  where system = frame_system {}
@@ -420,9 +424,9 @@ mod tests {
 	}
 	impl frame_system::Trait for Test {
 		type Origin = Origin;
+		type Call = ();
 		type Index = u64;
 		type BlockNumber = u64;
-		type Call = ();
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
 		type AccountId = u64;
@@ -431,8 +435,8 @@ mod tests {
 		type Event = ();
 		type BlockHashCount = BlockHashCount;
 		type MaximumBlockWeight = MaximumBlockWeight;
-		type AvailableBlockRatio = AvailableBlockRatio;
 		type MaximumBlockLength = MaximumBlockLength;
+		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
 		type ModuleToIndex = ();
 	}
@@ -441,13 +445,21 @@ mod tests {
 		pub const TransferFee: u64 = 0;
 		pub const CreationFee: u64 = 0;
 	}
-	impl pallet_balances::Trait for Test {
+	impl darwinia_kton::Trait for Test {
 		type Balance = u64;
-		type OnNewAccount = ();
-		type OnFreeBalanceZero = ();
 		type Event = ();
+		type RingCurrency = Ring;
+		type TransferPayment = ();
+		type ExistentialDeposit = ExistentialDeposit;
+		type TransferFee = TransferFee;
+	}
+	impl darwinia_ring::Trait for Test {
+		type Balance = u64;
+		type OnFreeBalanceZero = ();
+		type OnNewAccount = ();
 		type TransferPayment = ();
 		type DustRemoval = ();
+		type Event = ();
 		type ExistentialDeposit = ExistentialDeposit;
 		type TransferFee = TransferFee;
 		type CreationFee = CreationFee;
@@ -459,7 +471,8 @@ mod tests {
 		pub const Burn: Permill = Permill::from_percent(50);
 	}
 	impl Trait for Test {
-		type Currency = pallet_balances::Module<Test>;
+		type RingCurrency = Ring;
+		type KtonCurrency = Kton;
 		type ApproveOrigin = frame_system::EnsureRoot<u64>;
 		type RejectOrigin = frame_system::EnsureRoot<u64>;
 		type Event = ();
@@ -469,19 +482,22 @@ mod tests {
 		type SpendPeriod = SpendPeriod;
 		type Burn = Burn;
 	}
-	type Balances = pallet_balances::Module<Test>;
-	type Treasury = Module<Test>;
 
 	fn new_test_ext() -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test> {
+		let _ = darwinia_ring::GenesisConfig::<Test> {
 			// Total issuance will be 200 with treasury account initialized at ED.
 			balances: vec![(0, 100), (1, 98), (2, 1)],
 			vesting: vec![],
 		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-		GenesisConfig::default().assimilate_storage::<Test>(&mut t).unwrap();
+		.assimilate_storage(&mut t);
+		let _ = darwinia_kton::GenesisConfig::<Test> {
+			// Total issuance will be 200 with treasury account initialized at ED.
+			balances: vec![(0, 100), (1, 98), (2, 1)],
+			vesting: vec![],
+		}
+		.assimilate_storage(&mut t);
+		let _ = GenesisConfig::default().assimilate_storage::<Test>(&mut t);
 		t.into()
 	}
 
@@ -497,7 +513,7 @@ mod tests {
 	fn minting_works() {
 		new_test_ext().execute_with(|| {
 			// Check that accumulate works when we have Some value in Dummy already.
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 		});
 	}
@@ -506,8 +522,8 @@ mod tests {
 	fn spend_proposal_takes_min_deposit() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 3));
-			assert_eq!(Balances::free_balance(&0), 99);
-			assert_eq!(Balances::reserved_balance(&0), 1);
+			assert_eq!(Ring::free_balance(&0), 99);
+			assert_eq!(Ring::reserved_balance(&0), 1);
 		});
 	}
 
@@ -515,8 +531,8 @@ mod tests {
 	fn spend_proposal_takes_proportional_deposit() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
-			assert_eq!(Balances::free_balance(&0), 95);
-			assert_eq!(Balances::reserved_balance(&0), 5);
+			assert_eq!(Ring::free_balance(&0), 95);
+			assert_eq!(Ring::reserved_balance(&0), 5);
 		});
 	}
 
@@ -533,13 +549,13 @@ mod tests {
 	#[test]
 	fn accepted_spend_proposal_ignored_outside_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(1);
-			assert_eq!(Balances::free_balance(&3), 0);
+			assert_eq!(Ring::free_balance(&3), 0);
 			assert_eq!(Treasury::pot(), 100);
 		});
 	}
@@ -547,26 +563,26 @@ mod tests {
 	#[test]
 	fn unused_pot_should_diminish() {
 		new_test_ext().execute_with(|| {
-			let init_total_issuance = Balances::total_issuance();
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
-			assert_eq!(Balances::total_issuance(), init_total_issuance + 100);
+			let init_total_issuance = Ring::total_issuance();
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
+			assert_eq!(Ring::total_issuance(), init_total_issuance + 100);
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 50);
-			assert_eq!(Balances::total_issuance(), init_total_issuance + 50);
+			assert_eq!(Ring::total_issuance(), init_total_issuance + 50);
 		});
 	}
 
 	#[test]
 	fn rejected_spend_proposal_ignored_on_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
-			assert_eq!(Balances::free_balance(&3), 0);
+			assert_eq!(Ring::free_balance(&3), 0);
 			assert_eq!(Treasury::pot(), 50);
 		});
 	}
@@ -574,7 +590,7 @@ mod tests {
 	#[test]
 	fn reject_already_rejected_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
@@ -608,7 +624,7 @@ mod tests {
 	#[test]
 	fn accept_already_rejected_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
@@ -622,14 +638,14 @@ mod tests {
 	#[test]
 	fn accepted_spend_proposal_enacted_on_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
-			assert_eq!(Balances::free_balance(&3), 100);
+			assert_eq!(Ring::free_balance(&3), 100);
 			assert_eq!(Treasury::pot(), 0);
 		});
 	}
@@ -637,7 +653,7 @@ mod tests {
 	#[test]
 	fn pot_underflow_should_not_diminish() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 150, 3));
@@ -646,9 +662,9 @@ mod tests {
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 100); // Pot hasn't changed
 
-			let _ = Balances::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
+			let _ = Ring::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
-			assert_eq!(Balances::free_balance(&3), 150); // Fund has been spent
+			assert_eq!(Ring::free_balance(&3), 150); // Fund has been spent
 			assert_eq!(Treasury::pot(), 25); // Pot has finally changed
 		});
 	}
@@ -658,9 +674,9 @@ mod tests {
 	#[test]
 	fn treasury_account_doesnt_get_deleted() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
-			let treasury_balance = Balances::free_balance(&Treasury::account_id());
+			let treasury_balance = Ring::free_balance(&Treasury::account_id());
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), treasury_balance, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
@@ -673,7 +689,7 @@ mod tests {
 
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
 			assert_eq!(Treasury::pot(), 0); // Pot is emptied
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 1); // but the account is still there
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 1); // but the account is still there
 		});
 	}
 
@@ -682,7 +698,7 @@ mod tests {
 	#[test]
 	fn inexisting_account_works() {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test> {
+		darwinia_ring::GenesisConfig::<Test> {
 			balances: vec![(0, 100), (1, 99), (2, 1)],
 			vesting: vec![],
 		}
@@ -692,7 +708,7 @@ mod tests {
 		let mut t: sp_io::TestExternalities = t.into();
 
 		t.execute_with(|| {
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 0); // Account does not exist
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 0); // Account does not exist
 			assert_eq!(Treasury::pot(), 0); // Pot is empty
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 99, 3));
@@ -701,16 +717,16 @@ mod tests {
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 0); // Pot hasn't changed
-			assert_eq!(Balances::free_balance(&3), 0); // Balance of `3` hasn't changed
+			assert_eq!(Ring::free_balance(&3), 0); // Balance of `3` hasn't changed
 
-			Balances::make_free_balance_be(&Treasury::account_id(), 100);
+			Ring::make_free_balance_be(&Treasury::account_id(), 100);
 			assert_eq!(Treasury::pot(), 99); // Pot now contains funds
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 100); // Account does exist
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 100); // Account does exist
 
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
 
 			assert_eq!(Treasury::pot(), 0); // Pot has changed
-			assert_eq!(Balances::free_balance(&3), 99); // Balance of `3` has changed
+			assert_eq!(Ring::free_balance(&3), 99); // Balance of `3` has changed
 		});
 	}
 }
