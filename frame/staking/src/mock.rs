@@ -416,6 +416,14 @@ pub fn check_exposure(stash: AccountId) {
 	// );
 }
 
+pub fn assert_ledger_consistent(stash: u64) {
+	assert_is_stash(stash);
+	let ledger = Staking::ledger(stash - 1).unwrap();
+
+	assert_eq!(ledger.active_ring, ledger.ring_staking_lock.staking_amount);
+	assert_eq!(ledger.active_kton, ledger.kton_staking_lock.staking_amount);
+}
+
 /// Check that for each nominator: slashable_balance > sum(used_balance)
 /// Note: we might not consume all of a nominator's balance, but we MUST NOT over spend it.
 pub fn check_nominator_exposure(stash: AccountId) {
