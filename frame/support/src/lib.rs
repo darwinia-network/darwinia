@@ -242,6 +242,7 @@ mod traits {
 		fn remove_lock(id: LockIdentifier, who: &AccountId);
 	}
 
+	// TODO doc
 	pub trait Fee<AccountId, Balance> {
 		fn pay_transfer_fee(
 			transactor: &AccountId,
@@ -250,7 +251,13 @@ mod traits {
 		) -> DispatchResult;
 	}
 
-	// callback on eth-backing module
+	impl<AccountId, Balance> Fee<AccountId, Balance> for () {
+		fn pay_transfer_fee(_: &AccountId, _: Balance, _: ExistenceRequirement) -> DispatchResult {
+			Ok(())
+		}
+	}
+
+	/// Callback on eth-backing module
 	pub trait OnDepositRedeem<AccountId> {
 		type Balance;
 		type Moment;

@@ -1057,6 +1057,7 @@ dependencies = [
 name = "darwinia-staking"
 version = "0.4.0"
 dependencies = [
+ "darwinia-kton",
  "darwinia-phragmen",
  "darwinia-ring",
  "darwinia-support",
@@ -1064,6 +1065,7 @@ dependencies = [
  "frame-system",
  "pallet-authorship",
  "pallet-session",
+ "pallet-timestamp",
  "parity-scale-codec",
  "safe-mix",
  "serde",
