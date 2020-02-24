@@ -245,25 +245,6 @@ impl pallet_collective::Trait<CouncilCollective> for Runtime {
 //	type MembershipChanged = TechnicalCommittee;
 //}
 
-//parameter_types! {
-//	pub const ProposalBond: Permill = Permill::from_percent(5);
-//	pub const ProposalBondMinimum: Balance = 1 * COIN;
-//	pub const SpendPeriod: BlockNumber = 1 * DAYS;
-//	pub const Burn: Permill = Permill::from_percent(50);
-//}
-//
-//impl pallet_treasury::Trait for Runtime {
-//	type Currency = Balances;
-//	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
-//	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
-//	type Event = Event;
-//	type ProposalRejection = ();
-//	type ProposalBond = ProposalBond;
-//	type ProposalBondMinimum = ProposalBondMinimum;
-//	type SpendPeriod = SpendPeriod;
-//	type Burn = Burn;
-//}
-
 parameter_types! {
 	pub const ContractTransferFee: Balance = 1 * MILLI;
 	pub const ContractCreationFee: Balance = 1 * MILLI;
