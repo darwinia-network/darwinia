@@ -57,30 +57,46 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod types {
+	use crate::*;
+
+	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
+	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
+	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
+
+	pub type KtonBalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::Balance;
+	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
+
+	type AccountId<T> = <T as system::Trait>::AccountId;
+	type RingCurrency<T> = <T as Trait>::RingCurrency;
+	type KtonCurrency<T> = <T as Trait>::KtonCurrency;
+}
+
 use codec::{Decode, Encode};
-use frame_support::traits::{
-	Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason,
+use frame_support::{
+	decl_error, decl_event, decl_module, decl_storage, ensure, print,
+	traits::{Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason},
+	weights::SimpleDispatchInfo,
 };
-use frame_support::weights::SimpleDispatchInfo;
-use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure, print};
 use frame_system::{self as system, ensure_signed};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_runtime::traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero};
-use sp_runtime::{ModuleId, Permill};
+use sp_runtime::{
+	traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero},
+	ModuleId, Permill,
+};
 use sp_std::prelude::*;
 
-type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceOf<T> =
-	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::PositiveImbalance;
-type NegativeImbalanceOf<T> =
-	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::NegativeImbalance;
+use darwinia_support::OnUnbalancedKton;
+use types::*;
 
 const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
 
 pub trait Trait: frame_system::Trait {
-	/// The staking balance.
-	type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+	/// The staking *RING*.
+	type RingCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+	/// The staking *Kton*.
+	type KtonCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 
 	/// Origin from which approvals must come.
 	type ApproveOrigin: EnsureOrigin<Self::Origin>;
@@ -92,14 +108,14 @@ pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 
 	/// Handler for the unbalanced decrease when slashing for a rejected proposal.
-	type ProposalRejection: OnUnbalanced<NegativeImbalanceOf<Self>>;
+	type ProposalRejection: OnUnbalanced<RingNegativeImbalance<Self>>;
 
 	/// Fraction of a proposal's value that should be bonded in order to place the proposal.
 	/// An accepted proposal gets these back. A rejected proposal does not.
 	type ProposalBond: Get<Permill>;
 
 	/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-	type ProposalBondMinimum: Get<BalanceOf<Self>>;
+	type ProposalBondMinimum: Get<RingBalance<Self>>;
 
 	/// Period between successive spends.
 	type SpendPeriod: Get<Self::BlockNumber>;
@@ -117,7 +133,7 @@ decl_module! {
 		const ProposalBond: Permill = T::ProposalBond::get();
 
 		/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-		const ProposalBondMinimum: BalanceOf<T> = T::ProposalBondMinimum::get();
+		const ProposalBondMinimum: RingBalance<T> = T::ProposalBondMinimum::get();
 
 		/// Period between successive spends.
 		const SpendPeriod: T::BlockNumber = T::SpendPeriod::get();
@@ -141,14 +157,14 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn propose_spend(
 			origin,
-			#[compact] value: BalanceOf<T>,
+			#[compact] value: RingBalance<T>,
 			beneficiary: <T::Lookup as StaticLookup>::Source
 		) {
 			let proposer = ensure_signed(origin)?;
 			let beneficiary = T::Lookup::lookup(beneficiary)?;
 
 			let bond = Self::calculate_bond(value);
-			T::Currency::reserve(&proposer, bond)
+			T::RingCurrency::reserve(&proposer, bond)
 				.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 
 			let c = Self::proposal_count();
@@ -171,7 +187,7 @@ decl_module! {
 			let proposal = <Proposals<T>>::take(&proposal_id).ok_or(<Error<T>>::InvalidProposalIndex)?;
 
 			let value = proposal.bond;
-			let imbalance = T::Currency::slash_reserved(&proposal.proposer, value).0;
+			let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
 			T::ProposalRejection::on_unbalanced(imbalance);
 
 			Self::deposit_event(Event::<T>::Rejected(proposal_id, value));
@@ -206,11 +222,11 @@ decl_module! {
 /// A spending proposal.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, PartialEq, Eq, sp_runtime::RuntimeDebug)]
-pub struct Proposal<AccountId, Balance> {
+pub struct Proposal<AccountId, RingBalance> {
 	proposer: AccountId,
-	value: Balance,
+	value: RingBalance,
 	beneficiary: AccountId,
-	bond: Balance,
+	bond: RingBalance,
 }
 
 decl_storage! {
@@ -219,7 +235,7 @@ decl_storage! {
 		ProposalCount get(fn proposal_count): ProposalIndex;
 
 		/// Proposals that have been made.
-		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, BalanceOf<T>>>;
+		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, RingBalance<T>>>;
 
 		/// Proposal indices that have been approved but not yet awarded.
 		Approvals get(fn approvals): Vec<ProposalIndex>;
@@ -227,9 +243,9 @@ decl_storage! {
 	add_extra_genesis {
 		build(|_config| {
 			// Create Treasury account
-			let _ = T::Currency::make_free_balance_be(
+			let _ = T::RingCurrency::make_free_balance_be(
 				&<Module<T>>::account_id(),
-				T::Currency::minimum_balance(),
+				T::RingCurrency::minimum_balance(),
 			);
 		});
 	}
@@ -238,23 +254,26 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T>
 	where
-		Balance = BalanceOf<T>,
-		<T as frame_system::Trait>::AccountId
+		<T as frame_system::Trait>::AccountId,
+		RingBalance = RingBalance<T>,
+		KtonBalance = KtonBalance<T>,
 	{
 		/// New proposal.
 		Proposed(ProposalIndex),
 		/// We have ended a spend period and will now allocate funds.
-		Spending(Balance),
+		Spending(RingBalance),
 		/// Some funds have been allocated.
-		Awarded(ProposalIndex, Balance, AccountId),
+		Awarded(ProposalIndex, RingBalance, AccountId),
 		/// A proposal was rejected; funds were slashed.
-		Rejected(ProposalIndex, Balance),
+		Rejected(ProposalIndex, RingBalance),
 		/// Some of our funds have been burnt.
-		Burnt(Balance),
+		Burnt(RingBalance),
 		/// Spending has finished; this is the amount that rolls over until next spend.
-		Rollover(Balance),
-		/// Some funds have been deposited.
-		Deposit(Balance),
+		Rollover(RingBalance),
+		/// Some *Ring* have been deposited.
+		DepositRing(RingBalance),
+		/// Some *Kton* have been deposited.
+		DepositKton(KtonBalance),
 	}
 );
 
@@ -280,7 +299,7 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// The needed bond for a proposal whose spend is `value`.
-	fn calculate_bond(value: BalanceOf<T>) -> BalanceOf<T> {
+	fn calculate_bond(value: RingBalance<T>) -> RingBalance<T> {
 		T::ProposalBondMinimum::get().max(T::ProposalBond::get() * value)
 	}
 
@@ -290,7 +309,7 @@ impl<T: Trait> Module<T> {
 		Self::deposit_event(RawEvent::Spending(budget_remaining));
 
 		let mut missed_any = false;
-		let mut imbalance = <PositiveImbalanceOf<T>>::zero();
+		let mut imbalance = <RingPositiveImbalance<T>>::zero();
 		Approvals::mutate(|v| {
 			v.retain(|&index| {
 				// Should always be true, but shouldn't panic if false or we're screwed.
@@ -300,10 +319,10 @@ impl<T: Trait> Module<T> {
 						<Proposals<T>>::remove(index);
 
 						// return their deposit.
-						let _ = T::Currency::unreserve(&p.proposer, p.bond);
+						let _ = T::RingCurrency::unreserve(&p.proposer, p.bond);
 
 						// provide the allocation.
-						imbalance.subsume(T::Currency::deposit_creating(&p.beneficiary, p.value));
+						imbalance.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, p.value));
 
 						Self::deposit_event(RawEvent::Awarded(index, p.value, p.beneficiary));
 						false
@@ -321,7 +340,7 @@ impl<T: Trait> Module<T> {
 			// burn some proportion of the remaining budget if we run a surplus.
 			let burn = (T::Burn::get() * budget_remaining).min(budget_remaining);
 			budget_remaining -= burn;
-			imbalance.subsume(T::Currency::burn(burn));
+			imbalance.subsume(T::RingCurrency::burn(burn));
 			Self::deposit_event(RawEvent::Burnt(burn))
 		}
 
@@ -329,7 +348,7 @@ impl<T: Trait> Module<T> {
 		// proof: budget_remaining is account free balance minus ED;
 		// Thus we can't spend more than account free balance minus ED;
 		// Thus account is kept alive; qed;
-		if let Err(problem) = T::Currency::settle(
+		if let Err(problem) = T::RingCurrency::settle(
 			&Self::account_id(),
 			imbalance,
 			WithdrawReason::Transfer.into(),
@@ -345,21 +364,33 @@ impl<T: Trait> Module<T> {
 
 	/// Return the amount of money in the pot.
 	// The existential deposit is not part of the pot so treasury account never gets deleted.
-	fn pot() -> BalanceOf<T> {
-		T::Currency::free_balance(&Self::account_id())
+	fn pot() -> RingBalance<T> {
+		T::RingCurrency::free_balance(&Self::account_id())
 			// Must never be less than 0 but better be safe.
-			.saturating_sub(T::Currency::minimum_balance())
+			.saturating_sub(T::RingCurrency::minimum_balance())
 	}
 }
 
-impl<T: Trait> OnUnbalanced<NegativeImbalanceOf<T>> for Module<T> {
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<T>) {
+impl<T: Trait> OnUnbalanced<RingNegativeImbalance<T>> for Module<T> {
+	fn on_nonzero_unbalanced(amount: RingNegativeImbalance<T>) {
 		let numeric_amount = amount.peek();
 
 		// Must resolve into existing but better to be safe.
-		let _ = T::Currency::resolve_creating(&Self::account_id(), amount);
+		let _ = T::RingCurrency::resolve_creating(&Self::account_id(), amount);
 
-		Self::deposit_event(RawEvent::Deposit(numeric_amount));
+		Self::deposit_event(RawEvent::DepositRing(numeric_amount));
+	}
+}
+
+// FIXME: Ugly hack due to https://github.com/rust-lang/rust/issues/31844#issuecomment-557918823
+impl<T: Trait> OnUnbalancedKton<KtonNegativeImbalance<T>> for Module<T> {
+	fn on_nonzero_unbalanced(amount: KtonNegativeImbalance<T>) {
+		let numeric_amount = amount.peek();
+
+		// Must resolve into existing but better to be safe.
+		let _ = T::KtonCurrency::resolve_creating(&Self::account_id(), amount);
+
+		Self::deposit_event(RawEvent::DepositKton(numeric_amount));
 	}
 }
 

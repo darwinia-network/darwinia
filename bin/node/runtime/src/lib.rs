@@ -1,20 +1,4 @@
-// Copyright 2018-2020 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
-//! The Substrate runtime. This can be compiled with ``#[no_std]`, ready for Wasm.
+//! The Darwinia runtime. This can be compiled with ``#[no_std]`, ready for Wasm.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
@@ -37,7 +21,7 @@ pub use pallet_staking::StakerStatus;
 use constants::{currency::*, supply::*, time::*};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Currency, OnUnbalanced, Randomness, SplitTwoWays},
+	traits::{Currency, Randomness, SplitTwoWays},
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
@@ -49,7 +33,7 @@ use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
-	u32_trait::{_1, _3, _4},
+	u32_trait::{_1, _2, _3, _4},
 	OpaqueMetadata,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
@@ -57,7 +41,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{self, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup},
 	transaction_validity::TransactionValidity,
-	ApplyExtrinsicResult, Perbill,
+	ApplyExtrinsicResult, Perbill, Permill,
 };
 use sp_staking::SessionIndex;
 use sp_std::vec::Vec;
@@ -81,8 +65,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	// and set impl_version to equal spec_version. If only runtime
 	// implementation changes and behavior does not, then leave spec_version as
 	// is and increment impl_version.
-	spec_version: 85,
-	impl_version: 85,
+	spec_version: 86,
+	impl_version: 86,
 	apis: RUNTIME_API_VERSIONS,
 };
 
@@ -102,17 +86,10 @@ pub type DealWithFees = SplitTwoWays<
 	NegativeImbalance,
 	_4,
 	//	Treasury, // 4 parts (80%) goes to the treasury.
-	MockTreasury,
+	Treasury,
 	_1,
 	Author, // 1 part (20%) goes to the block author.
 >;
-
-pub struct MockTreasury;
-impl OnUnbalanced<NegativeImbalance> for MockTreasury {
-	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
-		Balances::resolve_creating(&Sudo::key(), amount);
-	}
-}
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
@@ -381,7 +358,7 @@ impl pallet_nicks::Trait for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type ReservationFee = ReservationFee;
-	type Slashed = MockTreasury;
+	type Slashed = Treasury;
 	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
 	type MinLength = MinLength;
 	type MaxLength = MaxLength;
@@ -421,10 +398,41 @@ impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for 
 	}
 }
 
+impl pallet_eth_backing::Trait for Runtime {
+	type Event = Event;
+	type Time = Timestamp;
+	type DetermineAccountId = pallet_eth_backing::AccountIdDeterminator<Runtime>;
+	type EthRelay = EthRelay;
+	type OnDepositRedeem = Staking;
+	type Ring = Balances;
+	type RingReward = ();
+	type Kton = Kton;
+	type KtonReward = ();
+}
+
+parameter_types! {
+	pub const EthMainet: u64 = 0;
+	pub const EthRopsten: u64 = 1;
+}
+
+impl pallet_eth_relay::Trait for Runtime {
+	type Event = Event;
+	type EthNetwork = EthRopsten;
+}
+
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
 	pub const TransferFee: Balance = 1 * MILLI;
 	pub const CreationFee: Balance = 1 * MILLI;
+}
+
+impl pallet_kton::Trait for Runtime {
+	type Balance = Balance;
+	type Event = Event;
+	type RingCurrency = Balances;
+	type TransferPayment = Balances;
+	type ExistentialDeposit = ExistentialDeposit;
+	type TransferFee = TransferFee;
 }
 
 impl pallet_ring::Trait for Runtime {
@@ -437,14 +445,6 @@ impl pallet_ring::Trait for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
-}
-impl pallet_kton::Trait for Runtime {
-	type Balance = Balance;
-	type Event = Event;
-	type RingCurrency = Balances;
-	type TransferPayment = Balances;
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
 }
 
 parameter_types! {
@@ -469,11 +469,15 @@ impl pallet_staking::Trait for Runtime {
 	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 	type SessionInterface = Self;
 	type RingCurrency = Balances;
-	type RingRewardRemainder = ();
-	type RingSlash = ();
+	type RingRewardRemainder = Treasury;
+	// send the slashed funds to the treasury.
+	type RingSlash = Treasury;
+	// rewards are minted from the void
 	type RingReward = ();
 	type KtonCurrency = Kton;
-	type KtonSlash = ();
+	// send the slashed funds to the treasury.
+	type KtonSlash = Treasury;
+	// rewards are minted from the void
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
@@ -481,25 +485,23 @@ impl pallet_staking::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const EthMainet: u64 = 0;
-	pub const EthRopsten: u64 = 1;
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBondMinimum: Balance = 1 * COIN;
+	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+	pub const Burn: Permill = Permill::from_percent(50);
 }
 
-impl pallet_eth_relay::Trait for Runtime {
+impl pallet_treasury::Trait for Runtime {
+	type RingCurrency = Balances;
+	type KtonCurrency = Kton;
+	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
+	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
 	type Event = Event;
-	type EthNetwork = EthRopsten;
-}
-
-impl pallet_eth_backing::Trait for Runtime {
-	type Event = Event;
-	type Time = Timestamp;
-	type DetermineAccountId = pallet_eth_backing::AccountIdDeterminator<Runtime>;
-	type EthRelay = EthRelay;
-	type OnDepositRedeem = Staking;
-	type Ring = Balances;
-	type RingReward = ();
-	type Kton = Kton;
-	type KtonReward = ();
+	type ProposalRejection = ();
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
 }
 
 construct_runtime!(
@@ -521,7 +523,6 @@ construct_runtime!(
 //		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
-//		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Contracts: pallet_contracts,
 		Sudo: pallet_sudo,
 		ImOnline: pallet_im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
@@ -530,11 +531,12 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
 
-		Balances: pallet_ring,
-		Kton: pallet_kton,
-		Staking: pallet_staking,
-		EthRelay: pallet_eth_relay,
 		EthBacking: pallet_eth_backing,
+		EthRelay: pallet_eth_relay,
+		Kton: pallet_kton,
+		Balances: pallet_ring,
+		Staking: pallet_staking,
+		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 	}
 );
 
