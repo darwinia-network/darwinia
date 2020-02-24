@@ -31,6 +31,7 @@ pub mod time {
 	use node_primitives::{BlockNumber, Moment};
 	use sp_staking::SessionIndex;
 
+	// TODO doc
 	include!(concat!(env!("OUT_DIR"), "/timestamp_now.rs"));
 	pub const GENESIS_TIME: Moment = NOW;
 

@@ -28,8 +28,10 @@ darwinia-support = {  default-features = false, path = "../support" }
 
 [dev-dependencies]
 substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+pallet-timestamp = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
-darwinia-ring = { path = "../../frame/balances/ring" }
+pallet-ring = { package = "darwinia-ring", path = "../../frame/balances/ring" }
+pallet-kton = { package = "darwinia-kton", path = "../../frame/balances/kton" }
 
 [features]
 equalize = []
