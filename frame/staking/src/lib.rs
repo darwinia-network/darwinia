@@ -2383,7 +2383,7 @@ impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
 		let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
 		let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 
-		// TODO: Issue #169, checking the timestamp unit difference between Ethereum and Darwinia
+		// The timestamp unit is different between Ethereum and Darwinia, converting from seconds to milliseconds
 		let start_time = start_time * 1000;
 		let promise_month = months.min(36);
 
