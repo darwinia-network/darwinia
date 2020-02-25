@@ -11,6 +11,7 @@ members = [
 	"frame/balances/ring",
 	"frame/chainrelay/eth/backing",
 	"frame/chainrelay/eth/relay",
+	"frame/elections-phragmen",
 	"frame/staking",
 	"frame/support",
 	"frame/treasury",

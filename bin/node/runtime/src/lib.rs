@@ -228,22 +228,73 @@ impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Event = Event;
 }
 
-//type TechnicalCollective = pallet_collective::Instance2;
-//impl pallet_collective::Trait<TechnicalCollective> for Runtime {
-//	type Origin = Origin;
-//	type Proposal = Call;
-//	type Event = Event;
-//}
+// mod support_kton_in_futures {
+// 	use sp_runtime::traits::Convert;
 //
-//impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
-//	type Event = Event;
-//	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type MembershipInitialized = TechnicalCommittee;
-//	type MembershipChanged = TechnicalCommittee;
-//}
+// 	use crate::Balance;
+//
+// 	/// Struct that handles the conversion of Balance -> `u64`. This is used for staking's election
+// 	/// calculation.
+// 	pub struct CurrencyToVoteHandler;
+//
+// 	impl CurrencyToVoteHandler {
+// 		fn factor() -> Balance {
+// 			(Balances::total_issuance() / u64::max_value() as Balance).max(1)
+// 		}
+// 	}
+//
+// 	impl Convert<Balance, u64> for CurrencyToVoteHandler {
+// 		fn convert(x: Balance) -> u64 {
+// 			(x / Self::factor()) as u64
+// 		}
+// 	}
+//
+// 	impl Convert<u128, Balance> for CurrencyToVoteHandler {
+// 		fn convert(x: u128) -> Balance {
+// 			x * Self::factor()
+// 		}
+// 	}
+// }
+//
+// parameter_types! {
+// 	pub const CandidacyBond: Balance = 10 * COIN;
+// 	pub const VotingBond: Balance = 1 * COIN;
+// 	pub const TermDuration: BlockNumber = 7 * DAYS;
+// 	pub const DesiredMembers: u32 = 13;
+// 	pub const DesiredRunnersUp: u32 = 7;
+// }
+//
+// impl pallet_elections_phragmen::Trait for Runtime {
+// 	type Event = Event;
+// 	type Currency = Balances;
+// 	type ChangeMembers = Council;
+// 	type CurrencyToVote = support_kton_in_futures::CurrencyToVoteHandler;
+// 	type CandidacyBond = CandidacyBond;
+// 	type VotingBond = VotingBond;
+// 	type LoserCandidate = ();
+// 	type BadReport = ();
+// 	type KickedMember = ();
+// 	type DesiredMembers = DesiredMembers;
+// 	type DesiredRunnersUp = DesiredRunnersUp;
+// 	type TermDuration = TermDuration;
+// }
+
+type TechnicalCollective = pallet_collective::Instance2;
+impl pallet_collective::Trait<TechnicalCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+}
+
+impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
+	type Event = Event;
+	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type MembershipInitialized = TechnicalCommittee;
+	type MembershipChanged = TechnicalCommittee;
+}
 
 parameter_types! {
 	pub const ContractTransferFee: Balance = 1 * MILLI;
@@ -500,8 +551,9 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
 		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-//		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-//		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
+		// Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
+		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		TechnicalMembership: pallet_membership  ::<Instance1>,
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
 		Contracts: pallet_contracts,
@@ -673,7 +725,7 @@ impl_runtime_apis! {
 			Contracts::get_storage(address, key).map_err(|rpc_err| {
 				use pallet_contracts::GetStorageError;
 				use pallet_contracts_rpc_runtime_api::{GetStorageError as RpcGetStorageError};
-				/// Map the contract error into the RPC layer error.
+				// Map the contract error into the RPC layer error.
 				match rpc_err {
 					GetStorageError::ContractDoesntExist => RpcGetStorageError::ContractDoesntExist,
 					GetStorageError::IsTombstone => RpcGetStorageError::IsTombstone,
