@@ -1090,6 +1090,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-treasury"
+version = "2.0.0"
+dependencies = [
+ "darwinia-kton",
+ "darwinia-ring",
+ "darwinia-support",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3515,6 +3532,7 @@ dependencies = [
  "darwinia-kton",
  "darwinia-ring",
  "darwinia-staking",
+ "darwinia-treasury",
  "frame-executive",
  "frame-support",
  "frame-system",
@@ -4081,21 +4099,6 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-treasury"
-version = "2.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]

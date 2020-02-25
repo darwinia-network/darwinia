@@ -309,8 +309,8 @@ use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, vec, vec::V
 
 use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
 use darwinia_support::{
-	LockIdentifier, LockableCurrency, NormalLock, OnDepositRedeem, StakingLock, WithdrawLock, WithdrawReason,
-	WithdrawReasons,
+	LockIdentifier, LockableCurrency, NormalLock, OnDepositRedeem, OnUnbalancedKton, StakingLock, WithdrawLock,
+	WithdrawReason, WithdrawReasons,
 };
 use types::*;
 
@@ -757,8 +757,9 @@ pub trait Trait: system::Trait {
 
 	/// The *KTON* balance
 	type KtonCurrency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+	// FIXME: Ugly hack due to https://github.com/rust-lang/rust/issues/31844#issuecomment-557918823
 	/// Handler for the unbalanced *KTON* reduction when slashing a staker.
-	type KtonSlash: OnUnbalanced<KtonNegativeImbalance<Self>>;
+	type KtonSlash: OnUnbalancedKton<KtonNegativeImbalance<Self>>;
 	/// Handler for the unbalanced *KTON* increment when rewarding a staker.
 	type KtonReward: OnUnbalanced<KtonPositiveImbalance<Self>>;
 

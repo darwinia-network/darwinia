@@ -57,30 +57,46 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod types {
+	use crate::*;
+
+	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
+	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
+	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
+
+	pub type KtonBalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::Balance;
+	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
+
+	type AccountId<T> = <T as system::Trait>::AccountId;
+	type RingCurrency<T> = <T as Trait>::RingCurrency;
+	type KtonCurrency<T> = <T as Trait>::KtonCurrency;
+}
+
 use codec::{Decode, Encode};
-use frame_support::traits::{
-	Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason,
+use frame_support::{
+	decl_error, decl_event, decl_module, decl_storage, ensure, print,
+	traits::{Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason},
+	weights::SimpleDispatchInfo,
 };
-use frame_support::weights::SimpleDispatchInfo;
-use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure, print};
 use frame_system::{self as system, ensure_signed};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_runtime::traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero};
-use sp_runtime::{ModuleId, Permill};
+use sp_runtime::{
+	traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero},
+	ModuleId, Permill,
+};
 use sp_std::prelude::*;
 
-type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::Balance;
-type PositiveImbalanceOf<T> =
-	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::PositiveImbalance;
-type NegativeImbalanceOf<T> =
-	<<T as Trait>::Currency as Currency<<T as frame_system::Trait>::AccountId>>::NegativeImbalance;
+use darwinia_support::OnUnbalancedKton;
+use types::*;
 
 const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
 
 pub trait Trait: frame_system::Trait {
-	/// The staking balance.
-	type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+	/// The staking *RING*.
+	type RingCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+	/// The staking *Kton*.
+	type KtonCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 
 	/// Origin from which approvals must come.
 	type ApproveOrigin: EnsureOrigin<Self::Origin>;
@@ -92,14 +108,14 @@ pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 
 	/// Handler for the unbalanced decrease when slashing for a rejected proposal.
-	type ProposalRejection: OnUnbalanced<NegativeImbalanceOf<Self>>;
+	type ProposalRejection: OnUnbalanced<RingNegativeImbalance<Self>>;
 
 	/// Fraction of a proposal's value that should be bonded in order to place the proposal.
 	/// An accepted proposal gets these back. A rejected proposal does not.
 	type ProposalBond: Get<Permill>;
 
 	/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-	type ProposalBondMinimum: Get<BalanceOf<Self>>;
+	type ProposalBondMinimum: Get<RingBalance<Self>>;
 
 	/// Period between successive spends.
 	type SpendPeriod: Get<Self::BlockNumber>;
@@ -117,7 +133,7 @@ decl_module! {
 		const ProposalBond: Permill = T::ProposalBond::get();
 
 		/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-		const ProposalBondMinimum: BalanceOf<T> = T::ProposalBondMinimum::get();
+		const ProposalBondMinimum: RingBalance<T> = T::ProposalBondMinimum::get();
 
 		/// Period between successive spends.
 		const SpendPeriod: T::BlockNumber = T::SpendPeriod::get();
@@ -141,14 +157,14 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn propose_spend(
 			origin,
-			#[compact] value: BalanceOf<T>,
+			#[compact] value: RingBalance<T>,
 			beneficiary: <T::Lookup as StaticLookup>::Source
 		) {
 			let proposer = ensure_signed(origin)?;
 			let beneficiary = T::Lookup::lookup(beneficiary)?;
 
 			let bond = Self::calculate_bond(value);
-			T::Currency::reserve(&proposer, bond)
+			T::RingCurrency::reserve(&proposer, bond)
 				.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 
 			let c = Self::proposal_count();
@@ -171,7 +187,7 @@ decl_module! {
 			let proposal = <Proposals<T>>::take(&proposal_id).ok_or(<Error<T>>::InvalidProposalIndex)?;
 
 			let value = proposal.bond;
-			let imbalance = T::Currency::slash_reserved(&proposal.proposer, value).0;
+			let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
 			T::ProposalRejection::on_unbalanced(imbalance);
 
 			Self::deposit_event(Event::<T>::Rejected(proposal_id, value));
@@ -206,11 +222,11 @@ decl_module! {
 /// A spending proposal.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, PartialEq, Eq, sp_runtime::RuntimeDebug)]
-pub struct Proposal<AccountId, Balance> {
+pub struct Proposal<AccountId, RingBalance> {
 	proposer: AccountId,
-	value: Balance,
+	value: RingBalance,
 	beneficiary: AccountId,
-	bond: Balance,
+	bond: RingBalance,
 }
 
 decl_storage! {
@@ -219,7 +235,7 @@ decl_storage! {
 		ProposalCount get(fn proposal_count): ProposalIndex;
 
 		/// Proposals that have been made.
-		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, BalanceOf<T>>>;
+		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, RingBalance<T>>>;
 
 		/// Proposal indices that have been approved but not yet awarded.
 		Approvals get(fn approvals): Vec<ProposalIndex>;
@@ -227,9 +243,9 @@ decl_storage! {
 	add_extra_genesis {
 		build(|_config| {
 			// Create Treasury account
-			let _ = T::Currency::make_free_balance_be(
+			let _ = T::RingCurrency::make_free_balance_be(
 				&<Module<T>>::account_id(),
-				T::Currency::minimum_balance(),
+				T::RingCurrency::minimum_balance(),
 			);
 		});
 	}
@@ -238,23 +254,26 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T>
 	where
-		Balance = BalanceOf<T>,
-		<T as frame_system::Trait>::AccountId
+		<T as frame_system::Trait>::AccountId,
+		RingBalance = RingBalance<T>,
+		KtonBalance = KtonBalance<T>,
 	{
 		/// New proposal.
 		Proposed(ProposalIndex),
 		/// We have ended a spend period and will now allocate funds.
-		Spending(Balance),
+		Spending(RingBalance),
 		/// Some funds have been allocated.
-		Awarded(ProposalIndex, Balance, AccountId),
+		Awarded(ProposalIndex, RingBalance, AccountId),
 		/// A proposal was rejected; funds were slashed.
-		Rejected(ProposalIndex, Balance),
+		Rejected(ProposalIndex, RingBalance),
 		/// Some of our funds have been burnt.
-		Burnt(Balance),
+		Burnt(RingBalance),
 		/// Spending has finished; this is the amount that rolls over until next spend.
-		Rollover(Balance),
-		/// Some funds have been deposited.
-		Deposit(Balance),
+		Rollover(RingBalance),
+		/// Some *Ring* have been deposited.
+		DepositRing(RingBalance),
+		/// Some *Kton* have been deposited.
+		DepositKton(KtonBalance),
 	}
 );
 
@@ -280,7 +299,7 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// The needed bond for a proposal whose spend is `value`.
-	fn calculate_bond(value: BalanceOf<T>) -> BalanceOf<T> {
+	fn calculate_bond(value: RingBalance<T>) -> RingBalance<T> {
 		T::ProposalBondMinimum::get().max(T::ProposalBond::get() * value)
 	}
 
@@ -290,7 +309,7 @@ impl<T: Trait> Module<T> {
 		Self::deposit_event(RawEvent::Spending(budget_remaining));
 
 		let mut missed_any = false;
-		let mut imbalance = <PositiveImbalanceOf<T>>::zero();
+		let mut imbalance = <RingPositiveImbalance<T>>::zero();
 		Approvals::mutate(|v| {
 			v.retain(|&index| {
 				// Should always be true, but shouldn't panic if false or we're screwed.
@@ -300,10 +319,10 @@ impl<T: Trait> Module<T> {
 						<Proposals<T>>::remove(index);
 
 						// return their deposit.
-						let _ = T::Currency::unreserve(&p.proposer, p.bond);
+						let _ = T::RingCurrency::unreserve(&p.proposer, p.bond);
 
 						// provide the allocation.
-						imbalance.subsume(T::Currency::deposit_creating(&p.beneficiary, p.value));
+						imbalance.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, p.value));
 
 						Self::deposit_event(RawEvent::Awarded(index, p.value, p.beneficiary));
 						false
@@ -321,7 +340,7 @@ impl<T: Trait> Module<T> {
 			// burn some proportion of the remaining budget if we run a surplus.
 			let burn = (T::Burn::get() * budget_remaining).min(budget_remaining);
 			budget_remaining -= burn;
-			imbalance.subsume(T::Currency::burn(burn));
+			imbalance.subsume(T::RingCurrency::burn(burn));
 			Self::deposit_event(RawEvent::Burnt(burn))
 		}
 
@@ -329,7 +348,7 @@ impl<T: Trait> Module<T> {
 		// proof: budget_remaining is account free balance minus ED;
 		// Thus we can't spend more than account free balance minus ED;
 		// Thus account is kept alive; qed;
-		if let Err(problem) = T::Currency::settle(
+		if let Err(problem) = T::RingCurrency::settle(
 			&Self::account_id(),
 			imbalance,
 			WithdrawReason::Transfer.into(),
@@ -345,27 +364,39 @@ impl<T: Trait> Module<T> {
 
 	/// Return the amount of money in the pot.
 	// The existential deposit is not part of the pot so treasury account never gets deleted.
-	fn pot() -> BalanceOf<T> {
-		T::Currency::free_balance(&Self::account_id())
+	fn pot() -> RingBalance<T> {
+		T::RingCurrency::free_balance(&Self::account_id())
 			// Must never be less than 0 but better be safe.
-			.saturating_sub(T::Currency::minimum_balance())
+			.saturating_sub(T::RingCurrency::minimum_balance())
 	}
 }
 
-impl<T: Trait> OnUnbalanced<NegativeImbalanceOf<T>> for Module<T> {
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<T>) {
+impl<T: Trait> OnUnbalanced<RingNegativeImbalance<T>> for Module<T> {
+	fn on_nonzero_unbalanced(amount: RingNegativeImbalance<T>) {
 		let numeric_amount = amount.peek();
 
 		// Must resolve into existing but better to be safe.
-		let _ = T::Currency::resolve_creating(&Self::account_id(), amount);
+		let _ = T::RingCurrency::resolve_creating(&Self::account_id(), amount);
 
-		Self::deposit_event(RawEvent::Deposit(numeric_amount));
+		Self::deposit_event(RawEvent::DepositRing(numeric_amount));
+	}
+}
+
+// FIXME: Ugly hack due to https://github.com/rust-lang/rust/issues/31844#issuecomment-557918823
+impl<T: Trait> OnUnbalancedKton<KtonNegativeImbalance<T>> for Module<T> {
+	fn on_nonzero_unbalanced(amount: KtonNegativeImbalance<T>) {
+		let numeric_amount = amount.peek();
+
+		// Must resolve into existing but better to be safe.
+		let _ = T::KtonCurrency::resolve_creating(&Self::account_id(), amount);
+
+		Self::deposit_event(RawEvent::DepositKton(numeric_amount));
 	}
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use crate::*;
 
 	use frame_support::{assert_noop, assert_ok, impl_outer_origin, parameter_types, weights::Weight};
 	use sp_core::H256;
@@ -374,6 +405,10 @@ mod tests {
 		traits::{BlakeTwo256, IdentityLookup, OnFinalize},
 		Perbill,
 	};
+
+	type Ring = darwinia_ring::Module<Test>;
+	type Kton = darwinia_kton::Module<Test>;
+	type Treasury = Module<Test>;
 
 	impl_outer_origin! {
 		pub enum Origin for Test  where system = frame_system {}
@@ -389,9 +424,9 @@ mod tests {
 	}
 	impl frame_system::Trait for Test {
 		type Origin = Origin;
+		type Call = ();
 		type Index = u64;
 		type BlockNumber = u64;
-		type Call = ();
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
 		type AccountId = u64;
@@ -400,8 +435,8 @@ mod tests {
 		type Event = ();
 		type BlockHashCount = BlockHashCount;
 		type MaximumBlockWeight = MaximumBlockWeight;
-		type AvailableBlockRatio = AvailableBlockRatio;
 		type MaximumBlockLength = MaximumBlockLength;
+		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
 		type ModuleToIndex = ();
 	}
@@ -410,13 +445,21 @@ mod tests {
 		pub const TransferFee: u64 = 0;
 		pub const CreationFee: u64 = 0;
 	}
-	impl pallet_balances::Trait for Test {
+	impl darwinia_kton::Trait for Test {
 		type Balance = u64;
-		type OnNewAccount = ();
-		type OnFreeBalanceZero = ();
 		type Event = ();
+		type RingCurrency = Ring;
+		type TransferPayment = ();
+		type ExistentialDeposit = ExistentialDeposit;
+		type TransferFee = TransferFee;
+	}
+	impl darwinia_ring::Trait for Test {
+		type Balance = u64;
+		type OnFreeBalanceZero = ();
+		type OnNewAccount = ();
 		type TransferPayment = ();
 		type DustRemoval = ();
+		type Event = ();
 		type ExistentialDeposit = ExistentialDeposit;
 		type TransferFee = TransferFee;
 		type CreationFee = CreationFee;
@@ -428,7 +471,8 @@ mod tests {
 		pub const Burn: Permill = Permill::from_percent(50);
 	}
 	impl Trait for Test {
-		type Currency = pallet_balances::Module<Test>;
+		type RingCurrency = Ring;
+		type KtonCurrency = Kton;
 		type ApproveOrigin = frame_system::EnsureRoot<u64>;
 		type RejectOrigin = frame_system::EnsureRoot<u64>;
 		type Event = ();
@@ -438,19 +482,22 @@ mod tests {
 		type SpendPeriod = SpendPeriod;
 		type Burn = Burn;
 	}
-	type Balances = pallet_balances::Module<Test>;
-	type Treasury = Module<Test>;
 
 	fn new_test_ext() -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test> {
+		let _ = darwinia_ring::GenesisConfig::<Test> {
 			// Total issuance will be 200 with treasury account initialized at ED.
 			balances: vec![(0, 100), (1, 98), (2, 1)],
 			vesting: vec![],
 		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-		GenesisConfig::default().assimilate_storage::<Test>(&mut t).unwrap();
+		.assimilate_storage(&mut t);
+		let _ = darwinia_kton::GenesisConfig::<Test> {
+			// Total issuance will be 200 with treasury account initialized at ED.
+			balances: vec![(0, 100), (1, 98), (2, 1)],
+			vesting: vec![],
+		}
+		.assimilate_storage(&mut t);
+		let _ = GenesisConfig::default().assimilate_storage::<Test>(&mut t);
 		t.into()
 	}
 
@@ -466,7 +513,7 @@ mod tests {
 	fn minting_works() {
 		new_test_ext().execute_with(|| {
 			// Check that accumulate works when we have Some value in Dummy already.
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 		});
 	}
@@ -475,8 +522,8 @@ mod tests {
 	fn spend_proposal_takes_min_deposit() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 3));
-			assert_eq!(Balances::free_balance(&0), 99);
-			assert_eq!(Balances::reserved_balance(&0), 1);
+			assert_eq!(Ring::free_balance(&0), 99);
+			assert_eq!(Ring::reserved_balance(&0), 1);
 		});
 	}
 
@@ -484,8 +531,8 @@ mod tests {
 	fn spend_proposal_takes_proportional_deposit() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
-			assert_eq!(Balances::free_balance(&0), 95);
-			assert_eq!(Balances::reserved_balance(&0), 5);
+			assert_eq!(Ring::free_balance(&0), 95);
+			assert_eq!(Ring::reserved_balance(&0), 5);
 		});
 	}
 
@@ -502,13 +549,13 @@ mod tests {
 	#[test]
 	fn accepted_spend_proposal_ignored_outside_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(1);
-			assert_eq!(Balances::free_balance(&3), 0);
+			assert_eq!(Ring::free_balance(&3), 0);
 			assert_eq!(Treasury::pot(), 100);
 		});
 	}
@@ -516,26 +563,26 @@ mod tests {
 	#[test]
 	fn unused_pot_should_diminish() {
 		new_test_ext().execute_with(|| {
-			let init_total_issuance = Balances::total_issuance();
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
-			assert_eq!(Balances::total_issuance(), init_total_issuance + 100);
+			let init_total_issuance = Ring::total_issuance();
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
+			assert_eq!(Ring::total_issuance(), init_total_issuance + 100);
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 50);
-			assert_eq!(Balances::total_issuance(), init_total_issuance + 50);
+			assert_eq!(Ring::total_issuance(), init_total_issuance + 50);
 		});
 	}
 
 	#[test]
 	fn rejected_spend_proposal_ignored_on_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
-			assert_eq!(Balances::free_balance(&3), 0);
+			assert_eq!(Ring::free_balance(&3), 0);
 			assert_eq!(Treasury::pot(), 50);
 		});
 	}
@@ -543,7 +590,7 @@ mod tests {
 	#[test]
 	fn reject_already_rejected_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
@@ -577,7 +624,7 @@ mod tests {
 	#[test]
 	fn accept_already_rejected_spend_proposal_fails() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
@@ -591,14 +638,14 @@ mod tests {
 	#[test]
 	fn accepted_spend_proposal_enacted_on_spend_period() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
-			assert_eq!(Balances::free_balance(&3), 100);
+			assert_eq!(Ring::free_balance(&3), 100);
 			assert_eq!(Treasury::pot(), 0);
 		});
 	}
@@ -606,7 +653,7 @@ mod tests {
 	#[test]
 	fn pot_underflow_should_not_diminish() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 150, 3));
@@ -615,9 +662,9 @@ mod tests {
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 100); // Pot hasn't changed
 
-			let _ = Balances::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
+			let _ = Ring::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
-			assert_eq!(Balances::free_balance(&3), 150); // Fund has been spent
+			assert_eq!(Ring::free_balance(&3), 150); // Fund has been spent
 			assert_eq!(Treasury::pot(), 25); // Pot has finally changed
 		});
 	}
@@ -627,9 +674,9 @@ mod tests {
 	#[test]
 	fn treasury_account_doesnt_get_deleted() {
 		new_test_ext().execute_with(|| {
-			Balances::make_free_balance_be(&Treasury::account_id(), 101);
+			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot(), 100);
-			let treasury_balance = Balances::free_balance(&Treasury::account_id());
+			let treasury_balance = Ring::free_balance(&Treasury::account_id());
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), treasury_balance, 3));
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
@@ -642,7 +689,7 @@ mod tests {
 
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
 			assert_eq!(Treasury::pot(), 0); // Pot is emptied
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 1); // but the account is still there
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 1); // but the account is still there
 		});
 	}
 
@@ -651,7 +698,7 @@ mod tests {
 	#[test]
 	fn inexisting_account_works() {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test> {
+		darwinia_ring::GenesisConfig::<Test> {
 			balances: vec![(0, 100), (1, 99), (2, 1)],
 			vesting: vec![],
 		}
@@ -661,7 +708,7 @@ mod tests {
 		let mut t: sp_io::TestExternalities = t.into();
 
 		t.execute_with(|| {
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 0); // Account does not exist
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 0); // Account does not exist
 			assert_eq!(Treasury::pot(), 0); // Pot is empty
 
 			assert_ok!(Treasury::propose_spend(Origin::signed(0), 99, 3));
@@ -670,16 +717,16 @@ mod tests {
 			assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
 			<Treasury as OnFinalize<u64>>::on_finalize(2);
 			assert_eq!(Treasury::pot(), 0); // Pot hasn't changed
-			assert_eq!(Balances::free_balance(&3), 0); // Balance of `3` hasn't changed
+			assert_eq!(Ring::free_balance(&3), 0); // Balance of `3` hasn't changed
 
-			Balances::make_free_balance_be(&Treasury::account_id(), 100);
+			Ring::make_free_balance_be(&Treasury::account_id(), 100);
 			assert_eq!(Treasury::pot(), 99); // Pot now contains funds
-			assert_eq!(Balances::free_balance(&Treasury::account_id()), 100); // Account does exist
+			assert_eq!(Ring::free_balance(&Treasury::account_id()), 100); // Account does exist
 
 			<Treasury as OnFinalize<u64>>::on_finalize(4);
 
 			assert_eq!(Treasury::pot(), 0); // Pot has changed
-			assert_eq!(Balances::free_balance(&3), 99); // Balance of `3` has changed
+			assert_eq!(Ring::free_balance(&3), 99); // Balance of `3` has changed
 		});
 	}
 }

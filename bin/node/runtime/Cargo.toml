@@ -58,11 +58,12 @@ pallet-transaction-payment = { version = "2.0.0", default-features = false, git 
 pallet-transaction-payment-rpc-runtime-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-utility = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
+pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
+pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
 pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
 pallet-ring = { package = "darwinia-ring", default-features = false, path = "../../../frame/balances/ring" }
 pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
-pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
-pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
+pallet-treasury = { package = "darwinia-treasury", default-features = false, path = "../../../frame/treasury" }
 
 [build-dependencies]
 wasm-builder-runner = { version = "1.0.4", package = "substrate-wasm-builder-runner", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
@@ -96,11 +97,12 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-utility/std",
 
+	"pallet-eth-backing/std",
+	"pallet-eth-relay/std",
 	"pallet-kton/std",
 	"pallet-ring/std",
 	"pallet-staking/std",
-	"pallet-eth-relay/std",
-	"pallet-eth-backing/std",
+	"pallet-treasury/std",
 
 	"node-primitives/std",
 	"rustc-hex",

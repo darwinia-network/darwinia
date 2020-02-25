@@ -6,7 +6,7 @@ pub use frame_support::traits::{LockIdentifier, WithdrawReason, WithdrawReasons}
 pub use structs::*;
 pub use traits::*;
 
-mod structs {
+pub mod structs {
 	use codec::{Decode, Encode};
 	use num_traits::Zero;
 
@@ -214,8 +214,8 @@ mod structs {
 	}
 }
 
-mod traits {
-	use frame_support::traits::{Currency, ExistenceRequirement};
+pub mod traits {
+	use frame_support::traits::{Currency, ExistenceRequirement, TryDrop};
 	use sp_runtime::DispatchResult;
 
 	use crate::{LockIdentifier, WithdrawLock, WithdrawReasons};
@@ -268,5 +268,33 @@ mod traits {
 			amount: Self::Balance,
 			stash: &AccountId,
 		) -> DispatchResult;
+	}
+
+	// FIXME: Ugly hack due to https://github.com/rust-lang/rust/issues/31844#issuecomment-557918823
+	/// Handler for when some currency "account" decreased in balance for
+	/// some reason.
+	///
+	/// The only reason at present for an increase would be for validator rewards, but
+	/// there may be other reasons in the future or for other chains.
+	///
+	/// Reasons for decreases include:
+	///
+	/// - Someone got slashed.
+	/// - Someone paid for a transaction to be included.
+	pub trait OnUnbalancedKton<Imbalance: TryDrop> {
+		/// Handler for some imbalance. Infallible.
+		fn on_unbalanced(amount: Imbalance) {
+			amount.try_drop().unwrap_or_else(Self::on_nonzero_unbalanced)
+		}
+
+		/// Actually handle a non-zero imbalance. You probably want to implement this rather than
+		/// `on_unbalanced`.
+		fn on_nonzero_unbalanced(amount: Imbalance);
+	}
+
+	impl<Imbalance: TryDrop> OnUnbalancedKton<Imbalance> for () {
+		fn on_nonzero_unbalanced(amount: Imbalance) {
+			drop(amount);
+		}
 	}
 }

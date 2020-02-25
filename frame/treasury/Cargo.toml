@@ -1,5 +1,5 @@
 [package]
-name = "pallet-treasury"
+name = "darwinia-treasury"
 version = "2.0.0"
 authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
@@ -12,13 +12,17 @@ serde = { version = "1.0.101", optional = true, features = ["derive"] }
 # github.com
 frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-balances = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+
+darwinia-support = { default-features = false, path = "../support" }
 
 [dev-dependencies]
 sp-core = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-io ={ version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+
+darwinia-ring = { path = "../balances/ring" }
+darwinia-kton = { path = "../balances/kton" }
 
 [features]
 default = ["std"]
@@ -28,7 +32,8 @@ std = [
 
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-balances/std",
 	"sp-std/std",
 	"sp-runtime/std",
+
+	"darwinia-support/std",
 ]

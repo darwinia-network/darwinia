@@ -166,20 +166,33 @@ pub fn darwinia_genesis(
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		pallet_ring: Some(BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, RING_ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			vesting: vec![],
+
+		pallet_eth_backing: Some(EthBackingConfig {
+			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
+			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
+			ring_locked: 2_000_000_000 * COIN,
+			kton_locked: 50_000 * COIN,
+			..Default::default()
+		}),
+		pallet_eth_relay: Some(EthRelayConfig {
+			authorities: eth_relay_authorities,
+			..Default::default()
 		}),
 		pallet_kton: Some(KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, KTON_ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+			vesting: vec![],
+		}),
+		pallet_ring: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, RING_ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 			vesting: vec![],
@@ -196,18 +209,7 @@ pub fn darwinia_genesis(
 			slash_reward_fraction: Perbill::from_percent(10),
 			..Default::default()
 		}),
-		pallet_eth_relay: Some(EthRelayConfig {
-			authorities: eth_relay_authorities,
-			..Default::default()
-		}),
-		pallet_eth_backing: Some(EthBackingConfig {
-			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
-			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
-			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
-			ring_locked: 2_000_000_000 * COIN,
-			kton_locked: 50_000 * COIN,
-			..Default::default()
-		}),
+		pallet_treasury: Some(Default::default()),
 	}
 }
 
