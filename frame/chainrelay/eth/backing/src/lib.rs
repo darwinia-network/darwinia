@@ -226,7 +226,8 @@ decl_module! {
 
 				<MomentT<T>>::saturated_from(Moment::try_from(month)? as _)
 			};
-			// TODO: Check the time unit in seconds or milliseconds
+			// https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBankV2.sol#L178
+			// The start_at here is in seconds, will be converted to milliseconds later in on_deposit_redeem
 			let start_at = {
 				let start_at = result
 					.params[3]
@@ -238,7 +239,8 @@ decl_module! {
 				<MomentT<T>>::saturated_from(Moment::try_from(start_at)? as _)
 			};
 			let redeemed_ring = {
-				// TODO: div 10**18 and mul 10**9
+				// The decimal in Ethereum is 10**18, and the decimal in Darwinia is 10**9,
+				// div 10**18 and mul 10**9
 				let amount = result.params[5]
 					.value
 					.clone()
