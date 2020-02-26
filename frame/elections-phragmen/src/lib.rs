@@ -82,17 +82,21 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_std::prelude::*;
-use sp_runtime::{print, DispatchResult, DispatchError, traits::{Zero, StaticLookup, Bounded, Convert}};
 use frame_support::{
-	decl_storage, decl_event, ensure, decl_module, decl_error, weights::SimpleDispatchInfo,
-	traits::{
-		Currency, Get, LockableCurrency, LockIdentifier, ReservableCurrency, WithdrawReasons,
-		ChangeMembers, OnUnbalanced, WithdrawReason
-	}
+	decl_error, decl_event, decl_module, decl_storage, ensure,
+	traits::{ChangeMembers, Currency, Get, LockIdentifier, OnUnbalanced, ReservableCurrency},
+	weights::SimpleDispatchInfo,
 };
+use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_phragmen::ExtendedBalance;
-use frame_system::{self as system, ensure_signed, ensure_root};
+use sp_runtime::{
+	print,
+	traits::{Bounded, Convert, StaticLookup, Zero},
+	DispatchError, DispatchResult,
+};
+use sp_std::prelude::*;
+
+use darwinia_support::{LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
 
 const MODULE_ID: LockIdentifier = *b"phrelect";
 
@@ -108,9 +112,7 @@ pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 
 	/// The currency that people are electing with.
-	type Currency:
-		LockableCurrency<Self::AccountId, Moment=Self::BlockNumber> +
-		ReservableCurrency<Self::AccountId>;
+	type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber> + ReservableCurrency<Self::AccountId>;
 
 	/// What to do when the members change.
 	type ChangeMembers: ChangeMembers<Self::AccountId>;
@@ -259,8 +261,10 @@ decl_module! {
 			T::Currency::set_lock(
 				MODULE_ID,
 				&who,
-				locked_balance,
-				T::BlockNumber::max_value(),
+				WithdrawLock::Normal(NormalLock {
+					amount: locked_balance,
+					until: T::BlockNumber::max_value(),
+				}),
 				WithdrawReasons::except(WithdrawReason::TransactionPayment),
 			);
 			<StakeOf<T>>::insert(&who, locked_balance);
@@ -486,14 +490,15 @@ impl<T: Trait> Module<T> {
 			members_with_stake.remove(index);
 
 			let next_up = <RunnersUp<T>>::mutate(|runners_up| runners_up.pop());
-			let maybe_replacement = next_up.and_then(|(replacement, stake)|
-				members_with_stake.binary_search_by(|(ref m, ref _s)| m.cmp(&replacement))
+			let maybe_replacement = next_up.and_then(|(replacement, stake)| {
+				members_with_stake
+					.binary_search_by(|(ref m, ref _s)| m.cmp(&replacement))
 					.err()
 					.map(|index| {
 						members_with_stake.insert(index, (replacement.clone(), stake));
 						replacement
 					})
-			);
+			});
 
 			<Members<T>>::put(&members_with_stake);
 			let members = members_with_stake.into_iter().map(|m| m.0).collect::<Vec<_>>();
@@ -555,12 +560,18 @@ impl<T: Trait> Module<T> {
 
 	/// Get the members' account ids.
 	fn members_ids() -> Vec<T::AccountId> {
-		Self::members().into_iter().map(|(m, _)| m).collect::<Vec<T::AccountId>>()
+		Self::members()
+			.into_iter()
+			.map(|(m, _)| m)
+			.collect::<Vec<T::AccountId>>()
 	}
 
 	/// The the runners' up account ids.
 	fn runners_up_ids() -> Vec<T::AccountId> {
-		Self::runners_up().into_iter().map(|(r, _)| r).collect::<Vec<T::AccountId>>()
+		Self::runners_up()
+			.into_iter()
+			.map(|(r, _)| r)
+			.collect::<Vec<T::AccountId>>()
 	}
 
 	/// Check if `who` is a defunct voter.
@@ -647,10 +658,12 @@ impl<T: Trait> Module<T> {
 		);
 
 		if let Some(phragmen_result) = maybe_phragmen_result {
-			let old_members_ids = <Members<T>>::take().into_iter()
+			let old_members_ids = <Members<T>>::take()
+				.into_iter()
 				.map(|(m, _)| m)
 				.collect::<Vec<T::AccountId>>();
-			let old_runners_up_ids = <RunnersUp<T>>::take().into_iter()
+			let old_runners_up_ids = <RunnersUp<T>>::take()
+				.into_iter()
 				.map(|(r, _)| r)
 				.collect::<Vec<T::AccountId>>();
 
@@ -662,7 +675,7 @@ impl<T: Trait> Module<T> {
 			let new_set_with_approval = phragmen_result.winners;
 			let new_set = new_set_with_approval
 				.into_iter()
-				.filter_map(|(m, a)| if a.is_zero() { None } else { Some(m) } )
+				.filter_map(|(m, a)| if a.is_zero() { None } else { Some(m) })
 				.collect::<Vec<T::AccountId>>();
 
 			let support_map = sp_phragmen::build_support_map::<_, _, _, T::CurrencyToVote>(
@@ -671,16 +684,15 @@ impl<T: Trait> Module<T> {
 				Self::locked_stake_of,
 			);
 
-			let to_balance = |e: ExtendedBalance|
-				<T::CurrencyToVote as Convert<ExtendedBalance, BalanceOf<T>>>::convert(e);
+			let to_balance =
+				|e: ExtendedBalance| <T::CurrencyToVote as Convert<ExtendedBalance, BalanceOf<T>>>::convert(e);
 			let new_set_with_stake = new_set
 				.into_iter()
 				.map(|ref m| {
-					let support = support_map.get(m)
-						.expect(
-							"entire new_set was given to build_support_map; en entry must be \
-							created for each item; qed"
-						);
+					let support = support_map.get(m).expect(
+						"entire new_set was given to build_support_map; en entry must be \
+							created for each item; qed",
+					);
 					(m.clone(), to_balance(support.total))
 				})
 				.collect::<Vec<(T::AccountId, BalanceOf<T>)>>();
@@ -711,25 +723,15 @@ impl<T: Trait> Module<T> {
 				.collect::<Vec<T::AccountId>>();
 
 			// report member changes. We compute diff because we need the outgoing list.
-			let (incoming, outgoing) = T::ChangeMembers::compute_members_diff(
-				&new_members_ids,
-				&old_members_ids,
-			);
-			T::ChangeMembers::change_members_sorted(
-				&incoming,
-				&outgoing.clone(),
-				&new_members_ids,
-			);
+			let (incoming, outgoing) = T::ChangeMembers::compute_members_diff(&new_members_ids, &old_members_ids);
+			T::ChangeMembers::change_members_sorted(&incoming, &outgoing.clone(), &new_members_ids);
 
 			// outgoing candidates lose their bond.
 			let mut to_burn_bond = outgoing.to_vec();
 
 			// compute the outgoing of runners up as well and append them to the `to_burn_bond`
 			{
-				let (_, outgoing) = T::ChangeMembers::compute_members_diff(
-					&new_runners_up_ids,
-					&old_runners_up_ids,
-				);
+				let (_, outgoing) = T::ChangeMembers::compute_members_diff(&new_runners_up_ids, &old_runners_up_ids);
 				to_burn_bond.extend(outgoing);
 			}
 
@@ -738,8 +740,7 @@ impl<T: Trait> Module<T> {
 			// both the member and runner counts are bounded.
 			exposed_candidates.into_iter().for_each(|c| {
 				// any candidate who is not a member and not a runner up.
-				if new_members.binary_search_by_key(&c, |(m, _)| m.clone()).is_err()
-					&& !new_runners_up_ids.contains(&c)
+				if new_members.binary_search_by_key(&c, |(m, _)| m.clone()).is_err() && !new_runners_up_ids.contains(&c)
 				{
 					let (imbalance, _) = T::Currency::slash_reserved(&c, T::CandidacyBond::get());
 					T::LoserCandidate::on_unbalanced(imbalance);
@@ -769,17 +770,20 @@ impl<T: Trait> Module<T> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use std::cell::RefCell;
-	use frame_support::{assert_ok, assert_noop, parameter_types, weights::Weight};
-	use substrate_test_utils::assert_eq_uvec;
+	use frame_support::{assert_noop, assert_ok, parameter_types, weights::Weight};
+	use frame_system as system;
 	use sp_core::H256;
 	use sp_runtime::{
-		Perbill, testing::Header, BuildStorage,
-		traits::{BlakeTwo256, IdentityLookup, Block as BlockT},
+		testing::Header,
+		traits::{BlakeTwo256, Block as BlockT, IdentityLookup},
+		BuildStorage, Perbill,
 	};
+	use std::cell::RefCell;
+	use substrate_test_utils::assert_eq_uvec;
+
 	use crate as elections;
-	use frame_system as system;
+	use darwinia_support::{NormalLock, WithdrawLock};
+	use elections::*;
 
 	parameter_types! {
 		pub const BlockHashCount: u64 = 250;
@@ -790,9 +794,9 @@ mod tests {
 
 	impl frame_system::Trait for Test {
 		type Origin = Origin;
+		type Call = ();
 		type Index = u64;
 		type BlockNumber = u64;
-		type Call = ();
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
 		type AccountId = u64;
@@ -815,11 +819,11 @@ mod tests {
 
 	impl pallet_balances::Trait for Test {
 		type Balance = u64;
-		type OnNewAccount = ();
 		type OnFreeBalanceZero = ();
-		type Event = Event;
+		type OnNewAccount = ();
 		type TransferPayment = ();
 		type DustRemoval = ();
+		type Event = Event;
 		type ExistentialDeposit = ExistentialDeposit;
 		type TransferFee = TransferFee;
 		type CreationFee = CreationFee;
@@ -838,22 +842,30 @@ mod tests {
 
 	pub struct VotingBond;
 	impl Get<u64> for VotingBond {
-		fn get() -> u64 { VOTING_BOND.with(|v| *v.borrow()) }
+		fn get() -> u64 {
+			VOTING_BOND.with(|v| *v.borrow())
+		}
 	}
 
 	pub struct DesiredMembers;
 	impl Get<u32> for DesiredMembers {
-		fn get() -> u32 { DESIRED_MEMBERS.with(|v| *v.borrow()) }
+		fn get() -> u32 {
+			DESIRED_MEMBERS.with(|v| *v.borrow())
+		}
 	}
 
 	pub struct DesiredRunnersUp;
 	impl Get<u32> for DesiredRunnersUp {
-		fn get() -> u32 { DESIRED_RUNNERS_UP.with(|v| *v.borrow()) }
+		fn get() -> u32 {
+			DESIRED_RUNNERS_UP.with(|v| *v.borrow())
+		}
 	}
 
 	pub struct TermDuration;
 	impl Get<u64> for TermDuration {
-		fn get() -> u64 { TERM_DURATION.with(|v| *v.borrow()) }
+		fn get() -> u64 {
+			TERM_DURATION.with(|v| *v.borrow())
+		}
 	}
 
 	thread_local! {
@@ -898,7 +910,9 @@ mod tests {
 	/// Simple structure that exposes how u64 currency can be represented as... u64.
 	pub struct CurrencyToVoteHandler;
 	impl Convert<u64, u64> for CurrencyToVoteHandler {
-		fn convert(x: u64) -> u64 { x }
+		fn convert(x: u64) -> u64 {
+			x
+		}
 	}
 	impl Convert<u128, u64> for CurrencyToVoteHandler {
 		fn convert(x: u128) -> u64 {
@@ -909,16 +923,16 @@ mod tests {
 	impl Trait for Test {
 		type Event = Event;
 		type Currency = Balances;
-		type CurrencyToVote = CurrencyToVoteHandler;
 		type ChangeMembers = TestChangeMembers;
+		type CurrencyToVote = CurrencyToVoteHandler;
 		type CandidacyBond = CandidacyBond;
 		type VotingBond = VotingBond;
-		type TermDuration = TermDuration;
+		type LoserCandidate = ();
+		type BadReport = ();
+		type KickedMember = ();
 		type DesiredMembers = DesiredMembers;
 		type DesiredRunnersUp = DesiredRunnersUp;
-		type LoserCandidate = ();
-		type KickedMember = ();
-		type BadReport = ();
+		type TermDuration = TermDuration;
 	}
 
 	pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -972,18 +986,21 @@ mod tests {
 			TERM_DURATION.with(|v| *v.borrow_mut() = self.term_duration);
 			DESIRED_RUNNERS_UP.with(|v| *v.borrow_mut() = self.desired_runners_up);
 			GenesisConfig {
-				pallet_balances: Some(pallet_balances::GenesisConfig::<Test>{
+				pallet_balances: Some(pallet_balances::GenesisConfig::<Test> {
 					balances: vec![
 						(1, 10 * self.balance_factor),
 						(2, 20 * self.balance_factor),
 						(3, 30 * self.balance_factor),
 						(4, 40 * self.balance_factor),
 						(5, 50 * self.balance_factor),
-						(6, 60 * self.balance_factor)
+						(6, 60 * self.balance_factor),
 					],
 					vesting: vec![],
 				}),
-			}.build_storage().unwrap().into()
+			}
+			.build_storage()
+			.unwrap()
+			.into()
 		}
 	}
 
@@ -998,7 +1015,10 @@ mod tests {
 	fn has_lock(who: &u64) -> u64 {
 		let lock = Balances::locks(who)[0].clone();
 		assert_eq!(lock.id, MODULE_ID);
-		lock.amount
+		match lock.withdraw_lock {
+			WithdrawLock::Normal(NormalLock { amount, .. }) => amount,
+			_ => unreachable!(),
+		}
 	}
 
 	#[test]
@@ -1023,11 +1043,7 @@ mod tests {
 
 	#[test]
 	fn term_duration_zero_is_passive() {
-		ExtBuilder::default()
-			.term_duration(0)
-			.build()
-			.execute_with(||
-		{
+		ExtBuilder::default().term_duration(0).build().execute_with(|| {
 			System::set_block_number(1);
 			assert_eq!(Elections::term_duration(), 0);
 			assert_eq!(Elections::desired_members(), 2);
@@ -1394,7 +1410,6 @@ mod tests {
 
 			// has a candidate voted for.
 			assert_eq!(Elections::is_defunct_voter(&1), false);
-
 		});
 	}
 
@@ -1458,7 +1473,6 @@ mod tests {
 			assert_eq!(balances(&5), (45, 3));
 		});
 	}
-
 
 	#[test]
 	fn simple_voting_rounds_should_work() {
