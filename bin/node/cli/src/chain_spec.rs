@@ -5,8 +5,8 @@ use hex_literal::hex;
 use node_runtime::constants::currency::*;
 use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, EthBackingConfig,
-	EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus,
+	AuthorityDiscoveryConfig, BabeConfig, ContractsConfig, CouncilConfig, EthBackingConfig, EthRelayConfig,
+	GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, RingConfig, SessionConfig, SessionKeys, StakerStatus,
 	StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -193,7 +193,7 @@ pub fn darwinia_genesis(
 				.collect(),
 			vesting: vec![],
 		}),
-		pallet_ring: Some(BalancesConfig {
+		pallet_ring: Some(RingConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()

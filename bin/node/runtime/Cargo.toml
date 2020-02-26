@@ -16,7 +16,7 @@ serde = { version = "1.0.102", optional = true }
 # primitives
 sp-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-authority-discovery = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-block-builder = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111", default-features = false}
+sp-block-builder = { git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111", default-features = false }
 sp-consensus-babe = { version = "0.8", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-inherents = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
@@ -42,7 +42,6 @@ pallet-babe = { version = "2.0.0", default-features = false, git = "https://gith
 pallet-collective = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-contracts = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-contracts-rpc-runtime-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-elections-phragmen = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-finality-tracker = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-grandpa = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-im-online = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
@@ -58,6 +57,7 @@ pallet-transaction-payment = { version = "2.0.0", default-features = false, git 
 pallet-transaction-payment-rpc-runtime-api = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 pallet-utility = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 
+pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
 pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
 pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
 pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
@@ -97,6 +97,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-utility/std",
 
+	"pallet-elections-phragmen/std",
 	"pallet-eth-backing/std",
 	"pallet-eth-relay/std",
 	"pallet-kton/std",
