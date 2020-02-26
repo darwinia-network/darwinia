@@ -626,10 +626,6 @@ where
 	pub own_kton_balance: KtonBalance,
 	pub own_power: Power,
 	/// The total balance backing this validator.
-	#[codec(compact)]
-	pub total_ring_balance: RingBalance,
-	#[codec(compact)]
-	pub total_kton_balance: KtonBalance,
 	pub total_power: Power,
 	/// The portions of nominators stashes that are exposed.
 	pub others: Vec<IndividualExposure<AccountId, RingBalance, KtonBalance>>,
@@ -1618,7 +1614,8 @@ impl<T: Trait> Module<T> {
 	// PUBLIC IMMUTABLES
 
 	// power is a mixture of ring and kton
-	// power = ring_ratio * POWER_COUNT / 2 + kton_ratio * POWER_COUNT / 2
+	// For *RING* power = ring_ratio * POWER_COUNT / 2
+	// For *KTON* power = kton_ratio * POWER_COUNT / 2
 	pub fn currency_to_power<S: TryInto<Balance>>(active: S, pool: S) -> Power {
 		(Perquintill::from_rational_approximation(
 			active.saturated_into::<Balance>(),
@@ -2093,8 +2090,6 @@ impl<T: Trait> Module<T> {
 					own_ring_balance: s.own_ring_balance,
 					own_kton_balance: s.own_kton_balance,
 					own_power: to_power(s.own_votes),
-					total_ring_balance: s.total_ring_balance,
-					total_kton_balance: s.total_kton_balance,
 					total_power: to_power(s.total_votes),
 					others: s
 						.others
