@@ -523,7 +523,6 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
 		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalMembership: pallet_membership  ::<Instance1>,
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
@@ -536,6 +535,7 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Nicks: pallet_nicks::{Module, Call, Storage, Event<T>},
 
+		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		EthBacking: pallet_eth_backing,
 		EthRelay: pallet_eth_relay,
 		Kton: pallet_kton,
