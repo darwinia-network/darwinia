@@ -18,7 +18,7 @@ impl-rlp = { default-features = false, git = "https://github.com/darwinia-networ
 keccak-hash = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 primitive-types = { default-features = false, features = ["codec", "rlp"], git = "https://github.com/darwinia-network/parity-common.git" }
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
-rlp_derive = { git = "https://github.com/darwinia-network/parity-common.git" }
+rlp-derive = { git = "https://github.com/darwinia-network/parity-common.git" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
 

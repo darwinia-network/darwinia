@@ -15,7 +15,7 @@ pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-pub use pallet_ring::Call as BalancesCall;
+pub use pallet_ring::Call as RingCall;
 pub use pallet_staking::StakerStatus;
 
 use constants::{currency::*, supply::*, time::*};
@@ -25,7 +25,7 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
-use impls::{Author, LinearWeightToFee, TargetedFeeAdjustment};
+use impls::{support_kton_in_the_future, Author, LinearWeightToFee, TargetedFeeAdjustment};
 use pallet_contracts_rpc_runtime_api::ContractExecResult;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -79,7 +79,7 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+type NegativeImbalance = <Ring as Currency<AccountId>>::NegativeImbalance;
 
 pub type DealWithFees = SplitTwoWays<
 	Balance,
@@ -129,7 +129,7 @@ parameter_types! {
 impl pallet_utility::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type Currency = Balances;
+	type Currency = Ring;
 	type MultisigDepositBase = MultisigDepositBase;
 	type MultisigDepositFactor = MultisigDepositFactor;
 	type MaxSignatories = MaxSignatories;
@@ -148,7 +148,7 @@ impl pallet_babe::Trait for Runtime {
 
 impl pallet_indices::Trait for Runtime {
 	type AccountIndex = AccountIndex;
-	type IsDeadAccount = Balances;
+	type IsDeadAccount = Ring;
 	type ResolveHint = pallet_indices::SimpleResolveHint<Self::AccountId, Self::AccountIndex>;
 	type Event = Event;
 }
@@ -163,7 +163,7 @@ parameter_types! {
 }
 
 impl pallet_transaction_payment::Trait for Runtime {
-	type Currency = Balances;
+	type Currency = Ring;
 	type OnTransactionPayment = DealWithFees;
 	type TransactionBaseFee = TransactionBaseFee;
 	type TransactionByteFee = TransactionByteFee;
@@ -228,22 +228,45 @@ impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Event = Event;
 }
 
-//type TechnicalCollective = pallet_collective::Instance2;
-//impl pallet_collective::Trait<TechnicalCollective> for Runtime {
-//	type Origin = Origin;
-//	type Proposal = Call;
-//	type Event = Event;
-//}
-//
-//impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
-//	type Event = Event;
-//	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
-//	type MembershipInitialized = TechnicalCommittee;
-//	type MembershipChanged = TechnicalCommittee;
-//}
+parameter_types! {
+	pub const CandidacyBond: Balance = 10 * COIN;
+	pub const VotingBond: Balance = 1 * COIN;
+	pub const TermDuration: BlockNumber = 7 * DAYS;
+	pub const DesiredMembers: u32 = 13;
+	pub const DesiredRunnersUp: u32 = 7;
+}
+
+impl pallet_elections_phragmen::Trait for Runtime {
+	type Event = Event;
+	type Currency = Ring;
+	type ChangeMembers = Council;
+	type CurrencyToVote = support_kton_in_the_future::CurrencyToVoteHandler;
+	type CandidacyBond = CandidacyBond;
+	type VotingBond = VotingBond;
+	type LoserCandidate = ();
+	type BadReport = ();
+	type KickedMember = ();
+	type DesiredMembers = DesiredMembers;
+	type DesiredRunnersUp = DesiredRunnersUp;
+	type TermDuration = TermDuration;
+}
+
+type TechnicalCollective = pallet_collective::Instance2;
+impl pallet_collective::Trait<TechnicalCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+}
+
+impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
+	type Event = Event;
+	type AddOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type MembershipInitialized = TechnicalCommittee;
+	type MembershipChanged = TechnicalCommittee;
+}
 
 parameter_types! {
 	pub const ContractTransferFee: Balance = 1 * MILLI;
@@ -258,7 +281,7 @@ parameter_types! {
 }
 
 impl pallet_contracts::Trait for Runtime {
-	type Currency = Balances;
+	type Currency = Ring;
 	type Time = Timestamp;
 	type Randomness = RandomnessCollectiveFlip;
 	type Call = Call;
@@ -337,7 +360,7 @@ parameter_types! {
 
 impl pallet_nicks::Trait for Runtime {
 	type Event = Event;
-	type Currency = Balances;
+	type Currency = Ring;
 	type ReservationFee = ReservationFee;
 	type Slashed = Treasury;
 	type ForceOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
@@ -385,7 +408,7 @@ impl pallet_eth_backing::Trait for Runtime {
 	type DetermineAccountId = pallet_eth_backing::AccountIdDeterminator<Runtime>;
 	type EthRelay = EthRelay;
 	type OnDepositRedeem = Staking;
-	type Ring = Balances;
+	type Ring = Ring;
 	type RingReward = ();
 	type Kton = Kton;
 	type KtonReward = ();
@@ -410,8 +433,8 @@ parameter_types! {
 impl pallet_kton::Trait for Runtime {
 	type Balance = Balance;
 	type Event = Event;
-	type RingCurrency = Balances;
-	type TransferPayment = Balances;
+	type RingCurrency = Ring;
+	type TransferPayment = Ring;
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 }
@@ -449,7 +472,7 @@ impl pallet_staking::Trait for Runtime {
 	/// A super-majority of the council can cancel the slash.
 	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 	type SessionInterface = Self;
-	type RingCurrency = Balances;
+	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	// send the slashed funds to the treasury.
 	type RingSlash = Treasury;
@@ -473,7 +496,7 @@ parameter_types! {
 }
 
 impl pallet_treasury::Trait for Runtime {
-	type RingCurrency = Balances;
+	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
 	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
 	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
@@ -500,8 +523,9 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
 		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-//		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-//		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
+		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
+		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		TechnicalMembership: pallet_membership  ::<Instance1>,
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
 		Contracts: pallet_contracts,
@@ -515,7 +539,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing,
 		EthRelay: pallet_eth_relay,
 		Kton: pallet_kton,
-		Balances: pallet_ring,
+		Ring: pallet_ring,
 		Staking: pallet_staking,
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 	}
@@ -673,7 +697,7 @@ impl_runtime_apis! {
 			Contracts::get_storage(address, key).map_err(|rpc_err| {
 				use pallet_contracts::GetStorageError;
 				use pallet_contracts_rpc_runtime_api::{GetStorageError as RpcGetStorageError};
-				/// Map the contract error into the RPC layer error.
+				// Map the contract error into the RPC layer error.
 				match rpc_err {
 					GetStorageError::ContractDoesntExist => RpcGetStorageError::ContractDoesntExist,
 					GetStorageError::IsTombstone => RpcGetStorageError::IsTombstone,

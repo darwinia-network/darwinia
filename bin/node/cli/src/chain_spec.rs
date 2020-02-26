@@ -5,9 +5,9 @@ use hex_literal::hex;
 use node_runtime::constants::currency::*;
 use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, EthBackingConfig,
-	EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig, SessionKeys, StakerStatus,
-	StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
+	AuthorityDiscoveryConfig, BabeConfig, ContractsConfig, CouncilConfig, EthBackingConfig, EthRelayConfig,
+	GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, RingConfig, SessionConfig, SessionKeys, StakerStatus,
+	StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -98,7 +98,7 @@ pub fn get_authority_keys_from_seed(
 
 /// Helper function to create GenesisConfig for darwinia
 /// is_testnet: under test net we will use Alice & Bob as seed to generate keys,
-///             but in production enviroment, these accounts will use preset keys
+/// but in production enviroment, these accounts will use preset keys
 pub fn darwinia_genesis(
 	initial_authorities: Vec<(
 		AccountId,
@@ -154,6 +154,10 @@ pub fn darwinia_genesis(
 			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
 			phantom: Default::default(),
 		}),
+		pallet_collective_Instance2: Some(TechnicalCommitteeConfig {
+			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
+			phantom: Default::default(),
+		}),
 		pallet_contracts: Some(ContractsConfig {
 			current_schedule: pallet_contracts::Schedule {
 				enable_println, // this should only be enabled on development chains
@@ -166,6 +170,7 @@ pub fn darwinia_genesis(
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
+		pallet_membership_Instance1: Some(Default::default()),
 
 		pallet_eth_backing: Some(EthBackingConfig {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
@@ -188,7 +193,7 @@ pub fn darwinia_genesis(
 				.collect(),
 			vesting: vec![],
 		}),
-		pallet_ring: Some(BalancesConfig {
+		pallet_ring: Some(RingConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()

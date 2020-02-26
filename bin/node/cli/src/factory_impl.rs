@@ -24,7 +24,7 @@ use rand::{Rng, SeedableRng};
 use codec::{Decode, Encode};
 use node_primitives::Signature;
 use node_runtime::{
-	BalancesCall, Call, CheckedExtrinsic, ExistentialDeposit, MinimumPeriod, SignedExtra, UncheckedExtrinsic,
+	Call, CheckedExtrinsic, ExistentialDeposit, MinimumPeriod, RingCall, SignedExtra, UncheckedExtrinsic,
 };
 use node_transaction_factory::modes::Mode;
 use node_transaction_factory::RuntimeAdapter;
@@ -144,7 +144,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 		sign::<Self>(
 			CheckedExtrinsic {
 				signed: Some((sender.clone(), Self::build_extra(index, phase))),
-				function: Call::Balances(BalancesCall::transfer(
+				function: Call::Ring(RingCall::transfer(
 					pallet_indices::address::Address::Id(destination.clone().into()),
 					(*amount).into(),
 				)),
