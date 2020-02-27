@@ -37,12 +37,12 @@ jobs:
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native RING
       script: .maintain/ci/darwinia_test_script.sh ring
 
-  # TODO: remove this, when staking test case upgrade ready
-  allow_failures:
     - stage: Darwinia Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native STAKING
       script: .maintain/ci/darwinia_test_script.sh staking
 
+    # TODO: remove this when overall test case ready
+  allow_failures:
     - stage: Overall Test 
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/test_script.sh

@@ -1,10 +1,6 @@
 //! Test utilities
 
-use std::{
-	cell::RefCell,
-	collections::HashSet,
-	time::{SystemTime, UNIX_EPOCH},
-};
+use std::{cell::RefCell, collections::HashSet};
 
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
@@ -15,6 +11,7 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
+	print,
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
 	{KeyTypeId, Perbill},
@@ -28,7 +25,7 @@ use crate::*;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
-pub type Balance = u64;
+pub type Balance = u128;
 
 pub type System = system::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
@@ -43,7 +40,8 @@ pub const MICRO: Balance = 1_000 * NANO;
 pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
-pub const CAP: Balance = 1_000_000_000 * COIN;
+pub const CAP: Balance = 10_000_000_000 * COIN;
+pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
 thread_local! {
@@ -203,7 +201,7 @@ parameter_types! {
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as _;
+	pub const GenesisTime: Moment = GENESIS_TIME;
 }
 impl Trait for Test {
 	type Time = pallet_timestamp::Module<Self>;
@@ -417,6 +415,14 @@ pub fn check_exposure(stash: AccountId) {
 	// 	stash,
 	// 	expo,
 	// );
+}
+
+pub fn assert_ledger_consistent(stash: u64) {
+	assert_is_stash(stash);
+	let ledger = Staking::ledger(stash - 1).unwrap();
+
+	assert_eq!(ledger.active_ring, ledger.ring_staking_lock.staking_amount);
+	assert_eq!(ledger.active_kton, ledger.kton_staking_lock.staking_amount);
 }
 
 /// Check that for each nominator: slashable_balance > sum(used_balance)
