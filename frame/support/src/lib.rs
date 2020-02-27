@@ -193,8 +193,8 @@ pub mod structs {
 				Ordering::Less
 			} else {
 				// Don't even compute gcd.
-				let self_n = self.0 as u64 * other.1 as u64;
-				let other_n = other.0 as u64 * self.1 as u64;
+				let self_n = self.0 as u128 * other.1 as u128;
+				let other_n = other.0 as u128 * self.1 as u128;
 				self_n.cmp(&other_n)
 			}
 		}
@@ -206,8 +206,8 @@ pub mod structs {
 			if self.1 == other.1 {
 				self.0.eq(&other.0)
 			} else {
-				let self_n = self.0 as u64 * other.1 as u64;
-				let other_n = other.0 as u64 * self.1 as u64;
+				let self_n = self.0 as u128 * other.1 as u128;
+				let other_n = other.0 as u128 * self.1 as u128;
 				self_n.eq(&other_n)
 			}
 		}

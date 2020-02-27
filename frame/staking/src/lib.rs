@@ -1887,8 +1887,8 @@ impl<T: Trait> Module<T> {
 			let validators = Self::current_elected();
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration,
-				T::Time::now() - T::GenesisTime::get(),
-				T::Cap::get() - T::RingCurrency::total_issuance(),
+				now - T::GenesisTime::get(),
+				T::Cap::get().saturating_sub(T::RingCurrency::total_issuance()),
 				PayoutFraction::get(),
 			);
 			let mut total_imbalance = <RingPositiveImbalance<T>>::zero();
