@@ -23,13 +23,13 @@ mod mock;
 mod tests;
 
 use sp_runtime::{
-	traits::{Member, Saturating, SimpleArithmetic, Zero},
+	helpers_128bit::multiply_by_rational,
+	traits::{Member, SaturatedConversion, Saturating, SimpleArithmetic, Zero},
 	Perbill, RuntimeDebug,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 use darwinia_support::Rational64;
-use sp_runtime::traits::SaturatedConversion;
 
 /// Power of an account.
 pub type Power = u32;
@@ -116,13 +116,11 @@ pub struct PhragmenResult<AccountId> {
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct Support<AccountId, RingBalance, KtonBalance> {
 	/// The amount of support as the effect of self-vote.
-	pub own_votes: Votes,
 	pub own_ring_balance: RingBalance,
 	pub own_kton_balance: KtonBalance,
+	pub own_votes: Votes,
 	/// Total support.
 	pub total_votes: Votes,
-	pub total_ring_balance: RingBalance,
-	pub total_kton_balance: KtonBalance,
 	/// Support from voters.
 	pub others: Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
 }
@@ -355,12 +353,12 @@ where
 		for (c, per_thing) in assignment.iter() {
 			if let Some(support) = supports.get_mut(c) {
 				let nominator_stake = to_votes(power_of(n));
+				// AUDIT: it is crucially important for the `Mul` implementation of all
+				// per-things to be sound.
 				let (ring_balance, kton_balance) = {
 					let (r, k) = stake_of(n);
 					(*per_thing * r, *per_thing * k)
 				};
-				// AUDIT: it is crucially important for the `Mul` implementation of all
-				// per-things to be sound.
 				let other_stake = *per_thing * nominator_stake;
 				if c == n {
 					// This is a nomination from `n` to themselves. This will increase both the
@@ -368,10 +366,8 @@ where
 					debug_assert!(*per_thing == Perbill::one()); // TODO: deal with this: do we want it?
 
 					support.own_ring_balance = support.own_ring_balance.saturating_add(ring_balance);
-					support.total_ring_balance = support.total_ring_balance.saturating_add(ring_balance);
 
 					support.own_kton_balance = support.own_kton_balance.saturating_add(kton_balance);
-					support.total_kton_balance = support.total_kton_balance.saturating_add(kton_balance);
 
 					support.own_votes = support.own_votes.saturating_add(other_stake);
 					support.total_votes = support.total_votes.saturating_add(other_stake);
@@ -380,8 +376,6 @@ where
 					// inside `others`.
 					// For an astronomically rich validator with more astronomically rich
 					// set of nominators, this might saturate.
-					support.total_ring_balance = support.total_ring_balance.saturating_add(ring_balance);
-					support.total_kton_balance = support.total_kton_balance.saturating_add(kton_balance);
 					support.total_votes = support.total_votes.saturating_add(other_stake);
 
 					support.others.push(PhragmenStakedAssignment {
@@ -532,25 +526,21 @@ where
 		idx += 1;
 	}
 
-	let PhragmenStakedAssignment {
-		ring_balance: last_ring_balance,
-		kton_balance: last_kton_balance,
-		votes: last_votes,
-		..
-	} = elected_edges[last_index];
+	let last_votes = elected_edges[last_index].votes;
 	let split_ways = last_index + 1;
 	let excess = budget
 		.saturating_add(cumulative_stake)
 		.saturating_sub(last_votes.saturating_mul(split_ways as Votes));
 	elected_edges.iter_mut().take(split_ways).for_each(|e| {
 		if let Some(support) = support_map.get_mut(&e.account_id) {
-			e.ring_balance = ((excess.saturated_into::<RingBalance>() / split_ways.saturated_into::<RingBalance>())
-				+ last_ring_balance)
-				.saturating_sub(support.total_ring_balance);
-			e.kton_balance = ((excess.saturated_into::<KtonBalance>() / split_ways.saturated_into::<KtonBalance>())
-				+ last_kton_balance)
-				.saturating_sub(support.total_kton_balance);
-			e.votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
+			let votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
+			e.ring_balance = multiply_by_rational(e.ring_balance.saturated_into(), votes as _, e.votes as _)
+				.unwrap_or(0)
+				.saturated_into();
+			e.kton_balance = multiply_by_rational(e.kton_balance.saturated_into(), votes as _, e.votes as _)
+				.unwrap_or(0)
+				.saturated_into();
+			e.votes = votes;
 
 			support.total_votes = support.total_votes.saturating_add(e.votes);
 			support.others.push(PhragmenStakedAssignment {

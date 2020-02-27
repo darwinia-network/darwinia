@@ -53,8 +53,8 @@ pub(crate) fn create_stake_of(stakes: &[(AccountId, Power)]) -> Box<dyn Fn(&Acco
 	stakes.iter().for_each(|s| {
 		storage.insert(s.0, s.1);
 	});
-	let stake_of = move |who: &AccountId| -> Power { storage.get(who).unwrap().to_owned() };
-	Box::new(stake_of)
+	let power_of = move |who: &AccountId| -> Power { storage.get(who).unwrap().to_owned() };
+	Box::new(power_of)
 }
 
 pub(crate) fn auto_generate_self_voters<A: Clone>(candidates: &[A]) -> Vec<(A, Vec<A>)> {
@@ -71,16 +71,16 @@ pub(crate) fn check_assignments(assignments: Vec<(AccountId, Vec<PhragmenAssignm
 pub(crate) fn run_and_compare(
 	candidates: Vec<AccountId>,
 	voters: Vec<(AccountId, Vec<AccountId>)>,
-	stake_of: Box<dyn Fn(&AccountId) -> Power>,
+	power_of: Box<dyn Fn(&AccountId) -> Power>,
 	to_elect: usize,
 	min_to_elect: usize,
 ) {
 	// run fixed point code.
 	let PhragmenResult { winners, assignments } =
-		elect::<_, _>(to_elect, min_to_elect, candidates.clone(), voters.clone(), &stake_of).unwrap();
+		elect::<_, _>(to_elect, min_to_elect, candidates.clone(), voters.clone(), &power_of).unwrap();
 
 	// run float poc code.
-	let truth_value = elect_float(to_elect, min_to_elect, candidates, voters, &stake_of).unwrap();
+	let truth_value = elect_float(to_elect, min_to_elect, candidates, voters, &power_of).unwrap();
 
 	assert_eq!(winners, truth_value.winners);
 
@@ -110,7 +110,7 @@ pub(crate) fn elect_float<A, FS>(
 	minimum_candidate_count: usize,
 	initial_candidates: Vec<A>,
 	initial_voters: Vec<(A, Vec<A>)>,
-	stake_of: FS,
+	power_of: FS,
 ) -> Option<_PhragmenResult<A>>
 where
 	A: Default + Ord + Member + Copy,
@@ -139,7 +139,7 @@ where
 	}
 
 	voters.extend(initial_voters.into_iter().map(|(who, votes)| {
-		let voter_stake = stake_of(&who) as f64;
+		let voter_stake = power_of(&who) as f64;
 		let mut edges: Vec<_Edge<A>> = Vec::with_capacity(votes.len());
 		for v in votes {
 			if let Some(idx) = c_idx_cache.get(&v) {
@@ -220,7 +220,7 @@ where
 	})
 }
 
-pub(crate) fn build_support_map<FS>(result: &mut _PhragmenResult<AccountId>, stake_of: FS) -> _SupportMap<AccountId>
+pub(crate) fn build_support_map<FS>(result: &mut _PhragmenResult<AccountId>, power_of: FS) -> _SupportMap<AccountId>
 where
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {
@@ -228,7 +228,7 @@ where
 	result
 		.winners
 		.iter()
-		.map(|(e, _)| (e, stake_of(e) as f64))
+		.map(|(e, _)| (e, power_of(e) as f64))
 		.for_each(|(e, s)| {
 			let item = _Support {
 				own: s,
@@ -240,7 +240,7 @@ where
 
 	for (n, assignment) in result.assignments.iter_mut() {
 		for (c, r) in assignment.iter_mut() {
-			let nominator_stake = stake_of(n) as f64;
+			let nominator_stake = power_of(n) as f64;
 			let other_stake = nominator_stake * *r;
 			if let Some(support) = supports.get_mut(c) {
 				support.total = support.total + other_stake;
@@ -257,7 +257,7 @@ pub(crate) fn equalize_float<A, FS>(
 	supports: &mut _SupportMap<A>,
 	tolerance: f64,
 	iterations: usize,
-	stake_of: FS,
+	power_of: FS,
 ) where
 	for<'r> FS: Fn(&'r A) -> Power,
 	A: Ord + Clone + std::fmt::Debug,
@@ -265,7 +265,7 @@ pub(crate) fn equalize_float<A, FS>(
 	for _i in 0..iterations {
 		let mut max_diff = 0.0;
 		for (voter, assignment) in assignments.iter_mut() {
-			let voter_budget = stake_of(&voter);
+			let voter_budget = power_of(&voter);
 			let diff = do_equalize_float(voter, voter_budget, assignment, supports, tolerance);
 			if diff > max_diff {
 				max_diff = diff;
