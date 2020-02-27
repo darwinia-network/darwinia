@@ -13,7 +13,7 @@ jsonrpc-core-client = { version = "14.0.3", features = ["http", "ws"] }
 log = "0.4.8"
 
 # github.com
-sc-rpc = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sc-rpc = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 # darwinia
 node-primitives = { path = "../primitives" }

@@ -7,11 +7,13 @@
 image:https://travis-ci.org/darwinia-network/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/darwinia-network/darwinia]
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=https://opensource.org/licenses/Apache-2.0]
 
-== Darwinia Relay Chain
+== Darwinia Network
 
 image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
 
-Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
+Darwinia is the hub chain connecting different application chains and can be connected to Polkadot as a Polkadot Parachain.
+
+Darwinia also support to build the internet of tokens by introducing token bridges between different blockchain networks.
 
 It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/RFC/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
 
@@ -21,7 +23,7 @@ image:https://github.com/darwinia-network/rfcs/raw/master/RFC/zh_CN/images/0007-
 
 == Road Map
 
-Darwinia Network provides game developers the scalability, cross-chain interoperability, and NFT identifiability, with seamless integrations to Polkadot, bridges to all major blockchains, and on-chain RNG services. For more details, go to link:ROADMAP.md[Road Map].
+Darwinia Network provides application developers the scalability, cross-chain interoperability with seamless integrations to Polkadot, token bridges to all major blockchains etc. For more details, go to link:ROADMAP.md[Road Map].
 
 // === So far
 
@@ -232,13 +234,13 @@ please kindly check following things before making an issue.
 * using the latest nightly Rust
 * build without `sccache`
 
-== Joining the Canary Testnet
+== Joining the Crab Testnet
 
 // Latest known working version: ``
 
 === Quick start (professional):
-  * https://telemetry.polkadot.io/#list/Darwinia%20Canary%20Testnet[Telemetry]
-  * https://canary-wallet.darwinia.network[Darwinia Web Wallet]
+  * https://telemetry.polkadot.io/#list/Darwinia%20Crab%20Testnet[Telemetry]
+  * https://crab-wallet.darwinia.network[Darwinia Web Wallet]
   * Bootnodes: 
     ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
     ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`

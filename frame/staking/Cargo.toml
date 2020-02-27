@@ -11,24 +11,24 @@ safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-session = { version = "2.0.0", default-features = false, features = ["historical"], git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-io ={ default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-keyring = { version = "2.0.0", optional = true, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-staking = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-authorship = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-session = { version = "2.0.0", default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-io ={ default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-keyring = { version = "2.0.0", optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-staking = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 # darwinia
 darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
 darwinia-support = {  default-features = false, path = "../support" }
 
 [dev-dependencies]
-substrate-test-utils = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-timestamp = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+substrate-test-utils = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-timestamp = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 pallet-ring = { package = "darwinia-ring", path = "../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../frame/balances/kton" }
