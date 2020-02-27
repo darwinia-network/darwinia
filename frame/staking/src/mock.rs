@@ -11,6 +11,7 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
+	print,
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
 	{KeyTypeId, Perbill},
