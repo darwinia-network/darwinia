@@ -11,6 +11,7 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
+	print,
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
 	{KeyTypeId, Perbill},
@@ -414,6 +415,14 @@ pub fn check_exposure(stash: AccountId) {
 	// 	stash,
 	// 	expo,
 	// );
+}
+
+pub fn assert_ledger_consistent(stash: u64) {
+	assert_is_stash(stash);
+	let ledger = Staking::ledger(stash - 1).unwrap();
+
+	assert_eq!(ledger.active_ring, ledger.ring_staking_lock.staking_amount);
+	assert_eq!(ledger.active_kton, ledger.kton_staking_lock.staking_amount);
 }
 
 /// Check that for each nominator: slashable_balance > sum(used_balance)
