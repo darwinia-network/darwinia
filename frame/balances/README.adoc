@@ -1,0 +1,9 @@
+# Balances
+
+Balances currently contains **RING** and **KTON**.
+
+**RING** is system token of Darwinia Network, the initial supply before Darwinia network mainnet release is 2 billion.
+
+**KTON** is the staking and governance credential of Darwinia Network, KTON can **only obtained by locking RING**, the initial supply is 0.
+
+At present, some **RING** and **KTON** exist in the Ethereum network and the Tron network in the form of **ERC-20** and **TRC-20**. These TOKENs will be transferred to the Darwinia main network by 1:1 cross-chain conversion after the Darwinia main online.
