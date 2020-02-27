@@ -1,5 +1,7 @@
 //! Tests for the module.
 
+use substrate_test_utils::assert_eq_uvec;
+
 use crate::{mock::*, *};
 
 // #[test]
@@ -1771,30 +1773,30 @@ use crate::{mock::*, *};
 // 			check_nominator_all();
 // 		})
 // }
-//
-// #[test]
-// fn phragmen_should_not_overflow_validators() {
-// 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-// 		let _ = Staking::chill(Origin::signed(10));
-// 		let _ = Staking::chill(Origin::signed(20));
-//
-// 		bond_validator(2, u64::max_value());
-// 		bond_validator(4, u64::max_value());
-//
-// 		bond_nominator(6, u64::max_value() / 2, vec![3, 5]);
-// 		bond_nominator(8, u64::max_value() / 2, vec![3, 5]);
-//
-// 		start_era(1);
-//
-// 		assert_eq_uvec!(validator_controllers(), vec![4, 2]);
-//
-// 		// This test will fail this. Will saturate.
-// 		// check_exposure_all();
-// 		assert_eq!(Staking::stakers(3).total, u64::max_value());
-// 		assert_eq!(Staking::stakers(5).total, u64::max_value());
-// 	})
-// }
-//
+
+#[test]
+fn phragmen_should_not_overflow_validators() {
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		let _ = Staking::chill(Origin::signed(10));
+		let _ = Staking::chill(Origin::signed(20));
+
+		bond_validator(2, StakingBalance::RingBalance(CAP - 1));
+		bond_validator(4, StakingBalance::KtonBalance(CAP - 1));
+
+		bond_nominator(6, StakingBalance::RingBalance(1), vec![3, 5]);
+		bond_nominator(8, StakingBalance::KtonBalance(1), vec![3, 5]);
+
+		start_era(1);
+
+		assert_eq_uvec!(validator_controllers(), vec![4, 2]);
+
+		// This test will fail this. Will saturate.
+		// check_exposure_all();
+		assert_eq!(Staking::stakers(3).total_power, TOTAL_POWER / 2);
+		assert_eq!(Staking::stakers(5).total_power, TOTAL_POWER / 2);
+	})
+}
+
 // #[test]
 // fn phragmen_should_not_overflow_nominators() {
 // 	ExtBuilder::default().nominate(false).build().execute_with(|| {

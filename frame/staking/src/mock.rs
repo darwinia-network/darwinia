@@ -1,10 +1,6 @@
 //! Test utilities
 
-use std::{
-	cell::RefCell,
-	collections::HashSet,
-	time::{SystemTime, UNIX_EPOCH},
-};
+use std::{cell::RefCell, collections::HashSet};
 
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
@@ -28,7 +24,7 @@ use crate::*;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
-pub type Balance = u64;
+pub type Balance = u128;
 
 pub type System = system::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
@@ -43,7 +39,8 @@ pub const MICRO: Balance = 1_000 * NANO;
 pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
-pub const CAP: Balance = 1_000_000_000 * COIN;
+pub const CAP: Balance = 10_000_000_000 * COIN;
+pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
 thread_local! {
@@ -203,7 +200,7 @@ parameter_types! {
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as _;
+	pub const GenesisTime: Moment = GENESIS_TIME;
 }
 impl Trait for Test {
 	type Time = pallet_timestamp::Module<Self>;
