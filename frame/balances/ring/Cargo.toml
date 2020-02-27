@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
@@ -28,7 +27,6 @@ pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/pari
 default = ["std"]
 std = [
 	"codec/std",
-	"safe-mix/std",
 	"serde",
 
 	"frame-support/std",
