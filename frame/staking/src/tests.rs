@@ -1,21 +1,11 @@
 //! Tests for the module.
-use crate::sp_api_hidden_includes_decl_storage::hidden_include::sp_runtime::traits::OnInitialize;
-use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::ReservableCurrency;
-use darwinia_support::{BalanceLock, NormalLock, StakingLock, WithdrawLock, WithdrawReasons};
-use frame_support::{assert_err, assert_noop, assert_ok};
-use sp_runtime::{
-	assert_eq_error_rate, print,
-	traits::{
-		Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, SimpleArithmetic, StaticLookup,
-		Zero,
-	},
-	DispatchError, DispatchResult, RuntimeDebug,
-};
+
+use frame_support::{assert_noop, assert_ok, traits::ReservableCurrency};
+use sp_runtime::{assert_eq_error_rate, traits::OnInitialize, DispatchError};
 use substrate_test_utils::assert_eq_uvec;
 
-use crate::StakingBalance::RingBalance;
-
 use crate::{mock::*, *};
+use darwinia_support::{BalanceLock, StakingLock, WithdrawLock, WithdrawReasons};
 
 /// gen_paired_account!(a(1), b(2), m(12));
 /// will create stash `a` and controller `b`
@@ -841,7 +831,7 @@ fn nominators_also_get_slashed() {
 		let total_slash = expo.total_power.min(slash_value) as u128;
 		let validator_slash = expo.own_ring_balance.min(total_slash);
 		let nominator_slash = match nominator_stake {
-			RingBalance(v) => v.min(total_slash - validator_slash),
+			StakingBalance::RingBalance(v) => v.min(total_slash - validator_slash),
 			_ => panic!("nominator slash should be Ring Balance here"),
 		};
 
@@ -1906,31 +1896,28 @@ fn new_era_elects_correct_number_of_validators() {
 		})
 }
 
-// TODO: overflow, the test case failed
-// thread 'tests::phragmen_should_not_overflow_validators' panicked at 'attempt to add with overflow',
-//
-// #[test]
-// fn phragmen_should_not_overflow_validators() {
-// 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-// 		let _ = Staking::chill(Origin::signed(10));
-// 		let _ = Staking::chill(Origin::signed(20));
+#[test]
+fn phragmen_should_not_overflow_validators() {
+	ExtBuilder::default().nominate(false).build().execute_with(|| {
+		let _ = Staking::chill(Origin::signed(10));
+		let _ = Staking::chill(Origin::signed(20));
 
-// 		bond_validator(2, StakingBalance::RingBalance(u64::max_value()));
-// 		bond_validator(4, StakingBalance::RingBalance(u64::max_value()));
+		bond_validator(2, StakingBalance::RingBalance(CAP - 1));
+		bond_validator(4, StakingBalance::KtonBalance(CAP - 1));
 
-// 		bond_nominator(6, StakingBalance::RingBalance(u64::max_value() / 2), vec![3, 5]);
-// 		bond_nominator(8, StakingBalance::RingBalance(u64::max_value() / 2), vec![3, 5]);
+		bond_nominator(6, StakingBalance::RingBalance(1), vec![3, 5]);
+		bond_nominator(8, StakingBalance::KtonBalance(1), vec![3, 5]);
 
-// 		start_era(1);
+		start_era(1);
 
-// 		assert_eq_uvec!(validator_controllers(), vec![4, 2]);
+		assert_eq_uvec!(validator_controllers(), vec![4, 2]);
 
-// 		// This test will fail this. Will saturate.
-// 		// check_exposure_all();
-// 		assert_eq!(Staking::stakers(3).total_power, u64::max_value());
-// 		assert_eq!(Staking::stakers(5).total_power, u64::max_value());
-// 	})
-// }
+		// This test will fail this. Will saturate.
+		// check_exposure_all();
+		assert_eq!(Staking::stakers(3).total_power, TOTAL_POWER / 2);
+		assert_eq!(Staking::stakers(5).total_power, TOTAL_POWER / 2);
+	})
+}
 
 // TODO: overflow, should be checked
 // thread 'tests::phragmen_should_not_overflow_nominators' panicked at 'attempt to add with overflow'

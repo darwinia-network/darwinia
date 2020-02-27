@@ -11,7 +11,6 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
-	print,
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
 	{KeyTypeId, Perbill},
@@ -408,13 +407,13 @@ pub fn check_nominator_all() {
 pub fn check_exposure(stash: AccountId) {
 	assert_is_stash(stash);
 	let expo = Staking::stakers(&stash);
-	// assert_eq!(
-	// 	expo.total as u128,
-	// 	expo.own as u128 + expo.others.iter().map(|e| e.value as u128).sum::<u128>(),
-	// 	"wrong total exposure for {:?}: {:?}",
-	// 	stash,
-	// 	expo,
-	// );
+	assert_eq!(
+		expo.total_power,
+		expo.own_power + expo.others.iter().map(|e| e.power).sum::<Power>(),
+		"wrong total exposure for {:?}: {:?}",
+		stash,
+		expo,
+	);
 }
 
 pub fn assert_ledger_consistent(stash: u64) {
@@ -430,19 +429,19 @@ pub fn assert_ledger_consistent(stash: u64) {
 pub fn check_nominator_exposure(stash: AccountId) {
 	assert_is_stash(stash);
 	let mut sum = 0;
-	// Staking::current_elected()
-	// 	.iter()
-	// 	.map(|v| Staking::stakers(v))
-	// 	.for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.value));
-	// let nominator_stake = Staking::slashable_balance_of(&stash);
-	// // a nominator cannot over-spend.
-	// assert!(
-	// 	nominator_stake >= sum,
-	// 	"failed: Nominator({}) stake({}) >= sum divided({})",
-	// 	stash,
-	// 	nominator_stake,
-	// 	sum,
-	// );
+	Staking::current_elected()
+		.iter()
+		.map(|v| Staking::stakers(v))
+		.for_each(|e| e.others.iter().filter(|i| i.who == stash).for_each(|i| sum += i.power));
+	let nominator_power = Staking::power_of(&stash);
+	// a nominator cannot over-spend.
+	assert!(
+		nominator_power >= sum,
+		"failed: Nominator({}) stake({}) >= sum divided({})",
+		stash,
+		nominator_power,
+		sum,
+	);
 }
 
 pub fn assert_is_stash(acc: AccountId) {
