@@ -41,9 +41,9 @@ pub struct Extensions {
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = sc_service::ChainSpec<GenesisConfig, Extensions>;
-/// Canary testnet generator
-pub fn canary_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../res/canary.json")[..])
+/// Crab testnet generator
+pub fn crab_testnet_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/crab.json")[..])
 }
 
 fn session_keys(
@@ -355,9 +355,9 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-/// Canary local testnet config (multivalidator Alice + Bob)
+/// Crab local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	fn canary_config_genesis() -> GenesisConfig {
+	fn crab_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				get_authority_keys_from_seed("Alice"),
@@ -382,9 +382,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Canary Testnet",
-		"canary_testnet",
-		canary_config_genesis,
+		"Darwinia Crab Testnet",
+		"crab_testnet",
+		crab_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
@@ -404,9 +404,9 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-/// Canary testnet config generator
-pub fn gen_canary_testnet_config() -> ChainSpec {
-	fn canary_config_genesis() -> GenesisConfig {
+/// Crab testnet config generator
+pub fn gen_crab_testnet_config() -> ChainSpec {
+	fn crab_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				(
@@ -445,9 +445,9 @@ pub fn gen_canary_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Canary Testnet",
-		"canary_testnet",
-		canary_config_genesis,
+		"Darwinia Crab Testnet",
+		"crab_testnet",
+		crab_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),

@@ -61,9 +61,9 @@ dependencies = [
 
 [[package]]
 name = "aho-corasick"
-version = "0.7.8"
+version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "743ad5a418686aad3b87fd14c43badd828cf26e214a00f92a384291cf22e1811"
+checksum = "d5e63fd144e18ba274ae7095c0197a870a7b9468abc801dd62f190d80817d2ec"
 dependencies = [
  "memchr",
 ]
@@ -976,7 +976,7 @@ dependencies = [
  "sp-io",
  "sp-phragmen",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "substrate-test-utils",
 ]
 
@@ -1004,7 +1004,7 @@ dependencies = [
  "sp-phragmen",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1025,7 +1025,7 @@ dependencies = [
  "sp-eth-primitives",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1043,7 +1043,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1055,7 +1055,7 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "substrate-test-utils",
 ]
 
@@ -1073,7 +1073,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1097,7 +1097,7 @@ dependencies = [
  "sp-keyring",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "substrate-test-utils",
 ]
 
@@ -1109,7 +1109,7 @@ dependencies = [
  "num-traits",
  "parity-scale-codec",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1126,7 +1126,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1292,7 +1292,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "sp-std 2.0.0 (git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop)",
+ "sp-std",
  "tiny-keccak 1.5.0",
 ]
 
@@ -1544,7 +1544,7 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 [[package]]
 name = "fork-tree"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -1552,7 +1552,7 @@ dependencies = [
 [[package]]
 name = "frame-executive"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1560,24 +1560,24 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "frame-metadata"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-core",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "frame-support"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "bitmask",
  "frame-metadata",
@@ -1594,14 +1594,14 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-state-machine",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "tracing",
 ]
 
 [[package]]
 name = "frame-support-procedural"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support-procedural-tools",
  "proc-macro2 1.0.9",
@@ -1612,7 +1612,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate",
@@ -1624,7 +1624,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "proc-macro2 1.0.9",
  "quote 1.0.2",
@@ -1634,7 +1634,7 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -1644,14 +1644,14 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-version",
 ]
 
 [[package]]
 name = "frame-system-rpc-runtime-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -1939,7 +1939,7 @@ dependencies = [
 [[package]]
 name = "grafana-data-source"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "async-std",
  "chrono",
@@ -3253,7 +3253,7 @@ dependencies = [
  "keccak-hash",
  "rand 0.6.5",
  "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "uuid",
 ]
 
@@ -3589,7 +3589,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder-runner",
@@ -3598,7 +3598,7 @@ dependencies = [
 [[package]]
 name = "node-transaction-factory"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "log 0.4.8",
  "parity-scale-codec",
@@ -3770,7 +3770,7 @@ dependencies = [
 [[package]]
 name = "pallet-authority-discovery"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3782,13 +3782,13 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-authorship"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3799,13 +3799,13 @@ dependencies = [
  "sp-inherents",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-babe"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3819,14 +3819,14 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-timestamp",
 ]
 
 [[package]]
 name = "pallet-balances"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3834,13 +3834,13 @@ dependencies = [
  "safe-mix",
  "serde",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-collective"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3850,13 +3850,13 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-contracts"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3868,14 +3868,14 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-sandbox",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "wasmi-validation",
 ]
 
 [[package]]
 name = "pallet-contracts-rpc"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -3892,18 +3892,18 @@ dependencies = [
 [[package]]
 name = "pallet-contracts-rpc-runtime-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-finality-tracker"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3913,13 +3913,13 @@ dependencies = [
  "sp-finality-tracker",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-grandpa"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3931,13 +3931,13 @@ dependencies = [
  "sp-finality-grandpa",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-im-online"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3950,13 +3950,13 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-indices"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3967,13 +3967,13 @@ dependencies = [
  "sp-io",
  "sp-keyring",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-membership"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3981,13 +3981,13 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-nicks"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3995,13 +3995,13 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-offences"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4010,26 +4010,26 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-randomness-collective-flip"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
  "safe-mix",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-session"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4041,14 +4041,14 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-trie",
 ]
 
 [[package]]
 name = "pallet-sudo"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4056,13 +4056,13 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-timestamp"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4071,27 +4071,27 @@ dependencies = [
  "serde",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-timestamp",
 ]
 
 [[package]]
 name = "pallet-transaction-payment"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-transaction-payment-rpc"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -4108,20 +4108,20 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc-runtime-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
  "serde",
  "sp-api",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-utility"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4130,7 +4130,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
@@ -5127,7 +5127,7 @@ dependencies = [
 [[package]]
 name = "sc-authority-discovery"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "bytes 0.4.12",
  "derive_more",
@@ -5152,7 +5152,7 @@ dependencies = [
 [[package]]
 name = "sc-basic-authority"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "futures 0.3.4",
  "log 0.4.8",
@@ -5173,7 +5173,7 @@ dependencies = [
 [[package]]
 name = "sc-block-builder"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -5187,7 +5187,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-trait-for-tuples",
  "sc-chain-spec-derive",
@@ -5202,7 +5202,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec-derive"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2 1.0.9",
@@ -5213,7 +5213,7 @@ dependencies = [
 [[package]]
 name = "sc-cli"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "ansi_term 0.12.1",
  "app_dirs",
@@ -5248,7 +5248,7 @@ dependencies = [
 [[package]]
 name = "sc-client"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "fnv",
@@ -5272,7 +5272,7 @@ dependencies = [
  "sp-keyring",
  "sp-runtime",
  "sp-state-machine",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-trie",
  "sp-version",
  "tracing",
@@ -5281,7 +5281,7 @@ dependencies = [
 [[package]]
 name = "sc-client-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "fnv",
@@ -5303,7 +5303,7 @@ dependencies = [
  "sp-keyring",
  "sp-runtime",
  "sp-state-machine",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-transaction-pool",
  "sp-trie",
  "sp-version",
@@ -5312,7 +5312,7 @@ dependencies = [
 [[package]]
 name = "sc-client-db"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "hash-db",
  "kvdb 0.2.0",
@@ -5337,7 +5337,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-babe"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "fork-tree",
@@ -5377,7 +5377,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-slots"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "futures 0.3.4",
  "futures-timer 2.0.2",
@@ -5396,7 +5396,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-uncles"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "log 0.4.8",
  "sc-client-api",
@@ -5410,7 +5410,7 @@ dependencies = [
 [[package]]
 name = "sc-executor"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "lazy_static",
@@ -5437,7 +5437,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-common"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "log 0.4.8",
@@ -5452,7 +5452,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmi"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "log 0.4.8",
  "parity-scale-codec",
@@ -5468,7 +5468,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmtime"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
@@ -5492,7 +5492,7 @@ dependencies = [
 [[package]]
 name = "sc-finality-grandpa"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "finality-grandpa",
  "fork-tree",
@@ -5522,7 +5522,7 @@ dependencies = [
 [[package]]
 name = "sc-keystore"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "hex 0.4.2",
@@ -5537,7 +5537,7 @@ dependencies = [
 [[package]]
 name = "sc-network"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "bitflags",
  "bytes 0.4.12",
@@ -5582,7 +5582,7 @@ dependencies = [
 [[package]]
 name = "sc-network-gossip"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "futures 0.1.29",
  "futures 0.3.4",
@@ -5598,7 +5598,7 @@ dependencies = [
 [[package]]
 name = "sc-offchain"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "bytes 0.4.12",
  "fnv",
@@ -5625,7 +5625,7 @@ dependencies = [
 [[package]]
 name = "sc-peerset"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "futures 0.3.4",
  "libp2p",
@@ -5636,7 +5636,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "futures 0.3.4",
  "hash-db",
@@ -5665,7 +5665,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "futures 0.3.4",
@@ -5687,7 +5687,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-server"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-http-server",
@@ -5702,7 +5702,7 @@ dependencies = [
 [[package]]
 name = "sc-service"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "exit-future",
@@ -5749,7 +5749,7 @@ dependencies = [
 [[package]]
 name = "sc-state-db"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "log 0.4.8",
  "parity-scale-codec",
@@ -5760,7 +5760,7 @@ dependencies = [
 [[package]]
 name = "sc-telemetry"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "bytes 0.4.12",
  "futures 0.1.29",
@@ -5782,7 +5782,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "erased-serde",
  "grafana-data-source",
@@ -5798,7 +5798,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-graph"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "futures 0.3.4",
@@ -5813,7 +5813,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "futures 0.3.4",
@@ -6137,21 +6137,21 @@ checksum = "4bf77cb82ba8453b42b6ae1d692e4cdc92f9a47beaf89a847c8be83f4e328ad3"
 [[package]]
 name = "sp-api"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api-proc-macro",
  "sp-core",
  "sp-runtime",
  "sp-state-machine",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-version",
 ]
 
 [[package]]
 name = "sp-api-proc-macro"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "blake2-rfc",
  "proc-macro-crate",
@@ -6163,67 +6163,67 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-core",
  "sp-io",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-arithmetic"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "integer-sqrt",
  "num-traits",
  "parity-scale-codec",
  "serde",
  "sp-debug-derive",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-authority-discovery"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-application-crypto",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-authorship"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-block-builder"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-blockchain"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "log 0.4.8",
@@ -6239,7 +6239,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "futures 0.3.4",
@@ -6251,14 +6251,14 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-version",
 ]
 
 [[package]]
 name = "sp-consensus-babe"
 version = "0.8.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "schnorrkel",
@@ -6267,14 +6267,14 @@ dependencies = [
  "sp-consensus",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-timestamp",
 ]
 
 [[package]]
 name = "sp-core"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "base58",
  "blake2-rfc",
@@ -6300,7 +6300,7 @@ dependencies = [
  "sp-debug-derive",
  "sp-externalities",
  "sp-runtime-interface",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-storage",
  "substrate-bip39",
  "tiny-bip39",
@@ -6313,7 +6313,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "proc-macro2 1.0.9",
  "quote 1.0.2",
@@ -6340,59 +6340,59 @@ dependencies = [
  "rustc-hex",
  "serde",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "triehash",
 ]
 
 [[package]]
 name = "sp-externalities"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "environmental",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-storage",
 ]
 
 [[package]]
 name = "sp-finality-grandpa"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-api",
  "sp-application-crypto",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-finality-tracker"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-inherents",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-inherents"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "parity-scale-codec",
  "parking_lot 0.9.0",
  "sp-core",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-io"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "hash-db",
  "libsecp256k1",
@@ -6402,14 +6402,14 @@ dependencies = [
  "sp-externalities",
  "sp-runtime-interface",
  "sp-state-machine",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-trie",
 ]
 
 [[package]]
 name = "sp-keyring"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "lazy_static",
  "sp-core",
@@ -6420,7 +6420,7 @@ dependencies = [
 [[package]]
 name = "sp-offchain"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "sp-api",
  "sp-runtime",
@@ -6429,7 +6429,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "backtrace",
  "log 0.4.8",
@@ -6438,17 +6438,17 @@ dependencies = [
 [[package]]
 name = "sp-phragmen"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "serde",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-rpc"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "serde",
  "sp-core",
@@ -6457,7 +6457,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-trait-for-tuples",
  "log 0.4.8",
@@ -6470,20 +6470,20 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-io",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-runtime-interface"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "environmental",
  "parity-scale-codec",
  "primitive-types 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-externalities",
  "sp-runtime-interface-proc-macro",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "sp-wasm-interface",
  "static_assertions 1.1.0",
 ]
@@ -6491,7 +6491,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "Inflector",
  "proc-macro-crate",
@@ -6503,19 +6503,19 @@ dependencies = [
 [[package]]
 name = "sp-sandbox"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-core",
  "sp-io",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "wasmi",
 ]
 
 [[package]]
 name = "sp-serializer"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "serde",
  "serde_json",
@@ -6524,27 +6524,27 @@ dependencies = [
 [[package]]
 name = "sp-session"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "sp-api",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-staking"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "parity-scale-codec",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-state-machine"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "hash-db",
  "log 0.4.8",
@@ -6563,41 +6563,36 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
-
-[[package]]
-name = "sp-std"
-version = "2.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 
 [[package]]
 name = "sp-storage"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-serde 0.2.3",
  "serde",
  "sp-debug-derive",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-timestamp"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "sp-api",
  "sp-inherents",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-transaction-pool"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "derive_more",
  "futures 0.3.4",
@@ -6611,13 +6606,13 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "hash-db",
  "memory-db",
  "parity-scale-codec",
  "sp-core",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
  "trie-db",
  "trie-root",
 ]
@@ -6625,19 +6620,19 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-serde 0.2.3",
  "parity-scale-codec",
  "serde",
  "sp-runtime",
- "sp-std 2.0.0 (git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111)",
+ "sp-std",
 ]
 
 [[package]]
 name = "sp-wasm-interface"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "impl-trait-for-tuples",
  "wasmi",
@@ -6759,12 +6754,12 @@ dependencies = [
 [[package]]
 name = "substrate-build-script-utils"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 
 [[package]]
 name = "substrate-frame-rpc-system"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 dependencies = [
  "frame-system-rpc-runtime-api",
  "futures 0.3.4",
@@ -6784,12 +6779,12 @@ dependencies = [
 [[package]]
 name = "substrate-test-utils"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 
 [[package]]
 name = "substrate-wasm-builder-runner"
 version = "1.0.4"
-source = "git+https://github.com/paritytech/substrate.git?tag=pre-v2.0-3e65111#3e651110aa06aa835790df63410a29676243fc54"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#3e651110aa06aa835790df63410a29676243fc54"
 
 [[package]]
 name = "subtle"
@@ -7298,9 +7293,9 @@ checksum = "e987b6bf443f4b5b3b6f38704195592cca41c5bb7aedd3c3693c7081f8289860"
 
 [[package]]
 name = "tracing"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e213bd24252abeb86a0b7060e02df677d367ce6cb772cef17e9214b8390a8d3"
+checksum = "1721cc8cf7d770cc4257872507180f35a4797272f5962f24c806af9e7faf52ab"
 dependencies = [
  "cfg-if",
  "tracing-attributes",
@@ -7309,9 +7304,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-attributes"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04cfd395def5a60236e187e1ff905cb55668a59f29928dec05e6e1b1fd2ac1f3"
+checksum = "7fbad39da2f9af1cae3016339ad7f2c7a9e870f12e8fd04c4fd7ef35b30c0d2b"
 dependencies = [
  "quote 1.0.2",
  "syn 1.0.16",

@@ -9,12 +9,12 @@ edition = "2018"
 jsonrpc-core = "14.0.3"
 
 # github.com
-pallet-contracts-rpc = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-pallet-transaction-payment-rpc = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sc-client = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-runtime = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-transaction-pool = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-substrate-frame-rpc-system = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+pallet-contracts-rpc = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-transaction-payment-rpc = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sc-client = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-runtime = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-transaction-pool = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+substrate-frame-rpc-system = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 # darwinia
 node-primitives = { path = "../primitives" }

@@ -1,6 +1,6 @@
 {
-  "name": "Darwinia Canary Testnet",
-  "id": "canary_testnet",
+  "name": "Darwinia Crab Testnet",
+  "id": "crab_testnet",
   "bootNodes": [],
   "telemetryEndpoints": [
     [

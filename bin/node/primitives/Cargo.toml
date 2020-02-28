@@ -5,8 +5,8 @@ authors = ["darwinia <hello@darwinia.network>"]
 edition = "2018"
 
 [dependencies]
-sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "pre-v2.0-3e65111" }
+sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 [features]
 default = ["std"]
