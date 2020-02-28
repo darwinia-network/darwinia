@@ -109,7 +109,8 @@ pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 
 	/// Handler for the unbalanced decrease when slashing for a rejected proposal.
-	type ProposalRejection: OnUnbalanced<RingNegativeImbalance<Self>>;
+	type RingProposalRejection: OnUnbalanced<RingNegativeImbalance<Self>>;
+	type KtonProposalRejection: OnUnbalanced<KtonNegativeImbalance<Self>>;
 
 	/// Fraction of a proposal's value that should be bonded in order to place the proposal.
 	/// An accepted proposal gets these back. A rejected proposal does not.
@@ -130,7 +131,7 @@ type ProposalIndex = u32;
 /// To unify *Ring* and *Kton* balances. Ref to the solution at
 /// [`darwinia_staking`](../darwinia_staking/enum.StakingBalance.html),
 /// keep the `StakingBalance` name for upgrade usages.
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, Ord, PartialOrd)]
+#[derive(Copy, Clone, Encode, Decode, Eq, Ord, RuntimeDebug, PartialEq, PartialOrd)]
 pub enum StakingBalance<RingBalance, KtonBalance> {
 	RingBalance(RingBalance),
 	KtonBalance(KtonBalance),
@@ -170,49 +171,30 @@ decl_module! {
 			value: StakingBalanceT<T>,
 			beneficiary: <T::Lookup as StaticLookup>::Source
 		) {
-			match value {
-				StakingBalance::RingBalance(value) => {
-					let proposer = ensure_signed(origin)?;
-					let beneficiary = T::Lookup::lookup(beneficiary)?;
-
-					// TODO: must be true, error handling.
-					if let StakingBalance::RingBalance(bond) = Self::calculate_bond(
-						StakingBalance::RingBalance(value)
-					) {
-						T::RingCurrency::reserve(&proposer, bond)
-							.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
-
-						let c = Self::proposal_count();
-						ProposalCount::put(c + 1);
-						<Proposals<T>>::insert(c, Proposal { proposer, value, beneficiary, bond });
-
-						Self::deposit_event(RawEvent::Proposed(c));
-					}
+			let proposer = ensure_signed(origin)?;
+			let beneficiary = T::Lookup::lookup(beneficiary)?;
+			let bond = Self::calculate_bond(value);
+			match bond {
+				StakingBalance::KtonBalance(bond) => {
+					T::KtonCurrency::reserve(&proposer, bond)
+						.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 				},
-				StakingBalance::KtonBalance(value) => {
-					// unimplemented!();
-					let proposer = ensure_signed(origin)?;
-					let _beneficiary = T::Lookup::lookup(beneficiary)?;
-
-					// TODO: must be true, error handling.
-					if let StakingBalance::KtonBalance(bond) = Self::calculate_bond(
-						StakingBalance::KtonBalance(value)
-					) {
-						T::KtonCurrency::reserve(&proposer, bond)
-							.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
-
-						let c = Self::proposal_count();
-						ProposalCount::put(c + 1);
-
-						// TODO: @clearloop
-						//
-						// This line requires completing StakingBalance store
-						// <Proposals<T>>::insert(c, Proposal { proposer, value, beneficiary, bond });
-
-						Self::deposit_event(RawEvent::Proposed(c));
-					}
+				StakingBalance::RingBalance(bond) => {
+					T::RingCurrency::reserve(&proposer, bond)
+						.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 				}
 			}
+
+			let c = Self::proposal_count();
+			ProposalCount::put(c + 1);
+			<Proposals<T>>::insert(c, Proposal {
+				proposer,
+				beneficiary,
+				bond,
+				value,
+			});
+
+			Self::deposit_event(RawEvent::Proposed(c));
 		}
 
 		/// Reject a proposed spend. The original deposit will be slashed.
@@ -228,24 +210,18 @@ decl_module! {
 			let proposal = <Proposals<T>>::take(&proposal_id).ok_or(<Error<T>>::InvalidProposalIndex)?;
 
 			let value = proposal.bond;
-			let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
-			T::ProposalRejection::on_unbalanced(imbalance);
+			match value {
+				StakingBalance::KtonBalance(value) => {
+					let imbalance = T::KtonCurrency::slash_reserved(&proposal.proposer, value).0;
+					T::KtonProposalRejection::on_unbalanced(imbalance);
+				},
+				StakingBalance::RingBalance(value) => {
+					let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
+					T::RingProposalRejection::on_unbalanced(imbalance);
+				}
+			}
+
 			Self::deposit_event(Event::<T>::Rejected(proposal_id, value));
-
-
-			// match value {
-			// 	StakingBalance::KtonBalance(value) => {
-			// 		let imbalance = T::KtonCurrency::slash_reserved(&proposal.proposer, value).0;
-			// 		T::ProposalRejection::on_unbalanced(imbalance);
-			// 		Self::deposit_event(Event::<T>::Rejected(proposal_id, StakingBalance::KtonBalance(value)));
-			// 	},
-			// 	StakingBalance::RingBalance(value) => {
-			// 		let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
-			// 		T::ProposalRejection::on_unbalanced(imbalance);
-			// 		Self::deposit_event(Event::<T>::Rejected(proposal_id, StakingBalance::RingBalance(value)));
-			// 	}
-			// }
-
 		}
 
 		/// Approve a proposal. At a later time, the proposal will be allocated to the beneficiary
@@ -268,7 +244,8 @@ decl_module! {
 		fn on_finalize(n: T::BlockNumber) {
 			// Check to see if we should spend some funds!
 			if (n % T::SpendPeriod::get()).is_zero() {
-				Self::spend_funds();
+				Self::spend_funds::<T::RingCurrency>();
+				Self::spend_funds::<T::KtonCurrency>();
 			}
 		}
 	}
@@ -290,7 +267,7 @@ decl_storage! {
 		ProposalCount get(fn proposal_count): ProposalIndex;
 
 		/// Proposals that have been made.
-		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, RingBalance<T>>>;
+		Proposals get(fn proposals): map ProposalIndex => Option<Proposal<T::AccountId, StakingBalanceT<T>>>;
 
 		/// Proposal indices that have been approved but not yet awarded.
 		Approvals get(fn approvals): Vec<ProposalIndex>;
@@ -303,12 +280,10 @@ decl_storage! {
 				T::RingCurrency::minimum_balance(),
 			);
 
-			// TODO: how to init both Ring and Kton in genesis?
-			//
-			// let _ = T::KtonCurrency::make_free_balance_be(
-			// 	&<Module<T>>::account_id(),
-			// 	T::KtonCurrency::minimum_balance(),
-			// );
+			let _ = T::KtonCurrency::make_free_balance_be(
+				&<Module<T>>::account_id(),
+				T::KtonCurrency::minimum_balance(),
+			);
 		});
 	}
 }
@@ -324,15 +299,15 @@ decl_event!(
 		/// New proposal.
 		Proposed(ProposalIndex),
 		/// We have ended a spend period and will now allocate funds.
-		Spending(RingBalance),
+		Spending(StakingBalance<RingBalance, KtonBalance>),
 		/// Some funds have been allocated.
-		Awarded(ProposalIndex, RingBalance, AccountId),
+		Awarded(ProposalIndex, StakingBalance<RingBalance, KtonBalance>, AccountId),
 		/// A proposal was rejected; funds were slashed.
-		Rejected(ProposalIndex, RingBalance),
+		Rejected(ProposalIndex, StakingBalance<RingBalance, KtonBalance>),
 		/// Some of our funds have been burnt.
-		Burnt(RingBalance),
+		Burnt(StakingBalance<RingBalance, KtonBalance>),
 		/// Spending has finished; this is the amount that rolls over until next spend.
-		Rollover(RingBalance),
+		Rollover(StakingBalance<RingBalance, KtonBalance>),
 		/// Some *Ring* have been deposited.
 		DepositRing(RingBalance),
 		/// Some *Kton* have been deposited.
@@ -374,34 +349,45 @@ impl<T: Trait> Module<T> {
 	}
 
 	// Spend some money!
-	fn spend_funds() {
-		let mut budget_remaining = Self::pot();
-		Self::deposit_event(RawEvent::Spending(budget_remaining));
+	fn spend_funds<C: Currency<T::AccountId>>() {
+		let mut budget_remaining = Self::pot::<T::RingCurrency>();
+		Self::deposit_event(RawEvent::Spending(StakingBalance::RingBalance(budget_remaining)));
 
 		let mut missed_any = false;
 		let mut imbalance = <RingPositiveImbalance<T>>::zero();
 		Approvals::mutate(|v| {
 			v.retain(|&index| {
 				// Should always be true, but shouldn't panic if false or we're screwed.
-				if let Some(p) = Self::proposals(index) {
-					if p.value <= budget_remaining {
-						budget_remaining -= p.value;
+				let option_proposal = Self::proposals(index);
+				if option_proposal.is_none() {
+					return false;
+				}
+
+				let p = option_proposal.unwrap();
+				match (p.value, p.bond) {
+					(StakingBalance::RingBalance(value), StakingBalance::RingBalance(bond)) => {
+						if value > budget_remaining {
+							missed_any = true;
+							return true;
+						}
+
+						budget_remaining -= value;
 						<Proposals<T>>::remove(index);
 
 						// return their deposit.
-						let _ = T::RingCurrency::unreserve(&p.proposer, p.bond);
+						let _ = T::RingCurrency::unreserve(&p.proposer, bond);
 
 						// provide the allocation.
-						imbalance.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, p.value));
+						imbalance.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, value));
 
-						Self::deposit_event(RawEvent::Awarded(index, p.value, p.beneficiary));
+						Self::deposit_event(RawEvent::Awarded(
+							index,
+							StakingBalance::RingBalance(value),
+							p.beneficiary,
+						));
 						false
-					} else {
-						missed_any = true;
-						true
 					}
-				} else {
-					false
+					_ => false,
 				}
 			});
 		});
@@ -411,7 +397,7 @@ impl<T: Trait> Module<T> {
 			let burn = (T::Burn::get() * budget_remaining).min(budget_remaining);
 			budget_remaining -= burn;
 			imbalance.subsume(T::RingCurrency::burn(burn));
-			Self::deposit_event(RawEvent::Burnt(burn))
+			Self::deposit_event(RawEvent::Burnt(StakingBalance::RingBalance(burn)))
 		}
 
 		// Must never be an error, but better to be safe.
@@ -429,15 +415,18 @@ impl<T: Trait> Module<T> {
 			drop(problem);
 		}
 
-		Self::deposit_event(RawEvent::Rollover(budget_remaining));
+		Self::deposit_event(RawEvent::Rollover(StakingBalance::RingBalance(budget_remaining)));
 	}
 
 	/// Return the amount of money in the pot.
 	// The existential deposit is not part of the pot so treasury account never gets deleted.
-	fn pot() -> RingBalance<T> {
-		T::RingCurrency::free_balance(&Self::account_id())
+	fn pot<C>() -> C::Balance
+	where
+		C: Currency<T::AccountId>,
+	{
+		C::free_balance(&Self::account_id())
 			// Must never be less than 0 but better be safe.
-			.saturating_sub(T::RingCurrency::minimum_balance())
+			.saturating_sub(C::minimum_balance())
 	}
 }
 
@@ -546,7 +535,8 @@ mod tests {
 		type ApproveOrigin = frame_system::EnsureRoot<u64>;
 		type RejectOrigin = frame_system::EnsureRoot<u64>;
 		type Event = ();
-		type ProposalRejection = ();
+		type KtonProposalRejection = ();
+		type RingProposalRejection = ();
 		type ProposalBond = ProposalBond;
 		type ProposalBondMinimum = ProposalBondMinimum;
 		type SpendPeriod = SpendPeriod;
