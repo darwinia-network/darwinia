@@ -100,7 +100,6 @@ decl_module! {
 		}
 
 		pub fn relay_header(origin, header: EthHeader) {
-
 			let relayer = ensure_signed(origin)?;
 			if Self::check_authorities() {
 				ensure!(Self::authorities().contains(&relayer), "Account - NO PRIVILEGES");
@@ -136,7 +135,9 @@ decl_module! {
 			let _me = ensure_root(origin)?;
 
 			if !Self::authorities().contains(&who) {
-				<Authorities<T>>::mutate(|l| l.push(who));
+				<Authorities<T>>::mutate(|l| l.push(who.clone()));
+
+				<Module<T>>::deposit_event(RawEvent::AddAuthority(who));
 			}
 		}
 
@@ -147,6 +148,8 @@ decl_module! {
 				.into_iter()
 				.position(|who_| who_ == who) {
 				<Authorities<T>>::mutate(|l| l.remove(i));
+
+				<Module<T>>::deposit_event(RawEvent::RemoveAuthority(who));
 			}
 		}
 
@@ -154,6 +157,8 @@ decl_module! {
 			let _me = ensure_root(origin)?;
 
 			CheckAuthorities::put(!Self::check_authorities());
+
+			<Module<T>>::deposit_event(RawEvent::ToggleCheckAuthorities(Self::check_authorities()));
 		}
 	}
 }
@@ -166,6 +171,9 @@ decl_event! {
 		SetGenesisHeader(AccountId, EthHeader, u64),
 		RelayHeader(AccountId, EthHeader),
 		VerifyProof(AccountId, Receipt, EthReceiptProof),
+		AddAuthority(AccountId),
+		RemoveAuthority(AccountId),
+		ToggleCheckAuthorities(bool),
 	}
 }
 
@@ -198,6 +206,21 @@ impl<T: Trait> Module<T> {
 		BestHeaderHash::mutate(|hash| {
 			*hash = header_hash;
 		});
+
+		CanonicalHeaderHashOf::insert(block_number, &header_hash);
+
+		// Removing headers with larger numbers, if there are.
+		let mut number = block_number + 1;
+		loop {
+			// If the current block hash is 0 (unlikely), or the previous hash matches the
+			// current hash, then we chains converged and can stop now.
+			if !CanonicalHeaderHashOf::exists(&number) {
+				break;
+			}
+
+			CanonicalHeaderHashOf::remove(&number);
+			number += 1;
+		}
 
 		GenesisHeader::put(header.clone());
 
@@ -339,6 +362,12 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 	/// get the receipt MPT trie root from the block header
 	/// Using receipt MPT trie root to verify the proof and index etc.
 	fn verify_receipt(proof_record: &EthReceiptProof) -> Result<Receipt, &'static str> {
+		let info = Self::header_info_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let canonical_hash = Self::canonical_header_hash_of(info.number);
+		if proof_record.header_hash != canonical_hash {
+			return Err("Header - NOT CANONICAL");
+		}
+
 		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
 		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
 		let key = rlp::encode(&proof_record.index);
