@@ -212,6 +212,7 @@ pub fn darwinia_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
+			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_treasury: Some(Default::default()),

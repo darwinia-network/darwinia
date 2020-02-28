@@ -375,6 +375,7 @@ impl ExtBuilder {
 			minimum_validator_count: self.minimum_validator_count,
 			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
+			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}
 		.assimilate_storage(&mut storage);
