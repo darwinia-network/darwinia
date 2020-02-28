@@ -10,7 +10,6 @@ build = "build.rs"
 codec = { package = "parity-scale-codec", version = "1.0.6", default-features = false, features = ["derive"] }
 integer-sqrt = { version = "0.1.2" }
 rustc-hex = { version = "2.0", optional = true }
-safe-mix = { version = "1.0", default-features = false }
 serde = { version = "1.0.102", optional = true }
 
 # primitives
@@ -72,6 +71,9 @@ wasm-builder-runner = { version = "1.0.4", package = "substrate-wasm-builder-run
 default = ["std"]
 std = [
 	"codec/std",
+	"rustc-hex",
+	"serde",
+
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
@@ -105,10 +107,8 @@ std = [
 	"pallet-staking/std",
 	"pallet-treasury/std",
 
-	"node-primitives/std",
-	"rustc-hex",
-	"safe-mix/std",
-	"serde",
+    "node-primitives/std",
+
 	"sp-api/std",
 	"sp-authority-discovery/std",
 	"sp-block-builder/std",

@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-safe-mix = { version = "1.0.0", default-features = false }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
@@ -39,7 +38,6 @@ migrate = []
 default = ["std", "equalize"]
 std = [
 	"codec/std",
-	"safe-mix/std",
 	"serde",
 
 	"frame-support/std",
