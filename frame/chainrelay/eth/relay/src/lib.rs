@@ -63,6 +63,8 @@ decl_storage! {
 		/// Number of blocks finality
 		pub NumberOfBlocksFinality get(number_of_blocks_finality) config(): u64 = 30;
 
+		pub NumberOfBlocksSafe get(number_of_blocks_safe) config(): u64 = 10;
+
 		pub CheckAuthorities get(fn check_authorities) config(): bool = true;
 		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
 	}
@@ -366,6 +368,11 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		let canonical_hash = Self::canonical_header_hash_of(info.number);
 		if proof_record.header_hash != canonical_hash {
 			return Err("Header - NOT CANONICAL");
+		}
+
+		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or("Header - Best Header Not Found")?;
+		if best_info.number < info.number + Self::number_of_blocks_safe() {
+			return Err("Header - NOT SAFE");
 		}
 
 		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
