@@ -63,7 +63,7 @@ mod types {
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
 	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
-
+	pub type StakingBalanceT<T> = StakingBalance<RingBalance<T>, KtonBalance<T>>;
 	pub type KtonBalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
 
@@ -83,7 +83,7 @@ use frame_system::{self as system, ensure_signed};
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
 	traits::{AccountIdConversion, EnsureOrigin, Saturating, StaticLookup, Zero},
-	ModuleId, Permill,
+	ModuleId, Permill, RuntimeDebug,
 };
 use sp_std::prelude::*;
 
@@ -95,6 +95,7 @@ const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
 pub trait Trait: frame_system::Trait {
 	/// The staking *RING*.
 	type RingCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+
 	/// The staking *Kton*.
 	type KtonCurrency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 
@@ -115,7 +116,7 @@ pub trait Trait: frame_system::Trait {
 	type ProposalBond: Get<Permill>;
 
 	/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-	type ProposalBondMinimum: Get<RingBalance<Self>>;
+	type ProposalBondMinimum: Get<StakingBalanceT<Self>>;
 
 	/// Period between successive spends.
 	type SpendPeriod: Get<Self::BlockNumber>;
@@ -126,6 +127,15 @@ pub trait Trait: frame_system::Trait {
 
 type ProposalIndex = u32;
 
+/// To unify *Ring* and *Kton* balances. Ref to the solution at
+/// [`darwinia_staking`](../darwinia_staking/enum.StakingBalance.html),
+/// keep the `StakingBalance` name for upgrade usages.
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, Ord, PartialOrd)]
+pub enum StakingBalance<RingBalance, KtonBalance> {
+	RingBalance(RingBalance),
+	KtonBalance(KtonBalance),
+}
+
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		/// Fraction of a proposal's value that should be bonded in order to place the proposal.
@@ -133,7 +143,7 @@ decl_module! {
 		const ProposalBond: Permill = T::ProposalBond::get();
 
 		/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-		const ProposalBondMinimum: RingBalance<T> = T::ProposalBondMinimum::get();
+		const ProposalBondMinimum: StakingBalanceT<T> = T::ProposalBondMinimum::get();
 
 		/// Period between successive spends.
 		const SpendPeriod: T::BlockNumber = T::SpendPeriod::get();
@@ -157,21 +167,52 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn propose_spend(
 			origin,
-			#[compact] value: RingBalance<T>,
+			value: StakingBalanceT<T>,
 			beneficiary: <T::Lookup as StaticLookup>::Source
 		) {
-			let proposer = ensure_signed(origin)?;
-			let beneficiary = T::Lookup::lookup(beneficiary)?;
+			match value {
+				StakingBalance::RingBalance(value) => {
+					let proposer = ensure_signed(origin)?;
+					let beneficiary = T::Lookup::lookup(beneficiary)?;
 
-			let bond = Self::calculate_bond(value);
-			T::RingCurrency::reserve(&proposer, bond)
-				.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
+					// TODO: must be true, error handling.
+					if let StakingBalance::RingBalance(bond) = Self::calculate_bond(
+						StakingBalance::RingBalance(value)
+					) {
+						T::RingCurrency::reserve(&proposer, bond)
+							.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
 
-			let c = Self::proposal_count();
-			ProposalCount::put(c + 1);
-			<Proposals<T>>::insert(c, Proposal { proposer, value, beneficiary, bond });
+						let c = Self::proposal_count();
+						ProposalCount::put(c + 1);
+						<Proposals<T>>::insert(c, Proposal { proposer, value, beneficiary, bond });
 
-			Self::deposit_event(RawEvent::Proposed(c));
+						Self::deposit_event(RawEvent::Proposed(c));
+					}
+				},
+				StakingBalance::KtonBalance(value) => {
+					// unimplemented!();
+					let proposer = ensure_signed(origin)?;
+					let _beneficiary = T::Lookup::lookup(beneficiary)?;
+
+					// TODO: must be true, error handling.
+					if let StakingBalance::KtonBalance(bond) = Self::calculate_bond(
+						StakingBalance::KtonBalance(value)
+					) {
+						T::KtonCurrency::reserve(&proposer, bond)
+							.map_err(|_| <Error<T>>::InsufficientProposersBalance)?;
+
+						let c = Self::proposal_count();
+						ProposalCount::put(c + 1);
+
+						// TODO: @clearloop
+						//
+						// This line requires completing StakingBalance store
+						// <Proposals<T>>::insert(c, Proposal { proposer, value, beneficiary, bond });
+
+						Self::deposit_event(RawEvent::Proposed(c));
+					}
+				}
+			}
 		}
 
 		/// Reject a proposed spend. The original deposit will be slashed.
@@ -189,8 +230,22 @@ decl_module! {
 			let value = proposal.bond;
 			let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
 			T::ProposalRejection::on_unbalanced(imbalance);
-
 			Self::deposit_event(Event::<T>::Rejected(proposal_id, value));
+
+
+			// match value {
+			// 	StakingBalance::KtonBalance(value) => {
+			// 		let imbalance = T::KtonCurrency::slash_reserved(&proposal.proposer, value).0;
+			// 		T::ProposalRejection::on_unbalanced(imbalance);
+			// 		Self::deposit_event(Event::<T>::Rejected(proposal_id, StakingBalance::KtonBalance(value)));
+			// 	},
+			// 	StakingBalance::RingBalance(value) => {
+			// 		let imbalance = T::RingCurrency::slash_reserved(&proposal.proposer, value).0;
+			// 		T::ProposalRejection::on_unbalanced(imbalance);
+			// 		Self::deposit_event(Event::<T>::Rejected(proposal_id, StakingBalance::RingBalance(value)));
+			// 	}
+			// }
+
 		}
 
 		/// Approve a proposal. At a later time, the proposal will be allocated to the beneficiary
@@ -222,11 +277,11 @@ decl_module! {
 /// A spending proposal.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, PartialEq, Eq, sp_runtime::RuntimeDebug)]
-pub struct Proposal<AccountId, RingBalance> {
+pub struct Proposal<AccountId, StakingBalance> {
 	proposer: AccountId,
-	value: RingBalance,
+	value: StakingBalance,
 	beneficiary: AccountId,
-	bond: RingBalance,
+	bond: StakingBalance,
 }
 
 decl_storage! {
@@ -247,11 +302,19 @@ decl_storage! {
 				&<Module<T>>::account_id(),
 				T::RingCurrency::minimum_balance(),
 			);
+
+			// TODO: how to init both Ring and Kton in genesis?
+			//
+			// let _ = T::KtonCurrency::make_free_balance_be(
+			// 	&<Module<T>>::account_id(),
+			// 	T::KtonCurrency::minimum_balance(),
+			// );
 		});
 	}
 }
 
 decl_event!(
+	/// TODO: Events below needs to replace RingBalance to StakingBalance
 	pub enum Event<T>
 	where
 		<T as frame_system::Trait>::AccountId,
@@ -299,8 +362,15 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// The needed bond for a proposal whose spend is `value`.
-	fn calculate_bond(value: RingBalance<T>) -> RingBalance<T> {
-		T::ProposalBondMinimum::get().max(T::ProposalBond::get() * value)
+	fn calculate_bond(value: StakingBalanceT<T>) -> StakingBalanceT<T> {
+		match value {
+			StakingBalance::KtonBalance(value) => {
+				T::ProposalBondMinimum::get().max(StakingBalance::KtonBalance(T::ProposalBond::get() * value))
+			}
+			StakingBalance::RingBalance(value) => {
+				T::ProposalBondMinimum::get().max(StakingBalance::RingBalance(T::ProposalBond::get() * value))
+			}
+		}
 	}
 
 	// Spend some money!
