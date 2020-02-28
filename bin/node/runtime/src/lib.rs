@@ -501,9 +501,10 @@ impl pallet_treasury::Trait for Runtime {
 	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
 	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
 	type Event = Event;
-	type ProposalRejection = ();
+	type KtonProposalRejection = ();
+	type RingProposalRejection = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMinimum = ();
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 }
