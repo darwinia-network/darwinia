@@ -42,10 +42,3 @@ impl From<BlockError> for &str {
 		}
 	}
 }
-
-//#[cfg(feature = "std")]
-//impl Error for BlockError {
-//	fn description(&self) -> &str {
-//		"Block error"
-//	}
-//}

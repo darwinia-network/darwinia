@@ -36,10 +36,10 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// Generate Canary testnet config.
-	GenCanaryTestnet,
-	/// The Canary testnet.
-	CanaryTestnet,
+	/// Generate Crab testnet config.
+	GenCrabTestnet,
+	/// The Crab testnet.
+	CrabTestnet,
 	/// Whatever the current runtime is with the "global testnet" defaults.
 	StagingTestnet,
 }
@@ -51,8 +51,8 @@ impl ChainSpec {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
 			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
-			ChainSpec::GenCanaryTestnet => chain_spec::gen_canary_testnet_config(),
-			ChainSpec::CanaryTestnet => chain_spec::canary_testnet_config()?,
+			ChainSpec::GenCrabTestnet => chain_spec::gen_crab_testnet_config(),
+			ChainSpec::CrabTestnet => chain_spec::crab_testnet_config()?,
 		})
 	}
 
@@ -61,8 +61,8 @@ impl ChainSpec {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
 			"staging" => Some(ChainSpec::StagingTestnet),
-			"gen" => Some(ChainSpec::GenCanaryTestnet),
-			"" | "canary" | "Canary" => Some(ChainSpec::CanaryTestnet),
+			"gen" => Some(ChainSpec::GenCrabTestnet),
+			"" | "crab" | "Crab" => Some(ChainSpec::CrabTestnet),
 			_ => None,
 		}
 	}
