@@ -63,9 +63,9 @@ mod types {
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
 	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
-	pub type StakingBalanceT<T> = StakingBalance<RingBalance<T>, KtonBalance<T>>;
 	pub type KtonBalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
+	pub type StakingBalanceT<T> = StakingBalance<RingBalance<T>, KtonBalance<T>>;
 
 	type AccountId<T> = <T as system::Trait>::AccountId;
 	type RingCurrency<T> = <T as Trait>::RingCurrency;
@@ -117,7 +117,8 @@ pub trait Trait: frame_system::Trait {
 	type ProposalBond: Get<Permill>;
 
 	/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-	type ProposalBondMinimum: Get<StakingBalanceT<Self>>;
+	type RingProposalBondMinimum: Get<RingBalance<Self>>;
+	type KtonProposalBondMinimum: Get<KtonBalance<Self>>;
 
 	/// Period between successive spends.
 	type SpendPeriod: Get<Self::BlockNumber>;
@@ -147,6 +148,16 @@ where
 	}
 }
 
+impl<RingBalance, KtonBalance> StakingBalance<RingBalance, KtonBalance> {
+	fn ring(v: RingBalance) -> Self {
+		StakingBalance::RingBalance(v)
+	}
+
+	fn kton(v: KtonBalance) -> Self {
+		StakingBalance::KtonBalance(v)
+	}
+}
+
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		/// Fraction of a proposal's value that should be bonded in order to place the proposal.
@@ -154,7 +165,8 @@ decl_module! {
 		const ProposalBond: Permill = T::ProposalBond::get();
 
 		/// Minimum amount of funds that should be placed in a deposit for making a proposal.
-		const ProposalBondMinimum: StakingBalanceT<T> = T::ProposalBondMinimum::get();
+		const KtonProposalBondMinimum: KtonBalance<T> = T::KtonProposalBondMinimum::get();
+		const RingProposalBondMinimum: RingBalance<T> = T::RingProposalBondMinimum::get();
 
 		/// Period between successive spends.
 		const SpendPeriod: T::BlockNumber = T::SpendPeriod::get();
@@ -350,15 +362,16 @@ impl<T: Trait> Module<T> {
 	fn calculate_bond(value: StakingBalanceT<T>) -> StakingBalanceT<T> {
 		match value {
 			StakingBalance::KtonBalance(value) => {
-				T::ProposalBondMinimum::get().max(StakingBalance::KtonBalance(T::ProposalBond::get() * value))
+				StakingBalance::kton(T::KtonProposalBondMinimum::get().max(T::ProposalBond::get() * value))
 			}
 			StakingBalance::RingBalance(value) => {
-				T::ProposalBondMinimum::get().max(StakingBalance::RingBalance(T::ProposalBond::get() * value))
+				StakingBalance::ring(T::RingProposalBondMinimum::get().max(T::ProposalBond::get() * value))
 			}
 		}
 	}
 
 	// Spend some money!
+	/// TODO: implement spending Kton funds.
 	fn spend_funds<C: Currency<T::AccountId>>() {
 		let mut budget_remaining = Self::pot::<T::RingCurrency>();
 		Self::deposit_event(RawEvent::Spending(StakingBalance::RingBalance(budget_remaining)));
@@ -534,7 +547,8 @@ mod tests {
 	}
 	parameter_types! {
 		pub const ProposalBond: Permill = Permill::from_percent(5);
-		// pub const ProposalBondMinimum: u64 = 1;
+		pub const RingProposalBondMinimum: u64 = 1;
+		pub const KtonProposalBondMinimum: u64 = 1;
 		pub const SpendPeriod: u64 = 2;
 		pub const Burn: Permill = Permill::from_percent(50);
 	}
@@ -547,7 +561,8 @@ mod tests {
 		type KtonProposalRejection = ();
 		type RingProposalRejection = ();
 		type ProposalBond = ProposalBond;
-		type ProposalBondMinimum = ();
+		type RingProposalBondMinimum = RingProposalBondMinimum;
+		type KtonProposalBondMinimum = KtonProposalBondMinimum;
 		type SpendPeriod = SpendPeriod;
 		type Burn = Burn;
 	}
@@ -596,8 +611,8 @@ mod tests {
 				StakingBalance::RingBalance(1),
 				3
 			));
-			assert_eq!(Ring::free_balance(&0), 100);
-			assert_eq!(Ring::reserved_balance(&0), 0);
+			assert_eq!(Ring::free_balance(&0), 99);
+			assert_eq!(Ring::reserved_balance(&0), 1);
 		});
 	}
 
