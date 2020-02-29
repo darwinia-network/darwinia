@@ -504,7 +504,8 @@ impl pallet_treasury::Trait for Runtime {
 	type KtonProposalRejection = ();
 	type RingProposalRejection = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ();
+	type RingProposalBondMinimum = ();
+	type KtonProposalBondMinimum = ();
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 }

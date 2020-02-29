@@ -6,6 +6,8 @@ readonly TEST_CRATES=(
 );
 
 function main() {
+    cargo build
+
     for crate in ${TEST_CRATES[@]}
     do
 	cargo test -p "darwinia-$crate"
