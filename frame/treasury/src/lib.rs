@@ -64,6 +64,7 @@ mod types {
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
 	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
 	pub type KtonBalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::Balance;
+	pub type KtonPositiveImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
 	pub type KtonNegativeImbalance<T> = <KtonCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
 	pub type StakingBalanceT<T> = StakingBalance<RingBalance<T>, KtonBalance<T>>;
 
@@ -73,6 +74,7 @@ mod types {
 }
 
 use codec::{Decode, Encode};
+use darwinia_support::OnUnbalancedKton;
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure, print,
 	traits::{Currency, ExistenceRequirement, Get, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReason},
@@ -86,8 +88,6 @@ use sp_runtime::{
 	ModuleId, Permill, RuntimeDebug,
 };
 use sp_std::prelude::*;
-
-use darwinia_support::OnUnbalancedKton;
 use types::*;
 
 const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
@@ -129,6 +129,13 @@ pub trait Trait: frame_system::Trait {
 
 type ProposalIndex = u32;
 
+/// Reversed for manually usage
+#[allow(unused)]
+enum Funds {
+	Kton,
+	Ring,
+}
+
 /// To unify *Ring* and *Kton* balances. Ref to the solution at
 /// [`darwinia_staking`](../darwinia_staking/enum.StakingBalance.html),
 /// keep the `StakingBalance` name for upgrade usages.
@@ -136,16 +143,6 @@ type ProposalIndex = u32;
 pub enum StakingBalance<RingBalance, KtonBalance> {
 	RingBalance(RingBalance),
 	KtonBalance(KtonBalance),
-}
-
-impl<RingBalance, KtonBalance> Default for StakingBalance<RingBalance, KtonBalance>
-where
-	RingBalance: Default,
-	KtonBalance: Default,
-{
-	fn default() -> Self {
-		StakingBalance::RingBalance(Default::default())
-	}
 }
 
 impl<RingBalance, KtonBalance> StakingBalance<RingBalance, KtonBalance> {
@@ -263,11 +260,13 @@ decl_module! {
 			Approvals::mutate(|v| v.push(proposal_id));
 		}
 
+		/// This function will implement the `OnFinalize` trait
 		fn on_finalize(n: T::BlockNumber) {
 			// Check to see if we should spend some funds!
 			if (n % T::SpendPeriod::get()).is_zero() {
-				Self::spend_funds::<T::RingCurrency>();
-				// Self::spend_funds::<T::KtonCurrency>();
+				Self::spend_funds(Funds::Ring);
+				// Self::spend_funds(Funds::Kton);
+
 			}
 		}
 	}
@@ -370,9 +369,77 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
-	// Spend some money!
-	/// TODO: implement spending Kton funds.
-	fn spend_funds<C: Currency<T::AccountId>>() {
+	/// TODO: Need a pre-logic to infer what specific to do with kton or ring.
+	fn spend_kton_funds() {
+		let mut budget_remaining = Self::pot::<T::KtonCurrency>();
+		Self::deposit_event(RawEvent::Spending(StakingBalance::kton(budget_remaining)));
+
+		let mut missed_any = false;
+		let mut imbalance = <KtonPositiveImbalance<T>>::zero();
+		Approvals::mutate(|v| {
+			v.retain(|&index| {
+				// Should always be true, but shouldn't panic if false or we're screwed.
+				let option_proposal = Self::proposals(index);
+				if option_proposal.is_none() {
+					return false;
+				}
+
+				let p = option_proposal.unwrap();
+				match (p.value, p.bond) {
+					(StakingBalance::KtonBalance(value), StakingBalance::KtonBalance(bond)) => {
+						if value > budget_remaining {
+							missed_any = true;
+							return true;
+						}
+
+						budget_remaining -= value;
+						<Proposals<T>>::remove(index);
+
+						// return their deposit.
+						let _ = T::KtonCurrency::unreserve(&p.proposer, bond);
+
+						// provide the allocation.
+						imbalance.subsume(T::KtonCurrency::deposit_creating(&p.beneficiary, value));
+
+						Self::deposit_event(RawEvent::Awarded(
+							index,
+							StakingBalance::KtonBalance(value),
+							p.beneficiary,
+						));
+						false
+					}
+					_ => false,
+				}
+			});
+		});
+
+		if !missed_any {
+			// burn some proportion of the remaining budget if we run a surplus.
+			let burn = (T::Burn::get() * budget_remaining).min(budget_remaining);
+			budget_remaining -= burn;
+			imbalance.subsume(T::KtonCurrency::burn(burn));
+			Self::deposit_event(RawEvent::Burnt(StakingBalance::kton(burn)))
+		}
+
+		// Must never be an error, but better to be safe.
+		// proof: budget_remaining is account free balance minus ED;
+		// Thus we can't spend more than account free balance minus ED;
+		// Thus account is kept alive; qed;
+		if let Err(problem) = T::KtonCurrency::settle(
+			&Self::account_id(),
+			imbalance,
+			WithdrawReason::Transfer.into(),
+			ExistenceRequirement::KeepAlive,
+		) {
+			print("Inconsistent state - couldn't settle imbalance for funds spent by treasury");
+			// Nothing else to do here.
+			drop(problem);
+		}
+
+		Self::deposit_event(RawEvent::Rollover(StakingBalance::kton(budget_remaining)));
+	}
+
+	fn spend_ring_funds() {
 		let mut budget_remaining = Self::pot::<T::RingCurrency>();
 		Self::deposit_event(RawEvent::Spending(StakingBalance::RingBalance(budget_remaining)));
 
@@ -439,6 +506,14 @@ impl<T: Trait> Module<T> {
 		}
 
 		Self::deposit_event(RawEvent::Rollover(StakingBalance::RingBalance(budget_remaining)));
+	}
+
+	// Spend some money!
+	fn spend_funds(fund: Funds) {
+		match fund {
+			Funds::Kton => Self::spend_kton_funds(),
+			Funds::Ring => Self::spend_ring_funds(),
+		}
 	}
 
 	/// Return the amount of money in the pot.
@@ -589,6 +664,7 @@ mod tests {
 	fn genesis_config_works() {
 		new_test_ext().execute_with(|| {
 			assert_eq!(Treasury::pot::<Ring>(), 0);
+			assert_eq!(Treasury::pot::<Kton>(), 0);
 			assert_eq!(Treasury::proposal_count(), 0);
 		});
 	}
@@ -599,6 +675,7 @@ mod tests {
 			// Check that accumulate works when we have Some value in Dummy already.
 			Ring::make_free_balance_be(&Treasury::account_id(), 101);
 			assert_eq!(Treasury::pot::<Ring>(), 100);
+			// assert_eq!(Treasury::pot::<Kton>(), 0);
 		});
 	}
 
