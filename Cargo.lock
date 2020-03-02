@@ -1060,7 +1060,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ring"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "darwinia-support",
  "frame-support 2.0.0-alpha.3",
@@ -1099,13 +1099,13 @@ dependencies = [
 
 [[package]]
 name = "darwinia-support"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
- "frame-support 2.0.0",
+ "frame-support 2.0.0-alpha.3",
  "num-traits",
  "parity-scale-codec",
- "sp-runtime 2.0.0",
- "sp-std 2.0.0",
+ "sp-runtime 2.0.0-alpha.3",
+ "sp-std 2.0.0-alpha.3",
 ]
 
 [[package]]
