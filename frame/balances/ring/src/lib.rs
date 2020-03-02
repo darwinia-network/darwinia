@@ -258,9 +258,6 @@ pub struct AccountData<Balance> {
 	/// This balance is a 'reserve' balance that other subsystems use in order to set aside tokens
 	/// that are still 'owned' by the account holder, but which are suspendable.
 	pub reserved: Balance,
-	/// The amount that `free` may not drop below when withdrawing for *anything except transaction
-	/// fee payment*.
-	pub misc_frozen: Balance,
 	/// The amount that `free` may not drop below when withdrawing specifically for transaction
 	/// fee payment.
 	pub fee_frozen: Balance,
@@ -268,15 +265,16 @@ pub struct AccountData<Balance> {
 
 impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
 	/// How much this account's balance can be reduced for the given `reasons`.
-	fn usable(&self, reasons: BalanceReasons) -> Balance {
-		self.free.saturating_sub(self.frozen(reasons))
+	fn usable(&self, reasons: BalanceReasons, misc_frozen: Balance) -> Balance {
+		self.free.saturating_sub(self.frozen(reasons, misc_frozen))
 	}
 	/// The amount that this account's free balance may not be reduced beyond for the given
 	/// `reasons`.
-	fn frozen(&self, reasons: BalanceReasons) -> Balance {
+	fn frozen(&self, reasons: BalanceReasons, misc_frozen: Balance) -> Balance {
 		match reasons {
-			BalanceReasons::All => self.misc_frozen.max(self.fee_frozen),
-			BalanceReasons::Misc => self.misc_frozen,
+			BalanceReasons::All => misc_frozen.max(self.fee_frozen),
+			BalanceReasons::Misc => misc_frozen,
+			// TODO: possible to move outside? avoid the loop in `misc_frozen`.
 			BalanceReasons::Fee => self.fee_frozen,
 		}
 	}
@@ -470,16 +468,22 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 		Self::account(who.borrow()).free
 	}
 
+	fn misc_frozen(who: &T::AccountId) -> T::Balance {
+		Self::locks(who).iter().fold(Zero::zero(), |acc, lock| {
+			acc + lock.locked_amount(<system::Module<T>>::block_number())
+		})
+	}
+
 	/// Get the balance of an account that can be used for transfers, reservations, or any other
 	/// non-locking, non-transaction-fee activity. Will be at most `free_balance`.
 	pub fn usable_balance(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(BalanceReasons::Misc)
+		Self::account(who.borrow()).usable(BalanceReasons::Misc, Self::misc_frozen(who.borrow()))
 	}
 
 	/// Get the balance of an account that can be used for paying transaction fees (not tipping,
 	/// or any other kind of fees, though). Will be at most `free_balance`.
 	pub fn usable_balance_for_fees(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(BalanceReasons::Fee)
+		Self::account(who.borrow()).usable(BalanceReasons::Fee, Self::misc_frozen(who.borrow()))
 	}
 
 	/// Get the reserved balance of an account.
@@ -557,15 +561,10 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	fn update_locks(who: &T::AccountId, mut locks: Vec<BalanceLock<T::Balance, T::BlockNumber>>) {
 		Self::mutate_account(who, |b| {
 			let now = <system::Module<T>>::block_number();
-			b.misc_frozen = Zero::zero();
 			b.fee_frozen = Zero::zero();
 			for l in locks.iter_mut() {
-				let locked_amount = l.locked_amount(now);
-				if l.reasons == BalanceReasons::All || l.reasons == BalanceReasons::Misc {
-					b.misc_frozen = b.misc_frozen.max(locked_amount);
-				}
 				if l.reasons == BalanceReasons::All || l.reasons == BalanceReasons::Fee {
-					b.fee_frozen = b.fee_frozen.max(locked_amount);
+					b.fee_frozen = b.fee_frozen.max(l.update_locks(now));
 				}
 			}
 		});
@@ -867,7 +866,7 @@ where
 		if amount.is_zero() {
 			return Ok(());
 		}
-		let min_balance = Self::account(who).frozen(reasons.into());
+		let min_balance = Self::account(who).frozen(reasons.into(), Self::misc_frozen(who));
 		ensure!(new_balance >= min_balance, Error::<T, I>::LiquidityRestrictions);
 		Ok(())
 	}
@@ -1204,7 +1203,7 @@ where
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
-		mut withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
+		withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
 		if withdraw_lock
