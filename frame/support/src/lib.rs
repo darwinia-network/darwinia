@@ -65,8 +65,19 @@ pub mod structs {
 		Moment: Copy + PartialOrd,
 	{
 		#[inline]
-		pub fn locked_amount(&mut self, at: Moment) -> Balance {
-			self.withdraw_lock.locked_amount(at)
+		pub fn locked_amount(&self, at: Moment) -> Balance {
+			match &self.withdraw_lock {
+				WithdrawLock::Normal(lock) => lock.locked_amount(at),
+				WithdrawLock::WithStaking(lock) => lock.locked_amount(at),
+			}
+		}
+
+		#[inline]
+		pub fn update_locks(&mut self, at: Moment) -> Balance {
+			match &mut self.withdraw_lock {
+				WithdrawLock::Normal(_) => Zero::zero(),
+				WithdrawLock::WithStaking(lock) => lock.update_locks(at),
+			}
 		}
 	}
 
@@ -81,8 +92,7 @@ pub mod structs {
 		Balance: Copy + Default + AtLeast32Bit,
 		Moment: Copy + PartialOrd,
 	{
-		#[inline]
-		pub fn locked_amount(&mut self, at: Moment) -> Balance {
+		pub fn locked_amount(&self, at: Moment) -> Balance {
 			match self {
 				WithdrawLock::Normal(lock) => lock.locked_amount(at),
 				WithdrawLock::WithStaking(lock) => lock.locked_amount(at),
@@ -90,7 +100,7 @@ pub mod structs {
 		}
 
 		#[inline]
-		pub fn can_withdraw(&mut self, at: Moment, new_balance: Balance) -> bool {
+		pub fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
 			match self {
 				WithdrawLock::Normal(lock) => lock.can_withdraw(at, new_balance),
 				WithdrawLock::WithStaking(lock) => lock.can_withdraw(at, new_balance),
@@ -116,7 +126,7 @@ pub mod structs {
 		}
 
 		#[inline]
-		fn locked_amount(&self, at: Moment) -> Balance {
+		pub fn locked_amount(&self, at: Moment) -> Balance {
 			if self.valid_at(at) {
 				self.amount
 			} else {
@@ -143,7 +153,23 @@ pub mod structs {
 		Moment: Copy + PartialOrd,
 	{
 		#[inline]
-		fn locked_amount(&mut self, at: Moment) -> Balance {
+		pub fn locked_amount(&self, at: Moment) -> Balance {
+			self.unbondings.iter().fold(self.staking_amount, |acc, unbonding| {
+				if unbonding.valid_at(at) {
+					acc + unbonding.amount
+				} else {
+					acc
+				}
+			})
+		}
+
+		#[inline]
+		fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
+			new_balance >= self.locked_amount(at)
+		}
+
+		#[inline]
+		fn update_locks(&mut self, at: Moment) -> Balance {
 			let mut locked_amount = self.staking_amount;
 
 			self.unbondings.retain(|unbonding| {
@@ -156,11 +182,6 @@ pub mod structs {
 			});
 
 			locked_amount
-		}
-
-		#[inline]
-		fn can_withdraw(&mut self, at: Moment, new_balance: Balance) -> bool {
-			new_balance >= self.locked_amount(at)
 		}
 	}
 
