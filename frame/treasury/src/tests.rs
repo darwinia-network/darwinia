@@ -145,8 +145,8 @@ fn spend_proposal_takes_proportional_deposit() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_eq!(Ring::free_balance(&0), 95);
-		assert_eq!(Ring::reserved_balance(&0), 5);
 		assert_eq!(Kton::free_balance(&0), 95);
+		assert_eq!(Ring::reserved_balance(&0), 5);
 		assert_eq!(Kton::reserved_balance(&0), 5);
 	});
 }
@@ -154,11 +154,30 @@ fn spend_proposal_takes_proportional_deposit() {
 #[test]
 fn spend_proposal_fails_when_proposer_poor() {
 	new_test_ext().execute_with(|| {
-		// ring
 		assert_noop!(
 			Treasury::propose_spend(Origin::signed(2), 100, 100, 3),
 			Error::<Test>::InsufficientProposersBalance,
 		);
+	});
+}
+
+#[test]
+fn no_spend_no_burn() {
+	new_test_ext().execute_with(|| {
+		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 0, 3));
+		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
+
+		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Ring::free_balance(&3), 100);
+		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 0);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
 	});
 }
 
