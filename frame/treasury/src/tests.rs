@@ -128,7 +128,6 @@ fn minting_works() {
 	});
 }
 
-/// min deposit is 0 now
 #[test]
 fn spend_proposal_takes_min_deposit() {
 	new_test_ext().execute_with(|| {
@@ -158,26 +157,6 @@ fn spend_proposal_fails_when_proposer_poor() {
 			Treasury::propose_spend(Origin::signed(2), 100, 100, 3),
 			Error::<Test>::InsufficientProposersBalance,
 		);
-	});
-}
-
-#[test]
-fn no_spend_no_burn() {
-	new_test_ext().execute_with(|| {
-		Ring::make_free_balance_be(&Treasury::account_id(), 101);
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-
-		assert_eq!(Treasury::pot::<Ring>(), 100);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
-
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 0, 3));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
-		assert_eq!(Ring::free_balance(&3), 100);
-		assert_eq!(Kton::free_balance(&3), 0);
-		assert_eq!(Treasury::pot::<Ring>(), 0);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
 	});
 }
 
@@ -417,5 +396,89 @@ fn inexisting_account_works() {
 		assert_eq!(Treasury::pot::<Kton>(), 0); // Pot has changed
 		assert_eq!(Ring::free_balance(&3), 99); // Balance of `3` has changed
 		assert_eq!(Kton::free_balance(&3), 99); // Balance of `3` has changed
+	});
+}
+
+#[test]
+fn no_spent_no_burn() {
+	// ring
+	new_test_ext().execute_with(|| {
+		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 0, 100, 3));
+		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
+
+		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Ring::free_balance(&3), 0);
+		assert_eq!(Kton::free_balance(&3), 100);
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 0);
+	});
+
+	// kton
+	new_test_ext().execute_with(|| {
+		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 0, 3));
+		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
+
+		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Ring::free_balance(&3), 100);
+		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 0);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+	});
+
+	// both
+	new_test_ext().execute_with(|| {
+		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 0, 0, 3));
+		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
+
+		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Ring::free_balance(&3), 0);
+		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+	});
+}
+
+/// FIXME: If this is true?
+#[test]
+fn no_accept_no_reject_keep_burning() {
+	new_test_ext().execute_with(|| {
+		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
+		// assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
+		// assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
+
+		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Ring::free_balance(&3), 0);
+		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 50);
+		assert_eq!(Treasury::pot::<Kton>(), 50);
+
+		<Treasury as OnFinalize<u64>>::on_finalize(4);
+		assert_eq!(Ring::free_balance(&3), 0);
+		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 25);
+		assert_eq!(Treasury::pot::<Kton>(), 25);
 	});
 }
