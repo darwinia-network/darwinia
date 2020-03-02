@@ -10,16 +10,64 @@ pub mod structs {
 	use codec::{Decode, Encode};
 	use num_traits::Zero;
 
-	use sp_runtime::{traits::SimpleArithmetic, RuntimeDebug};
-	use sp_std::{cmp::Ordering, vec::Vec};
+	use sp_runtime::{traits::AtLeast32Bit, RuntimeDebug};
+	use sp_std::{cmp::Ordering, ops::BitOr, vec::Vec};
 
-	use crate::{LockIdentifier, WithdrawReasons};
+	use crate::{LockIdentifier, WithdrawReason, WithdrawReasons};
 
-	#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
+	/// Simplified reasons for withdrawing balance.
+	#[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug)]
+	pub enum BalanceReasons {
+		/// Paying system transaction fees.
+		Fee = 0,
+		/// Any reason other than paying system transaction fees.
+		Misc = 1,
+		/// Any reason at all.
+		All = 2,
+	}
+
+	impl From<WithdrawReasons> for BalanceReasons {
+		fn from(r: WithdrawReasons) -> BalanceReasons {
+			if r == WithdrawReasons::from(WithdrawReason::TransactionPayment) {
+				BalanceReasons::Fee
+			} else if r.contains(WithdrawReason::TransactionPayment) {
+				BalanceReasons::All
+			} else {
+				BalanceReasons::Misc
+			}
+		}
+	}
+
+	impl BitOr for BalanceReasons {
+		type Output = BalanceReasons;
+		fn bitor(self, other: BalanceReasons) -> BalanceReasons {
+			if self == other {
+				return self;
+			}
+			BalanceReasons::All
+		}
+	}
+
+	/// A single lock on a balance. There can be many of these on an account and they "overlap", so the
+	/// same balance is frozen by multiple locks.
+	#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 	pub struct BalanceLock<Balance, Moment> {
+		/// An identifier for this lock. Only one lock may be in existence for each identifier.
 		pub id: LockIdentifier,
 		pub withdraw_lock: WithdrawLock<Balance, Moment>,
-		pub reasons: WithdrawReasons,
+		/// If true, then the lock remains in effect even for payment of transaction fees.
+		pub reasons: BalanceReasons,
+	}
+
+	impl<Balance, Moment> BalanceLock<Balance, Moment>
+	where
+		Balance: Copy + Default + AtLeast32Bit,
+		Moment: Copy + PartialOrd,
+	{
+		#[inline]
+		pub fn locked_amount(&mut self, at: Moment) -> Balance {
+			self.withdraw_lock.locked_amount(at)
+		}
 	}
 
 	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
@@ -30,10 +78,19 @@ pub mod structs {
 
 	impl<Balance, Moment> WithdrawLock<Balance, Moment>
 	where
-		Balance: Copy + Default + SimpleArithmetic,
+		Balance: Copy + Default + AtLeast32Bit,
 		Moment: Copy + PartialOrd,
 	{
-		pub fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
+		#[inline]
+		pub fn locked_amount(&mut self, at: Moment) -> Balance {
+			match self {
+				WithdrawLock::Normal(lock) => lock.locked_amount(at),
+				WithdrawLock::WithStaking(lock) => lock.locked_amount(at),
+			}
+		}
+
+		#[inline]
+		pub fn can_withdraw(&mut self, at: Moment, new_balance: Balance) -> bool {
 			match self {
 				WithdrawLock::Normal(lock) => lock.can_withdraw(at, new_balance),
 				WithdrawLock::WithStaking(lock) => lock.can_withdraw(at, new_balance),
@@ -43,18 +100,28 @@ pub mod structs {
 
 	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 	pub struct NormalLock<Balance, Moment> {
+		/// The amount which the free balance may not drop below when this lock is in effect.
 		pub amount: Balance,
 		pub until: Moment,
 	}
 
 	impl<Balance, Moment> NormalLock<Balance, Moment>
 	where
-		Balance: Copy + PartialOrd,
+		Balance: Copy + PartialOrd + Zero,
 		Moment: PartialOrd,
 	{
 		#[inline]
 		fn valid_at(&self, at: Moment) -> bool {
 			self.until > at
+		}
+
+		#[inline]
+		fn locked_amount(&self, at: Moment) -> Balance {
+			if self.valid_at(at) {
+				self.amount
+			} else {
+				Zero::zero()
+			}
 		}
 
 		#[inline]
@@ -65,32 +132,35 @@ pub mod structs {
 
 	#[derive(Clone, Default, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 	pub struct StakingLock<Balance, Moment> {
+		/// The amount which the free balance may not drop below when this lock is in effect.
 		pub staking_amount: Balance,
 		pub unbondings: Vec<NormalLock<Balance, Moment>>,
 	}
 
 	impl<Balance, Moment> StakingLock<Balance, Moment>
 	where
-		Balance: Copy + PartialOrd + SimpleArithmetic,
+		Balance: Copy + PartialOrd + AtLeast32Bit,
 		Moment: Copy + PartialOrd,
 	{
 		#[inline]
-		fn can_withdraw(&self, at: Moment, new_balance: Balance) -> bool {
+		fn locked_amount(&mut self, at: Moment) -> Balance {
 			let mut locked_amount = self.staking_amount;
 
-			for unbonding in &self.unbondings {
-				if unbonding.valid_at(at) {
-					// TODO: check overflow?
+			self.unbondings.retain(|unbonding| {
+				let valid = unbonding.valid_at(at);
+				if valid {
 					locked_amount += unbonding.amount;
 				}
-			}
 
-			new_balance >= locked_amount
+				valid
+			});
+
+			locked_amount
 		}
 
 		#[inline]
-		pub fn shrink(&mut self, at: Moment) {
-			self.unbondings.retain(|unbonding| unbonding.valid_at(at));
+		fn can_withdraw(&mut self, at: Moment, new_balance: Balance) -> bool {
+			new_balance >= self.locked_amount(at)
 		}
 	}
 
