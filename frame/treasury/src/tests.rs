@@ -132,22 +132,10 @@ fn minting_works() {
 #[test]
 fn spend_proposal_takes_min_deposit() {
 	new_test_ext().execute_with(|| {
-		// ring
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(1),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 1, 3));
 		assert_eq!(Ring::free_balance(&0), 99);
-		assert_eq!(Ring::reserved_balance(&0), 1);
-
-		// kton
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(1),
-			3
-		));
 		assert_eq!(Kton::free_balance(&0), 99);
+		assert_eq!(Ring::reserved_balance(&0), 1);
 		assert_eq!(Kton::reserved_balance(&0), 1);
 	});
 }
@@ -155,21 +143,9 @@ fn spend_proposal_takes_min_deposit() {
 #[test]
 fn spend_proposal_takes_proportional_deposit() {
 	new_test_ext().execute_with(|| {
-		// ring
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_eq!(Ring::free_balance(&0), 95);
 		assert_eq!(Ring::reserved_balance(&0), 5);
-
-		// kton
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
 		assert_eq!(Kton::free_balance(&0), 95);
 		assert_eq!(Kton::reserved_balance(&0), 5);
 	});
@@ -180,13 +156,7 @@ fn spend_proposal_fails_when_proposer_poor() {
 	new_test_ext().execute_with(|| {
 		// ring
 		assert_noop!(
-			Treasury::propose_spend(Origin::signed(2), StakingBalance::RingBalance(100), 3),
-			Error::<Test>::InsufficientProposersBalance,
-		);
-
-		// kton
-		assert_noop!(
-			Treasury::propose_spend(Origin::signed(2), StakingBalance::KtonBalance(100), 3),
+			Treasury::propose_spend(Origin::signed(2), 100, 100, 3),
 			Error::<Test>::InsufficientProposersBalance,
 		);
 	});
@@ -195,30 +165,16 @@ fn spend_proposal_fails_when_proposer_poor() {
 #[test]
 fn accepted_spend_proposal_ignored_outside_spend_period() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(1);
 		assert_eq!(Ring::free_balance(&3), 0);
-		assert_eq!(Treasury::pot::<Ring>(), 100);
-
-		// kton
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(3);
 		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 100);
 		assert_eq!(Treasury::pot::<Kton>(), 100);
 	});
 }
@@ -229,20 +185,16 @@ fn unused_pot_should_diminish() {
 		let init_total_ring_issuance = Ring::total_issuance();
 		let init_total_kton_issuance = Kton::total_issuance();
 
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_eq!(Ring::total_issuance(), init_total_ring_issuance + 100);
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
-		assert_eq!(Treasury::pot::<Ring>(), 50);
-		assert_eq!(Ring::total_issuance(), init_total_ring_issuance + 50);
-
-		// kton
 		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_eq!(Ring::total_issuance(), init_total_ring_issuance + 100);
 		assert_eq!(Kton::total_issuance(), init_total_kton_issuance + 100);
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
+		assert_eq!(Treasury::pot::<Ring>(), 50);
 		assert_eq!(Treasury::pot::<Kton>(), 50);
+		assert_eq!(Ring::total_issuance(), init_total_ring_issuance + 50);
 		assert_eq!(Kton::total_issuance(), init_total_kton_issuance + 50);
 	});
 }
@@ -250,31 +202,16 @@ fn unused_pot_should_diminish() {
 #[test]
 fn rejected_spend_proposal_ignored_on_spend_period() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
+
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Ring::free_balance(&3), 0);
-		assert_eq!(Treasury::pot::<Ring>(), 50);
-
-		// kton
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
-		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 1));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Kton::free_balance(&3), 0);
+		assert_eq!(Treasury::pot::<Ring>(), 50);
 		assert_eq!(Treasury::pot::<Kton>(), 50);
 	});
 }
@@ -282,31 +219,13 @@ fn rejected_spend_proposal_ignored_on_spend_period() {
 #[test]
 fn reject_already_rejected_spend_proposal_fails() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
 
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 		assert_noop!(
 			Treasury::reject_proposal(Origin::ROOT, 0),
-			Error::<Test>::InvalidProposalIndex
-		);
-
-		// kton
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
-		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 1));
-		assert_noop!(
-			Treasury::reject_proposal(Origin::ROOT, 1),
 			Error::<Test>::InvalidProposalIndex
 		);
 	});
@@ -323,43 +242,15 @@ fn reject_non_existant_spend_proposal_fails() {
 }
 
 #[test]
-fn accept_non_existant_spend_proposal_fails() {
-	new_test_ext().execute_with(|| {
-		assert_noop!(
-			Treasury::approve_proposal(Origin::ROOT, 0),
-			Error::<Test>::InvalidProposalIndex
-		);
-	});
-}
-
-#[test]
 fn accept_already_rejected_spend_proposal_fails() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
 
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 		assert_noop!(
 			Treasury::approve_proposal(Origin::ROOT, 0),
-			Error::<Test>::InvalidProposalIndex
-		);
-
-		// kton
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
-		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 1));
-		assert_noop!(
-			Treasury::approve_proposal(Origin::ROOT, 1),
 			Error::<Test>::InvalidProposalIndex
 		);
 	});
@@ -368,36 +259,18 @@ fn accept_already_rejected_spend_proposal_fails() {
 #[test]
 fn accepted_spend_proposal_enacted_on_spend_period() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
 		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
 
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(100),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Ring::free_balance(&3), 100);
-		assert_eq!(Treasury::pot::<Ring>(), 0);
-	});
-
-	// kton
-	new_test_ext().execute_with(|| {
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
-
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(100),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Kton::free_balance(&3), 100);
+		assert_eq!(Treasury::pot::<Ring>(), 0);
 		assert_eq!(Treasury::pot::<Kton>(), 0);
 	});
 }
@@ -405,40 +278,24 @@ fn accepted_spend_proposal_enacted_on_spend_period() {
 #[test]
 fn pot_underflow_should_not_diminish() {
 	new_test_ext().execute_with(|| {
-		// ring
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
 		assert_eq!(Treasury::pot::<Ring>(), 100);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(150),
-			3
-		));
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 150, 150, 3));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Treasury::pot::<Ring>(), 100); // Pot hasn't changed
-
-		let _ = Ring::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
-		<Treasury as OnFinalize<u64>>::on_finalize(4);
-		assert_eq!(Ring::free_balance(&3), 150); // Fund has been spent
-		assert_eq!(Treasury::pot::<Ring>(), 25); // Pot has finally changed
-
-		// kton
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(150),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(3);
 		assert_eq!(Treasury::pot::<Kton>(), 100); // Pot hasn't changed
 
+		let _ = Ring::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
 		let _ = Kton::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
+
 		<Treasury as OnFinalize<u64>>::on_finalize(4);
+		assert_eq!(Ring::free_balance(&3), 150); // Fund has been spent
 		assert_eq!(Kton::free_balance(&3), 150); // Fund has been spent
+		assert_eq!(Treasury::pot::<Ring>(), 25); // Pot has finally changed
 		assert_eq!(Treasury::pot::<Kton>(), 25); // Pot has finally changed
 	});
 }
@@ -449,47 +306,38 @@ fn pot_underflow_should_not_diminish() {
 fn treasury_account_doesnt_get_deleted() {
 	new_test_ext().execute_with(|| {
 		Ring::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_eq!(Treasury::pot::<Ring>(), 100);
-		let ring_treasury_balance = StakingBalance::RingBalance(Ring::free_balance(&Treasury::account_id()));
+		Kton::make_free_balance_be(&Treasury::account_id(), 101);
 
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), ring_treasury_balance, 3));
+		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 100);
+
+		let ring_treasury_balance = Ring::free_balance(&Treasury::account_id());
+		let kton_treasury_balance = Kton::free_balance(&Treasury::account_id());
+
+		assert_ok!(Treasury::propose_spend(
+			Origin::signed(0),
+			ring_treasury_balance,
+			kton_treasury_balance,
+			3
+		));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Treasury::pot::<Ring>(), 100); // Pot hasn't changed
+		assert_eq!(Treasury::pot::<Kton>(), 100); // Pot hasn't changed
 
 		assert_ok!(Treasury::propose_spend(
 			Origin::signed(0),
-			StakingBalance::RingBalance(Treasury::pot::<Ring>()),
+			Treasury::pot::<Ring>(),
+			Treasury::pot::<Kton>(),
 			3
 		));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(4);
 		assert_eq!(Treasury::pot::<Ring>(), 0); // Pot is emptied
-		assert_eq!(Ring::free_balance(&Treasury::account_id()), 1); // but the account is still there
-	});
-
-	new_test_ext().execute_with(|| {
-		Kton::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
-		let kton_treasury_balance = StakingBalance::KtonBalance(Kton::free_balance(&Treasury::account_id()));
-
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), kton_treasury_balance, 3));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
-		assert_eq!(Treasury::pot::<Kton>(), 100); // Pot hasn't changed
-
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(Treasury::pot::<Kton>()),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(4);
 		assert_eq!(Treasury::pot::<Kton>(), 0); // Pot is emptied
+		assert_eq!(Ring::free_balance(&Treasury::account_id()), 1); // but the account is still there
 		assert_eq!(Kton::free_balance(&Treasury::account_id()), 1); // but the account is still there
 	});
 }
@@ -498,93 +346,57 @@ fn treasury_account_doesnt_get_deleted() {
 // This is usefull for chain that will just update runtime.
 #[test]
 fn inexisting_account_works() {
-	let mut tr = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	let mut tk = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	darwinia_ring::GenesisConfig::<Test> {
 		balances: vec![(0, 100), (1, 99), (2, 1)],
 		vesting: vec![],
 	}
-	.assimilate_storage(&mut tr)
+	.assimilate_storage(&mut t)
 	.unwrap();
 
 	darwinia_kton::GenesisConfig::<Test> {
 		balances: vec![(0, 100), (1, 99), (2, 1)],
 		vesting: vec![],
 	}
-	.assimilate_storage(&mut tk)
+	.assimilate_storage(&mut t)
 	.unwrap();
 
 	// Treasury genesis config is not build thus treasury account does not exist
-	let mut tr: sp_io::TestExternalities = tr.into();
-	let mut tk: sp_io::TestExternalities = tk.into();
-
-	tr.execute_with(|| {
+	let mut t: sp_io::TestExternalities = t.into();
+	t.execute_with(|| {
 		// Account does not exist
 		assert_eq!(Ring::free_balance(&Treasury::account_id()), 0);
-
-		// Pot is empty
-		assert_eq!(Treasury::pot::<Ring>(), 0);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(99),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::RingBalance(1),
-			3
-		));
-		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
-
-		<Treasury as OnFinalize<u64>>::on_finalize(2);
-		// Pot hasn't changed
-		assert_eq!(Treasury::pot::<Ring>(), 0);
-		// Balance of `3` hasn't changed
-		assert_eq!(Ring::free_balance(&3), 0);
-
-		Ring::make_free_balance_be(&Treasury::account_id(), 100);
-		assert_eq!(Treasury::pot::<Ring>(), 99); // Pot now contains funds
-		assert_eq!(Ring::free_balance(&Treasury::account_id()), 100); // Account does exist
-
-		<Treasury as OnFinalize<u64>>::on_finalize(4);
-
-		assert_eq!(Treasury::pot::<Ring>(), 0); // Pot has changed
-		assert_eq!(Ring::free_balance(&3), 99); // Balance of `3` has changed
-	});
-
-	tk.execute_with(|| {
-		// Account does not exist
 		assert_eq!(Kton::free_balance(&Treasury::account_id()), 0);
 
 		// Pot is empty
+		assert_eq!(Treasury::pot::<Ring>(), 0);
 		assert_eq!(Treasury::pot::<Kton>(), 0);
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(99),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 99, 99, 3));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 0));
-		assert_ok!(Treasury::propose_spend(
-			Origin::signed(0),
-			StakingBalance::KtonBalance(1),
-			3
-		));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 1, 3));
 		assert_ok!(Treasury::approve_proposal(Origin::ROOT, 1));
 
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		// Pot hasn't changed
+		assert_eq!(Treasury::pot::<Ring>(), 0);
 		assert_eq!(Treasury::pot::<Kton>(), 0);
+
 		// Balance of `3` hasn't changed
+		assert_eq!(Ring::free_balance(&3), 0);
 		assert_eq!(Kton::free_balance(&3), 0);
 
+		Ring::make_free_balance_be(&Treasury::account_id(), 100);
 		Kton::make_free_balance_be(&Treasury::account_id(), 100);
+		assert_eq!(Treasury::pot::<Ring>(), 99); // Pot now contains funds
 		assert_eq!(Treasury::pot::<Kton>(), 99); // Pot now contains funds
+		assert_eq!(Ring::free_balance(&Treasury::account_id()), 100); // Account does exist
 		assert_eq!(Kton::free_balance(&Treasury::account_id()), 100); // Account does exist
 
 		<Treasury as OnFinalize<u64>>::on_finalize(4);
 
+		assert_eq!(Treasury::pot::<Ring>(), 0); // Pot has changed
 		assert_eq!(Treasury::pot::<Kton>(), 0); // Pot has changed
+		assert_eq!(Ring::free_balance(&3), 99); // Balance of `3` has changed
 		assert_eq!(Kton::free_balance(&3), 99); // Balance of `3` has changed
 	});
 }
