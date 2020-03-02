@@ -142,14 +142,12 @@
 // mod benchmarking;
 
 use codec::{Codec, Decode, Encode};
-
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
 	traits::{
 		BalanceStatus as Status, Currency, ExistenceRequirement, ExistenceRequirement::AllowDeath,
-		ExistenceRequirement::KeepAlive, Get, Imbalance, IsDeadAccount, LockIdentifier, LockableCurrency,
-		OnKilledAccount, OnUnbalanced, ReservableCurrency, SignedImbalance, StoredMap, TryDrop, WithdrawReason,
-		WithdrawReasons,
+		ExistenceRequirement::KeepAlive, Get, Imbalance, IsDeadAccount, OnKilledAccount, OnUnbalanced,
+		ReservableCurrency, SignedImbalance, StoredMap, TryDrop,
 	},
 	weights::SimpleDispatchInfo,
 	Parameter, StorageValue,
@@ -162,8 +160,11 @@ use sp_runtime::{
 	},
 	DispatchError, DispatchResult, RuntimeDebug,
 };
-use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, ops::BitOr, prelude::*};
+use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, prelude::*};
 
+use darwinia_support::{
+	BalanceLock, BalanceReasons, LockIdentifier, LockableCurrency, WithdrawLock, WithdrawReason, WithdrawReasons,
+};
 use imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
@@ -241,51 +242,6 @@ decl_error! {
 	}
 }
 
-/// Simplified reasons for withdrawing balance.
-#[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug)]
-pub enum Reasons {
-	/// Paying system transaction fees.
-	Fee = 0,
-	/// Any reason other than paying system transaction fees.
-	Misc = 1,
-	/// Any reason at all.
-	All = 2,
-}
-
-impl From<WithdrawReasons> for Reasons {
-	fn from(r: WithdrawReasons) -> Reasons {
-		if r == WithdrawReasons::from(WithdrawReason::TransactionPayment) {
-			Reasons::Fee
-		} else if r.contains(WithdrawReason::TransactionPayment) {
-			Reasons::All
-		} else {
-			Reasons::Misc
-		}
-	}
-}
-
-impl BitOr for Reasons {
-	type Output = Reasons;
-	fn bitor(self, other: Reasons) -> Reasons {
-		if self == other {
-			return self;
-		}
-		Reasons::All
-	}
-}
-
-/// A single lock on a balance. There can be many of these on an account and they "overlap", so the
-/// same balance is frozen by multiple locks.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
-pub struct BalanceLock<Balance> {
-	/// An identifier for this lock. Only one lock may be in existence for each identifier.
-	pub id: LockIdentifier,
-	/// The amount which the free balance may not drop below when this lock is in effect.
-	pub amount: Balance,
-	/// If true, then the lock remains in effect even for payment of transaction fees.
-	pub reasons: Reasons,
-}
-
 /// All balance information for an account.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
 pub struct AccountData<Balance> {
@@ -312,16 +268,16 @@ pub struct AccountData<Balance> {
 
 impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
 	/// How much this account's balance can be reduced for the given `reasons`.
-	fn usable(&self, reasons: Reasons) -> Balance {
+	fn usable(&self, reasons: BalanceReasons) -> Balance {
 		self.free.saturating_sub(self.frozen(reasons))
 	}
 	/// The amount that this account's free balance may not be reduced beyond for the given
 	/// `reasons`.
-	fn frozen(&self, reasons: Reasons) -> Balance {
+	fn frozen(&self, reasons: BalanceReasons) -> Balance {
 		match reasons {
-			Reasons::All => self.misc_frozen.max(self.fee_frozen),
-			Reasons::Misc => self.misc_frozen,
-			Reasons::Fee => self.fee_frozen,
+			BalanceReasons::All => self.misc_frozen.max(self.fee_frozen),
+			BalanceReasons::Misc => self.misc_frozen,
+			BalanceReasons::Fee => self.fee_frozen,
 		}
 	}
 	/// The total balance in this account including any that is reserved and ignoring any frozen.
@@ -331,7 +287,7 @@ impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
 }
 
 decl_storage! {
-	trait Store for Module<T: Trait<I>, I: Instance=DefaultInstance> as Balances {
+	trait Store for Module<T: Trait<I>, I: Instance = DefaultInstance> as Balances {
 		/// The total units issued in the system.
 		pub TotalIssuance get(fn total_issuance) build(|config: &GenesisConfig<T, I>| {
 			config
@@ -350,7 +306,7 @@ decl_storage! {
 
 		/// Any liquidity locks on some account balances.
 		/// NOTE: Should only be accessed when setting, changing and freeing a lock.
-		pub Locks get(fn locks): map hasher(blake2_256) T::AccountId => Vec<BalanceLock<T::Balance>>;
+		pub Locks get(fn locks): map hasher(blake2_256) T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -517,13 +473,13 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// Get the balance of an account that can be used for transfers, reservations, or any other
 	/// non-locking, non-transaction-fee activity. Will be at most `free_balance`.
 	pub fn usable_balance(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(Reasons::Misc)
+		Self::account(who.borrow()).usable(BalanceReasons::Misc)
 	}
 
 	/// Get the balance of an account that can be used for paying transaction fees (not tipping,
 	/// or any other kind of fees, though). Will be at most `free_balance`.
 	pub fn usable_balance_for_fees(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(Reasons::Fee)
+		Self::account(who.borrow()).usable(BalanceReasons::Fee)
 	}
 
 	/// Get the reserved balance of an account.
@@ -598,16 +554,18 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	}
 
 	/// Update the account entry for `who`, given the locks.
-	fn update_locks(who: &T::AccountId, locks: &[BalanceLock<T::Balance>]) {
+	fn update_locks(who: &T::AccountId, mut locks: Vec<BalanceLock<T::Balance, T::BlockNumber>>) {
 		Self::mutate_account(who, |b| {
+			let now = <system::Module<T>>::block_number();
 			b.misc_frozen = Zero::zero();
 			b.fee_frozen = Zero::zero();
-			for l in locks.iter() {
-				if l.reasons == Reasons::All || l.reasons == Reasons::Misc {
-					b.misc_frozen = b.misc_frozen.max(l.amount);
+			for l in locks.iter_mut() {
+				let locked_amount = l.locked_amount(now);
+				if l.reasons == BalanceReasons::All || l.reasons == BalanceReasons::Misc {
+					b.misc_frozen = b.misc_frozen.max(locked_amount);
 				}
-				if l.reasons == Reasons::All || l.reasons == Reasons::Fee {
-					b.fee_frozen = b.fee_frozen.max(l.amount);
+				if l.reasons == BalanceReasons::All || l.reasons == BalanceReasons::Fee {
+					b.fee_frozen = b.fee_frozen.max(locked_amount);
 				}
 			}
 		});
@@ -1243,13 +1201,21 @@ where
 
 	// Set a lock on the balance of `who`.
 	// Is a no-op if lock amount is zero or `reasons` `is_none()`.
-	fn set_lock(id: LockIdentifier, who: &T::AccountId, amount: T::Balance, reasons: WithdrawReasons) {
-		if amount.is_zero() || reasons.is_none() {
+	fn set_lock(
+		id: LockIdentifier,
+		who: &T::AccountId,
+		mut withdraw_lock: WithdrawLock<Self::Balance, Self::Moment>,
+		reasons: WithdrawReasons,
+	) {
+		if withdraw_lock
+			.locked_amount(<system::Module<T>>::block_number())
+			.is_zero() || reasons.is_none()
+		{
 			return;
 		}
 		let mut new_lock = Some(BalanceLock {
 			id,
-			amount,
+			withdraw_lock,
 			reasons: reasons.into(),
 		});
 		let mut locks = Self::locks(who)
@@ -1259,44 +1225,44 @@ where
 		if let Some(lock) = new_lock {
 			locks.push(lock)
 		}
-		Self::update_locks(who, &locks[..]);
+		Self::update_locks(who, locks);
 	}
 
-	// Extend a lock on the balance of `who`.
-	// Is a no-op if lock amount is zero or `reasons` `is_none()`.
-	fn extend_lock(id: LockIdentifier, who: &T::AccountId, amount: T::Balance, reasons: WithdrawReasons) {
-		if amount.is_zero() || reasons.is_none() {
-			return;
-		}
-		let mut new_lock = Some(BalanceLock {
-			id,
-			amount,
-			reasons: reasons.into(),
-		});
-		let mut locks = Self::locks(who)
-			.into_iter()
-			.filter_map(|l| {
-				if l.id == id {
-					new_lock.take().map(|nl| BalanceLock {
-						id: l.id,
-						amount: l.amount.max(nl.amount),
-						reasons: l.reasons | nl.reasons,
-					})
-				} else {
-					Some(l)
-				}
-			})
-			.collect::<Vec<_>>();
-		if let Some(lock) = new_lock {
-			locks.push(lock)
-		}
-		Self::update_locks(who, &locks[..]);
-	}
+	// // Extend a lock on the balance of `who`.
+	// // Is a no-op if lock amount is zero or `reasons` `is_none()`.
+	// fn extend_lock(id: LockIdentifier, who: &T::AccountId, amount: T::Balance, reasons: WithdrawReasons) {
+	// 	if amount.is_zero() || reasons.is_none() {
+	// 		return;
+	// 	}
+	// 	let mut new_lock = Some(BalanceLock {
+	// 		id,
+	// 		amount,
+	// 		reasons: reasons.into(),
+	// 	});
+	// 	let mut locks = Self::locks(who)
+	// 		.into_iter()
+	// 		.filter_map(|l| {
+	// 			if l.id == id {
+	// 				new_lock.take().map(|nl| BalanceLock {
+	// 					id: l.id,
+	// 					amount: l.amount.max(nl.amount),
+	// 					reasons: l.reasons | nl.reasons,
+	// 				})
+	// 			} else {
+	// 				Some(l)
+	// 			}
+	// 		})
+	// 		.collect::<Vec<_>>();
+	// 	if let Some(lock) = new_lock {
+	// 		locks.push(lock)
+	// 	}
+	// 	Self::update_locks(who, &locks[..]);
+	// }
 
 	fn remove_lock(id: LockIdentifier, who: &T::AccountId) {
 		let mut locks = Self::locks(who);
 		locks.retain(|l| l.id != id);
-		Self::update_locks(who, &locks[..]);
+		Self::update_locks(who, locks);
 	}
 }
 
