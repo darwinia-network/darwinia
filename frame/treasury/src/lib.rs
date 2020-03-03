@@ -371,25 +371,20 @@ impl<T: Trait> Module<T> {
 					return true;
 				}
 
-				// no spent no burn
-				if p.ring_value == RingBalance::<T>::from(0) {
-					miss_any_ring = true;
-				}
-
-				if p.kton_value == KtonBalance::<T>::from(0) {
-					miss_any_kton = true;
-				}
-
 				if p.ring_value > RingBalance::<T>::from(0) {
 					budget_remaining_ring -= p.ring_value;
 					let _ = T::RingCurrency::unreserve(&p.proposer, p.ring_bond);
 					imbalance_ring.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, p.ring_value));
+				} else {
+					miss_any_ring = true;
 				}
 
 				if p.kton_value > KtonBalance::<T>::from(0) {
 					budget_remaining_kton -= p.kton_value;
 					let _ = T::KtonCurrency::unreserve(&p.proposer, p.kton_bond);
 					imbalance_kton.subsume(T::KtonCurrency::deposit_creating(&p.beneficiary, p.kton_value));
+				} else {
+					miss_any_kton = true;
 				}
 
 				<Proposals<T>>::remove(index);
