@@ -345,36 +345,48 @@ impl<T: Trait> Module<T> {
 		let mut budget_remaining_kton = Self::pot::<T::KtonCurrency>();
 		let mut imbalance_ring = <RingPositiveImbalance<T>>::zero();
 		let mut imbalance_kton = <KtonPositiveImbalance<T>>::zero();
-		let mut should_burn_ring = true;
-		let mut should_burn_kton = true;
+		let mut miss_any_ring = false;
+		let mut miss_any_kton = false;
 
 		Self::deposit_event(RawEvent::Spending(budget_remaining_ring, budget_remaining_kton));
 
 		Approvals::mutate(|v| {
 			v.retain(|&index| {
 				// Should always be some, but shouldn't panic if false or we're screwed.
-				let mut should_return = false;
 				let option_proposal = Self::proposals(index);
 				if option_proposal.is_none() {
 					return false;
 				}
 
 				let p = option_proposal.unwrap();
-				if p.ring_value > budget_remaining_ring || p.ring_value == RingBalance::<T>::from(0) {
-					should_burn_ring = false;
-					should_return = true;
-				} else {
+				if p.ring_value > budget_remaining_ring {
+					if p.ring_value > budget_remaining_ring {
+						miss_any_ring = true;
+					}
+
+					if p.kton_value > budget_remaining_kton {
+						miss_any_kton = true;
+					}
+
+					return true;
+				}
+
+				// no spent no burn
+				if p.ring_value == RingBalance::<T>::from(0) {
+					miss_any_ring = true;
+				}
+
+				if p.kton_value == KtonBalance::<T>::from(0) {
+					miss_any_kton = true;
+				}
+
+				if p.ring_value > RingBalance::<T>::from(0) {
 					budget_remaining_ring -= p.ring_value;
 					let _ = T::RingCurrency::unreserve(&p.proposer, p.ring_bond);
 					imbalance_ring.subsume(T::RingCurrency::deposit_creating(&p.beneficiary, p.ring_value));
 				}
 
-				if p.kton_value > budget_remaining_kton || p.kton_value == KtonBalance::<T>::from(0) {
-					should_burn_kton = false;
-					if should_return {
-						return true;
-					}
-				} else {
+				if p.kton_value > KtonBalance::<T>::from(0) {
 					budget_remaining_kton -= p.kton_value;
 					let _ = T::KtonCurrency::unreserve(&p.proposer, p.kton_bond);
 					imbalance_kton.subsume(T::KtonCurrency::deposit_creating(&p.beneficiary, p.kton_value));
@@ -387,14 +399,14 @@ impl<T: Trait> Module<T> {
 		});
 
 		// burn balances
-		if should_burn_ring {
+		if !miss_any_ring {
 			// burn some proportion of the remaining budget if we run a surplus.
 			let burn = (T::Burn::get() * budget_remaining_ring).min(budget_remaining_ring);
 			budget_remaining_ring -= burn;
 			imbalance_ring.subsume(T::RingCurrency::burn(burn));
 		}
 
-		if should_burn_kton {
+		if !miss_any_kton {
 			let burn = (T::Burn::get() * budget_remaining_kton).min(budget_remaining_kton);
 			budget_remaining_kton -= burn;
 			imbalance_kton.subsume(T::KtonCurrency::burn(burn));
