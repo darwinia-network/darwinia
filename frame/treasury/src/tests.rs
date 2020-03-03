@@ -415,7 +415,7 @@ fn no_spent_no_burn() {
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Ring::free_balance(&3), 0);
 		assert_eq!(Kton::free_balance(&3), 100);
-		assert_eq!(Treasury::pot::<Ring>(), 100);
+		assert_eq!(Treasury::pot::<Ring>(), 50);
 		assert_eq!(Treasury::pot::<Kton>(), 0);
 	});
 
@@ -434,7 +434,7 @@ fn no_spent_no_burn() {
 		assert_eq!(Ring::free_balance(&3), 100);
 		assert_eq!(Kton::free_balance(&3), 0);
 		assert_eq!(Treasury::pot::<Ring>(), 0);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
+		assert_eq!(Treasury::pot::<Kton>(), 50);
 	});
 
 	// both
@@ -451,8 +451,8 @@ fn no_spent_no_burn() {
 		<Treasury as OnFinalize<u64>>::on_finalize(2);
 		assert_eq!(Ring::free_balance(&3), 0);
 		assert_eq!(Kton::free_balance(&3), 0);
-		assert_eq!(Treasury::pot::<Ring>(), 100);
-		assert_eq!(Treasury::pot::<Kton>(), 100);
+		assert_eq!(Treasury::pot::<Ring>(), 50);
+		assert_eq!(Treasury::pot::<Kton>(), 50);
 	});
 }
 
@@ -507,8 +507,8 @@ fn approve_proposal_no_keep_burning() {
 
 		// @2: On the first spend perid
 		<Treasury as OnFinalize<u64>>::on_finalize(2); // SpendPeriod: u64 = 2;
-		assert_eq!(Ring::free_balance(&0), 100); // ProposalBond: Permill::from_percent(5); **No burn if approve**
-		assert_eq!(Kton::free_balance(&0), 100); // ProposalBond: Permill::from_percent(5); **No burn if approve**
+		assert_eq!(Ring::free_balance(&0), 100); // ProposalBond: Permill::from_percent(5); **return bond**
+		assert_eq!(Kton::free_balance(&0), 100); // ProposalBond: Permill::from_percent(5); **return bond**
 		assert_eq!(Ring::free_balance(&1), 98); // No changes
 		assert_eq!(Kton::free_balance(&1), 98); // No changes
 		assert_eq!(Ring::free_balance(&2), 1); // No changes
@@ -571,6 +571,7 @@ fn reject_proposal_keep_burning() {
 
 		// Put forward a suggestion for spending, burn treasury balances to AccontID-3
 		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 100, 3));
+		assert_ok!(Treasury::reject_proposal(Origin::ROOT, 0));
 
 		// @0-1: Check balances after `propose_spend`
 		<Treasury as OnFinalize<u64>>::on_finalize(1);
