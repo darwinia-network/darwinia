@@ -1229,10 +1229,10 @@ where
 	fn set_lock(
 		id: LockIdentifier,
 		who: &T::AccountId,
-		balance_lock_for: LockFor<Self::Balance, Self::Moment>,
+		lock_for: LockFor<Self::Balance, Self::Moment>,
 		reasons: WithdrawReasons,
 	) {
-		if match &balance_lock_for {
+		if match &lock_for {
 			LockFor::Common { amount } => *amount,
 			LockFor::Staking(staking_lock) => staking_lock.locked_amount(<system::Module<T>>::block_number()),
 		}
@@ -1242,7 +1242,7 @@ where
 		}
 		let mut new_lock = Some(BalanceLock {
 			id,
-			lock_for: balance_lock_for,
+			lock_for,
 			lock_reasons: reasons.into(),
 		});
 		let mut locks = Self::locks(who)

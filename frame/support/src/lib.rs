@@ -272,7 +272,7 @@ pub mod traits {
 		fn set_lock(
 			id: LockIdentifier,
 			who: &AccountId,
-			withdraw_lock: LockFor<Self::Balance, Self::Moment>,
+			lock_for: LockFor<Self::Balance, Self::Moment>,
 			reasons: WithdrawReasons,
 		);
 
