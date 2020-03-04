@@ -1,19 +1,3 @@
-// Copyright 2019-2020 Parity Technologies (UK) Ltd.
-// This file is part of Substrate.
-
-// Substrate is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Substrate is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
-
 //! # Phragmen Election Module.
 //!
 //! An election module based on sequential phragmen.
@@ -84,19 +68,19 @@
 
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
-	traits::{ChangeMembers, Currency, Get, LockIdentifier, OnUnbalanced, ReservableCurrency},
+	traits::{BalanceStatus, ChangeMembers, Contains, Currency, Get, OnUnbalanced, ReservableCurrency},
 	weights::SimpleDispatchInfo,
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_phragmen::ExtendedBalance;
 use sp_runtime::{
 	print,
-	traits::{Bounded, Convert, StaticLookup, Zero},
-	DispatchError, DispatchResult,
+	traits::{Convert, StaticLookup, Zero},
+	DispatchError, DispatchResult, Perbill,
 };
 use sp_std::prelude::*;
 
-use darwinia_support::{LockableCurrency, NormalLock, WithdrawLock, WithdrawReason, WithdrawReasons};
+use darwinia_support::balance::lock::*;
 
 const MODULE_ID: LockIdentifier = *b"phrelect";
 
@@ -159,12 +143,12 @@ decl_storage! {
 		pub ElectionRounds get(fn election_rounds): u32 = Zero::zero();
 
 		/// Votes of a particular voter, with the round index of the votes.
-		pub VotesOf get(fn votes_of): linked_map T::AccountId => Vec<T::AccountId>;
+		pub VotesOf get(fn votes_of): linked_map hasher(blake2_256) T::AccountId => Vec<T::AccountId>;
 		/// Locked stake of a voter.
-		pub StakeOf get(fn stake_of): map T::AccountId => BalanceOf<T>;
+		pub StakeOf get(fn stake_of): map hasher(blake2_256) T::AccountId => BalanceOf<T>;
 
-		/// The present candidate list. Sorted based on account id. A current member can never enter
-		/// this vector and is always implicitly assumed to be a candidate.
+		/// The present candidate list. Sorted based on account-id. A current member or a runner can
+		/// never enter this vector and is always implicitly assumed to be a candidate.
 		pub Candidates get(fn candidates): Vec<T::AccountId>;
 	}
 }
@@ -261,10 +245,7 @@ decl_module! {
 			T::Currency::set_lock(
 				MODULE_ID,
 				&who,
-				WithdrawLock::Normal(NormalLock {
-					amount: locked_balance,
-					until: T::BlockNumber::max_value(),
-				}),
+				LockFor::Common { amount: locked_balance },
 				WithdrawReasons::except(WithdrawReason::TransactionPayment),
 			);
 			<StakeOf<T>>::insert(&who, locked_balance);
@@ -316,7 +297,7 @@ decl_module! {
 			let valid = Self::is_defunct_voter(&target);
 			if valid {
 				// reporter will get the voting bond of the target
-				T::Currency::repatriate_reserved(&target, &reporter, T::VotingBond::get())?;
+				T::Currency::repatriate_reserved(&target, &reporter, T::VotingBond::get(), BalanceStatus::Free)?;
 				// remove the target. They are defunct.
 				Self::do_remove_voter(&target, false);
 			} else {
@@ -526,7 +507,7 @@ impl<T: Trait> Module<T> {
 	///
 	/// State: O(1).
 	fn is_voter(who: &T::AccountId) -> bool {
-		<StakeOf<T>>::exists(who)
+		<StakeOf<T>>::contains_key(who)
 	}
 
 	/// Check if `who` is currently an active member.
@@ -540,7 +521,7 @@ impl<T: Trait> Module<T> {
 	///
 	/// Limited number of runners-up. Binary search. Constant time factor. O(1)
 	fn is_runner(who: &T::AccountId) -> bool {
-		Self::runners_up().binary_search_by(|(a, _b)| a.cmp(who)).is_ok()
+		Self::runners_up().iter().position(|(a, _b)| a == who).is_some()
 	}
 
 	/// Returns number of desired members.
@@ -649,7 +630,7 @@ impl<T: Trait> Module<T> {
 		let voters_and_votes = <VotesOf<T>>::enumerate()
 			.map(|(v, i)| (v, i))
 			.collect::<Vec<(T::AccountId, Vec<T::AccountId>)>>();
-		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::CurrencyToVote>(
+		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::CurrencyToVote, Perbill>(
 			num_to_elect,
 			0,
 			candidates,
@@ -678,7 +659,7 @@ impl<T: Trait> Module<T> {
 				.filter_map(|(m, a)| if a.is_zero() { None } else { Some(m) })
 				.collect::<Vec<T::AccountId>>();
 
-			let support_map = sp_phragmen::build_support_map::<_, _, _, T::CurrencyToVote>(
+			let support_map = sp_phragmen::build_support_map::<_, _, _, T::CurrencyToVote, Perbill>(
 				&new_set,
 				&phragmen_result.assignments,
 				Self::locked_stake_of,
@@ -768,21 +749,30 @@ impl<T: Trait> Module<T> {
 	}
 }
 
+impl<T: Trait> Contains<T::AccountId> for Module<T> {
+	fn contains(who: &T::AccountId) -> bool {
+		Self::is_member(who)
+	}
+	fn sorted_members() -> Vec<T::AccountId> {
+		Self::members_ids()
+	}
+}
+
 #[cfg(test)]
 mod tests {
+	use std::cell::RefCell;
+
 	use frame_support::{assert_noop, assert_ok, parameter_types, weights::Weight};
-	use frame_system as system;
 	use sp_core::H256;
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, Block as BlockT, IdentityLookup},
 		BuildStorage, Perbill,
 	};
-	use std::cell::RefCell;
 	use substrate_test_utils::assert_eq_uvec;
 
 	use crate as elections;
-	use darwinia_support::{NormalLock, WithdrawLock};
+	use darwinia_support::balance::lock::LockFor;
 	use elections::*;
 
 	parameter_types! {
@@ -809,24 +799,22 @@ mod tests {
 		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
 		type ModuleToIndex = ();
+		type AccountData = pallet_ring::AccountData<u64>;
+		type OnNewAccount = ();
+		type OnKilledAccount = ();
 	}
 
 	parameter_types! {
-		pub const ExistentialDeposit: u64 = 1;
-		pub const TransferFee: u64 = 0;
-		pub const CreationFee: u64 = 0;
+			pub const ExistentialDeposit: u64 = 1;
 	}
 
-	impl pallet_balances::Trait for Test {
+	impl pallet_ring::Trait for Test {
 		type Balance = u64;
-		type OnFreeBalanceZero = ();
-		type OnNewAccount = ();
-		type TransferPayment = ();
 		type DustRemoval = ();
 		type Event = Event;
 		type ExistentialDeposit = ExistentialDeposit;
-		type TransferFee = TransferFee;
-		type CreationFee = CreationFee;
+		type AccountStore = frame_system::Module<Test>;
+		type TryDropKton = ();
 	}
 
 	parameter_types! {
@@ -944,8 +932,8 @@ mod tests {
 			NodeBlock = Block,
 			UncheckedExtrinsic = UncheckedExtrinsic
 		{
-			System: system::{Module, Call, Event},
-			Balances: pallet_balances::{Module, Call, Event<T>, Config<T>},
+			System: frame_system::{Module, Call, Event<T>},
+			Balances: pallet_ring::{Module, Call, Event<T>, Config<T>},
 			Elections: elections::{Module, Call, Event<T>},
 		}
 	);
@@ -986,7 +974,7 @@ mod tests {
 			TERM_DURATION.with(|v| *v.borrow_mut() = self.term_duration);
 			DESIRED_RUNNERS_UP.with(|v| *v.borrow_mut() = self.desired_runners_up);
 			GenesisConfig {
-				pallet_balances: Some(pallet_balances::GenesisConfig::<Test> {
+				pallet_ring: Some(pallet_ring::GenesisConfig::<Test> {
 					balances: vec![
 						(1, 10 * self.balance_factor),
 						(2, 20 * self.balance_factor),
@@ -995,7 +983,6 @@ mod tests {
 						(5, 50 * self.balance_factor),
 						(6, 60 * self.balance_factor),
 					],
-					vesting: vec![],
 				}),
 			}
 			.build_storage()
@@ -1015,8 +1002,8 @@ mod tests {
 	fn has_lock(who: &u64) -> u64 {
 		let lock = Balances::locks(who)[0].clone();
 		assert_eq!(lock.id, MODULE_ID);
-		match lock.withdraw_lock {
-			WithdrawLock::Normal(NormalLock { amount, .. }) => amount,
+		match &lock.lock_for {
+			LockFor::Common { amount } => *amount,
 			_ => unreachable!(),
 		}
 	}
@@ -1436,7 +1423,7 @@ mod tests {
 
 			assert_ok!(Elections::report_defunct_voter(Origin::signed(5), 3));
 			assert_eq!(
-				System::events()[1].event,
+				System::events()[7].event,
 				Event::elections(RawEvent::VoterReported(3, 5, true))
 			);
 
@@ -1465,7 +1452,7 @@ mod tests {
 
 			assert_ok!(Elections::report_defunct_voter(Origin::signed(5), 4));
 			assert_eq!(
-				System::events()[1].event,
+				System::events()[7].event,
 				Event::elections(RawEvent::VoterReported(4, 5, false))
 			);
 
@@ -1875,7 +1862,7 @@ mod tests {
 			assert_eq!(balances(&5), (45, 2));
 
 			assert_eq!(
-				System::events()[0].event,
+				System::events()[6].event,
 				Event::elections(RawEvent::NewTerm(vec![(4, 40), (5, 50)])),
 			);
 		})
@@ -2084,6 +2071,25 @@ mod tests {
 				Elections::renounce_candidacy(Origin::signed(5)),
 				Error::<Test>::InvalidOrigin,
 			);
+		})
+	}
+
+	#[test]
+	fn behavior_with_dupe_candidate() {
+		ExtBuilder::default().desired_runners_up(2).build().execute_with(|| {
+			<Candidates<Test>>::put(vec![1, 1, 2, 3, 4]);
+
+			assert_ok!(Elections::vote(Origin::signed(5), vec![1], 50));
+			assert_ok!(Elections::vote(Origin::signed(4), vec![4], 40));
+			assert_ok!(Elections::vote(Origin::signed(3), vec![3], 30));
+			assert_ok!(Elections::vote(Origin::signed(2), vec![2], 20));
+
+			System::set_block_number(5);
+			assert_ok!(Elections::end_block(System::block_number()));
+
+			assert_eq!(Elections::members_ids(), vec![1, 4]);
+			assert_eq!(Elections::runners_up_ids(), vec![2, 3]);
+			assert_eq!(Elections::candidates(), vec![]);
 		})
 	}
 }
