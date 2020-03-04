@@ -428,29 +428,24 @@ impl pallet_eth_relay::Trait for Runtime {
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
-	pub const TransferFee: Balance = 1 * MILLI;
-	pub const CreationFee: Balance = 1 * MILLI;
 }
 
 impl pallet_kton::Trait for Runtime {
 	type Balance = Balance;
+	type DustRemoval = ();
 	type Event = Event;
-	type RingCurrency = Ring;
-	type TransferPayment = Ring;
 	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
+	type AccountStore = frame_system::Module<Runtime>;
+	type TryDropRing = Ring;
 }
 
 impl pallet_ring::Trait for Runtime {
 	type Balance = Balance;
-	type OnFreeBalanceZero = ((Staking, Contracts), Session);
-	type OnNewAccount = Indices;
-	type TransferPayment = ();
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
+	type AccountStore = frame_system::Module<Runtime>;
+	type TryDropKton = Kton;
 }
 
 parameter_types! {
