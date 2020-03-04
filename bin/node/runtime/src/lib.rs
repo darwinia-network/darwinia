@@ -79,6 +79,8 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
+type Ring = Balances;
+
 type NegativeImbalance = <Ring as Currency<AccountId>>::NegativeImbalance;
 
 pub type DealWithFees = SplitTwoWays<
@@ -490,7 +492,8 @@ impl pallet_staking::Trait for Runtime {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * COIN;
+	pub const RingProposalBondMinimum: Balance = 1 * COIN;
+	pub const KtonProposalBondMinimum: Balance = 1 * COIN;
 	pub const SpendPeriod: BlockNumber = 1 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(50);
 }
@@ -501,9 +504,11 @@ impl pallet_treasury::Trait for Runtime {
 	type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, CouncilCollective>;
 	type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>;
 	type Event = Event;
-	type ProposalRejection = ();
+	type KtonProposalRejection = ();
+	type RingProposalRejection = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
+	type RingProposalBondMinimum = RingProposalBondMinimum;
+	type KtonProposalBondMinimum = KtonProposalBondMinimum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 }
@@ -539,7 +544,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing,
 		EthRelay: pallet_eth_relay,
 		Kton: pallet_kton,
-		Ring: pallet_ring,
+		Balances: pallet_ring,
 		Staking: pallet_staking,
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 	}

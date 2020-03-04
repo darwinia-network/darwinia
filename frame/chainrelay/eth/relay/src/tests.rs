@@ -141,7 +141,7 @@ fn relay_header() {
 
 		assert_ok!(EthRelay::verify_header(&header2));
 
-		assert_ok!(EthRelay::store_header(&header2));
+		assert_ok!(EthRelay::maybe_store_header(&header2));
 
 
 		// 6760581
@@ -168,6 +168,6 @@ fn relay_header() {
 
 		assert_ok!(EthRelay::verify_header(&header3));
 
-		assert_ok!(EthRelay::store_header(&header3));
+		assert_ok!(EthRelay::maybe_store_header(&header3));
 	});
 }
