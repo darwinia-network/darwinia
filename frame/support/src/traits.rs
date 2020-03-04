@@ -45,6 +45,12 @@ pub trait ExistentialCheck<AccountId, Balance> {
 	fn try_drop(who: &AccountId) -> (bool, Balance);
 }
 
+impl<AccountId, Balance> ExistentialCheck<AccountId, Balance> for () {
+	fn try_drop(_: &AccountId) -> (bool, Balance) {
+		panic!("only for tests")
+	}
+}
+
 /// Callback on eth-backing module
 pub trait OnDepositRedeem<AccountId> {
 	type Balance;
