@@ -1,10 +1,10 @@
 [package]
 name = "ethash"
-description = "An Apache-licensed Ethash implementation."
 version = "0.4.0"
+description = "An Apache-licensed Ethash implementation."
 authors = ["Wei Tang <hi@that.world>"]
-license = "Apache-2.0"
 edition = "2018"
+license = "Apache-2.0"
 
 [dependencies]
 # crates.io
