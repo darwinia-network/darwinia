@@ -162,9 +162,7 @@ use sp_runtime::{
 };
 use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, prelude::*};
 
-use darwinia_support::{
-	BalanceLock, LockFor, LockIdentifier, LockReasons, LockableCurrency, WithdrawReason, WithdrawReasons,
-};
+use darwinia_support::balance::{lock::*, ExistentialCheck};
 use imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
@@ -176,6 +174,9 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
 
 	/// The means of storing the balances of an account.
 	type AccountStore: StoredMap<Self::AccountId, ActiveBalance<Self::Balance>>;
+
+	// TODO: doc
+	type TryDropKton: ExistentialCheck<Self::AccountId, Self::Balance>;
 }
 
 pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
@@ -193,25 +194,30 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
 
 	/// The means of storing the balances of an account.
 	type AccountStore: StoredMap<Self::AccountId, ActiveBalance<Self::Balance>>;
+
+	// TODO: doc
+	type TryDropKton: ExistentialCheck<Self::AccountId, Self::Balance>;
 }
 
 impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 	type Balance = T::Balance;
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type AccountStore = T::AccountStore;
+
+	type TryDropKton = T::TryDropKton;
 }
 
 decl_event!(
 	pub enum Event<T, I: Instance = DefaultInstance>
 	where
 		<T as system::Trait>::AccountId,
-		<T as Trait<I>>::Balance
+		<T as Trait<I>>::Balance,
 	{
 		/// An account was created with some free balance.
 		Endowed(AccountId, Balance),
 		/// An account was removed whose balance was non-zero but below ExistentialDeposit,
 		/// resulting in an outright loss.
-		DustLost(AccountId, Balance),
+		DustLost(AccountId, Balance, Balance),
 		/// Transfer succeeded (from, to, value).
 		Transfer(AccountId, AccountId, Balance),
 		/// A balance was set by root (who, free, reserved).
@@ -542,8 +548,11 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 		let total = new.total();
 		if total < T::ExistentialDeposit::get() {
 			if !total.is_zero() {
-				T::DustRemoval::on_unbalanced(NegativeImbalance::new(total));
-				Self::deposit_event(RawEvent::DustLost(who.clone(), total));
+				let (dropped, dropped_kton) = T::TryDropKton::try_drop(who);
+				if dropped {
+					T::DustRemoval::on_unbalanced(NegativeImbalance::new(total));
+					Self::deposit_event(RawEvent::DustLost(who.clone(), total, dropped_kton));
+				}
 			}
 			None
 		} else {
@@ -810,6 +819,8 @@ impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type Event = ();
 	type ExistentialDeposit = T::ExistentialDeposit;
 	type AccountStore = T::AccountStore;
+
+	type TryDropKton = T::TryDropKton;
 }
 
 impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I>
@@ -1255,6 +1266,7 @@ where
 		Self::update_locks(who, &locks);
 	}
 
+	// TODO: for democracy
 	// // Extend a lock on the balance of `who`.
 	// // Is a no-op if lock amount is zero or `reasons` `is_none()`.
 	// fn extend_lock(id: LockIdentifier, who: &T::AccountId, amount: T::Balance, reasons: WithdrawReasons) {
@@ -1300,5 +1312,20 @@ where
 	fn is_dead_account(who: &T::AccountId) -> bool {
 		// this should always be exactly equivalent to `Self::account(who).total().is_zero()`
 		!T::AccountStore::is_explicit(who)
+	}
+}
+
+impl<T: Trait<I>, I: Instance> ExistentialCheck<T::AccountId, T::Balance> for Module<T, I>
+where
+	T::Balance: MaybeSerializeDeserialize + Debug,
+{
+	fn try_drop(who: &T::AccountId) -> (bool, T::Balance) {
+		let dropped_ring = Self::total_balance(who);
+		let dropped = !dropped_ring.is_zero() && dropped_ring < T::ExistentialDeposit::get();
+		if dropped {
+			T::DustRemoval::on_unbalanced(NegativeImbalance::new(dropped_ring));
+		}
+
+		(dropped, dropped_ring)
 	}
 }
