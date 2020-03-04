@@ -173,7 +173,7 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
 	type ExistentialDeposit: Get<Self::Balance>;
 
 	/// The means of storing the balances of an account.
-	type AccountStore: StoredMap<Self::AccountId, ActiveBalance<Self::Balance>>;
+	type AccountStore: StoredMap<Self::AccountId, AccountData<Self::Balance>>;
 
 	// TODO: doc
 	type TryDropKton: ExistentialCheck<Self::AccountId, Self::Balance>;
@@ -193,7 +193,7 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
 	type ExistentialDeposit: Get<Self::Balance>;
 
 	/// The means of storing the balances of an account.
-	type AccountStore: StoredMap<Self::AccountId, ActiveBalance<Self::Balance>>;
+	type AccountStore: StoredMap<Self::AccountId, AccountData<Self::Balance>>;
 
 	// TODO: doc
 	type TryDropKton: ExistentialCheck<Self::AccountId, Self::Balance>;
@@ -250,7 +250,7 @@ decl_error! {
 
 /// Active balance information for an account.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
-pub struct ActiveBalance<Balance> {
+pub struct AccountData<Balance> {
 	/// Non-reserved part of the balance. There may still be restrictions on this, but it is the
 	/// total pool what may in principle be transferred, reserved and used for tipping.
 	///
@@ -266,13 +266,14 @@ pub struct ActiveBalance<Balance> {
 	pub reserved: Balance,
 }
 
-impl<Balance> ActiveBalance<Balance>
+impl<Balance> AccountData<Balance>
 where
 	Balance: Copy + Ord + Saturating + Zero,
 {
 	/// How much this account's balance can be reduced for the given `reasons`.
 	fn usable(&self, reasons: LockReasons, frozen_balance: FrozenBalance<Balance>) -> Balance {
-		self.free.saturating_sub(FrozenBalance::frozen(reasons, frozen_balance))
+		self.free
+			.saturating_sub(FrozenBalance::frozen_for(reasons, frozen_balance))
 	}
 	/// The total balance in this account including any that is reserved and ignoring any frozen.
 	fn total(&self) -> Balance {
@@ -303,7 +304,7 @@ where
 
 	/// The amount that this account's free balance may not be reduced beyond for the given
 	/// `reasons`.
-	fn frozen(reasons: LockReasons, frozen_balance: Self) -> Balance {
+	fn frozen_for(reasons: LockReasons, frozen_balance: Self) -> Balance {
 		match reasons {
 			LockReasons::All => frozen_balance.misc.max(frozen_balance.fee),
 			LockReasons::Misc => frozen_balance.misc,
@@ -328,7 +329,7 @@ decl_storage! {
 		/// is ever zero, then the entry *MUST* be removed.
 		///
 		/// NOTE: This is only used in the case that this module is used to store balances.
-		pub Account: map hasher(blake2_256) T::AccountId => ActiveBalance<T::Balance>;
+		pub Account: map hasher(blake2_256) T::AccountId => AccountData<T::Balance>;
 
 		/// Any liquidity locks on some account balances.
 		/// NOTE: Should only be accessed when setting, changing and freeing a lock.
@@ -349,7 +350,7 @@ decl_storage! {
 				)
 			}
 			for &(ref who, free) in config.balances.iter() {
-				T::AccountStore::insert(who, ActiveBalance {
+				T::AccountStore::insert(who, AccountData {
 					free,
 					..Default::default()
 				});
@@ -534,7 +535,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	}
 
 	/// Get both the free and reserved balances of an account.
-	fn account(who: &T::AccountId) -> ActiveBalance<T::Balance> {
+	fn account(who: &T::AccountId) -> AccountData<T::Balance> {
 		T::AccountStore::get(&who)
 	}
 
@@ -544,7 +545,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// Returns the final free balance, iff the account was previously of total balance zero, known
 	/// as its "endowment".
-	fn post_mutation(who: &T::AccountId, new: ActiveBalance<T::Balance>) -> Option<ActiveBalance<T::Balance>> {
+	fn post_mutation(who: &T::AccountId, new: AccountData<T::Balance>) -> Option<AccountData<T::Balance>> {
 		let total = new.total();
 		if total < T::ExistentialDeposit::get() {
 			if !total.is_zero() {
@@ -568,7 +569,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	///
 	/// NOTE: LOW-LEVEL: This will not attempt to maintain total issuance. It is expected that
 	/// the caller will do this.
-	fn mutate_account<R>(who: &T::AccountId, f: impl FnOnce(&mut ActiveBalance<T::Balance>) -> R) -> R {
+	fn mutate_account<R>(who: &T::AccountId, f: impl FnOnce(&mut AccountData<T::Balance>) -> R) -> R {
 		Self::try_mutate_account(who, |a| -> Result<R, Infallible> { Ok(f(a)) }).expect("Error is infallible; qed")
 	}
 
@@ -583,7 +584,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	/// the caller will do this.
 	fn try_mutate_account<R, E>(
 		who: &T::AccountId,
-		f: impl FnOnce(&mut ActiveBalance<T::Balance>) -> Result<R, E>,
+		f: impl FnOnce(&mut AccountData<T::Balance>) -> Result<R, E>,
 	) -> Result<R, E> {
 		T::AccountStore::try_mutate_exists(who, |maybe_account| {
 			let mut account = maybe_account.take().unwrap_or_default();
@@ -903,7 +904,7 @@ where
 		if amount.is_zero() {
 			return Ok(());
 		}
-		let min_balance = FrozenBalance::frozen(reasons.into(), Self::frozen_balance(who.borrow()));
+		let min_balance = FrozenBalance::frozen_for(reasons.into(), Self::frozen_balance(who.borrow()));
 		ensure!(new_balance >= min_balance, Error::<T, I>::LiquidityRestrictions);
 		Ok(())
 	}
