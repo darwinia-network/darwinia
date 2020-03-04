@@ -1,8 +1,12 @@
 [package]
 name = "darwinia-ring"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "FRAME pallet to manage RING"
 
 [dependencies]
 # crates.io
@@ -10,18 +14,18 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 # darwinia
 darwinia-support = { default-features = false, path = "../../support" }
 
 [dev-dependencies]
-sp-core = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-io = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-pallet-transaction-payment = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [features]
 default = ["std"]
@@ -31,6 +35,7 @@ std = [
 
 	"frame-support/std",
 	"frame-system/std",
+
 	"sp-runtime/std",
 	"sp-std/std",
 
