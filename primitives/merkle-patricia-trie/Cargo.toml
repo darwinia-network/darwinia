@@ -1,10 +1,12 @@
 [package]
 name = "merkle-patricia-trie"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "Merkle-Patricia Trie (Ethereum Style)"
 
 [dependencies]
 # crates.io
@@ -13,7 +15,8 @@ hashbrown = { version = "0.6.0" }
 # github.com
 hash = { package = "keccak-hash", default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [dev-dependencies]
 criterion = "0.2.10"
