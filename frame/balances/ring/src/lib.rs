@@ -548,14 +548,17 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 	fn post_mutation(who: &T::AccountId, new: AccountData<T::Balance>) -> Option<AccountData<T::Balance>> {
 		let total = new.total();
 		if total < T::ExistentialDeposit::get() {
-			if !total.is_zero() {
-				let (dropped, dropped_kton) = T::TryDropKton::try_drop(who);
-				if dropped {
+			let (dropped, dropped_kton) = T::TryDropKton::try_drop(who);
+			if dropped {
+				if !total.is_zero() {
 					T::DustRemoval::on_unbalanced(NegativeImbalance::new(total));
-					Self::deposit_event(RawEvent::DustLost(who.clone(), total, dropped_kton));
 				}
+				Self::deposit_event(RawEvent::DustLost(who.clone(), total, dropped_kton));
+
+				None
+			} else {
+				Some(new)
 			}
-			None
 		} else {
 			Some(new)
 		}
