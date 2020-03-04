@@ -165,7 +165,7 @@ use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, prelude:
 use darwinia_support::balance::{lock::*, ExistentialCheck};
 use imbalances::{NegativeImbalance, PositiveImbalance};
 
-pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
+pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait {
 	/// The balance of an account.
 	type Balance: Parameter + Member + AtLeast32Bit + Codec + Default + Copy + MaybeSerializeDeserialize + Debug;
 
@@ -179,7 +179,7 @@ pub trait Subtrait<I: Instance = DefaultInstance>: system::Trait {
 	type TryDropKton: ExistentialCheck<Self::AccountId, Self::Balance>;
 }
 
-pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
+pub trait Trait<I: Instance = DefaultInstance>: frame_system::Trait {
 	/// The balance of an account.
 	type Balance: Parameter + Member + AtLeast32Bit + Codec + Default + Copy + MaybeSerializeDeserialize + Debug;
 
@@ -187,7 +187,7 @@ pub trait Trait<I: Instance = DefaultInstance>: system::Trait {
 	type DustRemoval: OnUnbalanced<NegativeImbalance<Self, I>>;
 
 	/// The overarching event type.
-	type Event: From<Event<Self, I>> + Into<<Self as system::Trait>::Event>;
+	type Event: From<Event<Self, I>> + Into<<Self as frame_system::Trait>::Event>;
 
 	/// The minimum amount required to keep an account open.
 	type ExistentialDeposit: Get<Self::Balance>;
@@ -210,7 +210,7 @@ impl<T: Trait<I>, I: Instance> Subtrait<I> for T {
 decl_event!(
 	pub enum Event<T, I: Instance = DefaultInstance>
 	where
-		<T as system::Trait>::AccountId,
+		<T as frame_system::Trait>::AccountId,
 		<T as Trait<I>>::Balance,
 	{
 		/// An account was created with some free balance.
@@ -411,7 +411,7 @@ decl_module! {
 		/// This will alter `FreeBalance` and `ReservedBalance` in storage. it will
 		/// also decrease the total issuance of the system (`TotalIssuance`).
 		/// If the new free or reserved balance is below the existential deposit,
-		/// it will reset the account nonce (`system::AccountNonce`).
+		/// it will reset the account nonce (`frame_system::AccountNonce`).
 		///
 		/// The dispatch origin for this call is `root`.
 		///
@@ -499,7 +499,7 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 
 	/// Get the frozen balance of an account.
 	fn frozen_balance(who: impl Borrow<T::AccountId>) -> FrozenBalance<T::Balance> {
-		let now = <system::Module<T>>::block_number();
+		let now = <frame_system::Module<T>>::block_number();
 		let mut frozen_balance = <FrozenBalance<T::Balance>>::zero();
 		for lock in Self::locks(who.borrow()).iter() {
 			let locked_amount = match &lock.lock_for {
@@ -614,12 +614,12 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 			if existed {
 				// TODO: use Locks::<T, I>::hashed_key
 				// https://github.com/paritytech/substrate/issues/4969
-				system::Module::<T>::dec_ref(who);
+				frame_system::Module::<T>::dec_ref(who);
 			}
 		} else {
 			Locks::<T, I>::insert(who, locks);
 			if !existed {
-				system::Module::<T>::inc_ref(who);
+				frame_system::Module::<T>::inc_ref(who);
 			}
 		}
 	}
@@ -796,7 +796,7 @@ impl<T: Subtrait<I>, I: Instance> PartialEq for ElevatedTrait<T, I> {
 	}
 }
 impl<T: Subtrait<I>, I: Instance> Eq for ElevatedTrait<T, I> {}
-impl<T: Subtrait<I>, I: Instance> system::Trait for ElevatedTrait<T, I> {
+impl<T: Subtrait<I>, I: Instance> frame_system::Trait for ElevatedTrait<T, I> {
 	type Origin = T::Origin;
 	type Call = T::Call;
 	type Index = T::Index;
@@ -941,7 +941,7 @@ where
 				Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer.into(), from_account.free)?;
 
 				let allow_death = existence_requirement == ExistenceRequirement::AllowDeath;
-				let allow_death = allow_death && system::Module::<T>::allow_death(transactor);
+				let allow_death = allow_death && frame_system::Module::<T>::allow_death(transactor);
 				ensure!(allow_death || from_account.free >= ed, Error::<T, I>::KeepAlive);
 
 				Ok(())
@@ -1249,7 +1249,7 @@ where
 	) {
 		if match &lock_for {
 			LockFor::Common { amount } => *amount,
-			LockFor::Staking(staking_lock) => staking_lock.locked_amount(<system::Module<T>>::block_number()),
+			LockFor::Staking(staking_lock) => staking_lock.locked_amount(<frame_system::Module<T>>::block_number()),
 		}
 		.is_zero() || reasons.is_none()
 		{
