@@ -1,7 +1,5 @@
 //! Tests for phragmen.
 
-#![cfg(test)]
-
 use sp_runtime::Perbill;
 use substrate_test_utils::assert_eq_uvec;
 

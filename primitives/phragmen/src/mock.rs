@@ -1,7 +1,5 @@
 //! Mock file for phragmen.
 
-#![cfg(test)]
-
 use sp_runtime::{assert_eq_error_rate, traits::Member, PerThing, Perbill};
 use sp_std::collections::btree_map::BTreeMap;
 
