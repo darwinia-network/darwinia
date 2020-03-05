@@ -14,11 +14,11 @@ use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 
-use ethash::{EthereumPatch, LightDAG};
-use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
-use sp_eth_primitives::{
+use eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
 };
+use ethash::{EthereumPatch, LightDAG};
+use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
 
@@ -54,16 +54,16 @@ decl_storage! {
 		/// Hash of best block header
 		pub BestHeaderHash get(fn best_header_hash): H256;
 
-		pub CanonicalHeaderHashOf get(canonical_header_hash_of): map u64 => H256;
+		pub CanonicalHeaderHashOf get(fn canonical_header_hash_of): map hasher(blake2_256) u64 => H256;
 
-		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
+		pub HeaderOf get(fn header_of): map hasher(blake2_256) H256 => Option<EthHeader>;
 
-		pub HeaderInfoOf get(header_info_of): map H256 => Option<HeaderInfo>;
+		pub HeaderInfoOf get(fn header_info_of): map hasher(blake2_256) H256 => Option<HeaderInfo>;
 
 		/// Number of blocks finality
-		pub NumberOfBlocksFinality get(number_of_blocks_finality) config(): u64 = 30;
+		pub NumberOfBlocksFinality get(fn number_of_blocks_finality) config(): u64 = 30;
 
-		pub NumberOfBlocksSafe get(number_of_blocks_safe) config(): u64 = 10;
+		pub NumberOfBlocksSafe get(fn number_of_blocks_safe) config(): u64 = 10;
 
 		pub CheckAuthorities get(fn check_authorities) config(): bool = true;
 		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
@@ -109,7 +109,7 @@ decl_module! {
 
 			let header_hash = header.hash();
 
-			ensure!(! HeaderInfoOf::get(&header_hash).is_some(), "The header is already known.");
+			ensure!(!HeaderInfoOf::get(&header_hash).is_some(), "The header is already known.");
 
 //			let best_header_hash = Self::best_header_hash();
 //			if self.best_header_hash == Default::default() {
@@ -216,7 +216,7 @@ impl<T: Trait> Module<T> {
 		loop {
 			// If the current block hash is 0 (unlikely), or the previous hash matches the
 			// current hash, then we chains converged and can stop now.
-			if !CanonicalHeaderHashOf::exists(&number) {
+			if !CanonicalHeaderHashOf::contains_key(&number) {
 				break;
 			}
 

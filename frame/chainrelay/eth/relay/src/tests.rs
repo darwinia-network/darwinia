@@ -1,13 +1,14 @@
-//! Tests for the module.
+//! Tests for eth-relay.
+
 use std::str::FromStr;
 
-use frame_support::assert_ok;
-use hex_literal::hex;
-use rustc_hex::FromHex;
-use sp_eth_primitives::{
+use eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
 	Bloom, EthAddress, H64, U128,
 };
+use frame_support::assert_ok;
+use hex_literal::hex;
+use rustc_hex::FromHex;
 
 use crate::{mock::*, *};
 

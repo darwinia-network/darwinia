@@ -1,4 +1,4 @@
-//! Test utilities
+//! Mock file for eth-relay.
 
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
 use sp_core::H256;
@@ -6,6 +6,7 @@ use sp_runtime::{testing::Header, traits::IdentityLookup, Perbill};
 
 use crate::*;
 
+pub type AccountId = u64;
 pub type BlockNumber = u64;
 
 pub type System = system::Module<Test>;
@@ -25,14 +26,14 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl system::Trait for Test {
+impl frame_system::Trait for Test {
 	type Origin = Origin;
 	type Call = ();
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
-	type Hashing = ::sp_runtime::traits::BlakeTwo256;
-	type AccountId = u64;
+	type Hashing = sp_runtime::traits::BlakeTwo256;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = ();
@@ -42,6 +43,9 @@ impl system::Trait for Test {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 	type ModuleToIndex = ();
+	type AccountData = ();
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
 }
 
 parameter_types! {
