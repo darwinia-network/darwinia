@@ -1,10 +1,12 @@
 [package]
 name = "darwinia-eth-backing"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "FRAME pallet to backing Ethereum assets"
 
 [dependencies]
 # crates.io
@@ -13,26 +15,31 @@ serde = { version = "1.0.101", optional = true }
 
 # github.com
 ethabi = { default-features = false, git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std" }
-frame-support = { version = "2.0.0", default-features = false , git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-core = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+
+frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 # darwinia
 darwinia-eth-relay = { default-features = false, path = "../relay" }
 darwinia-support = { default-features = false, path = "../../../support" }
-sp-eth-primitives = { default-features = false, path = "../../../../primitives/sp-eth-primitives" }
+
+eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
 
 [dev-dependencies]
 hex-literal = "0.2.1"
 rustc-hex = "2.0"
 
-pallet-session = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
-sp-io = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-phragmen = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
-sp-staking = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop"}
+
+pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
+
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-phragmen = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
+sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
 
 kton = { package = "darwinia-kton", path = "../../../balances/kton" }
 ring = { package = "darwinia-ring", path = '../../../balances/ring' }
@@ -53,5 +60,6 @@ std = [
 
 	"darwinia-support/std",
 	"darwinia-eth-relay/std",
-	"sp-eth-primitives/std",
+
+	"eth-primitives/std",
 ]
