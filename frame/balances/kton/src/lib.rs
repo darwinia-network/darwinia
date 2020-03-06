@@ -517,18 +517,6 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 		frozen_balance
 	}
 
-	/// Get the balance of an account that can be used for transfers, reservations, or any other
-	/// non-locking, non-transaction-fee activity. Will be at most `free_balance`.
-	pub fn usable_balance(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(LockReasons::Misc, Self::frozen_balance(who.borrow()))
-	}
-
-	/// Get the balance of an account that can be used for paying transaction fees (not tipping,
-	/// or any other kind of fees, though). Will be at most `free_balance`.
-	pub fn usable_balance_for_fees(who: impl Borrow<T::AccountId>) -> T::Balance {
-		Self::account(who.borrow()).usable(LockReasons::Fee, Self::frozen_balance(who.borrow()))
-	}
-
 	/// Get the reserved balance of an account.
 	pub fn reserved_balance(who: impl Borrow<T::AccountId>) -> T::Balance {
 		Self::account(who.borrow()).reserved
@@ -614,12 +602,12 @@ impl<T: Trait<I>, I: Instance> Module<T, I> {
 			if existed {
 				// TODO: use Locks::<T, I>::hashed_key
 				// https://github.com/paritytech/substrate/issues/4969
-				frame_system::Module::<T>::dec_ref(who);
+				<frame_system::Module<T>>::dec_ref(who);
 			}
 		} else {
 			Locks::<T, I>::insert(who, locks);
 			if !existed {
-				frame_system::Module::<T>::inc_ref(who);
+				<frame_system::Module<T>>::inc_ref(who);
 			}
 		}
 	}
@@ -941,7 +929,7 @@ where
 				Self::ensure_can_withdraw(transactor, value, WithdrawReason::Transfer.into(), from_account.free)?;
 
 				let allow_death = existence_requirement == ExistenceRequirement::AllowDeath;
-				let allow_death = allow_death && frame_system::Module::<T>::allow_death(transactor);
+				let allow_death = allow_death && <frame_system::Module<T>>::allow_death(transactor);
 				ensure!(allow_death || from_account.free >= ed, Error::<T, I>::KeepAlive);
 
 				Ok(())
@@ -1306,6 +1294,18 @@ where
 		let mut locks = Self::locks(who);
 		locks.retain(|l| l.id != id);
 		Self::update_locks(who, &locks);
+	}
+
+	/// Get the balance of an account that can be used for transfers, reservations, or any other
+	/// non-locking, non-transaction-fee activity. Will be at most `free_balance`.
+	fn usable_balance(who: &T::AccountId) -> Self::Balance {
+		Self::account(who).usable(LockReasons::Misc, Self::frozen_balance(who))
+	}
+
+	/// Get the balance of an account that can be used for paying transaction fees (not tipping,
+	/// or any other kind of fees, though). Will be at most `free_balance`.
+	fn usable_balance_for_fees(who: &T::AccountId) -> Self::Balance {
+		Self::account(who).usable(LockReasons::Fee, Self::frozen_balance(who))
 	}
 }
 
