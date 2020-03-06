@@ -1,20 +1,35 @@
 [package]
 name = "node-rpc"
-version = "2.0.0"
+version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "Darwinia node rpc"
 
 [dependencies]
 # crates.io
 jsonrpc-core = "14.0.3"
 
 # github.com
-pallet-contracts-rpc = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-pallet-transaction-payment-rpc = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sc-client = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-runtime = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-transaction-pool = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-substrate-frame-rpc-system = { version = "2.0.0", git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+pallet-contracts-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-consensus= { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-consensus-babe-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-consensus-epochs = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-keystore = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sp-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-blockchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+substrate-frame-rpc-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 # darwinia
 node-primitives = { path = "../primitives" }
