@@ -3,7 +3,7 @@ use ethbloom::Bloom;
 use keccak_hash::{keccak, KECCAK_EMPTY_LIST_RLP, KECCAK_NULL_RLP};
 use rlp::{Decodable, DecoderError, Encodable, Rlp, RlpStream};
 use sp_runtime::RuntimeDebug;
-use sp_std::{vec, vec::Vec};
+use sp_std::prelude::*;
 
 use crate::*;
 

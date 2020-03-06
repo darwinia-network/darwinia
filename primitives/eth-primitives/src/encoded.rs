@@ -1,4 +1,4 @@
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header(Vec<u8>);

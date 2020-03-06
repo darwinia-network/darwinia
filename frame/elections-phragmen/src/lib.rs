@@ -223,20 +223,20 @@ decl_module! {
 			// addition is valid: candidates and members never overlap.
 			let allowed_votes = candidates_count + members_count;
 
-			ensure!(!allowed_votes.is_zero(), Error::<T>::UnableToVote);
-			ensure!(votes.len() <= allowed_votes, Error::<T>::TooManyVotes);
-			ensure!(votes.len() <= MAXIMUM_VOTE, Error::<T>::MaximumVotesExceeded);
-			ensure!(!votes.is_empty(), Error::<T>::NoVotes);
+			ensure!(!allowed_votes.is_zero(), <Error<T>>::UnableToVote);
+			ensure!(votes.len() <= allowed_votes, <Error<T>>::TooManyVotes);
+			ensure!(votes.len() <= MAXIMUM_VOTE, <Error<T>>::MaximumVotesExceeded);
+			ensure!(!votes.is_empty(), <Error<T>>::NoVotes);
 
 			ensure!(
 				value > T::Currency::minimum_balance(),
-				Error::<T>::LowBalance,
+				<Error<T>>::LowBalance,
 			);
 
 			if !Self::is_voter(&who) {
 				// first time voter. Reserve bond.
 				T::Currency::reserve(&who, T::VotingBond::get())
-					.map_err(|_| Error::<T>::UnableToPayBond)?;
+					.map_err(|_| <Error<T>>::UnableToPayBond)?;
 			}
 			// Amount to be locked up.
 			let locked_balance = value.min(T::Currency::total_balance(&who));
@@ -263,7 +263,7 @@ decl_module! {
 		fn remove_voter(origin) {
 			let who = ensure_signed(origin)?;
 
-			ensure!(Self::is_voter(&who), Error::<T>::MustBeVoter);
+			ensure!(Self::is_voter(&who), <Error<T>>::MustBeVoter);
 
 			Self::do_remove_voter(&who, true);
 		}
@@ -286,8 +286,8 @@ decl_module! {
 			let reporter = ensure_signed(origin)?;
 			let target = T::Lookup::lookup(target)?;
 
-			ensure!(reporter != target, Error::<T>::ReportSelf);
-			ensure!(Self::is_voter(&reporter), Error::<T>::MustBeVoter);
+			ensure!(reporter != target, <Error<T>>::ReportSelf);
+			ensure!(Self::is_voter(&reporter), <Error<T>>::MustBeVoter);
 
 			// Checking if someone is a candidate and a member here is O(LogN), making the whole
 			// function O(MLonN) with N candidates in total and M of them being voted by `target`.
@@ -329,15 +329,15 @@ decl_module! {
 			let who = ensure_signed(origin)?;
 
 			let is_candidate = Self::is_candidate(&who);
-			ensure!(is_candidate.is_err(), Error::<T>::DuplicatedCandidate);
+			ensure!(is_candidate.is_err(), <Error<T>>::DuplicatedCandidate);
 			// assured to be an error, error always contains the index.
 			let index = is_candidate.unwrap_err();
 
-			ensure!(!Self::is_member(&who), Error::<T>::MemberSubmit);
-			ensure!(!Self::is_runner(&who), Error::<T>::RunnerSubmit);
+			ensure!(!Self::is_member(&who), <Error<T>>::MemberSubmit);
+			ensure!(!Self::is_runner(&who), <Error<T>>::RunnerSubmit);
 
 			T::Currency::reserve(&who, T::CandidacyBond::get())
-				.map_err(|_| Error::<T>::InsufficientCandidateFunds)?;
+				.map_err(|_| <Error<T>>::InsufficientCandidateFunds)?;
 
 			<Candidates<T>>::mutate(|c| c.insert(index, who));
 		}
@@ -394,7 +394,7 @@ decl_module! {
 				return Ok(());
 			}
 
-			Err(Error::<T>::InvalidOrigin)?
+			Err(<Error<T>>::InvalidOrigin)?
 		}
 
 		/// Remove a particular member from the set. This is effective immediately and the bond of
@@ -491,7 +491,7 @@ impl<T: Trait> Module<T> {
 			}
 			result
 		} else {
-			Err(Error::<T>::NotMember)?
+			Err(<Error<T>>::NotMember)?
 		}
 	}
 

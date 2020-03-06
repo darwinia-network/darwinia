@@ -573,7 +573,7 @@ decl_module! {
 
 			let tip = <Tips<T>>::get(hash).ok_or(<Error<T>>::UnknownTip)?;
 			let n = tip.closes.as_ref().ok_or(<Error<T>>::StillOpen)?;
-			ensure!(<system::Module<T>>::block_number() >= *n, <Error<T>>::Premature);
+			ensure!(<frame_system::Module<T>>::block_number() >= *n, <Error<T>>::Premature);
 			// closed.
 			<Reasons<T>>::remove(&tip.reason);
 			<Tips<T>>::remove(hash);
@@ -625,7 +625,7 @@ impl<T: Trait> Module<T> {
 		Self::retain_active_tips(&mut tip.tips);
 		let threshold = (T::Tippers::count() + 1) / 2;
 		if tip.tips.len() >= threshold && tip.closes.is_none() {
-			tip.closes = Some(<system::Module<T>>::block_number() + T::TipCountdown::get());
+			tip.closes = Some(<frame_system::Module<T>>::block_number() + T::TipCountdown::get());
 			true
 		} else {
 			false

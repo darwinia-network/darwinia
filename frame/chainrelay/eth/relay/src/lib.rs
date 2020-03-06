@@ -1,4 +1,4 @@
-//!  prototype module for bridging in ethereum pow blockchain, including mainet and ropsten
+//! prototype module for bridging in ethereum pow blockchain, including mainet and ropsten.
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -12,7 +12,7 @@ use codec::{Decode, Encode};
 use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get};
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::RuntimeDebug;
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
 use eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
