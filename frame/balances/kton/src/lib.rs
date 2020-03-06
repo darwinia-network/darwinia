@@ -141,7 +141,7 @@
 // mod tests;
 // mod benchmarking;
 
-use codec::{Codec, Decode, Encode};
+use codec::Codec;
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
 	traits::{
@@ -158,11 +158,11 @@ use sp_runtime::{
 		AtLeast32Bit, Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, Saturating, StaticLookup,
 		Zero,
 	},
-	DispatchError, DispatchResult, RuntimeDebug,
+	DispatchError, DispatchResult,
 };
 use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, prelude::*};
 
-use darwinia_support::balance::{lock::*, ExistentialCheck};
+use darwinia_support::balance::{lock::*, *};
 use imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait {
@@ -245,71 +245,6 @@ decl_error! {
 		ExistingVestingSchedule,
 		/// Beneficiary account must pre-exist
 		DeadAccount,
-	}
-}
-
-/// Active balance information for an account.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
-pub struct AccountData<Balance> {
-	/// Non-reserved part of the balance. There may still be restrictions on this, but it is the
-	/// total pool what may in principle be transferred, reserved and used for tipping.
-	///
-	/// This is the only balance that matters in terms of most operations on tokens. It
-	/// alone is used to determine the balance when in the contract execution environment.
-	pub free: Balance,
-	/// Balance which is reserved and may not be used at all.
-	///
-	/// This can still get slashed, but gets slashed last of all.
-	///
-	/// This balance is a 'reserve' balance that other subsystems use in order to set aside tokens
-	/// that are still 'owned' by the account holder, but which are suspendable.
-	pub reserved: Balance,
-}
-
-impl<Balance> AccountData<Balance>
-where
-	Balance: Copy + Ord + Saturating + Zero,
-{
-	/// How much this account's balance can be reduced for the given `reasons`.
-	fn usable(&self, reasons: LockReasons, frozen_balance: FrozenBalance<Balance>) -> Balance {
-		self.free
-			.saturating_sub(FrozenBalance::frozen_for(reasons, frozen_balance))
-	}
-	/// The total balance in this account including any that is reserved and ignoring any frozen.
-	fn total(&self) -> Balance {
-		self.free.saturating_add(self.reserved)
-	}
-}
-
-/// Frozen balance information for an account.
-pub struct FrozenBalance<Balance> {
-	/// The amount that `free` may not drop below when withdrawing specifically for transaction
-	/// fee payment.
-	fee: Balance,
-	/// The amount that `free` may not drop below when withdrawing for *anything except transaction
-	/// fee payment*.
-	misc: Balance,
-}
-
-impl<Balance> FrozenBalance<Balance>
-where
-	Balance: Copy + Ord + Zero,
-{
-	fn zero() -> Self {
-		Self {
-			fee: Zero::zero(),
-			misc: Zero::zero(),
-		}
-	}
-
-	/// The amount that this account's free balance may not be reduced beyond for the given
-	/// `reasons`.
-	fn frozen_for(reasons: LockReasons, frozen_balance: Self) -> Balance {
-		match reasons {
-			LockReasons::All => frozen_balance.misc.max(frozen_balance.fee),
-			LockReasons::Misc => frozen_balance.misc,
-			LockReasons::Fee => frozen_balance.fee,
-		}
 	}
 }
 
