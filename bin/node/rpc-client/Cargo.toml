@@ -2,11 +2,11 @@
 name = "node-rpc-client"
 version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node rpc client"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
-description = "Darwinia node rpc client"
 
 [dependencies]
 # crates.io

@@ -2,11 +2,11 @@
 name = "merkle-patricia-trie"
 version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Merkle-Patricia Trie (Ethereum Style)"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
-description = "Merkle-Patricia Trie (Ethereum Style)"
 
 [dependencies]
 # crates.io
