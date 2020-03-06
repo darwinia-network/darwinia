@@ -9,7 +9,7 @@ use crate::*;
 pub type AccountId = u64;
 pub type BlockNumber = u64;
 
-pub type System = system::Module<Test>;
+pub type System = frame_system::Module<Test>;
 
 pub type EthRelay = Module<Test>;
 

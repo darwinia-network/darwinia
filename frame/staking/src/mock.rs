@@ -26,7 +26,7 @@ pub type AccountId = u64;
 pub type BlockNumber = u64;
 pub type Balance = u128;
 
-pub type System = system::Module<Test>;
+pub type System = frame_system::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;
 

@@ -122,14 +122,14 @@ fn basic_setup_works() {
 				active_ring: 1000,
 				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: Vec::new(),
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -141,14 +141,14 @@ fn basic_setup_works() {
 				active_ring: 1000,
 				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: Vec::new(),
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -172,14 +172,14 @@ fn basic_setup_works() {
 				active_ring: 500,
 				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: Vec::new(),
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 500,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -467,14 +467,14 @@ fn staking_should_work() {
 					active_ring: 1500,
 					active_deposit_ring: 0,
 					active_kton: 0,
-					deposit_items: Vec::new(),
+					deposit_items: vec![],
 					ring_staking_lock: StakingLock {
 						staking_amount: 1500,
-						unbondings: Vec::new()
+						unbondings: vec![]
 					},
 					kton_staking_lock: StakingLock {
 						staking_amount: 0,
-						unbondings: Vec::new()
+						unbondings: vec![]
 					}
 				})
 			);
@@ -1104,14 +1104,14 @@ fn reward_destination_works() {
 				active_ring: 1000,
 				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: Vec::new(),
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -1137,14 +1137,14 @@ fn reward_destination_works() {
 		//		active_ring: 1000 + total_payout_0,
 		//		active_deposit_ring: 0,
 		//		active_kton: 0,
-		//		deposit_items: Vec::new(),
+		//		deposit_items: vec![],
 		//		ring_staking_lock: StakingLock {
 		//			staking_amount: 1000 + total_payout_0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		},
 		//		kton_staking_lock: StakingLock {
 		//			staking_amount: 0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		}
 		//	})
 		//);
@@ -1173,14 +1173,14 @@ fn reward_destination_works() {
 		//		active_ring: 1000 + total_payout_0,
 		//		active_deposit_ring: 0,
 		//		active_kton: 0,
-		//		deposit_items: Vec::new(),
+		//		deposit_items: vec![],
 		//		ring_staking_lock: StakingLock {
 		//			staking_amount: 1000 + total_payout_0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		},
 		//		kton_staking_lock: StakingLock {
 		//			staking_amount: 0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		}
 		//	})
 		//);
@@ -1210,14 +1210,14 @@ fn reward_destination_works() {
 		//		active_ring: 1000 + total_payout_0,
 		//		active_deposit_ring: 0,
 		//		active_kton: 0,
-		//		deposit_items: Vec::new(),
+		//		deposit_items: vec![],
 		//		ring_staking_lock: StakingLock {
 		//			staking_amount: 1000 + total_payout_0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		},
 		//		kton_staking_lock: StakingLock {
 		//			staking_amount: 0,
-		//			unbondings: Vec::new()
+		//			unbondings: vec![]
 		//		}
 		//	})
 		//);
@@ -1309,14 +1309,14 @@ fn bond_extra_works() {
 				active_ring: 1000,
 				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: Vec::new(),
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -1345,11 +1345,11 @@ fn bond_extra_works() {
 				}],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + 100,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);
@@ -1375,11 +1375,11 @@ fn bond_extra_works() {
 				}],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000000,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: Vec::new()
+					unbondings: vec![]
 				}
 			})
 		);

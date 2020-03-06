@@ -1,109 +1,9 @@
-use crate::*;
-use frame_support::{assert_noop, assert_ok, impl_outer_origin, parameter_types, weights::Weight};
-use sp_core::H256;
-use sp_runtime::{
-	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup, OnFinalize},
-	Perbill,
-};
+//! Tests for treasury.
 
-type Ring = darwinia_ring::Module<Test>;
-type Kton = darwinia_kton::Module<Test>;
-type Treasury = Module<Test>;
+use frame_support::{assert_noop, assert_ok};
+use sp_runtime::traits::OnFinalize;
 
-impl_outer_origin! {
-	pub enum Origin for Test  where system = frame_system {}
-}
-
-#[derive(Clone, Eq, PartialEq)]
-pub struct Test;
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
-	pub const MaximumBlockLength: u32 = 2 * 1024;
-	pub const AvailableBlockRatio: Perbill = Perbill::one();
-}
-impl frame_system::Trait for Test {
-	type Origin = Origin;
-	type Call = ();
-	type Index = u64;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
-	type AccountId = u64;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = ();
-	type BlockHashCount = BlockHashCount;
-	type MaximumBlockWeight = MaximumBlockWeight;
-	type MaximumBlockLength = MaximumBlockLength;
-	type AvailableBlockRatio = AvailableBlockRatio;
-	type Version = ();
-	type ModuleToIndex = ();
-}
-parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
-	pub const TransferFee: u64 = 0;
-	pub const CreationFee: u64 = 0;
-}
-impl darwinia_kton::Trait for Test {
-	type Balance = u64;
-	type Event = ();
-	type RingCurrency = Ring;
-	type TransferPayment = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-}
-impl darwinia_ring::Trait for Test {
-	type Balance = u64;
-	type OnFreeBalanceZero = ();
-	type OnNewAccount = ();
-	type TransferPayment = ();
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
-}
-parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const RingProposalBondMinimum: u64 = 1;
-	pub const KtonProposalBondMinimum: u64 = 1;
-	pub const SpendPeriod: u64 = 2;
-	pub const Burn: Permill = Permill::from_percent(50);
-}
-impl Trait for Test {
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type ApproveOrigin = frame_system::EnsureRoot<u64>;
-	type RejectOrigin = frame_system::EnsureRoot<u64>;
-	type Event = ();
-	type KtonProposalRejection = ();
-	type RingProposalRejection = ();
-	type ProposalBond = ProposalBond;
-	type RingProposalBondMinimum = RingProposalBondMinimum;
-	type KtonProposalBondMinimum = KtonProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
-	type Burn = Burn;
-}
-
-fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	let _ = darwinia_ring::GenesisConfig::<Test> {
-		// Total issuance will be 200 with treasury account initialized at ED.
-		balances: vec![(0, 100), (1, 98), (2, 1)],
-		vesting: vec![],
-	}
-	.assimilate_storage(&mut t);
-	let _ = darwinia_kton::GenesisConfig::<Test> {
-		// Total issuance will be 200 with treasury account initialized at ED.
-		balances: vec![(0, 100), (1, 98), (2, 1)],
-		vesting: vec![],
-	}
-	.assimilate_storage(&mut t);
-	let _ = GenesisConfig::default().assimilate_storage::<Test>(&mut t);
-	t.into()
-}
+use crate::{mock::*, *};
 
 #[test]
 fn genesis_config_works() {
@@ -345,14 +245,14 @@ fn treasury_account_doesnt_get_deleted() {
 #[test]
 fn inexisting_account_works() {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	darwinia_ring::GenesisConfig::<Test> {
+	pallet_ring::GenesisConfig::<Test> {
 		balances: vec![(0, 100), (1, 99), (2, 1)],
 		vesting: vec![],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
 
-	darwinia_kton::GenesisConfig::<Test> {
+	pallet_kton::GenesisConfig::<Test> {
 		balances: vec![(0, 100), (1, 99), (2, 1)],
 		vesting: vec![],
 	}
