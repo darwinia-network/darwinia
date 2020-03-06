@@ -1,0 +1,26 @@
+[package]
+name = "node-inspect"
+version = "0.5.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "Darwinia node inspect"
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0" }
+derive_more = "0.99"
+log = "0.4.8"
+structopt = "0.3.8"
+
+# github.com
+#sc-cli = { path = "../../../client/cli" }
+sc-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-service = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sp-blockchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
