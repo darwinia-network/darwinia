@@ -1,7 +1,7 @@
 use codec::{Decode, Encode};
 use num_traits::Zero;
 use sp_runtime::{traits::AtLeast32Bit, RuntimeDebug};
-use sp_std::{cmp::Ordering, ops::BitOr, vec::Vec};
+use sp_std::{cmp::Ordering, ops::BitOr, prelude::*};
 
 use crate::balance::lock::{LockIdentifier, WithdrawReason, WithdrawReasons};
 
@@ -79,7 +79,7 @@ where
 	}
 
 	#[inline]
-	pub fn update_locks(&mut self, at: Moment) -> Balance {
+	pub fn update(&mut self, at: Moment) {
 		let mut locked_amount = self.staking_amount;
 
 		self.unbondings.retain(|unbonding| {
@@ -90,8 +90,6 @@ where
 
 			valid
 		});
-
-		locked_amount
 	}
 }
 
