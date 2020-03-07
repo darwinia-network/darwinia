@@ -35,7 +35,8 @@ sp-version = { default-features = false, git = "https://github.com/darwinia-netw
 node-primitives = { default-features = false, path = "../primitives" }
 
 # frame dependencies
-frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# FIXME
+#frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-executive = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -48,8 +49,8 @@ pallet-collective = { default-features = false, git = "https://github.com/darwin
 pallet-contracts = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-contracts-primitives = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-contracts-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-contracts-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-democracy = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-finality-tracker = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-grandpa = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-im-online = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-indices = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -65,7 +66,6 @@ pallet-timestamp = { default-features = false, git = "https://github.com/darwini
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-vesting = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
 pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
@@ -75,6 +75,7 @@ pallet-ring = { package = "darwinia-ring", default-features = false, path = "../
 pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
 pallet-support = { package = "darwinia-support", default-features = false, path = "../../../frame/support" }
 pallet-treasury = { package = "darwinia-treasury", default-features = false, path = "../../../frame/treasury" }
+pallet-vesting = { package = "darwinia-vesting", default-features = false, path = "../../../frame/vesting" }
 
 [build-dependencies]
 wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -86,7 +87,8 @@ std = [
 	"rustc-hex",
 	"serde",
 
-	"frame-benchmarking/std",
+# FIXME
+#	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",

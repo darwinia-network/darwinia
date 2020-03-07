@@ -21,7 +21,7 @@ pub use pallet_ring::Call as RingCall;
 pub use pallet_staking::StakerStatus;
 
 use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime, debug, parameter_types,
 	traits::{Currency, Randomness, SplitTwoWays},
 	weights::Weight,
 };
@@ -39,9 +39,7 @@ use sp_core::{
 use sp_inherents::{CheckInherentsResult, InherentData};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		self, BlakeTwo256, Block as BlockT, ConvertInto, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
-	},
+	traits::{self, BlakeTwo256, Block as BlockT, ConvertInto, OpaqueKeys, SaturatedConversion, StaticLookup},
 	transaction_validity::TransactionValidity,
 	ApplyExtrinsicResult, Perbill, Percent, Permill,
 };
@@ -51,9 +49,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use frame_system::Trait;
 use node_primitives::*;
-use pallet_staking::{EraIndex, Exposure, ExposureOf, StashOf};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -150,16 +146,19 @@ impl pallet_babe::Trait for Runtime {
 	type EpochChangeTrigger = pallet_babe::ExternalTrigger;
 }
 
+parameter_types! {
+	pub const IndexDeposit: Balance = 1 * COIN;
+}
 impl pallet_indices::Trait for Runtime {
 	type AccountIndex = AccountIndex;
-	type Currency = Balances;
+	type Currency = Ring;
 	type Deposit = IndexDeposit;
 	type Event = Event;
 }
 
 parameter_types! {
-	pub const TransactionBaseFee: Balance = 1 * CENTS;
-	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
+	pub const TransactionBaseFee: Balance = 1 * MILLI;
+	pub const TransactionByteFee: Balance = 10 * MICRO;
 	// setting this to zero will disable the weight fee.
 	pub const WeightFeeCoefficient: Balance = 1_000;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
@@ -456,7 +455,7 @@ parameter_types! {
 impl pallet_recovery::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type Currency = Balances;
+	type Currency = Ring;
 	type ConfigDepositBase = ConfigDepositBase;
 	type FriendDepositFactor = FriendDepositFactor;
 	type MaxFriends = MaxFriends;
@@ -488,12 +487,6 @@ impl pallet_society::Trait for Runtime {
 	type ChallengePeriod = ChallengePeriod;
 }
 
-impl pallet_vesting::Trait for Runtime {
-	type Event = Event;
-	type Currency = Balances;
-	type BlockNumberToBalance = ConvertInto;
-}
-
 impl pallet_eth_backing::Trait for Runtime {
 	type Event = Event;
 	type Time = Timestamp;
@@ -510,7 +503,6 @@ parameter_types! {
 	pub const EthMainet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
-
 impl pallet_eth_relay::Trait for Runtime {
 	type Event = Event;
 	type EthNetwork = EthRopsten;
@@ -519,7 +511,6 @@ impl pallet_eth_relay::Trait for Runtime {
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
 }
-
 impl pallet_kton::Trait for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();
@@ -528,7 +519,6 @@ impl pallet_kton::Trait for Runtime {
 	type AccountStore = frame_system::Module<Runtime>;
 	type TryDropRing = Ring;
 }
-
 impl pallet_ring::Trait for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();
@@ -540,15 +530,14 @@ impl pallet_ring::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
+	pub const BondingDurationInEra: pallet_staking::EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
-	pub const SlashDeferDuration: EraIndex = 7 * 24; // 1/4 the bonding duration.
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 7 * 24; // 1/4 the bonding duration.
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 	pub const GenesisTime: Moment = GENESIS_TIME;
 }
-
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
 	type Event = Event;
@@ -606,44 +595,50 @@ impl pallet_treasury::Trait for Runtime {
 	type Burn = Burn;
 }
 
+impl pallet_vesting::Trait for Runtime {
+	type Event = Event;
+	type Currency = Ring;
+	type BlockNumberToBalance = ConvertInto;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
 		NodeBlock = node_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
 		Utility: pallet_utility::{Module, Call, Storage, Event<T>},
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent},
-		Indices: pallet_indices,
+		Indices: pallet_indices::{Module, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
-		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
+		Session: pallet_session::{Module, Call, Storage, Config<T>, Event},
 		// Democracy: pallet_democracy::{Module, Call, Storage, Config, Event<T>},
-		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		TechnicalMembership: pallet_membership::<Instance1>,
+		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>},
+		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>},
+		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>},
 		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
-		Contracts: pallet_contracts,
-		Sudo: pallet_sudo,
-		ImOnline: pallet_im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+		Contracts: pallet_contracts::{Module, Call, Storage, Config<T>, Event<T>},
+		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
+		ImOnline: pallet_im_online::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned},
 		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config},
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Identity: pallet_identity::{Module, Call, Storage, Event<T>},
-		Society: pallet_society,
+		Society: pallet_society::{Module, Call, Storage, Config<T>, Event<T>},
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
-		Vesting: pallet_vesting,
 
 		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
-		EthBacking: pallet_eth_backing,
-		EthRelay: pallet_eth_relay,
-		Kton: pallet_kton,
-		Balances: pallet_ring,
-		Staking: pallet_staking,
+		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
+		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
+		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
+		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
+		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
+		Vesting: pallet_vesting::{Module, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -833,23 +828,24 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_benchmarking::Benchmark<Block> for Runtime {
-		fn dispatch_benchmark(
-			module: Vec<u8>,
-			extrinsic: Vec<u8>,
-			steps: Vec<u32>,
-			repeat: u32,
-		) -> Option<Vec<frame_benchmarking::BenchmarkResults>> {
-			use frame_benchmarking::Benchmarking;
-
-			match module.as_slice() {
-				b"pallet-balances" | b"balances" => Balances::run_benchmark(extrinsic, steps, repeat).ok(),
-				b"pallet-identity" | b"identity" => Identity::run_benchmark(extrinsic, steps, repeat).ok(),
-				b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(extrinsic, steps, repeat).ok(),
-				_ => None,
-			}
-		}
-	}
+	// FIXME
+	// impl frame_benchmarking::Benchmark<Block> for Runtime {
+	// 	fn dispatch_benchmark(
+	// 		module: Vec<u8>,
+	// 		extrinsic: Vec<u8>,
+	// 		steps: Vec<u32>,
+	// 		repeat: u32,
+	// 	) -> Option<Vec<frame_benchmarking::BenchmarkResults>> {
+	// 		use frame_benchmarking::Benchmarking;
+	//
+	// 		match module.as_slice() {
+	// 			b"pallet-balances" | b"balances" => Balances::run_benchmark(extrinsic, steps, repeat).ok(),
+	// 			b"pallet-identity" | b"identity" => Identity::run_benchmark(extrinsic, steps, repeat).ok(),
+	// 			b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(extrinsic, steps, repeat).ok(),
+	// 			_ => None,
+	// 		}
+	// 	}
+	// }
 }
 
 #[cfg(test)]
