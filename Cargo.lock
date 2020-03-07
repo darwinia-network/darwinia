@@ -984,6 +984,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-cli"
+version = "0.5.0"
+dependencies = [
+ "ansi_term 0.12.1",
+ "app_dirs",
+ "atty",
+ "chrono",
+ "clap",
+ "derive_more",
+ "env_logger 0.7.1",
+ "fdlimit",
+ "futures 0.3.4",
+ "lazy_static",
+ "log 0.4.8",
+ "names",
+ "parity-util-mem",
+ "regex",
+ "rpassword",
+ "sc-client-api",
+ "sc-informant",
+ "sc-network",
+ "sc-service",
+ "sc-telemetry",
+ "sc-tracing",
+ "serde",
+ "serde_json",
+ "sp-blockchain",
+ "sp-core",
+ "sp-keyring",
+ "sp-panic-handler",
+ "sp-runtime",
+ "sp-state-machine",
+ "structopt",
+ "substrate-prometheus-endpoint",
+ "tempfile",
+ "time",
+ "tokio 0.2.13",
+]
+
+[[package]]
 name = "darwinia-elections-phragmen"
 version = "0.5.0"
 dependencies = [
@@ -3545,6 +3585,7 @@ name = "node-cli"
 version = "0.5.0"
 dependencies = [
  "assert_cmd",
+ "darwinia-cli",
  "frame-benchmarking-cli",
  "frame-support",
  "frame-system",
@@ -3570,7 +3611,6 @@ dependencies = [
  "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-chain-spec",
- "sc-cli",
  "sc-client",
  "sc-client-api",
  "sc-client-db",
@@ -3630,10 +3670,10 @@ dependencies = [
 name = "node-inspect"
 version = "0.5.0"
 dependencies = [
+ "darwinia-cli",
  "derive_more",
  "log 0.4.8",
  "parity-scale-codec",
- "sc-cli",
  "sc-client-api",
  "sc-service",
  "sp-blockchain",
@@ -3754,9 +3794,9 @@ dependencies = [
 name = "node-transaction-factory"
 version = "0.5.0"
 dependencies = [
+ "darwinia-cli",
  "log 0.4.8",
  "parity-scale-codec",
- "sc-cli",
  "sc-client",
  "sc-client-api",
  "sc-service",

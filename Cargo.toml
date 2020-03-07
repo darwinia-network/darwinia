@@ -10,7 +10,7 @@ members = [
 # FIXME
 #	"bin/node/testing",
 	"bin/node/transaction-factory",
-#	"client/cli",
+	"client/cli",
 	"frame/balances/kton",
 	"frame/balances/ring",
 	"frame/chainrelay/eth/backing",
