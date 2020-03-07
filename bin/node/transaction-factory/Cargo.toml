@@ -14,7 +14,6 @@ codec = { package = "parity-scale-codec", version = "1.0.0", features = ["derive
 log = "0.4.8"
 
 # github.com
-sc-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -27,4 +26,4 @@ sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2
 sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 # darwinia
-#sc-cli = { path = "../../../client/cli" }
+sc-cli = { package = "darwinia-cli", path = "../../../client/cli" }

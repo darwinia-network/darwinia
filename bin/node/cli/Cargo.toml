@@ -98,9 +98,7 @@ node-transaction-factory = { optional = true, path = "../transaction-factory" }
 
 frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
-sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-
-#sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
+sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
 
 # WASM-specific dependencies
 wasm-bindgen = { version = "0.2.57", optional = true }
@@ -127,7 +125,7 @@ build-script-utils = { package = "substrate-build-script-utils", git = "https://
 
 frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
-sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
 
 node-inspect = { optional = true, path = "../inspect" }
 node-transaction-factory = { optional = true, path = "../transaction-factory" }

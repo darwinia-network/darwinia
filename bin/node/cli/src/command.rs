@@ -10,7 +10,7 @@ where
 	T: Into<std::ffi::OsString> + Clone,
 {
 	let args: Vec<_> = args.collect();
-	let opt = sc_cli::from_iter::<Cli, _>(args.clone(), &version);
+	let mut opt = sc_cli::from_iter::<Cli, _>(args.clone(), &version);
 
 	let mut config = sc_service::Configuration::from_version(&version);
 
@@ -35,11 +35,13 @@ where
 
 			cmd.run(inspect)
 		}
-		Some(Subcommand::Benchmark(cmd)) => {
-			cmd.init(&version)?;
-			cmd.update_config(&mut config, load_spec, &version)?;
-
-			cmd.run::<_, _, node_runtime::Block, node_executor::Executor>(config)
+		Some(Subcommand::Benchmark(_cmd)) => {
+			// FIXME
+			panic!("fix the benchmark-cli, cause we're using darwinia-cli instead sc-cli")
+			// cmd.init(&version)?;
+			// cmd.update_config(&mut config, load_spec, &version)?;
+			//
+			// cmd.run::<_, _, node_runtime::Block, node_executor::Executor>(config)
 		}
 		Some(Subcommand::Factory(cli_args)) => {
 			cli_args.shared_params.init(&version)?;

@@ -16,11 +16,12 @@ log = "0.4.8"
 structopt = "0.3.8"
 
 # github.com
-#sc-cli = { path = "../../../client/cli" }
-sc-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-service = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 sp-blockchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+# darwinia
+sc-cli = { package = "darwinia-cli", path = "../../../client/cli" }
