@@ -39,7 +39,7 @@ pub mod time {
 	// Develop
 	pub const MILLISECS_PER_BLOCK: Moment = 3000;
 	// Prodution
-	// pub const MILLISECS_PER_BLOCK: Moment = 6000;
+	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
