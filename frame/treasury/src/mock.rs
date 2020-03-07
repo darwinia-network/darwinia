@@ -45,7 +45,7 @@ impl frame_system::Trait for Test {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 	type ModuleToIndex = ();
-	type AccountData = pallet_ring::AccountData<u64>;
+	type AccountData = darwinia_support::balance::AccountData<u64>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 }
@@ -113,14 +113,12 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_ring::GenesisConfig::<Test> {
 		// Total issuance will be 200 with treasury account initialized at ED.
 		balances: vec![(0, 100), (1, 98), (2, 1)],
-		vesting: vec![],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
 	pallet_kton::GenesisConfig::<Test> {
 		// Total issuance will be 200 with treasury account initialized at ED.
 		balances: vec![(0, 100), (1, 98), (2, 1)],
-		vesting: vec![],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
