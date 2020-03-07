@@ -283,6 +283,8 @@ mod types {
 	type KtonCurrency<T> = <T as Trait>::KtonCurrency;
 }
 
+pub use types::EraIndex;
+
 use codec::{Decode, Encode, HasCompact};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
