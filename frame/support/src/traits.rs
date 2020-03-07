@@ -1,7 +1,9 @@
+pub use frame_support::traits::{LockIdentifier, VestingSchedule, WithdrawReason, WithdrawReasons};
+
 use frame_support::traits::{Currency, TryDrop};
 use sp_runtime::DispatchResult;
 
-use crate::balance::lock::{LockFor, LockIdentifier, WithdrawReasons};
+use crate::balance::lock::LockFor;
 
 /// A currency whose accounts can have liquidity restrictions.
 pub trait LockableCurrency<AccountId>: Currency<AccountId> {

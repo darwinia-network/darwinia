@@ -6,10 +6,8 @@ pub mod traits;
 
 pub mod balance {
 	pub mod lock {
-		pub use frame_support::traits::{LockIdentifier, WithdrawReason, WithdrawReasons};
-
 		pub use structs::{BalanceLock, LockFor, LockReasons, StakingLock, Unbonding};
-		pub use traits::LockableCurrency;
+		pub use traits::{LockIdentifier, LockableCurrency, VestingSchedule, WithdrawReason, WithdrawReasons};
 
 		use crate::*;
 	}
