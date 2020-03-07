@@ -9,13 +9,7 @@ fn main() -> sc_cli::Result<()> {
 		version: env!("CARGO_PKG_VERSION"),
 		executable_name: "darwinia",
 		author: "Darwinia Network <hello@darwinia.network>",
-		description: r#" _____                      _       _       
-|  __ \\                    (_)     (_)      
-| |  | | __ _ _ ____      ___ _ __  _  __ _ 
-| |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |
-| |__| | (_| | |   \\ V  V /| | | | | | (_| |
-|_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|
-            Darwinia Network 2018-2020          "#,
+		description: "Darwinia node implementation in Rust",
 		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 		copyright_start_year: 2018,
 	};
