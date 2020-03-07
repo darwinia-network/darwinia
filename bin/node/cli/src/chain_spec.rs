@@ -5,13 +5,11 @@ pub use node_runtime::GenesisConfig;
 
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
-use node_runtime::constants::currency::*;
-use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, ContractsConfig, CouncilConfig,
-	EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig,
-	SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeConfig,
-	WASM_BINARY,
+	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, Block, ContractsConfig,
+	CouncilConfig, EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig,
+	SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -456,7 +454,7 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
 				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
 			],
-			true,
+			false,
 			false,
 		)
 	}
