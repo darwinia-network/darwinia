@@ -8,6 +8,7 @@ edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
+default-run = "darwinia"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
