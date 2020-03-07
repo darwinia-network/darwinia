@@ -55,9 +55,13 @@ pub trait ExistentialCheck<AccountId, Balance> {
 	fn try_drop(who: &AccountId) -> (bool, Balance);
 }
 
-impl<AccountId, Balance> ExistentialCheck<AccountId, Balance> for () {
+impl<AccountId, Balance> ExistentialCheck<AccountId, Balance> for ()
+where
+	Balance: Default,
+{
 	fn try_drop(_: &AccountId) -> (bool, Balance) {
-		panic!("only for tests")
+		// only for tests
+		(true, Default::default())
 	}
 }
 
