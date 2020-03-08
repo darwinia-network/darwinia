@@ -1,13 +1,15 @@
 //! Darwinia chain configurations.
 
+pub use node_primitives::{AccountId, Balance, Signature};
+pub use node_runtime::GenesisConfig;
+
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
-use node_runtime::constants::currency::*;
-use node_runtime::Block;
 use node_runtime::{
-	AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, ContractsConfig, CouncilConfig,
-	EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, SessionConfig,
-	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeConfig, WASM_BINARY,
+	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, Block, ContractsConfig,
+	CouncilConfig, EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig,
+	SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
@@ -22,9 +24,6 @@ use sp_runtime::{
 	Perbill,
 };
 
-pub use node_primitives::{AccountId, Balance, Signature};
-pub use node_runtime::GenesisConfig;
-
 type AccountPublic = <Signature as Verify>::Signer;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -34,9 +33,12 @@ const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 /// Additional parameters for some Substrate core modules,
 /// customizable from the chain spec.
 #[derive(Default, Clone, Serialize, Deserialize, ChainSpecExtension)]
+#[serde(rename_all = "camelCase")]
 pub struct Extensions {
 	/// Block numbers with known hashes.
 	pub fork_blocks: sc_client::ForkBlocks<Block>,
+	/// Known bad block hashes.
+	pub bad_blocks: sc_client::BadBlocks<Block>,
 }
 
 /// Specialized `ChainSpec`.
@@ -132,30 +134,34 @@ pub fn darwinia_genesis(
 			code: WASM_BINARY.to_vec(),
 			changes_trie_config: Default::default(),
 		}),
-		pallet_indices: Some(IndicesConfig {
-			ids: endowed_accounts
-				.iter()
-				.cloned()
-				.chain(initial_authorities.iter().map(|x| x.0.clone()))
-				.collect::<Vec<_>>(),
-		}),
+		pallet_indices: Some(IndicesConfig { indices: vec![] }),
 		pallet_session: Some(SessionConfig {
 			keys: initial_authorities
 				.iter()
 				.map(|x| {
 					(
 						x.0.clone(),
+						x.0.clone(),
 						session_keys(x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone()),
 					)
 				})
 				.collect::<Vec<_>>(),
 		}),
+		// pallet_democracy: Some(DemocracyConfig::default()),
 		pallet_collective_Instance1: Some(CouncilConfig {
-			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
+			members: endowed_accounts
+				.iter()
+				.take((num_endowed_accounts + 1) / 2)
+				.cloned()
+				.collect(),
 			phantom: Default::default(),
 		}),
 		pallet_collective_Instance2: Some(TechnicalCommitteeConfig {
-			members: endowed_accounts.iter().cloned().collect::<Vec<_>>()[..(num_endowed_accounts + 1) / 2].to_vec(),
+			members: endowed_accounts
+				.iter()
+				.take((num_endowed_accounts + 1) / 2)
+				.cloned()
+				.collect(),
 			phantom: Default::default(),
 		}),
 		pallet_contracts: Some(ContractsConfig {
@@ -163,7 +169,7 @@ pub fn darwinia_genesis(
 				enable_println, // this should only be enabled on development chains
 				..Default::default()
 			},
-			gas_price: 1 * MILLI,
+			gas_price: 1 * MICRO,
 		}),
 		pallet_sudo: Some(SudoConfig { key: root_key }),
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
@@ -171,6 +177,15 @@ pub fn darwinia_genesis(
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
 		pallet_membership_Instance1: Some(Default::default()),
+		pallet_society: Some(SocietyConfig {
+			members: endowed_accounts
+				.iter()
+				.take((num_endowed_accounts + 1) / 2)
+				.cloned()
+				.collect(),
+			pot: 0,
+			max_members: 999,
+		}),
 
 		pallet_eth_backing: Some(EthBackingConfig {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
@@ -191,7 +206,6 @@ pub fn darwinia_genesis(
 				.map(|k| (k, KTON_ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
-			vesting: vec![],
 		}),
 		pallet_ring: Some(RingConfig {
 			balances: endowed_accounts
@@ -200,7 +214,6 @@ pub fn darwinia_genesis(
 				.map(|k| (k, RING_ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
-			vesting: vec![],
 		}),
 		pallet_staking: Some(StakingConfig {
 			current_era: 0,
@@ -216,6 +229,7 @@ pub fn darwinia_genesis(
 			..Default::default()
 		}),
 		pallet_treasury: Some(Default::default()),
+		pallet_vesting: Some(Default::default()),
 	}
 }
 
@@ -440,7 +454,7 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
 				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
 			],
-			true,
+			false,
 			false,
 		)
 	}
@@ -465,4 +479,74 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 		},
 		Default::default(),
 	)
+}
+
+#[cfg(test)]
+pub(crate) mod tests {
+	use super::*;
+	use crate::service::{new_full, new_light};
+	use sc_service_test;
+	use sp_runtime::BuildStorage;
+
+	fn local_testnet_genesis_instant_single() -> GenesisConfig {
+		testnet_genesis(
+			vec![get_authority_keys_from_seed("Alice")],
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			None,
+			false,
+		)
+	}
+
+	/// Local testnet config (single validator - Alice)
+	pub fn integration_test_config_with_single_authority() -> ChainSpec {
+		ChainSpec::from_genesis(
+			"Integration Test",
+			"test",
+			local_testnet_genesis_instant_single,
+			vec![],
+			None,
+			None,
+			None,
+			Default::default(),
+		)
+	}
+
+	/// Local testnet config (multivalidator Alice + Bob)
+	pub fn integration_test_config_with_two_authorities() -> ChainSpec {
+		ChainSpec::from_genesis(
+			"Integration Test",
+			"test",
+			local_testnet_genesis,
+			vec![],
+			None,
+			None,
+			None,
+			Default::default(),
+		)
+	}
+
+	#[test]
+	#[ignore]
+	fn test_connectivity() {
+		sc_service_test::connectivity(
+			integration_test_config_with_two_authorities(),
+			|config| new_full(config),
+			|config| new_light(config),
+		);
+	}
+
+	#[test]
+	fn test_create_development_chain_spec() {
+		development_config().build_storage().unwrap();
+	}
+
+	#[test]
+	fn test_create_local_testnet_chain_spec() {
+		local_testnet_config().build_storage().unwrap();
+	}
+
+	#[test]
+	fn test_staging_test_net_chain_spec() {
+		staging_testnet_config().build_storage().unwrap();
+	}
 }

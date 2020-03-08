@@ -26,7 +26,7 @@ pub type AccountId = u64;
 pub type BlockNumber = u64;
 pub type Balance = u128;
 
-pub type System = system::Module<Test>;
+pub type System = frame_system::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;
 
@@ -115,7 +115,7 @@ parameter_types! {
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-impl system::Trait for Test {
+impl frame_system::Trait for Test {
 	type Origin = Origin;
 	type Call = ();
 	type Index = u64;
@@ -132,29 +132,25 @@ impl system::Trait for Test {
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = ();
 	type ModuleToIndex = ();
-}
-parameter_types! {
-	pub const TransferFee: Balance = 0;
-	pub const CreationFee: Balance = 0;
-}
-impl pallet_ring::Trait for Test {
-	type Balance = Balance;
-	type OnFreeBalanceZero = Staking;
+	type AccountData = darwinia_support::balance::AccountData<Balance>;
 	type OnNewAccount = ();
-	type TransferPayment = ();
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
-	type CreationFee = CreationFee;
+	type OnKilledAccount = ();
 }
 impl pallet_kton::Trait for Test {
 	type Balance = Balance;
+	type DustRemoval = ();
 	type Event = ();
-	type RingCurrency = Ring;
-	type TransferPayment = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type TransferFee = TransferFee;
+	type AccountStore = System;
+	type TryDropRing = ();
+}
+impl pallet_ring::Trait for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type TryDropKton = ();
 }
 parameter_types! {
 	pub const Period: BlockNumber = 1;
@@ -165,15 +161,13 @@ parameter_types! {
 impl pallet_session::Trait for Test {
 	type Event = ();
 	type ValidatorId = AccountId;
-	type ValidatorIdOf = StashOf<Test>;
+	type ValidatorIdOf = crate::StashOf<Test>;
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type OnSessionEnding = pallet_session::historical::NoteHistoricalRoot<Test, Staking>;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Test, Staking>;
 	type SessionHandler = TestSessionHandler;
 	type Keys = UintAuthorityId;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
-	type SelectInitialValidators = Staking;
 }
-
 impl pallet_session::historical::Trait for Test {
 	type FullIdentification = Exposure<AccountId, Balance, Balance>;
 	type FullIdentificationOf = ExposureOf<Test>;
@@ -321,7 +315,6 @@ impl ExtBuilder {
 				// This allow us to have a total_payout different from 0.
 				(999, 1_000_000_000_000),
 			],
-			vesting: vec![],
 		}
 		.assimilate_storage(&mut storage);
 		let _ = pallet_kton::GenesisConfig::<Test> {
@@ -343,7 +336,6 @@ impl ExtBuilder {
 				// This allow us to have a total_payout different from 0.
 				(999, 1_000_000_000_000),
 			],
-			vesting: vec![],
 		}
 		.assimilate_storage(&mut storage);
 
@@ -381,7 +373,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut storage);
 
 		let _ = pallet_session::GenesisConfig::<Test> {
-			keys: validators.iter().map(|x| (*x, UintAuthorityId(*x))).collect(),
+			keys: validators.iter().map(|x| (*x, *x, UintAuthorityId(*x))).collect(),
 		}
 		.assimilate_storage(&mut storage);
 

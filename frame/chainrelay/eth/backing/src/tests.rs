@@ -1,4 +1,4 @@
-//! Tests for the module.
+//! Tests for eth-backing.
 
 use std::str::FromStr;
 

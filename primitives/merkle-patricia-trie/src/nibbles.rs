@@ -1,6 +1,6 @@
 use core::cmp::min;
 
-use sp_std::{vec, vec::Vec};
+use sp_std::prelude::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Nibbles {

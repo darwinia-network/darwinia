@@ -1,5 +1,5 @@
 use hashbrown::HashMap;
-use sp_std::{cell::RefCell, vec::Vec};
+use sp_std::{cell::RefCell, prelude::*};
 
 #[derive(Debug)]
 pub struct MemoryDB {

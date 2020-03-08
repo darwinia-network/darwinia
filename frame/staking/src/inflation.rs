@@ -1,7 +1,7 @@
 use sp_core::U256;
 use sp_runtime::{
 	traits::{IntegerSquareRoot, SaturatedConversion},
-	Perbill, Perquintill,
+	PerThing, Perbill, Perquintill,
 };
 use sp_std::convert::TryInto;
 

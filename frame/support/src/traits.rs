@@ -1,7 +1,9 @@
+pub use frame_support::traits::{LockIdentifier, VestingSchedule, WithdrawReason, WithdrawReasons};
+
 use frame_support::traits::{Currency, TryDrop};
 use sp_runtime::DispatchResult;
 
-use crate::balance::lock::{LockFor, LockIdentifier, WithdrawReasons};
+use crate::balance::lock::LockFor;
 
 /// A currency whose accounts can have liquidity restrictions.
 pub trait LockableCurrency<AccountId>: Currency<AccountId> {
@@ -39,10 +41,28 @@ pub trait LockableCurrency<AccountId>: Currency<AccountId> {
 
 	/// Remove an existing lock.
 	fn remove_lock(id: LockIdentifier, who: &AccountId);
+
+	/// Get the balance of an account that can be used for transfers, reservations, or any other
+	/// non-locking, non-transaction-fee activity. Will be at most `free_balance`.
+	fn usable_balance(who: &AccountId) -> Self::Balance;
+
+	/// Get the balance of an account that can be used for paying transaction fees (not tipping,
+	/// or any other kind of fees, though). Will be at most `free_balance`.
+	fn usable_balance_for_fees(who: &AccountId) -> Self::Balance;
 }
 
 pub trait ExistentialCheck<AccountId, Balance> {
 	fn try_drop(who: &AccountId) -> (bool, Balance);
+}
+
+impl<AccountId, Balance> ExistentialCheck<AccountId, Balance> for ()
+where
+	Balance: Default,
+{
+	fn try_drop(_: &AccountId) -> (bool, Balance) {
+		// only for tests
+		(true, Default::default())
+	}
 }
 
 /// Callback on eth-backing module

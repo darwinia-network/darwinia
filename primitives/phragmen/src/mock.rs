@@ -1,8 +1,6 @@
-//! Test utilities
+//! Mock file for phragmen.
 
-#![cfg(test)]
-
-use sp_runtime::{assert_eq_error_rate, traits::Member, Perbill};
+use sp_runtime::{assert_eq_error_rate, traits::Member, PerThing, Perbill};
 use sp_std::collections::btree_map::BTreeMap;
 
 use crate::{elect, PhragmenAssignment, PhragmenResult, Power, Votes};
@@ -48,7 +46,7 @@ pub(crate) struct _PhragmenResult<A: Clone> {
 	pub assignments: Vec<(A, Vec<_PhragmenAssignment<A>>)>,
 }
 
-pub(crate) fn create_stake_of(stakes: &[(AccountId, Power)]) -> Box<dyn Fn(&AccountId) -> Power> {
+pub(crate) fn create_power_of(stakes: &[(AccountId, Power)]) -> Box<dyn Fn(&AccountId) -> Power> {
 	let mut storage = BTreeMap::<AccountId, Power>::new();
 	stakes.iter().for_each(|s| {
 		storage.insert(s.0, s.1);
@@ -61,10 +59,10 @@ pub(crate) fn auto_generate_self_voters<A: Clone>(candidates: &[A]) -> Vec<(A, V
 	candidates.iter().map(|c| (c.clone(), vec![c.clone()])).collect()
 }
 
-pub(crate) fn check_assignments(assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>) {
+pub(crate) fn check_assignments(assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId, Perbill>>)>) {
 	for (_, a) in assignments {
 		let sum: u32 = a.iter().map(|(_, p)| p.deconstruct()).sum();
-		assert_eq_error_rate!(sum, Perbill::accuracy(), 5);
+		assert_eq_error_rate!(sum, Perbill::ACCURACY, 5);
 	}
 }
 
@@ -77,7 +75,7 @@ pub(crate) fn run_and_compare(
 ) {
 	// run fixed point code.
 	let PhragmenResult { winners, assignments } =
-		elect::<_, _>(to_elect, min_to_elect, candidates.clone(), voters.clone(), &power_of).unwrap();
+		elect::<_, Perbill, _>(to_elect, min_to_elect, candidates.clone(), voters.clone(), &power_of).unwrap();
 
 	// run float poc code.
 	let truth_value = elect_float(to_elect, min_to_elect, candidates, voters, &power_of).unwrap();
@@ -220,7 +218,10 @@ where
 	})
 }
 
-pub(crate) fn build_support_map<FS>(result: &mut _PhragmenResult<AccountId>, power_of: FS) -> _SupportMap<AccountId>
+pub(crate) fn build_support_map_float<FS>(
+	result: &mut _PhragmenResult<AccountId>,
+	power_of: FS,
+) -> _SupportMap<AccountId>
 where
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {

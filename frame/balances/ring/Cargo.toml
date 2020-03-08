@@ -2,11 +2,11 @@
 name = "darwinia-ring"
 version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "FRAME pallet to manage RING"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
-description = "FRAME pallet to manage RING"
 
 [dependencies]
 # crates.io
@@ -14,9 +14,12 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 serde = { version = "1.0.101", optional = true }
 
 # github.com
+# TODO benchmarking
+#frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
@@ -36,6 +39,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 
+	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
 
