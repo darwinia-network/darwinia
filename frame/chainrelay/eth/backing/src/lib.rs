@@ -1,4 +1,4 @@
-//!  prototype module for cross chain assets backing
+//! Prototype module for cross chain assets backing.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![recursion_limit = "128"]
@@ -49,8 +49,8 @@ use sp_std::borrow::ToOwned;
 use sp_std::{convert::TryFrom, marker::PhantomData, vec};
 
 use darwinia_eth_relay::{EthReceiptProof, VerifyEthReceipts};
-use darwinia_support::{LockableCurrency, OnDepositRedeem};
-use sp_eth_primitives::{EthAddress, H256, U256};
+use darwinia_support::traits::{LockableCurrency, OnDepositRedeem};
+use eth_primitives::{EthAddress, H256, U256};
 use types::*;
 
 pub trait Trait: system::Trait {
@@ -74,14 +74,14 @@ pub trait Trait: system::Trait {
 decl_storage! {
 	trait Store for Module<T: Trait> as EthBacking {
 		pub RingLocked get(fn ring_locked) config(): RingBalance<T>;
-		pub RingProofVerified get(fn ring_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub RingProofVerified get(fn ring_proof_verfied): map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
 		pub RingRedeemAddress get(fn ring_redeem_address) config(): EthAddress;
 
 		pub KtonLocked get(fn kton_locked) config(): KtonBalance<T>;
-		pub KtonProofVerified get(fn kton_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub KtonProofVerified get(fn kton_proof_verfied): map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
 		pub KtonRedeemAddress get(fn kton_redeem_address) config(): EthAddress;
 
-		pub DepositProofVerified get(fn deposit_proof_verfied): map EthTransactionIndex => Option<EthReceiptProof>;
+		pub DepositProofVerified get(fn deposit_proof_verfied): map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
 		pub DepositRedeemAddress get(fn deposit_redeem_address) config(): EthAddress;
 	}
 }
@@ -112,7 +112,7 @@ decl_module! {
 			let _relayer = ensure_signed(origin)?;
 
 			ensure!(
-				!RingProofVerified::exists((proof_record.header_hash, proof_record.index)),
+				!RingProofVerified::contains_key((proof_record.header_hash, proof_record.index)),
 				"Ring For This Proof - ALREADY BEEN REDEEMED",
 			);
 
@@ -145,7 +145,7 @@ decl_module! {
 			let _relayer = ensure_signed(origin)?;
 
 			ensure!(
-				!KtonProofVerified::exists((proof_record.header_hash, proof_record.index)),
+				!KtonProofVerified::contains_key((proof_record.header_hash, proof_record.index)),
 				"Kton For This Proof - ALREADY BEEN REDEEMED",
 			);
 
@@ -179,7 +179,7 @@ decl_module! {
 			let _relayer = ensure_signed(origin)?;
 
 			ensure!(
-				!DepositProofVerified::exists((proof_record.header_hash, proof_record.index)),
+				!DepositProofVerified::contains_key((proof_record.header_hash, proof_record.index)),
 				"Deposit For This Proof - ALREADY BEEN REDEEMED",
 			);
 

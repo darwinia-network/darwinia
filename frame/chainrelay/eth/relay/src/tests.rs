@@ -1,13 +1,14 @@
-//! Tests for the module.
+//! Tests for eth-relay.
+
 use std::str::FromStr;
 
-use frame_support::assert_ok;
-use hex_literal::hex;
-use rustc_hex::FromHex;
-use sp_eth_primitives::{
+use eth_primitives::{
 	receipt::{LogEntry, TransactionOutcome},
 	Bloom, EthAddress, H64, U128,
 };
+use frame_support::assert_ok;
+use hex_literal::hex;
+use rustc_hex::FromHex;
 
 use crate::{mock::*, *};
 
@@ -141,7 +142,7 @@ fn relay_header() {
 
 		assert_ok!(EthRelay::verify_header(&header2));
 
-		assert_ok!(EthRelay::store_header(&header2));
+		assert_ok!(EthRelay::maybe_store_header(&header2));
 
 
 		// 6760581
@@ -168,6 +169,6 @@ fn relay_header() {
 
 		assert_ok!(EthRelay::verify_header(&header3));
 
-		assert_ok!(EthRelay::store_header(&header3));
+		assert_ok!(EthRelay::maybe_store_header(&header3));
 	});
 }

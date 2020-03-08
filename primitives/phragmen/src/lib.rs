@@ -1,4 +1,4 @@
-//! Rust implementation of the Phragmén election algorithm. This is used in several SRML modules to
+//! Rust implementation of the Phragmén election algorithm. This is used in several pallets to
 //! optimally distribute the weight of a set of voters among an elected set of candidates. In the
 //! context of staking this is mapped to validators and nominators.
 //!
@@ -24,12 +24,12 @@ mod tests;
 
 use sp_runtime::{
 	helpers_128bit::multiply_by_rational,
-	traits::{Member, SaturatedConversion, Saturating, SimpleArithmetic, Zero},
-	Perbill, RuntimeDebug,
+	traits::{AtLeast32Bit, Bounded, Member, SaturatedConversion, Saturating, Zero},
+	PerThing, RuntimeDebug,
 };
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
-use darwinia_support::Rational64;
+use darwinia_support::structs::Rational64;
 
 /// Power of an account.
 pub type Power = u32;
@@ -81,12 +81,12 @@ pub struct Edge<AccountId> {
 	candidate_index: usize,
 }
 
-/// Means a particular `AccountId` was backed by `Perbill`th of a nominator's stake.
-pub type PhragmenAssignment<AccountId> = (AccountId, Perbill);
+/// Particular `AccountId` was backed by `T`-ratio of a nominator's stake.
+pub type PhragmenAssignment<AccountId, T> = (AccountId, T);
 
-/// Means a particular `AccountId` was backed by `Votes` of a nominator's stake.
+/// Particular `AccountId` was backed by `Votes` of a nominator's stake.
 #[derive(RuntimeDebug)]
-#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "std", derive(Eq, PartialEq, serde::Serialize, serde::Deserialize))]
 pub struct PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance> {
 	pub account_id: AccountId,
 	pub ring_balance: RingBalance,
@@ -96,13 +96,13 @@ pub struct PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance> {
 
 /// Final result of the phragmen election.
 #[derive(RuntimeDebug)]
-pub struct PhragmenResult<AccountId> {
+pub struct PhragmenResult<AccountId, T: PerThing> {
 	/// Just winners zipped with their approval stake. Note that the approval stake is merely the
 	/// sub of their received stake and could be used for very basic sorting and approval voting.
 	pub winners: Vec<(AccountId, Votes)>,
 	/// Individual assignments. for each tuple, the first elements is a voter and the second
 	/// is the list of candidates that it supports.
-	pub assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
+	pub assignments: Vec<(AccountId, Vec<PhragmenAssignment<AccountId, T>>)>,
 }
 
 /// A structure to demonstrate the phragmen result from the perspective of the candidate, i.e. how
@@ -110,10 +110,10 @@ pub struct PhragmenResult<AccountId> {
 ///
 /// This complements the [`PhragmenResult`] and is needed to run the equalize post-processing.
 ///
-/// This, at the current version, resembles the `Exposure` defined in the staking SRML module, yet
+/// This, at the current version, resembles the `Exposure` defined in the Staking pallet, yet
 /// they do not necessarily have to be the same.
 #[derive(Default, RuntimeDebug)]
-#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "std", derive(Eq, PartialEq, serde::Serialize, serde::Deserialize))]
 pub struct Support<AccountId, RingBalance, KtonBalance> {
 	/// The amount of support as the effect of self-vote.
 	pub own_ring_balance: RingBalance,
@@ -122,7 +122,7 @@ pub struct Support<AccountId, RingBalance, KtonBalance> {
 	/// Total support.
 	pub total_votes: Votes,
 	/// Support from voters.
-	pub others: Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
+	pub voters: Vec<PhragmenStakedAssignment<AccountId, RingBalance, KtonBalance>>,
 }
 
 /// A linkage from a candidate and its [`Support`].
@@ -144,22 +144,23 @@ pub type SupportMap<A, R, K> = BTreeMap<A, Support<A, R, K>>;
 /// responsibility of the caller to make sure only those candidates who have a sensible economic
 /// value are passed in. From the perspective of this function, a candidate can easily be among the
 /// winner with no backing stake.
-pub fn elect<AccountId, FS>(
+pub fn elect<AccountId, R, FS>(
 	candidate_count: usize,
 	minimum_candidate_count: usize,
 	initial_candidates: Vec<AccountId>,
 	initial_voters: Vec<(AccountId, Vec<AccountId>)>,
 	power_of: FS,
-) -> Option<PhragmenResult<AccountId>>
+) -> Option<PhragmenResult<AccountId, R>>
 where
 	AccountId: Default + Ord + Member,
+	R: PerThing,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {
 	let to_votes = |p: Power| p as Votes;
 
 	// return structures
 	let mut elected_candidates: Vec<(AccountId, Votes)>;
-	let mut assigned: Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>;
+	let mut assigned: Vec<(AccountId, Vec<PhragmenAssignment<AccountId, R>>)>;
 
 	// used to cache and access candidates index.
 	let mut c_idx_cache = BTreeMap::<AccountId, usize>::new();
@@ -269,15 +270,22 @@ where
 		let mut assignment = (n.who.clone(), vec![]);
 		for e in &mut n.edges {
 			if elected_candidates.iter().position(|(ref c, _)| *c == e.who).is_some() {
-				let per_bill_parts = {
+				let per_bill_parts: R::Inner = {
 					if n.load == e.load {
 						// Full support. No need to calculate.
-						Perbill::accuracy().into()
+						R::ACCURACY
 					} else {
 						if e.load.d() == n.load.d() {
 							// return e.load / n.load.
-							let desired_scale = Perbill::accuracy().into();
-							Rational64::multiply_by_rational(desired_scale, e.load.n(), n.load.n())
+							let desired_scale = R::ACCURACY.saturated_into() as _;
+							let parts = Rational64::multiply_by_rational(desired_scale, e.load.n(), n.load.n());
+
+							TryFrom::try_from(parts)
+								// If the result cannot fit into R::Inner. Defensive only. This can
+								// never happen. `desired_scale * e / n`, where `e / n < 1` always
+								// yields a value smaller than `desired_scale`, which will fit into
+								// R::Inner.
+								.unwrap_or(Bounded::max_value())
 						} else {
 							// defensive only. Both edge and nominator loads are built from
 							// scores, hence MUST have the same denominator.
@@ -285,8 +293,9 @@ where
 						}
 					}
 				};
-				// safer to .min() inside as well to argue as u32 is safe.
-				let per_thing = Perbill::from_parts(per_bill_parts.min(Perbill::accuracy().into()) as u32);
+
+				let per_thing = R::from_parts(per_bill_parts);
+
 				assignment.1.push((e.who.clone(), per_thing));
 			}
 		}
@@ -294,17 +303,21 @@ where
 		if assignment.1.len() > 0 {
 			// To ensure an assertion indicating: no stake from the nominator going to waste,
 			// we add a minimal post-processing to equally assign all of the leftover stake ratios.
-			let vote_count = assignment.1.len() as u32;
+			let vote_count: R::Inner = assignment.1.len().saturated_into();
 			let len = assignment.1.len();
-			let sum = assignment.1.iter().map(|a| a.1.deconstruct()).sum::<u32>();
-			let accuracy = Perbill::accuracy();
-			let diff = accuracy.checked_sub(sum).unwrap_or(0);
+			let mut sum: R::Inner = Zero::zero();
+			assignment
+				.1
+				.iter()
+				.for_each(|a| sum = sum.saturating_add(a.1.deconstruct()));
+			let accuracy = R::ACCURACY;
+			let diff = accuracy.saturating_sub(sum);
 			let diff_per_vote = (diff / vote_count).min(accuracy);
 
-			if diff_per_vote > 0 {
+			if !diff_per_vote.is_zero() {
 				for i in 0..len {
 					let current_ratio = assignment.1[i % len].1;
-					let next_ratio = current_ratio.saturating_add(Perbill::from_parts(diff_per_vote));
+					let next_ratio = current_ratio.saturating_add(R::from_parts(diff_per_vote));
 					assignment.1[i % len].1 = next_ratio;
 				}
 			}
@@ -312,9 +325,9 @@ where
 			// `remainder` is set to be less than maximum votes of a nominator (currently 16).
 			// safe to cast it to usize.
 			let remainder = diff - diff_per_vote * vote_count;
-			for i in 0..remainder as usize {
+			for i in 0..remainder.saturated_into::<usize>() {
 				let current_ratio = assignment.1[i % len].1;
-				let next_ratio = current_ratio.saturating_add(Perbill::from_parts(1));
+				let next_ratio = current_ratio.saturating_add(R::from_parts(1u8.into()));
 				assignment.1[i % len].1 = next_ratio;
 			}
 			assigned.push(assignment);
@@ -328,16 +341,20 @@ where
 }
 
 /// Build the support map from the given phragmen result.
-pub fn build_support_map<AccountId, RingBalance, KtonBalance, FS, FSS>(
+pub fn build_support_map<AccountId, R, RingBalance, KtonBalance, FS, FSS>(
 	elected_stashes: &Vec<AccountId>,
-	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId>>)>,
+	assignments: &Vec<(AccountId, Vec<PhragmenAssignment<AccountId, R>>)>,
 	power_of: FS,
 	stake_of: FSS,
 ) -> SupportMap<AccountId, RingBalance, KtonBalance>
 where
 	AccountId: Default + Ord + Member,
-	RingBalance: Default + Copy + SimpleArithmetic,
-	KtonBalance: Default + Copy + SimpleArithmetic,
+	R: PerThing
+		+ sp_std::ops::Mul<Votes, Output = Votes>
+		+ sp_std::ops::Mul<RingBalance, Output = RingBalance>
+		+ sp_std::ops::Mul<KtonBalance, Output = KtonBalance>,
+	RingBalance: Default + Copy + AtLeast32Bit,
+	KtonBalance: Default + Copy + AtLeast32Bit,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 	for<'r> FSS: Fn(&'r AccountId) -> (RingBalance, KtonBalance),
 {
@@ -351,40 +368,22 @@ where
 	// build support struct.
 	for (n, assignment) in assignments.iter() {
 		for (c, per_thing) in assignment.iter() {
+			let nominator_stake = to_votes(power_of(n));
+			// AUDIT: it is crucially important for the `Mul` implementation of all
+			// per-things to be sound.
+			let (ring_balance, kton_balance) = {
+				let (r, k) = stake_of(n);
+				(*per_thing * r, *per_thing * k)
+			};
+			let other_stake = *per_thing * nominator_stake;
 			if let Some(support) = supports.get_mut(c) {
-				let nominator_stake = to_votes(power_of(n));
-				// AUDIT: it is crucially important for the `Mul` implementation of all
-				// per-things to be sound.
-				let (ring_balance, kton_balance) = {
-					let (r, k) = stake_of(n);
-					(*per_thing * r, *per_thing * k)
-				};
-				let other_stake = *per_thing * nominator_stake;
-				if c == n {
-					// This is a nomination from `n` to themselves. This will increase both the
-					// `own` and `total` field.
-					debug_assert!(*per_thing == Perbill::one()); // TODO: deal with this: do we want it?
-
-					support.own_ring_balance = support.own_ring_balance.saturating_add(ring_balance);
-
-					support.own_kton_balance = support.own_kton_balance.saturating_add(kton_balance);
-
-					support.own_votes = support.own_votes.saturating_add(other_stake);
-					support.total_votes = support.total_votes.saturating_add(other_stake);
-				} else {
-					// This is a nomination from `n` to someone else. Increase `total` and add an entry
-					// inside `others`.
-					// For an astronomically rich validator with more astronomically rich
-					// set of nominators, this might saturate.
-					support.total_votes = support.total_votes.saturating_add(other_stake);
-
-					support.others.push(PhragmenStakedAssignment {
-						account_id: n.clone(),
-						ring_balance,
-						kton_balance,
-						votes: other_stake,
-					});
-				}
+				support.voters.push(PhragmenStakedAssignment {
+					account_id: n.clone(),
+					ring_balance,
+					kton_balance,
+					votes: other_stake,
+				});
+				support.total_votes = support.total_votes.saturating_add(other_stake);
 			}
 		}
 	}
@@ -413,8 +412,8 @@ pub fn equalize<AccountId, RingBalance, KtonBalance, FS>(
 	power_of: FS,
 ) where
 	AccountId: Ord + Clone,
-	RingBalance: Copy + SimpleArithmetic,
-	KtonBalance: Copy + SimpleArithmetic,
+	RingBalance: Copy + AtLeast32Bit,
+	KtonBalance: Copy + AtLeast32Bit,
 	for<'r> FS: Fn(&'r AccountId) -> Power,
 {
 	// prepare the data for equalise
@@ -447,15 +446,15 @@ fn do_equalize<AccountId, RingBalance, KtonBalance>(
 ) -> Votes
 where
 	AccountId: Ord + Clone,
-	RingBalance: Copy + SimpleArithmetic,
-	KtonBalance: Copy + SimpleArithmetic,
+	RingBalance: Copy + AtLeast32Bit,
+	KtonBalance: Copy + AtLeast32Bit,
 {
 	let to_votes = |p: Power| p as Votes;
 	let budget = to_votes(budget_balance);
 
 	// Nothing to do. This voter had nothing useful.
-	// Defensive only. Assignment list should always be populated.
-	if elected_edges.is_empty() {
+	// Defensive only. Assignment list should always be populated. 1 might happen for self vote.
+	if elected_edges.is_empty() || elected_edges.len() == 1 {
 		return 0;
 	}
 
@@ -496,7 +495,7 @@ where
 	elected_edges.iter_mut().for_each(|e| {
 		if let Some(support) = support_map.get_mut(&e.account_id) {
 			support.total_votes = support.total_votes.saturating_sub(e.votes);
-			support.others.retain(|i_support| i_support.account_id != *voter);
+			support.voters.retain(|i_support| i_support.account_id != *voter);
 		}
 		e.votes = 0;
 	});
@@ -533,7 +532,9 @@ where
 		.saturating_sub(last_votes.saturating_mul(split_ways as Votes));
 	elected_edges.iter_mut().take(split_ways).for_each(|e| {
 		if let Some(support) = support_map.get_mut(&e.account_id) {
-			let votes = ((excess / split_ways as Votes) + last_votes).saturating_sub(support.total_votes);
+			let votes = (excess / split_ways as Votes)
+				.saturating_add(last_votes)
+				.saturating_sub(support.total_votes);
 			e.ring_balance = multiply_by_rational(e.ring_balance.saturated_into(), votes as _, e.votes as _)
 				.unwrap_or(0)
 				.saturated_into();
@@ -543,7 +544,7 @@ where
 			e.votes = votes;
 
 			support.total_votes = support.total_votes.saturating_add(e.votes);
-			support.others.push(PhragmenStakedAssignment {
+			support.voters.push(PhragmenStakedAssignment {
 				account_id: voter.clone(),
 				ring_balance: e.ring_balance,
 				kton_balance: e.kton_balance,

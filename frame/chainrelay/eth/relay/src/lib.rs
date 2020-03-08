@@ -1,4 +1,4 @@
-//!  prototype module for bridging in ethereum pow blockchain, including mainet and ropsten
+//! prototype module for bridging in ethereum pow blockchain, including mainet and ropsten.
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -12,13 +12,13 @@ use codec::{Decode, Encode};
 use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get};
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::RuntimeDebug;
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
-use ethash::{EthereumPatch, LightDAG};
-use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
-use sp_eth_primitives::{
+use eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
 };
+use ethash::{EthereumPatch, LightDAG};
+use merkle_patricia_trie::{trie::Trie, MerklePatriciaTrie, Proof};
 
 type DAG = LightDAG<EthereumPatch>;
 
@@ -30,18 +30,13 @@ pub trait Trait: system::Trait {
 
 /// Familial details concerning a block
 #[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
-pub struct BlockDetails {
-	/// Block number
-	pub height: EthBlockNumber,
-	pub hash: H256,
+pub struct HeaderInfo {
 	/// Total difficulty of the block and all its parents
 	pub total_difficulty: U256,
-	//	/// Parent block hash
-	//	pub parent: H256,
-	//	/// List of children block hashes
-	//	pub children: Vec<H256>,
-	//	/// Whether the block is considered finalized
-	//	pub is_finalized: bool,
+	/// Parent hash of the header
+	pub parent_hash: H256,
+	/// Block number
+	pub number: EthBlockNumber,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
@@ -54,24 +49,21 @@ pub struct EthReceiptProof {
 decl_storage! {
 	trait Store for Module<T: Trait> as EthRelay {
 		/// Anchor block that works as genesis block
-		pub BeginHeader get(fn begin_header): Option<EthHeader>;
+		pub GenesisHeader get(fn begin_header): Option<EthHeader>;
 
-		/// Info of the best block header for now
+		/// Hash of best block header
 		pub BestHeaderHash get(fn best_header_hash): H256;
 
-		pub HeaderOf get(header_of): map H256 => Option<EthHeader>;
+		pub CanonicalHeaderHashOf get(fn canonical_header_hash_of): map hasher(blake2_256) u64 => H256;
 
-		pub HeaderDetailsOf get(header_details_of): map H256 => Option<BlockDetails>;
+		pub HeaderOf get(fn header_of): map hasher(blake2_256) H256 => Option<EthHeader>;
 
-		/// Block delay for verify transaction
-		pub FinalizeNumber get(finalize_number): Option<u64>;
+		pub HeaderInfoOf get(fn header_info_of): map hasher(blake2_256) H256 => Option<HeaderInfo>;
 
-//		pub BestHashOf get(best_hash_of): map u64 => Option<H256>;
+		/// Number of blocks finality
+		pub NumberOfBlocksFinality get(fn number_of_blocks_finality) config(): u64 = 30;
 
-//		pub HashsOf get(hashs_of): map u64 => Vec<H256>;
-
-//		pub HeaderForIndex get(header_for_index): map H256 => Vec<(u64, T::Hash)>;
-//		pub UnverifiedHeader get(unverified_header): map PrevHash => Vec<Header>;
+		pub NumberOfBlocksSafe get(fn number_of_blocks_safe) config(): u64 = 10;
 
 		pub CheckAuthorities get(fn check_authorities) config(): bool = true;
 		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
@@ -85,8 +77,6 @@ decl_storage! {
 
 				// Discard the result even it fail.
 				let _ = <Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
-
-				// TODO: initialize other parameters.
 			}
 		});
 	}
@@ -99,13 +89,13 @@ decl_module! {
 	{
 		fn deposit_event() = default;
 
+		// TODO: Just for easy testing.
 		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
 			let relayer = ensure_signed(origin)?;
 			if Self::check_authorities() {
 				ensure!(Self::authorities().contains(&relayer), "Account - NO PRIVILEGES");
 			}
 
-			// TODO: Just for easy testing.
 			Self::init_genesis_header(&header, genesis_difficulty)?;
 
 			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(relayer, header, genesis_difficulty));
@@ -116,12 +106,18 @@ decl_module! {
 			if Self::check_authorities() {
 				ensure!(Self::authorities().contains(&relayer), "Account - NO PRIVILEGES");
 			}
-			// 1. There must be a corresponding parent hash
-			// 2. Update best hash if the current block number is larger than current best block's number （Chain reorg）
+
+			let header_hash = header.hash();
+
+			ensure!(!HeaderInfoOf::get(&header_hash).is_some(), "The header is already known.");
+
+//			let best_header_hash = Self::best_header_hash();
+//			if self.best_header_hash == Default::default() {
+//				Self::maybe_store_header(&header)?;
+//			}
 
 			Self::verify_header(&header)?;
-
-			Self::store_header(&header)?;
+			Self::maybe_store_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::RelayHeader(relayer, header));
 		}
@@ -137,19 +133,13 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::VerifyProof(relayer, verified_receipt, proof_record));
 		}
 
-		// Assuming that there are at least one honest worker submiting headers
-		// This method may be merged together with relay_header
-		pub fn challenge_header(origin, _header: EthHeader) {
-			let _relayer = ensure_signed(origin)?;
-			// if header confirmed then return
-			// if header in unverified header then challenge
-		}
-
 		pub fn add_authority(origin, who: T::AccountId) {
 			let _me = ensure_root(origin)?;
 
 			if !Self::authorities().contains(&who) {
-				<Authorities<T>>::mutate(|l| l.push(who));
+				<Authorities<T>>::mutate(|l| l.push(who.clone()));
+
+				<Module<T>>::deposit_event(RawEvent::AddAuthority(who));
 			}
 		}
 
@@ -160,6 +150,8 @@ decl_module! {
 				.into_iter()
 				.position(|who_| who_ == who) {
 				<Authorities<T>>::mutate(|l| l.remove(i));
+
+				<Module<T>>::deposit_event(RawEvent::RemoveAuthority(who));
 			}
 		}
 
@@ -167,6 +159,8 @@ decl_module! {
 			let _me = ensure_root(origin)?;
 
 			CheckAuthorities::put(!Self::check_authorities());
+
+			<Module<T>>::deposit_event(RawEvent::ToggleCheckAuthorities(Self::check_authorities()));
 		}
 	}
 }
@@ -179,9 +173,9 @@ decl_event! {
 		SetGenesisHeader(AccountId, EthHeader, u64),
 		RelayHeader(AccountId, EthHeader),
 		VerifyProof(AccountId, Receipt, EthReceiptProof),
-
-		// Develop
-		// Print(u64),
+		AddAuthority(AccountId),
+		RemoveAuthority(AccountId),
+		ToggleCheckAuthorities(bool),
 	}
 }
 
@@ -191,7 +185,6 @@ pub trait VerifyEthReceipts {
 }
 
 impl<T: Trait> Module<T> {
-	// TOOD: what is the total difficulty for genesis/begin header
 	pub fn init_genesis_header(header: &EthHeader, genesis_difficulty: u64) -> Result<(), &'static str> {
 		let header_hash = header.hash();
 
@@ -201,13 +194,13 @@ impl<T: Trait> Module<T> {
 
 		HeaderOf::insert(&header_hash, header);
 
-		// initialize the header details, including total difficulty.
-		HeaderDetailsOf::insert(
+		// initialize header info, including total difficulty.
+		HeaderInfoOf::insert(
 			&header_hash,
-			BlockDetails {
-				height: block_number,
-				hash: header_hash,
+			HeaderInfo {
+				parent_hash: *header.parent_hash(),
 				total_difficulty: genesis_difficulty.into(),
+				number: block_number,
 			},
 		);
 
@@ -216,8 +209,22 @@ impl<T: Trait> Module<T> {
 			*hash = header_hash;
 		});
 
-		// Initialize the header.
-		BeginHeader::put(header.clone());
+		CanonicalHeaderHashOf::insert(block_number, &header_hash);
+
+		// Removing headers with larger numbers, if there are.
+		let mut number = block_number + 1;
+		loop {
+			// If the current block hash is 0 (unlikely), or the previous hash matches the
+			// current hash, then we chains converged and can stop now.
+			if !CanonicalHeaderHashOf::contains_key(&number) {
+				break;
+			}
+
+			CanonicalHeaderHashOf::remove(&number);
+			number += 1;
+		}
+
+		GenesisHeader::put(header.clone());
 
 		Ok(())
 	}
@@ -229,7 +236,6 @@ impl<T: Trait> Module<T> {
 		ensure!(header.hash() == header.re_compute_hash(), "Header Hash - MISMATCHED");
 
 		let parent_hash = header.parent_hash();
-
 		let number = header.number();
 
 		ensure!(
@@ -237,7 +243,7 @@ impl<T: Trait> Module<T> {
 			"Block Number - TOO SMALL",
 		);
 
-		// TODO: check parent hash is the last header, ignore or reorg
+		// There must be a corresponding parent hash
 		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
 		ensure!((prev_header.number() + 1) == number, "Block Number - MISMATCHED");
 
@@ -274,46 +280,101 @@ impl<T: Trait> Module<T> {
 		Ok(())
 	}
 
-	fn store_header(header: &EthHeader) -> Result<(), &'static str> {
+	fn maybe_store_header(header: &EthHeader) -> Result<(), &'static str> {
+		let best_header_info =
+			Self::header_info_of(Self::best_header_hash()).ok_or("Best Header Detail - NOT EXISTED")?;
+
+		if best_header_info.number > header.number + Self::number_of_blocks_finality() {
+			return Err("Header Too Old: It's too late to add this block header.");
+		}
+
 		let header_hash = header.hash();
-		let block_number = header.number();
-
-		let prev_total_difficulty = Self::header_details_of(header.parent_hash())
-			.ok_or("Previous Header Detail - NOT EXISTED")?
-			.total_difficulty;
-		let best_header_hash = Self::best_header_hash();
-		//			let best_header = Self::header_of(best_header_hash).ok_or("Can not find best header.");
-		let best_header_details =
-			Self::header_details_of(best_header_hash).ok_or("Best Header Detail - NOT EXISTED")?;
-
 		HeaderOf::insert(header_hash, header);
 
-		HeaderDetailsOf::insert(
-			header_hash,
-			BlockDetails {
-				height: block_number,
-				hash: header_hash,
-				total_difficulty: prev_total_difficulty + header.difficulty(),
-			},
-		);
+		let parent_total_difficulty = Self::header_info_of(header.parent_hash())
+			.ok_or("Previous Header Detail - NOT EXISTED")?
+			.total_difficulty;
 
-		// TODO: Check total difficulty and reorg if necessary.
-		if prev_total_difficulty + header.difficulty() > best_header_details.total_difficulty {
+		let block_number = header.number();
+		let header_info = HeaderInfo {
+			number: block_number,
+			parent_hash: *header.parent_hash(),
+			total_difficulty: parent_total_difficulty + header.difficulty(),
+		};
+
+		HeaderInfoOf::insert(&header_hash, header_info);
+
+		// Check total difficulty and re-org if necessary.
+		if header_info.total_difficulty > best_header_info.total_difficulty
+			|| (header_info.total_difficulty == best_header_info.total_difficulty
+				&& header.difficulty % 2 == U256::default())
+		{
+			// The new header is the tip of the new canonical chain.
+			// We need to update hashes of the canonical chain to match the new header.
+
+			// If the new header has a lower number than the previous header, we need to cleaning
+			// it going forward.
+			if best_header_info.number > header_info.number {
+				for number in header_info.number + 1..=best_header_info.number {
+					CanonicalHeaderHashOf::remove(&number);
+				}
+			}
+			// Replacing the global best header hash.
 			BestHeaderHash::mutate(|hash| {
 				*hash = header_hash;
 			});
+
+			CanonicalHeaderHashOf::insert(&header_info.number, &header_hash);
+
+			// Replacing past hashes until we converge into the same parent.
+			// Starting from the parent hash.
+			let mut number = header.number - 1;
+			let mut current_hash = header_info.parent_hash;
+			loop {
+				let prev_value = CanonicalHeaderHashOf::get(&number);
+				// If the current block hash is 0 (unlikely), or the previous hash matches the
+				// current hash, then we chains converged and can stop now.
+				if number == 0 || prev_value == current_hash {
+					break;
+				}
+
+				CanonicalHeaderHashOf::insert(&number, &current_hash);
+
+				// Check if there is an info to get the parent hash
+				if let Some(info) = HeaderInfoOf::get(&current_hash) {
+					current_hash = info.parent_hash;
+				} else {
+					break;
+				}
+				number -= 1;
+			}
 		}
 
 		Ok(())
 	}
 
+	// TODO: Economic model design required for the relay
 	fn _punish(_who: &T::AccountId) -> Result<(), &'static str> {
 		unimplemented!()
 	}
 }
 
 impl<T: Trait> VerifyEthReceipts for Module<T> {
+	/// confirm that the block hash is right
+	/// get the receipt MPT trie root from the block header
+	/// Using receipt MPT trie root to verify the proof and index etc.
 	fn verify_receipt(proof_record: &EthReceiptProof) -> Result<Receipt, &'static str> {
+		let info = Self::header_info_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+		let canonical_hash = Self::canonical_header_hash_of(info.number);
+		if proof_record.header_hash != canonical_hash {
+			return Err("Header - NOT CANONICAL");
+		}
+
+		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or("Header - Best Header Not Found")?;
+		if best_info.number < info.number + Self::number_of_blocks_safe() {
+			return Err("Header - NOT SAFE");
+		}
+
 		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
 		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
 		let key = rlp::encode(&proof_record.index);
@@ -323,8 +384,5 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		let receipt = rlp::decode(&value).map_err(|_| "Deserialize Receipt - FAILED")?;
 
 		Ok(receipt)
-		// confirm that the block hash is right
-		// get the receipt MPT trie root from the block header
-		// Using receipt MPT trie root to verify the proof and index etc.
 	}
 }

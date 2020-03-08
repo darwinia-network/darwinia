@@ -2,10 +2,14 @@
 members = [
 	"bin/node/cli",
 	"bin/node/executor",
+	"bin/node/inspect",
 	"bin/node/primitives",
 	"bin/node/rpc-client",
 	"bin/node/rpc",
 	"bin/node/runtime",
+# FIXME
+#	"bin/node/testing",
+	"bin/node/transaction-factory",
 	"client/cli",
 	"frame/balances/kton",
 	"frame/balances/ring",
@@ -16,10 +20,11 @@ members = [
 	"frame/staking",
 	"frame/support",
 	"frame/treasury",
+	"frame/vesting",
 	"primitives/ethash",
 	"primitives/merkle-patricia-trie",
 	"primitives/phragmen",
-	"primitives/sp-eth-primitives",
+	"primitives/eth-primitives",
 ]
 
 [profile.release]

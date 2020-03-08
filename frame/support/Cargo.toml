@@ -1,8 +1,12 @@
 [package]
 name = "darwinia-support"
-version = "0.4.0"
-authors = ["darwinia <hello@darwinia.network>"]
+version = "0.5.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Support code for Darwinia runtime"
 edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
 # crates.io
@@ -10,9 +14,9 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 num-traits = { version = "0.2.8", default-features = false }
 
 # github.com
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [features]
 default = ["std"]

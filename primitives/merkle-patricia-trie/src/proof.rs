@@ -1,5 +1,5 @@
 use rlp::{Decodable, DecoderError, Encodable, Rlp, RlpStream};
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
 #[derive(Clone)]
 #[cfg_attr(feature = "std", derive(Debug, PartialEq))]

@@ -1,0 +1,31 @@
+# Kton
+
+To encourage users to make long term commitments and pledge, users can choose to lock RING for 3 - 36 months in the process of Staking, and the system will offer a KTON token as reward for users participating in Staking. During the committed pledge period, users can not unlock their RING. (Unless pay triple amounts of KTON as penalty)
+
+As a result, during RING staking process, user can choose to **lock RING for a period to receive KTON**. The initial supply amount of KTON should be zero, yet before Darwinia Mainnet launch, some users have already started locking their RING in Evolution Land, so there will be some KTON supply at the time of mainnet launch. The earliest design to obtain the KTON by locking the RING appears in the Gringotts of Evolution Land. The related introduction can refer to the Gringotts KTON model [5].
+
+KTON can be pledged to receive Staking power, so as to participate POS mining as well. User may Staking via pledge KTON, if user take back their staking KTON, then related POS mining is stopped, and it takes 14 days for unpledged KTON to arrive.
+
+## FAQ
+
+### What is Kton?
+
+**KTON** is the staking and governance credential of Darwinia Network, KTON can **only obtained by locking RING**, the initial supply is 0.
+
+### Where Kton from?
+
+Users can choose to lock RING for 3 - 36 months in the process of Staking, and the system will offer a KTON token as reward for users participating in Staking. 
+
+### When Kton spends?
+
+1. Transfer to other accounts.
+
+2. Burned by slashed.
+
+### What will happen after slashing?
+
+Slashed token goes to tresure.
+
+
+---
+(5): https://forum.evolution.land/topics/55

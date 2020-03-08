@@ -11,7 +11,6 @@
 //! hasn't been tested.
 
 #![warn(missing_docs)]
-#![warn(unused_extern_crates)]
 
 pub mod chain_spec;
 
@@ -22,12 +21,16 @@ mod browser;
 #[cfg(feature = "cli")]
 mod cli;
 #[cfg(feature = "cli")]
+mod command;
+#[cfg(feature = "cli")]
 mod factory_impl;
 
 #[cfg(feature = "browser")]
 pub use browser::*;
 #[cfg(feature = "cli")]
 pub use cli::*;
+#[cfg(feature = "cli")]
+pub use command::*;
 
 /// The chain specification option.
 #[derive(Clone, Debug, PartialEq)]

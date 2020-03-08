@@ -4,7 +4,7 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
-use wasm_builder_runner::{build_current_project_with_rustflags, WasmBuilderSource};
+use wasm_builder_runner::WasmBuilder;
 
 fn main() {
 	fs::write(
@@ -16,12 +16,10 @@ fn main() {
 	)
 	.unwrap();
 
-	build_current_project_with_rustflags(
-		"wasm_binary.rs",
-		// TODO: update version
-		WasmBuilderSource::Crates("1.0.8"),
-		// This instructs LLD to export __heap_base as a global variable, which is used by the
-		// external memory allocator.
-		"-Clink-arg=--export=__heap_base",
-	);
+	WasmBuilder::new()
+		.with_current_project()
+		.with_wasm_builder_from_crates("1.0.9")
+		.export_heap_base()
+		.import_memory()
+		.build()
 }

@@ -1,10 +1,12 @@
 [package]
 name = "darwinia-eth-relay"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "FRAME pallet to relay Ethereum headers"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
 # crates.io
@@ -12,24 +14,26 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-frame-system = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
-sp-runtime = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-std = { version = "2.0.0", default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
 
 # darwinia
 ethash = { default-features = false, path = "../../../../primitives/ethash" }
+eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
 merkle-patricia-trie = { default-features = false, path = "../../../../primitives/merkle-patricia-trie" }
-sp-eth-primitives = { default-features = false, path = "../../../../primitives/sp-eth-primitives" }
 
 [dev-dependencies]
 hex-literal = "0.2.1"
 keccak-hasher = "0.15.2"
 rustc-hex = "2.0"
 
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
-sp-io = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-develop" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [features]
 default = ["std"]
@@ -39,11 +43,13 @@ std = [
 
 	"frame-support/std",
 	"frame-system/std",
-	"rlp/std",
+
 	"sp-runtime/std",
 	"sp-std/std",
 
+	"rlp/std",
+
 	"ethash/std",
+	"eth-primitives/std",
 	"merkle-patricia-trie/std",
-	"sp-eth-primitives/std",
 ]

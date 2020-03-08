@@ -1,7 +1,7 @@
 use hash::keccak;
 use hashbrown::{HashMap, HashSet};
 use rlp::{Prototype, Rlp, RlpStream};
-use sp_std::{cell::RefCell, rc::Rc, vec, vec::Vec};
+use sp_std::{cell::RefCell, prelude::*, rc::Rc, vec};
 
 use crate::{
 	db::MemoryDB,
@@ -170,7 +170,7 @@ impl Trie for MerklePatriciaTrie {
 
 impl MerklePatriciaTrie {
 	pub fn iter(&self) -> TrieIterator {
-		let mut nodes = Vec::new();
+		let mut nodes = vec![];
 		nodes.push((self.root.clone()).into());
 		TrieIterator {
 			trie: self,

@@ -1,4 +1,4 @@
-use sp_std::{cell::RefCell, rc::Rc, vec::Vec};
+use sp_std::{cell::RefCell, prelude::*, rc::Rc};
 
 use crate::nibbles::Nibbles;
 
