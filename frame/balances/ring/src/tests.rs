@@ -15,7 +15,6 @@ macro_rules! decl_tests {
 		};
 
 		use crate::*;
-		use darwinia_support::balance::lock::*;
 
 		const ID_1: LockIdentifier = *b"1       ";
 		const ID_2: LockIdentifier = *b"2       ";
