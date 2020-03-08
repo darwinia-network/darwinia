@@ -984,6 +984,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-claims"
+version = "0.5.0"
+dependencies = [
+ "darwinia-ring",
+ "darwinia-vesting",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "libsecp256k1",
+ "parity-scale-codec",
+ "rustc-hex",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+ "tiny-keccak 1.5.0",
+]
+
+[[package]]
 name = "darwinia-cli"
 version = "0.5.0"
 dependencies = [
