@@ -27,5 +27,5 @@ members = [
 ]
 
 [profile.release]
-# Substrate runtime requires unwinding.
+# Darwinia runtime requires unwinding.
 panic = "unwind"

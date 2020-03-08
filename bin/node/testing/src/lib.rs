@@ -1,4 +1,4 @@
-//! A set of testing utilities for Substrate Node.
+//! A set of testing utilities for Darwinia Node.
 
 #![warn(missing_docs)]
 
