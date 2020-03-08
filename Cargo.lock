@@ -1690,22 +1690,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-benchmarking-cli"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
-dependencies = [
- "frame-benchmarking",
- "parity-scale-codec",
- "sc-cli",
- "sc-client",
- "sc-client-db",
- "sc-executor",
- "sc-service",
- "sp-runtime",
- "structopt",
-]
-
-[[package]]
 name = "frame-executive"
 version = "2.0.0-alpha.3"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
@@ -3587,7 +3571,6 @@ version = "0.5.0"
 dependencies = [
  "assert_cmd",
  "darwinia-cli",
- "frame-benchmarking-cli",
  "frame-support",
  "frame-system",
  "futures 0.3.4",
@@ -3655,7 +3638,6 @@ dependencies = [
 name = "node-executor"
 version = "0.5.0"
 dependencies = [
- "frame-benchmarking",
  "node-primitives",
  "node-runtime",
  "parity-scale-codec",
@@ -5481,45 +5463,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "sc-cli"
-version = "0.8.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
-dependencies = [
- "ansi_term 0.12.1",
- "app_dirs",
- "atty",
- "chrono",
- "clap",
- "derive_more",
- "env_logger 0.7.1",
- "fdlimit",
- "futures 0.3.4",
- "lazy_static",
- "log 0.4.8",
- "names",
- "parity-util-mem",
- "regex",
- "rpassword",
- "sc-client-api",
- "sc-informant",
- "sc-network",
- "sc-service",
- "sc-telemetry",
- "sc-tracing",
- "serde_json",
- "sp-blockchain",
- "sp-core",
- "sp-keyring",
- "sp-panic-handler",
- "sp-runtime",
- "sp-state-machine",
- "structopt",
- "substrate-prometheus-endpoint",
- "time",
- "tokio 0.2.13",
 ]
 
 [[package]]

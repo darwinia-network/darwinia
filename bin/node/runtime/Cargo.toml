@@ -35,7 +35,7 @@ sp-version = { default-features = false, git = "https://github.com/darwinia-netw
 node-primitives = { default-features = false, path = "../primitives" }
 
 # frame dependencies
-# FIXME
+# TODO benchmarking
 #frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-executive = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -87,7 +87,7 @@ std = [
 	"rustc-hex",
 	"serde",
 
-# FIXME
+# TODO benchmarking
 #	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",

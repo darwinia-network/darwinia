@@ -10,5 +10,6 @@ native_executor_instance!(
 	pub Executor,
 	node_runtime::api::dispatch,
 	node_runtime::native_version,
-	frame_benchmarking::benchmarking::HostFunctions,
+	// TODO benchmarking
+	// frame_benchmarking::benchmarking::HostFunctions,
 );
