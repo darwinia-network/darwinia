@@ -2,7 +2,7 @@
 <html>
   <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-	<title>Substrate node</title>
+	<title>Darwinia node</title>
 	<link rel="shortcut icon" href="/favicon.png" />
 	<script type="module">
 import { start_client, default as init } from './pkg/node_cli.js';
@@ -16,7 +16,7 @@ async function start() {
 	log('Loading WASM');
 	await init('./pkg/node_cli_bg.wasm');
 	log('Fetching chain spec');
-	const chain_spec_response = await fetch("https://raw.githubusercontent.com/paritytech/substrate/master/bin/node/cli/res/flaming-fir.json");
+	const chain_spec_response = await fetch("https://raw.githubusercontent.com/darwinia-network/darwinia/master/bin/node/cli/res/crab.json");
 	const chain_spec_text = await chain_spec_response.text();
 
 	// Build our client.

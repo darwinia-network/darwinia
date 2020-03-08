@@ -10,7 +10,7 @@ mod common;
 fn factory_works() {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let status = Command::new(cargo_bin("substrate"))
+	let status = Command::new(cargo_bin("darwinia"))
 		.stdout(Stdio::null())
 		.args(&["factory", "--dev", "-d"])
 		.arg(base_path.path())

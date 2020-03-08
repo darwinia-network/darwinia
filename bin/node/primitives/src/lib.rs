@@ -1,4 +1,4 @@
-//! Low-level types used throughout the Substrate code.
+//! Low-level types used throughout the Darwinia.
 
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]

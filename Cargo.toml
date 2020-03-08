@@ -7,7 +7,7 @@ members = [
 	"bin/node/rpc-client",
 	"bin/node/rpc",
 	"bin/node/runtime",
-# FIXME
+# TODO benchmarking
 #	"bin/node/testing",
 	"bin/node/transaction-factory",
 	"client/cli",
@@ -28,5 +28,5 @@ members = [
 ]
 
 [profile.release]
-# Substrate runtime requires unwinding.
+# Darwinia runtime requires unwinding.
 panic = "unwind"

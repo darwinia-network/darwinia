@@ -828,7 +828,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	// FIXME
+	// TODO benchmarking
 	// impl frame_benchmarking::Benchmark<Block> for Runtime {
 	// 	fn dispatch_benchmark(
 	// 		module: Vec<u8>,
