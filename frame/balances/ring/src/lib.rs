@@ -285,10 +285,9 @@ decl_storage! {
 				)
 			}
 			for &(ref who, free_ring) in config.balances.iter() {
-				T::AccountStore::insert(who, AccountData {
-					free_ring,
-					..Default::default()
-				});
+				let mut account_data = T::AccountStore::get(who);
+				account_data.free_ring = free_ring;
+				T::AccountStore::insert(who, account_data);
 			}
 		});
 	}
