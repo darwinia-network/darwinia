@@ -2,15 +2,15 @@
 
 use std::str::FromStr;
 
+use frame_support::{assert_err, assert_ok};
 use hex_literal::hex;
 use rustc_hex::FromHex;
-use sr_primitives::{traits::Dispatchable, AccountId32};
-use support::{assert_err, assert_ok};
+use sp_runtime::{traits::Dispatchable, AccountId32};
 
 use crate::{mock::*, *};
-use darwinia_support::StakingLock;
-use sp_eth_primitives::{header::EthHeader, Bloom, EthAddress, H64};
-use staking::{RewardDestination, StakingBalances, StakingLedger, TimeDepositItem};
+use darwinia_support::balance::lock::StakingLock;
+use eth_primitives::{header::EthHeader, Bloom, EthAddress, H64};
+use pallet_staking::{RewardDestination, StakingBalance, StakingLedger, TimeDepositItem};
 
 #[test]
 fn verify_parse_token_redeem_proof() {
@@ -242,9 +242,9 @@ fn verify_redeem_deposit() {
 			let controller = AccountId32::from([1; 32]);
 
 			let _ = Ring::deposit_creating(&expect_account_id, 1);
-			assert_ok!(staking::Call::<Test>::bond(
+			assert_ok!(pallet_staking::Call::<Test>::bond(
 				controller.clone(),
-				StakingBalances::RingBalance(1),
+				StakingBalance::RingBalance(1),
 				RewardDestination::Controller,
 				0,
 			).dispatch(Origin::signed(expect_account_id.clone())));

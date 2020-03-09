@@ -154,7 +154,7 @@ fn submitted_transaction_should_be_valid() {
 		// add balance to the account
 		let author = extrinsic.signature.clone().unwrap().0;
 		let address = Indices::lookup(author).unwrap();
-		let data = pallet_balances::AccountData {
+		let data = pallet_balances::balance::AccountData {
 			free: 5_000_000_000_000,
 			..Default::default()
 		};

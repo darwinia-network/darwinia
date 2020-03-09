@@ -39,11 +39,15 @@ pallet-session = { git = "https://github.com/darwinia-network/substrate.git", ta
 
 sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-phragmen = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
-sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
 
-kton = { package = "darwinia-kton", path = "../../../balances/kton" }
-ring = { package = "darwinia-ring", path = '../../../balances/ring' }
-staking = { package = "darwinia-staking", path = "../../../staking" }
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+
+pallet-ring = { package = "darwinia-ring", path = "../../../../frame/balances/ring" }
+pallet-kton = { package = "darwinia-kton", path = "../../../../frame/balances/kton" }
+pallet-staking = { package = "darwinia-staking", path = "../../../../frame/staking" }
+darwinia-phragmen = { default-features = false, path = "../../../../primitives/phragmen" }
+
+sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [features]
 default = ["std"]

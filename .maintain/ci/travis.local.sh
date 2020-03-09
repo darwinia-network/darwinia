@@ -3,6 +3,8 @@ readonly TEST_CRATES=(
     'ring'
     'staking'
     'treasury'
+    'darwinia-eth-relay'
+    'darwinia-eth-backing'
 );
 
 function main() {

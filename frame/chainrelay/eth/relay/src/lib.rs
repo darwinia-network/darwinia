@@ -9,7 +9,7 @@ mod mock;
 mod tests;
 
 use codec::{Decode, Encode};
-use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get};
+use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get, weights::SimpleDispatchInfo};
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
@@ -88,6 +88,18 @@ decl_module! {
 		origin: T::Origin
 	{
 		fn deposit_event() = default;
+
+		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
+		fn set_number_of_blocks_finality(origin, #[compact] new: u64) {
+			ensure_root(origin)?;
+			NumberOfBlocksFinality::put(new);
+		}
+
+		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
+		fn set_number_of_blocks_safe(origin, #[compact] new: u64) {
+			ensure_root(origin)?;
+			NumberOfBlocksSafe::put(new);
+		}
 
 		// TODO: Just for easy testing.
 		pub fn reset_genesis_header(origin, header: EthHeader, genesis_difficulty: u64) {
