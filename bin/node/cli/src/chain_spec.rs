@@ -18,7 +18,7 @@ use sc_telemetry::TelemetryEndpoints;
 use serde::{Deserialize, Serialize};
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
+use sp_core::{sr25519, Pair, Public};
 use sp_runtime::{
 	traits::{IdentifyAccount, Verify},
 	Perbill,
@@ -98,9 +98,55 @@ pub fn get_authority_keys_from_seed(
 	)
 }
 
+/// Properties for Darwinia Crab Testnet
+fn crab_properties() -> Properties {
+	let mut properties = Properties::new();
+
+	properties.insert("ss58Format".into(), 42.into());
+	properties.insert("tokenDecimals".into(), 9.into());
+	properties.insert("tokenSymbol".into(), "CRING".into());
+	properties.insert("ktonTokenDecimals".into(), 9.into());
+	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
+
+	properties
+}
+
+/// Endowed accounts for development
+fn development_endowed_accounts() -> Vec<AccountId> {
+	vec![
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Bob"),
+		get_account_id_from_seed::<sr25519::Public>("Charlie"),
+		get_account_id_from_seed::<sr25519::Public>("Dave"),
+		get_account_id_from_seed::<sr25519::Public>("Eve"),
+		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+		get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+		get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+		get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+		get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+		get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+	]
+}
+/// Endowed accounts for production
+fn production_endowed_accounts() -> Vec<AccountId> {
+	vec![
+		hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
+		hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
+		hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
+		hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
+		hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
+		hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
+		hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
+		hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
+		hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
+		hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
+	]
+}
+
 /// Helper function to create GenesisConfig for darwinia
 /// is_testnet: under test net we will use Alice & Bob as seed to generate keys,
-/// but in production enviroment, these accounts will use preset keys
+/// but in production environment, these accounts will use preset keys
 pub fn darwinia_genesis(
 	initial_authorities: Vec<(
 		AccountId,
@@ -112,7 +158,6 @@ pub fn darwinia_genesis(
 	)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	enable_println: bool,
 	is_testnet: bool,
 ) -> GenesisConfig {
 	let eth_relay_authorities: Vec<AccountId> = if is_testnet {
@@ -166,7 +211,7 @@ pub fn darwinia_genesis(
 		}),
 		pallet_contracts: Some(ContractsConfig {
 			current_schedule: pallet_contracts::Schedule {
-				enable_println, // this should only be enabled on development chains
+				enable_println: is_testnet, // this should only be enabled on development chains
 				..Default::default()
 			},
 			gas_price: 1 * MICRO,
@@ -186,7 +231,7 @@ pub fn darwinia_genesis(
 			pot: 0,
 			max_members: 999,
 		}),
-
+		//  Custom Module
 		pallet_eth_backing: Some(EthBackingConfig {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
@@ -233,127 +278,13 @@ pub fn darwinia_genesis(
 	}
 }
 
-/// Staging testnet config.
-pub fn staging_testnet_config() -> ChainSpec {
-	fn staging_testnet_config_genesis() -> GenesisConfig {
-		// stash, controller, session-key
-		// generated with secret:
-		// for i in 1 2 3 4 ; do for j in stash controller; do subkey inspect "$secret"/fir/$j/$i; done; done
-		// and
-		// for i in 1 2 3 4 ; do for j in session; do subkey --ed25519 inspect "$secret"//fir//$j//$i; done; done
-
-		let initial_authorities: Vec<(
-			AccountId,
-			AccountId,
-			GrandpaId,
-			BabeId,
-			ImOnlineId,
-			AuthorityDiscoveryId,
-		)> = vec![
-			(
-				// 5Fbsd6WXDGiLTxunqeK5BATNiocfCqu9bS1yArVjCgeBLkVy
-				hex!["9c7a2ee14e565db0c69f78c7b4cd839fbf52b607d867e9e9c5a79042898a0d12"].into(),
-				// 5EnCiV7wSHeNhjW3FSUwiJNkcc2SBkPLn5Nj93FmbLtBjQUq
-				hex!["781ead1e2fa9ccb74b44c19d29cb2a7a4b5be3972927ae98cd3877523976a276"].into(),
-				// 5Fb9ayurnxnaXj56CjmyQLBiadfRCqUbL2VWNbbe1nZU6wiC
-				hex!["9becad03e6dcac03cee07edebca5475314861492cdfc96a2144a67bbe9699332"].unchecked_into(),
-				// 5EZaeQ8djPcq9pheJUhgerXQZt9YaHnMJpiHMRhwQeinqUW8
-				hex!["6e7e4eb42cbd2e0ab4cae8708ce5509580b8c04d11f6758dbf686d50fe9f9106"].unchecked_into(),
-				// 5EZaeQ8djPcq9pheJUhgerXQZt9YaHnMJpiHMRhwQeinqUW8
-				hex!["6e7e4eb42cbd2e0ab4cae8708ce5509580b8c04d11f6758dbf686d50fe9f9106"].unchecked_into(),
-				// 5EZaeQ8djPcq9pheJUhgerXQZt9YaHnMJpiHMRhwQeinqUW8
-				hex!["6e7e4eb42cbd2e0ab4cae8708ce5509580b8c04d11f6758dbf686d50fe9f9106"].unchecked_into(),
-			),
-			(
-				// 5ERawXCzCWkjVq3xz1W5KGNtVx2VdefvZ62Bw1FEuZW4Vny2
-				hex!["68655684472b743e456907b398d3a44c113f189e56d1bbfd55e889e295dfde78"].into(),
-				// 5Gc4vr42hH1uDZc93Nayk5G7i687bAQdHHc9unLuyeawHipF
-				hex!["c8dc79e36b29395413399edaec3e20fcca7205fb19776ed8ddb25d6f427ec40e"].into(),
-				// 5EockCXN6YkiNCDjpqqnbcqd4ad35nU4RmA1ikM4YeRN4WcE
-				hex!["7932cff431e748892fa48e10c63c17d30f80ca42e4de3921e641249cd7fa3c2f"].unchecked_into(),
-				// 5DhLtiaQd1L1LU9jaNeeu9HJkP6eyg3BwXA7iNMzKm7qqruQ
-				hex!["482dbd7297a39fa145c570552249c2ca9dd47e281f0c500c971b59c9dcdcd82e"].unchecked_into(),
-				// 5DhLtiaQd1L1LU9jaNeeu9HJkP6eyg3BwXA7iNMzKm7qqruQ
-				hex!["482dbd7297a39fa145c570552249c2ca9dd47e281f0c500c971b59c9dcdcd82e"].unchecked_into(),
-				// 5DhLtiaQd1L1LU9jaNeeu9HJkP6eyg3BwXA7iNMzKm7qqruQ
-				hex!["482dbd7297a39fa145c570552249c2ca9dd47e281f0c500c971b59c9dcdcd82e"].unchecked_into(),
-			),
-			(
-				// 5DyVtKWPidondEu8iHZgi6Ffv9yrJJ1NDNLom3X9cTDi98qp
-				hex!["547ff0ab649283a7ae01dbc2eb73932eba2fb09075e9485ff369082a2ff38d65"].into(),
-				// 5FeD54vGVNpFX3PndHPXJ2MDakc462vBCD5mgtWRnWYCpZU9
-				hex!["9e42241d7cd91d001773b0b616d523dd80e13c6c2cab860b1234ef1b9ffc1526"].into(),
-				// 5E1jLYfLdUQKrFrtqoKgFrRvxM3oQPMbf6DfcsrugZZ5Bn8d
-				hex!["5633b70b80a6c8bb16270f82cca6d56b27ed7b76c8fd5af2986a25a4788ce440"].unchecked_into(),
-				// 5DhKqkHRkndJu8vq7pi2Q5S3DfftWJHGxbEUNH43b46qNspH
-				hex!["482a3389a6cf42d8ed83888cfd920fec738ea30f97e44699ada7323f08c3380a"].unchecked_into(),
-				// 5DhKqkHRkndJu8vq7pi2Q5S3DfftWJHGxbEUNH43b46qNspH
-				hex!["482a3389a6cf42d8ed83888cfd920fec738ea30f97e44699ada7323f08c3380a"].unchecked_into(),
-				// 5DhKqkHRkndJu8vq7pi2Q5S3DfftWJHGxbEUNH43b46qNspH
-				hex!["482a3389a6cf42d8ed83888cfd920fec738ea30f97e44699ada7323f08c3380a"].unchecked_into(),
-			),
-			(
-				// 5HYZnKWe5FVZQ33ZRJK1rG3WaLMztxWrrNDb1JRwaHHVWyP9
-				hex!["f26cdb14b5aec7b2789fd5ca80f979cef3761897ae1f37ffb3e154cbcc1c2663"].into(),
-				// 5EPQdAQ39WQNLCRjWsCk5jErsCitHiY5ZmjfWzzbXDoAoYbn
-				hex!["66bc1e5d275da50b72b15de072a2468a5ad414919ca9054d2695767cf650012f"].into(),
-				// 5DMa31Hd5u1dwoRKgC4uvqyrdK45RHv3CpwvpUC1EzuwDit4
-				hex!["3919132b851ef0fd2dae42a7e734fe547af5a6b809006100f48944d7fae8e8ef"].unchecked_into(),
-				// 5C4vDQxA8LTck2xJEy4Yg1hM9qjDt4LvTQaMo4Y8ne43aU6x
-				hex!["00299981a2b92f878baaf5dbeba5c18d4e70f2a1fcd9c61b32ea18daf38f4378"].unchecked_into(),
-				// 5C4vDQxA8LTck2xJEy4Yg1hM9qjDt4LvTQaMo4Y8ne43aU6x
-				hex!["00299981a2b92f878baaf5dbeba5c18d4e70f2a1fcd9c61b32ea18daf38f4378"].unchecked_into(),
-				// 5C4vDQxA8LTck2xJEy4Yg1hM9qjDt4LvTQaMo4Y8ne43aU6x
-				hex!["00299981a2b92f878baaf5dbeba5c18d4e70f2a1fcd9c61b32ea18daf38f4378"].unchecked_into(),
-			),
-		];
-
-		// generated with secret: subkey inspect "$secret"/fir
-		let root_key: AccountId = hex![
-			// 5Ff3iXP75ruzroPWRP2FYBHWnmGGBSb63857BgnzCoXNxfPo
-			"9ee5e5bdc0ec239eb164f865ecc345ce4c88e76ee002e0f7e318097347471809"
-		]
-		.into();
-
-		let endowed_accounts: Vec<AccountId> = vec![root_key.clone()];
-
-		darwinia_genesis(initial_authorities, root_key, endowed_accounts, false, true)
-	}
-
-	let boot_nodes = vec![];
-	ChainSpec::from_genesis(
-		"Staging Testnet",
-		"staging_testnet",
-		staging_testnet_config_genesis,
-		boot_nodes,
-		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
-		None,
-		None,
-		Default::default(),
-	)
-}
-
 /// Development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
 	fn development_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
-				get_account_id_from_seed::<sr25519::Public>("Dave"),
-				get_account_id_from_seed::<sr25519::Public>("Eve"),
-				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-			],
-			true,
+			development_endowed_accounts(),
 			true,
 		)
 	}
@@ -364,8 +295,8 @@ pub fn development_config() -> ChainSpec {
 		development_config_genesis,
 		vec![],
 		None,
-		None,
-		None,
+		Some("DAR"),
+		Some(crab_properties()),
 		Default::default(),
 	)
 }
@@ -379,49 +310,26 @@ pub fn local_testnet_config() -> ChainSpec {
 				get_authority_keys_from_seed("Bob"),
 			],
 			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(), // 5FpQFHfKd1xQ9HLZLQoG1JAQSCJoUEVBELnKsKNcuRLZejJR
-			vec![
-				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
-				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
-				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
-				hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
-				hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
-				hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
-				hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
-				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
-				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
-				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
-			],
-			true,
+			production_endowed_accounts(),
 			true,
 		)
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Crab Testnet",
-		"crab_testnet",
+		"Darwinia Crab Local Testnet",
+		"crab_local_testnet",
 		crab_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
-		{
-			let mut properties = Properties::new();
-
-			properties.insert("ss58Format".into(), 42.into());
-
-			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "CRING".into());
-			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
-
-			Some(properties)
-		},
+		Some(crab_properties()),
 		Default::default(),
 	)
 }
 
 /// Crab testnet config generator
 pub fn gen_crab_testnet_config() -> ChainSpec {
-	fn crab_config_genesis() -> GenesisConfig {
+	fn gen_crab_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
 				(
@@ -442,19 +350,7 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 				),
 			],
 			hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
-			vec![
-				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(),
-				hex!["f29311a581558ded67b8bfd097e614ce8135f777e29777d07ec501adb0ddab08"].into(),
-				hex!["1098e3bf7b351d6210c61b05edefb3a2b88c9611db26fbed2c7136b6d8f9c90f"].into(),
-				hex!["f252bc67e45acc9b3852a0ef84ddfce6c9cef25193617ef1421c460ecc2c746f"].into(),
-				hex!["90ce56f84328b180fc55146709aa7038c18efd58f1f247410be0b1ddc612df27"].into(),
-				hex!["4ca516c4b95488d0e6e9810a429a010b5716168d777c6b1399d3ed61cce1715c"].into(),
-				hex!["e28573bb4d9233c799defe8f85fa80a66b43d47f4c1aef64bb8fffde1ecf8606"].into(),
-				hex!["20e2455350cbe36631e82ce9b12152f98a3738cb763e46e65d1a253806a26d1a"].into(),
-				hex!["9eccaca8a35f0659aed4df45455a855bcb3e7bff7bfc9d672b676bbb78988f0d"].into(),
-				hex!["98dba2d3252825f4cd1141ca4f41ea201a22b4e129a6c7253cea546dbb20e442"].into(),
-			],
-			false,
+			production_endowed_accounts(),
 			false,
 		)
 	}
@@ -462,21 +358,11 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 	ChainSpec::from_genesis(
 		"Darwinia Crab Testnet",
 		"crab_testnet",
-		crab_config_genesis,
+		gen_crab_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
 		Some("DAR"),
-		{
-			let mut properties = Properties::new();
-
-			properties.insert("ss58Format".into(), 42.into());
-			properties.insert("tokenDecimals".into(), 9.into());
-			properties.insert("tokenSymbol".into(), "CRING".into());
-			properties.insert("ktonTokenDecimals".into(), 9.into());
-			properties.insert("ktonTokenSymbol".into(), "CKTON".into());
-
-			Some(properties)
-		},
+		Some(crab_properties()),
 		Default::default(),
 	)
 }
@@ -546,7 +432,7 @@ pub(crate) mod tests {
 	}
 
 	#[test]
-	fn test_staging_test_net_chain_spec() {
-		staging_testnet_config().build_storage().unwrap();
+	fn test_gen_crab_testnet_chain_spec() {
+		gen_crab_testnet_config().build_storage().unwrap();
 	}
 }
