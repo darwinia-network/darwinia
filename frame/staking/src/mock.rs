@@ -8,16 +8,16 @@ use frame_support::{
 	weights::Weight,
 	StorageLinkedMap, StorageValue,
 };
-use pallet_staking::{
-	offence::{OffenceDetails, OnOffenceHandler},
-	SessionIndex,
-};
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
 	{KeyTypeId, Perbill},
+};
+use sp_staking::{
+	offence::{OffenceDetails, OnOffenceHandler},
+	SessionIndex,
 };
 
 use crate::*;
