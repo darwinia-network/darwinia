@@ -5,28 +5,29 @@
 //! Test utilities
 
 use hex_literal::hex;
-use std::{cell::RefCell, collections::HashSet};
+use std::cell::RefCell;
 
-use frame_support::{
-	assert_ok, impl_outer_origin, parameter_types,
-	traits::{Currency, FindAuthor, Get},
-	weights::Weight,
-	StorageLinkedMap, StorageValue,
-};
+use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
 	testing::{Header, UintAuthorityId},
-	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
-	{KeyTypeId, Perbill},
+	traits::{IdentifyAccount, IdentityLookup, OpaqueKeys, Verify},
+	{KeyTypeId, MultiSignature, Perbill},
 };
-use sp_staking::offence::{OffenceDetails, OnOffenceHandler};
+use sp_staking::SessionIndex;
 
-use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
+use pallet_staking::{EraIndex, Exposure, ExposureOf};
+
+use darwinia_phragmen::Power;
 
 use crate::*;
 
-pub type AccountId = u64;
+/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
+pub type Signature = MultiSignature;
+/// Some way of identifying an account on the chain. We intentionally make it equivalent
+/// to the public key of our transaction signing scheme.
+pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 pub type BlockNumber = u64;
 pub type Balance = u128;
 
@@ -49,19 +50,29 @@ pub const CAP: Balance = 10_000_000_000 * COIN;
 pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
-impl_outer_origin! {
-	pub enum Origin for Test  where system = system {}
+thread_local! {
+	static EXISTENTIAL_DEPOSIT: RefCell<Balance> = RefCell::new(0);
+	static SLASH_DEFER_DURATION: RefCell<EraIndex> = RefCell::new(0);
 }
 
-/// Author of block is always 11
-pub struct Author11;
-impl FindAuthor<u64> for Author11 {
-	fn find_author<'a, I>(_digests: I) -> Option<u64>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
-	{
-		Some(11)
+pub struct TestSessionHandler;
+impl pallet_session::SessionHandler<AccountId> for TestSessionHandler {
+	const KEY_TYPE_IDS: &'static [KeyTypeId] = &[key_types::DUMMY];
+
+	fn on_genesis_session<Ks: OpaqueKeys>(_validators: &[(AccountId, Ks)]) {}
+
+	fn on_new_session<Ks: OpaqueKeys>(
+		_changed: bool,
+		_validators: &[(AccountId, Ks)],
+		_queued_validators: &[(AccountId, Ks)],
+	) {
 	}
+
+	fn on_disabled(_validator_index: usize) {}
+}
+
+impl_outer_origin! {
+	pub enum Origin for Test  where system = system {}
 }
 
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
@@ -148,7 +159,7 @@ impl pallet_staking::Trait for Test {
 	type BondingDurationInBlockNumber = ();
 	type SlashDeferDuration = ();
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
-	type SessionInterface = ();
+	type SessionInterface = Self;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = ();
 	type RingSlash = ();
@@ -159,6 +170,28 @@ impl pallet_staking::Trait for Test {
 	type Cap = Cap;
 	type TotalPower = TotalPower;
 	type GenesisTime = GenesisTime;
+}
+
+parameter_types! {
+	pub const Period: BlockNumber = 1;
+	pub const Offset: BlockNumber = 0;
+	pub const UncleGenerations: u64 = 0;
+	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(25);
+}
+
+impl pallet_session::Trait for Test {
+	type Event = ();
+	type ValidatorId = AccountId;
+	type ValidatorIdOf = ();
+	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Test, Staking>;
+	type SessionHandler = TestSessionHandler;
+	type Keys = UintAuthorityId;
+	type DisabledValidatorsThreshold = ();
+}
+impl pallet_session::historical::Trait for Test {
+	type FullIdentification = Exposure<AccountId, Balance, Balance>;
+	type FullIdentificationOf = ExposureOf<Test>;
 }
 
 impl Trait for Test {
@@ -182,8 +215,6 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
-		self.set_associated_consts();
-
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 		let _ = GenesisConfig::<Test> {

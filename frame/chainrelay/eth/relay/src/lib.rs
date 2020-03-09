@@ -90,13 +90,13 @@ decl_module! {
 		fn deposit_event() = default;
 
 		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
-		fn set_number_of_blocks_finality(origin, #[compact] new: u64) {
+		pub fn set_number_of_blocks_finality(origin, #[compact] new: u64) {
 			ensure_root(origin)?;
 			NumberOfBlocksFinality::put(new);
 		}
 
 		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
-		fn set_number_of_blocks_safe(origin, #[compact] new: u64) {
+		pub fn set_number_of_blocks_safe(origin, #[compact] new: u64) {
 			ensure_root(origin)?;
 			NumberOfBlocksSafe::put(new);
 		}
