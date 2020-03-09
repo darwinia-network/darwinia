@@ -43,8 +43,6 @@ pub enum ChainSpec {
 	GenCrabTestnet,
 	/// The Crab testnet.
 	CrabTestnet,
-	/// Whatever the current runtime is with the "global testnet" defaults.
-	StagingTestnet,
 }
 
 /// Get a chain config from a spec setting.
@@ -53,7 +51,6 @@ impl ChainSpec {
 		Ok(match self {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
-			ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
 			ChainSpec::GenCrabTestnet => chain_spec::gen_crab_testnet_config(),
 			ChainSpec::CrabTestnet => chain_spec::crab_testnet_config()?,
 		})
@@ -63,7 +60,6 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"staging" => Some(ChainSpec::StagingTestnet),
 			"gen" => Some(ChainSpec::GenCrabTestnet),
 			"" | "crab" | "Crab" => Some(ChainSpec::CrabTestnet),
 			_ => None,

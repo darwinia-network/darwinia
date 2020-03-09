@@ -630,7 +630,7 @@ construct_runtime!(
 		Identity: pallet_identity::{Module, Call, Storage, Event<T>},
 		Society: pallet_society::{Module, Call, Storage, Config<T>, Event<T>},
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
-
+		// Custom Module
 		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},

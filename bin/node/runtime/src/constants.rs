@@ -36,9 +36,9 @@ pub mod time {
 	/// `SLOT_DURATION` should have the same value.
 	///
 	/// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
-	// Develop
+	// Development
 	pub const MILLISECS_PER_BLOCK: Moment = 3000;
-	// Prodution
+	// Production
 	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
