@@ -1,9 +1,5 @@
 //! Mock file for eth-backing.
 
-//! Test utilities
-
-//! Test utilities
-
 use hex_literal::hex;
 use std::cell::RefCell;
 

@@ -36,18 +36,15 @@ rustc-hex = "2.0"
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
 
 pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-phragmen = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
-
-pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 pallet-ring = { package = "darwinia-ring", path = "../../../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../../../frame/balances/kton" }
 pallet-staking = { package = "darwinia-staking", path = "../../../../frame/staking" }
-darwinia-phragmen = { default-features = false, path = "../../../../primitives/phragmen" }
-
-sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+darwinia-phragmen = { path = "../../../../primitives/phragmen" }
 
 [features]
 default = ["std"]
