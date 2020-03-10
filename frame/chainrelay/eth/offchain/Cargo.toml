@@ -1,0 +1,57 @@
+[package]
+name = "darwinia-eth-offchain"
+version = "0.1.0"
+authors = ["yanganto <yanganto@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+num-traits = { default-features = false, version = "0.2.8" }
+
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+pallet-timestamp = { default-features = false,  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-eth-relay = { default-features = false, package = "darwinia-eth-relay", path = "../relay" }
+
+parity-scale-codec = { version = "1.0.0", default-features = false, features = ["derive"] }
+simple-json = { git = 'https://github.com/jimmychu0807/simple-json', version = '0.1.5', default_features = false }
+primitive-types = { default-features = false, features = ["codec", "rlp"], git = "https://github.com/darwinia-network/parity-common.git" }
+hex = { default-features = false, version = "0.4.2" }
+eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
+ethereum-types = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+ethbloom = { default-features = false, git ="https://github.com/darwinia-network/parity-common.git" }
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+
+[build-dependencies]
+wasm-builder-runner = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1", package = "substrate-wasm-builder-runner", version = "1.0.4" }
+
+[features]
+default = ["std"]
+std = [
+    "num-traits/std",
+
+    "sp-std/std",
+    "sp-io/std",
+    "sp-runtime/std",
+    "sp-session/std",
+
+    "frame-support/std",
+    "frame-system/std",
+
+    "pallet-timestamp/std",
+    "pallet-eth-relay/std",
+
+    "parity-scale-codec/std",
+    "simple-json/std",
+    "primitive-types/std",
+    "hex/std",
+    "eth-primitives/std",
+    "ethereum-types/std",
+    "ethbloom/std",
+    "rlp/std",
+]
