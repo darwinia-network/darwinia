@@ -2,15 +2,16 @@
 
 use std::str::FromStr;
 
+use frame_support::{assert_err, assert_ok};
+use frame_system::RawOrigin;
 use hex_literal::hex;
 use rustc_hex::FromHex;
-use sr_primitives::{traits::Dispatchable, AccountId32};
-use support::{assert_err, assert_ok};
+use sp_runtime::{traits::Dispatchable, AccountId32};
 
 use crate::{mock::*, *};
-use darwinia_support::StakingLock;
-use sp_eth_primitives::{header::EthHeader, Bloom, EthAddress, H64};
-use staking::{RewardDestination, StakingBalances, StakingLedger, TimeDepositItem};
+use darwinia_support::balance::lock::StakingLock;
+use eth_primitives::{header::EthHeader, Bloom, EthAddress, H64};
+use pallet_staking::{RewardDestination, StakingBalance, StakingLedger, TimeDepositItem};
 
 #[test]
 fn verify_parse_token_redeem_proof() {
@@ -18,6 +19,7 @@ fn verify_parse_token_redeem_proof() {
 		.build()
 		.execute_with(|| {
 //			System::inc_account_nonce(&2);
+			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 			// https://ropsten.etherscan.io/tx/0x59c6758bd2b93b2f060e471df8d6f4d901c453d2c2c012ba28088acfb94f8216
 			let proof_record = EthReceiptProof {
@@ -62,6 +64,7 @@ fn verify_redeem_ring() {
 		.build()
 		.execute_with(|| {
 //			System::inc_account_nonce(&2);
+			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 			// https://ropsten.etherscan.io/tx/0x59c6758bd2b93b2f060e471df8d6f4d901c453d2c2c012ba28088acfb94f8216
 			let proof_record = EthReceiptProof {
@@ -97,8 +100,8 @@ fn verify_redeem_ring() {
 			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
 
 			let id1 = AccountId32::from([0; 32]);
-			// If expect_account_id doesn't exist, redeem should fail
-			assert_err!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()), "beneficiary account must pre-exist");
+			// If expect_account_id doesn't exist, redeem should fail, "beneficiary account must pre-exist"
+			assert_err!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()), pallet_ring::Error::<Test, _>::DeadAccount);
 
 			let ring_locked_before = EthBacking::ring_locked();
 
@@ -122,6 +125,7 @@ fn verify_redeem_kton() {
 		.build()
 		.execute_with(|| {
 //			System::inc_account_nonce(&2);
+			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 			// https://ropsten.etherscan.io/tx/0xc878562085dd8b68ad81adf0820aa0380f1f81b0ea7c012be122937b74020f96
 			// darwinia: 5FP2eFNSVxJzSrE3N2NEVFPhUU34VzYFD6DDtRXbYzTdwPn8
@@ -166,7 +170,7 @@ fn verify_redeem_kton() {
 
 			let id1 = AccountId32::from([0; 32]);
 			// If expect_account_id doesn't exist, redeem should fail
-			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "beneficiary account must pre-exist");
+			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), pallet_kton::Error::<Test, _>::DeadAccount);
 
 			let kton_locked_before = EthBacking::kton_locked();
 
@@ -189,6 +193,7 @@ fn verify_redeem_deposit() {
 		.build()
 		.execute_with(|| {
 //			System::inc_account_nonce(&2);
+			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 			// 1234ring -> 0.1234kton
 
@@ -242,9 +247,9 @@ fn verify_redeem_deposit() {
 			let controller = AccountId32::from([1; 32]);
 
 			let _ = Ring::deposit_creating(&expect_account_id, 1);
-			assert_ok!(staking::Call::<Test>::bond(
+			assert_ok!(pallet_staking::Call::<Test>::bond(
 				controller.clone(),
-				StakingBalances::RingBalance(1),
+				StakingBalance::RingBalance(1),
 				RewardDestination::Controller,
 				0,
 			).dispatch(Origin::signed(expect_account_id.clone())));

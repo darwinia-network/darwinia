@@ -7,6 +7,7 @@ use eth_primitives::{
 	Bloom, EthAddress, H64, U128,
 };
 use frame_support::assert_ok;
+use frame_system::RawOrigin;
 use hex_literal::hex;
 use rustc_hex::FromHex;
 
@@ -18,6 +19,8 @@ fn verify_receipt_proof() {
 		.build()
 		.execute_with(|| {
 			System::inc_account_nonce(&2);
+
+			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 			// https://ropsten.etherscan.io/tx/0xce62c3d1d2a43cfcc39707b98de53e61a7ef7b7f8853e943d85e511b3451aa7e#eventlog
 			let log_entries = vec![LogEntry {
