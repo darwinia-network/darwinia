@@ -46,12 +46,12 @@ jobs:
       script: .maintain/ci/darwinia_test_script.sh treasury
 
     - stage: Darwinia Test
-        env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
-        script: .maintain/ci/darwinia_test_script.sh eth-relay
+      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
+      script: .maintain/ci/darwinia_test_script.sh eth-relay
 
     - stage: Darwinia Test
-        env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
-        script: .maintain/ci/darwinia_test_script.sh eth-backing
+      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
+      script: .maintain/ci/darwinia_test_script.sh eth-backing
 
     # TODO: remove this when overall test case ready
   allow_failures:
