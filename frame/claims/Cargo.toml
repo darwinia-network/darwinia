@@ -30,7 +30,8 @@ tiny-keccak = "1.5.0"
 
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
-balances = { package = "darwinia-ring", path = "../balances/ring" }
+pallet-support = { package = "darwinia-support", path = "../support" }
+pallet-ring = { package = "darwinia-ring", path = "../balances/ring" }
 vesting = { package = "darwinia-vesting", path = "../vesting" }
 
 [features]
