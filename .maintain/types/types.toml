@@ -45,7 +45,7 @@ title = "Darwinia Node Runtime Types"
 	NominatorReward.who = "AccountId"
 	NominatorReward.amount = "Compact<Balance>"
 
-RKT = "RK"
+	RKT = "RK"
 	RK.r = "Balance"
 	RK.k = "Balance"
 
