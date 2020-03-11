@@ -55,10 +55,10 @@ RKT = "RK"
 	BalanceLock.lock_for = "LockFor"
 	BalanceLock.lock_reasons = "LockReasons"
 
-    LockFor._enum.Common = "Common"
-    LockFor._enum.Staking = "StakingLock"
+	LockFor._enum.Common = "Common"
+	LockFor._enum.Staking = "StakingLock"
 
-    Common.amount = "Balance"
+	Common.amount = "Balance"
 
 	StakingLock.staking_amount = "Balance"
 	StakingLock.unbondings = "Vec<Unbonding>"
