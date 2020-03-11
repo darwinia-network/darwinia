@@ -144,6 +144,12 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 	]
 }
 
+// TODO: doc
+fn load_claims_list() -> pallet_claims::ClaimsList {
+	let file = std::fs::File::open("./res/claims_list.json").expect("file NOT FOUND: ../res/claims_list.json");
+	serde_json::from_reader(file).unwrap()
+}
+
 /// Helper function to create GenesisConfig for darwinia
 /// is_testnet: under test net we will use Alice & Bob as seed to generate keys,
 /// but in production environment, these accounts will use preset keys
@@ -160,6 +166,8 @@ pub fn darwinia_genesis(
 	endowed_accounts: Vec<AccountId>,
 	is_testnet: bool,
 ) -> GenesisConfig {
+	let claims = load_claims_list();
+
 	let eth_relay_authorities: Vec<AccountId> = if is_testnet {
 		vec![
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -369,16 +377,16 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 
 #[cfg(test)]
 pub(crate) mod tests {
-	use super::*;
-	use crate::service::{new_full, new_light};
-	use sc_service_test;
 	use sp_runtime::BuildStorage;
 
+	use super::*;
+	use crate::service::{new_full, new_light};
+
 	fn local_testnet_genesis_instant_single() -> GenesisConfig {
-		testnet_genesis(
+		darwinia_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
+			vec![],
 			false,
 		)
 	}
@@ -399,6 +407,18 @@ pub(crate) mod tests {
 
 	/// Local testnet config (multivalidator Alice + Bob)
 	pub fn integration_test_config_with_two_authorities() -> ChainSpec {
+		fn local_testnet_genesis() -> GenesisConfig {
+			darwinia_genesis(
+				vec![
+					get_authority_keys_from_seed("Alice"),
+					get_authority_keys_from_seed("Bob"),
+				],
+				hex!["a60837b2782f7ffd23e95cd26d1aa8d493b8badc6636234ccd44db03c41fcc6c"].into(), // 5FpQFHfKd1xQ9HLZLQoG1JAQSCJoUEVBELnKsKNcuRLZejJR
+				production_endowed_accounts(),
+				true,
+			)
+		}
+
 		ChainSpec::from_genesis(
 			"Integration Test",
 			"test",
@@ -434,5 +454,11 @@ pub(crate) mod tests {
 	#[test]
 	fn test_gen_crab_testnet_chain_spec() {
 		gen_crab_testnet_config().build_storage().unwrap();
+	}
+
+	#[test]
+	fn test() {
+		let claims = load_claims_list();
+		println!("{:#?}", &claims.eth[0..10]);
 	}
 }
