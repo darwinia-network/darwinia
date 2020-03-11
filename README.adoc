@@ -355,6 +355,9 @@ Besides, the script will install some essential packages depends on your OS,
 if you want to do it manually, use the `--fast` option to skip.
 We will appreciate your contribution.
 
+If you have any questions when hacking on Darwinia, feel free to let us know on the Riot room https://riot.im/app/#/group/+darwinia:matrix.org[#darwinia:matrix.org].
+
+
 === Contributing Guidelines
 
 link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
