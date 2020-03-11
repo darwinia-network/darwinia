@@ -232,7 +232,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			existential_deposit: 1, // this shoule be greater than zero
+			existential_deposit: 1,
 			validator_pool: false,
 			nominate: true,
 			validator_count: 2,
@@ -289,8 +289,6 @@ impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
 		self.set_associated_consts();
 		let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		// existential_deposit should always > 0, actually, the minimum value is 1,
-		// more info plz ckechkout https://github.com/paritytech/substrate/blob/013c1ee167354a08283fb69915fda56a62fee943/frame/staking/src/mock.rs#L290
 		let balance_factor = if self.existential_deposit > 1 { 256 } else { 1 };
 
 		let num_validators = self.num_validators.unwrap_or(self.validator_count);

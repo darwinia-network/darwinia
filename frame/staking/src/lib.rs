@@ -610,14 +610,9 @@ where
 	ring_balance: RingBalance,
 	#[codec(compact)]
 	kton_balance: KtonBalance,
-	/// Contribution of validators/nominators
 	power: Power,
 }
 
-/// We use `power` instead of balance value to represent the
-/// contribution of validators/nominators(validators can contribute too),
-/// so does the rewards.
-///
 /// A snapshot of the stake backing a single validator in the system.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, RuntimeDebug)]
 pub struct Exposure<AccountId, RingBalance, KtonBalance>
@@ -1126,8 +1121,8 @@ decl_module! {
 			let promise_month = promise_month.min(36);
 
 			match max_additional {
-				StakingBalance::RingBalance(r) => {
-					let stash_balance = T::RingCurrency::free_balance(&stash);
+				 StakingBalance::RingBalance(r) => {
+					let stash_balance = T::RingCurrency::usable_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
 						let extra = extra.min(r);
 						let (start_time, expire_time) = Self::bond_ring(
@@ -1143,7 +1138,7 @@ decl_module! {
 					}
 				},
 				StakingBalance::KtonBalance(k) => {
-					let stash_balance = T::KtonCurrency::free_balance(&stash);
+					let stash_balance = T::KtonCurrency::usable_balance(&stash);
 					if let Some(extra) = stash_balance.checked_sub(&ledger.active_kton) {
 						let extra = extra.min(k);
 
@@ -1158,7 +1153,6 @@ decl_module! {
 		}
 
 		// TODO: doc
-		/// Deposit Ring and reward Kton.
 		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
@@ -1626,7 +1620,7 @@ decl_module! {
 		}
 
 		/// Remove all data structure concerning a staker/stash once its balance is zero.
-		/// This is essentially equivalent to `withdraw_unbonded` except it can be called by anyone
+		/// This is essentially equivalent to `withdraw_unobonded` except it can be called by anyone
 		/// and the target `stash` must have no funds left.
 		///
 		/// This can be called from any origin.
@@ -1850,7 +1844,6 @@ impl<T: Trait> Module<T> {
 		let reward = reward.saturating_sub(off_the_table);
 		let mut imbalance = <RingPositiveImbalance<T>>::zero();
 		let mut nominators_reward = vec![];
-
 		let validator_cut = if reward.is_zero() {
 			Zero::zero()
 		} else {
@@ -1860,6 +1853,7 @@ impl<T: Trait> Module<T> {
 			for i in &exposure.others {
 				let per_u64 = Perbill::from_rational_approximation(i.power, total);
 				let nominator_reward = per_u64 * reward;
+
 				imbalance.maybe_subsume(Self::make_payout(&i.who, nominator_reward));
 				nominators_reward.push(NominatorReward {
 					who: i.who.to_owned(),
@@ -1870,10 +1864,10 @@ impl<T: Trait> Module<T> {
 			let per_u64 = Perbill::from_rational_approximation(exposure.own_power, total);
 			per_u64 * reward
 		};
-
 		let validator_reward = validator_cut + off_the_table;
 
 		imbalance.maybe_subsume(Self::make_payout(stash, validator_reward));
+
 		(imbalance, (validator_reward, nominators_reward))
 	}
 
@@ -2094,7 +2088,7 @@ impl<T: Trait> Module<T> {
 								power,
 							});
 						}
-						total_power = total_power.saturating_add(power);
+						total_power += power;
 					},
 				);
 				let exposure = Exposure {
@@ -2397,10 +2391,10 @@ impl<T: Trait> OnDepositRedeem<T::AccountId> for Module<T> {
 		let start_time = start_time * 1000;
 		let promise_month = months.min(36);
 
-		//	let stash_balance = T::Ring::free_balance(&stash);
+		//		let stash_balance = T::Ring::free_balance(&stash);
 
 		// TODO: Lock but no kton reward because this is a deposit redeem
-		//	let extra = extra.min(r);
+		//		let extra = extra.min(r);
 
 		let redeemed_positive_imbalance_ring = T::RingCurrency::deposit_into_existing(&stash, amount)?;
 
