@@ -145,8 +145,8 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 }
 
 // TODO: doc
-fn load_claims_list() -> pallet_claims::ClaimsList {
-	let file = std::fs::File::open("./res/claims_list.json").expect("file NOT FOUND: ../res/claims_list.json");
+fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
+	let file = std::fs::File::open(path).expect(&format!("file NOT FOUND: {}", path));
 	serde_json::from_reader(file).unwrap()
 }
 
@@ -240,7 +240,7 @@ pub fn darwinia_genesis(
 		//  Custom Module
 		pallet_claims: Some({
 			ClaimsConfig {
-				claims_list: load_claims_list(),
+				claims_list: load_claims_list("../res/claims_list.json"),
 			}
 		}),
 		pallet_eth_backing: Some(EthBackingConfig {
@@ -461,7 +461,7 @@ pub(crate) mod tests {
 
 	#[test]
 	fn test() {
-		let claims = load_claims_list();
+		let claims = load_claims_list("./res/claims_list.json");
 		println!("{:#?}", &claims.eth[0..10]);
 	}
 }

@@ -2,7 +2,7 @@ import json
 
 def append_format(origin: str, content: dict) -> str:
 	for k, v in content.items():
-		origin += '{{ "k": "{}", "v": {} }},'.format(k, v)
+		origin += '{{ "address": "{}", "backed_ring": {} }},'.format(k, v)
 
 	return origin
 
