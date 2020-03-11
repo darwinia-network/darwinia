@@ -487,6 +487,15 @@ impl pallet_society::Trait for Runtime {
 	type ChallengePeriod = ChallengePeriod;
 }
 
+parameter_types! {
+	pub const Prefix: &'static [u8] = b"Pay RING to the Darwinia account:";
+}
+impl pallet_claims::Trait for Runtime {
+	type Event = Event;
+	type Prefix = Prefix;
+	type RingCurrency = Ring;
+}
+
 impl pallet_eth_backing::Trait for Runtime {
 	type Event = Event;
 	type Time = Timestamp;
@@ -631,6 +640,7 @@ construct_runtime!(
 		Society: pallet_society::{Module, Call, Storage, Config<T>, Event<T>},
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
 		// Custom Module
+		Claims: pallet_claims::{Module, Call, Storage, Config, Event<T>, ValidateUnsigned},
 		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},

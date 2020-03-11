@@ -6,9 +6,9 @@ pub use node_runtime::GenesisConfig;
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_runtime::{
-	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, Block, ContractsConfig,
-	CouncilConfig, EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig,
-	SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, Block, ClaimsConfig,
+	ContractsConfig, CouncilConfig, EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig,
+	KtonConfig, SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
 	TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -166,8 +166,6 @@ pub fn darwinia_genesis(
 	endowed_accounts: Vec<AccountId>,
 	is_testnet: bool,
 ) -> GenesisConfig {
-	let claims = load_claims_list();
-
 	let eth_relay_authorities: Vec<AccountId> = if is_testnet {
 		vec![
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -240,6 +238,11 @@ pub fn darwinia_genesis(
 			max_members: 999,
 		}),
 		//  Custom Module
+		pallet_claims: Some({
+			ClaimsConfig {
+				claims_list: load_claims_list(),
+			}
+		}),
 		pallet_eth_backing: Some(EthBackingConfig {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),

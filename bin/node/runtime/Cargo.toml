@@ -67,6 +67,7 @@ pallet-transaction-payment = { default-features = false, git = "https://github.c
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
+pallet-claims = { package = "darwinia-claims", default-features = false, path = "../../../frame/claims" }
 pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
 pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
 pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
@@ -119,6 +120,7 @@ std = [
 	"pallet-utility/std",
 	"pallet-vesting/std",
 
+	"pallet-claims/std",
 	"pallet-elections-phragmen/std",
 	"pallet-eth-backing/std",
 	"pallet-eth-relay/std",
