@@ -1,5 +1,6 @@
 use codec::{Decode, Encode};
 use rustc_hex::{FromHex, ToHex};
+#[cfg(feature = "std")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sp_runtime::RuntimeDebug;
 

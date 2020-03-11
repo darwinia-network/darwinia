@@ -25,8 +25,8 @@ use frame_support::{
 	{decl_error, decl_event, decl_module, decl_storage},
 };
 use frame_system::{self as system, ensure_none, ensure_root};
-use serde::{Deserialize, Serialize};
 #[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_runtime::{
 	traits::{CheckedSub, SaturatedConversion, Zero},
