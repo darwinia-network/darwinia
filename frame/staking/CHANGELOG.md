@@ -1,5 +1,26 @@
 # CHANGELOG(v2.0.0.alpha.3)
 
+## Core
+
+Some concepts should have some explaination for the changing from substrate
+
+### power
+
+power is a mixture of ring and kton.
+
++ For *RING*: `power = ring_ratio * POWER_COUNT / 2`
++ For *KTON*: `power = kton_ratio * POWER_COUNT / 2`
+
+### rebond
+
+The darwinia style `rebond` implementation.
+
+
+### withdraw
+
+What should happen after all balances being unbonded?(the locked balance)
+
+
 ## Moudle
 + delete `withdraw_unbond`
 + delete `slashable_balance_of`
