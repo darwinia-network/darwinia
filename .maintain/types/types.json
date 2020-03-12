@@ -179,7 +179,7 @@
 		"_struct": "AddressT"
 	},
 
-	"Signature": {
+	"OtherSignature": {
 		"_enum": {
 			"Dot": "EcdsaSignature",
 			"Eth": "EcdsaSignature",
@@ -187,7 +187,7 @@
 		}
 	},
 
-	"Address": {
+	"OtherAddress": {
 		"_enum": {
 			"Dot": "EthereumAddress",
 			"Eth": "EthereumAddress",
