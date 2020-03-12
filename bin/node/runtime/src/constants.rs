@@ -37,7 +37,7 @@ pub mod time {
 	///
 	/// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
 	// Development
-	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	pub const MILLISECS_PER_BLOCK: Moment = 6000;
 	// Production
 	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
 	pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
@@ -47,7 +47,10 @@ pub mod time {
 	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
-	pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
+	// Development
+	pub const BLOCKS_PER_SESSION: BlockNumber = 3 * MINUTES;
+	// Production
+	// pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
@@ -55,7 +58,10 @@ pub mod time {
 	};
 	pub const SESSION_DURATION: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
 
-	pub const SESSIONS_PER_ERA: SessionIndex = 6;
+	// Development
+	pub const SESSIONS_PER_ERA: SessionIndex = 3;
+	// Production
+	// pub const SESSIONS_PER_ERA: SessionIndex = 6;
 
 	// These time units are defined in number of blocks.
 	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);

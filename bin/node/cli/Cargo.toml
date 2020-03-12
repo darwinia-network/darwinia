@@ -38,6 +38,7 @@ jsonrpc-core = "14.0.3"
 log = "0.4.8"
 rand = "0.7.2"
 serde = { version = "1.0.102", features = ["derive"] }
+serde_json = "1.0.48"
 structopt = { version = "0.3.8", optional = true }
 tracing = "0.1.10"
 
@@ -86,6 +87,8 @@ pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", ta
 pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
+pallet-claims = { package = "darwinia-claims", path = "../../../frame/claims" }
+
 # node-specific dependencies
 node-executor = { path = "../executor" }
 node-primitives = { path = "../primitives" }
@@ -110,7 +113,6 @@ browser-utils = { package = "substrate-browser-utils", optional = true, git = "h
 assert_cmd = "0.12"
 futures = "0.3.1"
 nix = "0.17"
-serde_json = "1.0"
 tempfile = "3.1.0"
 
 sc-consensus-babe = { features = ["test-helpers"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

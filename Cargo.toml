@@ -13,6 +13,7 @@ members = [
 	"client/cli",
 	"frame/balances/kton",
 	"frame/balances/ring",
+	"frame/claims",
 	"frame/chainrelay/eth/backing",
 	"frame/chainrelay/eth/relay",
 	"frame/elections-phragmen",
