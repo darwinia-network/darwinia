@@ -1061,7 +1061,6 @@ version = "0.5.0"
 dependencies = [
  "darwinia-eth-relay",
  "darwinia-kton",
- "darwinia-phragmen",
  "darwinia-ring",
  "darwinia-staking",
  "darwinia-support",
