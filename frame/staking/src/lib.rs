@@ -752,9 +752,6 @@ pub trait Trait: frame_system::Trait {
 	type Cap: Get<RingBalance<Self>>;
 	// TODO: doc
 	type TotalPower: Get<Power>;
-
-	// TODO: doc
-	type GenesisTime: Get<MomentT<Self>>;
 }
 
 /// Mode of era-forcing.
@@ -876,19 +873,31 @@ decl_storage! {
 		/// The earliest era for which we have a pending, unapplied slash.
 		EarliestUnappliedSlash: Option<EraIndex>;
 
-		/// Total *Ring* in pool.
-		pub RingPool get(fn ring_pool): RingBalance<T>;
-		/// Total *Kton* in pool.
-		pub KtonPool get(fn kton_pool): KtonBalance<T>;
+		// --- custom ---
+
+		// --- immutable ---
+
+		// TODO: doc
+		pub GenesisTime get(fn genesis_time): MomentT<T>;
 
 		/// The percentage of the total payout that is distributed to validators and nominators
 		///
 		/// The reset might go to Treasury or something else.
 		pub PayoutFraction get(fn payout_fraction) config(): Perbill;
+
+		// --- mutable ---
+
+		/// Total *Ring* in pool.
+		pub RingPool get(fn ring_pool): RingBalance<T>;
+		/// Total *Kton* in pool.
+		pub KtonPool get(fn kton_pool): KtonBalance<T>;
 	}
 	add_extra_genesis {
+		config(genesis_time): u64;
 		config(stakers): Vec<(T::AccountId, T::AccountId, RingBalance<T>, StakerStatus<T::AccountId>)>;
 		build(|config: &GenesisConfig<T>| {
+			<GenesisTime<T>>::put(config.genesis_time.saturated_into::<MomentT<T>>());
+
 			for &(ref stash, ref controller, r, ref status) in &config.stakers {
 				assert!(
 					T::RingCurrency::free_balance(&stash) >= r,
@@ -996,9 +1005,6 @@ decl_module! {
 
 		// TODO: doc
 		const TotalPower: Power = T::TotalPower::get();
-
-		// TODO: doc
-		const GenesisTime: MomentT<T> = T::GenesisTime::get();
 
 		type Error = Error<T>;
 
@@ -1907,7 +1913,7 @@ impl<T: Trait> Module<T> {
 			let validators = Self::current_elected();
 			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
 				era_duration,
-				now - T::GenesisTime::get(),
+				now - Self::genesis_time(),
 				T::Cap::get().saturating_sub(T::RingCurrency::total_issuance()),
 				PayoutFraction::get(),
 			);

@@ -545,7 +545,6 @@ parameter_types! {
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = GENESIS_TIME;
 }
 impl pallet_staking::Trait for Runtime {
 	type Time = Timestamp;
@@ -570,7 +569,6 @@ impl pallet_staking::Trait for Runtime {
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
-	type GenesisTime = GenesisTime;
 }
 
 parameter_types! {

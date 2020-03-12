@@ -15,10 +15,6 @@ pub mod time {
 	use node_primitives::{BlockNumber, Moment};
 	use sp_staking::SessionIndex;
 
-	// TODO doc
-	include!(concat!(env!("OUT_DIR"), "/timestamp_now.rs"));
-	pub const GENESIS_TIME: Moment = NOW;
-
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
 	/// by `SLOT_DURATION`, but some slots will not be allocated to any
