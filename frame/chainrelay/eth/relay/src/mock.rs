@@ -6,12 +6,14 @@ use sp_runtime::{testing::Header, traits::IdentityLookup, Perbill};
 
 use crate::*;
 
-pub type AccountId = u64;
-pub type BlockNumber = u64;
-
+// --- substrate ---
 pub type System = frame_system::Module<Test>;
 
+// --- current ---
 pub type EthRelay = Module<Test>;
+
+type AccountId = u64;
+type BlockNumber = u64;
 
 impl_outer_origin! {
 	pub enum Origin for Test {}
@@ -20,6 +22,7 @@ impl_outer_origin! {
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
+
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
