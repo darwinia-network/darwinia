@@ -107,7 +107,6 @@ macro_rules! gen_paired_account {
 // 	});
 // }
 
-// @darwinia(LockFor)
 #[test]
 fn normal_kton_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -295,7 +294,6 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 	});
 }
 
-// @darwinia(LockFor)
 #[test]
 fn normal_unbond_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -555,7 +553,6 @@ fn validator_payment_ratio_should_work() {
 // @rm(outdated): `check_node_name_should_work`
 
 // @darwinia(breakpoint)
-// @review(slash_validator)
 #[test]
 fn slash_should_not_touch_unbondings() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -589,7 +586,7 @@ fn slash_should_not_touch_unbondings() {
 			ledger.kton_staking_lock.unbondings.clone(),
 		);
 
-		// @review(bond): check if below is correct
+		// @review(reward): check if below is correct
 		// assert_eq!(
 		// 	(ledger.active_ring, ledger.active_deposit_ring),
 		// 	(1000 + 1000 - 10, 1000),
@@ -657,6 +654,7 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 	});
 }
 
+// @darwinia(breakpoint)
 #[test]
 fn pool_should_be_increased_and_decreased_correctly() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -671,7 +669,7 @@ fn pool_should_be_increased_and_decreased_correctly() {
 		assert_eq!(Staking::ring_pool(), ring_pool);
 		assert_eq!(Staking::kton_pool(), kton_pool);
 
-		// unbond: 50Ring 50Kton
+		// unbond: 50Ring 25Kton
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller_1),
 			StakingBalance::RingBalance(50 * COIN)
@@ -730,7 +728,6 @@ fn pool_should_be_increased_and_decreased_correctly() {
 			},
 		);
 
-		// @review(slash_validator)
 		// TODO: check slash_validator issue
 		// // FIXME: slash strategy
 		// let _ = Staking::slash_validator(&stash_1, Power::max_value(), &Staking::stakers(&stash_1), &mut vec![]);
@@ -843,9 +840,7 @@ fn two_different_bond_then_unbond_specific_one() {
 			36,
 		));
 
-		// @review(bond): check if below is correct
-		// assert_eq!(Kton::free_balance(&stash), 1);
-		// ----
+		assert_eq!(Kton::free_balance(&stash), 1);
 
 		// Bond 1 Kton
 		assert_ok!(Staking::bond_extra(
@@ -1855,62 +1850,3 @@ fn bond_values_when_some_value_unbonding() {
 // 		let _ = Staking::slash_validator(&stash, power / 2, &Staking::stakers(&stash), &mut vec![]);
 // 	});
 // }
-
-// @cl_q1: check rewards without overflow
-//
-// We use power instead of balance value to represent the contribution
-// of validators/nominators(validators can contribute too), so does the rewards.
-//
-// ref: https://github.com/darwinia-network/darwinia/pull/331#issuecomment-597188087
-#[test]
-fn check_rewards() {
-	ExtBuilder::default().build().execute_with(|| {
-		let stake: u128 = 100;
-		let reward_slash: u128 = 100;
-
-		// Assert multiplication without overflows in balance arithmetic.
-		assert!(stake.checked_mul(reward_slash).is_some());
-
-		// Set staker
-		let _ = Ring::make_free_balance_be(&11, stake);
-		<Stakers<Test>>::insert(
-			&11,
-			Exposure {
-				own_ring_balance: stake,
-				total_power: stake as u32,
-				own_kton_balance: 0,
-				own_power: 0,
-				others: vec![],
-			},
-		);
-
-		// Check reward
-		let _ = Staking::reward_validator(&11, reward_slash);
-		assert_eq!(Ring::total_balance(&11), stake);
-	});
-}
-
-// @cl_q2: check deposit bonded
-#[test]
-fn check_deposit_bonded() {
-	ExtBuilder::default().build().execute_with(|| {
-		let (stash, controller) = (1001, 1000);
-		let _ = Ring::deposit_creating(&stash, COIN);
-		assert_ok!(Staking::bond(
-			Origin::signed(stash),
-			controller,
-			StakingBalance::RingBalance(COIN),
-			RewardDestination::Stash,
-			0,
-		));
-
-		// Check that account controller is not a validator
-		assert_eq!(<Validators<Test>>::contains_key(controller), false);
-
-		// Check that account stash is bonded by controller
-		assert_eq!(Staking::bonded(&stash), Some(controller));
-
-		// checkout that deposit_extra works
-		assert_ok!(Staking::deposit_extra(Origin::signed(stash), COIN, 12));
-	})
-}

@@ -1272,7 +1272,7 @@ fn bond_extra_works() {
 // @rm: `bond_extra_and_withdraw_unbonded_works` testcase
 // because we are not using this function
 
-// @review(lock): check if below is necessary
+// @review(unbond)
 #[test]
 fn too_many_unbond_calls_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -1287,26 +1287,27 @@ fn too_many_unbond_calls_should_not_work() {
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
 
 		// can't do more.
-		// assert_noop!(
-		// 	Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
-		// 	Error::<Test>::NoMoreChunks
-		// );
+		assert_noop!(
+			Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
+			Error::<Test>::NoMoreChunks
+		);
 
 		start_era(3);
 
-		// assert_noop!(
-		// 	Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
-		// 	Error::<Test>::NoMoreChunks
-		// );
+		assert_noop!(
+			Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
+			Error::<Test>::NoMoreChunks
+		);
+
+		// @review(unbond)
 		// free up.
 		// assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
-
+		//
 		// Can add again.
 		// assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
-		// assert_eq!(Staking::ledger(&10).unwrap().unlocking.len(), 2);
+		// assert_eq!(Ring::locks(&10).len(), 2);
 	})
 }
-// --------
 
 // @rm `rebond_works` testcase,
 // because darwinia doesn't has the `rebond` method currently.
@@ -1661,7 +1662,6 @@ fn bond_with_no_staked_value() {
 				0
 			));
 
-			// @darwinia(BalanceLock)
 			match &Ring::locks(&1)[0].lock_for {
 				LockFor::Common { amount: _ } => {
 					panic!("Locked balance should convert to StakingLock.");
@@ -1672,7 +1672,6 @@ fn bond_with_no_staked_value() {
 			}
 
 			// @darwinia(unbond)
-			// @important
 			// ~~unbonding even 1 will cause all to be unbonded.~~
 			// Only active normal ring can be unbond
 			//
@@ -1729,13 +1728,14 @@ fn bond_with_no_staked_value() {
 			// assert_eq!(Ring::locks(&1).len(), 0);
 			// -------- //
 
-			// @review(unbond_all)
+			// @review(unbond)
 			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(4)));
 			assert!(Staking::ledger(2).is_none());
 
 			start_era(3);
 
-			// @review(lock): This might be a bug
+			// @review(unbond): here is the point, lock should be drained,
+			// but we haven't made the choice now.
 			match &Ring::locks(&1)[0].lock_for {
 				LockFor::Common { amount: _ } => {
 					panic!("Locked balance should convert to StakingLock.");
@@ -1829,7 +1829,6 @@ fn new_era_elects_correct_number_of_validators() {
 		})
 }
 
-// @darwinia(CAP)
 // @review(power): check if the power result is right.
 #[test]
 fn phragmen_should_not_overflow_validators() {
@@ -1853,7 +1852,6 @@ fn phragmen_should_not_overflow_validators() {
 	})
 }
 
-// @darwinia(CAP)
 // @review(power): check if the power result is right.
 #[test]
 fn phragmen_should_not_overflow_nominators() {
@@ -1877,7 +1875,6 @@ fn phragmen_should_not_overflow_nominators() {
 	})
 }
 
-// @darwinia(CAP)
 // @review(power): check if the power result is right.
 #[test]
 fn phragmen_should_not_overflow_ultimate() {
@@ -1898,7 +1895,6 @@ fn phragmen_should_not_overflow_ultimate() {
 	})
 }
 
-// @darwinia(CAP)
 // @darwinia(reward)
 #[test]
 fn reward_validator_slashing_validator_doesnt_overflow() {
@@ -2311,7 +2307,6 @@ fn only_slash_for_max_in_era() {
 	})
 }
 
-// @darwinia(amount_slashed)
 #[test]
 fn garbage_collection_after_slashing() {
 	ExtBuilder::default().existential_deposit(2).build().execute_with(|| {
