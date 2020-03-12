@@ -108,3 +108,21 @@ title = "Darwinia Node Runtime Types"
 	EthReceiptProof.index = "u64"
 	EthReceiptProof.proof = "Bytes"
 	EthReceiptProof.header_hash = "H256"
+
+[claims]
+	[claims.basic]
+	AddressT = "[u8; 20]"
+
+	[claims.complex]
+	EthereumAddress._struct = "AddressT"
+	TronAddress._struct = "AddressT"
+
+	Signature._enum.Dot = "EcdsaSignature"
+	Signature._enum.Eth = "EcdsaSignature"
+	Signature._enum.Tron = "EcdsaSignature"
+
+	Address._enum.Dot = "EthereumAddress"
+	Address._enum.Eth = "EthereumAddress"
+	Address._enum.Tron = "TronAddress"
+
+	EcdsaSignature._struct = "[u8; 65]"

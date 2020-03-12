@@ -10,10 +10,14 @@ use sp_runtime::{
 
 use crate::*;
 
+// --- substrate ---
 pub type System = frame_system::Module<Test>;
 
+// --- custom ---
 pub type Kton = pallet_kton::Module<Test>;
 pub type Ring = pallet_ring::Module<Test>;
+
+// --- current ---
 pub type Treasury = Module<Test>;
 
 impl_outer_origin! {
@@ -22,6 +26,7 @@ impl_outer_origin! {
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct Test;
+
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
@@ -49,6 +54,17 @@ impl frame_system::Trait for Test {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 }
+
+pub struct TenToFourteen;
+impl Contains<u64> for TenToFourteen {
+	fn contains(n: &u64) -> bool {
+		*n >= 10 && *n <= 14
+	}
+	fn sorted_members() -> Vec<u64> {
+		vec![10, 11, 12, 13, 14]
+	}
+}
+
 parameter_types! {
 		pub const ExistentialDeposit: u64 = 1;
 }
@@ -68,15 +84,7 @@ impl pallet_ring::Trait for Test {
 	type AccountStore = System;
 	type TryDropKton = ();
 }
-pub struct TenToFourteen;
-impl Contains<u64> for TenToFourteen {
-	fn contains(n: &u64) -> bool {
-		*n >= 10 && *n <= 14
-	}
-	fn sorted_members() -> Vec<u64> {
-		vec![10, 11, 12, 13, 14]
-	}
-}
+
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const RingProposalBondMinimum: u64 = 1;
@@ -110,6 +118,7 @@ impl Trait for Test {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
 	pallet_ring::GenesisConfig::<Test> {
 		// Total issuance will be 200 with treasury account initialized at ED.
 		balances: vec![(0, 100), (1, 98), (2, 1)],
@@ -123,5 +132,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	.assimilate_storage(&mut t)
 	.unwrap();
 	GenesisConfig::default().assimilate_storage::<Test>(&mut t).unwrap();
+
 	t.into()
 }

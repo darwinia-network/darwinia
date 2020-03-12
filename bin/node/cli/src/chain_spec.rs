@@ -3,6 +3,13 @@
 pub use node_primitives::{AccountId, Balance, Signature};
 pub use node_runtime::GenesisConfig;
 
+use std::{
+	env,
+	fs::File,
+	path::Path,
+	time::{SystemTime, UNIX_EPOCH},
+};
+
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_runtime::{
@@ -146,11 +153,20 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 
 // TODO: doc
 fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
-	let file = std::fs::File::open(path).expect(&format!(
-		"!!file NOT FOUND!! current path: {}, load from path: {}",
-		std::env::current_dir().unwrap().display(),
-		path,
-	));
+	let mut path = path.to_owned();
+	if !Path::new(&path).is_file() {
+		let var = env::var("CLAIMS_LIST_PATH").expect(&format!(
+			"!!file NOT FOUND!! current path: {}, load from path: {}\n\
+			!!CLAIMS_LIST_PATH var NOT FOUND!!\n\
+			At least one of them should be VALID",
+			env::current_dir().unwrap().display(),
+			path,
+		));
+
+		path = var;
+	}
+
+	let file = File::open(&path).unwrap();
 	serde_json::from_reader(file).unwrap()
 }
 
@@ -285,6 +301,8 @@ pub fn darwinia_genesis(
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
+			// --- custom ---
+			genesis_time: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as _,
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),

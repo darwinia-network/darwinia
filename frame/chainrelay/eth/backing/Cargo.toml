@@ -44,7 +44,6 @@ sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = 
 pallet-ring = { package = "darwinia-ring", path = "../../../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../../../frame/balances/kton" }
 pallet-staking = { package = "darwinia-staking", path = "../../../../frame/staking" }
-darwinia-phragmen = { path = "../../../../primitives/phragmen" }
 
 [features]
 default = ["std"]

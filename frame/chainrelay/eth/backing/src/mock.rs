@@ -1,9 +1,9 @@
 //! Mock file for eth-backing.
 
-use hex_literal::hex;
 use std::cell::RefCell;
 
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
+use hex_literal::hex;
 use sp_core::{crypto::key_types, H256};
 use sp_io;
 use sp_runtime::{
@@ -15,27 +15,30 @@ use sp_staking::SessionIndex;
 
 use pallet_staking::{EraIndex, Exposure, ExposureOf};
 
-use darwinia_phragmen::Power;
-
 use crate::*;
 
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = MultiSignature;
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-pub type BlockNumber = u64;
-pub type Balance = u128;
-
-pub type System = frame_system::Module<Test>;
-//pub type Session = pallet_session::Module<Test>;
-pub type Timestamp = pallet_timestamp::Module<Test>;
-
-pub type EthBacking = Module<Test>;
+// --- custom ---
 pub type Ring = pallet_ring::Module<Test>;
 pub type Kton = pallet_kton::Module<Test>;
 pub type Staking = pallet_staking::Module<Test>;
 pub type EthRelay = darwinia_eth_relay::Module<Test>;
+
+// --- current ---
+pub type EthBacking = Module<Test>;
+
+// --- substrate ---
+type System = frame_system::Module<Test>;
+type Timestamp = pallet_timestamp::Module<Test>;
+
+type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
+type Signature = MultiSignature;
+/// Some way of identifying an account on the chain. We intentionally make it equivalent
+/// to the public key of our transaction signing scheme.
+
+type Balance = u128;
+type BlockNumber = u64;
+type Power = u32;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
@@ -43,7 +46,6 @@ pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
 pub const CAP: Balance = 10_000_000_000 * COIN;
-pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
 thread_local! {
@@ -74,6 +76,7 @@ impl_outer_origin! {
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
+
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
@@ -101,22 +104,6 @@ impl frame_system::Trait for Test {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 }
-impl pallet_kton::Trait for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ();
-	type AccountStore = System;
-	type TryDropRing = ();
-}
-impl pallet_ring::Trait for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ();
-	type AccountStore = System;
-	type TryDropKton = ();
-}
 
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
@@ -128,12 +115,53 @@ impl pallet_timestamp::Trait for Test {
 }
 
 parameter_types! {
-	pub const EthRopsten: u64 = 1;
+	pub const Period: BlockNumber = 1;
+	pub const Offset: BlockNumber = 0;
+	pub const UncleGenerations: u64 = 0;
+	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(25);
+}
+impl pallet_session::Trait for Test {
+	type Event = ();
+	type ValidatorId = AccountId;
+	type ValidatorIdOf = ();
+	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Test, Staking>;
+	type SessionHandler = TestSessionHandler;
+	type Keys = UintAuthorityId;
+	type DisabledValidatorsThreshold = ();
 }
 
+impl pallet_session::historical::Trait for Test {
+	type FullIdentification = Exposure<AccountId, Balance, Balance>;
+	type FullIdentificationOf = ExposureOf<Test>;
+}
+
+// --- custom ---
+
+parameter_types! {
+	pub const EthRopsten: u64 = 1;
+}
 impl darwinia_eth_relay::Trait for Test {
 	type Event = ();
 	type EthNetwork = EthRopsten;
+}
+
+impl pallet_kton::Trait for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ();
+	type AccountStore = System;
+	type TryDropRing = ();
+}
+
+impl pallet_ring::Trait for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ();
+	type AccountStore = System;
+	type TryDropKton = ();
 }
 
 parameter_types! {
@@ -144,15 +172,13 @@ parameter_types! {
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = GENESIS_TIME;
 }
-
 impl pallet_staking::Trait for Test {
 	type Time = Timestamp;
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = ();
-	type BondingDurationInBlockNumber = ();
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = ();
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;
@@ -165,40 +191,17 @@ impl pallet_staking::Trait for Test {
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
-	type GenesisTime = GenesisTime;
-}
-
-parameter_types! {
-	pub const Period: BlockNumber = 1;
-	pub const Offset: BlockNumber = 0;
-	pub const UncleGenerations: u64 = 0;
-	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(25);
-}
-
-impl pallet_session::Trait for Test {
-	type Event = ();
-	type ValidatorId = AccountId;
-	type ValidatorIdOf = ();
-	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Test, Staking>;
-	type SessionHandler = TestSessionHandler;
-	type Keys = UintAuthorityId;
-	type DisabledValidatorsThreshold = ();
-}
-impl pallet_session::historical::Trait for Test {
-	type FullIdentification = Exposure<AccountId, Balance, Balance>;
-	type FullIdentificationOf = ExposureOf<Test>;
 }
 
 impl Trait for Test {
 	type Event = ();
 	type Time = Timestamp;
-	type EthRelay = EthRelay;
-	type Ring = Ring;
-	type Kton = Kton;
-	type OnDepositRedeem = Staking;
 	type DetermineAccountId = AccountIdDeterminator<Test>;
+	type EthRelay = EthRelay;
+	type OnDepositRedeem = Staking;
+	type Ring = Ring;
 	type RingReward = ();
+	type Kton = Kton;
 	type KtonReward = ();
 }
 
@@ -213,7 +216,7 @@ impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
 		let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
-		let _ = GenesisConfig::<Test> {
+		GenesisConfig::<Test> {
 			ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),

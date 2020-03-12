@@ -9,7 +9,6 @@ use frame_support::{
 	StorageLinkedMap, StorageValue,
 };
 use sp_core::{crypto::key_types, H256};
-use sp_io;
 use sp_runtime::{
 	testing::{Header, UintAuthorityId},
 	traits::{IdentityLookup, OnInitialize, OpaqueKeys, SaturatedConversion},
@@ -22,17 +21,21 @@ use sp_staking::{
 
 use crate::*;
 
-pub type AccountId = u64;
-pub type BlockNumber = u64;
-pub type Balance = u128;
-
+// --- substrate ---
 pub type System = frame_system::Module<Test>;
 pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;
 
+// --- custom ---
 pub type Ring = pallet_ring::Module<Test>;
 pub type Kton = pallet_kton::Module<Test>;
+
+// --- current ---
 pub type Staking = Module<Test>;
+
+type AccountId = u64;
+type BlockNumber = u64;
+type Balance = u128;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
@@ -109,6 +112,7 @@ impl FindAuthor<u64> for Author11 {
 // Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Test;
+
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
@@ -136,22 +140,7 @@ impl frame_system::Trait for Test {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 }
-impl pallet_kton::Trait for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type TryDropRing = ();
-}
-impl pallet_ring::Trait for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type TryDropKton = ();
-}
+
 parameter_types! {
 	pub const Period: BlockNumber = 1;
 	pub const Offset: BlockNumber = 0;
@@ -168,16 +157,19 @@ impl pallet_session::Trait for Test {
 	type Keys = UintAuthorityId;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 }
+
 impl pallet_session::historical::Trait for Test {
 	type FullIdentification = Exposure<AccountId, Balance, Balance>;
 	type FullIdentificationOf = ExposureOf<Test>;
 }
+
 impl pallet_authorship::Trait for Test {
 	type FindAuthor = Author11;
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
 	type EventHandler = Module<Test>;
 }
+
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
 }
@@ -186,6 +178,24 @@ impl pallet_timestamp::Trait for Test {
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
 }
+
+impl pallet_kton::Trait for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type TryDropRing = ();
+}
+impl pallet_ring::Trait for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type TryDropKton = ();
+}
+
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDurationInEra: EraIndex = 3;
@@ -194,14 +204,13 @@ parameter_types! {
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
-	pub const GenesisTime: Moment = GENESIS_TIME;
 }
 impl Trait for Test {
 	type Time = pallet_timestamp::Module<Self>;
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = ();
-	type BondingDurationInBlockNumber = ();
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;
@@ -214,7 +223,6 @@ impl Trait for Test {
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
-	type GenesisTime = GenesisTime;
 }
 
 pub struct ExtBuilder {
@@ -367,6 +375,8 @@ impl ExtBuilder {
 			minimum_validator_count: self.minimum_validator_count,
 			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
+			// --- custom ---
+			genesis_time: 0,
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}
@@ -497,7 +507,7 @@ pub fn start_era(era_index: EraIndex) {
 pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	inflation::compute_total_payout::<Test>(
 		duration.saturated_into::<Moment>(),
-		(Timestamp::now() - <mock::Test as Trait>::GenesisTime::get()).saturated_into::<Moment>(),
+		(Timestamp::now() - Staking::genesis_time()).saturated_into::<Moment>(),
 		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
 		Perbill::from_percent(50),
 	)
@@ -505,12 +515,9 @@ pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 }
 
 pub fn reward_all_elected() {
-	let rewards = <Module<Test>>::current_elected()
-		.iter()
-		.map(|v| (*v, 1))
-		.collect::<Vec<_>>();
+	let rewards = Staking::current_elected().iter().map(|v| (*v, 1)).collect::<Vec<_>>();
 
-	<Module<Test>>::reward_by_ids(rewards)
+	Staking::reward_by_ids(rewards)
 }
 
 pub fn validator_controllers() -> Vec<AccountId> {

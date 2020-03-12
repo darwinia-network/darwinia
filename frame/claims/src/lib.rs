@@ -265,7 +265,7 @@ fn to_ascii_hex(data: &[u8]) -> Vec<u8> {
 }
 
 impl<T: Trait> Module<T> {
-	// Constructs the message that Ethereum RPC's `personal_sign` and `eth_sign` would sign.
+	// Constructs the message that RPC's `personal_sign` and `sign` would sign.
 	fn signable_message(what: &[u8], signed_message: &[u8]) -> Vec<u8> {
 		let prefix = T::Prefix::get();
 		let mut l = prefix.len() + what.len();
