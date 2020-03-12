@@ -6,7 +6,7 @@ use sp_runtime::RuntimeDebug;
 
 pub type AddressT = [u8; 20];
 
-macro_rules! impl_serde {
+macro_rules! impl_address {
 	($name:ident, $sname:expr, $prefix:expr) => {
 		#[doc = "An "]
 		#[doc = $sname]
@@ -52,5 +52,5 @@ macro_rules! impl_serde {
 	};
 }
 
-impl_serde!(EthereumAddress, "Ethereum", "0x");
-impl_serde!(TronAddress, "Tron", "41");
+impl_address!(EthereumAddress, "Ethereum", "0x");
+impl_address!(TronAddress, "Tron", "41");
