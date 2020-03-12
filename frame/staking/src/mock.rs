@@ -209,8 +209,8 @@ impl Trait for Test {
 	type Time = pallet_timestamp::Module<Self>;
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = ();
-	type BondingDurationInBlockNumber = ();
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;

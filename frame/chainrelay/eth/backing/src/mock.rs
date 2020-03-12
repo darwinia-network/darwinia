@@ -177,8 +177,8 @@ impl pallet_staking::Trait for Test {
 	type Time = Timestamp;
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = ();
-	type BondingDurationInBlockNumber = ();
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = ();
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;
