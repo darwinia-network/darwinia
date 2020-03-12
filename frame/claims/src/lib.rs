@@ -142,7 +142,7 @@ decl_storage! {
 			let mut total = <RingBalance<T>>::zero();
 
 			for Account { address, backed_ring } in &config.claims_list.dot {
-				let backed_ring = (*backed_ring).saturated_into();
+				let backed_ring = (*backed_ring).saturating_mul(50).saturated_into();
 				<ClaimsFromDot<T>>::insert(address, backed_ring);
 				total += backed_ring;
 			}
