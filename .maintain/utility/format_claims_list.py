@@ -2,6 +2,7 @@ import json
 
 def append_format(origin: str, content: dict) -> str:
 	for k, v in content.items():
+		v = int(int(v) / 10**9)
 		origin += '{{ "address": "{}", "backed_ring": {} }},'.format(k, v)
 
 	return origin
@@ -21,6 +22,6 @@ n_j += '"dot": ['
 n_j = append_format(n_j, j['dot'])
 n_j = n_j[:-1] + ']}'
 
-with open('claims_list.json', 'w+') as f:
+with open('../../bin/node/cli/res/claims_list.json', 'w') as f:
 	f.write(n_j)
 
