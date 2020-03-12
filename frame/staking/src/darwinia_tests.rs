@@ -924,8 +924,8 @@ fn nominator_voting_a_validator_before_he_chill() {
 	assert!(free_balance > free_balance_with_new_era);
 }
 
-// @TODO(BondingDuration)
-// TODO: fix BondingDuration issue,
+// @review(reward)
+// ~~TODO: fix BondingDuration issue,~~
 //// Original testcase name is `xavier_q1`
 //#[test]
 //fn staking_with_kton_with_unbondings() {
@@ -1252,8 +1252,8 @@ fn nominator_voting_a_validator_before_he_chill() {
 //	});
 //}
 
-// @TODO(BondingDuration)
-// TODO: fix BondingDuration issue,
+// @review()
+// ~~TODO: fix BondingDuration issue,~~
 //// Original testcase name is `xavier_q2`
 ////
 //// The values(KTON, RING) are unbond twice with different amount and times

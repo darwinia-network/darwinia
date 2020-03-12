@@ -2142,64 +2142,62 @@ fn slashing_performed_according_exposure() {
 	});
 }
 
-// @TODO(BondingDurationInEra): can not slash, this requires to be fixed,
-// because substrate can pass this test.
-// #[test]
-// fn slash_in_old_span_does_not_deselect() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		start_era(1);
-//
-// 		assert!(<Validators<Test>>::contains_key(11));
-// 		on_offence_now(
-// 			&[OffenceDetails {
-// 				offender: (11, Staking::stakers(&11)),
-// 				reporters: vec![],
-// 			}],
-// 			&[Perbill::from_percent(0)],
-// 		);
-// 		assert_eq!(Staking::force_era(), Forcing::ForceNew);
-// 		assert!(!<Validators<Test>>::contains_key(11));
-//
-// 		start_era(2);
-//
-// 		Staking::validate(Origin::signed(10), Default::default()).unwrap();
-// 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
-// 		assert!(<Validators<Test>>::contains_key(11));
-//
-// 		start_era(3);
-//
-// 		// this staker is in a new slashing span now, having re-registered after
-// 		// their prior slash.
-//
-// 		on_offence_in_era(
-// 			&[OffenceDetails {
-// 				offender: (11, Staking::stakers(&11)),
-// 				reporters: vec![],
-// 			}],
-// 			&[Perbill::from_percent(0)],
-// 			1,
-// 		);
-//
-// 		// not for zero-slash.
-// 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
-// 		assert!(<Validators<Test>>::contains_key(11));
-//
-// 		on_offence_in_era(
-// 			&[OffenceDetails {
-// 				offender: (11, Staking::stakers(&11)),
-// 				reporters: vec![],
-// 			}],
-// 			// NOTE: A 100% slash here would clean up the account, causing de-registration.
-// 			&[Perbill::from_percent(95)],
-// 			1,
-// 		);
-//
-// 		// or non-zero.
-// 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
-// 		assert!(<Validators<Test>>::contains_key(11));
-// 		assert_ledger_consistent(11);
-// 	});
-// }
+#[test]
+fn slash_in_old_span_does_not_deselect() {
+	ExtBuilder::default().build().execute_with(|| {
+		start_era(1);
+
+		assert!(<Validators<Test>>::contains_key(11));
+		on_offence_now(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(0)],
+		);
+		assert_eq!(Staking::force_era(), Forcing::ForceNew);
+		assert!(!<Validators<Test>>::contains_key(11));
+
+		start_era(2);
+
+		Staking::validate(Origin::signed(10), Default::default()).unwrap();
+		assert_eq!(Staking::force_era(), Forcing::NotForcing);
+		assert!(<Validators<Test>>::contains_key(11));
+
+		start_era(3);
+
+		// this staker is in a new slashing span now, having re-registered after
+		// their prior slash.
+
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(0)],
+			1,
+		);
+
+		// not for zero-slash.
+		assert_eq!(Staking::force_era(), Forcing::NotForcing);
+		assert!(<Validators<Test>>::contains_key(11));
+
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			// NOTE: A 100% slash here would clean up the account, causing de-registration.
+			&[Perbill::from_percent(95)],
+			1,
+		);
+
+		// or non-zero.
+		assert_eq!(Staking::force_era(), Forcing::NotForcing);
+		assert!(<Validators<Test>>::contains_key(11));
+		assert_ledger_consistent(11);
+	});
+}
 
 // @review(reward): caculate the correct reward
 // #[test]
@@ -2382,47 +2380,45 @@ fn garbage_collection_after_slashing() {
 	})
 }
 
-// @TODO(BondingDurationInEra)
-// #[test]
-// fn garbage_collection_on_window_pruning() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		start_era(1);
-//
-// 		assert_eq!(Ring::free_balance(11), 1000);
-//
-// 		let exposure = Staking::stakers(&11);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-// 		let nominated_value = exposure.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
-//
-// 		on_offence_now(
-// 			&[OffenceDetails {
-// 				offender: (11, Staking::stakers(&11)),
-// 				reporters: vec![],
-// 			}],
-// 			&[Perbill::from_percent(10)],
-// 		);
-//
-// 		let now = Staking::current_era();
-//
-// 		assert_eq!(Ring::free_balance(11), 900);
-// 		assert_eq!(Ring::free_balance(101), 2000 - (nominated_value / 10));
-//
-// 		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
-// 		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
-//
-// 		// + 1 because we have to exit the bonding window.
-// 		for era in (0..(BondingDurationInEra::get() + 1)).map(|offset| offset + now + 1) {
-// 			assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
-// 			assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
-//
-// 			start_era(era);
-// 		}
-//
-// 		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_none());
-// 		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_none());
-// 	})
-// }
-// --------
+#[test]
+fn garbage_collection_on_window_pruning() {
+	ExtBuilder::default().build().execute_with(|| {
+		start_era(1);
+
+		assert_eq!(Ring::free_balance(11), 1000);
+
+		let exposure = Staking::stakers(&11);
+		assert_eq!(Ring::free_balance(101), 2000);
+		let nominated_value = exposure.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
+
+		on_offence_now(
+			&[OffenceDetails {
+				offender: (11, Staking::stakers(&11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(10)],
+		);
+
+		let now = Staking::current_era();
+
+		assert_eq!(Ring::free_balance(11), 900);
+		assert_eq!(Ring::free_balance(101), 2000 - (nominated_value / 10));
+
+		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
+		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
+
+		// + 1 because we have to exit the bonding window.
+		for era in (0..(BondingDurationInEra::get() + 1)).map(|offset| offset + now + 1) {
+			assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
+			assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
+
+			start_era(era);
+		}
+
+		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_none());
+		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_none());
+	})
+}
 
 // @rm: `slashing_nominators_by_span_max` testcase
 // because `slashable_balance_of` is not used
@@ -2471,73 +2467,71 @@ fn deferred_slashes_are_deferred() {
 	})
 }
 
-// @TODO(BondingDurationInEra)
-// #[test]
-// fn remove_deferred() {
-// 	ExtBuilder::default().slash_defer_duration(2).build().execute_with(|| {
-// 		start_era(1);
-//
-// 		assert_eq!(Ring::free_balance(11), 1000);
-//
-// 		let exposure = Staking::stakers(&11);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-// 		let nominated_value = exposure.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
-//
-// 		on_offence_now(
-// 			&[OffenceDetails {
-// 				offender: (11, exposure.clone()),
-// 				reporters: vec![],
-// 			}],
-// 			&[Perbill::from_percent(10)],
-// 		);
-//
-// 		assert_eq!(Ring::free_balance(11), 1000);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-//
-// 		start_era(2);
-//
-// 		on_offence_in_era(
-// 			&[OffenceDetails {
-// 				offender: (11, exposure.clone()),
-// 				reporters: vec![],
-// 			}],
-// 			&[Perbill::from_percent(15)],
-// 			1,
-// 		);
-//
-// 		Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0]).unwrap();
-//
-// 		assert_eq!(Ring::free_balance(11), 1000);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-//
-// 		start_era(3);
-//
-// 		assert_eq!(Ring::free_balance(11), 1000);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-//
-// 		// at the start of era 4, slashes from era 1 are processed,
-// 		// after being deferred for at least 2 full eras.
-// 		start_era(4);
-//
-// 		// the first slash for 10% was cancelled, so no effect.
-// 		assert_eq!(Ring::free_balance(11), 1000);
-// 		assert_eq!(Ring::free_balance(101), 2000);
-//
-// 		start_era(5);
-//
-// 		let slash_10 = Perbill::from_percent(10);
-// 		let slash_15 = Perbill::from_percent(15);
-// 		let initial_slash = slash_10 * nominated_value;
-//
-// 		let total_slash = slash_15 * nominated_value;
-// 		let actual_slash = total_slash - initial_slash;
-//
-// 		// 5% slash (15 - 10) processed now.
-// 		assert_eq!(Ring::free_balance(11), 950);
-// 		assert_eq!(Ring::free_balance(101), 2000 - actual_slash);
-// 	})
-// }
-// --------
+#[test]
+fn remove_deferred() {
+	ExtBuilder::default().slash_defer_duration(2).build().execute_with(|| {
+		start_era(1);
+
+		assert_eq!(Ring::free_balance(11), 1000);
+
+		let exposure = Staking::stakers(&11);
+		assert_eq!(Ring::free_balance(101), 2000);
+		let nominated_value = exposure.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
+
+		on_offence_now(
+			&[OffenceDetails {
+				offender: (11, exposure.clone()),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(10)],
+		);
+
+		assert_eq!(Ring::free_balance(11), 1000);
+		assert_eq!(Ring::free_balance(101), 2000);
+
+		start_era(2);
+
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (11, exposure.clone()),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(15)],
+			1,
+		);
+
+		Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0]).unwrap();
+
+		assert_eq!(Ring::free_balance(11), 1000);
+		assert_eq!(Ring::free_balance(101), 2000);
+
+		start_era(3);
+
+		assert_eq!(Ring::free_balance(11), 1000);
+		assert_eq!(Ring::free_balance(101), 2000);
+
+		// at the start of era 4, slashes from era 1 are processed,
+		// after being deferred for at least 2 full eras.
+		start_era(4);
+
+		// the first slash for 10% was cancelled, so no effect.
+		assert_eq!(Ring::free_balance(11), 1000);
+		assert_eq!(Ring::free_balance(101), 2000);
+
+		start_era(5);
+
+		let slash_10 = Perbill::from_percent(10);
+		let slash_15 = Perbill::from_percent(15);
+		let initial_slash = slash_10 * nominated_value;
+
+		let total_slash = slash_15 * nominated_value;
+		let actual_slash = total_slash - initial_slash;
+
+		// 5% slash (15 - 10) processed now.
+		assert_eq!(Ring::free_balance(11), 950);
+		assert_eq!(Ring::free_balance(101), 2000 - actual_slash);
+	})
+}
 
 #[test]
 fn remove_multi_deferred() {
