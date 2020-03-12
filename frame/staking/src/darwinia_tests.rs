@@ -10,6 +10,7 @@ use substrate_test_utils::assert_eq_uvec;
 
 use crate::{mock::*, *};
 use darwinia_support::balance::lock::*;
+use pallet_ring::Error as RingError;
 
 /// gen_paired_account!(a(1), b(2), m(12));
 /// will create stash `a` and controller `b`
@@ -81,7 +82,7 @@ macro_rules! gen_paired_account {
 	};
 }
 
-// @review(deprecated): this should not work,
+// @review(deprecated): this should not work, please delete it after review.
 // due to: https://github.com/paritytech/substrate/blob/013c1ee167354a08283fb69915fda56a62fee943/frame/staking/src/mock.rs#L290
 // #[test]
 // fn bond_zero_should_work() {
@@ -180,8 +181,7 @@ fn normal_kton_should_work() {
 	});
 }
 
-// @darwinia(LockFor)
-// @review(BondingDuration)
+// @review(duration): now use BondingDurationInBlockNumber.
 // TODO: checkout BondingDuration not correct
 // Im not sure to use BondingDurationInBlockNumber or BondingDurationInEra
 #[test]
@@ -195,66 +195,69 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 			Origin::signed(controller),
 			StakingBalance::RingBalance(unbond_value),
 		));
-		// assert_eq!(
-		// 	Ring::locks(stash),
-		// 	vec![BalanceLock {
-		// 		id: STAKING_ID,
-		// 		lock_for: LockFor::Staking(StakingLock {
-		// 			staking_amount: 1000 - unbond_value,
-		// 			unbondings: vec![Unbonding {
-		// 				amount: unbond_value,
-		// 				until: BondingDurationInEra::get() as u64,
-		// 			}],
-		// 		}),
-		// 		lock_reasons: LockReasons::All,
-		// 	}],
-		// );
-		// assert_eq!(
-		// 	Staking::ledger(controller).unwrap(),
-		// 	StakingLedger {
-		// 		stash,
-		// 		active_ring: 1000 - unbond_value,
-		// 		active_deposit_ring: 0,
-		// 		active_kton: 0,
-		// 		deposit_items: vec![],
-		// 		ring_staking_lock: StakingLock {
-		// 			staking_amount: 1000 - unbond_value,
-		// 			unbondings: vec![Unbonding {
-		// 				amount: unbond_value,
-		// 				until: BondingDurationInEra::get(),
-		// 			}],
-		// 		},
-		// 		kton_staking_lock: Default::default(),
-		// 	},
-		// );
-		//
-		// let unbond_start: u64 = 30;
-		// Timestamp::set_timestamp(unbond_start);
-		// assert_ok!(Staking::unbond(
-		// 	Origin::signed(controller),
-		// 	StakingBalance::RingBalance(COIN)
-		// ));
-		//
-		// assert_eq!(
-		// 	Ring::locks(stash),
-		// 	vec![BalanceLock {
-		// 		id: STAKING_ID,
-		// 		lock_for: LockFor::Staking(StakingLock {
-		// 			staking_amount: 0,
-		// 			unbondings: vec![
-		// 				Unbonding {
-		// 					amount: unbond_value,
-		// 					until: BondingDurationInEra::get() as u64,
-		// 				},
-		// 				Unbonding {
-		// 					amount: 1000 - unbond_value,
-		// 					until: unbond_start + BondingDurationInEra::get() as u64,
-		// 				},
-		// 			],
-		// 		}),
-		// 		lock_reasons: LockReasons::All,
-		// 	}],
-		// );
+		assert_eq!(
+			Ring::locks(stash),
+			vec![BalanceLock {
+				id: STAKING_ID,
+				lock_for: LockFor::Staking(StakingLock {
+					staking_amount: 1000 - unbond_value,
+					unbondings: vec![Unbonding {
+						amount: unbond_value,
+						until: BondingDurationInBlockNumber::get() + 1,
+					}],
+				}),
+				lock_reasons: LockReasons::All,
+			}],
+		);
+		assert_eq!(
+			Staking::ledger(controller).unwrap(),
+			StakingLedger {
+				stash,
+				active_ring: 1000 - unbond_value,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000 - unbond_value,
+					unbondings: vec![Unbonding {
+						amount: unbond_value,
+						until: BondingDurationInBlockNumber::get() + 1,
+					}],
+				},
+				kton_staking_lock: Default::default(),
+			},
+		);
+
+		let unbond_start = 30;
+
+		Timestamp::set_timestamp(unbond_start);
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller),
+			StakingBalance::RingBalance(COIN)
+		));
+
+		assert_eq!(
+			Ring::locks(stash),
+			vec![BalanceLock {
+				id: STAKING_ID,
+				lock_for: LockFor::Staking(StakingLock {
+					staking_amount: 0,
+					unbondings: vec![
+						Unbonding {
+							amount: unbond_value,
+							until: BondingDurationInBlockNumber::get() + 1,
+						},
+						Unbonding {
+							amount: 1000 - unbond_value,
+							until: BondingDurationInBlockNumber::get() + 1,
+						},
+					],
+				}),
+				lock_reasons: LockReasons::All,
+			}],
+		);
+
+		// @review(duration): please check this.
 		// assert_eq!(
 		// 	Staking::ledger(controller).unwrap(),
 		// 	StakingLedger {
@@ -268,24 +271,26 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 		// 			unbondings: vec![
 		// 				Unbonding {
 		// 					amount: unbond_value,
-		// 					until: BondingDurationInEra::get(),
+		// 					until: BondingDurationInBlockNumber::get() + 1,
 		// 				},
 		// 				Unbonding {
 		// 					amount: 1000 - unbond_value,
-		// 					until: unbond_start + BondingDurationInEra::get() as u64,
+		// 					until: unbond_start + BondingDurationInBlockNumber::get() + 1,
 		// 				},
 		// 			],
 		// 		},
 		// 		kton_staking_lock: Default::default(),
 		// 	},
 		// );
-		//
-		// assert_err!(
-		// 	Ring::transfer(Origin::signed(stash), controller, 1),
-		// 	"account liquidity restrictions prevent withdrawal",
-		// );
-		//
-		// Timestamp::set_timestamp(BondingDurationInEra::get() as u64);
+
+		assert_err!(
+			Ring::transfer(Origin::signed(stash), controller, 1),
+			RingError::<Test, _>::LiquidityRestrictions
+		);
+
+		Timestamp::set_timestamp(BondingDurationInBlockNumber::get() as u64);
+
+		// @review(duration): please check this.
 		// assert_ok!(Ring::transfer(Origin::signed(stash), controller, 1));
 	});
 }
@@ -351,7 +356,7 @@ fn normal_unbond_should_work() {
 				until: BondingDurationInBlockNumber::get(),
 			});
 
-			// @review(BondingDuration): check below
+			// @review(duration): check below
 			// assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 		}
 	});
@@ -549,6 +554,7 @@ fn validator_payment_ratio_should_work() {
 
 // @rm(outdated): `check_node_name_should_work`
 
+// @darwinia(breakpoint)
 // @review(slash_validator)
 #[test]
 fn slash_should_not_touch_unbondings() {
@@ -1252,7 +1258,7 @@ fn nominator_voting_a_validator_before_he_chill() {
 //	});
 //}
 
-// @review()
+// @review(reward)
 // ~~TODO: fix BondingDuration issue,~~
 //// Original testcase name is `xavier_q2`
 ////
@@ -1825,8 +1831,7 @@ fn bond_values_when_some_value_unbonding() {
 	});
 }
 
-// @TODO(slash_validator)
-// breakpoint test
+// @darwinia(breakpoint): keep annotated is fine.
 // #[test]
 // fn xavier_q4() {
 // 	ExtBuilder::default().build().execute_with(|| {

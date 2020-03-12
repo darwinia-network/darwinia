@@ -24,6 +24,8 @@ What should happen after all balances being unbonded?(the locked balance)
 ## Moudle
 + delete `withdraw_unbond`
 + delete `slashable_balance_of`
++ use `power_of`
++ use `stake_of`
 
 ## Structs
 
@@ -106,6 +108,8 @@ pub struct IndividualExposure<AccountId, Balance: HasCompact> {
 The ledger of a (bonded) stash.
 
 + annotated `rebond`
+
+Currently we don't have this requirement.
 
 > darwinia
 ```rust

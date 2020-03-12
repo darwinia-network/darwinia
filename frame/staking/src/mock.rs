@@ -201,7 +201,7 @@ impl Trait for Test {
 	type Event = ();
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
-	type BondingDurationInBlockNumber = ();
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;

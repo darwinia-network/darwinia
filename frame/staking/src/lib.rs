@@ -491,6 +491,9 @@ where
 				let normal_ring = *active_ring - *active_deposit_ring;
 				if normal_ring < *slash_ring {
 					let mut slash_deposit_ring = *slash_ring - (*active_ring - *active_deposit_ring);
+
+					// This relate to the testcase `reward_validator_slashing_validator_doesnt_overflow`,
+					// if some conditions are missing, free to modify or add more additional tests.
 					*active_deposit_ring = active_deposit_ring.saturating_sub(slash_deposit_ring);
 
 					deposit_item.drain_filter(|item| {

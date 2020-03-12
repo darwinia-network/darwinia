@@ -11,7 +11,6 @@
 //! explaining why you delete them.
 use frame_support::{
 	assert_noop, assert_ok,
-	dispatch::DispatchError,
 	traits::{Currency, ReservableCurrency},
 	StorageMap,
 };
@@ -24,6 +23,7 @@ use substrate_test_utils::assert_eq_uvec;
 
 use crate::{mock::*, *};
 use darwinia_support::balance::lock::*;
+use pallet_ring::Error as RingError;
 
 #[test]
 fn force_unstake_works() {
@@ -34,11 +34,7 @@ fn force_unstake_works() {
 		// Cant transfer
 		assert_noop!(
 			Ring::transfer(Origin::signed(11), 1, 10),
-			DispatchError::Module {
-				index: 0,
-				error: 1,
-				message: Some("LiquidityRestrictions"),
-			}
+			RingError::<Test, _>::LiquidityRestrictions,
 		);
 		// Force unstake requires root.
 		assert_noop!(Staking::force_unstake(Origin::signed(11), 11), BadOrigin);
@@ -270,12 +266,12 @@ fn rewards_should_work() {
 		Session::on_initialize(System::block_number());
 		assert_eq!(Staking::current_era(), 0);
 		assert_eq!(Session::current_index(), 1);
-		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
-		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
+		Staking::reward_by_ids(vec![(11, 50)]);
+		Staking::reward_by_ids(vec![(11, 50)]);
 		// This is the second validator of the current elected set.
-		<Module<Test>>::reward_by_ids(vec![(21, 50)]);
+		Staking::reward_by_ids(vec![(21, 50)]);
 		// This must be no-op as it is not an elected validator.
-		<Module<Test>>::reward_by_ids(vec![(1001, 10_000)]);
+		Staking::reward_by_ids(vec![(1001, 10_000)]);
 
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout = current_total_payout_for_duration(9 * 5 * 1000);
@@ -324,7 +320,7 @@ fn multi_era_reward_should_work() {
 		// Compute now as other parameter won't change
 		let total_payout_0 = current_total_payout_for_duration(3000);
 		assert!(total_payout_0 > 10); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_session(0);
 		start_session(1);
@@ -338,7 +334,7 @@ fn multi_era_reward_should_work() {
 
 		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 10); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 101)]);
+		Staking::reward_by_ids(vec![(11, 101)]);
 
 		// new era is triggered here.
 		start_session(5);
@@ -434,14 +430,7 @@ fn staking_should_work() {
 			);
 
 			// e.g. it cannot spend more than 500 that it has free from the total 2000
-			assert_noop!(
-				Ring::reserve(&3, 501),
-				DispatchError::Module {
-					index: 0,
-					error: 1,
-					message: Some("LiquidityRestrictions"),
-				}
-			);
+			assert_noop!(Ring::reserve(&3, 501), RingError::<Test, _>::LiquidityRestrictions,);
 			assert_ok!(Ring::reserve(&3, 409));
 		});
 }
@@ -586,10 +575,10 @@ fn nominating_and_rewards_should_work() {
 			// the total reward for era 0
 			let total_payout_0 = current_total_payout_for_duration(3000);
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(41, 1)]);
-			<Module<Test>>::reward_by_ids(vec![(31, 1)]);
-			<Module<Test>>::reward_by_ids(vec![(21, 10)]); // must be no-op
-			<Module<Test>>::reward_by_ids(vec![(11, 10)]); // must be no-op
+			Staking::reward_by_ids(vec![(41, 1)]);
+			Staking::reward_by_ids(vec![(31, 1)]);
+			Staking::reward_by_ids(vec![(21, 10)]); // must be no-op
+			Staking::reward_by_ids(vec![(11, 10)]); // must be no-op
 
 			start_era(1);
 
@@ -649,10 +638,10 @@ fn nominating_and_rewards_should_work() {
 			// the total reward for era 1
 			let total_payout_1 = current_total_payout_for_duration(3000);
 			assert!(total_payout_1 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(41, 10)]); // must be no-op
-			<Module<Test>>::reward_by_ids(vec![(31, 10)]); // must be no-op
-			<Module<Test>>::reward_by_ids(vec![(21, 2)]);
-			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+			Staking::reward_by_ids(vec![(41, 10)]); // must be no-op
+			Staking::reward_by_ids(vec![(31, 10)]); // must be no-op
+			Staking::reward_by_ids(vec![(21, 2)]);
+			Staking::reward_by_ids(vec![(11, 1)]);
 
 			start_era(2);
 
@@ -717,7 +706,7 @@ fn nominators_also_get_slashed() {
 
 		let total_payout = current_total_payout_for_duration(3000);
 		assert!(total_payout > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		// new era, pay rewards,
 		start_era(1);
@@ -923,11 +912,7 @@ fn cannot_transfer_staked_balance() {
 		// Confirm account 11 cannot transfer as a result
 		assert_noop!(
 			Ring::transfer(Origin::signed(11), 20, 1),
-			DispatchError::Module {
-				index: 0,
-				error: 1,
-				message: Some("LiquidityRestrictions"),
-			}
+			RingError::<Test, _>::LiquidityRestrictions
 		);
 
 		// Give account 11 extra free balance
@@ -956,11 +941,7 @@ fn cannot_transfer_staked_balance_2() {
 			// Confirm account 21 can transfer at most 1000
 			assert_noop!(
 				Ring::transfer(Origin::signed(21), 20, 1001),
-				DispatchError::Module {
-					index: 0,
-					error: 1,
-					message: Some("LiquidityRestrictions"),
-				}
+				RingError::<Test, _>::LiquidityRestrictions,
 			);
 			assert_ok!(Ring::transfer(Origin::signed(21), 20, 1000));
 		});
@@ -977,14 +958,7 @@ fn cannot_reserve_staked_balance() {
 		// Confirm account 11 (via controller 10) is totally staked
 		assert_eq!(Staking::stakers(&11).own_ring_balance, 1000);
 		// Confirm account 11 cannot transfer as a result
-		assert_noop!(
-			Ring::reserve(&11, 1),
-			DispatchError::Module {
-				index: 0,
-				error: 1,
-				message: Some("LiquidityRestrictions"),
-			}
-		);
+		assert_noop!(Ring::reserve(&11, 1), RingError::<Test, _>::LiquidityRestrictions);
 
 		// Give account 11 extra free balance
 		let _ = Ring::make_free_balance_be(&11, 10000);
@@ -1026,7 +1000,7 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_0 = current_total_payout_for_duration(3000);
 		assert!(total_payout_0 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(1);
 
@@ -1060,7 +1034,7 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(2);
 
@@ -1099,7 +1073,7 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_2 = current_total_payout_for_duration(3000);
 		assert!(total_payout_2 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(3);
 
@@ -1174,7 +1148,7 @@ fn validator_payment_prefs_work() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_0 = current_total_payout_for_duration(3000);
 		assert!(total_payout_0 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(1);
 		// @review(reward): caculate the reward
@@ -1328,17 +1302,17 @@ fn too_many_unbond_calls_should_not_work() {
 		// assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
 
 		// Can add again.
-		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+		// assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
 		// assert_eq!(Staking::ledger(&10).unwrap().unlocking.len(), 2);
 	})
 }
 // --------
 
 // @rm `rebond_works` testcase,
-// because darwinia doesn't has the `rebond` method.
+// because darwinia doesn't has the `rebond` method currently.
 
 // @rm `rebond_is_fifo` testcase,
-// because darwinia doesn't has the `rebond` method.
+// because darwinia doesn't has the `rebond` method currently.
 
 #[test]
 fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
@@ -1398,8 +1372,8 @@ fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment(
 			// Compute total payout now for whole duration as other parameter won't change
 			let total_payout_0 = current_total_payout_for_duration(3000);
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
+			Staking::reward_by_ids(vec![(11, 1)]);
+			Staking::reward_by_ids(vec![(21, 1)]);
 
 			// New era --> rewards are paid --> stakes are changed
 			start_era(1);
@@ -1698,6 +1672,7 @@ fn bond_with_no_staked_value() {
 			}
 
 			// @darwinia(unbond)
+			// @important
 			// ~~unbonding even 1 will cause all to be unbonded.~~
 			// Only active normal ring can be unbond
 			//
@@ -1713,7 +1688,7 @@ fn bond_with_no_staked_value() {
 					deposit_items: vec![],
 					ring_staking_lock: StakingLock {
 						staking_amount: 4,
-						unbondings: vec![Unbonding { amount: 1, until: 1 }]
+						unbondings: vec![Unbonding { amount: 1, until: 541 }]
 					},
 					kton_staking_lock: StakingLock {
 						staking_amount: 0,
@@ -1757,17 +1732,18 @@ fn bond_with_no_staked_value() {
 			// @review(unbond_all)
 			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(4)));
 			assert!(Staking::ledger(2).is_none());
+
+			start_era(3);
+
+			// @review(lock): This might be a bug
 			match &Ring::locks(&1)[0].lock_for {
 				LockFor::Common { amount: _ } => {
 					panic!("Locked balance should convert to StakingLock.");
 				}
 				LockFor::Staking(staking_lock) => {
-					assert_eq!(staking_lock.staking_amount, (4 as u128));
+					assert_eq!(staking_lock.staking_amount, (0 as u128));
 				}
 			}
-
-			// @review(lock): remove lock after 14 days
-			// assert_eq!(Ring::locks(&1).len(), 0);
 		});
 }
 
@@ -2002,13 +1978,13 @@ fn reward_from_authorship_event_handler_works() {
 
 		assert_eq!(<pallet_authorship::Module<Test>>::author(), 11);
 
-		<Module<Test>>::note_author(11);
-		<Module<Test>>::note_uncle(21, 1);
+		Staking::note_author(11);
+		Staking::note_uncle(21, 1);
 		// An uncle author that is not currently elected doesn't get rewards,
 		// but the block producer does get reward for referencing it.
-		<Module<Test>>::note_uncle(31, 1);
+		Staking::note_uncle(31, 1);
 		// Rewarding the same two times works.
-		<Module<Test>>::note_uncle(11, 1);
+		Staking::note_uncle(11, 1);
 
 		// Not mandatory but must be coherent with rewards
 		assert_eq!(<CurrentElected<Test>>::get(), vec![21, 11]);
@@ -2023,13 +1999,13 @@ fn reward_from_authorship_event_handler_works() {
 #[test]
 fn add_reward_points_fns_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let validators = <Module<Test>>::current_elected();
+		let validators = Staking::current_elected();
 		// Not mandatory but must be coherent with rewards
 		assert_eq!(validators, vec![21, 11]);
 
-		<Module<Test>>::reward_by_indices(vec![(0, 1), (1, 1), (2, 1), (1, 1)]);
+		Staking::reward_by_indices(vec![(0, 1), (1, 1), (2, 1), (1, 1)]);
 
-		<Module<Test>>::reward_by_ids(vec![(21, 1), (11, 1), (31, 1), (11, 1)]);
+		Staking::reward_by_ids(vec![(21, 1), (11, 1), (31, 1), (11, 1)]);
 
 		assert_eq!(CurrentEraPointsEarned::get().individual, vec![2, 4]);
 		assert_eq!(CurrentEraPointsEarned::get().total, 6);
