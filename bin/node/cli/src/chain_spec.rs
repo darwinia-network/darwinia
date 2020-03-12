@@ -3,7 +3,12 @@
 pub use node_primitives::{AccountId, Balance, Signature};
 pub use node_runtime::GenesisConfig;
 
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+	env,
+	fs::File,
+	path::Path,
+	time::{SystemTime, UNIX_EPOCH},
+};
 
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
@@ -148,11 +153,20 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 
 // TODO: doc
 fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
-	let file = std::fs::File::open(path).expect(&format!(
-		"!!file NOT FOUND!! current path: {}, load from path: {}",
-		std::env::current_dir().unwrap().display(),
-		path,
-	));
+	let mut path = path.to_owned();
+	if !Path::new(&path).is_file() {
+		let var = env::var("CLAIMS_LIST_PATH").expect(&format!(
+			"!!file NOT FOUND!! current path: {}, load from path: {}\n\
+			!!CLAIMS_LIST_PATH var NOT FOUND!!\n\
+			At least one of them should be VALID",
+			env::current_dir().unwrap().display(),
+			path,
+		));
+
+		path = var;
+	}
+
+	let file = File::open(&path).unwrap();
 	serde_json::from_reader(file).unwrap()
 }
 
