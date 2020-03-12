@@ -156,9 +156,10 @@ fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
 	let mut path = path.to_owned();
 	if !Path::new(&path).is_file() {
 		let var = env::var("CLAIMS_LIST_PATH").expect(&format!(
-			"!!file NOT FOUND!! current path: {}, load from path: {}\n\
+			"\n\
+			!!file NOT FOUND!! current path: {}, load from path: {}\n\
 			!!CLAIMS_LIST_PATH var NOT FOUND!!\n\
-			At least one of them should be VALID",
+			At least one of them should be VALID\n",
 			env::current_dir().unwrap().display(),
 			path,
 		));
