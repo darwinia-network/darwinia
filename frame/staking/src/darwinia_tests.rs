@@ -879,7 +879,7 @@ fn two_different_bond_then_unbond_specific_one() {
 // more reward with more validators
 #[test]
 fn nominator_voting_a_validator_before_he_chill() {
-	fn run(with_new_era: bool) -> mock::Balance {
+	fn run(with_new_era: bool) -> u128 {
 		let mut balance = 0;
 		ExtBuilder::default().build().execute_with(|| {
 			gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
