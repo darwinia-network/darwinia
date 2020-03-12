@@ -39,10 +39,10 @@ pub enum ChainSpec {
 	Development,
 	/// Whatever the current runtime is, with simple Alice/Bob auths.
 	LocalTestnet,
-	/// Generate Crab testnet config.
-	GenCrabTestnet,
-	/// The Crab testnet.
-	CrabTestnet,
+	/// Generate Crab network config.
+	GenCrabNetwork,
+	/// The Crab network.
+	CrabNetwork,
 }
 
 /// Get a chain config from a spec setting.
@@ -51,8 +51,8 @@ impl ChainSpec {
 		Ok(match self {
 			ChainSpec::Development => chain_spec::development_config(),
 			ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
-			ChainSpec::GenCrabTestnet => chain_spec::gen_crab_testnet_config(),
-			ChainSpec::CrabTestnet => chain_spec::crab_testnet_config()?,
+			ChainSpec::GenCrabNetwork => chain_spec::gen_crab_network_config(),
+			ChainSpec::CrabNetwork => chain_spec::crab_network_config()?,
 		})
 	}
 
@@ -60,8 +60,8 @@ impl ChainSpec {
 		match s {
 			"dev" => Some(ChainSpec::Development),
 			"local" => Some(ChainSpec::LocalTestnet),
-			"gen" => Some(ChainSpec::GenCrabTestnet),
-			"" | "crab" | "Crab" => Some(ChainSpec::CrabTestnet),
+			"gen" => Some(ChainSpec::GenCrabNetwork),
+			"" | "crab" | "Crab" => Some(ChainSpec::CrabNetwork),
 			_ => None,
 		}
 	}

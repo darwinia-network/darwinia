@@ -240,7 +240,7 @@ please kindly check following things before making an issue.
 * using the latest nightly Rust
 * build without `sccache`
 
-== Joining the Crab Testnet
+== Joining the Crab Network
 
 // Latest known working version: ``
 
