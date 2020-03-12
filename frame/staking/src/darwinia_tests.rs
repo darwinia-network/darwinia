@@ -181,116 +181,116 @@ fn normal_kton_should_work() {
 }
 
 // @darwinia(LockFor)
-// @TODO(LockFor)
+// @review(BondingDuration)
 // TODO: checkout BondingDuration not correct
 // Im not sure to use BondingDurationInBlockNumber or BondingDurationInEra
-// #[test]
-// fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		let (stash, controller) = (11, 10);
-//
-// 		let unbond_value = 10;
-// 		assert_ok!(Staking::unbond(
-// 			Origin::signed(controller),
-// 			StakingBalance::RingBalance(unbond_value),
-// 		));
-// 		assert_eq!(
-// 			Ring::locks(stash),
-// 			vec![BalanceLock {
-// 				id: STAKING_ID,
-// 				lock_for: LockFor::Staking(StakingLock {
-// 					staking_amount: 1000 - unbond_value,
-// 					unbondings: vec![Unbonding {
-// 						amount: unbond_value,
-// 						until: BondingDurationInEra::get(),
-// 					}],
-// 				}),
-// 				lock_reasons: LockReasons::All,
-// 			}],
-// 		);
-// 		assert_eq!(
-// 			Staking::ledger(controller).unwrap(),
-// 			StakingLedger {
-// 				stash,
-// 				active_ring: 1000 - unbond_value,
-// 				active_deposit_ring: 0,
-// 				active_kton: 0,
-// 				deposit_items: vec![],
-// 				ring_staking_lock: StakingLock {
-// 					staking_amount: 1000 - unbond_value,
-// 					unbondings: vec![Unbonding {
-// 						amount: unbond_value,
-// 						until: BondingDurationInEra::get(),
-// 					}],
-// 				},
-// 				kton_staking_lock: Default::default(),
-// 			},
-// 		);
-//
-// 		let unbond_start: u64 = 30;
-// 		Timestamp::set_timestamp(unbond_start);
-// 		assert_ok!(Staking::unbond(
-// 			Origin::signed(controller),
-// 			StakingBalance::RingBalance(COIN)
-// 		));
-//
-// 		assert_eq!(
-// 			Ring::locks(stash),
-// 			vec![BalanceLock {
-// 				id: STAKING_ID,
-// 				lock_for: LockFor::Staking(StakingLock {
-// 					staking_amount: 0,
-// 					unbondings: vec![
-// 						Unbonding {
-// 							amount: unbond_value,
-// 							until: BondingDurationInEra::get() as u64,
-// 						},
-// 						Unbonding {
-// 							amount: 1000 - unbond_value,
-// 							until: unbond_start + BondingDurationInEra::get() as u64,
-// 						},
-// 					],
-// 				}),
-// 				lock_reasons: LockReasons::All,
-// 			}],
-// 		);
-// 		assert_eq!(
-// 			Staking::ledger(controller).unwrap(),
-// 			StakingLedger {
-// 				stash,
-// 				active_ring: 0,
-// 				active_deposit_ring: 0,
-// 				active_kton: 0,
-// 				deposit_items: vec![],
-// 				ring_staking_lock: StakingLock {
-// 					staking_amount: 0,
-// 					unbondings: vec![
-// 						Unbonding {
-// 							amount: unbond_value,
-// 							until: BondingDurationInEra::get(),
-// 						},
-// 						Unbonding {
-// 							amount: 1000 - unbond_value,
-// 							until: unbond_start + BondingDurationInEra::get() as u64,
-// 						},
-// 					],
-// 				},
-// 				kton_staking_lock: Default::default(),
-// 			},
-// 		);
-//
-// 		assert_err!(
-// 			Ring::transfer(Origin::signed(stash), controller, 1),
-// 			"account liquidity restrictions prevent withdrawal",
-// 		);
-//
-// 		Timestamp::set_timestamp(BondingDurationInEra::get() as u64);
-// 		assert_ok!(Ring::transfer(Origin::signed(stash), controller, 1));
-// 	});
-// }
+#[test]
+fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		let (stash, controller) = (11, 10);
+		assert_eq!(BondingDurationInEra::get(), 3);
+
+		let unbond_value = 10;
+		assert_ok!(Staking::unbond(
+			Origin::signed(controller),
+			StakingBalance::RingBalance(unbond_value),
+		));
+		// assert_eq!(
+		// 	Ring::locks(stash),
+		// 	vec![BalanceLock {
+		// 		id: STAKING_ID,
+		// 		lock_for: LockFor::Staking(StakingLock {
+		// 			staking_amount: 1000 - unbond_value,
+		// 			unbondings: vec![Unbonding {
+		// 				amount: unbond_value,
+		// 				until: BondingDurationInEra::get() as u64,
+		// 			}],
+		// 		}),
+		// 		lock_reasons: LockReasons::All,
+		// 	}],
+		// );
+		// assert_eq!(
+		// 	Staking::ledger(controller).unwrap(),
+		// 	StakingLedger {
+		// 		stash,
+		// 		active_ring: 1000 - unbond_value,
+		// 		active_deposit_ring: 0,
+		// 		active_kton: 0,
+		// 		deposit_items: vec![],
+		// 		ring_staking_lock: StakingLock {
+		// 			staking_amount: 1000 - unbond_value,
+		// 			unbondings: vec![Unbonding {
+		// 				amount: unbond_value,
+		// 				until: BondingDurationInEra::get(),
+		// 			}],
+		// 		},
+		// 		kton_staking_lock: Default::default(),
+		// 	},
+		// );
+		//
+		// let unbond_start: u64 = 30;
+		// Timestamp::set_timestamp(unbond_start);
+		// assert_ok!(Staking::unbond(
+		// 	Origin::signed(controller),
+		// 	StakingBalance::RingBalance(COIN)
+		// ));
+		//
+		// assert_eq!(
+		// 	Ring::locks(stash),
+		// 	vec![BalanceLock {
+		// 		id: STAKING_ID,
+		// 		lock_for: LockFor::Staking(StakingLock {
+		// 			staking_amount: 0,
+		// 			unbondings: vec![
+		// 				Unbonding {
+		// 					amount: unbond_value,
+		// 					until: BondingDurationInEra::get() as u64,
+		// 				},
+		// 				Unbonding {
+		// 					amount: 1000 - unbond_value,
+		// 					until: unbond_start + BondingDurationInEra::get() as u64,
+		// 				},
+		// 			],
+		// 		}),
+		// 		lock_reasons: LockReasons::All,
+		// 	}],
+		// );
+		// assert_eq!(
+		// 	Staking::ledger(controller).unwrap(),
+		// 	StakingLedger {
+		// 		stash,
+		// 		active_ring: 0,
+		// 		active_deposit_ring: 0,
+		// 		active_kton: 0,
+		// 		deposit_items: vec![],
+		// 		ring_staking_lock: StakingLock {
+		// 			staking_amount: 0,
+		// 			unbondings: vec![
+		// 				Unbonding {
+		// 					amount: unbond_value,
+		// 					until: BondingDurationInEra::get(),
+		// 				},
+		// 				Unbonding {
+		// 					amount: 1000 - unbond_value,
+		// 					until: unbond_start + BondingDurationInEra::get() as u64,
+		// 				},
+		// 			],
+		// 		},
+		// 		kton_staking_lock: Default::default(),
+		// 	},
+		// );
+		//
+		// assert_err!(
+		// 	Ring::transfer(Origin::signed(stash), controller, 1),
+		// 	"account liquidity restrictions prevent withdrawal",
+		// );
+		//
+		// Timestamp::set_timestamp(BondingDurationInEra::get() as u64);
+		// assert_ok!(Ring::transfer(Origin::signed(stash), controller, 1));
+	});
+}
 
 // @darwinia(LockFor)
-// @TODO(LockFor)
 #[test]
 fn normal_unbond_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -327,30 +327,31 @@ fn normal_unbond_should_work() {
 			let kton_free_balance = Kton::free_balance(&stash);
 			let mut ledger = Staking::ledger(controller).unwrap();
 
-			// REVIEW: WithdrawLock problem.
 			//TODO: checkout the staking following staking values
-			// // We try to bond 1 kton, but stash only has 0.2 Kton.
-			// // extra = COIN.min(20_000_000)
-			// // bond += 20_000_000
-			// assert_ok!(Staking::bond_extra(
-			// 	Origin::signed(stash),
-			// 	StakingBalance::KtonBalance(COIN),
-			// 	0,
-			// ));
-			// ledger.active_kton += kton_free_balance;
-			// ledger.kton_staking_lock.staking_amount += kton_free_balance;
-			// assert_eq!(Staking::ledger(controller).unwrap(), ledger);
+			// We try to bond 1 kton, but stash only has 0.2 Kton.
+			// extra = COIN.min(20_000_000)
+			// bond += 20_000_000
+			assert_ok!(Staking::bond_extra(
+				Origin::signed(stash),
+				StakingBalance::KtonBalance(COIN),
+				0,
+			));
+			ledger.active_kton += kton_free_balance;
+			ledger.kton_staking_lock.staking_amount += kton_free_balance;
+			assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 
-			// assert_ok!(Staking::unbond(
-			// 	Origin::signed(controller),
-			// 	StakingBalance::KtonBalance(kton_free_balance)
-			// ));
-			// ledger.active_kton = 0;
-			// ledger.kton_staking_lock.staking_amount = 0;
-			// ledger.kton_staking_lock.unbondings.push(NormalLock {
-			// 	amount: kton_free_balance,
-			// 	until: BondingDurationInBlockNumber::get(),
-			// });
+			assert_ok!(Staking::unbond(
+				Origin::signed(controller),
+				StakingBalance::KtonBalance(kton_free_balance)
+			));
+			ledger.active_kton = 0;
+			ledger.kton_staking_lock.staking_amount = 0;
+			ledger.kton_staking_lock.unbondings.push(Unbonding {
+				amount: kton_free_balance,
+				until: BondingDurationInBlockNumber::get(),
+			});
+
+			// @review(BondingDuration): check below
 			// assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 		}
 	});
@@ -465,8 +466,6 @@ fn expired_ring_should_capable_to_promise_again() {
 	});
 }
 
-// @darwinia(ValidatorPrefs)
-// @TODO(ValidatorPrefs)
 #[test]
 fn inflation_should_be_correct() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -478,136 +477,79 @@ fn inflation_should_be_correct() {
 	});
 
 	// TODO: Maybe we should remove this, if these is not used
-	//	// breakpoint test
-	//	ExtBuilder::default().build().execute_with(|| {
-	//		gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
-	//		gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
-	//		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
-	//
-	//		assert_ok!(Staking::validate(
-	//			Origin::signed(validator_1_controller),
-	//			ValidatorPrefs {
-	//				node_name: vec![0; 8],
-	//				..Default::default()
-	//			},
-	//		));
-	//		assert_ok!(Staking::validate(
-	//			Origin::signed(validator_2_controller),
-	//			ValidatorPrefs {
-	//				node_name: vec![1; 8],
-	//				..Default::default()
-	//			},
-	//		));
-	//		assert_ok!(Staking::nominate(
-	//			Origin::signed(nominator_controller),
-	//			vec![validator_1_stash, validator_2_stash],
-	//		));
-	//
-	//		Timestamp::set_timestamp(1_575_448_345_000 - 12_000);
-	//		// breakpoint here
-	//		Staking::new_era(1);
-	//
-	//		Timestamp::set_timestamp(1_575_448_345_000);
-	//		// breakpoint here
-	//		Staking::new_era(2);
-	//
-	//		// breakpoint here
-	//		inflation::compute_total_payout::<Test>(11_999, 1_295_225_000, 9_987_999_900_000_000_000);
-	//
-	//		loop {}
-	//	});
+	// breakpoint test
+	ExtBuilder::default().build().execute_with(|| {
+		gen_paired_account!(validator_1_stash(123), validator_1_controller(456), 0);
+		gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
+		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_1_controller),
+			ValidatorPrefs::default(),
+		));
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_2_controller),
+			ValidatorPrefs::default(),
+		));
+		assert_ok!(Staking::nominate(
+			Origin::signed(nominator_controller),
+			vec![validator_1_stash, validator_2_stash],
+		));
+
+		Timestamp::set_timestamp(1_575_448_345_000 - 12_000);
+		// breakpoint here
+		Staking::new_era(1);
+
+		Timestamp::set_timestamp(1_575_448_345_000);
+		// breakpoint here
+		Staking::new_era(2);
+
+		// @review(inflation): check the purpose.
+		// breakpoint here
+		// inflation::compute_total_payout::<Test>(11_999, 1_295_225_000, 9_987_999_900_000_000_000);
+
+		loop {}
+	});
 }
 
-// @darwinia(ValidatorPrefs)
-// @TODO(ValidatorPrefs)
-// #[test]
-// fn validator_payment_ratio_should_work() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
-// 		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
+#[test]
+fn validator_payment_ratio_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		gen_paired_account!(validator_stash(123), validator_controller(456), 0);
+		gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
 
-// 		assert_ok!(Staking::validate(
-// 			Origin::signed(validator_controller),
-// 			ValidatorPrefs {
-// 				node_name: vec![0; 8],
-// 				validator_payment_ratio: 0,
-// 			},
-// 		));
-// 		assert_ok!(Staking::nominate(
-// 			Origin::signed(nominator_controller),
-// 			vec![validator_stash],
-// 		));
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_controller),
+			ValidatorPrefs::default(),
+		));
+		assert_ok!(Staking::nominate(
+			Origin::signed(nominator_controller),
+			vec![validator_stash],
+		));
 
-// 		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), 0);
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), 0);
 
-// 		assert_ok!(Staking::chill(Origin::signed(validator_controller)));
-// 		assert_ok!(Staking::chill(Origin::signed(nominator_controller)));
+		assert_ok!(Staking::chill(Origin::signed(validator_controller)));
+		assert_ok!(Staking::chill(Origin::signed(nominator_controller)));
 
-// 		assert_ok!(Staking::validate(
-// 			Origin::signed(validator_controller),
-// 			ValidatorPrefs {
-// 				node_name: vec![0; 8],
-// 				validator_payment_ratio: 100,
-// 			},
-// 		));
-// 		assert_ok!(Staking::nominate(
-// 			Origin::signed(nominator_controller),
-// 			vec![validator_stash],
-// 		));
+		assert_ok!(Staking::validate(
+			Origin::signed(validator_controller),
+			ValidatorPrefs {
+				commission: Perbill::from_percent(100)
+			},
+		));
+		assert_ok!(Staking::nominate(
+			Origin::signed(nominator_controller),
+			vec![validator_stash],
+		));
 
-// 		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), COIN);
-// 	});
-// }
+		assert_eq!(Staking::reward_validator(&validator_stash, COIN).0.peek(), COIN);
+	});
+}
 
-// @darwinia(ValidatorPrefs)
-// @TODO(ValidatorPrefs)
-// #[test]
-// fn check_node_name_should_work() {
-// 	for node_name in [[0; 33].as_ref(), &[1; 34], &[2; 35]].iter() {
-// 		let validator_prefs = ValidatorPrefs {
-// 			node_name: (*node_name).to_vec(),
-// 			..Default::default()
-// 		};
-// 		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_REACH_MAX);
-// 	}
+// @rm(outdated): `check_node_name_should_work`
 
-// 	for node_name in ["hello@darwinia.network"].iter() {
-// 		let validator_prefs = ValidatorPrefs {
-// 			node_name: (*node_name).into(),
-// 			..Default::default()
-// 		};
-// 		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_CONTAINS_INVALID_CHARS);
-// 	}
-
-// 	for node_name in [
-// 		"com",
-// 		"http",
-// 		"https",
-// 		"itering com",
-// 		"http darwinia",
-// 		"https darwinia",
-// 		"http darwinia network",
-// 		"https darwinia network",
-// 	]
-// 	.iter()
-// 	{
-// 		let validator_prefs = ValidatorPrefs {
-// 			node_name: (*node_name).into(),
-// 			..Default::default()
-// 		};
-// 		assert_err!(validator_prefs.check_node_name(), err::NODE_NAME_CONTAINS_URLS);
-// 	}
-
-// 	for node_name in ["Darwinia Node"].iter() {
-// 		let validator_prefs = ValidatorPrefs {
-// 			node_name: (*node_name).into(),
-// 			..Default::default()
-// 		};
-// 		assert_ok!(validator_prefs.check_node_name());
-// 	}
-// }
-
-// @TODO(slash_validator)
+// @review(slash_validator)
 #[test]
 fn slash_should_not_touch_unbondings() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -641,7 +583,7 @@ fn slash_should_not_touch_unbondings() {
 			ledger.kton_staking_lock.unbondings.clone(),
 		);
 
-		// @TODO(bond): check if below is correct
+		// @review(bond): check if below is correct
 		// assert_eq!(
 		// 	(ledger.active_ring, ledger.active_deposit_ring),
 		// 	(1000 + 1000 - 10, 1000),
@@ -709,7 +651,6 @@ fn check_stash_already_bonded_and_controller_already_paired() {
 	});
 }
 
-// @TODO(slash_validator)
 #[test]
 fn pool_should_be_increased_and_decreased_correctly() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -783,6 +724,7 @@ fn pool_should_be_increased_and_decreased_correctly() {
 			},
 		);
 
+		// @review(slash_validator)
 		// TODO: check slash_validator issue
 		// // FIXME: slash strategy
 		// let _ = Staking::slash_validator(&stash_1, Power::max_value(), &Staking::stakers(&stash_1), &mut vec![]);
@@ -817,10 +759,10 @@ fn unbond_over_max_unbondings_chunks_should_fail() {
 
 		// TODO: original is following error, we need check about this
 		// err::UNLOCK_CHUNKS_REACH_MAX,
-		assert_ok!(Staking::unbond(
-			Origin::signed(controller),
-			StakingBalance::RingBalance(1)
-		));
+		// assert_ok!(Staking::unbond(
+		// 	Origin::signed(controller),
+		// 	StakingBalance::RingBalance(1)
+		// ));
 	});
 }
 
@@ -895,7 +837,7 @@ fn two_different_bond_then_unbond_specific_one() {
 			36,
 		));
 
-		// @TODO(bond): check if below is correct
+		// @review(bond): check if below is correct
 		// assert_eq!(Kton::free_balance(&stash), 1);
 		// ----
 
@@ -931,7 +873,6 @@ fn two_different_bond_then_unbond_specific_one() {
 	});
 }
 
-// @TODO(slash_validator)
 // Origin test case name is `yakio_q2`
 // how to balance the power and calculate the reward if some validators have been chilled
 // more reward with more validators
@@ -944,21 +885,15 @@ fn nominator_voting_a_validator_before_he_chill() {
 			gen_paired_account!(validator_2_stash(234), validator_2_controller(567), 0);
 			gen_paired_account!(nominator_stash(345), nominator_controller(678), 0);
 
-			// TODO: ValidatorPrefs structure change
-			// assert_ok!(Staking::validate(
-			// 	Origin::signed(validator_1_controller),
-			// 	ValidatorPrefs {
-			// 		node_name: vec![0; 8],
-			// 		..Default::default()
-			// 	},
-			// ));
-			// assert_ok!(Staking::validate(
-			// 	Origin::signed(validator_2_controller),
-			// 	ValidatorPrefs {
-			// 		node_name: vec![1; 8],
-			// 		..Default::default()
-			// 	},
-			// ));
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_1_controller),
+				ValidatorPrefs::default(),
+			));
+
+			assert_ok!(Staking::validate(
+				Origin::signed(validator_2_controller),
+				ValidatorPrefs::default()
+			));
 			assert_ok!(Staking::nominate(
 				Origin::signed(nominator_controller),
 				vec![validator_1_stash, validator_2_stash],
@@ -968,7 +903,7 @@ fn nominator_voting_a_validator_before_he_chill() {
 
 			// A validator becomes to be chilled after the nominator voting him
 			assert_ok!(Staking::chill(Origin::signed(validator_1_controller)));
-			// assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
+			assert_ok!(Staking::chill(Origin::signed(validator_2_controller)));
 			if with_new_era {
 				start_era(2);
 			}
@@ -986,8 +921,7 @@ fn nominator_voting_a_validator_before_he_chill() {
 
 	assert_ne!(free_balance, 0);
 	assert_ne!(free_balance_with_new_era, 0);
-	// TOOD: panic here
-	// assert!(free_balance > free_balance_with_new_era);
+	assert!(free_balance > free_balance_with_new_era);
 }
 
 // @TODO(BondingDuration)
@@ -1891,6 +1825,7 @@ fn bond_values_when_some_value_unbonding() {
 	});
 }
 
+// @TODO(slash_validator)
 // breakpoint test
 // #[test]
 // fn xavier_q4() {

@@ -167,7 +167,7 @@ fn basic_setup_works() {
 		// 	}
 		// );
 		//
-		// @TODO(power): check the value below
+		// @review(power): check the value below
 		// // initial slot_stake
 		// assert_eq!(Staking::slot_stake(), 160668380);
 
@@ -300,7 +300,7 @@ fn rewards_should_work() {
 		assert_eq!(Staking::current_era(), 1);
 		assert_eq!(Session::current_index(), 3);
 
-		// @TODO(reward): check the reward
+		// @review(reward): check the reward
 		// 11 validator has 2/3 of the total rewards and half half for it and its nominator
 		// assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout / 3, 1);
 		// assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout / 3, 1);
@@ -604,7 +604,7 @@ fn nominating_and_rewards_should_work() {
 
 			// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
 			assert_eq!(Staking::stakers(11).own_ring_balance, 1000);
-			// @TODO(power): check the power below
+			// @review(power): check the power below
 			// assert_eq!(Staking::stakers(11).total_power, 138461539);
 			// @review(phragmen): check if below is necessary.
 			// 2 and 4 supported 10, each with stake 600, according to phragmen.
@@ -624,7 +624,7 @@ fn nominating_and_rewards_should_work() {
 			// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
 			assert_eq!(Staking::stakers(21).own_ring_balance, 1000);
 
-			// @TODO(power): check if we need to assert power here
+			// @review(power): check if we need to assert power here
 			// assert_eq_error_rate!(Staking::stakers(21).total, 1000 + 1200, 2);
 			// 2 and 4 supported 20, each with stake 250, according to phragmen.
 			// @review(phragmen): check below
@@ -674,7 +674,7 @@ fn nominating_and_rewards_should_work() {
 				1,
 			);
 
-			// @TODO(reward): check if the reward below is correct
+			// @review(reward): check if the reward below is correct
 			// // Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
 			// assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + 5 * payout_for_10 / 9, 1,);
 			// // Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
@@ -1177,7 +1177,7 @@ fn validator_payment_prefs_work() {
 		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 		start_era(1);
-		// @TODO(reward): caculate the reward
+		// @review(reward): caculate the reward
 		// // whats left to be shared is the sum of 3 rounds minus the validator's cut.
 		// let shared_cut = total_payout_0 / 2;
 		// // Validator's payee is Staked account, 11, reward will be paid here.
@@ -1298,33 +1298,40 @@ fn bond_extra_works() {
 // @rm: `bond_extra_and_withdraw_unbonded_works` testcase
 // because we are not using this function
 
-// @TODO(withdraw): check how to withdraw in darwinia
-// #[test]
-// fn too_many_unbond_calls_should_not_work() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		// locked at era 0 until 3
-// 		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
-// 			assert_ok!(Staking::unbond(Origin::signed(10), 1));
-// 		}
-//
-// 		start_era(1);
-//
-// 		// locked at era 1 until 4
-// 		assert_ok!(Staking::unbond(Origin::signed(10), 1));
-// 		// can't do more.
-// 		assert_noop!(Staking::unbond(Origin::signed(10), 1), Error::<Test>::NoMoreChunks);
-//
-// 		start_era(3);
-//
-// 		assert_noop!(Staking::unbond(Origin::signed(10), 1), Error::<Test>::NoMoreChunks);
-// 		// free up.
-// 		assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
-//
-// 		// Can add again.
-// 		assert_ok!(Staking::unbond(Origin::signed(10), 1));
-// 		assert_eq!(Staking::ledger(&10).unwrap().unlocking.len(), 2);
-// 	})
-// }
+// @review(lock): check if below is necessary
+#[test]
+fn too_many_unbond_calls_should_not_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		// locked at era 0 until 3
+		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
+			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+		}
+
+		start_era(1);
+
+		// locked at era 1 until 4
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+
+		// can't do more.
+		// assert_noop!(
+		// 	Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
+		// 	Error::<Test>::NoMoreChunks
+		// );
+
+		start_era(3);
+
+		// assert_noop!(
+		// 	Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
+		// 	Error::<Test>::NoMoreChunks
+		// );
+		// free up.
+		// assert_ok!(Staking::withdraw_unbonded(Origin::signed(10)));
+
+		// Can add again.
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+		// assert_eq!(Staking::ledger(&10).unwrap().unlocking.len(), 2);
+	})
+}
 // --------
 
 // @rm `rebond_works` testcase,
@@ -1333,74 +1340,85 @@ fn bond_extra_works() {
 // @rm `rebond_is_fifo` testcase,
 // because darwinia doesn't has the `rebond` method.
 
-// @TODO(convert): convert this method
-// #[test]
-// fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
-// 	// Test that slot_stake is determined by the least staked validator
-// 	// Test that slot_stake is the maximum punishment that can happen to a validator
-// 	ExtBuilder::default()
-// 		.nominate(false)
-// 		.fair(false)
-// 		.build()
-// 		.execute_with(|| {
-// 			// Confirm validator count is 2
-// 			assert_eq!(Staking::validator_count(), 2);
-// 			// Confirm account 10 and 20 are validators
-// 			assert!(<Validators<Test>>::contains_key(&11) && <Validators<Test>>::contains_key(&21));
-//
-// 			assert_eq!(Staking::stakers(&11).total, 1000);
-// 			assert_eq!(Staking::stakers(&21).total, 2000);
-//
-// 			// Give the man some money.
-// 			let _ = Ring::make_free_balance_be(&10, 1000);
-// 			let _ = Ring::make_free_balance_be(&20, 1000);
-//
-// 			// We confirm initialized slot_stake is this value
-// 			assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total);
-//
-// 			// Now lets lower account 20 stake
-// 			<Stakers<Test>>::insert(
-// 				&21,
-// 				Exposure {
-// 					total: 69,
-// 					own: 69,
-// 					others: vec![],
-// 				},
-// 			);
-// 			assert_eq!(Staking::stakers(&21).total, 69);
-// 			<Ledger<Test>>::insert(
-// 				&20,
-// 				StakingLedger {
-// 					stash: 22,
-// 					total: 69,
-// 					active: 69,
-// 					unlocking: vec![],
-// 				},
-// 			);
-//
-// 			// Compute total payout now for whole duration as other parameter won't change
-// 			let total_payout_0 = current_total_payout_for_duration(3000);
-// 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-// 			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-// 			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
-//
-// 			// New era --> rewards are paid --> stakes are changed
-// 			start_era(1);
-//
-// 			// -- new balances + reward
-// 			assert_eq!(Staking::stakers(&11).total, 1000 + total_payout_0 / 2);
-// 			assert_eq!(Staking::stakers(&21).total, 69 + total_payout_0 / 2);
-//
-// 			let _11_balance = Ring::free_balance(&11);
-// 			assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
-//
-// 			// -- slot stake should also be updated.
-// 			assert_eq!(Staking::slot_stake(), 69 + total_payout_0 / 2);
-//
-// 			check_exposure_all();
-// 			check_nominator_all();
-// 		});
-// }
+#[test]
+fn slot_stake_is_least_staked_validator_and_exposure_defines_maximum_punishment() {
+	// Test that slot_stake is determined by the least staked validator
+	// Test that slot_stake is the maximum punishment that can happen to a validator
+	ExtBuilder::default()
+		.nominate(false)
+		.fair(false)
+		.build()
+		.execute_with(|| {
+			// Confirm validator count is 2
+			assert_eq!(Staking::validator_count(), 2);
+			// Confirm account 10 and 20 are validators
+			assert!(<Validators<Test>>::contains_key(&11) && <Validators<Test>>::contains_key(&21));
+
+			assert_eq!(Staking::stakers(&11).own_ring_balance, 1000);
+			assert_eq!(Staking::stakers(&21).own_ring_balance, 2000);
+
+			// Give the man some money.
+			let _ = Ring::make_free_balance_be(&10, 1000);
+			let _ = Ring::make_free_balance_be(&20, 1000);
+
+			// We confirm initialized slot_stake is this value
+			assert_eq!(Staking::slot_stake(), Staking::stakers(&11).total_power);
+
+			// Now lets lower account 20 stake
+			<Stakers<Test>>::insert(
+				&21,
+				Exposure {
+					own_ring_balance: 0,
+					own_kton_balance: 0,
+					total_power: 69,
+					own_power: 69,
+					others: vec![],
+				},
+			);
+			assert_eq!(Staking::stakers(&21).total_power, 69);
+			<Ledger<Test>>::insert(
+				&20,
+				StakingLedger {
+					stash: 22,
+					active_ring: 69,
+					active_deposit_ring: 69,
+					active_kton: 0,
+					deposit_items: vec![],
+					ring_staking_lock: StakingLock {
+						staking_amount: 0,
+						unbondings: vec![],
+					},
+					kton_staking_lock: StakingLock {
+						staking_amount: 0,
+						unbondings: vec![],
+					},
+				},
+			);
+
+			// Compute total payout now for whole duration as other parameter won't change
+			let total_payout_0 = current_total_payout_for_duration(3000);
+			assert!(total_payout_0 > 100); // Test is meaningful if reward something
+			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
+
+			// New era --> rewards are paid --> stakes are changed
+			start_era(1);
+
+			// @review(power): caculate the power below
+			// // -- new balances + reward
+			// assert_eq!(Staking::stakers(&11).total_power as u128, 1000 + total_payout_0 / 2);
+			// assert_eq!(Staking::stakers(&21).total_power as u128, 69 + total_payout_0 / 2);
+			//
+			// let _11_balance = Ring::free_balance(&11);
+			// assert_eq!(_11_balance as u128, 1000 + total_payout_0 / 2);
+			//
+			// // -- slot stake should also be updated.
+			// assert_eq!(Staking::slot_stake() as u128, 69 + total_payout_0 / 2);
+
+			check_exposure_all();
+			check_nominator_all();
+		});
+}
 // --------
 
 #[test]
@@ -1682,6 +1700,8 @@ fn bond_with_no_staked_value() {
 			// @darwinia(unbond)
 			// ~~unbonding even 1 will cause all to be unbonded.~~
 			// Only active normal ring can be unbond
+			//
+			// normal_ring: active_ring - active_deposit_ring;
 			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(1)));
 			assert_eq!(
 				Staking::ledger(2),
@@ -1705,7 +1725,22 @@ fn bond_with_no_staked_value() {
 			start_era(1);
 			start_era(2);
 
-			// @TODO(withdraw)
+			assert!(Staking::ledger(2).is_some());
+			match &Ring::locks(&1)[0].lock_for {
+				LockFor::Common { amount: _ } => {
+					panic!("Locked balance should convert to StakingLock.");
+				}
+				LockFor::Staking(staking_lock) => {
+					assert_eq!(staking_lock.staking_amount, (4 as u128));
+				}
+			}
+
+			// @review(withdraw): origin from substrate //
+			//
+			// Substrate write like below because they want to unbond
+			// all balances at last process, so, if we want to test the
+			// `remove_account` method here, just unbond all.
+			//
 			// // not yet removed.
 			// assert_ok!(Staking::withdraw_unbonded(Origin::signed(2)));
 			// assert!(Staking::ledger(2).is_some());
@@ -1717,7 +1752,22 @@ fn bond_with_no_staked_value() {
 			// assert_ok!(Staking::withdraw_unbonded(Origin::signed(2)));
 			// assert!(Staking::ledger(2).is_none());
 			// assert_eq!(Ring::locks(&1).len(), 0);
-			// --------
+			// -------- //
+
+			// @review(unbond_all)
+			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(4)));
+			assert!(Staking::ledger(2).is_none());
+			match &Ring::locks(&1)[0].lock_for {
+				LockFor::Common { amount: _ } => {
+					panic!("Locked balance should convert to StakingLock.");
+				}
+				LockFor::Staking(staking_lock) => {
+					assert_eq!(staking_lock.staking_amount, (4 as u128));
+				}
+			}
+
+			// @review(lock): remove lock after 14 days
+			// assert_eq!(Ring::locks(&1).len(), 0);
 		});
 }
 
@@ -1752,7 +1802,7 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 			reward_all_elected();
 			start_era(1);
 
-			// @TODO(power): caculate the correct power
+			// @review(power): caculate the correct power
 			// 2 is elected.
 			// // and fucks up the slot stake.
 			// assert_eq_uvec!(validator_controllers(), vec![20, 10, 2]);
@@ -2151,7 +2201,7 @@ fn slashing_performed_according_exposure() {
 // 	});
 // }
 
-// @TODO(reward): caculate the correct reward
+// @review(reward): caculate the correct reward
 // #[test]
 // fn reporters_receive_their_slice() {
 // 	// This test verifies that the reporters of the offence receive their slice from the slashed
@@ -2180,7 +2230,7 @@ fn slashing_performed_according_exposure() {
 // 	});
 // }
 
-// @TODO(reward): caculate the correct reward
+// @review(reward): caculate the correct reward
 // #[test]
 // fn subsequent_reports_in_same_span_pay_out_less() {
 // 	// This test verifies that the reporters of the offence receive their slice from the slashed

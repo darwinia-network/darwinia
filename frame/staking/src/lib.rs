@@ -1208,6 +1208,8 @@ decl_module! {
 		///   will cause a new entry to be inserted into a vector (`StakingLock.unbondings`) kept in storage.
 		/// - One DB entry.
 		/// </weight>
+		///
+		/// Only active normal ring can be unbond
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
@@ -1295,7 +1297,7 @@ decl_module! {
 				// - the user is bonded again in the 14 days, so the after 14 days
 				//   the lock should not be removed
 				//
-				// If the locks are not deleted, this lock will wast the storage in the future
+				// If the locks are not deleted, this lock will waste the storage in the future
 				// blocks.
 				//
 				// T::Ring::remove_lock(STAKING_ID, &stash);
@@ -1620,7 +1622,7 @@ decl_module! {
 		}
 
 		/// Remove all data structure concerning a staker/stash once its balance is zero.
-		/// This is essentially equivalent to `withdraw_unobonded` except it can be called by anyone
+		/// This is essentially equivalent to `withdraw_unbonded` except it can be called by anyone
 		/// and the target `stash` must have no funds left.
 		///
 		/// This can be called from any origin.
