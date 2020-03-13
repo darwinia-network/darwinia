@@ -3,7 +3,7 @@ version: 2.1
 executors:
   rust-nightly-executor:
     docker:
-      - image: rust:1
+      - image: iteringops/darwinia-builder:latest
     working_directory: /darwinia
 
 
@@ -16,14 +16,8 @@ jobs:
           key: project-cache
       - run:
           command: |
-            apt-get update
-            apt-get install cmake pkg-config libssl-dev git clang libclang-dev -y
-            rustup component add rustfmt
-            rustup default nightly-2020-02-07
-            rustup target add wasm32-unknown-unknown --toolchain nightly-2020-02-07
             echo 'export TARGET="native"' >> $BASH_ENV
-            echo 'export RUST_TOOLCHAIN="nightly-2020-02-07"' >> $BASH_ENV
-            apt-get autoclean
+            echo 'export RUST_TOOLCHAIN="nightly"' >> $BASH_ENV
             df -h
             .maintain/ci/build_script.sh
       - save_cache:
