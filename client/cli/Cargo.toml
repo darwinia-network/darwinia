@@ -36,6 +36,7 @@ rpassword = "4.0.1"
 # github.com
 sc-informant = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-panic-handler = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-blockchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sc-network = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

@@ -35,13 +35,13 @@ where
 
 			cmd.run(inspect)
 		}
-		// TODO benchmarking
-		// Some(Subcommand::Benchmark(_cmd)) => {
-		// 	cmd.init(&version)?;
-		// 	cmd.update_config(&mut config, load_spec, &version)?;
-		//
-		// 	cmd.run::<_, _, node_runtime::Block, node_executor::Executor>(config)
-		// }
+		Some(Subcommand::Benchmark(cmd)) => {
+			cmd.init(&version)?;
+			cmd.update_config(&mut config, load_spec, &version)?;
+
+			cmd.run::<_, _, node_runtime::Block, node_executor::Executor>(config)?;
+			Ok(())
+		}
 		Some(Subcommand::Factory(cli_args)) => {
 			cli_args.shared_params.init(&version)?;
 			cli_args.shared_params.update_config(&mut config, load_spec, &version)?;
