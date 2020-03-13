@@ -232,9 +232,11 @@
 #![recursion_limit = "128"]
 
 #[cfg(test)]
+mod darwinia_tests;
+#[cfg(test)]
 mod mock;
 #[cfg(test)]
-mod tests;
+mod substrate_tests;
 
 mod inflation;
 mod slashing;
@@ -489,7 +491,10 @@ where
 				let normal_ring = *active_ring - *active_deposit_ring;
 				if normal_ring < *slash_ring {
 					let mut slash_deposit_ring = *slash_ring - (*active_ring - *active_deposit_ring);
-					*active_deposit_ring -= slash_deposit_ring;
+
+					// This relate to the testcase `reward_validator_slashing_validator_doesnt_overflow`,
+					// if some conditions are missing, free to modify or add more additional tests.
+					*active_deposit_ring = active_deposit_ring.saturating_sub(slash_deposit_ring);
 
 					deposit_item.drain_filter(|item| {
 						if ts >= item.expire_time {
@@ -1212,6 +1217,8 @@ decl_module! {
 		///   will cause a new entry to be inserted into a vector (`StakingLock.unbondings`) kept in storage.
 		/// - One DB entry.
 		/// </weight>
+		///
+		/// Only active normal ring can be unbond
 		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
@@ -1299,7 +1306,7 @@ decl_module! {
 				// - the user is bonded again in the 14 days, so the after 14 days
 				//   the lock should not be removed
 				//
-				// If the locks are not deleted, this lock will wast the storage in the future
+				// If the locks are not deleted, this lock will waste the storage in the future
 				// blocks.
 				//
 				// T::Ring::remove_lock(STAKING_ID, &stash);
