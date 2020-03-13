@@ -1,19 +1,21 @@
-//! prototype module for bridging in ethereum pow blockchain, including mainet and ropsten.
+//! prototype module for bridging in ethereum pow blockchain, including mainnet and ropsten.
 
-#![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![recursion_limit = "128"]
 
 #[cfg(all(feature = "std", test))]
 mod mock;
 #[cfg(all(feature = "std", test))]
 mod tests;
 
+// --- third-party ---
 use codec::{Decode, Encode};
 use frame_support::{decl_event, decl_module, decl_storage, ensure, traits::Get, weights::SimpleDispatchInfo};
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
+// --- custom ---
 use eth_primitives::{
 	header::EthHeader, pow::EthashPartial, pow::EthashSeal, receipt::Receipt, EthBlockNumber, H256, U256,
 };
@@ -29,7 +31,7 @@ pub trait Trait: system::Trait {
 }
 
 /// Familial details concerning a block
-#[derive(Default, Clone, Copy, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Default, PartialEq, Encode, Decode)]
 pub struct HeaderInfo {
 	/// Total difficulty of the block and all its parents
 	pub total_difficulty: U256,
@@ -39,7 +41,7 @@ pub struct HeaderInfo {
 	pub number: EthBlockNumber,
 }
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub struct EthReceiptProof {
 	pub index: u64,
 	pub proof: Vec<u8>,
@@ -61,9 +63,8 @@ decl_storage! {
 		pub HeaderInfoOf get(fn header_info_of): map hasher(blake2_256) H256 => Option<HeaderInfo>;
 
 		/// Number of blocks finality
-		pub NumberOfBlocksFinality get(fn number_of_blocks_finality) config(): u64 = 30;
-
-		pub NumberOfBlocksSafe get(fn number_of_blocks_safe) config(): u64 = 10;
+		pub NumberOfBlocksFinality get(fn number_of_blocks_finality) config(): u64;
+		pub NumberOfBlocksSafe get(fn number_of_blocks_safe) config(): u64;
 
 		pub CheckAuthorities get(fn check_authorities) config(): bool = true;
 		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
@@ -121,7 +122,7 @@ decl_module! {
 
 			let header_hash = header.hash();
 
-			ensure!(!HeaderInfoOf::get(&header_hash).is_some(), "The header is already known.");
+			ensure!(HeaderInfoOf::get(&header_hash).is_none(), "Header - ALREADY EXISTS");
 
 //			let best_header_hash = Self::best_header_hash();
 //			if self.best_header_hash == Default::default() {
@@ -146,7 +147,7 @@ decl_module! {
 		}
 
 		pub fn add_authority(origin, who: T::AccountId) {
-			let _me = ensure_root(origin)?;
+			ensure_root(origin)?;
 
 			if !Self::authorities().contains(&who) {
 				<Authorities<T>>::mutate(|l| l.push(who.clone()));
@@ -156,7 +157,7 @@ decl_module! {
 		}
 
 		pub fn remove_authority(origin, who: T::AccountId) {
-			let _me = ensure_root(origin)?;
+			ensure_root(origin)?;
 
 			if let Some(i) = Self::authorities()
 				.into_iter()
@@ -168,7 +169,7 @@ decl_module! {
 		}
 
 		pub fn toggle_check_authorities(origin) {
-			let _me = ensure_root(origin)?;
+			ensure_root(origin)?;
 
 			CheckAuthorities::put(!Self::check_authorities());
 
@@ -202,7 +203,7 @@ impl<T: Trait> Module<T> {
 
 		ensure!(header_hash == header.re_compute_hash(), "Header Hash - MISMATCHED");
 
-		let block_number = header.number();
+		let block_number = header.number;
 
 		HeaderOf::insert(&header_hash, header);
 
@@ -210,20 +211,20 @@ impl<T: Trait> Module<T> {
 		HeaderInfoOf::insert(
 			&header_hash,
 			HeaderInfo {
-				parent_hash: *header.parent_hash(),
+				parent_hash: header.parent_hash,
 				total_difficulty: genesis_difficulty.into(),
 				number: block_number,
 			},
 		);
 
 		// Initialize the the best hash.
-		BestHeaderHash::mutate(|hash| {
-			*hash = header_hash;
-		});
+		BestHeaderHash::put(header_hash);
 
-		CanonicalHeaderHashOf::insert(block_number, &header_hash);
+		CanonicalHeaderHashOf::insert(block_number, header_hash);
 
 		// Removing headers with larger numbers, if there are.
+		// FIXME check overflow
+		//     for n in number..u64::max_value() {}
 		let mut number = block_number + 1;
 		loop {
 			// If the current block hash is 0 (unlikely), or the previous hash matches the
@@ -247,17 +248,13 @@ impl<T: Trait> Module<T> {
 	fn verify_header(header: &EthHeader) -> Result<(), &'static str> {
 		ensure!(header.hash() == header.re_compute_hash(), "Header Hash - MISMATCHED");
 
-		let parent_hash = header.parent_hash();
-		let number = header.number();
-
-		ensure!(
-			number >= Self::begin_header().ok_or("Begin Header - NOT EXISTED")?.number(),
-			"Block Number - TOO SMALL",
-		);
+		let begin_header_number = Self::begin_header().ok_or("Begin Header - NOT EXISTED")?.number;
+		ensure!(header.number >= begin_header_number, "Block Number - TOO SMALL");
 
 		// There must be a corresponding parent hash
-		let prev_header = Self::header_of(parent_hash).ok_or("Previous Header - NOT EXISTED")?;
-		ensure!((prev_header.number() + 1) == number, "Block Number - MISMATCHED");
+		let prev_header = Self::header_of(header.parent_hash).ok_or("Previous Header - NOT EXISTED")?;
+		// FIXME check overflow
+		ensure!(header.number == (prev_header.number + 1), "Block Number - MISMATCHED");
 
 		// check difficulty
 		let ethash_params = match T::EthNetwork::get() {
@@ -279,13 +276,11 @@ impl<T: Trait> Module<T> {
 			_ => {
 				let seal = EthashSeal::parse_seal(header.seal())?;
 
-				let light_dag = DAG::new(number.into());
+				let light_dag = DAG::new(header.number.into());
 				let partial_header_hash = header.bare_hash();
 				let mix_hash = light_dag.hashimoto(partial_header_hash, seal.nonce).0;
 
-				if mix_hash != seal.mix_hash {
-					return Err("Mixhash - MISMATCHED");
-				}
+				ensure!(mix_hash == seal.mix_hash, "Mixhash - MISMATCHED");
 			}
 		};
 
@@ -296,64 +291,68 @@ impl<T: Trait> Module<T> {
 		let best_header_info =
 			Self::header_info_of(Self::best_header_hash()).ok_or("Best Header Detail - NOT EXISTED")?;
 
-		if best_header_info.number > header.number + Self::number_of_blocks_finality() {
-			return Err("Header Too Old: It's too late to add this block header.");
-		}
+		// FIXME check overflow
+		ensure!(
+			best_header_info.number <= header.number + Self::number_of_blocks_finality(),
+			"Header Too Old: It's too late to add this block header.",
+		);
 
 		let header_hash = header.hash();
+		// FIXME check write storage
 		HeaderOf::insert(header_hash, header);
 
-		let parent_total_difficulty = Self::header_info_of(header.parent_hash())
+		let parent_total_difficulty = Self::header_info_of(header.parent_hash)
 			.ok_or("Previous Header Detail - NOT EXISTED")?
 			.total_difficulty;
 
-		let block_number = header.number();
+		let block_number = header.number;
+		// FIXME check overflow
 		let header_info = HeaderInfo {
 			number: block_number,
-			parent_hash: *header.parent_hash(),
-			total_difficulty: parent_total_difficulty + header.difficulty(),
+			parent_hash: header.parent_hash,
+			total_difficulty: parent_total_difficulty + header.difficulty,
 		};
 
-		HeaderInfoOf::insert(&header_hash, header_info);
+		HeaderInfoOf::insert(header_hash, header_info.clone());
 
 		// Check total difficulty and re-org if necessary.
 		if header_info.total_difficulty > best_header_info.total_difficulty
 			|| (header_info.total_difficulty == best_header_info.total_difficulty
-				&& header.difficulty % 2 == U256::default())
+				&& header.difficulty % 2 == U256::zero())
 		{
 			// The new header is the tip of the new canonical chain.
 			// We need to update hashes of the canonical chain to match the new header.
 
 			// If the new header has a lower number than the previous header, we need to cleaning
 			// it going forward.
+			// FIXME check overflow
 			if best_header_info.number > header_info.number {
 				for number in header_info.number + 1..=best_header_info.number {
 					CanonicalHeaderHashOf::remove(&number);
 				}
 			}
 			// Replacing the global best header hash.
-			BestHeaderHash::mutate(|hash| {
-				*hash = header_hash;
-			});
+			BestHeaderHash::put(header_hash);
 
-			CanonicalHeaderHashOf::insert(&header_info.number, &header_hash);
+			CanonicalHeaderHashOf::insert(header_info.number, header_hash);
 
 			// Replacing past hashes until we converge into the same parent.
 			// Starting from the parent hash.
+			// FIXME check overflow
 			let mut number = header.number - 1;
 			let mut current_hash = header_info.parent_hash;
 			loop {
-				let prev_value = CanonicalHeaderHashOf::get(&number);
+				let prev_value = CanonicalHeaderHashOf::get(number);
 				// If the current block hash is 0 (unlikely), or the previous hash matches the
 				// current hash, then we chains converged and can stop now.
 				if number == 0 || prev_value == current_hash {
 					break;
 				}
 
-				CanonicalHeaderHashOf::insert(&number, &current_hash);
+				CanonicalHeaderHashOf::insert(number, current_hash);
 
 				// Check if there is an info to get the parent hash
-				if let Some(info) = HeaderInfoOf::get(&current_hash) {
+				if let Some(info) = HeaderInfoOf::get(current_hash) {
 					current_hash = info.parent_hash;
 				} else {
 					break;
@@ -377,15 +376,16 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 	/// Using receipt MPT trie root to verify the proof and index etc.
 	fn verify_receipt(proof_record: &EthReceiptProof) -> Result<Receipt, &'static str> {
 		let info = Self::header_info_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
+
 		let canonical_hash = Self::canonical_header_hash_of(info.number);
-		if proof_record.header_hash != canonical_hash {
-			return Err("Header - NOT CANONICAL");
-		}
+		ensure!(canonical_hash == proof_record.header_hash, "Header - NOT CANONICAL");
 
 		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or("Header - Best Header Not Found")?;
-		if best_info.number < info.number + Self::number_of_blocks_safe() {
-			return Err("Header - NOT SAFE");
-		}
+		// FIXME check overflow
+		ensure!(
+			best_info.number >= info.number + Self::number_of_blocks_safe(),
+			"Header - NOT SAFE",
+		);
 
 		let header = Self::header_of(&proof_record.header_hash).ok_or("Header - NOT EXISTED")?;
 		let proof: Proof = rlp::decode(&proof_record.proof).map_err(|_| "Rlp Decode - FAILED")?;
