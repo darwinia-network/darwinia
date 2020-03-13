@@ -76,18 +76,18 @@ The dispatch origin for this call is `root`.
 
 ### Weight in Balances
 
-| Call                     | Origin | weight    |
-|--------------------------|--------|-----------|
-| fn force\_transfer       | S      | 1,000,000 |
-| fn transfer(...)         | S      | 1,000,000 |
-| fn transfer\_keep\_alive | S      | 1,000,000 |
-| fn set\_balance(...)     | R      | 50,000    |
+| Call                          | Origin | weight    |
+|-------------------------------|--------|-----------|
+| fn force\_transfer(...)       | S      | 1,000,000 |
+| fn transfer(...)              | S      | 1,000,000 |
+| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
+| fn set\_balance(...)          | R      | 50,000    |
 
 ### Weight in Substrate's Balances
 
-| Call                     | Origin | weight    |
-|--------------------------|--------|-----------|
-| fn force\_transfer       | S      | 1,000,000 |
-| fn transfer(...)         | S      | 1,000,000 |
-| fn transfer\_keep\_alive | S      | 1,000,000 |
-| fn set\_balance(...)     | R      | 50,000    |
+| Call                          | Origin | weight    |
+|-------------------------------|--------|-----------|
+| fn force\_transfer(...)       | S      | 1,000,000 |
+| fn transfer(...)              | S      | 1,000,000 |
+| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
+| fn set\_balance(...)          | R      | 50,000    |
