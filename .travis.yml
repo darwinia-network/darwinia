@@ -22,42 +22,37 @@ jobs:
       script: .maintain/ci/fmt_script.sh
 
     - stage: Build
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
-      script: .maintain/ci/build_script.sh
-
-    - stage: Build
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=wasm
       script: .maintain/ci/build_script.sh
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native KTON
-      script: .maintain/ci/darwinia_test_script.sh kton
+    # TODO: following tests are moved to circle ci
+    # - stage: Build
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
+    #   script: .maintain/ci/build_script.sh
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native RING
-      script: .maintain/ci/darwinia_test_script.sh ring
+    # - stage: Darwinia Test
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native RING
+    #   script: .maintain/ci/darwinia_test_script.sh ring
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native STAKING
-      script: .maintain/ci/darwinia_test_script.sh staking
+    # - stage: Darwinia Test
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native STAKING
+    #   script: .maintain/ci/darwinia_test_script.sh staking
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native TREASURY
-      script: .maintain/ci/darwinia_test_script.sh treasury
+    # - stage: Darwinia Test
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native TREASURY
+    #   script: .maintain/ci/darwinia_test_script.sh treasury
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
-      script: .maintain/ci/darwinia_test_script.sh eth-relay
+    # - stage: Darwinia Test
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
+    #   script: .maintain/ci/darwinia_test_script.sh eth-relay
 
-    - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
-      script: .maintain/ci/darwinia_test_script.sh eth-backing
+    # - stage: Darwinia Test
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
+    #   script: .maintain/ci/darwinia_test_script.sh eth-backing
 
-    # TODO: remove this when overall test case ready
-  allow_failures:
-    - stage: Overall Test 
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
-      script: .maintain/ci/test_script.sh
+    # - stage: Overall Test 
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
+    #   script: .maintain/ci/test_script.sh
 
 after_script:
     # Check how much free disk space left after the build

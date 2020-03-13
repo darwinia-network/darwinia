@@ -1,0 +1,143 @@
+version: 2.1
+
+executors:
+  rust-nightly-executor:
+    docker:
+      - image: rust:1
+    working_directory: /darwinia
+
+
+jobs:
+  build:
+    executor: rust-nightly-executor
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-cache
+      - run:
+          command: |
+            apt-get update
+            apt-get install cmake pkg-config libssl-dev git clang libclang-dev -y
+            rustup component add rustfmt
+            rustup default nightly-2020-02-07
+            rustup target add wasm32-unknown-unknown --toolchain nightly-2020-02-07
+            echo 'export TARGET="native"' >> $BASH_ENV
+            echo 'export RUST_TOOLCHAIN="nightly-2020-02-07"' >> $BASH_ENV
+            apt-get autoclean
+            df -h
+            .maintain/ci/build_script.sh
+      - save_cache:
+          key: project-cache
+          paths:
+            - "~/.cargo"
+      - run: echo "OK" > /darwinia/target/darwinia-cache-test
+      - run: mv /darwinia/target /tmp
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - target
+
+  ring test:
+    executor: rust-nightly-executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - run: |
+          cp -r /tmp/target /darwinia
+          if [[ `cat /darwinia/target/darwinia-cache-test` == "OK" ]]; then
+            echo "workspace cache ready";
+          else
+            echo "workspace cache fail"; exit 1
+          fi
+          echo 'export TARGET="native"' >> $BASH_ENV
+          .maintain/ci/darwinia_test_script.sh ring
+
+  staking test:
+    executor: rust-nightly-executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - run: |
+          cp -r /tmp/target /workspace
+          if [[ `cat /workspace/target/workspace-cache-test` == "OK" ]]; then
+            echo "workspace cache ready";
+          else
+            echo "workspace cache fail"; exit 1
+          fi
+          echo 'export TARGET="native"' >> $BASH_ENV
+          .maintain/ci/darwinia_test_script.sh staking
+
+  eth-relay test:
+    executor: rust-nightly-executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - run: |
+          cp -r /tmp/target /workspace
+          if [[ `cat /workspace/target/workspace-cache-test` == "OK" ]]; then
+            echo "workspace cache ready";
+          else
+            echo "workspace cache fail"; exit 1
+          fi
+          echo 'export TARGET="native"' >> $BASH_ENV
+          .maintain/ci/darwinia_test_script.sh eth-relay
+
+  eth-backing test:
+    executor: rust-nightly-executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - run: |
+          cp -r /tmp/target /workspace
+          if [[ `cat /workspace/target/workspace-cache-test` == "OK" ]]; then
+            echo "workspace cache ready";
+          else
+            echo "workspace cache fail"; exit 1
+          fi
+          echo 'export TARGET="native"' >> $BASH_ENV
+          .maintain/ci/darwinia_test_script.sh eth-backing
+
+  overall test:
+    executor: rust-nightly-executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - run: |
+          cp -r /tmp/target /workspace
+          if [[ `cat /workspace/target/workspace-cache-test` == "OK" ]]; then
+            echo "workspace cache ready";
+          else
+            echo "workspace cache fail"; exit 1
+          fi
+          echo 'export TARGET="native"' >> $BASH_ENV
+          .maintain/ci/darwinia_test_script.sh
+
+workflows:
+  version: 2
+
+  btd:
+    jobs:
+      - build
+      - ring test:
+          requires:
+            - build
+      - ring test:
+          requires:
+            - build
+      - staking test:
+          requires:
+            - build
+      - eth-relay test:
+          requires:
+            - build
+      - eth-backing test:
+          requires:
+            - build
+      - overall test:
+          requires:
+            - staking test
