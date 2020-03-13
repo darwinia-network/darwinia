@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -69,12 +70,12 @@ func main() {
 	read("data/bank.csv",
 		result.Eth,
 		func(s string) string { return s },
-		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(1, 18)) })
+		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(1, 9)) })
 
 	read("data/bank_tron.csv",
 		result.Tron,
 		func(s string) string { return s },
-		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(1, 18)) })
+		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(1, 9)) })
 
 	// Eth
 	read("data/eth.csv",
@@ -89,20 +90,20 @@ func main() {
 					balance = decimal.RequireFromString(sr[0]).Mul(decimal.RequireFromString(sr[1]))
 				}
 			}
-			return balance.Mul(decimal.New(1, 18))
+			return balance.Mul(decimal.New(1, 9))
 		})
 
 	// Tron
 	read("data/tron.csv",
 		result.Tron,
 		func(s string) string { return TrxBase58toHexAddress(s) },
-		func(f string) decimal.Decimal { return decimal.RequireFromString(f) })
+		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Div(decimal.New(1, 9)) })
 
 	// Dot
 	read("data/dot.csv",
 		result.Dot,
 		func(s string) string { return s },
-		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(50, 18)) })
+		func(f string) decimal.Decimal { return decimal.RequireFromString(f).Mul(decimal.New(50, 9)) })
 
 	// filter
 	var contracts []string
@@ -152,18 +153,24 @@ func main() {
 	}
 	wg.Wait()
 
-	var filter = func(r map[string]decimal.Decimal) {
-		for address := range r {
+	convert := make(map[string]map[string]uint64)
+	var filter = func(chain string, r map[string]decimal.Decimal) {
+		convert[chain] = make(map[string]uint64)
+		for address, balance := range r {
 			if StringInSlice(address, contracts) {
 				delete(r, address)
+			} else {
+				part := strings.Split(balance.String(), ".")
+				uint64Balance, _ := strconv.ParseUint(part[0], 10, 64)
+				convert[chain][address] = uint64Balance
 			}
 		}
 	}
-	filter(result.Eth)
-	filter(result.Tron)
-	filter(result.Dot)
+	filter("eth", result.Eth)
+	filter("tron", result.Tron)
+	filter("dot", result.Dot)
 
-	b, _ := json.Marshal(result)
+	b, _ := json.Marshal(convert)
 	fmt.Println(string(b))
 }
 
