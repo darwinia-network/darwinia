@@ -488,7 +488,7 @@ impl pallet_society::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const Prefix: &'static [u8] = b"Pay RING to the Darwinia account:";
+	pub const Prefix: &'static [u8] = b"Pay RINGs to the Crab account:";
 }
 impl pallet_claims::Trait for Runtime {
 	type Event = Event;

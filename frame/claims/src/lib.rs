@@ -47,14 +47,14 @@ enum ValidityError {
 }
 
 #[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
-pub enum Signature {
+pub enum OtherSignature {
 	Dot(EcdsaSignature),
 	Eth(EcdsaSignature),
 	Tron(EcdsaSignature),
 }
 
 #[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug)]
-pub enum Address {
+pub enum OtherAddress {
 	Dot(EthereumAddress),
 	Eth(EthereumAddress),
 	Tron(TronAddress),
@@ -105,7 +105,7 @@ decl_event!(
 		<T as frame_system::Trait>::AccountId,
 		RingBalance = RingBalance<T>,
 	{
-		/// Someone claimed some *RING*.
+		/// Someone claimed some *RING*s.
 		Claimed(AccountId, AddressT, RingBalance),
 	}
 );
@@ -142,7 +142,7 @@ decl_storage! {
 			let mut total = <RingBalance<T>>::zero();
 
 			for Account { address, backed_ring } in &config.claims_list.dot {
-				let backed_ring = (*backed_ring).saturated_into();
+				let backed_ring = (*backed_ring).saturating_mul(50).saturated_into();
 				<ClaimsFromDot<T>>::insert(address, backed_ring);
 				total += backed_ring;
 			}
@@ -176,13 +176,13 @@ decl_module! {
 
 		/// Make a claim.
 		#[weight = SimpleDispatchInfo::FixedNormal(1_000_000)]
-		fn claim(origin, dest: T::AccountId, signature: Signature) {
+		fn claim(origin, dest: T::AccountId, signature: OtherSignature) {
 			ensure_none(origin)?;
 
 			let data = dest.using_encoded(to_ascii_hex);
 
 			match signature {
-				Signature::Dot(signature) => {
+				OtherSignature::Dot(signature) => {
 					let signer = Self::eth_recover(&signature, &data)
 						.ok_or(<Error<T>>::InvalidSignature)?;
 					let balance_due = <ClaimsFromDot<T>>::get(&signer)
@@ -197,7 +197,7 @@ decl_module! {
 
 					Self::deposit_event(RawEvent::Claimed(dest, signer.0, balance_due));
 				}
-				Signature::Eth(signature) => {
+				OtherSignature::Eth(signature) => {
 					let signer = Self::eth_recover(&signature, &data)
 						.ok_or(<Error<T>>::InvalidSignature)?;
 					let balance_due = <ClaimsFromEth<T>>::get(&signer)
@@ -212,7 +212,7 @@ decl_module! {
 
 					Self::deposit_event(RawEvent::Claimed(dest, signer.0, balance_due));
 				}
-				Signature::Tron(signature) => {
+				OtherSignature::Tron(signature) => {
 					let signer = Self::tron_recover(&signature, &data)
 						.ok_or(<Error<T>>::InvalidSignature)?;
 					let balance_due = <ClaimsFromTron<T>>::get(&signer)
@@ -232,19 +232,19 @@ decl_module! {
 
 		/// Add a new claim, if you are root.
 		#[weight = SimpleDispatchInfo::FixedNormal(30_000)]
-		fn mint_claim(origin, who: Address, value: RingBalance<T>) {
+		fn mint_claim(origin, who: OtherAddress, value: RingBalance<T>) {
 			ensure_root(origin)?;
 
 			match who {
-				Address::Dot(who) => {
+				OtherAddress::Dot(who) => {
 					<Total<T>>::mutate(|t| *t += value);
 					<ClaimsFromDot<T>>::insert(who, value);
 				}
-				Address::Eth(who) => {
+				OtherAddress::Eth(who) => {
 					<Total<T>>::mutate(|t| *t += value);
 					<ClaimsFromEth<T>>::insert(who, value);
 				}
-				Address::Tron(who) => {
+				OtherAddress::Tron(who) => {
 					<Total<T>>::mutate(|t| *t += value);
 					<ClaimsFromTron<T>>::insert(who, value);
 				}
@@ -314,7 +314,7 @@ impl<T: Trait> sp_runtime::traits::ValidateUnsigned for Module<T> {
 				let data = account.using_encoded(to_ascii_hex);
 
 				match signature {
-					Signature::Dot(signature) => {
+					OtherSignature::Dot(signature) => {
 						let maybe_signer = Self::eth_recover(&signature, &data);
 						let signer = if let Some(s) = maybe_signer {
 							s
@@ -334,7 +334,7 @@ impl<T: Trait> sp_runtime::traits::ValidateUnsigned for Module<T> {
 							propagate: true,
 						})
 					}
-					Signature::Eth(signature) => {
+					OtherSignature::Eth(signature) => {
 						let maybe_signer = Self::eth_recover(&signature, &data);
 						let signer = if let Some(s) = maybe_signer {
 							s
@@ -354,7 +354,7 @@ impl<T: Trait> sp_runtime::traits::ValidateUnsigned for Module<T> {
 							propagate: true,
 						})
 					}
-					Signature::Tron(signature) => {
+					OtherSignature::Tron(signature) => {
 						let maybe_signer = Self::tron_recover(&signature, &data);
 						let signer = if let Some(s) = maybe_signer {
 							s
@@ -567,7 +567,7 @@ mod tests {
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				1,
-				Signature::Dot(sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+				OtherSignature::Dot(sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&1), 100);
 			assert_eq!(Claims::total(), 500);
@@ -576,7 +576,7 @@ mod tests {
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				2,
-				Signature::Eth(sig(&bob(), &2u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+				OtherSignature::Eth(sig(&bob(), &2u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&2), 200);
 			assert_eq!(Claims::total(), 300);
@@ -585,7 +585,7 @@ mod tests {
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				3,
-				Signature::Tron(sig(&carol(), &3u64.encode(), TRON_SIGNED_MESSAGE)),
+				OtherSignature::Tron(sig(&carol(), &3u64.encode(), TRON_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&3), 300);
 			assert_eq!(Claims::total(), 0);
@@ -596,7 +596,7 @@ mod tests {
 	fn add_claim_works() {
 		new_test_ext().execute_with(|| {
 			assert_noop!(
-				Claims::mint_claim(Origin::signed(42), Address::Dot(eth(&bob())), 200),
+				Claims::mint_claim(Origin::signed(42), OtherAddress::Dot(eth(&bob())), 200),
 				sp_runtime::traits::BadOrigin,
 			);
 			assert_eq!(Ring::free_balance(42), 0);
@@ -604,16 +604,16 @@ mod tests {
 				Claims::claim(
 					Origin::NONE,
 					69,
-					Signature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				),
 				<Error<Test>>::SignerHasNoClaim,
 			);
-			assert_ok!(Claims::mint_claim(Origin::ROOT, Address::Dot(eth(&bob())), 200));
+			assert_ok!(Claims::mint_claim(Origin::ROOT, OtherAddress::Dot(eth(&bob())), 200));
 			assert_eq!(Claims::total(), 800);
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				69,
-				Signature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+				OtherSignature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&69), 200);
 			assert_eq!(Claims::total(), 600);
@@ -628,7 +628,7 @@ mod tests {
 				Claims::claim(
 					Origin::signed(42),
 					42,
-					Signature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				),
 				sp_runtime::traits::BadOrigin,
 			);
@@ -642,13 +642,13 @@ mod tests {
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				42,
-				Signature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+				OtherSignature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_noop!(
 				Claims::claim(
 					Origin::NONE,
 					42,
-					Signature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&alice(), &42u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				),
 				<Error<Test>>::SignerHasNoClaim,
 			);
@@ -663,7 +663,7 @@ mod tests {
 				Claims::claim(
 					Origin::NONE,
 					42,
-					Signature::Dot(sig(&alice(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&alice(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				),
 				<Error<Test>>::SignerHasNoClaim,
 			);
@@ -678,7 +678,7 @@ mod tests {
 				Claims::claim(
 					Origin::NONE,
 					42,
-					Signature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				),
 				<Error<Test>>::SignerHasNoClaim,
 			);
@@ -706,7 +706,7 @@ mod tests {
 			assert_eq!(
 				Claims::validate_unsigned(&Call::claim(
 					1,
-					Signature::Dot(sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				)),
 				Ok(ValidTransaction {
 					priority: 100,
@@ -717,20 +717,20 @@ mod tests {
 				})
 			);
 			assert_eq!(
-				Claims::validate_unsigned(&Call::claim(0, Signature::Dot(EcdsaSignature([0; 65])))),
+				Claims::validate_unsigned(&Call::claim(0, OtherSignature::Dot(EcdsaSignature([0; 65])))),
 				InvalidTransaction::Custom(ValidityError::InvalidSignature as _).into(),
 			);
 			assert_eq!(
 				Claims::validate_unsigned(&Call::claim(
 					1,
-					Signature::Dot(sig(&bob(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&bob(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				)),
 				InvalidTransaction::Custom(ValidityError::SignerHasNoClaim as _).into(),
 			);
 			assert_eq!(
 				Claims::validate_unsigned(&Call::claim(
 					0,
-					Signature::Dot(sig(&bob(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
+					OtherSignature::Dot(sig(&bob(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 				)),
 				InvalidTransaction::Custom(ValidityError::SignerHasNoClaim as _).into(),
 			);
