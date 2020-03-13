@@ -13,9 +13,9 @@ use std::{
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
 use node_runtime::{
-	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig as RingConfig, Block, ClaimsConfig,
-	ContractsConfig, CouncilConfig, EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig,
-	KtonConfig, SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
+	constants::currency::*, AuthorityDiscoveryConfig, BabeConfig, Block, ClaimsConfig, ContractsConfig, CouncilConfig,
+	EthBackingConfig, EthRelayConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, KtonConfig, RingConfig,
+	SessionConfig, SessionKeys, SocietyConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
 	TechnicalCommitteeConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;

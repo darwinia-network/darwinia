@@ -141,7 +141,6 @@ browser = [
 	"wasm-bindgen-futures",
 ]
 cli = [
-	# TODO benchmarking
 	"frame-benchmarking-cli",
 
 	"node-executor/wasmi-errno",

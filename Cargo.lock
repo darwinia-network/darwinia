@@ -1137,6 +1137,7 @@ name = "darwinia-ring"
 version = "0.5.0"
 dependencies = [
  "darwinia-support",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-transaction-payment",
@@ -3755,6 +3756,7 @@ dependencies = [
  "darwinia-support",
  "darwinia-treasury",
  "darwinia-vesting",
+ "frame-benchmarking",
  "frame-executive",
  "frame-support",
  "frame-system",

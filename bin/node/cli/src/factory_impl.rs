@@ -98,7 +98,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 		sign::<Self>(
 			CheckedExtrinsic {
 				signed: Some((sender.clone(), extra)),
-				function: Call::Balances(RingCall::transfer(
+				function: Call::Ring(RingCall::transfer(
 					pallet_indices::address::Address::Id(destination.clone().into()),
 					(*amount).into(),
 				)),

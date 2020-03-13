@@ -78,8 +78,6 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-type Ring = Balances;
-
 type NegativeImbalance = <Ring as Currency<AccountId>>::NegativeImbalance;
 
 pub type DealWithFees = SplitTwoWays<
@@ -643,7 +641,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
-		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
+		Ring: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Vesting: pallet_vesting::{Module, Call, Storage, Config<T>, Event<T>},
@@ -837,23 +835,23 @@ impl_runtime_apis! {
 	}
 
 	// TODO benchmarking
-	// impl frame_benchmarking::Benchmark<Block> for Runtime {
-	// 	fn dispatch_benchmark(
-	// 		module: Vec<u8>,
-	// 		extrinsic: Vec<u8>,
-	// 		steps: Vec<u32>,
-	// 		repeat: u32,
-	// 	) -> Option<Vec<frame_benchmarking::BenchmarkResults>> {
-	// 		use frame_benchmarking::Benchmarking;
-	//
-	// 		match module.as_slice() {
-	// 			b"pallet-balances" | b"balances" => Balances::run_benchmark(extrinsic, steps, repeat).ok(),
-	// 			b"pallet-identity" | b"identity" => Identity::run_benchmark(extrinsic, steps, repeat).ok(),
-	// 			b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(extrinsic, steps, repeat).ok(),
-	// 			_ => None,
-	// 		}
-	// 	}
-	// }
+	impl frame_benchmarking::Benchmark<Block> for Runtime {
+		fn dispatch_benchmark(
+			module: Vec<u8>,
+			extrinsic: Vec<u8>,
+			steps: Vec<u32>,
+			repeat: u32,
+		) -> Option<Vec<frame_benchmarking::BenchmarkResults>> {
+			use frame_benchmarking::Benchmarking;
+
+			match module.as_slice() {
+				b"darwinia-ring" | b"ring" => Ring::run_benchmark(extrinsic, steps, repeat).ok(),
+				// b"pallet-identity" | b"identity" => Identity::run_benchmark(extrinsic, steps, repeat).ok(),
+				// b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(extrinsic, steps, repeat).ok(),
+				_ => None,
+			}
+		}
+	}
 }
 
 #[cfg(test)]

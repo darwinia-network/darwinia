@@ -139,7 +139,7 @@ mod tests_local;
 #[cfg(test)]
 #[macro_use]
 mod tests;
-// mod benchmarking;
+mod benchmarking;
 
 use codec::Codec;
 use frame_support::{
