@@ -239,8 +239,8 @@ mod mock;
 
 // #[cfg(test)]
 // mod darwinia_tests;
-// #[cfg(test)]
-// mod substrate_tests;
+#[cfg(test)]
+mod substrate_tests;
 
 mod inflation;
 mod slashing;
@@ -1506,6 +1506,7 @@ decl_module! {
 				.take(MAX_NOMINATIONS)
 				.map(|t| T::Lookup::lookup(t))
 				.collect::<Result<Vec<T::AccountId>, _>>()?;
+
 			let nominations = Nominations {
 				targets,
 				// initial nominations are considered submitted at era 0. See `Nominations` doc
