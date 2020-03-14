@@ -50,8 +50,8 @@ pub struct Extensions {
 
 /// Specialized `ChainSpec`.
 pub type ChainSpec = sc_service::ChainSpec<GenesisConfig, Extensions>;
-/// Crab testnet generator
-pub fn crab_testnet_config() -> Result<ChainSpec, String> {
+/// Crab network generator
+pub fn crab_network_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/crab.json")[..])
 }
 
@@ -105,7 +105,7 @@ pub fn get_authority_keys_from_seed(
 	)
 }
 
-/// Properties for Darwinia Crab Testnet
+/// Properties for Darwinia Crab Network
 fn crab_properties() -> Properties {
 	let mut properties = Properties::new();
 
@@ -360,8 +360,8 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-/// Crab testnet config generator
-pub fn gen_crab_testnet_config() -> ChainSpec {
+/// Crab network config generator
+pub fn gen_crab_network_config() -> ChainSpec {
 	fn gen_crab_config_genesis() -> GenesisConfig {
 		darwinia_genesis(
 			vec![
@@ -389,8 +389,8 @@ pub fn gen_crab_testnet_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Darwinia Crab Testnet",
-		"crab_testnet",
+		"Darwinia Crab Network",
+		"darwinia_crab_network",
 		gen_crab_config_genesis,
 		vec![],
 		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
@@ -477,8 +477,8 @@ pub(crate) mod tests {
 	}
 
 	#[test]
-	fn test_gen_crab_testnet_chain_spec() {
-		gen_crab_testnet_config().build_storage().unwrap();
+	fn test_gen_crab_network_chain_spec() {
+		gen_crab_network_config().build_storage().unwrap();
 	}
 
 	#[test]
