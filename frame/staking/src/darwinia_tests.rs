@@ -180,20 +180,22 @@ fn normal_kton_should_work() {
 	});
 }
 
-// @review(duration): now use BondingDurationInBlockNumber.
-// TODO: checkout BondingDuration not correct
-// Im not sure to use BondingDurationInBlockNumber or BondingDurationInEra
 #[test]
 fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		let (stash, controller) = (11, 10);
 		assert_eq!(BondingDurationInEra::get(), 3);
 
+		let start = System::block_number();
 		let unbond_value = 10;
+
+		// unbond 10 for the first time
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
 			StakingBalance::RingBalance(unbond_value),
 		));
+
+		// check the lock
 		assert_eq!(
 			Ring::locks(stash),
 			vec![BalanceLock {
@@ -202,12 +204,14 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 					staking_amount: 1000 - unbond_value,
 					unbondings: vec![Unbonding {
 						amount: unbond_value,
-						until: BondingDurationInBlockNumber::get() + 1,
+						until: BondingDurationInBlockNumber::get() + start,
 					}],
 				}),
 				lock_reasons: LockReasons::All,
 			}],
 		);
+
+		// check the ledger
 		assert_eq!(
 			Staking::ledger(controller).unwrap(),
 			StakingLedger {
@@ -220,7 +224,7 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 					staking_amount: 1000 - unbond_value,
 					unbondings: vec![Unbonding {
 						amount: unbond_value,
-						until: BondingDurationInBlockNumber::get() + 1,
+						until: BondingDurationInBlockNumber::get() + start,
 					}],
 				},
 				kton_staking_lock: Default::default(),
@@ -228,13 +232,15 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 		);
 
 		let unbond_start = 30;
+		System::set_block_number(unbond_start);
 
-		Timestamp::set_timestamp(unbond_start);
+		// unbond for the second time
 		assert_ok!(Staking::unbond(
 			Origin::signed(controller),
 			StakingBalance::RingBalance(COIN)
 		));
 
+		// check the locks
 		assert_eq!(
 			Ring::locks(stash),
 			vec![BalanceLock {
@@ -244,11 +250,11 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 					unbondings: vec![
 						Unbonding {
 							amount: unbond_value,
-							until: BondingDurationInBlockNumber::get() + 1,
+							until: BondingDurationInBlockNumber::get() + start,
 						},
 						Unbonding {
 							amount: 1000 - unbond_value,
-							until: BondingDurationInBlockNumber::get() + 1,
+							until: BondingDurationInBlockNumber::get() + unbond_start,
 						},
 					],
 				}),
@@ -256,41 +262,22 @@ fn time_deposit_ring_unbond_and_withdraw_automatically_should_work() {
 			}],
 		);
 
-		// @review(duration): please check this.
-		// assert_eq!(
-		// 	Staking::ledger(controller).unwrap(),
-		// 	StakingLedger {
-		// 		stash,
-		// 		active_ring: 0,
-		// 		active_deposit_ring: 0,
-		// 		active_kton: 0,
-		// 		deposit_items: vec![],
-		// 		ring_staking_lock: StakingLock {
-		// 			staking_amount: 0,
-		// 			unbondings: vec![
-		// 				Unbonding {
-		// 					amount: unbond_value,
-		// 					until: BondingDurationInBlockNumber::get() + 1,
-		// 				},
-		// 				Unbonding {
-		// 					amount: 1000 - unbond_value,
-		// 					until: unbond_start + BondingDurationInBlockNumber::get() + 1,
-		// 				},
-		// 			],
-		// 		},
-		// 		kton_staking_lock: Default::default(),
-		// 	},
-		// );
+		// check the ledger, it will be empty because we have
+		// just unbonded all balances, the ledger is drained.
+		assert!(Staking::ledger(controller).is_none());
 
+		// We can't transfer current now.
 		assert_err!(
 			Ring::transfer(Origin::signed(stash), controller, 1),
 			RingError::<Test, _>::LiquidityRestrictions
 		);
 
-		Timestamp::set_timestamp(BondingDurationInBlockNumber::get() as u64);
+		// Let's move to the until block
+		System::set_block_number(BondingDurationInBlockNumber::get() + unbond_start);
+		assert_eq!(Ring::locks(&stash).len(), 1);
 
-		// @review(duration): please check this.
-		// assert_ok!(Ring::transfer(Origin::signed(stash), controller, 1));
+		// stash account can transfer again!
+		assert_ok!(Ring::transfer(Origin::signed(stash), controller, 1));
 	});
 }
 
@@ -301,6 +288,7 @@ fn normal_unbond_should_work() {
 		let value = 200 * COIN;
 		let promise_month = 12;
 		let _ = Ring::deposit_creating(&stash, 1000 * COIN);
+		let start = System::block_number();
 
 		{
 			let kton_free_balance = Kton::free_balance(&stash);
@@ -351,11 +339,10 @@ fn normal_unbond_should_work() {
 			ledger.kton_staking_lock.staking_amount = 0;
 			ledger.kton_staking_lock.unbondings.push(Unbonding {
 				amount: kton_free_balance,
-				until: BondingDurationInBlockNumber::get(),
+				until: BondingDurationInBlockNumber::get() + start,
 			});
 
-			// @review(duration): check below
-			// assert_eq!(Staking::ledger(controller).unwrap(), ledger);
+			assert_eq!(Staking::ledger(controller).unwrap(), ledger);
 		}
 	});
 }

@@ -1295,15 +1295,17 @@ fn bond_extra_works() {
 #[test]
 fn too_many_unbond_calls_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
+		let start = System::block_number();
+
 		// locked at era 0 until 3
 		for _ in 0..MAX_UNLOCKING_CHUNKS - 1 {
 			assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
 		}
 
-		start_era(1);
-
-		// locked at era 1 until 4
+		// locked at era start until `BondingDurationInBlockNumber::get() + start`
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+		assert_eq!(Ring::locks(&10).len(), 0);
+		assert_eq!(Ring::locks(&11).len(), 1);
 
 		// can't do more.
 		assert_noop!(
@@ -1311,18 +1313,20 @@ fn too_many_unbond_calls_should_not_work() {
 			Error::<Test>::NoMoreChunks
 		);
 
-		start_era(3);
+		// move to the `until - start` block
+		System::set_block_number(BondingDurationInBlockNumber::get());
 
 		assert_noop!(
 			Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)),
 			Error::<Test>::NoMoreChunks
 		);
 
-		// free up.
-		System::set_block_number(BondingDurationInBlockNumber::get() + 1);
+		// move to the until block
+		System::set_block_number(BondingDurationInBlockNumber::get() + start);
 
 		// Can add again.
 		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(1)));
+
 		assert_eq!(Ring::locks(&11).len(), 1);
 		assert_eq!(Ring::locks(&10).len(), 0);
 	})
