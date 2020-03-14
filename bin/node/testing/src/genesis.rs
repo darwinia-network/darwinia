@@ -63,7 +63,6 @@ pub fn config_endowed(support_changes_trie: bool, code: Option<&[u8]>, extra_end
 			],
 		}),
 		pallet_staking: Some(StakingConfig {
-			current_era: 0,
 			stakers: vec![
 				(dave(), alice(), 111 * DOLLARS, pallet_staking::StakerStatus::Validator),
 				(eve(), bob(), 100 * DOLLARS, pallet_staking::StakerStatus::Validator),
