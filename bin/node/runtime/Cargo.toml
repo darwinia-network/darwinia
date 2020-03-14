@@ -59,7 +59,7 @@ pallet-membership = { default-features = false, git = "https://github.com/darwin
 pallet-offences = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-recovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-session = { default-features = false, features = ["historical"], path = "../../../frame/session" }
 pallet-society = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-sudo = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

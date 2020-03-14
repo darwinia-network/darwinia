@@ -40,7 +40,7 @@ node-runtime = { path = "../runtime" }
 #pallet-grandpa = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-im-online = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-#pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+#pallet-session = { path = "../../../frame/session" }
 #pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-treasury = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

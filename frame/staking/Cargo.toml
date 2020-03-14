@@ -18,7 +18,7 @@ frame-support = { default-features = false, git = "https://github.com/darwinia-n
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-session = { default-features = false, features = ["historical"], path = "../session" }
 
 sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-io ={ default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
