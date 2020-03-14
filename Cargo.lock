@@ -1078,7 +1078,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
@@ -1165,7 +1165,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
  "substrate-test-utils",
 ]
@@ -3745,7 +3745,7 @@ dependencies = [
  "node-primitives",
  "pallet-authority-discovery",
  "pallet-authorship",
- "pallet-babe",
+ "pallet-babe 0.5.0",
  "pallet-collective",
  "pallet-contracts",
  "pallet-contracts-primitives",
@@ -3779,7 +3779,7 @@ dependencies = [
  "sp-offchain",
  "sp-runtime",
  "sp-session",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
  "sp-transaction-pool",
  "sp-version",
@@ -3956,12 +3956,11 @@ dependencies = [
 
 [[package]]
 name = "pallet-authority-discovery"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+version = "0.5.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "pallet-session 2.0.0-alpha.3",
+ "pallet-session 0.5.0",
  "parity-scale-codec",
  "serde",
  "sp-application-crypto",
@@ -3969,6 +3968,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
@@ -3991,6 +3991,31 @@ dependencies = [
 
 [[package]]
 name = "pallet-babe"
+version = "0.5.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "lazy_static",
+ "pallet-session 0.5.0",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "parking_lot 0.10.0",
+ "serde",
+ "sp-consensus-babe",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking 0.5.0",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+ "sp-timestamp",
+ "sp-version",
+ "substrate-test-runtime",
+]
+
+[[package]]
+name = "pallet-babe"
 version = "2.0.0-alpha.3"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
 dependencies = [
@@ -4005,24 +4030,9 @@ dependencies = [
  "sp-inherents",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 2.0.0-alpha.3",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
  "sp-timestamp",
-]
-
-[[package]]
-name = "pallet-balances"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-io",
- "sp-runtime",
- "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
 [[package]]
@@ -4119,19 +4129,19 @@ dependencies = [
 
 [[package]]
 name = "pallet-grandpa"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+version = "0.5.0"
 dependencies = [
  "frame-support",
  "frame-system",
  "pallet-finality-tracker",
- "pallet-session 2.0.0-alpha.3",
+ "pallet-session 0.5.0",
  "parity-scale-codec",
  "serde",
  "sp-core",
  "sp-finality-grandpa",
+ "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
@@ -4153,20 +4163,19 @@ dependencies = [
 
 [[package]]
 name = "pallet-im-online"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+version = "0.5.0"
 dependencies = [
  "frame-support",
  "frame-system",
  "pallet-authorship",
- "pallet-session 2.0.0-alpha.3",
+ "pallet-session 0.5.0",
  "parity-scale-codec",
  "serde",
  "sp-application-crypto",
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
@@ -4202,16 +4211,16 @@ dependencies = [
 
 [[package]]
 name = "pallet-offences"
-version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+version = "0.5.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "pallet-balances",
  "parity-scale-codec",
  "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
 
@@ -4258,7 +4267,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 0.5.0",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
  "sp-trie",
 ]
@@ -4276,7 +4285,7 @@ dependencies = [
  "serde",
  "sp-io",
  "sp-runtime",
- "sp-staking",
+ "sp-staking 2.0.0-alpha.3",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
  "sp-trie",
 ]
@@ -6654,6 +6663,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-consensus-aura"
+version = "0.8.0-alpha.3"
+source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+ "sp-timestamp",
+]
+
+[[package]]
 name = "sp-consensus-babe"
 version = "0.8.0-alpha.3"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
@@ -6905,6 +6928,15 @@ source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha
 dependencies = [
  "sp-api",
  "sp-core",
+ "sp-runtime",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+]
+
+[[package]]
+name = "sp-staking"
+version = "0.5.0"
+dependencies = [
+ "parity-scale-codec",
  "sp-runtime",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
 ]
@@ -7202,6 +7234,45 @@ dependencies = [
  "log 0.4.8",
  "prometheus",
  "tokio 0.2.13",
+]
+
+[[package]]
+name = "substrate-test-runtime"
+version = "2.0.0-dev"
+source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+dependencies = [
+ "cfg-if",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-rpc-runtime-api",
+ "log 0.4.8",
+ "memory-db",
+ "pallet-babe 2.0.0-alpha.3",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "parity-util-mem",
+ "sc-client",
+ "serde",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-consensus-babe",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-keyring",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-runtime-interface",
+ "sp-session",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+ "sp-transaction-pool",
+ "sp-trie",
+ "sp-version",
+ "substrate-wasm-builder-runner",
+ "trie-db",
 ]
 
 [[package]]
