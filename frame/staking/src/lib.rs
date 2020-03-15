@@ -237,8 +237,8 @@
 #[cfg(test)]
 mod mock;
 
-// #[cfg(test)]
-// mod darwinia_tests;
+#[cfg(test)]
+mod darwinia_tests;
 #[cfg(test)]
 mod substrate_tests;
 
