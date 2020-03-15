@@ -78,6 +78,8 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
+type Ring = Balances;
+
 type NegativeImbalance = <Ring as Currency<AccountId>>::NegativeImbalance;
 
 pub type DealWithFees = SplitTwoWays<
@@ -641,7 +643,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
-		Ring: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
+		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Vesting: pallet_vesting::{Module, Call, Storage, Config<T>, Event<T>},
