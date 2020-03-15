@@ -52,7 +52,7 @@ impl frame_system::Trait for Test {
 }
 
 parameter_types! {
-//	pub const EthMainet: u64 = 0;
+//	pub const EthMainnet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
 impl Trait for Test {
@@ -60,16 +60,16 @@ impl Trait for Test {
 	type EthNetwork = EthRopsten;
 }
 
-pub struct ExtBuilder;
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self
-	}
-}
-impl ExtBuilder {
-	pub fn build(self) -> sp_io::TestExternalities {
-		let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+pub fn new_test_ext() -> sp_io::TestExternalities {
+	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
-		t.into()
+	GenesisConfig::<Test> {
+		number_of_blocks_finality: 30,
+		number_of_blocks_safe: 10,
+		..Default::default()
 	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	t.into()
 }

@@ -15,9 +15,7 @@ use crate::{mock::*, *};
 
 #[test]
 fn verify_receipt_proof() {
-	ExtBuilder::default()
-		.build()
-		.execute_with(|| {
+	new_test_ext().execute_with(|| {
 			System::inc_account_nonce(&2);
 
 			assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
@@ -78,7 +76,7 @@ fn verify_receipt_proof() {
 
 #[test]
 fn relay_header() {
-	ExtBuilder::default().build().execute_with(|| {
+	new_test_ext().execute_with(|| {
 		// 6760579
 		let mixh1 = H256::from(hex!("1e2fc5a540b8f1cdaf50de52c388b1f53856cc61eb3ad20d91b9fcc2de3e3e2a"));
 		let nonce1 = H64::from(hex!("339140bca72c49cd"));
