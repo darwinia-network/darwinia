@@ -33,3 +33,59 @@ as being a *staker*). To become *bonded*, a fund-holding account known as the *s
 which holds some or all of the funds that become frozen in place as part of the staking process,
 is paired with an active **controller** account, which issues instructions on how they shall be
 used.
+
+### Q3: What are the differents from BlockNumber, Era, Session and TimeStamp?
+
+We config the relationships manually, for example: 
+
+```rust
+pub fn start_session(session_index: SessionIndex) {
+	for i in Session::current_index()..session_index {
+		Staking::on_finalize(System::block_number());
+		System::set_block_number((i + 1).into());
+		Timestamp::set_timestamp(System::block_number() * 1000);
+		Session::on_initialize(System::block_number());
+	}
+
+	assert_eq!(Session::current_index(), session_index);
+}
+```
+
+| Unit        | Value    |
+|-------------|----------|
+| BlockNumber | 4        |
+| Session     | 3        |
+| Timestamp   | 3 * 1000 |
+| Era         | 1        |
+
+### Q4: What is the process of rewrad?
+
+```rust
+// 1. Insert stash account into Payment map.
+Payee::<Test>::insert(11, RewardDestination::Controller);
+
+// 2. Add reward points to validators using their stash account ID.
+Staking::reward_by_ids(vec![(11, 50)]);
+
+// 3. Make all validator and nominator request their payment
+make_all_reward_payment(0); // 0 means 0 era.
+```
+
+**What happend exactly?**
+
+`make_all_reward_payment` triggers reward process:
+
++ `make_all_reward_payment`
+  + reward nominators
+    + payout from nominators to controller
+  + reward validators
+    + payout from validators to controller
+
+
+
+#### [Sequential Phragmén’s method.][0]
+
+
+
+
+[0]: https://research.web3.foundation/en/latest/polkadot/NPoS/4.%20Sequential%20Phragm%C3%A9n%E2%80%99s%20method.html
