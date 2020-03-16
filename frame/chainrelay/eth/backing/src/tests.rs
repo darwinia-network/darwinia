@@ -110,7 +110,7 @@ fn verify_redeem_ring() {
 			// If expect_account_id doesn't exist, redeem should fail, "beneficiary account must pre-exist"
 			assert_err!(
 				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Ring(proof_record.clone())),
-				pallet_ring::Error::<Test, _>::DeadAccount,
+				<pallet_ring::Error<Test, _>>::DeadAccount,
 			);
 
 			let ring_locked_before = EthBacking::ring_locked();
@@ -127,7 +127,7 @@ fn verify_redeem_ring() {
 			// shouldn't redeem twice
 			assert_err!(
 				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Ring(proof_record.clone())),
-				"Ring For This Proof - ALREADY BEEN REDEEMED",
+				<Error<Test>>::RingAR,
 			);
 		});
 }
@@ -190,7 +190,7 @@ fn verify_redeem_kton() {
 			// If expect_account_id doesn't exist, redeem should fail
 			assert_err!(
 				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Kton(proof_record.clone())),
-				pallet_kton::Error::<Test, _>::DeadAccount,
+				<pallet_kton::Error<Test, _>>::DeadAccount,
 			);
 
 			let kton_locked_before = EthBacking::kton_locked();
@@ -206,7 +206,7 @@ fn verify_redeem_kton() {
 			// shouldn't redeem twice
 			assert_err!(
 				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Kton(proof_record.clone())),
-				"Kton For This Proof - ALREADY BEEN REDEEMED",
+				<Error<Test>>::KtonAR,
 			);
 		});
 }
@@ -273,7 +273,7 @@ fn verify_redeem_deposit() {
 			let controller = AccountId32::from([1; 32]);
 
 			let _ = Ring::deposit_creating(&expect_account_id, 1);
-			assert_ok!(pallet_staking::Call::<Test>::bond(
+			assert_ok!(<pallet_staking::Call<Test>>::bond(
 				controller.clone(),
 				StakingBalance::RingBalance(1),
 				RewardDestination::Controller,
@@ -304,7 +304,7 @@ fn verify_redeem_deposit() {
 			// shouldn't redeem twice
 			assert_err!(
 				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Deposit(proof_record.clone())),
-				"Deposit For This Proof - ALREADY BEEN REDEEMED",
+				<Error<Test>>::DepositAR,
 			);
 		});
 }

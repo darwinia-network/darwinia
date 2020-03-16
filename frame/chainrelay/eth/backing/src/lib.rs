@@ -333,14 +333,14 @@ impl<T: Trait> Module<T> {
 	fn redeem_ring(proof_record: EthReceiptProof) -> DispatchResult {
 		ensure!(
 			!RingProofVerified::contains_key((proof_record.header_hash, proof_record.index)),
-			<Error<T>>::KtonAR,
+			<Error<T>>::RingAR,
 		);
 
 		let (redeemed_ring, darwinia_account) = Self::parse_token_redeem_proof(&proof_record, "RingBurndropTokens")?;
 		let redeemed_ring = redeemed_ring.saturated_into();
 		let new_ring_locked = Self::ring_locked()
 			.checked_sub(&redeemed_ring)
-			.ok_or(<Error<T>>::KtonLockedNSBA)?;
+			.ok_or(<Error<T>>::RingLockedNSBA)?;
 		let redeemed_positive_imbalance_ring = T::Ring::deposit_into_existing(&darwinia_account, redeemed_ring)?;
 
 		T::RingReward::on_unbalanced(redeemed_positive_imbalance_ring);
