@@ -325,8 +325,6 @@ impl ExtBuilder {
 				(41, balance_factor * 2000),
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
-				// This allow us to have a total_payout different from 0.
-				(999, 1_000_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage);
@@ -346,8 +344,6 @@ impl ExtBuilder {
 				(41, balance_factor * 2000),
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
-				// This allow us to have a total_payout different from 0.
-				(999, 1_000_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage);
@@ -509,7 +505,7 @@ pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	inflation::compute_total_payout::<Test>(
 		duration.saturated_into::<Moment>(),
 		(Timestamp::now() - Staking::genesis_time()).saturated_into::<Moment>(),
-		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		(<Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
 		Perbill::from_percent(50),
 	)
 	.0
