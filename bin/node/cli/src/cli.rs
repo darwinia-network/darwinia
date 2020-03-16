@@ -32,10 +32,9 @@ pub enum Subcommand {
 		about = "Decode given block or extrinsic using current native runtime."
 	)]
 	Inspect(node_inspect::cli::InspectCmd),
-	// TODO benchmarking
-	// /// The custom benchmark subcommmand benchmarking runtime pallets.
-	// #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
-	// Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+	/// The custom benchmark subcommmand benchmarking runtime pallets.
+	#[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
+	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
 
 /// The `factory` command used to generate transactions.
