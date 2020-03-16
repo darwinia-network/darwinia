@@ -11,14 +11,10 @@ mod tests;
 // --- third-party ---
 use codec::{Decode, Encode};
 use frame_support::{
-	decl_error, decl_event, decl_module, decl_storage,
-	dispatch::{DispatchError, DispatchResult},
-	ensure,
-	traits::Get,
-	weights::SimpleDispatchInfo,
+	decl_error, decl_event, decl_module, decl_storage, ensure, traits::Get, weights::SimpleDispatchInfo,
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::prelude::*;
 
 // --- custom ---
@@ -88,6 +84,20 @@ decl_storage! {
 	}
 }
 
+decl_event! {
+	pub enum Event<T>
+	where
+		<T as frame_system::Trait>::AccountId
+	{
+		SetGenesisHeader(AccountId, EthHeader, u64),
+		RelayHeader(AccountId, EthHeader),
+		VerifyProof(AccountId, Receipt, EthReceiptProof),
+		AddAuthority(AccountId),
+		RemoveAuthority(AccountId),
+		ToggleCheckAuthorities(bool),
+	}
+}
+
 decl_error! {
 	pub enum Error for Module<T: Trait> {
 		/// Account - NO PRIVILEGES
@@ -140,25 +150,13 @@ decl_error! {
 	}
 }
 
-decl_event! {
-	pub enum Event<T>
-	where
-		<T as frame_system::Trait>::AccountId
-	{
-		SetGenesisHeader(AccountId, EthHeader, u64),
-		RelayHeader(AccountId, EthHeader),
-		VerifyProof(AccountId, Receipt, EthReceiptProof),
-		AddAuthority(AccountId),
-		RemoveAuthority(AccountId),
-		ToggleCheckAuthorities(bool),
-	}
-}
-
 decl_module! {
 	pub struct Module<T: Trait> for enum Call
 	where
 		origin: T::Origin
 	{
+		type Error = Error<T>;
+
 		fn deposit_event() = default;
 
 		// TODO: Just for easy testing.
