@@ -16,6 +16,8 @@
 
 //! Initialization errors.
 
+use sc_cli::Error as ScError;
+
 /// Result type alias for the CLI.
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -65,6 +67,21 @@ impl std::error::Error for Error {
 			Error::Input(_) => None,
 			Error::InvalidListenMultiaddress => None,
 			Error::Other(_) => None,
+		}
+	}
+}
+
+// Convert the Error of sc-cli
+impl std::convert::From<ScError> for Error {
+	fn from(e: ScError) -> Error {
+		match e {
+			ScError::Io(e) => Error::Io(e),
+			ScError::Cli(e) => Error::Cli(e),
+			ScError::Service(e) => Error::Service(e),
+			ScError::Client(e) => Error::Client(e),
+			ScError::Input(e) => Error::Input(e),
+			ScError::InvalidListenMultiaddress => Error::InvalidListenMultiaddress,
+			ScError::Other(e) => Error::Other(e),
 		}
 	}
 }

@@ -35,8 +35,7 @@ sp-version = { default-features = false, git = "https://github.com/darwinia-netw
 node-primitives = { default-features = false, path = "../primitives" }
 
 # frame dependencies
-# TODO benchmarking
-#frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-executive = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
@@ -88,8 +87,7 @@ std = [
 	"rustc-hex",
 	"serde",
 
-# TODO benchmarking
-#	"frame-benchmarking/std",
+	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",

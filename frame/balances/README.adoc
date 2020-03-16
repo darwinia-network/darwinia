@@ -7,3 +7,87 @@ Balances currently contains **RING** and **KTON**.
 **KTON** is the staking and governance credential of Darwinia Network, KTON can **only obtained by locking RING**, the initial supply is 0.
 
 At present, some **RING** and **KTON** exist in the Ethereum network and the Tron network in the form of **ERC-20** and **TRC-20**. These TOKENs will be transferred to the Darwinia main network by 1:1 cross-chain conversion after the Darwinia main online.
+
+**The Balances module provides functions for**
+
+- Getting and setting free balances.
+- Retrieving total, reserved and unreserved balances.
+- Repatriating a reserved balance to a beneficiary account that exists.
+- Transferring a balance between accounts (when not reserved).
+- Slashing an account balance.
+- Account creation and removal.
+- Managing total issuance.
+- Setting and managing locks.
+
+## Terminology
+
+- **Existential Deposit:** The minimum balance required to create or keep an account open. This prevents
+"dust accounts" from filling storage. When the free plus the reserved balance (i.e. the total balance)
+  fall below this, then the account is said to be dead; and it loses its functionality as well as any
+  prior history and all information on it is removed from the chain's state.
+  No account should ever have a total balance that is strictly between 0 and the existential
+  deposit (exclusive). If this ever happens, it indicates either a bug in this module or an
+  erroneous raw mutation of storage.
+
+- **Total Issuance:** The total number of units in existence in a system.
+
+- **Reaping an account:** The act of removing an account by resetting its nonce. Happens after its
+total balance has become zero (or, strictly speaking, less than the Existential Deposit).
+
+- **Free Balance:** The portion of a balance that is not reserved. The free balance is the only
+  balance that matters for most operations.
+
+- **Reserved Balance:** Reserved balance still belongs to the account holder, but is suspended.
+  Reserved balance can still be slashed, but only after all the free balance has been slashed.
+
+- **Imbalance:** A condition when some funds were credited or debited without equal and opposite accounting
+(i.e. a difference between total issuance and account balances). Functions that result in an imbalance will
+return an object of the `Imbalance` trait that can be managed within your runtime logic. (If an imbalance is
+simply dropped, it should automatically maintain any book-keeping such as total issuance.)
+
+- **Lock:** A freeze on a specified amount of an account's free balance until a specified block number. Multiple
+locks always operate over the same funds, so they "overlay" rather than "stack".
+
+
+## Usage
+
+### transfer balances
+
+Transfer some liquid free balance to another account.
+
+`transfer` will set the `FreeBalance` of the sender and receiver.
+It will decrease the total issuance of the system by the `TransferFee`.
+If the sender's account is below the existential deposit as a result
+of the transfer, the account will be reaped.
+
+### set balances
+
+Set the balances of a given account.
+
+This will alter `FreeBalance` and `ReservedBalance` in storage. it will
+also decrease the total issuance of the system (`TotalIssuance`).
+If the new free or reserved balance is below the existential deposit,
+it will reset the account nonce (`frame_system::AccountNonce`).
+
+The dispatch origin for this call is `root`.
+
+
+## Weight 
+
+### Weight in Balances
+
+| Call                          | Origin | weight    |
+|-------------------------------|--------|-----------|
+| fn force\_transfer(...)       | S      | 1,000,000 |
+| fn transfer(...)              | S      | 1,000,000 |
+| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
+| fn set\_balance(...)          | R      | 50,000    |
+
+### Weight in Substrate's Balances
+
+| Call                          | Origin | weight    |
+|-------------------------------|--------|-----------|
+| fn force\_transfer(...)       | S      | 1,000,000 |
+| fn transfer(...)              | S      | 1,000,000 |
+| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
+| fn set\_balance(...)          | R      | 50,000    |

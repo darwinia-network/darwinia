@@ -1015,6 +1015,7 @@ dependencies = [
  "parity-util-mem",
  "regex",
  "rpassword",
+ "sc-cli",
  "sc-client-api",
  "sc-informant",
  "sc-network",
@@ -1136,6 +1137,7 @@ name = "darwinia-ring"
 version = "0.5.0"
 dependencies = [
  "darwinia-support",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-transaction-payment",
@@ -1698,6 +1700,22 @@ dependencies = [
  "sp-io",
  "sp-runtime-interface",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3)",
+]
+
+[[package]]
+name = "frame-benchmarking-cli"
+version = "2.0.0-alpha.3"
+source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+dependencies = [
+ "frame-benchmarking",
+ "parity-scale-codec",
+ "sc-cli",
+ "sc-client",
+ "sc-client-db",
+ "sc-executor",
+ "sc-service",
+ "sp-runtime",
+ "structopt",
 ]
 
 [[package]]
@@ -3583,6 +3601,7 @@ dependencies = [
  "assert_cmd",
  "darwinia-claims",
  "darwinia-cli",
+ "frame-benchmarking-cli",
  "frame-support",
  "frame-system",
  "futures 0.3.4",
@@ -3737,6 +3756,7 @@ dependencies = [
  "darwinia-support",
  "darwinia-treasury",
  "darwinia-vesting",
+ "frame-benchmarking",
  "frame-executive",
  "frame-support",
  "frame-system",
@@ -5476,6 +5496,45 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "sc-cli"
+version = "0.8.0-alpha.3"
+source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.3#013c1ee167354a08283fb69915fda56a62fee943"
+dependencies = [
+ "ansi_term 0.12.1",
+ "app_dirs",
+ "atty",
+ "chrono",
+ "clap",
+ "derive_more",
+ "env_logger 0.7.1",
+ "fdlimit",
+ "futures 0.3.4",
+ "lazy_static",
+ "log 0.4.8",
+ "names",
+ "parity-util-mem",
+ "regex",
+ "rpassword",
+ "sc-client-api",
+ "sc-informant",
+ "sc-network",
+ "sc-service",
+ "sc-telemetry",
+ "sc-tracing",
+ "serde_json",
+ "sp-blockchain",
+ "sp-core",
+ "sp-keyring",
+ "sp-panic-handler",
+ "sp-runtime",
+ "sp-state-machine",
+ "structopt",
+ "substrate-prometheus-endpoint",
+ "time",
+ "tokio 0.2.13",
 ]
 
 [[package]]
@@ -7780,7 +7839,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfd5b7557925ce778ff9b9ef90e3ade34c524b5ff10e239c69a42d546d2af56"
 dependencies = [
- "rand 0.7.3",
+ "rand 0.5.6",
 ]
 
 [[package]]

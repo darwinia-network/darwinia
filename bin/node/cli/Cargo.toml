@@ -99,8 +99,8 @@ node-runtime = { path = "../runtime" }
 node-inspect = { optional = true, path = "../inspect" }
 node-transaction-factory = { optional = true, path = "../transaction-factory" }
 
-# TODO benchmarking
-#frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# benchmarking
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
 
@@ -125,9 +125,7 @@ structopt = { version = "0.3.8", optional = true }
 vergen = { version = "3.0.4", optional =true }
 
 build-script-utils = { package = "substrate-build-script-utils", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-
-# TODO benchmarking
-#frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
 
@@ -143,8 +141,7 @@ browser = [
 	"wasm-bindgen-futures",
 ]
 cli = [
-	# TODO benchmarking
-#	"frame-benchmarking-cli",
+	"frame-benchmarking-cli",
 
 	"node-executor/wasmi-errno",
 	"node-inspect",
