@@ -787,7 +787,7 @@ decl_storage! {
 		/// Must be more than the number of era delayed by session otherwise.
 		/// i.e. active era must always be in history.
 		/// i.e. `active_era > current_era - history_depth` must be guaranteed.
-		HistoryDepth get(fn history_depth) config(): u32 = 84;
+		HistoryDepth get(fn history_depth) config(): u32 = 336;
 
 		/// The ideal number of staking participants.
 		pub ValidatorCount get(fn validator_count) config(): u32;
