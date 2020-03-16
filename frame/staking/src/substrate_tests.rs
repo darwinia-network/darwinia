@@ -1,7 +1,7 @@
 //! Tests for the module.
 //!
-//! These tests are migrated from substrate `v2.0.0-alpha.3` for upgrade
-//! usages, do not **add** functions to this file unless you are doing the
+//! These tests are migrated from Substrate `75116bd8c45c7e46a9b8eed9cb29ee4256ed631b`
+//! for upgrade usages, do not **add** functions to this file unless you are doing the
 //! upgrading work :-P
 //!
 //! + If you want to add some external tests for this crate, please gather
@@ -9,6 +9,8 @@
 //!
 //! + If you want to delete some functions, please left some comments
 //! explaining why you delete them.
+
+// --- third-party ---
 use frame_support::{
 	assert_noop, assert_ok,
 	traits::{Currency, ReservableCurrency},
@@ -21,6 +23,7 @@ use sp_runtime::{
 use sp_staking::offence::OffenceDetails;
 use substrate_test_utils::assert_eq_uvec;
 
+// --- custom ---
 use crate::{mock::*, *};
 use darwinia_support::balance::lock::*;
 use pallet_ring::Error as RingError;
@@ -34,7 +37,7 @@ fn force_unstake_works() {
 		// Cant transfer
 		assert_noop!(
 			Ring::transfer(Origin::signed(11), 1, 10),
-			RingError::<Test, _>::LiquidityRestrictions,
+			<RingError<Test, _>>::LiquidityRestrictions,
 		);
 		// Force unstake requires root.
 		assert_noop!(Staking::force_unstake(Origin::signed(11), 11), BadOrigin);

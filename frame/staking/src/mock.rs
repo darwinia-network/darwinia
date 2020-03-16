@@ -351,24 +351,24 @@ impl ExtBuilder {
 		let stake_21 = if self.fair { 1000 } else { 2000 };
 		let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
 		let status_41 = if self.validator_pool {
-			StakerStatus::<AccountId>::Validator
+			<StakerStatus<AccountId>>::Validator
 		} else {
-			StakerStatus::<AccountId>::Idle
+			<StakerStatus<AccountId>>::Idle
 		};
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			stakers: vec![
 				// (stash, controller, staked_amount, status)
-				(11, 10, balance_factor * 1000, StakerStatus::<AccountId>::Validator),
-				(21, 20, stake_21, StakerStatus::<AccountId>::Validator),
-				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
+				(11, 10, balance_factor * 1000, <StakerStatus<AccountId>>::Validator),
+				(21, 20, stake_21, <StakerStatus<AccountId>>::Validator),
+				(31, 30, stake_31, <StakerStatus<AccountId>>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
 				// nominator
 				(
 					101,
 					100,
 					balance_factor * 500,
-					StakerStatus::<AccountId>::Nominator(nominated),
+					<StakerStatus<AccountId>>::Nominator(nominated),
 				),
 			],
 			validator_count: self.validator_count,
