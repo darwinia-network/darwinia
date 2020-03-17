@@ -79,6 +79,9 @@ mod tests;
 mod types {
 	use crate::*;
 
+	/// An index of a proposal. Just a `u32`.
+	pub type ProposalIndex = u32;
+
 	pub type RingBalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::Balance;
 	pub type RingPositiveImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::PositiveImbalance;
 	pub type RingNegativeImbalance<T> = <RingCurrency<T> as Currency<AccountId<T>>>::NegativeImbalance;
@@ -113,9 +116,6 @@ use sp_std::prelude::*;
 // custom
 use darwinia_support::traits::OnUnbalancedKton;
 use types::*;
-
-/// An index of a proposal. Just a `u32`.
-type ProposalIndex = u32;
 
 /// The treasury's module id, used for deriving its sovereign account ID.
 const MODULE_ID: ModuleId = ModuleId(*b"py/trsry");
@@ -214,7 +214,7 @@ decl_storage! {
 		ProposalCount get(fn proposal_count): ProposalIndex;
 
 		/// Proposals that have been made.
-		Proposals get(fn proposals): map hasher(blake2_256) ProposalIndex => Option<Proposal<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
+		Proposals get(fn proposals): map hasher(twox_64_concat) ProposalIndex => Option<Proposal<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
 
 		/// Proposal indices that have been approved but not yet awarded.
 		Approvals get(fn approvals): Vec<ProposalIndex>;
@@ -226,7 +226,7 @@ decl_storage! {
 
 		/// Simple preimage lookup from the reason's hash to the original data. Again, has an
 		/// insecure enumerable hash since the key is guaranteed to be the result of a secure hash.
-		pub Reasons get(fn reasons): map hasher(twox_64_concat) T::Hash => Option<Vec<u8>>;
+		pub Reasons get(fn reasons): map hasher(identity) T::Hash => Option<Vec<u8>>;
 	}
 	add_extra_genesis {
 		build(|_config| {
