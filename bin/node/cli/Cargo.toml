@@ -43,73 +43,75 @@ structopt = { version = "0.3.8", optional = true }
 tracing = "0.1.10"
 
 # primitives
-grandpa-primitives = { package = "sp-finality-grandpa", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+grandpa-primitives = { package = "sp-finality-grandpa", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sp-authority-discovery = {  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-consensus = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-finality-tracker = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-inherents = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-keyring = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-authority-discovery = {  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-consensus = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-finality-tracker = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-inherents = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-keyring = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 # client dependencies
-grandpa = { package = "sc-finality-grandpa", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+grandpa = { package = "sc-finality-grandpa", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sc-authority-discovery = {  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-basic-authorship = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-chain-spec = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-client-db = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-network = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-offchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-service = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-telemetry = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-tracing = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-authority-discovery = {  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-basic-authorship = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-chain-spec = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-client-db = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-network = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-offchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-service = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-telemetry = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-tracing = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 # frame dependencies
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-frame-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-# TODO https://github.com/darwinia-network/darwinia/issues/347
-pallet-authority-discovery = { path = "../../../frame/authority-discovery" }
-pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-# TODO https://github.com/darwinia-network/darwinia/issues/347
-pallet-im-online = { default-features = false, path = "../../../frame/im-online" }
-pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-im-online = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 pallet-claims = { package = "darwinia-claims", path = "../../../frame/claims" }
 
 # node-specific dependencies
+node-primitives = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
 node-executor = { path = "../executor" }
-node-primitives = { path = "../primitives" }
 node-rpc = { path = "../rpc" }
 node-runtime = { path = "../runtime" }
 
 # CLI-specific dependencies
-node-inspect = { optional = true, path = "../inspect" }
-node-transaction-factory = { optional = true, path = "../transaction-factory" }
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-# benchmarking
-frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+node-inspect = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+node-transaction-factory = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
+sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+# TODO https://github.com/darwinia-network/darwinia/issues/26
+#sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
 
 # WASM-specific dependencies
+browser-utils = { package = "substrate-browser-utils", optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
 wasm-bindgen = { version = "0.2.57", optional = true }
 wasm-bindgen-futures = { version = "0.4.7", optional = true }
-browser-utils = { package = "substrate-browser-utils", optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 [dev-dependencies]
 assert_cmd = "0.12"
@@ -117,22 +119,25 @@ futures = "0.3.1"
 nix = "0.17"
 tempfile = "3.1.0"
 
-sc-consensus-babe = { features = ["test-helpers"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-consensus-epochs = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-keystore = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sc-service-test = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sc-consensus-babe = { features = ["test-helpers"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-consensus-epochs = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-keystore = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sc-service-test = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 [build-dependencies]
 structopt = { version = "0.3.8", optional = true }
 vergen = { version = "3.0.4", optional =true }
 
-build-script-utils = { package = "substrate-build-script-utils", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+build-script-utils = { package = "substrate-build-script-utils", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
+sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-node-inspect = { optional = true, path = "../inspect" }
-node-transaction-factory = { optional = true, path = "../transaction-factory" }
+# TODO https://github.com/darwinia-network/darwinia/issues/26
+#sc-cli = { package = "darwinia-cli", optional = true, path = "../../../client/cli" }
+
+node-inspect = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+node-transaction-factory = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 [features]
 default = ["cli", "wasmtime"]
