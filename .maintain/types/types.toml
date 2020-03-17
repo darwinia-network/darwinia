@@ -109,6 +109,12 @@ title = "Darwinia Node Runtime Types"
 	EthReceiptProof.proof = "Bytes"
 	EthReceiptProof.header_hash = "H256"
 
+[eth-relay]
+	[eth-relay.complex]
+	RedeemFor._enum.Ring = "EthReceiptProof"
+	RedeemFor._enum.Kton = "EthReceiptProof"
+	RedeemFor._enum.Deposit = "EthReceiptProof"
+
 [claims]
 	[claims.basic]
 	AddressT = "[u8; 20]"
