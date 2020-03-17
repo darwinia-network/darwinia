@@ -72,7 +72,7 @@ it will reset the account nonce (`frame_system::AccountNonce`).
 The dispatch origin for this call is `root`.
 
 
-## Weight 
+## Weights
 
 | Call                          | Origin | Darwinia  | Substrate |
 |-------------------------------|--------|-----------|-----------|

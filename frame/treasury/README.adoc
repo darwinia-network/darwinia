@@ -35,6 +35,15 @@ respectively.
 - `reject_proposal` - Reject a proposal, slashing the deposit.
 - `approve_proposal` - Accept the proposal, returning the deposit.
 
-## GenesisConfig
+## Weights
 
-The Treasury module depends on the `GenesisConfig`.
+| Call                      | Origin | Darwinia | Substrate |
+|---------------------------|--------|----------|-----------|
+| fn propose\_spend(...)    | S      | 500,000  | 500,000   |
+| fn tip\_new(...)          | S      | 150,000  | 150,000   |
+| fn reject\_proposal(...)  | -      | 100,000  | 100,000   |
+| fn approve\_proposal(...) | -      | 100,000  | 100,000   |
+| fn report\_awesome(...)   | S      | 100,000  | 100,000   |
+| fn retract\_tip(...)      | S      | 50,000   | 50,000    |
+| fn tip(...)               | S      | 50,000   | 50,000    |
+| fn close\_tip(...)        | S      | 50,000   | 50,000    |
