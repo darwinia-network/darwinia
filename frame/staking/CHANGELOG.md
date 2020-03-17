@@ -38,7 +38,15 @@ We use `power_of` and `stake_of` instead of `slashable_balance_of`:
 + **power_of**: The total power that can be slashed from a stash account as of right now.
 + **stake_of**: The `active_ring` and `active_kton` from a stash account.
 
-Fore example, we can get the slashable power by `power_of` from an account directly, if the power is zero, it means we don't have slashable balances, otherwise, we can convert power to the **slashable_balances**.
+**For if an account is slashale:**
+
+Just use `power_of`, if the return `power` is zero, the target account is not slashable.
+
+**For the amount of slashable balances:**
+
+The slashable balances actually mean `active-ring` and `active-kton` in darwinia's staking
+process, we can use `Staking::ledger(controller)` to get a `StakingLedger` which contains
+the `active-ring` and `active-kton` the `controller` have.
 
 ## Structs
 

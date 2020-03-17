@@ -1392,7 +1392,11 @@ decl_module! {
 			}
 		}
 
-		/// Stash Account can get their ring back after the depositing time exceeded.
+		/// Claim mature deposits from a controller account back to the related
+		/// stash accounts.
+		///
+		/// Stash accounts can get their ring back after the depositing time exceeded,
+		/// and the ring getting back is still in staking status.
 		///
 		/// # <weight>
 		/// - Independent of the arguments. Insignificant complexity.
@@ -1408,8 +1412,10 @@ decl_module! {
 			<Ledger<T>>::insert(controller, ledger);
 		}
 
-		/// Claim deposits when the depositing time has not been exceeded, accounts' ring
-		/// will get slashed.
+		/// Claim deposits while the depositing time has not been exceeded, the ring
+		/// will not be slashed, but the account is required to pay KTON as punish.
+		///
+		/// Refer to https://talk.darwinia.network/topics/55
 		///
 		/// # <weight>
 		/// - Independent of the arguments. Insignificant complexity.
@@ -1567,7 +1573,7 @@ decl_module! {
 		/// Effects will be felt at the beginning of the next era.
 		///
 		/// The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-		///1
+		///
 		/// # <weight>
 		/// - Independent of the arguments. Insignificant complexity.
 		/// - Contains a limited number of reads.
@@ -1781,13 +1787,6 @@ decl_module! {
 		/// This can be called from any origin.
 		///
 		/// - `stash`: The stash account to reap. Its balance must be zero.
-		///
-		/// # <weight>
-		/// - `O(1)`
-		/// - One slash kill
-		/// - Two lock removes
-		/// # </weight>
-		#[weight = SimpleDispatchInfo::FixedOperational(10_000)]
 		fn reap_stash(_origin, stash: T::AccountId) {
 			Self::ensure_storage_upgraded();
 			ensure!(T::RingCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
