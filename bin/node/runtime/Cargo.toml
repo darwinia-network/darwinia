@@ -145,3 +145,11 @@ std = [
 	"sp-std/std",
     "sp-version/std",
 ]
+runtime-benchmarks = [
+# TODO: benchmark
+#	"frame-benchmarking",
+#	"pallet-timestamp/runtime-benchmarks",
+#	"pallet-identity/runtime-benchmarks",
+#	"pallet-balances/runtime-benchmarks",
+#	"pallet-vesting/runtime-benchmarks",
+]

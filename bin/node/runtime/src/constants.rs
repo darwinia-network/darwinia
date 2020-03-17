@@ -71,7 +71,7 @@ pub mod supply {
 
 	// TODO: Move to darwinia-node-extra-primitives?
 	/// Power of an account.
-	type Power = u32;
+	pub type Power = u32;
 
 	pub const CAP: Balance = 1_000_000_000 * COIN;
 	pub const TOTAL_POWER: Power = 1_000_000_000;
