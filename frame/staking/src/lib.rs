@@ -1229,7 +1229,16 @@ decl_module! {
 			}
 		}
 
-		// TODO: doc
+		/// Deposit some extra amount ring, and return kton to the controller.
+		///
+		/// The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - O(1).
+		/// - One DB entry.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
@@ -1287,7 +1296,7 @@ decl_module! {
 		/// </weight>
 		///
 		/// Only active normal ring can be unbond
-		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
@@ -1383,7 +1392,15 @@ decl_module! {
 			}
 		}
 
-		// TODO: doc
+		/// Stash Account can get their ring back after the depositing time exceeded.
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - One storage read.
+		/// - One storage write.
+		/// - Writes are limited to the `origin` account key.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
@@ -1391,7 +1408,16 @@ decl_module! {
 			<Ledger<T>>::insert(controller, ledger);
 		}
 
-		// TODO: doc
+		/// Claim deposits when the depositing time has not been exceeded, accounts' ring
+		/// will get slashed.
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - One storage read.
+		/// - One storage write.
+		/// - Writes are limited to the `origin` account key.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn try_claim_deposits_with_punish(origin, expire_time: MomentT<T>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
@@ -1541,7 +1567,7 @@ decl_module! {
 		/// Effects will be felt at the beginning of the next era.
 		///
 		/// The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-		///
+		///1
 		/// # <weight>
 		/// - Independent of the arguments. Insignificant complexity.
 		/// - Contains a limited number of reads.
@@ -1755,6 +1781,13 @@ decl_module! {
 		/// This can be called from any origin.
 		///
 		/// - `stash`: The stash account to reap. Its balance must be zero.
+		///
+		/// # <weight>
+		/// - `O(1)`
+		/// - One slash kill
+		/// - Two lock removes
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedOperational(10_000)]
 		fn reap_stash(_origin, stash: T::AccountId) {
 			Self::ensure_storage_upgraded();
 			ensure!(T::RingCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
