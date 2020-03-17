@@ -82,18 +82,18 @@ decl_storage! {
 		pub RingLocked get(fn ring_locked) config(): RingBalance<T>;
 		pub RingProofVerified
 			get(fn ring_proof_verfied)
-			: map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
+			: map hasher(blake2_128_concat) EthTransactionIndex => Option<EthReceiptProof>;
 		pub RingRedeemAddress get(fn ring_redeem_address) config(): EthAddress;
 
 		pub KtonLocked get(fn kton_locked) config(): KtonBalance<T>;
 		pub KtonProofVerified
 			get(fn kton_proof_verfied)
-			: map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
+			: map hasher(blake2_128_concat) EthTransactionIndex => Option<EthReceiptProof>;
 		pub KtonRedeemAddress get(fn kton_redeem_address) config(): EthAddress;
 
 		pub DepositProofVerified
 			 get(fn deposit_proof_verfied)
-			 : map hasher(blake2_256) EthTransactionIndex => Option<EthReceiptProof>;
+			 : map hasher(blake2_128_concat) EthTransactionIndex => Option<EthReceiptProof>;
 		pub DepositRedeemAddress get(fn deposit_redeem_address) config(): EthAddress;
 	}
 }
