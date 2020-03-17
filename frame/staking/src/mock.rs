@@ -7,9 +7,10 @@ use std::{
 
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
+	storage::IterableStorageMap,
 	traits::{Currency, FindAuthor, Get},
 	weights::Weight,
-	StorageLinkedMap, StorageValue,
+	StorageValue,
 };
 use sp_core::{crypto::key_types, H256};
 use sp_runtime::{
@@ -142,6 +143,7 @@ impl frame_system::Trait for Test {
 	type AccountData = darwinia_support::balance::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
+	type MigrateAccount = ();
 }
 
 parameter_types! {
@@ -405,7 +407,7 @@ pub fn check_exposure_all(era: EraIndex) {
 }
 
 pub fn check_nominator_all(era: EraIndex) {
-	<Nominators<Test>>::enumerate().for_each(|(acc, _)| check_nominator_exposure(era, acc));
+	<Nominators<Test>>::iter().for_each(|(acc, _)| check_nominator_exposure(era, acc));
 }
 
 /// Check for each selected validator: expo.total = Sum(expo.other) + expo.own
