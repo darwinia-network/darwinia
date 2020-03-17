@@ -126,13 +126,13 @@ decl_storage! {
 	trait Store for Module<T: Trait> as Claims {
 		ClaimsFromDot
 			get(claims_from_dot)
-			: map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
+			: map hasher(identity) EthereumAddress => Option<RingBalance<T>>;
 		ClaimsFromEth
 			get(claims_from_eth)
-			: map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
+			: map hasher(identity) EthereumAddress => Option<RingBalance<T>>;
 		ClaimsFromTron
 			get(claims_from_tron)
-			: map hasher(blake2_256) TronAddress => Option<RingBalance<T>>;
+			: map hasher(identity) TronAddress => Option<RingBalance<T>>;
 
 		Total get(total): RingBalance<T>;
 	}
@@ -440,6 +440,7 @@ mod tests {
 		type AccountData = pallet_support::balance::AccountData<u64>;
 		type OnNewAccount = ();
 		type OnKilledAccount = ();
+		type MigrateAccount = ();
 	}
 
 	parameter_types! {
