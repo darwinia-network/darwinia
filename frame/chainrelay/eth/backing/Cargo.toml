@@ -16,12 +16,12 @@ serde = { version = "1.0.101", optional = true }
 # github.com
 ethabi = { default-features = false, git = "https://github.com/darwinia-network/ethabi.git", branch = "with_no_std" }
 
-frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 # darwinia
 darwinia-eth-relay = { default-features = false, path = "../relay" }
@@ -35,13 +35,11 @@ rustc-hex = "2.0"
 
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
 
-# TODO https://github.com/darwinia-network/darwinia/issues/347
-pallet-session = { path = "../../../session" }
-pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-# TODO https://github.com/darwinia-network/darwinia/issues/347
-sp-staking = { path = "../../../../primitives/staking" }
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 pallet-ring = { package = "darwinia-ring", path = "../../../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../../../frame/balances/kton" }

@@ -10,10 +10,10 @@ use sp_core::{
 	map,
 	storage::{well_known_keys, Storage},
 	traits::Externalities,
-	Blake2Hasher, NeverNativeValue,
+	NeverNativeValue,
 };
 use sp_runtime::{
-	traits::{Convert, Hash as HashT},
+	traits::{BlakeTwo256, Convert, Hash as HashT},
 	transaction_validity::InvalidTransaction,
 	ApplyExtrinsicResult, Fixed64,
 };
@@ -143,7 +143,7 @@ fn block_with_size(time: u64, nonce: u32, size: usize) -> (Vec<u8>, Hash) {
 
 #[test]
 fn panic_execution_with_foreign_code_gives_error() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		BLOATY_CODE,
 		Storage {
 			top: map![
@@ -185,7 +185,7 @@ fn panic_execution_with_foreign_code_gives_error() {
 
 #[test]
 fn bad_extrinsic_with_native_equivalent_code_gives_error() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		COMPACT_CODE,
 		Storage {
 			top: map![
@@ -227,7 +227,7 @@ fn bad_extrinsic_with_native_equivalent_code_gives_error() {
 
 #[test]
 fn successful_execution_with_native_equivalent_code_gives_ok() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		COMPACT_CODE,
 		Storage {
 			top: map![
@@ -274,7 +274,7 @@ fn successful_execution_with_native_equivalent_code_gives_ok() {
 
 #[test]
 fn successful_execution_with_foreign_code_gives_ok() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		BLOATY_CODE,
 		Storage {
 			top: map![
@@ -692,7 +692,7 @@ fn native_big_block_import_fails_on_fallback() {
 
 #[test]
 fn panic_execution_gives_error() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		BLOATY_CODE,
 		Storage {
 			top: map![
@@ -730,7 +730,7 @@ fn panic_execution_gives_error() {
 
 #[test]
 fn successful_execution_gives_ok() {
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		COMPACT_CODE,
 		Storage {
 			top: map![

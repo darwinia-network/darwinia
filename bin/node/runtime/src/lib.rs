@@ -22,7 +22,7 @@ pub use pallet_staking::StakerStatus;
 
 use frame_support::{
 	construct_runtime, debug, parameter_types,
-	traits::{Currency, Randomness, SplitTwoWays},
+	traits::{Currency, Imbalance, OnUnbalanced, Randomness},
 	weights::Weight,
 };
 use frame_system::offchain::TransactionSubmitter;
@@ -49,6 +49,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use crate::constants::supply::Power;
 use node_primitives::*;
 
 // Make the WASM binary available.
@@ -64,7 +65,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	// and set impl_version to 0. If only runtime
 	// implementation changes and behavior does not, then leave spec_version as
 	// is and increment impl_version.
-	spec_version: 88,
+	spec_version: 90,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 };
@@ -82,14 +83,21 @@ type Ring = Balances;
 
 type NegativeImbalance = <Ring as Currency<AccountId>>::NegativeImbalance;
 
-pub type DealWithFees = SplitTwoWays<
-	Balance,
-	NegativeImbalance,
-	_4,
-	Treasury, // 4 parts (80%) goes to the treasury.
-	_1,
-	Author, // 1 part (20%) goes to the block author.
->;
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+		if let Some(fees) = fees_then_tips.next() {
+			// for fees, 80% to treasury, 20% to author
+			let mut split = fees.ration(80, 20);
+			if let Some(tips) = fees_then_tips.next() {
+				// for tips, if any, 80% to treasury, 20% to author (though this can be anything)
+				tips.ration_merge_into(80, 20, &mut split);
+			}
+			Treasury::on_unbalanced(split.0);
+			Author::on_unbalanced(split.1);
+		}
+	}
+}
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
@@ -118,6 +126,7 @@ impl frame_system::Trait for Runtime {
 	type AccountData = pallet_support::balance::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
+	type MigrateAccount = ();
 }
 
 parameter_types! {
@@ -259,11 +268,15 @@ impl pallet_session::historical::Trait for Runtime {
 // 	type Slash = Treasury;
 // }
 
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+}
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
 }
 
 parameter_types! {
@@ -288,11 +301,15 @@ impl pallet_elections_phragmen::Trait for Runtime {
 	type TermDuration = TermDuration;
 }
 
+parameter_types! {
+	pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
+}
 type TechnicalCollective = pallet_collective::Instance2;
 impl pallet_collective::Trait<TechnicalCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
+	type MotionDuration = TechnicalMotionDuration;
 }
 
 impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
@@ -301,6 +318,7 @@ impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
 	type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
 	type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
 	type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
+	type PrimeOrigin = pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>;
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
 }
@@ -604,10 +622,14 @@ impl pallet_treasury::Trait for Runtime {
 	type Burn = Burn;
 }
 
+parameter_types! {
+	pub const MinVestedTransfer: Balance = 100 * COIN;
+}
 impl pallet_vesting::Trait for Runtime {
 	type Event = Event;
 	type Currency = Ring;
 	type BlockNumberToBalance = ConvertInto;
+	type MinVestedTransfer = MinVestedTransfer;
 }
 
 construct_runtime!(
@@ -706,10 +728,6 @@ impl_runtime_apis! {
 	impl sp_block_builder::BlockBuilder<Block> for Runtime {
 		fn apply_extrinsic(extrinsic: <Block as BlockT>::Extrinsic) -> ApplyExtrinsicResult {
 			Executive::apply_extrinsic(extrinsic)
-		}
-
-		fn apply_trusted_extrinsic(extrinsic: <Block as BlockT>::Extrinsic) -> ApplyExtrinsicResult {
-			Executive::apply_trusted_extrinsic(extrinsic)
 		}
 
 		fn finalize_block() -> <Block as BlockT>::Header {
@@ -838,22 +856,51 @@ impl_runtime_apis! {
 		}
 	}
 
-	// TODO benchmarking
+	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
 		fn dispatch_benchmark(
 			module: Vec<u8>,
 			extrinsic: Vec<u8>,
+			lowest_range_values: Vec<u32>,
+			highest_range_values: Vec<u32>,
 			steps: Vec<u32>,
 			repeat: u32,
-		) -> Option<Vec<frame_benchmarking::BenchmarkResults>> {
+		) -> Result<Vec<frame_benchmarking::BenchmarkResults>, sp_runtime::RuntimeString> {
 			use frame_benchmarking::Benchmarking;
 
-			match module.as_slice() {
-				b"darwinia-ring" | b"ring" => Ring::run_benchmark(extrinsic, steps, repeat).ok(),
-				// b"pallet-identity" | b"identity" => Identity::run_benchmark(extrinsic, steps, repeat).ok(),
-				// b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(extrinsic, steps, repeat).ok(),
-				_ => None,
-			}
+			let result = match module.as_slice() {
+				b"pallet-balances" | b"balances" => Balances::run_benchmark(
+					extrinsic,
+					lowest_range_values,
+					highest_range_values,
+					steps,
+					repeat,
+				),
+				b"pallet-identity" | b"identity" => Identity::run_benchmark(
+					extrinsic,
+					lowest_range_values,
+					highest_range_values,
+					steps,
+					repeat,
+				),
+				b"pallet-timestamp" | b"timestamp" => Timestamp::run_benchmark(
+					extrinsic,
+					lowest_range_values,
+					highest_range_values,
+					steps,
+					repeat,
+				),
+				b"pallet-vesting" | b"vesting" => Vesting::run_benchmark(
+					extrinsic,
+					lowest_range_values,
+					highest_range_values,
+					steps,
+					repeat,
+				),
+				_ => Err("Benchmark not found for this pallet."),
+			};
+
+			result.map_err(|e| e.into())
 		}
 	}
 }

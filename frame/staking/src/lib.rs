@@ -290,6 +290,7 @@ pub use types::EraIndex;
 use codec::{Decode, Encode, HasCompact};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
+	storage::IterableStorageMap,
 	traits::{Currency, Get, Imbalance, OnUnbalanced, Time},
 	weights::SimpleDispatchInfo,
 };
@@ -803,23 +804,23 @@ decl_storage! {
 		pub Invulnerables get(fn invulnerables) config(): Vec<T::AccountId>;
 
 		/// Map from all locked "stash" accounts to the controller account.
-		pub Bonded get(fn bonded): map hasher(blake2_256) T::AccountId => Option<T::AccountId>;
+		pub Bonded get(fn bonded): map hasher(twox_64_concat) T::AccountId => Option<T::AccountId>;
 
 		/// Map from all (unlocked) "controller" accounts to the info regarding the staking.
-		pub Ledger get(fn ledger): map hasher(blake2_256) T::AccountId => Option<StakingLedgerT<T>>;
+		pub Ledger get(fn ledger): map hasher(blake2_128_concat) T::AccountId => Option<StakingLedgerT<T>>;
 
 		/// Where the reward payment should be made. Keyed by stash.
-		pub Payee get(fn payee): map hasher(blake2_256) T::AccountId => RewardDestination;
+		pub Payee get(fn payee): map hasher(twox_64_concat) T::AccountId => RewardDestination;
 
 		/// The map from (wannabe) validator stash key to the preferences of that validator.
 		pub Validators
 			get(fn validators)
-			: linked_map hasher(blake2_256) T::AccountId => ValidatorPrefs;
+			: map hasher(twox_64_concat) T::AccountId => ValidatorPrefs;
 
 		/// The map from nominator stash key to the set of stash keys of all validators to nominate.
 		pub Nominators
 			get(fn nominators)
-			: linked_map hasher(blake2_256) T::AccountId => Option<Nominations<T::AccountId>>;
+			: map hasher(twox_64_concat) T::AccountId => Option<Nominations<T::AccountId>>;
 
 		/// The current era index.
 		///
@@ -836,7 +837,7 @@ decl_storage! {
 		/// The session index at which the era start for the last `HISTORY_DEPTH` eras
 		pub ErasStartSessionIndex
 			get(fn eras_start_session_index)
-			: map hasher(blake2_256) EraIndex => Option<SessionIndex>;
+			: map hasher(twox_64_concat) EraIndex => Option<SessionIndex>;
 
 		/// Exposure of validator at era.
 		///
@@ -880,19 +881,19 @@ decl_storage! {
 		/// Eras that haven't finished yet or has been removed doesn't have reward.
 		pub ErasValidatorReward
 			get(fn eras_validator_reward)
-			: map hasher(blake2_256) EraIndex => Option<RingBalance<T>>;
+			: map hasher(twox_64_concat) EraIndex => Option<RingBalance<T>>;
 
 		/// Rewards for the last `HISTORY_DEPTH` eras.
 		/// If reward hasn't been set or has been removed then 0 reward is returned.
 		pub ErasRewardPoints
 			get(fn eras_reward_points)
-			: map hasher(blake2_256) EraIndex => EraRewardPoints<T::AccountId>;
+			: map hasher(twox_64_concat) EraIndex => EraRewardPoints<T::AccountId>;
 
 		/// The total amount staked for the last `HISTORY_DEPTH` eras.
 		/// If total hasn't been set or has been removed then 0 stake is returned.
 		pub ErasTotalStake
 			get(fn eras_total_stake)
-			: map hasher(blake2_256) EraIndex => Power;
+			: map hasher(twox_64_concat) EraIndex => Power;
 
 		/// True if the next session change will be a new era regardless of index.
 		pub ForceEra get(fn force_era) config(): Forcing;
@@ -908,7 +909,7 @@ decl_storage! {
 
 		/// All unapplied slashes that are queued for later.
 		pub UnappliedSlashes
-			: map hasher(blake2_256) EraIndex
+			: map hasher(twox_64_concat) EraIndex
 				=> Vec<UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
 
 		/// A mapping from still-bonded eras to the first session index of that era.
@@ -920,21 +921,21 @@ decl_storage! {
 		/// All slashing events on validators, mapped by era to the highest slash proportion
 		/// and slash value of the era.
 		ValidatorSlashInEra
-			: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId
+			: double_map hasher(twox_64_concat) EraIndex, hasher(twox_64_concat) T::AccountId
 				=> Option<(Perbill, slashing::RKT<T>)>;
 
 		/// All slashing events on nominators, mapped by era to the highest slash value of the era.
 		NominatorSlashInEra
-			: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId
+			: double_map hasher(twox_64_concat) EraIndex, hasher(twox_64_concat) T::AccountId
 				=> Option<slashing::RKT<T>>;
 
 		/// Slashing spans for stash accounts.
-		SlashingSpans: map hasher(blake2_256) T::AccountId => Option<slashing::SlashingSpans>;
+		SlashingSpans: map hasher(twox_64_concat) T::AccountId => Option<slashing::SlashingSpans>;
 
 		/// Records information about the maximum slash of a stash within a slashing span,
 		/// as well as how much reward has been paid out.
 		SpanSlash
-			: map hasher(blake2_256) (T::AccountId, slashing::SpanIndex)
+			: map hasher(twox_64_concat) (T::AccountId, slashing::SpanIndex)
 				=> slashing::SpanRecord<RingBalance<T>, KtonBalance<T>>;
 
 		/// The earliest era for which we have a pending, unapplied slash.
@@ -1057,6 +1058,8 @@ decl_error! {
 		InvalidEraToReward,
 		/// Invalid number of nominations.
 		InvalidNumberOfNominations,
+		/// Items are not sorted and unique.
+		NotSortedAndUnique,
 	}
 }
 
@@ -1659,21 +1662,15 @@ decl_module! {
 				.map(|_| ())
 				.or_else(ensure_root)?;
 
-			let mut slash_indices = slash_indices;
-			slash_indices.sort_unstable();
+			ensure!(!slash_indices.is_empty(), <Error<T>>::EmptyTargets);
+			ensure!(Self::is_sorted_and_unique(&slash_indices), <Error<T>>::NotSortedAndUnique);
+
 			let mut unapplied = <Self as Store>::UnappliedSlashes::get(&era);
+			let last_item = slash_indices[slash_indices.len() - 1];
+			ensure!((last_item as usize) < unapplied.len(), <Error<T>>::InvalidSlashIndex);
 
 			for (removed, index) in slash_indices.into_iter().enumerate() {
-				let index = index as usize;
-
-				// if `index` is not duplicate, `removed` must be <= index.
-				ensure!(removed <= index, <Error<T>>::DuplicateIndex);
-
-				// all prior removals were from before this index, since the
-				// list is sorted.
-				let index = index - removed;
-				ensure!(index < unapplied.len(), <Error<T>>::InvalidSlashIndex);
-
+				let index = (index as usize) - removed;
 				unapplied.remove(index);
 			}
 
@@ -1796,6 +1793,11 @@ impl<T: Trait> Module<T> {
 			.and_then(Self::ledger)
 			.map(|l| (l.active_ring, l.active_kton))
 			.unwrap_or_default()
+	}
+
+	/// Check that list is sorted and has no duplicates.
+	fn is_sorted_and_unique(list: &Vec<u32>) -> bool {
+		list.windows(2).all(|w| w[0] < w[1])
 	}
 
 	// Update the ledger while bonding ring and compute the kton should return.
@@ -2237,13 +2239,13 @@ impl<T: Trait> Module<T> {
 		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = vec![];
 		let mut all_validators_and_prefs = BTreeMap::new();
 		let mut all_validators = Vec::new();
-		for (validator, preference) in <Validators<T>>::enumerate() {
+		for (validator, preference) in <Validators<T>>::iter() {
 			let self_vote = (validator.clone(), vec![validator.clone()]);
 			all_nominators.push(self_vote);
 			all_validators_and_prefs.insert(validator.clone(), preference);
 			all_validators.push(validator);
 		}
-		let nominator_votes = <Nominators<T>>::enumerate().map(|(nominator, nominations)| {
+		let nominator_votes = <Nominators<T>>::iter().map(|(nominator, nominations)| {
 			let Nominations {
 				submitted_in,
 				mut targets,

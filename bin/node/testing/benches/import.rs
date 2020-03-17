@@ -14,15 +14,15 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use node_primitives::Block;
-use node_testing::bench::{BenchDb, Profile};
+use node_testing::bench::{BenchDb, BlockType, KeyTypes, Profile};
 use sc_client_api::backend::Backend;
 use sp_runtime::generic::BlockId;
 use std::fmt;
 
 criterion_group!(
 	name = benches;
-	config = Criterion::default().sample_size(20).warm_up_time(std::time::Duration::from_secs(20));
-	targets = bench_block_import
+	config = Criterion::default().sample_size(50).warm_up_time(std::time::Duration::from_secs(20));
+	targets = bench_block_import, bench_account_reaping, bench_account_ed25519
 );
 criterion_group!(
 	name = wasm_size;
@@ -41,8 +41,8 @@ fn bench_block_import(c: &mut Criterion) {
 	// for future uses, uncomment if something wrong.
 	// sc_cli::init_logger("sc_client=debug");
 
-	let mut bench_db = BenchDb::new(128);
-	let block = bench_db.generate_block(100);
+	let mut bench_db = BenchDb::new(100);
+	let block = bench_db.generate_block(BlockType::RandomTransfers(100));
 
 	log::trace!(
 		target: "bench-logistics",
@@ -51,7 +51,7 @@ fn bench_block_import(c: &mut Criterion) {
 	);
 
 	c.bench_function_over_inputs(
-		"import block",
+		"import-block-B-0001",
 		move |bencher, profile| {
 			bencher.iter_batched(
 				|| {
@@ -91,7 +91,67 @@ fn bench_block_import(c: &mut Criterion) {
 							.expect("RocksDB backend always provides usage info!"),
 					);
 				},
-				criterion::BatchSize::PerIteration,
+				criterion::BatchSize::LargeInput,
+			);
+		},
+		vec![Profile::Wasm, Profile::Native],
+	);
+}
+
+fn bench_account_reaping(c: &mut Criterion) {
+	sc_cli::init_logger("");
+
+	let mut bench_db = BenchDb::new(100);
+	let block = bench_db.generate_block(BlockType::RandomTransfersReaping(100));
+
+	c.bench_function_over_inputs(
+		"import-block-reaping-B-0002",
+		move |bencher, profile| {
+			bencher.iter_batched(
+				|| {
+					let context = bench_db.create_context(*profile);
+
+					// mostly to just launch compiler before benching!
+					context
+						.client
+						.runtime_version_at(&BlockId::Number(0))
+						.expect("Failed to get runtime version");
+
+					context
+				},
+				|mut context| {
+					context.import_block(block.clone());
+				},
+				criterion::BatchSize::LargeInput,
+			);
+		},
+		vec![Profile::Wasm, Profile::Native],
+	);
+}
+
+fn bench_account_ed25519(c: &mut Criterion) {
+	sc_cli::init_logger("");
+
+	let mut bench_db = BenchDb::with_key_types(100, KeyTypes::Ed25519);
+	let block = bench_db.generate_block(BlockType::RandomTransfers(100));
+
+	c.bench_function_over_inputs(
+		"import-block-ed25519-B-0003",
+		move |bencher, profile| {
+			bencher.iter_batched(
+				|| {
+					let context = bench_db.create_context(*profile);
+					context
+						.client
+						.runtime_version_at(&BlockId::Number(0))
+						.expect("Failed to get runtime version");
+
+					context
+				},
+				|mut context| {
+					context.import_block(block.clone());
+				},
+				criterion::BatchSize::LargeInput,
 			);
 		},
 		vec![Profile::Wasm, Profile::Native],
@@ -105,7 +165,7 @@ fn profile_block_import(c: &mut Criterion) {
 	sc_cli::init_logger("");
 
 	let mut bench_db = BenchDb::new(128);
-	let block = bench_db.generate_block(100);
+	let block = bench_db.generate_block(BlockType::RandomTransfers(100));
 
 	c.bench_function("profile block", move |bencher| {
 		bencher.iter_batched(
@@ -163,7 +223,7 @@ impl Iterator for SetupIterator {
 
 		let size = self.current * self.multiplier;
 		let mut db = BenchDb::new(size);
-		let block = db.generate_block(size);
+		let block = db.generate_block(BlockType::RandomTransfers(size));
 		Some(Setup { db, block })
 	}
 }

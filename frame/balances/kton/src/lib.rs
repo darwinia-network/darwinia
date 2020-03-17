@@ -132,14 +132,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// #[cfg(test)]
-// mod tests_composite;
-// #[cfg(test)]
-// mod tests_local;
-// #[cfg(test)]
-// #[macro_use]
-// mod tests;
-// mod benchmarking;
+pub use imbalances::{NegativeImbalance, PositiveImbalance};
 
 use codec::Codec;
 use frame_support::{
@@ -163,7 +156,6 @@ use sp_runtime::{
 use sp_std::{borrow::Borrow, cmp, convert::Infallible, fmt::Debug, mem, prelude::*};
 
 use darwinia_support::balance::{lock::*, *};
-use imbalances::{NegativeImbalance, PositiveImbalance};
 
 pub trait Subtrait<I: Instance = DefaultInstance>: frame_system::Trait {
 	/// The balance of an account.
@@ -264,11 +256,14 @@ decl_storage! {
 		/// is ever zero, then the entry *MUST* be removed.
 		///
 		/// NOTE: This is only used in the case that this module is used to store balances.
-		pub Account: map hasher(blake2_256) T::AccountId => AccountData<T::Balance>;
+		pub Account: map hasher(blake2_128_concat) T::AccountId => AccountData<T::Balance>;
 
 		/// Any liquidity locks on some account balances.
 		/// NOTE: Should only be accessed when setting, changing and freeing a lock.
-		pub Locks get(fn locks): map hasher(blake2_256) T::AccountId => Vec<BalanceLock<T::Balance, T::BlockNumber>>;
+		pub Locks
+			get(fn locks)
+			: map hasher(blake2_128_concat) T::AccountId
+				=> Vec<BalanceLock<T::Balance, T::BlockNumber>>;
 	}
 	add_extra_genesis {
 		config(balances): Vec<(T::AccountId, T::Balance)>;
@@ -738,6 +733,7 @@ impl<T: Subtrait<I>, I: Instance> frame_system::Trait for ElevatedTrait<T, I> {
 	type AccountData = T::AccountData;
 	type OnNewAccount = T::OnNewAccount;
 	type OnKilledAccount = T::OnKilledAccount;
+	type MigrateAccount = ();
 }
 impl<T: Subtrait<I>, I: Instance> Trait<I> for ElevatedTrait<T, I> {
 	type Balance = T::Balance;

@@ -68,6 +68,7 @@
 
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
+	storage::{IterableStorageMap, StorageMap},
 	traits::{BalanceStatus, ChangeMembers, Contains, Currency, Get, OnUnbalanced, ReservableCurrency},
 	weights::SimpleDispatchInfo,
 };
@@ -143,9 +144,9 @@ decl_storage! {
 		pub ElectionRounds get(fn election_rounds): u32 = Zero::zero();
 
 		/// Votes of a particular voter, with the round index of the votes.
-		pub VotesOf get(fn votes_of): linked_map hasher(blake2_256) T::AccountId => Vec<T::AccountId>;
+		pub VotesOf get(fn votes_of): map hasher(twox_64_concat) T::AccountId => Vec<T::AccountId>;
 		/// Locked stake of a voter.
-		pub StakeOf get(fn stake_of): map hasher(blake2_256) T::AccountId => BalanceOf<T>;
+		pub StakeOf get(fn stake_of): map hasher(twox_64_concat) T::AccountId => BalanceOf<T>;
 
 		/// The present candidate list. Sorted based on account-id. A current member or a runner can
 		/// never enter this vector and is always implicitly assumed to be a candidate.
@@ -627,7 +628,7 @@ impl<T: Trait> Module<T> {
 		// previous runners_up are also always candidates for the next round.
 		candidates.append(&mut Self::runners_up_ids());
 
-		let voters_and_votes = <VotesOf<T>>::enumerate()
+		let voters_and_votes = <VotesOf<T>>::iter()
 			.map(|(v, i)| (v, i))
 			.collect::<Vec<(T::AccountId, Vec<T::AccountId>)>>();
 		let maybe_phragmen_result = sp_phragmen::elect::<_, _, _, T::CurrencyToVote, Perbill>(
@@ -681,6 +682,7 @@ impl<T: Trait> Module<T> {
 			// split new set into winners and runners up.
 			let split_point = desired_seats.min(new_set_with_stake.len());
 			let mut new_members = (&new_set_with_stake[..split_point]).to_vec();
+			let most_popular = new_members.first().map(|x| x.0.clone());
 
 			// save the runners up as-is. They are sorted based on desirability.
 			// sort and save the members.
@@ -706,6 +708,7 @@ impl<T: Trait> Module<T> {
 			// report member changes. We compute diff because we need the outgoing list.
 			let (incoming, outgoing) = T::ChangeMembers::compute_members_diff(&new_members_ids, &old_members_ids);
 			T::ChangeMembers::change_members_sorted(&incoming, &outgoing.clone(), &new_members_ids);
+			T::ChangeMembers::set_prime(most_popular);
 
 			// outgoing candidates lose their bond.
 			let mut to_burn_bond = outgoing.to_vec();
@@ -802,6 +805,7 @@ mod tests {
 		type AccountData = AccountData<u64>;
 		type OnNewAccount = ();
 		type OnKilledAccount = ();
+		type MigrateAccount = ();
 	}
 
 	parameter_types! {
@@ -858,6 +862,7 @@ mod tests {
 
 	thread_local! {
 		pub static MEMBERS: RefCell<Vec<u64>> = RefCell::new(vec![]);
+		pub static PRIME: RefCell<Option<u64>> = RefCell::new(None);
 	}
 
 	pub struct TestChangeMembers;
@@ -892,6 +897,11 @@ mod tests {
 			assert_eq!(old_plus_incoming, new_plus_outgoing);
 
 			MEMBERS.with(|m| *m.borrow_mut() = new.to_vec());
+			PRIME.with(|p| *p.borrow_mut() = None);
+		}
+
+		fn set_prime(who: Option<u64>) {
+			PRIME.with(|p| *p.borrow_mut() = who);
 		}
 	}
 
@@ -992,7 +1002,7 @@ mod tests {
 	}
 
 	fn all_voters() -> Vec<u64> {
-		<VotesOf<Test>>::enumerate().map(|(v, _)| v).collect::<Vec<u64>>()
+		<VotesOf<Test>>::iter().map(|(v, _)| v).collect::<Vec<u64>>()
 	}
 
 	fn balances(who: &u64) -> (u64, u64) {
@@ -1245,6 +1255,30 @@ mod tests {
 			assert_eq!(Elections::candidates(), vec![]);
 
 			assert_ok!(Elections::vote(Origin::signed(3), vec![4, 5], 10));
+		});
+	}
+
+	#[test]
+	fn prime_works() {
+		ExtBuilder::default().build().execute_with(|| {
+			assert_ok!(Elections::submit_candidacy(Origin::signed(3)));
+			assert_ok!(Elections::submit_candidacy(Origin::signed(4)));
+			assert_ok!(Elections::submit_candidacy(Origin::signed(5)));
+
+			assert_ok!(Elections::vote(Origin::signed(1), vec![4, 3], 10));
+			assert_ok!(Elections::vote(Origin::signed(2), vec![4], 20));
+			assert_ok!(Elections::vote(Origin::signed(3), vec![3], 30));
+			assert_ok!(Elections::vote(Origin::signed(4), vec![4], 40));
+			assert_ok!(Elections::vote(Origin::signed(5), vec![5], 50));
+
+			System::set_block_number(5);
+			assert_ok!(Elections::end_block(System::block_number()));
+
+			assert_eq!(Elections::members_ids(), vec![4, 5]);
+			assert_eq!(Elections::candidates(), vec![]);
+
+			assert_ok!(Elections::vote(Origin::signed(3), vec![4, 5], 10));
+			assert_eq!(PRIME.with(|p| *p.borrow()), Some(4));
 		});
 	}
 

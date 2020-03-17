@@ -13,8 +13,8 @@ repository = "https://github.com/darwinia-network/darwinia/"
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 
 # github.com
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 # darwinia
 darwinia-support = { default-features = false, path = "../../frame/support" }
@@ -22,8 +22,8 @@ darwinia-support = { default-features = false, path = "../../frame/support" }
 [dev-dependencies]
 rand = "0.7.2"
 
-sp-io ={ git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-io ={ git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 [features]
 default = ["std"]
