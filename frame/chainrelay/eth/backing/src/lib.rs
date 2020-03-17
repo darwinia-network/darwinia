@@ -235,7 +235,7 @@ impl<T: Trait> Module<T> {
 
 	fn parse_deposit_redeem_proof(
 		proof_record: &EthReceiptProof,
-	) -> Result<(DepositId, MomentT<T>, MomentT<T>, RingBalance<T>, T::AccountId), &'static str> {
+	) -> Result<(DepositId, MomentT<T>, MomentT<T>, RingBalance<T>, T::AccountId), DispatchError> {
 		let result = {
 			let verified_receipt = T::EthRelay::verify_receipt(proof_record)?;
 			let eth_event = EthEvent {
