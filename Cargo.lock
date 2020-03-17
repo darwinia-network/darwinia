@@ -88,9 +88,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.26"
+version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7825f6833612eb2414095684fcf6c635becf3ce97fe48cf6421321e93bfbd53c"
+checksum = "013a6e0a2cbe3d20f9c60b65458f7a7f7a5e636c5d0f45a5a6aee5d4b1f01785"
 
 [[package]]
 name = "app_dirs"
@@ -982,7 +982,7 @@ dependencies = [
  "pallet-session",
  "pallet-timestamp",
  "parity-scale-codec",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
  "rustc-hex",
  "serde",
  "sp-core",
@@ -1004,7 +1004,7 @@ dependencies = [
  "keccak-hasher",
  "merkle-patricia-trie",
  "parity-scale-codec",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
  "rustc-hex",
  "serde",
  "sp-core",
@@ -1324,7 +1324,7 @@ dependencies = [
  "keccak-hasher",
  "parity-scale-codec",
  "primitive-types 0.6.2 (git+https://github.com/darwinia-network/parity-common.git)",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
  "rlp-derive",
  "rustc-hex",
  "serde",
@@ -1355,7 +1355,7 @@ dependencies = [
  "ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)",
  "hex-literal",
  "primitive-types 0.6.2 (git+https://github.com/darwinia-network/parity-common.git)",
- "rlp 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rlp 0.4.5",
  "sha3",
 ]
 
@@ -2036,9 +2036,9 @@ checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
 name = "globset"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "925aa2cac82d8834e2b2a4415b6f6879757fb5c0928fc445ae76461a12eed8f2"
+checksum = "7ad1da430bd7281dde2576f44c84cc3f0f7b475e7202cd503042dff01a8c8120"
 dependencies = [
  "aho-corasick",
  "bstr",
@@ -2387,7 +2387,7 @@ name = "impl-rlp"
 version = "0.2.1"
 source = "git+https://github.com/darwinia-network/parity-common.git#12a86aa8af8ff5ccd5c953074aa893c716cf85b5"
 dependencies = [
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
 ]
 
 [[package]]
@@ -2396,7 +2396,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f7a72f11830b52333f36e3b09a288333888bf54380fd0ac0790a3c31ab0f3c5"
 dependencies = [
- "rlp 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rlp 0.4.5",
 ]
 
 [[package]]
@@ -2468,9 +2468,9 @@ dependencies = [
 
 [[package]]
 name = "ipnet"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a859057dc563d1388c1e816f98a1892629075fc046ed06e845b883bb8b2916fb"
+checksum = "47be2f14c678be2fdcab04ab1171db51b2762ce6f0a8ee87c8dd4a04ed216135"
 
 [[package]]
 name = "itertools"
@@ -3273,11 +3273,11 @@ checksum = "3728d817d99e5ac407411fa471ff9800a778d88a24685968b36824eaf4bee400"
 
 [[package]]
 name = "memoffset"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75189eb85871ea5c2e2c15abbdd541185f63b408415e5051f5cac122d8c774b9"
+checksum = "b4fc2c02a7e374099d4ee95a193111f72d2110197fe200272371758f6c3643d8"
 dependencies = [
- "rustc_version",
+ "autocfg 1.0.0",
 ]
 
 [[package]]
@@ -3308,7 +3308,7 @@ dependencies = [
  "hex 0.3.2",
  "keccak-hash",
  "rand 0.6.5",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.darwinia.1)",
  "uuid 0.7.4",
 ]
@@ -4217,9 +4217,9 @@ dependencies = [
 
 [[package]]
 name = "parity-bytes"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c276d76c5333b8c2579e02d49a06733a55b8282d2d9b13e8d53b6406bd7e30a"
+checksum = "16b56e3a2420138bdb970f84dfb9c774aea80fa0e7371549eedec0d80c209c67"
 
 [[package]]
 name = "parity-multiaddr"
@@ -5034,9 +5034,9 @@ dependencies = [
 
 [[package]]
 name = "rlp"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a44d5ae8afcb238af8b75640907edc6c931efcfab2c854e81ed35fa080f84cd"
+checksum = "4a7d3f9bed94764eac15b8f14af59fac420c236adaff743b7bcc88e265cb4345"
 dependencies = [
  "rustc-hex",
 ]
@@ -6775,7 +6775,7 @@ source = "git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha
 [[package]]
 name = "sp-std"
 version = "2.0.0-alpha.3"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#013c1ee167354a08283fb69915fda56a62fee943"
+source = "git+https://github.com/darwinia-network/substrate.git?branch=darwinia-develop#dd97b1478b31a4715df7e88a5ebc6664425fb6c6"
 
 [[package]]
 name = "sp-storage"
@@ -7588,7 +7588,7 @@ version = "0.8.2"
 source = "git+https://github.com/darwinia-network/parity-common.git#12a86aa8af8ff5ccd5c953074aa893c716cf85b5"
 dependencies = [
  "hash-db",
- "rlp 0.4.4 (git+https://github.com/darwinia-network/parity-common.git)",
+ "rlp 0.4.4",
 ]
 
 [[package]]
@@ -7614,7 +7614,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfd5b7557925ce778ff9b9ef90e3ade34c524b5ff10e239c69a42d546d2af56"
 dependencies = [
- "rand 0.5.6",
+ "rand 0.7.3",
 ]
 
 [[package]]
