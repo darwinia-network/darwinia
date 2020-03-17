@@ -627,7 +627,7 @@ parameter_types! {
 }
 impl pallet_vesting::Trait for Runtime {
 	type Event = Event;
-	type Currency = Balances;
+	type Currency = Ring;
 	type BlockNumberToBalance = ConvertInto;
 	type MinVestedTransfer = MinVestedTransfer;
 }
