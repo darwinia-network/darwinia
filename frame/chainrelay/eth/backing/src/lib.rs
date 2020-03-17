@@ -152,6 +152,12 @@ decl_module! {
 
 		fn deposit_event() = default;
 
+		/// Redeem balances
+		///
+		/// # <weight>
+		/// - `O(1)`
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(10_000)]
 		pub fn redeem(origin, r#for: RedeemFor) {
 			let _relayer = ensure_signed(origin)?;
 
