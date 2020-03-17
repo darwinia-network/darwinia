@@ -772,7 +772,7 @@ mod tests {
 	use substrate_test_utils::assert_eq_uvec;
 
 	use crate as elections;
-	use darwinia_support::balance::lock::LockFor;
+	use darwinia_support::balance::{lock::LockFor, AccountData};
 	use elections::*;
 
 	parameter_types! {
@@ -799,7 +799,7 @@ mod tests {
 		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
 		type ModuleToIndex = ();
-		type AccountData = pallet_ring::AccountData<u64>;
+		type AccountData = AccountData<u64>;
 		type OnNewAccount = ();
 		type OnKilledAccount = ();
 	}

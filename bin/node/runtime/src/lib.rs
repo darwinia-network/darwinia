@@ -542,7 +542,8 @@ parameter_types! {
 	pub const BondingDurationInEra: pallet_staking::EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	pub const SlashDeferDuration: pallet_staking::EraIndex = 7 * 24; // 1/4 the bonding duration.
-
+	pub const MaxNominatorRewardedPerValidator: u32 = 64;
+	// --- custom ---
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
@@ -556,6 +557,7 @@ impl pallet_staking::Trait for Runtime {
 	/// A super-majority of the council can cancel the slash.
 	type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 	type SessionInterface = Self;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	// send the slashed funds to the treasury.

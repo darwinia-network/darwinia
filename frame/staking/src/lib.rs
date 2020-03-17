@@ -88,6 +88,11 @@
 //! The **reward and slashing** procedure is the core of the Staking module, attempting to _embrace
 //! valid behavior_ while _punishing any misbehavior or lack of availability_.
 //!
+//! Reward must be claimed by stakers for each era before it gets too old by $HISTORY_DEPTH using
+//! `payout_nominator` and `payout_validator` calls.
+//! Only the [`T::MaxNominatorRewardedPerValidator`] biggest stakers can claim their reward. This
+//! limit the i/o cost to compute nominators payout.
+//!
 //! Slashing can occur at any point in time, once misbehavior is reported. Once slashing is
 //! determined, a value is deducted from the balance of the validator and all the nominators who
 //! voted for this validator (values are deducted from the _stash_ account of the slashed entity).
@@ -105,6 +110,11 @@
 //! they are validators, they will no longer be a candidate for the next election.
 //!
 //! An account can step back via the [`chill`](enum.Call.html#variant.chill) call.
+//!
+//! ### Session managing
+//!
+//! The module implement the trait `SessionManager`. Which is the only API to query new validator
+//! set and allowing these validator set to be rewarded once their era is ended.
 //!
 //! ## Interface
 //!
@@ -142,14 +152,6 @@
 //! ```
 //!
 //! ## Implementation Details
-//!
-//! ### Slot Stake
-//!
-//! The term [`SlotStake`](./struct.Module.html#method.slot_stake) will be used throughout this
-//! section. It refers to a value calculated at the end of each era, containing the _minimum value
-//! at stake among all validators._ Note that a validator's value at stake might be a combination
-//! of the validator's own stake and the votes it received. See [`Exposure`](./struct.Exposure.html)
-//! for more details.
 //!
 //! ### Reward Calculation
 //!
@@ -220,6 +222,7 @@
 //! ## GenesisConfig
 //!
 //! The Staking module depends on the [`GenesisConfig`](./struct.GenesisConfig.html).
+//! The `GenesisConfig` is optional and allow to set some initial stakers.
 //!
 //! ## Related Modules
 //!
@@ -232,24 +235,23 @@
 #![recursion_limit = "128"]
 
 #[cfg(test)]
-mod darwinia_tests;
-#[cfg(test)]
 mod mock;
-#[cfg(test)]
-mod substrate_tests;
+
+// #[cfg(test)]
+// mod darwinia_tests;
+// #[cfg(test)]
+// mod substrate_tests;
 
 mod inflation;
 mod slashing;
 
 mod types {
-	use sp_std::prelude::*;
-
 	use crate::*;
 
 	/// Counter for the number of eras that have passed.
 	pub type EraIndex = u32;
 	/// Counter for the number of "reward" points earned by a given validator.
-	pub type Points = u32;
+	pub type RewardPoint = u32;
 
 	/// Balance of an account.
 	pub type Balance = u128;
@@ -272,8 +274,6 @@ mod types {
 
 	pub type MomentT<T> = <TimeT<T> as Time>::Moment;
 
-	pub type Rewards<T> = (RingBalance<T>, Vec<NominatorReward<AccountId<T>, RingBalance<T>>>);
-
 	/// A timestamp: milliseconds since the unix epoch.
 	/// `u64` is enough to represent a duration of half a billion years, when the
 	/// time scale is milliseconds.
@@ -295,18 +295,16 @@ use frame_support::{
 };
 use frame_system::{self as system, ensure_root, ensure_signed};
 use sp_runtime::{
-	traits::{
-		AtLeast32Bit, CheckedSub, Convert, EnsureOrigin, One, SaturatedConversion, Saturating, StaticLookup, Zero,
-	},
+	traits::{AtLeast32Bit, CheckedSub, Convert, EnsureOrigin, SaturatedConversion, Saturating, StaticLookup, Zero},
 	DispatchResult, PerThing, Perbill, Perquintill, RuntimeDebug,
 };
 #[cfg(feature = "std")]
 use sp_runtime::{Deserialize, Serialize};
 use sp_staking::{
-	offence::{Offence, OffenceDetails, OnOffenceHandler, ReportOffence},
+	offence::{Offence, OffenceDetails, OffenceError, OnOffenceHandler, ReportOffence},
 	SessionIndex,
 };
-use sp_std::{borrow::ToOwned, convert::TryInto, marker::PhantomData, prelude::*};
+use sp_std::{collections::btree_map::BTreeMap, convert::TryInto, marker::PhantomData, prelude::*};
 
 use darwinia_phragmen::{PhragmenStakedAssignment, Power, Votes};
 use darwinia_support::{
@@ -322,28 +320,7 @@ const MAX_NOMINATIONS: usize = 16;
 const MAX_UNLOCKING_CHUNKS: usize = 32;
 const STAKING_ID: LockIdentifier = *b"staking ";
 
-/// Reward points of an era. Used to split era total payout between validators.
-#[derive(Encode, Decode, Default)]
-pub struct EraPoints {
-	/// Total number of points. Equals the sum of reward points for each validator.
-	total: Points,
-	/// The reward points earned by a given validator. The index of this vec corresponds to the
-	/// index into the current validator set.
-	individual: Vec<Points>,
-}
-
-impl EraPoints {
-	/// Add the reward to the validator at the given index. Index must be valid
-	/// (i.e. `index < current_elected.len()`).
-	fn add_points_to_index(&mut self, index: u32, points: u32) {
-		if let Some(new_total) = self.total.checked_add(points) {
-			self.total = new_total;
-			self.individual
-				.resize((index as usize + 1).max(self.individual.len()), 0);
-			self.individual[index as usize] += points; // Addition is less than total
-		}
-	}
-}
+// --- enum ---
 
 /// Indicates the initial status of the staker.
 #[derive(RuntimeDebug)]
@@ -374,20 +351,23 @@ impl Default for RewardDestination {
 	}
 }
 
-/// Preference of what happens regarding validation.
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct ValidatorPrefs {
-	/// Reward that validator takes up-front; only the rest is split between themselves and
-	/// nominators.
-	#[codec(compact)]
-	pub commission: Perbill,
+/// Mode of era-forcing.
+#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum Forcing {
+	/// Not forcing anything - just let whatever happen.
+	NotForcing,
+	/// Force a new era, then reset to `NotForcing` as soon as it is done.
+	ForceNew,
+	/// Avoid a new era indefinitely.
+	ForceNone,
+	/// Force a new era at the end of all sessions indefinitely.
+	ForceAlways,
 }
 
-impl Default for ValidatorPrefs {
+impl Default for Forcing {
 	fn default() -> Self {
-		ValidatorPrefs {
-			commission: Default::default(),
-		}
+		Forcing::NotForcing
 	}
 }
 
@@ -413,15 +393,46 @@ where
 	}
 }
 
-/// The *Ring* under deposit.
+// --- struct ---
+
+/// Information regarding the active era (era in used in session).
+#[derive(Debug, Encode, Decode)]
+pub struct ActiveEraInfo<Moment> {
+	/// Index of era.
+	index: EraIndex,
+	/// Moment of start
+	///
+	/// Start can be none if start hasn't been set for the era yet,
+	/// Start is set on the first on_finalize of the era to guarantee usage of `Time`.
+	start: Option<Moment>,
+}
+
+/// Reward points of an era. Used to split era total payout between validators.
+///
+/// This points will be used to reward validators and their respective nominators.
+#[derive(PartialEq, Encode, Decode, Default, Debug)]
+pub struct EraRewardPoints<AccountId: Ord> {
+	/// Total number of points. Equals the sum of reward points for each validator.
+	total: RewardPoint,
+	/// The reward points earned by a given validator.
+	individual: BTreeMap<AccountId, RewardPoint>,
+}
+
+/// Preference of what happens regarding validation.
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
+pub struct ValidatorPrefs {
+	/// Reward that validator takes up-front; only the rest is split between themselves and
+	/// nominators.
 	#[codec(compact)]
-	pub value: RingBalance,
-	#[codec(compact)]
-	pub start_time: Moment,
-	#[codec(compact)]
-	pub expire_time: Moment,
+	pub commission: Perbill,
+}
+
+impl Default for ValidatorPrefs {
+	fn default() -> Self {
+		ValidatorPrefs {
+			commission: Default::default(),
+		}
+	}
 }
 
 /// The ledger of a (bonded) stash.
@@ -455,6 +466,9 @@ where
 	pub ring_staking_lock: StakingLock<RingBalance, BlockNumber>,
 	// TODO doc
 	pub kton_staking_lock: StakingLock<KtonBalance, BlockNumber>,
+
+	/// The latest and highest era which the staker has claimed reward for.
+	pub last_reward: Option<EraIndex>,
 }
 
 impl<AccountId, RingBalance, KtonBalance, BlockNumber, Timestamp>
@@ -588,32 +602,28 @@ where
 	}
 }
 
+/// The *Ring* under deposit.
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+pub struct TimeDepositItem<RingBalance: HasCompact, Moment> {
+	#[codec(compact)]
+	pub value: RingBalance,
+	#[codec(compact)]
+	pub start_time: Moment,
+	#[codec(compact)]
+	pub expire_time: Moment,
+}
+
 /// A record of the nominations made by a specific account.
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
 pub struct Nominations<AccountId> {
 	/// The targets of nomination.
 	pub targets: Vec<AccountId>,
 	/// The era the nominations were submitted.
+	///
+	/// Except for initial nominations which are considered submitted at era 0.
 	pub submitted_in: EraIndex,
 	/// Whether the nominations have been suppressed.
 	pub suppressed: bool,
-}
-
-/// The amount of exposure (to slashing) than an individual nominator has.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
-pub struct IndividualExposure<AccountId, RingBalance, KtonBalance>
-where
-	RingBalance: HasCompact,
-	KtonBalance: HasCompact,
-{
-	/// The stash account of the nominator in question.
-	who: AccountId,
-	/// Amount of funds exposed.
-	#[codec(compact)]
-	ring_balance: RingBalance,
-	#[codec(compact)]
-	kton_balance: KtonBalance,
-	power: Power,
 }
 
 /// A snapshot of the stake backing a single validator in the system.
@@ -635,6 +645,23 @@ where
 	pub others: Vec<IndividualExposure<AccountId, RingBalance, KtonBalance>>,
 }
 
+/// The amount of exposure (to slashing) than an individual nominator has.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, RuntimeDebug)]
+pub struct IndividualExposure<AccountId, RingBalance, KtonBalance>
+where
+	RingBalance: HasCompact,
+	KtonBalance: HasCompact,
+{
+	/// The stash account of the nominator in question.
+	who: AccountId,
+	/// Amount of funds exposed.
+	#[codec(compact)]
+	ring_balance: RingBalance,
+	#[codec(compact)]
+	kton_balance: KtonBalance,
+	power: Power,
+}
+
 /// A pending slash record. The value of the slash has been computed but not applied yet,
 /// rather deferred for several eras.
 #[derive(Encode, Decode, Default, RuntimeDebug)]
@@ -651,24 +678,7 @@ pub struct UnappliedSlash<AccountId, RingBalance, KtonBalance> {
 	payout: slashing::RK<RingBalance, KtonBalance>,
 }
 
-// FIXME: RingBalance: HasCompact
-// TODO: doc
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct ValidatorReward<AccountId, RingBalance> {
-	who: AccountId,
-	#[codec(compact)]
-	amount: RingBalance,
-	nominators_reward: Vec<NominatorReward<AccountId, RingBalance>>,
-}
-
-// FIXME: RingBalance: HasCompact
-// TODO: doc
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct NominatorReward<AccountId, RingBalance> {
-	who: AccountId,
-	#[codec(compact)]
-	amount: RingBalance,
-}
+// --- trait ---
 
 /// Means for interacting with a specialized version of the `session` trait.
 ///
@@ -712,6 +722,9 @@ where
 
 pub trait Trait: frame_system::Trait {
 	/// Time used for computing era duration.
+	///
+	/// It is guaranteed to start being called from the first `on_finalize`. Thus value at genesis
+	/// is not used.
 	type Time: Time;
 
 	/// The overarching event type.
@@ -736,6 +749,12 @@ pub trait Trait: frame_system::Trait {
 	/// Interface for interacting with a session module.
 	type SessionInterface: self::SessionInterface<Self::AccountId>;
 
+	/// The maximum number of nominator rewarded for each validator.
+	///
+	/// For each validator only the `$MaxNominatorRewardedPerValidator` biggest stakers can claim
+	/// their reward. This used to limit the i/o cost for the nominator payout.
+	type MaxNominatorRewardedPerValidator: Get<u32>;
+
 	/// The *RING* currency.
 	type RingCurrency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 	/// Tokens have been minted and are unused for validator-reward.
@@ -759,33 +778,24 @@ pub trait Trait: frame_system::Trait {
 	type TotalPower: Get<Power>;
 }
 
-/// Mode of era-forcing.
-#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum Forcing {
-	/// Not forcing anything - just let whatever happen.
-	NotForcing,
-	/// Force a new era, then reset to `NotForcing` as soon as it is done.
-	ForceNew,
-	/// Avoid a new era indefinitely.
-	ForceNone,
-	/// Force a new era at the end of all sessions indefinitely.
-	ForceAlways,
-}
-
-impl Default for Forcing {
-	fn default() -> Self {
-		Forcing::NotForcing
-	}
-}
-
 decl_storage! {
 	trait Store for Module<T: Trait> as Staking {
+		/// Number of era to keep in history.
+		///
+		/// Information is kept for eras in `[current_era - history_depth; current_era]
+		///
+		/// Must be more than the number of era delayed by session otherwise.
+		/// i.e. active era must always be in history.
+		/// i.e. `active_era > current_era - history_depth` must be guaranteed.
+		HistoryDepth get(fn history_depth) config(): u32 = 336;
+
 		/// The ideal number of staking participants.
 		pub ValidatorCount get(fn validator_count) config(): u32;
 
 		/// Minimum number of staking participants before emergency conditions are imposed.
-		pub MinimumValidatorCount get(fn minimum_validator_count) config(): u32 = DEFAULT_MINIMUM_VALIDATOR_COUNT;
+		pub MinimumValidatorCount
+			get(fn minimum_validator_count) config()
+			: u32 = DEFAULT_MINIMUM_VALIDATOR_COUNT;
 
 		/// Any validators that may never be slashed or forcibly kicked. It's a Vec since they're
 		/// easy to initialize and the performance hit is minimal (we expect no more than four
@@ -802,46 +812,87 @@ decl_storage! {
 		pub Payee get(fn payee): map hasher(blake2_256) T::AccountId => RewardDestination;
 
 		/// The map from (wannabe) validator stash key to the preferences of that validator.
-		pub Validators get(fn validators): linked_map hasher(blake2_256) T::AccountId => ValidatorPrefs;
+		pub Validators
+			get(fn validators)
+			: linked_map hasher(blake2_256) T::AccountId => ValidatorPrefs;
 
 		/// The map from nominator stash key to the set of stash keys of all validators to nominate.
-		///
-		/// NOTE: is private so that we can ensure upgraded before all typical accesses.
-		/// Direct storage APIs can still bypass this protection.
-		Nominators get(fn nominators): linked_map hasher(blake2_256) T::AccountId => Option<Nominations<T::AccountId>>;
-
-		/// Nominators for a particular account that is in action right now. You can't iterate
-		/// through validators here, but you can find them in the Session module.
-		///
-		/// This is keyed by the stash account.
-		pub Stakers get(fn stakers): map hasher(blake2_256) T::AccountId => Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>;
-
-		/// The currently elected validator set keyed by stash account ID.
-		pub CurrentElected get(fn current_elected): Vec<T::AccountId>;
+		pub Nominators
+			get(fn nominators)
+			: linked_map hasher(blake2_256) T::AccountId => Option<Nominations<T::AccountId>>;
 
 		/// The current era index.
-		pub CurrentEra get(fn current_era) config(): EraIndex;
-
-		/// The start of the current era.
-		pub CurrentEraStart get(fn current_era_start): MomentT<T>;
-
-		/// The session index at which the current era started.
-		pub CurrentEraStartSessionIndex get(fn current_era_start_session_index): SessionIndex;
-
-		/// Rewards for the current era. Using indices of current elected set.
-		CurrentEraPointsEarned get(fn current_era_reward): EraPoints;
-
-		/// The amount of balance actively at stake for each validator slot, currently.
 		///
-		/// This is used to derive rewards and punishments.
-		pub SlotStake get(fn slot_stake) build(|config: &GenesisConfig<T>| {
-			config
-				.stakers
-				.iter()
-				.map(|&(_, _, r, _)| <Module<T>>::currency_to_power::<_>(r, <Module<T>>::ring_pool()))
-				.min()
-				.unwrap_or_default()
-		}): Power;
+		/// This is the latest planned era, depending on how session module queues the validator
+		/// set, it might be active or not.
+		pub CurrentEra get(fn current_era): Option<EraIndex>;
+
+		/// The active era information, it holds index and start.
+		///
+		/// The active era is the era currently rewarded.
+		/// Validator set of this era must be equal to `SessionInterface::validators`.
+		pub ActiveEra get(fn active_era): Option<ActiveEraInfo<MomentT<T>>>;
+
+		/// The session index at which the era start for the last `HISTORY_DEPTH` eras
+		pub ErasStartSessionIndex
+			get(fn eras_start_session_index)
+			: map hasher(blake2_256) EraIndex => Option<SessionIndex>;
+
+		/// Exposure of validator at era.
+		///
+		/// This is keyed first by the era index to allow bulk deletion and then the stash account.
+		///
+		/// Is it removed after `HISTORY_DEPTH` eras.
+		/// If stakers hasn't been set or has been removed then empty exposure is returned.
+		pub ErasStakers
+			get(fn eras_stakers)
+			: double_map hasher(twox_64_concat) EraIndex, hasher(twox_64_concat) T::AccountId
+				=> Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>;
+
+		/// Clipped Exposure of validator at era.
+		///
+		/// This is similar to [`ErasStakers`] but number of nominators exposed is reduce to the
+		/// `T::MaxNominatorRewardedPerValidator` biggest stakers.
+		/// This is used to limit the i/o cost for the nominator payout.
+		///
+		/// This is keyed fist by the era index to allow bulk deletion and then the stash account.
+		///
+		/// Is it removed after `HISTORY_DEPTH` eras.
+		/// If stakers hasn't been set or has been removed then empty exposure is returned.
+		pub ErasStakersClipped
+			get(fn eras_stakers_clipped)
+			: double_map hasher(twox_64_concat) EraIndex, hasher(twox_64_concat) T::AccountId
+				=> Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>;
+
+		/// Similarly to `ErasStakers` this holds the preferences of validators.
+		///
+		/// This is keyed fist by the era index to allow bulk deletion and then the stash account.
+		///
+		/// Is it removed after `HISTORY_DEPTH` eras.
+		// If prefs hasn't been set or has been removed then 0 commission is returned.
+		pub ErasValidatorPrefs
+			get(fn eras_validator_prefs)
+			: double_map hasher(twox_64_concat) EraIndex, hasher(twox_64_concat) T::AccountId
+				=> ValidatorPrefs;
+
+		/// The total validator era payout for the last `HISTORY_DEPTH` eras.
+		///
+		/// Eras that haven't finished yet or has been removed doesn't have reward.
+		pub ErasValidatorReward
+			get(fn eras_validator_reward)
+			: map hasher(blake2_256) EraIndex => Option<RingBalance<T>>;
+
+		/// Rewards for the last `HISTORY_DEPTH` eras.
+		/// If reward hasn't been set or has been removed then 0 reward is returned.
+		pub ErasRewardPoints
+			get(fn eras_reward_points)
+			: map hasher(blake2_256) EraIndex => EraRewardPoints<T::AccountId>;
+
+		/// The total amount staked for the last `HISTORY_DEPTH` eras.
+		/// If total hasn't been set or has been removed then 0 stake is returned.
+		pub ErasTotalStake
+			get(fn eras_total_stake)
+			: map hasher(blake2_256) EraIndex => Power;
 
 		/// True if the next session change will be a new era regardless of index.
 		pub ForceEra get(fn force_era) config(): Forcing;
@@ -856,24 +907,35 @@ decl_storage! {
 		pub CanceledSlashPayout get(fn canceled_payout) config(): Power;
 
 		/// All unapplied slashes that are queued for later.
-		pub UnappliedSlashes: map hasher(blake2_256) EraIndex => Vec<UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
+		pub UnappliedSlashes
+			: map hasher(blake2_256) EraIndex
+				=> Vec<UnappliedSlash<T::AccountId, RingBalance<T>, KtonBalance<T>>>;
 
 		/// A mapping from still-bonded eras to the first session index of that era.
+		///
+		/// Must contains information for eras for the range:
+		/// `[active_era - bounding_duration; active_era]`
 		BondedEras: Vec<(EraIndex, SessionIndex)>;
 
 		/// All slashing events on validators, mapped by era to the highest slash proportion
 		/// and slash value of the era.
-		ValidatorSlashInEra: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId => Option<(Perbill, slashing::RKT<T>)>;
+		ValidatorSlashInEra
+			: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId
+				=> Option<(Perbill, slashing::RKT<T>)>;
 
 		/// All slashing events on nominators, mapped by era to the highest slash value of the era.
-		NominatorSlashInEra: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId => Option<slashing::RKT<T>>;
+		NominatorSlashInEra
+			: double_map hasher(blake2_256) EraIndex, hasher(twox_128) T::AccountId
+				=> Option<slashing::RKT<T>>;
 
 		/// Slashing spans for stash accounts.
 		SlashingSpans: map hasher(blake2_256) T::AccountId => Option<slashing::SlashingSpans>;
 
 		/// Records information about the maximum slash of a stash within a slashing span,
 		/// as well as how much reward has been paid out.
-		SpanSlash: map hasher(blake2_256) (T::AccountId, slashing::SpanIndex) => slashing::SpanRecord<RingBalance<T>, KtonBalance<T>>;
+		SpanSlash
+			: map hasher(blake2_256) (T::AccountId, slashing::SpanIndex)
+				=> slashing::SpanRecord<RingBalance<T>, KtonBalance<T>>;
 
 		/// The earliest era for which we have a pending, unapplied slash.
 		EarliestUnappliedSlash: Option<EraIndex>;
@@ -957,9 +1019,8 @@ decl_event!(
 		/// `amount` om `KtonBalance<T>`, `now` in `BlockNumber`
 		UnbondKton(KtonBalance, BlockNumber),
 
-		/// All validators have been rewarded by the first balance; the second is the remainder
-		/// from the maximum amount of reward; the third is validator and nominators' reward.
-		Reward(RingBalance, RingBalance, Vec<ValidatorReward<AccountId, RingBalance>>),
+		/// The staker has been rewarded by this amount. AccountId is controller account.
+		Reward(AccountId, RingBalance),
 
 		/// One validator (and its nominators) has been slashed by the given amount.
 		Slash(AccountId, RingBalance, KtonBalance),
@@ -992,6 +1053,10 @@ decl_error! {
 		NoMoreChunks,
 		/// Attempting to target a stash that still has funds.
 		FundedTarget,
+		/// Invalid era to reward.
+		InvalidEraToReward,
+		/// Invalid number of nominations.
+		InvalidNumberOfNominations,
 	}
 }
 
@@ -1020,9 +1085,11 @@ decl_module! {
 		}
 
 		fn on_finalize() {
-			// Set the start of the first era.
-			if !<CurrentEraStart<T>>::exists() {
-				<CurrentEraStart<T>>::put(T::Time::now());
+			if let Some(mut active_era) = Self::active_era() {
+				if active_era.start.is_none() {
+					active_era.start = Some(T::Time::now());
+					<ActiveEra<T>>::put(active_era);
+				}
 			}
 		}
 
@@ -1057,6 +1124,7 @@ decl_module! {
 
 			let ledger = StakingLedger {
 				stash: stash.clone(),
+				last_reward: Self::current_era(),
 				..Default::default()
 			};
 			let promise_month = promise_month.min(36);
@@ -1390,25 +1458,6 @@ decl_module! {
 			<Ledger<T>>::insert(&controller, ledger);
 		}
 
-		// /// Rebond a portion of the stash scheduled to be unlocked.
-		// ///
-		// /// # <weight>
-		// /// - Time complexity: O(1). Bounded by `MAX_UNLOCKING_CHUNKS`.
-		// /// - Storage changes: Can't increase storage, only decrease it.
-		// /// # </weight>
-		// #[weight = SimpleDispatchInfo::FixedNormal(500_000)]
-		// fn rebond(origin, #[compact] value: BalanceOf<T>) {
-		// 	let controller = ensure_signed(origin)?;
-		// 	let ledger = Self::ledger(&controller).ok_or(Error::<T>::NotController)?;
-		// 	ensure!(
-		// 		ledger.unlocking.len() > 0,
-		// 		Error::<T>::NoUnlockChunk,
-		// 	);
-		//
-		// 	let ledger = ledger.rebond(value);
-		// 	Self::update_ledger(&controller, &ledger);
-		// }
-
 		/// Declare the desire to validate for the origin controller.
 		///
 		/// Effects will be felt at the beginning of the next era.
@@ -1459,7 +1508,8 @@ decl_module! {
 				.collect::<Result<Vec<T::AccountId>, _>>()?;
 			let nominations = Nominations {
 				targets,
-				submitted_in: Self::current_era(),
+				// initial nominations are considered submitted at era 0. See `Nominations` doc
+				submitted_in: Self::current_era().unwrap_or(0),
 				suppressed: false,
 			};
 
@@ -1630,6 +1680,74 @@ decl_module! {
 			<Self as Store>::UnappliedSlashes::insert(&era, &unapplied);
 		}
 
+		/// Make one nominator's payout for one era.
+		///
+		/// - `who` is the controller account of the nominator to pay out.
+		/// - `era` may not be lower than one following the most recently paid era. If it is higher,
+		///   then it indicates an instruction to skip the payout of all previous eras.
+		/// - `validators` is the list of all validators that `who` had exposure to during `era`.
+		///   If it is incomplete, then less than the full reward will be paid out.
+		///   It must not exceed `MAX_NOMINATIONS`.
+		///
+		/// WARNING: once an era is payed for a validator such validator can't claim the payout of
+		/// previous era.
+		///
+		/// WARNING: Incorrect arguments here can result in loss of payout. Be very careful.
+		///
+		/// # <weight>
+		/// - Number of storage read of `O(validators)`; `validators` is the argument of the call,
+		///   and is bounded by `MAX_NOMINATIONS`.
+		/// - Each storage read is `O(N)` size and decode complexity; `N` is the  maximum
+		///   nominations that can be given to a single validator.
+		/// - Computation complexity: `O(MAX_NOMINATIONS * logN)`; `MAX_NOMINATIONS` is the
+		///   maximum number of validators that may be nominated by a single nominator, it is
+		///   bounded only economically (all nominators are required to place a minimum stake).
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
+		fn payout_nominator(origin, era: EraIndex, validators: Vec<(T::AccountId, u32)>) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			Self::do_payout_nominator(who, era, validators)
+		}
+
+		/// Make one validator's payout for one era.
+		///
+		/// - `who` is the controller account of the validator to pay out.
+		/// - `era` may not be lower than one following the most recently paid era. If it is higher,
+		///   then it indicates an instruction to skip the payout of all previous eras.
+		///
+		/// WARNING: once an era is payed for a validator such validator can't claim the payout of
+		/// previous era.
+		///
+		/// WARNING: Incorrect arguments here can result in loss of payout. Be very careful.
+		///
+		/// # <weight>
+		/// - Time complexity: O(1).
+		/// - Contains a limited number of reads and writes.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
+		fn payout_validator(origin, era: EraIndex) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			Self::do_payout_validator(who, era)
+		}
+
+		/// Set history_depth value.
+		///
+		/// Origin must be root.
+		#[weight = SimpleDispatchInfo::FixedOperational(500_000)]
+		fn set_history_depth(origin, #[compact] new_history_depth: EraIndex) {
+			ensure_root(origin)?;
+			if let Some(current_era) = Self::current_era() {
+				HistoryDepth::mutate(|history_depth| {
+					let last_kept = current_era.checked_sub(*history_depth).unwrap_or(0);
+					let new_last_kept = current_era.checked_sub(new_history_depth).unwrap_or(0);
+					for era_index in last_kept..new_last_kept {
+						Self::clear_era_information(era_index);
+					}
+					*history_depth = new_history_depth
+				})
+			}
+		}
+
 		/// Remove all data structure concerning a staker/stash once its balance is zero.
 		/// This is essentially equivalent to `withdraw_unbonded` except it can be called by anyone
 		/// and the target `stash` must have no funds left.
@@ -1639,8 +1757,8 @@ decl_module! {
 		/// - `stash`: The stash account to reap. Its balance must be zero.
 		fn reap_stash(_origin, stash: T::AccountId) {
 			Self::ensure_storage_upgraded();
-			ensure!(T::RingCurrency::total_balance(&stash).is_zero(), Error::<T>::FundedTarget);
-			ensure!(T::KtonCurrency::total_balance(&stash).is_zero(), Error::<T>::FundedTarget);
+			ensure!(T::RingCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
+			ensure!(T::KtonCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
 
 			Self::kill_stash(&stash)?;
 			T::RingCurrency::remove_lock(STAKING_ID, &stash);
@@ -1768,6 +1886,106 @@ impl<T: Trait> Module<T> {
 
 	// MUTABLES (DANGEROUS)
 
+	fn do_payout_nominator(who: T::AccountId, era: EraIndex, validators: Vec<(T::AccountId, u32)>) -> DispatchResult {
+		// validators len must not exceed `MAX_NOMINATIONS` to avoid querying more validator
+		// exposure than necessary.
+		ensure!(
+			validators.len() <= MAX_NOMINATIONS,
+			<Error<T>>::InvalidNumberOfNominations
+		);
+
+		// Note: if era has no reward to be claimed, era may be future. better not to update
+		// `nominator_ledger.last_reward` in this case.
+		let era_payout = <ErasValidatorReward<T>>::get(&era).ok_or_else(|| <Error<T>>::InvalidEraToReward)?;
+
+		let mut nominator_ledger = <Ledger<T>>::get(&who).ok_or_else(|| <Error<T>>::NotController)?;
+
+		if nominator_ledger
+			.last_reward
+			.map(|last_reward| last_reward >= era)
+			.unwrap_or(false)
+		{
+			return Err(<Error<T>>::InvalidEraToReward.into());
+		}
+
+		nominator_ledger.last_reward = Some(era);
+		<Ledger<T>>::insert(&who, &nominator_ledger);
+
+		let mut reward = Perbill::zero();
+		let era_reward_points = <ErasRewardPoints<T>>::get(&era);
+
+		for (validator, nominator_index) in validators.into_iter() {
+			let commission = Self::eras_validator_prefs(&era, &validator).commission;
+			let validator_exposure = <ErasStakersClipped<T>>::get(&era, &validator);
+
+			if let Some(nominator_exposure) = validator_exposure.others.get(nominator_index as usize) {
+				if nominator_exposure.who != nominator_ledger.stash {
+					continue;
+				}
+
+				let nominator_exposure_part =
+					Perbill::from_rational_approximation(nominator_exposure.power, validator_exposure.total_power);
+				let validator_point = era_reward_points
+					.individual
+					.get(&validator)
+					.map(|points| *points)
+					.unwrap_or_else(|| Zero::zero());
+				let validator_point_part =
+					Perbill::from_rational_approximation(validator_point, era_reward_points.total);
+				reward = reward.saturating_add(
+					validator_point_part
+						.saturating_mul(Perbill::one().saturating_sub(commission))
+						.saturating_mul(nominator_exposure_part),
+				);
+			}
+		}
+
+		if let Some(imbalance) = Self::make_payout(&nominator_ledger.stash, reward * era_payout) {
+			Self::deposit_event(RawEvent::Reward(who, imbalance.peek()));
+		}
+
+		Ok(())
+	}
+
+	fn do_payout_validator(who: T::AccountId, era: EraIndex) -> DispatchResult {
+		// Note: if era has no reward to be claimed, era may be future. better not to update
+		// `ledger.last_reward` in this case.
+		let era_payout = <ErasValidatorReward<T>>::get(&era).ok_or_else(|| <Error<T>>::InvalidEraToReward)?;
+
+		let mut ledger = <Ledger<T>>::get(&who).ok_or_else(|| <Error<T>>::NotController)?;
+		if ledger
+			.last_reward
+			.map(|last_reward| last_reward >= era)
+			.unwrap_or(false)
+		{
+			return Err(<Error<T>>::InvalidEraToReward.into());
+		}
+
+		ledger.last_reward = Some(era);
+		<Ledger<T>>::insert(&who, &ledger);
+
+		let era_reward_points = <ErasRewardPoints<T>>::get(&era);
+		let commission = Self::eras_validator_prefs(&era, &ledger.stash).commission;
+		let exposure = <ErasStakers<T>>::get(&era, &ledger.stash);
+
+		let exposure_part = Perbill::from_rational_approximation(exposure.own_power, exposure.total_power);
+		let validator_point = era_reward_points
+			.individual
+			.get(&ledger.stash)
+			.map(|points| *points)
+			.unwrap_or_else(|| Zero::zero());
+		let validator_point_part = Perbill::from_rational_approximation(validator_point, era_reward_points.total);
+		let reward = validator_point_part.saturating_mul(
+			commission.saturating_add(Perbill::one().saturating_sub(commission).saturating_mul(exposure_part)),
+		);
+
+		if let Some(imbalance) = Self::make_payout(&ledger.stash, reward * era_payout) {
+			Self::deposit_event(RawEvent::Reward(who, imbalance.peek()));
+		}
+
+		Ok(())
+	}
+
 	/// Update the ledger for a controller. This will also update the stash lock. The lock will
 	/// will lock the entire funds except paying for further transactions.
 	fn update_ledger(controller: &T::AccountId, ledger: &mut StakingLedgerT<T>, staking_balance: StakingBalanceT<T>) {
@@ -1821,9 +2039,6 @@ impl<T: Trait> Module<T> {
 	}
 
 	/// Ensures storage is upgraded to most recent necessary state.
-	///
-	/// Right now it's a no-op as all networks that are supported by Substrate Frame Core are
-	/// running with the latest staking storage scheme.
 	fn ensure_storage_upgraded() {}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
@@ -1847,126 +2062,82 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
-	/// Reward a given validator by a specific amount. Add the reward to the validator's, and its
-	/// nominators' balance, pro-rata based on their exposure, after having removed the validator's
-	/// pre-payout cut.
-	fn reward_validator(stash: &T::AccountId, reward: RingBalance<T>) -> (RingPositiveImbalance<T>, Rewards<T>) {
-		let off_the_table = Self::validators(stash).commission * reward;
-		let reward = reward.saturating_sub(off_the_table);
-		let mut imbalance = <RingPositiveImbalance<T>>::zero();
-		let mut nominators_reward = vec![];
-		let validator_cut = if reward.is_zero() {
-			Zero::zero()
-		} else {
-			let exposure = Self::stakers(stash);
-			let total = exposure.total_power.max(One::one());
-
-			for i in &exposure.others {
-				let per_u64 = Perbill::from_rational_approximation(i.power, total);
-				let nominator_reward = per_u64 * reward;
-
-				imbalance.maybe_subsume(Self::make_payout(&i.who, nominator_reward));
-				nominators_reward.push(NominatorReward {
-					who: i.who.to_owned(),
-					amount: nominator_reward,
-				});
-			}
-
-			let per_u64 = Perbill::from_rational_approximation(exposure.own_power, total);
-			per_u64 * reward
-		};
-		let validator_reward = validator_cut + off_the_table;
-
-		imbalance.maybe_subsume(Self::make_payout(stash, validator_reward));
-
-		(imbalance, (validator_reward, nominators_reward))
-	}
-
-	/// Session has just ended. Provide the validator set for the next session if it's an era-end.
+	/// Plan a new session potentially trigger a new era.
 	fn new_session(session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		let era_length = session_index
-			.checked_sub(Self::current_era_start_session_index())
-			.unwrap_or(0);
-		match ForceEra::get() {
-			Forcing::ForceNew => ForceEra::kill(),
-			Forcing::ForceAlways => (),
-			Forcing::NotForcing if era_length >= T::SessionsPerEra::get() => (),
-			_ => return None,
-		}
+		if let Some(current_era) = Self::current_era() {
+			// Initial era has been set.
 
-		Self::new_era(session_index)
-	}
+			let current_era_start_session_index = Self::eras_start_session_index(current_era).unwrap_or_else(|| {
+				frame_support::print("Error: start_session_index must be set for current_era");
+				0
+			});
 
-	/// Initialize the first session (and consequently the first era)
-	fn initial_session() -> Option<Vec<T::AccountId>> {
-		// note: `CurrentEraStart` is set in `on_finalize` of the first block because now is not
-		// available yet.
-		CurrentEraStartSessionIndex::put(0);
-		BondedEras::mutate(|bonded| bonded.push((0, 0)));
-		Self::select_validators().1
-	}
+			let era_length = session_index.checked_sub(current_era_start_session_index).unwrap_or(0); // Must never happen.
 
-	/// The era has changed - enact new staking set.
-	///
-	/// NOTE: This always happens immediately before a session change to ensure that new validators
-	/// get a chance to set their session keys.
-	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		// Payout
-		let points = CurrentEraPointsEarned::take();
-		let now = T::Time::now();
-		let previous_era_start = <CurrentEraStart<T>>::mutate(|v| sp_std::mem::replace(v, now));
-		let era_duration = now - previous_era_start;
-		if !era_duration.is_zero() {
-			let validators = Self::current_elected();
-			let (total_payout, max_payout) = inflation::compute_total_payout::<T>(
-				era_duration,
-				now - Self::genesis_time(),
-				T::Cap::get().saturating_sub(T::RingCurrency::total_issuance()),
-				PayoutFraction::get(),
-			);
-			let mut total_imbalance = <RingPositiveImbalance<T>>::zero();
-			let mut validators_reward = vec![];
-
-			for (v, p) in validators.iter().zip(points.individual.into_iter()) {
-				if p != 0 {
-					let reward = Perbill::from_rational_approximation(p, points.total) * total_payout;
-					let (imbalance, (validator_reward, nominators_reward)) = Self::reward_validator(v, reward);
-
-					total_imbalance.subsume(imbalance);
-					validators_reward.push(ValidatorReward {
-						who: v.to_owned(),
-						amount: validator_reward,
-						nominators_reward,
-					});
-				}
+			match ForceEra::get() {
+				Forcing::ForceNew => ForceEra::kill(),
+				Forcing::ForceAlways => (),
+				Forcing::NotForcing if era_length >= T::SessionsPerEra::get() => (),
+				_ => return None,
 			}
-
-			// assert!(total_imbalance.peek() == total_payout)
-			let total_payout = total_imbalance.peek();
-			let rest = max_payout.saturating_sub(total_payout);
-
-			Self::deposit_event(RawEvent::Reward(total_payout, rest, validators_reward));
-
-			T::RingReward::on_unbalanced(total_imbalance);
-			T::RingRewardRemainder::on_unbalanced(T::RingCurrency::issue(rest));
+			Self::new_era(session_index)
+		} else {
+			// Set initial era
+			Self::new_era(session_index)
 		}
+	}
 
-		// Increment current era.
-		let current_era = CurrentEra::mutate(|s| {
-			*s += 1;
-			*s
+	/// Start a session potentially starting an era.
+	fn start_session(start_session: SessionIndex) {
+		let next_active_era = Self::active_era().map(|e| e.index + 1).unwrap_or(0);
+		if let Some(next_active_era_start_session_index) = Self::eras_start_session_index(next_active_era) {
+			if next_active_era_start_session_index == start_session {
+				Self::start_era(start_session);
+			} else if next_active_era_start_session_index < start_session {
+				// This arm should never happen, but better handle it than to stall the
+				// staking pallet.
+				frame_support::print("Warning: A session appears to have been skipped.");
+				Self::start_era(start_session);
+			}
+		}
+	}
+
+	/// End a session potentially ending an era.
+	fn end_session(session_index: SessionIndex) {
+		if let Some(active_era) = Self::active_era() {
+			let next_active_era_start_session_index = Self::eras_start_session_index(active_era.index + 1)
+				.unwrap_or_else(|| {
+					frame_support::print("Error: start_session_index must be set for active_era + 1");
+					0
+				});
+
+			if next_active_era_start_session_index == session_index + 1 {
+				Self::end_era(active_era, session_index);
+			}
+		}
+	}
+
+	/// * Increment `active_era.index`,
+	/// * reset `active_era.start`,
+	/// * update `BondedEras` and apply slashes.
+	fn start_era(start_session: SessionIndex) {
+		let active_era = <ActiveEra<T>>::mutate(|active_era| {
+			let new_index = active_era.as_ref().map(|info| info.index + 1).unwrap_or(0);
+			*active_era = Some(ActiveEraInfo {
+				index: new_index,
+				// Set new active era start in next `on_finalize`. To guarantee usage of `Time`
+				start: None,
+			});
+			new_index
 		});
 
-		CurrentEraStartSessionIndex::mutate(|v| {
-			*v = start_session_index;
-		});
-		let bonding_duration_in_era = T::BondingDurationInEra::get();
+		let bonding_duration = T::BondingDurationInEra::get();
 
 		BondedEras::mutate(|bonded| {
-			bonded.push((current_era, start_session_index));
+			bonded.push((active_era, start_session));
 
-			if current_era > bonding_duration_in_era {
-				let first_kept = current_era - bonding_duration_in_era;
+			if active_era > bonding_duration {
+				let first_kept = active_era - bonding_duration;
 
 				// prune out everything that's from before the first-kept index.
 				let n_to_prune = bonded.iter().take_while(|&&(era_idx, _)| era_idx < first_kept).count();
@@ -1982,19 +2153,65 @@ impl<T: Trait> Module<T> {
 			}
 		});
 
-		// Reassign all Stakers.
-		let (_slot_stake, maybe_new_validators) = Self::select_validators();
-		Self::apply_unapplied_slashes(current_era);
+		Self::apply_unapplied_slashes(active_era);
+	}
+
+	/// Compute payout for era.
+	fn end_era(active_era: ActiveEraInfo<MomentT<T>>, _session_index: SessionIndex) {
+		// Note: active_era_start can be None if end era is called during genesis config.
+		if let Some(active_era_start) = active_era.start {
+			let now = T::Time::now();
+
+			let era_duration = now - active_era_start;
+			let (total_payout, _max_payout) = inflation::compute_total_payout::<T>(
+				era_duration,
+				now - Self::genesis_time(),
+				T::Cap::get().saturating_sub(T::RingCurrency::total_issuance()),
+				PayoutFraction::get(),
+			);
+
+			// Set ending era reward.
+			<ErasValidatorReward<T>>::insert(&active_era.index, total_payout);
+		}
+	}
+
+	/// Plan a new era. Return the potential new staking set.
+	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
+		// Increment or set current era.
+		let current_era = CurrentEra::mutate(|s| {
+			*s = Some(s.map(|s| s + 1).unwrap_or(0));
+			s.unwrap()
+		});
+		ErasStartSessionIndex::insert(&current_era, &start_session_index);
+
+		// Clean old era information.
+		if let Some(old_era) = current_era.checked_sub(Self::history_depth() + 1) {
+			Self::clear_era_information(old_era);
+		}
+
+		// Set staking information for new era.
+		let maybe_new_validators = Self::select_validators(current_era);
 
 		maybe_new_validators
 	}
 
+	/// Clear all era information for given era.
+	fn clear_era_information(era_index: EraIndex) {
+		<ErasStakers<T>>::remove_prefix(era_index);
+		<ErasStakersClipped<T>>::remove_prefix(era_index);
+		<ErasValidatorPrefs<T>>::remove_prefix(era_index);
+		<ErasValidatorReward<T>>::remove(era_index);
+		<ErasRewardPoints<T>>::remove(era_index);
+		ErasTotalStake::remove(era_index);
+		ErasStartSessionIndex::remove(era_index);
+	}
+
 	/// Apply previously-unapplied slashes on the beginning of a new era, after a delay.
-	fn apply_unapplied_slashes(current_era: EraIndex) {
+	fn apply_unapplied_slashes(active_era: EraIndex) {
 		let slash_defer_duration = T::SlashDeferDuration::get();
 		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
 			if let Some(ref mut earliest) = earliest {
-				let keep_from = current_era.saturating_sub(slash_defer_duration);
+				let keep_from = active_era.saturating_sub(slash_defer_duration);
 				for era in (*earliest)..keep_from {
 					let era_slashes = <Self as Store>::UnappliedSlashes::take(&era);
 					for slash in era_slashes {
@@ -2007,21 +2224,25 @@ impl<T: Trait> Module<T> {
 		})
 	}
 
-	/// Select a new validator set from the assembled stakers and their role preferences.
+	/// Select a new validator set from the assembled stakers and their role preferences, and store
+	/// staking information for the new current era.
 	///
-	/// Returns the new `SlotStake` value and a set of newly selected _stash_ IDs.
+	/// Fill the storages `ErasStakers`, `ErasStakersClipped`, `ErasValidatorPrefs` and
+	/// `ErasTotalStake` for current era.
+	///
+	/// Returns a set of newly selected _stash_ IDs.
 	///
 	/// Assumes storage is coherent with the declaration.
-	fn select_validators() -> (Power, Option<Vec<T::AccountId>>) {
+	fn select_validators(current_era: EraIndex) -> Option<Vec<T::AccountId>> {
 		let mut all_nominators: Vec<(T::AccountId, Vec<T::AccountId>)> = vec![];
-		let all_validator_candidates_iter = <Validators<T>>::enumerate();
-		let all_validators = all_validator_candidates_iter
-			.map(|(who, _pref)| {
-				let self_vote = (who.clone(), vec![who.clone()]);
-				all_nominators.push(self_vote);
-				who
-			})
-			.collect::<Vec<T::AccountId>>();
+		let mut all_validators_and_prefs = BTreeMap::new();
+		let mut all_validators = Vec::new();
+		for (validator, preference) in <Validators<T>>::enumerate() {
+			let self_vote = (validator.clone(), vec![validator.clone()]);
+			all_nominators.push(self_vote);
+			all_validators_and_prefs.insert(validator.clone(), preference);
+			all_validators.push(validator);
+		}
 		let nominator_votes = <Nominators<T>>::enumerate().map(|(nominator, nominations)| {
 			let Nominations {
 				submitted_in,
@@ -2051,8 +2272,8 @@ impl<T: Trait> Module<T> {
 		if let Some(phragmen_result) = maybe_phragmen_result {
 			let elected_stashes = phragmen_result
 				.winners
-				.iter()
-				.map(|(s, _)| s.clone())
+				.into_iter()
+				.map(|(s, _)| s)
 				.collect::<Vec<T::AccountId>>();
 			let assignments = phragmen_result.assignments;
 
@@ -2065,13 +2286,8 @@ impl<T: Trait> Module<T> {
 				Self::stake_of,
 			);
 
-			// Clear Stakers.
-			for v in Self::current_elected().iter() {
-				<Stakers<T>>::remove(v);
-			}
-
-			// Populate Stakers and figure out the minimum stake behind a slot.
-			let mut slot_stake = T::TotalPower::get();
+			// Populate stakers information and figure out the total staked.
+			let mut total_staked = 0;
 			for (c, s) in supports.into_iter() {
 				// build `struct exposure` from `support`
 				let mut own_ring_balance: RingBalance<T> = Zero::zero();
@@ -2102,6 +2318,9 @@ impl<T: Trait> Module<T> {
 						total_power += power;
 					},
 				);
+
+				total_staked += total_power;
+
 				let exposure = Exposure {
 					own_ring_balance,
 					own_kton_balance,
@@ -2110,24 +2329,33 @@ impl<T: Trait> Module<T> {
 					others,
 				};
 
-				if exposure.total_power < slot_stake {
-					slot_stake = exposure.total_power;
+				<ErasStakers<T>>::insert(&current_era, &c, &exposure);
+
+				let mut exposure_clipped = exposure;
+				let clipped_max_len = T::MaxNominatorRewardedPerValidator::get() as usize;
+				if exposure_clipped.others.len() > clipped_max_len {
+					exposure_clipped
+						.others
+						.sort_unstable_by(|a, b| a.power.cmp(&b.power).reverse());
+					exposure_clipped.others.truncate(clipped_max_len);
 				}
 
-				<Stakers<T>>::insert(&c, exposure.clone());
+				<ErasStakersClipped<T>>::insert(&current_era, &c, exposure_clipped);
 			}
 
-			// Update slot stake.
-			SlotStake::put(&slot_stake);
-
-			// Set the new validator set in sessions.
-			<CurrentElected<T>>::put(&elected_stashes);
+			// Insert current era staking informations
+			ErasTotalStake::insert(&current_era, total_staked);
+			let default_pref = ValidatorPrefs::default();
+			for stash in &elected_stashes {
+				let pref = all_validators_and_prefs.get(stash).unwrap_or(&default_pref); // Must never happen, but better to be safe.
+				<ErasValidatorPrefs<T>>::insert(&current_era, stash, pref);
+			}
 
 			// In order to keep the property required by `n_session_ending`
 			// that we must return the new validator set even if it's the same as the old,
 			// as long as any underlying economic conditions have changed, we don't attempt
 			// to do any optimization where we compare against the prior set.
-			(slot_stake, Some(elected_stashes))
+			Some(elected_stashes)
 		} else {
 			// There were not enough candidates for even our minimal level of functionality.
 			// This is bad.
@@ -2135,7 +2363,7 @@ impl<T: Trait> Module<T> {
 			// and let the chain keep producing blocks until we can decide on a sufficiently
 			// substantial set.
 			// TODO: #2494
-			(Self::slot_stake(), None)
+			None
 		}
 	}
 
@@ -2147,7 +2375,7 @@ impl<T: Trait> Module<T> {
 	/// - after a `withdraw_unbond()` call that frees all of a stash's bonded balance.
 	/// - through `reap_stash()` if the balance has fallen to zero (through slashing).
 	fn kill_stash(stash: &T::AccountId) -> DispatchResult {
-		let controller = Bonded::<T>::take(stash).ok_or(Error::<T>::NotStash)?;
+		let controller = <Bonded<T>>::take(stash).ok_or(<Error<T>>::NotStash)?;
 		<Ledger<T>>::remove(&controller);
 
 		<Payee<T>>::remove(stash);
@@ -2156,7 +2384,7 @@ impl<T: Trait> Module<T> {
 
 		slashing::clear_stash_metadata::<T>(stash);
 
-		system::Module::<T>::dec_ref(stash);
+		<frame_system::Module<T>>::dec_ref(stash);
 
 		Ok(())
 	}
@@ -2174,30 +2402,14 @@ impl<T: Trait> Module<T> {
 	/// COMPLEXITY: Complexity is `number_of_validator_to_reward x current_elected_len`.
 	/// If you need to reward lots of validator consider using `reward_by_indices`.
 	pub fn reward_by_ids(validators_points: impl IntoIterator<Item = (T::AccountId, u32)>) {
-		CurrentEraPointsEarned::mutate(|rewards| {
-			let current_elected = Self::current_elected();
-			for (validator, points) in validators_points.into_iter() {
-				if let Some(index) = current_elected.iter().position(|elected| *elected == validator) {
-					rewards.add_points_to_index(index as u32, points);
+		if let Some(active_era) = Self::active_era() {
+			<ErasRewardPoints<T>>::mutate(active_era.index, |era_rewards| {
+				for (validator, points) in validators_points.into_iter() {
+					*era_rewards.individual.entry(validator).or_default() += points;
+					era_rewards.total += points;
 				}
-			}
-		});
-	}
-
-	/// Add reward points to validators using their validator index.
-	///
-	/// For each element in the iterator the given number of points in u32 is added to the
-	/// validator, thus duplicates are handled.
-	pub fn reward_by_indices(validators_points: impl IntoIterator<Item = (u32, u32)>) {
-		let current_elected_len = Self::current_elected().len() as u32;
-
-		CurrentEraPointsEarned::mutate(|rewards| {
-			for (validator_index, points) in validators_points.into_iter() {
-				if validator_index < current_elected_len {
-					rewards.add_points_to_index(validator_index, points);
-				}
-			}
-		});
+			});
+		}
 	}
 
 	/// Ensures that at the end of the current session there will be a new era.
@@ -2212,14 +2424,18 @@ impl<T: Trait> Module<T> {
 impl<T: Trait> pallet_session::SessionManager<T::AccountId> for Module<T> {
 	fn new_session(new_index: SessionIndex) -> Option<Vec<T::AccountId>> {
 		Self::ensure_storage_upgraded();
-		if new_index == 0 {
-			return Self::initial_session();
-		}
-		Self::new_session(new_index - 1)
+		Self::new_session(new_index)
 	}
-	fn end_session(_end_index: SessionIndex) {}
+	fn end_session(end_index: SessionIndex) {
+		Self::end_session(end_index)
+	}
+	fn start_session(start_index: SessionIndex) {
+		Self::start_session(start_index)
+	}
 }
 
+/// This implementation has the same constrains as the implementation of
+/// `pallet_session::SessionManager`.
 impl<T: Trait>
 	pallet_session::historical::SessionManager<T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>>
 	for Module<T>
@@ -2228,14 +2444,21 @@ impl<T: Trait>
 		new_index: SessionIndex,
 	) -> Option<Vec<(T::AccountId, Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>)>> {
 		<Self as pallet_session::SessionManager<_>>::new_session(new_index).map(|validators| {
+			let current_era = Self::current_era()
+				// Must be some as a new era has been created.
+				.unwrap_or(0);
+
 			validators
 				.into_iter()
 				.map(|v| {
-					let exposure = <Stakers<T>>::get(&v);
+					let exposure = Self::eras_stakers(current_era, &v);
 					(v, exposure)
 				})
 				.collect()
 		})
+	}
+	fn start_session(start_index: SessionIndex) {
+		<Self as pallet_session::SessionManager<_>>::start_session(start_index)
 	}
 	fn end_session(end_index: SessionIndex) {
 		<Self as pallet_session::SessionManager<_>>::end_session(end_index)
@@ -2246,12 +2469,15 @@ impl<T: Trait>
 /// * 20 points to the block producer for producing a (non-uncle) block in the relay chain,
 /// * 2 points to the block producer for each reference to a previously unreferenced uncle, and
 /// * 1 point to the producer of each referenced uncle block.
-impl<T: Trait + pallet_authorship::Trait> pallet_authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T> {
+impl<T> pallet_authorship::EventHandler<T::AccountId, T::BlockNumber> for Module<T>
+where
+	T: Trait + pallet_authorship::Trait + pallet_session::Trait,
+{
 	fn note_author(author: T::AccountId) {
 		Self::reward_by_ids(vec![(author, 20)]);
 	}
 	fn note_uncle(author: T::AccountId, _age: T::BlockNumber) {
-		Self::reward_by_ids(vec![(<pallet_authorship::Module<T>>::author(), 2), (author, 1)])
+		Self::reward_by_ids(vec![(<pallet_authorship::Module<T>>::author(), 2), (author, 1)]);
 	}
 }
 
@@ -2265,13 +2491,20 @@ impl<T: Trait> Convert<T::AccountId, Option<T::AccountId>> for StashOf<T> {
 	}
 }
 
-/// A typed conversion from stash account ID to the current exposure of nominators
+/// A typed conversion from stash account ID to the active exposure of nominators
 /// on that account.
+///
+/// Active exposure is the exposure of the validator set currently validating, i.e. in
+/// `active_era`. It can differ from the latest planned exposure in `current_era`.
 pub struct ExposureOf<T>(PhantomData<T>);
 
 impl<T: Trait> Convert<T::AccountId, Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>>> for ExposureOf<T> {
 	fn convert(validator: T::AccountId) -> Option<Exposure<T::AccountId, RingBalance<T>, KtonBalance<T>>> {
-		Some(<Module<T>>::stakers(&validator))
+		if let Some(active_era) = <Module<T>>::active_era() {
+			Some(<Module<T>>::eras_stakers(active_era.index, &validator))
+		} else {
+			None
+		}
 	}
 }
 
@@ -2295,12 +2528,25 @@ where
 		Self::ensure_storage_upgraded();
 
 		let reward_proportion = SlashRewardFraction::get();
-		let era_now = Self::current_era();
-		let window_start = era_now.saturating_sub(T::BondingDurationInEra::get());
-		let current_era_start_session = CurrentEraStartSessionIndex::get();
-		// fast path for current-era report - most likely.
-		let slash_era = if slash_session >= current_era_start_session {
-			era_now
+
+		let active_era = {
+			let active_era = Self::active_era();
+			if active_era.is_none() {
+				return;
+			}
+			active_era.unwrap().index
+		};
+		let active_era_start_session_index = Self::eras_start_session_index(active_era).unwrap_or_else(|| {
+			frame_support::print("Error: start_session_index must be set for current_era");
+			0
+		});
+
+		let window_start = active_era.saturating_sub(T::BondingDurationInEra::get());
+
+		// fast path for active-era report - most likely.
+		// `slash_session` cannot be in a future active era. It must be in `active_era` or before.
+		let slash_era = if slash_session >= active_era_start_session_index {
+			active_era
 		} else {
 			// reverse because it's more likely to find reports from recent eras.
 			match BondedEras::get()
@@ -2316,7 +2562,7 @@ where
 
 		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
 			if earliest.is_none() {
-				*earliest = Some(era_now)
+				*earliest = Some(active_era)
 			}
 		});
 
@@ -2337,7 +2583,7 @@ where
 				exposure,
 				slash_era,
 				window_start,
-				now: era_now,
+				now: active_era,
 				reward_proportion,
 			});
 
@@ -2348,7 +2594,7 @@ where
 					slashing::apply_slash::<T>(unapplied);
 				} else {
 					// defer to end of some `slash_defer_duration` from now.
-					<Self as Store>::UnappliedSlashes::mutate(era_now, move |for_later| for_later.push(unapplied));
+					<Self as Store>::UnappliedSlashes::mutate(active_era, move |for_later| for_later.push(unapplied));
 				}
 			}
 		}
@@ -2366,7 +2612,7 @@ where
 	R: ReportOffence<Reporter, Offender, O>,
 	O: Offence<Offender>,
 {
-	fn report_offence(reporters: Vec<Reporter>, offence: O) {
+	fn report_offence(reporters: Vec<Reporter>, offence: O) -> Result<(), OffenceError> {
 		<Module<T>>::ensure_storage_upgraded();
 
 		// disallow any slashing from before the current bonding period.
@@ -2380,7 +2626,8 @@ where
 		{
 			R::report_offence(reporters, offence)
 		} else {
-			<Module<T>>::deposit_event(RawEvent::OldSlashingReportDiscarded(offence_session))
+			<Module<T>>::deposit_event(RawEvent::OldSlashingReportDiscarded(offence_session));
+			Ok(())
 		}
 	}
 }

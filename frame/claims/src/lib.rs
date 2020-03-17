@@ -126,13 +126,13 @@ decl_storage! {
 	trait Store for Module<T: Trait> as Claims {
 		ClaimsFromDot
 			get(claims_from_dot)
-			:map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
+			: map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
 		ClaimsFromEth
 			get(claims_from_eth)
-			:map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
+			: map hasher(blake2_256) EthereumAddress => Option<RingBalance<T>>;
 		ClaimsFromTron
 			get(claims_from_tron)
-			:map hasher(blake2_256) TronAddress => Option<RingBalance<T>>;
+			: map hasher(blake2_256) TronAddress => Option<RingBalance<T>>;
 
 		Total get(total): RingBalance<T>;
 	}
@@ -529,9 +529,9 @@ mod tests {
 	#[test]
 	fn basic_setup_works() {
 		new_test_ext().execute_with(|| {
-			assert_eq!(Claims::total(), 600);
+			assert_eq!(Claims::total(), 5500);
 
-			assert_eq!(Claims::claims_from_dot(&eth(&alice())), Some(100));
+			assert_eq!(Claims::claims_from_dot(&eth(&alice())), Some(5000));
 			assert_eq!(Claims::claims_from_eth(&eth(&alice())), None);
 			assert_eq!(Claims::claims_from_tron(&tron(&alice())), None);
 
@@ -569,7 +569,7 @@ mod tests {
 				1,
 				OtherSignature::Dot(sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
-			assert_eq!(Ring::free_balance(&1), 100);
+			assert_eq!(Ring::free_balance(&1), 5000);
 			assert_eq!(Claims::total(), 500);
 
 			assert_eq!(Ring::free_balance(2), 0);
@@ -609,14 +609,14 @@ mod tests {
 				<Error<Test>>::SignerHasNoClaim,
 			);
 			assert_ok!(Claims::mint_claim(Origin::ROOT, OtherAddress::Dot(eth(&bob())), 200));
-			assert_eq!(Claims::total(), 800);
+			assert_eq!(Claims::total(), 5700);
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				69,
 				OtherSignature::Dot(sig(&bob(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&69), 200);
-			assert_eq!(Claims::total(), 600);
+			assert_eq!(Claims::total(), 5500);
 		});
 	}
 

@@ -169,6 +169,7 @@ parameter_types! {
 	pub const BondingDurationInEra: EraIndex = 3;
 	// assume 60 blocks per session
 	pub const BondingDurationInBlockNumber: BlockNumber = 3 * 3 * 60;
+	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
@@ -182,6 +183,7 @@ impl pallet_staking::Trait for Test {
 	type SlashDeferDuration = ();
 	type SlashCancelOrigin = system::EnsureRoot<Self::AccountId>;
 	type SessionInterface = Self;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = ();
 	type RingSlash = ();

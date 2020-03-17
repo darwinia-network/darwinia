@@ -37,10 +37,13 @@ node-runtime = { path = "../runtime" }
 #
 #pallet-balances = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-#pallet-grandpa = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-#pallet-im-online = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+#pallet-grandpa = { path = "../../../frame/grandpa" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+#pallet-im-online = { path = "../../../frame/session" }
 #pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-#pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+#pallet-session = { path = "../../../frame/session" }
 #pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 #pallet-treasury = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

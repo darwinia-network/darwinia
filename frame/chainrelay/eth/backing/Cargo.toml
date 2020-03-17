@@ -35,11 +35,13 @@ rustc-hex = "2.0"
 
 rlp = { package = "rlp", git = "https://github.com/darwinia-network/parity-common.git" }
 
-pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3"}
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+pallet-session = { path = "../../../session" }
 pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-staking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+sp-staking = { path = "../../../../primitives/staking" }
 
 pallet-ring = { package = "darwinia-ring", path = "../../../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../../../frame/balances/kton" }

@@ -293,7 +293,6 @@ pub fn darwinia_genesis(
 				.collect(),
 		}),
 		pallet_staking: Some(StakingConfig {
-			current_era: 0,
 			validator_count: initial_authorities.len() as u32 * 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities

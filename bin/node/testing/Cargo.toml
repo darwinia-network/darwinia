@@ -21,9 +21,11 @@ frame-support = { git = "https://github.com/darwinia-network/substrate.git", tag
 frame-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
 pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-grandpa = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+pallet-grandpa = { path = "../../../frame/grandpa" }
 pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+# TODO https://github.com/darwinia-network/darwinia/issues/347
+pallet-session = { path = "../../../frame/session" }
 pallet-society = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }

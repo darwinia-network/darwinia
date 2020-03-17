@@ -1,8 +1,8 @@
 [package]
-name = "darwinia-staking"
+name = "pallet-im-online"
 version = "0.5.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
-description = "FRAME pallet staking"
+description = "FRAME's I'm online pallet"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
@@ -10,7 +10,7 @@ repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
 # crates.io
-codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0.101", optional = true }
 
 # github.com
@@ -19,47 +19,32 @@ frame-system = { default-features = false, git = "https://github.com/darwinia-ne
 
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 # TODO https://github.com/darwinia-network/darwinia/issues/347
-pallet-session = { default-features = false, features = ["historical"], path = "../session" }
+pallet-session = { default-features = false, path = "../session" }
 
+sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-sp-io ={ default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 # TODO https://github.com/darwinia-network/darwinia/issues/347
 sp-staking = { default-features = false, path = "../../primitives/staking" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
 
-# darwinia
-darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
-darwinia-support = {  default-features = false, path = "../support" }
-
-[dev-dependencies]
-substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-
-pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.3" }
-
-pallet-ring = { package = "darwinia-ring", path = "../../frame/balances/ring" }
-pallet-kton = { package = "darwinia-kton", path = "../../frame/balances/kton" }
-
 [features]
-equalize = []
-migrate = []
-default = ["std", "equalize"]
+default = ["std", "pallet-session/historical"]
 std = [
 	"codec/std",
 	"serde",
 
 	"frame-support/std",
-	"frame-system/std",
+    "frame-system/std",
 
 	"pallet-authorship/std",
 	"pallet-session/std",
 
+	"sp-application-crypto/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-staking/std",
 	"sp-std/std",
-
-	"darwinia-phragmen/std",
-	"darwinia-support/std",
 ]
