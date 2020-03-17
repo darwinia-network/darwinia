@@ -16,6 +16,7 @@ pub mod chain_spec;
 
 #[macro_use]
 mod service;
+
 #[cfg(feature = "browser")]
 mod browser;
 #[cfg(feature = "cli")]
@@ -67,9 +68,9 @@ impl ChainSpec {
 	}
 }
 
-fn load_spec(id: &str) -> Result<Option<chain_spec::ChainSpec>, String> {
+fn load_spec(id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
 	Ok(match ChainSpec::from(id) {
-		Some(spec) => Some(spec.load()?),
-		None => None,
+		Some(spec) => Box::new(spec.load()?),
+		None => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(id))?),
 	})
 }

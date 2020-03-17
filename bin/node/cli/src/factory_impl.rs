@@ -50,11 +50,11 @@ impl RuntimeAdapter for FactoryState<Number> {
 	type AccountId = node_primitives::AccountId;
 	type Balance = node_primitives::Balance;
 	type Block = node_primitives::Block;
-	type Index = node_primitives::Index;
-	type Number = Number;
 	type Phase = sp_runtime::generic::Phase;
-
 	type Secret = sr25519::Pair;
+	type Index = node_primitives::Index;
+
+	type Number = Number;
 
 	fn new(blocks: u32, transactions: u32) -> FactoryState<Self::Number> {
 		FactoryState {
@@ -65,16 +65,16 @@ impl RuntimeAdapter for FactoryState<Number> {
 		}
 	}
 
+	fn block_number(&self) -> u32 {
+		self.block_number
+	}
+
 	fn blocks(&self) -> u32 {
 		self.blocks
 	}
 
 	fn transactions(&self) -> u32 {
 		self.transactions
-	}
-
-	fn block_number(&self) -> u32 {
-		self.block_number
 	}
 
 	fn set_block_number(&mut self, value: u32) {

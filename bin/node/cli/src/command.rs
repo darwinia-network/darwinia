@@ -10,7 +10,7 @@ where
 	T: Into<std::ffi::OsString> + Clone,
 {
 	let args: Vec<_> = args.collect();
-	let mut opt = sc_cli::from_iter::<Cli, _>(args.clone(), &version);
+	let opt = sc_cli::from_iter::<Cli, _>(args.clone(), &version);
 
 	let mut config = sc_service::Configuration::from_version(&version);
 
@@ -24,13 +24,10 @@ where
 			cmd.init(&version)?;
 			cmd.update_config(&mut config, load_spec, &version)?;
 
-			let client = sc_service::new_full_client::<
-				node_runtime::Block,
-				node_runtime::RuntimeApi,
-				node_executor::Executor,
-				_,
-				_,
-			>(&config)?;
+			let client =
+				sc_service::new_full_client::<node_runtime::Block, node_runtime::RuntimeApi, node_executor::Executor>(
+					&config,
+				)?;
 			let inspect = node_inspect::Inspector::<node_runtime::Block>::new(client);
 
 			cmd.run(inspect)
@@ -39,8 +36,7 @@ where
 			cmd.init(&version)?;
 			cmd.update_config(&mut config, load_spec, &version)?;
 
-			cmd.run::<_, _, node_runtime::Block, node_executor::Executor>(config)?;
-			Ok(())
+			cmd.run::<node_runtime::Block, node_executor::Executor>(config)
 		}
 		Some(Subcommand::Factory(cli_args)) => {
 			cli_args.shared_params.init(&version)?;
@@ -70,7 +66,7 @@ where
 			let factory_state = FactoryState::new(cli_args.blocks, cli_args.transactions);
 
 			let service_builder = new_full_start!(config).0;
-			node_transaction_factory::factory::<FactoryState<_>, _, _, _, _, _>(
+			node_transaction_factory::factory(
 				factory_state,
 				service_builder.client(),
 				service_builder
@@ -84,9 +80,10 @@ where
 		Some(Subcommand::Base(subcommand)) => {
 			subcommand.init(&version)?;
 			subcommand.update_config(&mut config, load_spec, &version)?;
-			subcommand.run(config, |config: service::NodeConfiguration| {
-				Ok(new_full_start!(config).0)
-			})
+			subcommand.run(
+				config,
+				|config: sc_service::Configuration| Ok(new_full_start!(config).0),
+			)
 		}
 	}
 }
