@@ -688,13 +688,13 @@ fn nominators_also_get_slashed() {
 		}
 
 		// 2 will nominate for 10, 20
-		let nominator_stake = StakingBalance::RingBalance(500);
+		let nominator_stake = 500;
 		assert_ok!(Staking::bond(
 			Origin::signed(1),
 			2,
-			nominator_stake.clone(),
+			StakingBalance::RingBalance(nominator_stake),
 			RewardDestination::default(),
-			0
+			0,
 		));
 		assert_ok!(Staking::nominate(Origin::signed(2), vec![20, 10]));
 
@@ -718,12 +718,13 @@ fn nominators_also_get_slashed() {
 		);
 		let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
 		let slash_value = 50;
-		let total_slash = expo.total_power.min(slash_value) as u128;
+		let total_slash = expo
+			.others
+			.iter()
+			.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance)
+			.min(slash_value);
 		let validator_slash = expo.own_ring_balance.min(total_slash);
-		let nominator_slash = match nominator_stake {
-			StakingBalance::RingBalance(v) => v.min(total_slash - validator_slash),
-			_ => panic!("nominator slash should be Ring Balance here"),
-		};
+		let nominator_slash = nominator_stake.min(total_slash - validator_slash);
 
 		// initial + first era reward + slash
 		assert_eq!(Ring::total_balance(&11), initial_balance - validator_slash);
