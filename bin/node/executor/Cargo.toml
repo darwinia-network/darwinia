@@ -15,15 +15,15 @@ trie-root = "0.16.0"
 
 # github.com
 # TODO benchmarking
-#frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+#frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
-node-primitives = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+node-primitives = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-state-machine = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-trie = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sc-executor = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-state-machine = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-trie = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
 # darwinia
 node-runtime = { path = "../runtime" }
@@ -33,23 +33,23 @@ node-runtime = { path = "../runtime" }
 #criterion = "0.3.0"
 #wabt = "0.9.2"
 #
-#frame-support = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#frame-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+#frame-support = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#frame-system = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 #
-#pallet-balances = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-grandpa = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-im-online = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#pallet-treasury = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+#pallet-balances = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-contracts = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-grandpa = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-im-online = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-session = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#pallet-treasury = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 #
-#sp-application-crypto = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-#sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+#sp-application-crypto = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+#sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 #
-#substrate-test-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+#substrate-test-client = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 #
 #node-testing = { path = "../testing" }
 

@@ -1,44 +1,39 @@
 [package]
-name = "darwinia-kton"
-version = "0.5.0"
+name = "darwinia-chain-mmr"
+version = "0.0.1"
 authors = ["Darwinia Network <hello@darwinia.network>"]
-description = "FRAME pallet to manage KTON"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
+description = "Pallet for logging MMR into header digest"
 
 [dependencies]
-# crates.io
-codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0.101", optional = true }
-
-# github.com
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false }
+#frame-benchmarking = { version = "2.0.0-alpha.2", default-features = false, path = "../benchmarking" }
+frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
-# darwinia
-darwinia-support = { default-features = false, path = "../../support" }
+merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
 
 [dev-dependencies]
-pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
 [features]
 default = ["std"]
 std = [
-	"codec/std",
 	"serde",
-
+	"codec/std",
+	"sp-runtime/std",
+#	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
-
-	"sp-runtime/std",
+	"sp-io/std",
 	"sp-std/std",
-
-	"darwinia-support/std",
+	"merkle-mountain-range/std",
 ]

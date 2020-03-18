@@ -2,28 +2,24 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_std::marker::PhantomData;
 use frame_support::{decl_module, decl_storage};
+use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 //use frame_benchmarking::{benchmarks, account};
 //use frame_system::{self as system, ensure_signed, ensure_root, RawOrigin};
 
 //use codec::{Encode, Decode};
-use sp_runtime::{
-	traits::Hash,
-	generic::{DigestItem},
-};
+use sp_runtime::{generic::DigestItem, traits::Hash};
 
-use merkle_mountain_range::{MMR, MMRStore};
+use merkle_mountain_range::{MMRStore, MMR};
 
-pub trait Trait: frame_system::Trait {
-}
+pub trait Trait: frame_system::Trait {}
 
 decl_storage! {
-	trait Store for Module<T: Trait> as MMRDigest {
+	trait Store for Module<T: Trait> as ChainMMR {
 		/// MMR struct of the previous blocks, from first(genesis) to parent hash.
 		pub MMRList get(fn mmr_list): map hasher(twox_64_concat) u64 => T::Hash;
-        pub MMRCounter get(fn mmr_counter): u64;
+		pub MMRCounter get(fn mmr_counter): u64;
 	}
 }
 
@@ -33,7 +29,7 @@ decl_storage! {
 
 pub struct MMRMerge<T>(PhantomData<T>);
 
-impl<T: Trait>  merkle_mountain_range::Merge for MMRMerge<T> {
+impl<T: Trait> merkle_mountain_range::Merge for MMRMerge<T> {
 	type Item = <T as frame_system::Trait>::Hash;
 	fn merge(lhs: &Self::Item, rhs: &Self::Item) -> Self::Item {
 		let encoded_vec = vec![lhs, rhs];
@@ -57,7 +53,7 @@ impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 		let mmr_count = <MMRCounter>::get();
 		if pos != mmr_count {
 			// Must be append only.
-			return Err(merkle_mountain_range::Error::InconsistentStore)
+			return Err(merkle_mountain_range::Error::InconsistentStore);
 		}
 
 		let elems_len = elems.len() as u64;
