@@ -123,11 +123,9 @@ title = "Darwinia Node Runtime Types"
 	EthereumAddress._struct = "AddressT"
 	TronAddress._struct = "AddressT"
 
-	OtherSignature._enum.Dot = "EcdsaSignature"
 	OtherSignature._enum.Eth = "EcdsaSignature"
 	OtherSignature._enum.Tron = "EcdsaSignature"
 
-	OtherAddress._enum.Dot = "EthereumAddress"
 	OtherAddress._enum.Eth = "EthereumAddress"
 	OtherAddress._enum.Tron = "TronAddress"
 
