@@ -197,16 +197,10 @@ fn change_controller_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Staking::bonded(&11), Some(10));
 
-		assert!(<Validators<Test>>::iter()
-			.map(|(c, _)| c)
-			.collect::<Vec<u64>>()
-			.contains(&11));
+		assert!(Session::validators().contains(&11));
 		// 10 can control 11 who is initially a validator.
 		assert_ok!(Staking::chill(Origin::signed(10)));
-		assert!(!<Validators<Test>>::iter()
-			.map(|(c, _)| c)
-			.collect::<Vec<u64>>()
-			.contains(&11));
+		assert!(Session::validators().contains(&11));
 
 		assert_ok!(Staking::set_controller(Origin::signed(11), 5));
 
@@ -214,7 +208,7 @@ fn change_controller_works() {
 
 		assert_noop!(
 			Staking::validate(Origin::signed(10), ValidatorPrefs::default()),
-			Error::<Test>::NotController,
+			<Error<Test>>::NotController,
 		);
 		assert_ok!(Staking::validate(Origin::signed(5), ValidatorPrefs::default()));
 	})
