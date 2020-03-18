@@ -953,14 +953,19 @@ fn cannot_transfer_staked_balance_2() {
 			// Confirm account 21 has some free balance
 			assert_eq!(Ring::free_balance(21), 2000);
 			// Confirm account 21 (via controller 20) is totally staked
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, &21).own_ring_balance,
-				1000
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, &21);
+				assert_eq!(
+					expo.others
+						.iter()
+						.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance),
+					1000,
+				);
+			}
 			// Confirm account 21 can transfer at most 1000
 			assert_noop!(
 				Ring::transfer(Origin::signed(21), 20, 1001),
-				RingError::<Test, _>::LiquidityRestrictions,
+				<RingError<Test, _>>::LiquidityRestrictions,
 			);
 			assert_ok!(Ring::transfer(Origin::signed(21), 20, 1000));
 		});
