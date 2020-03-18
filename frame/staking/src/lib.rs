@@ -1392,9 +1392,6 @@ decl_module! {
 			}
 		}
 
-		/// Claim mature deposits from a controller account back to the related
-		/// stash accounts.
-		///
 		/// Stash accounts can get their ring back after the depositing time exceeded,
 		/// and the ring getting back is still in staking status.
 		///
