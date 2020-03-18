@@ -1,6 +1,6 @@
 //! Tests for the module.
 //!
-//! These tests are migrated from Substrate `75116bd8c45c7e46a9b8eed9cb29ee4256ed631b`
+//! These tests are migrated from Substrate `dd97b1478b31a4715df7e88a5ebc6664425fb6c6`
 //! for upgrade usages, do not **add** functions to this file unless you are doing the
 //! upgrading work :-P
 //!
@@ -106,7 +106,7 @@ fn basic_setup_works() {
 
 		// ValidatorPrefs are default
 		assert_eq!(
-			<Validators<Test>>::enumerate().collect::<Vec<_>>(),
+			<Validators<Test>>::iter().collect::<Vec<_>>(),
 			vec![
 				(31, ValidatorPrefs::default()),
 				(21, ValidatorPrefs::default()),
@@ -114,7 +114,6 @@ fn basic_setup_works() {
 			]
 		);
 
-		// @review(power)
 		assert_eq!(
 			Staking::ledger(100),
 			Some(StakingLedger {
@@ -136,23 +135,18 @@ fn basic_setup_works() {
 		);
 		assert_eq!(Staking::nominators(101).unwrap().targets, vec![11, 21]);
 
-		// nominator phragmen ratio is 1/4.
-		let po_11 = Staking::power_of(&11);
-		let po_21 = Staking::power_of(&21);
-		let po_101 = Staking::power_of(&101);
-
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 11),
 			Exposure {
 				own_ring_balance: 1000,
 				own_kton_balance: 0,
-				own_power: po_11,
-				total_power: po_11 + po_101 / 4,
+				own_power: Staking::power_of(&11),
+				total_power: Staking::power_of(&11) + Staking::currency_to_power(125, Staking::ring_pool()),
 				others: vec![IndividualExposure {
 					who: 101,
 					ring_balance: 125,
 					kton_balance: 0,
-					power: po_101 / 4,
+					power: Staking::currency_to_power(125, Staking::ring_pool()),
 				}]
 			}
 		);
@@ -162,13 +156,13 @@ fn basic_setup_works() {
 			Exposure {
 				own_ring_balance: 1000,
 				own_kton_balance: 0,
-				own_power: po_21,
-				total_power: po_21 + po_101 * 3 / 4 + 1, // po_101 is even
+				own_power: Staking::power_of(&21),
+				total_power: Staking::power_of(&21) + Staking::currency_to_power(375, Staking::ring_pool()),
 				others: vec![IndividualExposure {
 					who: 101,
 					ring_balance: 375,
 					kton_balance: 0,
-					power: po_101 * 3 / 4 + 1, // po_101 is even
+					power: Staking::currency_to_power(375, Staking::ring_pool()),
 				}]
 			}
 		);
@@ -176,7 +170,7 @@ fn basic_setup_works() {
 		// initial slot_stake
 		assert_eq!(
 			Staking::eras_total_stake(Staking::active_era().unwrap().index),
-			po_11 + po_21 + po_101
+			Staking::power_of(&11) + Staking::power_of(&21) + Staking::power_of(&101)
 		);
 
 		// The number of validators required.
@@ -203,13 +197,13 @@ fn change_controller_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Staking::bonded(&11), Some(10));
 
-		assert!(<Validators<Test>>::enumerate()
+		assert!(<Validators<Test>>::iter()
 			.map(|(c, _)| c)
 			.collect::<Vec<u64>>()
 			.contains(&11));
 		// 10 can control 11 who is initially a validator.
 		assert_ok!(Staking::chill(Origin::signed(10)));
-		assert!(!<Validators<Test>>::enumerate()
+		assert!(!<Validators<Test>>::iter()
 			.map(|(c, _)| c)
 			.collect::<Vec<u64>>()
 			.contains(&11));
@@ -2661,7 +2655,7 @@ fn slash_kicks_validators_not_nominators() {
 
 		// This is the best way to check that the validator was chilled; `get` will
 		// return default value.
-		for (stash, _) in <Staking as Store>::Validators::enumerate() {
+		for (stash, _) in <Staking as Store>::Validators::iter() {
 			assert!(stash != 11);
 		}
 
@@ -2699,7 +2693,7 @@ fn zero_slash_keeps_nominators() {
 
 		// This is the best way to check that the validator was chilled; `get` will
 		// return default value.
-		for (stash, _) in <Staking as Store>::Validators::enumerate() {
+		for (stash, _) in <Staking as Store>::Validators::iter() {
 			assert!(stash != 11);
 		}
 
