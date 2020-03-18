@@ -7,8 +7,11 @@ use node_runtime::{
 	TransactionPayment, WeightFeeCoefficient,
 };
 use node_testing::keyring::*;
-use sp_core::{map, storage::Storage, Blake2Hasher, NeverNativeValue};
-use sp_runtime::{traits::Convert, Fixed64, Perbill};
+use sp_core::{map, storage::Storage, NeverNativeValue};
+use sp_runtime::{
+	traits::{BlakeTwo256, Convert},
+	Fixed64, Perbill,
+};
 
 pub mod common;
 use self::common::{sign, *};
@@ -101,7 +104,7 @@ fn transaction_fee_is_correct_ultimate() {
 	//   - 1 MILLICENTS in substrate node.
 	//   - 1 milli-dot based on current polkadot runtime.
 	// (this baed on assigning 0.1 CENT to the cheapest tx with `weight = 100`)
-	let mut t = TestExternalities::<Blake2Hasher>::new_with_code(
+	let mut t = TestExternalities::<BlakeTwo256>::new_with_code(
 		COMPACT_CODE,
 		Storage {
 			top: map![

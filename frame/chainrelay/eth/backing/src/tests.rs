@@ -52,9 +52,14 @@ fn verify_parse_token_redeem_proof() {
 
 			assert_ok!(EthRelay::init_genesis_header(&header, 0x68de130d2c02a8_u64));
 
-			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(
+				&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546"),
+			).unwrap();
 
-			assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "RingBurndropTokens"), Ok((expect_account_id, 1234567891)));
+			assert_eq!(
+				EthBacking::parse_token_redeem_proof(&proof_record, "RingBurndropTokens"), 
+				Ok((1234567891, expect_account_id)),
+			);
 		});
 }
 
@@ -97,16 +102,21 @@ fn verify_redeem_ring() {
 
 			assert_ok!(EthRelay::init_genesis_header(&header, 0x68de130d2c02a8_u64));
 
-			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(
+				&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546"),
+			).unwrap();
 
 			let id1 = AccountId32::from([0; 32]);
 			// If expect_account_id doesn't exist, redeem should fail, "beneficiary account must pre-exist"
-			assert_err!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()), pallet_ring::Error::<Test, _>::DeadAccount);
+			assert_err!(
+				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Ring(proof_record.clone())),
+				<pallet_ring::Error<Test, _>>::DeadAccount,
+			);
 
 			let ring_locked_before = EthBacking::ring_locked();
 
 			let _ = Ring::deposit_creating(&expect_account_id, 1);
-			assert_ok!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()));
+			assert_ok!(EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Ring(proof_record.clone())));
 
 			assert_eq!(Ring::free_balance(&expect_account_id), 1234567891 + 1);
 
@@ -115,7 +125,10 @@ fn verify_redeem_ring() {
 			assert_eq!(ring_locked_after + 1234567891, ring_locked_before);
 
 			// shouldn't redeem twice
-			assert_err!(EthBacking::redeem_ring(Origin::signed(id1.clone()), proof_record.clone()), "Ring For This Proof - ALREADY BEEN REDEEMED");
+			assert_err!(
+				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Ring(proof_record.clone())),
+				<Error<Test>>::RingAR,
+			);
 		});
 }
 
@@ -163,19 +176,27 @@ fn verify_redeem_kton() {
 			// totalDifficulty
 			assert_ok!(EthRelay::init_genesis_header(&header, 0x68e4ea361f7a78_u64));
 
-			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(
+				&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546"),
+			).unwrap();
 
 			// 0.123456789123456789 KTON
-			assert_eq!(EthBacking::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens"), Ok((expect_account_id.clone(), 123456789)));
+			assert_eq!(
+				EthBacking::parse_token_redeem_proof(&proof_record, "KtonBurndropTokens"), 
+				Ok((123456789, expect_account_id.clone())),
+			);
 
 			let id1 = AccountId32::from([0; 32]);
 			// If expect_account_id doesn't exist, redeem should fail
-			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), pallet_kton::Error::<Test, _>::DeadAccount);
+			assert_err!(
+				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Kton(proof_record.clone())),
+				<pallet_kton::Error<Test, _>>::DeadAccount,
+			);
 
 			let kton_locked_before = EthBacking::kton_locked();
 
 			let _ = Kton::deposit_creating(&expect_account_id, 1);
-			assert_ok!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()));
+			assert_ok!(EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Kton(proof_record.clone())));
 
 			assert_eq!(Kton::free_balance(&expect_account_id), 123456789 + 1);
 
@@ -183,7 +204,10 @@ fn verify_redeem_kton() {
 			assert_eq!(kton_locked_after + 123456789, kton_locked_before);
 
 			// shouldn't redeem twice
-			assert_err!(EthBacking::redeem_kton(Origin::signed(id1.clone()), proof_record.clone()), "Kton For This Proof - ALREADY BEEN REDEEMED");
+			assert_err!(
+				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Kton(proof_record.clone())),
+				<Error<Test>>::KtonAR,
+			);
 		});
 }
 
@@ -240,20 +264,22 @@ fn verify_redeem_deposit() {
 
 			let ring_locked_before = EthBacking::ring_locked();
 
-			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546")).unwrap();
+			let expect_account_id = <Test as Trait>::DetermineAccountId::account_id_for(
+				&hex!("2a92ae5b41feba5ee68a61449c557efa9e3b894a6461c058ec2de45429adb44546"),
+			).unwrap();
 
 			let id1 = AccountId32::from([0; 32]);
 
 			let controller = AccountId32::from([1; 32]);
 
 			let _ = Ring::deposit_creating(&expect_account_id, 1);
-			assert_ok!(pallet_staking::Call::<Test>::bond(
+			assert_ok!(<pallet_staking::Call<Test>>::bond(
 				controller.clone(),
 				StakingBalance::RingBalance(1),
 				RewardDestination::Controller,
 				0,
 			).dispatch(Origin::signed(expect_account_id.clone())));
-			assert_ok!(EthBacking::redeem_deposit(Origin::signed(id1.clone()), proof_record.clone()));
+			assert_ok!(EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Deposit(proof_record.clone())));
 
 			assert_eq!(Ring::free_balance(&expect_account_id), 1234000000000 + 1);
 
@@ -266,13 +292,20 @@ fn verify_redeem_deposit() {
 				stash: expect_account_id,
 				active_ring: 1234000000001,
 				active_deposit_ring: 1234000000000,
-				deposit_items: vec![TimeDepositItem { value: 1234000000000, start_time: 1576664555000, expire_time: 1607768555000 }],
+				deposit_items: vec![TimeDepositItem {
+					value: 1234000000000,
+					start_time: 1576664555000,
+					expire_time: 1607768555000,
+				}],
 				ring_staking_lock: StakingLock { staking_amount: 1234000000001, unbondings: vec![] },
 				..Default::default()
 			}));
 
 			// shouldn't redeem twice
-			assert_err!(EthBacking::redeem_deposit(Origin::signed(id1.clone()), proof_record.clone()), "Deposit For This Proof - ALREADY BEEN REDEEMED");
+			assert_err!(
+				EthBacking::redeem(Origin::signed(id1.clone()), RedeemFor::Deposit(proof_record.clone())),
+				<Error<Test>>::DepositAR,
+			);
 		});
 }
 

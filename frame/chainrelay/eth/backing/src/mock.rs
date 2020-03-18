@@ -103,6 +103,7 @@ impl frame_system::Trait for Test {
 	type AccountData = darwinia_support::balance::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
+	type MigrateAccount = ();
 }
 
 parameter_types! {

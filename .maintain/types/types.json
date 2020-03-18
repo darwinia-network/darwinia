@@ -170,6 +170,14 @@
 		"header_hash": "H256"
 	},
 
+	"RedeemFor": {
+		"_enum": {
+			"Ring": "EthReceiptProof",
+			"Kton": "EthReceiptProof",
+			"Deposit": "EthReceiptProof"
+		}
+	},
+
 	"AddressT": "[u8; 20]",
 
 	"EthereumAddress": {

@@ -67,7 +67,11 @@ pub mod time {
 
 pub mod supply {
 	use crate::constants::currency::COIN;
-	use node_primitives::{Balance, Power};
+	use node_primitives::Balance;
+
+	// TODO: Move to darwinia-node-extra-primitives?
+	/// Power of an account.
+	pub type Power = u32;
 
 	pub const CAP: Balance = 1_000_000_000 * COIN;
 	pub const TOTAL_POWER: Power = 1_000_000_000;

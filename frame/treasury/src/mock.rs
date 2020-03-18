@@ -53,6 +53,7 @@ impl frame_system::Trait for Test {
 	type AccountData = darwinia_support::balance::AccountData<u64>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
+	type MigrateAccount = ();
 }
 
 pub struct TenToFourteen;

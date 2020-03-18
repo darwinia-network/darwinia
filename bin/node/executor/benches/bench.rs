@@ -8,8 +8,9 @@ use node_runtime::{Block, BuildStorage, Call, CheckedExtrinsic, GenesisConfig, H
 use node_testing::keyring::*;
 use sc_executor::{Externalities, NativeExecutor, RuntimeInfo, WasmExecutionMethod};
 use sp_core::storage::well_known_keys;
-use sp_core::traits::CodeExecutor;
-use sp_core::{Blake2Hasher, NativeOrEncoded, NeverNativeValue};
+use sp_core::traits::{CodeExecutor, RuntimeCode};
+use sp_core::{NativeOrEncoded, NeverNativeValue};
+use sp_runtime::traits::BlakeTwo256;
 use sp_state_machine::TestExternalities as CoreTestExternalities;
 
 criterion_group!(benches, bench_execute_block);
@@ -36,7 +37,7 @@ fn sign(xt: CheckedExtrinsic) -> UncheckedExtrinsic {
 	node_testing::keyring::sign(xt, VERSION, GENESIS_HASH)
 }
 
-fn new_test_ext(genesis_config: &GenesisConfig) -> TestExternalities<Blake2Hasher> {
+fn new_test_ext(genesis_config: &GenesisConfig) -> TestExternalities<BlakeTwo256> {
 	let mut test_ext = TestExternalities::new_with_code(COMPACT_CODE, genesis_config.build_storage().unwrap());
 	test_ext
 		.ext()
@@ -57,7 +58,7 @@ fn construct_block<E: Externalities>(
 	let extrinsics = extrinsics.into_iter().map(sign).collect::<Vec<_>>();
 
 	// calculate the header fields that we can.
-	let extrinsics_root = Layout::<Blake2Hasher>::ordered_trie_root(extrinsics.iter().map(Encode::encode))
+	let extrinsics_root = Layout::<BlakeTwo256>::ordered_trie_root(extrinsics.iter().map(Encode::encode))
 		.to_fixed_bytes()
 		.into();
 
@@ -69,21 +70,41 @@ fn construct_block<E: Externalities>(
 		digest: Default::default(),
 	};
 
+	let runtime_code = RuntimeCode {
+		code_fetcher: &sp_core::traits::WrappedRuntimeCode(COMPACT_CODE.into()),
+		hash: vec![1, 2, 3],
+		heap_pages: None,
+	};
+
 	// execute the block to get the real header.
 	executor
-		.call::<_, NeverNativeValue, fn() -> _>(ext, "Core_initialize_block", &header.encode(), true, None)
+		.call::<NeverNativeValue, fn() -> _>(
+			ext,
+			&runtime_code,
+			"Core_initialize_block",
+			&header.encode(),
+			true,
+			None,
+		)
 		.0
 		.unwrap();
 
 	for i in extrinsics.iter() {
 		executor
-			.call::<_, NeverNativeValue, fn() -> _>(ext, "BlockBuilder_apply_extrinsic", &i.encode(), true, None)
+			.call::<NeverNativeValue, fn() -> _>(
+				ext,
+				&runtime_code,
+				"BlockBuilder_apply_extrinsic",
+				&i.encode(),
+				true,
+				None,
+			)
 			.0
 			.unwrap();
 	}
 
 	let header = match executor
-		.call::<_, NeverNativeValue, fn() -> _>(ext, "BlockBuilder_finalize_block", &[0u8; 0], true, None)
+		.call::<NeverNativeValue, fn() -> _>(ext, &runtime_code, "BlockBuilder_finalize_block", &[0u8; 0], true, None)
 		.0
 		.unwrap()
 	{
@@ -119,12 +140,18 @@ fn bench_execute_block(c: &mut Criterion) {
 				ExecutionMethod::Native => (true, WasmExecutionMethod::Interpreted),
 				ExecutionMethod::Wasm(wasm_method) => (false, *wasm_method),
 			};
-			let executor = NativeExecutor::new(wasm_method, None);
+
+			let executor = NativeExecutor::new(wasm_method, None, 8);
+			let runtime_code = RuntimeCode {
+				code_fetcher: &sp_core::traits::WrappedRuntimeCode(COMPACT_CODE.into()),
+				hash: vec![1, 2, 3],
+				heap_pages: None,
+			};
 
 			// Get the runtime version to initialize the runtimes cache.
 			{
 				let mut test_ext = new_test_ext(&genesis_config);
-				executor.runtime_version(&mut test_ext.ext());
+				executor.runtime_version(&mut test_ext.ext(), &runtime_code).unwrap();
 			}
 
 			let blocks = test_blocks(&genesis_config, &executor);
@@ -134,8 +161,9 @@ fn bench_execute_block(c: &mut Criterion) {
 				|test_ext| {
 					for block in blocks.iter() {
 						executor
-							.call::<_, NeverNativeValue, fn() -> _>(
+							.call::<NeverNativeValue, fn() -> _>(
 								&mut test_ext.ext(),
+								&runtime_code,
 								"Core_execute_block",
 								&block.0,
 								use_native,

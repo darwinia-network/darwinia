@@ -7,9 +7,10 @@ use std::{
 
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
+	storage::IterableStorageMap,
 	traits::{Currency, FindAuthor, Get},
 	weights::Weight,
-	StorageLinkedMap, StorageValue,
+	StorageValue,
 };
 use sp_core::{crypto::key_types, H256};
 use sp_runtime::{
@@ -142,6 +143,7 @@ impl frame_system::Trait for Test {
 	type AccountData = darwinia_support::balance::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
+	type MigrateAccount = ();
 }
 
 parameter_types! {
@@ -325,6 +327,8 @@ impl ExtBuilder {
 				(41, balance_factor * 2000),
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
+				// This allow us to have a total_payout different from 0.
+				(999, 1_000_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage);
@@ -344,6 +348,8 @@ impl ExtBuilder {
 				(41, balance_factor * 2000),
 				(100, 2000 * balance_factor),
 				(101, 2000 * balance_factor),
+				// This allow us to have a total_payout different from 0.
+				(999, 1_000_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage);
@@ -351,24 +357,24 @@ impl ExtBuilder {
 		let stake_21 = if self.fair { 1000 } else { 2000 };
 		let stake_31 = if self.validator_pool { balance_factor * 1000 } else { 1 };
 		let status_41 = if self.validator_pool {
-			<StakerStatus<AccountId>>::Validator
+			StakerStatus::<AccountId>::Validator
 		} else {
-			<StakerStatus<AccountId>>::Idle
+			StakerStatus::<AccountId>::Idle
 		};
 		let nominated = if self.nominate { vec![11, 21] } else { vec![] };
 		let _ = GenesisConfig::<Test> {
 			stakers: vec![
 				// (stash, controller, staked_amount, status)
-				(11, 10, balance_factor * 1000, <StakerStatus<AccountId>>::Validator),
-				(21, 20, stake_21, <StakerStatus<AccountId>>::Validator),
-				(31, 30, stake_31, <StakerStatus<AccountId>>::Validator),
+				(11, 10, balance_factor * 1000, StakerStatus::<AccountId>::Validator),
+				(21, 20, stake_21, StakerStatus::<AccountId>::Validator),
+				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
 				// nominator
 				(
 					101,
 					100,
 					balance_factor * 500,
-					<StakerStatus<AccountId>>::Nominator(nominated),
+					StakerStatus::<AccountId>::Nominator(nominated),
 				),
 			],
 			validator_count: self.validator_count,
@@ -401,7 +407,7 @@ pub fn check_exposure_all(era: EraIndex) {
 }
 
 pub fn check_nominator_all(era: EraIndex) {
-	<Nominators<Test>>::enumerate().for_each(|(acc, _)| check_nominator_exposure(era, acc));
+	<Nominators<Test>>::iter().for_each(|(acc, _)| check_nominator_exposure(era, acc));
 }
 
 /// Check for each selected validator: expo.total = Sum(expo.other) + expo.own
@@ -505,7 +511,7 @@ pub fn current_total_payout_for_duration(duration: u64) -> Balance {
 	inflation::compute_total_payout::<Test>(
 		duration.saturated_into::<Moment>(),
 		(Timestamp::now() - Staking::genesis_time()).saturated_into::<Moment>(),
-		(<Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
 		Perbill::from_percent(50),
 	)
 	.0

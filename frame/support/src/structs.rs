@@ -161,7 +161,7 @@ where
 	pub fn locked_amount(&self, at: Moment) -> Balance {
 		self.unbondings.iter().fold(self.staking_amount, |acc, unbonding| {
 			if unbonding.valid_at(at) {
-				acc + unbonding.amount
+				acc.saturating_add(unbonding.amount)
 			} else {
 				acc
 			}
@@ -175,7 +175,7 @@ where
 		self.unbondings.retain(|unbonding| {
 			let valid = unbonding.valid_at(at);
 			if valid {
-				locked_amount += unbonding.amount;
+				locked_amount = locked_amount.saturating_add(unbonding.amount);
 			}
 
 			valid
