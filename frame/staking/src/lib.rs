@@ -946,7 +946,7 @@ decl_storage! {
 		// --- immutable ---
 
 		// TODO: doc
-		pub GenesisTime get(fn genesis_time): MomentT<T>;
+		pub LivingTime get(fn living_time): MomentT<T>;
 
 		/// The percentage of the total payout that is distributed to validators and nominators
 		///
@@ -961,11 +961,8 @@ decl_storage! {
 		pub KtonPool get(fn kton_pool): KtonBalance<T>;
 	}
 	add_extra_genesis {
-		config(genesis_time): u64;
 		config(stakers): Vec<(T::AccountId, T::AccountId, RingBalance<T>, StakerStatus<T::AccountId>)>;
 		build(|config: &GenesisConfig<T>| {
-			<GenesisTime<T>>::put(config.genesis_time.saturated_into::<MomentT<T>>());
-
 			for &(ref stash, ref controller, r, ref status) in &config.stakers {
 				assert!(
 					T::RingCurrency::free_balance(&stash) >= r,
@@ -2193,14 +2190,17 @@ impl<T: Trait> Module<T> {
 		if let Some(active_era_start) = active_era.start {
 			let now = T::Time::now();
 
+			let living_time = Self::living_time();
 			let era_duration = now - active_era_start;
+
 			let (total_payout, _max_payout) = inflation::compute_total_payout::<T>(
 				era_duration,
-				now - Self::genesis_time(),
+				Self::living_time(),
 				T::Cap::get().saturating_sub(T::RingCurrency::total_issuance()),
 				PayoutFraction::get(),
 			);
 
+			<LivingTime<T>>::put(living_time + era_duration);
 			// Set ending era reward.
 			<ErasValidatorReward<T>>::insert(&active_era.index, total_payout);
 		}

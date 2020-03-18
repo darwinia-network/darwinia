@@ -382,7 +382,6 @@ impl ExtBuilder {
 			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
 			// --- custom ---
-			genesis_time: 0,
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}
@@ -507,11 +506,11 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::active_era().unwrap().index, era_index);
 }
 
-pub fn current_total_payout_for_duration(duration: u64) -> Balance {
+pub fn current_total_payout_for_duration(era_duration: Moment) -> Balance {
 	inflation::compute_total_payout::<Test>(
-		duration.saturated_into::<Moment>(),
-		(Timestamp::now() - Staking::genesis_time()).saturated_into::<Moment>(),
-		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		era_duration,
+		<Module<Test>>::living_time(),
+		<Test as Trait>::Cap::get() - Ring::total_issuance(),
 		Perbill::from_percent(50),
 	)
 	.0
