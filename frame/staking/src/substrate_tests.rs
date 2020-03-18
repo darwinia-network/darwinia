@@ -26,7 +26,6 @@ use substrate_test_utils::assert_eq_uvec;
 // --- custom ---
 use crate::{mock::*, *};
 use darwinia_support::balance::lock::*;
-use pallet_ring::Error as RingError;
 
 #[test]
 fn force_unstake_works() {
@@ -334,6 +333,9 @@ fn staking_should_work() {
 		.fair(false) // to give 20 more staked value
 		.build()
 		.execute_with(|| {
+			// --- Block 1:
+			start_session(1);
+
 			Timestamp::set_timestamp(1); // Initialize time.
 
 			// remember + compare this along with the test.
@@ -344,45 +346,52 @@ fn staking_should_work() {
 				let _ = Ring::make_free_balance_be(&i, 2000);
 			}
 
-			// --- Block 1:
-			start_session(1);
+			// --- Block 2:
+			start_session(2);
 			// add a new candidate for being a validator. account 3 controlled by 4.
 			assert_ok!(Staking::bond(
 				Origin::signed(3),
 				4,
 				StakingBalance::RingBalance(1500),
 				RewardDestination::Controller,
-				0
+				0,
 			));
+			let current_era_at_bond = Staking::current_era();
 			assert_ok!(Staking::validate(Origin::signed(4), ValidatorPrefs::default()));
 
 			// No effects will be seen so far.
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-			// --- Block 2:
-			start_session(2);
+			// --- Block 3:
+			start_session(3);
 
 			// No effects will be seen so far. Era has not been yet triggered.
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
-			// --- Block 3: the validators will now be queued.
-			start_session(3);
-			assert_eq!(Staking::current_era(), Some(1));
-
-			// --- Block 4: the validators will now be changed.
+			// --- Block 4: the validators will now be queued.
 			start_session(4);
+			assert_eq!(Staking::active_era().unwrap().index, 1);
+
+			// --- Block 5: the validators are still in queue.
+			start_session(5);
+
+			// --- Block 6: the validators will now be changed.
+			start_session(6);
 
 			assert_eq_uvec!(validator_controllers(), vec![20, 4]);
 			// --- Block 4: Unstake 4 as a validator, freeing up the balance stashed in 3
 			// 4 will chill
 			Staking::chill(Origin::signed(4)).unwrap();
 
-			// --- Block 5: nothing. 4 is still there.
-			start_session(5);
+			// --- Block 7: nothing. 4 is still there.
+			start_session(7);
 			assert_eq_uvec!(validator_controllers(), vec![20, 4]);
 
-			// --- Block 6: 4 will not be a validator.
-			start_session(7);
+			// --- Block 8:
+			start_session(8);
+
+			// --- Block 9: 4 will not be a validator.
+			start_session(9);
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
 			// Note: the stashed value of 4 is still lock
@@ -402,12 +411,11 @@ fn staking_should_work() {
 						staking_amount: 0,
 						unbondings: vec![]
 					},
-					last_reward: Some(0),
+					last_reward: current_era_at_bond,
 				})
 			);
-
 			// e.g. it cannot spend more than 500 that it has free from the total 2000
-			assert_noop!(Ring::reserve(&3, 501), RingError::<Test, _>::LiquidityRestrictions,);
+			assert_noop!(Ring::reserve(&3, 501), <RingError<Test, _>>::LiquidityRestrictions);
 			assert_ok!(Ring::reserve(&3, 409));
 		});
 }
