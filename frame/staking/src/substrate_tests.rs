@@ -238,7 +238,7 @@ fn rewards_should_work() {
 		<Module<Test>>::reward_by_ids(vec![(21, 50)]);
 
 		// Compute total payout now for whole duration as other parameter won't change
-		let total_payout_0 = current_total_payout_for_duration(3 * 1000);
+		let total_payout_0 = current_total_payout_for_duration(3000);
 		assert!(total_payout_0 > 10); // Test is meaningful if reward something
 
 		start_session(1);
@@ -293,7 +293,7 @@ fn rewards_should_work() {
 		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 		// Compute total payout now for whole duration as other parameter won't change
-		let total_payout_1 = current_total_payout_for_duration(3 * 1000);
+		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 10); // Test is meaningful if reward something
 
 		start_era(2);
@@ -543,7 +543,7 @@ fn nominating_and_rewards_should_work() {
 				2,
 				StakingBalance::RingBalance(1000),
 				RewardDestination::Controller,
-				0
+				0,
 			));
 			assert_ok!(Staking::nominate(Origin::signed(2), vec![11, 21, 31]));
 			// 4 will nominate for 10, 20, 40
@@ -552,7 +552,7 @@ fn nominating_and_rewards_should_work() {
 				4,
 				StakingBalance::RingBalance(1000),
 				RewardDestination::Controller,
-				0
+				0,
 			));
 			assert_ok!(Staking::nominate(Origin::signed(4), vec![11, 21, 41]));
 
