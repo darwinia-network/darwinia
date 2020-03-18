@@ -559,10 +559,8 @@ fn nominating_and_rewards_should_work() {
 			// the total reward for era 0
 			let total_payout_0 = current_total_payout_for_duration(3000);
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-			Staking::reward_by_ids(vec![(41, 1)]);
-			Staking::reward_by_ids(vec![(31, 1)]);
-			Staking::reward_by_ids(vec![(21, 10)]); // must be no-op
-			Staking::reward_by_ids(vec![(11, 10)]); // must be no-op
+			<Module<Test>>::reward_by_ids(vec![(41, 1)]);
+			<Module<Test>>::reward_by_ids(vec![(31, 1)]);
 
 			start_era(1);
 
@@ -570,108 +568,100 @@ fn nominating_and_rewards_should_work() {
 			assert_eq_uvec!(validator_controllers(), vec![20, 10]);
 
 			// OLD validators must have already received some rewards.
-			// assert_eq!(Ring::total_balance(&40), 1 + total_payout_0 / 2);
-			// assert_eq!(Ring::total_balance(&30), 1 + total_payout_0 / 2);
+			make_all_reward_payment(0);
+			assert_eq!(Ring::total_balance(&40), 1 + total_payout_0 / 2);
+			assert_eq!(Ring::total_balance(&30), 1 + total_payout_0 / 2);
 
 			// ------ check the staked value of all parties.
 
-			// total expo of 10, with 1200 coming from nominators (externals), according to phragmen.
+			// 30 and 40 are not chosen anymore
 			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-				1000
-			);
-			// @review(power): check the power below
-			// assert_eq!(Staking::eras_stakers(11).total_power, 138461539);
-			// @review(phragmen): check if below is necessary.
-			// 2 and 4 supported 10, each with stake 600, according to phragmen.
-			// assert_eq!(
-			// 	Staking::eras_stakers(11)
-			// 		.others
-			// 		.iter()
-			// 		.map(|e| e.value)
-			// 		.collect::<Vec<BalanceOf<Test>>>(),
-			// 	vec![400, 400]
-			// );
-
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 11)
-					.others
-					.iter()
-					.map(|e| e.who)
-					.collect::<Vec<u64>>(),
-				vec![3, 1]
-			);
-			// total expo of 20, with 500 coming from nominators (externals), according to phragmen.
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21).own_ring_balance,
-				1000
-			);
-
-			// @review(power): check if we need to assert power here
-			// assert_eq_error_rate!(Staking::eras_stakers(21).total, 1000 + 1200, 2);
-			// 2 and 4 supported 20, each with stake 250, according to phragmen.
-			// @review(phragmen): check below
-			// assert_eq!(
-			// 	Staking::eras_stakers(21)
-			// 		.others
-			// 		.iter()
-			// 		.map(|e| e.value)
-			// 		.collect::<Vec<BalanceOf<Test>>>(),
-			// 	vec![600, 600]
-			// );
-			// --------
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21)
-					.others
-					.iter()
-					.map(|e| e.who)
-					.collect::<Vec<u64>>(),
-				vec![3, 1]
-			);
-
-			// They are not chosen anymore
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 31).total_power,
-				0
+				ErasStakers::<Test>::iter_prefix(Staking::active_era().unwrap().index).count(),
+				2,
 			);
 			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 41).total_power,
-				0
+				Staking::eras_stakers(Staking::active_era().unwrap().index, 11),
+				Exposure {
+					own_ring_balance: 1000,
+					own_kton_balance: 0,
+					own_power: Staking::currency_to_power(1000, Staking::ring_pool()),
+					total_power: Staking::currency_to_power(1000, Staking::ring_pool())
+						+ Staking::currency_to_power(800, Staking::ring_pool()),
+					others: vec![
+						IndividualExposure {
+							who: 3,
+							ring_balance: 400,
+							kton_balance: 0,
+							power: Staking::currency_to_power(400, Staking::ring_pool()),
+						},
+						IndividualExposure {
+							who: 1,
+							ring_balance: 400,
+							kton_balance: 0,
+							power: Staking::currency_to_power(400, Staking::ring_pool()),
+						},
+					],
+				},
 			);
-
+			assert_eq!(
+				Staking::eras_stakers(Staking::active_era().unwrap().index, 21),
+				Exposure {
+					own_ring_balance: 1000,
+					own_kton_balance: 0,
+					own_power: Staking::currency_to_power(1000, Staking::ring_pool()),
+					total_power: Staking::currency_to_power(1000, Staking::ring_pool())
+						+ Staking::currency_to_power(1200, Staking::ring_pool()),
+					others: vec![
+						IndividualExposure {
+							who: 3,
+							ring_balance: 600,
+							kton_balance: 0,
+							power: Staking::currency_to_power(600, Staking::ring_pool()),
+						},
+						IndividualExposure {
+							who: 1,
+							ring_balance: 600,
+							kton_balance: 0,
+							power: Staking::currency_to_power(600, Staking::ring_pool()),
+						},
+					],
+				},
+			);
 			// the total reward for era 1
 			let total_payout_1 = current_total_payout_for_duration(3000);
 			assert!(total_payout_1 > 100); // Test is meaningful if reward something
-			Staking::reward_by_ids(vec![(41, 10)]); // must be no-op
-			Staking::reward_by_ids(vec![(31, 10)]); // must be no-op
-			Staking::reward_by_ids(vec![(21, 2)]);
-			Staking::reward_by_ids(vec![(11, 1)]);
+			<Module<Test>>::reward_by_ids(vec![(21, 2)]);
+			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 			start_era(2);
 
 			// nothing else will happen, era ends and rewards are paid again,
 			// it is expected that nominators will also be paid. See below
 
+			make_all_reward_payment(1);
 			let payout_for_10 = total_payout_1 / 3;
 			let payout_for_20 = 2 * total_payout_1 / 3;
 			// Nominator 2: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
-			// assert_eq_error_rate!(
-			// 	Ring::total_balance(&2),
-			// 	initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
-			// 	1,
-			// );
+			assert_eq_error_rate!(
+				Ring::total_balance(&2),
+				initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
+				MICRO,
+			);
 			// Nominator 4: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
-			// assert_eq_error_rate!(
-			// 	Ring::total_balance(&4),
-			// 	initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
-			// 	1,
-			// );
+			assert_eq_error_rate!(
+				Ring::total_balance(&4),
+				initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
+				MICRO,
+			);
 
-			// @review(reward): check if the reward below is correct
-			// // Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
-			// assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + 5 * payout_for_10 / 9, 1,);
-			// // Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
-			// assert_eq_error_rate!(Ring::total_balance(&20), initial_balance + 5 * payout_for_20 / 11, 1,);
+			// Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
+			assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + 5 * payout_for_10 / 9, MICRO);
+			// Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
+			assert_eq_error_rate!(
+				Ring::total_balance(&20),
+				initial_balance + 5 * payout_for_20 / 11,
+				MICRO,
+			);
 
 			check_exposure_all(Staking::active_era().unwrap().index);
 			check_nominator_all(Staking::active_era().unwrap().index);
