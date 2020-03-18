@@ -8,13 +8,14 @@ Some concepts should have some explaination for the changing from substrate
 
 power is a mixture of ring and kton.
 
-+ For *RING*: `power = ring_ratio * POWER_COUNT / 2`
-+ For *KTON*: `power = kton_ratio * POWER_COUNT / 2`
++ *RING*: `power = ring_ratio * POWER_COUNT / 2`
++ *KTON*: `power = kton_ratio * POWER_COUNT / 2`
+
+We use `currency_to_power` and `power_of` to calculcate `power`.
 
 ### rebond
 
-The darwinia style `rebond` implementation.
-
+We doesn't support `rebond` currently now.
 
 ### withdraw
 
@@ -22,10 +23,30 @@ What should happen after all balances being unbonded?(the locked balance)
 
 
 ## Moudle
-+ delete `withdraw_unbond`
-+ delete `slashable_balance_of`
-+ use `power_of`
-+ use `stake_of`
+### delete `withdraw_unbond`
+
++ **withdraw_unbond**: Remove all associated data of a stash account from the staking system.
+
+Darwinia has `active_balance` and `active_deposit_balance`, we calculate `normal_balance` by `active_balance - active_deposit_balance`, the `normal_balance` is **free to transfer**, so we don't need the `withdraw_unbond` function actually.
+
+### delete `slashable_balance_of`
+
++ **slashable_balance_of**: The total balance that can be slashed from a stash account as of right now.
+
+We use `power_of` and `stake_of` instead of `slashable_balance_of`:
+
++ **power_of**: The total power that can be slashed from a stash account as of right now.
++ **stake_of**: The `active_ring` and `active_kton` from a stash account.
+
+**For if an account is slashale:**
+
+Just use `power_of`, if the return `power` is zero, the target account is not slashable.
+
+**For the amount of slashable balances:**
+
+The slashable balances actually mean `active-ring` and `active-kton` in darwinia's staking
+process, we can use `Staking::ledger(controller)` to get a `StakingLedger` which contains
+the `active-ring` and `active-kton` the `controller` have.
 
 ## Structs
 

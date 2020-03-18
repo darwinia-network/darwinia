@@ -1232,7 +1232,16 @@ decl_module! {
 			}
 		}
 
-		// TODO: doc
+		/// Deposit some extra amount ring, and return kton to the controller.
+		///
+		/// The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - O(1).
+		/// - One DB entry.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn deposit_extra(origin, value: RingBalance<T>, promise_month: Moment) {
 			let stash = ensure_signed(origin)?;
 			let controller = Self::bonded(&stash).ok_or(<Error<T>>::NotStash)?;
@@ -1290,7 +1299,7 @@ decl_module! {
 		/// </weight>
 		///
 		/// Only active normal ring can be unbond
-		#[weight = SimpleDispatchInfo::FixedNormal(400_000)]
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn unbond(origin, value: StakingBalanceT<T>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
@@ -1386,7 +1395,16 @@ decl_module! {
 			}
 		}
 
-		// TODO: doc
+		/// Stash accounts can get their ring back after the depositing time exceeded,
+		/// and the ring getting back is still in staking status.
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - One storage read.
+		/// - One storage write.
+		/// - Writes are limited to the `origin` account key.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(500_000)]
 		fn claim_mature_deposits(origin) {
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::clear_mature_deposits(Self::ledger(&controller).ok_or(<Error<T>>::NotController)?);
@@ -1394,7 +1412,18 @@ decl_module! {
 			<Ledger<T>>::insert(controller, ledger);
 		}
 
-		// TODO: doc
+		/// Claim deposits while the depositing time has not been exceeded, the ring
+		/// will not be slashed, but the account is required to pay KTON as punish.
+		///
+		/// Refer to https://talk.darwinia.network/topics/55
+		///
+		/// # <weight>
+		/// - Independent of the arguments. Insignificant complexity.
+		/// - One storage read.
+		/// - One storage write.
+		/// - Writes are limited to the `origin` account key.
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn try_claim_deposits_with_punish(origin, expire_time: MomentT<T>) {
 			let controller = ensure_signed(origin)?;
 			let mut ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
