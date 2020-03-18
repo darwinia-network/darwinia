@@ -982,10 +982,10 @@ fn cannot_reserve_staked_balance() {
 		// Confirm account 11 (via controller 10) is totally staked
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, &11).own_ring_balance,
-			1000
+			1000,
 		);
 		// Confirm account 11 cannot transfer as a result
-		assert_noop!(Ring::reserve(&11, 1), RingError::<Test, _>::LiquidityRestrictions);
+		assert_noop!(Ring::reserve(&11, 1), <RingError<Test, _>>::LiquidityRestrictions);
 
 		// Give account 11 extra free balance
 		let _ = Ring::make_free_balance_be(&11, 10000);
