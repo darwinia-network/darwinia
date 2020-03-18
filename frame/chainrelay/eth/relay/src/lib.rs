@@ -43,7 +43,7 @@ pub struct HeaderInfo {
 	pub number: EthBlockNumber,
 }
 
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug)]
 pub struct EthReceiptProof {
 	pub index: u64,
 	pub proof: Vec<u8>,
@@ -173,7 +173,7 @@ decl_module! {
 		}
 
 		/// Relay header of eth block, store the passing header
-		/// to darwinia Storage if it is verified.
+		/// if it is verified.
 		///
 		/// # <weight>
 		/// - `O(1)`.
@@ -496,9 +496,17 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		let info = Self::header_info_of(&proof_record.header_hash).ok_or(<Error<T>>::HeaderInfoNE)?;
 
 		let canonical_hash = Self::canonical_header_hash_of(info.number);
+		println!("canonical_hash: {:#?}", canonical_hash);
+		println!("proof number: {:#?}", info.number);
+		println!("proof hash: {:#?}", proof_record.header_hash);
 		ensure!(canonical_hash == proof_record.header_hash, <Error<T>>::HeaderNC);
 
 		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or(<Error<T>>::HeaderInfoNE)?;
+
+		println!("best_info: {:#?}", best_info.number);
+		println!("info: {:#?}", info.number);
+		println!("add: {:#?}", info.number.checked_add(Self::number_of_blocks_safe()));
+
 		ensure!(
 			best_info.number
 				>= info

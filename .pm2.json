@@ -1,0 +1,7 @@
+{
+    "apps": [{
+	"name": "darwinia-node",
+	"script": "cargo",
+	"args": "run --release -- --dev --alice --rpc-external --rpc-port 23333 --ws-external --ws-port 9944 --rpc-cors all --port 9945 --base-path /tmp/darwinia-develop/alice",
+    }]
+}
