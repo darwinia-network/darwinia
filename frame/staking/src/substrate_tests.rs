@@ -750,7 +750,7 @@ fn double_staking_should_fail() {
 			2,
 			StakingBalance::RingBalance(arbitrary_value),
 			RewardDestination::default(),
-			0
+			0,
 		));
 		// 4 = not used so far, 1 stashed => not allowed.
 		assert_noop!(
@@ -759,14 +759,14 @@ fn double_staking_should_fail() {
 				4,
 				StakingBalance::RingBalance(arbitrary_value),
 				RewardDestination::default(),
-				0
+				0,
 			),
-			Error::<Test>::AlreadyBonded,
+			<Error<Test>>::AlreadyBonded,
 		);
 		// 1 = stashed => attempting to nominate should fail.
 		assert_noop!(
 			Staking::nominate(Origin::signed(1), vec![1]),
-			Error::<Test>::NotController
+			<Error<Test>>::NotController,
 		);
 		// 2 = controller  => nominating should work.
 		assert_ok!(Staking::nominate(Origin::signed(2), vec![1]));
@@ -785,7 +785,7 @@ fn double_controlling_should_fail() {
 			2,
 			StakingBalance::RingBalance(arbitrary_value),
 			RewardDestination::default(),
-			0
+			0,
 		));
 		// 2 = controller, 3 stashed (Note that 2 is reused.) => no-op
 		assert_noop!(
@@ -794,9 +794,9 @@ fn double_controlling_should_fail() {
 				2,
 				StakingBalance::RingBalance(arbitrary_value),
 				RewardDestination::default(),
-				0
+				0,
 			),
-			Error::<Test>::AlreadyPaired,
+			<Error<Test>>::AlreadyPaired,
 		);
 	});
 }
