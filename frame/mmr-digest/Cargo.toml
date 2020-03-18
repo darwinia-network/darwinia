@@ -1,0 +1,38 @@
+[package]
+name = "darwinia-mmr-digest"
+version = "0.0.1"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+description = "Pallet for logging MMR into header digest"
+
+[dependencies]
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false }
+frame-benchmarking = { version = "2.0.0-alpha.2", default-features = false, path = "../benchmarking" }
+frame-support = { version = "2.0.0-alpha.2", default-features = false, path = "../support" }
+frame-system = { version = "2.0.0-alpha.2", default-features = false, path = "../system" }
+sp-runtime = { version = "2.0.0-alpha.2", default-features = false, path = "../../primitives/runtime" }
+sp-std = { version = "2.0.0-alpha.2", default-features = false, path = "../../primitives/std" }
+sp-io = { version = "2.0.0-alpha.2", default-features = false, path = "../../primitives/io" }
+
+merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
+
+[dev-dependencies]
+sp-core = { version = "2.0.0-alpha.2", path = "../../primitives/core" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-runtime/std",
+	"frame-benchmarking/std",
+	"frame-support/std",
+	"frame-system/std",
+	"sp-io/std",
+	"sp-std/std",
+	"merkle-mountain-range/std",
+]
