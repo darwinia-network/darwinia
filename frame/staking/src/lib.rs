@@ -239,8 +239,8 @@ mod mock;
 
 // #[cfg(test)]
 // mod darwinia_tests;
-// #[cfg(test)]
-// mod substrate_tests;
+#[cfg(test)]
+mod substrate_tests;
 
 mod inflation;
 mod slashing;
