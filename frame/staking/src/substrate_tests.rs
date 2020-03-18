@@ -232,10 +232,10 @@ fn rewards_should_work() {
 		<Payee<Test>>::insert(21, RewardDestination::Controller);
 		<Payee<Test>>::insert(101, RewardDestination::Controller);
 
-		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
-		<Module<Test>>::reward_by_ids(vec![(11, 50)]);
+		Staking::reward_by_ids(vec![(11, 50)]);
+		Staking::reward_by_ids(vec![(11, 50)]);
 		// This is the second validator of the current elected set.
-		<Module<Test>>::reward_by_ids(vec![(21, 50)]);
+		Staking::reward_by_ids(vec![(21, 50)]);
 
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_0 = current_total_payout_for_duration(3000);
@@ -290,7 +290,7 @@ fn rewards_should_work() {
 		assert_eq_error_rate!(Ring::total_balance(&101), init_balance_101, MICRO);
 
 		assert_eq_uvec!(Session::validators(), vec![11, 21]);
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_1 = current_total_payout_for_duration(3000);
@@ -559,8 +559,8 @@ fn nominating_and_rewards_should_work() {
 			// the total reward for era 0
 			let total_payout_0 = current_total_payout_for_duration(3000);
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(41, 1)]);
-			<Module<Test>>::reward_by_ids(vec![(31, 1)]);
+			Staking::reward_by_ids(vec![(41, 1)]);
+			Staking::reward_by_ids(vec![(31, 1)]);
 
 			start_era(1);
 
@@ -630,8 +630,8 @@ fn nominating_and_rewards_should_work() {
 			// the total reward for era 1
 			let total_payout_1 = current_total_payout_for_duration(3000);
 			assert!(total_payout_1 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(21, 2)]);
-			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+			Staking::reward_by_ids(vec![(21, 2)]);
+			Staking::reward_by_ids(vec![(11, 1)]);
 
 			start_era(2);
 
@@ -1064,7 +1064,7 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(2);
 		make_all_reward_payment(1);
@@ -1105,7 +1105,7 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_2 = current_total_payout_for_duration(3000);
 		assert!(total_payout_2 > 100); // Test is meaningful if reward something
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(3);
 		make_all_reward_payment(2);
@@ -1167,7 +1167,7 @@ fn validator_payment_prefs_work() {
 		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 100); // Test is meaningful if reward something
 		let exposure_1 = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
-		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
+		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(2);
 		mock::make_all_reward_payment(1);
@@ -1401,8 +1401,8 @@ fn reward_to_stake_works() {
 			// Compute total payout now for whole duration as other parameter won't change
 			let total_payout_0 = current_total_payout_for_duration(3000);
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
-			<Module<Test>>::reward_by_ids(vec![(11, 1)]);
-			<Module<Test>>::reward_by_ids(vec![(21, 1)]);
+			Staking::reward_by_ids(vec![(11, 1)]);
+			Staking::reward_by_ids(vec![(21, 1)]);
 
 			// New era --> rewards are paid --> stakes are changed
 			start_era(1);
