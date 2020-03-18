@@ -1015,14 +1015,14 @@ fn reward_destination_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				last_reward: None,
-			})
+			}),
 		);
 
 		// Compute total payout now for whole duration as other parameter won't change
@@ -1031,33 +1031,32 @@ fn reward_destination_works() {
 		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(1);
+		make_all_reward_payment(0);
 
 		// Check that RewardDestination is Staked (default)
 		assert_eq!(Staking::payee(&11), RewardDestination::Staked { promise_month: 0 });
-
-		// @review(reward)
 		// Check that reward went to the stash account of validator
-		// assert_eq!(Ring::free_balance(11), 1000 + total_payout_0);
+		assert_eq!(Ring::free_balance(11), 1000 + total_payout_0);
 		// Check that amount at stake increased accordingly
-		// assert_eq!(
-		// 	Staking::ledger(&10),
-		// 	Some(StakingLedger {
-		// 		stash: 11,
-		// 		active_ring: 1000 + total_payout_0,
-		// 		active_deposit_ring: 0,
-		// 		active_kton: 0,
-		// 		deposit_items: vec![],
-		// 		ring_staking_lock: StakingLock {
-		// 			staking_amount: 1000 + total_payout_0,
-		// 			unbondings: vec![]
-		// 		},
-		// 		kton_staking_lock: StakingLock {
-		// 			staking_amount: 0,
-		// 			unbondings: vec![]
-		// 		},
-		// 		last_reward: None,
-		// 	})
-		// );
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000 + total_payout_0,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000 + total_payout_0,
+					unbondings: vec![],
+				},
+				kton_staking_lock: StakingLock {
+					staking_amount: 0,
+					unbondings: vec![],
+				},
+				last_reward: Some(0),
+			}),
+		);
 
 		//Change RewardDestination to Stash
 		<Payee<Test>>::insert(&11, RewardDestination::Stash);
@@ -1065,37 +1064,37 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_1 = current_total_payout_for_duration(3000);
 		assert!(total_payout_1 > 100); // Test is meaningful if reward something
-		Staking::reward_by_ids(vec![(11, 1)]);
+		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 		start_era(2);
+		make_all_reward_payment(1);
 
 		// Check that RewardDestination is Stash
 		assert_eq!(Staking::payee(&11), RewardDestination::Stash);
-		// @review(reward)
 		// Check that reward went to the stash account
-		// assert_eq!(Ring::free_balance(11), 1000 + total_payout_0 + total_payout_1);
+		assert_eq!(Ring::free_balance(11), 1000 + total_payout_0 + total_payout_1);
 		// Record this value
-		// let recorded_stash_balance = 1000 + total_payout_0 + total_payout_1;
+		let recorded_stash_balance = 1000 + total_payout_0 + total_payout_1;
 		// Check that amount at stake is NOT increased
-		// assert_eq!(
-		// 	Staking::ledger(&10),
-		// 	Some(StakingLedger {
-		// 		stash: 11,
-		// 		active_ring: 1000 + total_payout_0,
-		// 		active_deposit_ring: 0,
-		// 		active_kton: 0,
-		// 		deposit_items: vec![],
-		// 		ring_staking_lock: StakingLock {
-		// 			staking_amount: 1000 + total_payout_0,
-		// 			unbondings: vec![]
-		// 		},
-		// 		kton_staking_lock: StakingLock {
-		// 			staking_amount: 0,
-		// 			unbondings: vec![]
-		// 		},
-		// 		last_reward: None,
-		// 	})
-		// );
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000 + total_payout_0,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000 + total_payout_0,
+					unbondings: vec![],
+				},
+				kton_staking_lock: StakingLock {
+					staking_amount: 0,
+					unbondings: vec![],
+				},
+				last_reward: Some(1),
+			}),
+		);
 
 		// Change RewardDestination to Controller
 		<Payee<Test>>::insert(&11, RewardDestination::Controller);
@@ -1106,37 +1105,37 @@ fn reward_destination_works() {
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_2 = current_total_payout_for_duration(3000);
 		assert!(total_payout_2 > 100); // Test is meaningful if reward something
-		Staking::reward_by_ids(vec![(11, 1)]);
+		<Module<Test>>::reward_by_ids(vec![(11, 1)]);
 
 		start_era(3);
+		make_all_reward_payment(2);
 
 		// Check that RewardDestination is Controller
 		assert_eq!(Staking::payee(&11), RewardDestination::Controller);
 		// Check that reward went to the controller account
-		// @review(reward)
-		// assert_eq!(Ring::free_balance(10), 1 + total_payout_2);
-		// // Check that amount at stake is NOT increased
-		// assert_eq!(
-		// 	Staking::ledger(&10),
-		// 	Some(StakingLedger {
-		// 		stash: 11,
-		// 		active_ring: 1000 + total_payout_0,
-		// 		active_deposit_ring: 0,
-		// 		active_kton: 0,
-		// 		deposit_items: vec![],
-		// 		ring_staking_lock: StakingLock {
-		// 			staking_amount: 1000 + total_payout_0,
-		// 			unbondings: vec![]
-		// 		},
-		// 		kton_staking_lock: StakingLock {
-		// 			staking_amount: 0,
-		// 			unbondings: vec![],
-		// 		},
-		// 		last_reward: None,
-		// 	})
-		// );
+		assert_eq!(Ring::free_balance(10), 1 + total_payout_2);
+		// Check that amount at stake is NOT increased
+		assert_eq!(
+			Staking::ledger(&10),
+			Some(StakingLedger {
+				stash: 11,
+				active_ring: 1000 + total_payout_0,
+				active_deposit_ring: 0,
+				active_kton: 0,
+				deposit_items: vec![],
+				ring_staking_lock: StakingLock {
+					staking_amount: 1000 + total_payout_0,
+					unbondings: vec![],
+				},
+				kton_staking_lock: StakingLock {
+					staking_amount: 0,
+					unbondings: vec![],
+				},
+				last_reward: Some(2),
+			}),
+		);
 		// Check that amount in staked account is NOT increased.
-		// assert_eq!(Ring::free_balance(11), recorded_stash_balance);
+		assert_eq!(Ring::free_balance(11), recorded_stash_balance);
 	});
 }
 
