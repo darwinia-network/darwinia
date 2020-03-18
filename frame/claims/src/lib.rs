@@ -353,13 +353,13 @@ mod tests {
 	};
 	use tiny_keccak::keccak256;
 
-	// --- third-party ---
+	// --- custom ---
 	use crate::*;
 
 	// --- substrate ---
 	type System = frame_system::Module<Test>;
 
-	// --- custom ---
+	// --- darwinia ---
 	type Ring = pallet_ring::Module<Test>;
 
 	// --- current ---
