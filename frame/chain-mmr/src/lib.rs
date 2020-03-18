@@ -32,8 +32,8 @@ pub struct MMRMerge<T>(PhantomData<T>);
 impl<T: Trait> merkle_mountain_range::Merge for MMRMerge<T> {
 	type Item = <T as frame_system::Trait>::Hash;
 	fn merge(lhs: &Self::Item, rhs: &Self::Item) -> Self::Item {
-		let encoded_vec = vec![lhs, rhs];
-		<T as frame_system::Trait>::Hashing::hash_of(&encoded_vec)
+		let encodable = (lhs, rhs);
+		<T as frame_system::Trait>::Hashing::hash_of(&encodable)
 	}
 }
 
