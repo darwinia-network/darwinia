@@ -1,5 +1,8 @@
 //! Test utilities
 
+pub use pallet_kton::Error as KtonError;
+pub use pallet_ring::Error as RingError;
+
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
@@ -15,7 +18,7 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_runtime::{
 	testing::{Header, UintAuthorityId},
-	traits::{IdentityLookup, OnFinalize, OnInitialize, OpaqueKeys, SaturatedConversion},
+	traits::{IdentityLookup, OnFinalize, OnInitialize, OpaqueKeys},
 	{KeyTypeId, Perbill},
 };
 use sp_staking::{
@@ -47,7 +50,6 @@ pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
 pub const CAP: Balance = 10_000_000_000 * COIN;
-pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
 thread_local! {

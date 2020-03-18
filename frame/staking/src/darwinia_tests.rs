@@ -10,7 +10,6 @@ use substrate_test_utils::assert_eq_uvec;
 
 use crate::{mock::*, *};
 use darwinia_support::balance::lock::*;
-use pallet_ring::Error as RingError;
 
 /// gen_paired_account!(a(1), b(2), m(12));
 /// will create stash `a` and controller `b`
