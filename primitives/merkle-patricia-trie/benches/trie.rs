@@ -21,7 +21,7 @@ fn insert_worse_case_benchmark(c: &mut Criterion) {
 		let (keys, values) = random_data(1000);
 		b.iter(|| {
 			for i in 0..keys.len() {
-				trie.insert(keys[i].clone(), values[i].clone()).unwrap()
+				trie.insert(keys[i].clone(), values[i].clone()).unwrap();
 			}
 		});
 	});
@@ -32,7 +32,7 @@ fn insert_worse_case_benchmark(c: &mut Criterion) {
 		let (keys, values) = random_data(10000);
 		b.iter(|| {
 			for i in 0..keys.len() {
-				trie.insert(keys[i].clone(), values[i].clone()).unwrap()
+				trie.insert(keys[i].clone(), values[i].clone()).unwrap();
 			}
 		});
 	});
@@ -42,7 +42,7 @@ fn insert_worse_case_benchmark(c: &mut Criterion) {
 
 		let (keys, values) = random_data(10000);
 		for i in 0..keys.len() {
-			trie.insert(keys[i].clone(), values[i].clone()).unwrap()
+			trie.insert(keys[i].clone(), values[i].clone()).unwrap();
 		}
 
 		b.iter(|| {
@@ -56,7 +56,7 @@ fn insert_worse_case_benchmark(c: &mut Criterion) {
 
 		let (keys, values) = random_data(1000);
 		for i in 0..keys.len() {
-			trie.insert(keys[i].clone(), values[i].clone()).unwrap()
+			trie.insert(keys[i].clone(), values[i].clone()).unwrap();
 		}
 
 		b.iter(|| {
@@ -71,7 +71,7 @@ fn insert_worse_case_benchmark(c: &mut Criterion) {
 
 		let (keys, values) = random_data(10000);
 		for i in 0..keys.len() {
-			trie.insert(keys[i].clone(), values[i].clone()).unwrap()
+			trie.insert(keys[i].clone(), values[i].clone()).unwrap();
 		}
 
 		b.iter(|| {
