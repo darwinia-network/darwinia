@@ -66,18 +66,11 @@ fn basic_setup_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
 					unbondings: vec![]
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-				last_reward: None,
+				..Default::default()
 			})
 		);
 		// Account 20 controls the stash from account 21, which is 200 * balance_factor units
@@ -86,18 +79,11 @@ fn basic_setup_works() {
 			Some(StakingLedger {
 				stash: 21,
 				active_ring: 1000,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
 					unbondings: vec![]
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-				last_reward: None,
+				..Default::default()
 			})
 		);
 		// Account 1 does not control any stash
@@ -118,18 +104,11 @@ fn basic_setup_works() {
 			Some(StakingLedger {
 				stash: 101,
 				active_ring: 500,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 500,
 					unbondings: vec![]
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![]
-				},
-				last_reward: None,
+				..Default::default()
 			})
 		);
 		assert_eq!(Staking::nominators(101).unwrap().targets, vec![11, 21]);
@@ -400,18 +379,12 @@ fn staking_should_work() {
 				Some(StakingLedger {
 					stash: 3,
 					active_ring: 1500,
-					active_deposit_ring: 0,
-					active_kton: 0,
-					deposit_items: vec![],
 					ring_staking_lock: StakingLock {
 						staking_amount: 1500,
 						unbondings: vec![]
 					},
-					kton_staking_lock: StakingLock {
-						staking_amount: 0,
-						unbondings: vec![]
-					},
 					last_reward: current_era_at_bond,
+					..Default::default()
 				})
 			);
 			// e.g. it cannot spend more than 500 that it has free from the total 2000
@@ -1010,18 +983,11 @@ fn reward_destination_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
-				last_reward: None,
+				..Default::default()
 			}),
 		);
 
@@ -1043,18 +1009,12 @@ fn reward_destination_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000 + total_payout_0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + total_payout_0,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
 				last_reward: Some(0),
+				..Default::default()
 			}),
 		);
 
@@ -1081,18 +1041,12 @@ fn reward_destination_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000 + total_payout_0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + total_payout_0,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
 				last_reward: Some(1),
+				..Default::default()
 			}),
 		);
 
@@ -1120,18 +1074,12 @@ fn reward_destination_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000 + total_payout_0,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + total_payout_0,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
 				last_reward: Some(2),
+				..Default::default()
 			}),
 		);
 		// Check that amount in staked account is NOT increased.
@@ -1200,18 +1148,11 @@ fn bond_extra_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
-				last_reward: None,
+				..Default::default()
 			})
 		);
 
@@ -1230,18 +1171,11 @@ fn bond_extra_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000 + 100,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + 100,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
-				last_reward: None,
+				..Default::default()
 			}),
 		);
 
@@ -1257,18 +1191,11 @@ fn bond_extra_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000000,
-				active_deposit_ring: 0,
-				active_kton: 0,
-				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000000,
 					unbondings: vec![],
 				},
-				kton_staking_lock: StakingLock {
-					staking_amount: 0,
-					unbondings: vec![],
-				},
-				last_reward: None,
+				..Default::default()
 			}),
 		);
 	});
@@ -1353,9 +1280,10 @@ fn reward_to_stake_works() {
 				21,
 				Exposure {
 					own_ring_balance: 69,
+					own_kton_balance: 0,
 					total_power: Staking::currency_to_power(69, Staking::ring_pool()),
 					own_power: Staking::currency_to_power(69, Staking::ring_pool()),
-					..Default::default()
+					others: vec![],
 				},
 			);
 
