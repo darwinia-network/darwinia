@@ -18,11 +18,12 @@ frame-system = { default-features = false, git = "https://github.com/darwinia-ne
 sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
 
 merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
 
 [dev-dependencies]
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+
 
 [features]
 default = ["std"]

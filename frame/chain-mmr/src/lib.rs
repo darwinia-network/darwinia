@@ -1,27 +1,73 @@
-//! # MMR Digest Pallet
+//! # Chain MMR Pallet
+//!
+//! \## Overview
+//! This is the pallet to maintain accumulate headers Merkle Mountain Range
+//! and push the mmr root in to the digest of block headers on finalize.
+//! MMR can be used for light client to implement super light clients,
+//! and can also be used in other chains to implement chain relay for
+//! cross-chain verification purpose.
+//!
+//! \## Terminology
+//!
+//! \### Merkle Moutain Range
+//! For more details about the MMR struct, refer https://github.com/mimblewimble/grin/blob/master/doc/mmr.md#structure
+//!
+//! \### MMR Proof
+//! Using the MMR Store Storage, MMR Proof can be generated for specific
+//! block header hash. Proofs can be used to verify block inclusion together with
+//! the mmr root in the header digest.
+//!
+//! \### Positions
+//! The index position of the nodes(and hash leave nodes) in the mmr node list
+//! constructed using MMR struct
+//!
+//! \### Digest Item
+//! The is a ```MerkleMountainRangeRoot(Hash)``` digest item pre-subscribed in Digest.
+//! This is implemented in Darwinia's fork of substrate: https://github.com/darwinia-network/substrate
+//! The Pull request link is https://github.com/darwinia-network/substrate/pull/1
+//!
+//! \## Implementation
+//! We are using the MMR library from https://github.com/nervosnetwork/merkle-mountain-range
+//! Pull request: https://github.com/darwinia-network/darwinia/pull/358
+//!
+//! \## References
+//! Darwinia Relay's Technical Paper:
+//! https://github.com/darwinia-network/rfcs/blob/master/paper/Darwinia_Relay_Sublinear_Optimistic_Relay_for_Interoperable_Blockchains_v0.7.pdf
+//!
+//! https://github.com/mimblewimble/grin/blob/master/doc/mmr.md#structure
+//! https://github.com/mimblewimble/grin/blob/0ff6763ee64e5a14e70ddd4642b99789a1648a32/core/src/core/pmmr.rs#L606
+//! https://github.com/nervosnetwork/merkle-mountain-range/blob/master/src/tests/test_accumulate_headers.rs
+//! https://eprint.iacr.org/2019/226.pdf
+//!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{decl_module, decl_storage};
+use frame_support::{decl_error, decl_module, decl_storage, ensure};
+use sp_std::convert::TryFrom;
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 //use frame_benchmarking::{benchmarks, account};
-//use frame_system::{self as system, ensure_signed, ensure_root, RawOrigin};
+//use frame_system::{self as system, ensure_root, ensure_signed, RawOrigin};
 
 //use codec::{Encode, Decode};
 use sp_runtime::{
-	generic::DigestItem,
+	generic::{DigestItem, Header},
 	traits::{Hash, One},
+	DispatchError,
 };
 
-use merkle_mountain_range::{MMRStore, MMR};
+use merkle_mountain_range::{MMRStore, MerkleProof, MMR};
 
-pub trait Trait: frame_system::Trait {}
+pub trait Trait: frame_system::Trait {
+	// Nothing
+}
 
 decl_storage! {
 	trait Store for Module<T: Trait> as ChainMMR {
 		/// MMR struct of the previous blocks, from first(genesis) to parent hash.
 		pub MMRNodeList get(fn mmr_node_list): map hasher(identity) u64 => T::Hash;
+
+		/// The MMR size and length of the mmr node list
 		pub MMRCounter get(fn mmr_counter): u64;
 
 		/// The positions of header numbers in the MMR Node List
@@ -75,6 +121,13 @@ impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 	}
 }
 
+decl_error! {
+	pub enum Error for Module<T: Trait> {
+		/// Proof - GET FAILED
+		ProofGF,
+	}
+}
+
 decl_module! {
 	// Simple declaration of the `Module` type. Lets the macro know what its working on.
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
@@ -112,5 +165,37 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	// Nothing
+	// TODO: Add rpc call for this
+	fn _get_proof(
+		block_number: T::BlockNumber,
+		mmr_header: &Header<T::BlockNumber, T::Hashing>,
+	) -> Result<MerkleProof<T::Hash, MMRMerge<T>>, DispatchError>
+	where
+		T::BlockNumber: Into<sp_core::U256> + TryFrom<sp_core::U256>,
+		T::Hash: sp_runtime::traits::Hash,
+	{
+		ensure!(block_number < mmr_header.number, "Block number too large");
+
+		let store = ModuleMMRStore::<T>::default();
+
+		let pos = Self::position_of(block_number);
+		let mmr_header_pos = Self::position_of(&mmr_header.number);
+		let mmr = MMR::<_, MMRMerge<T>, _>::new(mmr_header_pos, store);
+
+		// find the first consensus digest with the right ID which converts to
+		// the right kind of consensus log.
+		let header_mmr_root = mmr_header
+			.digest
+			.convert_first(|l| l.as_merkle_mountain_range_root().cloned())
+			.expect("Header mmr get failed");
+
+		assert!(
+			mmr.get_root().expect("Get Root Failed") == header_mmr_root,
+			"MMR root not match"
+		);
+
+		let proof = mmr.gen_proof(vec![pos]).map_err(|_| <Error<T>>::ProofGF)?;
+
+		Ok(proof)
+	}
 }
