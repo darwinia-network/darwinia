@@ -9,7 +9,10 @@ use sp_std::prelude::*;
 //use frame_system::{self as system, ensure_signed, ensure_root, RawOrigin};
 
 //use codec::{Encode, Decode};
-use sp_runtime::{generic::DigestItem, traits::Hash};
+use sp_runtime::{
+	generic::DigestItem,
+	traits::{Hash, One},
+};
 
 use merkle_mountain_range::{MMRStore, MMR};
 
@@ -18,8 +21,11 @@ pub trait Trait: frame_system::Trait {}
 decl_storage! {
 	trait Store for Module<T: Trait> as ChainMMR {
 		/// MMR struct of the previous blocks, from first(genesis) to parent hash.
-		pub MMRList get(fn mmr_list): map hasher(identity) u64 => T::Hash;
+		pub MMRNodeList get(fn mmr_node_list): map hasher(identity) u64 => T::Hash;
 		pub MMRCounter get(fn mmr_counter): u64;
+
+		/// The positions of header numbers in the MMR Node List
+		pub Positions get(fn position_of): map hasher(identity) T::BlockNumber => u64;
 	}
 }
 
@@ -46,7 +52,7 @@ impl<T> Default for ModuleMMRStore<T> {
 
 impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 	fn get_elem(&self, pos: u64) -> merkle_mountain_range::Result<Option<T::Hash>> {
-		Ok(Some(Module::<T>::mmr_list(pos)))
+		Ok(Some(Module::<T>::mmr_node_list(pos)))
 	}
 
 	fn append(&mut self, pos: u64, elems: Vec<T::Hash>) -> merkle_mountain_range::Result<()> {
@@ -59,7 +65,7 @@ impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 		let elems_len = elems.len() as u64;
 
 		for (i, elem) in elems.into_iter().enumerate() {
-			<MMRList<T>>::insert(mmr_count + i as u64, elem);
+			<MMRNodeList<T>>::insert(mmr_count + i as u64, elem);
 		}
 
 		// increment counter
@@ -85,10 +91,15 @@ decl_module! {
 
 			let parent_hash = <frame_system::Module<T>>::parent_hash();
 			// Update MMR and add mmr root to digest of block header
-			mmr.push(parent_hash).expect("Failed to push parent hash to mmr.");
+			let pos = mmr.push(parent_hash).expect("Failed to push parent hash to mmr.");
+
+			// The first block number should start with 1 and parent block should be (T::BlockNumber::zero(), hash69())
+			// Checking just in case custom changes in system gensis config
+			if <frame_system::Module<T>>::block_number() >= T::BlockNumber::one() {
+				<Positions<T>>::insert(<frame_system::Module<T>>::block_number() - T::BlockNumber::one(), pos);
+			}
 
 			let mmr_root = mmr.get_root().expect("Failed to calculate merkle mountain range; qed");
-
 			mmr.commit().expect("Failed to push parent hash to mmr.");
 
 			let mmr_item = DigestItem::MerkleMountainRangeRoot(
