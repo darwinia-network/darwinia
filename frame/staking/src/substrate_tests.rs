@@ -1678,9 +1678,9 @@ fn bond_with_no_staked_value() {
 					2,
 					StakingBalance::RingBalance(1),
 					RewardDestination::Controller,
-					0
+					0,
 				),
-				Error::<Test>::InsufficientValue,
+				StakingError::InsufficientValue,
 			);
 			// bonded with absolute minimum value possible.
 			assert_ok!(Staking::bond(
@@ -1688,90 +1688,13 @@ fn bond_with_no_staked_value() {
 				2,
 				StakingBalance::RingBalance(5),
 				RewardDestination::Controller,
-				0
+				0,
 			));
+			assert_eq!(Ring::locks(&1)[0].locked_amount(Some(System::block_number())), 5);
 
-			match &Ring::locks(&1)[0].lock_for {
-				LockFor::Common { amount: _ } => {
-					panic!("Locked balance should convert to StakingLock.");
-				}
-				LockFor::Staking(staking_lock) => {
-					assert_eq!(staking_lock.staking_amount, (5 as u128));
-				}
-			}
-
-			// @darwinia(unbond)
-			// Only active normal ring can be unbond
-			//
-			// normal_ring: active_ring - active_deposit_ring;
+			// unbonding even 1 will cause all to be unbonded.
 			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(1)));
-			assert_eq!(
-				Staking::ledger(2),
-				Some(StakingLedger {
-					stash: 1,
-					active_ring: 4,
-					active_deposit_ring: 0,
-					active_kton: 0,
-					deposit_items: vec![],
-					ring_staking_lock: StakingLock {
-						staking_amount: 4,
-						unbondings: vec![Unbonding { amount: 1, until: 541 }]
-					},
-					kton_staking_lock: StakingLock {
-						staking_amount: 0,
-						unbondings: vec![]
-					},
-					last_reward: Some(0),
-				})
-			);
-
-			start_era(1);
-			start_era(2);
-
-			assert!(Staking::ledger(2).is_some());
-			match &Ring::locks(&1)[0].lock_for {
-				LockFor::Common { amount: _ } => {
-					panic!("Locked balance should convert to StakingLock.");
-				}
-				LockFor::Staking(staking_lock) => {
-					assert_eq!(staking_lock.staking_amount, (4 as u128));
-				}
-			}
-
-			// @review(withdraw): origin from substrate //
-			//
-			// Substrate write like below because they want to unbond
-			// all balances at last process, so, if we want to test the
-			// `remove_account` method here, just unbond all.
-			//
-			// // not yet removed.
-			// assert_ok!(Staking::withdraw_unbonded(Origin::signed(2)));
-			// assert!(Staking::ledger(2).is_some());
-			// assert_eq!(Ring::locks(&1)[0].amount, 5);
-			//
-			// start_era(3);
-			//
-			// // poof. Account 1 is removed from the staking system.
-			// assert_ok!(Staking::withdraw_unbonded(Origin::signed(2)));
-			// assert!(Staking::ledger(2).is_none());
-			// assert_eq!(Ring::locks(&1).len(), 0);
-			// -------- //
-
-			assert_ok!(Staking::unbond(Origin::signed(2), StakingBalance::RingBalance(4)));
 			assert!(Staking::ledger(2).is_none());
-
-			start_era(3);
-
-			// Lock should be drained,
-			// but we haven't made the choice now.
-			match &Ring::locks(&1)[0].lock_for {
-				LockFor::Common { amount: _ } => {
-					panic!("Locked balance should convert to StakingLock.");
-				}
-				LockFor::Staking(staking_lock) => {
-					assert_eq!(staking_lock.staking_amount, (0 as u128));
-				}
-			}
 		});
 }
 

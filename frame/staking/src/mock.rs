@@ -210,8 +210,7 @@ impl pallet_ring::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDurationInEra: EraIndex = 3;
-	// assume 60 blocks per session
-	pub const BondingDurationInBlockNumber: BlockNumber = 3 * 3 * 60;
+	pub const BondingDurationInBlockNumber: BlockNumber = 1;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 
 	pub const Cap: Balance = CAP;
