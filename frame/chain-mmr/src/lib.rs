@@ -18,7 +18,7 @@ pub trait Trait: frame_system::Trait {}
 decl_storage! {
 	trait Store for Module<T: Trait> as ChainMMR {
 		/// MMR struct of the previous blocks, from first(genesis) to parent hash.
-		pub MMRList get(fn mmr_list): map hasher(twox_64_concat) u64 => T::Hash;
+		pub MMRList get(fn mmr_list): map hasher(identity) u64 => T::Hash;
 		pub MMRCounter get(fn mmr_counter): u64;
 	}
 }
