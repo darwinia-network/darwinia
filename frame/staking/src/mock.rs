@@ -210,7 +210,7 @@ impl pallet_ring::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDurationInEra: EraIndex = 3;
-	pub const BondingDurationInBlockNumber: BlockNumber = 1;
+	pub const BondingDurationInBlockNumber: BlockNumber = 9;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 
 	pub const Cap: Balance = CAP;
@@ -469,7 +469,6 @@ pub fn bond(acc: AccountId, val: StakingBalanceT<Test>) {
 		StakingBalance::KtonBalance(k) => {
 			let _ = Kton::make_free_balance_be(&(acc + 1), k);
 		}
-		_ => return,
 	}
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
