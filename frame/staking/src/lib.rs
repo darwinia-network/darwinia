@@ -1137,8 +1137,8 @@ decl_module! {
 						<Error<T>>::InsufficientValue,
 					);
 
-					let stash_balance = T::RingCurrency::usable_balance(&stash);
-					let value = r.min(stash_balance);
+					let usable_balance = T::RingCurrency::usable_balance(&stash);
+					let value = r.min(usable_balance);
 					let (start_time, expire_time) = Self::bond_ring(
 						&stash,
 						&controller,
@@ -1157,8 +1157,8 @@ decl_module! {
 						<Error<T>>::InsufficientValue,
 					);
 
-					let stash_balance = T::KtonCurrency::free_balance(&stash);
-					let value = k.min(stash_balance);
+					let usable_balance = T::KtonCurrency::usable_balance(&stash);
+					let value = k.min(usable_balance);
 
 					Self::bond_kton(&controller, value, ledger);
 
@@ -1199,31 +1199,27 @@ decl_module! {
 
 			match max_additional {
 				 StakingBalance::RingBalance(r) => {
-					let stash_balance = T::RingCurrency::usable_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&ledger.active_ring) {
-						let extra = extra.min(r);
-						let (start_time, expire_time) = Self::bond_ring(
-							&stash,
-							&controller,
-							extra,
-							promise_month,
-							ledger,
-						);
+					let extra = T::RingCurrency::usable_balance(&stash);
+					let extra = extra.min(r);
+					let (start_time, expire_time) = Self::bond_ring(
+						&stash,
+						&controller,
+						extra,
+						promise_month,
+						ledger,
+					);
 
-						<RingPool<T>>::mutate(|r| *r += extra);
-						Self::deposit_event(RawEvent::BondRing(extra, start_time, expire_time));
-					}
+					<RingPool<T>>::mutate(|r| *r += extra);
+					Self::deposit_event(RawEvent::BondRing(extra, start_time, expire_time));
 				},
 				StakingBalance::KtonBalance(k) => {
-					let stash_balance = T::KtonCurrency::usable_balance(&stash);
-					if let Some(extra) = stash_balance.checked_sub(&ledger.active_kton) {
-						let extra = extra.min(k);
+					let extra = T::KtonCurrency::usable_balance(&stash);
+					let extra = extra.min(k);
 
-						Self::bond_kton(&controller, extra, ledger);
+					Self::bond_kton(&controller, extra, ledger);
 
-						<KtonPool<T>>::mutate(|k| *k += extra);
-						Self::deposit_event(RawEvent::BondKton(extra));
-					}
+					<KtonPool<T>>::mutate(|k| *k += extra);
+					Self::deposit_event(RawEvent::BondKton(extra));
 				},
 				_ => (),
 			}
