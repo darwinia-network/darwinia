@@ -379,7 +379,6 @@ where
 	RingBalance: HasCompact,
 	KtonBalance: HasCompact,
 {
-	All,
 	RingBalance(RingBalance),
 	KtonBalance(KtonBalance),
 }
@@ -1165,7 +1164,6 @@ decl_module! {
 					<KtonPool<T>>::mutate(|k| *k += value);
 					Self::deposit_event(RawEvent::BondKton(value));
 				},
-				_ => (),
 			}
 
 			// You're auto-bonded forever, here. We might improve this by only bonding when
@@ -1221,7 +1219,6 @@ decl_module! {
 					<KtonPool<T>>::mutate(|k| *k += extra);
 					Self::deposit_event(RawEvent::BondKton(extra));
 				},
-				_ => (),
 			}
 		}
 
@@ -1320,49 +1317,92 @@ decl_module! {
 				<Error<T>>::NoMoreChunks,
 			);
 
+			let mut unbond_ring: RingBalance<T> = Zero::zero();
+			let mut unbond_kton: KtonBalance<T> = Zero::zero();
+
 			match value {
 				StakingBalance::RingBalance(r) => {
 					// Only active normal ring can be unbond:
 					// `active_ring = active_normal_ring + active_deposit_ring`
 					let active_normal_ring = *active_ring - *active_deposit_ring;
-					let available_unbond_ring = r.min(active_normal_ring);
+					unbond_ring = r.min(active_normal_ring);
 
-					if !available_unbond_ring.is_zero() {
-						*active_ring -= available_unbond_ring;
+					if !unbond_ring.is_zero() {
+						*active_ring -= unbond_ring;
+
+						// Avoid there being a dust balance left in the staking system.
+						if (*active_ring < T::RingCurrency::minimum_balance())
+							&& (*active_kton < T::KtonCurrency::minimum_balance()) {
+							unbond_ring += *active_ring;
+							unbond_kton += *active_kton;
+
+							*active_ring = Zero::zero();
+							*active_kton = Zero::zero();
+						}
+
 						ring_staking_lock.unbondings.push(Unbonding {
-							amount: available_unbond_ring,
+							amount: unbond_ring,
 							until: now + T::BondingDurationInBlockNumber::get(),
 						});
 
-						Self::update_ledger(&controller, &mut ledger, value);
+						<RingPool<T>>::mutate(|r| *r -= unbond_ring);
+						Self::deposit_event(RawEvent::UnbondRing(unbond_ring, now));
 
-						<RingPool<T>>::mutate(|r| *r -= available_unbond_ring);
-						Self::deposit_event(RawEvent::UnbondRing(available_unbond_ring, now));
+						if !unbond_kton.is_zero() {
+							kton_staking_lock.unbondings.push(Unbonding {
+								amount: unbond_kton,
+								until: now + T::BondingDurationInBlockNumber::get(),
+							});
+
+							<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
+							Self::deposit_event(RawEvent::UnbondKton(unbond_kton, now));
+						}
 					}
 				},
 				StakingBalance::KtonBalance(k) => {
-					let unbond_kton = k.min(*active_kton);
+					unbond_kton = k.min(*active_kton);
 
 					if !unbond_kton.is_zero() {
 						*active_kton -= unbond_kton;
+
+						// Avoid there being a dust balance left in the staking system.
+						if (*active_kton < T::KtonCurrency::minimum_balance())
+							&& (*active_ring < T::RingCurrency::minimum_balance()) {
+							unbond_kton += *active_kton;
+							unbond_ring += *active_ring;
+
+							*active_kton = Zero::zero();
+							*active_ring = Zero::zero();
+						}
+
 						kton_staking_lock.unbondings.push(Unbonding {
 							amount: unbond_kton,
 							until: now + T::BondingDurationInBlockNumber::get(),
 						});
 
-						Self::update_ledger(&controller, &mut ledger, value);
 
 						<KtonPool<T>>::mutate(|k| *k -= unbond_kton);
 						Self::deposit_event(RawEvent::UnbondKton(unbond_kton, now));
+
+						if !unbond_ring.is_zero() {
+							ring_staking_lock.unbondings.push(Unbonding {
+								amount: unbond_ring,
+								until: now + T::BondingDurationInBlockNumber::get(),
+							});
+
+							<RingPool<T>>::mutate(|k| *k -= unbond_ring);
+							Self::deposit_event(RawEvent::UnbondRing(unbond_ring, now));
+						}
 					}
 				},
-				_ => (),
 			}
 
+			Self::update_ledger(&controller, &mut ledger);
+
 			let StakingLedger {
+				stash,
 				active_ring,
 				active_kton,
-				stash,
 				..
 			} = ledger;
 
@@ -1853,7 +1893,7 @@ impl<T: Trait> Module<T> {
 			});
 		}
 
-		Self::update_ledger(&controller, &mut ledger, StakingBalance::RingBalance(value));
+		Self::update_ledger(&controller, &mut ledger);
 
 		(start_time, expire_time)
 	}
@@ -1876,7 +1916,7 @@ impl<T: Trait> Module<T> {
 			expire_time,
 		});
 
-		Self::update_ledger(&controller, &mut ledger, StakingBalance::RingBalance(value));
+		Self::update_ledger(&controller, &mut ledger);
 
 		(start_time, expire_time)
 	}
@@ -1884,7 +1924,7 @@ impl<T: Trait> Module<T> {
 	// Update the ledger while bonding controller with kton.
 	fn bond_kton(controller: &T::AccountId, value: KtonBalance<T>, mut ledger: StakingLedgerT<T>) {
 		ledger.active_kton += value;
-		Self::update_ledger(&controller, &mut ledger, StakingBalance::KtonBalance(value));
+		Self::update_ledger(&controller, &mut ledger);
 	}
 
 	// TODO: doc
@@ -2012,45 +2052,35 @@ impl<T: Trait> Module<T> {
 
 	/// Update the ledger for a controller. This will also update the stash lock. The lock will
 	/// will lock the entire funds except paying for further transactions.
-	fn update_ledger(controller: &T::AccountId, ledger: &mut StakingLedgerT<T>, staking_balance: StakingBalanceT<T>) {
-		match staking_balance {
-			StakingBalance::RingBalance(_) => {
-				ledger.ring_staking_lock.staking_amount = ledger.active_ring;
+	fn update_ledger(controller: &T::AccountId, ledger: &mut StakingLedgerT<T>) {
+		let StakingLedger {
+			active_ring,
+			active_kton,
+			ring_staking_lock,
+			kton_staking_lock,
+			..
+		} = ledger;
 
-				T::RingCurrency::set_lock(
-					STAKING_ID,
-					&ledger.stash,
-					LockFor::Staking(ledger.ring_staking_lock.clone()),
-					WithdrawReasons::all(),
-				);
-			}
-			StakingBalance::KtonBalance(_) => {
-				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
+		if *active_ring != ring_staking_lock.staking_amount {
+			ring_staking_lock.staking_amount = *active_ring;
 
-				T::KtonCurrency::set_lock(
-					STAKING_ID,
-					&ledger.stash,
-					LockFor::Staking(ledger.kton_staking_lock.clone()),
-					WithdrawReasons::all(),
-				);
-			}
-			_ => {
-				ledger.ring_staking_lock.staking_amount = ledger.active_ring;
-				ledger.kton_staking_lock.staking_amount = ledger.active_kton;
+			T::RingCurrency::set_lock(
+				STAKING_ID,
+				&ledger.stash,
+				LockFor::Staking(ledger.ring_staking_lock.clone()),
+				WithdrawReasons::all(),
+			);
+		}
 
-				T::RingCurrency::set_lock(
-					STAKING_ID,
-					&ledger.stash,
-					LockFor::Staking(ledger.ring_staking_lock.clone()),
-					WithdrawReasons::all(),
-				);
-				T::KtonCurrency::set_lock(
-					STAKING_ID,
-					&ledger.stash,
-					LockFor::Staking(ledger.kton_staking_lock.clone()),
-					WithdrawReasons::all(),
-				);
-			}
+		if *active_kton != kton_staking_lock.staking_amount {
+			kton_staking_lock.staking_amount = *active_kton;
+
+			T::KtonCurrency::set_lock(
+				STAKING_ID,
+				&ledger.stash,
+				LockFor::Staking(ledger.kton_staking_lock.clone()),
+				WithdrawReasons::all(),
+			);
 		}
 
 		<Ledger<T>>::insert(controller, ledger);
@@ -2080,7 +2110,7 @@ impl<T: Trait> Module<T> {
 					l.active_ring += amount;
 
 					let r = T::RingCurrency::deposit_into_existing(stash, amount).ok();
-					Self::update_ledger(&c, &mut l, StakingBalance::RingBalance(amount));
+					Self::update_ledger(&c, &mut l);
 					r
 				}),
 		}

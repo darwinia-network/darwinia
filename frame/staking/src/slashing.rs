@@ -717,7 +717,7 @@ fn do_slash<T: Trait>(
 	}
 
 	if slashed {
-		<Module<T>>::update_ledger(&controller, &mut ledger, StakingBalance::All);
+		<Module<T>>::update_ledger(&controller, &mut ledger);
 		<Module<T>>::deposit_event(RawEvent::Slash(stash.clone(), value.r, value.k));
 	}
 }
