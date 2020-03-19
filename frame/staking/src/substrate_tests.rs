@@ -1170,15 +1170,14 @@ fn validator_payment_prefs_work() {
 		Staking::reward_by_ids(vec![(11, 1)]);
 
 		start_era(2);
-		mock::make_all_reward_payment(1);
+		make_all_reward_payment(1);
 
-		// @review(reward)
-		// let taken_cut = commission * total_payout_1;
-		// let shared_cut = total_payout_1 - taken_cut;
-		// let reward_of_10 = shared_cut * exposure_1.own / exposure_1.total + taken_cut;
-		// let reward_of_100 = shared_cut * exposure_1.others[0].value / exposure_1.total;
-		// assert_eq_error_rate!(Balances::total_balance(&10), balance_era_1_10 + reward_of_10, 2);
-		// assert_eq_error_rate!(Balances::total_balance(&100), balance_era_1_100 + reward_of_100, 2);
+		let taken_cut = commission * total_payout_1;
+		let shared_cut = total_payout_1 - taken_cut;
+		let reward_of_10 = shared_cut * exposure_1.own_power as u128 / exposure_1.total_power as u128 + taken_cut;
+		let reward_of_100 = shared_cut * exposure_1.others[0].power as u128 / exposure_1.total_power as u128;
+		assert_eq_error_rate!(Ring::total_balance(&10), balance_era_1_10 + reward_of_10, MICRO);
+		assert_eq_error_rate!(Ring::total_balance(&100), balance_era_1_100 + reward_of_100, MICRO);
 
 		check_exposure_all(Staking::active_era().unwrap().index);
 		check_nominator_all(Staking::active_era().unwrap().index);
