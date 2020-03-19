@@ -1306,14 +1306,15 @@ fn too_many_unbond_calls_should_not_work() {
 	})
 }
 
-// @rm `rebond_works` testcase,
-// because darwinia doesn't has the `rebond` method currently.
-
-// @rm `rebond_is_fifo` testcase,
-// because darwinia doesn't has the `rebond` method currently.
-
+// #[deprecated]
 // #[test]
-// @TODO(reward): result not correct
+// fn rebond_works() {}
+
+// #[deprecated]
+// #[test]
+// fn rebond_is_fifo() {}
+
+#[test]
 fn reward_to_stake_works() {
 	ExtBuilder::default()
 		.nominate(false)
@@ -1325,51 +1326,54 @@ fn reward_to_stake_works() {
 			// Confirm account 10 and 20 are validators
 			assert!(<Validators<Test>>::contains_key(&11) && <Validators<Test>>::contains_key(&21));
 
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-				1000
-			);
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21).own_ring_balance,
-				2000
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 1000);
+			}
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 2000);
+			}
 
 			// Give the man some money.
 			let _ = Ring::make_free_balance_be(&10, 1000);
 			let _ = Ring::make_free_balance_be(&20, 1000);
 
 			// Bypass logic and change current exposure
-			ErasStakers::<Test>::insert(
+			<ErasStakers<Test>>::insert(
 				0,
 				21,
 				Exposure {
-					own_ring_balance: 1,
-					own_kton_balance: 1,
-					total_power: 69,
-					own_power: 69,
-					others: vec![],
+					own_ring_balance: 69,
+					total_power: Staking::currency_to_power(69, Staking::ring_pool()),
+					own_power: Staking::currency_to_power(69, Staking::ring_pool()),
+					..Default::default()
 				},
 			);
 
 			// Now lets lower account 20 stake
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21).own_ring_balance,
-				69
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 69);
+			}
 			<Ledger<Test>>::insert(
 				&20,
 				StakingLedger {
 					stash: 21,
-					active_ring: 0,
-					active_deposit_ring: 0,
-					active_kton: 5,
-					deposit_items: vec![],
-					ring_staking_lock: Default::default(),
-					kton_staking_lock: StakingLock {
-						staking_amount: 5,
-						unbondings: vec![],
-					},
-					last_reward: None,
+					active_ring: 69,
+					..Default::default()
 				},
 			);
 
@@ -1381,32 +1385,48 @@ fn reward_to_stake_works() {
 
 			// New era --> rewards are paid --> stakes are changed
 			start_era(1);
-			mock::make_all_reward_payment(0);
+			make_all_reward_payment(0);
 
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-				1000
-			);
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21).own_ring_balance,
-				69
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 1000);
+			}
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 69);
+			}
 
-			let _11_balance = Ring::free_balance(&11);
+			let _11_balance = Ring::total_balance(&11);
 			assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
 
 			// Trigger another new era as the info are frozen before the era start.
 			start_era(2);
 
 			// -- new infos
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-				1000 + total_payout_0 / 2
-			);
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 21).own_ring_balance,
-				69 + total_payout_0 / 2
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 1000 + total_payout_0 / 2);
+			}
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 69 + total_payout_0 / 2);
+			}
 
 			check_exposure_all(Staking::active_era().unwrap().index);
 			check_nominator_all(Staking::active_era().unwrap().index);
