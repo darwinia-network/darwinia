@@ -1205,11 +1205,11 @@ fn bond_extra_works() {
 				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				last_reward: None,
 			})
@@ -1222,7 +1222,7 @@ fn bond_extra_works() {
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(11),
 			StakingBalance::RingBalance(100),
-			12
+			0,
 		));
 		// There should be 100 more `total` and `active` in the ledger
 		assert_eq!(
@@ -1230,59 +1230,46 @@ fn bond_extra_works() {
 			Some(StakingLedger {
 				stash: 11,
 				active_ring: 1000 + 100,
-				active_deposit_ring: 100,
+				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: vec![TimeDepositItem {
-					value: 100,
-					start_time: 0,
-					expire_time: 31104000000
-				}],
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
 					staking_amount: 1000 + 100,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				last_reward: None,
-			})
+			}),
 		);
 
 		// Call the bond_extra function with a large number, should handle it
 		assert_ok!(Staking::bond_extra(
 			Origin::signed(11),
-			StakingBalance::RingBalance(u64::max_value() as u128),
-			0
+			StakingBalance::RingBalance(Balance::max_value()),
+			0,
 		));
-
 		// The full amount of the funds should now be in the total and active
 		assert_eq!(
 			Staking::ledger(&10),
 			Some(StakingLedger {
 				stash: 11,
-				// @review(bond): check if below is correct
-				// if it is correct, please delete this comment.
-				active_ring: 998900,
-				active_deposit_ring: 100,
+				active_ring: 1000000,
+				active_deposit_ring: 0,
 				active_kton: 0,
-				deposit_items: vec![TimeDepositItem {
-					value: 100,
-					start_time: 0,
-					expire_time: 31104000000
-				}],
+				deposit_items: vec![],
 				ring_staking_lock: StakingLock {
-					// @review(bond): check if below is correct,
-					// if it is correct, please delete this comment.
-					staking_amount: 998900,
-					unbondings: vec![]
+					staking_amount: 1000000,
+					unbondings: vec![],
 				},
 				kton_staking_lock: StakingLock {
 					staking_amount: 0,
-					unbondings: vec![]
+					unbondings: vec![],
 				},
 				last_reward: None,
-			})
+			}),
 		);
 	});
 }
