@@ -1274,8 +1274,9 @@ fn bond_extra_works() {
 	});
 }
 
-// @rm: `bond_extra_and_withdraw_unbonded_works` testcase
-// because we are not using this function
+// #[deprecated]
+// #[test]
+// fn bond_extra_and_withdraw_unbonded_works() {}
 
 #[test]
 fn too_many_unbond_calls_should_not_work() {
