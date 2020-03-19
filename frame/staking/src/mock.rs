@@ -1,13 +1,12 @@
 //! Test utilities
 
-pub use pallet_kton::Error as KtonError;
-pub use pallet_ring::Error as RingError;
-
+// --- std ---
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
 };
 
+// --- third-party ---
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
 	storage::IterableStorageMap,
@@ -26,6 +25,7 @@ use sp_staking::{
 	SessionIndex,
 };
 
+// --- custom ---
 use crate::*;
 
 // --- substrate ---
@@ -34,8 +34,12 @@ pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;
 
 // --- custom ---
-pub type Ring = pallet_ring::Module<Test>;
 pub type Kton = pallet_kton::Module<Test>;
+pub type Ring = pallet_ring::Module<Test>;
+
+pub type RingError = pallet_ring::Error<Test, pallet_ring::DefaultInstance>;
+pub type KtonError = pallet_kton::Error<Test, pallet_kton::DefaultInstance>;
+pub type StakingError = crate::Error<Test>;
 
 // --- current ---
 pub type Staking = Module<Test>;
