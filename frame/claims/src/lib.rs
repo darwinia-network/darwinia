@@ -138,8 +138,7 @@ decl_storage! {
 
 			// Eth Address
 			for Account { address, backed_ring } in &config.claims_list.dot {
-				// DOT:RING = 1:50
-				let backed_ring = (*backed_ring).saturating_mul(50).saturated_into();
+				let backed_ring = (*backed_ring).saturated_into();
 				<ClaimsFromEth<T>>::insert(address, backed_ring);
 				total += backed_ring;
 			}
