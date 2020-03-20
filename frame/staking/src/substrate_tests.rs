@@ -1732,11 +1732,11 @@ fn phragmen_should_not_overflow_validators() {
 		// Saturate.
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 3).total_power,
-			TOTAL_POWER / 2
+			TOTAL_POWER / 2,
 		);
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 5).total_power,
-			TOTAL_POWER / 2
+			TOTAL_POWER / 2,
 		);
 	})
 }
@@ -1747,11 +1747,11 @@ fn phragmen_should_not_overflow_nominators() {
 		let _ = Staking::chill(Origin::signed(10));
 		let _ = Staking::chill(Origin::signed(20));
 
-		bond_validator(2, StakingBalance::RingBalance(CAP));
-		bond_validator(4, StakingBalance::KtonBalance(CAP));
+		bond_validator(2, StakingBalance::RingBalance(1));
+		bond_validator(4, StakingBalance::KtonBalance(1));
 
-		bond_nominator(6, StakingBalance::RingBalance(1), vec![3, 5]);
-		bond_nominator(8, StakingBalance::KtonBalance(1), vec![3, 5]);
+		bond_nominator(6, StakingBalance::RingBalance(CAP), vec![3, 5]);
+		bond_nominator(8, StakingBalance::KtonBalance(CAP), vec![3, 5]);
 
 		start_era(1);
 
@@ -1760,11 +1760,11 @@ fn phragmen_should_not_overflow_nominators() {
 		// Saturate.
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 3).total_power,
-			TOTAL_POWER / 2
+			TOTAL_POWER / 2,
 		);
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 5).total_power,
-			TOTAL_POWER / 2
+			TOTAL_POWER / 2,
 		);
 	})
 }
