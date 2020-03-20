@@ -2203,8 +2203,48 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 	});
 }
 
-// @rm: `invulnerables_are_not_slashed` testcase
-// because `slashable_balance_of` is not used
+#[test]
+fn invulnerables_are_not_slashed() {
+	// For invulnerable validators no slashing is performed.
+	ExtBuilder::default().invulnerables(vec![11]).build().execute_with(|| {
+		assert_eq!(Ring::total_balance(&11), 1000);
+		assert_eq!(Ring::total_balance(&21), 2000);
+
+		let exposure = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+		let initial_balance = Staking::stake_of(&21).0;
+
+		let nominator_balances: Vec<_> = exposure.others.iter().map(|o| Ring::total_balance(&o.who)).collect();
+
+		on_offence_now(
+			&[
+				OffenceDetails {
+					offender: (11, Staking::eras_stakers(Staking::active_era().unwrap().index, 11)),
+					reporters: vec![],
+				},
+				OffenceDetails {
+					offender: (21, Staking::eras_stakers(Staking::active_era().unwrap().index, 21)),
+					reporters: vec![],
+				},
+			],
+			&[Perbill::from_percent(50), Perbill::from_percent(20)],
+		);
+
+		// The validator 11 hasn't been slashed, but 21 has been.
+		assert_eq!(Ring::total_balance(&11), 1000);
+		// 2000 - (0.2 * initial_balance)
+		assert_eq!(Ring::total_balance(&21), 2000 - (2 * initial_balance / 10));
+
+		// ensure that nominators were slashed as well.
+		for (initial_balance, other) in nominator_balances.into_iter().zip(exposure.others) {
+			assert_eq!(
+				Ring::total_balance(&other.who),
+				initial_balance - (2 * other.ring_balance / 10),
+			);
+		}
+		assert_ledger_consistent(11);
+		assert_ledger_consistent(21);
+	});
+}
 
 #[test]
 fn dont_slash_if_fraction_is_zero() {
