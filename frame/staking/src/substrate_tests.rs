@@ -2120,8 +2120,7 @@ fn slash_in_old_span_does_not_deselect() {
 	});
 }
 
-// @review(reward): caculate the correct reward
-// #[test]
+#[test]
 fn reporters_receive_their_slice() {
 	// This test verifies that the reporters of the offence receive their slice from the slashed
 	// amount.
@@ -2129,10 +2128,14 @@ fn reporters_receive_their_slice() {
 		// The reporters' reward is calculated from the total exposure.
 		let initial_balance = 1125;
 
-		assert_eq!(
-			Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-			initial_balance
-		);
+		{
+			let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+			let total_ring = expo
+				.others
+				.iter()
+				.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+			assert_eq!(total_ring, initial_balance);
+		}
 
 		on_offence_now(
 			&[OffenceDetails {
@@ -2146,8 +2149,8 @@ fn reporters_receive_their_slice() {
 		// 50% * (10% * initial_balance / 2)
 		let reward = (initial_balance / 20) / 2;
 		let reward_each = reward / 2; // split into two pieces.
-		assert_eq!(Ring::free_balance(1), 10 + reward_each);
-		assert_eq!(Ring::free_balance(2), 20 + reward_each);
+		assert_eq!(Ring::total_balance(&1), 10 + reward_each);
+		assert_eq!(Ring::total_balance(&2), 20 + reward_each);
 		assert_ledger_consistent(11);
 	});
 }
