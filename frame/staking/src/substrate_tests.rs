@@ -1474,8 +1474,6 @@ fn on_free_balance_zero_stash_removes_nominator() {
 fn switching_roles() {
 	// Test that it should be possible to switch between roles (nominator, validator, idle) with minimal overhead.
 	ExtBuilder::default().nominate(false).build().execute_with(|| {
-		Timestamp::set_timestamp(1); // Initialize time.
-
 		// Reset reward destination
 		for i in &[10, 20] {
 			assert_ok!(Staking::set_payee(Origin::signed(*i), RewardDestination::Controller));
@@ -1494,7 +1492,7 @@ fn switching_roles() {
 			2,
 			StakingBalance::RingBalance(2000),
 			RewardDestination::Controller,
-			0
+			0,
 		));
 		assert_ok!(Staking::nominate(Origin::signed(2), vec![11, 5]));
 
@@ -1503,7 +1501,7 @@ fn switching_roles() {
 			4,
 			StakingBalance::RingBalance(500),
 			RewardDestination::Controller,
-			0
+			0,
 		));
 		assert_ok!(Staking::nominate(Origin::signed(4), vec![21, 1]));
 
@@ -1513,24 +1511,11 @@ fn switching_roles() {
 			6,
 			StakingBalance::RingBalance(1000),
 			RewardDestination::Controller,
-			0
+			0,
 		));
 		assert_ok!(Staking::validate(Origin::signed(6), ValidatorPrefs::default()));
 
-		// new block
-		start_session(1);
-
-		// no change
-		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
-
-		// new block
-		start_session(2);
-
-		// no change
-		assert_eq_uvec!(validator_controllers(), vec![20, 10]);
-
-		// new block --> ne era --> new validators
-		start_session(3);
+		start_era(1);
 
 		// with current nominators 10 and 5 have the most stake
 		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
@@ -1544,14 +1529,8 @@ fn switching_roles() {
 		// 2 : 2000 self vote + 250 vote.
 		// Winners: 20 and 2
 
-		start_session(4);
-		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
+		start_era(2);
 
-		start_session(5);
-		assert_eq_uvec!(validator_controllers(), vec![6, 10]);
-
-		// ne era
-		start_session(6);
 		assert_eq_uvec!(validator_controllers(), vec![2, 20]);
 
 		check_exposure_all(Staking::active_era().unwrap().index);
