@@ -2385,8 +2385,100 @@ fn garbage_collection_on_window_pruning() {
 	})
 }
 
-// @rm: `slashing_nominators_by_span_max` testcase
-// because `slashable_balance_of` is not used
+#[test]
+fn slashing_nominators_by_span_max() {
+	ExtBuilder::default().build().execute_with(|| {
+		start_era(1);
+		start_era(2);
+		start_era(3);
+
+		assert_eq!(Ring::free_balance(11), 1000);
+		assert_eq!(Ring::free_balance(21), 2000);
+		assert_eq!(Ring::free_balance(101), 2000);
+		assert_eq!(Staking::stake_of(&21).0, 1000);
+
+		let exposure_11 = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+		let exposure_21 = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
+		assert_eq!(Ring::free_balance(101), 2000);
+		let nominated_value_11 = exposure_11.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
+		let nominated_value_21 = exposure_21.others.iter().find(|o| o.who == 101).unwrap().ring_balance;
+
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (11, Staking::eras_stakers(Staking::active_era().unwrap().index, 11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(10)],
+			2,
+		);
+
+		assert_eq!(Ring::free_balance(11), 900);
+
+		let slash_1_amount = Perbill::from_percent(10) * nominated_value_11;
+		assert_eq!(Ring::free_balance(101), 2000 - slash_1_amount);
+
+		let expected_spans = vec![
+			slashing::SlashingSpan {
+				index: 1,
+				start: 4,
+				length: None,
+			},
+			slashing::SlashingSpan {
+				index: 0,
+				start: 0,
+				length: Some(4),
+			},
+		];
+
+		let get_span = |account| <Staking as Store>::SlashingSpans::get(&account).unwrap();
+
+		assert_eq!(get_span(11).iter().collect::<Vec<_>>(), expected_spans,);
+
+		assert_eq!(get_span(101).iter().collect::<Vec<_>>(), expected_spans,);
+
+		// second slash: higher era, higher value, same span.
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (21, Staking::eras_stakers(Staking::active_era().unwrap().index, 21)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(30)],
+			3,
+		);
+
+		// 11 was not further slashed, but 21 and 101 were.
+		assert_eq!(Ring::free_balance(11), 900);
+		assert_eq!(Ring::free_balance(21), 1700);
+
+		let slash_2_amount = Perbill::from_percent(30) * nominated_value_21;
+		assert!(slash_2_amount > slash_1_amount);
+
+		// only the maximum slash in a single span is taken.
+		assert_eq!(Ring::free_balance(101), 2000 - slash_2_amount);
+
+		// third slash: in same era and on same validator as first, higher
+		// in-era value, but lower slash value than slash 2.
+		on_offence_in_era(
+			&[OffenceDetails {
+				offender: (11, Staking::eras_stakers(Staking::active_era().unwrap().index, 11)),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(20)],
+			2,
+		);
+
+		// 11 was further slashed, but 21 and 101 were not.
+		assert_eq!(Ring::free_balance(11), 800);
+		assert_eq!(Ring::free_balance(21), 1700);
+
+		let slash_3_amount = Perbill::from_percent(20) * nominated_value_21;
+		assert!(slash_3_amount < slash_2_amount);
+		assert!(slash_3_amount > slash_1_amount);
+
+		// only the maximum slash in a single span is taken.
+		assert_eq!(Ring::free_balance(101), 2000 - slash_2_amount);
+	});
+}
 
 // @rm: `slashes_are_summed_across_spans` testcase
 // because `slashable_balance_of` is not used
