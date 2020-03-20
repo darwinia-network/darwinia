@@ -1894,7 +1894,7 @@ fn reward_from_authorship_event_handler_works() {
 		// 21 is rewarded as an uncle producer
 		// 11 is rewarded as a block producer and uncle referencer and uncle producer
 		assert_eq!(
-			ErasRewardPoints::<Test>::get(Staking::active_era().unwrap().index),
+			<ErasRewardPoints<Test>>::get(Staking::active_era().unwrap().index),
 			EraRewardPoints {
 				individual: vec![(11, 20 + 2 * 2 + 1), (21, 1)].into_iter().collect(),
 				total: 26,
@@ -1923,8 +1923,18 @@ fn add_reward_points_fns_works() {
 	})
 }
 
-// @rm: `unbonded_balance_is_not_slashable` testcase
-// because `slashable_balance_of` is not used
+#[test]
+fn unbonded_balance_is_not_slashable() {
+	ExtBuilder::default().build().execute_with(|| {
+		// total amount staked is slashable.
+		assert_eq!(Staking::stake_of(&11).0, 1000);
+
+		assert_ok!(Staking::unbond(Origin::signed(10), StakingBalance::RingBalance(800)));
+
+		// only the active portion.
+		assert_eq!(Staking::stake_of(&11).0, 200);
+	})
+}
 
 #[test]
 fn era_is_always_same_length() {
