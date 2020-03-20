@@ -2213,7 +2213,7 @@ fn invulnerables_are_not_slashed() {
 		let exposure = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
 		let initial_balance = Staking::stake_of(&21).0;
 
-		let nominator_balances: Vec<_> = exposure.others.iter().map(|o| Ring::total_balance(&o.who)).collect();
+		let nominator_balances: Vec<_> = exposure.others.iter().map(|o| Ring::free_balance(&o.who)).collect();
 
 		on_offence_now(
 			&[
