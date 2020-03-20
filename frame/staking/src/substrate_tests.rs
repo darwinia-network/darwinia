@@ -24,7 +24,10 @@ use sp_staking::offence::OffenceDetails;
 use substrate_test_utils::assert_eq_uvec;
 
 // --- custom ---
-use crate::{mock::*, *};
+use crate::{
+	mock::{AccountId, Balance, *},
+	*,
+};
 use darwinia_support::balance::lock::*;
 
 #[test]
@@ -1794,38 +1797,37 @@ fn phragmen_should_not_overflow_ultimate() {
 	})
 }
 
-// // @darwinia(reward)
 #[test]
 fn reward_validator_slashing_validator_doesnt_overflow() {
 	ExtBuilder::default().build().execute_with(|| {
-		let stake = CAP * 2;
-		let reward_slash = CAP * 2;
+		let stake = u64::max_value() as Balance * 2;
+		let reward_slash = u64::max_value() as Balance * 2;
 
 		// Assert multiplication overflows in balance arithmetic.
 		assert!(stake.checked_mul(reward_slash).is_none());
 
 		// Set staker
 		let _ = Ring::make_free_balance_be(&11, stake);
-		let exposure = Exposure {
+
+		let exposure = Exposure::<AccountId, Balance, Balance> {
 			own_ring_balance: stake,
-			total_power: stake as u32,
 			own_kton_balance: 0,
-			own_power: 0,
+			own_power: Staking::currency_to_power(stake, Staking::ring_pool()),
+			total_power: Staking::currency_to_power(stake, Staking::ring_pool()),
 			others: vec![],
 		};
-		let reward = EraRewardPoints::<u64> {
+		let reward = EraRewardPoints::<AccountId> {
 			total: 1,
 			individual: vec![(11, 1)].into_iter().collect(),
 		};
 
 		// Check reward
-		ErasRewardPoints::<Test>::insert(0, reward);
-		ErasStakers::<Test>::insert(0, 11, &exposure);
-		ErasStakersClipped::<Test>::insert(0, 11, exposure);
-		ErasValidatorReward::<Test>::insert(0, stake);
+		<ErasRewardPoints<Test>>::insert(0, reward);
+		<ErasStakers<Test>>::insert(0, 11, &exposure);
+		<ErasStakersClipped<Test>>::insert(0, 11, exposure);
+		<ErasValidatorReward<Test>>::insert(0, stake);
 		assert_ok!(Staking::payout_validator(Origin::signed(10), 0));
-		// @review(reward): should be stake * 2
-		assert_eq!(Ring::total_balance(&11), stake);
+		assert_eq!(Ring::total_balance(&11), stake * 2);
 
 		// Set staker
 		let _ = Ring::make_free_balance_be(&11, stake);
@@ -1841,20 +1843,20 @@ fn reward_validator_slashing_validator_doesnt_overflow() {
 			0,
 		)
 		.unwrap();
-
+		// Override exposure of 11
 		<ErasStakers<Test>>::insert(
 			0,
 			&11,
 			Exposure {
-				own_ring_balance: stake,
-				total_power: stake as u32,
+				own_ring_balance: 1,
+				total_power: Staking::currency_to_power(stake, Staking::ring_pool()),
 				own_kton_balance: 0,
-				own_power: 0,
+				own_power: Staking::currency_to_power(1, Staking::ring_pool()),
 				others: vec![IndividualExposure {
 					who: 2,
 					ring_balance: stake - 1,
 					kton_balance: 0,
-					power: 0,
+					power: Staking::currency_to_power(stake - 1, Staking::ring_pool()),
 				}],
 			},
 		);
@@ -1868,7 +1870,7 @@ fn reward_validator_slashing_validator_doesnt_overflow() {
 			&[Perbill::from_percent(100)],
 		);
 
-		assert_eq!(Ring::total_balance(&11), stake - 1000);
+		assert_eq_error_rate!(Ring::total_balance(&11), stake - 1000, MICRO);
 		assert_eq!(Ring::total_balance(&2), 1);
 	})
 }

@@ -44,9 +44,9 @@ pub type StakingError = crate::Error<Test>;
 // --- current ---
 pub type Staking = Module<Test>;
 
-type AccountId = u64;
+pub type AccountId = u64;
+pub type Balance = u128;
 type BlockNumber = u64;
-type Balance = u128;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
