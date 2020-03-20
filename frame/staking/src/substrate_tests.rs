@@ -2155,8 +2155,7 @@ fn reporters_receive_their_slice() {
 	});
 }
 
-// @review(reward): caculate the correct reward
-// #[test]
+#[test]
 fn subsequent_reports_in_same_span_pay_out_less() {
 	// This test verifies that the reporters of the offence receive their slice from the slashed
 	// amount.
@@ -2164,10 +2163,14 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 		// The reporters' reward is calculated from the total exposure.
 		let initial_balance = 1125;
 
-		assert_eq!(
-			Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-			initial_balance
-		);
+		{
+			let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 11);
+			let total_ring = expo
+				.others
+				.iter()
+				.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+			assert_eq!(total_ring, initial_balance);
+		}
 
 		on_offence_now(
 			&[OffenceDetails {
@@ -2180,7 +2183,7 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 		// F1 * (reward_proportion * slash - 0)
 		// 50% * (10% * initial_balance * 20%)
 		let reward = (initial_balance / 5) / 20;
-		assert_eq!(Ring::free_balance(1), 10 + reward);
+		assert_eq!(Ring::total_balance(&1), 10 + reward);
 
 		on_offence_now(
 			&[OffenceDetails {
@@ -2195,7 +2198,7 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 		// F1 * (reward_proportion * slash - prior_payout)
 		// 50% * (10% * (initial_balance / 2) - prior_payout)
 		let reward = ((initial_balance / 20) - prior_payout) / 2;
-		assert_eq!(Ring::free_balance(1), 10 + prior_payout + reward);
+		assert_eq!(Ring::total_balance(&1), 10 + prior_payout + reward);
 		assert_ledger_consistent(11);
 	});
 }
