@@ -76,7 +76,7 @@ pallet-staking = { package = "darwinia-staking", default-features = false, featu
 pallet-support = { package = "darwinia-support", default-features = false, path = "../../../frame/support" }
 pallet-treasury = { package = "darwinia-treasury", default-features = false, path = "../../../frame/treasury" }
 pallet-vesting = { package = "darwinia-vesting", default-features = false, path = "../../../frame/vesting" }
-pallet-chain-mmr = { package = "darwinia-chain-mmr", default-features = false, path = "../../../frame/chain-mmr" }
+pallet-header-mmr = { package = "darwinia-header-mmr", default-features = false, path = "../../../frame/header-mmr" }
 
 [build-dependencies]
 wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
@@ -129,7 +129,7 @@ std = [
 	"pallet-staking/std",
 	"pallet-support/std",
 	"pallet-treasury/std",
-	"pallet-chain-mmr/std",
+	"pallet-header-mmr/std",
 
     "node-primitives/std",
 

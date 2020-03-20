@@ -933,21 +933,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-chain-mmr"
-version = "0.0.1"
-dependencies = [
- "ckb-merkle-mountain-range",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?branch=denny_support_mmr_header)",
-]
-
-[[package]]
 name = "darwinia-claims"
 version = "0.5.0"
 dependencies = [
@@ -1029,6 +1014,21 @@ dependencies = [
  "parity-scale-codec",
  "rlp 0.4.4",
  "rustc-hex",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?branch=denny_support_mmr_header)",
+]
+
+[[package]]
+name = "darwinia-header-mmr"
+version = "0.0.1"
+dependencies = [
+ "ckb-merkle-mountain-range",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
  "serde",
  "sp-core",
  "sp-io",
@@ -3609,11 +3609,11 @@ dependencies = [
 name = "node-runtime"
 version = "0.5.0"
 dependencies = [
- "darwinia-chain-mmr",
  "darwinia-claims",
  "darwinia-elections-phragmen",
  "darwinia-eth-backing",
  "darwinia-eth-relay",
+ "darwinia-header-mmr",
  "darwinia-kton",
  "darwinia-ring",
  "darwinia-staking",

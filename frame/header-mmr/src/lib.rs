@@ -42,28 +42,30 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{decl_error, decl_module, decl_storage, ensure};
-use sp_std::convert::TryFrom;
+use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 //use frame_benchmarking::{benchmarks, account};
-//use frame_system::{self as system, ensure_root, ensure_signed, RawOrigin};
+use frame_system::{self as system}; // , ensure_root, ensure_signed, RawOrigin
 
 //use codec::{Encode, Decode};
 use sp_runtime::{
-	generic::{DigestItem, Header},
+	generic::DigestItem,
 	traits::{Hash, One},
 	DispatchError,
 };
 
 use merkle_mountain_range::{MMRStore, MerkleProof, MMR};
 
+mod mock;
+mod tests;
+
 pub trait Trait: frame_system::Trait {
-	// Nothing
+	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
 }
 
 decl_storage! {
-	trait Store for Module<T: Trait> as ChainMMR {
+	trait Store for Module<T: Trait> as HeaderMMR {
 		/// MMR struct of the previous blocks, from first(genesis) to parent hash.
 		pub MMRNodeList get(fn mmr_node_list): map hasher(identity) u64 => T::Hash;
 
@@ -75,9 +77,52 @@ decl_storage! {
 	}
 }
 
-//decl_event!(
-//);
+decl_event! {
+	pub enum Event<T> where H = <T as system::Trait>::Hash {
+		/// New mmr root log hash been deposited.
+		NewMMRRoot(H),
+	}
+}
 // `ensure_root` and `ensure_none`.
+
+decl_error! {
+	pub enum Error for Module<T: Trait> {
+		/// Proof - GET FAILED
+		ProofGF,
+	}
+}
+
+decl_module! {
+	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+		fn deposit_event() = default;
+
+		fn on_finalize(_block_number: T::BlockNumber) {
+			let store = ModuleMMRStore::<T>::default();
+
+			let mut mmr = MMR::<_, MMRMerge<T>, _>::new(<MMRCounter>::get(), store);
+
+			let parent_hash = <frame_system::Module<T>>::parent_hash();
+			// Update MMR and add mmr root to digest of block header
+			let pos = mmr.push(parent_hash).expect("Failed to push parent hash to mmr.");
+
+			// The first block number should start with 1 and parent block should be (T::BlockNumber::zero(), hash69())
+			// Checking just in case custom changes in system gensis config
+			if <frame_system::Module<T>>::block_number() >= T::BlockNumber::one() {
+				<Positions<T>>::insert(<frame_system::Module<T>>::block_number() - T::BlockNumber::one(), pos);
+			}
+
+			let mmr_root = mmr.get_root().expect("Failed to calculate merkle mountain range; qed");
+			mmr.commit().expect("Failed to push parent hash to mmr.");
+
+			let mmr_item = DigestItem::MerkleMountainRangeRoot(
+				mmr_root.into()
+			);
+
+			<frame_system::Module<T>>::deposit_log(mmr_item.into());
+			Self::deposit_event(Event::<T>::NewMMRRoot(mmr_root));
+		}
+	}
+}
 
 pub struct MMRMerge<T>(PhantomData<T>);
 
@@ -121,78 +166,19 @@ impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 	}
 }
 
-decl_error! {
-	pub enum Error for Module<T: Trait> {
-		/// Proof - GET FAILED
-		ProofGF,
-	}
-}
-
-decl_module! {
-	// Simple declaration of the `Module` type. Lets the macro know what its working on.
-	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		/// Deposit one of this pallet's events by using the default implementation.
-		/// It is also possible to provide a custom implementation.
-		/// For non-generic events, the generic parameter just needs to be dropped, so that it
-		/// looks like: `fn deposit_event() = default;`.
-//		fn deposit_event() = default;
-
-		fn on_finalize(_block_number: T::BlockNumber) {
-			let store = ModuleMMRStore::<T>::default();
-
-			let mut mmr = MMR::<_, MMRMerge<T>, _>::new(<MMRCounter>::get(), store);
-
-			let parent_hash = <frame_system::Module<T>>::parent_hash();
-			// Update MMR and add mmr root to digest of block header
-			let pos = mmr.push(parent_hash).expect("Failed to push parent hash to mmr.");
-
-			// The first block number should start with 1 and parent block should be (T::BlockNumber::zero(), hash69())
-			// Checking just in case custom changes in system gensis config
-			if <frame_system::Module<T>>::block_number() >= T::BlockNumber::one() {
-				<Positions<T>>::insert(<frame_system::Module<T>>::block_number() - T::BlockNumber::one(), pos);
-			}
-
-			let mmr_root = mmr.get_root().expect("Failed to calculate merkle mountain range; qed");
-			mmr.commit().expect("Failed to push parent hash to mmr.");
-
-			let mmr_item = DigestItem::MerkleMountainRangeRoot(
-				mmr_root.into()
-			);
-
-			<frame_system::Module<T>>::deposit_log(mmr_item.into());
-		}
-	}
-}
-
 impl<T: Trait> Module<T> {
 	// TODO: Add rpc call for this
-	fn _get_proof(
+	fn _gen_proof(
 		block_number: T::BlockNumber,
-		mmr_header: &Header<T::BlockNumber, T::Hashing>,
-	) -> Result<MerkleProof<T::Hash, MMRMerge<T>>, DispatchError>
-	where
-		T::BlockNumber: Into<sp_core::U256> + TryFrom<sp_core::U256>,
-		T::Hash: sp_runtime::traits::Hash,
-	{
-		ensure!(block_number < mmr_header.number, "Block number too large");
-
-		let store = ModuleMMRStore::<T>::default();
+		mmr_block_number: T::BlockNumber,
+	) -> Result<MerkleProof<T::Hash, MMRMerge<T>>, DispatchError> {
+		ensure!(block_number < mmr_block_number, "Block number too large");
 
 		let pos = Self::position_of(block_number);
-		let mmr_header_pos = Self::position_of(&mmr_header.number);
+		let mmr_header_pos = Self::position_of(mmr_block_number);
+
+		let store = ModuleMMRStore::<T>::default();
 		let mmr = MMR::<_, MMRMerge<T>, _>::new(mmr_header_pos, store);
-
-		// find the first consensus digest with the right ID which converts to
-		// the right kind of consensus log.
-		let header_mmr_root = mmr_header
-			.digest
-			.convert_first(|l| l.as_merkle_mountain_range_root().cloned())
-			.expect("Header mmr get failed");
-
-		assert!(
-			mmr.get_root().expect("Get Root Failed") == header_mmr_root,
-			"MMR root not match"
-		);
 
 		let proof = mmr.gen_proof(vec![pos]).map_err(|_| <Error<T>>::ProofGF)?;
 
