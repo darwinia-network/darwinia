@@ -2033,7 +2033,7 @@ fn slashing_performed_according_exposure() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			Staking::eras_stakers(Staking::active_era().unwrap().index, 11).own_ring_balance,
-			1000
+			1000,
 		);
 
 		// Handle an offence with a historical exposure.
@@ -2042,7 +2042,7 @@ fn slashing_performed_according_exposure() {
 				offender: (
 					11,
 					Exposure {
-						total_power: 500,
+						total_power: Staking::currency_to_power(500, Staking::ring_pool()),
 						own_ring_balance: 500,
 						own_kton_balance: 0,
 						own_power: 0,
