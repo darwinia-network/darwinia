@@ -1944,13 +1944,13 @@ fn era_is_always_same_length() {
 		start_era(1);
 		assert_eq!(
 			Staking::eras_start_session_index(Staking::active_era().unwrap().index).unwrap(),
-			SessionsPerEra::get()
+			SessionsPerEra::get(),
 		);
 
 		start_era(2);
 		assert_eq!(
 			Staking::eras_start_session_index(Staking::active_era().unwrap().index).unwrap(),
-			SessionsPerEra::get() * 2
+			SessionsPerEra::get() * 2,
 		);
 
 		let session = Session::current_index();
@@ -1960,13 +1960,13 @@ fn era_is_always_same_length() {
 		assert_eq!(Staking::active_era().unwrap().index, 3);
 		assert_eq!(
 			Staking::eras_start_session_index(Staking::active_era().unwrap().index).unwrap(),
-			session + 2
+			session + 2,
 		);
 
 		start_era(4);
 		assert_eq!(
 			Staking::eras_start_session_index(Staking::active_era().unwrap().index).unwrap(),
-			session + 2 + SessionsPerEra::get()
+			session + 2 + SessionsPerEra::get(),
 		);
 	});
 }
@@ -1974,6 +1974,8 @@ fn era_is_always_same_length() {
 #[test]
 fn offence_forces_new_era() {
 	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Staking::force_era(), Forcing::NotForcing);
+
 		on_offence_now(
 			&[OffenceDetails {
 				offender: (11, Staking::eras_stakers(Staking::active_era().unwrap().index, 11)),
@@ -1990,6 +1992,7 @@ fn offence_forces_new_era() {
 fn offence_ensures_new_era_without_clobbering() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Staking::force_new_era_always(Origin::ROOT));
+		assert_eq!(Staking::force_era(), Forcing::ForceAlways);
 
 		on_offence_now(
 			&[OffenceDetails {
