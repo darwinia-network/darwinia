@@ -202,12 +202,12 @@ fn rewards_should_work() {
 	// * rewards get paid per Era
 	// * Check that nominators are also rewarded
 	ExtBuilder::default().nominate(true).build().execute_with(|| {
-		let init_balance_10 = Ring::total_balance(&10);
-		let init_balance_11 = Ring::total_balance(&11);
-		let init_balance_20 = Ring::total_balance(&20);
-		let init_balance_21 = Ring::total_balance(&21);
-		let init_balance_100 = Ring::total_balance(&100);
-		let init_balance_101 = Ring::total_balance(&101);
+		let init_balance_10 = Ring::free_balance(&10);
+		let init_balance_11 = Ring::free_balance(&11);
+		let init_balance_20 = Ring::free_balance(&20);
+		let init_balance_21 = Ring::free_balance(&21);
+		let init_balance_100 = Ring::free_balance(&100);
+		let init_balance_101 = Ring::free_balance(&101);
 
 		// Check state
 		<Payee<Test>>::insert(11, RewardDestination::Controller);
@@ -225,12 +225,12 @@ fn rewards_should_work() {
 
 		start_session(1);
 
-		assert_eq!(Ring::total_balance(&10), init_balance_10);
-		assert_eq!(Ring::total_balance(&11), init_balance_11);
-		assert_eq!(Ring::total_balance(&20), init_balance_20);
-		assert_eq!(Ring::total_balance(&21), init_balance_21);
-		assert_eq!(Ring::total_balance(&100), init_balance_100);
-		assert_eq!(Ring::total_balance(&101), init_balance_101);
+		assert_eq!(Ring::free_balance(&10), init_balance_10);
+		assert_eq!(Ring::free_balance(&11), init_balance_11);
+		assert_eq!(Ring::free_balance(&20), init_balance_20);
+		assert_eq!(Ring::free_balance(&21), init_balance_21);
+		assert_eq!(Ring::free_balance(&100), init_balance_100);
+		assert_eq!(Ring::free_balance(&101), init_balance_101);
 		assert_eq_uvec!(Session::validators(), vec![11, 21]);
 		assert_eq!(
 			Staking::eras_reward_points(Staking::active_era().unwrap().index),
@@ -251,25 +251,25 @@ fn rewards_should_work() {
 		make_all_reward_payment(0);
 
 		assert_eq_error_rate!(
-			Ring::total_balance(&10),
+			Ring::free_balance(&10),
 			init_balance_10 + part_for_10 * total_payout_0 * 2 / 3,
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&11), init_balance_11, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&11), init_balance_11, MICRO);
 		assert_eq_error_rate!(
-			Ring::total_balance(&20),
+			Ring::free_balance(&20),
 			init_balance_20 + part_for_20 * total_payout_0 * 1 / 3,
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&21), init_balance_21, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&21), init_balance_21, MICRO);
 		assert_eq_error_rate!(
-			Ring::total_balance(&100),
+			Ring::free_balance(&100),
 			init_balance_100
 				+ part_for_100_from_10 * total_payout_0 * 2 / 3
 				+ part_for_100_from_20 * total_payout_0 * 1 / 3,
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&101), init_balance_101, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&101), init_balance_101, MICRO);
 
 		assert_eq_uvec!(Session::validators(), vec![11, 21]);
 		Staking::reward_by_ids(vec![(11, 1)]);
@@ -282,25 +282,25 @@ fn rewards_should_work() {
 		make_all_reward_payment(1);
 
 		assert_eq_error_rate!(
-			Ring::total_balance(&10),
+			Ring::free_balance(&10),
 			init_balance_10 + part_for_10 * (total_payout_0 * 2 / 3 + total_payout_1),
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&11), init_balance_11, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&11), init_balance_11, MICRO);
 		assert_eq_error_rate!(
-			Ring::total_balance(&20),
+			Ring::free_balance(&20),
 			init_balance_20 + part_for_20 * total_payout_0 * 1 / 3,
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&21), init_balance_21, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&21), init_balance_21, MICRO);
 		assert_eq_error_rate!(
-			Ring::total_balance(&100),
+			Ring::free_balance(&100),
 			init_balance_100
 				+ part_for_100_from_10 * (total_payout_0 * 2 / 3 + total_payout_1)
 				+ part_for_100_from_20 * total_payout_0 * 1 / 3,
 			MICRO,
 		);
-		assert_eq_error_rate!(Ring::total_balance(&101), init_balance_101, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&101), init_balance_101, MICRO);
 	});
 }
 
@@ -545,8 +545,8 @@ fn nominating_and_rewards_should_work() {
 
 			// OLD validators must have already received some rewards.
 			make_all_reward_payment(0);
-			assert_eq!(Ring::total_balance(&40), 1 + total_payout_0 / 2);
-			assert_eq!(Ring::total_balance(&30), 1 + total_payout_0 / 2);
+			assert_eq!(Ring::free_balance(&40), 1 + total_payout_0 / 2);
+			assert_eq!(Ring::free_balance(&30), 1 + total_payout_0 / 2);
 
 			// ------ check the staked value of all parties.
 
@@ -619,22 +619,22 @@ fn nominating_and_rewards_should_work() {
 			let payout_for_20 = 2 * total_payout_1 / 3;
 			// Nominator 2: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
 			assert_eq_error_rate!(
-				Ring::total_balance(&2),
+				Ring::free_balance(&2),
 				initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
 				MICRO,
 			);
 			// Nominator 4: has [400/1800 ~ 2/9 from 10] + [600/2200 ~ 3/11 from 20]'s reward. ==> 2/9 + 3/11
 			assert_eq_error_rate!(
-				Ring::total_balance(&4),
+				Ring::free_balance(&4),
 				initial_balance + (2 * payout_for_10 / 9 + 3 * payout_for_20 / 11),
 				MICRO,
 			);
 
 			// Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
-			assert_eq_error_rate!(Ring::total_balance(&10), initial_balance + 5 * payout_for_10 / 9, MICRO);
+			assert_eq_error_rate!(Ring::free_balance(&10), initial_balance + 5 * payout_for_10 / 9, MICRO);
 			// Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
 			assert_eq_error_rate!(
-				Ring::total_balance(&20),
+				Ring::free_balance(&20),
 				initial_balance + 5 * payout_for_20 / 11,
 				MICRO,
 			);
@@ -682,7 +682,7 @@ fn nominators_also_get_slashed() {
 		start_era(1);
 
 		// Nominator stash didn't collect any.
-		assert_eq!(Ring::total_balance(&2), initial_balance);
+		assert_eq!(Ring::free_balance(&2), initial_balance);
 
 		// 10 goes offline
 		on_offence_now(
@@ -703,8 +703,8 @@ fn nominators_also_get_slashed() {
 		let nominator_slash = nominator_stake.min(total_slash - validator_slash);
 
 		// initial + first era reward + slash
-		assert_eq!(Ring::total_balance(&11), initial_balance - validator_slash);
-		assert_eq!(Ring::total_balance(&2), initial_balance - nominator_slash);
+		assert_eq!(Ring::free_balance(&11), initial_balance - validator_slash);
+		assert_eq!(Ring::free_balance(&2), initial_balance - nominator_slash);
 		check_exposure_all(Staking::active_era().unwrap().index);
 		check_nominator_all(Staking::active_era().unwrap().index);
 		// Because slashing happened.
@@ -1111,8 +1111,8 @@ fn validator_payment_prefs_work() {
 		start_era(1);
 		mock::make_all_reward_payment(0);
 
-		let balance_era_1_10 = Ring::total_balance(&10);
-		let balance_era_1_100 = Ring::total_balance(&100);
+		let balance_era_1_10 = Ring::free_balance(&10);
+		let balance_era_1_100 = Ring::free_balance(&100);
 
 		// Compute total payout now for whole duration as other parameter won't change
 		let total_payout_1 = current_total_payout_for_duration(3000);
@@ -1127,8 +1127,8 @@ fn validator_payment_prefs_work() {
 		let shared_cut = total_payout_1 - taken_cut;
 		let reward_of_10 = shared_cut * exposure_1.own_power as u128 / exposure_1.total_power as u128 + taken_cut;
 		let reward_of_100 = shared_cut * exposure_1.others[0].power as u128 / exposure_1.total_power as u128;
-		assert_eq_error_rate!(Ring::total_balance(&10), balance_era_1_10 + reward_of_10, MICRO);
-		assert_eq_error_rate!(Ring::total_balance(&100), balance_era_1_100 + reward_of_100, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&10), balance_era_1_10 + reward_of_10, MICRO);
+		assert_eq_error_rate!(Ring::free_balance(&100), balance_era_1_100 + reward_of_100, MICRO);
 
 		check_exposure_all(Staking::active_era().unwrap().index);
 		check_nominator_all(Staking::active_era().unwrap().index);
@@ -1335,7 +1335,7 @@ fn reward_to_stake_works() {
 				assert_eq!(total_ring, 69);
 			}
 
-			let _11_balance = Ring::total_balance(&11);
+			let _11_balance = Ring::free_balance(&11);
 			assert_eq!(_11_balance, 1000 + total_payout_0 / 2);
 
 			// Trigger another new era as the info are frozen before the era start.
@@ -1403,7 +1403,7 @@ fn on_free_balance_zero_stash_removes_validator() {
 		// Reduce free_balance of stash to 0
 		let _ = Ring::slash(&11, Balance::max_value());
 		// Check total balance of stash
-		assert_eq!(Ring::total_balance(&11), 0);
+		assert_eq!(Ring::free_balance(&11), 0);
 
 		// Reap the stash
 		assert_ok!(Staking::reap_stash(Origin::NONE, 11));
@@ -1443,7 +1443,7 @@ fn on_free_balance_zero_stash_removes_nominator() {
 		// Reduce free_balance of controller to 0
 		let _ = Ring::slash(&10, Balance::max_value());
 		// Check total balance of account 10
-		assert_eq!(Ring::total_balance(&10), 0);
+		assert_eq!(Ring::free_balance(&10), 0);
 
 		// Check the balance of the stash account has not been touched
 		assert_eq!(Ring::free_balance(11), 256000);
@@ -1459,7 +1459,7 @@ fn on_free_balance_zero_stash_removes_nominator() {
 		// Reduce free_balance of stash to 0
 		let _ = Ring::slash(&11, Balance::max_value());
 		// Check total balance of stash
-		assert_eq!(Ring::total_balance(&11), 0);
+		assert_eq!(Ring::free_balance(&11), 0);
 
 		// Reap the stash
 		assert_ok!(Staking::reap_stash(Origin::NONE, 11));
@@ -1629,8 +1629,8 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 			// setup
 			assert_ok!(Staking::chill(Origin::signed(30)));
 			assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
-			let init_balance_2 = Ring::total_balance(&2);
-			let init_balance_10 = Ring::total_balance(&10);
+			let init_balance_2 = Ring::free_balance(&2);
+			let init_balance_10 = Ring::free_balance(&10);
 
 			// Stingy validator.
 			assert_ok!(Staking::bond(
@@ -1662,9 +1662,9 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 			}
 
 			// Old ones are rewarded.
-			assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout_0 / 3, MICRO);
+			assert_eq_error_rate!(Ring::free_balance(&10), init_balance_10 + total_payout_0 / 3, MICRO);
 			// no rewards paid to 2. This was initial election.
-			assert_eq!(Ring::total_balance(&2), init_balance_2);
+			assert_eq!(Ring::free_balance(&2), init_balance_2);
 
 			// reward era 1
 			let total_payout_1 = current_total_payout_for_duration(3000);
@@ -1683,9 +1683,9 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 				assert_eq!(total_ring, 0);
 			}
 
-			assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout_1 / 3, MICRO);
+			assert_eq_error_rate!(Ring::free_balance(&2), init_balance_2 + total_payout_1 / 3, MICRO);
 			assert_eq_error_rate!(
-				Ring::total_balance(&10),
+				Ring::free_balance(&10),
 				init_balance_10 + total_payout_0 / 3 + total_payout_1 / 3,
 				MICRO,
 			);
@@ -1827,7 +1827,7 @@ fn reward_validator_slashing_validator_doesnt_overflow() {
 		<ErasStakersClipped<Test>>::insert(0, 11, exposure);
 		<ErasValidatorReward<Test>>::insert(0, stake);
 		assert_ok!(Staking::payout_validator(Origin::signed(10), 0));
-		assert_eq!(Ring::total_balance(&11), stake * 2);
+		assert_eq!(Ring::free_balance(&11), stake * 2);
 
 		// Set staker
 		let _ = Ring::make_free_balance_be(&11, stake);
@@ -1870,8 +1870,8 @@ fn reward_validator_slashing_validator_doesnt_overflow() {
 			&[Perbill::from_percent(100)],
 		);
 
-		assert_eq_error_rate!(Ring::total_balance(&11), stake - 1000, MICRO);
-		assert_eq!(Ring::total_balance(&2), 1);
+		assert_eq_error_rate!(Ring::free_balance(&11), stake - 1000, MICRO);
+		assert_eq!(Ring::free_balance(&2), 1);
 	})
 }
 
@@ -2149,8 +2149,8 @@ fn reporters_receive_their_slice() {
 		// 50% * (10% * initial_balance / 2)
 		let reward = (initial_balance / 20) / 2;
 		let reward_each = reward / 2; // split into two pieces.
-		assert_eq!(Ring::total_balance(&1), 10 + reward_each);
-		assert_eq!(Ring::total_balance(&2), 20 + reward_each);
+		assert_eq!(Ring::free_balance(&1), 10 + reward_each);
+		assert_eq!(Ring::free_balance(&2), 20 + reward_each);
 		assert_ledger_consistent(11);
 	});
 }
@@ -2183,7 +2183,7 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 		// F1 * (reward_proportion * slash - 0)
 		// 50% * (10% * initial_balance * 20%)
 		let reward = (initial_balance / 5) / 20;
-		assert_eq!(Ring::total_balance(&1), 10 + reward);
+		assert_eq!(Ring::free_balance(&1), 10 + reward);
 
 		on_offence_now(
 			&[OffenceDetails {
@@ -2198,7 +2198,7 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 		// F1 * (reward_proportion * slash - prior_payout)
 		// 50% * (10% * (initial_balance / 2) - prior_payout)
 		let reward = ((initial_balance / 20) - prior_payout) / 2;
-		assert_eq!(Ring::total_balance(&1), 10 + prior_payout + reward);
+		assert_eq!(Ring::free_balance(&1), 10 + prior_payout + reward);
 		assert_ledger_consistent(11);
 	});
 }
@@ -2207,8 +2207,8 @@ fn subsequent_reports_in_same_span_pay_out_less() {
 fn invulnerables_are_not_slashed() {
 	// For invulnerable validators no slashing is performed.
 	ExtBuilder::default().invulnerables(vec![11]).build().execute_with(|| {
-		assert_eq!(Ring::total_balance(&11), 1000);
-		assert_eq!(Ring::total_balance(&21), 2000);
+		assert_eq!(Ring::free_balance(&11), 1000);
+		assert_eq!(Ring::free_balance(&21), 2000);
 
 		let exposure = Staking::eras_stakers(Staking::active_era().unwrap().index, 21);
 		let initial_balance = Staking::stake_of(&21).0;
@@ -2230,14 +2230,14 @@ fn invulnerables_are_not_slashed() {
 		);
 
 		// The validator 11 hasn't been slashed, but 21 has been.
-		assert_eq!(Ring::total_balance(&11), 1000);
+		assert_eq!(Ring::free_balance(&11), 1000);
 		// 2000 - (0.2 * initial_balance)
-		assert_eq!(Ring::total_balance(&21), 2000 - (2 * initial_balance / 10));
+		assert_eq!(Ring::free_balance(&21), 2000 - (2 * initial_balance / 10));
 
 		// ensure that nominators were slashed as well.
 		for (initial_balance, other) in nominator_balances.into_iter().zip(exposure.others) {
 			assert_eq!(
-				Ring::total_balance(&other.who),
+				Ring::free_balance(&other.who),
 				initial_balance - (2 * other.ring_balance / 10),
 			);
 		}
