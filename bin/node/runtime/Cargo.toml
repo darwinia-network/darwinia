@@ -17,54 +17,54 @@ rustc-hex = { version = "2.0", optional = true }
 serde = { version = "1.0.102", optional = true }
 
 # primitives
-sp-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-block-builder = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-consensus-babe = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-inherents = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-keyring = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-offchain = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-version = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-block-builder = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-consensus-babe = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-inherents = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-keyring = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-offchain = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-version = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-node-primitives = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+node-primitives = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 # frame dependencies
-frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-frame-executive = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+frame-benchmarking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-executive = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-babe = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-collective = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-contracts = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-contracts-primitives = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-contracts-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-#pallet-democracy = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-finality-tracker = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-grandpa = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-im-online = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-indices = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-identity = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-membership = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-offences = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-recovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-society = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-sudo = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+pallet-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-babe = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-collective = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-contracts = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-contracts-primitives = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-contracts-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+#pallet-democracy = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-finality-tracker = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-grandpa = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-im-online = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-indices = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-identity = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-membership = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-offences = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-recovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-society = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-sudo = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 pallet-claims = { package = "darwinia-claims", default-features = false, path = "../../../frame/claims" }
 pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
@@ -79,7 +79,7 @@ pallet-vesting = { package = "darwinia-vesting", default-features = false, path 
 pallet-header-mmr = { package = "darwinia-header-mmr", default-features = false, path = "../../../frame/header-mmr" }
 
 [build-dependencies]
-wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 [features]
 default = ["std"]

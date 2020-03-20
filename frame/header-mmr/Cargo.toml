@@ -12,13 +12,13 @@ description = "Pallet for logging MMR into header digest"
 serde = { version = "1.0.101", optional = true }
 codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false }
 #frame-benchmarking = { version = "2.0.0-alpha.2", default-features = false, path = "../benchmarking" }
-frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
-sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "denny_support_mmr_header" }
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
 
