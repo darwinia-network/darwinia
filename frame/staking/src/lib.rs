@@ -1079,10 +1079,6 @@ decl_module! {
 
 		fn deposit_event() = default;
 
-		fn on_initialize() {
-			Self::ensure_storage_upgraded();
-		}
-
 		fn on_finalize() {
 			if let Some(mut active_era) = Self::active_era() {
 				if active_era.start.is_none() {
@@ -1536,8 +1532,6 @@ decl_module! {
 		/// # </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn validate(origin, prefs: ValidatorPrefs) {
-			Self::ensure_storage_upgraded();
-
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
@@ -1559,8 +1553,6 @@ decl_module! {
 		/// # </weight>
 		#[weight = SimpleDispatchInfo::FixedNormal(750_000)]
 		fn nominate(origin, targets: Vec<<T::Lookup as StaticLookup>::Source>) {
-			Self::ensure_storage_upgraded();
-
 			let controller = ensure_signed(origin)?;
 			let ledger = Self::ledger(&controller).ok_or(<Error<T>>::NotController)?;
 			let stash = &ledger.stash;
@@ -1815,7 +1807,6 @@ decl_module! {
 		///
 		/// - `stash`: The stash account to reap. Its balance must be zero.
 		fn reap_stash(_origin, stash: T::AccountId) {
-			Self::ensure_storage_upgraded();
 			ensure!(T::RingCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
 			ensure!(T::KtonCurrency::total_balance(&stash).is_zero(), <Error<T>>::FundedTarget);
 
@@ -2091,9 +2082,6 @@ impl<T: Trait> Module<T> {
 		<Validators<T>>::remove(stash);
 		<Nominators<T>>::remove(stash);
 	}
-
-	/// Ensures storage is upgraded to most recent necessary state.
-	fn ensure_storage_upgraded() {}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
 	/// to pay the right payee for the given staker account.
@@ -2480,7 +2468,6 @@ impl<T: Trait> Module<T> {
 
 impl<T: Trait> pallet_session::SessionManager<T::AccountId> for Module<T> {
 	fn new_session(new_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		Self::ensure_storage_upgraded();
 		Self::new_session(new_index)
 	}
 	fn end_session(end_index: SessionIndex) {
@@ -2582,8 +2569,6 @@ where
 		slash_fraction: &[Perbill],
 		slash_session: SessionIndex,
 	) {
-		Self::ensure_storage_upgraded();
-
 		let reward_proportion = SlashRewardFraction::get();
 
 		let active_era = {
@@ -2670,8 +2655,6 @@ where
 	O: Offence<Offender>,
 {
 	fn report_offence(reporters: Vec<Reporter>, offence: O) -> Result<(), OffenceError> {
-		<Module<T>>::ensure_storage_upgraded();
-
 		// disallow any slashing from before the current bonding period.
 		let offence_session = offence.session_index();
 		let bonded_eras = BondedEras::get();
