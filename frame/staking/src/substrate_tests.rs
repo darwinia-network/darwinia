@@ -2863,3 +2863,22 @@ fn test_max_nominator_rewarded_per_validator_and_cant_steal_someone_else_reward(
 		}
 	});
 }
+
+#[test]
+fn set_history_depth_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		start_era(10);
+		Staking::set_history_depth(Origin::ROOT, 20).unwrap();
+		assert!(<Staking as Store>::ErasTotalStake::contains_key(10 - 4));
+		assert!(<Staking as Store>::ErasTotalStake::contains_key(10 - 5));
+		Staking::set_history_depth(Origin::ROOT, 4).unwrap();
+		assert!(<Staking as Store>::ErasTotalStake::contains_key(10 - 4));
+		assert!(!<Staking as Store>::ErasTotalStake::contains_key(10 - 5));
+		Staking::set_history_depth(Origin::ROOT, 3).unwrap();
+		assert!(!<Staking as Store>::ErasTotalStake::contains_key(10 - 4));
+		assert!(!<Staking as Store>::ErasTotalStake::contains_key(10 - 5));
+		Staking::set_history_depth(Origin::ROOT, 8).unwrap();
+		assert!(!<Staking as Store>::ErasTotalStake::contains_key(10 - 4));
+		assert!(!<Staking as Store>::ErasTotalStake::contains_key(10 - 5));
+	});
+}
