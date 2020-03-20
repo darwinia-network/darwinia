@@ -1558,7 +1558,7 @@ fn wrong_vote_is_null() {
 				2,
 				StakingBalance::RingBalance(2000),
 				RewardDestination::default(),
-				0
+				0,
 			));
 			assert_ok!(Staking::nominate(
 				Origin::signed(2),
@@ -1626,8 +1626,8 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 			// setup
 			assert_ok!(Staking::chill(Origin::signed(30)));
 			assert_ok!(Staking::set_payee(Origin::signed(10), RewardDestination::Controller));
-			let init_balance_2 = Ring::free_balance(&2);
-			let init_balance_10 = Ring::free_balance(&10);
+			let init_balance_2 = Ring::total_balance(&2);
+			let init_balance_10 = Ring::total_balance(&10);
 
 			// Stingy validator.
 			assert_ok!(Staking::bond(
@@ -1635,7 +1635,7 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 				2,
 				StakingBalance::RingBalance(1),
 				RewardDestination::Controller,
-				0
+				0,
 			));
 			assert_ok!(Staking::validate(Origin::signed(2), ValidatorPrefs::default()));
 
@@ -1644,27 +1644,48 @@ fn bond_with_little_staked_value_bounded_by_slot_stake() {
 			assert!(total_payout_0 > 100); // Test is meaningful if reward something
 			reward_all_elected();
 			start_era(1);
-			mock::make_all_reward_payment(0);
+			make_all_reward_payment(0);
 
 			// 2 is elected.
 			assert_eq_uvec!(validator_controllers(), vec![20, 10, 2]);
 			// And has minimal stake
-			assert_eq!(
-				Staking::eras_stakers(Staking::active_era().unwrap().index, 2).own_ring_balance,
-				0
-			);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 2);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 0);
+			}
 
 			// Old ones are rewarded.
-			assert_eq!(Ring::free_balance(10), init_balance_10 + total_payout_0 / 3 - 1);
+			assert_eq_error_rate!(Ring::total_balance(&10), init_balance_10 + total_payout_0 / 3, MICRO);
 			// no rewards paid to 2. This was initial election.
-			assert_eq!(Ring::free_balance(2), init_balance_2);
+			assert_eq!(Ring::total_balance(&2), init_balance_2);
 
 			// reward era 1
 			let total_payout_1 = current_total_payout_for_duration(3000);
 			assert!(total_payout_1 > 100); // Test is meaningful if reward something
 			reward_all_elected();
 			start_era(2);
-			mock::make_all_reward_payment(1);
+			make_all_reward_payment(1);
+
+			assert_eq_uvec!(validator_controllers(), vec![20, 10, 2]);
+			{
+				let expo = Staking::eras_stakers(Staking::active_era().unwrap().index, 2);
+				let total_ring = expo
+					.others
+					.iter()
+					.fold(expo.own_ring_balance, |acc, i| acc + i.ring_balance);
+				assert_eq!(total_ring, 0);
+			}
+
+			assert_eq_error_rate!(Ring::total_balance(&2), init_balance_2 + total_payout_1 / 3, MICRO);
+			assert_eq_error_rate!(
+				Ring::total_balance(&10),
+				init_balance_10 + total_payout_0 / 3 + total_payout_1 / 3,
+				MICRO,
+			);
 
 			check_exposure_all(Staking::active_era().unwrap().index);
 			check_nominator_all(Staking::active_era().unwrap().index);
