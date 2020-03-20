@@ -1384,7 +1384,7 @@ fn on_free_balance_zero_stash_removes_validator() {
 		assert!(<Payee<Test>>::contains_key(&11));
 
 		// Reduce free_balance of controller to 0
-		let _ = Ring::slash(&10, u64::max_value() as u128);
+		let _ = Ring::slash(&10, Balance::max_value());
 
 		// Check the balance of the stash account has not been touched
 		assert_eq!(Ring::free_balance(11), 256000);
@@ -1398,7 +1398,7 @@ fn on_free_balance_zero_stash_removes_validator() {
 		assert!(<Payee<Test>>::contains_key(&11));
 
 		// Reduce free_balance of stash to 0
-		let _ = Ring::slash(&11, u64::max_value() as u128);
+		let _ = Ring::slash(&11, Balance::max_value());
 		// Check total balance of stash
 		assert_eq!(Ring::total_balance(&11), 0);
 
