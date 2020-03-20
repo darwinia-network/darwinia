@@ -54,8 +54,8 @@ jobs:
       script: .maintain/ci/darwinia_test_script.sh eth-backing
 
     - stage: Darwinia Test
-        env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native HEADERMMR
-        script: .maintain/ci/darwinia_test_script.sh header-mmr
+      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native HEADERMMR
+      script: .maintain/ci/darwinia_test_script.sh header-mmr
 
     # TODO: remove this when overall test case ready
   allow_failures:
