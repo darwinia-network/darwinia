@@ -438,10 +438,10 @@ fn no_candidate_emergency_condition() {
 			let prefs = ValidatorPrefs {
 				commission: Perbill::one(),
 			};
-			<Staking as crate::Store>::Validators::insert(11, prefs.clone());
+			<Staking as Store>::Validators::insert(11, prefs.clone());
 
 			// set the minimum validator count.
-			<Staking as crate::Store>::MinimumValidatorCount::put(10);
+			<Staking as Store>::MinimumValidatorCount::put(10);
 
 			let _ = Staking::chill(Origin::signed(10));
 
@@ -633,11 +633,7 @@ fn nominating_and_rewards_should_work() {
 			// Validator 10: got 800 / 1800 external stake => 8/18 =? 4/9 => Validator's share = 5/9
 			assert_eq_error_rate!(Ring::free_balance(&10), initial_balance + 5 * payout_for_10 / 9, MICRO);
 			// Validator 20: got 1200 / 2200 external stake => 12/22 =? 6/11 => Validator's share = 5/11
-			assert_eq_error_rate!(
-				Ring::free_balance(&20),
-				initial_balance + 5 * payout_for_20 / 11,
-				MICRO,
-			);
+			assert_eq_error_rate!(Ring::free_balance(&20), initial_balance + 5 * payout_for_20 / 11, MICRO,);
 
 			check_exposure_all(Staking::active_era().unwrap().index);
 			check_nominator_all(Staking::active_era().unwrap().index);
@@ -2322,11 +2318,8 @@ fn garbage_collection_after_slashing() {
 		);
 
 		assert_eq!(Ring::free_balance(11), 256_000 - 25_600);
-		assert!(<Staking as crate::Store>::SlashingSpans::get(&11).is_some());
-		assert_eq!(
-			<Staking as crate::Store>::SpanSlash::get(&(11, 0)).amount_slashed().r,
-			25_600
-		);
+		assert!(<Staking as Store>::SlashingSpans::get(&11).is_some());
+		assert_eq!(<Staking as Store>::SpanSlash::get(&(11, 0)).amount_slashed().r, 25_600,);
 
 		on_offence_now(
 			&[OffenceDetails {
@@ -2344,10 +2337,10 @@ fn garbage_collection_after_slashing() {
 
 		assert_ok!(Staking::reap_stash(Origin::NONE, 11));
 
-		assert!(<Staking as crate::Store>::SlashingSpans::get(&11).is_none());
+		assert!(<Staking as Store>::SlashingSpans::get(&11).is_none());
 		assert_eq!(
-			<Staking as crate::Store>::SpanSlash::get(&(11, 0)).amount_slashed().r,
-			0
+			<Staking as Store>::SpanSlash::get(&(11, 0)).amount_slashed(),
+			&Zero::zero(),
 		);
 	})
 }
@@ -2376,19 +2369,19 @@ fn garbage_collection_on_window_pruning() {
 		assert_eq!(Ring::free_balance(11), 900);
 		assert_eq!(Ring::free_balance(101), 2000 - (nominated_value / 10));
 
-		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
-		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
+		assert!(<Staking as Store>::ValidatorSlashInEra::get(&now, &11).is_some());
+		assert!(<Staking as Store>::NominatorSlashInEra::get(&now, &101).is_some());
 
 		// + 1 because we have to exit the bonding window.
 		for era in (0..(BondingDurationInEra::get() + 1)).map(|offset| offset + now + 1) {
-			assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_some());
-			assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_some());
+			assert!(<Staking as Store>::ValidatorSlashInEra::get(&now, &11).is_some());
+			assert!(<Staking as Store>::NominatorSlashInEra::get(&now, &101).is_some());
 
 			start_era(era);
 		}
 
-		assert!(<Staking as crate::Store>::ValidatorSlashInEra::get(&now, &11).is_none());
-		assert!(<Staking as crate::Store>::NominatorSlashInEra::get(&now, &101).is_none());
+		assert!(<Staking as Store>::ValidatorSlashInEra::get(&now, &11).is_none());
+		assert!(<Staking as Store>::NominatorSlashInEra::get(&now, &101).is_none());
 	})
 }
 
@@ -2472,7 +2465,13 @@ fn remove_deferred() {
 			1,
 		);
 
-		Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0]).unwrap();
+		// fails if empty
+		assert_noop!(
+			Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![]),
+			StakingError::EmptyTargets
+		);
+
+		assert_ok!(Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0]));
 
 		assert_eq!(Ring::free_balance(11), 1000);
 		assert_eq!(Ring::free_balance(101), 2000);
@@ -2539,12 +2538,47 @@ fn remove_multi_deferred() {
 			&[Perbill::from_percent(25)],
 		);
 
-		assert_eq!(<Staking as Store>::UnappliedSlashes::get(&1).len(), 3);
-		Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0, 2]).unwrap();
+		on_offence_now(
+			&[OffenceDetails {
+				offender: (42, exposure.clone()),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(25)],
+		);
+
+		on_offence_now(
+			&[OffenceDetails {
+				offender: (69, exposure.clone()),
+				reporters: vec![],
+			}],
+			&[Perbill::from_percent(25)],
+		);
+
+		assert_eq!(<Staking as Store>::UnappliedSlashes::get(&1).len(), 5);
+
+		// fails if list is not sorted
+		assert_noop!(
+			Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![2, 0, 4]),
+			StakingError::NotSortedAndUnique,
+		);
+		// fails if list is not unique
+		assert_noop!(
+			Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0, 2, 2]),
+			StakingError::NotSortedAndUnique,
+		);
+		// fails if bad index
+		assert_noop!(
+			Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![1, 2, 3, 4, 5]),
+			StakingError::InvalidSlashIndex,
+		);
+
+		assert_ok!(Staking::cancel_deferred_slash(Origin::ROOT, 1, vec![0, 2, 4]));
 
 		let slashes = <Staking as Store>::UnappliedSlashes::get(&1);
-		assert_eq!(slashes.len(), 1);
+		assert_eq!(slashes.len(), 2);
+		// println!("Slashes: {:?}", slashes);
 		assert_eq!(slashes[0].validator, 21);
+		assert_eq!(slashes[1].validator, 42);
 	})
 }
 
