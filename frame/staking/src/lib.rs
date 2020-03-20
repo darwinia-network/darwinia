@@ -498,43 +498,39 @@ where
 		                    active_kton: &mut KtonBalance,
 		                    slash_ring: &mut RingBalance,
 		                    slash_kton: &mut KtonBalance| {
-			let slash_from_active_ring = (*slash_ring).min(*active_ring);
-			let slash_from_active_kton = (*slash_kton).min(*active_kton);
+			let slashable_active_ring = (*slash_ring).min(*active_ring);
+			let slashable_active_kton = (*slash_kton).min(*active_kton);
 
-			if !slash_from_active_ring.is_zero() {
-				let normal_ring = *active_ring - *active_deposit_ring;
-				if normal_ring < *slash_ring {
-					let mut slash_deposit_ring = *slash_ring - (*active_ring - *active_deposit_ring);
-
-					// This relate to the testcase `reward_validator_slashing_validator_doesnt_overflow`,
-					// if some conditions are missing, free to modify or add more additional tests.
-					*active_deposit_ring = active_deposit_ring.saturating_sub(slash_deposit_ring);
-
+			if !slashable_active_ring.is_zero() {
+				let slashable_normal_ring = *active_ring - *active_deposit_ring;
+				if let Some(mut slashable_deposit_ring) = slashable_active_ring.checked_sub(&slashable_normal_ring) {
 					deposit_item.drain_filter(|item| {
 						if ts >= item.expire_time {
 							true
 						} else {
-							if slash_deposit_ring.is_zero() {
+							if slashable_deposit_ring.is_zero() {
 								false
 							} else {
-								if slash_deposit_ring > item.value {
-									slash_deposit_ring -= item.value;
+								if let Some(new_slashable_deposit_ring) =
+									slashable_deposit_ring.checked_sub(&item.value)
+								{
+									slashable_deposit_ring = new_slashable_deposit_ring;
 									true
 								} else {
-									item.value -= sp_std::mem::replace(&mut slash_deposit_ring, Zero::zero());
+									item.value -= sp_std::mem::replace(&mut slashable_deposit_ring, Zero::zero());
 									false
 								}
 							}
 						}
 					});
 				}
-				*active_ring -= slash_from_active_ring;
-				*slash_ring -= slash_from_active_ring;
+				*active_ring -= slashable_active_ring;
+				*slash_ring -= slashable_active_ring;
 			}
 
-			if !slash_from_active_kton.is_zero() {
-				*active_kton -= slash_from_active_kton;
-				*slash_kton -= slash_from_active_kton;
+			if !slashable_active_kton.is_zero() {
+				*active_kton -= slashable_active_kton;
+				*slash_kton -= slashable_active_kton;
 			}
 		};
 
