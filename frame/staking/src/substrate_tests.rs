@@ -2009,6 +2009,7 @@ fn offence_ensures_new_era_without_clobbering() {
 #[test]
 fn offence_deselects_validator_when_slash_is_zero() {
 	ExtBuilder::default().build().execute_with(|| {
+		assert!(Session::validators().contains(&11));
 		assert!(<Validators<Test>>::contains_key(11));
 		on_offence_now(
 			&[OffenceDetails {
@@ -2018,6 +2019,9 @@ fn offence_deselects_validator_when_slash_is_zero() {
 			&[Perbill::from_percent(0)],
 		);
 		assert_eq!(Staking::force_era(), Forcing::ForceNew);
+		assert!(!<Validators<Test>>::contains_key(11));
+		start_era(1);
+		assert!(!Session::validators().contains(&11));
 		assert!(!<Validators<Test>>::contains_key(11));
 	});
 }
