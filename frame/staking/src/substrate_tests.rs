@@ -1438,7 +1438,7 @@ fn on_free_balance_zero_stash_removes_nominator() {
 		assert!(<Payee<Test>>::contains_key(&11));
 
 		// Reduce free_balance of controller to 0
-		let _ = Ring::slash(&10, u64::max_value() as u128);
+		let _ = Ring::slash(&10, Balance::max_value());
 		// Check total balance of account 10
 		assert_eq!(Ring::total_balance(&10), 0);
 
@@ -1454,7 +1454,7 @@ fn on_free_balance_zero_stash_removes_nominator() {
 		assert!(<Payee<Test>>::contains_key(&11));
 
 		// Reduce free_balance of stash to 0
-		let _ = Ring::slash(&11, u64::max_value() as u128);
+		let _ = Ring::slash(&11, Balance::max_value());
 		// Check total balance of stash
 		assert_eq!(Ring::total_balance(&11), 0);
 
