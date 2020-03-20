@@ -2065,6 +2065,7 @@ fn slash_in_old_span_does_not_deselect() {
 		start_era(1);
 
 		assert!(<Validators<Test>>::contains_key(11));
+		assert!(Session::validators().contains(&11));
 		on_offence_now(
 			&[OffenceDetails {
 				offender: (11, Staking::eras_stakers(Staking::active_era().unwrap().index, 11)),
@@ -2080,6 +2081,7 @@ fn slash_in_old_span_does_not_deselect() {
 		Staking::validate(Origin::signed(10), Default::default()).unwrap();
 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
 		assert!(<Validators<Test>>::contains_key(11));
+		assert!(!Session::validators().contains(&11));
 
 		start_era(3);
 
@@ -2098,6 +2100,7 @@ fn slash_in_old_span_does_not_deselect() {
 		// not for zero-slash.
 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
 		assert!(<Validators<Test>>::contains_key(11));
+		assert!(Session::validators().contains(&11));
 
 		on_offence_in_era(
 			&[OffenceDetails {
@@ -2112,6 +2115,7 @@ fn slash_in_old_span_does_not_deselect() {
 		// or non-zero.
 		assert_eq!(Staking::force_era(), Forcing::NotForcing);
 		assert!(<Validators<Test>>::contains_key(11));
+		assert!(Session::validators().contains(&11));
 		assert_ledger_consistent(11);
 	});
 }
