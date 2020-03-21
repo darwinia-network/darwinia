@@ -160,14 +160,12 @@
 	},
 	"OtherSignature": {
 		"_enum": {
-			"Dot": "EcdsaSignature",
 			"Eth": "EcdsaSignature",
 			"Tron": "EcdsaSignature"
 		}
 	},
 	"OtherAddress": {
 		"_enum": {
-			"Dot": "EthereumAddress",
 			"Eth": "EthereumAddress",
 			"Tron": "EthereumAddress"
 		}
