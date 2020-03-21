@@ -1,10 +1,12 @@
 //! Test utilities
 
+// --- std ---
 use std::{
 	cell::RefCell,
 	collections::{HashMap, HashSet},
 };
 
+// --- third-party ---
 use frame_support::{
 	assert_ok, impl_outer_origin, parameter_types,
 	storage::IterableStorageMap,
@@ -15,7 +17,7 @@ use frame_support::{
 use sp_core::{crypto::key_types, H256};
 use sp_runtime::{
 	testing::{Header, UintAuthorityId},
-	traits::{IdentityLookup, OnFinalize, OnInitialize, OpaqueKeys, SaturatedConversion},
+	traits::{IdentityLookup, OnFinalize, OnInitialize, OpaqueKeys},
 	{KeyTypeId, Perbill},
 };
 use sp_staking::{
@@ -23,6 +25,7 @@ use sp_staking::{
 	SessionIndex,
 };
 
+// --- custom ---
 use crate::*;
 
 // --- substrate ---
@@ -31,15 +34,19 @@ pub type Session = pallet_session::Module<Test>;
 pub type Timestamp = pallet_timestamp::Module<Test>;
 
 // --- custom ---
-pub type Ring = pallet_ring::Module<Test>;
 pub type Kton = pallet_kton::Module<Test>;
+pub type Ring = pallet_ring::Module<Test>;
+
+pub type RingError = pallet_ring::Error<Test, pallet_ring::DefaultInstance>;
+pub type KtonError = pallet_kton::Error<Test, pallet_kton::DefaultInstance>;
+pub type StakingError = crate::Error<Test>;
 
 // --- current ---
 pub type Staking = Module<Test>;
 
-type AccountId = u64;
+pub type AccountId = u64;
+pub type Balance = u128;
 type BlockNumber = u64;
-type Balance = u128;
 
 pub const NANO: Balance = 1;
 pub const MICRO: Balance = 1_000 * NANO;
@@ -47,7 +54,6 @@ pub const MILLI: Balance = 1_000 * MICRO;
 pub const COIN: Balance = 1_000 * MILLI;
 
 pub const CAP: Balance = 10_000_000_000 * COIN;
-pub const GENESIS_TIME: Moment = 0;
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
 thread_local! {
@@ -204,8 +210,7 @@ impl pallet_ring::Trait for Test {
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = 3;
 	pub const BondingDurationInEra: EraIndex = 3;
-	// assume 60 blocks per session
-	pub const BondingDurationInBlockNumber: BlockNumber = 3 * 3 * 60;
+	pub const BondingDurationInBlockNumber: BlockNumber = 9;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 
 	pub const Cap: Balance = CAP;
@@ -382,7 +387,6 @@ impl ExtBuilder {
 			invulnerables: self.invulnerables,
 			slash_reward_fraction: Perbill::from_percent(10),
 			// --- custom ---
-			genesis_time: 0,
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}
@@ -465,7 +469,6 @@ pub fn bond(acc: AccountId, val: StakingBalanceT<Test>) {
 		StakingBalance::KtonBalance(k) => {
 			let _ = Kton::make_free_balance_be(&(acc + 1), k);
 		}
-		_ => return,
 	}
 	assert_ok!(Staking::bond(
 		Origin::signed(acc + 1),
@@ -507,11 +510,11 @@ pub fn start_era(era_index: EraIndex) {
 	assert_eq!(Staking::active_era().unwrap().index, era_index);
 }
 
-pub fn current_total_payout_for_duration(duration: u64) -> Balance {
+pub fn current_total_payout_for_duration(era_duration: Moment) -> Balance {
 	inflation::compute_total_payout::<Test>(
-		duration.saturated_into::<Moment>(),
-		(Timestamp::now() - Staking::genesis_time()).saturated_into::<Moment>(),
-		(<mock::Test as Trait>::Cap::get() - Ring::total_issuance()).saturated_into::<Balance>(),
+		era_duration,
+		<Module<Test>>::living_time(),
+		<Test as Trait>::Cap::get() - Ring::total_issuance(),
 		Perbill::from_percent(50),
 	)
 	.0

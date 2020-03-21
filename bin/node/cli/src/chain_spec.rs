@@ -3,12 +3,7 @@
 pub use node_primitives::{AccountId, Balance, Signature};
 pub use node_runtime::GenesisConfig;
 
-use std::{
-	env,
-	fs::File,
-	path::Path,
-	time::{SystemTime, UNIX_EPOCH},
-};
+use std::{env, fs::File, path::Path};
 
 use grandpa_primitives::AuthorityId as GrandpaId;
 use hex_literal::hex;
@@ -302,7 +297,6 @@ pub fn darwinia_genesis(
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
 			// --- custom ---
-			genesis_time: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as _,
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),

@@ -28,12 +28,14 @@ sp-std = { default-features = false, git = "https://github.com/darwinia-network/
 
 # darwinia
 darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
-darwinia-support = {  default-features = false, path = "../support" }
+darwinia-support = { default-features = false, path = "../support" }
 
 [dev-dependencies]
 substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
 pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+darwinia-support = { features = ["easy-testing"], path = "../support" }
 
 pallet-ring = { package = "darwinia-ring", path = "../../frame/balances/ring" }
 pallet-kton = { package = "darwinia-kton", path = "../../frame/balances/kton" }
