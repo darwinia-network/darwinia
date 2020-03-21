@@ -10,7 +10,6 @@ title = "Darwinia Node Runtime Types"
 
 	[staking.complex]
 	StakingBalanceT = "StakingBalance"
-	StakingBalance._enum.All = ""
 	StakingBalance._enum.RingBalance = "Balance"
 	StakingBalance._enum.KtonBalance = "Balance"
 

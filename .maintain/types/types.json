@@ -7,7 +7,6 @@
 	"StakingBalanceT": "StakingBalance",
 	"StakingBalance": {
 		"_enum": {
-			"All": null,
 			"RingBalance": "Balance",
 			"KtonBalance": "Balance"
 		}

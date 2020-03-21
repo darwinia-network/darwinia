@@ -23,7 +23,7 @@ validator's active nominator set) is recalculated and where rewards are paid out
 ## Weights
 
 | Call                                  | Origin | darwinia  | substrate |
-|---------------------------------------|--------|-----------|-----------|
+| ------------------------------------- | ------ | --------- | --------- |
 | fn cancel\_deferred\_slash            | R      | 1,000,000 | 1,000,000 |
 | fn validate(...)                      | S      | 750,000   | 750,000   |
 | fn nominate(...)                      | S      | 750,000   | 750,000   |
@@ -76,7 +76,7 @@ pub fn start_session(session_index: SessionIndex) {
 ```
 
 | Unit        | Value    |
-|-------------|----------|
+| ----------- | -------- |
 | BlockNumber | 4        |
 | Session     | 3        |
 | Timestamp   | 3 * 1000 |

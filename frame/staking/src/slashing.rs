@@ -609,7 +609,7 @@ impl<'a, T: 'a + Trait> InspectingSpans<'a, T> {
 			Zero::zero()
 		};
 
-		if !reward.r.is_zero() || !reward.k.is_zero() {
+		if !reward.is_zero() {
 			changed = true;
 			span_record.paid_out += reward;
 			*self.paid_out += reward;
@@ -717,7 +717,7 @@ fn do_slash<T: Trait>(
 	}
 
 	if slashed {
-		<Module<T>>::update_ledger(&controller, &mut ledger, StakingBalance::All);
+		<Module<T>>::update_ledger(&controller, &mut ledger);
 		<Module<T>>::deposit_event(RawEvent::Slash(stash.clone(), value.r, value.k));
 	}
 }
@@ -756,22 +756,18 @@ fn pay_reporters<T: Trait>(
 	slashed_kton: KtonNegativeImbalance<T>,
 	reporters: &[T::AccountId],
 ) {
-	if (!reward_payout.r.is_zero() || !reward_payout.k.is_zero()) || reporters.is_empty() {
-		if !reward_payout.r.is_zero() {
-			// nobody to pay out to or nothing to pay;
-			// just treat the whole value as slashed.
-			T::RingSlash::on_unbalanced(slashed_ring);
-		}
-		if !reward_payout.k.is_zero() {
-			// nobody to pay out to or nothing to pay;
-			// just treat the whole value as slashed.
-			T::KtonSlash::on_unbalanced(slashed_kton);
-		}
-
+	if reporters.is_empty() {
 		return;
 	}
 
-	if !reward_payout.r.is_zero() && reward_payout.k.is_zero() {
+	let reward_ring_is_zero = reward_payout.r.is_zero();
+	let reward_kton_is_zero = reward_payout.k.is_zero();
+
+	if reward_ring_is_zero && reward_kton_is_zero {
+		return;
+	}
+
+	if !reward_ring_is_zero && reward_kton_is_zero {
 		// take rewards out of the slashed imbalance.
 		let ring_reward_payout = reward_payout.r.min(slashed_ring.peek());
 		let (mut ring_reward_payout, mut ring_slashed) = slashed_ring.split(ring_reward_payout);
@@ -789,7 +785,10 @@ fn pay_reporters<T: Trait>(
 		// the rest goes to the on-slash imbalance handler (e.g. treasury)
 		ring_slashed.subsume(ring_reward_payout); // remainder of reward division remains.
 		T::RingSlash::on_unbalanced(ring_slashed);
-	} else if reward_payout.r.is_zero() && !reward_payout.k.is_zero() {
+		// nobody to pay out to or nothing to pay;
+		// just treat the whole value as slashed.
+		T::KtonSlash::on_unbalanced(slashed_kton);
+	} else if reward_ring_is_zero && !reward_kton_is_zero {
 		let kton_reward_payout = reward_payout.k.min(slashed_kton.peek());
 		let (mut kton_reward_payout, mut kton_slashed) = slashed_kton.split(kton_reward_payout);
 
@@ -806,7 +805,10 @@ fn pay_reporters<T: Trait>(
 		// the rest goes to the on-slash imbalance handler (e.g. treasury)
 		kton_slashed.subsume(kton_reward_payout); // remainder of reward division remains.
 		T::KtonSlash::on_unbalanced(kton_slashed);
-	} else if !reward_payout.is_zero() {
+		// nobody to pay out to or nothing to pay;
+		// just treat the whole value as slashed.
+		T::RingSlash::on_unbalanced(slashed_ring);
+	} else if !reward_ring_is_zero && !reward_kton_is_zero {
 		// take rewards out of the slashed imbalance.
 		let ring_reward_payout = reward_payout.r.min(slashed_ring.peek());
 		let (mut ring_reward_payout, mut ring_slashed) = slashed_ring.split(ring_reward_payout);

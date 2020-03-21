@@ -139,6 +139,24 @@ pub struct BalanceLock<Balance, Moment> {
 	pub lock_reasons: LockReasons,
 }
 
+#[cfg(feature = "easy-testing")]
+impl<Balance, Moment> BalanceLock<Balance, Moment>
+where
+	Balance: Copy + PartialOrd + AtLeast32Bit,
+	Moment: Copy + PartialOrd,
+{
+	// For performance, we don't need the `at` in some cases
+	// Only use for tests to avoid write a lot of matches in tests
+	pub fn locked_amount(&self, at: Option<Moment>) -> Balance {
+		match &self.lock_for {
+			LockFor::Common { amount } => *amount,
+			LockFor::Staking(staking_lock) => {
+				staking_lock.locked_amount(at.expect("This's a `StakingLock`, please specify the `Moment`."))
+			}
+		}
+	}
+}
+
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub enum LockFor<Balance, Moment> {
 	Common { amount: Balance },
