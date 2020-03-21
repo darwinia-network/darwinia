@@ -20,6 +20,31 @@ share in any reward, and punishment, they take.
 validator's active nominator set) is recalculated and where rewards are paid out.
 - **Slash**: The punishment of a staker by reducing its funds.
 
+## Weights
+
+| Call                                  | Origin | darwinia  | substrate |
+| ------------------------------------- | ------ | --------- | --------- |
+| fn cancel\_deferred\_slash            | R      | 1,000,000 | 1,000,000 |
+| fn validate(...)                      | S      | 750,000   | 750,000   |
+| fn nominate(...)                      | S      | 750,000   | 750,000   |
+| fn set\_controller(...)               | S      | 750,000   | 750,000   |
+| fn try\_claim\_deposits\_with\_punish | S      | 750,000   | -         |
+| fn deposit\_extra(...)                | S      | 500,000   | -         |
+| fn bond(...)                          | S      | 500,000   | 500,000   |
+| fn bond\_extra(...)                   | S      | 500,000   | 500,000   |
+| fn chill(...)                         | S      | 500,000   | 500,000   |
+| fn set\_payee(...)                    | S      | 500,000   | 500,000   |
+| fn payout\_nominator                  | R      | 500,000   | 500,000   |
+| fn set\_history\_depth                | R      | 500,000   | 500,000   |
+| fn unbond(...)                        | S      | 500,000   | 400,000   |
+| fn clain\_mature\_deposits            | S      | 100,000   | 10,000    |
+| fn set\_invulnerables                 | R      | 10,000    | 10,000    |
+| fn force\_unstake                     | R      | 10,000    | 10,000    |
+| fn force\_new\_era_\always            | R      | 10,000    | 10,000    |
+| fn set\_validator\_count(...)         | R      | 10,000    | 5,000     |
+| fn force\_no\_eras                    | R      | 10,000    | 5,000     |
+| fn reap\_stash                        | R      | 10,000    | -         |
+
 ## FAQ
 
 ### Q1: What is the relationship between stash and controller?
@@ -46,13 +71,12 @@ pub fn start_session(session_index: SessionIndex) {
 		Timestamp::set_timestamp(System::block_number() * 1000);
 		Session::on_initialize(System::block_number());
 	}
-
 	assert_eq!(Session::current_index(), session_index);
 }
 ```
 
 | Unit        | Value    |
-|-------------|----------|
+| ----------- | -------- |
 | BlockNumber | 4        |
 | Session     | 3        |
 | Timestamp   | 3 * 1000 |
@@ -63,10 +87,8 @@ pub fn start_session(session_index: SessionIndex) {
 ```rust
 // 1. Insert stash account into Payment map.
 Payee::<Test>::insert(11, RewardDestination::Controller);
-
 // 2. Add reward points to validators using their stash account ID.
 Staking::reward_by_ids(vec![(11, 50)]);
-
 // 3. Make all validator and nominator request their payment
 make_all_reward_payment(0); // 0 means 0 era.
 ```
@@ -80,12 +102,3 @@ make_all_reward_payment(0); // 0 means 0 era.
     + payout from nominators to controller
   + reward validators
     + payout from validators to controller
-
-
-
-#### [Sequential Phragmén’s method.][0]
-
-
-
-
-[0]: https://research.web3.foundation/en/latest/polkadot/NPoS/4.%20Sequential%20Phragm%C3%A9n%E2%80%99s%20method.html
