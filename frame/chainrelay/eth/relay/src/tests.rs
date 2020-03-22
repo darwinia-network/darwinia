@@ -11,7 +11,7 @@ use frame_system::RawOrigin;
 use hex_literal::hex;
 use rustc_hex::FromHex;
 
-use crate::{mock::*, *};
+use crate::{mock::*, mock_headers::*, *};
 
 #[test]
 fn verify_receipt_proof() {
@@ -214,68 +214,10 @@ fn build_genesis_header() {
 ///   - get trie key failed
 ///   - decode trie key failed
 #[test]
-fn check_receipt_should_not_work() {
+fn check_receipt_safely() {
 	new_test_ext().execute_with(|| {
-		// check-1: relayer doesn't have authority should fail
-		assert_err!(
-			EthRelay::check_receipt(Origin::signed(0), EthReceiptProof::default()),
-			<Error<Test>>::AccountNP
-		);
+		// feature-1: canonical hash
 
-		// check-2: header info hash
-		assert_ok!(EthRelay::add_authority(RawOrigin::Root.into(), 0));
-		assert_err!(
-			EthRelay::check_receipt(Origin::signed(0), EthReceiptProof::default()),
-			<Error<Test>>::HeaderInfoNE
-		);
-
-		// check-3: canonical_hash
-		let mut header_0 = EthHeader::default();
-		header_0.difficulty = U256::from(131000_u128);
-		header_0.compute_hash();
-		assert_ok!(EthRelay::init_genesis_header(&header_0, 0_u64));
-
-		let header_1 = mock_header_from(&header_0, 0);
-		assert_ok!(EthRelay::relay_header(Origin::signed(0), header_1.clone()));
-
-		let mut er_proof = EthReceiptProof::default();
-		er_proof.index = 0_u64;
-		er_proof.header_hash = header_1.hash.unwrap();
-
-		assert_err!(
-			EthRelay::check_receipt(Origin::signed(0), er_proof),
-			<Error<Test>>::HeaderNS
-		);
-
-		// // er_proof = EthReceiptProof {
-		// // 	index: 0_u64,
-		// // 	proof: rlp::encode(&trie.get_proof(&rlp::encode(&1_u64)).unwrap()),
-		// // 	header_hash: header_1.hash.unwrap(),
-		// // };
-		// let mut trie = MerklePatriciaTrie::new(Rc::new(MemoryDB::new()));
-		// assert!(trie.insert(rlp::encode(&0_u64), rlp::encode(&header_0)).is_ok());
-		// assert!(trie.insert(rlp::encode(&0_u64), rlp::encode(&header_1)).is_ok());
-		// // header_1.compute_hash();
-		// er_proof = EthReceiptProof {
-		// 	index: 1_u64,
-		// 	proof: rlp::encode(&trie.get_proof(&rlp::encode(&1_u64)).unwrap()),
-		// 	header_hash: header_1.hash.unwrap(),
-		// };
-		//
-		// // assert_ok!(EthRelay::maybe_store_header(&header_1));
-		//
-		// // check-4: best_info error
-		// //
-		// // TODO
-		//
-		// // check-5: best_header_info.number > number_of_blocks_safe()
-		// //
-		// // TODO
-		//
-		// // check-6: best_info.number < proof.info
-		// // assert_err!(
-		// // 	EthRelay::check_receipt(Origin::signed(0), er_proof),
-		// // 	<Error<Test>>::HeaderNS
-		// // );
+		// feature-2: safe-block
 	});
 }

@@ -140,6 +140,9 @@ impl EthashPartial {
 			header.number() >= self.progpow_transition,
 		)));
 
+		println!("difficulty is {:#?}", difficulty);
+		println!("header.difficulty() is {:#?}", header.difficulty());
+
 		// `header.difficulty()` will less than `min_difficulty` only if
 		// the prev block's difficulty is less than `min_difficulty - 72`.
 		//
@@ -169,6 +172,8 @@ impl EthashPartial {
 		let min_difficulty = self.minimum_difficulty;
 
 		let difficulty_hardfork = header.number() >= self.difficulty_hardfork_transition;
+		println!("hardfork tx: {:#?}", self.difficulty_hardfork_transition);
+		println!("is hardfork: {:#?}", difficulty_hardfork);
 		let difficulty_bound_divisor = if difficulty_hardfork {
 			self.difficulty_hardfork_bound_divisor
 		} else {

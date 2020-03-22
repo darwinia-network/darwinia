@@ -6,6 +6,8 @@
 #[cfg(all(feature = "std", test))]
 mod mock;
 #[cfg(all(feature = "std", test))]
+mod mock_headers;
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 // --- third-party ---
@@ -496,9 +498,6 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		let info = Self::header_info_of(&proof_record.header_hash).ok_or(<Error<T>>::HeaderInfoNE)?;
 
 		let canonical_hash = Self::canonical_header_hash_of(info.number);
-		println!("canonical_hash: {:#?}", canonical_hash);
-		println!("proof number: {:#?}", info.number);
-		println!("proof hash: {:#?}", proof_record.header_hash);
 		ensure!(canonical_hash == proof_record.header_hash, <Error<T>>::HeaderNC);
 
 		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or(<Error<T>>::HeaderInfoNE)?;
