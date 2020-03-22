@@ -132,9 +132,8 @@ decl_module! {
 		fn offchain_worker(block: T::BlockNumber) {
 			let duration = T::BlockFetchDur::get();
 			if duration > 0.into() && block % duration == 0.into() && T::APIKey::get().is_some() {
-				if let Err(e) = Self::fetch_eth_header(block) {
-					debug::error!("[eth-offchain] Error: {:#?}", e);
-				}
+				let result = Self::fetch_eth_header(block);
+				debug::trace!(target: "eoc-fc", "[eth-offchain] Fetch Eth Header: {:?}", result);
 			}
 		}
 	}
@@ -143,11 +142,11 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	fn json_request(raw_url: &Vec<u8>, api_type: EthScanAPI) -> Result<JsonValue, DispatchError> {
 		let url = core::str::from_utf8(raw_url).map_err(|_| <Error<T>>::URLDF)?;
-		debug::warn!("[eth-offchain] Request: {}", url);
+		debug::trace!(target: "eoc-req", "[eth-offchain] Request: {}", url);
 		let mut maybe_resp_body = None;
 
 		for retry_time in 0..=MAX_RETRY {
-			debug::warn!("[eth-offchain] Retry: {}", retry_time);
+			debug::trace!(target: "eoc-req", "[eth-offchain] Retry: {}", retry_time);
 			if let Ok(pending) = Request::get(&url).send() {
 				if let Ok(resp) = pending.wait() {
 					if resp.code == 200 {
@@ -157,7 +156,7 @@ impl<T: Trait> Module<T> {
 							break;
 						}
 					} else {
-						debug::warn!("[eth-offchain] Status Code: {}", resp.code);
+						debug::trace!(target: "eoc-req", "[eth-offchain] Status Code: {}", resp.code);
 					}
 				}
 			}
@@ -168,6 +167,7 @@ impl<T: Trait> Module<T> {
 
 		let mut resp_body = maybe_resp_body.ok_or(<Error<T>>::ReqRMR)?;
 		debug::trace!(
+			target: "eoc-resp",
 			"[eth-offchain] Response: {}",
 			core::str::from_utf8(&resp_body).unwrap_or("Resposne Body - INVALID"),
 		);
@@ -295,7 +295,7 @@ impl<T: Trait> Module<T> {
 			.parse::<u64>()
 			.map_err(|_| <Error<T>>::U64CF)?;
 
-		debug::trace!("[eth-offchain] current block height: {}", current_block_height);
+		debug::trace!(target: "eoc-bh", "[eth-offchain] Block Height: {}", current_block_height);
 
 		// TODO: check current header and skip this run
 
