@@ -39,19 +39,19 @@ pallet-support = { package = "darwinia-support", path = "../../../../frame/suppo
 [features]
 default = ["std"]
 std = [
-    "codec/std",
-    "hex/std",
-    "simple-json/std",
+	"codec/std",
+	"hex/std",
+	"simple-json/std",
 
-    "frame-support/std",
-    "frame-system/std",
+	"frame-support/std",
+	"frame-system/std",
 
-    "sp-std/std",
-    "sp-runtime/std",
+	"sp-std/std",
+	"sp-runtime/std",
 
-    "rlp/std",
+	"rlp/std",
 
-    "eth-primitives/std",
+	"eth-primitives/std",
 
-    "pallet-eth-relay/std",
+	"pallet-eth-relay/std",
 ]
