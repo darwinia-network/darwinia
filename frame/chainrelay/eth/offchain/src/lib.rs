@@ -140,8 +140,8 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	fn json_request(raw_url: &Vec<u8>, api_type: EthScanAPI) -> Result<JsonValue, DispatchError> {
-		let url = core::str::from_utf8(raw_url).map_err(|_| <Error<T>>::URLDF)?;
+	fn json_request<A: AsRef<[u8]>>(raw_url: A, api_type: EthScanAPI) -> Result<JsonValue, DispatchError> {
+		let url = core::str::from_utf8(raw_url.as_ref()).map_err(|_| <Error<T>>::URLDF)?;
 		debug::trace!(target: "eoc-req", "[eth-offchain] Request: {}", url);
 		let mut maybe_resp_body = None;
 
@@ -284,7 +284,7 @@ impl<T: Trait> Module<T> {
 	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
 		let now = T::Time::now().saturated_into::<u64>() / 1000;
 		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-		raw_url.append(&mut now.to_be_bytes().to_vec());
+		raw_url.append(&mut base_10_bytes(now));
 		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
 		let mut api_key = T::APIKey::get().unwrap();
 		raw_url.append(&mut api_key.clone());
@@ -301,7 +301,7 @@ impl<T: Trait> Module<T> {
 
 		let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
 		#[cfg(feature = "std")]
-		raw_url.append(&mut current_block_height.to_be_bytes().to_vec());
+		raw_url.append(&mut base_10_bytes(current_block_height));
 		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
 		raw_url.append(&mut api_key);
 
@@ -314,6 +314,17 @@ impl<T: Trait> Module<T> {
 
 		Ok(())
 	}
+}
+
+fn base_10_bytes(mut n: u64) -> Vec<u8> {
+	let mut buf = vec![];
+	while n > 0 {
+		buf.push(b'0' + (n % 10) as u8);
+		n /= 10;
+	}
+
+	buf.reverse();
+	buf
 }
 
 fn remove_trascation_and_uncle(r: &mut Vec<u8>) {
