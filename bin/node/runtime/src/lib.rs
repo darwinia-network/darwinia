@@ -539,14 +539,14 @@ impl pallet_eth_relay::Trait for Runtime {
 type SubmitPFTransaction =
 	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
 parameter_types! {
-   pub const BlockFetchDur: BlockNumber = 3;
-   // TODO: pass this from command line
-   // this a poc versiona, build with following command to launch the poc binary
-   // `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-   pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
-	   Some(s) => Some(s.as_bytes().to_vec()),
-	   None => None,
-   };
+	pub const BlockFetchDur: BlockNumber = 3;
+	// TODO: pass this from command line
+	// this a poc versiona, build with following command to launch the poc binary
+	// `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
+	pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
+		Some(s) => Some(s.as_bytes().to_vec()),
+		None => None,
+	};
 }
 impl pallet_eth_offchain::Trait for Runtime {
 	type Event = Event;
