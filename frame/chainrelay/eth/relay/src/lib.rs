@@ -45,7 +45,7 @@ pub struct HeaderInfo {
 	pub number: EthBlockNumber,
 }
 
-#[derive(Clone, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub struct EthReceiptProof {
 	pub index: u64,
 	pub proof: Vec<u8>,
@@ -501,10 +501,6 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		ensure!(canonical_hash == proof_record.header_hash, <Error<T>>::HeaderNC);
 
 		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or(<Error<T>>::HeaderInfoNE)?;
-
-		println!("best_info: {:#?}", best_info.number);
-		println!("info: {:#?}", info.number);
-		println!("add: {:#?}", info.number.checked_add(Self::number_of_blocks_safe()));
 
 		ensure!(
 			best_info.number

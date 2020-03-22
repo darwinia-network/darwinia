@@ -221,3 +221,8 @@ fn check_receipt_safely() {
 		// feature-2: safe-block
 	});
 }
+
+#[test]
+fn test_json_import() {
+	assert!(mock_canonical_relationship().is_some());
+}

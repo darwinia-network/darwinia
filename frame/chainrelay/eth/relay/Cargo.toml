@@ -28,6 +28,7 @@ eth-primitives = { default-features = false, path = "../../../../primitives/eth-
 merkle-patricia-trie = { default-features = false, path = "../../../../primitives/merkle-patricia-trie" }
 
 [dev-dependencies]
+json = "0.12.4"
 hex-literal = "0.2.1"
 keccak-hasher = "0.15.2"
 rustc-hex = "2.0"
