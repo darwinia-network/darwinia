@@ -100,27 +100,6 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	}
 }
 
-type SubmitPFTransaction =
-	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
-
-parameter_types! {
-   pub const BlockFetchDur: BlockNumber = 3;
-   // TODO: pass this from command line
-   // this a poc versiona, build with following command to launch the poc binary
-   // `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-   pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
-	   Some(s) => Some(s.as_bytes().to_vec()),
-	   None => None,
-   };
-}
-
-impl pallet_eth_offchain::Trait for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type SubmitSignedTransaction = SubmitPFTransaction;
-	type BlockFetchDur = BlockFetchDur;
-	type APIKey = EthScanAPIKey;
-}
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
 	pub const MaximumBlockWeight: Weight = 1_000_000_000;
@@ -555,6 +534,27 @@ parameter_types! {
 impl pallet_eth_relay::Trait for Runtime {
 	type Event = Event;
 	type EthNetwork = EthRopsten;
+}
+
+type SubmitPFTransaction =
+	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
+parameter_types! {
+   pub const BlockFetchDur: BlockNumber = 3;
+   // TODO: pass this from command line
+   // this a poc versiona, build with following command to launch the poc binary
+   // `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
+   pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
+	   Some(s) => Some(s.as_bytes().to_vec()),
+	   None => None,
+   };
+}
+impl pallet_eth_offchain::Trait for Runtime {
+	type Event = Event;
+	type Time = Timestamp;
+	type Call = Call;
+	type SubmitSignedTransaction = SubmitPFTransaction;
+	type BlockFetchDur = BlockFetchDur;
+	type APIKey = EthScanAPIKey;
 }
 
 parameter_types! {
