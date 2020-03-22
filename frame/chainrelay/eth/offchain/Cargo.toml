@@ -1,57 +1,57 @@
 [package]
 name = "darwinia-eth-offchain"
 version = "0.1.0"
-authors = ["yanganto <yanganto@gmail.com>"]
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "FRAME pallet to relay Ethereum header automactically"
 edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
-num-traits = { default-features = false, version = "0.2.8" }
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+hex = { version = "0.4.2", default-features = false }
+simple-json = { version = '0.1.5', default_features = false, git = 'https://github.com/jimmychu0807/simple-json' }
 
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-
+# github.com
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-pallet-timestamp = { default-features = false,  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-pallet-eth-relay = { default-features = false, package = "darwinia-eth-relay", path = "../relay" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 
-parity-scale-codec = { version = "1.0.0", default-features = false, features = ["derive"] }
-simple-json = { git = 'https://github.com/jimmychu0807/simple-json', version = '0.1.5', default_features = false }
-primitive-types = { default-features = false, features = ["codec", "rlp"], git = "https://github.com/darwinia-network/parity-common.git" }
-hex = { default-features = false, version = "0.4.2" }
-eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
-ethereum-types = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
-ethbloom = { default-features = false, git ="https://github.com/darwinia-network/parity-common.git" }
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 
-[build-dependencies]
-wasm-builder-runner = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1", package = "substrate-wasm-builder-runner", version = "1.0.4" }
+# darwinia
+eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
+
+pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../relay" }
+
+[dev-dependencies]
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+pallet-eth-relay = { package = "darwinia-eth-relay", path = "../relay" }
+pallet-support = { package = "darwinia-support", path = "../../../../frame/support" }
 
 [features]
 default = ["std"]
 std = [
-    "num-traits/std",
-
-    "sp-std/std",
-    "sp-io/std",
-    "sp-runtime/std",
-    "sp-session/std",
+    "codec/std",
+    "hex/std",
+    "simple-json/std",
 
     "frame-support/std",
     "frame-system/std",
 
-    "pallet-timestamp/std",
-    "pallet-eth-relay/std",
+    "sp-std/std",
+    "sp-runtime/std",
 
-    "parity-scale-codec/std",
-    "simple-json/std",
-    "primitive-types/std",
-    "hex/std",
-    "eth-primitives/std",
-    "ethereum-types/std",
-    "ethbloom/std",
     "rlp/std",
+
+    "eth-primitives/std",
+
+    "pallet-eth-relay/std",
 ]
