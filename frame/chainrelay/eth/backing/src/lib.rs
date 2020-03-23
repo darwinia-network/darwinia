@@ -139,7 +139,7 @@ decl_error! {
 		/// *RING* Locked - NO SUFFICIENT BACKING ASSETS
 		RingLockedNSBA,
 
-		/// Log Entry - NOT EXISTS
+		/// Log Entry - NOT EXISTED
 		LogEntryNE,
 	}
 }
