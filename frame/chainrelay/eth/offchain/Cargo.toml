@@ -1,0 +1,57 @@
+[package]
+name = "darwinia-eth-offchain"
+version = "0.1.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "FRAME pallet to relay Ethereum header automactically"
+edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
+hex = { version = "0.4.2", default-features = false }
+simple-json = { version = '0.1.5', default_features = false, git = 'https://github.com/jimmychu0807/simple-json' }
+
+# github.com
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
+
+# darwinia
+eth-primitives = { default-features = false, path = "../../../../primitives/eth-primitives" }
+
+pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../relay" }
+
+[dev-dependencies]
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+
+pallet-eth-relay = { package = "darwinia-eth-relay", path = "../relay" }
+pallet-support = { package = "darwinia-support", path = "../../../../frame/support" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"hex/std",
+	"simple-json/std",
+
+	"frame-support/std",
+	"frame-system/std",
+
+	"sp-std/std",
+	"sp-runtime/std",
+
+	"rlp/std",
+
+	"eth-primitives/std",
+
+	"pallet-eth-relay/std",
+]
