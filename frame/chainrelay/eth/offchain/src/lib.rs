@@ -24,7 +24,7 @@ mod tests;
 
 // --- third-party ---
 use frame_support::{
-	debug, decl_error, decl_event, decl_module, decl_storage, dispatch,
+	debug, decl_error, decl_event, decl_module, decl_storage,
 	traits::{Get, Time},
 };
 use frame_system::{self as system, offchain::SubmitSignedTransaction};
@@ -73,6 +73,9 @@ decl_event! {
 
 decl_error! {
 	pub enum Error for Module<T: Trait> {
+		/// Local accounts - UNAVAILABLE (Consider adding one via `author_insertKey` RPC)
+		AccountUA,
+
 		/// API Resoibse - UNEXPECTED
 		APIRespUnexp,
 
@@ -121,11 +124,7 @@ decl_module! {
 
 		fn deposit_event() = default;
 
-		pub fn record_header(
-			origin,
-			_block: T::BlockNumber,
-			eth_header: EthHeader
-		) -> dispatch::DispatchResult {
+		fn record_header(origin, _block: T::BlockNumber, eth_header: EthHeader) -> DispatchResult {
 			<pallet_eth_relay::Module<T>>::relay_header(origin, eth_header)
 		}
 
@@ -163,11 +162,13 @@ impl<T: Trait> Module<T> {
 
 			#[cfg(feature = "std")]
 			std::thread::sleep(std::time::Duration::from_secs(RETRY_INTERVAL));
+
+			// TODO: sleep in wasm
 		}
 
 		let mut resp_body = maybe_resp_body.ok_or(<Error<T>>::ReqRMR)?;
 		debug::trace!(
-			target: "eoc-resp",
+			target: "eoc-req",
 			"[eth-offchain] Response: {}",
 			core::str::from_utf8(&resp_body).unwrap_or("Resposne Body - INVALID"),
 		);
@@ -282,6 +283,10 @@ impl<T: Trait> Module<T> {
 	}
 
 	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
+		if !T::SubmitSignedTransaction::can_sign() {
+			Err(<Error<T>>::AccountUA)?;
+		}
+
 		let now = T::Time::now().saturated_into::<u64>() / 1000;
 		let mut api_key = T::APIKey::get().unwrap();
 
@@ -296,7 +301,7 @@ impl<T: Trait> Module<T> {
 			.parse::<u64>()
 			.map_err(|_| <Error<T>>::U64CF)?;
 
-		debug::trace!(target: "eoc-bh", "[eth-offchain] Block Height: {}", current_block_height);
+		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Height: {}", current_block_height);
 
 		// TODO: check current header and skip this run
 
@@ -310,7 +315,15 @@ impl<T: Trait> Module<T> {
 
 		let call = Call::record_header(block, eth_header);
 
-		let _ = T::SubmitSignedTransaction::submit_signed(call);
+		let results = T::SubmitSignedTransaction::submit_signed(call);
+		for (account, result) in &results {
+			debug::trace!(
+				target: "eoc-fc",
+				"[eth-offchain] Account: {:?}, Relay: {:?}",
+				account,
+				result,
+			);
+		}
 
 		Ok(())
 	}
