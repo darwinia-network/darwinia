@@ -17,7 +17,6 @@ pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-use pallet_eth_offchain;
 pub use pallet_ring::Call as RingCall;
 pub use pallet_staking::StakerStatus;
 
@@ -536,27 +535,6 @@ impl pallet_eth_relay::Trait for Runtime {
 	type EthNetwork = EthRopsten;
 }
 
-type SubmitPFTransaction =
-	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
-parameter_types! {
-	pub const BlockFetchDur: BlockNumber = 3;
-	// TODO: pass this from command line
-	// this a poc versiona, build with following command to launch the poc binary
-	// `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-	pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
-		Some(s) => Some(s.as_bytes().to_vec()),
-		None => None,
-	};
-}
-impl pallet_eth_offchain::Trait for Runtime {
-	type Event = Event;
-	type Time = Timestamp;
-	type Call = Call;
-	type SubmitSignedTransaction = SubmitPFTransaction;
-	type BlockFetchDur = BlockFetchDur;
-	type APIKey = EthScanAPIKey;
-}
-
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
 }
@@ -688,7 +666,6 @@ construct_runtime!(
 		Elections: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
-		EthOffchain: pallet_eth_offchain::{Module, Call, Storage, Event<T>},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
 		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
