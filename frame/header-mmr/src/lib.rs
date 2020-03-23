@@ -87,6 +87,8 @@ decl_event! {
 
 decl_error! {
 	pub enum Error for Module<T: Trait> {
+		/// Proof block nubmer TOO LARGE
+		ProofBlockNumberTL,
 		/// Proof - GET FAILED
 		ProofGF,
 	}
@@ -172,7 +174,7 @@ impl<T: Trait> Module<T> {
 		block_number: T::BlockNumber,
 		mmr_block_number: T::BlockNumber,
 	) -> Result<MerkleProof<T::Hash, MMRMerge<T>>, DispatchError> {
-		ensure!(block_number < mmr_block_number, "Block number too large");
+		ensure!(block_number < mmr_block_number, <Error<T>>::ProofBlockNumberTL);
 
 		let pos = Self::position_of(block_number);
 		let mmr_header_pos = Self::position_of(mmr_block_number);
