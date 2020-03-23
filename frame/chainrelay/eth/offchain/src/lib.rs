@@ -139,6 +139,52 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
+	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
+		if !T::SubmitSignedTransaction::can_sign() {
+			Err(<Error<T>>::AccountUA)?;
+		}
+
+		let now = T::Time::now().saturated_into::<u64>() / 1000;
+		let mut api_key = T::APIKey::get().unwrap();
+
+		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
+		raw_url.append(&mut base_n_bytes(now, 10));
+		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
+		raw_url.append(&mut api_key.clone());
+
+		let current_block_height = Self::json_request(&raw_url, EthScanAPI::GetBlockNoByTime)?.get_object()[2]
+			.1
+			.get_string()
+			.parse::<u64>()
+			.map_err(|_| <Error<T>>::U64CF)?;
+
+		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Height: {}", current_block_height);
+
+		// TODO: check current header and skip this run
+
+		let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
+		raw_url.append(&mut base_n_bytes(current_block_height, 16));
+		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
+		raw_url.append(&mut api_key);
+
+		let block_info = Self::json_request(&raw_url, EthScanAPI::GetBlockByNumber)?;
+		let eth_header = Self::build_eth_header(current_block_height, block_info)?;
+
+		let call = Call::record_header(block, eth_header);
+
+		let results = T::SubmitSignedTransaction::submit_signed(call);
+		for (account, result) in &results {
+			debug::trace!(
+				target: "eoc-fc",
+				"[eth-offchain] Account: {:?}, Relay: {:?}",
+				account,
+				result,
+			);
+		}
+
+		Ok(())
+	}
+
 	fn json_request<A: AsRef<[u8]>>(raw_url: A, api_type: EthScanAPI) -> Result<JsonValue, DispatchError> {
 		let url = core::str::from_utf8(raw_url.as_ref()).map_err(|_| <Error<T>>::URLDF)?;
 		debug::trace!(target: "eoc-req", "[eth-offchain] Request: {}", url);
@@ -192,48 +238,6 @@ impl<T: Trait> Module<T> {
 		Ok(json_val)
 	}
 
-	fn hex_padding<A: AsRef<[u8]>>(width: usize, content: A) -> Result<Vec<u8>, DispatchError> {
-		let content = content.as_ref();
-		let mut output = vec![48; width];
-		output[width.checked_sub(content.len()).ok_or(<Error<T>>::PaddingLenMis)?..].copy_from_slice(content);
-
-		Ok(output)
-	}
-
-	fn build_eth_seal<A: AsRef<[u8]>>(mix_hash_hex: A, nonce_hex: A) -> Result<EthashSeal, DispatchError> {
-		let mix_hash_hex = mix_hash_hex.as_ref();
-		let nonce_hex = nonce_hex.as_ref();
-		let s = EthashSeal {
-			mix_hash: <[u8; 32]>::from_hex(mix_hash_hex)
-				.map_err(|_| <Error<T>>::H256CF)?
-				.into(),
-			nonce: <[u8; 8]>::from_hex(nonce_hex).map_err(|_| <Error<T>>::H64CF)?.into(),
-		};
-
-		Ok(s)
-	}
-
-	// TODO: we may store the eth header info on chain install of all eth headers
-	fn _build_eth_header_info<A: AsRef<[u8]>>(
-		block_height: u64,
-		total_difficulty_hex: A,
-		parent_hash_hex: A,
-	) -> Result<HeaderInfo, DispatchError> {
-		let total_difficulty = Self::hex_padding(64, total_difficulty_hex.as_ref())?;
-		let parent_hash = parent_hash_hex.as_ref();
-		let h = HeaderInfo {
-			number: block_height,
-			total_difficulty: <[u8; 32]>::from_hex(total_difficulty)
-				.map_err(|_| <Error<T>>::U256CF)?
-				.into(),
-			parent_hash: <[u8; 32]>::from_hex(parent_hash)
-				.map_err(|_| <Error<T>>::H256CF)?
-				.into(),
-		};
-
-		Ok(h)
-	}
-
 	fn build_eth_header(number: u64, block_info: JsonValue) -> Result<EthHeader, DispatchError> {
 		let parent_hash = &block_info.get_object()[10].1.get_bytes()[2..];
 		let timestamp_hex = &block_info.get_object()[15].1.get_string()[2..];
@@ -282,50 +286,46 @@ impl<T: Trait> Module<T> {
 		Ok(h)
 	}
 
-	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
-		if !T::SubmitSignedTransaction::can_sign() {
-			Err(<Error<T>>::AccountUA)?;
-		}
+	fn hex_padding<A: AsRef<[u8]>>(width: usize, content: A) -> Result<Vec<u8>, DispatchError> {
+		let content = content.as_ref();
+		let mut output = vec![48; width];
+		output[width.checked_sub(content.len()).ok_or(<Error<T>>::PaddingLenMis)?..].copy_from_slice(content);
 
-		let now = T::Time::now().saturated_into::<u64>() / 1000;
-		let mut api_key = T::APIKey::get().unwrap();
+		Ok(output)
+	}
 
-		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-		raw_url.append(&mut base_n_bytes(now, 10));
-		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
-		raw_url.append(&mut api_key.clone());
+	fn build_eth_seal<A: AsRef<[u8]>>(mix_hash_hex: A, nonce_hex: A) -> Result<EthashSeal, DispatchError> {
+		let mix_hash_hex = mix_hash_hex.as_ref();
+		let nonce_hex = nonce_hex.as_ref();
+		let s = EthashSeal {
+			mix_hash: <[u8; 32]>::from_hex(mix_hash_hex)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			nonce: <[u8; 8]>::from_hex(nonce_hex).map_err(|_| <Error<T>>::H64CF)?.into(),
+		};
 
-		let current_block_height = Self::json_request(&raw_url, EthScanAPI::GetBlockNoByTime)?.get_object()[2]
-			.1
-			.get_string()
-			.parse::<u64>()
-			.map_err(|_| <Error<T>>::U64CF)?;
+		Ok(s)
+	}
 
-		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Height: {}", current_block_height);
+	// TODO: we may store the eth header info on chain install of all eth headers
+	fn _build_eth_header_info<A: AsRef<[u8]>>(
+		block_height: u64,
+		total_difficulty_hex: A,
+		parent_hash_hex: A,
+	) -> Result<HeaderInfo, DispatchError> {
+		let total_difficulty = Self::hex_padding(64, total_difficulty_hex.as_ref())?;
+		let parent_hash = parent_hash_hex.as_ref();
+		let h = HeaderInfo {
+			number: block_height,
+			total_difficulty: <[u8; 32]>::from_hex(total_difficulty)
+				.map_err(|_| <Error<T>>::U256CF)?
+				.into(),
+			parent_hash: <[u8; 32]>::from_hex(parent_hash)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+		};
 
-		// TODO: check current header and skip this run
-
-		let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
-		raw_url.append(&mut base_n_bytes(current_block_height, 16));
-		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
-		raw_url.append(&mut api_key);
-
-		let block_info = Self::json_request(&raw_url, EthScanAPI::GetBlockByNumber)?;
-		let eth_header = Self::build_eth_header(current_block_height, block_info)?;
-
-		let call = Call::record_header(block, eth_header);
-
-		let results = T::SubmitSignedTransaction::submit_signed(call);
-		for (account, result) in &results {
-			debug::trace!(
-				target: "eoc-fc",
-				"[eth-offchain] Account: {:?}, Relay: {:?}",
-				account,
-				result,
-			);
-		}
-
-		Ok(())
+		Ok(h)
 	}
 }
 
