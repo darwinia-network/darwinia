@@ -200,30 +200,57 @@ fn build_genesis_header() {
 	println!("{:?}", rlp::encode(&genesis_header));
 }
 
-/// Check receipt by EthReceiptProof
+/// # Check Receipt Safety
 ///
-/// **9 ways to fail**
-/// - doesn't have authority
-/// - verify receipt failed
-///   - get info failed
-///   - `canonical_hash != proof_record.header_hash`
-///   - block number doesn't correct
-///   - get header failed
-///   - decode proof failed
-///   - verify proof failed
-///   - get trie key failed
-///   - decode trie key failed
+/// ## Family Tree
+///
+/// | pos     | height  | tx                                                                 |
+/// |---------|---------|--------------------------------------------------------------------|
+/// | origin  | 7575765 |                                                                    |
+/// | grandpa | 7575766 |                                                                    |
+/// | uncle   | 7575766 | 0xc56be493f656f1c8222006eda5cd3392be5f0c096e8b7fb1c5542088c0f0c889 |
+/// | parent  | 7575767 |                                                                    |
+/// | current | 7575768 | 0xfc836bf547f1e035e837bf0a8d26e432aa26da9659db5bf6ba69b0341d818778 |
+///
+/// To help reward miners for when duplicate block solutions are found
+/// because of the shorter block times of Ethereum (compared to other cryptocurrency).
+/// An uncle is a smaller reward than a full block.
+///
+/// ## Note:
+///
+/// check receipt should
+/// - failed when we got into a hard fork chain
+/// - succeed when container block has brother block
 #[test]
-fn check_receipt_safely() {
+fn check_receipt_safety() {
 	new_test_ext().execute_with(|| {
-		// feature-1: canonical hash
+		assert_ok!(EthRelay::add_authority(RawOrigin::Root.into(), 0));
+		assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
-		// feature-2: safe-block
+		// family tree
+		let [o, g, _p, _u, _c] = mock_canonical_relationship().unwrap();
+		let [origin, grandpa] = [o.unwrap(), g.unwrap()];
+		assert_ok!(EthRelay::init_genesis_header(&origin, 0x624c22d93f8e59_u64));
+
+		let receipt = mock_canonical_receipt().unwrap();
+
+		// TODO: hard to mock difficulty
+		//
+		// check should fail when we got into a hard fork chain,
+		// now we pretend that we stepped into a fork chain just now.
+		//
+		// let mut gb = grandpa.clone();
+		// gb.author = EthAddress::from(hex!("bb5c52d9Ab611FCa798dDae930c7fc8307EfdC11"));
+		// gb.hash.take();
+		//
+		// assert_ok!(EthRelay::relay_header(Origin::signed(0), gb));
+		// assert_ok!(
+		// 	EthRelay::check_receipt(Origin::signed(0), receipt),
+		// 	<Error<Test>>::HeaderNC
+		// );
+
+		// check receipt should succeed even the container has brother
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa));
+		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt));
 	});
-}
-
-#[test]
-fn test_json_import() {
-	let hs = mock_canonical_relationship().unwrap();
-	println!("{:#?}", hs);
 }

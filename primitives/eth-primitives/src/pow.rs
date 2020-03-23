@@ -140,6 +140,9 @@ impl EthashPartial {
 			header.number() >= self.progpow_transition,
 		)));
 
+		println!("{:#?}", difficulty);
+		println!("{:#?}", header.difficulty());
+
 		if &difficulty < header.difficulty() {
 			return Err(BlockError::InvalidProofOfWork(OutOfBounds {
 				min: Some(header.difficulty().clone()),

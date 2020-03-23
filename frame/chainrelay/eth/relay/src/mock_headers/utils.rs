@@ -76,3 +76,30 @@ pub fn mock_header_from_source<'m>(o: &'m mut Object) -> Option<EthHeader> {
 		hash: Some(get_hash(o, "hash")?),
 	})
 }
+
+/// mock receipt
+pub fn mock_receipt_from_source(o: &mut Object) -> Option<EthReceiptProof> {
+	let index: u64 = {
+		let i = o.remove("index")?;
+		if let Ok(idx) = i.as_str()?[2..].parse() {
+			idx
+		} else {
+			return None;
+		}
+	};
+
+	let proof: Vec<u8> = {
+		let p = o.remove("proof")?;
+		if let Ok(prf) = p.as_str()?[2..].from_hex() {
+			prf
+		} else {
+			return None;
+		}
+	};
+
+	Some(EthReceiptProof {
+		index,
+		proof,
+		header_hash: get_hash(o, "header_hash")?,
+	})
+}
