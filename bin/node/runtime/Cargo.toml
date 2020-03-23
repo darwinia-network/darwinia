@@ -70,7 +70,6 @@ pallet-claims = { package = "darwinia-claims", default-features = false, path = 
 pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
 pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
 pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
-pallet-eth-offchain = { package = "darwinia-eth-offchain", default-features = false, path = "../../../frame/chainrelay/eth/offchain" }
 pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
 pallet-ring = { package = "darwinia-ring", default-features = false, path = "../../../frame/balances/ring" }
 pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
@@ -123,7 +122,6 @@ std = [
 	"pallet-elections-phragmen/std",
 	"pallet-eth-backing/std",
 	"pallet-eth-relay/std",
-	"pallet-eth-offchain/std",
 	"pallet-kton/std",
 	"pallet-ring/std",
 	"pallet-staking/std",
