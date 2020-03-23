@@ -14,26 +14,32 @@ static FAKE_ETH_API_RESONSE_WO_DATA: &'static str = r#"{"jsonrpc":"2.0","id":1,"
 static FAKE_ETH_API_RESONSE_W_BIG_DATA: &'static str = r#"{"jsonrpc":"2.0","id":1,"result":{"difficulty":"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","extraData":"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","gasLimit":"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","gasUsed":"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","hash":"0x26f10bfb3c09f1e1eadf856a8d75f5dbd2f88bd8eb4da8488f131835fa4a6ae3","logsBloom":"0x000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000020000000000000004000000000000000000000000000000020000000000000000000000000001000000000000004000000200000000000000000008020000020000000000000000001000000000000000000000004000040000000000000000000000000000000000000000000000000000000004001000000000000000000000000004080008000000000120000000000000000000000400000000000800000000000000000000000000200000000000001000000000000a0008000040000000000000000000000000000000","miner":"0x738db714c08b8a32a29e0e68af00215079aa9c5c","mixHash":"0xcb63ce95a3043c0f846ad6e1c3c25ec7a8cd8e09dccf02c7078669f2496f02c2","nonce":"0xfc2c4055195dac95","number":"0xffffffffffffffffff","parentHash":"0x28e9cc57847a0a1efd2920115ba94530ba7d29d7a7ffb15fc933302a97c73e49","receiptsRoot":"0xba124ff4744d7f59fd4f829be59f727fe17f468b34344759d4dd2ed10d6260d2","sha3Uncles":"0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347","size":"0x792","stateRoot":"0x46f9f3d17b9bba9d551ab85a6aa6686a51590a184f5d42b98b6d8518303da470","timestamp":"0xffffffffffffffff","totalDifficulty":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","transactions":[],"transactionsRoot":"0x5e7f4d048b09e832ccdb062c655def06f532ebdf02b3c0c423a65c6566220523","uncles":[]}} "#;
 
 #[test]
-fn convert_timestmap() {
-	let ts = 1_454_795_393u64;
-	assert_eq!(1_454_795_393u64.to_string().as_bytes().to_vec(), base_10_bytes(ts));
+fn test_hex_padding() {
+	assert_eq!(
+		Vec::from_hex("00000000000000000000000000000000000000000000031636269e79627d57c9").unwrap(),
+		Vec::from_hex(EthOffchain::hex_padding(64, "31636269e79627d57c9".as_bytes()).unwrap()).unwrap(),
+	);
 }
 
 #[test]
 fn url_decode() {
 	let ts = 1_454_795_393u64;
 	let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-	raw_url.append(&mut base_10_bytes(ts));
+	raw_url.append(&mut base_n_bytes(ts, 10));
 	raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
 	let url = core::str::from_utf8(&raw_url).unwrap();
-	println!("{}", url);
-}
-
-#[test]
-fn test_hex_padding() {
 	assert_eq!(
-		Vec::from_hex("00000000000000000000000000000000000000000000031636269e79627d57c9").unwrap(),
-		Vec::from_hex(EthOffchain::hex_padding(64, "31636269e79627d57c9".as_bytes()).unwrap()).unwrap(),
+		url,
+		"https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=1454795393&closest=before&apikey=",
+	);
+
+	let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
+	raw_url.append(&mut base_n_bytes(9725369, 16));
+	raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
+	let url = core::str::from_utf8(&raw_url).unwrap();
+	assert_eq!(
+		url,
+		"https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x9465B9&boolean=true&apikey=",
 	);
 }
 

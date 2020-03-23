@@ -283,10 +283,11 @@ impl<T: Trait> Module<T> {
 
 	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
 		let now = T::Time::now().saturated_into::<u64>() / 1000;
-		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-		raw_url.append(&mut base_10_bytes(now));
-		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
 		let mut api_key = T::APIKey::get().unwrap();
+
+		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
+		raw_url.append(&mut base_n_bytes(now, 10));
+		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
 		raw_url.append(&mut api_key.clone());
 
 		let current_block_height = Self::json_request(&raw_url, EthScanAPI::GetBlockNoByTime)?.get_object()[2]
@@ -300,8 +301,7 @@ impl<T: Trait> Module<T> {
 		// TODO: check current header and skip this run
 
 		let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
-		#[cfg(feature = "std")]
-		raw_url.append(&mut base_10_bytes(current_block_height));
+		raw_url.append(&mut base_n_bytes(current_block_height, 16));
 		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
 		raw_url.append(&mut api_key);
 
@@ -316,11 +316,20 @@ impl<T: Trait> Module<T> {
 	}
 }
 
-fn base_10_bytes(mut n: u64) -> Vec<u8> {
+fn base_n_bytes(mut x: u64, radix: u64) -> Vec<u8> {
+	if radix > 41 {
+		return vec![];
+	}
+
 	let mut buf = vec![];
-	while n > 0 {
-		buf.push(b'0' + (n % 10) as u8);
-		n /= 10;
+	while x > 0 {
+		let rem = (x % radix) as u8;
+		if rem < 10 {
+			buf.push(48 + rem);
+		} else {
+			buf.push(55 + rem);
+		}
+		x /= radix;
 	}
 
 	buf.reverse();
