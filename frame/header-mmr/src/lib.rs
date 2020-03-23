@@ -1,36 +1,36 @@
 //! # Chain MMR Pallet
 //!
-//! \## Overview
+//! ## Overview
 //! This is the pallet to maintain accumulate headers Merkle Mountain Range
 //! and push the mmr root in to the digest of block headers on finalize.
 //! MMR can be used for light client to implement super light clients,
 //! and can also be used in other chains to implement chain relay for
 //! cross-chain verification purpose.
 //!
-//! \## Terminology
+//! ## Terminology
 //!
-//! \### Merkle Moutain Range
+//! ### Merkle Moutain Range
 //! For more details about the MMR struct, refer https://github.com/mimblewimble/grin/blob/master/doc/mmr.md#structure
 //!
-//! \### MMR Proof
+//! ### MMR Proof
 //! Using the MMR Store Storage, MMR Proof can be generated for specific
 //! block header hash. Proofs can be used to verify block inclusion together with
 //! the mmr root in the header digest.
 //!
-//! \### Positions
+//! ### Positions
 //! The index position of the nodes(and hash leave nodes) in the mmr node list
 //! constructed using MMR struct
 //!
-//! \### Digest Item
+//! ### Digest Item
 //! The is a ```MerkleMountainRangeRoot(Hash)``` digest item pre-subscribed in Digest.
 //! This is implemented in Darwinia's fork of substrate: https://github.com/darwinia-network/substrate
 //! The Pull request link is https://github.com/darwinia-network/substrate/pull/1
 //!
-//! \## Implementation
+//! ## Implementation
 //! We are using the MMR library from https://github.com/nervosnetwork/merkle-mountain-range
 //! Pull request: https://github.com/darwinia-network/darwinia/pull/358
 //!
-//! \## References
+//! ## References
 //! Darwinia Relay's Technical Paper:
 //! https://github.com/darwinia-network/rfcs/blob/master/paper/Darwinia_Relay_Sublinear_Optimistic_Relay_for_Interoperable_Blockchains_v0.7.pdf
 //!
