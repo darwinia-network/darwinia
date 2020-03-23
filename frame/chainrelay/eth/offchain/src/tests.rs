@@ -30,7 +30,7 @@ fn url_decode() {
 }
 
 #[test]
-fn test_hexstr_padding() {
+fn test_hex_padding() {
 	assert_eq!(
 		Vec::from_hex("00000000000000000000000000000000000000000000031636269e79627d57c9").unwrap(),
 		Vec::from_hex(EthOffchain::hex_padding(64, "31636269e79627d57c9".as_bytes()).unwrap()).unwrap(),
