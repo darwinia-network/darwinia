@@ -223,10 +223,10 @@ impl<T: Trait> Module<T> {
 		let h = HeaderInfo {
 			number: block_height,
 			total_difficulty: <[u8; 32]>::from_hex(total_difficulty)
-				.map_err(|_| "Total difficulty decoding failed")?
+				.map_err(|_| <Error<T>>::U256CF)?
 				.into(),
 			parent_hash: <[u8; 32]>::from_hex(parent_hash)
-				.map_err(|_| "parent hash decoding failed")?
+				.map_err(|_| <Error<T>>::H256CF)?
 				.into(),
 		};
 
