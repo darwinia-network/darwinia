@@ -254,3 +254,37 @@ fn check_receipt_safety() {
 		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt));
 	});
 }
+
+#[test]
+fn test_safety_block() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(EthRelay::add_authority(RawOrigin::Root.into(), 0));
+		assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 2));
+
+		// family tree
+		let [o, g, p, u, c] = mock_canonical_relationship().unwrap();
+		let [origin, grandpa, parent, uncle, current] = [o.unwrap(), g.unwrap(), p.unwrap(), u.unwrap(), c.unwrap()];
+
+		let receipt = mock_canonical_receipt().unwrap();
+
+		// not safety after 0 block
+		assert_ok!(EthRelay::init_genesis_header(&origin, 0x624c22d93f8e59_u64));
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa));
+		assert_err!(
+			EthRelay::check_receipt(Origin::signed(0), receipt.clone()),
+			<Error<Test>>::HeaderNS
+		);
+
+		// not safety after 2 blocks
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), parent));
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), uncle));
+		assert_err!(
+			EthRelay::check_receipt(Origin::signed(0), receipt.clone()),
+			<Error<Test>>::HeaderNS
+		);
+
+		// safety after 3 blocks
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), current));
+		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt));
+	});
+}
