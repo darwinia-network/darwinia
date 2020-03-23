@@ -675,12 +675,24 @@ mod tests {
 	#[test]
 	fn real_eth_sig_works() {
 		new_test_ext().execute_with(|| {
-			// "Pay RUSTs to the TEST account:2a00000000000000"
-			let sig = hex!["444023e89b67e67c0562ed0305d252a5dd12b2af5ac51d6d3cb69a0b486bc4b3191401802dc29d26d586221f7256cd3329fe82174bdf659baea149a40e1c495d1c"];
+				// "Pay RUSTs to the TEST account:2a00000000000000"
+				let sig = hex!["444023e89b67e67c0562ed0305d252a5dd12b2af5ac51d6d3cb69a0b486bc4b3191401802dc29d26d586221f7256cd3329fe82174bdf659baea149a40e1c495d1c"];
+				let sig = EcdsaSignature(sig);
+				let who = 42u64.using_encoded(to_ascii_hex);
+				let signer = Claims::eth_recover(&sig, &who).unwrap();
+				assert_eq!(signer.0, hex!["6d31165d5d932d571f3b44695653b46dcc327e84"]);
+			});
+	}
+
+	#[test]
+	fn real_tron_sig_works() {
+		new_test_ext().execute_with(|| {
+			// "Pay RUSTs to the TEST account:0c0529c66a44e1861e5e1502b4a87009f23c792518a7a2091363f5a0e38abd57"
+			let sig = hex!["34c3d5afc7f8fa08f9d00a1ec4ac274c63ebce99460b556de85258c94f41ab2f52ad5188bd9fc51251cf5dcdd53751b1bd577828db3f2e8fe8ef77907d7f3f6a1b"];
 			let sig = EcdsaSignature(sig);
-			let who = 42u64.using_encoded(to_ascii_hex);
-			let signer = Claims::eth_recover(&sig, &who).unwrap();
-			assert_eq!(signer.0, hex!["6d31165d5d932d571f3b44695653b46dcc327e84"]);
+			let who = hex!["0c0529c66a44e1861e5e1502b4a87009f23c792518a7a2091363f5a0e38abd57"].using_encoded(to_ascii_hex);
+			let signer = Claims::tron_recover(&sig, &who).unwrap();
+			assert_eq!(signer.0, hex!["11974bce18a43243ede78beec2fd8e0ba4fe17ae"]);
 		});
 	}
 
