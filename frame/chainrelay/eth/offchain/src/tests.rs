@@ -33,7 +33,7 @@ fn url_decode() {
 		"https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=1454795393&closest=before&apikey=",
 	);
 
-	let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
+	let mut raw_url = ethscan_url::GTE_BLOCK.to_vec();
 	raw_url.append(&mut base_n_bytes(9725369, 16));
 	raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
 	let url = core::str::from_utf8(&raw_url).unwrap();

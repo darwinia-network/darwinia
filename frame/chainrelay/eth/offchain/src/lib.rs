@@ -11,9 +11,7 @@ pub mod crypto {
 }
 
 mod ethscan_url {
-	pub const GTE_BLOCK_BY_TIMESTAMP: &'static [u8] =
-		b"https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=";
-	pub const GTE_BLOCK_BY_BLOCK_NUMBER: &'static [u8] =
+	pub const GTE_BLOCK: &'static [u8] =
 		b"https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x";
 }
 
@@ -30,14 +28,16 @@ use frame_support::{
 use frame_system::{self as system, offchain::SubmitSignedTransaction};
 use hex::FromHex;
 use simple_json::{self, json::JsonValue};
-use sp_runtime::{offchain::http::Request, traits::SaturatedConversion, DispatchError, DispatchResult, KeyTypeId};
+use sp_runtime::{offchain::http::Request, DispatchError, DispatchResult, KeyTypeId};
 use sp_std::prelude::*;
 
 // --- custom ---
 use eth_primitives::{header::EthHeader, pow::EthashSeal};
 use pallet_eth_relay::HeaderInfo;
 
-type EthScanAPIKey = Option<Vec<u8>>;
+type EtherScanAPIKey = Option<Vec<u8>>;
+
+type EthRelay<T> = pallet_eth_relay::Module<T>;
 
 pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"ofpf");
 
@@ -49,17 +49,13 @@ pub trait Trait: pallet_eth_relay::Trait {
 
 	type Time: Time;
 
-	type Call: From<Call<Self>>;
+	type Call: From<pallet_eth_relay::Call<Self>>;
 
 	type SubmitSignedTransaction: SubmitSignedTransaction<Self, <Self as Trait>::Call>;
 
-	type BlockFetchDur: Get<Self::BlockNumber>;
+	type FetchInterval: Get<Self::BlockNumber>;
 
-	type APIKey: Get<EthScanAPIKey>;
-}
-enum EthScanAPI {
-	GetBlockNoByTime,
-	GetBlockByNumber,
+	type EtherScanAPIKey: Get<EtherScanAPIKey>;
 }
 
 decl_event! {
@@ -78,6 +74,11 @@ decl_error! {
 
 		/// API Resoibse - UNEXPECTED
 		APIRespUnexp,
+
+		/// Best Header - NOT EXISTED
+		BestHeaderNE,
+		/// Block Number - OVERFLOW
+		BlockNumberOF,
 
 		/// Json - PARSING FAILED
 		JsonPF,
@@ -124,14 +125,10 @@ decl_module! {
 
 		fn deposit_event() = default;
 
-		fn record_header(origin, _block: T::BlockNumber, eth_header: EthHeader) -> DispatchResult {
-			<pallet_eth_relay::Module<T>>::relay_header(origin, eth_header)
-		}
-
 		fn offchain_worker(block: T::BlockNumber) {
-			let duration = T::BlockFetchDur::get();
-			if duration > 0.into() && block % duration == 0.into() && T::APIKey::get().is_some() {
-				let result = Self::fetch_eth_header(block);
+			let fetch_interval = T::FetchInterval::get();
+			if fetch_interval > 0.into() && block % fetch_interval == 0.into() && T::EtherScanAPIKey::get().is_some() {
+				let result = Self::fetch_eth_header();
 				debug::trace!(target: "eoc-fc", "[eth-offchain] Fetch Eth Header: {:?}", result);
 			}
 		}
@@ -139,40 +136,29 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
+	fn fetch_eth_header() -> DispatchResult {
 		if !T::SubmitSignedTransaction::can_sign() {
 			Err(<Error<T>>::AccountUnavail)?;
 		}
 
-		let now = T::Time::now().saturated_into::<u64>() / 1000;
-		let mut api_key = T::APIKey::get().unwrap();
+		let next_block_number = <EthRelay<T>>::header_of(<EthRelay<T>>::best_header_hash())
+			.ok_or(<Error<T>>::BestHeaderNE)?
+			.number
+			.checked_add(1)
+			.ok_or(<Error<T>>::BlockNumberOF)?;
+		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Number: {}", next_block_number);
+		let raw_url = {
+			let mut v = ethscan_url::GTE_BLOCK.to_vec();
+			v.append(&mut base_n_bytes(next_block_number, 16));
+			v.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
+			v.append(&mut T::EtherScanAPIKey::get().unwrap());
 
-		let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-		raw_url.append(&mut base_n_bytes(now, 10));
-		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
-		raw_url.append(&mut api_key.clone());
+			v
+		};
+		let block_info = Self::json_request(&raw_url)?;
+		let eth_header = Self::build_eth_header(next_block_number, block_info)?;
 
-		let current_block_height = Self::json_request(&raw_url, EthScanAPI::GetBlockNoByTime)?.get_object()[2]
-			.1
-			.get_string()
-			.parse::<u64>()
-			.map_err(|_| <Error<T>>::U64CF)?;
-
-		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Height: {}", current_block_height);
-
-		// TODO: check current header and skip this run
-
-		let mut raw_url = ethscan_url::GTE_BLOCK_BY_BLOCK_NUMBER.to_vec();
-		raw_url.append(&mut base_n_bytes(current_block_height, 16));
-		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
-		raw_url.append(&mut api_key);
-
-		let block_info = Self::json_request(&raw_url, EthScanAPI::GetBlockByNumber)?;
-		let eth_header = Self::build_eth_header(current_block_height, block_info)?;
-
-		let call = Call::record_header(block, eth_header);
-
-		let results = T::SubmitSignedTransaction::submit_signed(call);
+		let results = T::SubmitSignedTransaction::submit_signed(pallet_eth_relay::Call::relay_header(eth_header));
 		for (account, result) in &results {
 			debug::trace!(
 				target: "eoc-fc",
@@ -185,7 +171,7 @@ impl<T: Trait> Module<T> {
 		Ok(())
 	}
 
-	fn json_request<A: AsRef<[u8]>>(raw_url: A, api_type: EthScanAPI) -> Result<JsonValue, DispatchError> {
+	fn json_request<A: AsRef<[u8]>>(raw_url: A) -> Result<JsonValue, DispatchError> {
 		let url = core::str::from_utf8(raw_url.as_ref()).map_err(|_| <Error<T>>::URLDF)?;
 		debug::trace!(target: "eoc-req", "[eth-offchain] Request: {}", url);
 		let mut maybe_resp_body = None;
@@ -219,23 +205,15 @@ impl<T: Trait> Module<T> {
 			core::str::from_utf8(&resp_body).unwrap_or("Resposne Body - INVALID"),
 		);
 
-		let json_val: JsonValue = match api_type {
-			EthScanAPI::GetBlockByNumber => {
-				if resp_body.len() < 1362 {
-					Err(<Error<T>>::APIRespUnexp)?;
-				}
-				remove_trascation_and_uncle(&mut resp_body);
-				// get the result part
-				simple_json::parse_json(
-					&core::str::from_utf8(&resp_body[33..resp_body.len() - 1]).map_err(|_| <Error<T>>::StrCF)?,
-				)
-				.map_err(|_| <Error<T>>::JsonPF)?
-			}
-			_ => simple_json::parse_json(&core::str::from_utf8(&resp_body).map_err(|_| <Error<T>>::StrCF)?)
-				.map_err(|_| <Error<T>>::JsonPF)?,
-		};
-
-		Ok(json_val)
+		if resp_body.len() < 1362 {
+			Err(<Error<T>>::APIRespUnexp)?;
+		}
+		remove_trascation_and_uncle(&mut resp_body);
+		// get the result part
+		Ok(simple_json::parse_json(
+			&core::str::from_utf8(&resp_body[33..resp_body.len() - 1]).map_err(|_| <Error<T>>::StrCF)?,
+		)
+		.map_err(|_| <Error<T>>::JsonPF)?)
 	}
 
 	fn build_eth_header(number: u64, block_info: JsonValue) -> Result<EthHeader, DispatchError> {
