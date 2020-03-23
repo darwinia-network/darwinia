@@ -48,7 +48,15 @@ pub fn get_hash(o: &mut Object, key: &str) -> Option<H256> {
 pub fn mock_header_from_source<'m>(o: &'m mut Object) -> Option<EthHeader> {
 	let mixh = get_hash(o, "mixHash")?;
 	let nonce = H64::from(h8(o.remove("nonce")?.as_str()?)?);
-	let addr = h20(o.remove("nonce")?.as_str()?)?;
+	let addr = h20(o.remove("miner")?.as_str()?)?;
+
+	let extra_data = o.remove("extraData")?;
+	let eds = &extra_data.as_str()?[2..];
+
+	let log_bloom = o.remove("logsBloom")?;
+	let lb = &log_bloom.as_str()?[2..];
+
+	let difficulty: u64 = o.remove("difficulty")?.as_str()?.parse().unwrap();
 
 	Some(EthHeader {
 		parent_hash: get_hash(o, "parentHash")?,
@@ -57,13 +65,13 @@ pub fn mock_header_from_source<'m>(o: &'m mut Object) -> Option<EthHeader> {
 		author: EthAddress::from(addr),
 		transactions_root: get_hash(o, "transactionsRoot")?,
 		uncles_hash: get_hash(o, "sha3Uncles")?,
-		extra_data: o.remove("extraData")?.as_str()?.from_hex().unwrap(),
+		extra_data: eds.from_hex().unwrap(),
 		state_root: get_hash(o, "stateRoot")?,
 		receipts_root: get_hash(o, "receiptsRoot")?,
-		log_bloom: Bloom::from_str(o.remove("logsBloom")?.as_str()?).unwrap(),
+		log_bloom: Bloom::from_str(lb).unwrap(),
 		gas_used: o.remove("gasUsed")?.as_i32()?.into(),
 		gas_limit: o.remove("gasLimit")?.as_i32()?.into(),
-		difficulty: o.remove("gasLimit")?.as_u64()?.into(),
+		difficulty: difficulty.into(),
 		seal: vec![rlp::encode(&mixh), rlp::encode(&nonce)],
 		hash: Some(get_hash(o, "hash")?),
 	})

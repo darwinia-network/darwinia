@@ -224,5 +224,6 @@ fn check_receipt_safely() {
 
 #[test]
 fn test_json_import() {
-	assert!(mock_canonical_relationship().is_some());
+	let hs = mock_canonical_relationship().unwrap();
+	println!("{:#?}", hs);
 }
