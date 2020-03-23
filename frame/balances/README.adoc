@@ -72,22 +72,11 @@ it will reset the account nonce (`frame_system::AccountNonce`).
 The dispatch origin for this call is `root`.
 
 
-## Weight 
+## Weights
 
-### Weight in Balances
-
-| Call                          | Origin | weight    |
-|-------------------------------|--------|-----------|
-| fn force\_transfer(...)       | S      | 1,000,000 |
-| fn transfer(...)              | S      | 1,000,000 |
-| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
-| fn set\_balance(...)          | R      | 50,000    |
-
-### Weight in Substrate's Balances
-
-| Call                          | Origin | weight    |
-|-------------------------------|--------|-----------|
-| fn force\_transfer(...)       | S      | 1,000,000 |
-| fn transfer(...)              | S      | 1,000,000 |
-| fn transfer\_keep\_alive(...) | S      | 1,000,000 |
-| fn set\_balance(...)          | R      | 50,000    |
+| Call                          | Origin | Darwinia  | Substrate |
+|-------------------------------|--------|-----------|-----------|
+| fn force\_transfer(...)       | S      | 1,000,000 | 1,000,000 |
+| fn transfer(...)              | S      | 1,000,000 | 1,000,000 |
+| fn transfer\_keep\_alive(...) | S      | 1,000,000 | 1,000,000 |
+| fn set\_balance(...)          | R      | 50,000    | 50,000    |

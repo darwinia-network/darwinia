@@ -36,6 +36,7 @@ use ethabi::{Event as EthEvent, EventParam as EthEventParam, ParamType, RawLog};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
 	traits::{Currency, OnUnbalanced, Time},
+	weights::SimpleDispatchInfo,
 };
 use frame_system::{self as system, ensure_signed};
 use sp_runtime::{
@@ -152,6 +153,12 @@ decl_module! {
 
 		fn deposit_event() = default;
 
+		/// Redeem balances
+		///
+		/// # <weight>
+		/// - `O(1)`
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(10_000)]
 		pub fn redeem(origin, r#for: RedeemFor) {
 			let _relayer = ensure_signed(origin)?;
 

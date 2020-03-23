@@ -57,6 +57,10 @@ jobs:
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native HEADERMMR
       script: .maintain/ci/darwinia_test_script.sh header-mmr
 
+    - stage: Darwinia Test
+      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHOFFCHAIN
+      script: .maintain/ci/darwinia_test_script.sh eth-offchain
+
     # TODO: remove this when overall test case ready
   allow_failures:
     - stage: Overall Test 

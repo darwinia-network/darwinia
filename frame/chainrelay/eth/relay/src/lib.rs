@@ -171,6 +171,17 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::SetGenesisHeader(relayer, header, genesis_difficulty));
 		}
 
+		/// Relay header of eth block, store the passing header
+		/// to darwinia Storage if it is verified.
+		///
+		/// # <weight>
+		/// - `O(1)`.
+		/// - Limited Storage reads
+		/// - One storage read
+		/// - One storage write
+		/// - Up to one event
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(100_000)]
 		pub fn relay_header(origin, header: EthHeader) {
 			let relayer = ensure_signed(origin)?;
 			if Self::check_authorities() {
@@ -192,6 +203,14 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::RelayHeader(relayer, header));
 		}
 
+		/// Check receipt
+		///
+		/// # <weight>
+		/// - `O(1)`.
+		/// - Limited Storage reads
+		/// - Up to one event
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(100_000)]
 		pub fn check_receipt(origin, proof_record: EthReceiptProof) {
 			let relayer = ensure_signed(origin)?;
 			if Self::check_authorities() {
@@ -205,6 +224,14 @@ decl_module! {
 
 		// --- root call ---
 
+		/// Add authority
+		///
+		/// # <weight>
+		/// - `O(A)` where `A` length of `authorities`
+		/// - One storage mutation (codec `O(A)`).
+		/// - Up to one event
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(50_000)]
 		pub fn add_authority(origin, who: T::AccountId) {
 			ensure_root(origin)?;
 
@@ -215,6 +242,14 @@ decl_module! {
 			}
 		}
 
+		/// Remove authority
+		///
+		/// # <weight>
+		/// - `O(A)` where `A` length of `authorities`
+		/// - One storage mutation (codec `O(A)`).
+		/// - Up to one event
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(50_000)]
 		pub fn remove_authority(origin, who: T::AccountId) {
 			ensure_root(origin)?;
 
@@ -227,6 +262,14 @@ decl_module! {
 			}
 		}
 
+		/// Check authorities
+		///
+		/// # <weight>
+		/// - `O(1)`.
+		/// - One storage write
+		/// - Up to one event
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(10_000)]
 		pub fn toggle_check_authorities(origin) {
 			ensure_root(origin)?;
 
@@ -235,13 +278,25 @@ decl_module! {
 			<Module<T>>::deposit_event(RawEvent::ToggleCheckAuthorities(Self::check_authorities()));
 		}
 
-		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
+		/// Set number of blocks finality
+		///
+		/// # <weight>
+		/// - `O(1)`.
+		/// - One storage write
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(10_000)]
 		pub fn set_number_of_blocks_finality(origin, #[compact] new: u64) {
 			ensure_root(origin)?;
 			NumberOfBlocksFinality::put(new);
 		}
 
-		#[weight = SimpleDispatchInfo::FixedNormal(5_000)]
+		/// Set number of blocks finality
+		///
+		/// # <weight>
+		/// - `O(1)`.
+		/// - One storage write
+		/// # </weight>
+		#[weight = SimpleDispatchInfo::FixedNormal(10_000)]
 		pub fn set_number_of_blocks_safe(origin, #[compact] new: u64) {
 			ensure_root(origin)?;
 			NumberOfBlocksSafe::put(new);
