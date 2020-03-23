@@ -74,7 +74,7 @@ decl_event! {
 decl_error! {
 	pub enum Error for Module<T: Trait> {
 		/// Local accounts - UNAVAILABLE (Consider adding one via `author_insertKey` RPC)
-		AccountUA,
+		AccountUnavail,
 
 		/// API Resoibse - UNEXPECTED
 		APIRespUnexp,
@@ -141,7 +141,7 @@ decl_module! {
 impl<T: Trait> Module<T> {
 	fn fetch_eth_header<'a>(block: T::BlockNumber) -> DispatchResult {
 		if !T::SubmitSignedTransaction::can_sign() {
-			Err(<Error<T>>::AccountUA)?;
+			Err(<Error<T>>::AccountUnavail)?;
 		}
 
 		let now = T::Time::now().saturated_into::<u64>() / 1000;
