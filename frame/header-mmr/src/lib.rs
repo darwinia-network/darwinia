@@ -42,23 +42,15 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure};
-use sp_std::marker::PhantomData;
-use sp_std::prelude::*;
-//use frame_benchmarking::{benchmarks, account};
-use frame_system::{self as system}; // , ensure_root, ensure_signed, RawOrigin
-
-//use codec::{Encode, Decode};
-use sp_runtime::{
-	generic::DigestItem,
-	traits::{Hash, One},
-	DispatchError,
-};
-
-use merkle_mountain_range::{MMRStore, MerkleProof, MMR};
-
 mod mock;
 mod tests;
+
+// --- third-party ---
+use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure};
+use frame_system::{self as system};
+use merkle_mountain_range::{MMRStore, MerkleProof, MMR};
+use sp_runtime::{generic::DigestItem, traits::Hash, DispatchError};
+use sp_std::{marker::PhantomData, prelude::*};
 
 pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -78,12 +70,14 @@ decl_storage! {
 }
 
 decl_event! {
-	pub enum Event<T> where H = <T as system::Trait>::Hash {
+	pub enum Event<T>
+	where
+		H = <T as system::Trait>::Hash,
+	{
 		/// New mmr root log hash been deposited.
 		NewMMRRoot(H),
 	}
 }
-// `ensure_root` and `ensure_none`.
 
 decl_error! {
 	pub enum Error for Module<T: Trait> {
@@ -95,13 +89,17 @@ decl_error! {
 }
 
 decl_module! {
-	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+	pub struct Module<T: Trait> for enum Call
+	where
+		origin: T::Origin
+	{
+		type Error = Error<T>;
+
 		fn deposit_event() = default;
 
-		fn on_finalize(_block_number: T::BlockNumber) {
-			let store = ModuleMMRStore::<T>::default();
-
-			let mut mmr = MMR::<_, MMRMerge<T>, _>::new(<MMRCounter>::get(), store);
+		fn on_finalize(block_number: T::BlockNumber) {
+			let store = <ModuleMMRStore<T>>::default();
+			let mut mmr = <MMR<_, MMRMerge<T>, _>>::new(<MMRCounter>::get(), store);
 
 			let parent_hash = <frame_system::Module<T>>::parent_hash();
 			// Update MMR and add mmr root to digest of block header
@@ -109,25 +107,22 @@ decl_module! {
 
 			// The first block number should start with 1 and parent block should be (T::BlockNumber::zero(), hash69())
 			// Checking just in case custom changes in system gensis config
-			if <frame_system::Module<T>>::block_number() >= T::BlockNumber::one() {
-				<Positions<T>>::insert(<frame_system::Module<T>>::block_number() - T::BlockNumber::one(), pos);
+			if block_number >= 1.into() {
+				<Positions<T>>::insert(block_number - 1.into(), pos);
 			}
 
 			let mmr_root = mmr.get_root().expect("Failed to calculate merkle mountain range; qed");
 			mmr.commit().expect("Failed to push parent hash to mmr.");
 
-			let mmr_item = DigestItem::MerkleMountainRangeRoot(
-				mmr_root.into()
-			);
+			let mmr_item = DigestItem::MerkleMountainRangeRoot(mmr_root.into());
 
 			<frame_system::Module<T>>::deposit_log(mmr_item.into());
-			Self::deposit_event(Event::<T>::NewMMRRoot(mmr_root));
+			Self::deposit_event(<Event<T>>::NewMMRRoot(mmr_root));
 		}
 	}
 }
 
 pub struct MMRMerge<T>(PhantomData<T>);
-
 impl<T: Trait> merkle_mountain_range::Merge for MMRMerge<T> {
 	type Item = <T as frame_system::Trait>::Hash;
 	fn merge(lhs: &Self::Item, rhs: &Self::Item) -> Self::Item {
@@ -145,16 +140,15 @@ impl<T> Default for ModuleMMRStore<T> {
 
 impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 	fn get_elem(&self, pos: u64) -> merkle_mountain_range::Result<Option<T::Hash>> {
-		Ok(Some(Module::<T>::mmr_node_list(pos)))
+		Ok(Some(<Module<T>>::mmr_node_list(pos)))
 	}
 
 	fn append(&mut self, pos: u64, elems: Vec<T::Hash>) -> merkle_mountain_range::Result<()> {
-		let mmr_count = <MMRCounter>::get();
+		let mmr_count = MMRCounter::get();
 		if pos != mmr_count {
 			// Must be append only.
-			return Err(merkle_mountain_range::Error::InconsistentStore);
+			Err(merkle_mountain_range::Error::InconsistentStore)?;
 		}
-
 		let elems_len = elems.len() as u64;
 
 		for (i, elem) in elems.into_iter().enumerate() {
@@ -162,7 +156,7 @@ impl<T: Trait> MMRStore<T::Hash> for ModuleMMRStore<T> {
 		}
 
 		// increment counter
-		<MMRCounter>::put(mmr_count + elems_len);
+		MMRCounter::put(mmr_count + elems_len);
 
 		Ok(())
 	}
@@ -179,8 +173,8 @@ impl<T: Trait> Module<T> {
 		let pos = Self::position_of(block_number);
 		let mmr_header_pos = Self::position_of(mmr_block_number);
 
-		let store = ModuleMMRStore::<T>::default();
-		let mmr = MMR::<_, MMRMerge<T>, _>::new(mmr_header_pos, store);
+		let store = <ModuleMMRStore<T>>::default();
+		let mmr = <MMR<_, MMRMerge<T>, _>>::new(mmr_header_pos, store);
 
 		let proof = mmr.gen_proof(vec![pos]).map_err(|_| <Error<T>>::ProofGF)?;
 

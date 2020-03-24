@@ -1,40 +1,41 @@
 [package]
 name = "darwinia-header-mmr"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Pallet for logging MMR into header digest"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
-description = "Pallet for logging MMR into header digest"
 
 [dependencies]
-serde = { version = "1.0.101", optional = true }
+# crates.io
 codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false }
-#frame-benchmarking = { version = "2.0.0-alpha.2", default-features = false, path = "../benchmarking" }
-frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+merkle-mountain-range = { package = "ckb-merkle-mountain-range", default-features = false, git = "https://github.com/nervosnetwork/merkle-mountain-range.git" }
+serde = { version = "1.0.101", optional = true }
+
+# github.com
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-
-merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
 
 [dev-dependencies]
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 
 [features]
 default = ["std"]
 std = [
-	"serde",
 	"codec/std",
-	"sp-runtime/std",
-#	"frame-benchmarking/std",
+	"merkle-mountain-range/std",
+	"serde",
+
 	"frame-support/std",
 	"frame-system/std",
-	"sp-io/std",
+	
+	"sp-runtime/std",
 	"sp-std/std",
-	"merkle-mountain-range/std",
 ]
