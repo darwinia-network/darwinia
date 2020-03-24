@@ -39,7 +39,7 @@ type EtherScanAPIKey = Option<Vec<u8>>;
 
 type EthRelay<T> = pallet_eth_relay::Module<T>;
 
-pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"ofpf");
+pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"rlwk");
 
 const MAX_RETRY: u8 = 3;
 const RETRY_INTERVAL: u64 = 1;
