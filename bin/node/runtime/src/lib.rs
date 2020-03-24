@@ -366,7 +366,6 @@ impl pallet_sudo::Trait for Runtime {
 
 /// A runtime transaction submitter.
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
-
 parameter_types! {
 	pub const SessionDuration: BlockNumber = SESSION_DURATION;
 }
@@ -654,7 +653,8 @@ impl pallet_vesting::Trait for Runtime {
 }
 
 construct_runtime!(
-	pub enum Runtime where
+	pub enum Runtime
+	where
 		Block = Block,
 		NodeBlock = node_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
