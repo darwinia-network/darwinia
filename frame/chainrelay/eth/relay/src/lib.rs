@@ -202,9 +202,7 @@ decl_module! {
 //				Self::maybe_store_header(&header)?;
 //			}
 
-			frame_support::debug::trace!(target: "er-rl", "[eth-relay] Verify Header: {:?}", Self::verify_header(&header));
 			Self::verify_header(&header)?;
-			frame_support::debug::trace!(target: "er-rl", "[eth-relay] Maybe Store Header: {:?}", Self::maybe_store_header(&header));
 			Self::maybe_store_header(&header)?;
 
 			<Module<T>>::deposit_event(RawEvent::RelayHeader(relayer, header));
@@ -361,6 +359,8 @@ impl<T: Trait> Module<T> {
 
 		let begin_header_number = Self::begin_header().ok_or(<Error<T>>::BeginHeaderNE)?.number;
 		ensure!(header.number >= begin_header_number, <Error<T>>::HeaderTE);
+
+		frame_support::debug::trace!(target: "er-rl", "[eth-relay] Parent Header Hash: {:?}", header.parent_hash);
 
 		// There must be a corresponding parent hash
 		let prev_header = Self::header_of(header.parent_hash).ok_or(<Error<T>>::HeaderNE)?;
