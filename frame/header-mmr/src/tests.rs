@@ -2,24 +2,15 @@
 
 #![cfg(test)]
 
-use super::*;
-use crate::mock::*;
-//use codec::{Decode, Encode};
+// --- third-party ---
 use frame_system::{EventRecord, Phase};
 use sp_runtime::{
 	testing::{Digest, H256},
 	traits::{Header, OnFinalize},
 };
 
-fn initialize_block(number: u64, parent_hash: H256) {
-	System::initialize(
-		&number,
-		&parent_hash,
-		&Default::default(),
-		&Default::default(),
-		Default::default(),
-	);
-}
+// --- custom ---
+use crate::{mock::*, *};
 
 #[test]
 fn first_header_mmr() {
