@@ -23,16 +23,6 @@ fn test_hex_padding() {
 
 #[test]
 fn url_decode() {
-	let ts = 1_454_795_393u64;
-	let mut raw_url = ethscan_url::GTE_BLOCK_BY_TIMESTAMP.to_vec();
-	raw_url.append(&mut base_n_bytes(ts, 10));
-	raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
-	let url = core::str::from_utf8(&raw_url).unwrap();
-	assert_eq!(
-		url,
-		"https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=1454795393&closest=before&apikey=",
-	);
-
 	let mut raw_url = ethscan_url::GTE_BLOCK.to_vec();
 	raw_url.append(&mut base_n_bytes(9725369, 16));
 	raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());

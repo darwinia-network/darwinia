@@ -10,7 +10,7 @@ use sp_runtime::{
 use crate::*;
 
 impl_outer_origin! {
-	pub enum Origin for Test  where system = frame_system {}
+	pub enum Origin for Test where system = frame_system {}
 }
 
 pub type EthOffchain = Module<Test>;
@@ -83,11 +83,17 @@ impl pallet_eth_relay::Trait for Test {
 	type EthNetwork = EthRopsten;
 }
 
+impl From<pallet_eth_relay::Call<Test>> for Call<Test> {
+	fn from(_: pallet_eth_relay::Call<Test>) -> Self {
+		unimplemented!()
+	}
+}
+
 impl Trait for Test {
 	type Event = ();
 	type Time = pallet_timestamp::Module<Self>;
-	type Call = Call<Test>;
+	type Call = Call<Self>;
 	type SubmitSignedTransaction = SubmitTransaction;
-	type BlockFetchDur = ();
-	type APIKey = ();
+	type FetchInterval = ();
+	type EtherScanAPIKey = ();
 }
