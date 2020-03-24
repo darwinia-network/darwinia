@@ -557,6 +557,10 @@ impl pallet_eth_relay::Trait for Runtime {
 	type EthNetwork = EthRopsten;
 }
 
+impl pallet_header_mmr::Trait for Runtime {
+	type Event = Event;
+}
+
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
 }
@@ -654,12 +658,9 @@ impl pallet_vesting::Trait for Runtime {
 	type MinVestedTransfer = MinVestedTransfer;
 }
 
-impl pallet_header_mmr::Trait for Runtime {
-	type Event = Event;
-}
-
 construct_runtime!(
-	pub enum Runtime where
+	pub enum Runtime
+	where
 		Block = Block,
 		NodeBlock = node_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
@@ -693,12 +694,12 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthOffchain: pallet_eth_offchain::{Module, Call, Storage, Event<T>},
+		HeaderMMR: pallet_header_mmr::{Module, Call, Storage, Event<T>},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
 		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Vesting: pallet_vesting::{Module, Call, Storage, Config<T>, Event<T>},
-		HeaderMMR: pallet_header_mmr::{Module, Call, Storage, Event<T>},
 	}
 );
 
