@@ -117,7 +117,7 @@
 		"parent_hash": "H256",
 		"timestamp": "u64",
 		"number": "EthBlockNumber",
-		"auth": "EthAddress",
+		"author": "EthAddress",
 		"transaction_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
