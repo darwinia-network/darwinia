@@ -17,7 +17,6 @@ pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-use pallet_eth_offchain;
 pub use pallet_ring::Call as RingCall;
 pub use pallet_staking::StakerStatus;
 
