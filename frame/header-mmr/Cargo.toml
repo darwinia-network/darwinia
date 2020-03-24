@@ -1,50 +1,40 @@
 [package]
-name = "darwinia-claims"
-version = "0.5.0"
+name = "darwinia-header-mmr"
+version = "0.0.1"
 authors = ["Darwinia Network <hello@darwinia.network>"]
-description = "FRAME to claim airdrop"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
+description = "Pallet for logging MMR into header digest"
 
 [dependencies]
-# crates.io
-codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false, features = ["derive"] }
-rustc-hex = { version = "2.0.1", default-features = false }
 serde = { version = "1.0.101", optional = true }
-
-# github.com
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false }
+#frame-benchmarking = { version = "2.0.0-alpha.2", default-features = false, path = "../benchmarking" }
+frame-support = { default-features = false , git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+
+merkle-mountain-range = { package = "ckb-merkle-mountain-range",  git = "https://github.com/nervosnetwork/merkle-mountain-range.git", default-features = false }
 
 [dev-dependencies]
-hex-literal = "0.2.1"
-libsecp256k1 = "0.3.2"
-serde_json = "1.0.41"
-tiny-keccak = "1.5.0"
 
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-
-pallet-support = { package = "darwinia-support", path = "../support" }
-pallet-ring = { package = "darwinia-ring", path = "../balances/ring" }
-vesting = { package = "darwinia-vesting", path = "../vesting" }
 
 [features]
 default = ["std"]
 std = [
-	"codec/std",
-	"rustc-hex/std",
 	"serde",
-
+	"codec/std",
+	"sp-runtime/std",
+#	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
-
 	"sp-io/std",
-	"sp-runtime/std",
 	"sp-std/std",
+	"merkle-mountain-range/std",
 ]

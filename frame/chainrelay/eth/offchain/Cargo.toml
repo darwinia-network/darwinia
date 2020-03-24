@@ -7,15 +7,15 @@ edition = "2018"
 [dependencies]
 num-traits = { default-features = false, version = "0.2.8" }
 
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-io = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-session = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-timestamp = { default-features = false,  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-timestamp = { default-features = false,  git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 pallet-eth-relay = { default-features = false, package = "darwinia-eth-relay", path = "../relay" }
 
 parity-scale-codec = { version = "1.0.0", default-features = false, features = ["derive"] }
@@ -28,7 +28,7 @@ ethbloom = { default-features = false, git ="https://github.com/darwinia-network
 rlp = { default-features = false, git = "https://github.com/darwinia-network/parity-common.git" }
 
 [build-dependencies]
-wasm-builder-runner = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1", package = "substrate-wasm-builder-runner", version = "1.0.4" }
+wasm-builder-runner = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2", package = "substrate-wasm-builder-runner", version = "1.0.4" }
 
 [features]
 default = ["std"]

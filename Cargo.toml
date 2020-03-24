@@ -17,6 +17,7 @@ members = [
 	"frame/support",
 	"frame/treasury",
 	"frame/vesting",
+	"frame/header-mmr",
 	"primitives/ethash",
 	"primitives/eth-primitives",
 	"primitives/merkle-patricia-trie",

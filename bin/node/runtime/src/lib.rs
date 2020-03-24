@@ -654,6 +654,10 @@ impl pallet_vesting::Trait for Runtime {
 	type MinVestedTransfer = MinVestedTransfer;
 }
 
+impl pallet_header_mmr::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -694,6 +698,7 @@ construct_runtime!(
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Vesting: pallet_vesting::{Module, Call, Storage, Config<T>, Event<T>},
+		HeaderMMR: pallet_header_mmr::{Module, Call, Storage, Event<T>},
 	}
 );
 

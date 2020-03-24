@@ -14,26 +14,26 @@ codec = { package = "parity-scale-codec", version = "1.0.0", default-features = 
 serde = { version = "1.0.101", optional = true }
 
 # github.com
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-io ={ default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-io ={ default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-staking = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 # darwinia
 darwinia-phragmen = { default-features = false, path = "../../primitives/phragmen" }
 darwinia-support = { default-features = false, path = "../support" }
 
 [dev-dependencies]
-substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+substrate-test-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-timestamp = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 darwinia-support = { features = ["easy-testing"], path = "../support" }
 

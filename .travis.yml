@@ -29,29 +29,33 @@ jobs:
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=wasm
       script: .maintain/ci/build_script.sh
 
-    - stage: Darwinia Test
+    - stage: Darwinia KTON Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native KTON
       script: .maintain/ci/darwinia_test_script.sh kton
 
-    - stage: Darwinia Test
+    - stage: Darwinia RING Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native RING
       script: .maintain/ci/darwinia_test_script.sh ring
 
-    - stage: Darwinia Test
+    - stage: Darwinia STAKING Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native STAKING
       script: .maintain/ci/darwinia_test_script.sh staking
 
-    - stage: Darwinia Test
+    - stage: Darwinia TREASURY Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native TREASURY
       script: .maintain/ci/darwinia_test_script.sh treasury
 
-    - stage: Darwinia Test
+    - stage: Darwinia ETHRELAY Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
       script: .maintain/ci/darwinia_test_script.sh eth-relay
 
-    - stage: Darwinia Test
+    - stage: Darwinia ETHBACKING Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
       script: .maintain/ci/darwinia_test_script.sh eth-backing
+
+    - stage: Darwinia HEADERMMR Test
+      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native HEADERMMR
+      script: .maintain/ci/darwinia_test_script.sh header-mmr
 
     - stage: Darwinia Test
       env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHOFFCHAIN
