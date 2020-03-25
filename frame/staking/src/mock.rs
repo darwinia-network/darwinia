@@ -38,7 +38,7 @@ pub type Kton = pallet_kton::Module<Test>;
 pub type Ring = pallet_ring::Module<Test>;
 
 pub type RingError = pallet_ring::Error<Test, pallet_ring::DefaultInstance>;
-pub type KtonError = pallet_kton::Error<Test, pallet_kton::DefaultInstance>;
+// pub type KtonError = pallet_kton::Error<Test, pallet_kton::DefaultInstance>;
 pub type StakingError = crate::Error<Test>;
 
 // --- current ---
