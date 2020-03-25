@@ -9,6 +9,9 @@ use rustc_hex::FromHex;
 
 use crate::*;
 
+pub use eth_primitives::receipt::LogEntry;
+pub use json::JsonValue;
+
 /// hex
 macro_rules! hex {
     {$(($name:tt, $len:tt),)*} => {
@@ -101,5 +104,30 @@ pub fn mock_receipt_from_source(o: &mut Object) -> Option<EthReceiptProof> {
 		index,
 		proof,
 		header_hash: get_hash(o, "header_hash")?,
+	})
+}
+
+/// mock logs
+pub fn mock_log_from_source(o: &mut Object) -> Option<LogEntry> {
+	let data: Vec<u8> = {
+		let p = o.remove("data")?;
+		if let Ok(d) = p.as_str()?[2..].from_hex() {
+			d
+		} else {
+			return None;
+		}
+	};
+
+	let mut topics: Vec<H256> = vec![];
+	if let JsonValue::Array(ts) = o.remove("topics")? {
+		for t in ts.iter() {
+			topics.push(H256::from(h32(t.as_str()?)?));
+		}
+	}
+
+	Some(LogEntry {
+		address: EthAddress::from(h20(o.remove("address")?.as_str()?)?),
+		topics,
+		data,
 	})
 }

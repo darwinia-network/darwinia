@@ -1,11 +1,11 @@
 mod check_receipt;
 mod utils;
 
-use json::JsonValue;
-
 use crate::*;
-use check_receipt::{JSON, RECEIPT};
+use check_receipt::{EVENT_LOGS, JSON, RECEIPT};
 use utils::*;
+
+pub use utils::LogEntry;
 
 /// To help reward miners for when duplicate block solutions are found
 /// because of the shorter block times of Ethereum (compared to other cryptocurrency).
@@ -42,6 +42,25 @@ pub fn mock_canonical_relationship() -> Option<[Option<EthHeader>; 5]> {
 pub fn mock_canonical_receipt() -> Option<EthReceiptProof> {
 	if let JsonValue::Object(mut receipt) = json::parse(RECEIPT).unwrap() {
 		mock_receipt_from_source(&mut receipt)
+	} else {
+		None
+	}
+}
+
+/// mock log events
+pub fn mock_receipt_logs() -> Option<Vec<Option<LogEntry>>> {
+	if let JsonValue::Array(logs) = json::parse(EVENT_LOGS).unwrap().remove("logs") {
+		Some(
+			logs.iter()
+				.map(|log| {
+					if let JsonValue::Object(mut log) = log.clone() {
+						mock_log_from_source(&mut log)
+					} else {
+						None
+					}
+				})
+				.collect::<Vec<Option<LogEntry>>>(),
+		)
 	} else {
 		None
 	}
