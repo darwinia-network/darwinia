@@ -30,38 +30,41 @@ jobs:
       script: .maintain/ci/build_script.sh
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native KTON
+      env:  KTON RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh kton
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native RING
+      env: RING RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh ring
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native STAKING
+      env: STAKING RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh staking
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native TREASURY
+      env: TREASURY RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh treasury
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHRELAY
+      env: ETHRELAY RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh eth-relay
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHBACKING
+      env: ETHBACKING RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh eth-backing
 
     - stage: Darwinia Test
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native ETHOFFCHAIN
+      env: HEADERMMR RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
+      script: .maintain/ci/darwinia_test_script.sh header-mmr
+
+    - stage: Darwinia Test
+      env: ETHOFFCHAIN RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
       script: .maintain/ci/darwinia_test_script.sh eth-offchain
 
-    # TODO: remove this when overall test case ready
-  allow_failures:
-    - stage: Overall Test 
-      env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
-      script: .maintain/ci/test_script.sh
+    # over the time limitation, so we comment this
+    # - stage: Overall Test 
+    #   env: RUST_TOOLCHAIN=nightly-2020-02-07 TARGET=native
+    #   script: .maintain/ci/test_script.sh
 
 after_script:
     # Check how much free disk space left after the build

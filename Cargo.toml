@@ -13,6 +13,7 @@ members = [
 	"frame/chainrelay/eth/relay",
 	"frame/chainrelay/eth/offchain",
 	"frame/elections-phragmen",
+	"frame/header-mmr",
 	"frame/staking",
 	"frame/support",
 	"frame/treasury",

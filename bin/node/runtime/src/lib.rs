@@ -555,6 +555,10 @@ impl pallet_eth_offchain::Trait for Runtime {
 	type EtherScanAPIKey = EtherScanAPIKey;
 }
 
+impl pallet_header_mmr::Trait for Runtime {
+	type Event = Event;
+}
+
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
 }
@@ -688,6 +692,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthOffchain: pallet_eth_offchain::{Module, Call, Storage, Event<T>},
+		HeaderMMR: pallet_header_mmr::{Module, Call, Storage, Event<T>},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
 		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},

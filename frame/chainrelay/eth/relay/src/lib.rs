@@ -58,11 +58,11 @@ decl_storage! {
 		/// Hash of best block header
 		pub BestHeaderHash get(fn best_header_hash): H256;
 
-		pub CanonicalHeaderHashOf get(fn canonical_header_hash_of): map hasher(blake2_128_concat) u64 => H256;
+		pub CanonicalHeaderHashOf get(fn canonical_header_hash_of): map hasher(identity) u64 => H256;
 
-		pub HeaderOf get(fn header_of): map hasher(blake2_128_concat) H256 => Option<EthHeader>;
+		pub HeaderOf get(fn header_of): map hasher(identity) H256 => Option<EthHeader>;
 
-		pub HeaderInfoOf get(fn header_info_of): map hasher(blake2_128_concat) H256 => Option<HeaderInfo>;
+		pub HeaderInfoOf get(fn header_info_of): map hasher(identity) H256 => Option<HeaderInfo>;
 
 		/// Number of blocks finality
 		pub NumberOfBlocksFinality get(fn number_of_blocks_finality) config(): u64;

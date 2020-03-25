@@ -5,6 +5,7 @@ readonly TEST_CRATES=(
     'treasury'
     'eth-relay'
     'eth-backing'
+    'header-mmr'
 );
 
 function main() {
