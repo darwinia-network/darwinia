@@ -46,15 +46,12 @@ mod mock;
 mod tests;
 
 // --- third-party ---
-use frame_support::{decl_error, decl_event, decl_module, decl_storage, ensure};
-use frame_system::{self as system};
+use frame_support::{decl_error, decl_module, decl_storage, ensure};
 use merkle_mountain_range::{MMRStore, MerkleProof, MMR};
 use sp_runtime::{generic::DigestItem, traits::Hash, DispatchError};
 use sp_std::{marker::PhantomData, prelude::*};
 
-pub trait Trait: frame_system::Trait {
-	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
-}
+pub trait Trait: frame_system::Trait {}
 
 decl_storage! {
 	trait Store for Module<T: Trait> as HeaderMMR {
@@ -66,16 +63,6 @@ decl_storage! {
 
 		/// The positions of header numbers in the MMR Node List
 		pub Positions get(fn position_of): map hasher(identity) T::BlockNumber => u64;
-	}
-}
-
-decl_event! {
-	pub enum Event<T>
-	where
-		H = <T as system::Trait>::Hash,
-	{
-		/// New mmr root log hash been deposited.
-		NewMMRRoot(H),
 	}
 }
 
@@ -94,8 +81,6 @@ decl_module! {
 		origin: T::Origin
 	{
 		type Error = Error<T>;
-
-		fn deposit_event() = default;
 
 		fn on_finalize(block_number: T::BlockNumber) {
 			let store = <ModuleMMRStore<T>>::default();
@@ -117,7 +102,6 @@ decl_module! {
 			let mmr_item = DigestItem::MerkleMountainRangeRoot(mmr_root.into());
 
 			<frame_system::Module<T>>::deposit_log(mmr_item.into());
-			Self::deposit_event(<Event<T>>::NewMMRRoot(mmr_root));
 		}
 	}
 }
