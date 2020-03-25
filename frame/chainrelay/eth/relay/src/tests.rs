@@ -219,8 +219,8 @@ fn build_genesis_header() {
 /// ## Note:
 ///
 /// check receipt should
-/// - failed when we got into a hard fork chain
-/// - succeed when container block has brother block
+/// - succeed when we relayed the correct header
+/// - failed when canonical hash was re-orged by the block which contains our tx's brother block
 #[test]
 fn check_receipt_safety() {
 	new_test_ext().execute_with(|| {
@@ -236,17 +236,44 @@ fn check_receipt_safety() {
 		assert_ne!(grandpa.hash, uncle.hash);
 		assert_eq!(grandpa.number, uncle.number);
 
-		// check receipt should succeed even the container has brother
-		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa));
+		// check receipt should succeed when we relayed the correct header
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa.clone()));
 		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt.clone()));
 
-		// check should fail when our tx packed into the block which has
-		// brother blocks.
+		// check should fail when canonical hash was re-orged by
+		// the block which contains our tx's brother block
 		assert_ok!(EthRelay::relay_header(Origin::signed(0), uncle));
 		assert_err!(
-			EthRelay::check_receipt(Origin::signed(0), receipt),
+			EthRelay::check_receipt(Origin::signed(0), receipt.clone()),
 			<Error<Test>>::HeaderNC
 		);
+	});
+}
+
+#[test]
+fn canonical_reorg_uncle_should_succeed() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(EthRelay::add_authority(RawOrigin::Root.into(), 0));
+		assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
+
+		let [o, g, u, _p, _c] = mock_canonical_relationship().unwrap();
+		let [origin, grandpa, uncle] = [o.unwrap(), g.unwrap(), u.unwrap()];
+		assert_ok!(EthRelay::init_genesis_header(&origin, 0x624c22d93f8e59_u64));
+
+		// check relationship
+		assert_ne!(grandpa.hash, uncle.hash);
+		assert_eq!(grandpa.number, uncle.number);
+
+		let (gh, uh) = (grandpa.hash, uncle.hash);
+		let number = grandpa.number;
+
+		// relay uncle header
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), uncle));
+		assert_eq!(EthRelay::canonical_header_hash_of(number), uh.unwrap());
+
+		// relay grandpa and re-org uncle
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa));
+		assert_eq!(EthRelay::canonical_header_hash_of(number), gh.unwrap());
 	});
 }
 

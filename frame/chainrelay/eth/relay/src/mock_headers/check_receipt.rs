@@ -3,8 +3,8 @@
 //! | pos     | height  | tx                                                                 |
 //! |---------|---------|--------------------------------------------------------------------|
 //! | origin  | 7575765 |                                                                    |
-//! | grandpa | 7575766 |                                                                    |
-//! | uncle   | 7575766 | 0xc56be493f656f1c8222006eda5cd3392be5f0c096e8b7fb1c5542088c0f0c889 |
+//! | grandpa | 7575766 | 0xc56be493f656f1c8222006eda5cd3392be5f0c096e8b7fb1c5542088c0f0c889 |
+//! | uncle   | 7575766 |                                                                    |
 //! | parent  | 7575767 |                                                                    |
 //! | current | 7575768 | 0xfc836bf547f1e035e837bf0a8d26e432aa26da9659db5bf6ba69b0341d818778 |
 pub const JSON: &'static str = r#"{
