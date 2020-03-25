@@ -431,28 +431,28 @@ pub(crate) mod tests {
 	use super::*;
 	use crate::service::{new_full, new_light};
 
-	fn local_testnet_genesis_instant_single() -> GenesisConfig {
-		darwinia_genesis(
-			vec![get_authority_keys_from_seed("Alice")],
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			vec![],
-			false,
-		)
-	}
-
-	/// Local testnet config (single validator - Alice)
-	pub fn integration_test_config_with_single_authority() -> ChainSpec {
-		ChainSpec::from_genesis(
-			"Integration Test",
-			"test",
-			local_testnet_genesis_instant_single,
-			vec![],
-			None,
-			None,
-			None,
-			Default::default(),
-		)
-	}
+	// fn local_testnet_genesis_instant_single() -> GenesisConfig {
+	// 	darwinia_genesis(
+	// 		vec![get_authority_keys_from_seed("Alice")],
+	// 		get_account_id_from_seed::<sr25519::Public>("Alice"),
+	// 		vec![],
+	// 		false,
+	// 	)
+	// }
+	//
+	// /// Local testnet config (single validator - Alice)
+	// pub fn integration_test_config_with_single_authority() -> ChainSpec {
+	// 	ChainSpec::from_genesis(
+	// 		"Integration Test",
+	// 		"test",
+	// 		local_testnet_genesis_instant_single,
+	// 		vec![],
+	// 		None,
+	// 		None,
+	// 		None,
+	// 		Default::default(),
+	// 	)
+	// }
 
 	/// Local testnet config (multivalidator Alice + Bob)
 	pub fn integration_test_config_with_two_authorities() -> ChainSpec {
