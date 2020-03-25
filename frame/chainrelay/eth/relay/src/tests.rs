@@ -207,8 +207,8 @@ fn build_genesis_header() {
 /// | pos     | height  | tx                                                                 |
 /// |---------|---------|--------------------------------------------------------------------|
 /// | origin  | 7575765 |                                                                    |
-/// | grandpa | 7575766 |                                                                    |
-/// | uncle   | 7575766 | 0xc56be493f656f1c8222006eda5cd3392be5f0c096e8b7fb1c5542088c0f0c889 |
+/// | grandpa | 7575766 | 0xc56be493f656f1c8222006eda5cd3392be5f0c096e8b7fb1c5542088c0f0c889 |
+/// | uncle   | 7575766 |                                                                    |
 /// | parent  | 7575767 |                                                                    |
 /// | current | 7575768 | 0xfc836bf547f1e035e837bf0a8d26e432aa26da9659db5bf6ba69b0341d818778 |
 ///
@@ -228,30 +228,25 @@ fn check_receipt_safety() {
 		assert_ok!(EthRelay::set_number_of_blocks_safe(RawOrigin::Root.into(), 0));
 
 		// family tree
-		let [o, g, _p, _u, _c] = mock_canonical_relationship().unwrap();
-		let [origin, grandpa] = [o.unwrap(), g.unwrap()];
+		let [o, g, u, _p, _c] = mock_canonical_relationship().unwrap();
+		let [origin, grandpa, uncle] = [o.unwrap(), g.unwrap(), u.unwrap()];
 		assert_ok!(EthRelay::init_genesis_header(&origin, 0x624c22d93f8e59_u64));
 
 		let receipt = mock_canonical_receipt().unwrap();
-
-		// TODO: hard to mock difficulty
-		//
-		// check should fail when we got into a hard fork chain,
-		// now we pretend that we stepped into a fork chain just now.
-		//
-		// let mut gb = grandpa.clone();
-		// gb.author = EthAddress::from(hex!("bb5c52d9Ab611FCa798dDae930c7fc8307EfdC11"));
-		// gb.hash.take();
-		//
-		// assert_ok!(EthRelay::relay_header(Origin::signed(0), gb));
-		// assert_ok!(
-		// 	EthRelay::check_receipt(Origin::signed(0), receipt),
-		// 	<Error<Test>>::HeaderNC
-		// );
+		assert_ne!(grandpa.hash, uncle.hash);
+		assert_eq!(grandpa.number, uncle.number);
 
 		// check receipt should succeed even the container has brother
 		assert_ok!(EthRelay::relay_header(Origin::signed(0), grandpa));
-		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt));
+		assert_ok!(EthRelay::check_receipt(Origin::signed(0), receipt.clone()));
+
+		// check should fail when our tx packed into the block which has
+		// brother blocks.
+		assert_ok!(EthRelay::relay_header(Origin::signed(0), uncle));
+		assert_err!(
+			EthRelay::check_receipt(Origin::signed(0), receipt),
+			<Error<Test>>::HeaderNC
+		);
 	});
 }
 
