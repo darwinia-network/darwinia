@@ -148,22 +148,11 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 
 // TODO: doc
 fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
-	let mut path = path.to_owned();
-	if !Path::new(&path).is_file() {
-		let var = env::var("CLAIMS_LIST_PATH").expect(&format!(
-			"\n\
-			!!file NOT FOUND!! current path: {}, load from path: {}\n\
-			!!CLAIMS_LIST_PATH var NOT FOUND!!\n\
-			At least one of them should be VALID\n",
-			env::current_dir().unwrap().display(),
-			path,
-		));
-
-		path = var;
+	if !Path::new(&path).is_file() && env::var("CLAIMS_LIST_PATH").is_err() {
+		Default::default()
+	} else {
+		serde_json::from_reader(File::open(env::var("CLAIMS_LIST_PATH").unwrap_or(path.to_owned())).unwrap()).unwrap()
 	}
-
-	let file = File::open(&path).unwrap();
-	serde_json::from_reader(file).unwrap()
 }
 
 /// Helper function to create GenesisConfig for darwinia
@@ -506,7 +495,7 @@ pub(crate) mod tests {
 	}
 
 	#[test]
-	fn test() {
+	fn build_genesis_claims_list() {
 		let claims = load_claims_list("./res/claims_list.json");
 		println!("{:#?}", &claims.eth[0..10]);
 	}
