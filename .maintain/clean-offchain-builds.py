@@ -4,10 +4,10 @@ from pathlib import Path
 from shutil import rmtree
 
 for pattern in ['*eth_offchain*']:
-    for p in iglob(''.join([dirname(dirname(abspath(__file__))), '/target', '/release', '/**/', pattern]), recursive=True):
-        print('removed:', p)
-        p = Path(p)
-        if p.is_dir():
-            rmtree(p)
-        elif p.is_file:
-            p.unlink()
+    for path in iglob(''.join([dirname(dirname(abspath(__file__))), '/target', '/release', '/**/', pattern]), recursive=True):
+        print('removed:', path)
+        path = Path(path)
+        if path.is_dir():
+            rmtree(path)
+        elif path.is_file:
+            path.unlink()
