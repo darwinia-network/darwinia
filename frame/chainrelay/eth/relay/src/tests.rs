@@ -173,3 +173,29 @@ fn relay_header() {
 		assert_ok!(EthRelay::maybe_store_header(&header3));
 	});
 }
+
+#[test]
+fn build_genesis_header() {
+	let genesis_header = EthHeader {
+			parent_hash: hex!("6e1494ad8e02a126fb86cf82b13627c45e6e8f1eab05e14270a69a05d7fe5e26").into(),
+			timestamp: 0x5e78a9f5,
+			number: 0x946eef,
+			author: hex!("5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c").into(),
+			transactions_root: hex!("661aff2eca6c57b3cb0f0b55d44761d4269c6548ed12bdebaa37df36d2e5b758").into(),
+			uncles_hash: hex!("8652a5fec23f8bd33f9898c05ccd953c2c1faeb0d3de918c967a24b709254814").into(),
+			extra_data: "737061726b706f6f6c2d6574682d636e2d687a33".from_hex().unwrap(),
+			state_root: hex!("53fceb8f891e321c5124414a9bfd97ee39abb975066936bd220597a578c7655a").into(),
+			receipts_root: hex!("4b57744cd97d237a8751a96317aecbe7db52f302ded36246d41782face81c17c").into(),
+			log_bloom: Bloom::from_str("7890cc80915ca44051c6e0c101505084edc980e151012010b46c00623e4020a83a581359d08b095ead0116a408da0b9c3782605088210826133440ea6824981c78250060f64aa3a6c890102800c235e7204164252648a4e5a240e6e72068000030320104045c412de0ae448a126c10400e244864500b2c249e00aeb061143064b7b810d4e601a018542542c095880c521b89853b45840018616b0816ce90f2c01a642124b20c3d008cfbe08702607ba4f268200c294e1c2002b3280f3aae9312119421e2570840bb40233131064b408d3a003378994005c1090a8073c1501493b053ecc480ca50185e8105d240762a670ca43a6036408ab46204d21e0c923d1a").unwrap(),
+			gas_used: 0x983707.into(),
+			gas_limit: 0x9883be.into(),
+			difficulty: 0x7db16f1a4402eu64.into(),
+			seal: vec![
+				rlp::encode(&H256::from(hex!("1cf81d78588bedf4ef8a0db007bba31b17c1086bead9b9badeca8d34b15db420"))), 
+				rlp::encode(&H64::from(hex!("a98d18400422c64e"))),
+			],
+			hash: Some(hex!("034cd83d9150808de742592f57e302dc9eccc71af270639dc5f236e5bdd7d3e3").into()),
+	};
+
+	println!("{:?}", rlp::encode(&genesis_header));
+}

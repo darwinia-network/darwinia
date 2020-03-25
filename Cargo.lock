@@ -242,9 +242,9 @@ checksum = "f8aac770f1885fd7e387acedd76065302551364496e46b3dd00860b2f8359b9d"
 
 [[package]]
 name = "backtrace"
-version = "0.3.45"
+version = "0.3.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad235dabf00f36301792cfe82499880ba54c6486be094d1047b02bacb67c14e8"
+checksum = "b1e692897359247cc6bb902933361652380af0f1b7651ae5c5013407f30e109e"
 dependencies = [
  "backtrace-sys",
  "cfg-if",
@@ -254,9 +254,9 @@ dependencies = [
 
 [[package]]
 name = "backtrace-sys"
-version = "0.1.34"
+version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca797db0057bae1a7aa2eef3283a874695455cecf08a43bfb8507ee0ebc1ed69"
+checksum = "7de8aba10a69c8e8d7622c5710229485ec32e9d55fdad160ea559c086fdcd118"
 dependencies = [
  "cc",
  "libc",
@@ -432,9 +432,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.2.0"
+version = "3.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f359dc14ff8911330a51ef78022d376f25ed00248912803b58f00cb1c27f742"
+checksum = "12ae9db68ad7fac5fe51304d20f016c911539251075a214f8e663babefa35187"
 
 [[package]]
 name = "byte-slice-cast"
@@ -1005,23 +1005,18 @@ name = "darwinia-eth-offchain"
 version = "0.1.0"
 dependencies = [
  "darwinia-eth-relay",
+ "darwinia-support",
  "eth-primitives",
- "ethbloom 0.8.1 (git+https://github.com/darwinia-network/parity-common.git)",
- "ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)",
  "frame-support",
  "frame-system",
  "hex 0.4.2",
- "num-traits",
  "pallet-timestamp",
  "parity-scale-codec",
- "primitive-types 0.6.2 (git+https://github.com/darwinia-network/parity-common.git)",
  "rlp 0.4.4",
  "simple-json",
- "sp-io",
+ "sp-core",
  "sp-runtime",
- "sp-session",
  "sp-std 2.0.0-alpha.3 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-alpha.darwinia.2)",
- "substrate-wasm-builder-runner",
 ]
 
 [[package]]
@@ -5007,9 +5002,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.3.5"
+version = "1.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8900ebc1363efa7ea1c399ccc32daed870b4002651e0bed86e72d501ebbe0048"
+checksum = "7f6946991529684867e47d86474e3a6d0c0ab9b82d5821e314b1ede31fa3a4b3"
 dependencies = [
  "aho-corasick",
  "memchr",

@@ -17,7 +17,6 @@ pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-use pallet_eth_offchain;
 pub use pallet_ring::Call as RingCall;
 pub use pallet_staking::StakerStatus;
 
@@ -100,27 +99,6 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	}
 }
 
-type SubmitPFTransaction =
-	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
-
-parameter_types! {
-   pub const BlockFetchDur: BlockNumber = 3;
-   // TODO: pass this from command line
-   // this a poc versiona, build with following command to launch the poc binary
-   // `APIKEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-   pub const EthScanAPIKey: Option<Vec<u8>> = match option_env!("APIKEY"){
-	   Some(s) => Some(s.as_bytes().to_vec()),
-	   None => None,
-   };
-}
-
-impl pallet_eth_offchain::Trait for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type SubmitSignedTransaction = SubmitPFTransaction;
-	type BlockFetchDur = BlockFetchDur;
-	type APIKey = EthScanAPIKey;
-}
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 250;
 	pub const MaximumBlockWeight: Weight = 1_000_000_000;
@@ -388,7 +366,6 @@ impl pallet_sudo::Trait for Runtime {
 
 /// A runtime transaction submitter.
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
-
 parameter_types! {
 	pub const SessionDuration: BlockNumber = SESSION_DURATION;
 }
@@ -557,9 +534,28 @@ impl pallet_eth_relay::Trait for Runtime {
 	type EthNetwork = EthRopsten;
 }
 
-impl pallet_header_mmr::Trait for Runtime {
-	type Event = Event;
+type SubmitPFTransaction =
+	frame_system::offchain::TransactionSubmitter<pallet_eth_offchain::crypto::Public, Runtime, UncheckedExtrinsic>;
+parameter_types! {
+	pub const FetchInterval: BlockNumber = 3;
+	// TODO: pass this from command line
+	// this a poc versiona, build with following command to launch the poc binary
+	// `ETHER_SCAN_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
+	pub const EtherScanAPIKey: Option<Vec<u8>> = match option_env!("ETHER_SCAN_API_KEY"){
+		Some(s) => Some(s.as_bytes().to_vec()),
+		None => None,
+	};
 }
+impl pallet_eth_offchain::Trait for Runtime {
+	type Event = Event;
+	type Time = Timestamp;
+	type Call = Call;
+	type SubmitSignedTransaction = SubmitPFTransaction;
+	type FetchInterval = FetchInterval;
+	type EtherScanAPIKey = EtherScanAPIKey;
+}
+
+impl pallet_header_mmr::Trait for Runtime {}
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1 * COIN;
@@ -694,7 +690,7 @@ construct_runtime!(
 		EthBacking: pallet_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: pallet_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthOffchain: pallet_eth_offchain::{Module, Call, Storage, Event<T>},
-		HeaderMMR: pallet_header_mmr::{Module, Call, Storage, Event<T>},
+		HeaderMMR: pallet_header_mmr::{Module, Call, Storage},
 		Kton: pallet_kton::{Module, Call, Storage, Config<T>, Event<T>},
 		Balances: pallet_ring::{Module, Call, Storage, Config<T>, Event<T>},
 		Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},

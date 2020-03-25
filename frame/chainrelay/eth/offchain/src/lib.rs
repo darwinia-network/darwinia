@@ -1,51 +1,61 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(all(feature = "std", test))]
-mod tests;
-
-extern crate alloc;
-use crate::sp_api_hidden_includes_decl_storage::hidden_include::sp_runtime::traits::SaturatedConversion;
-use alloc::string::String as AllocString;
-use eth_primitives::{header::EthHeader, pow::EthashSeal};
-use ethereum_types::H64;
-use frame_support::{debug, decl_event, decl_module, decl_storage, dispatch, traits::Get};
-use frame_system as system;
-use frame_system::offchain::SubmitSignedTransaction;
-use hex::FromHex;
-#[cfg(not(feature = "std"))]
-use num_traits::float::FloatCore;
-use pallet_eth_relay::HeaderInfo;
-use parity_scale_codec::Encode;
-use primitive_types::{H160, H256, U256};
-use simple_json::{self, json::JsonValue};
-use sp_runtime::{
-	offchain::http,
-	transaction_validity::{InvalidTransaction, TransactionLongevity, TransactionValidity, ValidTransaction},
-	KeyTypeId,
-};
-use sp_std::{convert::From, prelude::*};
-
-type Result<T> = core::result::Result<T, &'static str>;
-type EthScanAPIKey = Option<Vec<u8>>;
-
-pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"ofpf");
-
 pub mod crypto {
-	pub use super::KEY_TYPE;
+	// --- third-party ---
 	use sp_runtime::app_crypto::{app_crypto, sr25519};
+
+	// --- custom ---
+	use crate::KEY_TYPE;
+
 	app_crypto!(sr25519, KEY_TYPE);
 }
 
-pub trait Trait: pallet_timestamp::Trait + pallet_eth_relay::Trait {
-	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-	type Call: From<Call<Self>>;
-	type SubmitSignedTransaction: SubmitSignedTransaction<Self, <Self as Trait>::Call>;
-	type BlockFetchDur: Get<Self::BlockNumber>;
-	type APIKey: Get<EthScanAPIKey>;
+mod ethscan_url {
+	pub const GTE_BLOCK: &'static [u8] =
+		b"https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x";
 }
-enum EthScanAPI {
-	GetBlockNoByTime,
-	GetBlockByNumber,
+
+#[cfg(all(feature = "std", test))]
+mod mock;
+#[cfg(all(feature = "std", test))]
+mod tests;
+
+// --- third-party ---
+use frame_support::{
+	debug, decl_error, decl_event, decl_module, decl_storage,
+	traits::{Get, Time},
+};
+use frame_system::{self as system, offchain::SubmitSignedTransaction};
+use hex::FromHex;
+use simple_json::{self, json::JsonValue};
+use sp_runtime::{offchain::http::Request, DispatchError, DispatchResult, KeyTypeId};
+use sp_std::prelude::*;
+
+// --- custom ---
+use eth_primitives::{header::EthHeader, pow::EthashSeal};
+use pallet_eth_relay::HeaderInfo;
+
+type EtherScanAPIKey = Option<Vec<u8>>;
+
+type EthRelay<T> = pallet_eth_relay::Module<T>;
+
+pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"rlwk");
+
+const MAX_RETRY: u8 = 3;
+const RETRY_INTERVAL: u64 = 1;
+
+pub trait Trait: pallet_eth_relay::Trait {
+	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+
+	type Time: Time;
+
+	type Call: From<pallet_eth_relay::Call<Self>>;
+
+	type SubmitSignedTransaction: SubmitSignedTransaction<Self, <Self as Trait>::Call>;
+
+	type FetchInterval: Get<Self::BlockNumber>;
+
+	type EtherScanAPIKey: Get<EtherScanAPIKey>;
 }
 
 decl_event! {
@@ -57,32 +67,264 @@ decl_event! {
 	}
 }
 
+decl_error! {
+	pub enum Error for Module<T: Trait> {
+		/// Local accounts - UNAVAILABLE (Consider adding one via `author_insertKey` RPC)
+		AccountUnavail,
+
+		/// API Resoibse - UNEXPECTED
+		APIRespUnexp,
+
+		/// Best Header - NOT EXISTED
+		BestHeaderNE,
+		/// Block Number - OVERFLOW
+		BlockNumberOF,
+
+		/// Json - PARSING FAILED
+		JsonPF,
+		/// Bloom - CONVERTION FAILED
+		BloomCF,
+		/// Bytes - CONVERTION FAILED
+		BytesCF,
+		/// EthAddress - CONVERTION FAILED
+		EthAddrCF,
+		/// H64 - CONVERTION FALLED
+		H64CF,
+		/// H256 - CONVERTION FALLED
+		H256CF,
+		/// U64 - CONVERTION FAILED
+		U64CF,
+		/// U256 - CONVERTION FAILED
+		U256CF,
+		/// Str - CONVERTION FAILED
+		StrCF,
+		/// URL - DECODE FAILED
+		URLDF,
+
+		/// Pending Length - MISMATCHED
+		PaddingLenMis,
+		/// Response Code - MISMATCHED
+		RespCodeMis,
+
+		/// Request - REACH MAX RETRY
+		ReqRMR,
+	}
+}
+
 decl_storage! {
-  trait Store for Module<T: Trait> as EthOffchain {
-  }
+	trait Store for Module<T: Trait> as EthOffchain {
+	}
 }
 
 decl_module! {
-pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-	fn deposit_event() = default;
+	pub struct Module<T: Trait> for enum Call
+	where
+		origin: T::Origin
+	{
+		type Error = Error<T>;
 
-	pub fn record_header(
-		origin,
-		_block: T::BlockNumber,
-		eth_header: EthHeader
-	) -> dispatch::DispatchResult {
-		<pallet_eth_relay::Module<T>>::relay_header(origin, eth_header)
-	}
+		fn deposit_event() = default;
 
-	fn offchain_worker(block: T::BlockNumber) {
-		let duration = T::BlockFetchDur::get();
-		if duration > 0.into() && block % duration == 0.into() && T::APIKey::get().is_some() {
-			if let Err(e) = Self::fetch_eth_header(block) {
-				debug::error!("[eth-offchain] Error: {:}", e);
+		fn offchain_worker(block: T::BlockNumber) {
+			let fetch_interval = T::FetchInterval::get();
+			if fetch_interval > 0.into() && block % fetch_interval == 0.into() && T::EtherScanAPIKey::get().is_some() {
+				let result = Self::fetch_eth_header();
+				debug::trace!(target: "eoc-fc", "[eth-offchain] Fetch Eth Header: {:?}", result);
 			}
 		}
 	}
+}
+
+impl<T: Trait> Module<T> {
+	fn fetch_eth_header() -> DispatchResult {
+		if !T::SubmitSignedTransaction::can_sign() {
+			Err(<Error<T>>::AccountUnavail)?;
+		}
+
+		let next_block_number = <EthRelay<T>>::header_of(<EthRelay<T>>::best_header_hash())
+			.ok_or(<Error<T>>::BestHeaderNE)?
+			.number
+			.checked_add(1)
+			.ok_or(<Error<T>>::BlockNumberOF)?;
+		debug::trace!(target: "eoc-fc", "[eth-offchain] Block Number: {}", next_block_number);
+		let raw_url = {
+			let mut v = ethscan_url::GTE_BLOCK.to_vec();
+			v.append(&mut base_n_bytes(next_block_number, 16));
+			v.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
+			v.append(&mut T::EtherScanAPIKey::get().unwrap());
+
+			v
+		};
+		let block_info = Self::json_request(&raw_url)?;
+		let eth_header = Self::build_eth_header(next_block_number, block_info)?;
+
+		let results = T::SubmitSignedTransaction::submit_signed(pallet_eth_relay::Call::relay_header(eth_header));
+		for (account, result) in &results {
+			debug::trace!(
+				target: "eoc-fc",
+				"[eth-offchain] Account: {:?}, Relay: {:?}",
+				account,
+				result,
+			);
+		}
+
+		Ok(())
 	}
+
+	fn json_request<A: AsRef<[u8]>>(raw_url: A) -> Result<JsonValue, DispatchError> {
+		let url = core::str::from_utf8(raw_url.as_ref()).map_err(|_| <Error<T>>::URLDF)?;
+		debug::trace!(target: "eoc-req", "[eth-offchain] Request: {}", url);
+		let mut maybe_resp_body = None;
+
+		for retry_time in 0..=MAX_RETRY {
+			debug::trace!(target: "eoc-req", "[eth-offchain] Retry: {}", retry_time);
+			if let Ok(pending) = Request::get(&url).send() {
+				if let Ok(resp) = pending.wait() {
+					if resp.code == 200 {
+						let resp_body = resp.body().collect::<Vec<u8>>();
+						if resp_body[0] == 123u8 {
+							maybe_resp_body = Some(resp_body);
+							break;
+						}
+					} else {
+						debug::trace!(target: "eoc-req", "[eth-offchain] Status Code: {}", resp.code);
+					}
+				}
+			}
+
+			#[cfg(feature = "std")]
+			std::thread::sleep(std::time::Duration::from_secs(RETRY_INTERVAL));
+
+			// TODO: sleep in wasm
+		}
+
+		let mut resp_body = maybe_resp_body.ok_or(<Error<T>>::ReqRMR)?;
+		debug::trace!(
+			target: "eoc-req",
+			"[eth-offchain] Response: {}",
+			core::str::from_utf8(&resp_body).unwrap_or("Resposne Body - INVALID"),
+		);
+
+		if resp_body.len() < 1362 {
+			Err(<Error<T>>::APIRespUnexp)?;
+		}
+		remove_trascation_and_uncle(&mut resp_body);
+		// get the result part
+		Ok(simple_json::parse_json(
+			&core::str::from_utf8(&resp_body[33..resp_body.len() - 1]).map_err(|_| <Error<T>>::StrCF)?,
+		)
+		.map_err(|_| <Error<T>>::JsonPF)?)
+	}
+
+	fn build_eth_header(number: u64, block_info: JsonValue) -> Result<EthHeader, DispatchError> {
+		let parent_hash = &block_info.get_object()[10].1.get_bytes()[2..];
+		let timestamp_hex = &block_info.get_object()[15].1.get_string()[2..];
+		let author = &block_info.get_object()[6].1.get_bytes()[2..];
+		let uncles_hash = &block_info.get_object()[12].1.get_bytes()[2..];
+		let extra_data = &block_info.get_object()[1].1.get_bytes()[2..];
+		let state_root = &block_info.get_object()[14].1.get_bytes()[2..];
+		let receipts_root = &block_info.get_object()[11].1.get_bytes()[2..];
+		let bloom = &block_info.get_object()[5].1.get_bytes()[2..];
+		let gas_used = Self::hex_padding(64, &block_info.get_object()[3].1.get_bytes()[2..])?;
+		let gas_limit = Self::hex_padding(64, &block_info.get_object()[2].1.get_bytes()[2..])?;
+		let difficulty = Self::hex_padding(64, &block_info.get_object()[0].1.get_bytes()[2..])?;
+		let seal = Self::build_eth_seal(
+			&block_info.get_object()[7].1.get_bytes()[2..],
+			&block_info.get_object()[8].1.get_bytes()[2..],
+		)?;
+		let transactions_root = &block_info.get_object()[17].1.get_bytes()[2..];
+		let hash = &block_info.get_object()[4].1.get_bytes()[2..];
+
+		let h = EthHeader {
+			parent_hash: <[u8; 32]>::from_hex(parent_hash)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			timestamp: u64::from_str_radix(&timestamp_hex, 16).map_err(|_| <Error<T>>::U64CF)?,
+			number,
+			author: <[u8; 20]>::from_hex(author).map_err(|_| <Error<T>>::EthAddrCF)?.into(),
+			transactions_root: <[u8; 32]>::from_hex(transactions_root)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			uncles_hash: <[u8; 32]>::from_hex(uncles_hash)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			extra_data: <Vec<u8>>::from_hex(extra_data).map_err(|_| <Error<T>>::BytesCF)?.into(),
+			state_root: <[u8; 32]>::from_hex(state_root).map_err(|_| <Error<T>>::H256CF)?.into(),
+			receipts_root: <[u8; 32]>::from_hex(receipts_root)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			log_bloom: <[u8; 256]>::from_hex(bloom).map_err(|_| <Error<T>>::BloomCF)?.into(),
+			gas_used: <[u8; 32]>::from_hex(gas_used).map_err(|_| <Error<T>>::U256CF)?.into(),
+			gas_limit: <[u8; 32]>::from_hex(gas_limit).map_err(|_| <Error<T>>::U256CF)?.into(),
+			difficulty: <[u8; 32]>::from_hex(difficulty).map_err(|_| <Error<T>>::U256CF)?.into(),
+			seal: vec![rlp::encode(&seal.mix_hash), rlp::encode(&seal.nonce)],
+			hash: Some(<[u8; 32]>::from_hex(hash).map_err(|_| <Error<T>>::H256CF)?.into()),
+		};
+
+		Ok(h)
+	}
+
+	fn hex_padding<A: AsRef<[u8]>>(width: usize, content: A) -> Result<Vec<u8>, DispatchError> {
+		let content = content.as_ref();
+		let mut output = vec![48; width];
+		output[width.checked_sub(content.len()).ok_or(<Error<T>>::PaddingLenMis)?..].copy_from_slice(content);
+
+		Ok(output)
+	}
+
+	fn build_eth_seal<A: AsRef<[u8]>>(mix_hash_hex: A, nonce_hex: A) -> Result<EthashSeal, DispatchError> {
+		let mix_hash_hex = mix_hash_hex.as_ref();
+		let nonce_hex = nonce_hex.as_ref();
+		let s = EthashSeal {
+			mix_hash: <[u8; 32]>::from_hex(mix_hash_hex)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+			nonce: <[u8; 8]>::from_hex(nonce_hex).map_err(|_| <Error<T>>::H64CF)?.into(),
+		};
+
+		Ok(s)
+	}
+
+	// TODO: we may store the eth header info on chain install of all eth headers
+	fn _build_eth_header_info<A: AsRef<[u8]>>(
+		block_height: u64,
+		total_difficulty_hex: A,
+		parent_hash_hex: A,
+	) -> Result<HeaderInfo, DispatchError> {
+		let total_difficulty = Self::hex_padding(64, total_difficulty_hex.as_ref())?;
+		let parent_hash = parent_hash_hex.as_ref();
+		let h = HeaderInfo {
+			number: block_height,
+			total_difficulty: <[u8; 32]>::from_hex(total_difficulty)
+				.map_err(|_| <Error<T>>::U256CF)?
+				.into(),
+			parent_hash: <[u8; 32]>::from_hex(parent_hash)
+				.map_err(|_| <Error<T>>::H256CF)?
+				.into(),
+		};
+
+		Ok(h)
+	}
+}
+
+fn base_n_bytes(mut x: u64, radix: u64) -> Vec<u8> {
+	if radix > 41 {
+		return vec![];
+	}
+
+	let mut buf = vec![];
+	while x > 0 {
+		let rem = (x % radix) as u8;
+		if rem < 10 {
+			buf.push(48 + rem);
+		} else {
+			buf.push(55 + rem);
+		}
+		x /= radix;
+	}
+
+	buf.reverse();
+	buf
 }
 
 fn remove_trascation_and_uncle(r: &mut Vec<u8>) {
@@ -107,201 +349,4 @@ fn remove_trascation_and_uncle(r: &mut Vec<u8>) {
 	r.append(&mut tail);
 	r.push(125u8);
 	r.push(125u8);
-}
-
-fn json_request(raw_url: &Vec<u8>, api_type: EthScanAPI) -> Result<JsonValue> {
-	let url = core::str::from_utf8(raw_url).map_err(|_| "url decode error")?;
-	debug::trace!("[eth-offchain] request: {:?}", url);
-
-	let pending = http::Request::get(&url)
-		.send()
-		.map_err(|_| "Error in sending http GET request")?;
-
-	let mut response = pending.wait().map_err(|_| "Error in waiting http response back")?;
-
-	let mut retry_time = 0;
-	let mut r: Vec<u8>;
-	loop {
-		if response.code != 200 {
-			if retry_time == 3 {
-				debug::warn!("Unexpected status code: {}", response.code);
-				return Err("Non-200 status code returned from http request");
-			}
-			response = http::Request::get(&url)
-				.send()
-				.map_err(|_| "Error in sending http GET request")?
-				.wait()
-				.map_err(|_| "Error in waiting http response back")?;
-			retry_time += 1;
-			debug::info!("[eth-offchain] retry {} times", retry_time);
-		} else {
-			r = response.body().collect::<Vec<u8>>();
-			if r[0] == 123u8 {
-				break;
-			}
-		}
-		// TODO: figure out how to sleep in no-std here
-	}
-
-	debug::trace!("[eth-offchain] response: {:?}", core::str::from_utf8(&r));
-
-	let json_val: JsonValue = match api_type {
-		EthScanAPI::GetBlockByNumber => {
-			if r.len() < 1362 {
-				debug::warn!("[eth-offchain] response: {:?}", core::str::from_utf8(&r));
-				return Err("unexpected api response");
-			}
-			remove_trascation_and_uncle(&mut r);
-			// get the result part
-			simple_json::parse_json(
-				&core::str::from_utf8(&r[33..r.len() - 1]).map_err(|_| "result part cannot convert to string")?,
-			)
-			.map_err(|_| "JSON parsing error")?
-		}
-		_ => simple_json::parse_json(&core::str::from_utf8(&r).map_err(|_| "JSON result cannot convert to string")?)
-			.map_err(|_| "JSON parsing error")?,
-	};
-
-	Ok(json_val)
-}
-
-fn hexstr_padding(width: usize, content: AllocString) -> AllocString {
-	if content.len() < width {
-		let mut output: Vec<u8> = Vec::new();
-		for _ in 0..(width - content.len() + 2) {
-			output.push(48);
-		}
-		output.append(&mut content.into_bytes()[2..].to_vec());
-		return output.iter().map(|u| *u as char).collect::<AllocString>();
-	}
-	content
-}
-
-fn build_eth_header(number: u64, block_info: JsonValue) -> Result<EthHeader> {
-	let parent_hash = &block_info.get_object()[10].1.get_string()[2..];
-	let timestamp_hexstr = block_info.get_object()[15].1.get_string();
-	let author = &block_info.get_object()[6].1.get_string()[2..];
-	let uncles_hash = &block_info.get_object()[12].1.get_string()[2..];
-	let extra_data = &block_info.get_object()[1].1.get_string()[2..];
-	let state_root = &block_info.get_object()[14].1.get_string()[2..];
-	let receipts_root = &block_info.get_object()[11].1.get_string()[2..];
-	let bloom = &block_info.get_object()[5].1.get_string()[2..];
-	let gas_used = &hexstr_padding(64, block_info.get_object()[3].1.get_string());
-	let gas_limit = &hexstr_padding(64, block_info.get_object()[2].1.get_string());
-	let difficulty = &hexstr_padding(64, block_info.get_object()[0].1.get_string());
-	let seal = build_eth_seal(
-		block_info.get_object()[7].1.get_string(),
-		block_info.get_object()[8].1.get_string(),
-	)?;
-	let transactions_root = &block_info.get_object()[17].1.get_string()[2..];
-	let hash = &block_info.get_object()[4].1.get_string()[2..];
-
-	let h = EthHeader {
-		parent_hash: H256::from(<[u8; 32]>::from_hex(parent_hash).expect("parent hash decoding failed")),
-		timestamp: u64::from_str_radix(timestamp_hexstr.trim_start_matches("0x"), 16).unwrap(),
-		number,
-		author: H160::from(<[u8; 20]>::from_hex(author).expect("author decoding failed")),
-		transactions_root: H256::from(
-			<[u8; 32]>::from_hex(transactions_root).expect("transactions root decoding failed"),
-		),
-		uncles_hash: H256::from(<[u8; 32]>::from_hex(uncles_hash).expect("uncles hash hash decoding failed")),
-		state_root: H256::from(<[u8; 32]>::from_hex(state_root).expect("state root decoding failed")),
-		receipts_root: H256::from(<[u8; 32]>::from_hex(receipts_root).expect("receipts root decoding failed")),
-		gas_used: U256::from(<[u8; 32]>::from_hex(gas_used).expect("gas used root decoding failed")),
-		gas_limit: U256::from(<[u8; 32]>::from_hex(gas_limit).expect("gas limit root decoding failed")),
-		difficulty: U256::from(<[u8; 32]>::from_hex(difficulty).expect("difficulty decoding failed")),
-		seal: vec![rlp::encode(&seal.mix_hash).to_vec(), rlp::encode(&seal.nonce).to_vec()],
-		hash: Some(H256::from(<[u8; 32]>::from_hex(hash).expect("hash decoding failed"))),
-		extra_data: <Vec<u8>>::from_hex(extra_data).expect("extra data decoding failed"),
-		log_bloom: <[u8; 256]>::from_hex(bloom).expect("hash decoding failed").into(),
-	};
-	Ok(h)
-}
-
-// TODO: we may store the eth header info on chain install of all eth headers
-fn _build_eth_header_info(
-	block_height: u64,
-	total_difficulty_hexstr: AllocString,
-	parent_hash_hexstr: AllocString,
-) -> Result<HeaderInfo> {
-	let total_difficulty = hexstr_padding(64, total_difficulty_hexstr);
-	let parent_hash = &parent_hash_hexstr[2..];
-	let h = HeaderInfo {
-		number: block_height,
-		total_difficulty: U256::from(<[u8; 32]>::from_hex(total_difficulty).expect("Total difficulty decoding failed")),
-		parent_hash: H256::from(<[u8; 32]>::from_hex(parent_hash).expect("parent hash decoding failed")),
-	};
-	Ok(h)
-}
-
-fn build_eth_seal(mix_hash_hexstr: AllocString, nonce_hexstr: AllocString) -> Result<EthashSeal> {
-	let mix_hash = &mix_hash_hexstr[2..];
-	let nonce = &nonce_hexstr[2..];
-	let s = EthashSeal {
-		mix_hash: H256::from(<[u8; 32]>::from_hex(mix_hash).expect("Total difficulty decoding failed")),
-		nonce: H64::from(<[u8; 8]>::from_hex(nonce).expect("Nonce decoding failed")),
-	};
-	Ok(s)
-}
-
-impl<T: Trait> Module<T> {
-	fn fetch_eth_header<'a>(block: T::BlockNumber) -> Result<()> {
-		let now = <pallet_timestamp::Module<T>>::get().saturated_into::<usize>() / 1000;
-		let mut raw_url = "https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp="
-			.as_bytes()
-			.to_vec();
-		debug::trace!("[eth-offchain] now: {}", now);
-		#[cfg(feature = "std")]
-		raw_url.append(&mut now.to_string().as_bytes().to_vec());
-		raw_url.append(&mut "&closest=before&apikey=".as_bytes().to_vec());
-		let mut api_key = T::APIKey::get().unwrap();
-		debug::error!("[eth-offchain] api_key: {:?}", api_key);
-		raw_url.append(&mut api_key.clone());
-
-		let current_block_height = json_request(&raw_url, EthScanAPI::GetBlockNoByTime)?.get_object()[2]
-			.1
-			.get_string()
-			.parse::<u64>()
-			.map_err(|_| "fetch current block height error: parsing to u64 error")?;
-
-		debug::trace!("[eth-offchain] current block height: {:?}", current_block_height);
-
-		// TODO: check current header and skip this run
-
-		let mut raw_url = "https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x"
-			.as_bytes()
-			.to_vec();
-		#[cfg(feature = "std")]
-		raw_url.append(&mut format!("{:x}", current_block_height).as_bytes().to_vec());
-		raw_url.append(&mut "&boolean=true&apikey=".as_bytes().to_vec());
-		raw_url.append(&mut api_key);
-
-		let block_info = json_request(&raw_url, EthScanAPI::GetBlockByNumber)?;
-		let eth_header = build_eth_header(current_block_height, block_info)?;
-
-		let call = Call::record_header(block, eth_header);
-
-		let _ = T::SubmitSignedTransaction::submit_signed(call);
-
-		Ok(())
-	}
-}
-
-#[allow(deprecated)]
-impl<T: Trait> frame_support::unsigned::ValidateUnsigned for Module<T> {
-	type Call = Call<T>;
-
-	#[allow(deprecated)]
-	fn validate_unsigned(call: &Self::Call) -> TransactionValidity {
-		match call {
-			Call::record_header(block, _eth_header) => Ok(ValidTransaction {
-				priority: 0,
-				requires: vec![],
-				provides: vec![(block).encode()],
-				longevity: TransactionLongevity::max_value(),
-				propagate: true,
-			}),
-			_ => InvalidTransaction::Call.into(),
-		}
-	}
 }

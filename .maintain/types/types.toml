@@ -1,5 +1,16 @@
 title = "Darwinia Node Runtime Types"
 
+[system]
+	[system.complex]
+	Digest._enum.Others = "Bytes"
+	Digest._enum.AuthoritiesChange = "AuthoritiesChange"
+	Digest._enum.ChangesTrieRoot = "Hash"
+	Digest._enum.SealV0 = "SealV0"
+	Digest._enum.Consensus = "Consensus"
+	Digest._enum.Seal = "Seal"
+	Digest._enum.PreRuntime = "PreRuntime"
+	Digest._enum.MerkleMontainRangeRoot = "Hash"
+
 [staking]
 	[staking.basic]
 	RingBalance = "Balance"
@@ -84,7 +95,7 @@ title = "Darwinia Node Runtime Types"
 	EthHeader.parent_hash = "H256"
 	EthHeader.timestamp = "u64"
 	EthHeader.number = "EthBlockNumber"
-	EthHeader.auth = "EthAddress"
+	EthHeader.author = "EthAddress"
 	EthHeader.transaction_root = "H256"
 	EthHeader.uncles_hash = "H256"
 	EthHeader.extra_data = "Bytes"

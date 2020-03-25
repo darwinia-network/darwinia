@@ -3,7 +3,6 @@
 #![cfg(test)]
 
 // --- third-party ---
-use frame_system::{EventRecord, Phase};
 use sp_runtime::{
 	testing::{Digest, H256},
 	traits::{Header, OnFinalize},
@@ -27,15 +26,6 @@ fn first_header_mmr() {
 			Digest {
 				logs: vec![header_mmr_log(parent_hash)]
 			}
-		);
-
-		assert_eq!(
-			System::events(),
-			vec![EventRecord {
-				phase: Phase::Finalization,
-				event: Event::<Test>::NewMMRRoot(parent_hash).into(),
-				topics: vec![],
-			},]
 		);
 	});
 }

@@ -72,13 +72,12 @@ decl_storage! {
 		pub Authorities get(fn authorities) config(): Vec<T::AccountId>;
 	}
 	add_extra_genesis {
-		config(header): Option<Vec<u8>>;
-		config(genesis_difficulty): u64;
+		// genesis: Option<Header, Difficulty>
+		config(genesis): Option<(Vec<u8>, u64)>;
 		build(|config| {
-			if let Some(h) = &config.header {
-				let header: EthHeader = rlp::decode(&h).expect(<Error<T>>::RlpDcF.into());
-				// Discard the result even it fail.
-				let _ = <Module<T>>::init_genesis_header(&header,config.genesis_difficulty);
+			if let Some((header, difficulty)) = &config.genesis {
+				let header: EthHeader = rlp::decode(&header).expect(<Error<T>>::RlpDcF.into());
+				<Module<T>>::init_genesis_header(&header, *difficulty).expect(<Error<T>>::GenesisHeaderIF.into());
 			}
 		});
 	}
@@ -115,13 +114,13 @@ decl_error! {
 		/// Mixhash - MISMATCHED
 		MixhashMis,
 
-		/// Begin Header - NOT EXISTS
+		/// Begin Header - NOT EXISTED
 		BeginHeaderNE,
-		/// Header - NOT EXISTS
+		/// Header - NOT EXISTED
 		HeaderNE,
-		/// Header Info - NOT EXISTS
+		/// Header Info - NOT EXISTED
 		HeaderInfoNE,
-		/// Trie Key - NOT EXISTS
+		/// Trie Key - NOT EXISTED
 		TrieKeyNE,
 
 		/// Header - ALREADY EXISTS
@@ -139,6 +138,8 @@ decl_error! {
 		RlpDcF,
 		/// Receipt - DESERIALIZE FAILED
 		ReceiptDsF,
+		/// Genesis Header - INITIALIZATION FAILED
+		GenesisHeaderIF,
 		/// Seal - PARSING FAILED
 		SealPF,
 		/// Block Basic - VERIFICATION FAILED
@@ -184,11 +185,15 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedNormal(100_000)]
 		pub fn relay_header(origin, header: EthHeader) {
 			let relayer = ensure_signed(origin)?;
+			frame_support::debug::trace!(target: "er-rl", "[eth-relay] Relayer: {:?}", relayer);
+
 			if Self::check_authorities() {
 				ensure!(Self::authorities().contains(&relayer), <Error<T>>::AccountNP);
 			}
 
+
 			let header_hash = header.hash();
+			frame_support::debug::trace!(target: "er-rl", "[eth-relay] Header Hash: {:?}", header_hash);
 
 			ensure!(HeaderInfoOf::get(&header_hash).is_none(), <Error<T>>::HeaderAE);
 
@@ -354,6 +359,8 @@ impl<T: Trait> Module<T> {
 
 		let begin_header_number = Self::begin_header().ok_or(<Error<T>>::BeginHeaderNE)?.number;
 		ensure!(header.number >= begin_header_number, <Error<T>>::HeaderTE);
+
+		frame_support::debug::trace!(target: "er-rl", "[eth-relay] Parent Header Hash: {:?}", header.parent_hash);
 
 		// There must be a corresponding parent hash
 		let prev_header = Self::header_of(header.parent_hash).ok_or(<Error<T>>::HeaderNE)?;

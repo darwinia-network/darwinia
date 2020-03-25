@@ -2,20 +2,15 @@
 
 #![cfg(test)]
 
-mod headermmr {
-	pub use crate::Event;
-}
-
 // --- third-party ---
 use codec::{Decode, Encode};
-use frame_support::{impl_outer_event, impl_outer_origin, parameter_types, weights::Weight};
+use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
 use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup, DigestItem, Perbill};
 
 // --- custom ---
 use crate::*;
 
-use frame_system as system;
 impl_outer_origin! {
 	pub enum Origin for Test  where system = frame_system {}
 }
@@ -30,9 +25,8 @@ pub type HeaderMMR = Module<Test>;
 #[derive(Clone, PartialEq, Eq, Debug, Decode, Encode)]
 pub struct Test;
 
-impl Trait for Test {
-	type Event = TestEvent;
-}
+impl Trait for Test {}
+
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
@@ -49,7 +43,7 @@ impl frame_system::Trait for Test {
 	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = TestEvent;
+	type Event = ();
 	type BlockHashCount = BlockHashCount;
 	type MaximumBlockWeight = MaximumBlockWeight;
 	type MaximumBlockLength = MaximumBlockLength;
@@ -60,13 +54,6 @@ impl frame_system::Trait for Test {
 	type MigrateAccount = ();
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-}
-
-impl_outer_event! {
-	pub enum TestEvent for Test {
-		system<T>,
-		headermmr<T>,
-	}
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {

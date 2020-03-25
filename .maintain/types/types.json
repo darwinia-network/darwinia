@@ -1,4 +1,27 @@
 {
+	"DigestItem": {
+		"_enum": {
+			"Other": "Bytes",
+			"AuthoritiesChange": "Vec<AuthorityId>",
+			"ChangesTrieRoot": "Hash",
+			"SealV0": "SealV0",
+			"Consensus": "Consensus",
+			"Seal": "Seal",
+			"PreRuntime": "PreRuntime",
+			"Unknown7": "Bytes",
+			"Unknown8": "Bytes",
+			"Unknown9": "Bytes",
+			"Unknown10": "Bytes",
+			"Unknown11": "Bytes",
+			"Unknown12": "Bytes",
+			"Unknown13": "Bytes",
+			"Unknown14": "Bytes",
+			"Unknown15": "Bytes",
+			"Unknown16": "Bytes",
+			"Unknown17": "Bytes",
+			"MerkleMountainRangeRoot": "Hash"
+		}
+	},
 	"RingBalance": "Balance",
 	"KtonBalance": "Balance",
 	"MomentT": "Moment",
@@ -117,7 +140,7 @@
 		"parent_hash": "H256",
 		"timestamp": "u64",
 		"number": "EthBlockNumber",
-		"auth": "EthAddress",
+		"author": "EthAddress",
 		"transaction_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
