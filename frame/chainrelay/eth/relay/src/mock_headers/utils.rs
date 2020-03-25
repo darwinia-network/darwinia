@@ -1,9 +1,8 @@
 //! utils for parsing eth headers
-use std::num::ParseIntError;
-use std::str::FromStr;
+use std::{fmt::Debug, str::FromStr};
 
 use eth_primitives::{Bloom, EthAddress, H64};
-use hex_literal::hex;
+use hex::FromHex as HexFromHex;
 use json::object::Object;
 use rustc_hex::FromHex;
 
@@ -12,46 +11,35 @@ use crate::*;
 pub use eth_primitives::receipt::LogEntry;
 pub use json::JsonValue;
 
-/// hex
-macro_rules! hex {
-    {$(($name:tt, $len:tt),)*} => {
-        $(
-            pub fn $name(s: &str) -> Option<[u8; $len]> {
-	            let r: Result<Vec<u8>, ParseIntError> = (2..s.len())
-		            .step_by(2)
-		            .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
-		            .collect();
-
-	            if let Ok(r) = r {
-		            let mut bytes: [u8; $len] = [0; $len];
-		            bytes.copy_from_slice(&r);
-
-		            Some(bytes)
-	            } else {
-		            None
-	            }
-            }
-        )*
-    };
-
+/// get hash
+fn get_hash(o: &mut Object, key: &str) -> Option<H256> {
+	Some(H256::from(<[u8; 32]>::from_hex(&o.remove(key)?.as_str()?[2..]).ro()?))
 }
 
-hex! {
-	(h32, 32),
-	(h20, 20),
-	(h8, 8),
+/// convert Result to Option
+///
+/// NOTE: panic should happen in tests, but not mock.
+trait ResultToOption<T> {
+	fn ro(self) -> Option<T>;
 }
 
-/// get_hash
-pub fn get_hash(o: &mut Object, key: &str) -> Option<H256> {
-	Some(H256::from(h32(o.remove(key)?.as_str()?)?))
+impl<T, E> ResultToOption<T> for Result<T, E>
+where
+	E: Debug,
+{
+	fn ro(self) -> Option<T> {
+		match self {
+			Ok(v) => Some(v),
+			Err(_) => None,
+		}
+	}
 }
 
 /// mock ethheader
 pub fn mock_header_from_source<'m>(o: &'m mut Object) -> Option<EthHeader> {
 	let mixh = get_hash(o, "mixHash")?;
-	let nonce = H64::from(h8(o.remove("nonce")?.as_str()?)?);
-	let addr = h20(o.remove("miner")?.as_str()?)?;
+	let nonce = H64::from(<[u8; 8]>::from_hex(&o.remove("nonce")?.as_str()?[2..]).ro()?);
+	let addr = <[u8; 20]>::from_hex(&o.remove("miner")?.as_str()?[2..]).ro()?;
 
 	let extra_data = o.remove("extraData")?;
 	let eds = &extra_data.as_str()?[2..];
@@ -59,7 +47,7 @@ pub fn mock_header_from_source<'m>(o: &'m mut Object) -> Option<EthHeader> {
 	let log_bloom = o.remove("logsBloom")?;
 	let lb = &log_bloom.as_str()?[2..];
 
-	let difficulty: u64 = o.remove("difficulty")?.as_str()?.parse().unwrap();
+	let difficulty: u64 = o.remove("difficulty")?.as_str()?.parse().ro()?;
 
 	Some(EthHeader {
 		parent_hash: get_hash(o, "parentHash")?,
@@ -121,12 +109,12 @@ pub fn mock_log_from_source(o: &mut Object) -> Option<LogEntry> {
 	let mut topics: Vec<H256> = vec![];
 	if let JsonValue::Array(ts) = o.remove("topics")? {
 		for t in ts.iter() {
-			topics.push(H256::from(h32(t.as_str()?)?));
+			topics.push(H256::from(<[u8; 32]>::from_hex(&t.as_str()?[2..]).ro()?));
 		}
 	}
 
 	Some(LogEntry {
-		address: EthAddress::from(h20(o.remove("address")?.as_str()?)?),
+		address: EthAddress::from(<[u8; 20]>::from_hex(&o.remove("address")?.as_str()?[2..]).ro()?),
 		topics,
 		data,
 	})

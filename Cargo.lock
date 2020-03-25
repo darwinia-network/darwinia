@@ -1027,7 +1027,7 @@ dependencies = [
  "ethash",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex 0.4.2",
  "json",
  "keccak-hasher",
  "merkle-patricia-trie",

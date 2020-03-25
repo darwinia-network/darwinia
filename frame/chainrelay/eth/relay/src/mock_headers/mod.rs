@@ -13,7 +13,7 @@ pub use utils::LogEntry;
 ///
 /// stackoverflow: https://ethereum.stackexchange.com/questions/34/what-is-an-uncle-ommer-block
 ///
-/// returns: [grandpa, uncle, father, current]
+/// returns: [origin, grandpa, uncle, parent, current]
 pub fn mock_canonical_relationship() -> Option<[Option<EthHeader>; 5]> {
 	if let JsonValue::Array(headers) = json::parse(JSON).unwrap().remove("headers") {
 		let mut res: [Option<EthHeader>; 5] = [None, None, None, None, None];

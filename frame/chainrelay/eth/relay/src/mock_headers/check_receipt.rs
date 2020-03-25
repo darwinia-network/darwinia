@@ -189,6 +189,7 @@ pub const RECEIPT: &'static str = r#"{
   "header_hash":"0xb49cc783d8da7896e5dc50fc2a927b80dcef6ebb36738a3f0aeaf3b4f970e768"
 }"#;
 
+/// event logs
 pub const EVENT_LOGS: &'static str = r#"{
   "logs": [
     {
