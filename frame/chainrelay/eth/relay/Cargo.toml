@@ -29,10 +29,7 @@ merkle-patricia-trie = { default-features = false, path = "../../../../primitive
 
 [dev-dependencies]
 json = "0.12.4"
-hex = "0.4.2"
-# hex-literal = "0.2.1"
 keccak-hasher = "0.15.2"
-rustc-hex = "2.0"
 
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
