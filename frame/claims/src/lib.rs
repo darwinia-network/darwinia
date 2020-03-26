@@ -139,7 +139,7 @@ decl_storage! {
 			// Eth Address
 			for Account { address, backed_ring } in &config.claims_list.dot {
 				// DOT:RING = 1:50
-				let backed_ring = (*backed_ring).saturating_mul(50).saturated_into();
+				let backed_ring = (*backed_ring).saturated_into();
 				<ClaimsFromEth<T>>::insert(address, backed_ring);
 				total += backed_ring;
 			}
@@ -519,9 +519,9 @@ mod tests {
 	#[test]
 	fn basic_setup_works() {
 		new_test_ext().execute_with(|| {
-			assert_eq!(Claims::total(), 5500);
+			assert_eq!(Claims::total(), 600);
 
-			assert_eq!(Claims::claims_from_eth(&eth(&alice())), Some(5000));
+			assert_eq!(Claims::claims_from_eth(&eth(&alice())), Some(100));
 			assert_eq!(Claims::claims_from_tron(&tron(&alice())), None);
 
 			assert_eq!(Claims::claims_from_eth(&eth(&bob())), Some(200));
@@ -556,7 +556,7 @@ mod tests {
 				1,
 				OtherSignature::Eth(eth_sig(&alice(), &1u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
-			assert_eq!(Ring::free_balance(&1), 5000);
+			assert_eq!(Ring::free_balance(&1), 100);
 			assert_eq!(Claims::total(), 500);
 
 			assert_eq!(Ring::free_balance(2), 0);
@@ -596,14 +596,14 @@ mod tests {
 				<Error<Test>>::SignerHasNoClaim,
 			);
 			assert_ok!(Claims::mint_claim(Origin::ROOT, OtherAddress::Eth(eth(&carol())), 200));
-			assert_eq!(Claims::total(), 5700);
+			assert_eq!(Claims::total(), 800);
 			assert_ok!(Claims::claim(
 				Origin::NONE,
 				69,
 				OtherSignature::Eth(eth_sig(&carol(), &69u64.encode(), ETHEREUM_SIGNED_MESSAGE)),
 			));
 			assert_eq!(Ring::free_balance(&69), 200);
-			assert_eq!(Claims::total(), 5500);
+			assert_eq!(Claims::total(), 600);
 		});
 	}
 

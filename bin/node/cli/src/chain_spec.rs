@@ -148,22 +148,11 @@ fn production_endowed_accounts() -> Vec<AccountId> {
 
 // TODO: doc
 fn load_claims_list(path: &str) -> pallet_claims::ClaimsList {
-	let mut path = path.to_owned();
-	if !Path::new(&path).is_file() {
-		let var = env::var("CLAIMS_LIST_PATH").expect(&format!(
-			"\n\
-			!!file NOT FOUND!! current path: {}, load from path: {}\n\
-			!!CLAIMS_LIST_PATH var NOT FOUND!!\n\
-			At least one of them should be VALID\n",
-			env::current_dir().unwrap().display(),
-			path,
-		));
-
-		path = var;
+	if !Path::new(&path).is_file() && env::var("CLAIMS_LIST_PATH").is_err() {
+		Default::default()
+	} else {
+		serde_json::from_reader(File::open(env::var("CLAIMS_LIST_PATH").unwrap_or(path.to_owned())).unwrap()).unwrap()
 	}
-
-	let file = File::open(&path).unwrap();
-	serde_json::from_reader(file).unwrap()
 }
 
 /// Helper function to create GenesisConfig for darwinia
@@ -256,7 +245,7 @@ pub fn darwinia_genesis(
 		//  Custom Module
 		pallet_claims: Some({
 			ClaimsConfig {
-				claims_list: load_claims_list("./bin/node/cli/res/claims_list.json"),
+				claims_list: load_claims_list("./bin/node/cli/res/claims_list_genesis.json"),
 			}
 		}),
 		pallet_eth_backing: Some(EthBackingConfig {
@@ -431,28 +420,28 @@ pub(crate) mod tests {
 	use super::*;
 	use crate::service::{new_full, new_light};
 
-	fn local_testnet_genesis_instant_single() -> GenesisConfig {
-		darwinia_genesis(
-			vec![get_authority_keys_from_seed("Alice")],
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			vec![],
-			false,
-		)
-	}
-
-	/// Local testnet config (single validator - Alice)
-	pub fn integration_test_config_with_single_authority() -> ChainSpec {
-		ChainSpec::from_genesis(
-			"Integration Test",
-			"test",
-			local_testnet_genesis_instant_single,
-			vec![],
-			None,
-			None,
-			None,
-			Default::default(),
-		)
-	}
+	// fn local_testnet_genesis_instant_single() -> GenesisConfig {
+	// 	darwinia_genesis(
+	// 		vec![get_authority_keys_from_seed("Alice")],
+	// 		get_account_id_from_seed::<sr25519::Public>("Alice"),
+	// 		vec![],
+	// 		false,
+	// 	)
+	// }
+	//
+	// /// Local testnet config (single validator - Alice)
+	// pub fn integration_test_config_with_single_authority() -> ChainSpec {
+	// 	ChainSpec::from_genesis(
+	// 		"Integration Test",
+	// 		"test",
+	// 		local_testnet_genesis_instant_single,
+	// 		vec![],
+	// 		None,
+	// 		None,
+	// 		None,
+	// 		Default::default(),
+	// 	)
+	// }
 
 	/// Local testnet config (multivalidator Alice + Bob)
 	pub fn integration_test_config_with_two_authorities() -> ChainSpec {
@@ -506,8 +495,8 @@ pub(crate) mod tests {
 	}
 
 	#[test]
-	fn test() {
-		let claims = load_claims_list("./res/claims_list.json");
+	fn build_genesis_claims_list() {
+		let claims = load_claims_list("./res/claims_list_genesis.json");
 		println!("{:#?}", &claims.eth[0..10]);
 	}
 }
