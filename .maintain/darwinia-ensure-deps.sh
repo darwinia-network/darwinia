@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+
+# This script is customized from Substrate to adapt to Darwinia project.
+
 # The script is meant to check if the rules regarding packages
 # dependencies are satisfied.
 # The general format is:
@@ -15,16 +18,8 @@ set -u
 
 # HARD FAILING
 MUST_NOT=(
-	"client crates must not depend on anything in /frame"
-	"client crates must not depend on anything in /node"
-	"frame crates must not depend on anything in /node"
-	"frame crates must not depend on anything in /client"
+	"frame crates must not depend on anything in /bin/node"
 	"primitives crates must not depend on anything in /frame"
-)
-
-# ONLY DISPLAYED, script still succeeds
-PLEASE_DONT=(
-	"primitives crates should not depend on anything in /client"
 )
 
 VIOLATIONS=()
@@ -33,7 +28,7 @@ PACKAGES=()
 function check_rule() {
 	rule=$1
 	from=$(echo $rule | cut -f1 -d\ )
-	to=$(echo $rule | cut -f2 -d\/)
+	to=$(echo $rule | cut -f2- -d\/)
 
 	cd $from
 	echo "Checking rule '$rule'"
@@ -52,16 +47,6 @@ do
 	check_rule "$rule";
 done
 
-# Only the MUST NOT will be counted towards failure
-HARD_VIOLATIONS=${#VIOLATIONS[@]}
-
-
-for rule in "${PLEASE_DONT[@]}"
-do
-	check_rule "$rule";
-done
-
-# Display violations and fail
 I=0
 for v in "${VIOLATIONS[@]}"
 do
