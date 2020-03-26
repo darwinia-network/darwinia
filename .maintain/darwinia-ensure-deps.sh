@@ -30,6 +30,15 @@ function check_rule() {
 	from=$(echo $rule | cut -f1 -d\ )
 	to=$(echo $rule | cut -f2- -d\/)
 
+	# TODO: This is a good gitcoin issue
+	case "$from" in 
+		*/*)
+			echo "darwinia-ensure-dep.sh is not ready to parsing $from and handle / "
+			echo "darwinia-ensure-dep.sh is not ready to parsing $from and handle / "
+			exit 1
+		;;
+	esac
+
 	cd $from
 	echo "Checking rule '$rule'"
 	packages=$(find -name Cargo.toml | xargs grep -wn "path.*\.\.\/$to")
