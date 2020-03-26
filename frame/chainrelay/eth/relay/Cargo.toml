@@ -28,9 +28,8 @@ eth-primitives = { default-features = false, path = "../../../../primitives/eth-
 merkle-patricia-trie = { default-features = false, path = "../../../../primitives/merkle-patricia-trie" }
 
 [dev-dependencies]
-hex-literal = "0.2.1"
+json = "0.12.4"
 keccak-hasher = "0.15.2"
-rustc-hex = "2.0"
 
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-io = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }

@@ -56,6 +56,7 @@ parameter_types! {
 //	pub const EthMainnet: u64 = 0;
 	pub const EthRopsten: u64 = 1;
 }
+
 impl Trait for Test {
 	type Event = ();
 	type EthNetwork = EthRopsten;

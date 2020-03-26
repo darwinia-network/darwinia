@@ -6,6 +6,8 @@
 #[cfg(all(feature = "std", test))]
 mod mock;
 #[cfg(all(feature = "std", test))]
+mod mock_headers;
+#[cfg(all(feature = "std", test))]
 mod tests;
 
 // --- third-party ---
@@ -173,7 +175,7 @@ decl_module! {
 		}
 
 		/// Relay header of eth block, store the passing header
-		/// to darwinia Storage if it is verified.
+		/// if it is verified.
 		///
 		/// # <weight>
 		/// - `O(1)`.
@@ -499,6 +501,7 @@ impl<T: Trait> VerifyEthReceipts for Module<T> {
 		ensure!(canonical_hash == proof_record.header_hash, <Error<T>>::HeaderNC);
 
 		let best_info = Self::header_info_of(Self::best_header_hash()).ok_or(<Error<T>>::HeaderInfoNE)?;
+
 		ensure!(
 			best_info.number
 				>= info

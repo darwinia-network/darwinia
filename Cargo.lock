@@ -1027,12 +1027,11 @@ dependencies = [
  "ethash",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "json",
  "keccak-hasher",
  "merkle-patricia-trie",
  "parity-scale-codec",
  "rlp 0.4.4",
- "rustc-hex",
  "serde",
  "sp-core",
  "sp-io",
@@ -2546,6 +2545,12 @@ checksum = "1cb931d43e71f560c81badb0191596562bafad2be06a3f9025b845c847c60df5"
 dependencies = [
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "json"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd"
 
 [[package]]
 name = "jsonrpc-client-transports"

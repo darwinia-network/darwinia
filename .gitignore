@@ -25,3 +25,6 @@ windows-x86_64.tar.gz
 
 # Macro expand file
 expand.rs
+
+# pm2
+.pm2.json
