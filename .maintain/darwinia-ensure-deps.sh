@@ -34,7 +34,8 @@ function check_rule() {
 	case "$from" in 
 		*/*)
 			echo "darwinia-ensure-dep.sh is not ready to parsing $from and handle / "
-			echo "darwinia-ensure-dep.sh is not ready to parsing $from and handle / "
+			echo "please help us to do this like $to part"
+			echo "read https://github.com/darwinia-network/darwinia/pull/401 to know more about it"
 			exit 1
 		;;
 	esac
