@@ -66,18 +66,18 @@ pallet-transaction-payment = { default-features = false, git = "https://github.c
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-claims = { package = "darwinia-claims", default-features = false, path = "../../../frame/claims" }
-pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, path = "../../../frame/elections-phragmen" }
-pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, path = "../../../frame/chainrelay/eth/backing" }
-pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, path = "../../../frame/chainrelay/eth/relay" }
-pallet-eth-offchain = { package = "darwinia-eth-offchain", default-features = false, path = "../../../frame/chainrelay/eth/offchain" }
-pallet-kton = { package = "darwinia-kton", default-features = false, path = "../../../frame/balances/kton" }
-pallet-ring = { package = "darwinia-ring", default-features = false, path = "../../../frame/balances/ring" }
-pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], path = "../../../frame/staking" }
-pallet-support = { package = "darwinia-support", default-features = false, path = "../../../frame/support" }
-pallet-treasury = { package = "darwinia-treasury", default-features = false, path = "../../../frame/treasury" }
-pallet-vesting = { package = "darwinia-vesting", default-features = false, path = "../../../frame/vesting" }
-pallet-header-mmr = { package = "darwinia-header-mmr", default-features = false, path = "../../../frame/header-mmr" }
+pallet-claims = { package = "darwinia-claims", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-elections-phragmen = { package = "darwinia-elections-phragmen", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-eth-backing = { package = "darwinia-eth-backing", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-eth-relay = { package = "darwinia-eth-relay", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-eth-offchain = { package = "darwinia-eth-offchain", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-kton = { package = "darwinia-kton", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-ring = { package = "darwinia-ring", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-staking = { package = "darwinia-staking", default-features = false, features = ["migrate"], git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-support = { package = "darwinia-support", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-treasury = { package = "darwinia-treasury", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-vesting = { package = "darwinia-vesting", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
+pallet-header-mmr = { package = "darwinia-header-mmr", default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
 
 [build-dependencies]
 wasm-builder-runner = { package = "substrate-wasm-builder-runner", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }

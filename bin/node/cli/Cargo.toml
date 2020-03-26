@@ -87,7 +87,7 @@ pallet-indices = { git = "https://github.com/darwinia-network/substrate.git", ta
 pallet-timestamp = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
-pallet-claims = { package = "darwinia-claims", path = "../../../frame/claims" }
+pallet-claims = { package = "darwinia-claims", git = "https://github.com/darwinia-network/darwinia-common.git", branch="master" }
 
 # node-specific dependencies
 node-primitives = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
