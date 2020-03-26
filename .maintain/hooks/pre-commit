@@ -34,4 +34,12 @@ fi
 
 printf "[pre_commit] [SUCCESS] rustfmt ok \n"
 
+output=$(.maintain/ensure-deps.sh); rc=$?
+if [ rc != 0 ]; then
+  # WARNING only not force on this
+  printf "[pre_commit] [WARNING] Plaese check the dependencies is correct\n"
+  printf "$output\n"
+  printf "\n"
+fi
+
 exit 0
