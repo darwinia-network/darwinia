@@ -245,7 +245,7 @@ pub fn darwinia_genesis(
 		//  Custom Module
 		pallet_claims: Some({
 			ClaimsConfig {
-				claims_list: load_claims_list("./bin/node/cli/res/claims_list.json"),
+				claims_list: load_claims_list("./bin/node/cli/res/claims_list_genesis.json"),
 			}
 		}),
 		pallet_eth_backing: Some(EthBackingConfig {
@@ -496,7 +496,7 @@ pub(crate) mod tests {
 
 	#[test]
 	fn build_genesis_claims_list() {
-		let claims = load_claims_list("./res/claims_list.json");
+		let claims = load_claims_list("./res/claims_list_genesis.json");
 		println!("{:#?}", &claims.eth[0..10]);
 	}
 }
