@@ -6,22 +6,6 @@ members = [
 	"bin/node/runtime",
 # TODO benchmarking
 #	"bin/node/testing",
-	"frame/balances/kton",
-	"frame/balances/ring",
-	"frame/claims",
-	"frame/chainrelay/eth/backing",
-	"frame/chainrelay/eth/relay",
-	"frame/chainrelay/eth/offchain",
-	"frame/elections-phragmen",
-	"frame/header-mmr",
-	"frame/staking",
-	"frame/support",
-	"frame/treasury",
-	"frame/vesting",
-	"primitives/ethash",
-	"primitives/eth-primitives",
-	"primitives/merkle-patricia-trie",
-	"primitives/phragmen",
 ]
 
 [profile.release]
