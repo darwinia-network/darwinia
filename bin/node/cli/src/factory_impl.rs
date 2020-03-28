@@ -8,7 +8,7 @@ use rand::{Rng, SeedableRng};
 use codec::{Decode, Encode};
 use node_primitives::Signature;
 use node_runtime::{
-	Call, CheckedExtrinsic, ExistentialDeposit, MinimumPeriod, RingCall, SignedExtra, UncheckedExtrinsic,
+	BalancesCall, Call, CheckedExtrinsic, ExistentialDeposit, MinimumPeriod, SignedExtra, UncheckedExtrinsic,
 };
 use node_transaction_factory::RuntimeAdapter;
 use sp_core::{crypto::Pair, sr25519};
@@ -98,7 +98,7 @@ impl RuntimeAdapter for FactoryState<Number> {
 		sign::<Self>(
 			CheckedExtrinsic {
 				signed: Some((sender.clone(), extra)),
-				function: Call::Balances(RingCall::transfer(
+				function: Call::Balances(BalancesCall::transfer(
 					pallet_indices::address::Address::Id(destination.clone().into()),
 					(*amount).into(),
 				)),

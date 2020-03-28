@@ -290,7 +290,7 @@ pub fn darwinia_genesis(
 			)),
 			..Default::default()
 		}),
-		pallet_kton: Some(KtonConfig {
+		pallet_balances_Instance1: Some(KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -298,7 +298,7 @@ pub fn darwinia_genesis(
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 		}),
-		pallet_ring: Some(RingConfig {
+		pallet_balances_Instance2: Some(RingConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
