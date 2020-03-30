@@ -119,12 +119,10 @@
 		"moment": "BlockNumber"
 	},
 	"AccountData": {
-		"free_ring": "Balance",
-		"free_kton": "Balance",
-		"reserved_ring": "Balance",
-		"reserved_kton": "Balance",
 		"free": "Balance",
 		"reserved": "Balance",
+		"free_kton": "Balance",
+		"reserved_kton": "Balance",
 		"misc_frozen": "Balance",
 		"fee_frozen": "Balance"
 	},
