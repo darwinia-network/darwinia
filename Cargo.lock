@@ -868,7 +868,7 @@ dependencies = [
 [[package]]
 name = "darwinia-balances"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-support",
  "frame-benchmarking",
@@ -884,7 +884,7 @@ dependencies = [
 [[package]]
 name = "darwinia-claims"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -899,7 +899,7 @@ dependencies = [
 [[package]]
 name = "darwinia-elections-phragmen"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -913,7 +913,7 @@ dependencies = [
 [[package]]
 name = "darwinia-eth-backing"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-eth-relay",
  "darwinia-support",
@@ -931,7 +931,7 @@ dependencies = [
 [[package]]
 name = "darwinia-eth-offchain"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-eth-relay",
  "eth-primitives",
@@ -948,7 +948,7 @@ dependencies = [
 [[package]]
 name = "darwinia-eth-relay"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "eth-primitives",
  "ethash",
@@ -965,7 +965,7 @@ dependencies = [
 [[package]]
 name = "darwinia-header-mmr"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "ckb-merkle-mountain-range",
  "frame-support",
@@ -979,7 +979,7 @@ dependencies = [
 [[package]]
 name = "darwinia-phragmen"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-support",
  "serde",
@@ -990,7 +990,7 @@ dependencies = [
 [[package]]
 name = "darwinia-staking"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-phragmen",
  "darwinia-support",
@@ -1010,7 +1010,7 @@ dependencies = [
 [[package]]
 name = "darwinia-support"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "frame-support",
  "num-traits",
@@ -1022,7 +1022,7 @@ dependencies = [
 [[package]]
 name = "darwinia-treasury"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1036,7 +1036,7 @@ dependencies = [
 [[package]]
 name = "darwinia-vesting"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1233,7 +1233,7 @@ dependencies = [
 [[package]]
 name = "eth-primitives"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "ethbloom 0.8.1 (git+https://github.com/darwinia-network/parity-common.git)",
  "ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -1267,7 +1267,7 @@ dependencies = [
 [[package]]
 name = "ethash"
 version = "0.4.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "byteorder 1.3.4",
  "ethereum-types 0.8.0 (git+https://github.com/darwinia-network/parity-common.git)",
@@ -3143,7 +3143,7 @@ checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 [[package]]
 name = "merkle-patricia-trie"
 version = "0.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=denny_merge_ring_kton#7b9e1876d5d14322e9c849f05718e7985c83bf99"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=darwinia-master#7b9e1876d5d14322e9c849f05718e7985c83bf99"
 dependencies = [
  "hashbrown",
  "keccak-hash",
