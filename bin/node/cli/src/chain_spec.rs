@@ -290,19 +290,19 @@ pub fn darwinia_genesis(
 			)),
 			..Default::default()
 		}),
-		pallet_kton: Some(KtonConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, KTON_ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-		}),
-		pallet_ring: Some(RingConfig {
+		pallet_balances_Instance0: Some(RingConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, RING_ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+				.collect(),
+		}),
+		pallet_balances_Instance1: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, KTON_ENDOWMENT))
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 		}),

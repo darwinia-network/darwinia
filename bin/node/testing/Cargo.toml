@@ -50,10 +50,9 @@ sp-timestamp = { default-features = false, git = "https://github.com/darwinia-ne
 substrate-test-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 
 # darwinia
-pallet-kton = { package = "darwinia-kton", path = "../../../frame/balances/kton" }
-pallet-ring = { package = "darwinia-ring", path = "../../../frame/balances/ring" }
-pallet-staking = { package = "darwinia-staking", path = "../../../frame/staking" }
-pallet-treasury = { package = "darwinia-treasury", path = "../../../frame/treasury" }
+pallet-balances = { package = "darwinia-balances", git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+pallet-staking = { package = "darwinia-staking", git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+pallet-treasury = { package = "darwinia-treasury", git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 
 node-executor = { path = "../executor" }
 node-runtime = { path = "../runtime" }
