@@ -21,9 +21,8 @@ frame-support = { default-features = false, git = "https://github.com/darwinia-n
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
-# TODO: wait for https://github.com/darwinia-network/darwinia-common/pull/29
+darwinia-balances = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
+darwinia-staking = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
 darwinia-support = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
 
 [features]
