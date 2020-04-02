@@ -1,23 +1,23 @@
 //! Darwinia service. Specialized wrapper over substrate service.
 
+mod chain_spec;
+
 // --- substrate ---
-pub use sc_client::Client;
-pub use sc_executor::NativeExecutionDispatch;
-pub use sc_service::{
-	config::PrometheusConfig, AbstractService, Configuration, ServiceBuilderCommand, TFullBackend,
-	TLightBackend, TLightCallExecutor,
-};
-pub use sp_api::ConstructRuntimeApi;
-pub use sp_runtime::traits::BlakeTwo256;
+pub use sc_service::ChainSpec;
 
 // --- std ---
 use std::sync::Arc;
 // --- substrate ---
-use sc_client::LongestChain;
-use sc_executor::native_executor_instance;
+use sc_client::{Client, LongestChain};
+use sc_executor::{native_executor_instance, NativeExecutionDispatch};
 use sc_finality_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
-use sc_service::{error::Error as ServiceError, ServiceBuilder};
+use sc_service::{
+	config::PrometheusConfig, error::Error as ServiceError, AbstractService, Configuration,
+	ServiceBuilder, ServiceBuilderCommand, TFullBackend, TLightBackend, TLightCallExecutor,
+};
+use sp_api::ConstructRuntimeApi;
 use sp_inherents::InherentDataProviders;
+use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Block, Nonce};
