@@ -3,24 +3,28 @@
 mod chain_spec;
 
 // --- substrate ---
-pub use sc_service::ChainSpec;
+pub use sc_executor::NativeExecutionDispatch;
+pub use sc_service::{ChainSpec, Configuration, TFullClient, TLightBackend};
+// --- darwinia ---
+pub use chain_spec::CrabChainSpec;
+pub use darwinia_primitives::Block;
 
 // --- std ---
 use std::sync::Arc;
 // --- substrate ---
 use sc_client::{Client, LongestChain};
-use sc_executor::{native_executor_instance, NativeExecutionDispatch};
+use sc_executor::native_executor_instance;
 use sc_finality_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
 use sc_service::{
-	config::PrometheusConfig, error::Error as ServiceError, AbstractService, Configuration,
-	ServiceBuilder, ServiceBuilderCommand, TFullBackend, TLightBackend, TLightCallExecutor,
+	config::PrometheusConfig, error::Error as ServiceError, AbstractService, ServiceBuilder,
+	ServiceBuilderCommand, TFullBackend, TFullCallExecutor, TLightCallExecutor,
 };
 use sp_api::ConstructRuntimeApi;
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Block, Nonce};
+use darwinia_primitives::{AccountId, Balance, Nonce};
 
 native_executor_instance!(
 	pub CrabExecutor,
@@ -156,6 +160,171 @@ where
 {
 	config.keystore = sc_service::config::KeystoreConfig::InMemory;
 	Ok(new_full_start!(config, Runtime, Dispatch).0)
+}
+
+#[cfg(feature = "full-node")]
+pub fn new_full<Runtime, Dispatch, Extrinsic>(
+	mut config: Configuration,
+) -> Result<
+	impl AbstractService<
+		Block = Block,
+		RuntimeApi = Runtime,
+		Backend = TFullBackend<Block>,
+		SelectChain = LongestChain<TFullBackend<Block>, Block>,
+		CallExecutor = TFullCallExecutor<Block, Dispatch>,
+	>,
+	ServiceError,
+>
+where
+	Runtime:
+		ConstructRuntimeApi<Block, TFullClient<Block, Runtime, Dispatch>> + Send + Sync + 'static,
+	Runtime::RuntimeApi: RuntimeApiCollection<
+		Extrinsic,
+		StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
+	>,
+	Dispatch: NativeExecutionDispatch + 'static,
+	Extrinsic: RuntimeExtrinsic,
+	// Rust bug: https://github.com/rust-lang/rust/issues/24159
+	<Runtime::RuntimeApi as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+{
+	// --- third-party ---
+	use futures::prelude::*;
+	// --- substrate ---
+	use sc_client_api::ExecutorProvider;
+	use sc_network::Event;
+
+	let (is_authority, force_authoring, name, disable_grandpa, sentry_nodes) = (
+		config.roles.is_authority(),
+		config.force_authoring,
+		config.name.clone(),
+		config.disable_grandpa,
+		config.network.sentry_nodes.clone(),
+	);
+
+	// sentry nodes announce themselves as authorities to the network
+	// and should run the same protocols authorities do, but it should
+	// never actively participate in any consensus process.
+	let participates_in_consensus = is_authority && !config.sentry_mode;
+
+	let (builder, mut import_setup, inherent_data_providers) =
+		new_full_start!(config, Runtime, Dispatch);
+
+	let service = builder
+		.with_finality_proof_provider(|client, backend| {
+			let provider = client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
+			Ok(Arc::new(GrandpaFinalityProofProvider::new(backend, provider)) as _)
+		})?
+		.build()?;
+
+	let (block_import, grandpa_link, babe_link) = import_setup.take().expect(
+		"Link Half and Block Import are present for Full Services or setup failed before. qed",
+	);
+
+	// TODO
+	let with_startup_data = |_, _| {};
+	with_startup_data(&block_import, &babe_link);
+
+	if participates_in_consensus {
+		let proposer =
+			sc_basic_authorship::ProposerFactory::new(service.client(), service.transaction_pool());
+
+		let client = service.client();
+		let select_chain = service
+			.select_chain()
+			.ok_or(sc_service::Error::SelectChainRequired)?;
+
+		let can_author_with =
+			sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+
+		let babe_config = sc_consensus_babe::BabeParams {
+			keystore: service.keystore(),
+			client,
+			select_chain,
+			env: proposer,
+			block_import,
+			sync_oracle: service.network(),
+			inherent_data_providers: inherent_data_providers.clone(),
+			force_authoring,
+			babe_link,
+			can_author_with,
+		};
+
+		let babe = sc_consensus_babe::start_babe(babe_config)?;
+		service.spawn_essential_task("babe-proposer", babe);
+
+		let network = service.network();
+		let dht_event_stream = network
+			.event_stream()
+			.filter_map(|e| async move {
+				match e {
+					Event::Dht(e) => Some(e),
+					_ => None,
+				}
+			})
+			.boxed();
+		let authority_discovery = sc_authority_discovery::AuthorityDiscovery::new(
+			service.client(),
+			network,
+			sentry_nodes,
+			service.keystore(),
+			dht_event_stream,
+			service.prometheus_registry(),
+		);
+
+		service.spawn_task("authority-discovery", authority_discovery);
+	}
+
+	// if the node isn't actively participating in consensus then it doesn't
+	// need a keystore, regardless of which protocol we use below.
+	let keystore = if participates_in_consensus {
+		Some(service.keystore())
+	} else {
+		None
+	};
+
+	let config = sc_finality_grandpa::Config {
+		// FIXME #1578 make this available through chainspec
+		gossip_duration: std::time::Duration::from_millis(333),
+		justification_period: 512,
+		name: Some(name),
+		observer_enabled: false,
+		keystore,
+		is_authority,
+	};
+
+	let enable_grandpa = !disable_grandpa;
+	if enable_grandpa {
+		// start the full GRANDPA voter
+		// NOTE: non-authorities could run the GRANDPA observer protocol, but at
+		// this point the full voter should provide better guarantees of block
+		// and vote data availability than the observer. The observer has not
+		// been tested extensively yet and having most nodes in a network run it
+		// could lead to finality stalls.
+		let grandpa_config = sc_finality_grandpa::GrandpaParams {
+			config,
+			link: grandpa_link,
+			network: service.network(),
+			inherent_data_providers: inherent_data_providers.clone(),
+			telemetry_on_connect: Some(service.telemetry_on_connect_stream()),
+			voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+			prometheus_registry: service.prometheus_registry(),
+		};
+
+		// the GRANDPA voter task is considered infallible, i.e.
+		// if it fails we take down the service with it.
+		service.spawn_essential_task(
+			"grandpa-voter",
+			sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+		);
+	} else {
+		sc_finality_grandpa::setup_disabled_grandpa(
+			service.client(),
+			&inherent_data_providers,
+			service.network(),
+		)?;
+	}
+
+	Ok(service)
 }
 
 /// Create a new Crab service for a light client.
