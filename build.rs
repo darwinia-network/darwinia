@@ -1,5 +1,6 @@
 extern crate vergen;
 
+// --- crates ---
 use vergen::{generate_cargo_keys, ConstantsFlags};
 
 const ERROR_MSG: &'static str = "Failed to generate metadata files";
