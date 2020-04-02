@@ -14,23 +14,28 @@ homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
-# cli = { package = "polkadot-cli", path = "cli" }
-# futures = "0.3.4"
-# parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
-# service = { package = "polkadot-service", path = "service" }
+# third-party
+futures = "0.3.4"
+parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
+# darwinia
+darwinia-cli = { path = "cli" }
+darwinia-service = { path = "service" }
 
-# [build-dependencies]
-# vergen = "3.0.4"
+[build-dependencies]
+vergen = "3.1.0"
 
-# [dev-dependencies]
-# assert_cmd = "0.12"
-# nix = "0.17"
+[dev-dependencies]
+assert_cmd = "1.0.1"
+nix = "0.17"
 
 [workspace]
 members = [
+	"cli",
 	"primitives",
+	"rpc",
 	"runtime/common",
 	"runtime/crab",
+	"service",
 ]
 exclude = []
 
@@ -38,8 +43,9 @@ exclude = []
 maintenance = { status = "actively-developed" }
 
 [profile.release]
-# Polkadot runtime requires unwinding.
+# Darwinia runtime requires unwinding.
 panic = "unwind"
 
+# TODO: benchmark
 # [features]
 # runtime-benchmarks=["cli/runtime-benchmarks"]
