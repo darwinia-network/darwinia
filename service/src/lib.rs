@@ -1,12 +1,17 @@
 //! Darwinia service. Specialized wrapper over substrate service.
 
-mod chain_spec;
+pub mod chain_spec;
 
+// --- third-party ---
+pub use codec::Codec;
 // --- substrate ---
 pub use sc_executor::NativeExecutionDispatch;
-pub use sc_service::{ChainSpec, Configuration, TFullClient, TLightBackend};
+pub use sc_service::{
+	ChainSpec, Configuration, Roles, TFullBackend, TFullClient, TLightBackend, TLightClient,
+};
 // --- darwinia ---
 pub use chain_spec::CrabChainSpec;
+pub use crab_runtime;
 pub use darwinia_primitives::Block;
 
 // --- std ---
@@ -17,7 +22,7 @@ use sc_executor::native_executor_instance;
 use sc_finality_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
 use sc_service::{
 	config::PrometheusConfig, error::Error as ServiceError, AbstractService, ServiceBuilder,
-	ServiceBuilderCommand, TFullBackend, TFullCallExecutor, TLightCallExecutor,
+	ServiceBuilderCommand, TFullCallExecutor, TLightCallExecutor,
 };
 use sp_api::ConstructRuntimeApi;
 use sp_inherents::InherentDataProviders;

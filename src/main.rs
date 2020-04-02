@@ -2,9 +2,10 @@
 
 #![warn(missing_docs)]
 
-use cli::VersionInfo;
+// --- darwinia ---
+use darwinia_cli::VersionInfo;
 
-fn main() -> Result<(), cli::Error> {
+fn main() -> Result<(), darwinia_cli::Error> {
 	let version = VersionInfo {
 		name: "Darwinia-Network Darwinia",
 		commit: env!("VERGEN_SHA_SHORT"),
@@ -12,9 +13,9 @@ fn main() -> Result<(), cli::Error> {
 		executable_name: "darwinia",
 		author: "Darwinia Network <hello@darwinia.network>",
 		description: "Darwinia Relay-chain Client Node",
-		support_url: "https://github.com/darwinia-network/darwinia//issues/new",
+		support_url: "https://github.com/darwinia-network/darwinia/issues/new",
 		copyright_start_year: 2018,
 	};
 
-	cli::run(version)
+	darwinia_cli::run(version)
 }
