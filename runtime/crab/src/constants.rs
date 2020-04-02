@@ -2,7 +2,8 @@
 
 /// Money matters.
 pub mod currency {
-	use node_primitives::{Balance, Power};
+	// --- darwinia ---
+	use darwinia_primitives::{Balance, Power};
 
 	pub const NANO: Balance = 1;
 	pub const MICRO: Balance = 1_000 * NANO;
@@ -15,8 +16,10 @@ pub mod currency {
 
 /// Time and blocks.
 pub mod time {
-	use node_primitives::{BlockNumber, Moment};
+	// --- substrate ---
 	use sp_staking::SessionIndex;
+	// --- darwinai ---
+	use darwinia_primitives::{BlockNumber, Moment};
 
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
@@ -71,13 +74,11 @@ pub mod time {
 /// Fee-related.
 pub mod fee {
 	// --- substrate ---
-	pub use sp_runtime::Perbill;
-	// --- substrate ---
 	use frame_support::weights::Weight;
-	use sp_runtime::traits::Convert;
+	use sp_runtime::{traits::Convert, Perbill};
 	// --- darwinia ---
 	use super::currency::MILLI;
-	use node_primitives::Balance;
+	use darwinia_primitives::Balance;
 
 	/// The block saturation level. Fees will be updates based on this value.
 	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);

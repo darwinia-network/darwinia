@@ -33,12 +33,13 @@ use sp_runtime::{
 	ApplyExtrinsicResult, Perbill, Percent, Permill,
 };
 use sp_staking::SessionIndex;
+use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
-use node_primitives::*;
-use node_runtime_common::*;
+use darwinia_primitives::*;
+use darwinia_runtime_common::*;
 
 type Ring = Balances;
 
@@ -623,7 +624,7 @@ construct_runtime!(
 	pub enum Runtime
 	where
 		Block = Block,
-		NodeBlock = node_primitives::Block,
+		NodeBlock = darwinia_primitives::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// --- substrate ---
@@ -853,30 +854,31 @@ impl_runtime_apis! {
 		}
 	}
 
-	#[cfg(feature = "runtime-benchmarks")]
-	impl frame_benchmarking::Benchmark<Block> for Runtime {
-		fn dispatch_benchmark(
-			module: Vec<u8>,
-			extrinsic: Vec<u8>,
-			lowest_range_values: Vec<u32>,
-			highest_range_values: Vec<u32>,
-			steps: Vec<u32>,
-			repeat: u32,
-		) -> Result<Vec<frame_benchmarking::BenchmarkResults>, RuntimeString> {
-			use frame_benchmarking::Benchmarking;
+	// TODO: benchmark
+	// #[cfg(feature = "runtime-benchmarks")]
+	// impl frame_benchmarking::Benchmark<Block> for Runtime {
+	// 	fn dispatch_benchmark(
+	// 		module: Vec<u8>,
+	// 		extrinsic: Vec<u8>,
+	// 		lowest_range_values: Vec<u32>,
+	// 		highest_range_values: Vec<u32>,
+	// 		steps: Vec<u32>,
+	// 		repeat: u32,
+	// 	) -> Result<Vec<frame_benchmarking::BenchmarkResults>, RuntimeString> {
+	// 		use frame_benchmarking::Benchmarking;
 
-			let result = match module.as_slice() {
-				b"claims" => Claims::run_benchmark(
-					extrinsic,
-					lowest_range_values,
-					highest_range_values,
-					steps,
-					repeat,
-				),
-				_ => Err("Benchmark not found for this pallet."),
-			};
+	// 		let result = match module.as_slice() {
+	// 			b"claims" => Claims::run_benchmark(
+	// 				extrinsic,
+	// 				lowest_range_values,
+	// 				highest_range_values,
+	// 				steps,
+	// 				repeat,
+	// 			),
+	// 			_ => Err("Benchmark not found for this pallet."),
+	// 		};
 
-			result.map_err(|e| e.into())
-		}
-	}
+	// 		result.map_err(|e| e.into())
+	// 	}
+	// }
 }

@@ -17,7 +17,7 @@ darwinia_support::impl_account_data! {
 		RingInstance,
 		KtonInstance
 	where
-		Balance = node_primitives::Balance
+		Balance = darwinia_primitives::Balance
 	{
 		// other data
 	}
@@ -29,8 +29,8 @@ pub struct ToAuthor<R>(sp_std::marker::PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for ToAuthor<R>
 where
 	R: darwinia_balances::Trait<RingInstance> + pallet_authorship::Trait,
-	<R as frame_system::Trait>::AccountId: From<node_primitives::AccountId>,
-	<R as frame_system::Trait>::AccountId: Into<node_primitives::AccountId>,
+	<R as frame_system::Trait>::AccountId: From<darwinia_primitives::AccountId>,
+	<R as frame_system::Trait>::AccountId: Into<darwinia_primitives::AccountId>,
 	<R as frame_system::Trait>::Event: From<
 		darwinia_balances::RawEvent<
 			<R as frame_system::Trait>::AccountId,

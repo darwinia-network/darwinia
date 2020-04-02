@@ -15,7 +15,7 @@ codec = { package = "parity-scale-codec", version = "1.1.0", default-features = 
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 # darwinia primitives
-node-primitives = { package = "darwinia-primitives", default-features = false, path = "../../primitives" }
+darwinia-primitives = { default-features = false, path = "../../primitives" }
 # substrate frame
 frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
@@ -35,7 +35,7 @@ std = [
 	"sp-runtime/std",
 	"sp-std/std",
 	# darwinia primitives
-	"node-primitives/std",
+	"darwinia-primitives/std",
 	# substrate frame
 	"frame-support/std",
 	"frame-system/std",
@@ -46,4 +46,4 @@ std = [
 	"darwinia-support/std",
 ]
 # TODO: benchmark
-runtime-benchmarks = []
+# runtime-benchmarks = []

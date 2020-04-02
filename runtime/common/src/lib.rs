@@ -17,7 +17,7 @@ pub use darwinia_staking::StakerStatus;
 use frame_support::{parameter_types, traits::Currency, weights::Weight};
 use sp_runtime::Perbill;
 // --- darwinia ---
-use node_primitives::BlockNumber;
+use darwinia_primitives::BlockNumber;
 
 pub type RingInstance = darwinia_balances::Instance0;
 pub type KtonInstance = darwinia_balances::Instance1;
