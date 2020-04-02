@@ -439,7 +439,7 @@ pub fn crab_testnet_genesis(
 		}),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: load_claims_list("./bin/node/cli/res/claims_list_genesis.json"),
+				claims_list: load_claims_list("./service/res/crab_claims_list.json"),
 			}
 		}),
 		darwinia_eth_backing: Some(crab_runtime::EthBackingConfig {
