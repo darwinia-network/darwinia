@@ -8,6 +8,12 @@
 pub mod constants;
 use constants::{currency::*, fee::*, time::*};
 
+// --- darwinia ---
+#[cfg(feature = "std")]
+pub use darwinia_claims::ClaimsList;
+#[cfg(feature = "std")]
+pub use darwinia_staking::{Forcing, StakerStatus};
+
 // --- substrate ---
 use frame_support::{
 	construct_runtime, debug, parameter_types,
@@ -662,7 +668,7 @@ construct_runtime!(
 		Identity: pallet_identity::{Module, Call, Storage, Event<T>},
 
 		// Society module.
-		Society: pallet_society::{Module, Call, Storage, Config<T>, Event<T>},
+		Society: pallet_society::{Module, Call, Storage, Event<T>},
 
 		// Social recovery module.
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
@@ -691,7 +697,7 @@ construct_runtime!(
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
 
 		// Governance stuff; uncallable initially.
-		Treasury: darwinia_treasury::{Module, Call, Storage, Config, Event<T>},
+		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>},
 
 		// Vesting. Usable initially, but removed once all vesting is finished.
 		Vesting: darwinia_vesting::{Module, Call, Storage, Config<T>, Event<T>},
