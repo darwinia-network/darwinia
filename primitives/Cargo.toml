@@ -1,0 +1,22 @@
+[package]
+name = "darwinia-primitives"
+version = "0.5.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node runtime primitives"
+edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+
+[dependencies]
+# substrate primitives
+sp-core = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+
+[features]
+default = ["std"]
+std = [
+	# substrate primitives
+	"sp-core/std",
+	"sp-runtime/std",
+]
