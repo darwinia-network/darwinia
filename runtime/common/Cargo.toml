@@ -12,18 +12,18 @@ repository = "https://github.com/darwinia-network/darwinia/"
 # third-party
 codec = { package = "parity-scale-codec", version = "1.3.0", default-features = false }
 # substrate primitives
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 # substrate frame
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
-pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.2" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
+pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.1" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
-darwinia-staking = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
-darwinia-support = { default-features = false, git = "https://github.com/AurevoirXavier/darwinia-common.git", branch = "code-clean" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 
 [features]
 default = ["std"]
