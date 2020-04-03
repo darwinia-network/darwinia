@@ -539,11 +539,11 @@ impl darwinia_eth_backing::Trait for Runtime {
 //
 parameter_types! {
 	pub const EthMainet: u64 = 0;
-	pub const EthRopsten: u64 = 1;
+	// pub const EthRopsten: u64 = 1;
 }
 impl darwinia_eth_relay::Trait for Runtime {
 	type Event = Event;
-	type EthNetwork = EthRopsten;
+	type EthNetwork = EthMainet;
 }
 
 impl frame_system::offchain::CreateTransaction<Runtime, UncheckedExtrinsic> for Runtime {
