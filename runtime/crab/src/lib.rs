@@ -597,13 +597,6 @@ type SubmitPFTransaction = frame_system::offchain::TransactionSubmitter<
 >;
 parameter_types! {
 	pub const FetchInterval: BlockNumber = 3;
-	// TODO: pass this from command line
-	// this a poc versiona, build with following command to launch the poc binary
-	// `ETHER_SCAN_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-	pub const EtherScanAPIKey: Option<Vec<u8>> = match option_env!("ETHER_SCAN_API_KEY"){
-		Some(s) => Some(s.as_bytes().to_vec()),
-		None => None,
-	};
 }
 impl darwinia_eth_offchain::Trait for Runtime {
 	type Event = Event;
@@ -611,7 +604,6 @@ impl darwinia_eth_offchain::Trait for Runtime {
 	type Call = Call;
 	type SubmitSignedTransaction = SubmitPFTransaction;
 	type FetchInterval = FetchInterval;
-	type EtherScanAPIKey = EtherScanAPIKey;
 }
 
 impl darwinia_header_mmr::Trait for Runtime {}
