@@ -38,7 +38,7 @@ impl ChainSpec {
 
 	pub(crate) fn from(s: &str) -> Option<Self> {
 		match s {
-			"crab-dev" => Some(ChainSpec::CrabDevelopment),
+			"crab-dev" | "dev" => Some(ChainSpec::CrabDevelopment),
 			"crab-local" => Some(ChainSpec::CrabLocalTestnet),
 			"crab-genesis" => Some(ChainSpec::CrabGenesisBuilder),
 			"crab" => Some(ChainSpec::Crab),
