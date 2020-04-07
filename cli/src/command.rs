@@ -41,7 +41,6 @@ pub fn run(version: VersionInfo) -> sc_cli::Result<()> {
 			);
 			info!("🏷 Node name: {}", config.name);
 			info!("👤 Roles: {}", config.display_role());
-
 			info!(
 				"⛓ Native runtime: {}",
 				darwinia_service::CrabExecutor::native_version().runtime_version
