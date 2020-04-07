@@ -82,7 +82,7 @@ Canary Network of Darwinia.
 
 
 
-### Darwinia Mainet (Expected 2020 Q2)
+### Darwinia Mainnet (Expected 2020 Q2)
 There could more testnet for testing and security auditing and preparing for the mainnet launch at Q4 2019. 
 
 

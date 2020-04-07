@@ -1,27 +1,5 @@
 {
-	"DigestItem": {
-		"_enum": {
-			"Other": "Bytes",
-			"AuthoritiesChange": "Vec<AuthorityId>",
-			"ChangesTrieRoot": "Hash",
-			"SealV0": "SealV0",
-			"Consensus": "Consensus",
-			"Seal": "Seal",
-			"PreRuntime": "PreRuntime",
-			"Unknown7": "Bytes",
-			"Unknown8": "Bytes",
-			"Unknown9": "Bytes",
-			"Unknown10": "Bytes",
-			"Unknown11": "Bytes",
-			"Unknown12": "Bytes",
-			"Unknown13": "Bytes",
-			"Unknown14": "Bytes",
-			"Unknown15": "Bytes",
-			"Unknown16": "Bytes",
-			"Unknown17": "Bytes",
-			"MerkleMountainRangeRoot": "Hash"
-		}
-	},
+	"Address": "AccountId",
 	"RingBalance": "Balance",
 	"KtonBalance": "Balance",
 	"MomentT": "Moment",
@@ -193,5 +171,9 @@
 	},
 	"EcdsaSignature": {
 		"_struct": "[u8; 65]"
+	},
+	"MerkleMountainRangeRootLog": {
+		"prefix": "[u8; 4]",
+		"mmr_root": "Hash"
 	}
 }

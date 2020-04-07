@@ -16,6 +16,12 @@ use darwinia_service::{Block, RuntimeApiCollection, TFullClient};
 pub fn run(version: VersionInfo) -> sc_cli::Result<()> {
 	let opt = sc_cli::from_args::<Cli>(&version);
 
+	if let Some(path) = opt.conf {
+		if path.is_file() {
+			// TODO: load boot conf from file
+		}
+	}
+
 	let mut config = darwinia_service::Configuration::from_version(&version);
 	config.impl_name = "darwinia-network-darwinia";
 
@@ -41,7 +47,6 @@ pub fn run(version: VersionInfo) -> sc_cli::Result<()> {
 			);
 			info!("🏷 Node name: {}", config.name);
 			info!("👤 Roles: {}", config.display_role());
-
 			info!(
 				"⛓ Native runtime: {}",
 				darwinia_service::CrabExecutor::native_version().runtime_version

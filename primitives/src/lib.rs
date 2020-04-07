@@ -34,9 +34,6 @@ pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
 /// The type for looking up accounts. We don't expect more than 4 billion of them.
 pub type AccountIndex = u32;
 
-/// Identifier for a chain. 32-bit should be plenty.
-pub type ChainId = u32;
-
 /// A hash of some data used by the relay chain.
 pub type Hash = H256;
 

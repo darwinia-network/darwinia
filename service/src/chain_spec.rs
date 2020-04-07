@@ -92,6 +92,28 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		ed: [u8; 32],
 	}
 
+	impl Staker {
+		fn to_init_auth(
+			&self,
+		) -> (
+			AccountId,
+			AccountId,
+			BabeId,
+			GrandpaId,
+			ImOnlineId,
+			AuthorityDiscoveryId,
+		) {
+			(
+				self.sr.into(),
+				self.sr.into(),
+				self.sr.unchecked_into(),
+				self.ed.unchecked_into(),
+				self.sr.unchecked_into(),
+				self.sr.unchecked_into(),
+			)
+		}
+	}
+
 	// 5FGWcEpsd5TbDh14UGJEzRQENwrPXUt7e2ufzFzfcCEMesAQ
 	let multi_sign: AccountId =
 		hex!["8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8"].into();
@@ -141,6 +163,24 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		},
 	];
 
+	// local tester
+	let local_tester = Staker {
+		// Secret phrase `pulse upset spoil fatigue agent credit dirt language forest aware boat broom` is account:
+		// Network ID/version: substrate
+		// Secret seed:        0x76c87263b2a385fcb7faed857d0fe105b5e40cdc8cb5f1b2a188d7f57488e595
+		// Public key (hex):   0x584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f
+		// Account ID:         0x584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f
+		// SS58 Address:       5E4VSMKXm9VFaLMu4Jjbny3Uy7NnPizoGkf92A15XjS45C4A
+		sr: hex!["584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f"],
+		// Secret phrase `ecology admit arrest canal cage believe satoshi anger napkin sign decorate use` is account:
+		// Network ID/version: substrate
+		// Secret seed:        0x7b37f9bd46a368748e0e28992e2cd2bc77060cd8267784aef625fb812908fb7f
+		// Public key (hex):   0x70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976
+		// Account ID:         0x70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976
+		// SS58 Address:       5Ecqdt4nxP76MdwNfBwwYBi4mxWq7MYLDN1GXMtDFUSaerjG
+		ed: hex!["70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976"],
+	};
+
 	let endowed_accounts: Vec<AccountId> = stakers.iter().map(|staker| staker.sr.into()).collect();
 
 	let initial_authorities: Vec<(
@@ -150,19 +190,7 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		GrandpaId,
 		ImOnlineId,
 		AuthorityDiscoveryId,
-	)> = stakers
-		.iter()
-		.map(|staker| {
-			(
-				staker.sr.into(),
-				staker.sr.into(),
-				staker.sr.unchecked_into(),
-				staker.ed.unchecked_into(),
-				staker.sr.unchecked_into(),
-				staker.sr.unchecked_into(),
-			)
-		})
-		.collect();
+	)> = stakers.iter().map(Staker::to_init_auth).collect();
 
 	CrabGenesisConfig {
 		// --- substrate ---
@@ -180,6 +208,8 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				&initial_authorities[1],
 				// clearloop
 				&initial_authorities[2],
+				// local tester
+				&local_tester.to_init_auth(),
 			]
 			.iter()
 			.map(|x| {
@@ -206,12 +236,12 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				.iter()
 				.map(|k| (k.clone(), RING_ENDOWMENT))
 				.chain(
-					[
+					vec![
 						(root_key, 60_000_000 * CRING),
 						(multi_sign, 700_000_000 * CRING),
+						(local_tester.sr.into(), CRING),
 					]
-					.iter()
-					.cloned(),
+					.into_iter(),
 				)
 				.collect(),
 		}),
@@ -234,6 +264,15 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 						crab_runtime::StakerStatus::Validator,
 					)
 				})
+				.chain(
+					vec![(
+						local_tester.sr.into(),
+						local_tester.sr.into(),
+						CRING,
+						crab_runtime::StakerStatus::Validator,
+					)]
+					.into_iter(),
+				)
 				.collect(),
 			force_era: crab_runtime::Forcing::NotForcing,
 			slash_reward_fraction: Perbill::from_percent(10),

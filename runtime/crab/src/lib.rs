@@ -44,6 +44,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
+use darwinia_eth_relay::EthNetworkType;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 
@@ -542,7 +543,7 @@ impl darwinia_eth_backing::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const EthNetwork: darwinia_eth_relay::EthNetworkType = darwinia_eth_relay::EthNetworkType::Mainet;
+	pub const EthNetwork: EthNetworkType = EthNetworkType::Mainnet;
 }
 impl darwinia_eth_relay::Trait for Runtime {
 	type Event = Event;
@@ -680,7 +681,6 @@ construct_runtime!(
 
 		// --- darwinia ---
 		// Basic stuff; balances is uncallable initially.
-		// TODO: alias Instance in darwinia-common
 		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>},
 		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>},
 
