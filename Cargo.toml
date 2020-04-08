@@ -1,27 +1,51 @@
-[profile.release]
-panic = 'unwind'
+[[bin]]
+name = "darwinia"
+path = "src/main.rs"
+
+[package]
+name = "darwinia"
+version = "0.5.0"
+authors = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node implementation in Rust"
+build = "build.rs"
+edition = "2018"
+license = "GPL-3.0"
+homepage = "https://darwinia.network/"
+repository = "https://github.com/darwinia-network/darwinia/"
+
+[dependencies]
+# third-party
+futures = "0.3.4"
+parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
+# darwinia
+darwinia-cli = { path = "cli" }
+darwinia-service = { path = "service" }
+
+[build-dependencies]
+vergen = "3.1.0"
+
+[dev-dependencies]
+assert_cmd = "1.0.1"
+nix = "0.17"
 
 [workspace]
 members = [
-	"core/cli",
-	"core/ethash",
-#    "core/merkle-mountain-range",
-#    "core/fly-client",
-    "core/sr-eth-primitives",
-    "core/merkle-patricia-trie",
-
-	"node/cli",
-    "node/executor",
-    "node/primitives",
-    "node/rpc",
-    "node/rpc-client",
-    "node/runtime",
-
-    "srml/balances",
-    "srml/eth-relay",
-    "srml/eth-backing",
-    "srml/im-online",
-    "srml/kton",
-    "srml/staking",
-    "srml/support",
+	"cli",
+	"primitives",
+	"rpc",
+	"runtime/common",
+	"runtime/crab",
+	"service",
 ]
+exclude = []
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[profile.release]
+# Darwinia runtime requires unwinding.
+panic = "unwind"
+
+# TODO: benchmark
+# [features]
+# runtime-benchmarks=["cli/runtime-benchmarks"]

@@ -1,6 +1,0 @@
-{
-	"base-path": "/tmp/darwinia-testnet/4",
-	"name": "testnet 4",
-	"validator": true,
-	"rpc-port": 6667
-}
