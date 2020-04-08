@@ -18,6 +18,5 @@ EXPOSE 30333 9933 9944
 VOLUME ["/data"]
 
 ENTRYPOINT [ "/usr/local/bin/darwinia" ]
-CMD ["--dev"]
 
 
