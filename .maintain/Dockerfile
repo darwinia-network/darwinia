@@ -5,7 +5,7 @@ WORKDIR /source
 
 ENV TERM="xterm-256color"
 
-RUN ./build.sh && cargo build --release
+RUN cargo build --release
 
 FROM debian:stable-slim
 
@@ -16,6 +16,5 @@ EXPOSE 30333 9933 9944
 VOLUME ["/data"]
 
 ENTRYPOINT [ "/usr/local/bin/darwinia" ]
-CMD ["--dev"]
 
 
