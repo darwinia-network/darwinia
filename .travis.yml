@@ -1,33 +1,39 @@
-# Request an environment that provides sudo (that goes with larger containers)
-# and a minimal language environment.
-sudo: true
-language: minimal
-
-cache:
-  cargo: true
-  directories:
-    - $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target/wasm32-unknown-unknown/release
+language: rust
+rust: nightly
 
 branches:
-  only:
-    - master
+    only:
+        - master
+        - develop
 
 env:
-  global:
-    - RUST_BACKTRACE=1
+    global:
+        - RUST_BACKTRACE=1
 
 before_install:
-  # Check how much space we've got on this machine.
-  - df -h
-  - ls $HOME/build/darwinia-network/darwinia/node/runtime/wasm/target/wasm32-unknown-unknown/release
+    # Check how much space we've got on this machine.
+    - df -h
+    - rustup target add wasm32-unknown-unknown --toolchain nightly
+
 
 jobs:
   include:
-    - stage: Install
-      script: ./ci/script.sh nightly wasm
-    - stage: Test
-      script: ./ci/script.sh stable native
+    - stage: Check & Prepare
+      script: .maintain/ci/fmt_script.sh
+
+    - stage: Build
+      env: RUST_TOOLCHAIN=nightly TARGET=native
+      script: .maintain/ci/build_script.sh
+
+    - stage: Build
+      env: RUST_TOOLCHAIN=nightly TARGET=wasm
+      script: .maintain/ci/build_script.sh
+
+    # over the time limitation, so we comment this
+    # - stage: Overall Test 
+    #   env: RUST_TOOLCHAIN=nightly TARGET=native
+    #   script: .maintain/ci/test_script.sh
 
 after_script:
-  # Check how much free disk space left after the build
-  - df -h
+    # Check how much free disk space left after the build
+    - df -h

@@ -4,21 +4,32 @@
 :toc:
 :sectnums:
 
-== Darwinia Relay Chain
+image:https://travis-ci.org/darwinia-network/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/darwinia-network/darwinia]
+image:https://img.shields.io/badge/License-GPLv3-blue.svg[License: GPL v3,link=https://www.gnu.org/licenses/gpl-3.0]
+
+== Introduction
 
 image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
 
-Darwinia Relay Chain is the hub relay chain connecting different Darwinia AppChains and can be connected to Polkadot as a Polkadot Parachain.
+Darwinia is a bridge blockchain connecting different chains using darwinia relay and can be connected to Polkadot network as a  parachain.
 
-It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
+As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange and market.
 
 == Architecture
 
 image:https://github.com/darwinia-network/rfcs/raw/master/RFC/zh_CN/images/0007-darwinia-architecture.jpeg[Darwinia Architecture]
 
+It could have two models, the Solo model and the Polkadot model. For more details, go to https://github.com/darwinia-network/rfcs/blob/master/RFC/zh_CN/0007-dawinia-token-staking-model.md#solo%E6%A8%A1%E5%BC%8F[RFC-0007].
+
 == Road Map
 
-Darwinia Network provides game developers the scalability, cross-chain interoperability, and NFT identifiability, with seamless integrations to Polkadot, bridges to all major blockchains, and on-chain RNG services. For more details, go to link:ROADMAP.md[Road Map].
+Darwinia Network is composed of Darwinia Bridge Chain(Darwinia), and a serious of other blockchains bridged to Darwinia, including public blockchains such as Ethereum, Tron, EOS, and application specific blockchains.
+
+Darwinia Bridge Chain will provide interoperability for cross-chain tokens using Darwinia's bridge relay innovation and decentralized backing technology.
+
+Darwinia Crab  Network is a canary network for Darwinia, Darwinia's new cutting edge technologies will be first deployed on Crab Network.
+
+For more details, go to link:ROADMAP.md[Road Map].
 
 // === So far
 
@@ -50,7 +61,8 @@ Darwinia Network provides game developers the scalability, cross-chain interoper
 === Hacking on Darwinia
 
 If you'd actually like to hack on Darwinia, you can just grab the source code and
-build it. Ensure you have Rust and the support software installed:
+build it. We also provide the script to help you setup your developing environment in bellow sections.
+Please ensure you have Rust and the support software installed:
 
 ==== Linux and Mac
 
@@ -220,13 +232,21 @@ Each project can be skipped individually by using the environment variable `SKIP
 Where `PROJECT_NAME` needs to be replaced by the name of the cargo project, e.g. `node-runtime` will
 be `NODE_RUNTIME`.
 
-== Joining the IceFrog Testnet
+=== Precautions
+
+If you run into problems when building this project, 
+please kindly check following things before making an issue.
+
+* using the latest nightly Rust
+* build without `sccache`
+
+== Joining the Crab Network
 
 // Latest known working version: ``
 
 === Quick start (professional):
-  * https://telemetry.polkadot.io/#list/Darwinia%20IceFrog%20Testnet[Telemetry]
-  * https://testnet-wallet.darwinia.network[Darwinia Web Wallet]
+  * https://telemetry.polkadot.io/#list/Darwinia%20Crab%20Testnet[Telemetry]
+  * https://crab-wallet.darwinia.network[Darwinia Web Wallet]
   * Bootnodes: 
     ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
     ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
@@ -306,27 +326,43 @@ You can generate documentation for a Darwinia Rust package and have it automatic
 (of the The Rustdoc Book), by running the following command:
 
 ```
+cargo doc --open
+```
+
+If you just want to generate document from specific package, you may use following command:
+
+```
 cargo doc --package <spec> --open
 ```
 
-Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia --open`):
+Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
 
-* All Darwinia Packages
-[source, shell]
-darwinia
 * Darwinia Core
 [source, shell]
-darwinia, darwinia-cli, ethash, fly-client,
-merkle-mountain-range, merkle-patricia-trie, sr-eth-primitives
+darwinia-cli, ethash, fly-client,
+merkle-mountain-range, merkle-patricia-trie, eth-primitives
 * Darwinia Runtime Module Library
 [source, shell]
 darwinia-balances, darwinia-eth-backing, darwinia-eth-relay,
-darwinia-kton, darwinia-staking, darwinia-support
+darwinia-staking, darwinia-support
 * Node
 [source, shell]
-node-cli, node-executor, node-primitives, node-rpc, node-rpc-client, node-runtime
+node-cli, node-primitives, node-runtime
 
 == Contributing
+
+=== Environment
+
+The `scripts/bootstrap.sh` help set up your develop environment.
+The nightly `Rust`, `cargo`, `rustfmt` will be installed,
+the git hooks will be set, and ready to code.
+
+Besides, the script will install some essential packages depends on your OS,
+if you want to do it manually, use the `--fast` option to skip.
+We will appreciate your contribution.
+
+If you have any questions when hacking on Darwinia, feel free to let us know on the Riot room https://riot.im/app/#/group/+darwinia:matrix.org[#darwinia:matrix.org].
+
 
 === Contributing Guidelines
 
