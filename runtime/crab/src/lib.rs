@@ -116,7 +116,6 @@ impl frame_system::Trait for Runtime {
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type MigrateAccount = ();
 }
 
 parameter_types! {
