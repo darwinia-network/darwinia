@@ -119,7 +119,7 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		hex!["8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8"].into();
 
 	let root_key: AccountId =
-		hex!["12b782529c22032ed4694e0f6e7d486be7daa6d12088f6bc74d593b3900b8438"].into();
+		hex!["0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49"].into();
 
 	let stakers = [
 		// AlexChien
@@ -237,7 +237,7 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				.map(|k| (k.clone(), RING_ENDOWMENT))
 				.chain(
 					vec![
-						(root_key, 60_000_000 * CRING),
+						(root_key, 25_000_000 * CRING),
 						(multi_sign, 700_000_000 * CRING),
 						(local_tester.sr.into(), CRING),
 					]
@@ -289,7 +289,7 @@ fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 			// ring_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			// kton_redeem_address: hex!["dbc888d701167cbfb86486c516aafbefc3a4de6e"].into(),
 			// deposit_redeem_address: hex!["6ef538314829efa8386fc43386cb13b4e0a67d1e"].into(),
-			ring_locked: 16_857_478 * CRING,
+			ring_locked: 7_569_833 * CRING,
 			kton_locked: 30_000 * CRING,
 			..Default::default()
 		}),
