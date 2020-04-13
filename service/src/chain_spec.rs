@@ -122,7 +122,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 	.into();
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(
-		"0x12b782529c22032ed4694e0f6e7d486be7daa6d12088f6bc74d593b3900b8438",
+		"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49",
 		32
 	)
 	.into();
@@ -297,7 +297,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				.map(|k| (k, RING_ENDOWMENT))
 				.chain(
 					vec![
-						(root_key, 60_000_000 * CRING),
+						(root_key, 25_000_000 * CRING),
 						(multi_sign, 700_000_000 * CRING),
 						(local_tester.sr.into(), CRING),
 					]
@@ -355,7 +355,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				20
 			)
 			.into(),
-			ring_locked: 16_857_478 * CRING,
+			ring_locked: 7_569_833 * CRING,
 			kton_locked: 30_000 * CRING,
 			..Default::default()
 		}),
