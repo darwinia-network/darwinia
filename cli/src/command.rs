@@ -1,7 +1,7 @@
 // --- third-party ---
 use log::info;
 // --- substrate ---
-use sc_cli::VersionInfo;
+use sc_cli::{Result, SubstrateCli};
 use sc_executor::NativeExecutionDispatch;
 use sp_api::ConstructRuntimeApi;
 use sp_runtime::traits::BlakeTwo256;
@@ -12,73 +12,94 @@ use crate::{
 };
 use darwinia_service::{Block, RuntimeApiCollection, TFullClient};
 
-/// Parses polkadot specific CLI arguments and run the service.
-pub fn run(version: VersionInfo) -> sc_cli::Result<()> {
-	let opt = sc_cli::from_args::<Cli>(&version);
-
-	if let Some(path) = opt.conf {
-		if path.is_file() {
-			// TODO: load boot conf from file
-		}
+impl SubstrateCli for Cli {
+	fn impl_name() -> &'static str {
+		"darwinia-network"
 	}
 
-	let mut config = darwinia_service::Configuration::from_version(&version);
-	config.impl_name = "darwinia-network-darwinia";
+	fn impl_version() -> &'static str {
+		env!("DARWINIA_CLI_IMPL_VERSION")
+	}
 
-	match opt.subcommand {
+	fn description() -> &'static str {
+		env!("CARGO_PKG_DESCRIPTION")
+	}
+
+	fn author() -> &'static str {
+		env!("CARGO_PKG_AUTHORS")
+	}
+
+	fn support_url() -> &'static str {
+		"https://github.com/darwinia-network/darwinia/issues/new"
+	}
+
+	fn copyright_start_year() -> i32 {
+		2018
+	}
+
+	fn executable_name() -> &'static str {
+		"darwinia"
+	}
+
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+		Ok(match id {
+			"crab-dev" | "dev" => Box::new(crab_development_config()),
+			"crab-local" => Box::new(crab_local_testnet_config()),
+			"crab-genesis" => Box::new(crab_genesis_builder_config()),
+			"crab" | "" => Box::new(crab_config()?),
+			path => Box::new(darwinia_service::CrabChainSpec::from_json_file(
+				std::path::PathBuf::from(path),
+			)?),
+		})
+	}
+}
+
+/// Parses Darwinia specific CLI arguments and run the service.
+pub fn run() -> Result<()> {
+	let cli = Cli::from_args();
+
+	match &cli.subcommand {
 		None => {
-			opt.run.base.init(&version)?;
-			opt.run
-				.base
-				.update_config(&mut config, |id| load_spec(id), &version)?;
+			let runtime = cli.create_runner(&cli.run.base)?;
+			let config = runtime.config();
 
-			info!("{}", version.name);
-			info!("  version {}", config.full_version());
+			info!(
+				"⛓  Native runtime: {}",
+				darwinia_service::CrabExecutor::native_version().runtime_version
+			);
 			info!("  _____                      _       _       ");
 			info!(" |  __ \\                    (_)     (_)      ");
 			info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
 			info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
 			info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
 			info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
-			info!("  by {}, 2018-2020", version.author);
-			info!(
-				"📋 Chain specification: {}",
-				config.expect_chain_spec().name()
-			);
-			info!("🏷 Node name: {}", config.name);
-			info!("👤 Roles: {}", config.display_role());
-			info!(
-				"⛓ Native runtime: {}",
-				darwinia_service::CrabExecutor::native_version().runtime_version
-			);
+			info!("  by Darwinia-Network, 2018-2020");
 
-			run_service_until_exit::<
+			run_node::<
 				darwinia_service::crab_runtime::RuntimeApi,
 				darwinia_service::CrabExecutor,
 				darwinia_service::crab_runtime::UncheckedExtrinsic,
-			>(config)
+			>(runtime)
 		}
 		Some(Subcommand::Base(cmd)) => {
-			cmd.init(&version)?;
-			cmd.update_config(&mut config, |id| load_spec(id), &version)?;
-			cmd.run(
-				config,
-				darwinia_service::new_chain_ops::<
+			let runtime = cli.create_runner(subcommand)?;
+
+			runtime.run_subcommand(subcommand, |config| {
+				service::new_chain_ops::<
 					darwinia_service::crab_runtime::RuntimeApi,
 					darwinia_service::CrabExecutor,
 					darwinia_service::crab_runtime::UncheckedExtrinsic,
-				>,
-			)
-		} // TODO: benchmark
-		  // Some(Subcommand::Benchmark(cmd)) => {
-		  // 	cmd.init(&version)?;
-		  // 	cmd.update_config(&mut config, |id| load_spec(id), &version)?;
-		  // 	cmd.run::<darwinia_service::crab_runtime::Block, darwinia_service::CrabExecutor>(config)
-		  // }
+				>(config)
+			})
+		}
+		Some(_) => {
+			// TODO: benchmark
+			unimplemented!()
+		}
 	}
 }
 
-fn run_service_until_exit<R, D, E>(config: darwinia_service::Configuration) -> sc_cli::Result<()>
+fn run_node<R, D, E>(runtime: sc_cli::Runner<Cli>) -> sc_cli::Result<()>
 where
 	R: ConstructRuntimeApi<Block, darwinia_service::TFullClient<Block, R, D>>
 		+ Send
@@ -109,14 +130,10 @@ where
 	// Rust bug: https://github.com/rust-lang/rust/issues/43580
 	R: ConstructRuntimeApi<Block, TLightClient<R, D>>,
 {
-	match config.roles {
-		darwinia_service::Roles::LIGHT => sc_cli::run_service_until_exit(config, |config| {
-			darwinia_service::new_light::<R, D, E>(config)
-		}),
-		_ => sc_cli::run_service_until_exit(config, |config| {
-			darwinia_service::new_full::<R, D, E>(config)
-		}),
-	}
+	runtime.run_node(
+		|config| darwinia_service::new_light::<R, D, E>(config),
+		|config| darwinia_service::new_full::<R, D, E>(config),
+	)
 }
 
 // We can't simply use `darwinia_service::TLightClient` due to a
