@@ -35,15 +35,10 @@ sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
 sc-client-db = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
 sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sc-service = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
 # substrate utils
 substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
-
-[build-dependencies]
-# require lastest feature
-substrate-build-script-utils = {  git = "https://github.com/darwinia-network/substrate.git" }
 
 [features]
 default = [
@@ -56,7 +51,6 @@ rocksdb = ["darwinia-service/rocksdb"]
 cli = [
 	"tokio",
 	"sc-cli",
-	"sc-service",
 	# TODO: benchmark
 	# "frame-benchmarking-cli",
 	"darwinia-service/full-node",
