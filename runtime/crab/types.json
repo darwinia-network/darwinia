@@ -2,7 +2,7 @@
 	"Address": "AccountId",
 	"RingBalance": "Balance",
 	"KtonBalance": "Balance",
-	"MomentT": "Moment",
+	"TsInMs": "u64",
 	"Power": "u32",
 	"DepositId": "U256",
 	"StakingBalanceT": "StakingBalance",
@@ -21,14 +21,15 @@
 		"deposit_items": "Vec<TimeDepositItem>",
 		"ring_staking_lock": "StakingLock",
 		"kton_staking_lock": "StakingLock",
+		"last_reward": "Option<EraIndex>",
 		"total": "Compact<Balance>",
 		"active": "Compact<Balance>",
 		"unlocking": "Vec<UnlockChunk>"
 	},
 	"TimeDepositItem": {
 		"value": "Compact<Balance>",
-		"start_time": "Compact<Moment>",
-		"expire_time": "Compact<Moment>"
+		"start_time": "Compact<TsInMs>",
+		"expire_time": "Compact<TsInMs>"
 	},
 	"RewardDestination": {
 		"_enum": {
@@ -38,20 +39,24 @@
 		}
 	},
 	"Staked": {
-		"promise_month": "Moment"
+		"promise_month": "u8"
 	},
+	"ExposureT": "Exposure",
 	"Exposure": {
 		"own_ring_balance": "Compact<Balance>",
 		"own_kton_balance": "Compact<Balance>",
 		"own_power": "Power",
 		"total_power": "Power",
-		"others": "Vec<IndividualExposure>"
+		"others": "Vec<IndividualExposure>",
+		"total": "Compact<Balance>",
+		"own": "Compact<Balance>"
 	},
 	"IndividualExposure": {
 		"who": "AccountId",
 		"ring_balance": "Compact<Balance>",
 		"kton_balance": "Compact<Balance>",
-		"power": "Power"
+		"power": "Power",
+		"value": "Compact<Balance>"
 	},
 	"ValidatorReward": {
 		"who": "AccountId",
@@ -70,7 +75,9 @@
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"lock_for": "LockFor",
-		"lock_reasons": "LockReasons"
+		"lock_reasons": "LockReasons",
+		"amount": "Balance",
+		"reasons": "Reasons"
 	},
 	"LockFor": {
 		"_enum": {
@@ -117,7 +124,7 @@
 		"timestamp": "u64",
 		"number": "EthBlockNumber",
 		"author": "EthAddress",
-		"transaction_root": "H256",
+		"transactions_root": "H256",
 		"uncles_hash": "H256",
 		"extra_data": "Bytes",
 		"state_root": "H256",
@@ -142,6 +149,12 @@
 		"index": "u64",
 		"proof": "Bytes",
 		"header_hash": "H256"
+	},
+	"EthNetworkType": {
+		"_enum": {
+			"Mainnet": null,
+			"Ropsten": null
+		}
 	},
 	"RedeemFor": {
 		"_enum": {

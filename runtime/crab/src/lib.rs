@@ -1,4 +1,4 @@
-//! The Crab runtime. This can be compiled with ``#[no_std]`, ready for Wasm.
+//! The Crab runtime. This can be compiled with `#[no_std]`, ready for Wasm.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
@@ -32,10 +32,8 @@ use sp_core::{
 };
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup, OpaqueKeys, SaturatedConversion,
-	},
-	transaction_validity::TransactionValidity,
+	traits::{BlakeTwo256, Block as BlockT, IdentityLookup, OpaqueKeys, SaturatedConversion},
+	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, Perbill, Percent, Permill,
 };
 use sp_staking::SessionIndex;
@@ -47,6 +45,7 @@ use sp_version::RuntimeVersion;
 use darwinia_eth_relay::EthNetworkType;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
+use darwinia_staking::EraIndex;
 
 type Ring = Balances;
 
@@ -77,22 +76,6 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-pub struct DealWithFees;
-impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
-	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<Runtime>>) {
-		if let Some(fees) = fees_then_tips.next() {
-			// for fees, 80% to treasury, 20% to author
-			let mut split = fees.ration(80, 20);
-			if let Some(tips) = fees_then_tips.next() {
-				// for tips, if any, 80% to treasury, 20% to author (though this can be anything)
-				tips.ration_merge_into(80, 20, &mut split);
-			}
-			Treasury::on_unbalanced(split.0);
-			ToAuthor::on_unbalanced(split.1);
-		}
-	}
-}
-
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 }
@@ -116,11 +99,10 @@ impl frame_system::Trait for Runtime {
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type MigrateAccount = ();
 }
 
 parameter_types! {
-	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
+	pub const EpochDuration: u64 = EPOCH_DURATION_IN_BLOCKS as _;
 	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
 }
 impl pallet_babe::Trait for Runtime {
@@ -149,11 +131,24 @@ impl pallet_indices::Trait for Runtime {
 	type Event = Event;
 }
 
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<Runtime>>) {
+		if let Some(fees) = fees_then_tips.next() {
+			// for fees, 80% to treasury, 20% to author
+			let mut split = fees.ration(80, 20);
+			if let Some(tips) = fees_then_tips.next() {
+				// for tips, if any, 80% to treasury, 20% to author (though this can be anything)
+				tips.ration_merge_into(80, 20, &mut split);
+			}
+			Treasury::on_unbalanced(split.0);
+			ToAuthor::on_unbalanced(split.1);
+		}
+	}
+}
 parameter_types! {
 	pub const TransactionBaseFee: Balance = 1 * MILLI;
 	pub const TransactionByteFee: Balance = 10 * MICRO;
-	// setting this to zero will disable the weight fee.
-	pub const WeightFeeCoefficient: Balance = 1_000;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perbill = Perbill::from_percent(25);
 }
@@ -189,8 +184,8 @@ impl pallet_session::historical::Trait for Runtime {
 
 impl_opaque_keys! {
 	pub struct SessionKeys {
-		pub grandpa: Grandpa,
 		pub babe: Babe,
+		pub grandpa: Grandpa,
 		pub im_online: ImOnline,
 		pub authority_discovery: AuthorityDiscovery,
 	}
@@ -223,10 +218,9 @@ impl pallet_grandpa::Trait for Runtime {
 	type Event = Event;
 }
 
-/// A runtime transaction submitter.
 type SubmitTransaction = TransactionSubmitter<ImOnlineId, Runtime, UncheckedExtrinsic>;
 parameter_types! {
-	pub const SessionDuration: BlockNumber = SESSION_DURATION;
+	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_BLOCKS as _;
 }
 impl pallet_im_online::Trait for Runtime {
 	type AuthorityId = ImOnlineId;
@@ -425,16 +419,17 @@ impl darwinia_balances::Trait<KtonInstance> for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: darwinia_staking::EraIndex = 14 * 24 * (HOURS / (SESSIONS_PER_ERA * BLOCKS_PER_SESSION));
+	pub const BondingDurationInEra: EraIndex = 14 * DAYS
+		/ (SESSIONS_PER_ERA as BlockNumber * EPOCH_DURATION_IN_BLOCKS);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
-	pub const SlashDeferDuration: darwinia_staking::EraIndex = 7 * 24; // 1/4 the bonding duration.
+	pub const SlashDeferDuration: EraIndex = 14 * DAYS
+		/ (SESSIONS_PER_ERA as BlockNumber * EPOCH_DURATION_IN_BLOCKS);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	// --- custom ---
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
 impl darwinia_staking::Trait for Runtime {
-	type Time = Timestamp;
+	type UnixTime = Timestamp;
 	type Event = Event;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
@@ -531,14 +526,11 @@ parameter_types! {
 }
 impl darwinia_eth_backing::Trait for Runtime {
 	type Event = Event;
-	type Time = Timestamp;
 	type DetermineAccountId = darwinia_eth_backing::AccountIdDeterminator<Runtime>;
 	type EthRelay = EthRelay;
 	type OnDepositRedeem = Staking;
 	type Ring = Ring;
-	type RingReward = ();
 	type Kton = Kton;
-	type KtonReward = ();
 	type SubKeyPrefix = SubKeyPrefix;
 }
 
@@ -601,34 +593,15 @@ type SubmitPFTransaction = frame_system::offchain::TransactionSubmitter<
 >;
 parameter_types! {
 	pub const FetchInterval: BlockNumber = 3;
-	// TODO: pass this from command line
-	// this a poc versiona, build with following command to launch the poc binary
-	// `ETHER_SCAN_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX cargo build`
-	pub const EtherScanAPIKey: Option<Vec<u8>> = match option_env!("ETHER_SCAN_API_KEY"){
-		Some(s) => Some(s.as_bytes().to_vec()),
-		None => None,
-	};
 }
 impl darwinia_eth_offchain::Trait for Runtime {
 	type Event = Event;
-	type Time = Timestamp;
 	type Call = Call;
 	type SubmitSignedTransaction = SubmitPFTransaction;
 	type FetchInterval = FetchInterval;
-	type EtherScanAPIKey = EtherScanAPIKey;
 }
 
 impl darwinia_header_mmr::Trait for Runtime {}
-
-parameter_types! {
-	pub const MinVestedTransfer: Balance = 100 * COIN;
-}
-impl darwinia_vesting::Trait for Runtime {
-	type Event = Event;
-	type Currency = Ring;
-	type BlockNumberToBalance = ConvertInto;
-	type MinVestedTransfer = MinVestedTransfer;
-}
 
 construct_runtime!(
 	pub enum Runtime
@@ -654,7 +627,7 @@ construct_runtime!(
 		Offences: pallet_offences::{Module, Call, Storage, Event},
 		Historical: pallet_session_historical::{Module},
 		Session: pallet_session::{Module, Call, Storage, Config<T>, Event},
-		FinalityTracker: pallet_finality_tracker::{Module, Call, Inherent},
+		FinalityTracker: pallet_finality_tracker::{Module, Call, Storage, Inherent},
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
 		ImOnline: pallet_im_online::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned},
 		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config},
@@ -695,15 +668,12 @@ construct_runtime!(
 
 		EthBacking: darwinia_eth_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthRelay: darwinia_eth_relay::{Module, Call, Storage, Config<T>, Event<T>},
-		EthOffchain: darwinia_eth_offchain::{Module, Call, Storage, Event<T>},
+		EthOffchain: darwinia_eth_offchain::{Module, Call, Event<T>},
 
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
 
 		// Governance stuff; uncallable initially.
 		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>},
-
-		// Vesting. Usable initially, but removed once all vesting is finished.
-		Vesting: darwinia_vesting::{Module, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -728,10 +698,10 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
-/// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
+/// The payload being signed in transactions.
+pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -790,8 +760,10 @@ impl_runtime_apis! {
 	}
 
 	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
-		fn validate_transaction(tx: <Block as BlockT>::Extrinsic) -> TransactionValidity {
-			Executive::validate_transaction(tx)
+		fn validate_transaction(
+			source: TransactionSource,
+			tx: <Block as BlockT>::Extrinsic) -> TransactionValidity {
+			Executive::validate_transaction(source, tx)
 		}
 	}
 

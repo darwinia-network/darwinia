@@ -1,4 +1,4 @@
-//! Polkadot CLI library.
+//! Darwinia CLI library.
 
 // --- third-party ---
 use structopt::StructOpt;
