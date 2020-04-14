@@ -256,12 +256,8 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		pallet_indices: Some(Default::default()),
 		pallet_session: Some(crab_runtime::SessionConfig {
 			keys: [
-				// AlexChien
-				&initial_authorities[0],
 				// AurevoirXavier
 				&initial_authorities[1],
-				// clearloop
-				&initial_authorities[2],
 				// local tester
 				&local_tester.to_init_auth(),
 			]
