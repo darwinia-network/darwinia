@@ -675,7 +675,7 @@ checksum = "b3a71ab494c0b5b860bdc8407ae08978052417070c2ced38573a9157ad75b8ac"
 
 [[package]]
 name = "crab-runtime"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "darwinia-balances",
  "darwinia-claims",
@@ -948,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "assert_cmd",
  "darwinia-cli",
@@ -994,7 +994,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "darwinia-service",
  "log",
@@ -1109,7 +1109,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-primitives"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "sp-core",
  "sp-runtime",
@@ -1117,7 +1117,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "darwinia-primitives",
  "jsonrpc-core",
@@ -1132,7 +1132,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime-common"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "darwinia-balances",
  "darwinia-primitives",
@@ -1148,7 +1148,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-service"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "crab-runtime",
  "darwinia-primitives",
