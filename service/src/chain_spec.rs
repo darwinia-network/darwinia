@@ -1,7 +1,5 @@
 //! Polkadot chain configurations.
 
-// --- std ---
-use std::{env, fs::File, path::Path};
 // --- third-party ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
@@ -69,17 +67,6 @@ pub fn crab_properties() -> Properties {
 	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
 
 	properties
-}
-
-pub fn load_claims_list(path: &str) -> crab_runtime::ClaimsList {
-	if !Path::new(&path).is_file() && env::var("CLAIMS_LIST_PATH").is_err() {
-		Default::default()
-	} else {
-		serde_json::from_reader(
-			File::open(env::var("CLAIMS_LIST_PATH").unwrap_or(path.to_owned())).unwrap(),
-		)
-		.unwrap()
-	}
 }
 
 pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
@@ -303,7 +290,10 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		}),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: load_claims_list("./service/res/crab_claims_list.json"),
+				claims_list: crab_runtime::ClaimsList::load_genesis(
+					"./service/res/crab_claims_list.json",
+					"CLAIMS_LIST_PATH",
+				),
 			}
 		}),
 		darwinia_eth_backing: Some(crab_runtime::EthBackingConfig {
@@ -358,6 +348,10 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				],
 			)),
 			authorities: stakers.iter().map(|staker| staker.sr.into()).collect(),
+			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
+				"./service/res/dag_merkle_roots.json",
+				"DAG_MERKLE_ROOTS_PATH",
+			),
 			..Default::default()
 		}),
 	}
@@ -502,7 +496,10 @@ pub fn crab_testnet_genesis(
 		}),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: load_claims_list("./service/res/crab_claims_list.json"),
+				claims_list: crab_runtime::ClaimsList::load_genesis(
+					"./service/res/crab_claims_list.json",
+					"CLAIMS_LIST_PATH",
+				),
 			}
 		}),
 		darwinia_eth_backing: Some(crab_runtime::EthBackingConfig {
@@ -556,7 +553,11 @@ pub fn crab_testnet_genesis(
 					0, 0, 66,
 				],
 			)),
-			check_authorities: false,
+			check_authority: false,
+			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
+				"./service/res/dag_merkle_roots.json",
+				"DAG_MERKLE_ROOTS_PATH",
+			),
 			..Default::default()
 		}),
 	}
