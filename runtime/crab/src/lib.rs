@@ -12,6 +12,8 @@ use constants::{currency::*, fee::*, time::*};
 #[cfg(feature = "std")]
 pub use darwinia_claims::ClaimsList;
 #[cfg(feature = "std")]
+pub use darwinia_eth_relay::DagMerkleRoots;
+#[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- substrate ---
