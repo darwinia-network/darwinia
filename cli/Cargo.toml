@@ -62,3 +62,7 @@ browser = [
 ]
 # TODO: benchmark
 # runtime-benchmarks = ["service/runtime-benchmarks"]
+build-spec = [
+	"default",
+	"darwinia-service/build-spec",
+]

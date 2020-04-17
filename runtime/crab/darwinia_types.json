@@ -1,0 +1,184 @@
+{
+	"Address": "AccountId",
+	"RingBalance": "Balance",
+	"KtonBalance": "Balance",
+	"TsInMs": "u64",
+	"Power": "u32",
+	"DepositId": "U256",
+	"StakingBalanceT": "StakingBalance",
+	"StakingBalance": {
+		"_enum": {
+			"RingBalance": "Balance",
+			"KtonBalance": "Balance"
+		}
+	},
+	"StakingLedgerT": "StakingLedger",
+	"StakingLedger": {
+		"stash": "AccountId",
+		"active_ring": "Compact<Balance>",
+		"active_deposit_ring": "Compact<Balance>",
+		"active_kton": "Compact<Balance>",
+		"deposit_items": "Vec<TimeDepositItem>",
+		"ring_staking_lock": "StakingLock",
+		"kton_staking_lock": "StakingLock",
+		"last_reward": "Option<EraIndex>"
+	},
+	"TimeDepositItem": {
+		"value": "Compact<Balance>",
+		"start_time": "Compact<TsInMs>",
+		"expire_time": "Compact<TsInMs>"
+	},
+	"RewardDestination": {
+		"_enum": {
+			"Staked": "Staked",
+			"Stash": null,
+			"Controller": null
+		}
+	},
+	"Staked": {
+		"promise_month": "u8"
+	},
+	"ExposureT": "Exposure",
+	"Exposure": {
+		"own_ring_balance": "Compact<Balance>",
+		"own_kton_balance": "Compact<Balance>",
+		"own_power": "Power",
+		"total_power": "Power",
+		"others": "Vec<IndividualExposure>"
+	},
+	"IndividualExposure": {
+		"who": "AccountId",
+		"ring_balance": "Compact<Balance>",
+		"kton_balance": "Compact<Balance>",
+		"power": "Power"
+	},
+	"RKT": "RK",
+	"RK": {
+		"r": "Balance",
+		"k": "Balance"
+	},
+	"BalanceInfo": null,
+	"BalanceLock": {
+		"id": "LockIdentifier",
+		"lock_for": "LockFor",
+		"lock_reasons": "LockReasons"
+	},
+	"LockFor": {
+		"_enum": {
+			"Common": "Common",
+			"Staking": "StakingLock"
+		}
+	},
+	"Common": {
+		"amount": "Balance"
+	},
+	"StakingLock": {
+		"staking_amount": "Balance",
+		"unbondings": "Vec<Unbonding>"
+	},
+	"LockReasons": {
+		"_enum": {
+			"Fee": null,
+			"Misc": null,
+			"All": null
+		}
+	},
+	"Unbonding": {
+		"amount": "Balance",
+		"moment": "BlockNumber"
+	},
+	"AccountData": {
+		"free": "Balance",
+		"reserved": "Balance",
+		"free_kton": "Balance",
+		"reserved_kton": "Balance"
+	},
+	"EthBlockNumber": "u64",
+	"EthAddress": "H160",
+	"EthTransactionIndex": "(H256, u64)",
+	"EthHeaderBrief": {
+		"total_difficulty": "U256",
+		"parent_hash": "H256",
+		"number": "EthBlockNumber"
+	},
+	"EthHeader": {
+		"parent_hash": "H256",
+		"timestamp": "u64",
+		"number": "EthBlockNumber",
+		"author": "EthAddress",
+		"transactions_root": "H256",
+		"uncles_hash": "H256",
+		"extra_data": "Bytes",
+		"state_root": "H256",
+		"receipts_root": "H256",
+		"log_bloom": "Bloom",
+		"gas_used": "U256",
+		"gas_limit": "U256",
+		"difficulty": "U256",
+		"seal": "Vec<Bytes>",
+		"hash": "Option<H256>"
+	},
+	"Bloom": {
+		"_struct": "[u8; 256]"
+	},
+	"H128": {
+		"_struct": "[u8; 16]"
+	},
+	"H512": {
+		"_struct": "[u8; 64]"
+	},
+	"DoubleNodeWithMerkleProof": {
+		"dag_nodes": "[H512; 2]",
+		"proof": "Vec<H128>"
+	},
+	"Receipt": {
+		"gas_used": "U256",
+		"log_bloom": "Bloom",
+		"logs": "Vec<LogEntry>",
+		"outcome": "TransactionOutcome"
+	},
+	"EthReceiptProof": {
+		"index": "u64",
+		"proof": "Bytes",
+		"header_hash": "H256"
+	},
+	"EthNetworkType": {
+		"_enum": {
+			"Mainnet": null,
+			"Ropsten": null
+		}
+	},
+	"RedeemFor": {
+		"_enum": {
+			"Ring": "EthReceiptProof",
+			"Kton": "EthReceiptProof",
+			"Deposit": "EthReceiptProof"
+		}
+	},
+	"AddressT": "[u8; 20]",
+	"EthereumAddress": {
+		"_struct": "AddressT"
+	},
+	"TronAddress": {
+		"_struct": "AddressT"
+	},
+	"OtherSignature": {
+		"_enum": {
+			"Eth": "EcdsaSignature",
+			"Tron": "EcdsaSignature"
+		}
+	},
+	"OtherAddress": {
+		"_enum": {
+			"Eth": "EthereumAddress",
+			"Tron": "EthereumAddress"
+		}
+	},
+	"EcdsaSignature": {
+		"_struct": "[u8; 65]"
+	},
+	"MerkleMountainRangeRootLog": {
+		"prefix": "[u8; 4]",
+		"mmr_root": "Hash"
+	}
+}

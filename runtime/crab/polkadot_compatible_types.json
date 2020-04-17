@@ -58,20 +58,12 @@
 		"power": "Power",
 		"value": "Compact<Balance>"
 	},
-	"ValidatorReward": {
-		"who": "AccountId",
-		"amount": "Compact<Balance>",
-		"nominators_reward": "Vec<NominatorReward>"
-	},
-	"NominatorReward": {
-		"who": "AccountId",
-		"amount": "Compact<Balance>"
-	},
 	"RKT": "RK",
 	"RK": {
 		"r": "Balance",
 		"k": "Balance"
 	},
+	"BalanceInfo": null,
 	"BalanceLock": {
 		"id": "LockIdentifier",
 		"lock_for": "LockFor",
@@ -114,7 +106,7 @@
 	"EthBlockNumber": "u64",
 	"EthAddress": "H160",
 	"EthTransactionIndex": "(H256, u64)",
-	"HeaderInfo": {
+	"EthHeaderBrief": {
 		"total_difficulty": "U256",
 		"parent_hash": "H256",
 		"number": "EthBlockNumber"
@@ -138,6 +130,16 @@
 	},
 	"Bloom": {
 		"_struct": "[u8; 256]"
+	},
+	"H128": {
+		"_struct": "[u8; 16]"
+	},
+	"H512": {
+		"_struct": "[u8; 64]"
+	},
+	"DoubleNodeWithMerkleProof": {
+		"dag_nodes": "[H512; 2]",
+		"proof": "Vec<H128>"
 	},
 	"Receipt": {
 		"gas_used": "U256",

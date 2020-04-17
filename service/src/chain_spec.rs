@@ -1,7 +1,5 @@
 //! Polkadot chain configurations.
 
-// --- std ---
-use std::{env, fs::File, path::Path};
 // --- third-party ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
@@ -71,21 +69,9 @@ pub fn crab_properties() -> Properties {
 	properties
 }
 
-pub fn load_claims_list(path: &str) -> crab_runtime::ClaimsList {
-	if !Path::new(&path).is_file() && env::var("CLAIMS_LIST_PATH").is_err() {
-		Default::default()
-	} else {
-		serde_json::from_reader(
-			File::open(env::var("CLAIMS_LIST_PATH").unwrap_or(path.to_owned())).unwrap(),
-		)
-		.unwrap()
-	}
-}
-
 pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 	const RING_ENDOWMENT: Balance = 1_000_000 * CRING;
 	const KTON_ENDOWMENT: Balance = 10_000 * CKTON;
-	const STASH: Balance = 1000 * CRING;
 
 	struct Staker {
 		sr: [u8; 32],
@@ -93,7 +79,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 	}
 
 	impl Staker {
-		fn to_init_auth(
+		fn build_init_auth(
 			&self,
 		) -> (
 			AccountId,
@@ -235,16 +221,12 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		),
 	};
 
-	let endowed_accounts: Vec<AccountId> = stakers.iter().map(|staker| staker.sr.into()).collect();
+	let endowed_accounts = stakers
+		.iter()
+		.map(|staker| staker.sr.into())
+		.collect::<Vec<_>>();
 
-	let initial_authorities: Vec<(
-		AccountId,
-		AccountId,
-		BabeId,
-		GrandpaId,
-		ImOnlineId,
-		AuthorityDiscoveryId,
-	)> = stakers.iter().map(Staker::to_init_auth).collect();
+	let initial_authorities = [stakers[1].build_init_auth(), local_tester.build_init_auth()];
 
 	CrabGenesisConfig {
 		// --- substrate ---
@@ -255,26 +237,11 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		pallet_babe: Some(Default::default()),
 		pallet_indices: Some(Default::default()),
 		pallet_session: Some(crab_runtime::SessionConfig {
-			keys: [
-				// AurevoirXavier
-				&initial_authorities[1],
-				// local tester
-				&local_tester.to_init_auth(),
-			]
-			.iter()
-			.map(|x| {
-				(
-					x.0.to_owned(),
-					x.0.to_owned(),
-					crab_session_keys(
-						x.2.to_owned(),
-						x.3.to_owned(),
-						x.4.to_owned(),
-						x.5.to_owned(),
-					),
-				)
-			})
-			.collect(),
+			keys: initial_authorities
+				.iter()
+				.cloned()
+				.map(|x| (x.0.clone(), x.0, crab_session_keys(x.2, x.3, x.4, x.5)))
+				.collect(),
 		}),
 		pallet_grandpa: Some(Default::default()),
 		pallet_im_online: Some(Default::default()),
@@ -314,16 +281,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 			stakers: initial_authorities
 				.iter()
 				.cloned()
-				.map(|x| (x.0, x.1, STASH, crab_runtime::StakerStatus::Validator))
-				.chain(
-					vec![(
-						local_tester.sr.into(),
-						local_tester.sr.into(),
-						CRING,
-						crab_runtime::StakerStatus::Validator,
-					)]
-					.into_iter(),
-				)
+				.map(|x| (x.0, x.1, CRING, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			force_era: crab_runtime::Forcing::NotForcing,
 			slash_reward_fraction: Perbill::from_percent(10),
@@ -332,7 +290,10 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 		}),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: load_claims_list("./service/res/crab_claims_list.json"),
+				claims_list: crab_runtime::ClaimsList::load_genesis(
+					"./service/res/crab_claims_list.json",
+					"CLAIMS_LIST_PATH",
+				),
 			}
 		}),
 		darwinia_eth_backing: Some(crab_runtime::EthBackingConfig {
@@ -387,6 +348,10 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 				],
 			)),
 			authorities: stakers.iter().map(|staker| staker.sr.into()).collect(),
+			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
+				"./service/res/dag_merkle_roots.json",
+				"DAG_MERKLE_ROOTS_PATH",
+			),
 			..Default::default()
 		}),
 	}
@@ -531,7 +496,10 @@ pub fn crab_testnet_genesis(
 		}),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: load_claims_list("./service/res/crab_claims_list.json"),
+				claims_list: crab_runtime::ClaimsList::load_genesis(
+					"./service/res/crab_claims_list.json",
+					"CLAIMS_LIST_PATH",
+				),
 			}
 		}),
 		darwinia_eth_backing: Some(crab_runtime::EthBackingConfig {
@@ -585,7 +553,11 @@ pub fn crab_testnet_genesis(
 					0, 0, 66,
 				],
 			)),
-			check_authorities: false,
+			check_authority: false,
+			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
+				"./service/res/dag_merkle_roots.json",
+				"DAG_MERKLE_ROOTS_PATH",
+			),
 			..Default::default()
 		}),
 	}

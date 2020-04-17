@@ -21,10 +21,8 @@ pub mod time {
 	// --- darwinai ---
 	use darwinia_primitives::{BlockNumber, Moment};
 
-	// Crab & Mainnet
-	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
-	// Testnet
-	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	// Crab & Mainnet & Testnet
+	pub const MILLISECS_PER_BLOCK: Moment = 10000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 

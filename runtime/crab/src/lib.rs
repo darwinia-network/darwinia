@@ -12,6 +12,8 @@ use constants::{currency::*, fee::*, time::*};
 #[cfg(feature = "std")]
 pub use darwinia_claims::ClaimsList;
 #[cfg(feature = "std")]
+pub use darwinia_eth_relay::DagMerkleRoots;
+#[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- substrate ---
@@ -62,7 +64,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	// and set impl_version to 0. If only runtime
 	// implementation changes and behavior does not, then leave spec_version as
 	// is and increment impl_version.
-	spec_version: 1,
+	spec_version: 2,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 };
