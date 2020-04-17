@@ -139,3 +139,7 @@ std = [
 # runtime-benchmarks = [
 # 	"frame-benchmarking",
 # ]
+build-spec = [
+	"default",
+	"darwinia-staking/build-spec",
+]

@@ -62,3 +62,7 @@ rocksdb = ["sc-service/rocksdb"]
 # runtime-benchmarks = []
 # TODO: parachain
 full-node = []
+build-spec = [
+	"default",
+	"crab-runtime/build-spec",
+]

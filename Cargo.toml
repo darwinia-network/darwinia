@@ -46,6 +46,7 @@ maintenance = { status = "actively-developed" }
 # Darwinia runtime requires unwinding.
 panic = "unwind"
 
+[features]
 # TODO: benchmark
-# [features]
-# runtime-benchmarks=["cli/runtime-benchmarks"]
+# runtime-benchmarks=["darwinia-cli/runtime-benchmarks"]
+build-spec = ["darwinia-cli/build-spec"]
