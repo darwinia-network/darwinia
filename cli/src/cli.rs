@@ -1,6 +1,6 @@
 //! Darwinia CLI library.
 
-// --- third-party ---
+// --- crates ---
 use structopt::StructOpt;
 
 #[allow(missing_docs)]

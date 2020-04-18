@@ -1,6 +1,6 @@
 //! Polkadot chain configurations.
 
-// --- third-party ---
+// --- crates ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;

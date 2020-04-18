@@ -17,7 +17,7 @@ wasm-opt = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# third-party
+# crates
 log = "0.4.8"
 structopt = "0.3.13"
 tokio = { version = "0.2.18", features = ["rt-threaded"], optional = true }
