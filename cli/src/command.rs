@@ -1,4 +1,4 @@
-// --- third-party ---
+// --- crates ---
 use log::info;
 // --- substrate ---
 use sc_cli::VersionInfo;
@@ -23,7 +23,7 @@ pub fn run(version: VersionInfo) -> sc_cli::Result<()> {
 	}
 
 	let mut config = darwinia_service::Configuration::from_version(&version);
-	config.impl_name = "darwinia-network-darwinia";
+	config.impl_name = "Crab";
 
 	match opt.subcommand {
 		None => {

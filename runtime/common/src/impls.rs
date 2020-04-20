@@ -1,6 +1,6 @@
 //! Auxillary struct/enums for Darwinia runtime.
 
-// --- third-party ---
+// --- crates ---
 use codec::{Decode, Encode};
 // --- substrate ---
 use frame_support::traits::{Currency, Get, Imbalance, OnUnbalanced};

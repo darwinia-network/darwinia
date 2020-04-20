@@ -4,10 +4,6 @@
 
 // --- std ---
 use std::sync::Arc;
-// --- substrate ---
-use sp_api::ProvideRuntimeApi;
-use sp_transaction_pool::TransactionPool;
-use substrate_frame_rpc_system::SystemApi;
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Block, Nonce};
 
@@ -17,17 +13,20 @@ pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, UE>(client: Arc<C>, pool: Arc<P>) -> RpcExtension
 where
-	C: ProvideRuntimeApi<Block>,
+	C: sp_api::ProvideRuntimeApi<Block>,
 	C: sc_client::blockchain::HeaderBackend<Block>,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
-	P: TransactionPool + Sync + Send + 'static,
-	UE: codec::Codec + Send + Sync + 'static,
+	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
+	P: 'static + Sync + Send + sp_transaction_pool::TransactionPool,
+	UE: 'static + Send + Sync + codec::Codec,
 {
 	// --- substrate ---
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-	use substrate_frame_rpc_system::FullSystem;
+	use substrate_frame_rpc_system::{FullSystem, SystemApi};
+	// --- darwinia ---
+	use darwinia_balances_rpc::{Balances, BalancesApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -35,8 +34,9 @@ where
 		pool,
 	)));
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
-		client,
+		client.clone(),
 	)));
+	io.extend_with(BalancesApi::to_delegate(Balances::new(client)));
 	io
 }
 
@@ -48,17 +48,18 @@ pub fn create_light<C, P, F, UE>(
 	pool: Arc<P>,
 ) -> RpcExtension
 where
-	C: ProvideRuntimeApi<Block>,
+	C: sp_api::ProvideRuntimeApi<Block>,
 	C: sc_client::blockchain::HeaderBackend<Block>,
-	C: Send + Sync + 'static,
+	C: 'static + Send + Sync,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
-	P: TransactionPool + Sync + Send + 'static,
-	F: sc_client::light::fetcher::Fetcher<Block> + 'static,
-	UE: codec::Codec + Send + Sync + 'static,
+	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
+	P: 'static + Send + Sync + sp_transaction_pool::TransactionPool,
+	F: 'static + sc_client::light::fetcher::Fetcher<Block>,
+	UE: 'static + Send + Sync + codec::Codec,
 {
 	// --- substrate ---
-	use substrate_frame_rpc_system::LightSystem;
+	use substrate_frame_rpc_system::{LightSystem, SystemApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
 	io.extend_with(SystemApi::<AccountId, Nonce>::to_delegate(

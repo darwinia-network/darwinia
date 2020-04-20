@@ -14,7 +14,7 @@ homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
-# third-party
+# crates
 futures = "0.3.4"
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia

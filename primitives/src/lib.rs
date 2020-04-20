@@ -3,12 +3,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]
 
-// --- third-party ---
+// --- substrate ---
 pub use sp_runtime::traits::{BlakeTwo256, Hash as HashT, IdentifyAccount, Verify};
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
-// --- third-party ---
+// --- substrate ---
 use sp_core::H256;
 use sp_runtime::{generic, MultiSignature};
 

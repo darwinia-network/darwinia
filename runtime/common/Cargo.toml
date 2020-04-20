@@ -9,7 +9,7 @@ homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
-# third-party
+# crates
 codec = { package = "parity-scale-codec", version = "1.3.0", default-features = false }
 # substrate primitives
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
@@ -29,7 +29,7 @@ darwinia-support = { default-features = false, git = "https://github.com/darwini
 default = ["std"]
 no_std = []
 std = [
-	# third-party
+	# crates
 	"codec/std",
 	# substrate primitives
 	"sp-runtime/std",

@@ -1,6 +1,6 @@
 // --- std ---
 use std::str::FromStr;
-// --- third-party ---
+// --- crates ---
 use log::info;
 // --- substrate ---
 use substrate_browser_utils::{
