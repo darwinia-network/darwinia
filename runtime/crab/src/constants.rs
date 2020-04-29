@@ -18,20 +18,22 @@ pub mod currency {
 pub mod time {
 	// --- substrate ---
 	use sp_staking::SessionIndex;
-	// --- darwinai ---
+	// --- darwinia ---
 	use darwinia_primitives::{BlockNumber, Moment};
 
-	// Crab & Mainnet & Testnet
-	pub const MILLISECS_PER_BLOCK: Moment = 10000;
+	// Mainnet
+	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
+	// Crab & Testnet
+	pub const MILLISECS_PER_BLOCK: Moment = 6000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
-	// Crab
-	// pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * HOURS;
 	// Mainnet
-	// pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 4 * HOURS;
+	// pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
+	// Crab
+	// pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
 	// Testnet
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 
 	// Crab & Mainnet
 	// pub const SESSIONS_PER_ERA: SessionIndex = 6;
@@ -72,8 +74,8 @@ pub mod fee {
 	pub struct WeightToFee;
 	impl Convert<Weight, Balance> for WeightToFee {
 		fn convert(x: Weight) -> Balance {
-			// in Crab a weight of 10_000 (smallest non-zero weight) is mapped to 1/10 MILLI:
-			Balance::from(x).saturating_mul(MILLI / (10 * 10_000))
+			// in Crab a weight of 10_000_000 (smallest non-zero weight) is mapped to 1/10 MILLI:
+			Balance::from(x).saturating_mul(MILLI / (10 * 10_000_000))
 		}
 	}
 }
