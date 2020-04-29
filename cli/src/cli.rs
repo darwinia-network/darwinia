@@ -10,7 +10,7 @@ pub enum Subcommand {
 	#[structopt(flatten)]
 	Base(sc_cli::Subcommand),
 	// TODO: benchmark
-	// /// The custom benchmark subcommmand benchmarking runtime pallets.
+	// /// The custom benchmark subcommand benchmarking runtime pallets.
 	// #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
 	// Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }

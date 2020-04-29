@@ -14,7 +14,7 @@ pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
 pub fn create_full<C, P, UE>(client: Arc<C>, pool: Arc<P>) -> RpcExtension
 where
 	C: sp_api::ProvideRuntimeApi<Block>,
-	C: sc_client::blockchain::HeaderBackend<Block>,
+	C: sp_blockchain::HeaderBackend<Block>,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
@@ -43,19 +43,19 @@ where
 /// Instantiate all RPC extensions for light node.
 pub fn create_light<C, P, F, UE>(
 	client: Arc<C>,
-	remote_blockchain: Arc<dyn sc_client::light::blockchain::RemoteBlockchain<Block>>,
+	remote_blockchain: Arc<dyn sc_client_api::light::RemoteBlockchain<Block>>,
 	fetcher: Arc<F>,
 	pool: Arc<P>,
 ) -> RpcExtension
 where
 	C: sp_api::ProvideRuntimeApi<Block>,
-	C: sc_client::blockchain::HeaderBackend<Block>,
+	C: sp_blockchain::HeaderBackend<Block>,
 	C: 'static + Send + Sync,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
 	P: 'static + Send + Sync + sp_transaction_pool::TransactionPool,
-	F: 'static + sc_client::light::fetcher::Fetcher<Block>,
+	F: 'static + sc_client_api::light::Fetcher<Block>,
 	UE: 'static + Send + Sync + codec::Codec,
 {
 	// --- substrate ---

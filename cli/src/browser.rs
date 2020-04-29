@@ -23,12 +23,13 @@ async fn start_inner(
 	set_console_error_panic_hook();
 	init_console_log(log_level.parse()?)?;
 
-	let chain_spec = service::PolkadotChainSpec::from_json_bytes(chain_spec.as_bytes().to_vec())
-		.map_err(|e| format!("{:?}", e))?;
+	let chain_spec =
+		darwinia_service::CrabChainSpec::from_json_bytes(chain_spec.as_bytes().to_vec())
+			.map_err(|e| format!("{:?}", e))?;
 	let config = browser_configuration(chain_spec).await?;
 
 	info!("Darwinia browser node");
-	info!("  version {}", config.full_version());
+	info!("  version {}", config.impl_version);
 	info!("  _____                      _       _       ");
 	info!(" |  __ \\                    (_)     (_)      ");
 	info!(" | |  | | __ _ _ ____      ___ _ __  _  __ _ ");
@@ -36,15 +37,12 @@ async fn start_inner(
 	info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
 	info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 	info!("  by Darwinia Network, 2018-2020");
-	info!(
-		"📋 Chain specification: {}",
-		config.expect_chain_spec().name()
-	);
-	info!("🏷 Node name: {}", config.name);
-	info!("👤 Roles: {}", config.roles);
+	info!("📋 Chain specification: {}", config.chain_spec.name());
+	info!("🏷  Node name: {}", config.network.node_name);
+	info!("👤 Role: {}", config.display_role());
 
 	// Create the service. This is the most heavy initialization step.
-	let service = service::kusama_new_light(config).map_err(|e| format!("{:?}", e))?;
+	let service = darwinia_service::crab_new_light(config).map_err(|e| format!("{:?}", e))?;
 
 	Ok(browser_utils::start_client(service))
 }

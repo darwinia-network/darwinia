@@ -1,12 +1,13 @@
 [package]
 name = "darwinia-cli"
-version = "0.5.3"
+version = "0.5.4"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
+build = "build.rs"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -18,36 +19,35 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # crates
-log = "0.4.8"
-structopt = "0.3.13"
+log = { version = "0.4.8" }
+structopt = { version = "0.3.13" }
 tokio = { version = "0.2.18", features = ["rt-threaded"], optional = true }
 wasm-bindgen = { version = "0.2.60", optional = true }
 wasm-bindgen-futures = { version = "0.4.10", optional = true }
-# substrate primitives
-sp-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
 # substrate frame
 # TODO: benchmark
-# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3", optional = true }
+# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6", optional = true }
 # substrate client
-sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sc-client = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sc-client-db = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
-sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
+sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
+sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
+sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.3" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
 
+[build-dependencies]
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
+
 [features]
 default = [
-	"wasmtime", 
-	"rocksdb", 
+	"wasmtime",
+	"db",
 	"cli",
 ]
 wasmtime = ["sc-cli/wasmtime"]
-rocksdb = ["darwinia-service/rocksdb"]
+db = ["darwinia-service/db"]
 cli = [
 	"tokio",
 	"sc-cli",
