@@ -1,10 +1,10 @@
-//! Polkadot chain configurations.
+//! Darwinia chain configurations.
 
 // --- crates ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
-use sc_chain_spec::ChainSpecExtension;
+use sc_chain_spec::{ChainSpecExtension, ChainType};
 use sc_finality_grandpa::AuthorityId as GrandpaId;
 use sc_service::Properties;
 use sc_telemetry::TelemetryEndpoints;
@@ -15,7 +15,7 @@ use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
 use crab_runtime::{constants::currency::COIN as CRING, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance};
-use darwinia_support::fixed_hex_bytes_unchecked;
+use darwinia_support::bytes_thing::fixed_hex_bytes_unchecked;
 
 const CKTON: Balance = CRING;
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -69,7 +69,7 @@ pub fn crab_properties() -> Properties {
 	properties
 }
 
-pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
+pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 	const RING_ENDOWMENT: Balance = 1_000_000 * CRING;
 	const KTON_ENDOWMENT: Balance = 10_000 * CKTON;
 
@@ -288,6 +288,7 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
+		darwinia_elections_phragmen: Some(Default::default()),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
 				claims_list: crab_runtime::ClaimsList::load_genesis(
@@ -358,16 +359,17 @@ pub fn crab_genesis_builder_config_genesis() -> CrabGenesisConfig {
 }
 
 /// Crab config.
-pub fn crab_genesis_builder_config() -> CrabChainSpec {
+pub fn crab_build_spec_config() -> CrabChainSpec {
 	let boot_nodes = vec![];
 	CrabChainSpec::from_genesis(
 		"Crab",
 		"crab",
-		crab_genesis_builder_config_genesis,
+		ChainType::Live,
+		crab_build_spec_genesis,
 		boot_nodes,
 		Some(
 			TelemetryEndpoints::new(vec![(CRAB_TELEMETRY_URL.to_string(), 0)])
-				.expect("Polkadot Staging telemetry url is valid; qed"),
+				.expect("Crab telemetry url is valid; qed"),
 		),
 		Some(DEFAULT_PROTOCOL_ID),
 		Some(crab_properties()),
@@ -494,6 +496,7 @@ pub fn crab_testnet_genesis(
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
+		darwinia_elections_phragmen: Some(Default::default()),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
 				claims_list: crab_runtime::ClaimsList::load_genesis(
@@ -576,6 +579,7 @@ pub fn crab_development_config() -> CrabChainSpec {
 	CrabChainSpec::from_genesis(
 		"Development",
 		"crab_dev",
+		ChainType::Development,
 		crab_development_genesis,
 		vec![],
 		None,
@@ -601,6 +605,7 @@ pub fn crab_local_testnet_config() -> CrabChainSpec {
 	CrabChainSpec::from_genesis(
 		"Crab Local Testnet",
 		"crab_local_testnet",
+		ChainType::Local,
 		crab_local_testnet_genesis,
 		vec![],
 		None,
