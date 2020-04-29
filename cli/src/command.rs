@@ -9,7 +9,7 @@ use darwinia_service::{crab_runtime, IdentifyVariant};
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> &'static str {
-		"Darwinia"
+		"Crab"
 	}
 
 	fn impl_version() -> &'static str {
