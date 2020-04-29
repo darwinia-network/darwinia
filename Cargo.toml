@@ -7,7 +7,6 @@ name = "darwinia"
 version = "0.5.4"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust"
-build = "build.rs"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
@@ -21,12 +20,10 @@ parity-util-mem = { version = "*", default-features = false, features = ["jemall
 darwinia-cli = { path = "cli" }
 darwinia-service = { path = "service" }
 
-[build-dependencies]
-vergen = "3.1.0"
-
 [dev-dependencies]
 assert_cmd = "1.0.1"
 nix = "0.17"
+tempfile = "3.1.0"
 
 [workspace]
 members = [
