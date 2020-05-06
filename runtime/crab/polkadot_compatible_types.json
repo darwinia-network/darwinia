@@ -62,7 +62,7 @@
 		"deposit_items": "Vec<TimeDepositItem>",
 		"ring_staking_lock": "StakingLock",
 		"kton_staking_lock": "StakingLock",
-		"last_reward": "Option<EraIndex>",
+		"claimed_rewards": "Vec<EraIndex>",
 		"total": "Compact<Balance>",
 		"active": "Compact<Balance>",
 		"unlocking": "Vec<UnlockChunk>"
@@ -107,7 +107,8 @@
 	"EthHeaderBrief": {
 		"total_difficulty": "U256",
 		"parent_hash": "H256",
-		"number": "EthBlockNumber"
+		"number": "EthBlockNumber",
+		"relayer": "AccountId"
 	},
 	"EthBlockNumber": "u64",
 	"EthHeader": {
