@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.5.4"
+version = "0.5.5"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
