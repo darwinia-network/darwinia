@@ -31,14 +31,14 @@ pub mod time {
 	// Mainnet
 	// pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
 	// Crab
-	// pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
 	// Testnet
-	pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
+	// pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 
 	// Crab & Mainnet
-	// pub const SESSIONS_PER_ERA: SessionIndex = 6;
+	pub const SESSIONS_PER_ERA: SessionIndex = 6;
 	// Testnet
-	pub const SESSIONS_PER_ERA: SessionIndex = 3;
+	// pub const SESSIONS_PER_ERA: SessionIndex = 3;
 
 	// These time units are defined in number of blocks.
 	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);

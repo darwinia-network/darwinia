@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.5.4"
+version = "0.5.6"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
@@ -20,6 +20,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log = { version = "0.4.8" }
+serde = { optional = true, version = "1.0.106" }
+serde_json = { optional = true, version = "1.0.51" }
 structopt = { version = "0.3.13" }
 tokio = { version = "0.2.18", features = ["rt-threaded"], optional = true }
 wasm-bindgen = { version = "0.2.60", optional = true }
@@ -50,6 +52,8 @@ wasmtime = ["sc-cli/wasmtime"]
 db = ["darwinia-service/db"]
 cli = [
 	"tokio",
+	"serde",
+	"serde_json",
 	"sc-cli",
 	# TODO: benchmark
 	# "frame-benchmarking-cli",
