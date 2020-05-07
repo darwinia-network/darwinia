@@ -1,3 +1,6 @@
+// TODO: https://github.com/paritytech/substrate/issues/5936
+// mod config;
+
 // --- crates ---
 use log::info;
 // --- substrate ---
@@ -5,6 +8,8 @@ use sc_cli::SubstrateCli;
 use sc_executor::NativeExecutionDispatch;
 // --- darwinia ---
 use crate::cli::{Cli, Subcommand};
+// TODO: https://github.com/paritytech/substrate/issues/5936
+// use config::Configuration;
 use darwinia_service::{crab_runtime, IdentifyVariant};
 
 impl SubstrateCli for Cli {
@@ -52,17 +57,18 @@ impl SubstrateCli for Cli {
 /// Parses Darwinia specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
-
-	if let Some(path) = &cli.conf {
-		if path.is_file() {
-			// TODO: load boot conf from file
-		}
-	}
-
 	match &cli.subcommand {
 		None => {
-			let runtime = cli.create_runner(&cli.run.base)?;
-			let config = runtime.config();
+			let mut runtime = cli.create_runner(&cli.run.base)?;
+			let config = runtime.config_mut();
+
+			// TODO: https://github.com/paritytech/substrate/issues/5936
+			// if let Some(path) = &cli.conf {
+			// 	if path.is_file() {
+			// 		let darwinia_config = Configuration::load_config(path);
+			// 		darwinia_config.update_config(config);
+			// 	}
+			// }
 
 			info!("  _____                      _       _       ");
 			info!(" |  __ \\                    (_)     (_)      ");
