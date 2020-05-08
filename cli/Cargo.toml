@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.5.6"
+version = "0.5.7"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
@@ -66,7 +66,3 @@ browser = [
 ]
 # TODO: benchmark
 # runtime-benchmarks = ["service/runtime-benchmarks"]
-build-spec = [
-	"default",
-	"darwinia-service/build-spec",
-]

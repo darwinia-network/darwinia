@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-service"
-version = "0.5.6"
+version = "0.5.7"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node service"
 edition = "2018"
@@ -64,7 +64,3 @@ db = ["sc-service/db"]
 # runtime-benchmarks = []
 # TODO: parachain
 full-node = []
-build-spec = [
-	"default",
-	"crab-runtime/build-spec",
-]

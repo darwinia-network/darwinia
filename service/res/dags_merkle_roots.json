@@ -1,5 +1,5 @@
 {
-    "dag_merkle_roots": [
+    "dags_merkle_roots_loader": [
         "0x55b891e842e58f58956a847cbbf67821",
         "0xfba03a3d1902b9256ebe9177d03242fe",
         "0x2b186dc65b93be71780e5194fd44fc70",
