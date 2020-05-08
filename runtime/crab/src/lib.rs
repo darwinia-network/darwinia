@@ -12,7 +12,7 @@ use constants::{currency::*, fee::*, time::*};
 #[cfg(feature = "std")]
 pub use darwinia_claims::ClaimsList;
 #[cfg(feature = "std")]
-pub use darwinia_eth_relay::DagMerkleRoots;
+pub use darwinia_eth_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
@@ -628,8 +628,8 @@ impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
 	Call: From<C>,
 {
-	type OverarchingCall = Call;
 	type Extrinsic = UncheckedExtrinsic;
+	type OverarchingCall = Call;
 }
 
 construct_runtime!(

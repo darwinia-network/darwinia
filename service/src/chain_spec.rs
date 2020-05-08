@@ -291,7 +291,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		darwinia_elections_phragmen: Some(Default::default()),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: crab_runtime::ClaimsList::load_genesis(
+				claims_list: crab_runtime::ClaimsList::from_file(
 					"./service/res/crab_claims_list.json",
 					"CLAIMS_LIST_PATH",
 				),
@@ -355,8 +355,8 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				],
 			)),
 			authorities: stakers.iter().map(|staker| staker.sr.into()).collect(),
-			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
-				"./service/res/dag_merkle_roots.json",
+			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
+				"./service/res/dags_merkle_roots_loader.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -505,7 +505,7 @@ pub fn crab_testnet_genesis(
 		darwinia_elections_phragmen: Some(Default::default()),
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
-				claims_list: crab_runtime::ClaimsList::load_genesis(
+				claims_list: crab_runtime::ClaimsList::from_file(
 					"./service/res/crab_claims_list.json",
 					"CLAIMS_LIST_PATH",
 				),
@@ -569,8 +569,8 @@ pub fn crab_testnet_genesis(
 				],
 			)),
 			check_authority: false,
-			dag_merkle_roots: crab_runtime::DagMerkleRoots::load_genesis(
-				"./service/res/dag_merkle_roots.json",
+			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
+				"./service/res/dags_merkle_roots_loader.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
