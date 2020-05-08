@@ -4,7 +4,7 @@ path = "src/main.rs"
 
 [package]
 name = "darwinia"
-version = "0.5.6"
+version = "0.5.7"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust"
 edition = "2018"
@@ -46,4 +46,3 @@ panic = "unwind"
 [features]
 # TODO: benchmark
 # runtime-benchmarks=["darwinia-cli/runtime-benchmarks"]
-build-spec = ["darwinia-cli/build-spec"]

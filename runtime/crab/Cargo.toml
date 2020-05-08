@@ -1,13 +1,13 @@
 [package]
 name = "crab-runtime"
-version = "0.5.6"
+version = "0.5.7"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime for Crab network"
-build = "build.rs"
 edition = "2018"
 license = "GPL-3.0"
 homepage = "https://darwinia.network/"
 repository = "https://github.com/darwinia-network/darwinia/"
+build = "build.rs"
 
 [dependencies]
 # crates
@@ -141,7 +141,3 @@ std = [
 # runtime-benchmarks = [
 # 	"frame-benchmarking",
 # ]
-build-spec = [
-	"default",
-	"darwinia-staking/build-spec",
-]
