@@ -2,8 +2,8 @@
 
 ## Introduction
 
-As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange and market.
- 
+As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange, and market.
+
 ## Development RoadMap
 
 ### The specifications of the project including:
@@ -12,7 +12,6 @@ As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on t
     - Dual token model design and implementation, the native tokens are RING and KTON.
     - RING token for payment and gas fees, can be locked to issue KTON
     - KTON can only be created by locking RING, the amount issued depends on how long the RING will be locked.
-    - 
 2. The staking model.
     - Withdraw income support to KTON Token before transferring
     - Support Treasury runtime within the staking
@@ -36,17 +35,17 @@ After Crab Network and Substrate 2.0 stable, we will prepare for the launch of D
 ## Milestones
 
 ### Trilobita Testnet (2019-07 Launched)
-Include RING/KTON token runtime and Grigott runtime(Issuing KTON buy locking RING). 
+Include RING/KTON token runtime and Grigott runtime(Issuing KTON buy locking RING).
 
 - Features and functions
-    - Research on the tokens economic and staking protocol of Darwinia Network, and finalized the design paper
+    - Research on the tokens economic and staking protocol of Darwinia Network, and finalized the design paper.
     - Develop several SRML modules based on Substrate, and run a public testnet.
     - Develop a web wallet based on polkadot-js.
     - Develop a blockchain browser for the testnet to view blocks and transactions.
 - Deliverables
     - Docker container running a Substrate node with a simple native token system runtime, can connect to testnet and syncing blocks.
     - A design paper introducing this project, and the technical structure of it, including token economics and staking.
-    - Telemetry demonstrate the nodes status of the testnet
+    - Telemetry demonstrate the nodes status of the testnet.
     - A prototype web wallet for users and tester to play with.
 
 ### Crayfish Testnet (2019-09 Launched)
@@ -81,9 +80,8 @@ Release candidate for mainnet launch(2019Q4), with runtimes including cross-chai
 Canary Network of Darwinia.
 
 
-
 ### Darwinia Mainnet (Expected 2020 Q2)
-There could more testnet for testing and security auditing and preparing for the mainnet launch at Q4 2019. 
+There could more testnet for testing and security auditing and preparing for the mainnet launch at Q4 2019.
 
 
 ### Token Dex and Swap Protocol
