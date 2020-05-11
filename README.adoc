@@ -11,9 +11,9 @@ image:https://img.shields.io/badge/License-GPLv3-blue.svg[License: GPL v3,link=h
 
 image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
 
-Darwinia is a bridge blockchain connecting different chains using darwinia relay and can be connected to Polkadot network as a  parachain.
+Darwinia is a bridge blockchain connecting different chains using darwinia relay and can be connected to Polkadot network as a parachain.
 
-As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange and market.
+As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange, and market.
 
 == Architecture
 
@@ -27,7 +27,7 @@ Darwinia Network is composed of Darwinia Bridge Chain(Darwinia), and a serious o
 
 Darwinia Bridge Chain will provide interoperability for cross-chain tokens using Darwinia's bridge relay innovation and decentralized backing technology.
 
-Darwinia Crab  Network is a canary network for Darwinia, Darwinia's new cutting edge technologies will be first deployed on Crab Network.
+Darwinia Crab Network is a canary network for Darwinia, Darwinia's new cutting edge technologies will be first deployed on Crab Network.
 
 For more details, go to link:ROADMAP.md[Road Map].
 
@@ -51,9 +51,9 @@ For more details, go to link:ROADMAP.md[Road Map].
 // - Audit
 
 // == Trying out Darwinia Node
-// 
+//
 // === On Mac and Ubuntu
-// 
+//
 // === On Windows
 
 == Building
@@ -234,7 +234,7 @@ be `NODE_RUNTIME`.
 
 === Precautions
 
-If you run into problems when building this project, 
+If you run into problems when building this project,
 please kindly check following things before making an issue.
 
 * using the latest nightly Rust
@@ -245,12 +245,12 @@ please kindly check following things before making an issue.
 // Latest known working version: ``
 
 === Quick start (professional):
-  * https://telemetry.polkadot.io/#list/Darwinia%20Crab%20Testnet[Telemetry]
-  * https://crab-wallet.darwinia.network[Darwinia Web Wallet]
-  * Bootnodes: 
-    ** `/ip4/45.249.244.33/tcp/20222/p2p/QmPCSb9yCRAXnqvG6AnX27X6gutvVDq4NBPDNJtnBmNk43`
-    ** `/ip4/121.199.60.87/tcp/20222/p2p/QmaRDRZZpmY9FwjSwW8JhfkyaHc6XRHsLWnp6cLtyb3FCF`
-    ** `/ip4/35.234.9.96/tcp/20223/p2p/QmdAZq8tFrei8qQAhbAe7NwrZzNVhitvUBp9pw8yLjk81r`
+  * https://telemetry.polkadot.io/#list/Crab[Telemetry]
+  * https://apps.darwinia.network[Darwinia Web Wallet]
+  * Bootnodes:
+    ** `/ip4/175.24.95.3/tcp/30333/p2p/12D3KooWKdcGZkFe3y63dj8VWLH6xw3rB5QhhnoC8UenSscXFuqx`
+    ** `/ip4/35.234.33.88/tcp/30333/p2p/QmR4fARccJJA2o2Ac3fG2FcgatyGaoaZqUzymUDpvBZr7c`
+    ** `/ip4/35.234.9.96/tcp/30333/p2p/QmPPGpFMgqSm9ZeeHubZk8UXpKdZMNRCk4Wkymm181bpve`
 
 === Full tutorial (beginner):
   * EN-US (not yet)
@@ -262,35 +262,35 @@ please kindly check following things before making an issue.
 // cd substrate
 // git checkout -b flaming-fir a2a0eb5398d6223e531455b4c155ef053a4a3a2b
 // ----
-// 
+//
 // You can run the tests if you like:
-// 
+//
 // [source, shell]
 // cargo test --all
-// 
+//
 // Start your node:
-// 
+//
 // [source, shell]
 // cargo run --release \--
-// 
+//
 // To see a list of command line options, enter:
-// 
+//
 // [source, shell]
 // cargo run --release \-- --help
-// 
+//
 // For example, you can choose a custom node name:
-// 
+//
 // [source, shell]
 // cargo run --release \-- --name my_custom_name
-// 
+//
 // If you are successful, you will see your node syncing at https://telemetry.polkadot.io/#/Flaming%20Fir
 
 == Key management
 
 Keys in Darwinia are stored in the keystore in the file system. To store keys into this keystore,
 you need to use one of the two provided RPC calls. If your keys are encrypted or should be encrypted
-by the keystore, you need to provide the key using one of the cli arguments `--password`,
-`--password-interactive` or `--password-filename`.
+by the keystore, you need to provide the key using one of the CLI arguments `--password`,
+`--password-interactive`, or `--password-filename`.
 
 === Recommended RPC call
 
@@ -322,20 +322,20 @@ curl -H 'Content-Type: application/json' --data '{ "jsonrpc":"2.0", "method":"au
 
 === Viewing documentation for Darwinia packages
 
-You can generate documentation for a Darwinia Rust package and have it automatically open in your web browser using https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html#using-rustdoc-with-cargo[rustdoc with Cargo],
+You can generate the documentation for a Darwinia Rust package and have it automatically open in your web browser using https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html#using-rustdoc-with-cargo[rustdoc with Cargo],
 (of the The Rustdoc Book), by running the following command:
 
 ```
 cargo doc --open
 ```
 
-If you just want to generate document from specific package, you may use following command:
+If you just want to generate the document from specific package, you may use the following command:
 
 ```
 cargo doc --package <spec> --open
 ```
 
-Replacing `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
+And replace `<spec>` with one of the following (i.e. `cargo doc --package darwinia-cli --open`):
 
 * Darwinia Core
 [source, shell]
@@ -353,7 +353,7 @@ node-cli, node-primitives, node-runtime
 
 === Environment
 
-The `scripts/bootstrap.sh` help set up your develop environment.
+The `scripts/bootstrap.sh` helps set up your development environment.
 The nightly `Rust`, `cargo`, `rustfmt` will be installed,
 the git hooks will be set, and ready to code.
 
