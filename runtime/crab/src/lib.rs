@@ -55,6 +55,7 @@ use darwinia_eth_relay::EthNetworkType;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
+use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 type Ring = Balances;
 
@@ -877,6 +878,12 @@ impl_runtime_apis! {
 				1 => Kton::usable_balance_rpc(account),
 				_ => Default::default()
 			}
+		}
+	}
+
+	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
+		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
+			Staking::power_of_rpc(account)
 		}
 	}
 
