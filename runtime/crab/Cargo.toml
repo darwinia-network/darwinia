@@ -1,6 +1,6 @@
 [package]
 name = "crab-runtime"
-version = "0.5.7"
+version = "0.5.8"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime for Crab network"
 edition = "2018"
@@ -65,6 +65,7 @@ darwinia-eth-backing = { default-features = false, git = "https://github.com/dar
 darwinia-eth-relay = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 darwinia-eth-offchain = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-staking-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 # darwinia runtime
@@ -133,6 +134,7 @@ std = [
 	"darwinia-eth-offchain/std",
 	"darwinia-header-mmr/std",
 	"darwinia-staking/std",
+	"darwinia-staking-rpc-runtime-api/std",
 	"darwinia-treasury/std",
 	# darwinia runtime
 	"darwinia-runtime-common/std",

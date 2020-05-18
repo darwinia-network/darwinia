@@ -13,9 +13,9 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
+use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as CRING, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance};
-use darwinia_support::bytes_thing::fixed_hex_bytes_unchecked;
 
 const CKTON: Balance = CRING;
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";

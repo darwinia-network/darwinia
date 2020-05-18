@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-runtime-common"
-version = "0.5.7"
+version = "0.5.8"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime common"
 edition = "2018"

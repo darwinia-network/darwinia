@@ -92,6 +92,10 @@
 		"r": "Balance",
 		"k": "Balance"
 	},
+	"SpanRecord": {
+		"slashed": "RKT",
+		"paid_out": "RKT"
+	},
 	"__[pallet.bridge.eth]__": {},
 	"EthTransactionIndex": "(H256, u64)",
 	"EthHeaderBrief": {
@@ -168,5 +172,12 @@
 	"MerkleMountainRangeRootLog": {
 		"prefix": "[u8; 4; Prefix]",
 		"mmr_root": "Hash"
+	},
+	"__[node.rpc]__": {},
+	"BalancesRuntimeDispatchInfo": {
+		"usable_balance": "Balance"
+	},
+	"StakingRuntimeDispatchInfo": {
+		"power": "Power"
 	}
 }

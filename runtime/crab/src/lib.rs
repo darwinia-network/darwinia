@@ -55,6 +55,7 @@ use darwinia_eth_relay::EthNetworkType;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
+use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 type Ring = Balances;
 
@@ -67,7 +68,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Crab"),
 	authoring_version: 0,
-	spec_version: 0,
+	spec_version: 1,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -537,10 +538,12 @@ impl darwinia_treasury::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const ClaimsModuleId: ModuleId = ModuleId(*b"da/claim");
 	pub const Prefix: &'static [u8] = b"Pay RINGs to the Crab account:";
 }
 impl darwinia_claims::Trait for Runtime {
 	type Event = Event;
+	type ModuleId = ClaimsModuleId;
 	type Prefix = Prefix;
 	type RingCurrency = Ring;
 }
@@ -877,6 +880,12 @@ impl_runtime_apis! {
 				1 => Kton::usable_balance_rpc(account),
 				_ => Default::default()
 			}
+		}
+	}
+
+	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
+		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
+			Staking::power_of_rpc(account)
 		}
 	}
 

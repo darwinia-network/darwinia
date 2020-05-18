@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-service"
-version = "0.5.7"
+version = "0.5.8"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node service"
 edition = "2018"
@@ -36,8 +36,9 @@ pallet-im-online = { git = "https://github.com/darwinia-network/substrate.git", 
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 # darwinia frame
+array-bytes = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 darwinia-balances-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
-darwinia-support = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-staking-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 # substrate client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 sc-basic-authorship = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }

@@ -28,7 +28,7 @@ use sp_api::ConstructRuntimeApi;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Nonce};
+use darwinia_primitives::{AccountId, Balance, Nonce, Power};
 
 native_executor_instance!(
 	pub CrabExecutor,
@@ -47,6 +47,7 @@ pub trait RuntimeApiCollection<Extrinsic: 'static + Send + Sync + codec::Codec>:
 	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
 	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
 	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 	+ sp_api::Metadata<Block>
 	+ sp_offchain::OffchainWorkerApi<Block>
 	+ sp_session::SessionKeys<Block>
@@ -66,6 +67,7 @@ where
 		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
 		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
 		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 		+ sp_api::Metadata<Block>
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_session::SessionKeys<Block>

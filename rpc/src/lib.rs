@@ -5,7 +5,7 @@
 // --- std ---
 use std::sync::Arc;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Block, Nonce};
+use darwinia_primitives::{AccountId, Balance, Block, Nonce, Power};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
@@ -19,6 +19,7 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
+	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + Sync + Send + sp_transaction_pool::TransactionPool,
 	UE: 'static + Send + Sync + codec::Codec,
 {
@@ -27,6 +28,7 @@ where
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 	// --- darwinia ---
 	use darwinia_balances_rpc::{Balances, BalancesApi};
+	use darwinia_staking_rpc::{Staking, StakingApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -36,7 +38,9 @@ where
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
 	)));
-	io.extend_with(BalancesApi::to_delegate(Balances::new(client)));
+	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
+	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
+
 	io
 }
 
@@ -54,6 +58,7 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
+	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + Send + Sync + sp_transaction_pool::TransactionPool,
 	F: 'static + sc_client_api::light::Fetcher<Block>,
 	UE: 'static + Send + Sync + codec::Codec,
