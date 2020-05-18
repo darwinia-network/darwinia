@@ -538,10 +538,12 @@ impl darwinia_treasury::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const ClaimsModuleId: ModuleId = ModuleId(*b"da/claim");
 	pub const Prefix: &'static [u8] = b"Pay RINGs to the Crab account:";
 }
 impl darwinia_claims::Trait for Runtime {
 	type Event = Event;
+	type ModuleId = ClaimsModuleId;
 	type Prefix = Prefix;
 	type RingCurrency = Ring;
 }
