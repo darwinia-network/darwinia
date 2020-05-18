@@ -10,7 +10,7 @@ pub mod currency {
 	pub const MILLI: Balance = 1_000 * MICRO;
 	pub const COIN: Balance = 1_000 * MILLI;
 
-	pub const CAP: Balance = 1_000_000_000 * COIN;
+	pub const CAP: Balance = 10_000_000_000 * COIN;
 	pub const TOTAL_POWER: Power = 1_000_000_000;
 }
 
