@@ -21,9 +21,9 @@ frame-support = { default-features = false, git = "https://github.com/darwinia-n
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.6" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
 
 [features]
 default = ["std"]
