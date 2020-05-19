@@ -74,8 +74,8 @@ pub mod fee {
 	pub struct WeightToFee;
 	impl Convert<Weight, Balance> for WeightToFee {
 		fn convert(x: Weight) -> Balance {
-			// in Crab a weight of 10_000_000 (smallest non-zero weight) is mapped to 1/10 MILLI:
-			Balance::from(x).saturating_mul(MILLI / (10 * 10_000_000))
+			// in Crab a weight of 10_000_000 (smallest non-zero weight) is mapped to 10 MILLI:
+			Balance::from(x).saturating_mul(10 * MILLI) / 10_000_000
 		}
 	}
 }

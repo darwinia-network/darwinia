@@ -161,7 +161,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MICRO;
+	pub const TransactionByteFee: Balance = 10 * MILLI;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
 }
