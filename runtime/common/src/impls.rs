@@ -141,7 +141,7 @@ impl<T: Get<Perquintill>, R: frame_system::Trait> Convert<Fixed128, Fixed128>
 				.saturating_add(Fixed128::from_natural(1))
 				.saturating_mul(Fixed128::from_natural(1).saturating_add(excess))
 				.max(Fixed128::from_natural(0))
-				.saturating_sub(Fixed128::from_natural(-1))
+				.saturating_sub(Fixed128::from_natural(1))
 		} else {
 			// Defensive-only: first_term > second_term. Safe subtraction.
 			let negative = first_term.saturating_sub(second_term);
@@ -155,7 +155,7 @@ impl<T: Get<Perquintill>, R: frame_system::Trait> Convert<Fixed128, Fixed128>
 				.saturating_add(Fixed128::from_natural(1))
 				.saturating_mul(Fixed128::from_natural(1).saturating_sub(negative))
 				.max(Fixed128::from_natural(0))
-				.saturating_sub(Fixed128::from_natural(-1))
+				.saturating_sub(Fixed128::from_natural(1))
 		}
 	}
 }
