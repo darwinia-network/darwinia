@@ -137,18 +137,25 @@ impl<T: Get<Perquintill>, R: frame_system::Trait> Convert<Fixed128, Fixed128>
 			// Note: this is merely bounded by how big the multiplier and the inner value can go,
 			// not by any economical reasoning.
 			let excess = first_term.saturating_add(second_term);
-			multiplier.saturating_add(excess)
+			multiplier
+				.saturating_add(Fixed128::from_natural(1))
+				.saturating_mul(Fixed128::from_natural(1).saturating_add(excess))
+				.max(Fixed128::from_natural(0))
+				.saturating_sub(Fixed128::from_natural(-1))
 		} else {
 			// Defensive-only: first_term > second_term. Safe subtraction.
 			let negative = first_term.saturating_sub(second_term);
+
+			// despite the fact that apply_to saturates weight (final fee cannot go below 0)
+			// it is crucially important to stop here and don't further reduce the weight fee
+			// multiplier. While at -1, it means that the network is so un-congested that all
+			// transactions have no weight fee. We stop here and only increase if the network
+			// became more busy.
 			multiplier
-				.saturating_sub(negative)
-				// despite the fact that apply_to saturates weight (final fee cannot go below 0)
-				// it is crucially important to stop here and don't further reduce the weight fee
-				// multiplier. While at -1, it means that the network is so un-congested that all
-				// transactions have no weight fee. We stop here and only increase if the network
-				// became more busy.
-				.max(Fixed128::from_natural(-1))
+				.saturating_add(Fixed128::from_natural(1))
+				.saturating_mul(Fixed128::from_natural(1).saturating_sub(negative))
+				.max(Fixed128::from_natural(0))
+				.saturating_sub(Fixed128::from_natural(-1))
 		}
 	}
 }
