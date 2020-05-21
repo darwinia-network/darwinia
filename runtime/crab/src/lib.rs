@@ -22,7 +22,6 @@ use codec::Encode;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{Imbalance, LockIdentifier, OnUnbalanced, Randomness},
-	weights::RuntimeDbWeight,
 };
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -84,10 +83,6 @@ pub fn native_version() -> NativeVersion {
 }
 
 parameter_types! {
-	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight {
-		read: 60_000_000,
-		write: 200_000_000,
-	};
 	pub const Version: RuntimeVersion = VERSION;
 }
 impl frame_system::Trait for Runtime {
@@ -103,7 +98,7 @@ impl frame_system::Trait for Runtime {
 	type Event = Event;
 	type BlockHashCount = BlockHashCount;
 	type MaximumBlockWeight = MaximumBlockWeight;
-	type DbWeight = DbWeight;
+	type DbWeight = RocksDbWeight;
 	type BlockExecutionWeight = BlockExecutionWeight;
 	type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
 	type MaximumBlockLength = MaximumBlockLength;
