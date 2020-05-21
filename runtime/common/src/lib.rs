@@ -7,6 +7,9 @@ pub mod impls;
 pub use impls::*;
 
 // --- substrate ---
+pub use frame_support::weights::constants::{
+	BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 // --- darwinia ---
