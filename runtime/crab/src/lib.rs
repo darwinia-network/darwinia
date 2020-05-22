@@ -376,7 +376,7 @@ impl pallet_identity::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SocietyModuleId: ModuleId = ModuleId(*b"py/socie");
+	pub const SocietyModuleId: ModuleId = ModuleId(*b"da/socie");
 	pub const CandidateDeposit: Balance = 10 * COIN;
 	pub const WrongSideDeduction: Balance = 2 * COIN;
 	pub const MaxStrikes: u32 = 10;
@@ -520,7 +520,7 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const TreasuryModuleId: ModuleId = ModuleId(*b"py/trsry");
+	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const RingProposalBondMinimum: Balance = 20 * COIN;
 	pub const KtonProposalBondMinimum: Balance = 20 * COIN;
