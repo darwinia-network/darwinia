@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-service"
-version = "0.5.8"
+version = "0.6.0"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node service"
 edition = "2018"
