@@ -126,38 +126,41 @@ macro_rules! new_full_start {
 				);
 				Ok(pool)
 			})?
-			.with_import_queue(|_, client, mut select_chain, _, spawn_task_handle| {
-				let select_chain = select_chain
-					.take()
-					.ok_or_else(|| sc_service::Error::SelectChainRequired)?;
+			.with_import_queue(
+				|_, client, mut select_chain, _, spawn_task_handle, registry| {
+					let select_chain = select_chain
+						.take()
+						.ok_or_else(|| sc_service::Error::SelectChainRequired)?;
 
-				let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
-					client.clone(),
-					&(client.clone() as Arc<_>),
-					select_chain,
-				)?;
+					let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+						client.clone(),
+						&(client.clone() as Arc<_>),
+						select_chain,
+					)?;
 
-				let justification_import = grandpa_block_import.clone();
+					let justification_import = grandpa_block_import.clone();
 
-				let (block_import, babe_link) = sc_consensus_babe::block_import(
-					sc_consensus_babe::Config::get_or_compute(&*client)?,
-					grandpa_block_import,
-					client.clone(),
-				)?;
+					let (block_import, babe_link) = sc_consensus_babe::block_import(
+						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						grandpa_block_import,
+						client.clone(),
+					)?;
 
-				let import_queue = sc_consensus_babe::import_queue(
-					babe_link.clone(),
-					block_import.clone(),
-					Some(Box::new(justification_import)),
-					None,
-					client,
-					inherent_data_providers.clone(),
-					spawn_task_handle,
-				)?;
+					let import_queue = sc_consensus_babe::import_queue(
+						babe_link.clone(),
+						block_import.clone(),
+						Some(Box::new(justification_import)),
+						None,
+						client,
+						inherent_data_providers.clone(),
+						spawn_task_handle,
+						registry,
+					)?;
 
-				import_setup = Some((block_import, grandpa_link, babe_link));
-				Ok(import_queue)
-			})?
+					import_setup = Some((block_import, grandpa_link, babe_link));
+					Ok(import_queue)
+				},
+			)?
 			.with_rpc_extensions(|builder| -> Result<darwinia_rpc::RpcExtension, _> {
 				let babe_link = import_setup
 					.as_ref()
@@ -373,42 +376,45 @@ macro_rules! new_light {
 				);
 				Ok(pool)
 			})?
-			.with_import_queue_and_fprb(|_, client, backend, fetcher, _, _, spawn_task_handle| {
-				let fetch_checker = fetcher
-					.map(|fetcher| fetcher.checker().clone())
-					.ok_or_else(|| {
-						"Trying to start light import queue without active fetch checker"
-					})?;
-				let grandpa_block_import = sc_finality_grandpa::light_block_import(
-					client.clone(),
-					backend,
-					&(client.clone() as Arc<_>),
-					Arc::new(fetch_checker),
-				)?;
+			.with_import_queue_and_fprb(
+				|_, client, backend, fetcher, _, _, spawn_task_handle, registry| {
+					let fetch_checker = fetcher
+						.map(|fetcher| fetcher.checker().clone())
+						.ok_or_else(|| {
+							"Trying to start light import queue without active fetch checker"
+						})?;
+					let grandpa_block_import = sc_finality_grandpa::light_block_import(
+						client.clone(),
+						backend,
+						&(client.clone() as Arc<_>),
+						Arc::new(fetch_checker),
+					)?;
 
-				let finality_proof_import = grandpa_block_import.clone();
-				let finality_proof_request_builder =
-					finality_proof_import.create_finality_proof_request_builder();
+					let finality_proof_import = grandpa_block_import.clone();
+					let finality_proof_request_builder =
+						finality_proof_import.create_finality_proof_request_builder();
 
-				let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-					sc_consensus_babe::Config::get_or_compute(&*client)?,
-					grandpa_block_import,
-					client.clone(),
-				)?;
+					let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
+						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						grandpa_block_import,
+						client.clone(),
+					)?;
 
-				// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
-				let import_queue = sc_consensus_babe::import_queue(
-					babe_link,
-					babe_block_import,
-					None,
-					Some(Box::new(finality_proof_import)),
-					client,
-					inherent_data_providers.clone(),
-					spawn_task_handle,
-				)?;
+					// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
+					let import_queue = sc_consensus_babe::import_queue(
+						babe_link,
+						babe_block_import,
+						None,
+						Some(Box::new(finality_proof_import)),
+						client,
+						inherent_data_providers.clone(),
+						spawn_task_handle,
+						registry,
+					)?;
 
-				Ok((import_queue, finality_proof_request_builder))
-			})?
+					Ok((import_queue, finality_proof_request_builder))
+				},
+			)?
 			.with_finality_proof_provider(|client, backend| {
 				let provider =
 					client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
