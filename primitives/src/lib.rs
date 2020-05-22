@@ -58,3 +58,36 @@ pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
+
+/// App-specific crypto used for reporting equivocation/misbehavior in BABE,
+/// GRANDPA and Parachains, described in the white paper as the fisherman role.
+/// Any rewards for misbehavior reporting will be paid out to this account.
+pub mod fisherman {
+	// --- substrate ---
+	use sp_core::crypto::KeyTypeId;
+	// --- crates ---
+	use super::{Signature, Verify};
+
+	/// Key type for the reporting module. Used for reporting BABE, GRANDPA
+	/// and Parachain equivocations.
+	pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"fish");
+
+	mod app {
+		use sp_application_crypto::{app_crypto, sr25519};
+		app_crypto!(sr25519, super::KEY_TYPE);
+	}
+
+	/// Identity of the equivocation/misbehavior reporter.
+	pub type FishermanId = app::Public;
+
+	/// An `AppCrypto` type to allow submitting signed transactions using the fisherman
+	/// application key as signer.
+	pub struct FishermanAppCrypto;
+	impl frame_system::offchain::AppCrypto<<Signature as Verify>::Signer, Signature>
+		for FishermanAppCrypto
+	{
+		type RuntimeAppPublic = FishermanId;
+		type GenericSignature = sp_core::sr25519::Signature;
+		type GenericPublic = sp_core::sr25519::Public;
+	}
+}

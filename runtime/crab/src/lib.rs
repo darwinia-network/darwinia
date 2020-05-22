@@ -18,13 +18,13 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- crates ---
 use codec::Encode;
+use static_assertions::const_assert;
 // --- substrate ---
 use frame_support::{
 	construct_runtime, debug, parameter_types,
-	traits::{Imbalance, LockIdentifier, OnUnbalanced, Randomness},
-	weights::RuntimeDbWeight,
+	traits::{Imbalance, KeyOwnerProofSystem, LockIdentifier, OnUnbalanced, Randomness},
 };
-use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
+use pallet_grandpa::{fg_primitives, AuthorityId as GrandpaId};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -41,7 +41,7 @@ use sp_runtime::{
 		SaturatedConversion,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, ModuleId, Perbill, Percent, Permill, Perquintill,
+	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, Perquintill,
 };
 use sp_staking::SessionIndex;
 use sp_std::prelude::*;
@@ -68,10 +68,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Crab"),
 	authoring_version: 0,
-	spec_version: 1,
+	spec_version: 2,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 0,
+	transaction_version: 1,
 };
 
 /// Native version.
@@ -84,10 +84,6 @@ pub fn native_version() -> NativeVersion {
 }
 
 parameter_types! {
-	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight {
-		read: 60_000_000,
-		write: 200_000_000,
-	};
 	pub const Version: RuntimeVersion = VERSION;
 }
 impl frame_system::Trait for Runtime {
@@ -103,7 +99,7 @@ impl frame_system::Trait for Runtime {
 	type Event = Event;
 	type BlockHashCount = BlockHashCount;
 	type MaximumBlockWeight = MaximumBlockWeight;
-	type DbWeight = DbWeight;
+	type DbWeight = RocksDbWeight;
 	type BlockExecutionWeight = BlockExecutionWeight;
 	type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
 	type MaximumBlockLength = MaximumBlockLength;
@@ -161,7 +157,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MICRO;
+	pub const TransactionByteFee: Balance = 10 * MILLI;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
 }
@@ -212,7 +208,7 @@ impl pallet_session::Trait for Runtime {
 	type ValidatorIdOf = darwinia_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
-	type SessionManager = Staking;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
@@ -230,6 +226,20 @@ impl pallet_finality_tracker::Trait for Runtime {
 
 impl pallet_grandpa::Trait for Runtime {
 	type Event = Event;
+	type Call = Call;
+	type KeyOwnerProof =
+		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+		KeyTypeId,
+		GrandpaId,
+	)>>::IdentificationTuple;
+	type KeyOwnerProofSystem = Historical;
+	type HandleEquivocation = pallet_grandpa::EquivocationHandler<
+		Self::KeyOwnerIdentification,
+		darwinia_primitives::fisherman::FishermanAppCrypto,
+		Runtime,
+		Offences,
+	>;
 }
 
 parameter_types! {
@@ -287,7 +297,9 @@ impl pallet_authority_discovery::Trait for Runtime {}
 
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const CouncilMaxProposals: u32 = 100;
 	pub const TechnicalMotionDuration: BlockNumber = 3 * DAYS;
+	pub const TechnicalMaxProposals: u32 = 100;
 }
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Trait<CouncilCollective> for Runtime {
@@ -295,6 +307,7 @@ impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Proposal = Call;
 	type Event = Event;
 	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
 }
 type TechnicalCollective = pallet_collective::Instance2;
 impl pallet_collective::Trait<TechnicalCollective> for Runtime {
@@ -302,6 +315,7 @@ impl pallet_collective::Trait<TechnicalCollective> for Runtime {
 	type Proposal = Call;
 	type Event = Event;
 	type MotionDuration = TechnicalMotionDuration;
+	type MaxProposals = TechnicalMaxProposals;
 }
 
 impl pallet_membership::Trait<pallet_membership::Instance1> for Runtime {
@@ -362,7 +376,7 @@ impl pallet_identity::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const SocietyModuleId: ModuleId = ModuleId(*b"py/socie");
+	pub const SocietyModuleId: ModuleId = ModuleId(*b"da/socie");
 	pub const CandidateDeposit: Balance = 10 * COIN;
 	pub const WrongSideDeduction: Balance = 2 * COIN;
 	pub const MaxStrikes: u32 = 10;
@@ -476,18 +490,21 @@ impl darwinia_staking::Trait for Runtime {
 	type TotalPower = TotalPower;
 }
 
+const DESIRED_MEMBERS: u32 = 13;
+// Make sure that there are no more than MAX_MEMBERS members elected via phragmen.
+const_assert!(DESIRED_MEMBERS <= pallet_collective::MAX_MEMBERS);
 parameter_types! {
 	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
 	pub const CandidacyBond: Balance = 1 * COIN;
 	pub const VotingBond: Balance = 5 * MILLI;
 	/// Daily council elections.
 	pub const TermDuration: BlockNumber = 24 * HOURS;
-	pub const DesiredMembers: u32 = 13;
+	pub const DesiredMembers: u32 = DESIRED_MEMBERS;
 	pub const DesiredRunnersUp: u32 = 7;
 }
 impl darwinia_elections_phragmen::Trait for Runtime {
-	type ModuleId = ElectionsPhragmenModuleId;
 	type Event = Event;
+	type ModuleId = ElectionsPhragmenModuleId;
 	type Currency = Ring;
 	type ChangeMembers = Council;
 	type InitializeMembers = Council;
@@ -503,7 +520,7 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const TreasuryModuleId: ModuleId = ModuleId(*b"py/trsry");
+	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const RingProposalBondMinimum: Balance = 20 * COIN;
 	pub const KtonProposalBondMinimum: Balance = 20 * COIN;
@@ -605,12 +622,14 @@ where
 			.saturating_sub(1);
 		let tip = 0;
 		let extra: SignedExtra = (
-			frame_system::CheckVersion::<Runtime>::new(),
+			frame_system::CheckSpecVersion::<Runtime>::new(),
+			frame_system::CheckTxVersion::<Runtime>::new(),
 			frame_system::CheckGenesis::<Runtime>::new(),
 			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+			pallet_grandpa::ValidateEquivocationReport::<Runtime>::new(),
 			Default::default(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
@@ -721,12 +740,14 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
-	frame_system::CheckVersion<Runtime>,
+	frame_system::CheckSpecVersion<Runtime>,
+	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
 	frame_system::CheckEra<Runtime>,
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	pallet_grandpa::ValidateEquivocationReport<Runtime>,
 	darwinia_eth_relay::CheckEthRelayHeaderHash<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
@@ -807,8 +828,34 @@ impl_runtime_apis! {
 	}
 
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
-		fn grandpa_authorities() -> GrandpaAuthorityList {
+		fn grandpa_authorities() -> Vec<(GrandpaId, u64)> {
 			Grandpa::grandpa_authorities()
+		}
+
+		fn submit_report_equivocation_extrinsic(
+			equivocation_proof: fg_primitives::EquivocationProof<
+				<Block as BlockT>::Hash,
+				sp_runtime::traits::NumberFor<Block>,
+			>,
+			key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
+		) -> Option<()> {
+			let key_owner_proof = key_owner_proof.decode()?;
+
+			Grandpa::submit_report_equivocation_extrinsic(
+				equivocation_proof,
+				key_owner_proof,
+			)
+		}
+
+		fn generate_key_ownership_proof(
+			_set_id: fg_primitives::SetId,
+			authority_id: fg_primitives::AuthorityId,
+		) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
+			use codec::Encode;
+
+			Historical::prove((fg_primitives::KEY_TYPE, authority_id))
+				.map(|p| p.encode())
+				.map(fg_primitives::OpaqueKeyOwnershipProof::new)
 		}
 	}
 

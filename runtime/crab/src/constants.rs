@@ -57,6 +57,7 @@ pub mod fee {
 	// --- darwinia ---
 	use super::currency::MILLI;
 	use darwinia_primitives::Balance;
+	use darwinia_runtime_common::ExtrinsicBaseWeight;
 
 	/// The block saturation level. Fees will be updates based on this value.
 	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);
@@ -74,8 +75,8 @@ pub mod fee {
 	pub struct WeightToFee;
 	impl Convert<Weight, Balance> for WeightToFee {
 		fn convert(x: Weight) -> Balance {
-			// in Crab a weight of 10_000_000 (smallest non-zero weight) is mapped to 1/10 MILLI:
-			Balance::from(x).saturating_mul(MILLI / (10 * 10_000_000))
+			// in Crab, extrinsic base weight (smallest non-zero weight) is mapped to 100 MILLI:
+			Balance::from(x).saturating_mul(100 * MILLI) / Balance::from(ExtrinsicBaseWeight::get())
 		}
 	}
 }

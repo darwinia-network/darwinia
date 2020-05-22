@@ -7,6 +7,9 @@ pub mod impls;
 pub use impls::*;
 
 // --- substrate ---
+pub use frame_support::weights::constants::{
+	BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 // --- darwinia ---
@@ -14,7 +17,11 @@ pub use sp_runtime::BuildStorage;
 pub use darwinia_staking::StakerStatus;
 
 // --- substrate ---
-use frame_support::{parameter_types, traits::Currency, weights::Weight};
+use frame_support::{
+	parameter_types,
+	traits::Currency,
+	weights::{constants::WEIGHT_PER_SECOND, Weight},
+};
 use sp_runtime::Perbill;
 // --- darwinia ---
 use darwinia_primitives::BlockNumber;
@@ -27,10 +34,8 @@ pub type NegativeImbalance<T> = <darwinia_balances::Module<T, RingInstance> as C
 >>::NegativeImbalance;
 
 parameter_types! {
-	pub const BlockHashCount: BlockNumber = 250;
-	pub const MaximumBlockWeight: Weight = 2_000_000_000_000;
-	pub const ExtrinsicBaseWeight: Weight = 100_000_000; // TODO: Confirm/Update
-	pub const BlockExecutionWeight: Weight = 1_000_000_000; // TODO: Confirm/Update
+	pub const BlockHashCount: BlockNumber = 2400;
+	pub const MaximumBlockWeight: Weight = 2 * WEIGHT_PER_SECOND;
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::from_percent(75);
 }

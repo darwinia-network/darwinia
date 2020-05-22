@@ -17,9 +17,11 @@ pub use darwinia_primitives::Block;
 // --- std ---
 use std::{sync::Arc, time::Duration};
 // --- substrate ---
-use sc_client::LongestChain;
+use sc_consensus::LongestChain;
 use sc_executor::native_executor_instance;
-use sc_finality_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
+use sc_finality_grandpa::{
+	FinalityProofProvider as GrandpaFinalityProofProvider, SharedVoterState,
+};
 use sc_service::{
 	config::PrometheusConfig, error::Error as ServiceError, AbstractService, Role, ServiceBuilder,
 	ServiceBuilderCommand, TLightCallExecutor,
@@ -111,9 +113,10 @@ macro_rules! new_full_start {
 		set_prometheus_registry(&mut $config)?;
 
 		let mut import_setup = None;
+		let mut rpc_setup = None;
 		let inherent_data_providers = sp_inherents::InherentDataProviders::new();
 		let builder = sc_service::ServiceBuilder::new_full::<Block, $runtime, $executor>($config)?
-			.with_select_chain(|_, backend| Ok(LongestChain::new(backend.clone())))?
+			.with_select_chain(|_, backend| Ok(sc_consensus::LongestChain::new(backend.clone())))?
 			.with_transaction_pool(|config, client, _, prometheus_registry| {
 				let pool_api = sc_transaction_pool::FullChainApi::new(client.clone());
 				let pool = sc_transaction_pool::BasicPool::new(
@@ -123,45 +126,77 @@ macro_rules! new_full_start {
 				);
 				Ok(pool)
 			})?
-			.with_import_queue(|_config, client, mut select_chain, _| {
-				let select_chain = select_chain
-					.take()
-					.ok_or_else(|| sc_service::Error::SelectChainRequired)?;
+			.with_import_queue(
+				|_, client, mut select_chain, _, spawn_task_handle, registry| {
+					let select_chain = select_chain
+						.take()
+						.ok_or_else(|| sc_service::Error::SelectChainRequired)?;
 
-				let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
-					client.clone(),
-					&(client.clone() as Arc<_>),
-					select_chain,
-				)?;
+					let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+						client.clone(),
+						&(client.clone() as Arc<_>),
+						select_chain,
+					)?;
 
-				let justification_import = grandpa_block_import.clone();
+					let justification_import = grandpa_block_import.clone();
 
-				let (block_import, babe_link) = sc_consensus_babe::block_import(
-					sc_consensus_babe::Config::get_or_compute(&*client)?,
-					grandpa_block_import,
-					client.clone(),
-				)?;
+					let (block_import, babe_link) = sc_consensus_babe::block_import(
+						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						grandpa_block_import,
+						client.clone(),
+					)?;
 
-				let import_queue = sc_consensus_babe::import_queue(
-					babe_link.clone(),
-					block_import.clone(),
-					Some(Box::new(justification_import)),
-					None,
-					client,
-					inherent_data_providers.clone(),
-				)?;
+					let import_queue = sc_consensus_babe::import_queue(
+						babe_link.clone(),
+						block_import.clone(),
+						Some(Box::new(justification_import)),
+						None,
+						client,
+						inherent_data_providers.clone(),
+						spawn_task_handle,
+						registry,
+					)?;
 
-				import_setup = Some((block_import, grandpa_link, babe_link));
-				Ok(import_queue)
-			})?
+					import_setup = Some((block_import, grandpa_link, babe_link));
+					Ok(import_queue)
+				},
+			)?
 			.with_rpc_extensions(|builder| -> Result<darwinia_rpc::RpcExtension, _> {
-				Ok(darwinia_rpc::create_full(
-					builder.client().clone(),
-					builder.pool(),
-				))
+				let babe_link = import_setup
+					.as_ref()
+					.map(|s| &s.2)
+					.expect("BabeLink is present for full services or set up faile; qed.");
+				let grandpa_link = import_setup
+					.as_ref()
+					.map(|s| &s.1)
+					.expect("GRANDPA LinkHalf is present for full services or set up failed; qed.");
+				let shared_authority_set = grandpa_link.shared_authority_set();
+				let shared_voter_state = SharedVoterState::empty();
+				let deps = darwinia_rpc::FullDeps {
+					client: builder.client().clone(),
+					pool: builder.pool(),
+					select_chain: builder
+						.select_chain()
+						.cloned()
+						.expect("SelectChain is present for full services or set up failed; qed."),
+					babe: darwinia_rpc::BabeDeps {
+						keystore: builder.keystore(),
+						babe_config: sc_consensus_babe::BabeLink::config(babe_link).clone(),
+						shared_epoch_changes: sc_consensus_babe::BabeLink::epoch_changes(babe_link)
+							.clone(),
+					},
+					grandpa: darwinia_rpc::GrandpaDeps {
+						shared_voter_state: shared_voter_state.clone(),
+						shared_authority_set: shared_authority_set.clone(),
+					},
+				};
+
+				rpc_setup = Some((shared_voter_state));
+
+				Ok(darwinia_rpc::create_full(deps))
 			})?;
 
-		(builder, import_setup, inherent_data_providers)
+		(builder, import_setup, inherent_data_providers, rpc_setup)
 		}};
 }
 
@@ -187,7 +222,7 @@ macro_rules! new_full {
 			$config.disable_grandpa,
 		);
 
-		let (builder, mut import_setup, inherent_data_providers) = new_full_start!($config, $runtime, $dispatch);
+		let (builder, mut import_setup, inherent_data_providers, mut rpc_setup) = new_full_start!($config, $runtime, $dispatch);
 
 		let service = builder
 			.with_finality_proof_provider(|client, backend| {
@@ -198,6 +233,9 @@ macro_rules! new_full {
 
 		let (block_import, link_half, babe_link) = import_setup.take()
 			.expect("Link Half and Block Import are present for Full Services or setup failed before. qed");
+
+		let shared_voter_state = rpc_setup.take()
+			.expect("The SharedVoterState is present for Full Services or setup failed before. qed");
 
 		let client = service.client();
 
@@ -296,6 +334,7 @@ macro_rules! new_full {
 				telemetry_on_connect: Some(service.telemetry_on_connect_stream()),
 				voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
 				prometheus_registry: service.prometheus_registry(),
+				shared_voter_state,
 			};
 
 			service.spawn_essential_task(
@@ -337,41 +376,45 @@ macro_rules! new_light {
 				);
 				Ok(pool)
 			})?
-			.with_import_queue_and_fprb(|_, client, backend, fetcher, _, _| {
-				let fetch_checker = fetcher
-					.map(|fetcher| fetcher.checker().clone())
-					.ok_or_else(|| {
-						"Trying to start light import queue without active fetch checker"
-					})?;
-				let grandpa_block_import = sc_finality_grandpa::light_block_import(
-					client.clone(),
-					backend,
-					&(client.clone() as Arc<_>),
-					Arc::new(fetch_checker),
-				)?;
+			.with_import_queue_and_fprb(
+				|_, client, backend, fetcher, _, _, spawn_task_handle, registry| {
+					let fetch_checker = fetcher
+						.map(|fetcher| fetcher.checker().clone())
+						.ok_or_else(|| {
+							"Trying to start light import queue without active fetch checker"
+						})?;
+					let grandpa_block_import = sc_finality_grandpa::light_block_import(
+						client.clone(),
+						backend,
+						&(client.clone() as Arc<_>),
+						Arc::new(fetch_checker),
+					)?;
 
-				let finality_proof_import = grandpa_block_import.clone();
-				let finality_proof_request_builder =
-					finality_proof_import.create_finality_proof_request_builder();
+					let finality_proof_import = grandpa_block_import.clone();
+					let finality_proof_request_builder =
+						finality_proof_import.create_finality_proof_request_builder();
 
-				let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-					sc_consensus_babe::Config::get_or_compute(&*client)?,
-					grandpa_block_import,
-					client.clone(),
-				)?;
+					let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
+						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						grandpa_block_import,
+						client.clone(),
+					)?;
 
-				// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
-				let import_queue = sc_consensus_babe::import_queue(
-					babe_link,
-					babe_block_import,
-					None,
-					Some(Box::new(finality_proof_import)),
-					client,
-					inherent_data_providers.clone(),
-				)?;
+					// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
+					let import_queue = sc_consensus_babe::import_queue(
+						babe_link,
+						babe_block_import,
+						None,
+						Some(Box::new(finality_proof_import)),
+						client,
+						inherent_data_providers.clone(),
+						spawn_task_handle,
+						registry,
+					)?;
 
-				Ok((import_queue, finality_proof_request_builder))
-			})?
+					Ok((import_queue, finality_proof_request_builder))
+				},
+			)?
 			.with_finality_proof_provider(|client, backend| {
 				let provider =
 					client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
@@ -387,12 +430,14 @@ macro_rules! new_light {
 					.remote_backend()
 					.ok_or_else(|| "Trying to start node RPC without active remote blockchain")?;
 
-				Ok(darwinia_rpc::create_light(
-					builder.client().clone(),
+				let light_deps = darwinia_rpc::LightDeps {
 					remote_blockchain,
 					fetcher,
-					builder.pool(),
-				))
+					client: builder.client().clone(),
+					pool: builder.pool(),
+				};
+
+				Ok(darwinia_rpc::create_light(light_deps))
 			})?
 			.build()
 		}};
