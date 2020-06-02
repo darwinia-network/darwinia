@@ -1,3 +1,4 @@
+#[allow(unused)]
 mod config;
 
 // --- crates ---
