@@ -51,9 +51,13 @@ pub mod time {
 
 /// Fee-related.
 pub mod fee {
+	// --- crates ---
+	use smallvec::smallvec;
 	// --- substrate ---
-	use frame_support::weights::Weight;
-	use sp_runtime::{traits::Convert, Perbill};
+	use frame_support::weights::{
+		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
+	};
+	use sp_runtime::Perbill;
 	// --- darwinia ---
 	use super::currency::MILLI;
 	use darwinia_primitives::Balance;
@@ -73,10 +77,18 @@ pub mod fee {
 	///   - Setting it to `0` will essentially disable the weight fee.
 	///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
 	pub struct WeightToFee;
-	impl Convert<Weight, Balance> for WeightToFee {
-		fn convert(x: Weight) -> Balance {
+	impl WeightToFeePolynomial for WeightToFee {
+		type Balance = Balance;
+		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 			// in Crab, extrinsic base weight (smallest non-zero weight) is mapped to 100 MILLI:
-			Balance::from(x).saturating_mul(100 * MILLI) / Balance::from(ExtrinsicBaseWeight::get())
+			let p = 100 * MILLI;
+			let q = Balance::from(ExtrinsicBaseWeight::get());
+			smallvec![WeightToFeeCoefficient {
+				degree: 1,
+				negative: false,
+				coeff_frac: Perbill::from_rational_approximation(p % q, q),
+				coeff_integer: p / q,
+			}]
 		}
 	}
 }

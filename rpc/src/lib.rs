@@ -6,7 +6,7 @@
 use std::sync::Arc;
 // --- substrate ---
 use sp_api::ProvideRuntimeApi;
-use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sp_blockchain::{HeaderBackend, HeaderMetadata};
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Block, BlockNumber, Hash, Nonce, Power};
 
@@ -52,6 +52,8 @@ pub struct FullDeps<C, P, SC> {
 	pub pool: Arc<P>,
 	/// The SelectChain Strategy
 	pub select_chain: SC,
+	/// Whether to deny unsafe calls
+	pub deny_unsafe: sc_rpc::DenyUnsafe,
 	/// BABE specific dependencies.
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
@@ -62,7 +64,7 @@ pub struct FullDeps<C, P, SC> {
 pub fn create_full<C, P, UE, SC>(deps: FullDeps<C, P, SC>) -> RpcExtension
 where
 	C: ProvideRuntimeApi<Block>,
-	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C: 'static + Send + Sync,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
@@ -75,7 +77,7 @@ where
 {
 	// --- substrate ---
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-	use sc_consensus_babe_rpc::{BabeApi, BabeRPCHandler};
+	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
 	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 	// --- darwinia ---
@@ -86,6 +88,7 @@ where
 		client,
 		pool,
 		select_chain,
+		deny_unsafe,
 		babe,
 		grandpa,
 	} = deps;
@@ -104,12 +107,13 @@ where
 			babe_config,
 			shared_epoch_changes,
 		} = babe;
-		io.extend_with(BabeApi::to_delegate(BabeRPCHandler::new(
+		io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
 			client.clone(),
 			shared_epoch_changes,
 			keystore,
 			babe_config,
 			select_chain,
+			deny_unsafe,
 		)));
 	}
 	{
