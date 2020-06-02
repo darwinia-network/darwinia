@@ -122,13 +122,13 @@ pub struct Configuration {
 	#[serde(rename = "telemetry-url")]
 	telemetry_endpoints: Option<Vec<String>>,
 
-	// #[allow(missing_docs)]
-	// #[serde(flatten)]
-	// offchain_worker_config: OffchainWorkerConfig,
-	//
-	// #[allow(missing_docs)]
-	// #[serde(flatten)]
-	// shared_config: SharedConfig,
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	offchain_worker_config: OffchainWorkerConfig,
+
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	shared_config: SharedConfig,
 	//
 	// #[allow(missing_docs)]
 	// #[serde(flatten)]
@@ -200,13 +200,10 @@ pub struct Configuration {
 impl Configuration {
 	pub fn create_runner_from_cli(cli: Cli) -> sc_cli::Result<sc_cli::Runner<Cli>> {
 		if let Some(path) = &cli.conf {
-			if path.is_file() {
-				return Ok(Self::load_config(path).update_config(cli)?);
-			}
+			Ok(Self::load_config(path).update_config(cli)?)
+		} else {
+			Ok(cli.create_runner(&cli.run.base)?)
 		}
-
-		let runner = cli.create_runner(&cli.run.base)?;
-		Ok(runner)
 	}
 
 	fn load_config(path: &PathBuf) -> Self {
@@ -224,6 +221,26 @@ impl Configuration {
 					$target.$field = $field;
 					}
 			};
+			($target:ident, Some($field:ident)) => {
+				if self.$field.is_some() {
+					$target.$field = self.$field;
+				}
+			};
+			($target:ident, $field1:ident, $field2:ident, $subfield:ident) => {
+				if let Some($subfield) = self.$field2.$subfield {
+					$target.$field1.$subfield = $subfield;
+					}
+			};
+			($target:ident, $field1:ident, $field2:ident, Some($subfield:ident)) => {
+				if self.$field2.$subfield.is_some() {
+					$target.$field1.$subfield = self.$field2.$subfield;
+					}
+			};
+			($target:ident, $field1:ident, $($field2:tt)*) => {
+				if let Some($field1) = self.$($field2)* {
+					$target.$field1 = $field1;
+					}
+			};
 		}
 
 		{
@@ -238,18 +255,13 @@ impl Configuration {
 			quick_if_let!(cmd, ws_external);
 			quick_if_let!(cmd, unsafe_ws_external);
 			quick_if_let!(cmd, prometheus_external);
-
-			cmd.rpc_port = self.rpc_port;
-			cmd.ws_port = self.ws_port;
-			cmd.ws_max_connections = self.ws_max_connections;
-			cmd.prometheus_port = self.prometheus_port;
-
+			quick_if_let!(cmd, Some(rpc_port));
+			quick_if_let!(cmd, Some(ws_port));
+			quick_if_let!(cmd, Some(ws_max_connections));
+			quick_if_let!(cmd, Some(prometheus_port));
 			quick_if_let!(cmd, no_prometheus);
-
-			cmd.name = self.name;
-
+			quick_if_let!(cmd, Some(name));
 			quick_if_let!(cmd, no_telemetry);
-
 			if let Some(telemetry_endpoints) = &self.telemetry_endpoints {
 				for telemetry_endpoint in telemetry_endpoints {
 					cmd.telemetry_endpoints
@@ -257,10 +269,10 @@ impl Configuration {
 				}
 			}
 
-			// cmd.shared_params.chain = self.shared_config.chain;
-			// cmd.shared_params.dev = self.shared_config.dev;
-			// cmd.shared_params.base_path = self.shared_config.base_path;
-			// cmd.shared_params.log = self.shared_config.log;
+			quick_if_let!(cmd, shared_params, shared_config, Some(chain));
+			quick_if_let!(cmd, shared_params, shared_config, dev);
+			quick_if_let!(cmd, shared_params, shared_config, Some(base_path));
+			quick_if_let!(cmd, shared_params, shared_config, log);
 			//
 			// cmd.import_params.pruning_params.pruning =
 			// 	self.import_config.pruning_config.pruning.clone();
@@ -284,7 +296,7 @@ impl Configuration {
 			// cmd.network_params.discover_local = self.network_config.discover_local;
 			// cmd.network_params.legacy_network_protocol =
 			// 	self.network_config.legacy_network_protocol;
-
+			//
 			quick_if_let!(cmd, alice);
 			quick_if_let!(cmd, bob);
 			quick_if_let!(cmd, charlie);
@@ -294,17 +306,15 @@ impl Configuration {
 			quick_if_let!(cmd, one);
 			quick_if_let!(cmd, two);
 			quick_if_let!(cmd, force_authoring);
-
-			cmd.max_runtime_instances = self.max_runtime_instances;
-
+			quick_if_let!(cmd, Some(max_runtime_instances));
 			quick_if_let!(cmd, sentry_nodes);
 		}
 
 		let mut runner = cli.create_runner(&cli.run.base)?;
 		{
-			// let config = runner.config_mut();
-			// let is_dev = cli.run.base.is_dev().unwrap();
-			// let role = config.role.clone();
+			let config = runner.config_mut();
+			let is_dev = cli.run.base.is_dev().unwrap();
+			let role = config.role.clone();
 			// let base_path = self
 			// 	.base_path()
 			// 	.unwrap()
@@ -337,8 +347,12 @@ impl Configuration {
 			// 	}
 			// });
 			//
-			// config.offchain_worker = self.offchain_worker_config.offchain_worker(&role);
-
+			quick_if_let!(
+				config,
+				offchain_worker,
+				offchain_worker_config.offchain_worker(&config.offchain_worker, &role)
+			);
+			//
 			// config.database = match self.import_config.database_config {
 			// 	DatabaseConfig::RocksDb => sc_service::config::DatabaseConfig::RocksDb {
 			// 		path: base_path.join("db"),
@@ -417,31 +431,42 @@ struct OffchainWorkerConfig {
 	///
 	/// By default it's only enabled for nodes that are authoring new blocks.
 	#[serde(rename = "offchain-worker")]
-	enabled: OffchainWorkerEnabled,
+	enabled: Option<OffchainWorkerEnabled>,
 	/// allow writes from the runtime to the offchain worker database.
 	/// Enable Offchain Indexing API, which allows block import to write to Offchain DB.
 	///
 	/// Enables a runtime to write directly to a offchain workers
 	/// DB during block import.
 	#[serde(rename = "enable-offchain-indexing")]
-	indexing_enabled: bool,
+	indexing_enabled: Option<bool>,
 }
 impl OffchainWorkerConfig {
 	/// Load spec to `Configuration` from `OffchainWorkerParams` and spec factory.
-	fn offchain_worker(&self, role: &sc_service::Role) -> sc_service::config::OffchainWorkerConfig {
-		let enabled = match (&self.enabled, role) {
-			(OffchainWorkerEnabled::WhenValidating, sc_service::Role::Authority { .. }) => true,
-			(OffchainWorkerEnabled::Always, _) => true,
-			(OffchainWorkerEnabled::Never, _) => false,
-			(OffchainWorkerEnabled::WhenValidating, _) => false,
+	fn offchain_worker(
+		&self,
+		origin_config: &sc_service::config::OffchainWorkerConfig,
+		role: &sc_service::Role,
+	) -> Option<sc_service::config::OffchainWorkerConfig> {
+		let enabled = if let Some(enabled) = &self.enabled {
+			match (enabled, role) {
+				(OffchainWorkerEnabled::WhenValidating, sc_service::Role::Authority { .. }) => true,
+				(OffchainWorkerEnabled::Always, _) => true,
+				(OffchainWorkerEnabled::Never, _) => false,
+				(OffchainWorkerEnabled::WhenValidating, _) => false,
+			}
+		} else {
+			origin_config.enabled
+		};
+		let indexing_enabled = if let Some(indexing_enabled) = self.indexing_enabled {
+			indexing_enabled
+		} else {
+			origin_config.indexing_enabled
 		};
 
-		let indexing_enabled = enabled && self.indexing_enabled;
-
-		sc_service::config::OffchainWorkerConfig {
+		Some(sc_service::config::OffchainWorkerConfig {
 			enabled,
-			indexing_enabled,
-		}
+			indexing_enabled: enabled && indexing_enabled,
+		})
 	}
 }
 /// Whether off-chain workers are enabled.
@@ -461,7 +486,7 @@ struct SharedConfig {
 	chain: Option<String>,
 
 	/// Specify the development chain.
-	dev: bool,
+	dev: Option<bool>,
 
 	/// Specify custom base path.
 	base_path: Option<PathBuf>,
@@ -470,7 +495,7 @@ struct SharedConfig {
 	///
 	/// Log levels (least to most verbose) are error, warn, info, debug, and trace.
 	/// By default, all targets log `info`. The global log level can be set with -l<level>.
-	log: Vec<String>,
+	log: Option<Vec<String>>,
 }
 
 /// Parameters for block import.
