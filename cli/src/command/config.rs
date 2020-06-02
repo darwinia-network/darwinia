@@ -93,7 +93,7 @@ pub struct Configuration {
 	/// value). Value of `all` will disable origin validation. Default is to
 	/// allow localhost and https://polkadot.js.org origins. When running in
 	/// --dev mode the default is to allow all origins.
-	rpc_cors: Option<Cors>,
+	rpc_cors: Option<String>,
 
 	/// Specify Prometheus data source server TCP Port.
 	prometheus_port: Option<u16>,
@@ -129,10 +129,10 @@ pub struct Configuration {
 	#[allow(missing_docs)]
 	#[serde(flatten)]
 	shared_config: SharedConfig,
-	//
-	// #[allow(missing_docs)]
-	// #[serde(flatten)]
-	// import_config: ImportConfig,
+
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	import_config: ImportConfig,
 	//
 	// #[allow(missing_docs)]
 	// #[serde(flatten)]
@@ -216,52 +216,42 @@ impl Configuration {
 
 	fn update_config(self, mut cli: Cli) -> sc_cli::Result<sc_cli::Runner<Cli>> {
 		macro_rules! quick_if_let {
-			($target:ident, $field:ident) => {
-				if let Some($field) = self.$field {
-					$target.$field = $field;
-					}
-			};
-			($target:ident, Some($field:ident)) => {
-				if self.$field.is_some() {
-					$target.$field = self.$field;
+			($($source:tt).+, $($target:tt).+, $field:ident) => {
+				if let Some($field) = $($target).+.$field.clone() {
+					$($source).+.$field = $field.into();
 				}
 			};
-			($target:ident, $field1:ident, $field2:ident, $subfield:ident) => {
-				if let Some($subfield) = self.$field2.$subfield {
-					$target.$field1.$subfield = $subfield;
-					}
+			($($source:tt).+, $($target:tt).+, Some($field:ident)) => {
+				if $($target).+.$field.is_some() {
+					$($source).+.$field = $($target).+.$field.clone().into();
+				}
 			};
-			($target:ident, $field1:ident, $field2:ident, Some($subfield:ident)) => {
-				if self.$field2.$subfield.is_some() {
-					$target.$field1.$subfield = self.$field2.$subfield;
-					}
-			};
-			($target:ident, $field1:ident, $($field2:tt)*) => {
-				if let Some($field1) = self.$($field2)* {
-					$target.$field1 = $field1;
-					}
-			};
+			// ($($source:tt).+, $($target:ident$(($($params:expr),*))?).+, $field:ident) => {
+			// 	if let Some($field) = $($target$(($($params),*))?).+ {
+			// 		$($source).+.$field = $field.into();
+			// 	}
+			// };
 		}
 
 		{
 			let cmd = &mut cli.run.base;
 
-			quick_if_let!(cmd, validator);
-			quick_if_let!(cmd, sentry);
-			quick_if_let!(cmd, no_grandpa);
-			quick_if_let!(cmd, light);
-			quick_if_let!(cmd, rpc_external);
-			quick_if_let!(cmd, unsafe_rpc_external);
-			quick_if_let!(cmd, ws_external);
-			quick_if_let!(cmd, unsafe_ws_external);
-			quick_if_let!(cmd, prometheus_external);
-			quick_if_let!(cmd, Some(rpc_port));
-			quick_if_let!(cmd, Some(ws_port));
-			quick_if_let!(cmd, Some(ws_max_connections));
-			quick_if_let!(cmd, Some(prometheus_port));
-			quick_if_let!(cmd, no_prometheus);
-			quick_if_let!(cmd, Some(name));
-			quick_if_let!(cmd, no_telemetry);
+			quick_if_let!(cmd, self, validator);
+			quick_if_let!(cmd, self, sentry);
+			quick_if_let!(cmd, self, no_grandpa);
+			quick_if_let!(cmd, self, light);
+			quick_if_let!(cmd, self, rpc_external);
+			quick_if_let!(cmd, self, unsafe_rpc_external);
+			quick_if_let!(cmd, self, ws_external);
+			quick_if_let!(cmd, self, unsafe_ws_external);
+			quick_if_let!(cmd, self, prometheus_external);
+			quick_if_let!(cmd, self, Some(rpc_port));
+			quick_if_let!(cmd, self, Some(ws_port));
+			quick_if_let!(cmd, self, Some(ws_max_connections));
+			quick_if_let!(cmd, self, Some(prometheus_port));
+			quick_if_let!(cmd, self, no_prometheus);
+			quick_if_let!(cmd, self, Some(name));
+			quick_if_let!(cmd, self, no_telemetry);
 			if let Some(telemetry_endpoints) = &self.telemetry_endpoints {
 				for telemetry_endpoint in telemetry_endpoints {
 					cmd.telemetry_endpoints
@@ -269,17 +259,19 @@ impl Configuration {
 				}
 			}
 
-			quick_if_let!(cmd, shared_params, shared_config, Some(chain));
-			quick_if_let!(cmd, shared_params, shared_config, dev);
-			quick_if_let!(cmd, shared_params, shared_config, Some(base_path));
-			quick_if_let!(cmd, shared_params, shared_config, log);
-			//
-			// cmd.import_params.pruning_params.pruning =
-			// 	self.import_config.pruning_config.pruning.clone();
-			//
-			// cmd.import_params.unsafe_pruning = self.import_config.unsafe_pruning;
-			// cmd.import_params.state_cache_size = self.import_config.state_cache_size;
-			// cmd.import_params.tracing_targets = self.import_config.tracing_targets.clone();
+			quick_if_let!(cmd.shared_params, self.shared_config, Some(chain));
+			quick_if_let!(cmd.shared_params, self.shared_config, dev);
+			quick_if_let!(cmd.shared_params, self.shared_config, Some(base_path));
+			quick_if_let!(cmd.shared_params, self.shared_config, log);
+
+			quick_if_let!(
+				cmd.import_params.pruning_params,
+				self.import_config.pruning_config,
+				Some(pruning)
+			);
+			quick_if_let!(cmd.import_params, self.import_config, unsafe_pruning);
+			quick_if_let!(cmd.import_params, self.import_config, state_cache_size);
+			quick_if_let!(cmd.import_params, self.import_config, Some(tracing_targets));
 
 			// cmd.network_params.bootnodes = self.network_config.bootnodes;
 			// cmd.network_params.reserved_nodes = self.network_config.reserved_nodes;
@@ -297,17 +289,17 @@ impl Configuration {
 			// cmd.network_params.legacy_network_protocol =
 			// 	self.network_config.legacy_network_protocol;
 			//
-			quick_if_let!(cmd, alice);
-			quick_if_let!(cmd, bob);
-			quick_if_let!(cmd, charlie);
-			quick_if_let!(cmd, dave);
-			quick_if_let!(cmd, eve);
-			quick_if_let!(cmd, ferdie);
-			quick_if_let!(cmd, one);
-			quick_if_let!(cmd, two);
-			quick_if_let!(cmd, force_authoring);
-			quick_if_let!(cmd, Some(max_runtime_instances));
-			quick_if_let!(cmd, sentry_nodes);
+			quick_if_let!(cmd, self, alice);
+			quick_if_let!(cmd, self, bob);
+			quick_if_let!(cmd, self, charlie);
+			quick_if_let!(cmd, self, dave);
+			quick_if_let!(cmd, self, eve);
+			quick_if_let!(cmd, self, ferdie);
+			quick_if_let!(cmd, self, one);
+			quick_if_let!(cmd, self, two);
+			quick_if_let!(cmd, self, force_authoring);
+			quick_if_let!(cmd, self, Some(max_runtime_instances));
+			quick_if_let!(cmd, self, sentry_nodes);
 		}
 
 		let mut runner = cli.create_runner(&cli.run.base)?;
@@ -333,25 +325,27 @@ impl Configuration {
 
 			// config.rpc_methods = self.rpc_methods.into();
 			//
-			// config.rpc_cors = self.rpc_cors.map(Into::into).unwrap_or_else(|| {
-			// 	if is_dev {
-			// 		None
-			// 	} else {
-			// 		Some(vec![
-			// 			"http://localhost:*".into(),
-			// 			"http://127.0.0.1:*".into(),
-			// 			"https://localhost:*".into(),
-			// 			"https://127.0.0.1:*".into(),
-			// 			"https://polkadot.js.org".into(),
-			// 		])
-			// 	}
-			// });
-			//
-			quick_if_let!(
-				config,
-				offchain_worker,
-				offchain_worker_config.offchain_worker(&config.offchain_worker, &role)
-			);
+
+			config.rpc_cors = self
+				.rpc_cors
+				.map(|s| parse_cors(&s).into())
+				.unwrap_or_else(|| {
+					if is_dev {
+						None
+					} else {
+						Some(vec![
+							"http://localhost:*".into(),
+							"http://127.0.0.1:*".into(),
+							"https://localhost:*".into(),
+							"https://127.0.0.1:*".into(),
+							"https://polkadot.js.org".into(),
+						])
+					}
+				});
+
+			config.offchain_worker = self
+				.offchain_worker_config
+				.offchain_worker(&config.offchain_worker, &role);
 			//
 			// config.database = match self.import_config.database_config {
 			// 	DatabaseConfig::RocksDb => sc_service::config::DatabaseConfig::RocksDb {
@@ -370,11 +364,11 @@ impl Configuration {
 			// 	},
 			// };
 			//
-			// config.wasm_method = self.import_config.wasm_method.clone().into();
-			//
-			// config.execution_strategies = self.import_config.execution_strategies(is_dev);
-			//
-			// config.tracing_receiver = self.import_config.tracing_receiver.clone().into();
+			quick_if_let!(config, self.import_config, wasm_method);
+			config.execution_strategies = self
+				.import_config
+				.execution_strategies(&config.execution_strategies, is_dev);
+			quick_if_let!(config, self.import_config, tracing_receiver);
 		}
 
 		Ok(runner)
@@ -407,8 +401,6 @@ impl Into<sc_service::config::RpcMethods> for RpcMethods {
 ///
 /// The type is introduced to overcome `Option<Option<T>>`
 /// handling of `structopt`.
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
 enum Cors {
 	/// All hosts allowed.
 	All,
@@ -446,7 +438,7 @@ impl OffchainWorkerConfig {
 		&self,
 		origin_config: &sc_service::config::OffchainWorkerConfig,
 		role: &sc_service::Role,
-	) -> Option<sc_service::config::OffchainWorkerConfig> {
+	) -> sc_service::config::OffchainWorkerConfig {
 		let enabled = if let Some(enabled) = &self.enabled {
 			match (enabled, role) {
 				(OffchainWorkerEnabled::WhenValidating, sc_service::Role::Authority { .. }) => true,
@@ -463,10 +455,10 @@ impl OffchainWorkerConfig {
 			origin_config.indexing_enabled
 		};
 
-		Some(sc_service::config::OffchainWorkerConfig {
+		sc_service::config::OffchainWorkerConfig {
 			enabled,
 			indexing_enabled: enabled && indexing_enabled,
-		})
+		}
 	}
 }
 /// Whether off-chain workers are enabled.
@@ -515,27 +507,28 @@ struct ImportConfig {
 	/// When running as a validator it is highly recommended to disable state
 	/// pruning (i.e. 'archive') which is the default. The node will refuse to
 	/// start as a validator if pruning is enabled unless this option is set.
-	unsafe_pruning: bool,
+	unsafe_pruning: Option<bool>,
 
 	/// Method for executing Wasm runtime code.
-	wasm_method: WasmExecutionMethod,
+	wasm_method: Option<WasmExecutionMethod>,
 
 	#[allow(missing_docs)]
 	#[serde(flatten)]
-	pub execution_strategies: ExecutionStrategiesConfig,
+	execution_strategies: ExecutionStrategiesConfig,
 
 	/// Specify the state cache size.
-	pub state_cache_size: usize,
+	state_cache_size: Option<usize>,
 
 	/// Comma separated list of targets for tracing.
-	pub tracing_targets: Option<String>,
+	tracing_targets: Option<String>,
 
 	/// Receiver to process tracing messages.
-	pub tracing_receiver: TracingReceiver,
+	tracing_receiver: Option<TracingReceiver>,
 }
 impl ImportConfig {
 	fn execution_strategies(
 		&self,
+		origin_execution_strategies: &sc_client_api::execution_extensions::ExecutionStrategies,
 		is_dev: bool,
 	) -> sc_client_api::execution_extensions::ExecutionStrategies {
 		/// Default value for the `--execution-syncing` parameter.
@@ -562,20 +555,33 @@ impl ImportConfig {
 		};
 
 		sc_client_api::execution_extensions::ExecutionStrategies {
-			syncing: exec_all_or(exec.execution_syncing.clone(), DEFAULT_EXECUTION_SYNCING),
-			importing: exec_all_or(
-				exec.execution_import_block.clone(),
-				DEFAULT_EXECUTION_IMPORT_BLOCK,
-			),
-			block_construction: exec_all_or(
-				exec.execution_block_construction.clone(),
-				DEFAULT_EXECUTION_BLOCK_CONSTRUCTION,
-			),
-			offchain_worker: exec_all_or(
-				exec.execution_offchain_worker.clone(),
-				DEFAULT_EXECUTION_OFFCHAIN_WORKER,
-			),
-			other: exec_all_or(exec.execution_other.clone(), DEFAULT_EXECUTION_OTHER),
+			syncing: if let Some(syncing) = exec.execution_syncing.clone() {
+				exec_all_or(syncing, DEFAULT_EXECUTION_SYNCING)
+			} else {
+				origin_execution_strategies.syncing
+			},
+			importing: if let Some(importing) = exec.execution_import_block.clone() {
+				exec_all_or(importing, DEFAULT_EXECUTION_IMPORT_BLOCK)
+			} else {
+				origin_execution_strategies.importing
+			},
+			block_construction: if let Some(block_construction) =
+				exec.execution_block_construction.clone()
+			{
+				exec_all_or(block_construction, DEFAULT_EXECUTION_BLOCK_CONSTRUCTION)
+			} else {
+				origin_execution_strategies.block_construction
+			},
+			offchain_worker: if let Some(offchain_worker) = exec.execution_offchain_worker.clone() {
+				exec_all_or(offchain_worker, DEFAULT_EXECUTION_OFFCHAIN_WORKER)
+			} else {
+				origin_execution_strategies.offchain_worker
+			},
+			other: if let Some(other) = exec.execution_other.clone() {
+				exec_all_or(other, DEFAULT_EXECUTION_OTHER)
+			} else {
+				origin_execution_strategies.other
+			},
 		}
 	}
 }
@@ -648,7 +654,7 @@ pub struct ExecutionStrategiesConfig {
 	// case_insensitive = true,
 	// default_value = DEFAULT_EXECUTION_SYNCING.as_str(),
 	// )]
-	execution_syncing: ExecutionStrategy,
+	execution_syncing: Option<ExecutionStrategy>,
 
 	/// The means of execution used when calling into the runtime while importing blocks.
 	// #[structopt(
@@ -658,7 +664,7 @@ pub struct ExecutionStrategiesConfig {
 	// case_insensitive = true,
 	// default_value = DEFAULT_EXECUTION_IMPORT_BLOCK.as_str(),
 	// )]
-	execution_import_block: ExecutionStrategy,
+	execution_import_block: Option<ExecutionStrategy>,
 
 	/// The means of execution used when calling into the runtime while constructing blocks.
 	// #[structopt(
@@ -668,7 +674,7 @@ pub struct ExecutionStrategiesConfig {
 	// case_insensitive = true,
 	// default_value = DEFAULT_EXECUTION_BLOCK_CONSTRUCTION.as_str(),
 	// )]
-	execution_block_construction: ExecutionStrategy,
+	execution_block_construction: Option<ExecutionStrategy>,
 
 	/// The means of execution used when calling into the runtime while using an off-chain worker.
 	// #[structopt(
@@ -678,7 +684,7 @@ pub struct ExecutionStrategiesConfig {
 	// case_insensitive = true,
 	// default_value = DEFAULT_EXECUTION_OFFCHAIN_WORKER.as_str(),
 	// )]
-	execution_offchain_worker: ExecutionStrategy,
+	execution_offchain_worker: Option<ExecutionStrategy>,
 
 	/// The means of execution used when calling into the runtime while not syncing, importing or constructing blocks.
 	// #[structopt(
@@ -688,7 +694,7 @@ pub struct ExecutionStrategiesConfig {
 	// case_insensitive = true,
 	// default_value = DEFAULT_EXECUTION_OTHER.as_str(),
 	// )]
-	execution_other: ExecutionStrategy,
+	execution_other: Option<ExecutionStrategy>,
 
 	/// The execution strategy that should be used by all execution contexts.
 	// #[structopt(
@@ -894,6 +900,26 @@ struct NodeKeyConfig {
 #[serde(rename_all = "PascalCase")]
 enum NodeKeyType {
 	Ed25519,
+}
+
+fn parse_cors(s: &str) -> Cors {
+	let mut is_all = false;
+	let mut origins = Vec::new();
+	for part in s.split(',') {
+		match part {
+			"All" | "*" => {
+				is_all = true;
+				break;
+			}
+			other => origins.push(other.to_owned()),
+		}
+	}
+
+	if is_all {
+		Cors::All
+	} else {
+		Cors::List(origins)
+	}
 }
 
 fn parse_telemetry_endpoints(s: &str) -> (String, u8) {
