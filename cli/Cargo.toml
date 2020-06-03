@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
@@ -20,27 +20,29 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log = { version = "0.4.8" }
-serde = { optional = true, version = "1.0.106" }
-serde_json = { optional = true, version = "1.0.51" }
+serde = { version = "1.0.106", optional = true }
 structopt = { version = "0.3.13" }
 tokio = { version = "0.2.18", features = ["rt-threaded"], optional = true }
+toml = { version = "0.5.6", optional = true }
 wasm-bindgen = { version = "0.2.60", optional = true }
 wasm-bindgen-futures = { version = "0.4.10", optional = true }
 # substrate frame
 # TODO: benchmark
-# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8", optional = true }
+# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1", optional = true }
 # substrate client
-sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
-sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
-sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
+sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-network = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-tracing = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-alpha.darwinia.8" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
 
 [features]
 default = [
@@ -51,10 +53,12 @@ default = [
 wasmtime = ["sc-cli/wasmtime"]
 db = ["darwinia-service/db"]
 cli = [
-	"tokio",
 	"serde",
-	"serde_json",
+	"tokio",
+	"toml",
 	"sc-cli",
+	"sc-network",
+	"sc-tracing",
 	# TODO: benchmark
 	# "frame-benchmarking-cli",
 	"darwinia-service/full-node",

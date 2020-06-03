@@ -23,6 +23,7 @@ use static_assertions::const_assert;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{Imbalance, KeyOwnerProofSystem, LockIdentifier, OnUnbalanced, Randomness},
+	weights::Weight,
 };
 use pallet_grandpa::{fg_primitives, AuthorityId as GrandpaId};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -68,7 +69,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Crab"),
 	authoring_version: 0,
-	spec_version: 2,
+	spec_version: 3,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -102,6 +103,7 @@ impl frame_system::Trait for Runtime {
 	type DbWeight = RocksDbWeight;
 	type BlockExecutionWeight = BlockExecutionWeight;
 	type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
+	type MaximumExtrinsicWeight = MaximumExtrinsicWeight;
 	type MaximumBlockLength = MaximumBlockLength;
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = Version;
@@ -180,10 +182,14 @@ impl pallet_authorship::Trait for Runtime {
 	type EventHandler = (Staking, ImOnline);
 }
 
+parameter_types! {
+	pub const OffencesWeightSoftLimit: Weight = Perbill::from_percent(60) * MaximumBlockWeight::get();
+}
 impl pallet_offences::Trait for Runtime {
 	type Event = Event;
 	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
 	type OnOffenceHandler = Staking;
+	type WeightSoftLimit = OffencesWeightSoftLimit;
 }
 
 impl pallet_session::historical::Trait for Runtime {
@@ -348,6 +354,7 @@ impl pallet_utility::Trait for Runtime {
 	type MultisigDepositBase = MultisigDepositBase;
 	type MultisigDepositFactor = MultisigDepositFactor;
 	type MaxSignatories = MaxSignatories;
+	type IsCallable = ();
 }
 
 parameter_types! {

@@ -39,7 +39,7 @@ pub struct Cli {
 	#[structopt(flatten)]
 	pub run: RunCmd,
 
-	/// Load the boot configuration json file from <PATH>. Command line input will overwrite these.
+	/// Load the boot configuration json file from <PATH>. Command line input will be overwritten by this.
 	#[structopt(long = "conf", value_name = "PATH")]
 	pub conf: Option<std::path::PathBuf>,
 }

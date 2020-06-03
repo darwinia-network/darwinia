@@ -22,7 +22,7 @@ use frame_support::{
 	traits::Currency,
 	weights::{constants::WEIGHT_PER_SECOND, Weight},
 };
-use sp_runtime::Perbill;
+use sp_runtime::{traits::Saturating, Perbill};
 // --- darwinia ---
 use darwinia_primitives::BlockNumber;
 
@@ -36,6 +36,8 @@ pub type NegativeImbalance<T> = <darwinia_balances::Module<T, RingInstance> as C
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
 	pub const MaximumBlockWeight: Weight = 2 * WEIGHT_PER_SECOND;
+	pub const MaximumExtrinsicWeight: Weight = AvailableBlockRatio::get()
+		.saturating_sub(Perbill::from_percent(10)) * MaximumBlockWeight::get();
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::from_percent(75);
 }

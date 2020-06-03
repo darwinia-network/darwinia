@@ -1,5 +1,5 @@
-// TODO: https://github.com/paritytech/substrate/issues/5936
-// mod config;
+#[allow(unused)]
+mod config;
 
 // --- crates ---
 use log::info;
@@ -8,8 +8,7 @@ use sc_cli::SubstrateCli;
 use sc_executor::NativeExecutionDispatch;
 // --- darwinia ---
 use crate::cli::{Cli, Subcommand};
-// TODO: https://github.com/paritytech/substrate/issues/5936
-// use config::Configuration;
+use config::Configuration;
 use darwinia_service::{crab_runtime, IdentifyVariant};
 
 impl SubstrateCli for Cli {
@@ -42,7 +41,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		Ok(match id {
+		Ok(match id.to_lowercase().as_ref() {
 			"crab-dev" | "dev" => Box::new(darwinia_service::chain_spec::crab_development_config()),
 			"crab-local" => Box::new(darwinia_service::chain_spec::crab_local_testnet_config()),
 			"crab-genesis" => Box::new(darwinia_service::chain_spec::crab_build_spec_config()),
@@ -59,16 +58,8 @@ pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
 	match &cli.subcommand {
 		None => {
-			let mut runtime = cli.create_runner(&cli.run.base)?;
-			let config = runtime.config_mut();
-
-			// TODO: https://github.com/paritytech/substrate/issues/5936
-			// if let Some(path) = &cli.conf {
-			// 	if path.is_file() {
-			// 		let darwinia_config = Configuration::load_config(path);
-			// 		darwinia_config.update_config(config);
-			// 	}
-			// }
+			let runtime = Configuration::create_runner_from_cli(cli)?;
+			let config = runtime.config();
 
 			info!("  _____                      _       _       ");
 			info!(" |  __ \\                    (_)     (_)      ");

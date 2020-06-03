@@ -161,39 +161,52 @@ macro_rules! new_full_start {
 					Ok(import_queue)
 				},
 			)?
-			.with_rpc_extensions(|builder| -> Result<darwinia_rpc::RpcExtension, _> {
-				let babe_link = import_setup
-					.as_ref()
-					.map(|s| &s.2)
-					.expect("BabeLink is present for full services or set up faile; qed.");
+			.with_rpc_extensions_builder(|builder| {
 				let grandpa_link = import_setup
 					.as_ref()
 					.map(|s| &s.1)
 					.expect("GRANDPA LinkHalf is present for full services or set up failed; qed.");
-				let shared_authority_set = grandpa_link.shared_authority_set();
+
+				let shared_authority_set = grandpa_link.shared_authority_set().clone();
 				let shared_voter_state = SharedVoterState::empty();
-				let deps = darwinia_rpc::FullDeps {
-					client: builder.client().clone(),
-					pool: builder.pool(),
-					select_chain: builder
-						.select_chain()
-						.cloned()
-						.expect("SelectChain is present for full services or set up failed; qed."),
-					babe: darwinia_rpc::BabeDeps {
-						keystore: builder.keystore(),
-						babe_config: sc_consensus_babe::BabeLink::config(babe_link).clone(),
-						shared_epoch_changes: sc_consensus_babe::BabeLink::epoch_changes(babe_link)
-							.clone(),
-					},
-					grandpa: darwinia_rpc::GrandpaDeps {
-						shared_voter_state: shared_voter_state.clone(),
-						shared_authority_set: shared_authority_set.clone(),
-					},
-				};
 
-				rpc_setup = Some((shared_voter_state));
+				rpc_setup = Some((shared_voter_state.clone()));
 
-				Ok(darwinia_rpc::create_full(deps))
+				let babe_link = import_setup
+					.as_ref()
+					.map(|s| &s.2)
+					.expect("BabeLink is present for full services or set up faile; qed.");
+
+				let babe_config = babe_link.config().clone();
+				let shared_epoch_changes = babe_link.epoch_changes().clone();
+
+				let client = builder.client().clone();
+				let pool = builder.pool().clone();
+				let select_chain = builder
+					.select_chain()
+					.cloned()
+					.expect("SelectChain is present for full services or set up failed; qed.");
+				let keystore = builder.keystore().clone();
+
+				Ok(move |deny_unsafe| -> darwinia_rpc::RpcExtension {
+					let deps = darwinia_rpc::FullDeps {
+						client: client.clone(),
+						pool: pool.clone(),
+						select_chain: select_chain.clone(),
+						deny_unsafe,
+						babe: darwinia_rpc::BabeDeps {
+							babe_config: babe_config.clone(),
+							shared_epoch_changes: shared_epoch_changes.clone(),
+							keystore: keystore.clone(),
+						},
+						grandpa: darwinia_rpc::GrandpaDeps {
+							shared_voter_state: shared_voter_state.clone(),
+							shared_authority_set: shared_authority_set.clone(),
+						},
+					};
+
+					darwinia_rpc::create_full(deps)
+				})
 			})?;
 
 		(builder, import_setup, inherent_data_providers, rpc_setup)
@@ -243,6 +256,7 @@ macro_rules! new_full {
 			let proposer = sc_basic_authorship::ProposerFactory::new(
 				service.client(),
 				service.transaction_pool(),
+				service.prometheus_registry().as_ref(),
 			);
 
 			let select_chain = service.select_chain().ok_or(ServiceError::SelectChainRequired)?;
@@ -422,7 +436,7 @@ macro_rules! new_light {
 					backend, provider,
 				)) as _)
 			})?
-			.with_rpc_extensions(|builder| -> Result<darwinia_rpc::RpcExtension, _> {
+			.with_rpc_extensions(|builder| {
 				let fetcher = builder
 					.fetcher()
 					.ok_or_else(|| "Trying to start node RPC without active fetcher")?;
@@ -436,7 +450,6 @@ macro_rules! new_light {
 					client: builder.client().clone(),
 					pool: builder.pool(),
 				};
-
 				Ok(darwinia_rpc::create_light(light_deps))
 			})?
 			.build()
