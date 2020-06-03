@@ -182,6 +182,18 @@ unsafe-pruning = true
 # Enable authoring even when offline.
 #force_authoring = true
 
+# Specify custom keystore path.
+#keystore-path = ""
+
+# Use interactive shell for entering the password used by the keystore.
+#password-interactive = false
+
+# Password used by the keystore.
+#password = ""
+
+# File that contains the password used by the keystore.
+#password-filename = ""
+
 # The size of the instances cache for each runtime.
 #
 # The default value is 8 and the values higher than 256 are ignored.

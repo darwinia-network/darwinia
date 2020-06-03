@@ -176,11 +176,11 @@ pub struct Configuration {
 
 	/// Enable authoring even when offline.
 	force_authoring: Option<bool>,
-	//
-	// #[allow(missing_docs)]
-	// #[structopt(flatten)]
-	// pub keystore_params: KeystoreParams,
-	//
+
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	keystore_config: KeystoreConfig,
+
 	/// The size of the instances cache for each runtime.
 	///
 	/// The default value is 8 and the values higher than 256 are ignored.
@@ -301,6 +301,24 @@ impl Configuration {
 			quick_if_let!(cmd, self, one);
 			quick_if_let!(cmd, self, two);
 			quick_if_let!(cmd, self, force_authoring);
+
+			quick_if_let!(
+				cmd.keystore_params,
+				self.keystore_config,
+				Some(keystore_path)
+			);
+			quick_if_let!(
+				cmd.keystore_params,
+				self.keystore_config,
+				password_interactive
+			);
+			quick_if_let!(cmd.keystore_params, self.keystore_config, Some(password));
+			quick_if_let!(
+				cmd.keystore_params,
+				self.keystore_config,
+				Some(password_filename)
+			);
+
 			quick_if_let!(cmd, self, Some(max_runtime_instances));
 			quick_if_let!(cmd, self, sentry_nodes);
 		}
@@ -926,6 +944,37 @@ struct TransactionPoolConfig {
 
 	/// Maximum number of kilobytes of all transactions stored in the pool.
 	pool_kbytes: Option<usize>,
+}
+
+/// Parameters of the keystore
+#[derive(Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct KeystoreConfig {
+	/// Specify custom keystore path.
+	pub keystore_path: Option<PathBuf>,
+
+	/// Use interactive shell for entering the password used by the keystore.
+	// #[structopt(
+	// long = "password-interactive",
+	// conflicts_with_all = &[ "password", "password-filename" ]
+	// )]
+	pub password_interactive: Option<bool>,
+
+	/// Password used by the keystore.
+	// #[structopt(
+	// long = "password",
+	// conflicts_with_all = &[ "password-interactive", "password-filename" ]
+	// )]
+	pub password: Option<String>,
+
+	/// File that contains the password used by the keystore.
+	// #[structopt(
+	// long = "password-filename",
+	// value_name = "PATH",
+	// parse(from_os_str),
+	// conflicts_with_all = &[ "password-interactive", "password" ]
+	// )]
+	pub password_filename: Option<PathBuf>,
 }
 
 fn parse_cors(s: &str) -> Cors {
