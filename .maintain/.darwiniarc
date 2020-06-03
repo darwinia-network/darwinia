@@ -54,7 +54,7 @@ unsafe-rpc-external = true
 # Same as `--ws-external` but doesn't warn you about it.
 unsafe-ws-external = true
 
-# Listen to all Prometheu
+# Listen to all Prometheus
 #
 # Default is local.
 prometheus-external = true
@@ -82,7 +82,7 @@ rpc-cors = "All"
 # Do not expose a Prometheus metric endpoint.
 #
 # Prometheus metric endpoint is enabled by default.
-#no-primetheus = true
+#no-prometheus = true
 
 # The human-readable name for this node.
 #
@@ -169,7 +169,7 @@ unsafe-pruning = true
 #listen-addr = []
 
 # Specify p2p protocol TCP port.
-#port = 9933
+#port = 30333
 
 # Forbid connecting to private IPv4 addresses (as specified in
 # [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with
