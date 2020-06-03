@@ -149,6 +149,12 @@ unsafe-pruning = true
 # Receiver to process tracing messages.
 #tracing-receiver = "Log"
 
+# Maximum number of transactions in the transaction pool.
+#pool-limit = 8192
+
+# Maximum number of kilobytes of all transactions stored in the pool.
+#pool_kbytes = 20480
+
 # Shortcut for `--name Alice --validator` with session keys for `Alice` added to keystore.
 #alice = true
 

@@ -138,10 +138,10 @@ pub struct Configuration {
 	// #[serde(flatten)]
 	// network_config: NetworkConfig,
 	//
-	// #[allow(missing_docs)]
-	// #[structopt(flatten)]
-	// pub pool_config: TransactionPoolParams,
-	//
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	pool_config: TransactionPoolConfig,
+
 	/// Shortcut for `--name Alice --validator` with session keys for `Alice` added to keystore.
 	// #[structopt(long, conflicts_with_all = &["bob", "charlie", "dave", "eve", "ferdie", "one", "two"])]
 	alice: Option<bool>,
@@ -289,6 +289,9 @@ impl Configuration {
 			// cmd.network_params.legacy_network_protocol =
 			// 	self.network_config.legacy_network_protocol;
 			//
+			quick_if_let!(cmd.pool_config, self.pool_config, pool_limit);
+			quick_if_let!(cmd.pool_config, self.pool_config, pool_kbytes);
+
 			quick_if_let!(cmd, self, alice);
 			quick_if_let!(cmd, self, bob);
 			quick_if_let!(cmd, self, charlie);
@@ -657,7 +660,7 @@ impl Into<sc_service::config::WasmExecutionMethod> for WasmExecutionMethod {
 /// Execution strategies parameters.
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct ExecutionStrategiesConfig {
+struct ExecutionStrategiesConfig {
 	/// The means of execution used when calling into the runtime while syncing blocks.
 	// #[structopt(
 	// long = "execution-syncing",
@@ -879,7 +882,7 @@ struct NodeKeyConfig {
 	///
 	/// If the file does not exist, it is created with a newly generated secret key of
 	/// the chosen type.
-	pub node_key_file: Option<PathBuf>,
+	node_key_file: Option<PathBuf>,
 }
 // impl NodeKeyConfig {
 // 	/// Create a `NodeKeyConfig` from the given `NodeKeyParams` in the context
@@ -912,6 +915,17 @@ struct NodeKeyConfig {
 #[serde(rename_all = "PascalCase")]
 enum NodeKeyType {
 	Ed25519,
+}
+
+/// Parameters used to create the pool configuration.
+#[derive(Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct TransactionPoolConfig {
+	/// Maximum number of transactions in the transaction pool.
+	pool_limit: Option<usize>,
+
+	/// Maximum number of kilobytes of all transactions stored in the pool.
+	pool_kbytes: Option<usize>,
 }
 
 fn parse_cors(s: &str) -> Cors {
