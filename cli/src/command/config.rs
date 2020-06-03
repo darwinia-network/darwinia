@@ -305,26 +305,11 @@ impl Configuration {
 		let mut runner = cli.create_runner(&cli.run.base)?;
 		{
 			let config = runner.config_mut();
+
 			let is_dev = cli.run.base.is_dev().unwrap();
 			let role = config.role.clone();
-			// let base_path = self
-			// 	.base_path()
-			// 	.unwrap()
-			// 	.unwrap_or_else(|| {
-			// 		app_dirs::get_app_root(
-			// 			AppDataType::UserData,
-			// 			&AppInfo {
-			// 				name: cli.executable_name(),
-			// 				author: cli.author(),
-			// 			},
-			// 		)
-			// 		.expect("app directories exist on all supported platforms; qed")
-			// 	})
-			// 	.join("chains")
-			// 	.join(chain_spec.id());
 
-			// config.rpc_methods = self.rpc_methods.into();
-			//
+			quick_if_let!(config, self, rpc_methods);
 
 			config.rpc_cors = self
 				.rpc_cors
@@ -346,24 +331,10 @@ impl Configuration {
 			config.offchain_worker = self
 				.offchain_worker_config
 				.offchain_worker(&config.offchain_worker, &role);
-			//
-			// config.database = match self.import_config.database_config {
-			// 	DatabaseConfig::RocksDb => sc_service::config::DatabaseConfig::RocksDb {
-			// 		path: base_path.join("db"),
-			// 		cache_size: self
-			// 			.import_config
-			// 			.database_config
-			// 			.database_cache_size
-			// 			.unwrap_or(128),
-			// 	},
-			// 	DatabaseConfig::SubDb => sc_service::config::DatabaseConfig::SubDb {
-			// 		path: base_path.join("subdb"),
-			// 	},
-			// 	DatabaseConfig::ParityDb => sc_service::config::DatabaseConfig::ParityDb {
-			// 		path: base_path.join("paritydb"),
-			// 	},
-			// };
-			//
+			config.database = self
+				.import_config
+				.database_config
+				.database(&config.database);
 			quick_if_let!(config, self.import_config, wasm_method);
 			config.execution_strategies = self
 				.import_config
@@ -376,7 +347,7 @@ impl Configuration {
 }
 
 /// Available RPC methods.
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 enum RpcMethods {
 	/// Expose every RPC method only when RPC is listening on `localhost`,
@@ -436,7 +407,7 @@ impl OffchainWorkerConfig {
 	/// Load spec to `Configuration` from `OffchainWorkerParams` and spec factory.
 	fn offchain_worker(
 		&self,
-		origin_config: &sc_service::config::OffchainWorkerConfig,
+		origin_offchain_worker: &sc_service::config::OffchainWorkerConfig,
 		role: &sc_service::Role,
 	) -> sc_service::config::OffchainWorkerConfig {
 		let enabled = if let Some(enabled) = &self.enabled {
@@ -447,12 +418,12 @@ impl OffchainWorkerConfig {
 				(OffchainWorkerEnabled::WhenValidating, _) => false,
 			}
 		} else {
-			origin_config.enabled
+			origin_offchain_worker.enabled
 		};
 		let indexing_enabled = if let Some(indexing_enabled) = self.indexing_enabled {
 			indexing_enabled
 		} else {
-			origin_config.indexing_enabled
+			origin_offchain_worker.indexing_enabled
 		};
 
 		sc_service::config::OffchainWorkerConfig {
@@ -606,6 +577,47 @@ struct DatabaseConfig {
 	/// Limit the memory the database cache can use.
 	#[serde(rename = "db-cache")]
 	database_cache_size: Option<usize>,
+}
+impl DatabaseConfig {
+	fn database(
+		&self,
+		origin_database: &sc_service::config::DatabaseConfig,
+	) -> sc_service::config::DatabaseConfig {
+		if let Some(database) = &self.database {
+			let path = origin_database.path().unwrap().to_path_buf();
+			match database {
+				Database::RocksDb => {
+					let origin_data_base_cache_size =
+						if let sc_service::config::DatabaseConfig::RocksDb { cache_size, .. } =
+							origin_database
+						{
+							Some(*cache_size)
+						} else {
+							None
+						};
+
+					sc_service::config::DatabaseConfig::RocksDb {
+						path,
+						cache_size: self
+							.database_cache_size
+							.unwrap_or(origin_data_base_cache_size.unwrap_or(128)),
+					}
+				}
+				Database::SubDb => sc_service::config::DatabaseConfig::SubDb { path },
+				Database::ParityDb => sc_service::config::DatabaseConfig::ParityDb { path },
+			}
+		} else {
+			let mut database = origin_database.to_owned();
+
+			if let sc_service::config::DatabaseConfig::RocksDb { cache_size, .. } = &mut database {
+				if let Some(database_cache_size) = self.database_cache_size {
+					*cache_size = database_cache_size;
+				}
+			}
+
+			database
+		}
+	}
 }
 /// Database backend
 #[derive(Deserialize)]

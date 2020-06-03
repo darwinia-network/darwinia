@@ -115,7 +115,7 @@ base-path = "/tmp/data"
 #
 # Log levels (least to most verbose) are error, warn, info, debug, and trace.
 # By default, all targets log `info`. The global log level can be set with -l<level>.
-log = ["sync=trace"]
+#log = ["sync=trace"]
 
 # Specify the state pruning mode, a number of blocks to keep or 'archive'.
 #
@@ -123,6 +123,12 @@ log = ["sync=trace"]
 # validator (i.e. 'archive'), otherwise state is only kept for the last
 # 256 blocks.
 pruning = "32"
+
+# Select database backend to use.
+db = "ParityDb"
+
+# Limit the memory the database cache can use.
+db-cache = 128
 
 # Force start with unsafe pruning settings.
 #
