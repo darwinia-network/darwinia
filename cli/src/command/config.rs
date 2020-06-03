@@ -133,11 +133,11 @@ pub struct Configuration {
 	#[allow(missing_docs)]
 	#[serde(flatten)]
 	import_config: ImportConfig,
-	//
-	// #[allow(missing_docs)]
-	// #[serde(flatten)]
-	// network_config: NetworkConfig,
-	//
+
+	#[allow(missing_docs)]
+	#[serde(flatten)]
+	network_config: NetworkConfig,
+
 	#[allow(missing_docs)]
 	#[serde(flatten)]
 	pool_config: TransactionPoolConfig,
@@ -273,22 +273,44 @@ impl Configuration {
 			quick_if_let!(cmd.import_params, self.import_config, state_cache_size);
 			quick_if_let!(cmd.import_params, self.import_config, Some(tracing_targets));
 
-			// cmd.network_params.bootnodes = self.network_config.bootnodes;
-			// cmd.network_params.reserved_nodes = self.network_config.reserved_nodes;
-			// cmd.network_params.reserved_only = self.network_config.reserved_only;
-			// cmd.network_params.public_addr = self.network_config.public_addr;
-			// cmd.network_params.listen_addr = self.network_config.listen_addr;
-			// cmd.network_params.port = self.network_config.port;
-			// cmd.network_params.no_private_ipv4 = self.network_config.no_private_ipv4;
-			// cmd.network_params.out_peers = self.network_config.out_peers;
-			// cmd.network_params.in_peers = self.network_config.in_peers;
-			// cmd.network_params.no_mdns = self.network_config.no_mdns;
-			// cmd.network_params.max_parallel_downloads = self.network_config.max_parallel_downloads;
-			// cmd.network_params.no_yamux_flow_control = self.network_config.no_yamux_flow_control;
-			// cmd.network_params.discover_local = self.network_config.discover_local;
-			// cmd.network_params.legacy_network_protocol =
-			// 	self.network_config.legacy_network_protocol;
-			//
+			quick_if_let!(cmd.network_params, self.network_config, bootnodes);
+			quick_if_let!(cmd.network_params, self.network_config, reserved_nodes);
+			quick_if_let!(cmd.network_params, self.network_config, reserved_only);
+			quick_if_let!(cmd.network_params, self.network_config, public_addr);
+			quick_if_let!(cmd.network_params, self.network_config, listen_addr);
+			quick_if_let!(cmd.network_params, self.network_config, bootnodes);
+			quick_if_let!(cmd.network_params, self.network_config, bootnodes);
+			quick_if_let!(cmd.network_params, self.network_config, bootnodes);
+			quick_if_let!(cmd.network_params, self.network_config, Some(port));
+			quick_if_let!(cmd.network_params, self.network_config, no_private_ipv4);
+			quick_if_let!(cmd.network_params, self.network_config, out_peers);
+			quick_if_let!(cmd.network_params, self.network_config, in_peers);
+			quick_if_let!(
+				cmd.network_params,
+				self.network_config,
+				max_parallel_downloads
+			);
+			quick_if_let!(
+				cmd.network_params.node_key_params,
+				self.network_config.node_key_config,
+				Some(node_key)
+			);
+			quick_if_let!(
+				cmd.network_params.node_key_params,
+				self.network_config.node_key_config,
+				Some(node_key_file)
+			);
+			quick_if_let!(
+				cmd.network_params,
+				self.network_config,
+				no_yamux_flow_control
+			);
+			quick_if_let!(
+				cmd.network_params,
+				self.network_config,
+				legacy_network_protocol
+			);
+
 			quick_if_let!(cmd.pool_config, self.pool_config, pool_limit);
 			quick_if_let!(cmd.pool_config, self.pool_config, pool_kbytes);
 
@@ -788,23 +810,23 @@ impl Into<sc_tracing::TracingReceiver> for TracingReceiver {
 #[serde(rename_all = "kebab-case")]
 struct NetworkConfig {
 	/// Specify a list of bootnodes.
-	bootnodes: Vec<sc_service::config::MultiaddrWithPeerId>,
+	bootnodes: Option<Vec<sc_service::config::MultiaddrWithPeerId>>,
 
 	/// Specify a list of reserved node addresses.
-	reserved_nodes: Vec<sc_service::config::MultiaddrWithPeerId>,
+	reserved_nodes: Option<Vec<sc_service::config::MultiaddrWithPeerId>>,
 
 	/// Whether to only allow connections to/from reserved nodes.
 	///
 	/// If you are a validator your node might still connect to other validator
 	/// nodes regardless of whether they are defined as reserved nodes.
-	reserved_only: bool,
+	reserved_only: Option<bool>,
 
 	/// The public address that other nodes will use to connect to it.
 	/// This can be used if there's a proxy in front of this node.
-	public_addr: Vec<sc_service::config::Multiaddr>,
+	public_addr: Option<Vec<sc_service::config::Multiaddr>>,
 
 	/// Listen on this multiaddress.
-	listen_addr: Vec<sc_service::config::Multiaddr>,
+	listen_addr: Option<Vec<sc_service::config::Multiaddr>>,
 
 	/// Specify p2p protocol TCP port.
 	port: Option<u16>,
@@ -812,25 +834,25 @@ struct NetworkConfig {
 	/// Forbid connecting to private IPv4 addresses (as specified in
 	/// [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with
 	/// `--reserved-nodes` or `--bootnodes`.
-	no_private_ipv4: bool,
+	no_private_ipv4: Option<bool>,
 
 	/// Specify the number of outgoing connections we're trying to maintain.
-	out_peers: u32,
+	out_peers: Option<u32>,
 
 	/// Specify the maximum number of incoming connections we're accepting.
-	in_peers: u32,
+	in_peers: Option<u32>,
 
 	/// Disable mDNS discovery.
 	///
 	/// By default, the network will use mDNS to discover other nodes on the
 	/// local network. This disables it. Automatically implied when using --dev.
-	no_mdns: bool,
+	no_mdns: Option<bool>,
 
 	/// Maximum number of peers from which to ask for the same blocks in parallel.
 	///
 	/// This allows downloading announced blocks from multiple peers. Decrease to save
 	/// traffic and risk increased latency.
-	max_parallel_downloads: u32,
+	max_parallel_downloads: Option<u32>,
 
 	#[allow(missing_docs)]
 	#[serde(flatten)]
@@ -838,16 +860,16 @@ struct NetworkConfig {
 
 	/// Disable the yamux flow control. This option will be removed in the future once there is
 	/// enough confidence that this feature is properly working.
-	no_yamux_flow_control: bool,
+	no_yamux_flow_control: Option<bool>,
 
 	/// Enable peer discovery on local networks.
 	///
 	/// By default this option is true for `--dev` and false otherwise.
-	discover_local: bool,
+	discover_local: Option<bool>,
 
 	/// Use the legacy "pre-mainnet-launch" networking protocol. Enable if things seem broken.
 	/// This option will be removed in the future.
-	legacy_network_protocol: bool,
+	legacy_network_protocol: Option<bool>,
 }
 /// Parameters used to create the `NodeKeyConfig`, which determines the keypair
 /// used for libp2p networking.
@@ -888,7 +910,7 @@ struct NodeKeyConfig {
 	///
 	/// The node's secret key determines the corresponding public key and hence the
 	/// node's peer ID in the context of libp2p.
-	node_key_type: NodeKeyType,
+	node_key_type: Option<NodeKeyType>,
 
 	/// The file from which to read the node's secret key to use for libp2p networking.
 	///
@@ -902,33 +924,6 @@ struct NodeKeyConfig {
 	/// the chosen type.
 	node_key_file: Option<PathBuf>,
 }
-// impl NodeKeyConfig {
-// 	/// Create a `NodeKeyConfig` from the given `NodeKeyParams` in the context
-// 	/// of an optional network config storage directory.
-// 	fn node_key(&self, net_config_dir: &PathBuf) -> sc_service::config::NodeKeyConfig {
-// 		/// The file name of the node's Ed25519 secret key inside the chain-specific
-// 		/// network config directory, if neither `--node-key` nor `--node-key-file`
-// 		/// is specified in combination with `--node-key-type=ed25519`.
-// 		const NODE_KEY_ED25519_FILE: &str = "secret_ed25519";
-//
-// 		match self.node_key_type {
-// 			NodeKeyType::Ed25519 => {
-// 				let secret = if let Some(node_key) = self.node_key.as_ref() {
-// 					parse_ed25519_secret(node_key)?
-// 				} else {
-// 					let path = self
-// 						.node_key_file
-// 						.clone()
-// 						.unwrap_or_else(|| net_config_dir.join(NODE_KEY_ED25519_FILE));
-//
-// 					sc_network::config::Secret::File(path)
-// 				};
-//
-// 				NodeKeyConfig::Ed25519(secret)
-// 			}
-// 		}
-// 	}
-// }
 #[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
 enum NodeKeyType {
