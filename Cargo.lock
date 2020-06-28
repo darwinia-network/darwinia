@@ -1216,6 +1216,68 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-runtime"
+version = "0.6.1"
+dependencies = [
+ "darwinia-balances",
+ "darwinia-balances-rpc-runtime-api",
+ "darwinia-claims",
+ "darwinia-elections-phragmen",
+ "darwinia-eth-backing",
+ "darwinia-eth-offchain",
+ "darwinia-eth-relay",
+ "darwinia-header-mmr",
+ "darwinia-primitives",
+ "darwinia-runtime-common",
+ "darwinia-staking",
+ "darwinia-staking-rpc-runtime-api",
+ "darwinia-treasury",
+ "frame-benchmarking",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-rpc-runtime-api",
+ "pallet-authority-discovery",
+ "pallet-authorship",
+ "pallet-babe",
+ "pallet-collective",
+ "pallet-finality-tracker",
+ "pallet-grandpa",
+ "pallet-identity",
+ "pallet-im-online",
+ "pallet-indices",
+ "pallet-membership",
+ "pallet-offences",
+ "pallet-randomness-collective-flip",
+ "pallet-recovery",
+ "pallet-session",
+ "pallet-society",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
+ "parity-scale-codec",
+ "serde",
+ "smallvec 1.4.0",
+ "sp-api",
+ "sp-authority-discovery",
+ "sp-block-builder",
+ "sp-consensus-babe",
+ "sp-core",
+ "sp-inherents",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std 2.0.0-rc2 (git+https://github.com/darwinia-network/substrate.git?tag=v2.0.0-rc.darwinia.1)",
+ "sp-transaction-pool",
+ "sp-version",
+ "static_assertions",
+ "substrate-wasm-builder-runner",
+]
+
+[[package]]
 name = "darwinia-runtime-common"
 version = "0.6.1"
 dependencies = [

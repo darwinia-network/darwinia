@@ -32,6 +32,7 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
+	"runtime/darwinia",
 	"service",
 ]
 exclude = []
