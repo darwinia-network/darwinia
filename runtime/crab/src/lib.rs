@@ -426,6 +426,13 @@ impl pallet_recovery::Trait for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
+impl pallet_scheduler::Trait for Runtime {
+	type Event = Event;
+	type Origin = Origin;
+	type Call = Call;
+	type MaximumWeight = MaximumBlockWeight;
+}
+
 impl pallet_sudo::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -707,6 +714,9 @@ construct_runtime!(
 
 		// Social recovery module.
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
+
+		// System scheduler.
+		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 
 		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
 
