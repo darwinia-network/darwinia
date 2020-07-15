@@ -69,7 +69,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Crab"),
 	authoring_version: 0,
-	spec_version: 3,
+	spec_version: 4,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -159,7 +159,9 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MILLI;
+	// pub const TransactionByteFee: Balance = 10 * MILLI;
+	// FIXME: hot fix #473
+	pub const TransactionByteFee: Balance = 0;
 	// for a sane configuration, this should always be less than `AvailableBlockRatio`.
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
 }
@@ -424,6 +426,13 @@ impl pallet_recovery::Trait for Runtime {
 	type FriendDepositFactor = FriendDepositFactor;
 	type MaxFriends = MaxFriends;
 	type RecoveryDeposit = RecoveryDeposit;
+}
+
+impl pallet_scheduler::Trait for Runtime {
+	type Event = Event;
+	type Origin = Origin;
+	type Call = Call;
+	type MaximumWeight = MaximumBlockWeight;
 }
 
 impl pallet_sudo::Trait for Runtime {
@@ -707,6 +716,9 @@ construct_runtime!(
 
 		// Social recovery module.
 		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
+
+		// System scheduler.
+		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 
 		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
 
