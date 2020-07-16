@@ -1,6 +1,6 @@
 [package]
 name = "crab-runtime"
-version = "0.6.1"
+version = "0.6.3"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime for Crab network"
 edition = "2018"

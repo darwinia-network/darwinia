@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-primitives"
-version = "0.6.1"
+version = "0.6.3"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime primitives"
 edition = "2018"

@@ -4,7 +4,7 @@ use std::{io::Read, path::PathBuf};
 use serde::Deserialize;
 // --- substrate ---
 use sc_cli::{CliConfiguration, SubstrateCli};
-// --- custom ---
+// --- darwinia ---
 use crate::cli::Cli;
 
 /// Service configuration.
