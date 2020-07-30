@@ -102,11 +102,6 @@ pub fn run() -> sc_cli::Result<()> {
 					>(config)
 				})
 			}
-		} // TODO: benchmark
-		  // Some(Subcommand::Benchmark(cmd)) => {
-		  // 	cmd.init(&version)?;
-		  // 	cmd.update_config(&mut config, |id| load_spec(id), &version)?;
-		  // 	cmd.run::<darwinia_service::crab_runtime::Block, darwinia_service::CrabExecutor>(config)
-		  // }
+		}
 	}
 }

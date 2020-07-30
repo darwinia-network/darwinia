@@ -36,8 +36,6 @@ native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
-	// TODO: benchmarking
-	// frame_benchmarking::benchmarking::HostFunctions,
 );
 
 /// A set of APIs that darwinia-like runtimes must implement.
