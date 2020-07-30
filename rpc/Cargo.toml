@@ -15,6 +15,7 @@ jsonrpc-core = { version = "14.2.0" }
 # substrate primitives
 sp-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sp-blockchain = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sp-block-builder = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sp-consensus = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
