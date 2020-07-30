@@ -51,8 +51,6 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_eth_offchain::crypto::AuthorityId as EthOffchainId;
-use darwinia_eth_relay::EthNetworkType;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
@@ -263,45 +261,6 @@ impl pallet_im_online::Trait for Runtime {
 }
 
 impl pallet_authority_discovery::Trait for Runtime {}
-
-// parameter_types! {
-// 	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-// 	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-// 	pub const EmergencyVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-// 	pub const MinimumDeposit: Balance = 100 * COIN;
-// 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-// 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-// 	// One cent: $10,000 / MB
-// 	pub const PreimageByteDeposit: Balance = 1 * MILLI;
-// }
-// impl pallet_democracy::Trait for Runtime {
-// 	type Proposal = Call;
-// 	type Event = Event;
-// 	type Currency = Ring;
-// 	type EnactmentPeriod = EnactmentPeriod;
-// 	type LaunchPeriod = LaunchPeriod;
-// 	type VotingPeriod = VotingPeriod;
-// 	type MinimumDeposit = MinimumDeposit;
-// 	/// A straight majority of the council can decide what their next motion is.
-// 	type ExternalOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
-// 	/// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
-// 	type ExternalMajorityOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
-// 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-// 	/// (NTB) vote.
-// 	type ExternalDefaultOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
-// 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-// 	/// be tabled immediately and with a shorter voting/enactment period.
-// 	type FastTrackOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
-// 	type EmergencyVotingPeriod = EmergencyVotingPeriod;
-// 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-// 	type CancellationOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
-// 	// Any single technical committee member may veto a coming council proposal, however they can
-// 	// only do it once and it lasts only for the cooloff period.
-// 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-// 	type CooloffPeriod = CooloffPeriod;
-// 	type PreimageByteDeposit = PreimageByteDeposit;
-// 	type Slash = Treasury;
-// }
 
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
@@ -585,7 +544,7 @@ parameter_types! {
 	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/backi");
 	pub const SubKeyPrefix: u8 = 42;
 }
-impl darwinia_eth_backing::Trait for Runtime {
+impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthBackingModuleId;
 	type Event = Event;
 	type DetermineAccountId = darwinia_eth_backing::AccountIdDeterminator<Runtime>;
@@ -600,20 +559,12 @@ parameter_types! {
 	pub const EthRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
 	pub const EthNetwork: EthNetworkType = EthNetworkType::Mainnet;
 }
-impl darwinia_eth_relay::Trait for Runtime {
+impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthRelayModuleId;
 	type Event = Event;
 	type EthNetwork = EthNetwork;
 	type Call = Call;
 	type Currency = Ring;
-}
-
-parameter_types! {
-	pub const FetchInterval: BlockNumber = 3;
-}
-impl darwinia_eth_offchain::Trait for Runtime {
-	type AuthorityId = EthOffchainId;
-	type FetchInterval = FetchInterval;
 }
 
 impl darwinia_header_mmr::Trait for Runtime {}
@@ -646,7 +597,6 @@ where
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
 			pallet_grandpa::ValidateEquivocationReport::<Runtime>::new(),
-			Default::default(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -767,7 +717,6 @@ pub type SignedExtra = (
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 	pallet_grandpa::ValidateEquivocationReport<Runtime>,
-	darwinia_eth_relay::CheckEthRelayHeaderHash<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
