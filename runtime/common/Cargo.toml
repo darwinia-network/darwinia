@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-runtime-common"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime common"
 edition = "2018"
@@ -10,7 +10,7 @@ repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
 # crates
-codec = { package = "parity-scale-codec", version = "1.3.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "1.3.4", default-features = false }
 # substrate primitives
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sp-std = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
@@ -21,9 +21,9 @@ frame-support = { default-features = false, git = "https://github.com/darwinia-n
 frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
-darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "darwinia-master" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 
 [features]
 default = ["std"]
