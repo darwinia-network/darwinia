@@ -23,9 +23,9 @@ frame-system = { default-features = false, git = "https://github.com/darwinia-ne
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
-darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-relay" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-relay" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-relay" }
 
 [features]
 default = ["std"]
