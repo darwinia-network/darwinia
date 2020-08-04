@@ -674,20 +674,20 @@ impl darwinia_claims::Trait for Runtime {
 	type RingCurrency = Ring;
 }
 
-// parameter_types! {
-// 	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/backi");
-// 	pub const SubKeyPrefix: u8 = 42;
-// }
-// impl darwinia_ethereum_backing::Trait for Runtime {
-// 	type ModuleId = EthBackingModuleId;
-// 	type Event = Event;
-// 	type DetermineAccountId = darwinia_ethereum_backing::AccountIdDeterminator<Runtime>;
-// 	type EthereumRelay = EthereumRelay;
-// 	type OnDepositRedeem = Staking;
-// 	type RingCurrency = Ring;
-// 	type KtonCurrency = Kton;
-// 	type SubKeyPrefix = SubKeyPrefix;
-// }
+parameter_types! {
+	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/backi");
+	pub const SubKeyPrefix: u8 = 42;
+}
+impl darwinia_ethereum_backing::Trait for Runtime {
+	type ModuleId = EthBackingModuleId;
+	type Event = Event;
+	type DetermineAccountId = darwinia_ethereum_backing::AccountIdDeterminator<Runtime>;
+	type EthereumRelay = EthereumRelay;
+	type OnDepositRedeem = Staking;
+	type RingCurrency = Ring;
+	type KtonCurrency = Kton;
+	type SubKeyPrefix = SubKeyPrefix;
+}
 
 parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
@@ -778,7 +778,7 @@ construct_runtime!(
 		// Claims. Usable initially.
 		Claims: darwinia_claims::{Module, Call, Storage, Config, Event<T>, ValidateUnsigned},
 
-		// EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
+		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		RelayerGame: darwinia_relayer_game::<Instance0>::{Module, Call, Storage, Event<T>},
 
