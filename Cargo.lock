@@ -1015,7 +1015,7 @@ name = "darwinia"
 version = "0.6.4"
 dependencies = [
  "assert_cmd",
- "darwinia-cli",
+ "darwinia-cli 0.6.4",
  "darwinia-service",
  "futures 0.3.5",
  "nix 0.18.0",
@@ -1086,7 +1086,21 @@ dependencies = [
 [[package]]
 name = "darwinia-cli"
 version = "0.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=xavier-relay#64af9024563fa4f349f11307646a450a32024d35"
 dependencies = [
+ "sc-cli",
+ "sc-client-api",
+ "sc-service",
+ "sc-tracing",
+ "serde",
+ "toml",
+]
+
+[[package]]
+name = "darwinia-cli"
+version = "0.6.4"
+dependencies = [
+ "darwinia-cli 0.6.4 (git+https://github.com/darwinia-network/darwinia-common.git?branch=xavier-relay)",
  "darwinia-service",
  "log",
  "sc-cli",
@@ -1096,6 +1110,7 @@ dependencies = [
  "sc-service",
  "sc-tracing",
  "serde",
+ "sp-core",
  "structopt",
  "substrate-browser-utils",
  "substrate-build-script-utils",

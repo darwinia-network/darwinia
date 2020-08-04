@@ -35,6 +35,10 @@ sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = 
 sc-tracing = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # substrate utils
 substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# substrate primitives
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# darwinia client
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-relay" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
 
@@ -56,6 +60,7 @@ cli = [
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",
+	"darwinia-cli",
 	"darwinia-service/full-node",
 ]
 browser = [

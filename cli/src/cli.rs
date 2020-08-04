@@ -4,7 +4,7 @@
 use structopt::StructOpt;
 
 #[allow(missing_docs)]
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt)]
 pub enum Subcommand {
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
@@ -12,7 +12,7 @@ pub enum Subcommand {
 }
 
 #[allow(missing_docs)]
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt)]
 pub struct RunCmd {
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
@@ -20,12 +20,7 @@ pub struct RunCmd {
 }
 
 #[allow(missing_docs)]
-#[derive(Debug, StructOpt, Clone)]
-#[structopt(settings = &[
-	structopt::clap::AppSettings::GlobalVersion,
-	structopt::clap::AppSettings::ArgsNegateSubcommands,
-	structopt::clap::AppSettings::SubcommandsNegateReqs,
-])]
+#[derive(Debug, StructOpt)]
 pub struct Cli {
 	#[allow(missing_docs)]
 	#[structopt(subcommand)]
