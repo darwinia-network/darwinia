@@ -26,9 +26,6 @@ tokio = { version = "0.2.22", features = ["rt-threaded"], optional = true }
 toml = { version = "0.5.6", optional = true }
 wasm-bindgen = { version = "0.2.67", optional = true }
 wasm-bindgen-futures = { version = "0.4.17", optional = true }
-# substrate frame
-# TODO: benchmark
-# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3", optional = true }
 # substrate client
 sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
@@ -59,8 +56,6 @@ cli = [
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",
-	# TODO: benchmark
-	# "frame-benchmarking-cli",
 	"darwinia-service/full-node",
 ]
 browser = [
@@ -68,5 +63,3 @@ browser = [
 	"wasm-bindgen-futures",
 	"substrate-browser-utils",
 ]
-# TODO: benchmark
-# runtime-benchmarks = ["service/runtime-benchmarks"]

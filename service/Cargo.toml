@@ -61,7 +61,4 @@ darwinia-rpc = { path = "../rpc" }
 [features]
 default = ["db", "full-node"]
 db = ["sc-service/db"]
-# TODO: benchmark
-# runtime-benchmarks = []
-# TODO: parachain
 full-node = []

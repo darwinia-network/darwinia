@@ -48,5 +48,3 @@ std = [
 	"darwinia-staking/std",
 	"darwinia-support/std",
 ]
-# TODO: benchmark
-# runtime-benchmarks = []
