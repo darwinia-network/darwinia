@@ -47,7 +47,9 @@ pallet-identity = { default-features = false, git = "https://github.com/darwinia
 pallet-im-online = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-indices = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-membership = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+pallet-multisig = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-offences = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+pallet-proxy = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-recovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-scheduler = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
@@ -65,10 +67,12 @@ darwinia-claims = { default-features = false, git = "https://github.com/darwinia
 darwinia-elections-phragmen = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 darwinia-ethereum-backing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 darwinia-ethereum-relay = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-relayer-game = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 darwinia-staking-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
-darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "xavier-fix-unstable-sort" }
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 
@@ -115,7 +119,9 @@ std = [
 	"pallet-indices/std",
 	"pallet-identity/std",
 	"pallet-membership/std",
+	"pallet-multisig/std",
 	"pallet-offences/std",
+	"pallet-proxy/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-recovery/std",
 	"pallet-session/std",
@@ -133,13 +139,11 @@ std = [
 	"darwinia-ethereum-backing/std",
 	"darwinia-ethereum-relay/std",
 	"darwinia-header-mmr/std",
+	"darwinia-relayer-game/std",
 	"darwinia-staking/std",
 	"darwinia-staking-rpc-runtime-api/std",
+	"darwinia-support/std",
 	"darwinia-treasury/std",
 	# darwinia runtime
 	"darwinia-runtime-common/std",
 ]
-# TODO: benchmark
-# runtime-benchmarks = [
-# 	"frame-benchmarking",
-# ]
