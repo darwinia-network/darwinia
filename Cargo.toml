@@ -25,6 +25,9 @@ assert_cmd = { version = "1.0.1" }
 nix = { version = "0.18" }
 tempfile = { version = "3.1.0" }
 
+[features]
+default = ["darwinia-cli/wasmtime"]
+
 [workspace]
 members = [
 	"cli",

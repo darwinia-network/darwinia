@@ -47,11 +47,9 @@ substrate-build-script-utils = { git = "https://github.com/darwinia-network/subs
 
 [features]
 default = [
-	"wasmtime",
-	"db",
 	"cli",
+	"db",
 ]
-wasmtime = ["sc-cli/wasmtime"]
 db = ["darwinia-service/db"]
 cli = [
 	"serde",
@@ -63,6 +61,7 @@ cli = [
 	"darwinia-cli",
 	"darwinia-service/full-node",
 ]
+wasmtime = ["sc-cli/wasmtime"]
 browser = [
 	"wasm-bindgen",
 	"wasm-bindgen-futures",

@@ -14,9 +14,9 @@ pub mod wasm {
 	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 	#[cfg(target_arch = "arm")]
-	pub const WASM_BINARY: &[u8] = include_bytes!("../../wasm/crab_runtime.compact.wasm");
+	pub const WASM_BINARY: &[u8] = include_bytes!("../../../wasm/crab_runtime.compact.wasm");
 	#[cfg(target_arch = "arm")]
-	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../wasm/crab_runtime.wasm");
+	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../../wasm/crab_runtime.wasm");
 }
 
 // --- darwinia ---
