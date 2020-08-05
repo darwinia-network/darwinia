@@ -1,3 +1,0 @@
-FROM rustembedded/cross:aarch64-unknown-linux-gnu
-
-RUN apt update && apt upgrade -y && apt install -y clang g++-multilib llvm libclang-dev

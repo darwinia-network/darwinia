@@ -1,0 +1,13 @@
+FROM ubuntu:16.04
+
+# only for x86_64
+
+# change mirrorlist
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && \
+	# update
+	apt update && apt upgrade -y && apt install -y \
+	# tool
+	git make \
+	# compiler
+	gcc g++ \
+	clang llvm libclang-dev
