@@ -6,7 +6,18 @@
 
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, fee::*, relay::*, time::*};
+
+pub mod wasm {
+	//! Make the WASM binary available.
+
+	#[cfg(all(feature = "std", not(target_arch = "arm")))]
+	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+
+	#[cfg(target_arch = "arm")]
+	pub const WASM_BINARY: &[u8] = include_bytes!("../../wasm/crab_runtime.compact.wasm");
+	#[cfg(target_arch = "arm")]
+	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../wasm/crab_runtime.wasm");
+}
 
 // --- darwinia ---
 #[cfg(feature = "std")]
@@ -15,6 +26,7 @@ pub use darwinia_claims::ClaimsList;
 pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
+pub use wasm::*;
 
 // --- crates ---
 use codec::{Decode, Encode};
@@ -53,6 +65,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
+use constants::{currency::*, fee::*, relay::*, time::*};
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
@@ -96,10 +109,6 @@ pub type Executive = frame_executive::Executive<
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 
 type Ring = Balances;
-
-// Make the WASM binary available.
-#[cfg(feature = "std")]
-include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 /// Runtime version (Crab).
 pub const VERSION: RuntimeVersion = RuntimeVersion {
