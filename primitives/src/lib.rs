@@ -1,4 +1,4 @@
-//! Shareable Darwinia types.
+//! Darwinia types shared between the runtime and the Node-side code.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]

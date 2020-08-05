@@ -12,6 +12,10 @@ pub mod currency {
 
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 	pub const TOTAL_POWER: Power = 1_000_000_000;
+
+	pub const fn deposit(items: u32, bytes: u32) -> Balance {
+		items as Balance * 20 * COIN + (bytes as Balance) * 100 * MICRO
+	}
 }
 
 /// Time and blocks.
@@ -59,7 +63,7 @@ pub mod fee {
 	};
 	use sp_runtime::Perbill;
 	// --- darwinia ---
-	use super::currency::MILLI;
+	use super::currency::*;
 	use darwinia_primitives::Balance;
 	use darwinia_runtime_common::ExtrinsicBaseWeight;
 
@@ -89,6 +93,51 @@ pub mod fee {
 				coeff_frac: Perbill::from_rational_approximation(p % q, q),
 				coeff_integer: p / q,
 			}]
+		}
+	}
+}
+
+pub mod relay {
+	// --- darwinia ---
+	use super::currency::*;
+	use crate::*;
+	use darwinia_support::relay::*;
+
+	pub struct EthereumRelayerGameAdjustor;
+	impl AdjustableRelayerGame for EthereumRelayerGameAdjustor {
+		type Moment = BlockNumber;
+		type Balance = Balance;
+		type TcBlockNumber = <EthereumRelay as darwinia_support::relay::Relayable>::TcBlockNumber;
+
+		fn challenge_time(round: Round) -> Self::Moment {
+			match round {
+				// 3 mins
+				0 => 30,
+				// 1 mins
+				_ => 10,
+			}
+		}
+
+		fn round_from_chain_len(chain_len: u64) -> Round {
+			chain_len - 1
+		}
+
+		fn chain_len_from_round(round: Round) -> u64 {
+			round + 1
+		}
+
+		fn update_samples(samples: &mut Vec<Vec<Self::TcBlockNumber>>) {
+			samples.push(vec![samples.last().unwrap().last().unwrap() - 1]);
+		}
+
+		fn estimate_bond(round: Round, proposals_count: u64) -> Self::Balance {
+			match round {
+				0 => match proposals_count {
+					0 => 1000 * COIN,
+					_ => 1500 * COIN,
+				},
+				_ => 100 * COIN,
+			}
 		}
 	}
 }

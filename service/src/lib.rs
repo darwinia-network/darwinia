@@ -36,8 +36,6 @@ native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
-	// TODO: benchmarking
-	// frame_benchmarking::benchmarking::HostFunctions,
 );
 
 /// A set of APIs that darwinia-like runtimes must implement.
@@ -117,12 +115,12 @@ macro_rules! new_full_start {
 		let inherent_data_providers = sp_inherents::InherentDataProviders::new();
 		let builder = sc_service::ServiceBuilder::new_full::<Block, $runtime, $executor>($config)?
 			.with_select_chain(|_, backend| Ok(sc_consensus::LongestChain::new(backend.clone())))?
-			.with_transaction_pool(|config, client, _, prometheus_registry| {
-				let pool_api = sc_transaction_pool::FullChainApi::new(client.clone());
+			.with_transaction_pool(|builder| {
+				let pool_api = sc_transaction_pool::FullChainApi::new(builder.client().clone());
 				let pool = sc_transaction_pool::BasicPool::new(
-					config,
+					builder.config().transaction_pool.clone(),
 					std::sync::Arc::new(pool_api),
-					prometheus_registry,
+					builder.prometheus_registry(),
 				);
 				Ok(pool)
 			})?
@@ -226,6 +224,7 @@ macro_rules! new_full {
 		// --- substrate ---
 		use sc_network::Event;
 		use sc_client_api::ExecutorProvider;
+		use sp_core::traits::BareCryptoStorePtr;
 
 		let (role, is_authority, force_authoring, name, disable_grandpa) = (
 			$config.role.clone(),
@@ -242,7 +241,7 @@ macro_rules! new_full {
 				let provider = client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
 				Ok(Arc::new(GrandpaFinalityProofProvider::new(backend, provider)) as _)
 			})?
-			.build()?;
+			.build_full()?;
 
 		let (block_import, link_half, babe_link) = import_setup.take()
 			.expect("Link Half and Block Import are present for Full Services or setup failed before. qed");
@@ -277,7 +276,7 @@ macro_rules! new_full {
 			};
 
 			let babe = sc_consensus_babe::start_babe(babe_config)?;
-			service.spawn_essential_task("babe", babe);
+			service.spawn_essential_task_handle().spawn_blocking("babe", babe);
 		}
 
 		if matches!(role, Role::Authority{..} | Role::Sentry{..}) {
@@ -310,13 +309,13 @@ macro_rules! new_full {
 				service.prometheus_registry(),
 			);
 
-			service.spawn_task("authority-discovery", authority_discovery);
+			service.spawn_task_handle().spawn("authority-discovery", authority_discovery);
 		}
 
 		// if the node isn't actively participating in consensus then it doesn't
 		// need a keystore, regardless of which protocol we use below.
 		let keystore = if is_authority {
-			Some(service.keystore())
+			Some(service.keystore() as BareCryptoStorePtr)
 		} else {
 			None
 		};
@@ -351,7 +350,7 @@ macro_rules! new_full {
 				shared_voter_state,
 			};
 
-			service.spawn_essential_task(
+			service.spawn_essential_task_handle().spawn_blocking(
 				"grandpa-voter",
 				sc_finality_grandpa::run_grandpa_voter(grandpa_config)?
 			);
@@ -376,16 +375,16 @@ macro_rules! new_light {
 
 		ServiceBuilder::new_light::<Block, $runtime, $dispatch>($config)?
 			.with_select_chain(|_, backend| Ok(LongestChain::new(backend.clone())))?
-			.with_transaction_pool(|config, client, fetcher, prometheus_registry| {
-				let fetcher = fetcher.ok_or_else(|| {
+			.with_transaction_pool(|builder| {
+				let fetcher = builder.fetcher().ok_or_else(|| {
 					"Trying to start light transaction pool without active fetcher"
 				})?;
 				let pool_api =
-					sc_transaction_pool::LightChainApi::new(client.clone(), fetcher.clone());
+					sc_transaction_pool::LightChainApi::new(builder.client().clone(), fetcher);
 				let pool = sc_transaction_pool::BasicPool::with_revalidation_type(
-					config,
+					builder.config().transaction_pool.clone(),
 					Arc::new(pool_api),
-					prometheus_registry,
+					builder.prometheus_registry(),
 					sc_transaction_pool::RevalidationType::Light,
 				);
 				Ok(pool)
@@ -452,7 +451,7 @@ macro_rules! new_light {
 				};
 				Ok(darwinia_rpc::create_light(light_deps))
 			})?
-			.build()
+			.build_light()
 		}};
 }
 

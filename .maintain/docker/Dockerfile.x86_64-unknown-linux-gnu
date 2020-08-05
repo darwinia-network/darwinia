@@ -1,0 +1,3 @@
+FROM rustembedded/cross:x86_64-unknown-linux-gnu
+
+RUN apt update && apt upgrade -y && apt install -y clang llvm libclang-dev

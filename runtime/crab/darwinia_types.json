@@ -30,7 +30,7 @@
 	},
 	"Unbonding": {
 		"amount": "Balance",
-		"moment": "BlockNumber"
+		"until": "BlockNumber"
 	},
 	"AccountData": {
 		"free": "Balance",
@@ -88,6 +88,11 @@
 		"kton_balance": "Compact<Balance>",
 		"power": "Power"
 	},
+	"ElectionResultT": {
+		"elected_stashes": "Vec<AccountId>",
+		"exposures": "Vec<(AccountId, ExposureT)>",
+		"compute": "ElectionCompute"
+	},
 	"RKT": {
 		"r": "Balance",
 		"k": "Balance"
@@ -95,6 +100,22 @@
 	"SpanRecord": {
 		"slashed": "RKT",
 		"paid_out": "RKT"
+	},
+	"UnappliedSlash": {
+		"validator": "AccountId",
+		"own": "RKT",
+		"others": "Vec<(AccountId, RKT)>",
+		"reporters": "Vec<AccountId>",
+		"payout": "RKT"
+	},
+	"__[pallet.treasury]__": {},
+	"Proposal": {
+		"proposer": "AccountId",
+		"beneficiary": "AccountId",
+		"ring_value": "Balance",
+		"kton_value": "Balance",
+		"ring_bond": "Balance",
+		"kton_bond": "Balance"
 	},
 	"__[pallet.bridge.eth]__": {},
 	"EthTransactionIndex": "(H256, u64)",
@@ -125,7 +146,7 @@
 	"EthAddress": "H160",
 	"Bloom": "[u8; 256; Bloom]",
 	"H128": "[u8; 16; H128]",
-	"DoubleNodeWithMerkleProof": {
+	"EthashProof": {
 		"dag_nodes": "(H512, H512)",
 		"proof": "Vec<H128>"
 	},
@@ -135,7 +156,7 @@
 		"logs": "Vec<LogEntry>",
 		"outcome": "TransactionOutcome"
 	},
-	"EthNetworkType": {
+	"EthereumNetworkType": {
 		"_enum": {
 			"Mainnet": null,
 			"Ropsten": null
@@ -173,6 +194,13 @@
 		"prefix": "[u8; 4; Prefix]",
 		"mmr_root": "Hash"
 	},
+	"__[pallet.relayer-game]__": {},
+	"Round": "u64",
+	"TcBlockNumber": "Vec<u8>",
+	"TcHeaderHash": "Vec<u8>",
+	"MMRHash": "Vec<u8>",
+	"GameId": "TcBlockNumber",
+	"RawHeaderThing": "Vec<u8>",
 	"__[node.rpc]__": {},
 	"BalancesRuntimeDispatchInfo": {
 		"usable_balance": "Balance"

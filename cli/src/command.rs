@@ -1,14 +1,13 @@
-#[allow(unused)]
-mod config;
-
+// --- std ---
+use std::path::PathBuf;
 // --- crates ---
 use log::info;
 // --- substrate ---
-use sc_cli::SubstrateCli;
+use sc_cli::{RunCmd, SubstrateCli};
 use sc_executor::NativeExecutionDispatch;
 // --- darwinia ---
 use crate::cli::{Cli, Subcommand};
-use config::Configuration;
+use darwinia_cli::{Configuration, DarwiniaCli};
 use darwinia_service::{crab_runtime, IdentifyVariant};
 
 impl SubstrateCli for Cli {
@@ -41,11 +40,22 @@ impl SubstrateCli for Cli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+		let id = if id.is_empty() {
+			let n = get_exec_name().unwrap_or_default();
+			["crab"]
+				.iter()
+				.cloned()
+				.find(|&chain| n.starts_with(chain))
+				.unwrap_or("crab")
+		} else {
+			id
+		};
+
 		Ok(match id.to_lowercase().as_ref() {
 			"crab-dev" | "dev" => Box::new(darwinia_service::chain_spec::crab_development_config()),
 			"crab-local" => Box::new(darwinia_service::chain_spec::crab_local_testnet_config()),
 			"crab-genesis" => Box::new(darwinia_service::chain_spec::crab_build_spec_config()),
-			"crab" | "" => Box::new(darwinia_service::chain_spec::crab_config()?),
+			"crab" => Box::new(darwinia_service::chain_spec::crab_config()?),
 			path => Box::new(darwinia_service::CrabChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
 			)?),
@@ -53,13 +63,50 @@ impl SubstrateCli for Cli {
 	}
 }
 
+impl DarwiniaCli for Cli {
+	fn conf(&self) -> &Option<PathBuf> {
+		&self.conf
+	}
+
+	fn base(&self) -> &RunCmd {
+		&self.run.base
+	}
+
+	fn mut_base(&mut self) -> &mut RunCmd {
+		&mut self.run.base
+	}
+}
+
+fn get_exec_name() -> Option<String> {
+	std::env::current_exe()
+		.ok()
+		.and_then(|pb| pb.file_name().map(|s| s.to_os_string()))
+		.and_then(|s| s.into_string().ok())
+}
+
 /// Parses Darwinia specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
+
+	fn set_default_ss58_version(spec: &Box<dyn darwinia_service::ChainSpec>) {
+		// --- substrate ---
+		use sp_core::crypto::Ss58AddressFormat;
+
+		let ss58_version = if spec.is_crab() {
+			Ss58AddressFormat::SubstrateAccount
+		} else {
+			Ss58AddressFormat::DarwiniaAccount
+		};
+
+		sp_core::crypto::set_default_ss58_version(ss58_version);
+	};
+
 	match &cli.subcommand {
 		None => {
 			let runtime = Configuration::create_runner_from_cli(cli)?;
-			let config = runtime.config();
+			let chain_spec = &runtime.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
 
 			info!("  _____                      _       _       ");
 			info!(" |  __ \\                    (_)     (_)      ");
@@ -68,7 +115,7 @@ pub fn run() -> sc_cli::Result<()> {
 			info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
 			info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 
-			if config.chain_spec.is_crab() {
+			if chain_spec.is_crab() {
 				runtime.run_node(
 					|config| darwinia_service::crab_new_light(config),
 					|config| darwinia_service::crab_new_full(config),
@@ -84,8 +131,11 @@ pub fn run() -> sc_cli::Result<()> {
 		}
 		Some(Subcommand::Base(subcommand)) => {
 			let runtime = cli.create_runner(subcommand)?;
+			let chain_spec = &runtime.config().chain_spec;
 
-			if runtime.config().chain_spec.is_crab() {
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_crab() {
 				runtime.run_subcommand(subcommand, |config| {
 					darwinia_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
@@ -102,11 +152,6 @@ pub fn run() -> sc_cli::Result<()> {
 					>(config)
 				})
 			}
-		} // TODO: benchmark
-		  // Some(Subcommand::Benchmark(cmd)) => {
-		  // 	cmd.init(&version)?;
-		  // 	cmd.update_config(&mut config, |id| load_spec(id), &version)?;
-		  // 	cmd.run::<darwinia_service::crab_runtime::Block, darwinia_service::CrabExecutor>(config)
-		  // }
+		}
 	}
 }

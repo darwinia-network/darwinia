@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
@@ -19,30 +19,31 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # crates
-log = { version = "0.4.8" }
-serde = { version = "1.0.106", optional = true }
-structopt = { version = "0.3.13" }
-tokio = { version = "0.2.18", features = ["rt-threaded"], optional = true }
+log = { version = "0.4.11" }
+serde = { version = "1.0.114", optional = true }
+structopt = { version = "0.3.15" }
+tokio = { version = "0.2.22", features = ["rt-threaded"], optional = true }
 toml = { version = "0.5.6", optional = true }
-wasm-bindgen = { version = "0.2.60", optional = true }
-wasm-bindgen-futures = { version = "0.4.10", optional = true }
-# substrate frame
-# TODO: benchmark
-# frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1", optional = true }
+wasm-bindgen = { version = "0.2.67", optional = true }
+wasm-bindgen-futures = { version = "0.4.17", optional = true }
 # substrate client
-sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
-sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
-sc-network = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
-sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
-sc-tracing = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+sc-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sc-executor = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sc-network = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sc-service = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+sc-tracing = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# substrate primitives
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# darwinia client
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.1" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 
 [features]
 default = [
@@ -59,8 +60,7 @@ cli = [
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",
-	# TODO: benchmark
-	# "frame-benchmarking-cli",
+	"darwinia-cli",
 	"darwinia-service/full-node",
 ]
 browser = [
@@ -68,5 +68,3 @@ browser = [
 	"wasm-bindgen-futures",
 	"substrate-browser-utils",
 ]
-# TODO: benchmark
-# runtime-benchmarks = ["service/runtime-benchmarks"]

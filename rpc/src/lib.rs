@@ -69,6 +69,7 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UE>,
 	C::Api: sp_consensus_babe::BabeApi<Block>,
+	C::Api: sp_block_builder::BlockBuilder<Block>,
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
 	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + Sync + Send + sp_transaction_pool::TransactionPool,
@@ -97,6 +98,7 @@ where
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(
 		client.clone(),
 		pool,
+		deny_unsafe,
 	)));
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
@@ -157,7 +159,7 @@ where
 	} = deps;
 
 	let mut io = jsonrpc_core::IoHandler::default();
-	io.extend_with(SystemApi::<AccountId, Nonce>::to_delegate(
+	io.extend_with(SystemApi::<Hash, AccountId, Nonce>::to_delegate(
 		LightSystem::new(client, remote_blockchain, fetcher, pool),
 	));
 

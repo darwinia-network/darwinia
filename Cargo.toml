@@ -4,7 +4,7 @@ path = "src/main.rs"
 
 [package]
 name = "darwinia"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust"
 edition = "2018"
@@ -14,7 +14,7 @@ repository = "https://github.com/darwinia-network/darwinia/"
 
 [dependencies]
 # crates
-futures = { version = "0.3.4" }
+futures = { version = "0.3.5" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli = { path = "cli" }
@@ -22,7 +22,7 @@ darwinia-service = { path = "service" }
 
 [dev-dependencies]
 assert_cmd = { version = "1.0.1" }
-nix = { version = "0.17" }
+nix = { version = "0.18" }
 tempfile = { version = "3.1.0" }
 
 [workspace]
@@ -42,7 +42,3 @@ maintenance = { status = "actively-developed" }
 [profile.release]
 # Darwinia runtime requires unwinding.
 panic = "unwind"
-
-[features]
-# TODO: benchmark
-# runtime-benchmarks=["darwinia-cli/runtime-benchmarks"]
