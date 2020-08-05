@@ -1,0 +1,3 @@
+FROM centos:7
+
+RUN yum -y update && yum -y upgrade && yum -y install clang gcc gcc-c++ git llvm make
