@@ -112,7 +112,6 @@ std = [
 	"pallet-authority-discovery/std",
 	"pallet-babe/std",
 	"pallet-collective/std",
-#	"pallet-democracy/std",
 	"pallet-finality-tracker/std",
 	"pallet-grandpa/std",
 	"pallet-im-online/std",
