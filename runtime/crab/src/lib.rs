@@ -190,6 +190,29 @@ impl pallet_indices::Trait for Runtime {
 	type Event = Event;
 }
 
+parameter_types! {
+	pub const RingExistentialDeposit: Balance = 100 * MILLI;
+	pub const KtonExistentialDeposit: Balance = 10 * MICRO;
+}
+impl darwinia_balances::Trait<RingInstance> for Runtime {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = RingExistentialDeposit;
+	type BalanceInfo = AccountData<Balance>;
+	type AccountStore = System;
+	type DustCollector = (Kton,);
+}
+impl darwinia_balances::Trait<KtonInstance> for Runtime {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = KtonExistentialDeposit;
+	type BalanceInfo = AccountData<Balance>;
+	type AccountStore = System;
+	type DustCollector = (Ring,);
+}
+
 pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<Runtime>>) {
@@ -225,6 +248,51 @@ impl pallet_authorship::Trait for Runtime {
 	type UncleGenerations = UncleGenerations;
 	type FilterUncle = ();
 	type EventHandler = (Staking, ImOnline);
+}
+
+parameter_types! {
+	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
+	pub const BondingDurationInEra: EraIndex = 14 * DAYS
+		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
+	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
+	pub const SlashDeferDuration: EraIndex = 14 * DAYS
+		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
+	// quarter of the last session will be for election.
+	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
+	pub const MaxIterations: u32 = 5;
+	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
+	pub const MaxNominatorRewardedPerValidator: u32 = 64;
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	// quarter of the last session will be for election.
+	pub const Cap: Balance = CAP;
+	pub const TotalPower: Power = TOTAL_POWER;
+}
+impl darwinia_staking::Trait for Runtime {
+	type Event = Event;
+	type UnixTime = Timestamp;
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDurationInEra = BondingDurationInEra;
+	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
+	type SlashDeferDuration = SlashDeferDuration;
+	/// A super-majority of the council can cancel the slash.
+	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
+	type SessionInterface = Self;
+	type NextNewSession = Session;
+	type ElectionLookahead = ElectionLookahead;
+	type Call = Call;
+	type MaxIterations = MaxIterations;
+	type MinSolutionScoreBump = MinSolutionScoreBump;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type UnsignedPriority = StakingUnsignedPriority;
+	type RingCurrency = Ring;
+	type RingRewardRemainder = Treasury;
+	type RingSlash = Treasury;
+	type RingReward = ();
+	type KtonCurrency = Kton;
+	type KtonSlash = Treasury;
+	type KtonReward = ();
+	type Cap = Cap;
+	type TotalPower = TotalPower;
 }
 
 parameter_types! {
@@ -330,6 +398,34 @@ impl pallet_collective::Trait<TechnicalCollective> for Runtime {
 	type MaxProposals = TechnicalMaxProposals;
 }
 
+parameter_types! {
+	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
+	pub const CandidacyBond: Balance = 1 * COIN;
+	pub const VotingBond: Balance = 5 * MILLI;
+	/// Daily council elections.
+	pub const TermDuration: BlockNumber = 24 * HOURS;
+	pub const DesiredMembers: u32 = 17;
+	pub const DesiredRunnersUp: u32 = 7;
+}
+// Make sure that there are no more than MAX_MEMBERS members elected via phragmen.
+const_assert!(DesiredMembers::get() <= pallet_collective::MAX_MEMBERS);
+impl darwinia_elections_phragmen::Trait for Runtime {
+	type Event = Event;
+	type ModuleId = ElectionsPhragmenModuleId;
+	type Currency = Ring;
+	type ChangeMembers = Council;
+	type InitializeMembers = Council;
+	type CurrencyToVote = support_kton_in_the_future::CurrencyToVoteHandler<Self>;
+	type CandidacyBond = CandidacyBond;
+	type VotingBond = VotingBond;
+	type LoserCandidate = Treasury;
+	type BadReport = Treasury;
+	type KickedMember = Treasury;
+	type DesiredMembers = DesiredMembers;
+	type DesiredRunnersUp = DesiredRunnersUp;
+	type TermDuration = TermDuration;
+}
+
 type EnsureRootOrHalfCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -346,25 +442,58 @@ impl pallet_membership::Trait<pallet_membership::Instance0> for Runtime {
 	type MembershipChanged = TechnicalCommittee;
 }
 
-impl pallet_utility::Trait for Runtime {
+type ApproveOrigin = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
+>;
+parameter_types! {
+	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const RingProposalBondMinimum: Balance = 20 * COIN;
+	pub const KtonProposalBondMinimum: Balance = 20 * COIN;
+	pub const SpendPeriod: BlockNumber = 6 * DAYS;
+	pub const Burn: Permill = Permill::from_percent(0);
+	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub const TipFindersFee: Percent = Percent::from_percent(20);
+	pub const TipReportDepositBase: Balance = 1 * COIN;
+	pub const TipReportDepositPerByte: Balance = 1 * MILLI;
+}
+impl darwinia_treasury::Trait for Runtime {
+	type ModuleId = TreasuryModuleId;
+	type RingCurrency = Ring;
+	type KtonCurrency = Kton;
+	type ApproveOrigin = ApproveOrigin;
+	type RejectOrigin = EnsureRootOrHalfCouncil;
+	type Tippers = ElectionsPhragmen;
+	type TipCountdown = TipCountdown;
+	type TipFindersFee = TipFindersFee;
+	type TipReportDepositBase = TipReportDepositBase;
+	type TipReportDepositPerByte = TipReportDepositPerByte;
 	type Event = Event;
-	type Call = Call;
+	type RingProposalRejection = Treasury;
+	type KtonProposalRejection = Treasury;
+	type ProposalBond = ProposalBond;
+	type RingProposalBondMinimum = RingProposalBondMinimum;
+	type KtonProposalBondMinimum = KtonProposalBondMinimum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
 }
 
 parameter_types! {
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	pub const DepositBase: Balance = deposit(1, 88);
-	// Additional storage item size of 32 bytes.
-	pub const DepositFactor: Balance = deposit(0, 32);
-	pub const MaxSignatories: u16 = 100;
+	pub const ClaimsModuleId: ModuleId = ModuleId(*b"da/claim");
+	pub Prefix: &'static [u8] = b"Pay RINGs to the Crab account:";
 }
-impl pallet_multisig::Trait for Runtime {
+impl darwinia_claims::Trait for Runtime {
+	type Event = Event;
+	type ModuleId = ClaimsModuleId;
+	type Prefix = Prefix;
+	type RingCurrency = Ring;
+}
+
+impl pallet_utility::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type Currency = Ring;
-	type DepositBase = DepositBase;
-	type DepositFactor = DepositFactor;
-	type MaxSignatories = MaxSignatories;
 }
 
 parameter_types! {
@@ -494,7 +623,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
 				Call::Multisig(..) |
-				// Call::EthereumBacking(..) |
+				Call::EthereumBacking(..) |
 				Call::EthereumRelay(..) |
 				Call::RelayerGame(..) |
 				Call::HeaderMMR(..)
@@ -534,153 +663,25 @@ impl pallet_proxy::Trait for Runtime {
 	type MaxProxies = MaxProxies;
 }
 
+parameter_types! {
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
+	pub const DepositBase: Balance = deposit(1, 88);
+	// Additional storage item size of 32 bytes.
+	pub const DepositFactor: Balance = deposit(0, 32);
+	pub const MaxSignatories: u16 = 100;
+}
+impl pallet_multisig::Trait for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type Currency = Ring;
+	type DepositBase = DepositBase;
+	type DepositFactor = DepositFactor;
+	type MaxSignatories = MaxSignatories;
+}
+
 impl pallet_sudo::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-}
-
-parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MILLI;
-	pub const KtonExistentialDeposit: Balance = 10 * MICRO;
-}
-impl darwinia_balances::Trait<RingInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = RingExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type DustCollector = (Kton,);
-}
-impl darwinia_balances::Trait<KtonInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = KtonExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type DustCollector = (Ring,);
-}
-
-parameter_types! {
-	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
-	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
-	pub const SlashDeferDuration: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
-	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
-	pub const MaxIterations: u32 = 5;
-	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
-	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	// quarter of the last session will be for election.
-	pub const Cap: Balance = CAP;
-	pub const TotalPower: Power = TOTAL_POWER;
-}
-impl darwinia_staking::Trait for Runtime {
-	type Event = Event;
-	type UnixTime = Timestamp;
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = BondingDurationInEra;
-	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
-	type SlashDeferDuration = SlashDeferDuration;
-	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
-	type SessionInterface = Self;
-	type NextNewSession = Session;
-	type ElectionLookahead = ElectionLookahead;
-	type Call = Call;
-	type MaxIterations = MaxIterations;
-	type MinSolutionScoreBump = MinSolutionScoreBump;
-	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-	type UnsignedPriority = StakingUnsignedPriority;
-	type RingCurrency = Ring;
-	type RingRewardRemainder = Treasury;
-	type RingSlash = Treasury;
-	type RingReward = ();
-	type KtonCurrency = Kton;
-	type KtonSlash = Treasury;
-	type KtonReward = ();
-	type Cap = Cap;
-	type TotalPower = TotalPower;
-}
-
-parameter_types! {
-	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
-	pub const CandidacyBond: Balance = 1 * COIN;
-	pub const VotingBond: Balance = 5 * MILLI;
-	/// Daily council elections.
-	pub const TermDuration: BlockNumber = 24 * HOURS;
-	pub const DesiredMembers: u32 = 17;
-	pub const DesiredRunnersUp: u32 = 7;
-}
-// Make sure that there are no more than MAX_MEMBERS members elected via phragmen.
-const_assert!(DesiredMembers::get() <= pallet_collective::MAX_MEMBERS);
-impl darwinia_elections_phragmen::Trait for Runtime {
-	type Event = Event;
-	type ModuleId = ElectionsPhragmenModuleId;
-	type Currency = Ring;
-	type ChangeMembers = Council;
-	type InitializeMembers = Council;
-	type CurrencyToVote = support_kton_in_the_future::CurrencyToVoteHandler<Self>;
-	type CandidacyBond = CandidacyBond;
-	type VotingBond = VotingBond;
-	type LoserCandidate = Treasury;
-	type BadReport = Treasury;
-	type KickedMember = Treasury;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type TermDuration = TermDuration;
-}
-
-type ApproveOrigin = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
->;
-parameter_types! {
-	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const RingProposalBondMinimum: Balance = 20 * COIN;
-	pub const KtonProposalBondMinimum: Balance = 20 * COIN;
-	pub const SpendPeriod: BlockNumber = 6 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(0);
-	pub const TipCountdown: BlockNumber = 1 * DAYS;
-	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 1 * COIN;
-	pub const TipReportDepositPerByte: Balance = 1 * MILLI;
-}
-impl darwinia_treasury::Trait for Runtime {
-	type ModuleId = TreasuryModuleId;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = EnsureRootOrHalfCouncil;
-	type Tippers = ElectionsPhragmen;
-	type TipCountdown = TipCountdown;
-	type TipFindersFee = TipFindersFee;
-	type TipReportDepositBase = TipReportDepositBase;
-	type TipReportDepositPerByte = TipReportDepositPerByte;
-	type Event = Event;
-	type RingProposalRejection = Treasury;
-	type KtonProposalRejection = Treasury;
-	type ProposalBond = ProposalBond;
-	type RingProposalBondMinimum = RingProposalBondMinimum;
-	type KtonProposalBondMinimum = KtonProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
-	type Burn = Burn;
-}
-
-parameter_types! {
-	pub const ClaimsModuleId: ModuleId = ModuleId(*b"da/claim");
-	pub Prefix: &'static [u8] = b"Pay RINGs to the Crab account:";
-}
-impl darwinia_claims::Trait for Runtime {
-	type Event = Event;
-	type ModuleId = ClaimsModuleId;
-	type Prefix = Prefix;
-	type RingCurrency = Ring;
 }
 
 parameter_types! {
