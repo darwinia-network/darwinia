@@ -4,35 +4,23 @@ rust: nightly
 branches:
   only:
     - master
-    - develop
 
 env:
   global:
     - RUST_BACKTRACE=1
 
 before_install:
-  # Check how much space we've got on this machine.
   - df -h
   - rustup target add wasm32-unknown-unknown --toolchain nightly
 
 jobs:
   include:
     - stage: Check & Prepare
-      script: .maintain/ci/fmt_script.sh
+      script: .maintain/ci/format.sh
 
     - stage: Build
-      env: RUST_TOOLCHAIN=nightly TARGET=native
-      script: .maintain/ci/build_script.sh
-
-    - stage: Build
-      env: RUST_TOOLCHAIN=nightly TARGET=wasm
-      script: .maintain/ci/build_script.sh
-
-    # over the time limitation, so we comment this
-    # - stage: Overall Test
-    #   env: RUST_TOOLCHAIN=nightly TARGET=native
-    #   script: .maintain/ci/test_script.sh
+      env: RUST_TOOLCHAIN=nightly
+      script: .maintain/ci/build.sh
 
 after_script:
-  # Check how much free disk space left after the build
   - df -h

@@ -1,3 +1,0 @@
-FROM rustembedded/cross:arm-unknown-linux-gnueabihf
-
-RUN apt update && apt upgrade -y && apt install -y clang llvm libclang-dev

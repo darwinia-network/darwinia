@@ -1,9 +1,26 @@
 [target.x86_64-unknown-linux-gnu]
-image = "x86_64-unknown-linux-gnu"
+image = "x86_64-linux-gnu"
+# image = "centos-7"
+
+[target.aarch64-unknown-linux-gnu]
+image = "aarch64-linux-gnu"
+[target.aarch64-unknown-linux-gnu.env]
+passthrough = [
+	"RUSTFLAGS",
+	"SKIP_WASM_BUILD",
+]
 
 [target.arm-unknown-linux-gnueabihf]
-image = "arm-unknown-linux-gnueabihf"
+image = "arm-linux-gnueabihf"
 [target.arm-unknown-linux-gnueabihf.env]
+passthrough = [
+	"RUSTFLAGS",
+	"SKIP_WASM_BUILD",
+]
+
+[target.armv7-unknown-linux-gnueabihf]
+image = "armv7-linux-gnueabihf"
+[target.armv7-unknown-linux-gnueabihf.env]
 passthrough = [
 	"RUSTFLAGS",
 	"SKIP_WASM_BUILD",

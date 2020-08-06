@@ -1,0 +1,13 @@
+FROM rustembedded/cross:armv7-unknown-linux-gnueabihf
+
+# only for armv7
+
+# change mirrorlist
+RUN curl https://raw.githubusercontent.com/oooldking/script/master/superupdate.sh | bash && \
+	# update
+	apt update && apt upgrade -y && apt install -y \
+	# lib
+	libc6-dev-i386 \
+	# compiler
+	gcc-arm-linux-gnueabihf gcc-5-arm-linux-gnueabihf g++-arm-linux-gnueabihf g++-5-arm-linux-gnueabihf \
+	clang llvm libclang-dev
