@@ -13,9 +13,9 @@ pub mod wasm {
 	#[cfg(all(feature = "std", any(target_arch = "x86_64", target_arch = "x86")))]
 	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-	#[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
+	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
 	pub const WASM_BINARY: &[u8] = include_bytes!("../../../wasm/crab_runtime.compact.wasm");
-	#[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
+	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
 	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../../wasm/crab_runtime.wasm");
 }
 

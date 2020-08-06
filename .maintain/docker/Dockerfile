@@ -1,6 +1,6 @@
 FROM iteringops/darwinia-builder:latest as builder
 
-RUN rustup update
+RUN rustup update && rustup default nightly
 
 COPY . /source
 WORKDIR /source
@@ -18,5 +18,3 @@ EXPOSE 30333 9933 9944
 VOLUME ["/data"]
 
 ENTRYPOINT [ "/usr/local/bin/darwinia" ]
-
-
