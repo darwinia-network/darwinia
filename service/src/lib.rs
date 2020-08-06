@@ -186,12 +186,15 @@ macro_rules! new_full_start {
 					.expect("SelectChain is present for full services or set up failed; qed.");
 				let keystore = builder.keystore().clone();
 
+				let is_authority = $config.role.is_authority();
+
 				Ok(move |deny_unsafe| -> darwinia_rpc::RpcExtension {
 					let deps = darwinia_rpc::FullDeps {
 						client: client.clone(),
 						pool: pool.clone(),
 						select_chain: select_chain.clone(),
 						deny_unsafe,
+						is_authority,
 						babe: darwinia_rpc::BabeDeps {
 							babe_config: babe_config.clone(),
 							shared_epoch_changes: shared_epoch_changes.clone(),

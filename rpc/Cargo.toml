@@ -36,3 +36,9 @@ sc-finality-grandpa = { git = "https://github.com/darwinia-network/substrate.git
 sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sc-keystore = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sc-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# darwinia runtime
+crab-runtime = { path = "../runtime/crab" }
+
+# evm
+frontier-rpc = { version = "0.1.0", path = "https://github.com/paritytech/frontier.git" }
+frontier-rpc-primitives = { version = "0.1.0", git = "https://github.com/paritytech/frontier.git" }
