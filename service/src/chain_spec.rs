@@ -440,7 +440,7 @@ pub fn crab_testnet_genesis(
 				.map(|x| (x.0, x.1, 1 << 60, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
-			force_era: crab_runtime::Forcing::NotForcing,
+			force_era: crab_runtime::Forcing::ForceAlways,
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
@@ -504,7 +504,12 @@ pub fn crab_development_config() -> CrabChainSpec {
 		crab_testnet_genesis(
 			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
+			Some(vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			]),
 		)
 	}
 
@@ -530,7 +535,12 @@ pub fn crab_local_testnet_config() -> CrabChainSpec {
 				get_authority_keys_from_seed("Bob"),
 			],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			None,
+			Some(vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			]),
 		)
 	}
 
