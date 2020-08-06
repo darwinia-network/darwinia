@@ -411,7 +411,6 @@ pub fn crab_testnet_genesis(
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
 
 	CrabGenesisConfig {
-		// --- substrate ---
 		frame_system: Some(crab_runtime::SystemConfig {
 			code: crab_runtime::WASM_BINARY.to_vec(),
 			changes_trie_config: Default::default(),
