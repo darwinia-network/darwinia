@@ -60,6 +60,10 @@ pallet-timestamp = { default-features = false, git = "https://github.com/darwini
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+# evm
+ethereum = { version = "0.1.0", default-features = false, package = "pallet-ethereum", git = "https://github.com/paritytech/frontier.git" }
+evm = { default-features = false, package = "pallet-evm", git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
+frontier-rpc-primitives = { default-features = false, git = "https://github.com/paritytech/frontier.git" }
 # darwinia frame
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
 darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
@@ -130,6 +134,9 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-utility/std",
+	"evm/std",
+    "ethereum/std",
+	"frontier-rpc-primitives/std",
 	# darwinia frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",

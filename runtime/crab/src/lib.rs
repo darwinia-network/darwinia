@@ -72,6 +72,11 @@ use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
+// evm
+use ethereum::{Block as EthereumBlock, Transaction as EthereumTransaction, Receipt as EthereumReceipt};
+use evm::{Account as EVMAccount, FeeCalculator, HashedAddressMapping, EnsureAddressTruncated};
+use frontier_rpc_primitives::{TransactionStatus};
+
 /// The address format for describing accounts.
 pub type Address = AccountId;
 /// Block header type as expected by this runtime.
@@ -724,6 +729,50 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 
 impl darwinia_header_mmr::Trait for Runtime {}
 
+/// Fixed gas price of `1`.
+pub struct FixedGasPrice;
+
+impl FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> U256 {
+		// Gas price is always one token per gas.
+		1.into()
+	}
+}
+
+parameter_types! {
+	pub const ChainId: u64 = 43;
+}
+
+impl evm::Trait for Runtime {
+	type FeeCalculator = FixedGasPrice;
+	type CallOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+	type Currency = Balances;
+	type Event = Event;
+	type Precompiles = ();
+	type ChainId = ChainId;
+}
+
+pub struct EthereumFindAuthor<F>(PhantomData<F>);
+impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F>
+{
+	fn find_author<'a, I>(digests: I) -> Option<H160> where
+		I: 'a + IntoIterator<Item=(ConsensusEngineId, &'a [u8])>
+	{
+		if let Some(author_index) = F::find_author(digests) {
+			let authority_id = Aura::authorities()[author_index as usize].clone();
+			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
+		}
+		None
+	}
+}
+
+impl ethereum::Trait for Runtime {
+	type Event = Event;
+	type FindAuthor = EthereumFindAuthor<Aura>;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	where
@@ -802,8 +851,28 @@ construct_runtime!(
 
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
+
+		// evm
+		Ethereum: ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
+		EVM: evm::{Module, Config, Call, Storage, Event<T>},
 	}
 );
+
+pub struct TransactionConverter;
+
+impl frontier_rpc_primitives::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: ethereum::Transaction) -> UncheckedExtrinsic {
+		UncheckedExtrinsic::new_unsigned(ethereum::Call::<Runtime>::transact(transaction).into())
+	}
+}
+
+impl frontier_rpc_primitives::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: ethereum::Transaction) -> opaque::UncheckedExtrinsic {
+		let extrinsic = UncheckedExtrinsic::new_unsigned(ethereum::Call::<Runtime>::transact(transaction).into());
+		let encoded = extrinsic.encode();
+		opaque::UncheckedExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
+	}
+}
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
@@ -1024,6 +1093,167 @@ impl_runtime_apis! {
 	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
+		}
+	}
+
+	impl frontier_rpc_primitives::EthereumRuntimeApi<Block> for Runtime {
+		fn chain_id() -> u64 {
+			ChainId::get()
+		}
+
+		fn account_basic(address: H160) -> EVMAccount {
+			evm::Module::<Runtime>::account_basic(&address)
+		}
+
+		fn gas_price() -> U256 {
+			FixedGasPrice::min_gas_price()
+		}
+
+		fn account_code_at(address: H160) -> Vec<u8> {
+			evm::Module::<Runtime>::account_codes(address)
+		}
+
+		fn author() -> H160 {
+			<ethereum::Module<Runtime>>::find_author()
+		}
+
+		fn storage_at(address: H160, index: U256) -> H256 {
+			let mut tmp = [0u8; 32];
+			index.to_big_endian(&mut tmp);
+			evm::Module::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+		}
+
+		fn call(
+			from: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			gas_price: U256,
+			nonce: Option<U256>,
+			action: ethereum::TransactionAction,
+		) -> Option<(Vec<u8>, U256)> {
+			match action {
+				ethereum::TransactionAction::Call(to) =>
+					evm::Module::<Runtime>::execute_call(
+						from,
+						to,
+						data,
+						value,
+						gas_limit.low_u32(),
+						gas_price,
+						nonce,
+						false,
+					).ok().map(|(_, ret, gas)| (ret, gas)),
+				ethereum::TransactionAction::Create =>
+					evm::Module::<Runtime>::execute_create(
+						from,
+						data,
+						value,
+						gas_limit.low_u32(),
+						gas_price,
+						nonce,
+						false,
+					).ok().map(|(_, _, gas)| (vec![], gas)),
+			}
+		}
+
+		fn block_by_number(number: u32) -> (
+			Option<EthereumBlock>, Vec<Option<ethereum::TransactionStatus>>
+		) {
+			if let Some(block) = <ethereum::Module<Runtime>>::block_by_number(number) {
+				let statuses = <ethereum::Module<Runtime>>::block_transaction_statuses(&block);
+				return (
+					Some(block),
+					statuses
+				);
+			}
+			(None,vec![])
+		}
+
+		fn block_transaction_count_by_number(number: u32) -> Option<U256> {
+			if let Some(block) = <ethereum::Module<Runtime>>::block_by_number(number) {
+				return Some(U256::from(block.transactions.len()))
+			}
+			None
+		}
+
+		fn block_transaction_count_by_hash(hash: H256) -> Option<U256> {
+			if let Some(block) = <ethereum::Module<Runtime>>::block_by_hash(hash) {
+				return Some(U256::from(block.transactions.len()))
+			}
+			None
+		}
+
+		fn block_by_hash(hash: H256) -> Option<EthereumBlock> {
+			<ethereum::Module<Runtime>>::block_by_hash(hash)
+		}
+
+		fn block_by_hash_with_statuses(hash: H256) -> (
+			Option<EthereumBlock>, Vec<Option<ethereum::TransactionStatus>>
+		) {
+			if let Some(block) = <ethereum::Module<Runtime>>::block_by_hash(hash) {
+				let statuses = <ethereum::Module<Runtime>>::block_transaction_statuses(&block);
+				return (
+					Some(block),
+					statuses
+				);
+			}
+			(None, vec![])
+		}
+
+		fn transaction_by_hash(hash: H256) -> Option<(
+			EthereumTransaction,
+			EthereumBlock,
+			TransactionStatus,
+			Vec<EthereumReceipt>)> {
+			<ethereum::Module<Runtime>>::transaction_by_hash(hash)
+		}
+
+		fn transaction_by_block_hash_and_index(hash: H256, index: u32) -> Option<(
+			EthereumTransaction,
+			EthereumBlock,
+			TransactionStatus)> {
+			<ethereum::Module<Runtime>>::transaction_by_block_hash_and_index(hash, index)
+		}
+
+		fn transaction_by_block_number_and_index(number: u32, index: u32) -> Option<(
+			EthereumTransaction,
+			EthereumBlock,
+			TransactionStatus)> {
+			<ethereum::Module<Runtime>>::transaction_by_block_number_and_index(
+				number,
+				index
+			)
+		}
+
+		fn logs(
+			from_block: Option<u32>,
+			to_block: Option<u32>,
+			block_hash: Option<H256>,
+			address: Option<H160>,
+			topic: Option<Vec<H256>>
+		) -> Vec<(
+			H160, // address
+			Vec<H256>, // topics
+			Vec<u8>, // data
+			Option<H256>, // block_hash
+			Option<U256>, // block_number
+			Option<H256>, // transaction_hash
+			Option<U256>, // transaction_index
+			Option<U256>, // log index in block
+			Option<U256>, // log index in transaction
+		)> {
+			let output = <ethereum::Module<Runtime>>::filtered_logs(
+				from_block,
+				to_block,
+				block_hash,
+				address,
+				topic
+			);
+			if let Some(output) = output {
+				return output;
+			}
+			return vec![];
 		}
 	}
 }
