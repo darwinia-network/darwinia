@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-runtime-common"
-version = "0.6.4"
+version = "0.6.5"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime common"
 edition = "2018"
@@ -23,9 +23,9 @@ frame-system = { default-features = false, git = "https://github.com/darwinia-ne
 pallet-authorship = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 
 [features]
 default = ["std"]

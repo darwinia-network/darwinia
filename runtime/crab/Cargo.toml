@@ -1,6 +1,6 @@
 [package]
 name = "crab-runtime"
-version = "0.6.4"
+version = "0.6.5"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime for Crab network"
 edition = "2018"
@@ -61,18 +61,18 @@ pallet-transaction-payment = { default-features = false, git = "https://github.c
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 pallet-utility = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-claims = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-elections-phragmen = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-ethereum-backing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-ethereum-relay = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-relayer-game = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-staking-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-claims = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-elections-phragmen = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-ethereum-backing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-ethereum-relay = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-relayer-game = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-staking = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-staking-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-support = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 

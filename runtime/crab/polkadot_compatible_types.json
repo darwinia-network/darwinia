@@ -176,16 +176,17 @@
 	},
 	"RedeemFor": {
 		"_enum": {
-			"Ring": "EthReceiptProof",
-			"Kton": "EthReceiptProof",
-			"Deposit": "EthReceiptProof"
+			"Ring": null,
+			"Kton": null,
+			"Deposit": null
 		}
 	},
-	"EthReceiptProof": {
+	"EthereumReceiptProof": {
 		"index": "u64",
 		"proof": "Bytes",
 		"header_hash": "H256"
 	},
+	"MMRProof": "Vec<H256>",
 	"__[pallet.claims]__": {},
 	"OtherSignature": {
 		"_enum": {

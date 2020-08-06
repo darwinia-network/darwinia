@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-rpc"
-version = "0.6.4"
+version = "0.6.5"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node rpc"
 edition = "2018"
@@ -25,8 +25,8 @@ darwinia-primitives = { path = "../primitives" }
 pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 substrate-frame-rpc-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
-darwinia-balances-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
-darwinia-staking-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
+darwinia-balances-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-staking-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # substrate client
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 sc-consensus-babe = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }

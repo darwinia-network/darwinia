@@ -1,6 +1,6 @@
 [package]
 name = "darwinia-cli"
-version = "0.6.4"
+version = "0.6.5"
 authors = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia Client Node"
 edition = "2018"
@@ -38,7 +38,7 @@ substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-
 # substrate primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v0.6.4" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../service" }
 
