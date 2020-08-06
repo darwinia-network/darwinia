@@ -67,3 +67,4 @@ browser = [
 	"wasm-bindgen-futures",
 	"substrate-browser-utils",
 ]
+dev = ["darwinia-service/dev"]

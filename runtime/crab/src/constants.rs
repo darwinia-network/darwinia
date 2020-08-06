@@ -25,24 +25,22 @@ pub mod time {
 	// --- darwinia ---
 	use darwinia_primitives::{BlockNumber, Moment};
 
-	// Mainnet
-	// pub const MILLISECS_PER_BLOCK: Moment = 10000;
-	// Crab & Testnet
+	#[cfg(feature = "dev")]
+	pub const MILLISECS_PER_BLOCK: Moment = 3000;
+	#[cfg(not(feature = "dev"))]
 	pub const MILLISECS_PER_BLOCK: Moment = 6000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
-	// Mainnet
-	// pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
-	// Crab
+	#[cfg(feature = "dev")]
+	pub const BLOCKS_PER_SESSION: BlockNumber = MINUTES / 2;
+	#[cfg(not(feature = "dev"))]
 	pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
-	// Testnet
-	// pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 
-	// Crab & Mainnet
+	#[cfg(feature = "dev")]
+	pub const SESSIONS_PER_ERA: SessionIndex = 3;
+	#[cfg(not(feature = "dev"))]
 	pub const SESSIONS_PER_ERA: SessionIndex = 6;
-	// Testnet
-	// pub const SESSIONS_PER_ERA: SessionIndex = 3;
 
 	// These time units are defined in number of blocks.
 	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
@@ -66,9 +64,6 @@ pub mod fee {
 	use super::currency::*;
 	use darwinia_primitives::Balance;
 	use darwinia_runtime_common::ExtrinsicBaseWeight;
-
-	/// The block saturation level. Fees will be updates based on this value.
-	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);
 
 	/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 	/// node's balance type.

@@ -62,3 +62,4 @@ darwinia-rpc = { path = "../rpc" }
 default = ["db", "full-node"]
 db = ["sc-service/db"]
 full-node = []
+dev = ["crab-runtime/dev"]
