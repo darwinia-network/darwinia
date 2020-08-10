@@ -38,6 +38,7 @@ substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/sub
 # darwinia frame
 array-bytes = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-balances-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # substrate client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }

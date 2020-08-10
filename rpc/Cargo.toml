@@ -26,6 +26,7 @@ pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/su
 substrate-frame-rpc-system = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }
 # darwinia frame
 darwinia-balances-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # substrate client
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.3" }

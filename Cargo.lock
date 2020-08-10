@@ -748,6 +748,7 @@ dependencies = [
  "darwinia-ethereum-backing",
  "darwinia-ethereum-relay",
  "darwinia-header-mmr",
+ "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-primitives",
  "darwinia-relayer-game",
  "darwinia-runtime-common",
@@ -1192,6 +1193,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-header-mmr-rpc"
+version = "0.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#f69ef3631194ec58208e378838a721699561b05d"
+dependencies = [
+ "darwinia-header-mmr-rpc-runtime-api",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
 name = "darwinia-header-mmr-rpc-runtime-api"
 version = "0.6.4"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#f69ef3631194ec58208e378838a721699561b05d"
@@ -1234,6 +1250,7 @@ name = "darwinia-rpc"
 version = "0.6.5"
 dependencies = [
  "darwinia-balances-rpc",
+ "darwinia-header-mmr-rpc",
  "darwinia-primitives",
  "darwinia-staking-rpc",
  "jsonrpc-core",
@@ -1281,6 +1298,7 @@ dependencies = [
  "array-bytes",
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
+ "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-primitives",
  "darwinia-rpc",
  "darwinia-staking-rpc-runtime-api",

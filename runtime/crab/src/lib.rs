@@ -67,6 +67,7 @@ use sp_version::RuntimeVersion;
 // --- darwinia ---
 use constants::{currency::*, fee::*, relay::*, time::*};
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
+use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
@@ -1019,6 +1020,15 @@ impl_runtime_apis! {
 				1 => Kton::usable_balance_rpc(account),
 				_ => Default::default()
 			}
+		}
+	}
+
+	impl darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash> for Runtime {
+		fn gen_proof(
+			block_number_of_member_leaf: u64,
+			block_number_of_last_leaf: u64
+		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
+			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 
