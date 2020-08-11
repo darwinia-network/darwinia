@@ -516,17 +516,17 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Crab` network.
 	fn is_crab(&self) -> bool;
 
-	// /// Returns if this is a configuration for the `Darwinia` network.
-	// fn is_darwinia(&self) -> bool;
+	/// Returns if this is a configuration for the `Darwinia` network.
+	fn is_darwinia(&self) -> bool;
 }
 impl IdentifyVariant for Box<dyn ChainSpec> {
 	fn is_crab(&self) -> bool {
 		self.id().starts_with("crab")
 	}
 
-	// fn is_darwinia(&self) -> bool {
-	// 	self.id().starts_with("darwinia")
-	// }
+	fn is_darwinia(&self) -> bool {
+		self.id().starts_with("darwinia")
+	}
 }
 
 /// Builds a new object suitable for chain operations.

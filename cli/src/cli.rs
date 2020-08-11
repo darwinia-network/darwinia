@@ -17,6 +17,10 @@ pub struct RunCmd {
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
 	pub base: sc_cli::RunCmd,
+
+	/// Force using Crab native runtime.
+	#[structopt(long = "force-crab")]
+	pub force_crab: bool,
 }
 
 #[allow(missing_docs)]

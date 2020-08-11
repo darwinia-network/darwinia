@@ -1,10 +1,9 @@
 // --- std ---
-use std::str::FromStr;
+use std::{error::Error, str::FromStr};
 // --- crates ---
 use log::info;
-// --- substrate ---
 use substrate_browser_utils::{
-	browser_configuration, init_console_log, set_console_error_panic_hook, Client,
+	browser_configuration, init_console_log, set_console_error_panic_hook, start_client, Client,
 };
 use wasm_bindgen::prelude::*;
 
@@ -16,10 +15,7 @@ pub async fn start_client(chain_spec: String, log_level: String) -> Result<Clien
 		.map_err(|err| JsValue::from_str(&err.to_string()))
 }
 
-async fn start_inner(
-	chain_spec: String,
-	log_level: String,
-) -> Result<Client, Box<dyn std::error::Error>> {
+async fn start_inner(chain_spec: String, log_level: String) -> Result<Client, Box<dyn Error>> {
 	set_console_error_panic_hook();
 	init_console_log(log_level.parse()?)?;
 
@@ -42,7 +38,8 @@ async fn start_inner(
 	info!("👤 Role: {}", config.display_role());
 
 	// Create the service. This is the most heavy initialization step.
-	let service = darwinia_service::crab_new_light(config).map_err(|e| format!("{:?}", e))?;
+	let (task_manager, rpc_handlers) =
+		darwinia_service::crab_new_light(config).map_err(|e| format!("{:?}", e))?;
 
-	Ok(browser_utils::start_client(service))
+	Ok(start_client(task_manager, rpc_handlers))
 }
