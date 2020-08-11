@@ -20,7 +20,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log = { version = "0.4.11" }
-serde = { version = "1.0.114", optional = true }
+serde = { version = "1.0.115", optional = true }
 structopt = { version = "0.3.15" }
 tokio = { version = "0.2.22", features = ["rt-threaded"], optional = true }
 toml = { version = "0.5.6", optional = true }
