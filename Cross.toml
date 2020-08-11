@@ -1,6 +1,5 @@
 [target.x86_64-unknown-linux-gnu]
 image = "x86_64-linux-gnu"
-# image = "centos-7"
 
 [target.aarch64-unknown-linux-gnu]
 image = "aarch64-linux-gnu"
