@@ -16,4 +16,5 @@ expand.rs
 # Rust Things
 **/*.rs.bk
 **/target/
+.cargo-ok
 Cargo.toml.bak
