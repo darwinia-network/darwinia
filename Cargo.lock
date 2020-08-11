@@ -1339,6 +1339,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-transaction-pool",
+ "sp-trie",
  "substrate-prometheus-endpoint",
 ]
 

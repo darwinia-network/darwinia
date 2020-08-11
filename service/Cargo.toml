@@ -28,6 +28,7 @@ sp-offchain = { git = "https://github.com/darwinia-network/substrate.git", tag =
 sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.4" }
 sp-session = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.4" }
 sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.4" }
+sp-trie = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-rc.darwinia.4" }
 # darwinia primitives
 darwinia-primitives = { path = "../primitives" }
 # substrate frame
