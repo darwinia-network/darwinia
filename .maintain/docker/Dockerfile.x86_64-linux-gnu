@@ -1,13 +1,12 @@
-FROM ubuntu:16.04
+FROM centos:7
 
-# only for x86_64
+# for gernal linux
 
 # change mirrorlist
-RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && \
+RUN curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo && yum makecache \
 	# update
-	apt update && apt upgrade -y && apt install -y \
+	yum -y update && yum -y upgrade && yum -y install \
 	# tool
 	git make \
 	# compiler
-	gcc g++ \
-	clang llvm libclang-dev
+	clang gcc gcc-c++ llvm

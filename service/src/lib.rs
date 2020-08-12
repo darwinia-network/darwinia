@@ -16,21 +16,36 @@ pub use darwinia_primitives::Block;
 
 // --- std ---
 use std::{sync::Arc, time::Duration};
+// --- crates ---
+use futures::stream::StreamExt;
 // --- substrate ---
+use sc_authority_discovery::{AuthorityDiscovery, Role as AuthorityDiscoveryRole};
+use sc_basic_authorship::ProposerFactory;
+use sc_client_api::{ExecutorProvider, StateBackendFor};
 use sc_consensus::LongestChain;
+use sc_consensus_babe::{BabeParams, Config as BabeConfig};
 use sc_executor::native_executor_instance;
 use sc_finality_grandpa::{
-	FinalityProofProvider as GrandpaFinalityProofProvider, SharedVoterState,
+	Config as GrandpaConfig, FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
+	SharedVoterState as GrandpaSharedVoterState,
+	StorageAndProofProvider as GrandpaStorageAndProofProvider,
+	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
+use sc_network::Event as NetworkEvent;
 use sc_service::{
-	config::PrometheusConfig, error::Error as ServiceError, AbstractService, Role, ServiceBuilder,
-	ServiceBuilderCommand, TLightCallExecutor,
+	config::{KeystoreConfig, PrometheusConfig},
+	Error as ServiceError, Role as ServiceRole, ServiceBuilder, ServiceComponents, TaskManager,
 };
+use sc_transaction_pool::{BasicPool, FullChainApi, LightChainApi};
 use sp_api::ConstructRuntimeApi;
+use sp_consensus::import_queue::BasicQueue;
+use sp_core::traits::BareCryptoStorePtr;
+use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
+use sp_trie::PrefixedMemoryDB;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Nonce, Power};
+use darwinia_primitives::{AccountId, Balance, Hash, Nonce, Power};
 
 native_executor_instance!(
 	pub CrabExecutor,
@@ -38,69 +53,12 @@ native_executor_instance!(
 	crab_runtime::native_version,
 );
 
-/// A set of APIs that darwinia-like runtimes must implement.
-pub trait RuntimeApiCollection<Extrinsic: 'static + Send + Sync + codec::Codec>:
-	sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-	+ sp_api::ApiExt<Block, Error = sp_blockchain::Error>
-	+ sp_consensus_babe::BabeApi<Block>
-	+ sp_block_builder::BlockBuilder<Block>
-	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
-	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-	+ sp_api::Metadata<Block>
-	+ sp_offchain::OffchainWorkerApi<Block>
-	+ sp_session::SessionKeys<Block>
-	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
-where
-	Extrinsic: RuntimeExtrinsic,
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
-
-impl<Api, Extrinsic> RuntimeApiCollection<Extrinsic> for Api
-where
-	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ sp_api::ApiExt<Block, Error = sp_blockchain::Error>
-		+ sp_consensus_babe::BabeApi<Block>
-		+ sp_block_builder::BlockBuilder<Block>
-		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
-		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-		+ sp_api::Metadata<Block>
-		+ sp_offchain::OffchainWorkerApi<Block>
-		+ sp_session::SessionKeys<Block>
-		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>,
-	Extrinsic: RuntimeExtrinsic,
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
-
-pub trait RuntimeExtrinsic: 'static + Send + Sync + codec::Codec {}
-
-impl<E> RuntimeExtrinsic for E where E: 'static + Send + Sync + codec::Codec {}
-
-/// Can be called for a `Configuration` to check if it is a configuration for the `Kusama` network.
-pub trait IdentifyVariant {
-	/// Returns if this is a configuration for the `Crab` network.
-	fn is_crab(&self) -> bool;
-}
-
-impl IdentifyVariant for Box<dyn ChainSpec> {
-	fn is_crab(&self) -> bool {
-		self.id().starts_with("crab")
-	}
-}
-
-// If we're using prometheus, use a registry with a prefix of `darwinia`.
-fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
-	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
-		*registry = Registry::new_custom(Some("darwinia".into()), None)?;
-	}
-
-	Ok(())
-}
+// TODO: mainnet
+// native_executor_instance!(
+// 	pub DarwiniaExecutor,
+// 	darwinia_runtime::api::dispatch,
+// 	darwinia_runtime::native_version,
+// );
 
 /// Starts a `ServiceBuilder` for a full service.
 ///
@@ -112,34 +70,35 @@ macro_rules! new_full_start {
 
 		let mut import_setup = None;
 		let mut rpc_setup = None;
-		let inherent_data_providers = sp_inherents::InherentDataProviders::new();
-		let builder = sc_service::ServiceBuilder::new_full::<Block, $runtime, $executor>($config)?
+		let inherent_data_providers = InherentDataProviders::new();
+		let builder = ServiceBuilder::new_full::<Block, $runtime, $executor>($config)?
 			.with_select_chain(|_, backend| Ok(sc_consensus::LongestChain::new(backend.clone())))?
 			.with_transaction_pool(|builder| {
-				let pool_api = sc_transaction_pool::FullChainApi::new(builder.client().clone());
-				let pool = sc_transaction_pool::BasicPool::new(
+				let pool_api =
+					FullChainApi::new(builder.client().clone(), builder.prometheus_registry());
+				let pool = BasicPool::new_full(
 					builder.config().transaction_pool.clone(),
-					std::sync::Arc::new(pool_api),
+					Arc::new(pool_api),
 					builder.prometheus_registry(),
+					builder.spawn_handle(),
+					builder.client().clone(),
 				);
+
 				Ok(pool)
 			})?
 			.with_import_queue(
 				|_, client, mut select_chain, _, spawn_task_handle, registry| {
 					let select_chain = select_chain
 						.take()
-						.ok_or_else(|| sc_service::Error::SelectChainRequired)?;
-
+						.ok_or_else(|| ServiceError::SelectChainRequired)?;
 					let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
 						client.clone(),
 						&(client.clone() as Arc<_>),
-						select_chain,
+						select_chain.clone(),
 					)?;
-
 					let justification_import = grandpa_block_import.clone();
-
 					let (block_import, babe_link) = sc_consensus_babe::block_import(
-						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						BabeConfig::get_or_compute(&*client)?,
 						grandpa_block_import,
 						client.clone(),
 					)?;
@@ -150,12 +109,14 @@ macro_rules! new_full_start {
 						Some(Box::new(justification_import)),
 						None,
 						client,
+						select_chain,
 						inherent_data_providers.clone(),
 						spawn_task_handle,
 						registry,
 					)?;
 
 					import_setup = Some((block_import, grandpa_link, babe_link));
+
 					Ok(import_queue)
 				},
 			)?
@@ -164,20 +125,17 @@ macro_rules! new_full_start {
 					.as_ref()
 					.map(|s| &s.1)
 					.expect("GRANDPA LinkHalf is present for full services or set up failed; qed.");
-
 				let shared_authority_set = grandpa_link.shared_authority_set().clone();
-				let shared_voter_state = SharedVoterState::empty();
+				let shared_voter_state = GrandpaSharedVoterState::empty();
 
 				rpc_setup = Some((shared_voter_state.clone()));
 
 				let babe_link = import_setup
 					.as_ref()
 					.map(|s| &s.2)
-					.expect("BabeLink is present for full services or set up faile; qed.");
-
+					.expect("BabeLink is present for full services or set up failed; qed.");
 				let babe_config = babe_link.config().clone();
 				let shared_epoch_changes = babe_link.epoch_changes().clone();
-
 				let client = builder.client().clone();
 				let pool = builder.pool().clone();
 				let select_chain = builder
@@ -214,113 +172,108 @@ macro_rules! new_full_start {
 /// Builds a new service for a full client.
 #[macro_export]
 macro_rules! new_full {
-	(
-		$config:expr,
-		$runtime:ty,
-		$dispatch:ty
-	) => {{
-		// --- crates ---
-		use futures::stream::StreamExt;
-		// --- substrate ---
-		use sc_network::Event;
-		use sc_client_api::ExecutorProvider;
-		use sp_core::traits::BareCryptoStorePtr;
-
-		let (role, is_authority, force_authoring, name, disable_grandpa) = (
+	($config:expr, $runtime:ty, $dispatch:ty) => {{
+		let (role, force_authoring, name, disable_grandpa) = (
 			$config.role.clone(),
-			$config.role.is_authority(),
 			$config.force_authoring,
 			$config.network.node_name.clone(),
 			$config.disable_grandpa,
-		);
-
-		let (builder, mut import_setup, inherent_data_providers, mut rpc_setup) = new_full_start!($config, $runtime, $dispatch);
-
-		let service = builder
+			);
+		let (builder, mut import_setup, inherent_data_providers, mut rpc_setup) =
+			new_full_start!($config, $runtime, $dispatch);
+		let ServiceComponents {
+			client,
+			network,
+			select_chain,
+			keystore,
+			transaction_pool,
+			prometheus_registry,
+			task_manager,
+			telemetry_on_connect_sinks,
+			..
+		} = builder
 			.with_finality_proof_provider(|client, backend| {
-				let provider = client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
+				let provider = client as Arc<dyn GrandpaStorageAndProofProvider<_, _>>;
 				Ok(Arc::new(GrandpaFinalityProofProvider::new(backend, provider)) as _)
 			})?
 			.build_full()?;
-
-		let (block_import, link_half, babe_link) = import_setup.take()
-			.expect("Link Half and Block Import are present for Full Services or setup failed before. qed");
-
-		let shared_voter_state = rpc_setup.take()
-			.expect("The SharedVoterState is present for Full Services or setup failed before. qed");
-
-		let client = service.client();
-
-		if is_authority {
-			let proposer = sc_basic_authorship::ProposerFactory::new(
-				service.client(),
-				service.transaction_pool(),
-				service.prometheus_registry().as_ref(),
+		let (block_import, link_half, babe_link) = import_setup.take().expect(
+			"Link Half and Block Import are present for Full Services or setup failed before. qed",
+			);
+		let shared_voter_state = rpc_setup.take().expect(
+			"The SharedVoterState is present for Full Services or setup failed before. qed",
 			);
 
-			let select_chain = service.select_chain().ok_or(ServiceError::SelectChainRequired)?;
+		if role.is_authority() {
+			let select_chain = select_chain.ok_or(ServiceError::SelectChainRequired)?;
 			let can_author_with =
 				sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
-
-			let babe_config = sc_consensus_babe::BabeParams {
-				keystore: service.keystore(),
+			let proposer = ProposerFactory::new(
+				client.clone(),
+				transaction_pool,
+				prometheus_registry.as_ref(),
+			);
+			let babe_config = BabeParams {
+				keystore: keystore.clone(),
 				client: client.clone(),
 				select_chain,
 				block_import,
 				env: proposer,
-				sync_oracle: service.network(),
+				sync_oracle: network.clone(),
 				inherent_data_providers: inherent_data_providers.clone(),
 				force_authoring,
 				babe_link,
 				can_author_with,
 			};
-
 			let babe = sc_consensus_babe::start_babe(babe_config)?;
-			service.spawn_essential_task_handle().spawn_blocking("babe", babe);
-		}
 
-		if matches!(role, Role::Authority{..} | Role::Sentry{..}) {
+			task_manager
+				.spawn_essential_handle()
+				.spawn_blocking("babe", babe);
+			}
+
+		if matches!(role, ServiceRole::Authority { .. } | ServiceRole::Sentry { .. }) {
 			let (sentries, authority_discovery_role) = match role {
-				Role::Authority { ref sentry_nodes } => (
+				ServiceRole::Authority { ref sentry_nodes } => (
 					sentry_nodes.clone(),
-					sc_authority_discovery::Role::Authority (
-						service.keystore(),
+					AuthorityDiscoveryRole::Authority (
+						keystore.clone(),
 					),
 				),
-				Role::Sentry {..} => (
+				ServiceRole::Sentry { .. } => (
 					vec![],
-					sc_authority_discovery::Role::Sentry,
+					AuthorityDiscoveryRole::Sentry,
 				),
 				_ => unreachable!("Due to outer matches! constraint; qed."),
 			};
 
-			let network = service.network();
 			let network_event_stream = network.event_stream("authority-discovery");
 			let dht_event_stream = network_event_stream.filter_map(|e| async move { match e {
-				Event::Dht(e) => Some(e),
+				NetworkEvent::Dht(e) => Some(e),
 				_ => None,
 			}}).boxed();
-			let authority_discovery = sc_authority_discovery::AuthorityDiscovery::new(
-				service.client(),
-				network,
+			let authority_discovery = AuthorityDiscovery::new(
+				client.clone(),
+				network.clone(),
 				sentries,
 				dht_event_stream,
 				authority_discovery_role,
-				service.prometheus_registry(),
+				prometheus_registry.clone(),
 			);
 
-			service.spawn_task_handle().spawn("authority-discovery", authority_discovery);
+			task_manager
+				.spawn_essential_handle()
+				.spawn_blocking("authority-discovery", authority_discovery);
 		}
 
 		// if the node isn't actively participating in consensus then it doesn't
 		// need a keystore, regardless of which protocol we use below.
-		let keystore = if is_authority {
-			Some(service.keystore() as BareCryptoStorePtr)
+		let keystore = if role.is_authority() {
+			Some(keystore.clone() as BareCryptoStorePtr)
 		} else {
 			None
-		};
-
-		let config = sc_finality_grandpa::Config {
+			};
+		let grandpa_config = GrandpaConfig {
 			// FIXME substrate#1578 make this available through chainspec
 			gossip_duration: Duration::from_millis(1000),
 			justification_period: 512,
@@ -328,50 +281,49 @@ macro_rules! new_full {
 			observer_enabled: false,
 			keystore,
 			is_authority: role.is_network_authority(),
-		};
-
+			};
 		let enable_grandpa = !disable_grandpa;
+
 		if enable_grandpa {
 			// start the full GRANDPA voter
-			// NOTE: unlike in substrate we are currently running the full
-			// GRANDPA voter protocol for all full nodes (regardless of whether
-			// they're validators or not). at this point the full voter should
-			// provide better guarantees of block and vote data availability than
-			// the observer.
-
-			let grandpa_config = sc_finality_grandpa::GrandpaParams {
-				config,
+			// NOTE: non-authorities could run the GRANDPA observer protocol, but at
+			// this point the full voter should provide better guarantees of block
+			// and vote data availability than the observer. The observer has not
+			// been tested extensively yet and having most nodes in a network run it
+			// could lead to finality stalls.
+			let grandpa_config = GrandpaParams {
+				config: grandpa_config,
 				link: link_half,
-				network: service.network(),
+				network: network.clone(),
 				inherent_data_providers: inherent_data_providers.clone(),
-				telemetry_on_connect: Some(service.telemetry_on_connect_stream()),
-				voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
-				prometheus_registry: service.prometheus_registry(),
+				telemetry_on_connect: Some(telemetry_on_connect_sinks.on_connect_stream()),
+				voting_rule: GrandpaVotingRulesBuilder::default().build(),
+				prometheus_registry,
 				shared_voter_state,
 			};
 
-			service.spawn_essential_task_handle().spawn_blocking(
+			task_manager.spawn_essential_handle().spawn_blocking(
 				"grandpa-voter",
-				sc_finality_grandpa::run_grandpa_voter(grandpa_config)?
+				sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
 			);
 		} else {
 			sc_finality_grandpa::setup_disabled_grandpa(
 				client.clone(),
 				&inherent_data_providers,
-				service.network(),
+				network,
 			)?;
-		}
+			}
 
-		service
+		(task_manager, client)
 	}}
 }
 
 /// Builds a new service for a light client.
-#[macro_export]
 macro_rules! new_light {
 	($config:expr, $runtime:ty, $dispatch:ty) => {{
-		crate::set_prometheus_registry(&mut $config)?;
-		let inherent_data_providers = sp_inherents::InherentDataProviders::new();
+		set_prometheus_registry(&mut $config)?;
+
+		let inherent_data_providers = InherentDataProviders::new();
 
 		ServiceBuilder::new_light::<Block, $runtime, $dispatch>($config)?
 			.with_select_chain(|_, backend| Ok(LongestChain::new(backend.clone())))?
@@ -379,18 +331,21 @@ macro_rules! new_light {
 				let fetcher = builder.fetcher().ok_or_else(|| {
 					"Trying to start light transaction pool without active fetcher"
 				})?;
-				let pool_api =
-					sc_transaction_pool::LightChainApi::new(builder.client().clone(), fetcher);
-				let pool = sc_transaction_pool::BasicPool::with_revalidation_type(
+				let pool_api = LightChainApi::new(builder.client().clone(), fetcher);
+				let pool = Arc::new(BasicPool::new_light(
 					builder.config().transaction_pool.clone(),
 					Arc::new(pool_api),
 					builder.prometheus_registry(),
-					sc_transaction_pool::RevalidationType::Light,
-				);
+					builder.spawn_handle(),
+				));
+
 				Ok(pool)
 			})?
 			.with_import_queue_and_fprb(
-				|_, client, backend, fetcher, _, _, spawn_task_handle, registry| {
+				|_, client, backend, fetcher, mut select_chain, _, spawn_task_handle, registry| {
+					let select_chain = select_chain
+						.take()
+						.ok_or_else(|| ServiceError::SelectChainRequired)?;
 					let fetch_checker = fetcher
 						.map(|fetcher| fetcher.checker().clone())
 						.ok_or_else(|| {
@@ -402,17 +357,14 @@ macro_rules! new_light {
 						&(client.clone() as Arc<_>),
 						Arc::new(fetch_checker),
 					)?;
-
 					let finality_proof_import = grandpa_block_import.clone();
 					let finality_proof_request_builder =
 						finality_proof_import.create_finality_proof_request_builder();
-
 					let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-						sc_consensus_babe::Config::get_or_compute(&*client)?,
+						BabeConfig::get_or_compute(&*client)?,
 						grandpa_block_import,
 						client.clone(),
 					)?;
-
 					// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
 					let import_queue = sc_consensus_babe::import_queue(
 						babe_link,
@@ -420,6 +372,7 @@ macro_rules! new_light {
 						None,
 						Some(Box::new(finality_proof_import)),
 						client,
+						select_chain,
 						inherent_data_providers.clone(),
 						spawn_task_handle,
 						registry,
@@ -429,11 +382,8 @@ macro_rules! new_light {
 				},
 			)?
 			.with_finality_proof_provider(|client, backend| {
-				let provider =
-					client as Arc<dyn sc_finality_grandpa::StorageAndProofProvider<_, _>>;
-				Ok(Arc::new(sc_finality_grandpa::FinalityProofProvider::new(
-					backend, provider,
-				)) as _)
+				let provider = client as Arc<dyn GrandpaStorageAndProofProvider<_, _>>;
+				Ok(Arc::new(GrandpaFinalityProofProvider::new(backend, provider)) as _)
 			})?
 			.with_rpc_extensions(|builder| {
 				let fetcher = builder
@@ -442,58 +392,217 @@ macro_rules! new_light {
 				let remote_blockchain = builder
 					.remote_backend()
 					.ok_or_else(|| "Trying to start node RPC without active remote blockchain")?;
-
 				let light_deps = darwinia_rpc::LightDeps {
 					remote_blockchain,
 					fetcher,
 					client: builder.client().clone(),
 					pool: builder.pool(),
 				};
+
 				Ok(darwinia_rpc::create_light(light_deps))
 			})?
 			.build_light()
+			.map(|ServiceComponents { task_manager, .. }| task_manager)
 		}};
+}
+
+/// A set of APIs that polkadot-like runtimes must implement.
+pub trait RuntimeApiCollection<Extrinsic: 'static + Send + Sync + codec::Codec>:
+	sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+	+ sp_api::Metadata<Block>
+	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
+	+ sp_block_builder::BlockBuilder<Block>
+	+ sp_consensus_babe::BabeApi<Block>
+	+ sp_offchain::OffchainWorkerApi<Block>
+	+ sp_session::SessionKeys<Block>
+	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
+	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
+	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+	+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
+	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
+where
+	Extrinsic: RuntimeExtrinsic,
+	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+{
+}
+impl<Api, Extrinsic> RuntimeApiCollection<Extrinsic> for Api
+where
+	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+		+ sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+		+ sp_api::Metadata<Block>
+		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
+		+ sp_block_builder::BlockBuilder<Block>
+		+ sp_consensus_babe::BabeApi<Block>
+		+ sp_offchain::OffchainWorkerApi<Block>
+		+ sp_session::SessionKeys<Block>
+		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
+		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance, Extrinsic>
+		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+		+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
+		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>,
+	Extrinsic: RuntimeExtrinsic,
+	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+{
+}
+
+pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
+impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
+
+/// Crab client abstraction, this super trait only pulls in functionality required for
+/// Crab internal crates like Crab-collator.
+pub trait CrabClient<Block, Backend, Runtime>:
+	Sized
+	+ Send
+	+ Sync
+	+ sc_client_api::BlockchainEvents<Block>
+	+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+	+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
+	+ sp_blockchain::HeaderBackend<Block>
+where
+	Backend: sc_client_api::Backend<Block>,
+	Block: sp_runtime::traits::Block,
+	Runtime: sp_api::ConstructRuntimeApi<Block, Self>,
+{
+}
+impl<Block, Backend, Runtime, Client> CrabClient<Block, Backend, Runtime> for Client
+where
+	Backend: sc_client_api::Backend<Block>,
+	Block: sp_runtime::traits::Block,
+	Client: Sized
+		+ Send
+		+ Sync
+		+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+		+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
+		+ sp_blockchain::HeaderBackend<Block>
+		+ sc_client_api::BlockchainEvents<Block>,
+	Runtime: sp_api::ConstructRuntimeApi<Block, Self>,
+{
+}
+
+// /// Darwinia client abstraction, this super trait only pulls in functionality required for
+// /// Darwinia internal crates like Darwinia-collator.
+// pub trait DarwiniaClient<Block, Backend, Runtime>:
+// 	Sized
+// 	+ Send
+// 	+ Sync
+// 	+ sc_client_api::BlockchainEvents<Block>
+// 	+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+// 	+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
+// 	+ sp_blockchain::HeaderBackend<Block>
+// where
+// 	Backend: sc_client_api::Backend<Block>,
+// 	Block: sp_runtime::traits::Block,
+// 	Runtime: sp_api::ConstructRuntimeApi<Block, Self>,
+// {
+// }
+// impl<Block, Backend, Runtime, Client> DarwiniaClient<Block, Backend, Runtime> for Client
+// where
+// 	Backend: sc_client_api::Backend<Block>,
+// 	Block: sp_runtime::traits::Block,
+// 	Client: Sized
+// 		+ Send
+// 		+ Sync
+// 		+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+// 		+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
+// 		+ sp_blockchain::HeaderBackend<Block>
+// 		+ sc_client_api::BlockchainEvents<Block>,
+// 	Runtime: sp_api::ConstructRuntimeApi<Block, Self>,
+// {
+// }
+
+/// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
+pub trait IdentifyVariant {
+	/// Returns if this is a configuration for the `Crab` network.
+	fn is_crab(&self) -> bool;
+
+	/// Returns if this is a configuration for the `Darwinia` network.
+	fn is_darwinia(&self) -> bool;
+}
+impl IdentifyVariant for Box<dyn ChainSpec> {
+	fn is_crab(&self) -> bool {
+		self.id().starts_with("crab")
+	}
+
+	fn is_darwinia(&self) -> bool {
+		self.id().starts_with("darwinia")
+	}
 }
 
 /// Builds a new object suitable for chain operations.
 pub fn new_chain_ops<Runtime, Dispatch, Extrinsic>(
 	mut config: Configuration,
-) -> Result<impl ServiceBuilderCommand<Block = Block>, ServiceError>
+) -> Result<
+	(
+		Arc<TFullClient<Block, Runtime, Dispatch>>,
+		Arc<TFullBackend<Block>>,
+		BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
+		TaskManager,
+	),
+	ServiceError,
+>
 where
-	Runtime: 'static
-		+ Send
-		+ Sync
-		+ ConstructRuntimeApi<Block, sc_service::TFullClient<Block, Runtime, Dispatch>>,
-	Runtime::RuntimeApi: RuntimeApiCollection<
-		Extrinsic,
-		StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
-	>,
+	Runtime:
+		'static + Send + Sync + ConstructRuntimeApi<Block, TFullClient<Block, Runtime, Dispatch>>,
+	Runtime::RuntimeApi:
+		RuntimeApiCollection<Extrinsic, StateBackend = StateBackendFor<TFullBackend<Block>, Block>>,
 	Dispatch: 'static + NativeExecutionDispatch,
 	Extrinsic: RuntimeExtrinsic,
-	<Runtime::RuntimeApi as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
 {
-	config.keystore = sc_service::config::KeystoreConfig::InMemory;
-	Ok(new_full_start!(config, Runtime, Dispatch).0)
+	config.keystore = KeystoreConfig::InMemory;
+
+	let (builder, _, _, _) = new_full_start!(config, Runtime, Dispatch);
+
+	Ok(builder.to_chain_ops_parts())
+}
+
+// If we're using prometheus, use a registry with a prefix of `darwinia`.
+fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
+	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
+		*registry = Registry::new_custom(Some("darwinia".into()), None)?;
+	}
+
+	Ok(())
 }
 
 /// Create a new Crab service for a full node.
 #[cfg(feature = "full-node")]
-pub fn crab_new_full(mut config: Configuration) -> Result<impl AbstractService, ServiceError> {
-	Ok(new_full!(config, crab_runtime::RuntimeApi, CrabExecutor))
+pub fn crab_new_full(
+	mut config: Configuration,
+) -> Result<
+	(
+		TaskManager,
+		Arc<impl CrabClient<Block, TFullBackend<Block>, crab_runtime::RuntimeApi>>,
+	),
+	ServiceError,
+> {
+	let (components, client) = new_full!(config, crab_runtime::RuntimeApi, CrabExecutor);
+
+	Ok((components, client))
 }
 
 /// Create a new Crab service for a light client.
-pub fn crab_new_light(
-	mut config: Configuration,
-) -> Result<
-	impl AbstractService<
-		Block = Block,
-		RuntimeApi = crab_runtime::RuntimeApi,
-		Backend = TLightBackend<Block>,
-		SelectChain = LongestChain<TLightBackend<Block>, Block>,
-		CallExecutor = TLightCallExecutor<Block, CrabExecutor>,
-	>,
-	ServiceError,
-> {
+pub fn crab_new_light(mut config: Configuration) -> Result<TaskManager, ServiceError> {
 	new_light!(config, crab_runtime::RuntimeApi, CrabExecutor)
 }
+
+// /// Create a new Darwinia service for a full node.
+// #[cfg(feature = "full-node")]
+// pub fn darwinia_new_full(
+// 	mut config: Configuration,
+// ) -> Result<
+// 	(
+// 		TaskManager,
+// 		Arc<impl CrabClient<Block, TFullBackend<Block>, darwinia_runtime::RuntimeApi>>,
+// 	),
+// 	ServiceError,
+// > {
+// 	let (components, client) = new_full!(config, darwinia_runtime::RuntimeApi, DarwiniaExecutor);
+
+// 	Ok((components, client))
+// }
+
+// /// Create a new Darwinia service for a light client.
+// pub fn darwinia_new_light(mut config: Configuration) -> Result<TaskManager, ServiceError> {
+// 	new_light!(config, darwinia_runtime::RuntimeApi, DarwiniaExecutor)
+// }
