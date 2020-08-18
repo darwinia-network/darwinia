@@ -103,7 +103,7 @@ no-telemetry = true
 #telemetry-url = ["wss://telemetry.polkadot.io/submit/ 0"]
 
 # Specify the chain specification (one of dev, local, or staging).
-chain = "dev"
+chain = "crab-dev"
 
 # Specify the development chain.
 #dev = true
