@@ -230,7 +230,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 
 	CrabGenesisConfig {
 		frame_system: Some(crab_runtime::SystemConfig {
-			code: crab_runtime::WASM_BINARY.to_vec(),
+			code: crab_runtime::wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		}),
 		pallet_babe: Some(Default::default()),
@@ -412,7 +412,7 @@ pub fn crab_testnet_genesis(
 
 	CrabGenesisConfig {
 		frame_system: Some(crab_runtime::SystemConfig {
-			code: crab_runtime::WASM_BINARY.to_vec(),
+			code: crab_runtime::wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		}),
 		pallet_babe: Some(Default::default()),
