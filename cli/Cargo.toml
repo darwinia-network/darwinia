@@ -39,6 +39,9 @@ sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag
 sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 # substrate primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
+# this crate is used only to enable `trie-memory-tracker` feature
+# see https://github.com/paritytech/substrate/pull/6745
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 # substrate utils
 substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 
@@ -63,11 +66,16 @@ cli = [
 ]
 db  = ["darwinia-service/db"]
 
-browser  = [
+browser = [
 	"wasm-bindgen",
 	"wasm-bindgen-futures",
 	"substrate-browser-utils",
 ]
-wasmtime = ["sc-cli/wasmtime"]
+
+trie-memory-tracker = ["sp-trie/memory-tracker"]
+wasmtime            = [
+	"sc-cli/wasmtime",
+	"trie-memory-tracker",
+]
 
 dev = ["darwinia-service/dev"]
