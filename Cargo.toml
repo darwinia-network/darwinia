@@ -18,7 +18,7 @@ futures         = { version = "0.3.5" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli     = { path = "cli" }
-darwinia-service = { path = "service" }
+darwinia-service = { path = "node/service" }
 
 [dev-dependencies]
 assert_cmd = { version = "1.0.1" }
@@ -40,7 +40,7 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
-	"service",
+	"node/service",
 ]
 
 [badges]

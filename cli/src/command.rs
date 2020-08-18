@@ -143,12 +143,11 @@ pub fn run() -> sc_cli::Result<()> {
 					_ => darwinia_service::crab_new_full(config).map(|(components, _)| components),
 				})
 			} else if chain_spec.is_darwinia() {
-				// runtime.run_node_until_exit(|config| match config.role {
-				// 	Role::Light => darwinia_service::darwinia_new_light(config),
-				// 	_ => darwinia_service::darwinia_new_full(config)
-				// 		.map(|(components, _)| components),
-				// })
-				unimplemented!()
+				runtime.run_node_until_exit(|config| match config.role {
+					Role::Light => darwinia_service::darwinia_new_light(config),
+					_ => darwinia_service::darwinia_new_full(config)
+						.map(|(components, _)| components),
+				})
 			} else {
 				unreachable!()
 			}
@@ -164,18 +163,17 @@ pub fn run() -> sc_cli::Result<()> {
 					darwinia_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						darwinia_service::CrabExecutor,
-						crab_runtime::UncheckedExtrinsic,
 					>(config)
 				})
 			} else if chain_spec.is_darwinia() {
-				// runtime.run_subcommand(subcommand, |config| {
-				// 	darwinia_service::new_chain_ops::<
-				// 		darwinia_runtime::RuntimeApi,
-				// 		darwinia_service::DarwiniaExecutor,
-				// 		darwinia_runtime::UncheckedExtrinsic,
-				// 	>(config)
-				// })
-				unimplemented!()
+				runtime.run_subcommand(subcommand, |config| {
+					// TODO: switch `crab_runtime` to `darwinia_runtime`
+					// TODO: switch `CrabExecutor` to `DarwiniaExecutor`
+					darwinia_service::new_chain_ops::<
+						crab_runtime::RuntimeApi,
+						darwinia_service::CrabExecutor,
+					>(config)
+				})
 			} else {
 				unreachable!()
 			}

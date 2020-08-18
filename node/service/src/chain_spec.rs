@@ -287,7 +287,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
 				claims_list: crab_runtime::ClaimsList::from_file(
-					"./service/res/crab_claims_list.json",
+					".node/service/res/crab_claims_list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			}
@@ -315,7 +315,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
 			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
-				"./service/res/dags_merkle_roots_loader.json",
+				".node/service/res/dags_merkle_roots_loader.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()

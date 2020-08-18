@@ -29,7 +29,7 @@ wasm-bindgen-futures = { version = "0.4.17", optional = true }
 # darwinia client
 darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia service
-darwinia-service = { default-features = false, path = "../service" }
+darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
 sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }

@@ -21,11 +21,11 @@ darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-netwo
 darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
-darwinia-primitives = { path = "../primitives" }
+darwinia-primitives = { path = "../../primitives" }
 # darwinia rpc
-darwinia-rpc = { path = "../rpc" }
+darwinia-rpc = { path = "../../rpc" }
 # darwinia runtime
-crab-runtime = { path = "../runtime/crab" }
+crab-runtime = { path = "../../runtime/crab" }
 # substrate client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
