@@ -3,36 +3,37 @@ name = "darwinia"
 path = "src/main.rs"
 
 [package]
-name = "darwinia"
-version = "0.6.6"
-authors = ["Darwinia Network <hello@darwinia.network>"]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust"
-edition = "2018"
-license = "GPL-3.0"
-homepage = "https://darwinia.network/"
-repository = "https://github.com/darwinia-network/darwinia/"
+edition     = "2018"
+homepage    = "https://darwinia.network/"
+license     = "GPL-3.0"
+name        = "darwinia"
+repository  = "https://github.com/darwinia-network/darwinia/"
+version     = "0.6.6"
 
 [dependencies]
 # crates
-futures = { version = "0.3.5" }
+futures         = { version = "0.3.5" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
-darwinia-cli = { path = "cli" }
+darwinia-cli     = { path = "cli" }
 darwinia-service = { path = "service" }
 
 [dev-dependencies]
 assert_cmd = { version = "1.0.1" }
-nix = { version = "0.18" }
-tempfile = { version = "3.1.0" }
+nix        = { version = "0.18" }
+tempfile   = { version = "3.1.0" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
-dev = [
+dev     = [
 	"darwinia-service/dev",
 	"darwinia-cli/dev",
 ]
 
 [workspace]
+exclude = []
 members = [
 	"cli",
 	"primitives",
@@ -41,7 +42,6 @@ members = [
 	"runtime/crab",
 	"service",
 ]
-exclude = []
 
 [badges]
 maintenance = { status = "actively-developed" }
