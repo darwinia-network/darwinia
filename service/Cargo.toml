@@ -53,6 +53,7 @@ sp-blockchain          = { git = "https://github.com/darwinia-network/substrate.
 sp-consensus           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sp-consensus-babe      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sp-core                = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
+sp-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sp-inherents           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sp-offchain            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
 sp-runtime             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
