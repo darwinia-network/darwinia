@@ -786,7 +786,7 @@ checksum = "8aebca1129a03dc6dc2b127edd729435bbc4a37e1d5f4d7513165089ceb02634"
 
 [[package]]
 name = "crab-runtime"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
@@ -1050,10 +1050,10 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "assert_cmd",
- "darwinia-cli 0.6.6",
+ "darwinia-cli 0.6.7",
  "darwinia-service",
  "futures 0.3.5",
  "nix 0.18.0",
@@ -1122,7 +1122,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "darwinia-cli 1.0.0-alpha.2",
  "darwinia-service",
@@ -1260,7 +1260,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-primitives"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -1285,7 +1285,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "darwinia-balances-rpc",
  "darwinia-header-mmr-rpc",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime-common"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "darwinia-balances",
  "darwinia-primitives",
@@ -1332,7 +1332,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-service"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "array-bytes",
  "crab-runtime",
