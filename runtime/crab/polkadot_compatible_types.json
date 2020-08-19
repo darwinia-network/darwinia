@@ -1,4 +1,6 @@
 {
+	"__[frame.system]__": {},
+	"Address": "AccountId",
 	"__[pallet.balances]__": {},
 	"BalanceInfo": null,
 	"BalanceLock": {
@@ -117,7 +119,7 @@
 		"payout": "RKT"
 	},
 	"__[pallet.treasury]__": {},
-	"Proposal": {
+	"TreasuryProposal": {
 		"proposer": "AccountId",
 		"beneficiary": "AccountId",
 		"ring_value": "Balance",
