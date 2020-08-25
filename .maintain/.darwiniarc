@@ -3,7 +3,7 @@
 # The node will be started with the authority role and actively
 # participate in any consensus task that it can (e.g. depending on
 # availability of local keys).
-validator = true
+#validator = true
 
 # Enable sentry mode.
 #
@@ -40,7 +40,7 @@ unsafe-rpc-external = true
 # - `Safe`: Exposes only a safe subset of RPC methods, denying unsafe RPC methods.
 # - `Auto`: Acts as `Safe` if RPC is served externally, e.g. when `--{rpc,ws}-external` is passed,
 # otherwise acts as `Unsafe`.
-#rpc-methods = "Auto"
+rpc-methods = "Unsafe"
 
 # Listen to all Websocket interfaces.
 #
@@ -54,7 +54,7 @@ unsafe-rpc-external = true
 # Same as `--ws-external` but doesn't warn you about it.
 unsafe-ws-external = true
 
-# Listen to all Prometheu
+# Listen to all Prometheus
 #
 # Default is local.
 prometheus-external = true
@@ -82,17 +82,17 @@ rpc-cors = "All"
 # Do not expose a Prometheus metric endpoint.
 #
 # Prometheus metric endpoint is enabled by default.
-#no-primetheus = true
+#no-prometheus = true
 
 # The human-readable name for this node.
 #
 # The node name will be reported to the telemetry server, if enabled.
-name = "Example"
+name = "Alice"
 
 # Disable connecting to the Substrate telemetry server.
 #
 # Telemetry is on by default on global chains.
-#no-telemetry = true
+no-telemetry = true
 
 # The URL of the telemetry server to connect to.
 #
@@ -103,33 +103,39 @@ name = "Example"
 #telemetry-url = ["wss://telemetry.polkadot.io/submit/ 0"]
 
 # Specify the chain specification (one of dev, local, or staging).
-#chain = "crab"
+chain = "crab-dev"
 
 # Specify the development chain.
 #dev = true
 
 # Specify custom base path.
-base-path = "/tmp/data"
+#base-path = "/tmp/data"
 
 # Sets a custom logging filter. Syntax is <target>=<level>, e.g. -lsync=debug.
 #
 # Log levels (least to most verbose) are error, warn, info, debug, and trace.
 # By default, all targets log `info`. The global log level can be set with -l<level>.
-log = ["sync=trace"]
+#log = ["sync=trace"]
 
 # Specify the state pruning mode, a number of blocks to keep or 'archive'.
 #
 # Default is to keep all block states if the node is running as a
 # validator (i.e. 'archive'), otherwise state is only kept for the last
 # 256 blocks.
-pruning = "32"
+#pruning = "32"
+
+# Select database backend to use.
+#db = "ParityDb"
+
+# Limit the memory the database cache can use.
+#db-cache = 128
 
 # Force start with unsafe pruning settings.
 #
 # When running as a validator it is highly recommended to disable state
 # pruning (i.e. 'archive') which is the default. The node will refuse to
 # start as a validator if pruning is enabled unless this option is set.
-unsafe-pruning = true
+#unsafe-pruning = true
 
 # Method for executing Wasm runtime code.
 #wasm_method = "Interpreted"
@@ -143,8 +149,116 @@ unsafe-pruning = true
 # Receiver to process tracing messages.
 #tracing-receiver = "Log"
 
+# Specify a list of bootnodes.
+#bootnodes = []
+
+# Specify a list of reserved node addresses.
+#reserved-nodes = []
+
+# Whether to only allow connections to/from reserved nodes.
+#
+# If you are a validator your node might still connect to other validator
+# nodes regardless of whether they are defined as reserved nodes.
+#reserved-only = false
+
+# The public address that other nodes will use to connect to it.
+# This can be used if there's a proxy in front of this node.
+#public-addr = []
+
+# Listen on this multiaddress.
+#listen-addr = []
+
+# Specify p2p protocol TCP port.
+#port = 30333
+
+# Forbid connecting to private IPv4 addresses (as specified in
+# [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with
+# `--reserved-nodes` or `--bootnodes`.
+#no-private-ipv4 = false
+
+# Specify the number of outgoing connections we're trying to maintain.
+#out-peers = 25
+
+# Specify the maximum number of incoming connections we're accepting.
+#in-peers = 25
+
+# Disable mDNS discovery.
+#
+# By default, the network will use mDNS to discover other nodes on the
+#` local network. This disables it. Automatically implied when using --dev.
+#no-mdns = false
+
+# Maximum number of peers from which to ask for the same blocks in parallel.
+#
+# This allows downloading announced blocks from multiple peers. Decrease to save
+# traffic and risk increased latency.
+#max-parallel-downloads = 5
+
+# The secret key to use for libp2p networking.
+#
+# The value is a string that is parsed according to the choice of
+# `--node-key-type` as follows:
+#
+#   `ed25519`:
+#   The value is parsed as a hex-encoded Ed25519 32 byte secret key,
+#   i.e. 64 hex characters.
+#
+# The value of this option takes precedence over `--node-key-file`.
+#
+# WARNING: Secrets provided as command-line arguments are easily exposed.
+# Use of this option should be limited to development and testing. To use
+# an externally managed secret key, use `--node-key-file` instead.
+#node-key = ""
+
+# The type of secret key to use for libp2p networking.
+#
+# The secret key of the node is obtained as follows:
+#
+#   * If the `--node-key` option is given, the value is parsed as a secret key
+#     according to the type. See the documentation for `--node-key`.
+#
+#   * If the `--node-key-file` option is given, the secret key is read from the
+#     specified file. See the documentation for `--node-key-file`.
+#
+#   * Otherwise, the secret key is read from a file with a predetermined,
+#     type-specific name from the chain-specific network config directory
+#     inside the base directory specified by `--base-dir`. If this file does
+#     not exist, it is created with a newly generated secret key of the
+#     chosen type.
+#
+# The node's secret key determines the corresponding public key and hence the
+# node's peer ID in the context of libp2p.
+#node-key-type = "Ed25519"
+
+# The file from which to read the node's secret key to use for libp2p networking.
+#
+# The contents of the file are parsed according to the choice of `--node-key-type`
+# as follows:
+#
+#   `ed25519`:
+#   The file must contain an unencoded 32 byte Ed25519 secret key.
+#
+# If the file does not exist, it is created with a newly generated secret key of
+# the chosen type.
+#node-key-file = ""
+
+# Disable the yamux flow control. This option will be removed in the future once there is
+# enough confidence that this feature is properly working.
+#no-yamux-flow-control = false
+
+# Enable peer discovery on local networks.
+#
+# By default this option is true for `--dev` and false otherwise.
+#discover-local = false
+
+# Maximum number of transactions in the transaction pool.
+#pool-limit = 8192
+
+# Maximum number of kilobytes of all transactions stored in the pool.
+#pool_kbytes = 20480
+
 # Shortcut for `--name Alice --validator` with session keys for `Alice` added to keystore.
-#alice = true
+alice = true
 
 # Shortcut for `--name Bob --validator` with session keys for `Bob` added to keystore.
 #bob = true
@@ -170,6 +284,18 @@ unsafe-pruning = true
 # Enable authoring even when offline.
 #force_authoring = true
 
+# Specify custom keystore path.
+#keystore-path = ""
+
+# Use interactive shell for entering the password used by the keystore.
+#password-interactive = false
+
+# Password used by the keystore.
+#password = ""
+
+# File that contains the password used by the keystore.
+#password-filename = ""
+
 # The size of the instances cache for each runtime.
 #
 # The default value is 8 and the values higher than 256 are ignored.
@@ -180,3 +306,12 @@ unsafe-pruning = true
 # Can't be used with --public-addr as the sentry node would take precedence over the public address
 # specified there.
 #sentry-nodes = []
+
+# Run a temporary node.
+#
+# A temporary directory will be created to store the configuration and will be deleted
+# at the end of the process.
+#
+# Note: the directory is random per process execution. This directory is used as base path
+# which includes: database, node key and keystore.
+tmp = true

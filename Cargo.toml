@@ -1,33 +1,49 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node implementation in Rust"
+edition     = "2018"
+homepage    = "https://darwinia.network/"
+license     = "GPL-3.0"
+name        = "darwinia"
+repository  = "https://github.com/darwinia-network/darwinia/"
+version     = "0.6.7"
+
 [[bin]]
 name = "darwinia"
 path = "src/main.rs"
 
-[package]
-name = "darwinia"
-version = "0.6.6"
-authors = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia node implementation in Rust"
-edition = "2018"
-license = "GPL-3.0"
-homepage = "https://darwinia.network/"
-repository = "https://github.com/darwinia-network/darwinia/"
+[badges]
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 # crates
-futures = { version = "0.3.5" }
+futures         = { version = "0.3.5" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
-darwinia-cli = { path = "cli" }
-darwinia-service = { path = "service" }
+darwinia-cli     = { path = "cli" }
+darwinia-service = { path = "node/service" }
 
 [dev-dependencies]
 assert_cmd = { version = "1.0.1" }
-nix = { version = "0.18" }
-tempfile = { version = "3.1.0" }
+nix        = { version = "0.18" }
+tempfile   = { version = "3.1.0" }
+
+# [patch.'https://github.com/paritytech/frontier']
+# frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# frame-metadata     = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# frame-support      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# frame-system       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# pallet-evm         = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# pallet-timestamp   = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# sp-api             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# sp-core            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# sp-io              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# sp-runtime         = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# sp-std             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
-dev = [
+dev     = [
 	"darwinia-service/dev",
 	"darwinia-cli/dev",
 ]
@@ -39,12 +55,8 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
-	"service",
+	"node/service",
 ]
-exclude = []
-
-[badges]
-maintenance = { status = "actively-developed" }
 
 [profile.release]
 # Darwinia runtime requires unwinding.

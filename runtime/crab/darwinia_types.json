@@ -109,7 +109,7 @@
 		"payout": "RKT"
 	},
 	"__[pallet.treasury]__": {},
-	"Proposal": {
+	"TreasuryProposal": {
 		"proposer": "AccountId",
 		"beneficiary": "AccountId",
 		"ring_value": "Balance",
@@ -126,6 +126,12 @@
 		"relayer": "AccountId"
 	},
 	"EthBlockNumber": "u64",
+	"EthHeaderThing": {
+		"eth_header": "EthHeader",
+		"ethash_proof": "Vec<EthashProof>",
+		"mmr_root": "MMRHash",
+		"mmr_proof": "Vec<MMRHash>"
+	},
 	"EthHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
@@ -199,9 +205,26 @@
 	"Round": "u64",
 	"TcBlockNumber": "Vec<u8>",
 	"TcHeaderHash": "Vec<u8>",
+	"TcHeaderMMR": "Vec<u8>",
 	"MMRHash": "Vec<u8>",
 	"GameId": "TcBlockNumber",
 	"RawHeaderThing": "Vec<u8>",
+	"TcHeaderBrief": {
+		"number": "TcBlockNumber",
+		"hash": "TcHeaderHash",
+		"parent_hash": "TcHeaderHash",
+		"mmr": "TcHeaderMMR",
+		"others": "Vec<u8>"
+	},
+	"BondedTcHeader": {
+		"header_brief": "TcHeaderBrief",
+		"bond": "Balance"
+	},
+	"RelayProposal": {
+		"relayer": "AccountId",
+		"bonded_chain": "Vec<BondedTcHeader>",
+		"extend_from_header_hash": "Option<TcHeaderHash>"
+	},
 	"__[node.rpc]__": {},
 	"BalancesRuntimeDispatchInfo": {
 		"usable_balance": "Balance"

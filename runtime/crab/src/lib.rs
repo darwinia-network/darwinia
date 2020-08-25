@@ -17,7 +17,20 @@ pub mod wasm {
 	pub const WASM_BINARY: &[u8] = include_bytes!("../../../wasm/crab_runtime.compact.wasm");
 	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
 	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../../wasm/crab_runtime.wasm");
+
+	#[cfg(feature = "std")]
+	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
+	pub fn wasm_binary_unwrap() -> &'static [u8] {
+		WASM_BINARY.expect(
+			"Development wasm binary is not available. This means the client is \
+						built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
+						production chains. Please rebuild with the flag disabled.",
+		)
+	}
 }
+
+/// Weights for pallets used in the runtime.
+mod weights;
 
 // --- darwinia ---
 #[cfg(feature = "std")]
@@ -106,7 +119,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -118,7 +130,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Crab"),
 	authoring_version: 0,
-	spec_version: 6,
+	spec_version: 7,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 2,
@@ -218,8 +230,8 @@ impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type ExistentialDeposit = RingExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type DustCollector = (Kton,);
+	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type Balance = Balance;
@@ -228,8 +240,8 @@ impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type ExistentialDeposit = KtonExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type DustCollector = (Ring,);
+	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 
 pub struct DealWithFees;
@@ -274,8 +286,9 @@ parameter_types! {
 	pub const BondingDurationInEra: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
+	// slightly less than 14 days.
 	pub const SlashDeferDuration: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
+		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 	// quarter of the last session will be for election.
 	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
 	pub const MaxIterations: u32 = 5;
@@ -310,9 +323,9 @@ impl darwinia_staking::Trait for Runtime {
 	type KtonCurrency = Kton;
 	type KtonSlash = Treasury;
 	type KtonReward = ();
-	type WeightInfo = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -515,6 +528,7 @@ impl darwinia_claims::Trait for Runtime {
 	type ModuleId = ClaimsModuleId;
 	type Prefix = Prefix;
 	type RingCurrency = Ring;
+	type MoveClaimOrigin = EnsureRootOrHalfCouncil;
 }
 
 impl pallet_utility::Trait for Runtime {
@@ -740,6 +754,9 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthereumRelayModuleId;
 	type Event = Event;
 	type Currency = Ring;
+	type RelayerGame = RelayerGame;
+	type ApproveOrigin = ApproveOrigin;
+	type RejectOrigin = EnsureRootOrHalfCouncil;
 	type WeightInfo = ();
 }
 
@@ -754,25 +771,10 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
 	type TargetChain = EthereumRelay;
 	type ConfirmPeriod = ConfirmPeriod;
-	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = EnsureRootOrHalfCouncil;
 	type WeightInfo = ();
 }
 
 impl darwinia_header_mmr::Trait for Runtime {}
-
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		darwinia_treasury::Module::<Runtime>::migrate_retract_tip_for_tip_new();
-		500_000_000
-			+ if pallet_scheduler::Module::<Runtime>::migrate_v1_to_t2() {
-				<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-			} else {
-				<Runtime as frame_system::Trait>::DbWeight::get().reads(1) + 500_000_000
-			}
-	}
-}
 
 construct_runtime!(
 	pub enum Runtime
@@ -1066,10 +1068,9 @@ impl_runtime_apis! {
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<
 		Block,
 		Balance,
-		UncheckedExtrinsic,
 	> for Runtime {
 		fn query_info(
-			uxt: UncheckedExtrinsic, len: u32
+			uxt: <Block as BlockT>::Extrinsic, len: u32
 		) -> TransactionPaymentRuntimeDispatchInfo<Balance> {
 			TransactionPayment::query_info(uxt, len)
 		}
