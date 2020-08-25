@@ -22,7 +22,7 @@ use std::{sync::Arc, time::Duration};
 // --- crates ---
 use futures::stream::StreamExt;
 // --- substrate ---
-use sc_authority_discovery::{AuthorityDiscovery, Role as AuthorityDiscoveryRole};
+use sc_authority_discovery::Role as AuthorityDiscoveryRole;
 use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
 use sc_consensus::LongestChain;
@@ -388,7 +388,7 @@ where
 				}
 			})
 			.boxed();
-		let (authority_discovery_worker, _) = authority_discovery::new_worker_and_service(
+		let (authority_discovery_worker, _) = sc_authority_discovery::new_worker_and_service(
 			client.clone(),
 			network.clone(),
 			sentries,
