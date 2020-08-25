@@ -2,6 +2,8 @@
 
 #![warn(missing_docs)]
 
+// --- crates ---
+pub use jsonrpc_pubsub::manager::SubscriptionManager;
 // --- substrate ---
 pub use sc_rpc_api::DenyUnsafe;
 
