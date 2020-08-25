@@ -388,7 +388,7 @@ where
 				}
 			})
 			.boxed();
-		let authority_discovery = AuthorityDiscovery::new(
+		let (authority_discovery_worker, _) = authority_discovery::new_worker_and_service(
 			client.clone(),
 			network.clone(),
 			sentries,
@@ -398,8 +398,8 @@ where
 		);
 
 		task_manager
-			.spawn_essential_handle()
-			.spawn_blocking("authority-discovery", authority_discovery);
+			.spawn_handle()
+			.spawn("authority-discovery-worker", authority_discovery_worker);
 	}
 
 	let keystore = if is_authority {
