@@ -27,39 +27,39 @@ darwinia-rpc = { path = "../../rpc" }
 # darwinia runtime
 crab-runtime = { path = "../../runtime/crab" }
 # substrate client
-sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-chain-spec          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-client-api          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-client-db           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-consensus           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-consensus-babe      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-executor            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-network             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-service             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-telemetry           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
+sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-chain-spec          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-client-api          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-client-db           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-consensus           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-consensus-babe      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-executor            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-network             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-service             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-telemetry           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
 # substrate frame
-frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-pallet-im-online                           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
+frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+pallet-im-online                           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
 # substrate primitives
-sp-api                 = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-block-builder       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-blockchain          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-consensus           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-consensus-babe      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-core                = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-inherents           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-offchain            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-runtime             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-session             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
-sp-trie                = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc5" }
+sp-api                 = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-block-builder       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-blockchain          = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-consensus           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-consensus-babe      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-core                = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-inherents           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-offchain            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-runtime             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-session             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-trie                = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
 
 [features]
 default = ["db", "full-node"]
