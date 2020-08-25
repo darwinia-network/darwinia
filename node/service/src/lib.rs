@@ -49,7 +49,9 @@ use sp_trie::PrefixedMemoryDB;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Hash, Nonce, Power};
-use darwinia_rpc::{BabeDeps, DenyUnsafe, FullDeps, GrandpaDeps, LightDeps, RpcExtension};
+use darwinia_rpc::{
+	BabeDeps, DenyUnsafe, FullDeps, GrandpaDeps, LightDeps, RpcExtension, SubscriptionManager,
+};
 
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
@@ -158,7 +160,7 @@ fn new_partial<RuntimeApi, Executor>(
 		DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			impl Fn(DenyUnsafe) -> RpcExtension,
+			impl Fn(DenyUnsafe, SubscriptionManager) -> RpcExtension,
 			(
 				BabeBlockImport<
 					Block,
@@ -218,6 +220,7 @@ where
 		&task_manager.spawn_handle(),
 		config.prometheus_registry(),
 	)?;
+	let justification_stream = grandpa_link.justification_stream();
 	let shared_authority_set = grandpa_link.shared_authority_set().clone();
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let import_setup = (babe_import.clone(), grandpa_link, babe_link.clone());
@@ -230,7 +233,7 @@ where
 		let transaction_pool = transaction_pool.clone();
 		let select_chain = select_chain.clone();
 
-		move |deny_unsafe| -> RpcExtension {
+		move |deny_unsafe, subscriptions| -> RpcExtension {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
@@ -244,6 +247,8 @@ where
 				grandpa: GrandpaDeps {
 					shared_voter_state: shared_voter_state.clone(),
 					shared_authority_set: shared_authority_set.clone(),
+					justification_stream: justification_stream.clone(),
+					subscriptions,
 				},
 			};
 
