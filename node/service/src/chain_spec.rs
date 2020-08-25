@@ -17,6 +17,9 @@ use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as CRING, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance};
 
+/// The `ChainSpec parametrised for Crab runtime`.
+pub type CrabChainSpec = sc_service::GenericChainSpec<CrabGenesisConfig, Extensions>;
+
 const CKTON: Balance = CRING;
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 const DEFAULT_PROTOCOL_ID: &str = "dar";
@@ -33,9 +36,6 @@ pub struct Extensions {
 	/// Known bad block hashes.
 	pub bad_blocks: sc_client_api::BadBlocks<darwinia_primitives::Block>,
 }
-
-/// The `ChainSpec parametrised for Crab runtime`.
-pub type CrabChainSpec = sc_service::GenericChainSpec<CrabGenesisConfig, Extensions>;
 
 pub fn crab_config() -> Result<CrabChainSpec, String> {
 	CrabChainSpec::from_json_bytes(&include_bytes!("../res/crab.json")[..])
@@ -77,7 +77,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		sr: [u8; 32],
 		ed: [u8; 32],
 	}
-
 	impl Staker {
 		fn build_init_auth(
 			&self,
@@ -112,7 +111,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		32
 	)
 	.into();
-
 	let stakers = [
 		// AlexChien
 		Staker {
@@ -196,7 +194,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 			),
 		},
 	];
-
 	// local tester
 	let local_tester = Staker {
 		// Secret phrase `pulse upset spoil fatigue agent credit dirt language forest aware boat broom` is account:
@@ -220,12 +217,10 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 			32
 		),
 	};
-
 	let endowed_accounts = stakers
 		.iter()
 		.map(|staker| staker.sr.into())
 		.collect::<Vec<_>>();
-
 	let initial_authorities = [stakers[1].build_init_auth(), local_tester.build_init_auth()];
 
 	CrabGenesisConfig {
