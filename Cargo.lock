@@ -1328,6 +1328,7 @@ dependencies = [
  "darwinia-primitives",
  "darwinia-staking-rpc",
  "jsonrpc-core",
+ "jsonrpc-pubsub",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "sc-client-api",
