@@ -24,6 +24,7 @@ darwinia-ethereum-backing           = { default-features = false, git = "https:/
 darwinia-ethereum-relay             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-relay-primitives           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-relayer-game               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
@@ -95,6 +96,7 @@ std    = [
 	"darwinia-ethereum-relay/std",
 	"darwinia-header-mmr/std",
 	"darwinia-header-mmr-rpc-runtime-api/std",
+	"darwinia-relay-primitives/std",
 	"darwinia-relayer-game/std",
 	"darwinia-staking/std",
 	"darwinia-staking-rpc-runtime-api/std",

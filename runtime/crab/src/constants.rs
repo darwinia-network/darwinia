@@ -96,13 +96,13 @@ pub mod relay {
 	// --- darwinia ---
 	use super::currency::*;
 	use crate::*;
-	use darwinia_support::relay::*;
+	use darwinia_relay_primitives::*;
 
 	pub struct EthereumRelayerGameAdjustor;
 	impl AdjustableRelayerGame for EthereumRelayerGameAdjustor {
 		type Moment = BlockNumber;
 		type Balance = Balance;
-		type TcBlockNumber = <EthereumRelay as darwinia_support::relay::Relayable>::TcBlockNumber;
+		type TcBlockNumber = <EthereumRelay as Relayable>::BlockNumber;
 
 		fn challenge_time(round: Round) -> Self::Moment {
 			match round {
@@ -113,11 +113,11 @@ pub mod relay {
 			}
 		}
 
-		fn round_from_chain_len(chain_len: u64) -> Round {
+		fn round_of_samples_count(chain_len: u64) -> Round {
 			chain_len - 1
 		}
 
-		fn chain_len_from_round(round: Round) -> u64 {
+		fn samples_count_of_round(round: Round) -> u64 {
 			round + 1
 		}
 
