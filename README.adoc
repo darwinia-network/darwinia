@@ -370,4 +370,4 @@ link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
 
 == License
 
-https://github.com/darwinia-network/darwinia/blob/develop/LICENSE[LICENSE]
+https://github.com/darwinia-network/darwinia/blob/master/LICENSE[LICENSE]
