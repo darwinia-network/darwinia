@@ -37,9 +37,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Lint and prepare
-        run: .maintain/ci/format.sh
-
       - name: Build
         env:
           RUST_TOOLCHAIN: nightly
