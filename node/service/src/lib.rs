@@ -41,7 +41,9 @@ use sc_service::{
 };
 use sc_transaction_pool::{BasicPool, FullPool};
 use sp_api::ConstructRuntimeApi;
-use sp_consensus::{import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue};
+use sp_consensus::{
+	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
+};
 use sp_core::traits::BareCryptoStorePtr;
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
@@ -219,6 +221,7 @@ where
 		inherent_data_providers.clone(),
 		&task_manager.spawn_handle(),
 		config.prometheus_registry(),
+		CanAuthorWithNativeVersion::new(client.executor().clone()),
 	)?;
 	let justification_stream = grandpa_link.justification_stream();
 	let shared_authority_set = grandpa_link.shared_authority_set().clone();
@@ -493,6 +496,7 @@ where
 		inherent_data_providers.clone(),
 		&task_manager.spawn_handle(),
 		config.prometheus_registry(),
+		NeverCanAuthor,
 	)?;
 	let finality_proof_provider =
 		GrandpaFinalityProofProvider::new_for_service(backend.clone(), client.clone());
