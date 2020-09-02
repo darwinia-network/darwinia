@@ -14,11 +14,9 @@ pub mod wasm {
 	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
-	pub const WASM_BINARY: &[u8] =
-		include_bytes!("../../../wasm/darwinia_crab_runtime.compact.wasm");
+	pub const WASM_BINARY: &[u8] = include_bytes!("../../../wasm/crab_runtime.compact.wasm");
 	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
-	pub const WASM_BINARY_BLOATY: &[u8] =
-		include_bytes!("../../../wasm/darwinia_crab_runtime.wasm");
+	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../../wasm/crab_runtime.wasm");
 
 	#[cfg(feature = "std")]
 	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
