@@ -102,7 +102,7 @@ pub mod relay {
 	impl AdjustableRelayerGame for EthereumRelayerGameAdjustor {
 		type Moment = BlockNumber;
 		type Balance = Balance;
-		type TcBlockNumber = <EthereumRelay as Relayable>::BlockNumber;
+		type TcBlockNumber = <<EthereumRelay as Relayable>::HeaderThing as HeaderThing>::Number;
 
 		fn challenge_time(round: Round) -> Self::Moment {
 			match round {
