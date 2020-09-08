@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-rpc"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.7"
+version     = "0.6.8"
 
 [dependencies]
 # crates
@@ -20,22 +20,22 @@ darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-
 # darwinia primitives
 darwinia-primitives = { path = "../primitives" }
 # substrate client
-sc-client-api           = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-consensus-babe       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-consensus-babe-rpc   = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-consensus-epochs     = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-finality-grandpa     = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-keystore             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-rpc                  = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-rpc-api              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-client-api           = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-consensus-babe       = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-consensus-babe-rpc   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-consensus-epochs     = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-finality-grandpa     = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-keystore             = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-rpc                  = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-rpc-api              = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate frame
-pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate primitives
-sp-api              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-block-builder    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-blockchain       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-consensus        = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-consensus-babe   = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-api              = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-block-builder    = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-blockchain       = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-consensus        = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-consensus-babe   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }

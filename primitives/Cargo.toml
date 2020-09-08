@@ -6,17 +6,17 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-primitives"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.7"
+version     = "0.6.8"
 
 [dependencies]
 # crates
 codec = { package = "parity-scale-codec", version = "1.3.4", default-features = false }
 # substrate frame
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate primitives
-sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
 [features]
 default = ["std"]

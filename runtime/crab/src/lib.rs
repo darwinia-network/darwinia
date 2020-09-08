@@ -107,6 +107,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	darwinia_ethereum_relay::CheckEthereumRelayHeaderHash<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -127,13 +128,16 @@ type Ring = Balances;
 
 /// Runtime version (Crab).
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("Crab"),
-	impl_name: create_runtime_str!("Crab"),
+	spec_name: create_runtime_str!("Darwinia Crab"),
+	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 7,
+	spec_version: 8,
 	impl_version: 0,
+	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 2,
+	#[cfg(feature = "disable-runtime-api")]
+	apis: sp_version::create_apis_vec![[]],
+	transaction_version: 3,
 };
 
 /// Native version.
@@ -173,7 +177,7 @@ impl frame_system::Trait for Runtime {
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
+	type SystemWeightInfo = weights::frame_system::WeightInfo;
 }
 
 parameter_types! {
@@ -205,7 +209,7 @@ impl pallet_timestamp::Trait for Runtime {
 	type Moment = Moment;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_timestamp::WeightInfo;
 }
 
 parameter_types! {
@@ -438,7 +442,7 @@ parameter_types! {
 	pub const VotingBond: Balance = 5 * MILLI;
 	/// Daily council elections.
 	pub const TermDuration: BlockNumber = 24 * HOURS;
-	pub const DesiredMembers: u32 = 17;
+	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 7;
 }
 // Make sure that there are no more than MAX_MEMBERS members elected via phragmen.
@@ -534,7 +538,7 @@ impl darwinia_claims::Trait for Runtime {
 impl pallet_utility::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_utility::WeightInfo;
 }
 
 parameter_types! {
@@ -697,6 +701,9 @@ parameter_types! {
 	// Additional storage item size of 33 bytes.
 	pub const ProxyDepositFactor: Balance = deposit(0, 33);
 	pub const MaxProxies: u16 = 32;
+	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+	pub const MaxPending: u16 = 32;
 }
 impl pallet_proxy::Trait for Runtime {
 	type Event = Event;
@@ -706,7 +713,11 @@ impl pallet_proxy::Trait for Runtime {
 	type ProxyDepositBase = ProxyDepositBase;
 	type ProxyDepositFactor = ProxyDepositFactor;
 	type MaxProxies = MaxProxies;
-	type WeightInfo = ();
+	type MaxPending = MaxPending;
+	type CallHasher = BlakeTwo256;
+	type AnnouncementDepositBase = AnnouncementDepositBase;
+	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+	type WeightInfo = weights::pallet_proxy::WeightInfo;
 }
 
 parameter_types! {
@@ -733,17 +744,15 @@ impl pallet_sudo::Trait for Runtime {
 
 parameter_types! {
 	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/backi");
-	pub const SubKeyPrefix: u8 = 42;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthBackingModuleId;
 	type Event = Event;
-	type DetermineAccountId = darwinia_ethereum_backing::AccountIdDeterminator<Runtime>;
+	type RedeemAccountId = AccountId;
 	type EthereumRelay = EthereumRelay;
 	type OnDepositRedeem = Staking;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
-	type SubKeyPrefix = SubKeyPrefix;
 	type WeightInfo = ();
 }
 
@@ -753,6 +762,7 @@ parameter_types! {
 impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthereumRelayModuleId;
 	type Event = Event;
+	type Call = Call;
 	type Currency = Ring;
 	type RelayerGame = EthereumRelayerGame;
 	type ApproveOrigin = ApproveOrigin;
@@ -884,6 +894,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+			darwinia_ethereum_relay::CheckEthereumRelayHeaderHash::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {

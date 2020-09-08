@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.7"
+version     = "0.6.8"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -31,22 +31,22 @@ darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/dar
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
-sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-service    = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
 [features]
 default = [

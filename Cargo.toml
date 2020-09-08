@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.7"
+version     = "0.6.8"
 
 [[bin]]
 name = "darwinia"
@@ -29,17 +29,17 @@ nix        = { version = "0.18" }
 tempfile   = { version = "3.1.0" }
 
 # [patch.'https://github.com/paritytech/frontier']
-# frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# frame-metadata     = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# frame-support      = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# frame-system       = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# pallet-evm         = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# pallet-timestamp   = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# sp-api             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# sp-core            = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# sp-io              = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# sp-runtime         = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
-# sp-std             = { git = "https://github.com/darwinia-network/substrate.git", tag = "v2.0.0-darwinia-rc6" }
+# frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# frame-metadata     = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# frame-support      = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# frame-system       = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# pallet-evm         = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# pallet-timestamp   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# sp-api             = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# sp-core            = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# sp-io              = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# sp-runtime         = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# sp-std             = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]

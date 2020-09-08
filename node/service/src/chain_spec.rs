@@ -11,7 +11,7 @@ use sc_telemetry::TelemetryEndpoints;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
-use sp_runtime::{traits::IdentifyAccount, Perbill};
+use sp_runtime::{traits::IdentifyAccount, Perbill, Perquintill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as CRING, GenesisConfig as CrabGenesisConfig};
@@ -262,7 +262,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				.collect(),
 			force_era: crab_runtime::Forcing::NotForcing,
 			slash_reward_fraction: Perbill::from_percent(10),
-			payout_fraction: Perbill::from_percent(50),
+			payout_fraction: Perquintill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(crab_runtime::SessionConfig {
@@ -289,18 +289,23 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		}),
 		pallet_sudo: Some(crab_runtime::SudoConfig { key: root_key }),
 		darwinia_ethereum_backing: Some(crab_runtime::EthereumBackingConfig {
-			ring_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x4e99Ed57FF0C5B95f1F46AC314dAef3d547Bf7e4",
-				20
-			)
-			.into(),
-			kton_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x4e99Ed57FF0C5B95f1F46AC314dAef3d547Bf7e4",
+			token_redeem_address: fixed_hex_bytes_unchecked!(
+				"0x49262B932E439271d05634c32978294C7Ea15d0C",
 				20
 			)
 			.into(),
 			deposit_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x458B84F0Da1A157d34ea48c3863DF80b1D50EB8d",
+				"0x6EF538314829EfA8386Fc43386cB13B4e0A67D1e",
+				20
+			)
+			.into(),
+			ring_token_address: fixed_hex_bytes_unchecked!(
+				"0xb52FBE2B925ab79a821b261C82c5Ba0814AAA5e0",
+				20
+			)
+			.into(),
+			kton_token_address: fixed_hex_bytes_unchecked!(
+				"0x1994100c58753793D52c6f457f189aa3ce9cEe94",
 				20
 			)
 			.into(),
@@ -309,6 +314,11 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
+			genesis_header_info: (
+				0,
+				b"A\x94\x10#h\t#\xe0\xfeMt\xa3K\xda\xc8\x14\x1f%@\xe3\xae\x90b7\x18\xe4}f\xd1\xcaJ-".into(),
+				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
+			),
 			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
 				".node/service/res/dags_merkle_roots_loader.json",
 				"DAG_MERKLE_ROOTS_PATH",
@@ -322,7 +332,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 pub fn crab_build_spec_config() -> CrabChainSpec {
 	let boot_nodes = vec![];
 	CrabChainSpec::from_genesis(
-		"Crab",
+		"Darwinia Crab",
 		"crab",
 		ChainType::Live,
 		crab_build_spec_genesis,
@@ -437,7 +447,7 @@ pub fn crab_testnet_genesis(
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 			force_era: crab_runtime::Forcing::ForceAlways,
 			slash_reward_fraction: Perbill::from_percent(10),
-			payout_fraction: Perbill::from_percent(50),
+			payout_fraction: Perquintill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(crab_runtime::SessionConfig {
@@ -464,18 +474,23 @@ pub fn crab_testnet_genesis(
 		}),
 		pallet_sudo: Some(crab_runtime::SudoConfig { key: root_key }),
 		darwinia_ethereum_backing: Some(crab_runtime::EthereumBackingConfig {
-			ring_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x4e99Ed57FF0C5B95f1F46AC314dAef3d547Bf7e4",
-				20
-			)
-			.into(),
-			kton_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x4e99Ed57FF0C5B95f1F46AC314dAef3d547Bf7e4",
+			token_redeem_address: fixed_hex_bytes_unchecked!(
+				"0x49262B932E439271d05634c32978294C7Ea15d0C",
 				20
 			)
 			.into(),
 			deposit_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x458B84F0Da1A157d34ea48c3863DF80b1D50EB8d",
+				"0x6EF538314829EfA8386Fc43386cB13B4e0A67D1e",
+				20
+			)
+			.into(),
+			ring_token_address: fixed_hex_bytes_unchecked!(
+				"0xb52FBE2B925ab79a821b261C82c5Ba0814AAA5e0",
+				20
+			)
+			.into(),
+			kton_token_address: fixed_hex_bytes_unchecked!(
+				"0x1994100c58753793D52c6f457f189aa3ce9cEe94",
 				20
 			)
 			.into(),
@@ -484,6 +499,11 @@ pub fn crab_testnet_genesis(
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
+			genesis_header_info: (
+				0,
+				b"A\x94\x10#h\t#\xe0\xfeMt\xa3K\xda\xc8\x14\x1f%@\xe3\xae\x90b7\x18\xe4}f\xd1\xcaJ-".into(),
+				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
+			),
 			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
 				"./service/res/dags_merkle_roots_loader.json",
 				"DAG_MERKLE_ROOTS_PATH",
