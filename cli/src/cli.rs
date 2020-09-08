@@ -2,6 +2,8 @@
 
 // --- crates ---
 use structopt::StructOpt;
+// --- substrate ---
+use sc_cli::{KeySubcommand, SignCmd, VanityCmd, VerifyCmd};
 
 #[allow(missing_docs)]
 #[derive(Debug, StructOpt)]
@@ -9,6 +11,18 @@ pub enum Subcommand {
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
 	Base(sc_cli::Subcommand),
+
+	/// Key management cli utilities
+	Key(KeySubcommand),
+
+	/// Verify a signature for a message, provided on STDIN, with a given (public or secret) key.
+	Verify(VerifyCmd),
+
+	/// Generate a seed that provides a vanity address.
+	Vanity(VanityCmd),
+
+	/// Sign a message, with a given (secret) key.
+	Sign(SignCmd),
 }
 
 #[allow(missing_docs)]

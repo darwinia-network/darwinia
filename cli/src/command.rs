@@ -178,5 +178,9 @@ pub fn run() -> sc_cli::Result<()> {
 				unreachable!()
 			}
 		}
+		Some(Subcommand::Key(cmd)) => cmd.run(),
+		Some(Subcommand::Sign(cmd)) => cmd.run(),
+		Some(Subcommand::Verify(cmd)) => cmd.run(),
+		Some(Subcommand::Vanity(cmd)) => cmd.run(),
 	}
 }
