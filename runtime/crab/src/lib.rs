@@ -744,7 +744,6 @@ impl pallet_sudo::Trait for Runtime {
 
 parameter_types! {
 	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/backi");
-	pub const SubKeyPrefix: u8 = 42;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthBackingModuleId;
@@ -754,7 +753,6 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 	type OnDepositRedeem = Staking;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
-	type SubKeyPrefix = SubKeyPrefix;
 	type WeightInfo = ();
 }
 
