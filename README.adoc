@@ -27,7 +27,7 @@ Darwinia Network is composed of Darwinia Bridge Chain(Darwinia), and a serious o
 
 Darwinia Bridge Chain will provide interoperability for cross-chain tokens using Darwinia's bridge relay innovation and decentralized backing technology.
 
-Darwinia Crab Network is a canary network for Darwinia, Darwinia's new cutting edge technologies will be first deployed on Crab Network.
+Crab Network is a canary network for Darwinia, Darwinia's new cutting edge technologies will be first deployed on Crab Network.
 
 For more details, go to link:ROADMAP.md[Road Map].
 
