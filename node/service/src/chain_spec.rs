@@ -332,7 +332,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 pub fn crab_build_spec_config() -> CrabChainSpec {
 	let boot_nodes = vec![];
 	CrabChainSpec::from_genesis(
-		"Darwinia Crab",
+		"Crab",
 		"crab",
 		ChainType::Live,
 		crab_build_spec_genesis,
