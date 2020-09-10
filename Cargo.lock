@@ -879,6 +879,7 @@ dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
+ "darwinia-crab-issuing",
  "darwinia-elections-phragmen",
  "darwinia-ethereum-backing",
  "darwinia-ethereum-relay",
@@ -1288,6 +1289,18 @@ dependencies = [
  "sc-tracing",
  "serde",
  "toml",
+]
+
+[[package]]
+name = "darwinia-crab-issuing"
+version = "1.0.0-alpha.3"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#9f128f43a5b7cef6775450f00d627d725d81c0a9"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
 ]
 
 [[package]]

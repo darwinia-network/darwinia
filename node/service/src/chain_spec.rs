@@ -14,13 +14,12 @@ use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::{traits::IdentifyAccount, Perbill, Perquintill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
-use crab_runtime::{constants::currency::COIN as CRING, GenesisConfig as CrabGenesisConfig};
+use crab_runtime::{constants::currency::COIN, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type CrabChainSpec = sc_service::GenericChainSpec<CrabGenesisConfig, Extensions>;
 
-const CKTON: Balance = CRING;
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 const DEFAULT_PROTOCOL_ID: &str = "dar";
 
@@ -62,6 +61,7 @@ pub fn crab_properties() -> Properties {
 
 	properties.insert("ss58Format".into(), 42.into());
 	properties.insert("tokenDecimals".into(), 9.into());
+	// TODO change to *COIN*? currently, *CKTON* also display as *CRING* in front-end
 	properties.insert("tokenSymbol".into(), "CRING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
@@ -70,8 +70,8 @@ pub fn crab_properties() -> Properties {
 }
 
 pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
-	const RING_ENDOWMENT: Balance = 1_000_000 * CRING;
-	const KTON_ENDOWMENT: Balance = 10_000 * CKTON;
+	const RING_ENDOWMENT: Balance = 1_000_000 * COIN;
+	const KTON_ENDOWMENT: Balance = 10_000 * COIN;
 
 	struct Staker {
 		sr: [u8; 32],
@@ -237,9 +237,9 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				.map(|k| (k, RING_ENDOWMENT))
 				.chain(
 					vec![
-						(root_key.clone(), 25_000_000 * CRING),
-						(multi_sign, 700_000_000 * CRING),
-						(local_tester.sr.into(), CRING),
+						(root_key.clone(), 25_000_000 * COIN),
+						(multi_sign, 700_000_000 * COIN),
+						(local_tester.sr.into(), COIN),
 					]
 					.into_iter(),
 				)
@@ -258,7 +258,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 			stakers: initial_authorities
 				.iter()
 				.cloned()
-				.map(|x| (x.0, x.1, CRING, crab_runtime::StakerStatus::Validator))
+				.map(|x| (x.0, x.1, COIN, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			force_era: crab_runtime::Forcing::NotForcing,
 			slash_reward_fraction: Perbill::from_percent(10),
@@ -309,8 +309,8 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				20
 			)
 			.into(),
-			ring_locked: 7_569_833 * CRING,
-			kton_locked: 30_000 * CRING,
+			ring_locked: 7_569_833 * COIN,
+			kton_locked: 30_000 * COIN,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
@@ -324,6 +324,9 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
+		}),
+		darwinia_crab_issuing: Some(crab_runtime::CrabIssuingConfig {
+			total_mapped_ring: 40_000_000 * COIN,
 		}),
 	}
 }
@@ -509,6 +512,9 @@ pub fn crab_testnet_genesis(
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
+		}),
+		darwinia_crab_issuing: Some(crab_runtime::CrabIssuingConfig {
+			total_mapped_ring: 1 << 60
 		}),
 	}
 }
