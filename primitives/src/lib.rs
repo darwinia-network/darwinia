@@ -98,24 +98,21 @@ fn print_module_account() {
 	// --- substrate ---
 	use sp_runtime::{traits::AccountIdConversion, ModuleId};
 
-	fn account_of(old_alias: [u8; 8], new_alias: [u8; 8]) {
-		let old_module_id = ModuleId(old_alias);
-		let new_module_id = ModuleId(new_alias);
-
+	fn account_of(alias: [u8; 8]) {
 		eprintln!(
-			"old_module_id: {}",
-			<ModuleId as AccountIdConversion<AccountId>>::into_account(&old_module_id)
-		);
-		eprintln!(
-			"new_module_id: {}",
-			<ModuleId as AccountIdConversion<AccountId>>::into_account(&new_module_id)
+			"module_id: {}",
+			<ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(alias))
 		);
 	}
 
 	// old_module_id: 5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z
 	// new_module_id: 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
-	account_of(*b"py/trsry", *b"da/trsry");
+	account_of(*b"py/trsry");
+	account_of(*b"da/trsry");
 	// old_module_id: 5EYCAe5gKAhHFmT9jmwH1HL4mDpjC7KWzKSSDxo244qvxncz
 	// new_module_id: 5EYCAe5gKAhHfsDGJniP6JVgq2bq92gWT7CJwPWh51MMTcYK
-	account_of(*b"da/backi", *b"da/ethbk");
+	account_of(*b"da/backi");
+	account_of(*b"da/ethbk");
+	// module_id: 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
+	account_of(*b"da/crais");
 }

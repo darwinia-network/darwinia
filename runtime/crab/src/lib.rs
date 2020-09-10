@@ -792,6 +792,16 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 
 impl darwinia_header_mmr::Trait for Runtime {}
 
+parameter_types! {
+	pub const CrabIssuingModuleId: ModuleId = ModuleId(*b"da/crais");
+}
+impl darwinia_crab_issuing::Trait for Runtime {
+	type Event = Event;
+	type ModuleId = CrabIssuingModuleId;
+	type RingCurrency = Ring;
+	type WeightInfo = ();
+}
+
 construct_runtime!(
 	pub enum Runtime
 	where
@@ -870,6 +880,8 @@ construct_runtime!(
 
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
+
+		CrabIssuing: darwinia_crab_issuing::{Module, Call, Storage, Config, Event<T>},
 	}
 );
 
@@ -1151,6 +1163,13 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 				take,
 			);
 		}
+
+		put_storage_value::<Balance>(
+			b"DarwiniaCrabIssuing",
+			b"TotalMappedRing",
+			&[],
+			40_000_000 * COIN,
+		);
 
 		0
 	}
