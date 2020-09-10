@@ -113,6 +113,6 @@ fn print_module_account() {
 	// new_module_id: 5EYCAe5gKAhHfsDGJniP6JVgq2bq92gWT7CJwPWh51MMTcYK
 	account_of(*b"da/backi");
 	account_of(*b"da/ethbk");
-	// module_id: 5EYCAe5gKAhHQ8HoQJAFfTyFu38F7T2MyL36sxreaGnMi2b2
-	account_of(*b"da/crabk");
+	// module_id: 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
+	account_of(*b"da/crais");
 }

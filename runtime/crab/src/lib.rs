@@ -793,7 +793,7 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 impl darwinia_header_mmr::Trait for Runtime {}
 
 parameter_types! {
-	pub const CrabIssuingModuleId: ModuleId = ModuleId(*b"da/crabk");
+	pub const CrabIssuingModuleId: ModuleId = ModuleId(*b"da/crais");
 }
 impl darwinia_crab_issuing::Trait for Runtime {
 	type Event = Event;
