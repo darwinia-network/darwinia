@@ -265,7 +265,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MILLI;
+	pub const TransactionByteFee: Balance = 5 * MILLI;
 }
 impl pallet_transaction_payment::Trait for Runtime {
 	type Currency = Ring;
