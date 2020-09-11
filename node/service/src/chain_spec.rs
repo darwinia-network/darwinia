@@ -11,7 +11,7 @@ use sc_telemetry::TelemetryEndpoints;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
-use sp_runtime::{traits::IdentifyAccount, Perbill, Perquintill};
+use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN, GenesisConfig as CrabGenesisConfig};
@@ -262,7 +262,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				.collect(),
 			force_era: crab_runtime::Forcing::NotForcing,
 			slash_reward_fraction: Perbill::from_percent(10),
-			payout_fraction: Perquintill::from_percent(50),
+			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(crab_runtime::SessionConfig {
@@ -450,7 +450,7 @@ pub fn crab_testnet_genesis(
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 			force_era: crab_runtime::Forcing::ForceAlways,
 			slash_reward_fraction: Perbill::from_percent(10),
-			payout_fraction: Perquintill::from_percent(50),
+			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(crab_runtime::SessionConfig {
