@@ -118,6 +118,8 @@
 		"ring_bond": "Balance",
 		"kton_bond": "Balance"
 	},
+	"__[pallet.bridge.crab]__": {},
+	"MappedRing": "u128",
 	"__[pallet.bridge.eth]__": {},
 	"EthereumTransactionIndex": "(H256, u64)",
 	"EthereumHeaderBrief": {

@@ -132,7 +132,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 9,
+	spec_version: 10,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -265,7 +265,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MILLI;
+	pub const TransactionByteFee: Balance = 5 * MILLI;
 }
 impl pallet_transaction_payment::Trait for Runtime {
 	type Currency = Ring;
