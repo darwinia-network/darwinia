@@ -686,11 +686,9 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement(..))
 					| Call::Utility(pallet_utility::Call::batch(..))
 			),
-			ProxyType::EthereumBridge => matches!(
-				c,
-				Call::EthereumBacking(darwinia_ethereum_backing::Call(..))
-					| Call::EthereumRelay(darwinia_ethereum_relay::Call(..))
-			),
+			ProxyType::EthereumBridge => {
+				matches!(c, Call::EthereumBacking(..) | Call::EthereumRelay(..))
+			}
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
