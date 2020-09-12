@@ -626,7 +626,7 @@ pub enum ProxyType {
 	NonTransfer,
 	Staking,
 	IdentityJudgement,
-	Relaying,
+	EthereumBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -685,14 +685,11 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement(..))
 					| Call::Utility(pallet_utility::Call::batch(..))
 			),
-			ProxyType::Relaying => matches!(
+			ProxyType::EthereumBridge => matches!(
 				c,
-				Call::EthereumBacking(darwinia_ethereum_backing::Call::redeem(..)) |
-				Call::EthereumRelay(darwinia_ethereum_relay::Call::submit_proposal(..)) |
-				Call::EthereumRelay(darwinia_ethereum_relay::Call::approve_pending_header(..)) |
-				Call::EthereumRelay(darwinia_ethereum_relay::Call::reject_pending_header(..)) |
-				Call::EthereumRelay(darwinia_ethereum_relay::Call::check_receipt(..))
-			)
+				Call::EthereumBacking(darwinia_ethereum_backing::Call(..)) |
+				Call::EthereumRelay(darwinia_ethereum_relay::Call(..)) |
+			),
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
