@@ -677,7 +677,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::EthereumBacking(..) |
 				Call::EthereumRelay(..) |
 				Call::EthereumRelayerGame(..) |
-				Call::HeaderMMR(..)
+				Call::HeaderMMR(..) |
+				Call::CrabIssuing(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
