@@ -626,6 +626,7 @@ pub enum ProxyType {
 	NonTransfer,
 	Staking,
 	IdentityJudgement,
+	EthereumBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -676,7 +677,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::EthereumBacking(..) |
 				Call::EthereumRelay(..) |
 				Call::EthereumRelayerGame(..) |
-				Call::HeaderMMR(..)
+				Call::HeaderMMR(..) |
+				Call::CrabIssuing(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
@@ -684,6 +686,9 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement(..))
 					| Call::Utility(pallet_utility::Call::batch(..))
 			),
+			ProxyType::EthereumBridge => {
+				matches!(c, Call::EthereumBacking(..) | Call::EthereumRelay(..))
+			}
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
