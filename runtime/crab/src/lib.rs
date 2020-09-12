@@ -688,8 +688,8 @@ impl InstanceFilter<Call> for ProxyType {
 			),
 			ProxyType::EthereumBridge => matches!(
 				c,
-				Call::EthereumBacking(darwinia_ethereum_backing::Call(..)) |
-				Call::EthereumRelay(darwinia_ethereum_relay::Call(..)) |
+				Call::EthereumBacking(darwinia_ethereum_backing::Call(..))
+					| Call::EthereumRelay(darwinia_ethereum_relay::Call(..))
 			),
 		}
 	}
