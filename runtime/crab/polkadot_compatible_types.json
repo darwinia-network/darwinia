@@ -230,6 +230,17 @@
 		"bonded_proposal": "Vec<(Balance, TcHeaderThing)>",
 		"extend_from_header_hash": "Option<TcHeaderHash>"
 	},
+	"__[crab.runtime]__": {
+		"ProxyType": {
+			"_enum": {
+				"Any": null,
+				"NonTransfer": null,
+				"Staking": null,
+				"IdentityJudgement": null,
+				"EthereumBridge": null
+			}
+		}
+	},
 	"__[node.rpc]__": {},
 	"BalancesRuntimeDispatchInfo": {
 		"usable_balance": "Balance"
