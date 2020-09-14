@@ -143,6 +143,10 @@
 		"mmr_root": "H256",
 		"mmr_proof": "Vec<H256>"
 	},
+	"ConfirmedEthereumHeaderInfo": {
+		"header": "EthereumHeader",
+		"mmr_root": "H256"
+	},
 	"EthereumHeaderThing": {
 		"header": "EthereumHeader",
 		"mmr_root": "H256"
