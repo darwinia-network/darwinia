@@ -96,23 +96,27 @@ pub type BlockId = generic::BlockId<Block>;
 #[test]
 fn print_module_account() {
 	// --- substrate ---
+	use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat, Ss58AddressFormat::*};
 	use sp_runtime::{traits::AccountIdConversion, ModuleId};
 
-	fn account_of(alias: [u8; 8]) {
-		eprintln!(
-			"module_id: {}",
-			<ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(alias))
-		);
+	fn account_of(alias: [u8; 8], ss58_version: Ss58AddressFormat) {
+		set_default_ss58_version(ss58_version);
+
+		let alias_str = unsafe { core::str::from_utf8_unchecked(&alias) };
+		let id = <ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(alias));
+
+		eprintln!("{}:\n    {}\n    {:?}", alias_str, id, id);
 	}
 
 	// old_module_id: 5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z
 	// new_module_id: 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
-	account_of(*b"py/trsry");
-	account_of(*b"da/trsry");
+	account_of(*b"py/trsry", SubstrateAccount);
+	account_of(*b"da/trsry", SubstrateAccount);
 	// old_module_id: 5EYCAe5gKAhHFmT9jmwH1HL4mDpjC7KWzKSSDxo244qvxncz
 	// new_module_id: 5EYCAe5gKAhHfsDGJniP6JVgq2bq92gWT7CJwPWh51MMTcYK
-	account_of(*b"da/backi");
-	account_of(*b"da/ethbk");
+	account_of(*b"da/backi", SubstrateAccount);
+	account_of(*b"da/ethbk", SubstrateAccount);
 	// module_id: 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
-	account_of(*b"da/crais");
+	account_of(*b"da/crais", SubstrateAccount);
+	account_of(*b"da/crabk", DarwiniaAccount);
 }
