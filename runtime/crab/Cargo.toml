@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "crab-runtime"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.10"
+version     = "0.6.11"
 
 [dependencies]
 # crates
@@ -33,6 +33,7 @@ darwinia-support                    = { default-features = false, git = "https:/
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
+ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # substrate frame

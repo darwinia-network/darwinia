@@ -87,6 +87,7 @@ use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -120,7 +121,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -132,7 +132,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 10,
+	spec_version: 11,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -288,11 +288,11 @@ impl pallet_authorship::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 14 * DAYS
+	pub const BondingDurationInEra: EraIndex = 7 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
-	pub const SlashDeferDuration: EraIndex = 14 * DAYS
+	pub const SlashDeferDuration: EraIndex = 7 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 	// quarter of the last session will be for election.
 	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
@@ -769,10 +769,12 @@ type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 >;
 parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
+	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Ropsten;
 }
 impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthereumRelayModuleId;
 	type Event = Event;
+	type EthereumNetwork = EthereumNetwork;
 	type Call = Call;
 	type Currency = Ring;
 	type RelayerGame = EthereumRelayerGame;
@@ -1136,46 +1138,5 @@ impl_runtime_apis! {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
 		}
-	}
-}
-
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- substrate ---
-		use frame_support::{migration::*, Blake2_128Concat, StorageHasher};
-		use sp_runtime::traits::AccountIdConversion;
-
-		type AccountInfo = frame_system::AccountInfo<
-			<Runtime as frame_system::Trait>::Index,
-			<Runtime as frame_system::Trait>::AccountData,
-		>;
-
-		fn hash_module_id(module_id: [u8; 8]) -> Vec<u8> {
-			Blake2_128Concat::hash(
-				<ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(module_id))
-					.as_ref(),
-			)
-		}
-
-		if let Some(take) =
-			take_storage_value::<AccountInfo>(b"System", b"Account", &hash_module_id(*b"da/backi"))
-		{
-			put_storage_value::<AccountInfo>(
-				b"System",
-				b"Account",
-				&hash_module_id(*b"da/ethbk"),
-				take,
-			);
-		}
-
-		put_storage_value::<Balance>(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[],
-			40_000_000 * COIN,
-		);
-
-		0
 	}
 }
