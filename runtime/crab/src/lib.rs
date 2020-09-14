@@ -288,11 +288,11 @@ impl pallet_authorship::Trait for Runtime {
 
 parameter_types! {
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 14 * DAYS
+	pub const BondingDurationInEra: EraIndex = 7 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
-	pub const SlashDeferDuration: EraIndex = 14 * DAYS
+	pub const SlashDeferDuration: EraIndex = 7 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 	// quarter of the last session will be for election.
 	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
