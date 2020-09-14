@@ -121,7 +121,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -1139,46 +1138,5 @@ impl_runtime_apis! {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
 		}
-	}
-}
-
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- substrate ---
-		use frame_support::{migration::*, Blake2_128Concat, StorageHasher};
-		use sp_runtime::traits::AccountIdConversion;
-
-		type AccountInfo = frame_system::AccountInfo<
-			<Runtime as frame_system::Trait>::Index,
-			<Runtime as frame_system::Trait>::AccountData,
-		>;
-
-		fn hash_module_id(module_id: [u8; 8]) -> Vec<u8> {
-			Blake2_128Concat::hash(
-				<ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(module_id))
-					.as_ref(),
-			)
-		}
-
-		if let Some(take) =
-			take_storage_value::<AccountInfo>(b"System", b"Account", &hash_module_id(*b"da/backi"))
-		{
-			put_storage_value::<AccountInfo>(
-				b"System",
-				b"Account",
-				&hash_module_id(*b"da/ethbk"),
-				take,
-			);
-		}
-
-		put_storage_value::<Balance>(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[],
-			40_000_000 * COIN,
-		);
-
-		0
 	}
 }
