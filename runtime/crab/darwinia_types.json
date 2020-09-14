@@ -187,7 +187,11 @@
 		"header_hash": "H256"
 	},
 	"EthereumReceiptProofThing": "(EthereumHeader, EthereumReceiptProof, MMRProof)",
-	"MMRProof": "Vec<H256>",
+	"MMRProof": {
+		"member_leaf_index": "u64",
+		"last_leaf_index": "u64",
+		"proof": "Vec<H256>"
+	},
 	"__[pallet.claims]__": {},
 	"OtherSignature": {
 		"_enum": {

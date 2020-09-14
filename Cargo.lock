@@ -893,6 +893,7 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "darwinia-treasury",
+ "ethereum-primitives",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",

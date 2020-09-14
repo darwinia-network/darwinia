@@ -87,6 +87,7 @@ use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -769,10 +770,12 @@ type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 >;
 parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
+	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Ropsten;
 }
 impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthereumRelayModuleId;
 	type Event = Event;
+	type EthereumNetwork = EthereumNetwork;
 	type Call = Call;
 	type Currency = Ring;
 	type RelayerGame = EthereumRelayerGame;
