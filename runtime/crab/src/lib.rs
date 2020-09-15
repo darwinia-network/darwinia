@@ -670,7 +670,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
-				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
 				Call::Multisig(..) |

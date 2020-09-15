@@ -37,7 +37,6 @@ ethereum-primitives = { default-features = false, git = "https://github.com/darw
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # substrate frame
-frame-benchmarking                         = { default-features = false, optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
