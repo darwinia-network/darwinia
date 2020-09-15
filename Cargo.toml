@@ -55,6 +55,7 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
+	"runtime/darwinia",
 	"node/service",
 ]
 
