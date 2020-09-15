@@ -14,7 +14,7 @@ pub mod currency {
 	pub const TOTAL_POWER: Power = 1_000_000_000;
 
 	pub const fn deposit(items: u32, bytes: u32) -> Balance {
-		items as Balance * 20 * COIN + (bytes as Balance) * 100 * MICRO
+		items as Balance * 20 * MILLI + (bytes as Balance) * 100 * NANO
 	}
 }
 
@@ -35,7 +35,7 @@ pub mod time {
 	#[cfg(feature = "dev")]
 	pub const BLOCKS_PER_SESSION: BlockNumber = MINUTES / 2;
 	#[cfg(not(feature = "dev"))]
-	pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
 
 	#[cfg(feature = "dev")]
 	pub const SESSIONS_PER_ERA: SessionIndex = 3;
@@ -79,8 +79,8 @@ pub mod fee {
 	impl WeightToFeePolynomial for WeightToFee {
 		type Balance = Balance;
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-			// in Crab, extrinsic base weight (smallest non-zero weight) is mapped to 100 MILLI:
-			let p = 100 * MILLI;
+			// in Darwinia, extrinsic base weight (smallest non-zero weight) is mapped to 10 MILLI:
+			let p = 10 * MILLI;
 			let q = Balance::from(ExtrinsicBaseWeight::get());
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,

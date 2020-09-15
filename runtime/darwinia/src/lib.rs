@@ -46,7 +46,8 @@ use static_assertions::const_assert;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
-		Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, OnUnbalanced, Randomness,
+		Filter, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, OnUnbalanced,
+		Randomness,
 	},
 	weights::Weight,
 };
@@ -66,8 +67,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT, IdentityLookup, NumberFor,
-		OpaqueKeys, SaturatedConversion,
+		BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic as ExtrinsicT, IdentityLookup,
+		NumberFor, OpaqueKeys, SaturatedConversion,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, RuntimeDebug,
@@ -148,11 +149,26 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
+pub struct BaseFilter;
+impl Filter<Call> for BaseFilter {
+	fn filter(c: &Call) -> bool {
+		match c {
+			// first stage
+			Call::EthereumRelay(_) => false,
+			// second stage
+			Call::Balances(_)
+			| Call::Kton(_)
+			// | Call::Vesting(darwinia_vesting::Call::vested_transfer(..))
+			=> false,
+			_ => true,
+		}
+	}
+}
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 }
 impl frame_system::Trait for Runtime {
-	type BaseCallFilter = ();
+	type BaseCallFilter = BaseFilter;
 	type Origin = Origin;
 	type Call = Call;
 	type Index = Nonce;
@@ -176,7 +192,7 @@ impl frame_system::Trait for Runtime {
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type SystemWeightInfo = weights::frame_sysztem::WeightInfo;
+	type SystemWeightInfo = weights::frame_system::WeightInfo;
 }
 
 parameter_types! {
@@ -211,20 +227,9 @@ impl pallet_timestamp::Trait for Runtime {
 	type WeightInfo = weights::pallet_timestamp::WeightInfo;
 }
 
-// parameter_types! {
-// 	pub const IndexDeposit: Balance = 1 * COIN;
-// }
-// impl pallet_indices::Trait for Runtime {
-// 	type AccountIndex = AccountIndex;
-// 	type Currency = Ring;
-// 	type Deposit = IndexDeposit;
-// 	type Event = Event;
-// 	type WeightInfo = ();
-// }
-
 parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MILLI;
-	pub const KtonExistentialDeposit: Balance = 10 * MICRO;
+	pub const RingExistentialDeposit: Balance = 100 * MICRO;
+	pub const KtonExistentialDeposit: Balance = MICRO;
 }
 impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type Balance = Balance;
@@ -263,7 +268,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 5 * MILLI;
+	pub const TransactionByteFee: Balance = 500 * MICRO;
 }
 impl pallet_transaction_payment::Trait for Runtime {
 	type Currency = Ring;
@@ -292,8 +297,8 @@ parameter_types! {
 	// slightly less than 14 days.
 	pub const SlashDeferDuration: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
-	// quarter of the last session will be for election.
-	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
+	// last 15 minutes of the last session will be for election.
+	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 16;
 	pub const MaxIterations: u32 = 5;
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
@@ -411,9 +416,9 @@ impl pallet_im_online::Trait for Runtime {
 impl pallet_authority_discovery::Trait for Runtime {}
 
 parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
 	pub const CouncilMaxProposals: u32 = 100;
-	pub const TechnicalMotionDuration: BlockNumber = 3 * DAYS;
+	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
 	pub const TechnicalMaxProposals: u32 = 100;
 }
 type CouncilCollective = pallet_collective::Instance0;
@@ -437,10 +442,10 @@ impl pallet_collective::Trait<TechnicalCollective> for Runtime {
 
 parameter_types! {
 	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
-	pub const CandidacyBond: Balance = 1 * COIN;
+	pub const CandidacyBond: Balance = 100 * MILLI;
 	pub const VotingBond: Balance = 5 * MILLI;
 	/// Daily council elections.
-	pub const TermDuration: BlockNumber = 24 * HOURS;
+	pub const TermDuration: BlockNumber = 7 * DAYS;
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 7;
 }
@@ -488,14 +493,14 @@ type ApproveOrigin = EnsureOneOf<
 parameter_types! {
 	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const RingProposalBondMinimum: Balance = 20 * COIN;
-	pub const KtonProposalBondMinimum: Balance = 20 * COIN;
-	pub const SpendPeriod: BlockNumber = 6 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(0);
+	pub const RingProposalBondMinimum: Balance = 100 * MILLI;
+	pub const KtonProposalBondMinimum: Balance = 100 * MILLI;
+	pub const SpendPeriod: BlockNumber = 24 * DAYS;
+	pub const Burn: Permill = Permill::from_percent(1);
 	pub const TipCountdown: BlockNumber = 1 * DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 1 * COIN;
-	pub const TipReportDepositPerByte: Balance = 1 * MILLI;
+	pub const TipReportDepositBase: Balance = 1 * MILLI;
+	pub const TipReportDepositPerByte: Balance = 1 * MICRO;
 }
 impl darwinia_treasury::Trait for Runtime {
 	type ModuleId = TreasuryModuleId;
@@ -516,11 +521,21 @@ impl darwinia_treasury::Trait for Runtime {
 	type KtonProposalBondMinimum = KtonProposalBondMinimum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
-	type RingBurnDestination = Society;
-	// TODO
+	type RingBurnDestination = ();
 	type KtonBurnDestination = ();
 	type WeightInfo = ();
 }
+
+// parameter_types! {
+// 	pub const MinVestedTransfer: Balance = 100 * MILLI;
+// }
+// impl darwinia_vesting::Trait for Runtime {
+// 	type Event = Event;
+// 	type Currency = Ring;
+// 	type BlockNumberToBalance = ConvertInto;
+// 	type MinVestedTransfer = MinVestedTransfer;
+// 	type WeightInfo = ();
+// }
 
 impl pallet_utility::Trait for Runtime {
 	type Event = Event;
@@ -530,9 +545,9 @@ impl pallet_utility::Trait for Runtime {
 
 parameter_types! {
 	// Minimum 100 bytes/CRING deposited (1 MILLI/byte)
-	pub const BasicDeposit: Balance = 10 * COIN;       // 258 bytes on-chain
-	pub const FieldDeposit: Balance = 250 * MILLI;     // 66 bytes on-chain
-	pub const SubAccountDeposit: Balance = 2 * COIN;   // 53 bytes on-chain
+	pub const BasicDeposit: Balance = deposit(1, 258);
+	pub const FieldDeposit: Balance = deposit(0, 66);
+	pub const SubAccountDeposit: Balance = deposit(1, 53);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
@@ -628,10 +643,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::System(..) |
 				Call::Babe(..) |
 				Call::Timestamp(..) |
-				// Call::Indices(pallet_indices::Call::claim(..)) |
-				// Call::Indices(pallet_indices::Call::free(..)) |
-				// Call::Indices(pallet_indices::Call::freeze(..)) |
-				// Specifically omitting Indices `transfer`, `force_transfer`
 				// Specifically omitting the entire Balances pallet
 				Call::Authorship(..) |
 				Call::Staking(..) |
@@ -655,6 +666,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
+				// Call::Vesting(darwinia_vesting::Call::vest(..)) |
+				// Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
@@ -662,7 +675,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::EthereumBacking(..) |
 				Call::EthereumRelay(..) |
 				Call::EthereumRelayerGame(..) |
-				Call::HeaderMMR(..) // | Call::CrabBacking(..)
+				Call::HeaderMMR(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
@@ -769,7 +782,7 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
 parameter_types! {
-	pub const ConfirmPeriod: BlockNumber = 200;
+	pub const ConfirmPeriod: BlockNumber = 3 * DAYS;
 }
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type Event = Event;
@@ -783,14 +796,14 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 
 impl darwinia_header_mmr::Trait for Runtime {}
 
-// parameter_types! {
-// 	pub const CrabBackingModuleId: ModuleId = ModuleId(*b"da/crabk");
-// }
-// impl darwinia_crab_backing::Trait for Runtime {
-// 	type ModuleId = CrabBackingModuleId;
-// 	type RingCurrency = Ring;
-// 	type WeightInfo = ();
-// }
+parameter_types! {
+	pub const CrabBackingModuleId: ModuleId = ModuleId(*b"da/crabk");
+}
+impl darwinia_crab_backing::Trait for Runtime {
+	type ModuleId = CrabBackingModuleId;
+	type RingCurrency = Ring;
+	type WeightInfo = ();
+}
 
 construct_runtime!(
 	pub enum Runtime
@@ -809,7 +822,6 @@ construct_runtime!(
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>},
 		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>},
-		// Indices: pallet_indices::{Module, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 
 		// Consensus support.
@@ -853,7 +865,7 @@ construct_runtime!(
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
-		// Ethereum bridge
+		// Ethereum bridge.
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Call, Storage, Event<T>},
@@ -861,8 +873,8 @@ construct_runtime!(
 		// Consensus support.
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
 
-		// Crab bridge
-		// CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
+		// Crab bridge.
+		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
 	}
 );
 
