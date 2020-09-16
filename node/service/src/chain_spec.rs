@@ -45,6 +45,10 @@ pub fn crab_config() -> Result<CrabChainSpec, String> {
 	CrabChainSpec::from_json_bytes(&include_bytes!("../res/crab.json")[..])
 }
 
+pub fn darwinia_config() -> Result<DarwiniaChainSpec, String> {
+	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../res/darwinia.json")[..])
+}
+
 /// Session keys for Crab.
 pub fn crab_session_keys(
 	babe: BabeId,
@@ -53,6 +57,21 @@ pub fn crab_session_keys(
 	authority_discovery: AuthorityDiscoveryId,
 ) -> crab_runtime::SessionKeys {
 	crab_runtime::SessionKeys {
+		babe,
+		grandpa,
+		im_online,
+		authority_discovery,
+	}
+}
+
+/// Session keys for Darwinia.
+pub fn darwinia_session_keys(
+	babe: BabeId,
+	grandpa: GrandpaId,
+	im_online: ImOnlineId,
+	authority_discovery: AuthorityDiscoveryId,
+) -> darwinia_runtime::SessionKeys {
+	darwinia_runtime::SessionKeys {
 		babe,
 		grandpa,
 		im_online,
@@ -70,6 +89,20 @@ pub fn crab_properties() -> Properties {
 	properties.insert("tokenSymbol".into(), "CRING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
+
+	properties
+}
+
+/// Properties for Darwinia.
+pub fn darwinia_properties() -> Properties {
+	let mut properties = Properties::new();
+
+	properties.insert("ss58Format".into(), 42.into());
+	properties.insert("tokenDecimals".into(), 9.into());
+	// TODO change to *COIN*? currently, *KTON* also display as *RING* in front-end
+	properties.insert("tokenSymbol".into(), "RING".into());
+	properties.insert("ktonTokenDecimals".into(), 9.into());
+	properties.insert("ktonTokenSymbol".into(), "KTON".into());
 
 	properties
 }
@@ -335,58 +368,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 	}
 }
 
-/// Crab config.
-pub fn crab_build_spec_config() -> CrabChainSpec {
-	let boot_nodes = vec![];
-	CrabChainSpec::from_genesis(
-		"Crab",
-		"crab",
-		ChainType::Live,
-		crab_build_spec_genesis,
-		boot_nodes,
-		Some(
-			TelemetryEndpoints::new(vec![(CRAB_TELEMETRY_URL.to_string(), 0)])
-				.expect("Crab telemetry url is valid; qed"),
-		),
-		Some(DEFAULT_PROTOCOL_ID),
-		Some(crab_properties()),
-		Default::default(),
-	)
-}
-
-pub fn darwinia_config() -> Result<DarwiniaChainSpec, String> {
-	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../res/darwinia.json")[..])
-}
-
-/// Session keys for Darwinia.
-pub fn darwinia_session_keys(
-	babe: BabeId,
-	grandpa: GrandpaId,
-	im_online: ImOnlineId,
-	authority_discovery: AuthorityDiscoveryId,
-) -> darwinia_runtime::SessionKeys {
-	darwinia_runtime::SessionKeys {
-		babe,
-		grandpa,
-		im_online,
-		authority_discovery,
-	}
-}
-
-/// Properties for Darwinia.
-pub fn darwinia_properties() -> Properties {
-	let mut properties = Properties::new();
-
-	properties.insert("ss58Format".into(), 42.into());
-	properties.insert("tokenDecimals".into(), 9.into());
-	// TODO change to *COIN*? currently, *KTON* also display as *RING* in front-end
-	properties.insert("tokenSymbol".into(), "RING".into());
-	properties.insert("ktonTokenDecimals".into(), 9.into());
-	properties.insert("ktonTokenSymbol".into(), "KTON".into());
-
-	properties
-}
-
 pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	const MULTI_SIGN: &'static str =
 		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
@@ -533,6 +514,25 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			backed_ring: backed_ring_for_crab,
 		}),
 	}
+}
+
+/// Crab config.
+pub fn crab_build_spec_config() -> CrabChainSpec {
+	let boot_nodes = vec![];
+	CrabChainSpec::from_genesis(
+		"Crab",
+		"crab",
+		ChainType::Live,
+		crab_build_spec_genesis,
+		boot_nodes,
+		Some(
+			TelemetryEndpoints::new(vec![(CRAB_TELEMETRY_URL.to_string(), 0)])
+				.expect("Crab telemetry url is valid; qed"),
+		),
+		Some(DEFAULT_PROTOCOL_ID),
+		Some(crab_properties()),
+		Default::default(),
+	)
 }
 
 /// Darwinia config.

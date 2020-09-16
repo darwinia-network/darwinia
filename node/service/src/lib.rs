@@ -13,9 +13,11 @@ pub use sc_service::{
 };
 // --- darwinia ---
 pub use chain_spec::CrabChainSpec;
+pub use chain_spec::DarwiniaChainSpec;
 pub use client::DarwiniaClient;
 pub use crab_runtime;
 pub use darwinia_primitives::Block;
+pub use darwinia_runtime;
 
 // --- std ---
 use std::{sync::Arc, time::Duration};
@@ -74,12 +76,11 @@ native_executor_instance!(
 	crab_runtime::native_version,
 );
 
-// TODO: mainnet
-// native_executor_instance!(
-// 	pub DarwiniaExecutor,
-// 	darwinia_runtime::api::dispatch,
-// 	darwinia_runtime::native_version,
-// );
+native_executor_instance!(
+	pub DarwiniaExecutor,
+	darwinia_runtime::api::dispatch,
+	darwinia_runtime::native_version,
+);
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
@@ -604,8 +605,6 @@ pub fn crab_new_light(config: Configuration) -> Result<TaskManager, ServiceError
 	new_light::<crab_runtime::RuntimeApi, CrabExecutor>(config)
 }
 
-// TODO: switch `crab_runtime` to `darwinia_runtime`
-// TODO: switch `CrabExecutor` to `DarwiniaExecutor`
 /// Create a new Darwinia service for a full node.
 #[cfg(feature = "full-node")]
 pub fn darwinia_new_full(
@@ -613,16 +612,16 @@ pub fn darwinia_new_full(
 ) -> Result<
 	(
 		TaskManager,
-		Arc<impl DarwiniaClient<Block, FullBackend, crab_runtime::RuntimeApi>>,
+		Arc<impl DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
 	),
 	ServiceError,
 > {
-	let (components, client) = new_full::<crab_runtime::RuntimeApi, CrabExecutor>(config)?;
+	let (components, client) = new_full::<darwinia_runtime::RuntimeApi, DarwiniaExecutor>(config)?;
 
 	Ok((components, client))
 }
 
 /// Create a new Darwinia service for a light client.
 pub fn darwinia_new_light(config: Configuration) -> Result<TaskManager, ServiceError> {
-	new_light::<crab_runtime::RuntimeApi, CrabExecutor>(config)
+	new_light::<darwinia_runtime::RuntimeApi, DarwiniaExecutor>(config)
 }
