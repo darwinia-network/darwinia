@@ -843,6 +843,9 @@ construct_runtime!(
 		TechnicalMembership: pallet_membership::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>},
 		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>},
 
+		// Vesting. Usable initially, but removed once all vesting is finished.
+		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>},
+
 		// Utility module.
 		Utility: pallet_utility::{Module, Call, Event},
 
@@ -859,9 +862,6 @@ construct_runtime!(
 		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 
 		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
-
-		// Vesting. Usable initially, but removed once all vesting is finished.
-		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>},
 
 		// Proxy module. Late addition.
 		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
