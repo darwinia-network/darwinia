@@ -538,7 +538,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 /// Darwinia config.
 pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 	let boot_nodes = vec![];
-	CrabChainSpec::from_genesis(
+	DarwiniaChainSpec::from_genesis(
 		"Darwinia CC1",
 		"darwinia",
 		ChainType::Live,
