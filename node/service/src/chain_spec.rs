@@ -380,6 +380,10 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	const ROOT: &'static str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
 	const DA_CRABK: &'static str =
 		"0x6d6f646c64612f637261626b0000000000000000000000000000000000000000";
+	const TEAM_VESTING: &'static str =
+		"0x88db6cf10428d2608cd2ca2209971d0227422dc1f53c6ec0848fa610848a6ed3";
+	const FOUNDATION_VESTING: &'static str =
+		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
 	const GENESIS_VALIDATOR_STASH: &'static str =
 		"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
 	const GENESIS_VALIDATOR_CONTROLLER: &'static str =
@@ -432,6 +436,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	}
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
+	let team_vesting: AccountId = fixed_hex_bytes_unchecked!(TEAM_VESTING, 32).into();
+	let foundation_vesting: AccountId = fixed_hex_bytes_unchecked!(FOUNDATION_VESTING, 32).into();
 	let genesis_validator: (
 		AccountId,
 		AccountId,
@@ -454,6 +460,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			session.unchecked_into(),
 		)
 	};
+
+	// Team vesting: 300M
+	rings.push((team_vesting.clone(), 300_000_000 * D_COIN));
+	// Foundation vesting: 400M
+	rings.push((foundation_vesting.clone(), 400_000_000 * D_COIN));
 
 	DarwiniaGenesisConfig {
 		frame_system: Some(darwinia_runtime::SystemConfig {
@@ -498,11 +509,10 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		pallet_membership_Instance0: Some(Default::default()),
 		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
 			vesting: vec![
-				// TODO init who
-				// Foundation Vesting 400M, 5 years vesting period starts when mainnet launch
-				// (who, 0, (5. * 365.25) as BlockNumber * D_DAYS, 0)
-				// Team Vesting 300M, 1 year vesting period starts after 1 year since mainnet lanuch
-				// (who, 365 * D_DAYS,  365 * D_DAYS, 0)
+				// Team vesting: 1 year aperiod start after 1 year since mainnet lanuch
+				(foundation_vesting, 365 * D_DAYS,  365 * D_DAYS, 0),
+				// Foundation vesting: 5 years period start when mainnet launch
+				(team_vesting, 0, (5. * 365.25) as BlockNumber * D_DAYS, 0)
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
