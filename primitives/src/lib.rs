@@ -112,10 +112,10 @@ fn print_module_account() {
 	// 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
 	// 6d6f646c64612f74727372790000000000000000000000000000000000000000 (5EYCAe5g...)
 	account_of(*b"da/trsry", SubstrateAccount);
-	// da/backi:
-	// 5EYCAe5gKAhHFmT9jmwH1HL4mDpjC7KWzKSSDxo244qvxncz
-	// 6d6f646c64612f6261636b690000000000000000000000000000000000000000 (5EYCAe5g...)
-	account_of(*b"da/ethbk", SubstrateAccount);
+	// da/ethbk:
+	// 2qeMxq616BhqvTW8a1bp2g7VKPAmpda1vXuAAz5TxV5ehivG
+	// 6d6f646c64612f657468626b0000000000000000000000000000000000000000 (2qeMxq61...)
+	account_of(*b"da/ethbk", DarwiniaAccount);
 	// da/crais:
 	// 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
 	// 6d6f646c64612f63726169730000000000000000000000000000000000000000 (5EYCAe5g...)
