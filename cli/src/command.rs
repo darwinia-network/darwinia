@@ -8,11 +8,11 @@ use sp_core::crypto::Ss58AddressFormat;
 // --- darwinia ---
 use crate::cli::{Cli, Subcommand};
 use darwinia_cli::{Configuration, DarwiniaCli};
-use darwinia_service::{crab_runtime, IdentifyVariant};
+use darwinia_service::{crab_runtime, darwinia_runtime, IdentifyVariant};
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Darwinia Crab".into()
+		"Darwinia".into()
 	}
 
 	fn impl_version() -> String {
@@ -45,10 +45,9 @@ impl SubstrateCli for Cli {
 		if spec.is_crab() {
 			&darwinia_service::crab_runtime::VERSION
 		} else if spec.is_darwinia() {
-			// &service::westend_runtime::VERSION
-			unimplemented!()
+			&darwinia_service::darwinia_runtime::VERSION
 		} else {
-			unreachable!()
+			&darwinia_service::darwinia_runtime::VERSION
 		}
 	}
 
@@ -65,23 +64,26 @@ impl SubstrateCli for Cli {
 		};
 
 		Ok(match id.to_lowercase().as_ref() {
-			// "darwinia-dev" | "dev" => Box::new(darwinia_service::chain_spec::darwinia_development_config()),
-			// "darwinia-local" => Box::new(darwinia_service::chain_spec::darwinia_local_testnet_config()),
-			// "darwinia-genesis" => Box::new(darwinia_service::chain_spec::darwinia_build_spec_config()),
-			// "darwinia" => Box::new(darwinia_service::chain_spec::darwinia_config()?),
 			"crab-dev" => Box::new(darwinia_service::chain_spec::crab_development_config()),
 			"crab-local" => Box::new(darwinia_service::chain_spec::crab_local_testnet_config()),
 			"crab-genesis" => Box::new(darwinia_service::chain_spec::crab_build_spec_config()),
 			"crab" => Box::new(darwinia_service::chain_spec::crab_config()?),
+			// "darwinia-dev" | "dev" => {
+			// Box::new(darwinia_service::chain_spec::darwinia_development_config())
+			// }
+			// "darwinia-local" => {
+			// Box::new(darwinia_service::chain_spec::darwinia_local_testnet_config())
+			// }
+			"darwinia-genesis" => {
+				Box::new(darwinia_service::chain_spec::darwinia_build_spec_config())
+			}
+			"darwinia" => Box::new(darwinia_service::chain_spec::darwinia_config()?),
 			path if self.run.force_crab => Box::new(
 				darwinia_service::CrabChainSpec::from_json_file(std::path::PathBuf::from(path))?,
 			),
-			_path => {
-				// Box::new(darwinia_service::DarwiniaChainSpec::from_json_file(
-				// std::path::PathBuf::from(path),
-				// )?)
-				unimplemented!()
-			}
+			path => Box::new(darwinia_service::DarwiniaChainSpec::from_json_file(
+				std::path::PathBuf::from(path),
+			)?),
 		})
 	}
 }
@@ -117,7 +119,7 @@ pub fn run() -> sc_cli::Result<()> {
 		} else if spec.is_darwinia() {
 			Ss58AddressFormat::DarwiniaAccount
 		} else {
-			unreachable!()
+			Ss58AddressFormat::DarwiniaAccount
 		};
 
 		sp_core::crypto::set_default_ss58_version(ss58_version);
@@ -167,15 +169,18 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else if chain_spec.is_darwinia() {
 				runtime.run_subcommand(subcommand, |config| {
-					// TODO: switch `crab_runtime` to `darwinia_runtime`
-					// TODO: switch `CrabExecutor` to `DarwiniaExecutor`
 					darwinia_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						darwinia_service::CrabExecutor,
+						darwinia_runtime::RuntimeApi,
+						darwinia_service::DarwiniaExecutor,
 					>(config)
 				})
 			} else {
-				unreachable!()
+				runtime.run_subcommand(subcommand, |config| {
+					darwinia_service::new_chain_ops::<
+						darwinia_runtime::RuntimeApi,
+						darwinia_service::DarwiniaExecutor,
+					>(config)
+				})
 			}
 		}
 		Some(Subcommand::Key(cmd)) => cmd.run(),
