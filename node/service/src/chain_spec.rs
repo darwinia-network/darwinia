@@ -15,8 +15,14 @@ use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as C_COIN, GenesisConfig as CrabGenesisConfig};
-use darwinia_primitives::{AccountId, AccountPublic, Balance};
-use darwinia_runtime::{constants::currency::COIN, GenesisConfig as DarwiniaGenesisConfig};
+use darwinia_primitives::{AccountId, AccountPublic, Balance, BlockNumber};
+use darwinia_runtime::{
+	constants::{
+		currency::{COIN as D_COIN, RING_EXISTENTIAL_DEPOSIT},
+		time::DAYS as D_DAYS,
+	},
+	GenesisConfig as DarwiniaGenesisConfig,
+};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type CrabChainSpec = sc_service::GenericChainSpec<CrabGenesisConfig, Extensions>;
@@ -97,7 +103,7 @@ pub fn crab_properties() -> Properties {
 pub fn darwinia_properties() -> Properties {
 	let mut properties = Properties::new();
 
-	properties.insert("ss58Format".into(), 42.into());
+	properties.insert("ss58Format".into(), 18.into());
 	properties.insert("tokenDecimals".into(), 9.into());
 	// TODO change to *COIN*? currently, *KTON* also display as *RING* in front-end
 	properties.insert("tokenSymbol".into(), "RING".into());
@@ -383,8 +389,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	const GENESIS_VALIDATOR_GRANDPA: &'static str =
 		"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
 
-	let mut backed_ring_for_crab: u128 = 40_000_000 * COIN;
-
+	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
 	let mut rings = vec![];
 	let mut multi_sign_endowed = false;
 	let mut root_endowed = false;
@@ -401,10 +406,13 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	.mapped_rings
 	{
 		match address.as_ref() {
-			MULTI_SIGN => multi_sign_endowed = true,
-			ROOT => root_endowed = true,
-			DA_CRABK => da_crabk_endowed = true,
-			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
+			MULTI_SIGN => multi_sign_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
+			ROOT => root_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
+			DA_CRABK => da_crabk_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
+			GENESIS_VALIDATOR_STASH => {
+				genesis_validator_stash_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT
+			}
+			_ if mapped_ring < RING_EXISTENTIAL_DEPOSIT => continue,
 			_ => (),
 		}
 
@@ -461,7 +469,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			stakers: vec![(
 				genesis_validator.0.clone(),
 				genesis_validator.1.clone(),
-				COIN,
+				D_COIN,
 				darwinia_runtime::StakerStatus::Validator
 			)],
 			force_era: darwinia_runtime::Forcing::NotForcing,
@@ -488,7 +496,15 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		pallet_collective_Instance1: Some(Default::default()),
 		darwinia_elections_phragmen: Some(Default::default()),
 		pallet_membership_Instance0: Some(Default::default()),
-		darwinia_vesting: Some(Default::default()),
+		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
+			vesting: vec![
+				// TODO init who
+				// Foundation Vesting 400M, 5 years vesting period starts when mainnet launch
+				// (who, 0, (5. * 365.25) as BlockNumber * D_DAYS, 0)
+				// Team Vesting 300M, 1 year vesting period starts after 1 year since mainnet lanuch
+				// (who, 365 * D_DAYS,  365 * D_DAYS, 0)
+			]
+		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
 			// Los Angeles: 15/09/2020, 23:42:08

@@ -229,8 +229,8 @@ impl pallet_timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MICRO;
-	pub const KtonExistentialDeposit: Balance = MICRO;
+	pub const RingExistentialDeposit: Balance = RING_EXISTENTIAL_DEPOSIT;
+	pub const KtonExistentialDeposit: Balance = KTON_EXISTENTIAL_DEPOSIT;
 }
 impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type Balance = Balance;
@@ -667,8 +667,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
-				// Call::Vesting(darwinia_vesting::Call::vest(..)) |
-				// Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
+				Call::Vesting(darwinia_vesting::Call::vest(..)) |
+				Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
