@@ -320,7 +320,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		darwinia_claims: Some({
 			crab_runtime::ClaimsConfig {
 				claims_list: crab_runtime::ClaimsList::from_file(
-					".node/service/res/crab-claims-list.json",
+					"node/service/res/crab-claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			}
@@ -357,7 +357,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: crab_runtime::DagsMerkleRootsLoader::from_file(
-				".node/service/res/dags-merkle-roots.json",
+				"node/service/res/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -395,8 +395,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		address,
 		mapped_ring,
 	} in darwinia_runtime::MappedRingLoader::from_file(
-		".node/service/res/mapped-rings-example.json",
-		"MAPPED_RING_PATH",
+		"node/service/res/mapped-rings-example.json",
+		"MAPPED_RINGS_PATH",
 	)
 	.mapped_rings
 	{
@@ -505,7 +505,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: darwinia_runtime::DagsMerkleRootsLoader::from_file(
-				".node/service/res/dags-merkle-roots.json",
+				"node/service/res/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
