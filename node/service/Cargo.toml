@@ -25,7 +25,8 @@ darwinia-primitives = { path = "../../primitives" }
 # darwinia rpc
 darwinia-rpc = { path = "../../rpc" }
 # darwinia runtime
-crab-runtime = { path = "../../runtime/crab" }
+crab-runtime     = { path = "../../runtime/crab" }
+darwinia-runtime = { path = "../../runtime/darwinia" }
 # substrate client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
@@ -67,4 +68,7 @@ default = ["db", "full-node"]
 db        = ["sc-service/db"]
 full-node = []
 
-dev = ["crab-runtime/dev"]
+dev = [
+	"crab-runtime/dev",
+	"darwinia-runtime/dev",
+]
