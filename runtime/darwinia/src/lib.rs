@@ -34,6 +34,8 @@ mod weights;
 
 // --- darwinia ---
 #[cfg(feature = "std")]
+pub use darwinia_crab_issuing::{Account as CrabIssuingAccount, MappedRingLoader};
+#[cfg(feature = "std")]
 pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
@@ -158,8 +160,7 @@ impl Filter<Call> for BaseFilter {
 			// second stage
 			Call::Balances(_)
 			| Call::Kton(_)
-			// | Call::Vesting(darwinia_vesting::Call::vested_transfer(..))
-			=> false,
+			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
 		}
 	}
@@ -526,16 +527,16 @@ impl darwinia_treasury::Trait for Runtime {
 	type WeightInfo = ();
 }
 
-// parameter_types! {
-// 	pub const MinVestedTransfer: Balance = 100 * MILLI;
-// }
-// impl darwinia_vesting::Trait for Runtime {
-// 	type Event = Event;
-// 	type Currency = Ring;
-// 	type BlockNumberToBalance = ConvertInto;
-// 	type MinVestedTransfer = MinVestedTransfer;
-// 	type WeightInfo = ();
-// }
+parameter_types! {
+	pub const MinVestedTransfer: Balance = 100 * MILLI;
+}
+impl darwinia_vesting::Trait for Runtime {
+	type Event = Event;
+	type Currency = Ring;
+	type BlockNumberToBalance = ConvertInto;
+	type MinVestedTransfer = MinVestedTransfer;
+	type WeightInfo = ();
+}
 
 impl pallet_utility::Trait for Runtime {
 	type Event = Event;
@@ -858,6 +859,9 @@ construct_runtime!(
 		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 
 		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
+
+		// Vesting. Usable initially, but removed once all vesting is finished.
+		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>},
 
 		// Proxy module. Late addition.
 		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
