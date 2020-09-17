@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.6.12"
+version     = "0.7.0-alpha.1"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -20,7 +20,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log                  = { version = "0.4.11" }
-serde                = { version = "1.0.115", optional = true }
+serde                = { version = "1.0.116", optional = true }
 structopt            = { version = "0.3.16" }
 tokio                = { version = "0.2.22", features = ["rt-threaded"], optional = true }
 toml                 = { version = "0.5.6", optional = true }

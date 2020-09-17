@@ -105,18 +105,23 @@ fn print_module_account() {
 		let alias_str = unsafe { core::str::from_utf8_unchecked(&alias) };
 		let id = <ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(alias));
 
-		eprintln!("{}:\n    {}\n    {:?}", alias_str, id, id);
+		eprintln!("{}:\n\t{}\n\t{:?}", alias_str, id, id);
 	}
 
-	// old_module_id: 5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z
-	// new_module_id: 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
-	account_of(*b"py/trsry", SubstrateAccount);
+	// da/trsry:
+	// 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
+	// 6d6f646c64612f74727372790000000000000000000000000000000000000000 (5EYCAe5g...)
 	account_of(*b"da/trsry", SubstrateAccount);
-	// old_module_id: 5EYCAe5gKAhHFmT9jmwH1HL4mDpjC7KWzKSSDxo244qvxncz
-	// new_module_id: 5EYCAe5gKAhHfsDGJniP6JVgq2bq92gWT7CJwPWh51MMTcYK
-	account_of(*b"da/backi", SubstrateAccount);
-	account_of(*b"da/ethbk", SubstrateAccount);
-	// module_id: 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
+	// da/ethbk:
+	// 2qeMxq616BhqvTW8a1bp2g7VKPAmpda1vXuAAz5TxV5ehivG
+	// 6d6f646c64612f657468626b0000000000000000000000000000000000000000 (2qeMxq61...)
+	account_of(*b"da/ethbk", DarwiniaAccount);
+	// da/crais:
+	// 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
+	// 6d6f646c64612f63726169730000000000000000000000000000000000000000 (5EYCAe5g...)
 	account_of(*b"da/crais", SubstrateAccount);
+	// da/crabk:
+	// 2qeMxq616BhqeiaffX3gbqb4PPhBo3usSkjx7ZRRTkWexMAo
+	// 6d6f646c64612f637261626b0000000000000000000000000000000000000000 (2qeMxq61...)
 	account_of(*b"da/crabk", DarwiniaAccount);
 }
