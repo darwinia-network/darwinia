@@ -11,11 +11,25 @@ pub mod constants;
 pub mod genesis_loader {
 	// --- std ---
 	use std::fs::File;
+	// --- crates ---
+	use serde::{Deserialize, Serialize};
 	// --- darwinia ---
 	use crate::*;
 
+	#[derive(Serialize, Deserialize)]
+	pub struct Account {
+		address: String,
+		balance: Balance,
+	}
+
 	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, &'static str> {
 		serde_json::from_reader(File::open(path).map_err(|_| "Open File - FAILED")?)
+			.map(|accounts: Vec<Account>| {
+				accounts
+					.into_iter()
+					.map(|Account { address, balance }| (address, balance))
+					.collect()
+			})
 			.map_err(|_| "Deserialize - FAILED")
 	}
 }
