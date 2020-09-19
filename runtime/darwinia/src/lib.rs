@@ -7,6 +7,33 @@
 /// Constant values used within the runtime.
 pub mod constants;
 
+#[cfg(feature = "std")]
+pub mod genesis_loader {
+	// --- std ---
+	use std::fs::File;
+	// --- crates ---
+	use serde::{Deserialize, Serialize};
+	// --- darwinia ---
+	use crate::*;
+
+	#[derive(Serialize, Deserialize)]
+	pub struct Account {
+		address: String,
+		balance: Balance,
+	}
+
+	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, &'static str> {
+		serde_json::from_reader(File::open(path).map_err(|_| "Open File - FAILED")?)
+			.map(|accounts: Vec<Account>| {
+				accounts
+					.into_iter()
+					.map(|Account { address, balance }| (address, balance))
+					.collect()
+			})
+			.map_err(|_| "Deserialize - FAILED")
+	}
+}
+
 pub mod wasm {
 	//! Make the WASM binary available.
 
@@ -33,8 +60,6 @@ pub mod wasm {
 mod weights;
 
 // --- darwinia ---
-#[cfg(feature = "std")]
-pub use darwinia_crab_issuing::{Account as CrabIssuingAccount, MappedRingLoader};
 #[cfg(feature = "std")]
 pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
@@ -760,6 +785,11 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 	type WeightInfo = ();
 }
 
+type TechnicalCommitteeApproveOrigin = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_3, _5, AccountId, TechnicalCollective>,
+>;
 type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -776,7 +806,7 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 	type Call = Call;
 	type Currency = Ring;
 	type RelayerGame = EthereumRelayerGame;
-	type ApproveOrigin = ApproveOrigin;
+	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
 	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
 	type WeightInfo = ();
 }

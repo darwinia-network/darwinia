@@ -132,7 +132,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 13,
+	spec_version: 14,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -761,6 +761,11 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 	type WeightInfo = ();
 }
 
+type TechnicalCommitteeApproveOrigin = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_3, _5, AccountId, TechnicalCollective>,
+>;
 type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -777,7 +782,7 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 	type Call = Call;
 	type Currency = Ring;
 	type RelayerGame = EthereumRelayerGame;
-	type ApproveOrigin = ApproveOrigin;
+	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
 	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
 	type WeightInfo = ();
 }

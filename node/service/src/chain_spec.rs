@@ -18,7 +18,7 @@ use crab_runtime::{constants::currency::COIN as C_COIN, GenesisConfig as CrabGen
 use darwinia_primitives::{AccountId, AccountPublic, Balance, BlockNumber};
 use darwinia_runtime::{
 	constants::{
-		currency::{COIN as D_COIN, RING_EXISTENTIAL_DEPOSIT},
+		currency::{COIN as D_COIN, KTON_EXISTENTIAL_DEPOSIT, RING_EXISTENTIAL_DEPOSIT},
 		time::DAYS as D_DAYS,
 	},
 	GenesisConfig as DarwiniaGenesisConfig,
@@ -375,8 +375,8 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 }
 
 pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
-	const MULTI_SIGN: &'static str =
-		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
+	// const MULTI_SIGN: &'static str =
+	// 	"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
 	const ROOT: &'static str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
 	const DA_CRABK: &'static str =
 		"0x6d6f646c64612f637261626b0000000000000000000000000000000000000000";
@@ -395,39 +395,35 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 
 	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
 	let mut rings = vec![];
-	let mut multi_sign_endowed = false;
+	let mut ktons = vec![];
+	// let mut multi_sign_endowed = false;
 	let mut root_endowed = false;
-	let mut da_crabk_endowed = false;
 	let mut genesis_validator_stash_endowed = false;
 
-	for darwinia_runtime::CrabIssuingAccount {
-		address,
-		mapped_ring,
-	} in darwinia_runtime::MappedRingLoader::from_file(
-		"node/service/res/mapped-rings-example.json",
-		"MAPPED_RINGS_PATH",
+	// Initialize Crab genesis swap
+	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+		"node/service/res/crab-genesis-swap.json",
 	)
-	.mapped_rings
+	.unwrap()
 	{
 		match address.as_ref() {
-			MULTI_SIGN => multi_sign_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
-			ROOT => root_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
-			DA_CRABK => da_crabk_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT,
+			// MULTI_SIGN => multi_sign_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
+			ROOT => root_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
 			GENESIS_VALIDATOR_STASH => {
-				genesis_validator_stash_endowed = mapped_ring >= RING_EXISTENTIAL_DEPOSIT
+				genesis_validator_stash_endowed = ring >= RING_EXISTENTIAL_DEPOSIT
 			}
-			_ if mapped_ring < RING_EXISTENTIAL_DEPOSIT => continue,
+			_ if ring < RING_EXISTENTIAL_DEPOSIT => continue,
 			_ => (),
 		}
 
-		rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), mapped_ring));
-		backed_ring_for_crab -= mapped_ring;
+		rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		backed_ring_for_crab -= ring;
 	}
 
+	// Important account MUST be initialized
 	for owned in [
-		multi_sign_endowed,
+		// multi_sign_endowed,
 		root_endowed,
-		da_crabk_endowed,
 		genesis_validator_stash_endowed,
 	]
 	.iter()
@@ -435,7 +431,29 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		assert!(owned);
 	}
 
+	// Initialize Ethereum/Tron genesis swap (RING)
+	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+		"node/service/res/ethereum-tron-genesis-swap-ring.json",
+	)
+	.unwrap()
+	{
+		if ring > RING_EXISTENTIAL_DEPOSIT {
+			rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		}
+	}
+	// Initialize Ethereum/Tron genesis swap (KTON)
+	for (address, kton) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+		"node/service/res/ethereum-tron-genesis-swap-kton.json",
+	)
+	.unwrap()
+	{
+		if kton > KTON_EXISTENTIAL_DEPOSIT {
+			ktons.push((fixed_hex_bytes_unchecked!(address, 32).into(), kton));
+		}
+	}
+
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
+	let da_crabk: AccountId = fixed_hex_bytes_unchecked!(DA_CRABK, 32).into();
 	let team_vesting: AccountId = fixed_hex_bytes_unchecked!(TEAM_VESTING, 32).into();
 	let foundation_vesting: AccountId = fixed_hex_bytes_unchecked!(FOUNDATION_VESTING, 32).into();
 	let genesis_validator: (
@@ -461,6 +479,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		)
 	};
 
+	// Crab backing: 40M - claimed
+	rings.push((da_crabk, backed_ring_for_crab));
 	// Team vesting: 300M
 	rings.push((team_vesting.clone(), 300_000_000 * D_COIN));
 	// Foundation vesting: 400M
@@ -473,7 +493,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		}),
 		pallet_babe: Some(Default::default()),
 		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings }),
-		darwinia_balances_Instance1: Some(Default::default()),
+		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons }),
 		darwinia_staking: Some(darwinia_runtime::StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -483,7 +503,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 				D_COIN,
 				darwinia_runtime::StakerStatus::Validator
 			)],
-			force_era: darwinia_runtime::Forcing::NotForcing,
+			force_era: darwinia_runtime::Forcing::ForceNew,
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
