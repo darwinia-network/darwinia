@@ -433,7 +433,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 
 	// Initialize Ethereum/Tron genesis swap (RING)
 	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap.json",
+		"node/service/res/ethereum-tron-genesis-swap-ring.json",
 	)
 	.unwrap()
 	{
@@ -441,7 +441,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
 	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap.json",
+		"node/service/res/ethereum-tron-genesis-swap-kton.json",
 	)
 	.unwrap()
 	{
