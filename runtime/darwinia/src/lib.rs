@@ -7,6 +7,19 @@
 /// Constant values used within the runtime.
 pub mod constants;
 
+#[cfg(feature = "std")]
+pub mod genesis_loader {
+	// --- std ---
+	use std::fs::File;
+	// --- darwinia ---
+	use crate::*;
+
+	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, &'static str> {
+		serde_json::from_reader(File::open(path).map_err(|_| "Open File - FAILED")?)
+			.map_err(|_| "Deserialize - FAILED")
+	}
+}
+
 pub mod wasm {
 	//! Make the WASM binary available.
 
@@ -33,8 +46,6 @@ pub mod wasm {
 mod weights;
 
 // --- darwinia ---
-#[cfg(feature = "std")]
-pub use darwinia_crab_issuing::{Account as CrabIssuingAccount, MappedRingLoader};
 #[cfg(feature = "std")]
 pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
