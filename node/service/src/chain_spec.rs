@@ -18,7 +18,7 @@ use crab_runtime::{constants::currency::COIN as C_COIN, GenesisConfig as CrabGen
 use darwinia_primitives::{AccountId, AccountPublic, Balance, BlockNumber};
 use darwinia_runtime::{
 	constants::{
-		currency::{COIN as D_COIN, RING_EXISTENTIAL_DEPOSIT},
+		currency::{COIN as D_COIN, KTON_EXISTENTIAL_DEPOSIT, RING_EXISTENTIAL_DEPOSIT},
 		time::DAYS as D_DAYS,
 	},
 	GenesisConfig as DarwiniaGenesisConfig,
@@ -437,15 +437,19 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	)
 	.unwrap()
 	{
-		rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		if ring > RING_EXISTENTIAL_DEPOSIT {
+			rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		}
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
-	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+	for (address, kton) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
 		"node/service/res/ethereum-tron-genesis-swap-kton.json",
 	)
 	.unwrap()
 	{
-		ktons.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		if kton > KTON_EXISTENTIAL_DEPOSIT {
+			ktons.push((fixed_hex_bytes_unchecked!(address, 32).into(), kton));
+		}
 	}
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
