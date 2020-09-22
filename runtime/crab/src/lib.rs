@@ -428,7 +428,7 @@ parameter_types! {
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 }
-impl pallet_democracy::Trait for Runtime {
+impl darwinia_democracy::Trait for Runtime {
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = Ring;
@@ -465,7 +465,7 @@ impl pallet_democracy::Trait for Runtime {
 	type PalletsOrigin = OriginCaller;
 	type MaxVotes = MaxVotes;
 	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
-	type WeightInfo = weights::pallet_democracy::WeightInfo;
+	type WeightInfo = weights::darwinia_democracy::WeightInfo;
 }
 
 parameter_types! {
@@ -959,7 +959,7 @@ construct_runtime!(
 
 		CrabIssuing: darwinia_crab_issuing::{Module, Call, Storage, Config, Event<T>},
 
-		Democracy: pallet_democracy::{Module, Call, Storage, Config, Event<T>},
+		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>},
 	}
 );
 
