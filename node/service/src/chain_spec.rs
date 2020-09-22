@@ -400,7 +400,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 
 	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
 	let mut rings = BTreeMap::new();
-	let mut ktons = vec![];
+	let mut ktons = BTreeMap::new();
 	// let mut multi_sign_endowed = false;
 	let mut root_endowed = false;
 	let mut genesis_validator_stash_endowed = false;
@@ -458,10 +458,13 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		if kton >= KTON_EXISTENTIAL_DEPOSIT {
 			let account_id: AccountId32 = fixed_hex_bytes_unchecked!(address, 32).into();
 
-			ktons.push((account_id.clone(), kton));
+			ktons
+				.entry(account_id.clone())
+				.and_modify(|kton_| *kton_ += kton)
+				.or_insert(kton);
 
 			if !rings.contains_key(&account_id) {
-				// TODO: the account has no ring only kton
+				// TODO: the account has KTON but no RING
 			}
 		}
 	}
@@ -507,7 +510,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		}),
 		pallet_babe: Some(Default::default()),
 		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings.into_iter().collect() }),
-		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons }),
+		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons.into_iter().collect() }),
 		darwinia_staking: Some(darwinia_runtime::StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -544,9 +547,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year aperiod start after 1 year since mainnet lanuch
-				(team_vesting, 365 * D_DAYS, (5. * 365.25) as BlockNumber * D_DAYS, 0),
+				(team_vesting, 365 * D_DAYS, 365 * D_DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
-				(foundation_vesting, 0,  365 * D_DAYS, 0)
+				(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * D_DAYS, 0)
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
