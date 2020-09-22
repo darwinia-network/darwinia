@@ -413,7 +413,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			_ => (),
 		}
 
-		rings.insert(fixed_hex_bytes_unchecked!(address, 32).into(), ring);
+		rings
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|ring_| *ring_ += ring)
+			.or_insert(ring);
+
 		backed_ring_for_crab -= ring;
 	}
 
