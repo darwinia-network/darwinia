@@ -406,14 +406,18 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	)
 	.unwrap()
 	{
-		match address.as_ref() {
+		match format!("0x{}", address).as_ref() {
 			// MULTI_SIGN => multi_sign_endowed = true,
 			ROOT => root_endowed = true,
 			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
 			_ => (),
 		}
 
-		rings.insert(fixed_hex_bytes_unchecked!(address, 32).into(), ring);
+		rings
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|ring_| *ring_ += ring)
+			.or_insert(ring);
+
 		backed_ring_for_crab -= ring;
 	}
 
