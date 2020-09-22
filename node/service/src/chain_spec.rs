@@ -440,6 +440,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	]
 	.concat()
 	{
+		let ring = ring / 1_000_000_000;
+
 		rings
 			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
 			.and_modify(|ring_| *ring_ += ring)
@@ -458,6 +460,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	]
 	.concat()
 	{
+		let kton = kton / 1_000_000_000;
+
 		ktons
 			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
 			.and_modify(|kton_| *kton_ += kton)
