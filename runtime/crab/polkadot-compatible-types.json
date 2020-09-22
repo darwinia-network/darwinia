@@ -243,6 +243,7 @@
 			"_enum": {
 				"Any": null,
 				"NonTransfer": null,
+				"ProxyType": null,
 				"Staking": null,
 				"IdentityJudgement": null,
 				"EthereumBridge": null
