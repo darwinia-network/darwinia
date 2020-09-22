@@ -406,7 +406,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	)
 	.unwrap()
 	{
-		match address.as_ref() {
+		match format!("0x{}", address).as_ref() {
 			// MULTI_SIGN => multi_sign_endowed = true,
 			ROOT => root_endowed = true,
 			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,

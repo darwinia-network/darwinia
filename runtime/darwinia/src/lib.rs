@@ -27,20 +27,20 @@ pub mod genesis_loader {
 	where
 		D: Deserializer<'de>,
 	{
-		let s: &str = Deserialize::deserialize(deserializer)?;
+		let s: String = Deserialize::deserialize(deserializer)?;
 
 		s.parse::<Balance>().map_err(Error::custom)
 	}
 
-	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, &'static str> {
-		serde_json::from_reader(File::open(path).map_err(|_| "Open File - FAILED")?)
+	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, String> {
+		serde_json::from_reader(File::open(path).map_err(|e| e.to_string())?)
 			.map(|accounts: Vec<Account>| {
 				accounts
 					.into_iter()
 					.map(|Account { target, amount }| (target, amount))
 					.collect()
 			})
-			.map_err(|_| "Deserialize - FAILED")
+			.map_err(|e| e.to_string())
 	}
 }
 
