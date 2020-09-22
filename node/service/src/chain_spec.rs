@@ -1,5 +1,7 @@
 //! Darwinia chain configurations.
 
+// --- std ---
+use std::collections::BTreeMap;
 // --- crates ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
@@ -17,10 +19,7 @@ use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as C_COIN, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance, BlockNumber};
 use darwinia_runtime::{
-	constants::{
-		currency::{COIN as D_COIN, KTON_EXISTENTIAL_DEPOSIT, RING_EXISTENTIAL_DEPOSIT},
-		time::DAYS as D_DAYS,
-	},
+	constants::{currency::COIN as D_COIN, time::DAYS as D_DAYS},
 	GenesisConfig as DarwiniaGenesisConfig,
 };
 
@@ -394,8 +393,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
 
 	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
-	let mut rings = vec![];
-	let mut ktons = vec![];
+	let mut rings = BTreeMap::new();
+	let mut ktons = BTreeMap::new();
 	// let mut multi_sign_endowed = false;
 	let mut root_endowed = false;
 	let mut genesis_validator_stash_endowed = false;
@@ -407,16 +406,13 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	.unwrap()
 	{
 		match address.as_ref() {
-			// MULTI_SIGN => multi_sign_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
-			ROOT => root_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
-			GENESIS_VALIDATOR_STASH => {
-				genesis_validator_stash_endowed = ring >= RING_EXISTENTIAL_DEPOSIT
-			}
-			_ if ring < RING_EXISTENTIAL_DEPOSIT => continue,
+			// MULTI_SIGN => multi_sign_endowed = true,
+			ROOT => root_endowed = true,
+			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
 			_ => (),
 		}
 
-		rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		rings.insert(fixed_hex_bytes_unchecked!(address, 32).into(), ring);
 		backed_ring_for_crab -= ring;
 	}
 
@@ -432,24 +428,44 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	}
 
 	// Initialize Ethereum/Tron genesis swap (RING)
-	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap-ring.json",
-	)
-	.unwrap()
+	for (address, ring) in [
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/ethereum-genesis-swap-ring.json",
+		)
+		.unwrap(),
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/tron-genesis-swap-ring.json",
+		)
+		.unwrap(),
+	]
+	.concat()
 	{
-		if ring > RING_EXISTENTIAL_DEPOSIT {
-			rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
-		}
+		let ring = ring / 1_000_000_000;
+
+		rings
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|ring_| *ring_ += ring)
+			.or_insert(ring);
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
-	for (address, kton) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap-kton.json",
-	)
-	.unwrap()
+	for (address, kton) in [
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/ethereum-genesis-swap-kton.json",
+		)
+		.unwrap(),
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/tron-genesis-swap-kton.json",
+		)
+		.unwrap(),
+	]
+	.concat()
 	{
-		if kton > KTON_EXISTENTIAL_DEPOSIT {
-			ktons.push((fixed_hex_bytes_unchecked!(address, 32).into(), kton));
-		}
+		let kton = kton / 1_000_000_000;
+
+		ktons
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|kton_| *kton_ += kton)
+			.or_insert(kton);
 	}
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
@@ -480,11 +496,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	};
 
 	// Crab backing: 40M - claimed
-	rings.push((da_crabk, backed_ring_for_crab));
+	rings.insert(da_crabk, backed_ring_for_crab);
 	// Team vesting: 300M
-	rings.push((team_vesting.clone(), 300_000_000 * D_COIN));
+	rings.insert(team_vesting.clone(), 300_000_000 * D_COIN);
 	// Foundation vesting: 400M
-	rings.push((foundation_vesting.clone(), 400_000_000 * D_COIN));
+	rings.insert(foundation_vesting.clone(), 400_000_000 * D_COIN);
 
 	DarwiniaGenesisConfig {
 		frame_system: Some(darwinia_runtime::SystemConfig {
@@ -492,8 +508,8 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			changes_trie_config: Default::default(),
 		}),
 		pallet_babe: Some(Default::default()),
-		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings }),
-		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons }),
+		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings.into_iter().collect() }),
+		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons.into_iter().collect() }),
 		darwinia_staking: Some(darwinia_runtime::StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -530,9 +546,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year aperiod start after 1 year since mainnet lanuch
-				(foundation_vesting, 365 * D_DAYS,  365 * D_DAYS, 0),
+				(team_vesting, 365 * D_DAYS, 365 * D_DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
-				(team_vesting, 0, (5. * 365.25) as BlockNumber * D_DAYS, 0)
+				(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * D_DAYS, 0)
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),

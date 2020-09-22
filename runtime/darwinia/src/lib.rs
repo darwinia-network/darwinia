@@ -12,14 +12,24 @@ pub mod genesis_loader {
 	// --- std ---
 	use std::fs::File;
 	// --- crates ---
-	use serde::{Deserialize, Serialize};
+	use serde::{de::Error, Deserialize, Deserializer};
 	// --- darwinia ---
 	use crate::*;
 
-	#[derive(Serialize, Deserialize)]
-	pub struct Account {
-		address: String,
-		balance: Balance,
+	#[derive(Deserialize)]
+	struct Account {
+		target: String,
+		#[serde(deserialize_with = "string_to_balance")]
+		amount: Balance,
+	}
+
+	fn string_to_balance<'de, D>(deserializer: D) -> Result<Balance, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let s: &str = Deserialize::deserialize(deserializer)?;
+
+		s.parse::<Balance>().map_err(Error::custom)
 	}
 
 	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, &'static str> {
@@ -27,7 +37,7 @@ pub mod genesis_loader {
 			.map(|accounts: Vec<Account>| {
 				accounts
 					.into_iter()
-					.map(|Account { address, balance }| (address, balance))
+					.map(|Account { target, amount }| (target, amount))
 					.collect()
 			})
 			.map_err(|_| "Deserialize - FAILED")
@@ -254,8 +264,8 @@ impl pallet_timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const RingExistentialDeposit: Balance = RING_EXISTENTIAL_DEPOSIT;
-	pub const KtonExistentialDeposit: Balance = KTON_EXISTENTIAL_DEPOSIT;
+	pub const RingExistentialDeposit: Balance = 100 * MICRO;
+	pub const KtonExistentialDeposit: Balance = MICRO;
 }
 impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type Balance = Balance;
