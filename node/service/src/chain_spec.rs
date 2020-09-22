@@ -12,20 +12,14 @@ use sc_service::Properties;
 use sc_telemetry::TelemetryEndpoints;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{
-	crypto::{AccountId32, UncheckedInto},
-	sr25519, Pair, Public,
-};
+use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN as C_COIN, GenesisConfig as CrabGenesisConfig};
 use darwinia_primitives::{AccountId, AccountPublic, Balance, BlockNumber};
 use darwinia_runtime::{
-	constants::{
-		currency::{COIN as D_COIN, KTON_EXISTENTIAL_DEPOSIT, RING_EXISTENTIAL_DEPOSIT},
-		time::DAYS as D_DAYS,
-	},
+	constants::{currency::COIN as D_COIN, time::DAYS as D_DAYS},
 	GenesisConfig as DarwiniaGenesisConfig,
 };
 
@@ -412,12 +406,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	.unwrap()
 	{
 		match address.as_ref() {
-			// MULTI_SIGN => multi_sign_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
-			ROOT => root_endowed = ring >= RING_EXISTENTIAL_DEPOSIT,
-			GENESIS_VALIDATOR_STASH => {
-				genesis_validator_stash_endowed = ring >= RING_EXISTENTIAL_DEPOSIT
-			}
-			_ if ring < RING_EXISTENTIAL_DEPOSIT => continue,
+			// MULTI_SIGN => multi_sign_endowed = true,
+			ROOT => root_endowed = true,
+			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
 			_ => (),
 		}
 
@@ -437,36 +428,40 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	}
 
 	// Initialize Ethereum/Tron genesis swap (RING)
-	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap-ring.json",
-	)
-	.unwrap()
+	for (address, ring) in [
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/ethereum-genesis-swap-ring.json",
+		)
+		.unwrap(),
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/tron-genesis-swap-ring.json",
+		)
+		.unwrap(),
+	]
+	.concat()
 	{
-		if ring >= RING_EXISTENTIAL_DEPOSIT {
-			rings
-				.entry(fixed_hex_bytes_unchecked!(address, 32).into())
-				.and_modify(|ring_| *ring_ += ring)
-				.or_insert(ring);
-		}
+		rings
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|ring_| *ring_ += ring)
+			.or_insert(ring);
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
-	for (address, kton) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/ethereum-tron-genesis-swap-kton.json",
-	)
-	.unwrap()
+	for (address, kton) in [
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/ethereum-genesis-swap-kton.json",
+		)
+		.unwrap(),
+		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/tron-genesis-swap-kton.json",
+		)
+		.unwrap(),
+	]
+	.concat()
 	{
-		if kton >= KTON_EXISTENTIAL_DEPOSIT {
-			let account_id: AccountId32 = fixed_hex_bytes_unchecked!(address, 32).into();
-
-			ktons
-				.entry(account_id.clone())
-				.and_modify(|kton_| *kton_ += kton)
-				.or_insert(kton);
-
-			if !rings.contains_key(&account_id) {
-				// TODO: the account has KTON but no RING
-			}
-		}
+		ktons
+			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+			.and_modify(|kton_| *kton_ += kton)
+			.or_insert(kton);
 	}
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();

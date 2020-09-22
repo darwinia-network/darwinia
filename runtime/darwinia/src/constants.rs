@@ -13,9 +13,6 @@ pub mod currency {
 	pub const CAP: Balance = 10_000_000_000 * COIN;
 	pub const TOTAL_POWER: Power = 1_000_000_000;
 
-	pub const RING_EXISTENTIAL_DEPOSIT: u128 = 100 * MICRO;
-	pub const KTON_EXISTENTIAL_DEPOSIT: u128 = MICRO;
-
 	pub const fn deposit(items: u32, bytes: u32) -> Balance {
 		items as Balance * 20 * MILLI + (bytes as Balance) * 100 * NANO
 	}
