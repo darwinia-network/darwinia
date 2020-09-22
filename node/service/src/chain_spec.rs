@@ -1,5 +1,7 @@
 //! Darwinia chain configurations.
 
+// --- std ---
+use std::collections::BTreeMap;
 // --- crates ---
 use serde::{Deserialize, Serialize};
 // --- substrate ---
@@ -10,7 +12,10 @@ use sc_service::Properties;
 use sc_telemetry::TelemetryEndpoints;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
+use sp_core::{
+	crypto::{AccountId32, UncheckedInto},
+	sr25519, Pair, Public,
+};
 use sp_runtime::{traits::IdentifyAccount, Perbill};
 // --- darwinia ---
 use array_bytes::fixed_hex_bytes_unchecked;
@@ -394,7 +399,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
 
 	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
-	let mut rings = vec![];
+	let mut rings = BTreeMap::new();
 	let mut ktons = vec![];
 	// let mut multi_sign_endowed = false;
 	let mut root_endowed = false;
@@ -416,7 +421,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			_ => (),
 		}
 
-		rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		rings.insert(fixed_hex_bytes_unchecked!(address, 32).into(), ring);
 		backed_ring_for_crab -= ring;
 	}
 
@@ -437,8 +442,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	)
 	.unwrap()
 	{
-		if ring > RING_EXISTENTIAL_DEPOSIT {
-			rings.push((fixed_hex_bytes_unchecked!(address, 32).into(), ring));
+		if ring >= RING_EXISTENTIAL_DEPOSIT {
+			rings
+				.entry(fixed_hex_bytes_unchecked!(address, 32).into())
+				.and_modify(|ring_| *ring_ += ring)
+				.or_insert(ring);
 		}
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
@@ -447,8 +455,14 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	)
 	.unwrap()
 	{
-		if kton > KTON_EXISTENTIAL_DEPOSIT {
-			ktons.push((fixed_hex_bytes_unchecked!(address, 32).into(), kton));
+		if kton >= KTON_EXISTENTIAL_DEPOSIT {
+			let account_id: AccountId32 = fixed_hex_bytes_unchecked!(address, 32).into();
+
+			ktons.push((account_id.clone(), kton));
+
+			if !rings.contains_key(&account_id) {
+				// TODO: the account has no ring only kton
+			}
 		}
 	}
 
@@ -480,11 +494,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	};
 
 	// Crab backing: 40M - claimed
-	rings.push((da_crabk, backed_ring_for_crab));
+	rings.insert(da_crabk, backed_ring_for_crab);
 	// Team vesting: 300M
-	rings.push((team_vesting.clone(), 300_000_000 * D_COIN));
+	rings.insert(team_vesting.clone(), 300_000_000 * D_COIN);
 	// Foundation vesting: 400M
-	rings.push((foundation_vesting.clone(), 400_000_000 * D_COIN));
+	rings.insert(foundation_vesting.clone(), 400_000_000 * D_COIN);
 
 	DarwiniaGenesisConfig {
 		frame_system: Some(darwinia_runtime::SystemConfig {
@@ -492,7 +506,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			changes_trie_config: Default::default(),
 		}),
 		pallet_babe: Some(Default::default()),
-		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings }),
+		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings.into_iter().collect() }),
 		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons }),
 		darwinia_staking: Some(darwinia_runtime::StakingConfig {
 			minimum_validator_count: 1,
@@ -530,9 +544,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year aperiod start after 1 year since mainnet lanuch
-				(foundation_vesting, 365 * D_DAYS,  365 * D_DAYS, 0),
+				(team_vesting, 365 * D_DAYS, (5. * 365.25) as BlockNumber * D_DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
-				(team_vesting, 0, (5. * 365.25) as BlockNumber * D_DAYS, 0)
+				(foundation_vesting, 0,  365 * D_DAYS, 0)
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
