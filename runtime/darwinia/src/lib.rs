@@ -157,6 +157,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -168,7 +169,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1,
+	spec_version: 2,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -326,6 +327,7 @@ impl pallet_authorship::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
@@ -345,6 +347,7 @@ parameter_types! {
 }
 impl darwinia_staking::Trait for Runtime {
 	type Event = Event;
+	type ModuleId = StakingModuleId;
 	type UnixTime = Timestamp;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
@@ -835,6 +838,16 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub const TronBackingModuleId: ModuleId = ModuleId(*b"da/trobk");
+}
+impl darwinia_tron_backing::Trait for Runtime {
+	type ModuleId = TronBackingModuleId;
+	type RingCurrency = Ring;
+	type KtonCurrency = Kton;
+	type WeightInfo = ();
+}
+
 impl darwinia_header_mmr::Trait for Runtime {}
 
 parameter_types! {
@@ -909,16 +922,19 @@ construct_runtime!(
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
+		// Crab bridge.
+		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
+
 		// Ethereum bridge.
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Call, Storage, Event<T>},
 
+		// Tron bridge.
+		TronBacking: darwinia_tron_backing::{Module, Storage, Config<T>},
+
 		// Consensus support.
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
-
-		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
 	}
 );
 
@@ -1168,5 +1184,44 @@ impl_runtime_apis! {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
 		}
+	}
+}
+
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::{migration::*, Blake2_128Concat, StorageHasher};
+		use sp_runtime::traits::AccountIdConversion;
+
+		type AccountInfo = frame_system::AccountInfo<
+			<Runtime as frame_system::Trait>::Index,
+			<Runtime as frame_system::Trait>::AccountData,
+		>;
+
+		fn hash_module_id(module_id: [u8; 8]) -> Vec<u8> {
+			Blake2_128Concat::hash(
+				<ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(module_id))
+					.as_ref(),
+			)
+		}
+
+		let mut account = AccountInfo::default();
+
+		account.data = AccountData {
+			free: 90_417_878_212_547_854,
+			reserved: 0,
+			free_kton: 1_509_037_333_196,
+			reserved_kton: 0,
+		};
+
+		put_storage_value::<AccountInfo>(
+			b"System",
+			b"Account",
+			&hash_module_id(*b"da/trobk"),
+			account,
+		);
+
+		0
 	}
 }

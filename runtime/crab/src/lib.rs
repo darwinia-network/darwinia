@@ -287,6 +287,7 @@ impl pallet_authorship::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = 7 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
@@ -306,6 +307,7 @@ parameter_types! {
 }
 impl darwinia_staking::Trait for Runtime {
 	type Event = Event;
+	type ModuleId = StakingModuleId;
 	type UnixTime = Timestamp;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;

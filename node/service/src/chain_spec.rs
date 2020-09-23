@@ -557,6 +557,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
+		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
+			backed_ring: backed_ring_for_crab,
+		}),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
 			// Los Angeles: 15/09/2020, 23:42:08
 			// Berlin :     16/09/2020, 14:42:08
@@ -577,8 +580,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			),
 			..Default::default()
 		}),
-		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
-			backed_ring: backed_ring_for_crab,
+		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
+			backed_ring: 90_417_878_212_547_854,
+			backed_kton: 1_509_037_333_196
 		}),
 	}
 }
