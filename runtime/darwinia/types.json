@@ -66,16 +66,6 @@
 		"start_time": "Compact<TsInMs>",
 		"expire_time": "Compact<TsInMs>"
 	},
-	"RewardDestination": {
-		"_enum": {
-			"Staked": "Staked",
-			"Stash": null,
-			"Controller": null
-		}
-	},
-	"Staked": {
-		"promise_month": "u8"
-	},
 	"ExposureT": {
 		"own_ring_balance": "Compact<Balance>",
 		"own_kton_balance": "Compact<Balance>",
