@@ -90,7 +90,6 @@ pub fn crab_properties() -> Properties {
 
 	properties.insert("ss58Format".into(), 42.into());
 	properties.insert("tokenDecimals".into(), 9.into());
-	// TODO change to *COIN*? currently, *CKTON* also display as *CRING* in front-end
 	properties.insert("tokenSymbol".into(), "CRING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
@@ -104,7 +103,6 @@ pub fn darwinia_properties() -> Properties {
 
 	properties.insert("ss58Format".into(), 18.into());
 	properties.insert("tokenDecimals".into(), 9.into());
-	// TODO change to *COIN*? currently, *KTON* also display as *RING* in front-end
 	properties.insert("tokenSymbol".into(), "RING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "KTON".into());
@@ -148,7 +146,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		32
 	)
 	.into();
-
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(
 		"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49",
 		32
