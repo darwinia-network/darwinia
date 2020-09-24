@@ -580,6 +580,10 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
 			backed_ring: backed_ring_for_crab,
 		}),
+		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
+			backed_ring: 1,
+			backed_kton: 1,
+		}),
 	}
 }
 
