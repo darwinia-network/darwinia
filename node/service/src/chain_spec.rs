@@ -90,7 +90,6 @@ pub fn crab_properties() -> Properties {
 
 	properties.insert("ss58Format".into(), 42.into());
 	properties.insert("tokenDecimals".into(), 9.into());
-	// TODO change to *COIN*? currently, *CKTON* also display as *CRING* in front-end
 	properties.insert("tokenSymbol".into(), "CRING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
@@ -104,7 +103,6 @@ pub fn darwinia_properties() -> Properties {
 
 	properties.insert("ss58Format".into(), 18.into());
 	properties.insert("tokenDecimals".into(), 9.into());
-	// TODO change to *COIN*? currently, *KTON* also display as *RING* in front-end
 	properties.insert("tokenSymbol".into(), "RING".into());
 	properties.insert("ktonTokenDecimals".into(), 9.into());
 	properties.insert("ktonTokenSymbol".into(), "KTON".into());
@@ -148,7 +146,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		32
 	)
 	.into();
-
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(
 		"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49",
 		32
@@ -557,6 +554,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
+		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
+			backed_ring: backed_ring_for_crab,
+		}),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
 			// Los Angeles: 15/09/2020, 23:42:08
 			// Berlin :     16/09/2020, 14:42:08
@@ -577,8 +577,13 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			),
 			..Default::default()
 		}),
-		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
-			backed_ring: backed_ring_for_crab,
+		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
+			// Los Angeles: 23/09/2020, 19:22:49
+			// Berlin :     24/09/2020, 10:22:49
+			// Beijing:     24/09/2020, 09:22:49
+			// New York :   23/09/2020, 21:22:49
+			backed_ring: 90_417_734_952_547_848,
+			backed_kton: 1_507_677_333_196,
 		}),
 	}
 }
@@ -700,14 +705,14 @@ pub fn crab_testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, 1 << 30))
 				.collect(),
 		}),
 		darwinia_balances_Instance1: Some(crab_runtime::KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, 1 << 30))
 				.collect(),
 		}),
 		darwinia_staking: Some(crab_runtime::StakingConfig {
@@ -716,7 +721,7 @@ pub fn crab_testnet_genesis(
 			stakers: initial_authorities
 				.iter()
 				.cloned()
-				.map(|x| (x.0, x.1, 1 << 60, crab_runtime::StakerStatus::Validator))
+				.map(|x| (x.0, x.1, 1 << 30, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 			force_era: crab_runtime::Forcing::ForceAlways,
@@ -769,8 +774,8 @@ pub fn crab_testnet_genesis(
 				20
 			)
 			.into(),
-			ring_locked: 1 << 60,
-			kton_locked: 1 << 60,
+			ring_locked: 1 << 30,
+			kton_locked: 1 << 30,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
@@ -785,7 +790,7 @@ pub fn crab_testnet_genesis(
 			..Default::default()
 		}),
 		darwinia_crab_issuing: Some(crab_runtime::CrabIssuingConfig {
-			total_mapped_ring: 1 << 60
+			total_mapped_ring: 1 << 30
 		}),
 	}
 }

@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-runtime"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.7.0-alpha.3"
+version     = "0.7.0-alpha.4"
 
 [dependencies]
 # crates
@@ -31,6 +31,7 @@ darwinia-staking                    = { default-features = false, git = "https:/
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-tron-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
@@ -104,6 +105,7 @@ std    = [
 	"darwinia-staking-rpc-runtime-api/std",
 	"darwinia-support/std",
 	"darwinia-treasury/std",
+	"darwinia-tron-backing/std",
 	"darwinia-vesting/std",
 	"darwinia-primitives/std",
 	"darwinia-runtime-common/std",

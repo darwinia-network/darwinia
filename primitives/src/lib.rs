@@ -124,4 +124,12 @@ fn print_module_account() {
 	// 2qeMxq616BhqeiaffX3gbqb4PPhBo3usSkjx7ZRRTkWexMAo
 	// 6d6f646c64612f637261626b0000000000000000000000000000000000000000 (2qeMxq61...)
 	account_of(*b"da/crabk", DarwiniaAccount);
+	// da/staki:
+	// 2qeMxq616BhspChjTR7DN4GHvDMvRApmawT35ayQijghNchk
+	// 6d6f646c64612f7374616b690000000000000000000000000000000000000000 (2qeMxq61...)
+	account_of(*b"da/staki", DarwiniaAccount);
+	// da/trobk:
+	// 2qeMxq616BhswyueZhqkyWntaMt8QXshns9rBbmWBs1k9G4V
+	// 6d6f646c64612f74726f626b0000000000000000000000000000000000000000 (2qeMxq61...)
+	account_of(*b"da/trobk", DarwiniaAccount);
 }

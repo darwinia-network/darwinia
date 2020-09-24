@@ -326,6 +326,7 @@ impl pallet_authorship::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
@@ -345,6 +346,7 @@ parameter_types! {
 }
 impl darwinia_staking::Trait for Runtime {
 	type Event = Event;
+	type ModuleId = StakingModuleId;
 	type UnixTime = Timestamp;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
@@ -835,6 +837,16 @@ impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub const TronBackingModuleId: ModuleId = ModuleId(*b"da/trobk");
+}
+impl darwinia_tron_backing::Trait for Runtime {
+	type ModuleId = TronBackingModuleId;
+	type RingCurrency = Ring;
+	type KtonCurrency = Kton;
+	type WeightInfo = ();
+}
+
 impl darwinia_header_mmr::Trait for Runtime {}
 
 parameter_types! {
@@ -909,16 +921,19 @@ construct_runtime!(
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
+		// Crab bridge.
+		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
+
 		// Ethereum bridge.
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Call, Storage, Event<T>},
 
+		// Tron bridge.
+		TronBacking: darwinia_tron_backing::{Module, Storage, Config<T>},
+
 		// Consensus support.
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
-
-		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
 	}
 );
 
