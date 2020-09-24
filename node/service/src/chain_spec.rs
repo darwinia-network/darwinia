@@ -557,6 +557,9 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
+		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
+			backed_ring: backed_ring_for_crab,
+		}),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
 			// Los Angeles: 15/09/2020, 23:42:08
 			// Berlin :     16/09/2020, 14:42:08
@@ -576,9 +579,6 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
-		}),
-		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
-			backed_ring: backed_ring_for_crab,
 		}),
 		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
 			// Los Angeles: 23/09/2020, 19:22:49
