@@ -581,8 +581,12 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			backed_ring: backed_ring_for_crab,
 		}),
 		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
-			backed_ring: 1,
-			backed_kton: 1,
+			// Los Angeles: 23/09/2020, 19:22:49
+			// Berlin :     24/09/2020, 10:22:49
+			// Beijing:     24/09/2020, 09:22:49
+			// New York :   23/09/2020, 21:22:49
+			backed_ring: 90_417_734_952_547_848,
+			backed_kton: 1_507_677_333_196,
 		}),
 	}
 }
@@ -704,14 +708,14 @@ pub fn crab_testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, 1 << 30))
 				.collect(),
 		}),
 		darwinia_balances_Instance1: Some(crab_runtime::KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, 1 << 30))
 				.collect(),
 		}),
 		darwinia_staking: Some(crab_runtime::StakingConfig {
@@ -720,7 +724,7 @@ pub fn crab_testnet_genesis(
 			stakers: initial_authorities
 				.iter()
 				.cloned()
-				.map(|x| (x.0, x.1, 1 << 60, crab_runtime::StakerStatus::Validator))
+				.map(|x| (x.0, x.1, 1 << 30, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 			force_era: crab_runtime::Forcing::ForceAlways,
@@ -773,8 +777,8 @@ pub fn crab_testnet_genesis(
 				20
 			)
 			.into(),
-			ring_locked: 1 << 60,
-			kton_locked: 1 << 60,
+			ring_locked: 1 << 30,
+			kton_locked: 1 << 30,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
@@ -789,7 +793,7 @@ pub fn crab_testnet_genesis(
 			..Default::default()
 		}),
 		darwinia_crab_issuing: Some(crab_runtime::CrabIssuingConfig {
-			total_mapped_ring: 1 << 60
+			total_mapped_ring: 1 << 30
 		}),
 	}
 }
