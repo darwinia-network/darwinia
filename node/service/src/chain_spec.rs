@@ -442,7 +442,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	]
 	.concat()
 	{
-		let ring = ring / 1_000_000_000;
+		let ring = ring / D_COIN;
 
 		rings
 			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
@@ -462,7 +462,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	]
 	.concat()
 	{
-		let kton = kton / 1_000_000_000;
+		let kton = kton / D_COIN;
 
 		ktons
 			.entry(fixed_hex_bytes_unchecked!(address, 32).into())
@@ -558,12 +558,12 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			backed_ring: backed_ring_for_crab,
 		}),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
-			// Los Angeles: 15/09/2020, 23:42:08
-			// Berlin :     16/09/2020, 14:42:08
-			// Beijing:     16/09/2020, 13:42:08
-			// New York :   16/09/2020, 01:42:08
-			ring_locked: 1_179_562_684_772_882_521,
-			kton_locked: 55_784_589_946_137,
+			// Los Angeles: 9/24/2020, 7:42:52 PM
+			// Berlin :     9/25/2020, 10:42:52 AM
+			// Beijing:     9/25/2020, 9:42:52 AM
+			// New York :   9/24/2020, 9:42:52 PM
+			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / D_COIN + 1,
+			kton_locked: 55_760_225_171_204_355_332_737_128 / D_COIN + 1,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(darwinia_runtime::EthereumRelayConfig {
@@ -578,12 +578,12 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			..Default::default()
 		}),
 		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
-			// Los Angeles: 23/09/2020, 19:22:49
-			// Berlin :     24/09/2020, 10:22:49
-			// Beijing:     24/09/2020, 09:22:49
-			// New York :   23/09/2020, 21:22:49
-			backed_ring: 90_417_734_952_547_848,
-			backed_kton: 1_507_677_333_196,
+			// Los Angeles: 9/24/2020, 7:42:52 PM
+			// Berlin :     9/25/2020, 10:42:52 AM
+			// Beijing:     9/25/2020, 9:42:52 AM
+			// New York :   9/24/2020, 9:42:52 PM
+			backed_ring: 90_403_994_952_547_849_178_882_078_u128 / D_COIN + 1,
+			backed_kton: 1_357_120_581_926_771_954_238_u128 / D_COIN + 1,
 		}),
 	}
 }
