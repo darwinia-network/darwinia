@@ -23,7 +23,7 @@ pub type CrabChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 pub fn crab_config() -> Result<CrabChainSpec, String> {
-	CrabChainSpec::from_json_bytes(&include_bytes!("../../res/crab.json")[..])
+	CrabChainSpec::from_json_bytes(&include_bytes!("../../res/crab/crab.json")[..])
 }
 
 /// Session keys for Crab.
@@ -179,7 +179,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		darwinia_claims: Some({
 			ClaimsConfig {
 				claims_list: ClaimsList::from_file(
-					"node/service/res/crab-claims-list.json",
+					"node/service/res/crab/claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			}
@@ -200,7 +200,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
-				"node/service/res/dags-merkle-roots.json",
+				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -213,7 +213,11 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 
 /// Crab config.
 pub fn crab_build_spec_config() -> CrabChainSpec {
-	let boot_nodes = vec![];
+	let boot_nodes = vec![
+		"/dns/g1.p2p.crab.darwinia.network/tcp/30333/p2p/12D3KooWFqHZkyv6iabxxqiHdNjWb4c7EfmBqMNCyqLCCVZm8yyQ".parse().unwrap(),
+		"/dns/g2.p2p.crab.darwinia.network/tcp/30333/p2p/12D3KooWPiza2NAD6CjdBGtfUd3pfDnZXysYKzumejGHafW3Y8xP".parse().unwrap()
+	];
+
 	CrabChainSpec::from_genesis(
 		"Crab",
 		"crab",
@@ -232,6 +236,7 @@ pub fn crab_build_spec_config() -> CrabChainSpec {
 
 /// Helper function to create Crab GenesisConfig for testing
 pub fn crab_testnet_genesis(
+	root: AccountId,
 	initial_authorities: Vec<(
 		AccountId,
 		AccountId,
@@ -240,7 +245,6 @@ pub fn crab_testnet_genesis(
 		ImOnlineId,
 		AuthorityDiscoveryId,
 	)>,
-	root: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> GenesisConfig {
 	const TOKEN_REDEEM_ADDRESS: &'static str = "0x49262B932E439271d05634c32978294C7Ea15d0C";
@@ -303,7 +307,7 @@ pub fn crab_testnet_genesis(
 		darwinia_claims: Some({
 			ClaimsConfig {
 				claims_list: ClaimsList::from_file(
-					"node/service/res/crab-claims-list.json",
+					"node/service/res/crab/claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			}
@@ -324,7 +328,7 @@ pub fn crab_testnet_genesis(
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
-				"node/service/res/dags-merkler-oots.json",
+				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -339,8 +343,8 @@ pub fn crab_testnet_genesis(
 pub fn crab_development_config() -> CrabChainSpec {
 	fn crab_development_genesis() -> GenesisConfig {
 		crab_testnet_genesis(
-			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			vec![get_authority_keys_from_seed("Alice")],
 			Some(vec![
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),

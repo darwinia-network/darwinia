@@ -28,7 +28,7 @@ pub type DarwiniaChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensi
 const DARWINIA_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 pub fn darwinia_config() -> Result<DarwiniaChainSpec, String> {
-	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../../res/darwinia.json")[..])
+	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../../res/darwinia/darwinia.json")[..])
 }
 
 /// Session keys for Darwinia.
@@ -85,7 +85,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 
 	// Initialize Crab genesis swap
 	for (address, ring) in
-		genesis_loader::load_genesis_swap_from_file("node/service/res/crab-genesis-swap.json")
+		genesis_loader::load_genesis_swap_from_file("node/service/res/darwinia/swapped-cring.json")
 			.unwrap()
 	{
 		match format!("0x{}", address).as_ref() {
@@ -106,11 +106,13 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	// Initialize Ethereum/Tron genesis swap (RING)
 	for (address, ring) in [
 		genesis_loader::load_genesis_swap_from_file(
-			"node/service/res/ethereum-genesis-swap-ring.json",
+			"node/service/res/darwinia/swapped-erc20-ring.json",
 		)
 		.unwrap(),
-		genesis_loader::load_genesis_swap_from_file("node/service/res/tron-genesis-swap-ring.json")
-			.unwrap(),
+		genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/darwinia/swapped-trc20-ring.json",
+		)
+		.unwrap(),
 	]
 	.concat()
 	{
@@ -129,11 +131,13 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	// Initialize Ethereum/Tron genesis swap (KTON)
 	for (address, kton) in [
 		genesis_loader::load_genesis_swap_from_file(
-			"node/service/res/ethereum-genesis-swap-kton.json",
+			"node/service/res/darwinia/swapped-erc20-kton.json",
 		)
 		.unwrap(),
-		genesis_loader::load_genesis_swap_from_file("node/service/res/tron-genesis-swap-kton.json")
-			.unwrap(),
+		genesis_loader::load_genesis_swap_from_file(
+			"node/service/res/darwinia/swapped-trc20-kton.json",
+		)
+		.unwrap(),
 	]
 	.concat()
 	{
@@ -255,7 +259,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
-				"node/service/res/dags-merkle-roots.json",
+				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -273,7 +277,11 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 
 /// Darwinia config.
 pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
-	let boot_nodes = vec![];
+	let boot_nodes = vec![
+		"/dns4/g1.p2p.cc1.darwinia.network/tcp/30333/p2p/12D3KooWANEQE69Td86QUy68Lim3rZR5mxsMviGYdi14ErzCfdht".parse().unwrap(),
+		"/dns4/g2.p2p.cc1.darwinia.network/tcp/30333/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap()
+	];
+
 	DarwiniaChainSpec::from_genesis(
 		"Darwinia Devnet",
 		"darwinia",
@@ -292,6 +300,7 @@ pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 
 /// Helper function to create Darwinia GenesisConfig for testing
 pub fn darwinia_testnet_genesis(
+	root: AccountId,
 	initial_authorities: Vec<(
 		AccountId,
 		AccountId,
@@ -300,7 +309,6 @@ pub fn darwinia_testnet_genesis(
 		ImOnlineId,
 		AuthorityDiscoveryId,
 	)>,
-	root: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
@@ -366,7 +374,7 @@ pub fn darwinia_testnet_genesis(
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
-				"node/service/res/dags-merkle-roots.json",
+				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
@@ -382,8 +390,8 @@ pub fn darwinia_testnet_genesis(
 pub fn darwinia_development_config() -> DarwiniaChainSpec {
 	fn darwinia_development_genesis() -> GenesisConfig {
 		darwinia_testnet_genesis(
-			vec![get_authority_keys_from_seed("Alice")],
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			vec![get_authority_keys_from_seed("Alice")],
 			Some(vec![
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
