@@ -114,154 +114,60 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 	const C_RING_ENDOWMENT: Balance = 1_000_000 * C_COIN;
 	const C_KTON_ENDOWMENT: Balance = 10_000 * C_COIN;
 
-	struct Staker {
-		sr: [u8; 32],
-		ed: [u8; 32],
-	}
-	impl Staker {
-		fn build_init_auth(
-			&self,
-		) -> (
-			AccountId,
-			AccountId,
-			BabeId,
-			GrandpaId,
-			ImOnlineId,
-			AuthorityDiscoveryId,
-		) {
-			(
-				self.sr.into(),
-				self.sr.into(),
-				self.sr.unchecked_into(),
-				self.ed.unchecked_into(),
-				self.sr.unchecked_into(),
-				self.sr.unchecked_into(),
-			)
-		}
-	}
+	let root_key = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
+	let multi_sign = "0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
+	let genesis_validator: (
+		AccountId,
+		AccountId,
+		BabeId,
+		GrandpaId,
+		ImOnlineId,
+		AuthorityDiscoveryId,
+	) = {
+		let stash = fixed_hex_bytes_unchecked!(
+			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
+			32
+		);
+		let controller = fixed_hex_bytes_unchecked!(
+			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
+			32
+		);
+		let session = fixed_hex_bytes_unchecked!(
+			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
+			32
+		);
+		let grandpa = fixed_hex_bytes_unchecked!(
+			"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd",
+			32
+		);
 
-	// 5FGWcEpsd5TbDh14UGJEzRQENwrPXUt7e2ufzFzfcCEMesAQ
-	let multi_sign: AccountId = fixed_hex_bytes_unchecked!(
-		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8",
-		32
-	)
-	.into();
-	let root_key: AccountId = fixed_hex_bytes_unchecked!(
-		"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49",
-		32
-	)
-	.into();
-	let stakers = [
-		// AlexChien
-		Staker {
-			sr: fixed_hex_bytes_unchecked!(
-				"0x80a5d9612f5504f3e04a31ca19f1d6108ca77252bd05940031eb446953409c1a",
-				32
-			),
-			ed: fixed_hex_bytes_unchecked!(
-				"0x1b861031d9a6edea47c6478cb3765d7cd4881b36bfb1c665f6b6deb5e0d9c253",
-				32
-			),
-		},
-		// AurevoirXavier
-		Staker {
-			// 5G9z8Ttoo7892VqBHiSWCbnd2aEdH8noJLqZ4HFMzMVNhvgP
-			sr: fixed_hex_bytes_unchecked!(
-				"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
-				32
-			),
-			// 5ETtsEtnsGQZc5jcAJazedgmiePShJ43VyrY88aCvdQmkvj8
-			ed: fixed_hex_bytes_unchecked!(
-				"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd",
-				32
-			),
-		},
-		// clearloop
-		Staker {
-			sr: fixed_hex_bytes_unchecked!(
-				"0x6e6844ba5c73db6c4c6b67ea59c2787dd6bd2f9b8139a69c33e14a722d1e801d",
-				32
-			),
-			ed: fixed_hex_bytes_unchecked!(
-				"0x13c0b78d9573e99a74c313ddcf30f8fc3d3bc0503f8864427ad34654804e1bc5",
-				32
-			),
-		},
-		// freehere107
-		Staker {
-			sr: fixed_hex_bytes_unchecked!(
-				"0xc4429847f3598f40008d0cbab53476a2f19165696aa41002778524b3ecf82938",
-				32
-			),
-			ed: fixed_hex_bytes_unchecked!(
-				"0x2c8cb4d2de3192df18c60551038a506033cb2a85fbe0a3ff8cff413dac11f50a",
-				32
-			),
-		},
-		// HackFisher
-		Staker {
-			sr: fixed_hex_bytes_unchecked!(
-				"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f",
-				32
-			),
-			ed: fixed_hex_bytes_unchecked!(
-				"0x398f7935e0ea85cc2d1af71dab00d93f53b2cbf35e2afb1e6087f7554d2fdf96",
-				32
-			),
-		},
-		// WoeOm
-		Staker {
-			// 5C8thCAFsaTHuJFMJZz2CrT47XDWebP72Vwr9d1sL4eSJ4UM
-			sr: fixed_hex_bytes_unchecked!(
-				"0x0331760198d850b159844f3bfa620f6e704167973213154aca27675f7ddd987e",
-				32
-			),
-			// 5D2ocj7mvu5oemVwK2TXUz7tmNumtPSYdjs4fmFmNKQ9PJ3A
-			ed: fixed_hex_bytes_unchecked!(
-				"0x2ac9219ace40f5846ed675dded4e25a1997da7eabdea2f78597a71d6f3803148",
-				32
-			),
-		},
-		// yanganto
-		Staker {
-			sr: fixed_hex_bytes_unchecked!(
-				"0xc45f075b5b1aa0145c469f57bd741c02272c1c0c41e9518d5a32426030d98232",
-				32
-			),
-			ed: fixed_hex_bytes_unchecked!(
-				"0xaf78c408272f929225861c8276c6e8700c8f45c195b9ba82a0b246aade0937ec",
-				32
-			),
-		},
-	];
-	// local tester
-	let local_tester = Staker {
-		// Secret phrase `pulse upset spoil fatigue agent credit dirt language forest aware boat broom` is account:
-		// Network ID/version: substrate
-		// Secret seed:        0x76c87263b2a385fcb7faed857d0fe105b5e40cdc8cb5f1b2a188d7f57488e595
-		// Public key (hex):   0x584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f
-		// Account ID:         0x584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f
-		// SS58 Address:       5E4VSMKXm9VFaLMu4Jjbny3Uy7NnPizoGkf92A15XjS45C4A
-		sr: fixed_hex_bytes_unchecked!(
-			"0x584ea8f083c3a9038d57acc5229ab4d790ab6132921d5edc5fae1be4ed89ec1f",
-			32
-		),
-		// Secret phrase `ecology admit arrest canal cage believe satoshi anger napkin sign decorate use` is account:
-		// Network ID/version: substrate
-		// Secret seed:        0x7b37f9bd46a368748e0e28992e2cd2bc77060cd8267784aef625fb812908fb7f
-		// Public key (hex):   0x70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976
-		// Account ID:         0x70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976
-		// SS58 Address:       5Ecqdt4nxP76MdwNfBwwYBi4mxWq7MYLDN1GXMtDFUSaerjG
-		ed: fixed_hex_bytes_unchecked!(
-			"0x70fa82107e81f20bb4e5b059f4ac800d55aafcff9e918e000899569b4f207976",
-			32
-		),
+		(
+			stash.into(),
+			controller.into(),
+			session.unchecked_into(),
+			grandpa.unchecked_into(),
+			session.unchecked_into(),
+			session.unchecked_into(),
+		)
 	};
+	let endowed_accounts = [
+		// AlexChien
+		"0x80a5d9612f5504f3e04a31ca19f1d6108ca77252bd05940031eb446953409c1a",
+		// clearloop
+		"0x6e6844ba5c73db6c4c6b67ea59c2787dd6bd2f9b8139a69c33e14a722d1e801d",
+		// freehere107
+		"0xc4429847f3598f40008d0cbab53476a2f19165696aa41002778524b3ecf82938",
+		// HackFisher
+		"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f",
+		// WoeOm
+		"0x0331760198d850b159844f3bfa620f6e704167973213154aca27675f7ddd987e",
+		// yanganto
+		"0xc45f075b5b1aa0145c469f57bd741c02272c1c0c41e9518d5a32426030d98232",
+	];
 	let endowed_accounts = stakers
 		.iter()
-		.map(|staker| staker.sr.into())
+		.map(|s| fixed_hex_bytes_unchecked!(s, 32).into())
 		.collect::<Vec<_>>();
-	let initial_authorities = [stakers[1].build_init_auth(), local_tester.build_init_auth()];
 
 	CrabGenesisConfig {
 		frame_system: Some(crab_runtime::SystemConfig {
@@ -279,7 +185,7 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 					vec![
 						(root_key.clone(), 25_000_000 * C_COIN),
 						(multi_sign, 700_000_000 * C_COIN),
-						(local_tester.sr.into(), C_COIN),
+						(genesis_validator.0, C_RING_ENDOWMENT),
 					]
 					.into_iter(),
 				)
@@ -293,24 +199,30 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 				.collect(),
 		}),
 		darwinia_staking: Some(crab_runtime::StakingConfig {
-			minimum_validator_count: 2,
+			minimum_validator_count: 1,
 			validator_count: 15,
-			stakers: initial_authorities
-				.iter()
-				.cloned()
-				.map(|x| (x.0, x.1, C_COIN, crab_runtime::StakerStatus::Validator))
-				.collect(),
-			force_era: crab_runtime::Forcing::NotForcing,
+			stakers: vec![(
+				genesis_validator.0.clone(),
+				genesis_validator.1.clone(),
+				C_COIN,
+				crab_runtime::StakerStatus::Validator
+			)],
+			force_era: crab_runtime::Forcing::ForceNew,
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(crab_runtime::SessionConfig {
-			keys: initial_authorities
-				.iter()
-				.cloned()
-				.map(|x| (x.0.clone(), x.0, crab_session_keys(x.2, x.3, x.4, x.5)))
-				.collect(),
+			keys: vec![(
+				genesis_validator.0.clone(),
+				genesis_validator.0,
+				crab_session_keys(
+					genesis_validator.2,
+					genesis_validator.3,
+					genesis_validator.4,
+					genesis_validator.5
+				)
+			)]
 		}),
 		pallet_grandpa: Some(Default::default()),
 		pallet_im_online: Some(Default::default()),
