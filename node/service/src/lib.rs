@@ -12,8 +12,7 @@ pub use sc_service::{
 	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
 };
 // --- darwinia ---
-pub use chain_spec::CrabChainSpec;
-pub use chain_spec::DarwiniaChainSpec;
+pub use chain_spec::{CrabChainSpec, DarwiniaChainSpec};
 pub use client::DarwiniaClient;
 pub use crab_runtime;
 pub use darwinia_primitives::Block;
