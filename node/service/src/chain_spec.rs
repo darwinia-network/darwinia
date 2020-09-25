@@ -705,14 +705,14 @@ pub fn crab_testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 30))
+				.map(|k| (k, 1 << 56))
 				.collect(),
 		}),
 		darwinia_balances_Instance1: Some(crab_runtime::KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 30))
+				.map(|k| (k, 1 << 56))
 				.collect(),
 		}),
 		darwinia_staking: Some(crab_runtime::StakingConfig {
@@ -721,7 +721,7 @@ pub fn crab_testnet_genesis(
 			stakers: initial_authorities
 				.iter()
 				.cloned()
-				.map(|x| (x.0, x.1, 1 << 30, crab_runtime::StakerStatus::Validator))
+				.map(|x| (x.0, x.1, 1 << 56, crab_runtime::StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 			force_era: crab_runtime::Forcing::ForceAlways,
@@ -774,8 +774,8 @@ pub fn crab_testnet_genesis(
 				20
 			)
 			.into(),
-			ring_locked: 1 << 30,
-			kton_locked: 1 << 30,
+			ring_locked: 1 << 56,
+			kton_locked: 1 << 56,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(crab_runtime::EthereumRelayConfig {
@@ -790,7 +790,7 @@ pub fn crab_testnet_genesis(
 			..Default::default()
 		}),
 		darwinia_crab_issuing: Some(crab_runtime::CrabIssuingConfig {
-			total_mapped_ring: 1 << 30
+			total_mapped_ring: 1 << 56
 		}),
 	}
 }
