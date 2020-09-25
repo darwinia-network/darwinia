@@ -8,10 +8,13 @@ use sc_service::Properties;
 use sc_telemetry::TelemetryEndpoints;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::crypto::UncheckedInto;
+use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia ---
-use super::{Extensions, DEFAULT_PROTOCOL_ID};
+use super::{
+	get_account_id_from_seed, get_authority_keys_from_seed, testnet_accounts, Extensions,
+	DEFAULT_PROTOCOL_ID,
+};
 use array_bytes::fixed_hex_bytes_unchecked;
 use darwinia_primitives::{AccountId, BlockNumber};
 use darwinia_runtime::{
@@ -34,8 +37,8 @@ pub fn darwinia_session_keys(
 	grandpa: GrandpaId,
 	im_online: ImOnlineId,
 	authority_discovery: AuthorityDiscoveryId,
-) -> darwinia_runtime::SessionKeys {
-	darwinia_runtime::SessionKeys {
+) -> SessionKeys {
+	SessionKeys {
 		babe,
 		grandpa,
 		im_online,
@@ -81,10 +84,9 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	let mut genesis_validator_stash_endowed = false;
 
 	// Initialize Crab genesis swap
-	for (address, ring) in darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-		"node/service/res/crab-genesis-swap.json",
-	)
-	.unwrap()
+	for (address, ring) in
+		genesis_loader::load_genesis_swap_from_file("node/service/res/crab-genesis-swap.json")
+			.unwrap()
 	{
 		match format!("0x{}", address).as_ref() {
 			// MULTI_SIGN => multi_sign_endowed = true,
@@ -103,14 +105,12 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 
 	// Initialize Ethereum/Tron genesis swap (RING)
 	for (address, ring) in [
-		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+		genesis_loader::load_genesis_swap_from_file(
 			"node/service/res/ethereum-genesis-swap-ring.json",
 		)
 		.unwrap(),
-		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-			"node/service/res/tron-genesis-swap-ring.json",
-		)
-		.unwrap(),
+		genesis_loader::load_genesis_swap_from_file("node/service/res/tron-genesis-swap-ring.json")
+			.unwrap(),
 	]
 	.concat()
 	{
@@ -128,14 +128,12 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	}
 	// Initialize Ethereum/Tron genesis swap (KTON)
 	for (address, kton) in [
-		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
+		genesis_loader::load_genesis_swap_from_file(
 			"node/service/res/ethereum-genesis-swap-kton.json",
 		)
 		.unwrap(),
-		darwinia_runtime::genesis_loader::load_genesis_swap_from_file(
-			"node/service/res/tron-genesis-swap-kton.json",
-		)
-		.unwrap(),
+		genesis_loader::load_genesis_swap_from_file("node/service/res/tron-genesis-swap-kton.json")
+			.unwrap(),
 	]
 	.concat()
 	{
@@ -193,28 +191,28 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		.or_insert(400_000_000 * COIN);
 
 	GenesisConfig {
-		frame_system: Some(darwinia_runtime::SystemConfig {
-			code: darwinia_runtime::wasm_binary_unwrap().to_vec(),
+		frame_system: Some(SystemConfig {
+			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		}),
 		pallet_babe: Some(Default::default()),
-		darwinia_balances_Instance0: Some(darwinia_runtime::BalancesConfig { balances: rings.into_iter().collect() }),
-		darwinia_balances_Instance1: Some(darwinia_runtime::KtonConfig { balances: ktons.into_iter().collect() }),
-		darwinia_staking: Some(darwinia_runtime::StakingConfig {
+		darwinia_balances_Instance0: Some(BalancesConfig { balances: rings.into_iter().collect() }),
+		darwinia_balances_Instance1: Some(KtonConfig { balances: ktons.into_iter().collect() }),
+		darwinia_staking: Some(StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
 			stakers: vec![(
 				genesis_validator.0.clone(),
 				genesis_validator.1.clone(),
 				COIN,
-				darwinia_runtime::StakerStatus::Validator
+				StakerStatus::Validator
 			)],
-			force_era: darwinia_runtime::Forcing::ForceNew,
+			force_era: Forcing::ForceNew,
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
-		pallet_session: Some(darwinia_runtime::SessionConfig {
+		pallet_session: Some(SessionConfig {
 			keys: vec![(
 				genesis_validator.0.clone(),
 				genesis_validator.0,
@@ -233,7 +231,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_collective_Instance1: Some(Default::default()),
 		darwinia_elections_phragmen: Some(Default::default()),
 		pallet_membership_Instance0: Some(Default::default()),
-		darwinia_vesting: Some(darwinia_runtime::VestingConfig {
+		darwinia_vesting: Some(VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
 				(team_vesting, 365 * DAYS, 365 * DAYS, 0),
@@ -241,8 +239,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * DAYS, 0)
 			]
 		}),
-		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root }),
-		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
+		pallet_sudo: Some(SudoConfig { key: root }),
+		darwinia_ethereum_backing: Some(EthereumBackingConfig {
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
@@ -251,18 +249,18 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			kton_locked: 55_760_225_171_204_355_332_737_128 / COIN + 1,
 			..Default::default()
 		}),
-		darwinia_ethereum_relay: Some(darwinia_runtime::EthereumRelayConfig {
+		darwinia_ethereum_relay: Some(EthereumRelayConfig {
 			genesis_header_info: (
 				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
-			dags_merkle_roots_loader: darwinia_runtime::DagsMerkleRootsLoader::from_file(
+			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
 				"node/service/res/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
 		}),
-		darwinia_tron_backing: Some(darwinia_runtime::TronBackingConfig {
+		darwinia_tron_backing: Some(TronBackingConfig {
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
@@ -286,6 +284,122 @@ pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 			TelemetryEndpoints::new(vec![(DARWINIA_TELEMETRY_URL.to_string(), 0)])
 				.expect("Darwinia telemetry url is valid; qed"),
 		),
+		Some(DEFAULT_PROTOCOL_ID),
+		Some(darwinia_properties()),
+		Default::default(),
+	)
+}
+
+/// Helper function to create Darwinia GenesisConfig for testing
+pub fn darwinia_testnet_genesis(
+	initial_authorities: Vec<(
+		AccountId,
+		AccountId,
+		BabeId,
+		GrandpaId,
+		ImOnlineId,
+		AuthorityDiscoveryId,
+	)>,
+	root: AccountId,
+	endowed_accounts: Option<Vec<AccountId>>,
+) -> GenesisConfig {
+	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
+
+	GenesisConfig {
+		frame_system: Some(SystemConfig {
+			code: wasm_binary_unwrap().to_vec(),
+			changes_trie_config: Default::default(),
+		}),
+		pallet_babe: Some(Default::default()),
+		darwinia_balances_Instance0: Some(BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 << 56))
+				.collect(),
+		}),
+		darwinia_balances_Instance1: Some(KtonConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 << 56))
+				.collect(),
+		}),
+		darwinia_staking: Some(StakingConfig {
+			minimum_validator_count: 1,
+			validator_count: 15,
+			stakers: initial_authorities
+				.iter()
+				.cloned()
+				.map(|x| (x.0, x.1, 1 << 56, StakerStatus::Validator))
+				.collect(),
+			invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
+			force_era: Forcing::ForceAlways,
+			slash_reward_fraction: Perbill::from_percent(10),
+			payout_fraction: Perbill::from_percent(50),
+			..Default::default()
+		}),
+		pallet_session: Some(SessionConfig {
+			keys: initial_authorities
+				.iter()
+				.cloned()
+				.map(|x| (x.0.clone(), x.0, darwinia_session_keys(x.2, x.3, x.4, x.5)))
+				.collect(),
+		}),
+		pallet_grandpa: Some(Default::default()),
+		pallet_im_online: Some(Default::default()),
+		pallet_authority_discovery: Some(Default::default()),
+		pallet_collective_Instance0: Some(Default::default()),
+		pallet_collective_Instance1: Some(Default::default()),
+		darwinia_elections_phragmen: Some(Default::default()),
+		pallet_membership_Instance0: Some(Default::default()),
+		darwinia_vesting: Some(Default::default()),
+		pallet_sudo: Some(SudoConfig { key: root }),
+		darwinia_ethereum_backing: Some(EthereumBackingConfig {
+			ring_locked: 1 << 56,
+			kton_locked: 1 << 56,
+			..Default::default()
+		}),
+		darwinia_ethereum_relay: Some(EthereumRelayConfig {
+			genesis_header_info: (
+				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
+				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
+			),
+			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
+				"node/service/res/dags-merkle-roots.json",
+				"DAG_MERKLE_ROOTS_PATH",
+			),
+			..Default::default()
+		}),
+		darwinia_tron_backing: Some(TronBackingConfig {
+			backed_ring: 1 << 56,
+			backed_kton: 1 << 56,
+		}),
+	}
+}
+
+/// Darwinia development config (single validator Alice)
+pub fn darwinia_development_config() -> DarwiniaChainSpec {
+	fn darwinia_development_genesis() -> GenesisConfig {
+		darwinia_testnet_genesis(
+			vec![get_authority_keys_from_seed("Alice")],
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			Some(vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			]),
+		)
+	}
+
+	DarwiniaChainSpec::from_genesis(
+		"Development",
+		"darwinia_dev",
+		ChainType::Development,
+		darwinia_development_genesis,
+		vec![],
+		None,
 		Some(DEFAULT_PROTOCOL_ID),
 		Some(darwinia_properties()),
 		Default::default(),

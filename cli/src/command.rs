@@ -68,18 +68,18 @@ impl SubstrateCli for Cli {
 			"crab-dev" => Box::new(darwinia_service::chain_spec::crab_development_config()),
 			"crab-genesis" => Box::new(darwinia_service::chain_spec::crab_build_spec_config()),
 			"darwinia" => Box::new(darwinia_service::chain_spec::darwinia_config()?),
+			"darwinia-dev" | "dev" => {
+				Box::new(darwinia_service::chain_spec::darwinia_development_config())
+			}
+			"darwinia-genesis" => {
+				Box::new(darwinia_service::chain_spec::darwinia_build_spec_config())
+			}
 			path if self.run.force_crab => Box::new(
 				darwinia_service::CrabChainSpec::from_json_file(std::path::PathBuf::from(path))?,
 			),
 			path => Box::new(darwinia_service::DarwiniaChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
 			)?),
-			// "darwinia-dev" | "dev" => {
-			// Box::new(darwinia_service::chain_spec::darwinia_development_config())
-			// }
-			"darwinia-genesis" => {
-				Box::new(darwinia_service::chain_spec::darwinia_build_spec_config())
-			}
 		})
 	}
 }

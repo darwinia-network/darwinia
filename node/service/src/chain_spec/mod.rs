@@ -1,7 +1,9 @@
 //! Darwinia chain configurations.
 
 pub mod darwinia;
-pub use darwinia::{darwinia_build_spec_config, darwinia_config, DarwiniaChainSpec};
+pub use darwinia::{
+	darwinia_build_spec_config, darwinia_config, darwinia_development_config, DarwiniaChainSpec,
+};
 
 pub mod crab;
 pub use crab::{crab_build_spec_config, crab_config, crab_development_config, CrabChainSpec};

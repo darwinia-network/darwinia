@@ -303,7 +303,7 @@ pub fn crab_testnet_genesis(
 		darwinia_claims: Some({
 			ClaimsConfig {
 				claims_list: ClaimsList::from_file(
-					"./service/res/crab-claims-list.json",
+					"node/service/res/crab-claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			}
@@ -324,7 +324,7 @@ pub fn crab_testnet_genesis(
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
 			),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
-				"./service/res/dags-merkler-oots.json",
+				"node/service/res/dags-merkler-oots.json",
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
