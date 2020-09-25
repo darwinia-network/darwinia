@@ -822,34 +822,3 @@ pub fn crab_development_config() -> CrabChainSpec {
 		Default::default(),
 	)
 }
-
-/// Crab local testnet config (multivalidator Alice + Bob)
-pub fn crab_local_testnet_config() -> CrabChainSpec {
-	fn crab_local_testnet_genesis() -> CrabGenesisConfig {
-		crab_testnet_genesis(
-			vec![
-				get_authority_keys_from_seed("Alice"),
-				get_authority_keys_from_seed("Bob"),
-			],
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			Some(vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			]),
-		)
-	}
-
-	CrabChainSpec::from_genesis(
-		"Crab Local Testnet",
-		"crab_local_testnet",
-		ChainType::Local,
-		crab_local_testnet_genesis,
-		vec![],
-		None,
-		Some(DEFAULT_PROTOCOL_ID),
-		Some(crab_properties()),
-		Default::default(),
-	)
-}
