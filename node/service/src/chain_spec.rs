@@ -114,8 +114,19 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 	const C_RING_ENDOWMENT: Balance = 1_000_000 * C_COIN;
 	const C_KTON_ENDOWMENT: Balance = 10_000 * C_COIN;
 
-	let root_key = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
-	let multi_sign = "0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
+	const ROOT: &'static str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
+	const MULTI_SIGN: &'static str =
+		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
+	const GENESIS_VALIDATOR_SR: &'static str =
+		"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
+	const GENESIS_VALIDATOR_ED: &'static str =
+		"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd";
+
+	const TOKEN_REDEEM_ADDRESS: &'static str = "0x49262B932E439271d05634c32978294C7Ea15d0C";
+	const DEPOSIT_REDEEM_ADDRESS: &'static str = "0x6EF538314829EfA8386Fc43386cB13B4e0A67D1e";
+	const RING_TOKEN_ADDRESS: &'static str = "0xb52FBE2B925ab79a821b261C82c5Ba0814AAA5e0";
+	const KTON_TOKEN_ADDRESS: &'static str = "0x1994100c58753793D52c6f457f189aa3ce9cEe94";
+
 	let genesis_validator: (
 		AccountId,
 		AccountId,
@@ -124,22 +135,10 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		ImOnlineId,
 		AuthorityDiscoveryId,
 	) = {
-		let stash = fixed_hex_bytes_unchecked!(
-			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
-			32
-		);
-		let controller = fixed_hex_bytes_unchecked!(
-			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
-			32
-		);
-		let session = fixed_hex_bytes_unchecked!(
-			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747",
-			32
-		);
-		let grandpa = fixed_hex_bytes_unchecked!(
-			"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd",
-			32
-		);
+		let stash = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let controller = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let session = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let grandpa = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_ED, 32);
 
 		(
 			stash.into(),
@@ -242,26 +241,10 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 		}),
 		pallet_sudo: Some(crab_runtime::SudoConfig { key: root_key }),
 		darwinia_ethereum_backing: Some(crab_runtime::EthereumBackingConfig {
-			token_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x49262B932E439271d05634c32978294C7Ea15d0C",
-				20
-			)
-			.into(),
-			deposit_redeem_address: fixed_hex_bytes_unchecked!(
-				"0x6EF538314829EfA8386Fc43386cB13B4e0A67D1e",
-				20
-			)
-			.into(),
-			ring_token_address: fixed_hex_bytes_unchecked!(
-				"0xb52FBE2B925ab79a821b261C82c5Ba0814AAA5e0",
-				20
-			)
-			.into(),
-			kton_token_address: fixed_hex_bytes_unchecked!(
-				"0x1994100c58753793D52c6f457f189aa3ce9cEe94",
-				20
-			)
-			.into(),
+			token_redeem_address: fixed_hex_bytes_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: fixed_hex_bytes_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: fixed_hex_bytes_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: fixed_hex_bytes_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			ring_locked: 7_569_833 * C_COIN,
 			kton_locked: 30_000 * C_COIN,
 			..Default::default()
