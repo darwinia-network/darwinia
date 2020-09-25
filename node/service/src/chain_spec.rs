@@ -372,8 +372,6 @@ pub fn crab_build_spec_genesis() -> CrabGenesisConfig {
 }
 
 pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
-	// const MULTI_SIGN: &'static str =
-	// 	"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
 	const ROOT: &'static str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
 	const DA_CRABK: &'static str =
 		"0x6d6f646c64612f637261626b0000000000000000000000000000000000000000";
@@ -390,10 +388,10 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	const GENESIS_VALIDATOR_GRANDPA: &'static str =
 		"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
 
-	let mut backed_ring_for_crab = 40_000_000 * D_COIN;
 	let mut rings = BTreeMap::new();
 	let mut ktons = BTreeMap::new();
-	// let mut multi_sign_endowed = false;
+	let mut swapped_ring_for_crab = 0;
+	let mut da_crabk_endowed = false;
 	let mut root_endowed = false;
 	let mut genesis_validator_stash_endowed = false;
 
@@ -415,18 +413,7 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			.and_modify(|ring_| *ring_ += ring)
 			.or_insert(ring);
 
-		backed_ring_for_crab -= ring;
-	}
-
-	// Important account MUST be initialized
-	for owned in [
-		// multi_sign_endowed,
-		root_endowed,
-		genesis_validator_stash_endowed,
-	]
-	.iter()
-	{
-		assert!(owned);
+		swapped_ring_for_crab += ring;
 	}
 
 	// Initialize Ethereum/Tron genesis swap (RING)
@@ -442,6 +429,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	]
 	.concat()
 	{
+		match format!("0x{}", address).as_ref() {
+			DA_CRABK => da_crabk_endowed = true,
+			_ => (),
+		}
+
 		let ring = ring / D_COIN;
 
 		rings
@@ -469,6 +461,11 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			.and_modify(|kton_| *kton_ += kton)
 			.or_insert(kton);
 	}
+
+	// Important account MUST be initialized
+	assert!(da_crabk_endowed);
+	assert!(root_endowed);
+	assert!(genesis_validator_stash_endowed);
 
 	let root_key: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
 	let da_crabk: AccountId = fixed_hex_bytes_unchecked!(DA_CRABK, 32).into();
@@ -498,11 +495,17 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 	};
 
 	// Crab backing: 40M - claimed
-	rings.insert(da_crabk, backed_ring_for_crab);
+	*rings.get_mut(&da_crabk).unwrap() -= swapped_ring_for_crab;
 	// Team vesting: 300M
-	rings.insert(team_vesting.clone(), 300_000_000 * D_COIN);
+	rings
+		.entry(team_vesting.clone())
+		.and_modify(|ring| *ring += 300_000_000 * D_COIN)
+		.or_insert(300_000_000 * D_COIN);
 	// Foundation vesting: 400M
-	rings.insert(foundation_vesting.clone(), 400_000_000 * D_COIN);
+	rings
+		.entry(foundation_vesting.clone())
+		.and_modify(|ring| *ring += 400_000_000 * D_COIN)
+		.or_insert(400_000_000 * D_COIN);
 
 	DarwiniaGenesisConfig {
 		frame_system: Some(darwinia_runtime::SystemConfig {
@@ -554,9 +557,6 @@ pub fn darwinia_build_spec_genesis() -> DarwiniaGenesisConfig {
 			]
 		}),
 		pallet_sudo: Some(darwinia_runtime::SudoConfig { key: root_key }),
-		darwinia_crab_backing: Some(darwinia_runtime::CrabBackingConfig {
-			backed_ring: backed_ring_for_crab,
-		}),
 		darwinia_ethereum_backing: Some(darwinia_runtime::EthereumBackingConfig {
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
@@ -611,7 +611,7 @@ pub fn crab_build_spec_config() -> CrabChainSpec {
 pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 	let boot_nodes = vec![];
 	DarwiniaChainSpec::from_genesis(
-		"Darwinia CC1",
+		"Darwinia Devnet",
 		"darwinia",
 		ChainType::Live,
 		darwinia_build_spec_genesis,

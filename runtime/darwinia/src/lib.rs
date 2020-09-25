@@ -925,7 +925,7 @@ construct_runtime!(
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
 		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
+		CrabBacking: darwinia_crab_backing::{Module, Storage},
 
 		// Ethereum bridge.
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
