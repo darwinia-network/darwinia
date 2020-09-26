@@ -89,7 +89,6 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			.unwrap()
 	{
 		match format!("0x{}", address).as_ref() {
-			// MULTI_SIGN => multi_sign_endowed = true,
 			ROOT => root_endowed = true,
 			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
 			_ => (),
@@ -250,7 +249,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			// Beijing:     9/25/2020, 9:42:52 AM
 			// New York :   9/24/2020, 9:42:52 PM
 			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
-			kton_locked: 55_760_225_171_204_355_332_737_128 / COIN + 1,
+			kton_locked: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(EthereumRelayConfig {
