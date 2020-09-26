@@ -58,11 +58,14 @@ pub mod wasm {
 	#[cfg(feature = "std")]
 	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
 	pub fn wasm_binary_unwrap() -> &'static [u8] {
-		WASM_BINARY.expect(
+		#[cfg(all(feature = "std", any(target_arch = "x86_64", target_arch = "x86")))]
+		return WASM_BINARY.expect(
 			"Development wasm binary is not available. This means the client is \
 						built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
 						production chains. Please rebuild with the flag disabled.",
-		)
+		);
+		#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
+		return WASM_BINARY;
 	}
 }
 
@@ -274,7 +277,7 @@ impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type ExistentialDeposit = RingExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type DustCollector = (Kton,);
+	type OtherCurrencies = (Kton,);
 	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 impl darwinia_balances::Trait<KtonInstance> for Runtime {
@@ -284,7 +287,7 @@ impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type ExistentialDeposit = KtonExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type DustCollector = (Ring,);
+	type OtherCurrencies = (Ring,);
 	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 
@@ -304,7 +307,7 @@ impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
 	}
 }
 parameter_types! {
-	pub const TransactionByteFee: Balance = 500 * MICRO;
+	pub const TransactionByteFee: Balance = 50 * MICRO;
 }
 impl pallet_transaction_payment::Trait for Runtime {
 	type Currency = Ring;
@@ -922,7 +925,7 @@ construct_runtime!(
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
 		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Module, Storage, Config<T>},
+		CrabBacking: darwinia_crab_backing::{Module, Storage},
 
 		// Ethereum bridge.
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},

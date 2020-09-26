@@ -26,5 +26,5 @@ n_j += '"tron":['
 n_j = append_format(n_j, j['tron'])
 n_j = n_j[:-1] + ']}'
 
-with open(''.join([root_dir, '/node', '/service', '/res', '/crab-claims-list.json']), 'w') as f:
+with open(''.join([root_dir, '/node', '/service', '/res', '/crab', '/claims-list.json']), 'w') as f:
     f.write(n_j)

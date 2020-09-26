@@ -21,11 +21,14 @@ pub mod wasm {
 	#[cfg(feature = "std")]
 	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
 	pub fn wasm_binary_unwrap() -> &'static [u8] {
-		WASM_BINARY.expect(
+		#[cfg(all(feature = "std", any(target_arch = "x86_64", target_arch = "x86")))]
+		return WASM_BINARY.expect(
 			"Development wasm binary is not available. This means the client is \
 						built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
 						production chains. Please rebuild with the flag disabled.",
-		)
+		);
+		#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
+		return WASM_BINARY;
 	}
 }
 
@@ -132,7 +135,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 17,
+	spec_version: 18,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -235,7 +238,7 @@ impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type ExistentialDeposit = RingExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type DustCollector = (Kton,);
+	type OtherCurrencies = (Kton,);
 	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 impl darwinia_balances::Trait<KtonInstance> for Runtime {
@@ -245,7 +248,7 @@ impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type ExistentialDeposit = KtonExistentialDeposit;
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type DustCollector = (Ring,);
+	type OtherCurrencies = (Ring,);
 	type WeightInfo = weights::darwinia_balances::WeightInfo;
 }
 
@@ -289,11 +292,11 @@ impl pallet_authorship::Trait for Runtime {
 parameter_types! {
 	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 7 * DAYS
+	pub const BondingDurationInEra: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
-	pub const BondingDurationInBlockNumber: BlockNumber = 7 * DAYS;
-	// slightly less than 7 days.
-	pub const SlashDeferDuration: EraIndex = 7 * DAYS
+	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
+	// slightly less than 14 days.
+	pub const SlashDeferDuration: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 	// quarter of the last session will be for election.
 	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 4;
