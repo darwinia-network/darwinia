@@ -136,7 +136,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 19,
+	spec_version: 20,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1221,8 +1221,13 @@ impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		<darwinia_staking::Module<Runtime>>::migrate_correct_pool_value();
+		// --- substrate ---
+		use frame_support::migration::*;
 
-		500_000_000
+		// DarwiniaCrabIssuing
+		// pub GenesisSwapOpen get(fn genesis_swap_open): bool = true;
+		take_storage_item(b"DarwiniaCrabIssuing", b"GenesisSwapOpen", &[]);
+
+		100_000_000
 	}
 }
