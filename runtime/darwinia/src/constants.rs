@@ -35,9 +35,7 @@ pub mod time {
 	#[cfg(feature = "dev")]
 	pub const BLOCKS_PER_SESSION: BlockNumber = MINUTES / 2;
 	#[cfg(not(feature = "dev"))]
-	// https://github.com/darwinia-network/darwinia/issues/537
-	// pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
-	pub const BLOCKS_PER_SESSION: BlockNumber = 5 * MINUTES;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
 
 	#[cfg(feature = "dev")]
 	pub const SESSIONS_PER_ERA: SessionIndex = 3;
