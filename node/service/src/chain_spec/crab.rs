@@ -59,7 +59,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 	const C_KTON_ENDOWMENT: Balance = 10_000 * COIN;
 
 	const ROOT: &'static str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
-	const MULTI_SIGN: &'static str =
+	const MULTI_SIG: &'static str =
 		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
 	const GENESIS_VALIDATOR_SR: &'static str =
 		"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
@@ -72,7 +72,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 	const KTON_TOKEN_ADDRESS: &'static str = "0x1994100c58753793D52c6f457f189aa3ce9cEe94";
 
 	let root: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
-	let multi_sign: AccountId = fixed_hex_bytes_unchecked!(MULTI_SIGN, 32).into();
+	let multi_sig: AccountId = fixed_hex_bytes_unchecked!(MULTI_SIG, 32).into();
 	let genesis_validator: (
 		AccountId,
 		AccountId,
@@ -128,7 +128,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 				.chain(
 					vec![
 						(root.clone(), 25_000_000 * COIN),
-						(multi_sign, 700_000_000 * COIN),
+						(multi_sig, 700_000_000 * COIN),
 						(genesis_validator.0.clone(), C_RING_ENDOWMENT),
 					]
 					.into_iter(),
