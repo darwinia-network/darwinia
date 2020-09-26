@@ -1222,11 +1222,16 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
-		use frame_support::migration::*;
+		use frame_support::{storage::unhashed::kill, StorageHasher, Twox128};
 
 		// DarwiniaCrabIssuing
 		// pub GenesisSwapOpen get(fn genesis_swap_open): bool = true;
-		take_storage_item(b"DarwiniaCrabIssuing", b"GenesisSwapOpen", &[]);
+		let mut key = vec![0u8; 32];
+
+		key[0..16].copy_from_slice(&Twox128::hash(b"DarwiniaCrabIssuing"));
+		key[16..32].copy_from_slice(&Twox128::hash(b"GenesisSwapOpen"));
+
+		kill(&key);
 
 		100_000_000
 	}
