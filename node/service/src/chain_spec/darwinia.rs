@@ -67,21 +67,30 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		"0x88db6cf10428d2608cd2ca2209971d0227422dc1f53c6ec0848fa610848a6ed3";
 	const FOUNDATION_VESTING: &'static str =
 		"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
-	const GENESIS_VALIDATOR_STASH: &'static str =
+	const GENESIS_VALIDATOR_1_STASH: &'static str =
 		"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
-	const GENESIS_VALIDATOR_CONTROLLER: &'static str =
+	const GENESIS_VALIDATOR_1_CONTROLLER: &'static str =
 		"0x7e450358b1768b8cc1df515292a97ac9f14f3f2ec9705a7352ec70b380c7fa60";
-	const GENESIS_VALIDATOR_SESSION: &'static str =
+	const GENESIS_VALIDATOR_1_SESSION: &'static str =
 		"0x0ae0f956e21c3f0ca9ea9121b41a1c1fc567f6ba6ce8abfed000073bb3352511";
-	const GENESIS_VALIDATOR_GRANDPA: &'static str =
+	const GENESIS_VALIDATOR_1_GRANDPA: &'static str =
 		"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
+	const GENESIS_VALIDATOR_2_STASH: &'static str =
+		"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f";
+	const GENESIS_VALIDATOR_2_CONTROLLER: &'static str =
+		"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f";
+	const GENESIS_VALIDATOR_2_SESSION: &'static str =
+		"0xc8053dc90b1e4f4741c5c9088dcc1ee8758600fe8aa8702c178d91af1d191a17";
+	const GENESIS_VALIDATOR_2_GRANDPA: &'static str =
+		"0x229af404837dda8416b3f9ef22f4c3a8cc0103cd091bcdeb0d80776e6c3b99f1";
 
 	let mut rings = BTreeMap::new();
 	let mut ktons = BTreeMap::new();
 	let mut swapped_ring_for_crab = 0;
 	let mut da_crabk_endowed = false;
 	let mut root_endowed = false;
-	let mut genesis_validator_stash_endowed = false;
+	let mut genesis_validator_1_stash_endowed = false;
+	let mut genesis_validator_2_stash_endowed = false;
 
 	// Initialize Crab genesis swap
 	for (address, ring) in
@@ -89,9 +98,9 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			.unwrap()
 	{
 		match format!("0x{}", address).as_ref() {
-			// MULTI_SIGN => multi_sign_endowed = true,
 			ROOT => root_endowed = true,
-			GENESIS_VALIDATOR_STASH => genesis_validator_stash_endowed = true,
+			GENESIS_VALIDATOR_1_STASH => genesis_validator_1_stash_endowed = true,
+			GENESIS_VALIDATOR_2_STASH => genesis_validator_2_stash_endowed = true,
 			_ => (),
 		}
 
@@ -152,32 +161,45 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	// Important account MUST be initialized
 	assert!(da_crabk_endowed);
 	assert!(root_endowed);
-	assert!(genesis_validator_stash_endowed);
+	assert!(genesis_validator_1_stash_endowed);
+	assert!(genesis_validator_2_stash_endowed);
 
 	let root: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
 	let da_crabk: AccountId = fixed_hex_bytes_unchecked!(DA_CRABK, 32).into();
 	let team_vesting: AccountId = fixed_hex_bytes_unchecked!(TEAM_VESTING, 32).into();
 	let foundation_vesting: AccountId = fixed_hex_bytes_unchecked!(FOUNDATION_VESTING, 32).into();
-	let genesis_validator: (
-		AccountId,
-		AccountId,
-		BabeId,
-		GrandpaId,
-		ImOnlineId,
-		AuthorityDiscoveryId,
-	) = {
-		let stash = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_STASH, 32);
-		let controller = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_CONTROLLER, 32);
-		let session = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SESSION, 32);
-		let grandpa = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_GRANDPA, 32);
+	let genesis_validator_1: (AccountId, AccountId, SessionKeys) = {
+		let stash = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_1_STASH, 32);
+		let controller = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_1_CONTROLLER, 32);
+		let session = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_1_SESSION, 32);
+		let grandpa = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_1_GRANDPA, 32);
 
 		(
 			stash.into(),
 			controller.into(),
-			session.unchecked_into(),
-			grandpa.unchecked_into(),
-			session.unchecked_into(),
-			session.unchecked_into(),
+			darwinia_session_keys(
+				session.unchecked_into(),
+				grandpa.unchecked_into(),
+				session.unchecked_into(),
+				session.unchecked_into(),
+			),
+		)
+	};
+	let genesis_validator_2: (AccountId, AccountId, SessionKeys) = {
+		let stash = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_2_STASH, 32);
+		let controller = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_2_CONTROLLER, 32);
+		let session = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_2_SESSION, 32);
+		let grandpa = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_2_GRANDPA, 32);
+
+		(
+			stash.into(),
+			controller.into(),
+			darwinia_session_keys(
+				session.unchecked_into(),
+				grandpa.unchecked_into(),
+				session.unchecked_into(),
+				session.unchecked_into(),
+			),
 		)
 	};
 
@@ -205,28 +227,38 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		darwinia_staking: Some(StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
-			stakers: vec![(
-				genesis_validator.0.clone(),
-				genesis_validator.1.clone(),
-				COIN,
-				StakerStatus::Validator
-			)],
+			stakers: vec![
+				(
+					genesis_validator_1.0.clone(),
+					genesis_validator_1.1.clone(),
+					COIN,
+					StakerStatus::Validator
+				),
+				(
+					genesis_validator_2.0.clone(),
+					genesis_validator_2.1.clone(),
+					COIN,
+					StakerStatus::Validator
+				)
+			],
 			force_era: Forcing::ForceNew,
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
 		}),
 		pallet_session: Some(SessionConfig {
-			keys: vec![(
-				genesis_validator.0.clone(),
-				genesis_validator.0,
-				darwinia_session_keys(
-					genesis_validator.2,
-					genesis_validator.3,
-					genesis_validator.4,
-					genesis_validator.5
+			keys: vec![
+				(
+					genesis_validator_1.0.clone(),
+					genesis_validator_1.0,
+					genesis_validator_1.2
+				),
+				(
+					genesis_validator_2.0.clone(),
+					genesis_validator_2.0,
+					genesis_validator_2.2
 				)
-			)]
+			]
 		}),
 		pallet_grandpa: Some(Default::default()),
 		pallet_im_online: Some(Default::default()),
@@ -250,7 +282,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			// Beijing:     9/25/2020, 9:42:52 AM
 			// New York :   9/24/2020, 9:42:52 PM
 			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
-			kton_locked: 55_760_225_171_204_355_332_737_128 / COIN + 1,
+			kton_locked: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 			..Default::default()
 		}),
 		darwinia_ethereum_relay: Some(EthereumRelayConfig {
@@ -283,7 +315,7 @@ pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 	];
 
 	DarwiniaChainSpec::from_genesis(
-		"Darwinia Devnet",
+		"Darwinia CC1",
 		"darwinia",
 		ChainType::Live,
 		darwinia_build_spec_genesis,
