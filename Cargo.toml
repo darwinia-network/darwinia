@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.7.0"
+version     = "0.7.1"
 
 [[bin]]
 name = "darwinia"
@@ -17,7 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 # crates
-futures         = { version = "0.3.5" }
+futures         = { version = "0.3.6" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli     = { path = "cli" }
@@ -25,21 +25,8 @@ darwinia-service = { path = "node/service" }
 
 [dev-dependencies]
 assert_cmd = { version = "1.0.1" }
-nix        = { version = "0.18" }
+nix        = { version = "0.19.0" }
 tempfile   = { version = "3.1.0" }
-
-# [patch.'https://github.com/paritytech/frontier']
-# frame-benchmarking = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# frame-metadata     = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# frame-support      = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# frame-system       = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# pallet-evm         = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# pallet-timestamp   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# sp-api             = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# sp-core            = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# sp-io              = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# sp-runtime         = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-# sp-std             = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
