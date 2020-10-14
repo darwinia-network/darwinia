@@ -24,6 +24,7 @@ frame-system               = { default-features = false, git = "https://github.c
 pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate primitives
+sp-io      = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }# patch proxy
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 
@@ -53,6 +54,7 @@ substrate-frame-std      = [
 	"pallet-transaction-payment/std",
 ]
 substrate-primitives-std = [
+	"sp-io/std", # patch proxy
 	"sp-runtime/std",
 	"sp-std/std",
 ]

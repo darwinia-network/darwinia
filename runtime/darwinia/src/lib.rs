@@ -127,6 +127,8 @@ use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use ethereum_primitives::EthereumNetworkType;
+// Patch proxy
+use darwinia_runtime_common::patched_proxy as pallet_proxy;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -171,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1,
+	spec_version: 2,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,

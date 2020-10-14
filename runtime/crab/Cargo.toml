@@ -54,7 +54,6 @@ pallet-indices                             = { default-features = false, git = "
 pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-pallet-proxy                               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-randomness-collective-flip          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-recovery                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
@@ -65,6 +64,8 @@ pallet-timestamp                           = { default-features = false, git = "
 pallet-transaction-payment                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-utility                             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+# patch proxy
+# pallet-proxy                               = { default-features = false, path = "../common" }
 # substrate primitives
 sp-api                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
@@ -124,7 +125,7 @@ std    = [
 	"pallet-membership/std",
 	"pallet-multisig/std",
 	"pallet-offences/std",
-	"pallet-proxy/std",
+	# patch proxy "pallet-proxy/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-recovery/std",
 	"pallet-session/std",
