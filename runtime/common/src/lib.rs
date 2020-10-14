@@ -5,8 +5,6 @@
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
 pub use impls::*;
-// Patch proxy
-pub mod patched_proxy;
 
 // --- substrate ---
 pub use frame_support::weights::constants::{

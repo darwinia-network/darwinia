@@ -3,8 +3,7 @@
 use frame_support::weights::{constants::RocksDbWeight as DbWeight, Weight};
 
 pub struct WeightInfo;
-// Patch proxy
-impl darwinia_runtime_common::patched_proxy::WeightInfo for WeightInfo {
+impl pallet_proxy::WeightInfo for WeightInfo {
 	fn proxy(p: u32) -> Weight {
 		(26127000 as Weight)
 			.saturating_add((214000 as Weight).saturating_mul(p as Weight))

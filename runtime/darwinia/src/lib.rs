@@ -127,8 +127,6 @@ use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use ethereum_primitives::EthereumNetworkType;
-// Patch proxy
-use darwinia_runtime_common::patched_proxy as pallet_proxy;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
