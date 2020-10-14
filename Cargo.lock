@@ -932,7 +932,6 @@ dependencies = [
  "pallet-membership",
  "pallet-multisig",
  "pallet-offences",
- "pallet-proxy",
  "pallet-randomness-collective-flip",
  "pallet-recovery",
  "pallet-scheduler",
@@ -1559,7 +1558,6 @@ dependencies = [
  "pallet-membership",
  "pallet-multisig",
  "pallet-offences",
- "pallet-proxy",
  "pallet-randomness-collective-flip",
  "pallet-recovery",
  "pallet-scheduler",
@@ -1604,6 +1602,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-transaction-payment",
  "parity-scale-codec",
+ "sp-io",
  "sp-runtime",
  "sp-std 2.0.0-rc6",
  "static_assertions",
@@ -4631,21 +4630,6 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-staking",
- "sp-std 2.0.0-rc6",
-]
-
-[[package]]
-name = "pallet-proxy"
-version = "2.0.0-rc6"
-source = "git+https://github.com/darwinia-network/substrate.git?branch=common-library#35fe3cd1bc4b64cadb0bc6196ae40173db65bb28"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
  "sp-std 2.0.0-rc6",
 ]
 
