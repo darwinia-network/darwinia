@@ -127,8 +127,6 @@ use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use ethereum_primitives::EthereumNetworkType;
-// Patch proxy
-use darwinia_runtime_common::patched_proxy as pallet_proxy;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -162,6 +160,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -173,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 2,
+	spec_version: 3,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -229,11 +228,11 @@ impl frame_system::Trait for Runtime {
 	type MaximumBlockLength = MaximumBlockLength;
 	type AvailableBlockRatio = AvailableBlockRatio;
 	type Version = Version;
-	type ModuleToIndex = ModuleToIndex;
+	type PalletInfo = PalletInfo;
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type SystemWeightInfo = weights::frame_system::WeightInfo;
+	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -256,6 +255,7 @@ impl pallet_babe::Trait for Runtime {
 	)>>::IdentificationTuple;
 	type HandleEquivocation =
 		pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -265,12 +265,13 @@ impl pallet_timestamp::Trait for Runtime {
 	type Moment = Moment;
 	type OnTimestampSet = Babe;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = weights::pallet_timestamp::WeightInfo;
+	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
 
 parameter_types! {
 	pub const RingExistentialDeposit: Balance = 100 * MICRO;
 	pub const KtonExistentialDeposit: Balance = MICRO;
+	pub const MaxLocks: u32 = 50;
 }
 impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type Balance = Balance;
@@ -280,7 +281,8 @@ impl darwinia_balances::Trait<RingInstance> for Runtime {
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
 	type OtherCurrencies = (Kton,);
-	type WeightInfo = weights::darwinia_balances::WeightInfo;
+	type MaxLocks = MaxLocks;
+	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
 }
 impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type Balance = Balance;
@@ -290,7 +292,8 @@ impl darwinia_balances::Trait<KtonInstance> for Runtime {
 	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
 	type OtherCurrencies = (Ring,);
-	type WeightInfo = weights::darwinia_balances::WeightInfo;
+	type MaxLocks = MaxLocks;
+	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
 }
 
 pub struct DealWithFees;
@@ -345,7 +348,9 @@ parameter_types! {
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	// quarter of the last session will be for election.
+	pub OffchainSolutionWeightLimit: Weight = MaximumExtrinsicWeight::get()
+		.saturating_sub(BlockExecutionWeight::get())
+		.saturating_sub(ExtrinsicBaseWeight::get());
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
@@ -367,6 +372,9 @@ impl darwinia_staking::Trait for Runtime {
 	type MinSolutionScoreBump = MinSolutionScoreBump;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type UnsignedPriority = StakingUnsignedPriority;
+	// The unsigned solution weight targeted by the OCW. We set it to the maximum possible value of
+	// a single extrinsic.
+	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;
@@ -376,7 +384,7 @@ impl darwinia_staking::Trait for Runtime {
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
-	type WeightInfo = ();
+	type WeightInfo = weights::darwinia_staking::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -387,7 +395,6 @@ impl pallet_offences::Trait for Runtime {
 	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
 	type OnOffenceHandler = Staking;
 	type WeightSoftLimit = OffencesWeightSoftLimit;
-	type WeightInfo = ();
 }
 
 impl pallet_session::historical::Trait for Runtime {
@@ -416,7 +423,7 @@ impl pallet_session::Trait for Runtime {
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -441,6 +448,7 @@ impl pallet_grandpa::Trait for Runtime {
 	type KeyOwnerProofSystem = Historical;
 	type HandleEquivocation =
 		pallet_grandpa::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -453,7 +461,7 @@ impl pallet_im_online::Trait for Runtime {
 	type SessionDuration = SessionDuration;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
 }
 
 impl pallet_authority_discovery::Trait for Runtime {}
@@ -461,8 +469,10 @@ impl pallet_authority_discovery::Trait for Runtime {}
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
 	pub const CouncilMaxProposals: u32 = 100;
+	pub const CouncilMaxMembers: u32 = 100;
 	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
 	pub const TechnicalMaxProposals: u32 = 100;
+	pub const TechnicalMaxMembers: u32 = 100;
 }
 type CouncilCollective = pallet_collective::Instance0;
 impl pallet_collective::Trait<CouncilCollective> for Runtime {
@@ -471,7 +481,9 @@ impl pallet_collective::Trait<CouncilCollective> for Runtime {
 	type Event = Event;
 	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = CouncilMaxProposals;
-	type WeightInfo = ();
+	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 type TechnicalCollective = pallet_collective::Instance1;
 impl pallet_collective::Trait<TechnicalCollective> for Runtime {
@@ -480,7 +492,9 @@ impl pallet_collective::Trait<TechnicalCollective> for Runtime {
 	type Event = Event;
 	type MotionDuration = TechnicalMotionDuration;
 	type MaxProposals = TechnicalMaxProposals;
-	type WeightInfo = ();
+	type MaxMembers = TechnicalMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -492,8 +506,8 @@ parameter_types! {
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 7;
 }
-// Make sure that there are no more than MAX_MEMBERS members elected via phragmen.
-const_assert!(DesiredMembers::get() <= pallet_collective::MAX_MEMBERS);
+// Make sure that there are no more than MaxMembers members elected via phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
 impl darwinia_elections_phragmen::Trait for Runtime {
 	type Event = Event;
 	type ModuleId = ElectionsPhragmenModuleId;
@@ -509,7 +523,7 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 	type DesiredMembers = DesiredMembers;
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type TermDuration = TermDuration;
-	type WeightInfo = ();
+	type WeightInfo = weights::darwinia_elections_phragmen::WeightInfo<Runtime>;
 }
 
 type EnsureRootOrHalfCouncil = EnsureOneOf<
@@ -543,7 +557,13 @@ parameter_types! {
 	pub const TipCountdown: BlockNumber = 1 * DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
 	pub const TipReportDepositBase: Balance = 1 * MILLI;
-	pub const TipReportDepositPerByte: Balance = 1 * MICRO;
+	pub const DataDepositPerByte: Balance = 1 * MILLI;
+	pub const BountyDepositBase: Balance = 1 * COIN;
+	pub const BountyDepositPayoutDelay: BlockNumber = 8 * DAYS;
+	pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
+	pub const MaximumReasonLength: u32 = 16384;
+	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
+	pub const BountyValueMinimum: Balance = 10 * COIN;
 }
 impl darwinia_treasury::Trait for Runtime {
 	type ModuleId = TreasuryModuleId;
@@ -555,18 +575,24 @@ impl darwinia_treasury::Trait for Runtime {
 	type TipCountdown = TipCountdown;
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
-	type TipReportDepositPerByte = TipReportDepositPerByte;
+	type DataDepositPerByte = DataDepositPerByte;
 	type Event = Event;
-	type RingProposalRejection = Treasury;
-	type KtonProposalRejection = Treasury;
+	type OnSlashRing = Treasury;
+	type OnSlashKton = Treasury;
 	type ProposalBond = ProposalBond;
 	type RingProposalBondMinimum = RingProposalBondMinimum;
 	type KtonProposalBondMinimum = KtonProposalBondMinimum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
+	type BountyDepositBase = BountyDepositBase;
+	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+	type BountyUpdatePeriod = BountyUpdatePeriod;
+	type MaximumReasonLength = MaximumReasonLength;
+	type BountyCuratorDeposit = BountyCuratorDeposit;
+	type BountyValueMinimum = BountyValueMinimum;
 	type RingBurnDestination = ();
 	type KtonBurnDestination = ();
-	type WeightInfo = ();
+	type WeightInfo = weights::darwinia_treasury::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -577,13 +603,13 @@ impl darwinia_vesting::Trait for Runtime {
 	type Currency = Ring;
 	type BlockNumberToBalance = ConvertInto;
 	type MinVestedTransfer = MinVestedTransfer;
-	type WeightInfo = ();
+	type WeightInfo = weights::darwinia_vesting::WeightInfo<Runtime>;
 }
 
 impl pallet_utility::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type WeightInfo = weights::pallet_utility::WeightInfo;
+	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -607,7 +633,7 @@ impl pallet_identity::Trait for Runtime {
 	type Slashed = Treasury;
 	type ForceOrigin = EnsureRootOrHalfCouncil;
 	type RegistrarOrigin = EnsureRootOrHalfCouncil;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_identity::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -653,6 +679,9 @@ impl pallet_recovery::Trait for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
+parameter_types! {
+	pub const MaxScheduledPerBlock: u32 = 50;
+}
 impl pallet_scheduler::Trait for Runtime {
 	type Event = Event;
 	type Origin = Origin;
@@ -660,7 +689,8 @@ impl pallet_scheduler::Trait for Runtime {
 	type Call = Call;
 	type MaximumWeight = MaximumBlockWeight;
 	type ScheduleOrigin = EnsureRoot<AccountId>;
-	type WeightInfo = ();
+	type MaxScheduledPerBlock = MaxScheduledPerBlock;
+	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 }
 
 /// The type used to represent the kinds of proxying allowed.
@@ -763,7 +793,7 @@ impl pallet_proxy::Trait for Runtime {
 	type CallHasher = BlakeTwo256;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type WeightInfo = weights::pallet_proxy::WeightInfo;
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -780,7 +810,7 @@ impl pallet_multisig::Trait for Runtime {
 	type DepositBase = DepositBase;
 	type DepositFactor = DepositFactor;
 	type MaxSignatories = MaxSignatories;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
 }
 
 impl pallet_sudo::Trait for Runtime {
@@ -1188,5 +1218,43 @@ impl_runtime_apis! {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
 		}
+	}
+}
+
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		pallet_scheduler::Module::<Runtime>::migrate_v1_to_t2();
+
+		// Update scheduler origin usage
+		#[derive(Encode, Decode)]
+		#[allow(non_camel_case_types)]
+		pub enum OldOriginCaller {
+			system(frame_system::Origin<Runtime>),
+			pallet_collective_Instance0(
+				pallet_collective::Origin<Runtime, pallet_collective::Instance0>,
+			),
+			pallet_collective_Instance1(
+				pallet_collective::Origin<Runtime, pallet_collective::Instance1>,
+			),
+		}
+
+		impl Into<OriginCaller> for OldOriginCaller {
+			fn into(self) -> OriginCaller {
+				match self {
+					OldOriginCaller::system(o) => OriginCaller::system(o),
+					OldOriginCaller::pallet_collective_Instance0(o) => {
+						OriginCaller::pallet_collective_Instance0(o)
+					}
+					OldOriginCaller::pallet_collective_Instance1(o) => {
+						OriginCaller::pallet_collective_Instance1(o)
+					}
+				}
+			}
+		}
+
+		pallet_scheduler::Module::<Runtime>::migrate_origin::<OldOriginCaller>();
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
 }

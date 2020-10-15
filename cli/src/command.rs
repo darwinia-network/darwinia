@@ -105,21 +105,21 @@ fn get_exec_name() -> Option<String> {
 		.and_then(|s| s.into_string().ok())
 }
 
+fn set_default_ss58_version(spec: &Box<dyn darwinia_service::ChainSpec>) {
+	let ss58_version = if spec.is_crab() {
+		Ss58AddressFormat::SubstrateAccount
+	} else if spec.is_darwinia() {
+		Ss58AddressFormat::DarwiniaAccount
+	} else {
+		Ss58AddressFormat::DarwiniaAccount
+	};
+
+	sp_core::crypto::set_default_ss58_version(ss58_version);
+}
+
 /// Parses Darwinia specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
-
-	fn set_default_ss58_version(spec: &Box<dyn darwinia_service::ChainSpec>) {
-		let ss58_version = if spec.is_crab() {
-			Ss58AddressFormat::SubstrateAccount
-		} else if spec.is_darwinia() {
-			Ss58AddressFormat::DarwiniaAccount
-		} else {
-			Ss58AddressFormat::DarwiniaAccount
-		};
-
-		sp_core::crypto::set_default_ss58_version(ss58_version);
-	};
 
 	match &cli.subcommand {
 		None => {
@@ -150,33 +150,154 @@ pub fn run() -> sc_cli::Result<()> {
 				unreachable!()
 			}
 		}
-		Some(Subcommand::Base(subcommand)) => {
-			let runtime = cli.create_runner(subcommand)?;
-			let chain_spec = &runtime.config().chain_spec;
+		Some(Subcommand::BuildSpec(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+		}
+		// substrate 6804, #6999
+		// Some(Subcommand::BuildSyncSpec(cmd)) => {}
+		Some(Subcommand::CheckBlock(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
 
 			if chain_spec.is_crab() {
-				runtime.run_subcommand(subcommand, |config| {
-					darwinia_service::new_chain_ops::<
+				runner.async_run(|mut config| {
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						darwinia_service::CrabExecutor,
-					>(config)
+					>(&mut config)?;
+
+					Ok((cmd.run(client, import_queue), task_manager))
 				})
 			} else if chain_spec.is_darwinia() {
-				runtime.run_subcommand(subcommand, |config| {
-					darwinia_service::new_chain_ops::<
+				runner.async_run(|mut config| {
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						darwinia_service::DarwiniaExecutor,
-					>(config)
+					>(&mut config)?;
+
+					Ok((cmd.run(client, import_queue), task_manager))
 				})
 			} else {
-				runtime.run_subcommand(subcommand, |config| {
-					darwinia_service::new_chain_ops::<
+				unreachable!()
+			}
+		}
+		Some(Subcommand::ExportBlocks(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_crab() {
+				runner.async_run(|mut config| {
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
+						crab_runtime::RuntimeApi,
+						darwinia_service::CrabExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, config.database), task_manager))
+				})
+			} else if chain_spec.is_darwinia() {
+				runner.async_run(|mut config| {
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						darwinia_service::DarwiniaExecutor,
-					>(config)
+					>(&mut config)?;
+
+					Ok((cmd.run(client, config.database), task_manager))
 				})
+			} else {
+				unreachable!()
+			}
+		}
+		Some(Subcommand::ExportState(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_crab() {
+				runner.async_run(|mut config| {
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
+						crab_runtime::RuntimeApi,
+						darwinia_service::CrabExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, config.chain_spec), task_manager))
+				})
+			} else if chain_spec.is_darwinia() {
+				runner.async_run(|mut config| {
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
+						darwinia_runtime::RuntimeApi,
+						darwinia_service::DarwiniaExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, config.chain_spec), task_manager))
+				})
+			} else {
+				unreachable!()
+			}
+		}
+		Some(Subcommand::ImportBlocks(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_crab() {
+				runner.async_run(|mut config| {
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
+						crab_runtime::RuntimeApi,
+						darwinia_service::CrabExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, import_queue), task_manager))
+				})
+			} else if chain_spec.is_darwinia() {
+				runner.async_run(|mut config| {
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
+						darwinia_runtime::RuntimeApi,
+						darwinia_service::DarwiniaExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, import_queue), task_manager))
+				})
+			} else {
+				unreachable!()
+			}
+		}
+		Some(Subcommand::PurgeChain(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.database))
+		}
+		Some(Subcommand::Revert(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_crab() {
+				runner.async_run(|mut config| {
+					let (client, backend, _, task_manager) = darwinia_service::new_chain_ops::<
+						crab_runtime::RuntimeApi,
+						darwinia_service::CrabExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, backend), task_manager))
+				})
+			} else if chain_spec.is_darwinia() {
+				runner.async_run(|mut config| {
+					let (client, backend, _, task_manager) = darwinia_service::new_chain_ops::<
+						darwinia_runtime::RuntimeApi,
+						darwinia_service::DarwiniaExecutor,
+					>(&mut config)?;
+
+					Ok((cmd.run(client, backend), task_manager))
+				})
+			} else {
+				unreachable!()
 			}
 		}
 		Some(Subcommand::Key(cmd)) => cmd.run(),
