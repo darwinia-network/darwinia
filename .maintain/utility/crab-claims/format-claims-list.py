@@ -11,7 +11,7 @@ def append_format(origin: str, content: dict) -> str:
 
 root_dir = dirname(dirname(dirname(abspath(__file__))))
 
-with open(''.join([root_dir, '/.maintain', '/utility', '/crab-claims-list.json'])) as f:
+with open(''.join([root_dir, '/.maintain', '/utility', '/crab-claims', '/crab-claims-list.json'])) as f:
     j = load(f)
 
 n_j = '{"dot":['
