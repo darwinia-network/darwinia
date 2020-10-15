@@ -1,0 +1,38 @@
+#! /usr/bin/sh
+
+cd $(dirname $(dirname $(dirname $(dirname $(readlink -f "$0")))))
+
+echo -e '\e[1;32m🛠  Building Docker Image(s)\e[0m'
+docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu . &> /dev/null
+
+echo -e '\e[1;32m📥 Installing Cross Compile Toolchain(s)\e[0m'
+cargo install cross --git https://github.com/AurevoirXavier/cross --branch support-multi-sub-targets &> /dev/null
+rustup target add x86_64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
+$HOME/.cargo/bin/cross build --release --target x86_64-unknown-linux-gnu --sub-targets wasm32-unknown-unknown &> /dev/null
+
+echo -e '\e[1;32m📦 Packing WASM(s)\e[0m'
+mkdir -p wasm
+cp target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/darwinia_runtime.compact.wasm wasm
+cp target/x86_64-unknown-linux-gnu/release/wbuild/crab-runtime/crab_runtime.compact.wasm wasm
+cp target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/darwinia_runtime.wasm wasm
+cp target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm wasm
+
+echo -e '\e[1;32m📦 Packing Executable(s)\e[0m'
+mkdir -p release
+cp wasm/* release
+cp target/x86_64-unknown-linux-gnu/release/darwinia release
+cd release
+tar cjSf darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8.tar.bz2 darwinia
+rm darwinia
+
+echo -e '\e[1;32m🕹  Generating File(s) Hash\e[0m'
+for f in *
+do
+    md5sum $f >> ../md5sums.txt
+done
+for f in *
+do
+    sha256sum $f >> ../sha256sums.txt
+done
+mv ../md5sums.txt .
+mv ../sha256sums.txt .

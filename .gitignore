@@ -1,18 +1,21 @@
-# Cross Compile Thing
+# Cross Compile
 wasm
 
-# IDE Thing
+# IDE
 .idea
 .vscode
 .ignore
 
-# macOS Thing
+# macOS
 .DS_Store
 
-# PM2 Thing
+# PM2
 .pm2.json
 
-# Rust Thing
+# Release
+release/
+
+# Rust
 **/*.rs.bk
 **/target/
 .cargo-ok
