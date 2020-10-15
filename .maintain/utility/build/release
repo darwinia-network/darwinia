@@ -5,7 +5,7 @@ cd $(dirname $(dirname $(dirname $(dirname $(readlink -f "$0")))))
 echo -e '\e[1;32m🛠  Building Docker Image(s)\e[0m'
 docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu . &> /dev/null
 
-echo -e '\e[1;32m📥 Installing Cross Compile Toolchain\e[0m'
+echo -e '\e[1;32m📥 Installing Cross Compile Toolchain(s)\e[0m'
 cargo install cross --git https://github.com/AurevoirXavier/cross --branch support-multi-sub-targets &> /dev/null
 rustup target add x86_64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
 $HOME/.cargo/bin/cross build --release --target x86_64-unknown-linux-gnu --sub-targets wasm32-unknown-unknown &> /dev/null
