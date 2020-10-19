@@ -2,7 +2,6 @@ name: CI
 on:
   push:
     branches:
-      - develop
       - master
   pull_request:
     branches:
@@ -19,6 +18,12 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: itering/actions
+          path: .github/actions
+          persist-credentials: false
+          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
 
       - name: Install latest nightly
         uses: actions-rs/toolchain@v1
@@ -39,3 +44,8 @@ jobs:
 
       - name: Overall test
         run: cargo test
+
+      - uses: ./.github/actions/dingtalk-notify
+        if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')
+        with:
+          dingtalk_bot_token: ${{ secrets.DINGTALK_BOT_TOKEN }}
