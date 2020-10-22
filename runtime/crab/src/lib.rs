@@ -1261,37 +1261,6 @@ impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		pallet_scheduler::Module::<Runtime>::migrate_v1_to_t2();
-
-		// Update scheduler origin usage
-		#[derive(Encode, Decode)]
-		#[allow(non_camel_case_types)]
-		pub enum OldOriginCaller {
-			system(frame_system::Origin<Runtime>),
-			pallet_collective_Instance0(
-				pallet_collective::Origin<Runtime, pallet_collective::Instance0>,
-			),
-			pallet_collective_Instance1(
-				pallet_collective::Origin<Runtime, pallet_collective::Instance1>,
-			),
-		}
-
-		impl Into<OriginCaller> for OldOriginCaller {
-			fn into(self) -> OriginCaller {
-				match self {
-					OldOriginCaller::system(o) => OriginCaller::system(o),
-					OldOriginCaller::pallet_collective_Instance0(o) => {
-						OriginCaller::pallet_collective_Instance0(o)
-					}
-					OldOriginCaller::pallet_collective_Instance1(o) => {
-						OriginCaller::pallet_collective_Instance1(o)
-					}
-				}
-			}
-		}
-
-		pallet_scheduler::Module::<Runtime>::migrate_origin::<OldOriginCaller>();
-
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
 }
