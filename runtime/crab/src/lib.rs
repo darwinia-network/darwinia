@@ -903,11 +903,12 @@ parameter_types! {
 	pub const ConfirmPeriod: BlockNumber = 200;
 }
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
+	type Call = Call;
 	type Event = Event;
 	type RingCurrency = Ring;
 	type RingSlash = Treasury;
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
-	type TargetChain = EthereumRelay;
+	type RelayableChain = EthereumRelay;
 	type ConfirmPeriod = ConfirmPeriod;
 	type WeightInfo = ();
 }
