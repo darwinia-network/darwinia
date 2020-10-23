@@ -1262,6 +1262,8 @@ impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		<darwinia_ethereum_relay::Module<Runtime>>::migrate_genesis(false);
+
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
 }
