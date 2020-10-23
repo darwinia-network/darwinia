@@ -12,10 +12,10 @@ source ~/.cargo/env
 cargo install cross --git https://github.com/AurevoirXavier/cross --branch support-multi-sub-targets &> /dev/null
 rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
 
-echo -e '\e[1;32m🧬 Building darwinia-x86_64-linux-gnu-glibc-2.17-llvm-3.8 \e[0m'
+echo -e "\e[1;32m🧬 Building darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8 \e[0m"
 cross build --release --target x86_64-unknown-linux-gnu --sub-targets wasm32-unknown-unknown &> /dev/null
 
-echo -e '\e[1;32m🧬 Building darwinia-aarch64-linux-gnu-glibc-2.23-llvm-3.8 \e[0m'
+echo -e "\e[1;32m🧬 Building darwinia-$1-aarch64-linux-gnu-glibc-2.23-llvm-3.8 \e[0m"
 RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build --no-default-features --locked --release --target aarch64-unknown-linux-gnu &> /dev/null
 
 echo -e '\e[1;32m📦 Packing WASM(s)\e[0m'
