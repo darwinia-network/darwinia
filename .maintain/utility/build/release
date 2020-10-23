@@ -4,11 +4,19 @@ cd $(dirname $(dirname $(dirname $(dirname $(readlink -f "$0")))))
 
 echo -e '\e[1;32m🛠  Building Docker Image(s)\e[0m'
 docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu . &> /dev/null
+docker build -f .maintain/docker/Dockerfile.aarch64-linux-gnu -t aarch64-linux-gnu . &> /dev/null
 
 echo -e '\e[1;32m📥 Installing Cross Compile Toolchain(s)\e[0m'
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain nightly-2020-10-06 &> /dev/null
+source ~/.cargo/env
 cargo install cross --git https://github.com/AurevoirXavier/cross --branch support-multi-sub-targets &> /dev/null
-rustup target add x86_64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
-$HOME/.cargo/bin/cross build --release --target x86_64-unknown-linux-gnu --sub-targets wasm32-unknown-unknown &> /dev/null
+rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
+
+echo -e "\e[1;32m🧬 Building darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8 \e[0m"
+cross build --release --target x86_64-unknown-linux-gnu --sub-targets wasm32-unknown-unknown &> /dev/null
+
+echo -e "\e[1;32m🧬 Building darwinia-$1-aarch64-linux-gnu-glibc-2.23-llvm-3.8 \e[0m"
+RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build --no-default-features --locked --release --target aarch64-unknown-linux-gnu &> /dev/null
 
 echo -e '\e[1;32m📦 Packing WASM(s)\e[0m'
 mkdir -p wasm
@@ -19,10 +27,13 @@ cp target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/
 
 echo -e '\e[1;32m📦 Packing Executable(s)\e[0m'
 mkdir -p release
-cp wasm/* release
-cp target/x86_64-unknown-linux-gnu/release/darwinia release
 cd release
+cp ../wasm/* .
+cp ../target/x86_64-unknown-linux-gnu/release/darwinia .
 tar cjSf darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8.tar.bz2 darwinia
+rm darwinia
+cp ../target/x86_64-unknown-linux-gnu/release/darwinia .
+tar cjSf darwinia-$1-aarch64-linux-gnu-glibc-2.23-llvm-3.8.tar.bz2 darwinia
 rm darwinia
 
 echo -e '\e[1;32m🕹  Generating File(s) Hash\e[0m'
