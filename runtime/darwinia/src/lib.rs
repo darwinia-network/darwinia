@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 3,
+	spec_version: 4,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -863,11 +863,12 @@ parameter_types! {
 	pub const ConfirmPeriod: BlockNumber = 3 * DAYS;
 }
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
+	type Call = Call;
 	type Event = Event;
 	type RingCurrency = Ring;
 	type RingSlash = Treasury;
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
-	type TargetChain = EthereumRelay;
+	type RelayableChain = EthereumRelay;
 	type ConfirmPeriod = ConfirmPeriod;
 	type WeightInfo = ();
 }
@@ -1224,36 +1225,7 @@ impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		pallet_scheduler::Module::<Runtime>::migrate_v1_to_t2();
-
-		// Update scheduler origin usage
-		#[derive(Encode, Decode)]
-		#[allow(non_camel_case_types)]
-		pub enum OldOriginCaller {
-			system(frame_system::Origin<Runtime>),
-			pallet_collective_Instance0(
-				pallet_collective::Origin<Runtime, pallet_collective::Instance0>,
-			),
-			pallet_collective_Instance1(
-				pallet_collective::Origin<Runtime, pallet_collective::Instance1>,
-			),
-		}
-
-		impl Into<OriginCaller> for OldOriginCaller {
-			fn into(self) -> OriginCaller {
-				match self {
-					OldOriginCaller::system(o) => OriginCaller::system(o),
-					OldOriginCaller::pallet_collective_Instance0(o) => {
-						OriginCaller::pallet_collective_Instance0(o)
-					}
-					OldOriginCaller::pallet_collective_Instance1(o) => {
-						OriginCaller::pallet_collective_Instance1(o)
-					}
-				}
-			}
-		}
-
-		pallet_scheduler::Module::<Runtime>::migrate_origin::<OldOriginCaller>();
+		<darwinia_ethereum_relay::Module<Runtime>>::migrate_genesis(false);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}

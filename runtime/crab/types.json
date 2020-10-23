@@ -112,27 +112,7 @@
 	"MappedRing": "u128",
 	"__[pallet.bridge.eth]__": {},
 	"EthereumTransactionIndex": "(H256, u64)",
-	"EthereumHeaderBrief": {
-		"total_difficulty": "U256",
-		"parent_hash": "H256",
-		"number": "EthereumBlockNumber",
-		"relayer": "AccountId"
-	},
 	"EthereumBlockNumber": "u64",
-	"EthereumHeaderThingWithProof": {
-		"header": "EthereumHeader",
-		"ethash_proof": "Vec<EthashProof>",
-		"mmr_root": "H256",
-		"mmr_proof": "Vec<H256>"
-	},
-	"ConfirmedEthereumHeaderInfo": {
-		"header": "EthereumHeader",
-		"mmr_root": "H256"
-	},
-	"EthereumHeaderThing": {
-		"header": "EthereumHeader",
-		"mmr_root": "H256"
-	},
 	"EthereumHeader": {
 		"parent_hash": "H256",
 		"timestamp": "u64",
@@ -186,6 +166,14 @@
 		"last_leaf_index": "u64",
 		"proof": "Vec<H256>"
 	},
+	"EthereumRelayHeaderParcel": {
+		"header": "EthereumHeader",
+		"mmr_root": "H256"
+	},
+	"EthereumRelayProofs": {
+		"ethash_proof": "Vec<EthashProof>",
+		"mmr_proof": "Vec<H256>"
+	},
 	"__[pallet.claims]__": {},
 	"OtherSignature": {
 		"_enum": {
@@ -207,25 +195,26 @@
 		"mmr_root": "Hash"
 	},
 	"__[pallet.relayer-game]__": {},
-	"Round": "u64",
-	"__[these things should be eventually refactored]__": {},
-	"TcHeaderThingWithProof": "EthereumHeaderThingWithProof",
-	"TcHeaderThing": "EthereumHeaderThing",
-	"TcBlockNumber": "u64",
-	"TcHeaderHash": "H256",
-	"__[derotcafer yllautneve eb dluohs sgniht eseht]__": {},
-	"GameId": "TcBlockNumber",
-	"RelayProposalT": {
+	"RelayHeaderId": "Vec<u8>",
+	"RelayHeaderParcel": "Vec<u8>",
+	"RelayProofs": "Vec<u8>",
+	"RelayAffirmationId": {
+		"relay_header_id": "Vec<u8>",
+		"round": "u32",
+		"index": "u32"
+	},
+	"RelayAffirmationT": {
 		"relayer": "AccountId",
-		"bonded_proposal": "Vec<(Balance, TcHeaderThing)>",
-		"extend_from_header_hash": "Option<TcHeaderHash>"
+		"relay_header_parcels": "Vec<u8>",
+		"bond": "Balance",
+		"maybe_extended_relay_affirmation_id": "Option<Vec<u8>>",
+		"verified": "bool"
 	},
 	"__[crab.runtime]__": {
 		"ProxyType": {
 			"_enum": {
 				"Any": null,
 				"NonTransfer": null,
-				"ProxyType": null,
 				"Staking": null,
 				"IdentityJudgement": null,
 				"EthereumBridge": null
