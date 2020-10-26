@@ -210,15 +210,15 @@
 		"maybe_extended_relay_affirmation_id": "Option<Vec<u8>>",
 		"verified": "bool"
 	},
-	"__[crab.runtime]__": {
-		"ProxyType": {
-			"_enum": {
-				"Any": null,
-				"NonTransfer": null,
-				"Staking": null,
-				"IdentityJudgement": null,
-				"EthereumBridge": null
-			}
+	"__[crab.runtime]__": {},
+	"ProxyType": {
+		"_enum": {
+			"Any": null,
+			"NonTransfer": null,
+			"Governance": null,
+			"Staking": null,
+			"IdentityJudgement": null,
+			"EthereumBridge": null
 		}
 	},
 	"__[node.rpc]__": {},
