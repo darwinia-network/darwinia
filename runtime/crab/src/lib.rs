@@ -51,7 +51,8 @@ use static_assertions::const_assert;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
-		Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, OnUnbalanced, Randomness,
+		ChangeMembers, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
+		OnUnbalanced, Randomness,
 	},
 	weights::Weight,
 };
@@ -111,7 +112,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	darwinia_ethereum_relay::CheckEthereumRelayHeaderHash<Runtime>,
+	darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -124,7 +125,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
+	// CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -136,7 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 23,
+	spec_version: 24,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -553,6 +554,17 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 	type WeightInfo = weights::darwinia_elections_phragmen::WeightInfo<Runtime>;
 }
 
+pub struct MembershipChangedGroup;
+impl ChangeMembers<AccountId> for MembershipChangedGroup {
+	fn change_members_sorted(
+		incoming: &[AccountId],
+		outgoing: &[AccountId],
+		sorted_new: &[AccountId],
+	) {
+		TechnicalCommittee::change_members_sorted(incoming, outgoing, sorted_new);
+		EthereumRelay::change_members_sorted(incoming, outgoing, sorted_new);
+	}
+}
 type EnsureRootOrMoreThanHalfCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -566,7 +578,7 @@ impl pallet_membership::Trait<pallet_membership::Instance0> for Runtime {
 	type ResetOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type PrimeOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type MembershipInitialized = TechnicalCommittee;
-	type MembershipChanged = TechnicalCommittee;
+	type MembershipChanged = MembershipChangedGroup;
 }
 
 type ApproveOrigin = EnsureOneOf<
@@ -777,11 +789,9 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
 				Call::Multisig(..) |
-				Call::EthereumBacking(..) |
+				// Specifically omitting the entire EthereumBacking pallet
 				Call::EthereumRelay(..) |
-				Call::EthereumRelayerGame(..) |
-				Call::HeaderMMR(..) |
-				Call::CrabIssuing(..)
+				Call::HeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
@@ -885,6 +895,9 @@ type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
 	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Ropsten;
+	pub const ConfirmPeriod: BlockNumber = 200;
+	pub const ApproveThreshold: Perbill = Perbill::from_percent(60);
+	pub const RejectThreshold: Perbill = Perbill::from_percent(1);
 }
 impl darwinia_ethereum_relay::Trait for Runtime {
 	type ModuleId = EthereumRelayModuleId;
@@ -895,21 +908,19 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 	type RelayerGame = EthereumRelayerGame;
 	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
 	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
+	type ConfirmPeriod = ConfirmPeriod;
+	type TechnicalMembership = TechnicalMembership;
+	type ApproveThreshold = ApproveThreshold;
+	type RejectThreshold = RejectThreshold;
 	type WeightInfo = ();
 }
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
-parameter_types! {
-	pub const ConfirmPeriod: BlockNumber = 200;
-}
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
-	type Call = Call;
-	type Event = Event;
 	type RingCurrency = Ring;
 	type RingSlash = Treasury;
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
 	type RelayableChain = EthereumRelay;
-	type ConfirmPeriod = ConfirmPeriod;
 	type WeightInfo = ();
 }
 
@@ -990,7 +1001,7 @@ construct_runtime!(
 
 		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
-		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Call, Storage, Event<T>},
+		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage},
 
 		// Consensus support.
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
@@ -1037,7 +1048,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			darwinia_ethereum_relay::CheckEthereumRelayHeaderHash::<Runtime>::new(),
+			darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -1259,11 +1270,9 @@ impl_runtime_apis! {
 	}
 }
 
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		<darwinia_ethereum_relay::Module<Runtime>>::migrate_genesis(false);
-
-		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-	}
-}
+// pub struct CustomOnRuntimeUpgrade;
+// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+// 	}
+// }
