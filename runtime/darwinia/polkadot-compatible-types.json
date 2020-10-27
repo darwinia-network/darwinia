@@ -205,7 +205,7 @@
 	"__[pallet.relayer-game]__": {},
 	"RelayHeaderId": "EthereumBlockNumber",
 	"RelayHeaderParcel": "EthereumRelayHeaderParcel",
-	"RelayProofs": "EthereumRelayProof",
+	"RelayProofs": "EthereumRelayProofs",
 	"RelayAffirmationId": {
 		"game_id": "EthereumBlockNumber",
 		"round": "u32",
