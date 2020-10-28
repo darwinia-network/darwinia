@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 5,
+	spec_version: 6,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -709,10 +709,10 @@ impl pallet_scheduler::Trait for Runtime {
 pub enum ProxyType {
 	Any,
 	NonTransfer,
+	Governance,
 	Staking,
 	IdentityJudgement,
 	EthereumBridge,
-	Governance,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -763,6 +763,13 @@ impl InstanceFilter<Call> for ProxyType {
 				// Specifically omitting the entire TronBacking pallet
 				Call::HeaderMMR(..)
 			),
+			ProxyType::Governance => matches!(
+				c,
+				Call::Council(..)
+					| Call::TechnicalCommittee(..)
+					| Call::ElectionsPhragmen(..)
+					| Call::Treasury(..) | Call::Utility(..)
+			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
 				c,
@@ -772,13 +779,6 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::EthereumBridge => {
 				matches!(c, Call::EthereumBacking(..) | Call::EthereumRelay(..))
 			}
-			ProxyType::Governance => matches!(
-				c,
-				Call::Council(..)
-					| Call::TechnicalCommittee(..)
-					| Call::ElectionsPhragmen(..)
-					| Call::Treasury(..) | Call::Utility(..)
-			),
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
