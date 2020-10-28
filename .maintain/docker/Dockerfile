@@ -7,6 +7,12 @@ FROM rust:1 as builder
 ARG RUST_TOOLCHAIN=nightly-2020-10-06
 ENV CARGO_TERM_COLOR=always
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        clang \
+        libclang-dev \
+        cmake \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN rustup update \
     && rustup install ${RUST_TOOLCHAIN} \
     && rustup default ${RUST_TOOLCHAIN} \
