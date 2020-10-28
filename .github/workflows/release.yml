@@ -2,7 +2,6 @@ name: Release
 on:
   push:
     tags: ["*"]
-    branches: ["feature/github-actions-build-docker-image"]
 
 jobs:
   build-and-test:
