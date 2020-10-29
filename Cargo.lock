@@ -1519,7 +1519,6 @@ dependencies = [
 name = "darwinia-runtime"
 version = "0.8.0"
 dependencies = [
- "array-bytes",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-crab-backing",
