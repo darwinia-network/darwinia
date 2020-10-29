@@ -19,6 +19,7 @@ echo -e "\e[1;32m🧬 Building darwinia-$1-aarch64-linux-gnu-glibc-2.23-llvm-3.8
 RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build --no-default-features --locked --release --target aarch64-unknown-linux-gnu &> /dev/null
 
 echo -e '\e[1;32m📦 Packing WASM(s)\e[0m'
+rm -rf wasm
 mkdir -p wasm
 cp target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/darwinia_runtime.compact.wasm wasm
 cp target/x86_64-unknown-linux-gnu/release/wbuild/crab-runtime/crab_runtime.compact.wasm wasm
@@ -26,6 +27,7 @@ cp target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/
 cp target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm wasm
 
 echo -e '\e[1;32m📦 Packing Executable(s)\e[0m'
+rm -rf release
 mkdir -p release
 cd release
 cp ../wasm/* .
