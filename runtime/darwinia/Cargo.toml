@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-runtime"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.7.5"
+version     = "0.8.0"
 
 [dependencies]
 # crates
@@ -34,6 +34,7 @@ darwinia-treasury                   = { default-features = false, git = "https:/
 darwinia-tron-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
+array-bytes         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia runtime
@@ -106,6 +107,7 @@ std = [
 	"darwinia-treasury/std",
 	"darwinia-tron-backing/std",
 	"darwinia-vesting/std",
+	"array-bytes/std",
 	"darwinia-primitives/std",
 	"darwinia-runtime-common/std",
 	"frame-executive/std",

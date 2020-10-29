@@ -160,7 +160,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 6,
+	spec_version: 7,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -194,9 +194,7 @@ pub struct BaseFilter;
 impl Filter<Call> for BaseFilter {
 	fn filter(c: &Call) -> bool {
 		match c {
-			// first stage
-			Call::EthereumRelay(_) => false,
-			// second stage
+			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
@@ -1243,9 +1241,45 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::migration::*;
+		// --- darwinia ---
+		use array_bytes::fixed_hex_bytes_unchecked;
+		use ethereum_primitives::EthereumAddress;
+
+		let module = b"DarwiniaEthereumBacking";
+		let items: [(&[u8], &str); 4] = [
+			(
+				b"TokenRedeemAddress",
+				"0xea7938985898af7fd945b03b7bc2e405e744e913",
+			),
+			(
+				b"DepositRedeemAddress",
+				"0x649fdf6ee483a96e020b889571e93700fbd82d88",
+			),
+			(
+				b"RingTokenAddress",
+				"0x9469d013805bffb7d3debe5e7839237e535ec483",
+			),
+			(
+				b"KtonTokenAddress",
+				"0x9f284e1337a815fe77d2ff4ae46544645b20c5ff",
+			),
+		];
+		let hash = &[];
+
+		for (k, v) in &items {
+			put_storage_value(
+				module,
+				k,
+				hash,
+				EthereumAddress::from(fixed_hex_bytes_unchecked!(v, 20)),
+			);
+		}
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
