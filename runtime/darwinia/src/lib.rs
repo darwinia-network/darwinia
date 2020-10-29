@@ -160,7 +160,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -1243,9 +1243,33 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::migration::*;
+		// --- darwinia ---
+		use array_bytes::fixed_hex_bytes_unchecked;
+		use ethereum_primitives::EthereumAddress;
+
+		let module = b"DarwiniaEthereumBacking";
+		let items: [(&[u8], &str); 4] = [
+			(b"TokenRedeemAddress", ""),
+			(b"DepositRedeemAddress", ""),
+			(b"RingTokenAddress", ""),
+			(b"KtonTokenAddress", ""),
+		];
+		let hash = &[];
+
+		for (k, v) in &items {
+			put_storage_value(
+				module,
+				k,
+				hash,
+				EthereumAddress::from(fixed_hex_bytes_unchecked!(v, 20)),
+			);
+		}
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
