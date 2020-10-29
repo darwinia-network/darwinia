@@ -4,8 +4,8 @@ on:
     tags: ["*"]
 
 jobs:
-  build-and-test:
-    name: Build docker image
+  build-docker-image:
+    name: Build Docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
