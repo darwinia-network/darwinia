@@ -194,9 +194,7 @@ pub struct BaseFilter;
 impl Filter<Call> for BaseFilter {
 	fn filter(c: &Call) -> bool {
 		match c {
-			// first stage
-			Call::EthereumRelay(_) => false,
-			// second stage
+			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
