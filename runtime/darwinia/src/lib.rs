@@ -1252,10 +1252,22 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 		let module = b"DarwiniaEthereumBacking";
 		let items: [(&[u8], &str); 4] = [
-			(b"TokenRedeemAddress", ""),
-			(b"DepositRedeemAddress", ""),
-			(b"RingTokenAddress", ""),
-			(b"KtonTokenAddress", ""),
+			(
+				b"TokenRedeemAddress",
+				"0xea7938985898af7fd945b03b7bc2e405e744e913",
+			),
+			(
+				b"DepositRedeemAddress",
+				"0x649fdf6ee483a96e020b889571e93700fbd82d88",
+			),
+			(
+				b"RingTokenAddress",
+				"0x9469d013805bffb7d3debe5e7839237e535ec483",
+			),
+			(
+				b"KtonTokenAddress",
+				"0x9f284e1337a815fe77d2ff4ae46544645b20c5ff",
+			),
 		];
 		let hash = &[];
 
