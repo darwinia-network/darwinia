@@ -1,6 +1,6 @@
 #! /usr/bin/sh
 
-cd $(dirname $(dirname $(dirname $(dirname $(readlink -f "$0")))))
+cd $(dirname $(dirname $(dirname $(readlink -f "$0"))))
 
 echo -e '\e[1;32m🔧 Building Docker Image(s)\e[0m'
 docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu . &> /dev/null
