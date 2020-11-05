@@ -13,10 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
     && rm -rf /var/lib/apt/lists/*
 
-RUN rustup update \
-    && rustup install ${RUST_TOOLCHAIN} \
-    && rustup default ${RUST_TOOLCHAIN} \
-    && rustup target add wasm32-unknown-unknown --toolchain ${RUST_TOOLCHAIN}
+RUN rustup default ${RUST_TOOLCHAIN} \
+    && rustup target add wasm32-unknown-unknown
 
 WORKDIR /src
 COPY . .
