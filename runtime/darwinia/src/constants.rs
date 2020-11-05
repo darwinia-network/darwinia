@@ -144,10 +144,10 @@ pub mod relay {
 		fn estimate_stake(round: u32, affirmations_count: u32) -> Self::Balance {
 			match round {
 				0 => match affirmations_count {
-					0 => 1000 * COIN,
-					_ => 1500 * COIN,
+					0 => 100 * COIN,
+					_ => 150 * COIN,
 				},
-				_ => 100 * COIN,
+				_ => 10 * COIN,
 			}
 		}
 	}

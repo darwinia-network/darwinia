@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 5,
+	spec_version: 8,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -194,9 +194,7 @@ pub struct BaseFilter;
 impl Filter<Call> for BaseFilter {
 	fn filter(c: &Call) -> bool {
 		match c {
-			// first stage
-			Call::EthereumRelay(_) => false,
-			// second stage
+			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
@@ -709,10 +707,10 @@ impl pallet_scheduler::Trait for Runtime {
 pub enum ProxyType {
 	Any,
 	NonTransfer,
+	Governance,
 	Staking,
 	IdentityJudgement,
 	EthereumBridge,
-	Governance,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -763,6 +761,13 @@ impl InstanceFilter<Call> for ProxyType {
 				// Specifically omitting the entire TronBacking pallet
 				Call::HeaderMMR(..)
 			),
+			ProxyType::Governance => matches!(
+				c,
+				Call::Council(..)
+					| Call::TechnicalCommittee(..)
+					| Call::ElectionsPhragmen(..)
+					| Call::Treasury(..) | Call::Utility(..)
+			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
 				c,
@@ -772,13 +777,6 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::EthereumBridge => {
 				matches!(c, Call::EthereumBacking(..) | Call::EthereumRelay(..))
 			}
-			ProxyType::Governance => matches!(
-				c,
-				Call::Council(..)
-					| Call::TechnicalCommittee(..)
-					| Call::ElectionsPhragmen(..)
-					| Call::Treasury(..) | Call::Utility(..)
-			),
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
@@ -1246,6 +1244,9 @@ impl_runtime_apis! {
 // pub struct CustomOnRuntimeUpgrade;
 // impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 // 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+// 		// --- substrate ---
+// 		use frame_support::migration::*;
+
 // 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 // 	}
 // }

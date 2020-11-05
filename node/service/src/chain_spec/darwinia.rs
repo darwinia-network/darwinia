@@ -84,6 +84,11 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	const GENESIS_VALIDATOR_2_GRANDPA: &'static str =
 		"0x229af404837dda8416b3f9ef22f4c3a8cc0103cd091bcdeb0d80776e6c3b99f1";
 
+	const TOKEN_REDEEM_ADDRESS: &'static str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
+	const DEPOSIT_REDEEM_ADDRESS: &'static str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
+	const RING_TOKEN_ADDRESS: &'static str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
+	const KTON_TOKEN_ADDRESS: &'static str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
+
 	let mut rings = BTreeMap::new();
 	let mut ktons = BTreeMap::new();
 	let mut swapped_ring_for_crab = 0;
@@ -277,6 +282,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		}),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
+			token_redeem_address: fixed_hex_bytes_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: fixed_hex_bytes_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: fixed_hex_bytes_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: fixed_hex_bytes_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
@@ -343,6 +352,11 @@ pub fn darwinia_testnet_genesis(
 	)>,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> GenesisConfig {
+	const TOKEN_REDEEM_ADDRESS: &'static str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
+	const DEPOSIT_REDEEM_ADDRESS: &'static str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
+	const RING_TOKEN_ADDRESS: &'static str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
+	const KTON_TOKEN_ADDRESS: &'static str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
+
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
 
 	GenesisConfig {
@@ -396,6 +410,10 @@ pub fn darwinia_testnet_genesis(
 		darwinia_vesting: Some(Default::default()),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
+			token_redeem_address: fixed_hex_bytes_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: fixed_hex_bytes_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: fixed_hex_bytes_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: fixed_hex_bytes_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			ring_locked: 1 << 56,
 			kton_locked: 1 << 56,
 			..Default::default()
