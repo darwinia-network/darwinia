@@ -1,20 +1,38 @@
-FROM iteringops/darwinia-builder:latest as builder
+##
+# Builder
+##
 
-RUN rustup update && rustup default nightly
+FROM rust:1 as builder
 
-COPY . /source
-WORKDIR /source
+ARG RUST_TOOLCHAIN=nightly-2020-10-06
+ENV CARGO_TERM_COLOR=always
 
-ENV TERM="xterm-256color"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        clang \
+        libclang-dev \
+        cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN rustup default ${RUST_TOOLCHAIN} \
+    && rustup target add wasm32-unknown-unknown
+
+WORKDIR /src
+COPY . .
 
 RUN cargo build --release
 
+##
+# Final stage
+##
+
 FROM debian:stable-slim
 
-RUN apt-get update && apt-get -y install openssl && apt-get clean
-COPY --from=builder /source/target/release/darwinia /usr/local/bin/.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/target/release/darwinia /usr/local/bin/
 
 EXPOSE 30333 9933 9944
-VOLUME ["/data"]
 
 ENTRYPOINT [ "/usr/local/bin/darwinia" ]

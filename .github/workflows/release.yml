@@ -1,0 +1,38 @@
+name: Release
+on:
+  push:
+    tags: ["*"]
+
+jobs:
+  build-docker-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: itering/actions
+          path: .github/actions
+          persist-credentials: false
+          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
+
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
+          password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
+          registry: quay.io
+
+      - uses: ./.github/actions/docker-build-deploy
+        with:
+          deploy_phase: production
+          docker_registry: quay.io
+          trigger_token: ${{ secrets.ITERING_DEPLOYMENT_TRIGGER_TOKEN }}
+          trigger_endpoint: ${{ secrets.ITERING_DEPLOYMENT_TRIGGER_ENDPOINT }}
+          docker_build_options: -f .maintain/docker/Dockerfile
+          skip_deploy: true # for now
+
+      - uses: ./.github/actions/dingtalk-notify
+        if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')
+        with:
+          dingtalk_bot_token: ${{ secrets.DINGTALK_BOT_TOKEN }}
