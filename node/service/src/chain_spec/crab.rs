@@ -208,6 +208,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		darwinia_crab_issuing: Some(CrabIssuingConfig {
 			total_mapped_ring: 40_000_000 * COIN,
 		}),
+		pallet_evm: Some(Default::default()),
+		dvm_ethereum: Some(Default::default()),
 	}
 }
 
@@ -336,6 +338,8 @@ pub fn crab_testnet_genesis(
 		darwinia_crab_issuing: Some(CrabIssuingConfig {
 			total_mapped_ring: 1 << 56
 		}),
+		pallet_evm: Some(Default::default()),
+		dvm_ethereum: Some(Default::default()),
 	}
 }
 

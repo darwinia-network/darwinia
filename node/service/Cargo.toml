@@ -44,6 +44,7 @@ sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.
 # substrate frame
 frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-im-online                           = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+pallet-evm                                 = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 # substrate primitives
