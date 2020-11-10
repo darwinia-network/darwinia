@@ -20,6 +20,9 @@ array-bytes                         = { git = "https://github.com/darwinia-netwo
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dvm-consensus                       = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dvm-rpc                             = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dvm-rpc-primitives                  = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
 darwinia-primitives = { path = "../../primitives" }
 # darwinia rpc
