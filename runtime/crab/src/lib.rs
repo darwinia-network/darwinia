@@ -51,12 +51,16 @@ use static_assertions::const_assert;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
-		ChangeMembers, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
+		ChangeMembers, FindAuthor, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
 		OnUnbalanced, Randomness,
 	},
 	weights::Weight,
+	ConsensusEngineId,
 };
 use frame_system::{EnsureOneOf, EnsureRoot};
+use pallet_evm::{
+	Account as EVMAccount, AccountBasicMapping, EnsureAddressTruncated, FeeCalculator,
+};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -66,8 +70,9 @@ use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as Transacti
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
+	crypto::Public,
 	u32_trait::{_1, _2, _3, _5},
-	OpaqueMetadata,
+	OpaqueMetadata, H160, H256, U256,
 };
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
@@ -76,7 +81,8 @@ use sp_runtime::{
 		OpaqueKeys, SaturatedConversion,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, RuntimeDebug,
+	ApplyExtrinsicResult, KeyTypeId, ModuleId, OpaqueExtrinsic, Perbill, Percent, Permill,
+	RuntimeDebug,
 };
 use sp_staking::SessionIndex;
 use sp_std::prelude::*;
@@ -91,6 +97,11 @@ use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use dvm_ethereum::{
+	account_basic::DVMAccountBasicMapping,
+	precompiles::{ConcatAddressMapping, NativeTransfer},
+};
+use dvm_rpc_primitives::TransactionStatus;
 use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
@@ -936,6 +947,56 @@ impl darwinia_crab_issuing::Trait for Runtime {
 	type WeightInfo = ();
 }
 
+/// Fixed gas price of `1`.
+pub struct FixedGasPrice;
+impl FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> U256 {
+		// Gas price is always one token per gas.
+		0.into()
+	}
+}
+
+parameter_types! {
+	pub const ChainId: u64 = 43;
+}
+impl pallet_evm::Trait for Runtime {
+	type FeeCalculator = FixedGasPrice;
+	type CallOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = ConcatAddressMapping;
+	type Currency = Balances;
+	type Event = Event;
+	type Precompiles = (
+		pallet_evm::precompiles::ECRecover,
+		pallet_evm::precompiles::Sha256,
+		pallet_evm::precompiles::Ripemd160,
+		pallet_evm::precompiles::Identity,
+		NativeTransfer<Self>,
+	);
+	type ChainId = ChainId;
+	type AccountBasicMapping = DVMAccountBasicMapping<Self>;
+}
+
+pub struct EthereumFindAuthor<F>(sp_std::marker::PhantomData<F>);
+impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F> {
+	fn find_author<'a, I>(digests: I) -> Option<H160>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		if let Some(author_index) = F::find_author(digests) {
+			let authority_id = Babe::authorities()[author_index as usize].clone();
+			return Some(H160::from_slice(&authority_id.0.to_raw_vec()[4..24]));
+		}
+		None
+	}
+}
+impl dvm_ethereum::Trait for Runtime {
+	type Event = Event;
+	type FindAuthor = EthereumFindAuthor<Babe>;
+	type AddressMapping = ConcatAddressMapping;
+	type RingCurrency = Balances;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	where
@@ -1018,6 +1079,9 @@ construct_runtime!(
 		CrabIssuing: darwinia_crab_issuing::{Module, Call, Storage, Config, Event<T>},
 
 		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>},
+
+		EVM: pallet_evm::{Module, Config, Call, Storage, Event<T>},
+		Ethereum: dvm_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
 	}
 );
 
@@ -1267,6 +1331,127 @@ impl_runtime_apis! {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
 		}
+	}
+
+	impl dvm_rpc_primitives::EthereumRuntimeRPCApi<Block> for Runtime {
+		fn chain_id() -> u64 {
+			<Runtime as pallet_evm::Trait>::ChainId::get()
+		}
+
+		fn account_basic(address: H160) -> EVMAccount {
+			<Runtime as pallet_evm::Trait>::AccountBasicMapping::account_basic(&address)
+		}
+
+		fn gas_price() -> U256 {
+			<Runtime as pallet_evm::Trait>::FeeCalculator::min_gas_price()
+		}
+
+		fn account_code_at(address: H160) -> Vec<u8> {
+			pallet_evm::Module::<Runtime>::account_codes(address)
+		}
+
+		fn author() -> H160 {
+			<dvm_ethereum::Module<Runtime>>::find_author()
+		}
+
+		fn storage_at(address: H160, index: U256) -> H256 {
+			let mut tmp = [0u8; 32];
+			index.to_big_endian(&mut tmp);
+			pallet_evm::Module::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+		}
+
+		fn call(
+			from: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			gas_price: Option<U256>,
+			nonce: Option<U256>,
+			action: dvm_ethereum::TransactionAction,
+		) -> Result<(Vec<u8>, U256), sp_runtime::DispatchError> {
+			// --- substrate ---
+			use sp_runtime::traits::UniqueSaturatedInto;
+
+			// ensure that the gas_limit fits within a u32; otherwise the wrong value will be passed
+			let gas_limit_considered: u32 = gas_limit.unique_saturated_into();
+			let gas_limit_considered_256: U256 = gas_limit_considered.into();
+			if gas_limit_considered_256 != gas_limit {
+				frame_support::debug::warn!("WARNING: An invalid gas_limit amount was submitted.
+							Make sure your gas_limit fits within a 32-bit integer
+							(gas_limit: {:?})", gas_limit);
+			}
+			match action {
+				dvm_ethereum::TransactionAction::Call(to) =>
+				EVM::execute_call(
+						from,
+						to,
+						data,
+						value,
+						gas_limit_considered,
+						gas_price.unwrap_or(U256::from(0)),
+						nonce,
+						false,
+					)
+					.map(|(_, ret, gas, _)| (ret, gas))
+					.map_err(|err| err.into()),
+				dvm_ethereum::TransactionAction::Create =>
+				EVM::execute_create(
+						from,
+						data,
+						value,
+						gas_limit_considered,
+						gas_price.unwrap_or(U256::from(0)),
+						nonce,
+						false,
+					)
+					.map(|(_, _, gas, _)| (vec![], gas))
+					.map_err(|err| err.into()),
+			}
+		}
+
+
+		fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
+			Ethereum::current_transaction_statuses()
+		}
+
+		fn current_block() -> Option<dvm_ethereum::Block> {
+			Ethereum::current_block()
+		}
+
+		fn current_receipts() -> Option<Vec<dvm_ethereum::Receipt>> {
+			Ethereum::current_receipts()
+		}
+
+		fn current_all() -> (
+			Option<dvm_ethereum::Block>,
+			Option<Vec<dvm_ethereum::Receipt>>,
+			Option<Vec<TransactionStatus>>
+		) {
+			(
+				Ethereum::current_block(),
+				Ethereum::current_receipts(),
+				Ethereum::current_transaction_statuses()
+			)
+		}
+	}
+}
+
+pub struct TransactionConverter;
+impl dvm_rpc_primitives::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> UncheckedExtrinsic {
+		UncheckedExtrinsic::new_unsigned(
+			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
+		)
+	}
+}
+impl dvm_rpc_primitives::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> OpaqueExtrinsic {
+		let extrinsic = UncheckedExtrinsic::new_unsigned(
+			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
+		);
+		let encoded = extrinsic.encode();
+
+		OpaqueExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
 	}
 }
 
