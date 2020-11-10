@@ -33,6 +33,8 @@ darwinia-support                    = { default-features = false, git = "https:/
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-tron-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dvm-rpc-primitives                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dvm-ethereum                        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
@@ -51,6 +53,7 @@ pallet-finality-tracker                    = { default-features = false, git = "
 pallet-grandpa                             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-identity                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-im-online                           = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+pallet-evm                                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
@@ -108,6 +111,8 @@ std = [
 	"darwinia-vesting/std",
 	"darwinia-primitives/std",
 	"darwinia-runtime-common/std",
+	"dvm-ethereum/std",
+	"dvm-rpc-primitives/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
@@ -122,6 +127,7 @@ std = [
 	"pallet-identity/std",
 	"pallet-membership/std",
 	"pallet-multisig/std",
+	"pallet-evm/std",
 	"pallet-offences/std",
 	"pallet-proxy/std",
 	"pallet-randomness-collective-flip/std",

@@ -92,6 +92,7 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::{EnsureOneOf, EnsureRoot};
+use pallet_evm::Account as EVMAccount;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -102,7 +103,7 @@ use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
 	u32_trait::{_1, _2, _3, _5},
-	OpaqueMetadata,
+	OpaqueMetadata, H160, H256, U256,
 };
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
@@ -126,6 +127,7 @@ use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use dvm_rpc_primitives::TransactionStatus;
 use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
@@ -1237,6 +1239,68 @@ impl_runtime_apis! {
 	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
+		}
+	}
+
+	// Mock EthereumRuntimeRPCApi implementation for Runtime
+	impl dvm_rpc_primitives::EthereumRuntimeRPCApi<Block> for Runtime {
+		fn chain_id() -> u64 {
+			0
+		}
+
+		fn account_basic(_address: H160) -> EVMAccount {
+			EVMAccount::default()
+		}
+
+		fn gas_price() -> U256 {
+			U256::from(0)
+		}
+
+		fn account_code_at(_address: H160) -> Vec<u8> {
+			Vec::new()
+		}
+
+		fn author() -> H160 {
+			H160::default()
+		}
+
+		fn storage_at(_address: H160, _index: U256) -> H256 {
+			H256::default()
+		}
+
+		fn call(
+			_from: H160,
+			_data: Vec<u8>,
+			_value: U256,
+			_gas_limit: U256,
+			_gas_price: Option<U256>,
+			_nonce: Option<U256>,
+			_action: dvm_ethereum::TransactionAction,
+		) -> Result<(Vec<u8>, U256), sp_runtime::DispatchError> {
+			Ok((Vec::new(), U256::from(0)))
+		}
+
+
+		fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
+			None
+		}
+
+		fn current_block() -> Option<dvm_ethereum::Block> {
+			None
+		}
+
+		fn current_receipts() -> Option<Vec<dvm_ethereum::Receipt>> {
+			None
+		}
+
+		fn current_all() -> (
+			Option<dvm_ethereum::Block>,
+			Option<Vec<dvm_ethereum::Receipt>>,
+			Option<Vec<TransactionStatus>>
+		) {
+			(
+				None, None, None,
+			)
 		}
 	}
 }
