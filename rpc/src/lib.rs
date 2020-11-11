@@ -171,6 +171,7 @@ where
 		client.clone(),
 		pool.clone(),
 		TransactionConverter,
+		network.clone(),
 		is_authority,
 	)));
 	io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(

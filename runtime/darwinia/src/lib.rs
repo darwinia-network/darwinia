@@ -1276,7 +1276,7 @@ impl_runtime_apis! {
 			_gas_price: Option<U256>,
 			_nonce: Option<U256>,
 			_action: dvm_ethereum::TransactionAction,
-		) -> Result<(Vec<u8>, U256), sp_runtime::DispatchError> {
+		) -> Result<(Vec<u8>, U256), (sp_runtime::DispatchError, Vec<u8>)> {
 			Ok((Vec::new(), U256::from(0)))
 		}
 

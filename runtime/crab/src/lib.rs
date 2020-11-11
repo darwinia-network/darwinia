@@ -1368,47 +1368,9 @@ impl_runtime_apis! {
 			gas_price: Option<U256>,
 			nonce: Option<U256>,
 			action: dvm_ethereum::TransactionAction,
-		) -> Result<(Vec<u8>, U256), sp_runtime::DispatchError> {
-			// --- substrate ---
-			use sp_runtime::traits::UniqueSaturatedInto;
-
-			// ensure that the gas_limit fits within a u32; otherwise the wrong value will be passed
-			let gas_limit_considered: u32 = gas_limit.unique_saturated_into();
-			let gas_limit_considered_256: U256 = gas_limit_considered.into();
-			if gas_limit_considered_256 != gas_limit {
-				frame_support::debug::warn!("WARNING: An invalid gas_limit amount was submitted.
-							Make sure your gas_limit fits within a 32-bit integer
-							(gas_limit: {:?})", gas_limit);
-			}
-			match action {
-				dvm_ethereum::TransactionAction::Call(to) =>
-				EVM::execute_call(
-						from,
-						to,
-						data,
-						value,
-						gas_limit_considered,
-						gas_price.unwrap_or(U256::from(0)),
-						nonce,
-						false,
-					)
-					.map(|(_, ret, gas, _)| (ret, gas))
-					.map_err(|err| err.into()),
-				dvm_ethereum::TransactionAction::Create =>
-				EVM::execute_create(
-						from,
-						data,
-						value,
-						gas_limit_considered,
-						gas_price.unwrap_or(U256::from(0)),
-						nonce,
-						false,
-					)
-					.map(|(_, _, gas, _)| (vec![], gas))
-					.map_err(|err| err.into()),
-			}
+		) -> Result<(Vec<u8>, U256), (sp_runtime::DispatchError, Vec<u8>)> {
+			<dvm_ethereum::Module<Runtime>>::call(from, data, value, gas_limit.low_u32(), gas_price.unwrap_or_default(), nonce, action)
 		}
-
 
 		fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
 			Ethereum::current_transaction_statuses()
