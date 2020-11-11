@@ -1,3 +1,5 @@
+// --- std ---
+use std::collections::BTreeMap;
 // --- substrate ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainType;
@@ -256,6 +258,31 @@ pub fn crab_testnet_genesis(
 
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
 
+	let first_evm_account_id =
+		fixed_hex_bytes_unchecked!("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b", 20).into();
+	let second_evm_account_id =
+		fixed_hex_bytes_unchecked!("0xB90168C8CBcd351D069ffFdA7B71cd846924d551", 20).into();
+	let mut evm_accounts = BTreeMap::new();
+
+	evm_accounts.insert(
+		first_evm_account_id,
+		pallet_evm::GenesisAccount {
+			nonce: 0.into(),
+			balance: 123_456_789_000_000_000_090u128.into(),
+			storage: BTreeMap::new(),
+			code: vec![],
+		},
+	);
+	evm_accounts.insert(
+		second_evm_account_id,
+		pallet_evm::GenesisAccount {
+			nonce: 0.into(),
+			balance: 100_000_000_000_000_000_000u128.into(),
+			storage: BTreeMap::new(),
+			code: vec![],
+		},
+	);
+
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
 			code: wasm_binary_unwrap().to_vec(),
@@ -338,7 +365,9 @@ pub fn crab_testnet_genesis(
 		darwinia_crab_issuing: Some(CrabIssuingConfig {
 			total_mapped_ring: 1 << 56
 		}),
-		pallet_evm: Some(Default::default()),
+		pallet_evm: Some(EVMConfig {
+			accounts: evm_accounts,
+		}),
 		dvm_ethereum: Some(Default::default()),
 	}
 }
