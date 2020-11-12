@@ -174,7 +174,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 9,
+	spec_version: 10,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1242,7 +1242,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	// Mock EthereumRuntimeRPCApi implementation for Runtime
+	// TODO: Implement for Darwinia
 	impl dvm_rpc_primitives::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			0
@@ -1269,13 +1269,13 @@ impl_runtime_apis! {
 		}
 
 		fn call(
-			_from: H160,
-			_data: Vec<u8>,
-			_value: U256,
-			_gas_limit: U256,
-			_gas_price: Option<U256>,
-			_nonce: Option<U256>,
-			_action: dvm_ethereum::TransactionAction,
+			_: H160,
+			_: Vec<u8>,
+			_: U256,
+			_: U256,
+			_: Option<U256>,
+			_: Option<U256>,
+			_: dvm_ethereum::TransactionAction,
 		) -> Result<(Vec<u8>, U256), (sp_runtime::DispatchError, Vec<u8>)> {
 			Ok((Vec::new(), U256::from(0)))
 		}

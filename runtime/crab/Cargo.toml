@@ -33,9 +33,9 @@ darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https:/
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-ethereum                        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dvm-rpc-primitives                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
+dvm-rpc-primitives  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
@@ -47,8 +47,8 @@ frame-system-rpc-runtime-api               = { default-features = false, git = "
 pallet-authority-discovery                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-authorship                          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-babe                                = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-pallet-evm                                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-collective                          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+pallet-evm                                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-finality-tracker                    = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-grandpa                             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
 pallet-identity                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
@@ -110,8 +110,9 @@ std    = [
 	"darwinia-support/std",
 	"darwinia-treasury/std",
 	"darwinia-primitives/std",
-	"darwinia-runtime-common/std",
 	"dvm-ethereum/std",
+	"ethereum-primitives/std",
+	"darwinia-runtime-common/std",
 	"dvm-rpc-primitives/std",
 	"frame-executive/std",
 	"frame-support/std",
@@ -121,6 +122,7 @@ std    = [
 	"pallet-authority-discovery/std",
 	"pallet-babe/std",
 	"pallet-collective/std",
+	"pallet-evm/std",
 	"pallet-finality-tracker/std",
 	"pallet-grandpa/std",
 	"pallet-im-online/std",
@@ -135,7 +137,6 @@ std    = [
 	"pallet-session/std",
 	"pallet-society/std",
 	"pallet-sudo/std",
-	"pallet-evm/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",

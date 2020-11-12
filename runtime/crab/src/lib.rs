@@ -802,7 +802,10 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Multisig(..) |
 				// Specifically omitting the entire EthereumBacking pallet
 				Call::EthereumRelay(..) |
-				Call::HeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
+				Call::HeaderMMR(..) |
+				// Specifically omitting the entire CrabIssuing pallet
+				Call::EVM(..) |
+				Call::Ethereum(..)
 			),
 			ProxyType::Governance => matches!(
 				c,
@@ -955,7 +958,6 @@ impl FeeCalculator for FixedGasPrice {
 		0.into()
 	}
 }
-
 parameter_types! {
 	pub const ChainId: u64 = 43;
 }

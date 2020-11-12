@@ -257,15 +257,10 @@ pub fn crab_testnet_genesis(
 	const KTON_TOKEN_ADDRESS: &'static str = "0x1994100c58753793D52c6f457f189aa3ce9cEe94";
 
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
-
-	let first_evm_account_id =
-		fixed_hex_bytes_unchecked!("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b", 20).into();
-	let second_evm_account_id =
-		fixed_hex_bytes_unchecked!("0xB90168C8CBcd351D069ffFdA7B71cd846924d551", 20).into();
 	let mut evm_accounts = BTreeMap::new();
 
 	evm_accounts.insert(
-		first_evm_account_id,
+		fixed_hex_bytes_unchecked!("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b", 20).into(),
 		pallet_evm::GenesisAccount {
 			nonce: 0.into(),
 			balance: 123_456_789_000_000_000_090u128.into(),
@@ -274,7 +269,7 @@ pub fn crab_testnet_genesis(
 		},
 	);
 	evm_accounts.insert(
-		second_evm_account_id,
+		fixed_hex_bytes_unchecked!("0xB90168C8CBcd351D069ffFdA7B71cd846924d551", 20).into(),
 		pallet_evm::GenesisAccount {
 			nonce: 0.into(),
 			balance: 100_000_000_000_000_000_000u128.into(),

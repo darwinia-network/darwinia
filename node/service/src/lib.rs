@@ -8,7 +8,6 @@ pub mod client;
 pub use codec::Codec;
 // --- substrate ---
 pub use sc_executor::NativeExecutionDispatch;
-use sc_network::NetworkService;
 pub use sc_service::{
 	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
 };
@@ -35,7 +34,7 @@ use sc_finality_grandpa::{
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
 	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
-use sc_network::Event as NetworkEvent;
+use sc_network::{Event as NetworkEvent, NetworkService};
 use sc_service::{
 	config::{KeystoreConfig, PrometheusConfig},
 	BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder, PartialComponents,
