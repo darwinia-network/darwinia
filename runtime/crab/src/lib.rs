@@ -73,7 +73,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT, IdentityLookup, NumberFor,
-		OpaqueKeys, SaturatedConversion,
+		OpaqueKeys, SaturatedConversion, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, RuntimeDebug,
@@ -977,7 +977,7 @@ construct_runtime!(
 	pub enum Runtime
 	where
 		Block = Block,
-		NodeBlock = darwinia_primitives::Block,
+		NodeBlock = OpaqueBlock,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// Basic stuff; balances is uncallable initially.

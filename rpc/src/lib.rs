@@ -10,7 +10,9 @@ use std::sync::Arc;
 // --- substrate ---
 use sp_api::ProvideRuntimeApi;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Block, BlockNumber, Hash, Nonce, Power};
+use darwinia_primitives::{
+	AccountId, Balance, BlockNumber, Hash, Nonce, OpaqueBlock as Block, Power,
+};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
