@@ -837,16 +837,46 @@ impl pallet_sudo::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
+	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
+	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
+	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
+	pub const AdvancedFee: Balance = 50 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
-	type ModuleId = EthBackingModuleId;
+	type ModuleId = EthereumBackingModuleId;
+	type FeeModuleId = EthereumBackingFeeModuleId;
 	type Event = Event;
 	type RedeemAccountId = AccountId;
 	type EthereumRelay = EthereumRelay;
 	type OnDepositRedeem = Staking;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
+	type AdvancedFee = AdvancedFee;
+	type EcdsaAuthorities = EthereumRelayAuthorities;
+	type WeightInfo = ();
+}
+
+type EthereumRelayAuthoritiesInstance = darwinia_relay_authorities::Instance0;
+parameter_types! {
+	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
+	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 30 * DAYS;
+	pub const MaxCandidates: usize = 7;
+	pub const SignThreshold: Perbill = Perbill::from_percent(60);
+	pub const SubmitDuration: BlockNumber = 100;
+}
+impl darwinia_relay_authorities::Trait<EthereumRelayAuthoritiesInstance> for Runtime {
+	type Event = Event;
+	type RingCurrency = Ring;
+	type LockId = EthereumRelayAuthoritiesLockId;
+	type TermDuration = EthereumRelayAuthoritiesTermDuration;
+	type MaxCandidates = MaxCandidates;
+	type AddOrigin = ApproveOrigin;
+	type RemoveOrigin = ApproveOrigin;
+	type ResetOrigin = ApproveOrigin;
+	type DarwiniaMMR = HeaderMMR;
+	type Sign = EthereumBacking;
+	type SignThreshold = SignThreshold;
+	type SubmitDuration = SubmitDuration;
 	type WeightInfo = ();
 }
 
@@ -884,8 +914,15 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 }
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
+parameter_types! {
+	// TODO: migration
+	// pub const EthereumRelayerGameLockId: LockIdentifier = *b"ethrgame";
+	// Workaround
+	pub const EthereumRelayerGameLockId: LockIdentifier = *b"da/rgame";
+}
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type RingCurrency = Ring;
+	type LockId = EthereumRelayerGameLockId;
 	type RingSlash = Treasury;
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
 	type RelayableChain = EthereumRelay;
@@ -989,6 +1026,9 @@ construct_runtime!(
 
 		// Consensus support.
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
+
+		// Ethereum bridge.
+		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>},
 	}
 );
 
