@@ -184,21 +184,6 @@
 	},
 	"__[TODO.Generalize]__": "",
 	"Signer": "[u8; 20; EcdsaAddress]",
-	"__[pallet.claims]__": {},
-	"OtherSignature": {
-		"_enum": {
-			"Eth": "EcdsaSignature",
-			"Tron": "EcdsaSignature"
-		}
-	},
-	"EcdsaSignature": "[u8; 65; EcdsaSignature]",
-	"OtherAddress": {
-		"_enum": {
-			"Eth": "[u8; 20; EthereumAddress]",
-			"Tron": "[u8; 20; TronAddress]"
-		}
-	},
-	"AddressT": "[u8; 20; AddressT]",
 	"__[pallet.header-mmr]__": {},
 	"MerkleMountainRangeRootLog": {
 		"prefix": "[u8; 4; Prefix]",
