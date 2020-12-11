@@ -125,7 +125,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -1312,9 +1312,17 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::{migration::*, traits::Currency};
+
+		Ring::make_free_balance_be(
+			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
+			Ring::minimum_balance(),
+		);
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}

@@ -108,7 +108,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic as ExtrinsicT, IdentityLookup,
-		NumberFor, OpaqueKeys, SaturatedConversion, Verify
+		NumberFor, OpaqueKeys, SaturatedConversion, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, RuntimeDebug,
@@ -160,7 +160,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -1281,12 +1281,17 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		// --- substrate ---
-// 		use frame_support::migration::*;
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::{migration::*, traits::Currency};
 
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+		Ring::make_free_balance_be(
+			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
+			Ring::minimum_balance(),
+		);
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
