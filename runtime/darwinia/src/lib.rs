@@ -1291,6 +1291,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		use frame_support::{migration::*, traits::Currency};
 		// --- darwinia ---
 		use array_bytes::fixed_hex_bytes_unchecked;
+		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
 		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
 		Ring::make_free_balance_be(
