@@ -1317,10 +1317,42 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
 		use frame_support::{migration::*, traits::Currency};
+		// --- darwinia ---
+		use array_bytes::fixed_hex_bytes_unchecked;
+		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
 		Ring::make_free_balance_be(
 			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
 			Ring::minimum_balance(),
+		);
+
+		// @wuminzhe
+		let account_id = fixed_hex_bytes_unchecked!(
+			"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
+			32
+		)
+		.into();
+		// @wuminzhe
+		let signer = fixed_hex_bytes_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
+		let stake = 1;
+
+		Ring::set_lock(
+			EthereumRelayAuthoritiesLockId::get(),
+			&account_id,
+			LockFor::Common { amount: stake },
+			WithdrawReasons::all(),
+		);
+
+		put_storage_value(
+			b"Instance0DarwiniaRelayAuthorities",
+			b"Authorities",
+			&[],
+			vec![RelayAuthority {
+				account_id,
+				signer,
+				stake,
+				term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
+			}],
 		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
