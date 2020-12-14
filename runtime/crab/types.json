@@ -131,6 +131,7 @@
 		"hash": "Option<H256>"
 	},
 	"EthereumAddress": "H160",
+	"EcdsaAddress": "[u8; 20; EcdsaAddress]",
 	"Bloom": "[u8; 256; Bloom]",
 	"H128": "[u8; 16; H128]",
 	"EthashProof": {
@@ -175,7 +176,7 @@
 		"mmr_proof": "Vec<H256>"
 	},
 	"__[TODO.Generalize]__": "",
-	"Signer": "[u8; 20; EcdsaAddress]",
+	"Signer": "EcdsaAddress",
 	"__[pallet.claims]__": {},
 	"OtherSignature": {
 		"_enum": {
