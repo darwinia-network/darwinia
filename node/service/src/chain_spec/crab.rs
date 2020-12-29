@@ -13,7 +13,6 @@ use super::{
 	get_account_id_from_seed, get_authority_keys_from_seed, testnet_accounts, Extensions,
 	DEFAULT_PROTOCOL_ID,
 };
-use array_bytes::fixed_hex_bytes_unchecked;
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
 
@@ -71,8 +70,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 	const RING_TOKEN_ADDRESS: &'static str = "0xb52FBE2B925ab79a821b261C82c5Ba0814AAA5e0";
 	const KTON_TOKEN_ADDRESS: &'static str = "0x1994100c58753793D52c6f457f189aa3ce9cEe94";
 
-	let root: AccountId = fixed_hex_bytes_unchecked!(ROOT, 32).into();
-	let multi_sig: AccountId = fixed_hex_bytes_unchecked!(MULTI_SIG, 32).into();
+	let root: AccountId = array_bytes::hex_str_array_unchecked!(ROOT, 32).into();
+	let multi_sig: AccountId = array_bytes::hex_str_array_unchecked!(MULTI_SIG, 32).into();
 	let genesis_validator: (
 		AccountId,
 		AccountId,
@@ -81,10 +80,10 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		ImOnlineId,
 		AuthorityDiscoveryId,
 	) = {
-		let stash = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let controller = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let session = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let grandpa = fixed_hex_bytes_unchecked!(GENESIS_VALIDATOR_ED, 32);
+		let stash = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let controller = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let session = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_SR, 32);
+		let grandpa = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_ED, 32);
 
 		(
 			stash.into(),
@@ -110,7 +109,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		"0xc45f075b5b1aa0145c469f57bd741c02272c1c0c41e9518d5a32426030d98232",
 	]
 	.iter()
-	.map(|s| fixed_hex_bytes_unchecked!(s, 32).into())
+	.map(|s| array_bytes::hex_str_array_unchecked!(s, 32).into())
 	.collect::<Vec<_>>();
 
 	GenesisConfig {
@@ -186,10 +185,10 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		}),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
-			token_redeem_address: fixed_hex_bytes_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: fixed_hex_bytes_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: fixed_hex_bytes_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: fixed_hex_bytes_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex_str_array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: array_bytes::hex_str_array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: array_bytes::hex_str_array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: array_bytes::hex_str_array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			ring_locked: 7_569_833 * COIN,
 			kton_locked: 30_000 * COIN,
 			..Default::default()
@@ -314,10 +313,10 @@ pub fn crab_testnet_genesis(
 		}),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
-			token_redeem_address: fixed_hex_bytes_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: fixed_hex_bytes_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: fixed_hex_bytes_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: fixed_hex_bytes_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex_str_array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: array_bytes::hex_str_array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: array_bytes::hex_str_array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: array_bytes::hex_str_array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			ring_locked: 1 << 56,
 			kton_locked: 1 << 56,
 			..Default::default()

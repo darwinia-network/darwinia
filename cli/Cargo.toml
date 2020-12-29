@@ -23,7 +23,6 @@ log                  = { version = "0.4.11" }
 serde                = { version = "1.0.118", optional = true }
 structopt            = { version = "0.3.21" }
 tokio                = { version = "0.3.5", optional = true, features = ["rt-multi-thread"] }
-toml                 = { version = "0.5.7", optional = true }
 wasm-bindgen         = { version = "0.2.69", optional = true }
 wasm-bindgen-futures = { version = "0.4.19", optional = true }
 # darwinia client
@@ -57,7 +56,6 @@ default = [
 cli = [
 	"serde",
 	"tokio",
-	"toml",
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",

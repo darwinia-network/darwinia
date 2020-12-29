@@ -161,6 +161,12 @@ checksum = "dabe5a181f83789739c194cbe5a897dde195078fac08568d09221fd6137a7ba8"
 
 [[package]]
 name = "array-bytes"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43759f68cc29a37659a6b7a48a49674e03a888b6d41f36f4204c36d0d09a51de"
+
+[[package]]
+name = "array-bytes"
 version = "1.2.3"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#dd026e1ac5498c617651e14245a681632c186512"
 dependencies = [
@@ -894,7 +900,7 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 name = "crab-runtime"
 version = "0.8.3"
 dependencies = [
- "array-bytes",
+ "array-bytes 0.3.0",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
@@ -1288,7 +1294,7 @@ name = "darwinia-claims"
 version = "1.2.3"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#dd026e1ac5498c617651e14245a681632c186512"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.2.3",
  "darwinia-support",
  "frame-support",
  "frame-system",
@@ -1320,7 +1326,6 @@ dependencies = [
  "substrate-browser-utils",
  "substrate-build-script-utils",
  "tokio 0.3.6",
- "toml",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
@@ -1397,7 +1402,7 @@ name = "darwinia-ethereum-backing"
 version = "1.2.3"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#dd026e1ac5498c617651e14245a681632c186512"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.2.3",
  "darwinia-relay-primitives",
  "darwinia-support",
  "ethabi",
@@ -1417,7 +1422,7 @@ name = "darwinia-ethereum-relay"
 version = "1.2.3"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#dd026e1ac5498c617651e14245a681632c186512"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.2.3",
  "blake2-rfc",
  "ckb-merkle-mountain-range",
  "darwinia-relay-primitives",
@@ -1566,7 +1571,7 @@ dependencies = [
 name = "darwinia-runtime"
 version = "0.8.3"
 dependencies = [
- "array-bytes",
+ "array-bytes 0.3.0",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-crab-backing",
@@ -1656,7 +1661,7 @@ dependencies = [
 name = "darwinia-service"
 version = "0.8.3"
 dependencies = [
- "array-bytes",
+ "array-bytes 0.3.0",
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-header-mmr-rpc-runtime-api",
@@ -2055,7 +2060,7 @@ name = "ethereum-primitives"
 version = "1.2.3"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#dd026e1ac5498c617651e14245a681632c186512"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.2.3",
  "ethash",
  "ethbloom",
  "ethereum-types",
