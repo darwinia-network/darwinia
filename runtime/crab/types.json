@@ -131,7 +131,7 @@
 		"hash": "Option<H256>"
 	},
 	"EthereumAddress": "H160",
-	"EcdsaAddress": "[u8; 20; EcdsaAddress]",
+	"EcdsaMessage": "[u8; 32; EcdsaMessage]",
 	"Bloom": "[u8; 256; Bloom]",
 	"H128": "[u8; 16; H128]",
 	"EthashProof": {
@@ -176,7 +176,9 @@
 		"mmr_proof": "Vec<H256>"
 	},
 	"__[TODO.Generalize]__": "",
-	"Signer": "EcdsaAddress",
+	"RelayAuthoritySigner": "EthereumAddress",
+	"RelayAuthorityMessage": "EcdsaMessage",
+	"RelayAuthoritySignature": "EcdsaSignature",
 	"__[pallet.claims]__": {},
 	"OtherSignature": {
 		"_enum": {
@@ -197,7 +199,8 @@
 		"prefix": "[u8; 4; Prefix]",
 		"parent_mmr_root": "Hash"
 	},
-	"__[pallet.relayer-game]__": {},
+	"__[primitives.relay]__": {},
+	"Term": "u32",
 	"RelayHeaderId": "EthereumBlockNumber",
 	"RelayHeaderParcel": "EthereumRelayHeaderParcel",
 	"RelayProofs": "EthereumRelayProofs",
