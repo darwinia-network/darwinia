@@ -1359,6 +1359,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 				term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
 			}],
 		);
+		put_storage_value(
+			b"DarwiniaEthereumBacking",
+			b"SetAuthoritiesAddress",
+			&[],
+			array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
+		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}

@@ -1284,6 +1284,7 @@ impl_runtime_apis! {
 	}
 }
 
+// TODO: https://github.com/darwinia-network/darwinia/issues/592
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
@@ -1299,12 +1300,13 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			Ring::minimum_balance(),
 		);
 
-		// TODO: https://github.com/darwinia-network/darwinia/issues/589
+		// @wuminzhe
 		let account_id = fixed_hex_bytes_unchecked!(
 			"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
 			32
 		)
 		.into();
+		// @wuminzhe
 		let signer = fixed_hex_bytes_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
 		let stake = 1;
 
@@ -1325,6 +1327,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 				stake,
 				term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
 			}],
+		);
+		put_storage_value(
+			b"DarwiniaEthereumBacking",
+			b"SetAuthoritiesAddress",
+			&[],
+			array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
 		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
