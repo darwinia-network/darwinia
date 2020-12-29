@@ -11,6 +11,7 @@ version     = "0.8.3"
 
 [dependencies]
 # crates
+array-bytes       = { version = "0.3.0" }
 codec             = { package = "parity-scale-codec", version = "1.3.5", default-features = false, features = ["derive"] }
 serde             = { version = "1.0.118", optional = true }
 smallvec          = { version = "1.5.1" }
@@ -34,7 +35,6 @@ darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https:/
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
-array-bytes         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia runtime
@@ -109,7 +109,6 @@ std    = [
 	"darwinia-staking-rpc-runtime-api/std",
 	"darwinia-support/std",
 	"darwinia-treasury/std",
-	"array-bytes/std",
 	"darwinia-primitives/std",
 	"darwinia-runtime-common/std",
 	"frame-executive/std",

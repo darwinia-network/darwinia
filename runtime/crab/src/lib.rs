@@ -877,6 +877,7 @@ parameter_types! {
 	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
 	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
 	pub const AdvancedFee: Balance = 50 * COIN;
+	pub const SyncReward: Balance = 1000 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthereumBackingModuleId;
@@ -888,6 +889,7 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
 	type AdvancedFee = AdvancedFee;
+	type SyncReward = SyncReward;
 	type EcdsaAuthorities = EthereumRelayAuthorities;
 	type WeightInfo = ();
 }
@@ -1322,7 +1324,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		use frame_support::{migration::*, traits::Currency};
 		// --- darwinia ---
-		use array_bytes::fixed_hex_bytes_unchecked;
 		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
 		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
@@ -1332,13 +1333,14 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		);
 
 		// @wuminzhe
-		let account_id = fixed_hex_bytes_unchecked!(
+		let account_id = array_bytes::hex_str_array_unchecked!(
 			"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
 			32
 		)
 		.into();
 		// @wuminzhe
-		let signer = fixed_hex_bytes_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
+		let signer =
+			array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
 		let stake = 1;
 
 		Ring::set_lock(
