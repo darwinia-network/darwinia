@@ -953,9 +953,6 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
 parameter_types! {
-	// TODO: migration
-	// pub const EthereumRelayerGameLockId: LockIdentifier = *b"ethrgame";
-	// Workaround
 	pub const EthereumRelayerGameLockId: LockIdentifier = *b"da/rgame";
 }
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
