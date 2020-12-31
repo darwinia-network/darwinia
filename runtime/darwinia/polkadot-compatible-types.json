@@ -139,6 +139,7 @@
 		"hash": "Option<H256>"
 	},
 	"EthereumAddress": "H160",
+	"EcdsaMessage": "[u8; 32; EcdsaMessage]",
 	"Bloom": "[u8; 256; Bloom]",
 	"H128": "[u8; 16; H128]",
 	"EthashProof": {
@@ -176,33 +177,23 @@
 	},
 	"EthereumRelayHeaderParcel": {
 		"header": "EthereumHeader",
-		"mmr_root": "H256"
+		"parent_mmr_root": "H256"
 	},
 	"EthereumRelayProofs": {
 		"ethash_proof": "Vec<EthashProof>",
 		"mmr_proof": "Vec<H256>"
 	},
-	"__[pallet.claims]__": {},
-	"OtherSignature": {
-		"_enum": {
-			"Eth": "EcdsaSignature",
-			"Tron": "EcdsaSignature"
-		}
-	},
-	"EcdsaSignature": "[u8; 65; EcdsaSignature]",
-	"OtherAddress": {
-		"_enum": {
-			"Eth": "[u8; 20; EthereumAddress]",
-			"Tron": "[u8; 20; TronAddress]"
-		}
-	},
-	"AddressT": "[u8; 20; AddressT]",
+	"__[TODO.Generalize]__": "",
+	"RelayAuthoritySigner": "EthereumAddress",
+	"RelayAuthorityMessage": "EcdsaMessage",
+	"RelayAuthoritySignature": "EcdsaSignature",
 	"__[pallet.header-mmr]__": {},
 	"MerkleMountainRangeRootLog": {
 		"prefix": "[u8; 4; Prefix]",
-		"mmr_root": "Hash"
+		"parent_mmr_root": "Hash"
 	},
-	"__[pallet.relayer-game]__": {},
+	"__[primitives.relay]__": {},
+	"Term": "u32",
 	"RelayHeaderId": "EthereumBlockNumber",
 	"RelayHeaderParcel": "EthereumRelayHeaderParcel",
 	"RelayProofs": "EthereumRelayProofs",
@@ -222,6 +213,13 @@
 		"ayes": "Vec<AccountId>",
 		"nays": "Vec<AccountId>"
 	},
+	"RelayAuthorityT": {
+		"account_id": "AccountId",
+		"signer": "Signer",
+		"stake": "Balance",
+		"term": "BlockNumber"
+	},
+	"MMRRoot": "Hash",
 	"__[darwinia.runtime]__": {},
 	"ProxyType": {
 		"_enum": {

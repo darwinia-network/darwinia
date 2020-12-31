@@ -98,7 +98,7 @@ pub mod relay {
 	// --- darwinia ---
 	use super::currency::*;
 	use crate::*;
-	use darwinia_relay_primitives::*;
+	use darwinia_relay_primitives::relayer_game::*;
 	use ethereum_primitives::EthereumBlockNumber;
 
 	pub struct EthereumRelayerGameAdjustor;

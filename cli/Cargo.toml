@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.8.2"
+version     = "0.8.3"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -20,12 +20,11 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log                  = { version = "0.4.11" }
-serde                = { version = "1.0.117", optional = true }
-structopt            = { version = "0.3.20" }
-tokio                = { version = "0.3.3", optional = true, features = ["rt-multi-thread"] }
-toml                 = { version = "0.5.7", optional = true }
-wasm-bindgen         = { version = "0.2.68", optional = true }
-wasm-bindgen-futures = { version = "0.4.18", optional = true }
+serde                = { version = "1.0.118", optional = true }
+structopt            = { version = "0.3.21" }
+tokio                = { version = "0.3.5", optional = true, features = ["rt-multi-thread"] }
+wasm-bindgen         = { version = "0.2.69", optional = true }
+wasm-bindgen-futures = { version = "0.4.19", optional = true }
 # darwinia client
 darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia service
@@ -57,7 +56,6 @@ default = [
 cli = [
 	"serde",
 	"tokio",
-	"toml",
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",

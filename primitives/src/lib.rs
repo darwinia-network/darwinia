@@ -3,47 +3,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]
 
-/// App-specific crypto used for reporting equivocation/misbehavior in BABE,
-/// GRANDPA and Parachains, described in the white paper as the fisherman role.
-/// Any rewards for misbehavior reporting will be paid out to this account.
-pub mod fisherman {
-	// --- substrate ---
-	use sp_core::crypto::KeyTypeId;
-	// --- crates ---
-	use super::{Signature, Verify};
-
-	/// Key type for the reporting module. Used for reporting BABE, GRANDPA
-	/// and Parachain equivocations.
-	pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"fish");
-
-	mod app {
-		use sp_application_crypto::{app_crypto, sr25519};
-		app_crypto!(sr25519, super::KEY_TYPE);
-	}
-
-	/// Identity of the equivocation/misbehavior reporter.
-	pub type FishermanId = app::Public;
-
-	/// An `AppCrypto` type to allow submitting signed transactions using the fisherman
-	/// application key as signer.
-	pub struct FishermanAppCrypto;
-	impl frame_system::offchain::AppCrypto<<Signature as Verify>::Signer, Signature>
-		for FishermanAppCrypto
-	{
-		type RuntimeAppPublic = FishermanId;
-		type GenericPublic = sp_core::sr25519::Public;
-		type GenericSignature = sp_core::sr25519::Signature;
-	}
-}
-
-// --- substrate ---
-pub use sp_runtime::traits::{BlakeTwo256, Hash as HashT, IdentifyAccount, Verify};
-/// Opaque, encoded, unchecked extrinsic.
-pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-
 // --- substrate ---
 use sp_core::H256;
-use sp_runtime::{generic, MultiSignature};
+use sp_runtime::{
+	generic,
+	traits::{BlakeTwo256, IdentifyAccount, Verify},
+	MultiSignature, OpaqueExtrinsic,
+};
 
 /// An index to a block.
 /// 32-bits will allow for 136 years of blocks assuming 1 block per second.
@@ -87,10 +53,9 @@ pub type Power = u32;
 
 /// Header type.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+
 /// Block type.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-/// Block ID.
-pub type BlockId = generic::BlockId<Block>;
+pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 
 #[ignore]
 #[test]

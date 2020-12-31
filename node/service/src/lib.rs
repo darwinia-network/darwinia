@@ -15,7 +15,7 @@ pub use sc_service::{
 pub use chain_spec::{CrabChainSpec, DarwiniaChainSpec};
 pub use client::DarwiniaClient;
 pub use crab_runtime;
-pub use darwinia_primitives::Block;
+pub use darwinia_primitives::OpaqueBlock as Block;
 pub use darwinia_runtime;
 
 // --- std ---

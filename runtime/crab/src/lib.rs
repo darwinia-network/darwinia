@@ -73,7 +73,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT, IdentityLookup, NumberFor,
-		OpaqueKeys, SaturatedConversion,
+		OpaqueKeys, SaturatedConversion, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, KeyTypeId, ModuleId, Perbill, Percent, Permill, RuntimeDebug,
@@ -125,7 +125,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -137,7 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 28,
+	spec_version: 29,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -792,6 +792,7 @@ impl InstanceFilter<Call> for ProxyType {
 				// Specifically omitting the entire EthereumBacking pallet
 				Call::EthereumRelay(..) |
 				Call::HeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
+				                    // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
@@ -806,9 +807,12 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement(..))
 					| Call::Utility(pallet_utility::Call::batch(..))
 			),
-			ProxyType::EthereumBridge => {
-				matches!(c, Call::EthereumBacking(..) | Call::EthereumRelay(..))
-			}
+			ProxyType::EthereumBridge => matches!(
+				c,
+				Call::EthereumBacking(..)
+					| Call::EthereumRelay(..)
+					| Call::EthereumRelayAuthorities(..)
+			),
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
@@ -869,16 +873,48 @@ impl pallet_sudo::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const EthBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
+	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
+	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
+	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
+	pub const AdvancedFee: Balance = 50 * COIN;
+	pub const SyncReward: Balance = 1000 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
-	type ModuleId = EthBackingModuleId;
+	type ModuleId = EthereumBackingModuleId;
+	type FeeModuleId = EthereumBackingFeeModuleId;
 	type Event = Event;
 	type RedeemAccountId = AccountId;
 	type EthereumRelay = EthereumRelay;
 	type OnDepositRedeem = Staking;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
+	type AdvancedFee = AdvancedFee;
+	type SyncReward = SyncReward;
+	type EcdsaAuthorities = EthereumRelayAuthorities;
+	type WeightInfo = ();
+}
+
+type EthereumRelayAuthoritiesInstance = darwinia_relay_authorities::Instance0;
+parameter_types! {
+	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
+	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 30 * DAYS;
+	pub const MaxCandidates: usize = 7;
+	pub const SignThreshold: Perbill = Perbill::from_percent(60);
+	pub const SubmitDuration: BlockNumber = 100;
+}
+impl darwinia_relay_authorities::Trait<EthereumRelayAuthoritiesInstance> for Runtime {
+	type Event = Event;
+	type RingCurrency = Ring;
+	type LockId = EthereumRelayAuthoritiesLockId;
+	type TermDuration = EthereumRelayAuthoritiesTermDuration;
+	type MaxCandidates = MaxCandidates;
+	type AddOrigin = ApproveOrigin;
+	type RemoveOrigin = ApproveOrigin;
+	type ResetOrigin = ApproveOrigin;
+	type DarwiniaMMR = HeaderMMR;
+	type Sign = EthereumBacking;
+	type SignThreshold = SignThreshold;
+	type SubmitDuration = SubmitDuration;
 	type WeightInfo = ();
 }
 
@@ -916,8 +952,12 @@ impl darwinia_ethereum_relay::Trait for Runtime {
 }
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
+parameter_types! {
+	pub const EthereumRelayerGameLockId: LockIdentifier = *b"da/rgame";
+}
 impl darwinia_relayer_game::Trait<EthereumRelayerGameInstance> for Runtime {
 	type RingCurrency = Ring;
+	type LockId = EthereumRelayerGameLockId;
 	type RingSlash = Treasury;
 	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
 	type RelayableChain = EthereumRelay;
@@ -940,7 +980,7 @@ construct_runtime!(
 	pub enum Runtime
 	where
 		Block = Block,
-		NodeBlock = darwinia_primitives::Block,
+		NodeBlock = OpaqueBlock,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// Basic stuff; balances is uncallable initially.
@@ -1015,9 +1055,14 @@ construct_runtime!(
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
 
+		// Crab bridge.
 		CrabIssuing: darwinia_crab_issuing::{Module, Call, Storage, Config, Event<T>},
 
+		// Governance stuff; uncallable initially.
 		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>},
+
+		// Ethereum bridge.
+		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -1270,9 +1315,56 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::{migration::*, traits::Currency};
+		// --- darwinia ---
+		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
+		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+
+		Ring::make_free_balance_be(
+			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
+			Ring::minimum_balance(),
+		);
+
+		// @wuminzhe
+		let account_id = array_bytes::hex_str_array_unchecked!(
+			"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
+			32
+		)
+		.into();
+		// @wuminzhe
+		let signer =
+			array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
+		let stake = 1;
+
+		Ring::set_lock(
+			EthereumRelayAuthoritiesLockId::get(),
+			&account_id,
+			LockFor::Common { amount: stake },
+			WithdrawReasons::all(),
+		);
+
+		put_storage_value(
+			b"Instance0DarwiniaRelayAuthorities",
+			b"Authorities",
+			&[],
+			vec![RelayAuthority {
+				account_id,
+				signer,
+				stake,
+				term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
+			}],
+		);
+		put_storage_value(
+			b"DarwiniaEthereumBacking",
+			b"SetAuthoritiesAddress",
+			&[],
+			array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
+		);
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
