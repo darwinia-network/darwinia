@@ -137,7 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 29,
+	spec_version: 30,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1362,7 +1362,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			b"DarwiniaEthereumBacking",
 			b"SetAuthoritiesAddress",
 			&[],
-			array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
+			array_bytes::hex_str_array_unchecked!("0xc8d6c331030886716f6e323ACB795077eB530E36", 20),
 		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
