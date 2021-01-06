@@ -900,7 +900,6 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 name = "crab-runtime"
 version = "0.8.6"
 dependencies = [
- "array-bytes 0.3.0",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
