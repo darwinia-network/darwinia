@@ -313,6 +313,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 			backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 		}),
+		darwinia_democracy: Some(Default::default()),
 	}
 }
 
@@ -433,6 +434,7 @@ pub fn darwinia_testnet_genesis(
 			backed_ring: 1 << 56,
 			backed_kton: 1 << 56,
 		}),
+		darwinia_democracy: Some(Default::default()),
 	}
 }
 
