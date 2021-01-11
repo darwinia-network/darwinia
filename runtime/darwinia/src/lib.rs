@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 12,
+	spec_version: 13,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -197,6 +197,9 @@ impl Filter<Call> for BaseFilter {
 			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
+			| Call::EthereumBacking(darwinia_ethereum_backing::Call::lock(..))
+			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_set(..))
+			| Call::EthereumRelayAuthorities(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
 		}
@@ -605,6 +608,88 @@ impl darwinia_treasury::Trait for Runtime {
 }
 
 parameter_types! {
+	pub const LaunchPeriod: BlockNumber = 28 * DAYS;
+	pub const VotingPeriod: BlockNumber = 28 * DAYS;
+	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+	pub const MinimumDeposit: Balance = 100 * COIN;
+	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
+	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
+	// One milli: $10,000 / MB
+	pub const PreimageByteDeposit: Balance = 1 * MILLI;
+	pub const InstantAllowed: bool = true;
+	pub const MaxVotes: u32 = 100;
+	pub const MaxProposals: u32 = 100;
+}
+impl darwinia_democracy::Trait for Runtime {
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod;
+	type LaunchPeriod = LaunchPeriod;
+	type VotingPeriod = VotingPeriod;
+	type MinimumDeposit = MinimumDeposit;
+	/// A straight majority of the council can decide what their next motion is.
+	type ExternalOrigin = frame_system::EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// A 60% super-majority can have the next scheduled referendum be a straight majority-carries vote.
+	type ExternalMajorityOrigin = frame_system::EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// A unanimous council can have the next scheduled referendum be a straight default-carries
+	/// (NTB) vote.
+	type ExternalDefaultOrigin = frame_system::EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+	/// be tabled immediately and with a shorter voting/enactment period.
+	type FastTrackOrigin = frame_system::EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	type InstantOrigin = frame_system::EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	type InstantAllowed = InstantAllowed;
+	type FastTrackVotingPeriod = FastTrackVotingPeriod;
+	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	type CancellationOrigin = EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>,
+		EnsureRoot<AccountId>,
+	>;
+	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
+	// Root must agree.
+	type CancelProposalOrigin = EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
+		EnsureRoot<AccountId>,
+	>;
+	type BlacklistOrigin = EnsureRoot<AccountId>;
+	// Any single technical committee member may veto a coming council proposal, however they can
+	// only do it once and it lasts only for the cooloff period.
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	type CooloffPeriod = CooloffPeriod;
+	type PreimageByteDeposit = PreimageByteDeposit;
+	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	type Slash = Treasury;
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes;
+	type WeightInfo = weights::darwinia_democracy::WeightInfo<Runtime>;
+	type MaxProposals = MaxProposals;
+}
+
+parameter_types! {
 	pub const MinVestedTransfer: Balance = 100 * MILLI;
 }
 impl darwinia_vesting::Trait for Runtime {
@@ -740,6 +825,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::ElectionsPhragmen(..) |
 				Call::TechnicalMembership(..) |
 				Call::Treasury(..) |
+				Call::Democracy(..) |
 				Call::Utility(..) |
 				Call::Identity(..) |
 				Call::Society(..) |
@@ -766,7 +852,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Council(..)
 					| Call::TechnicalCommittee(..)
 					| Call::ElectionsPhragmen(..)
-					| Call::Treasury(..) | Call::Utility(..)
+					| Call::Treasury(..) | Call::Democracy(..)
+					| Call::Utility(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(
@@ -1031,6 +1118,9 @@ construct_runtime!(
 
 		// Ethereum bridge.
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>},
+
+		// Governance stuff; uncallable initially.
+		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>},
 	}
 );
 
@@ -1288,51 +1378,52 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
-		use frame_support::{migration::*, traits::Currency};
+		// use frame_support::migration::*;
+		use frame_support::traits::Currency;
 		// --- darwinia ---
-		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
-		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+		// use darwinia_relay_primitives::relay_authorities::RelayAuthority;
+		// use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
 		Ring::make_free_balance_be(
 			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
 			Ring::minimum_balance(),
 		);
 
-		// @wuminzhe
-		let account_id = array_bytes::hex_str_array_unchecked!(
-			"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
-			32
-		)
-		.into();
-		// @wuminzhe
-		let signer =
-			array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
-		let stake = 1;
+		// // @wuminzhe
+		// let account_id = array_bytes::hex_str_array_unchecked!(
+		// 	"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
+		// 	32
+		// )
+		// .into();
+		// // @wuminzhe
+		// let signer =
+		// 	array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
+		// let stake = 1;
 
-		Ring::set_lock(
-			EthereumRelayAuthoritiesLockId::get(),
-			&account_id,
-			LockFor::Common { amount: stake },
-			WithdrawReasons::all(),
-		);
+		// Ring::set_lock(
+		// 	EthereumRelayAuthoritiesLockId::get(),
+		// 	&account_id,
+		// 	LockFor::Common { amount: stake },
+		// 	WithdrawReasons::all(),
+		// );
 
-		put_storage_value(
-			b"Instance0DarwiniaRelayAuthorities",
-			b"Authorities",
-			&[],
-			vec![RelayAuthority {
-				account_id,
-				signer,
-				stake,
-				term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
-			}],
-		);
-		put_storage_value(
-			b"DarwiniaEthereumBacking",
-			b"SetAuthoritiesAddress",
-			&[],
-			array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
-		);
+		// put_storage_value(
+		// 	b"Instance0DarwiniaRelayAuthorities",
+		// 	b"Authorities",
+		// 	&[],
+		// 	vec![RelayAuthority {
+		// 		account_id,
+		// 		signer,
+		// 		stake,
+		// 		term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
+		// 	}],
+		// );
+		// put_storage_value(
+		// 	b"DarwiniaEthereumBacking",
+		// 	b"SetAuthoritiesAddress",
+		// 	&[],
+		// 	array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
+		// );
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}

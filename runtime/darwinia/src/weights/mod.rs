@@ -1,6 +1,7 @@
 //! A collection of weight modules used for pallets in the runtime.
 
 pub mod darwinia_balances;
+pub mod darwinia_democracy;
 pub mod darwinia_elections_phragmen;
 pub mod darwinia_staking;
 pub mod darwinia_treasury;

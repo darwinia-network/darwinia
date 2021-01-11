@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.8.6"
+version     = "0.8.7"
 
 [[bin]]
 name = "darwinia"
@@ -22,11 +22,6 @@ parity-util-mem = { version = "*", default-features = false, features = ["jemall
 # darwinia
 darwinia-cli     = { path = "cli" }
 darwinia-service = { path = "node/service" }
-
-[dev-dependencies]
-assert_cmd = { version = "1.0.1" }
-nix        = { version = "0.19.0" }
-tempfile   = { version = "3.1.0" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
