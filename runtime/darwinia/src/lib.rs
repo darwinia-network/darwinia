@@ -197,6 +197,9 @@ impl Filter<Call> for BaseFilter {
 			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
+			| Call::EthereumBacking(darwinia_ethereum_backing::Call::lock(..))
+			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_set(..))
+			| Call::EthereumRelayAuthorities(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
 		}
@@ -1375,9 +1378,10 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
-		use frame_support::{migration::*, traits::Currency};
+		// use frame_support::migration::*;
+		use frame_support::traits::Currency;
 		// --- darwinia ---
-		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
+		// use darwinia_relay_primitives::relay_authorities::RelayAuthority;
 		// use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
 		Ring::make_free_balance_be(
