@@ -137,7 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 32,
+	spec_version: 33,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1321,18 +1321,18 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		use frame_support::migration::*;
 
-		if let Some(term) = take_storage_value::<darwinia_relay_primitives::relay_authorities::Term>(
+		put_storage_value::<([u8; 32], Vec<(AccountId, [u8; 65])>)>(
 			b"Instance0DarwiniaRelayAuthorities",
-			b"AuthorityTerm",
+			b"AuthoritiesToSign",
 			&[],
-		) {
-			put_storage_value(
-				b"Instance0DarwiniaRelayAuthorities",
-				b"AuthorityTerm",
-				&[],
-				term - 1,
-			);
-		}
+			(
+				array_bytes::bytes_array_unchecked!(
+					"0x380132304c719f4aec2b56ad3f67828da851e226923de36cba246e401273f203",
+					32
+				),
+				vec![],
+			),
+		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
