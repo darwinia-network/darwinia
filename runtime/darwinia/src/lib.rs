@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 13,
+	spec_version: 14,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1379,15 +1379,9 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
-		use frame_support::traits::Currency;
 		// --- darwinia ---
 		// use darwinia_relay_primitives::relay_authorities::RelayAuthority;
 		// use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
-
-		Ring::make_free_balance_be(
-			&<darwinia_ethereum_backing::Module<Runtime>>::fee_account_id(),
-			Ring::minimum_balance(),
-		);
 
 		// // @wuminzhe
 		// let account_id = array_bytes::hex_str_array_unchecked!(
