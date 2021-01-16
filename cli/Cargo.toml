@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.8.8"
+version     = "0.8.9"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
