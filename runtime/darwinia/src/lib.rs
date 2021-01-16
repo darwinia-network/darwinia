@@ -123,6 +123,7 @@ use constants::{currency::*, fee::*, relay::*, time::*};
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
+use darwinia_relay_primitives::relay_authorities::OpCode;
 use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
@@ -172,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 14,
+	spec_version: 15,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -198,7 +199,7 @@ impl Filter<Call> for BaseFilter {
 			Call::Balances(_)
 			| Call::Kton(_)
 			| Call::EthereumBacking(darwinia_ethereum_backing::Call::lock(..))
-			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_set(..))
+			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_change(..))
 			| Call::EthereumRelayAuthorities(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
@@ -929,9 +930,11 @@ impl pallet_sudo::Trait for Runtime {
 parameter_types! {
 	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
 	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
+	pub const RingLockLimit: Balance = 10_000_000 * COIN;
+	pub const KtonLockLimit: Balance = 1_000 * COIN;
 	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
 	pub const AdvancedFee: Balance = 50 * COIN;
-	pub const SyncReward: Balance = 1000 * COIN;
+	pub const SyncReward: Balance = 1_000 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthereumBackingModuleId;
@@ -942,6 +945,8 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 	type OnDepositRedeem = Staking;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
+	type RingLockLimit = RingLockLimit;
+	type KtonLockLimit = KtonLockLimit;
 	type AdvancedFee = AdvancedFee;
 	type SyncReward = SyncReward;
 	type EcdsaAuthorities = EthereumRelayAuthorities;
@@ -953,6 +958,10 @@ parameter_types! {
 	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
 	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 30 * DAYS;
 	pub const MaxCandidates: usize = 7;
+	pub const OpCodes: (OpCode, OpCode) = (
+		[71, 159, 189, 249],
+		[180, 188, 244, 151]
+	);
 	pub const SignThreshold: Perbill = Perbill::from_percent(60);
 	pub const SubmitDuration: BlockNumber = 100;
 }
@@ -967,6 +976,7 @@ impl darwinia_relay_authorities::Trait<EthereumRelayAuthoritiesInstance> for Run
 	type ResetOrigin = ApproveOrigin;
 	type DarwiniaMMR = HeaderMMR;
 	type Sign = EthereumBacking;
+	type OpCodes = OpCodes;
 	type SignThreshold = SignThreshold;
 	type SubmitDuration = SubmitDuration;
 	type WeightInfo = ();

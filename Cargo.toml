@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.8.8"
+version     = "0.8.9"
 
 [[bin]]
 name = "darwinia"
@@ -17,7 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 # crates
-futures         = { version = "0.3.8" }
+futures         = { version = "=0.3.8" }
 parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli     = { path = "cli" }
