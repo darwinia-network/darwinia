@@ -1331,6 +1331,10 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		use frame_support::migration::*;
 
+		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"OldAuthorities", &[]);
+		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"AuthoritiesState", &[]);
+		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"OldAuthoritiesLockToRemove", &[]);
+
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
 }
