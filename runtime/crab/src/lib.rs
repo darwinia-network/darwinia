@@ -1331,19 +1331,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		use frame_support::migration::*;
 
-		put_storage_value::<([u8; 32], Vec<(AccountId, [u8; 65])>)>(
-			b"Instance0DarwiniaRelayAuthorities",
-			b"AuthoritiesToSign",
-			&[],
-			(
-				array_bytes::bytes_array_unchecked!(
-					"0x380132304c719f4aec2b56ad3f67828da851e226923de36cba246e401273f203",
-					32
-				),
-				vec![],
-			),
-		);
-
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
 }
