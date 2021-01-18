@@ -138,7 +138,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 34,
+	spec_version: 35,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1330,10 +1330,39 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
 		use frame_support::migration::*;
+		// --- darwinia ---
+		use darwinia_relay_primitives::relay_authorities::{RelayAuthority, Term};
+		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
-		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"OldAuthorities", &[]);
-		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"AuthoritiesState", &[]);
-		remove_storage_prefix(b"Instance0DarwiniaRelayAuthorities", b"OldAuthoritiesLockToRemove", &[]);
+		// https://github.com/darwinia-network/darwinia-common/issues/450
+		for (
+			_,
+			RelayAuthority {
+				account_id, stake, ..
+			},
+		) in <StorageIterator<RelayAuthority<AccountId, [u8; 20], Balance, BlockNumber>>>::new(
+			b"Instance0DarwiniaRelayAuthorities",
+			b"Authorities",
+		) {
+			Ring::set_lock(
+				EthereumRelayAuthoritiesLockId::get(),
+				&account_id,
+				LockFor::Common { amount: stake },
+				WithdrawReasons::all(),
+			);
+		}
+
+		// https://github.com/darwinia-network/darwinia-common/pull/451
+		if let Some(next_term) =
+			take_storage_value::<Term>(b"Instance0DarwiniaRelayAuthorities", b"AuthorityTerm", &[])
+		{
+			put_storage_value::<Term>(
+				b"Instance0DarwiniaRelayAuthorities",
+				b"NextTerm",
+				&[],
+				next_term,
+			);
+		}
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}

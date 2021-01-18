@@ -220,7 +220,7 @@
 		"stake": "Balance",
 		"term": "BlockNumber"
 	},
-	"ScheduledAuthoritiesChange": {
+	"ScheduledAuthoritiesChangeT": {
 		"next_authorities": "Vec<RelayAuthorityT>",
 		"deadline": "BlockNumber"
 	},
