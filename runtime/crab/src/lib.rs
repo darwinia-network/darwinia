@@ -126,7 +126,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
+	// CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -138,7 +138,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 35,
+	spec_version: 36,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -880,7 +880,7 @@ parameter_types! {
 	pub const KtonLockLimit: Balance = 1_000 * COIN;
 	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
 	pub const AdvancedFee: Balance = 50 * COIN;
-	pub const SyncReward: Balance = 1000 * COIN;
+	pub const SyncReward: Balance = 1_000 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthereumBackingModuleId;
@@ -1325,45 +1325,12 @@ impl_runtime_apis! {
 	}
 }
 
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- substrate ---
-		use frame_support::migration::*;
-		// --- darwinia ---
-		use darwinia_relay_primitives::relay_authorities::{RelayAuthority, Term};
-		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+// pub struct CustomOnRuntimeUpgrade;
+// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+// 		// --- substrate ---
+// 		use frame_support::migration::*;
 
-		// https://github.com/darwinia-network/darwinia-common/issues/450
-		for (
-			_,
-			RelayAuthority {
-				account_id, stake, ..
-			},
-		) in <StorageIterator<RelayAuthority<AccountId, [u8; 20], Balance, BlockNumber>>>::new(
-			b"Instance0DarwiniaRelayAuthorities",
-			b"Authorities",
-		) {
-			Ring::set_lock(
-				EthereumRelayAuthoritiesLockId::get(),
-				&account_id,
-				LockFor::Common { amount: stake },
-				WithdrawReasons::all(),
-			);
-		}
-
-		// https://github.com/darwinia-network/darwinia-common/pull/451
-		if let Some(next_term) =
-			take_storage_value::<Term>(b"Instance0DarwiniaRelayAuthorities", b"AuthorityTerm", &[])
-		{
-			put_storage_value::<Term>(
-				b"Instance0DarwiniaRelayAuthorities",
-				b"NextTerm",
-				&[],
-				next_term,
-			);
-		}
-
-		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-	}
-}
+// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+// 	}
+// }
