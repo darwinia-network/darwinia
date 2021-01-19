@@ -880,7 +880,7 @@ parameter_types! {
 	pub const KtonLockLimit: Balance = 1_000 * COIN;
 	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
 	pub const AdvancedFee: Balance = 50 * COIN;
-	pub const SyncReward: Balance = 1000 * COIN;
+	pub const SyncReward: Balance = 1_000 * COIN;
 }
 impl darwinia_ethereum_backing::Trait for Runtime {
 	type ModuleId = EthereumBackingModuleId;
