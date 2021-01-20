@@ -198,9 +198,6 @@ impl Filter<Call> for BaseFilter {
 			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
-			| Call::EthereumBacking(darwinia_ethereum_backing::Call::lock(..))
-			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_change(..))
-			| Call::EthereumRelayAuthorities(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
 		}
