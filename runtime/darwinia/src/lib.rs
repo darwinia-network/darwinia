@@ -1388,40 +1388,60 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
-		// use frame_support::migration::*;
+		use frame_support::migration::*;
 		// --- darwinia ---
-		// use darwinia_relay_primitives::relay_authorities::RelayAuthority;
-		// use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
+		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
-		// // @wuminzhe
-		// let account_id = array_bytes::hex_str_array_unchecked!(
-		// 	"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
-		// 	32
-		// )
-		// .into();
-		// // @wuminzhe
-		// let signer =
-		// 	array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
-		// let stake = 1;
+		let genesis_authorities = vec![
+			// @HackFisher
+			(
+				array_bytes::hex_str_array_unchecked!(
+					"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f",
+					32
+				)
+				.into(),
+				array_bytes::hex_str_array_unchecked!(
+					"0x7C9B3D4cfc78c681B7460acdE2801452aEF073A9",
+					20
+				),
+			),
+			// @wuminzhe
+			(
+				array_bytes::hex_str_array_unchecked!(
+					"0x6a4e6bef70a768785050414fcdf4d869debe5cb6336f8eeebe01f458ddbce409",
+					32
+				)
+				.into(),
+				array_bytes::hex_str_array_unchecked!(
+					"0x953D65e6054b7Eb1629f996238C0aa9b4E2dBfE9",
+					20
+				),
+			),
+		];
+		for (account_id, signer) in genesis_authorities {
+			let stake = 1u128;
 
-		// Ring::set_lock(
-		// 	EthereumRelayAuthoritiesLockId::get(),
-		// 	&account_id,
-		// 	LockFor::Common { amount: stake },
-		// 	WithdrawReasons::all(),
-		// );
+			Ring::set_lock(
+				EthereumRelayAuthoritiesLockId::get(),
+				&account_id,
+				LockFor::Common { amount: stake },
+				WithdrawReasons::all(),
+			);
 
-		// put_storage_value(
-		// 	b"Instance0DarwiniaRelayAuthorities",
-		// 	b"Authorities",
-		// 	&[],
-		// 	vec![RelayAuthority {
-		// 		account_id,
-		// 		signer,
-		// 		stake,
-		// 		term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
-		// 	}],
-		// );
+			put_storage_value(
+				b"Instance0DarwiniaRelayAuthorities",
+				b"Authorities",
+				&[],
+				vec![RelayAuthority {
+					account_id,
+					signer,
+					stake,
+					term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
+				}],
+			);
+		}
+
 		// put_storage_value(
 		// 	b"DarwiniaEthereumBacking",
 		// 	b"SetAuthoritiesAddress",
