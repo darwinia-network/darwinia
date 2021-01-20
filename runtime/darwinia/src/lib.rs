@@ -1439,12 +1439,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			);
 		}
 
-		// put_storage_value(
-		// 	b"DarwiniaEthereumBacking",
-		// 	b"SetAuthoritiesAddress",
-		// 	&[],
-		// 	array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
-		// );
+		put_storage_value(
+			b"DarwiniaEthereumBacking",
+			b"SetAuthoritiesAddress",
+			&[],
+			array_bytes::hex_str_array_unchecked!("0x5cde5Aafeb8E06Ce9e4F94c2406d3B6CB7098E49", 20),
+		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
