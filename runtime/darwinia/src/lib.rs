@@ -173,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 17,
+	spec_version: 18,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -198,9 +198,6 @@ impl Filter<Call> for BaseFilter {
 			// third stage
 			Call::Balances(_)
 			| Call::Kton(_)
-			| Call::EthereumBacking(darwinia_ethereum_backing::Call::lock(..))
-			| Call::EthereumBacking(darwinia_ethereum_backing::Call::sync_authorities_change(..))
-			| Call::EthereumRelayAuthorities(_)
 			| Call::Vesting(darwinia_vesting::Call::vested_transfer(..)) => false,
 			_ => true,
 		}
@@ -956,14 +953,14 @@ impl darwinia_ethereum_backing::Trait for Runtime {
 type EthereumRelayAuthoritiesInstance = darwinia_relay_authorities::Instance0;
 parameter_types! {
 	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
-	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 30 * DAYS;
+	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 7 * DAYS;
 	pub const MaxCandidates: usize = 7;
 	pub const OpCodes: (OpCode, OpCode) = (
 		[71, 159, 189, 249],
 		[180, 188, 244, 151]
 	);
 	pub const SignThreshold: Perbill = Perbill::from_percent(60);
-	pub const SubmitDuration: BlockNumber = 100;
+	pub const SubmitDuration: BlockNumber = 300;
 }
 impl darwinia_relay_authorities::Trait<EthereumRelayAuthoritiesInstance> for Runtime {
 	type Event = Event;
@@ -1388,46 +1385,66 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
-		// use frame_support::migration::*;
+		use frame_support::migration::*;
 		// --- darwinia ---
-		// use darwinia_relay_primitives::relay_authorities::RelayAuthority;
-		// use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
+		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
 
-		// // @wuminzhe
-		// let account_id = array_bytes::hex_str_array_unchecked!(
-		// 	"0x129f002b1c0787ea72c31b2dc986e66911fe1b4d6dc16f83a1127f33e5a74c7d",
-		// 	32
-		// )
-		// .into();
-		// // @wuminzhe
-		// let signer =
-		// 	array_bytes::hex_str_array_unchecked!("0x9a2976dB293C04Bc36acC39122aAd33CC00f62a8", 20);
-		// let stake = 1;
+		let genesis_authorities = vec![
+			// @HackFisher
+			(
+				array_bytes::hex_str_array_unchecked!(
+					"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f",
+					32
+				)
+				.into(),
+				array_bytes::hex_str_array_unchecked!(
+					"0x7C9B3D4cfc78c681B7460acdE2801452aEF073A9",
+					20
+				),
+			),
+			// @wuminzhe
+			(
+				array_bytes::hex_str_array_unchecked!(
+					"0x6a4e6bef70a768785050414fcdf4d869debe5cb6336f8eeebe01f458ddbce409",
+					32
+				)
+				.into(),
+				array_bytes::hex_str_array_unchecked!(
+					"0x953D65e6054b7Eb1629f996238C0aa9b4E2dBfE9",
+					20
+				),
+			),
+		];
+		for (account_id, signer) in genesis_authorities {
+			let stake = 1u128;
 
-		// Ring::set_lock(
-		// 	EthereumRelayAuthoritiesLockId::get(),
-		// 	&account_id,
-		// 	LockFor::Common { amount: stake },
-		// 	WithdrawReasons::all(),
-		// );
+			Ring::set_lock(
+				EthereumRelayAuthoritiesLockId::get(),
+				&account_id,
+				LockFor::Common { amount: stake },
+				WithdrawReasons::all(),
+			);
 
-		// put_storage_value(
-		// 	b"Instance0DarwiniaRelayAuthorities",
-		// 	b"Authorities",
-		// 	&[],
-		// 	vec![RelayAuthority {
-		// 		account_id,
-		// 		signer,
-		// 		stake,
-		// 		term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
-		// 	}],
-		// );
-		// put_storage_value(
-		// 	b"DarwiniaEthereumBacking",
-		// 	b"SetAuthoritiesAddress",
-		// 	&[],
-		// 	array_bytes::hex_str_array_unchecked!("0xE4A2892599Ad9527D76Ce6E26F93620FA7396D85", 20),
-		// );
+			put_storage_value(
+				b"Instance0DarwiniaRelayAuthorities",
+				b"Authorities",
+				&[],
+				vec![RelayAuthority {
+					account_id,
+					signer,
+					stake,
+					term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
+				}],
+			);
+		}
+
+		put_storage_value(
+			b"DarwiniaEthereumBacking",
+			b"SetAuthoritiesAddress",
+			&[],
+			array_bytes::hex_str_array_unchecked!("0x5cde5Aafeb8E06Ce9e4F94c2406d3B6CB7098E49", 20),
+		);
 
 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
 	}
