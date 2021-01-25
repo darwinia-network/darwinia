@@ -1346,14 +1346,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 						&key.encode(),
 					);
 				}
-
-				// schedule a new mmr root
-				put_storage_value::<Vec<(AccountId, [u8; 65])>>(
-					b"Instance0DarwiniaRelayAuthorities",
-					b"MMRRootsToSign",
-					&max.encode(),
-					vec![],
-				)
 			}
 		}
 
