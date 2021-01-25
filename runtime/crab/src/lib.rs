@@ -49,7 +49,8 @@ use codec::{Decode, Encode};
 use static_assertions::const_assert;
 // --- substrate ---
 use frame_support::{
-	construct_runtime, debug, parameter_types,
+	construct_runtime, debug,
+	parameter_types,
 	traits::{
 		ChangeMembers, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
 		OnUnbalanced, Randomness,
@@ -126,7 +127,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -1325,12 +1326,37 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		// --- substrate ---
-// 		use frame_support::migration::*;
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- substrate ---
+		use frame_support::migration::*;
 
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+		if let Some(keys) = take_storage_value::<Vec<BlockNumber>>(
+			b"Instance0DarwiniaRelayAuthorities",
+			b"MMRRootsToSignKeys",
+			&[],
+		) {
+			// clear old mmr roots
+			if let Some(&max) = keys.iter().max() {
+				for key in keys {
+					take_storage_value::<Vec<(AccountId, [u8; 65])>>(
+						b"Instance0DarwiniaRelayAuthorities",
+						b"MMRRootsToSign",
+						&key.encode(),
+					);
+				}
+
+				// schedule a new mmr root
+				put_storage_value::<Vec<(AccountId, [u8; 65])>>(
+					b"Instance0DarwiniaRelayAuthorities",
+					b"MMRRootsToSign",
+					&max.encode(),
+					vec![],
+				)
+			}
+		}
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
