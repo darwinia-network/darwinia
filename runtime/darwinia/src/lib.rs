@@ -161,7 +161,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	CustomOnRuntimeUpgrade,
+	// CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -173,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 18,
+	spec_version: 19,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1380,72 +1380,12 @@ impl_runtime_apis! {
 	}
 }
 
-// TODO: https://github.com/darwinia-network/darwinia/issues/592
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- substrate ---
-		use frame_support::migration::*;
-		// --- darwinia ---
-		use darwinia_relay_primitives::relay_authorities::RelayAuthority;
-		use darwinia_support::balance::lock::{LockFor, LockableCurrency, WithdrawReasons};
+// pub struct CustomOnRuntimeUpgrade;
+// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+// 		// --- substrate ---
+// 		use frame_support::migration::*;
 
-		let genesis_authorities = vec![
-			// @HackFisher
-			(
-				array_bytes::hex_str_array_unchecked!(
-					"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f",
-					32
-				)
-				.into(),
-				array_bytes::hex_str_array_unchecked!(
-					"0x7C9B3D4cfc78c681B7460acdE2801452aEF073A9",
-					20
-				),
-			),
-			// @wuminzhe
-			(
-				array_bytes::hex_str_array_unchecked!(
-					"0x6a4e6bef70a768785050414fcdf4d869debe5cb6336f8eeebe01f458ddbce409",
-					32
-				)
-				.into(),
-				array_bytes::hex_str_array_unchecked!(
-					"0x953D65e6054b7Eb1629f996238C0aa9b4E2dBfE9",
-					20
-				),
-			),
-		];
-		for (account_id, signer) in genesis_authorities {
-			let stake = 1u128;
-
-			Ring::set_lock(
-				EthereumRelayAuthoritiesLockId::get(),
-				&account_id,
-				LockFor::Common { amount: stake },
-				WithdrawReasons::all(),
-			);
-
-			put_storage_value(
-				b"Instance0DarwiniaRelayAuthorities",
-				b"Authorities",
-				&[],
-				vec![RelayAuthority {
-					account_id,
-					signer,
-					stake,
-					term: System::block_number() + EthereumRelayAuthoritiesTermDuration::get(),
-				}],
-			);
-		}
-
-		put_storage_value(
-			b"DarwiniaEthereumBacking",
-			b"SetAuthoritiesAddress",
-			&[],
-			array_bytes::hex_str_array_unchecked!("0x5cde5Aafeb8E06Ce9e4F94c2406d3B6CB7098E49", 20),
-		);
-
-		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-	}
-}
+// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+// 	}
+// }
