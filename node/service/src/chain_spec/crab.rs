@@ -45,10 +45,8 @@ pub fn crab_properties() -> Properties {
 	let mut properties = Properties::new();
 
 	properties.insert("ss58Format".into(), 42.into());
-	properties.insert("tokenDecimals".into(), 9.into());
-	properties.insert("tokenSymbol".into(), "CRING".into());
-	properties.insert("ktonTokenDecimals".into(), 9.into());
-	properties.insert("ktonTokenSymbol".into(), "CKTON".into());
+	properties.insert("tokenDecimals".into(), vec![9, 9].into());
+	properties.insert("tokenSymbol".into(), vec!["CRING", "CKTON"].into());
 
 	properties
 }
