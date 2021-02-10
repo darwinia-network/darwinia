@@ -7,7 +7,7 @@
 image:https://travis-ci.org/darwinia-network/darwinia.svg[Build Status (Travis CI),link=https://travis-ci.org/darwinia-network/darwinia]
 image:https://img.shields.io/badge/License-GPLv3-blue.svg[License: GPL v3,link=https://www.gnu.org/licenses/gpl-3.0]
 
-== Introduction
+== Introductionn
 
 image:https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png[image]
 
