@@ -132,11 +132,11 @@ pub mod relay {
 
 					sample_points.push(new_sample_points);
 				} else {
-					// Should never enter this condition
+					// Should never be reached
 					error!(target: "ethereum-relayer-game", "Sample Round - NOT EXISTED");
 				}
 			} else {
-				// Should never enter this condition
+				// Should never be reached
 				error!(target: "ethereum-relayer-game", "Sample Point - NOT EXISTED");
 			}
 		}
