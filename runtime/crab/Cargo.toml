@@ -130,6 +130,7 @@ std    = [
 	"pallet-proxy/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-recovery/std",
+	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-society/std",
 	"pallet-sudo/std",
