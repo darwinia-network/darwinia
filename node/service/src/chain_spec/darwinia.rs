@@ -323,7 +323,7 @@ pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 	];
 
 	DarwiniaChainSpec::from_genesis(
-		"Darwinia CC1",
+		"Darwinia",
 		"darwinia",
 		ChainType::Live,
 		darwinia_build_spec_genesis,
