@@ -26,7 +26,7 @@ tokio                = { version = "0.3.5", optional = true, features = ["rt-mul
 wasm-bindgen         = { version = "0.2.69", optional = true }
 wasm-bindgen-futures = { version = "0.4.19", optional = true }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "pangolin" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client

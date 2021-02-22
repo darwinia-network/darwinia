@@ -13,9 +13,9 @@ version     = "0.9.4"
 codec        = { package = "parity-scale-codec", version = "1.3.5", default-features = false }
 jsonrpc-core = { version = "15.1.0" }
 # darwinia frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "pangolin" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "pangolin" }
+darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "pangolin" }
 # darwinia primitives
 darwinia-primitives = { path = "../primitives" }
 # substrate client
