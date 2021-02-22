@@ -318,12 +318,12 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 /// Darwinia config.
 pub fn darwinia_build_spec_config() -> DarwiniaChainSpec {
 	let boot_nodes = vec![
-		"/dns4/g1.p2p.cc1.darwinia.network/tcp/30333/p2p/12D3KooWANEQE69Td86QUy68Lim3rZR5mxsMviGYdi14ErzCfdht".parse().unwrap(),
-		"/dns4/g2.p2p.cc1.darwinia.network/tcp/30333/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap()
+		"/dns4/g1.p2p.darwinia.network/tcp/30333/p2p/12D3KooWANEQE69Td86QUy68Lim3rZR5mxsMviGYdi14ErzCfdht".parse().unwrap(),
+		"/dns4/g2.p2p.darwinia.network/tcp/30333/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap()
 	];
 
 	DarwiniaChainSpec::from_genesis(
-		"Darwinia CC1",
+		"Darwinia",
 		"darwinia",
 		ChainType::Live,
 		darwinia_build_spec_genesis,
