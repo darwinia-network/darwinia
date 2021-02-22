@@ -102,7 +102,7 @@ impl<T: frame_system::Trait> darwinia_staking::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(n as Weight)))
 	}
-	fn rebond(l: u32, ) -> Weight {
+	fn rebond(l: u32) -> Weight {
 		(44_834_000 as Weight)
 			.saturating_add((103_000 as Weight).saturating_mul(l as Weight))
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
