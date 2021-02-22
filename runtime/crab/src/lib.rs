@@ -49,8 +49,7 @@ use codec::{Decode, Encode};
 use static_assertions::const_assert;
 // --- substrate ---
 use frame_support::{
-	construct_runtime, debug,
-	parameter_types,
+	construct_runtime, debug, parameter_types,
 	traits::{
 		ChangeMembers, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
 		OnUnbalanced, Randomness,
@@ -127,7 +126,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllModules,
-	// CustomOnRuntimeUpgrade,
+	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
@@ -139,7 +138,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Crab"),
 	impl_name: create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 39,
+	spec_version: 40,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -1326,12 +1325,105 @@ impl_runtime_apis! {
 	}
 }
 
-// pub struct CustomOnRuntimeUpgrade;
-// impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		// --- substrate ---
-// 		use frame_support::migration::*;
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- crates.io ---
+		use array_bytes::hex_str_array_unchecked;
+		// --- substrate ---
+		use frame_support::{migration::*, Hashable};
 
-// 		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
-// 	}
-// }
+		let broken_ledger_accounts: Vec<[u8; 32]> = vec![
+			hex_str_array_unchecked!(
+				"f02ab4ce414ccb16a4ed98214149ab109dd9559407fbdfe23c9c626eb7f31148",
+				32
+			),
+			hex_str_array_unchecked!(
+				"58aea2b6740c1ae992e652c9c6dc490d3d7396f5a3d2e19500e43188a4e92b51",
+				32
+			),
+		];
+
+		for broken_ledger_account in broken_ledger_accounts {
+			if let Some(mut ledger) = get_storage_value::<
+				darwinia_staking::StakingLedger<AccountId, Balance, Balance, BlockNumber>,
+			>(
+				b"DarwiniaStaking",
+				b"Ledger",
+				&<[u8; 32]>::blake2_128_concat(&broken_ledger_account),
+			) {
+				ledger.active_deposit_ring = 0;
+
+				put_storage_value(
+					b"DarwiniaStaking",
+					b"Ledger",
+					&<[u8; 32]>::blake2_128_concat(&broken_ledger_account),
+					ledger,
+				);
+			}
+		}
+
+		<Runtime as frame_system::Trait>::MaximumBlockWeight::get()
+	}
+}
+
+#[test]
+fn migration_should_work() {
+	// --- substrate ---
+	use frame_support::Hashable;
+	// --- darwinia ---
+	use darwinia_staking::StakingLedger;
+
+	assert_eq!(
+		array_bytes::hex_str(
+			"0x",
+			<[u8; 32]>::blake2_128_concat(&array_bytes::hex_str_array_unchecked!(
+				"58aea2b6740c1ae992e652c9c6dc490d3d7396f5a3d2e19500e43188a4e92b51",
+				32
+			)),
+		),
+		"0xf83824d08fffb51de52f86013ff7cfb858aea2b6740c1ae992e652c9c6dc490d3d7396f5a3d2e19500e43188a4e92b51"
+	);
+	assert_eq!(
+		<StakingLedger<AccountId, Balance, Balance, BlockNumber>>::decode(
+			&mut &*array_bytes::bytes_unchecked(
+				"0x58aea2b6740c1ae992e652c9c6dc490d3d7396f5a3d2e19500e43188a4e92b510f7228a8ef5b23090f7228a8ef5b23094a703800007228a8ef5b230900000000000000000000121c0e00000000000000000000000000003c000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d0000000e000000"
+			)
+		).unwrap(),
+		StakingLedger {
+			stash: array_bytes::hex_str_array_unchecked!(
+				"58aea2b6740c1ae992e652c9c6dc490d3d7396f5a3d2e19500e43188a4e92b51",
+				32
+			).into(),
+			active_ring: 2572152560167026,
+			active_deposit_ring: 2572152560167026,
+			active_kton: 924690,
+			deposit_items: vec![],
+			ring_staking_lock: darwinia_support::balance::lock::StakingLock {
+				staking_amount: 2572152560167026,
+				unbondings: vec![],
+			},
+			kton_staking_lock: darwinia_support::balance::lock::StakingLock {
+				staking_amount: 924690,
+				unbondings: vec![],
+			},
+			claimed_rewards: vec![
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+			],
+		}
+	);
+}

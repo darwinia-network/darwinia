@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "crab-runtime"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.9.3"
+version     = "0.9.4"
 
 [dependencies]
 # crates
@@ -130,6 +130,7 @@ std    = [
 	"pallet-proxy/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-recovery/std",
+	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-society/std",
 	"pallet-sudo/std",
