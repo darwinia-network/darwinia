@@ -1045,8 +1045,8 @@ construct_runtime!(
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 2,
 
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent} = 3,
-		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>} 4,
-		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>} 5,
+		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>} = 4,
+		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>} = 5,
 		TransactionPayment: pallet_transaction_payment::{Module, Storage} = 6,
 
 		// Consensus support.
