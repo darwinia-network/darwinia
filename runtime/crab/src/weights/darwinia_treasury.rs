@@ -21,7 +21,7 @@ impl<T: frame_system::Trait> darwinia_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn report_awesome(r: u32, ) -> Weight {
+	fn report_awesome(r: u32) -> Weight {
 		(64_348_000 as Weight)
 			.saturating_add((2_000 as Weight).saturating_mul(r as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
@@ -32,26 +32,26 @@ impl<T: frame_system::Trait> darwinia_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn tip_new(r: u32, t: u32, ) -> Weight {
+	fn tip_new(r: u32, t: u32) -> Weight {
 		(40_044_000 as Weight)
 			.saturating_add((2_000 as Weight).saturating_mul(r as Weight))
 			.saturating_add((145_000 as Weight).saturating_mul(t as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn tip(t: u32, ) -> Weight {
+	fn tip(t: u32) -> Weight {
 		(27_277_000 as Weight)
 			.saturating_add((688_000 as Weight).saturating_mul(t as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn close_tip(t: u32, ) -> Weight {
+	fn close_tip(t: u32) -> Weight {
 		(102_574_000 as Weight)
 			.saturating_add((360_000 as Weight).saturating_mul(t as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	fn propose_bounty(d: u32, ) -> Weight {
+	fn propose_bounty(d: u32) -> Weight {
 		(55_563_000 as Weight)
 			.saturating_add((1_000 as Weight).saturating_mul(d as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
@@ -102,7 +102,7 @@ impl<T: frame_system::Trait> darwinia_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn on_initialize_proposals(p: u32, ) -> Weight {
+	fn on_initialize_proposals(p: u32) -> Weight {
 		(110_747_000 as Weight)
 			.saturating_add((69_650_000 as Weight).saturating_mul(p as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
@@ -110,7 +110,7 @@ impl<T: frame_system::Trait> darwinia_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(p as Weight)))
 	}
-	fn on_initialize_bounties(b: u32, ) -> Weight {
+	fn on_initialize_bounties(b: u32) -> Weight {
 		(102_988_000 as Weight)
 			.saturating_add((69_250_000 as Weight).saturating_mul(b as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))

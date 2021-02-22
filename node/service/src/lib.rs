@@ -376,7 +376,10 @@ where
 			.spawn_blocking("babe", babe);
 	}
 
-	if matches!(role, ServiceRole::Authority { .. } | ServiceRole::Sentry { .. }) {
+	if matches!(
+		role,
+		ServiceRole::Authority { .. } | ServiceRole::Sentry { .. }
+	) {
 		let (sentries, authority_discovery_role) = match role {
 			ServiceRole::Authority { ref sentry_nodes } => (
 				sentry_nodes.clone(),

@@ -6,13 +6,13 @@ use sp_std::marker::PhantomData;
 
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Trait> darwinia_elections_phragmen::WeightInfo for WeightInfo<T> {
-	fn vote(v: u32, ) -> Weight {
+	fn vote(v: u32) -> Weight {
 		(83_050_000 as Weight)
 			.saturating_add((124_000 as Weight).saturating_mul(v as Weight))
 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn vote_update(v: u32, ) -> Weight {
+	fn vote_update(v: u32) -> Weight {
 		(50_510_000 as Weight)
 			.saturating_add((116_000 as Weight).saturating_mul(v as Weight))
 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
@@ -23,27 +23,27 @@ impl<T: frame_system::Trait> darwinia_elections_phragmen::WeightInfo for WeightI
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn report_defunct_voter_correct(c: u32, v: u32, ) -> Weight {
+	fn report_defunct_voter_correct(c: u32, v: u32) -> Weight {
 		(0 as Weight)
 			.saturating_add((1_722_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add((34_302_000 as Weight).saturating_mul(v as Weight))
 			.saturating_add(T::DbWeight::get().reads(7 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	fn report_defunct_voter_incorrect(c: u32, v: u32, ) -> Weight {
+	fn report_defunct_voter_incorrect(c: u32, v: u32) -> Weight {
 		(0 as Weight)
 			.saturating_add((1_724_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add((34_226_000 as Weight).saturating_mul(v as Weight))
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn submit_candidacy(c: u32, ) -> Weight {
+	fn submit_candidacy(c: u32) -> Weight {
 		(67_828_000 as Weight)
 			.saturating_add((278_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn renounce_candidacy_candidate(c: u32, ) -> Weight {
+	fn renounce_candidacy_candidate(c: u32) -> Weight {
 		(41_519_000 as Weight)
 			.saturating_add((140_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
@@ -65,7 +65,6 @@ impl<T: frame_system::Trait> darwinia_elections_phragmen::WeightInfo for WeightI
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
 	fn remove_member_wrong_refund() -> Weight {
-		(8_355_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+		(8_355_000 as Weight).saturating_add(T::DbWeight::get().reads(1 as Weight))
 	}
 }
