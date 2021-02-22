@@ -23,7 +23,6 @@ use std::{sync::Arc, time::Duration};
 // --- crates ---
 use futures::stream::StreamExt;
 // --- substrate ---
-use sc_authority_discovery::Role as AuthorityDiscoveryRole;
 use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
 use sc_consensus::LongestChain;
@@ -34,18 +33,17 @@ use sc_finality_grandpa::{
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
 	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
-use sc_network::Event as NetworkEvent;
+use sc_network::Event;
 use sc_service::{
 	config::{KeystoreConfig, PrometheusConfig},
 	BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder, PartialComponents,
-	Role as ServiceRole, SpawnTasksParams, TaskManager, TelemetryConnectionSinks,
+	SpawnTasksParams, TaskManager, TelemetryConnectionSinks,
 };
 use sc_transaction_pool::{BasicPool, FullPool};
 use sp_api::ConstructRuntimeApi;
 use sp_consensus::{
 	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
 };
-use sp_core::traits::BareCryptoStorePtr;
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
@@ -240,6 +238,7 @@ where
 		let keystore = keystore_container.sync_keystore();
 		let transaction_pool = transaction_pool.clone();
 		let select_chain = select_chain.clone();
+		let chain_spec = config.chain_spec.cloned_box();
 
 		move |deny_unsafe, subscription_executor| -> RpcExtension {
 			let deps = FullDeps {
@@ -379,42 +378,6 @@ where
 			.spawn_blocking("babe", babe);
 	}
 
-	if matches!(
-		role,
-		ServiceRole::Authority { .. } | ServiceRole::Sentry { .. }
-	) {
-		let (sentries, authority_discovery_role) = match role {
-			ServiceRole::Authority { ref sentry_nodes } => (
-				sentry_nodes.clone(),
-				AuthorityDiscoveryRole::Authority(keystore.clone()),
-			),
-			ServiceRole::Sentry { .. } => (vec![], AuthorityDiscoveryRole::Sentry),
-			_ => unreachable!("Due to outer matches! constraint; qed."),
-		};
-
-		let network_event_stream = network.event_stream("authority-discovery");
-		let dht_event_stream = network_event_stream
-			.filter_map(|e| async move {
-				match e {
-					NetworkEvent::Dht(e) => Some(e),
-					_ => None,
-				}
-			})
-			.boxed();
-		let (authority_discovery_worker, _) = sc_authority_discovery::new_worker_and_service(
-			client.clone(),
-			network.clone(),
-			sentries,
-			dht_event_stream,
-			authority_discovery_role,
-			prometheus_registry.clone(),
-		);
-
-		task_manager
-			.spawn_handle()
-			.spawn("authority-discovery-worker", authority_discovery_worker);
-	}
-
 	let keystore = if is_authority {
 		Some(keystore_container.sync_keystore())
 	} else {
@@ -451,9 +414,6 @@ where
 	}
 
 	if role.is_authority() && !authority_discovery_disabled {
-		use futures::StreamExt;
-		use sc_network::Event;
-
 		let authority_discovery_role =
 			sc_authority_discovery::Role::PublishAndDiscover(keystore_container.keystore());
 		let dht_event_stream =
@@ -466,6 +426,7 @@ where
 					}
 				});
 		let (authority_discovery_worker, _service) = sc_authority_discovery::new_worker_and_service(
+			client.clone(),
 			network,
 			Box::pin(dht_event_stream),
 			authority_discovery_role,

@@ -124,8 +124,8 @@ pub fn run() -> sc_cli::Result<()> {
 	match &cli.subcommand {
 		None => {
 			let authority_discovery_disabled = cli.run.authority_discovery_disabled;
-			let runtime = Configuration::create_runner(cli)?;
-			let chain_spec = &runtime.config().chain_spec;
+			let runner = Configuration::create_runner(cli)?;
+			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
 

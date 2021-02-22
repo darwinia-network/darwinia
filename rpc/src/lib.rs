@@ -75,9 +75,12 @@ pub struct LightDeps<C, F, P> {
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, SC, B>(deps: FullDeps<C, P, SC, B>) -> RpcExtension
 where
-	C: 'static + Send + Sync,
-	C: ProvideRuntimeApi<Block>,
-	C: sp_blockchain::HeaderBackend<Block>
+	C: 'static
+		+ Send
+		+ Sync
+		+ ProvideRuntimeApi<Block>
+		+ sc_client_api::AuxStore
+		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
@@ -165,9 +168,7 @@ where
 /// Instantiate all RPC extensions for light node.
 pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
 where
-	C: 'static + Send + Sync,
-	C: ProvideRuntimeApi<Block>,
-	C: sp_blockchain::HeaderBackend<Block>,
+	C: 'static + Send + Sync + ProvideRuntimeApi<Block> + sp_blockchain::HeaderBackend<Block>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	P: 'static + sp_transaction_pool::TransactionPool,
