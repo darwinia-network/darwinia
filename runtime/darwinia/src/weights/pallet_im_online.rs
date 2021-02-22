@@ -1,7 +1,3 @@
-//! Weights for pallet_im_online
-//! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 2.0.0
-//! DATE: 2020-09-28, STEPS: [50], REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
-
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
@@ -11,9 +7,9 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Trait> pallet_im_online::WeightInfo for WeightInfo<T> {
 	fn validate_unsigned_and_then_heartbeat(k: u32, e: u32) -> Weight {
-		(109_072_000 as Weight)
-			.saturating_add((216_000 as Weight).saturating_mul(k as Weight))
-			.saturating_add((481_000 as Weight).saturating_mul(e as Weight))
+		(107_274_000 as Weight)
+			.saturating_add((218_000 as Weight).saturating_mul(k as Weight))
+			.saturating_add((482_000 as Weight).saturating_mul(e as Weight))
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}

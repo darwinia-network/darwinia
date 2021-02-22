@@ -87,7 +87,7 @@ use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
 		ChangeMembers, Filter, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
-		OnUnbalanced, Randomness,
+		OnUnbalanced, Randomness, U128CurrencyToVote,
 	},
 	weights::Weight,
 };
@@ -497,7 +497,7 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 	type Currency = Ring;
 	type ChangeMembers = Council;
 	type InitializeMembers = Council;
-	type CurrencyToVote = support_kton_in_the_future::CurrencyToVoteHandler<Self>;
+	type CurrencyToVote = U128CurrencyToVote;
 	type CandidacyBond = CandidacyBond;
 	type VotingBond = VotingBond;
 	type LoserCandidate = Treasury;
@@ -798,7 +798,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Staking(..) |
 				Call::Offences(..) |
 				Call::Session(..) |
-				Call::FinalityTracker(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
 				Call::AuthorityDiscovery(..) |
