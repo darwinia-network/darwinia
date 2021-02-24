@@ -1,7 +1,3 @@
-//! Weights for pallet_utility
-//! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 2.0.0
-//! DATE: 2020-09-28, STEPS: [50], REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
-
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
@@ -11,10 +7,12 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Trait> pallet_utility::WeightInfo for WeightInfo<T> {
 	fn batch(c: u32) -> Weight {
-		(18_450_000 as Weight).saturating_add((1_730_000 as Weight).saturating_mul(c as Weight))
+		(18_717_000 as Weight).saturating_add((1_995_000 as Weight).saturating_mul(c as Weight))
 	}
-	// WARNING! Some components were not used: ["u"]
 	fn as_derivative() -> Weight {
-		(5_360_000 as Weight)
+		(5_548_000 as Weight)
+	}
+	fn batch_all(c: u32) -> Weight {
+		(19_735_000 as Weight).saturating_add((1_990_000 as Weight).saturating_mul(c as Weight))
 	}
 }

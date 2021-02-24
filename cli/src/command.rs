@@ -123,8 +123,9 @@ pub fn run() -> sc_cli::Result<()> {
 
 	match &cli.subcommand {
 		None => {
-			let runtime = Configuration::create_runner(cli)?;
-			let chain_spec = &runtime.config().chain_spec;
+			let authority_discovery_disabled = cli.run.authority_discovery_disabled;
+			let runner = Configuration::create_runner(cli)?;
+			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
 
@@ -136,15 +137,23 @@ pub fn run() -> sc_cli::Result<()> {
 			info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
 
 			if chain_spec.is_crab() {
-				runtime.run_node_until_exit(|config| match config.role {
-					Role::Light => darwinia_service::crab_new_light(config),
-					_ => darwinia_service::crab_new_full(config).map(|(components, _)| components),
+				runner.run_node_until_exit(|config| async move {
+					match config.role {
+						Role::Light => darwinia_service::crab_new_light(config),
+						_ => darwinia_service::crab_new_full(config, authority_discovery_disabled)
+							.map(|(components, _)| components),
+					}
 				})
 			} else if chain_spec.is_darwinia() {
-				runtime.run_node_until_exit(|config| match config.role {
-					Role::Light => darwinia_service::darwinia_new_light(config),
-					_ => darwinia_service::darwinia_new_full(config)
+				runner.run_node_until_exit(|config| async move {
+					match config.role {
+						Role::Light => darwinia_service::darwinia_new_light(config),
+						_ => darwinia_service::darwinia_new_full(
+							config,
+							authority_discovery_disabled,
+						)
 						.map(|(components, _)| components),
+					}
 				})
 			} else {
 				unreachable!()
@@ -154,8 +163,6 @@ pub fn run() -> sc_cli::Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		}
-		// substrate 6804, #6999
-		// Some(Subcommand::BuildSyncSpec(cmd)) => {}
 		Some(Subcommand::CheckBlock(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;

@@ -1,15 +1,9 @@
-//! Weights for pallet_democracy
-//! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 2.0.0
-//! DATE: 2020-10-29, STEPS: [50, ], REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("polkadot-dev"), DB CACHE: 128
-
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
 use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for pallet_democracy.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Trait> darwinia_democracy::WeightInfo for WeightInfo<T> {
 	fn propose() -> Weight {
