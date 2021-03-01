@@ -25,7 +25,7 @@ pub struct BabeDeps {
 	pub shared_epoch_changes:
 		sc_consensus_epochs::SharedEpochChanges<Block, sc_consensus_babe::Epoch>,
 	/// The keystore that manages the keys of the node.
-	pub keystore: sc_keystore::KeyStorePtr,
+	pub keystore: sp_keystore::SyncCryptoStorePtr,
 }
 
 /// Dependencies for GRANDPA
@@ -50,6 +50,8 @@ pub struct FullDeps<C, P, SC, B> {
 	pub pool: Arc<P>,
 	/// The SelectChain Strategy
 	pub select_chain: SC,
+	/// A copy of the chain spec.
+	pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
 	/// Whether to deny unsafe calls
 	pub deny_unsafe: sc_rpc::DenyUnsafe,
 	/// BABE specific dependencies.
@@ -73,9 +75,12 @@ pub struct LightDeps<C, F, P> {
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, SC, B>(deps: FullDeps<C, P, SC, B>) -> RpcExtension
 where
-	C: 'static + Send + Sync,
-	C: ProvideRuntimeApi<Block>,
-	C: sp_blockchain::HeaderBackend<Block>
+	C: 'static
+		+ Send
+		+ Sync
+		+ ProvideRuntimeApi<Block>
+		+ sc_client_api::AuxStore
+		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
@@ -93,6 +98,7 @@ where
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
 	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
+	use sc_sync_state_rpc::{SyncStateRpcApi, SyncStateRpcHandler};
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 	// --- darwinia ---
 	use darwinia_balances_rpc::{Balances, BalancesApi};
@@ -103,6 +109,7 @@ where
 		client,
 		pool,
 		select_chain,
+		chain_spec,
 		deny_unsafe,
 		babe,
 		grandpa,
@@ -117,37 +124,40 @@ where
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
 	)));
-	{
-		let BabeDeps {
-			keystore,
-			babe_config,
-			shared_epoch_changes,
-		} = babe;
-		io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
-			client.clone(),
-			shared_epoch_changes,
-			keystore,
-			babe_config,
-			select_chain,
-			deny_unsafe,
-		)));
-	}
-	{
-		let GrandpaDeps {
-			shared_voter_state,
-			shared_authority_set,
-			justification_stream,
-			subscription_executor,
-			finality_provider,
-		} = grandpa;
-		io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
-			shared_authority_set,
-			shared_voter_state,
-			justification_stream,
-			subscription_executor,
-			finality_provider,
-		)));
-	}
+	let BabeDeps {
+		keystore,
+		babe_config,
+		shared_epoch_changes,
+	} = babe;
+	io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
+		client.clone(),
+		shared_epoch_changes.clone(),
+		keystore,
+		babe_config,
+		select_chain,
+		deny_unsafe,
+	)));
+	let GrandpaDeps {
+		shared_voter_state,
+		shared_authority_set,
+		justification_stream,
+		subscription_executor,
+		finality_provider,
+	} = grandpa;
+	io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
+		shared_authority_set.clone(),
+		shared_voter_state,
+		justification_stream,
+		subscription_executor,
+		finality_provider,
+	)));
+	io.extend_with(SyncStateRpcApi::to_delegate(SyncStateRpcHandler::new(
+		chain_spec,
+		client.clone(),
+		shared_authority_set,
+		shared_epoch_changes,
+		deny_unsafe,
+	)));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
@@ -158,9 +168,7 @@ where
 /// Instantiate all RPC extensions for light node.
 pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
 where
-	C: 'static + Send + Sync,
-	C: ProvideRuntimeApi<Block>,
-	C: sp_blockchain::HeaderBackend<Block>,
+	C: 'static + Send + Sync + ProvideRuntimeApi<Block> + sp_blockchain::HeaderBackend<Block>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	P: 'static + sp_transaction_pool::TransactionPool,

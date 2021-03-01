@@ -87,7 +87,7 @@ use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
 		ChangeMembers, Filter, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
-		OnUnbalanced, Randomness,
+		OnUnbalanced, Randomness, U128CurrencyToVote,
 	},
 	weights::Weight,
 };
@@ -173,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("Darwinia"),
 	impl_name: create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 21,
+	spec_version: 22,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -419,16 +419,6 @@ impl pallet_session::Trait for Runtime {
 	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-	pub WindowSize: BlockNumber = pallet_finality_tracker::DEFAULT_WINDOW_SIZE.into();
-	pub ReportLatency: BlockNumber = pallet_finality_tracker::DEFAULT_REPORT_LATENCY.into();
-}
-impl pallet_finality_tracker::Trait for Runtime {
-	type OnFinalizationStalled = ();
-	type WindowSize = WindowSize;
-	type ReportLatency = ReportLatency;
-}
-
 impl pallet_grandpa::Trait for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -507,7 +497,7 @@ impl darwinia_elections_phragmen::Trait for Runtime {
 	type Currency = Ring;
 	type ChangeMembers = Council;
 	type InitializeMembers = Council;
-	type CurrencyToVote = support_kton_in_the_future::CurrencyToVoteHandler<Self>;
+	type CurrencyToVote = U128CurrencyToVote;
 	type CandidacyBond = CandidacyBond;
 	type VotingBond = VotingBond;
 	type LoserCandidate = Treasury;
@@ -808,7 +798,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Staking(..) |
 				Call::Offences(..) |
 				Call::Session(..) |
-				Call::FinalityTracker(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
 				Call::AuthorityDiscovery(..) |
@@ -1048,80 +1037,73 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// Basic stuff; balances is uncallable initially.
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Storage},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>} = 0,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Storage} = 1,
 
 		// Must be before session.
-		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned},
+		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 2,
 
-		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
-		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>},
-		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>},
-		TransactionPayment: pallet_transaction_payment::{Module, Storage},
+		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent} = 3,
+		Balances: darwinia_balances::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>} = 4,
+		Kton: darwinia_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>} = 5,
+		TransactionPayment: pallet_transaction_payment::{Module, Storage} = 6,
 
 		// Consensus support.
-		Authorship: pallet_authorship::{Module, Call, Storage},
-		Staking: darwinia_staking::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned},
-		Offences: pallet_offences::{Module, Call, Storage, Event},
-		Historical: pallet_session_historical::{Module},
-		Session: pallet_session::{Module, Call, Storage, Config<T>, Event},
-		FinalityTracker: pallet_finality_tracker::{Module, Call, Storage, Inherent},
-		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned},
-		ImOnline: pallet_im_online::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned},
-		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config},
+		Authorship: pallet_authorship::{Module, Call, Storage} = 7,
+		Staking: darwinia_staking::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 8,
+		Offences: pallet_offences::{Module, Call, Storage, Event} = 9,
+		Historical: pallet_session_historical::{Module} = 10,
+		Session: pallet_session::{Module, Call, Storage, Config<T>, Event} = 11,
+		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 13,
+		ImOnline: pallet_im_online::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
+		AuthorityDiscovery: pallet_authority_discovery::{Module, Call, Config} = 15,
+		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
-		Council: pallet_collective::<Instance0>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>},
-		TechnicalCommittee: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>},
-		ElectionsPhragmen: darwinia_elections_phragmen::{Module, Call, Storage, Config<T>, Event<T>},
-		TechnicalMembership: pallet_membership::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>},
-		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>},
+		Council: pallet_collective::<Instance0>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
+		TechnicalCommittee: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
+		ElectionsPhragmen: darwinia_elections_phragmen::{Module, Call, Storage, Config<T>, Event<T>} = 18,
+		TechnicalMembership: pallet_membership::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>} = 19,
+		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>} = 20,
+		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>} = 37,
 
 		// Vesting. Usable initially, but removed once all vesting is finished.
-		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>},
+		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>} = 21,
 
 		// Utility module.
-		Utility: pallet_utility::{Module, Call, Event},
+		Utility: pallet_utility::{Module, Call, Event} = 22,
 
 		// Less simple identity module.
-		Identity: pallet_identity::{Module, Call, Storage, Event<T>},
+		Identity: pallet_identity::{Module, Call, Storage, Event<T>} = 23,
 
 		// Society module.
-		Society: pallet_society::{Module, Call, Storage, Event<T>},
+		Society: pallet_society::{Module, Call, Storage, Event<T>} = 24,
 
 		// Social recovery module.
-		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>},
+		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>} = 25,
 
 		// System scheduler.
-		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
+		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>} = 26,
 
-		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
+		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>} = 27,
 
 		// Proxy module. Late addition.
-		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
+		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>} = 28,
 
 		// Multisig module. Late addition.
-		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>},
+		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>} = 29,
 
 		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Module, Storage},
+		CrabBacking: darwinia_crab_backing::{Module, Storage} = 30,
 
 		// Ethereum bridge.
-		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>},
-		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>},
-		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage},
+		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>} = 31,
+		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>} = 32,
+		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage} = 33,
+		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
-		TronBacking: darwinia_tron_backing::{Module, Storage, Config<T>},
-
-		// Consensus support.
-		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage},
-
-		// Ethereum bridge.
-		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>},
-
-		// Governance stuff; uncallable initially.
-		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>},
+		TronBacking: darwinia_tron_backing::{Module, Storage, Config<T>} = 34,
 	}
 );
 

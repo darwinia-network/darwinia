@@ -7,13 +7,55 @@ use sc_cli::{KeySubcommand, SignCmd, VanityCmd, VerifyCmd};
 
 #[allow(missing_docs)]
 #[derive(Debug, StructOpt)]
+pub struct Cli {
+	#[allow(missing_docs)]
+	#[structopt(subcommand)]
+	pub subcommand: Option<Subcommand>,
+
+	#[allow(missing_docs)]
+	#[structopt(flatten)]
+	pub run: RunCmd,
+
+	/// Load the boot configuration json file from <PATH>. Command line input will be overwritten by this.
+	#[structopt(long = "conf", value_name = "PATH")]
+	pub conf: Option<std::path::PathBuf>,
+}
+
+#[allow(missing_docs)]
+#[derive(Debug, StructOpt)]
+pub struct RunCmd {
+	#[allow(missing_docs)]
+	#[structopt(flatten)]
+	pub base: sc_cli::RunCmd,
+
+	/// Force using Crab native runtime.
+	#[structopt(long = "force-crab")]
+	pub force_crab: bool,
+
+	/// Disable the authority discovery module on validator or sentry nodes.
+	///
+	/// Enabled by default on validator and sentry nodes. Always disabled on non
+	/// validator or sentry nodes.
+	///
+	/// When enabled:
+	///
+	/// (1) As a validator node: Make oneself discoverable by publishing either
+	///     ones own network addresses, or the ones of ones sentry nodes
+	///     (configured via the `sentry-nodes` flag).
+	///
+	/// (2) As a validator or sentry node: Discover addresses of validators or
+	///     addresses of their sentry nodes and maintain a permanent connection
+	///     to a subset.
+	#[structopt(long = "disable-authority-discovery")]
+	pub authority_discovery_disabled: bool,
+}
+
+#[allow(missing_docs)]
+#[derive(Debug, StructOpt)]
 pub enum Subcommand {
 	/// Build a chain specification.
 	BuildSpec(sc_cli::BuildSpecCmd),
 
-	// substrate 6804, #6999
-	// /// Build a chain specification with a light client sync state.
-	// BuildSyncSpec(sc_cli::BuildSyncSpecCmd),
 	/// Validate blocks.
 	CheckBlock(sc_cli::CheckBlockCmd),
 
@@ -43,32 +85,4 @@ pub enum Subcommand {
 
 	/// Sign a message, with a given (secret) key.
 	Sign(SignCmd),
-}
-
-#[allow(missing_docs)]
-#[derive(Debug, StructOpt)]
-pub struct RunCmd {
-	#[allow(missing_docs)]
-	#[structopt(flatten)]
-	pub base: sc_cli::RunCmd,
-
-	/// Force using Crab native runtime.
-	#[structopt(long = "force-crab")]
-	pub force_crab: bool,
-}
-
-#[allow(missing_docs)]
-#[derive(Debug, StructOpt)]
-pub struct Cli {
-	#[allow(missing_docs)]
-	#[structopt(subcommand)]
-	pub subcommand: Option<Subcommand>,
-
-	#[allow(missing_docs)]
-	#[structopt(flatten)]
-	pub run: RunCmd,
-
-	/// Load the boot configuration json file from <PATH>. Command line input will be overwritten by this.
-	#[structopt(long = "conf", value_name = "PATH")]
-	pub conf: Option<std::path::PathBuf>,
 }
