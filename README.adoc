@@ -23,7 +23,7 @@ It could have two models, the Solo model and the Polkadot model. For more detail
 
 == Road Map
 
-Darwinia Network is composed of Darwinia Bridge Chain(Darwinia), and a serious of other blockchains bridged to Darwinia, including public blockchains such as Ethereum, Tron, EOS, and application specific blockchains.
+Darwinia Network is composed of Darwinia Bridge Chain(Darwinia), and a series of other blockchains bridged to Darwinia, including public blockchains such as Ethereum, Tron, EOS, and application specific blockchains.
 
 Darwinia Bridge Chain will provide interoperability for cross-chain tokens using Darwinia's bridge relay innovation and decentralized backing technology.
 
