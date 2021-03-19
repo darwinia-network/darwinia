@@ -44,3 +44,6 @@ members = [
 [profile.release]
 # Darwinia runtime requires unwinding.
 panic = "unwind"
+
+[patch."https://github.com/darwinia-network/rust-ethash.git"]
+ethash = { git = "https://github.com/darwinia-network/ethash.git", tag = "v1.0.0" }
