@@ -26,18 +26,17 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
 
-    #   - uses: actions/cache@v2
-    #     with:
-    #       path: |
-    #         ~/.cargo/registry
-    #         ~/.cargo/git
-    #         target
-    #       key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    #       restore-keys: |
-    #         ${{ runner.os }}-cargo-
+      - name: Cache darwinia target
+        id: cache-target
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-darwinia
 
       - name: Overall test
-        run: cargo test
+        env:
+          RUST_TOOLCHAIN: nightly-2020-10-06
+        run: sh -f .maintain/overall-test.sh
 
       - uses: 8398a7/action-slack@v3
         if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')

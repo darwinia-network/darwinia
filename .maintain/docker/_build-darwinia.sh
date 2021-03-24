@@ -32,10 +32,18 @@ fi
 
 cd /data/darwinia
 
-if [ "$ARCH" = "aarch64" ]; then
-  SKIP_WASM_BUILD=1 cross build --no-default-features --locked --release --target aarch64-unknown-linux-gnu
+if [ -n ${OVERALL_TEST} ]; then
+
+  cargo test
+
 else
-  cargo build --release
+
+  if [ "$ARCH" = "aarch64" ]; then
+    SKIP_WASM_BUILD=1 cross build --no-default-features --locked --release --target aarch64-unknown-linux-gnu
+  else
+    cargo build --release
+  fi
+
 fi
 
 
