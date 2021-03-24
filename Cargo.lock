@@ -3065,7 +3065,8 @@ dependencies = [
 [[package]]
 name = "impl-codec"
 version = "0.4.2"
-source = "git+https://github.com/darwinia-network/parity-common.git#12a86aa8af8ff5ccd5c953074aa893c716cf85b5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1be51a921b067b0eaca2fad532d9400041561aa922221cc65f95a85641c6bf53"
 dependencies = [
  "parity-scale-codec 1.3.6",
 ]
@@ -3073,8 +3074,7 @@ dependencies = [
 [[package]]
 name = "impl-codec"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1be51a921b067b0eaca2fad532d9400041561aa922221cc65f95a85641c6bf53"
+source = "git+https://github.com/darwinia-network/parity-common.git#12a86aa8af8ff5ccd5c953074aa893c716cf85b5"
 dependencies = [
  "parity-scale-codec 1.3.6",
 ]
