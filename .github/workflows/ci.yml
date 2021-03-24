@@ -18,12 +18,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
-        with:
-          repository: itering/actions
-          path: .github/actions
-          persist-credentials: false
-          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
 
       - name: Install latest nightly
         uses: actions-rs/toolchain@v1
