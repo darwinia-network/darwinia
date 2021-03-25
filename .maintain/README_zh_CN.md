@@ -84,7 +84,7 @@ cargo test
 
 目前缓存的策略并非是 Cargo 所下载的依赖库, 而是将编译过程中的 `target` 目录进行了缓存, 因为就实际情况而言, 在 Github Actions 的编译环境中, 网络并不是一个非常慢的问题, 主要拖慢速度的过程还是在编译, 因此将 `target` 目录进行缓存, 将会大大减少编译的时间.
 
-但是目前缓存策略还存在一下相关问题:
+但是目前缓存策略还存在以下相关问题:
 
 - 已编译依赖的缓存命中
   通常情况 Cargo 编译, 在相同的环境除非是版本发生变动, 已编译过的依赖将不会重新编译; 不过在 darwinia 项目中很多依赖并非是直接使用的 [crates.io](https://crates.io/) 发布的库, 而是直接依赖的 Github 仓库 (例如 [substrate](https://github.com/darwinia-network/substrate)), 这些仓库在 Cargo 的编译过程中, 都不会命中以前以编译过的文件, 而是选择重新编译; 因此这部分库仍然需要等待其编译.
@@ -182,4 +182,41 @@ srtool build --json
 ```
 
 这里需要注意的是 `Proposal` 字段, 这个值应该要和 apps 中发布时的值相同
+
+### 验证
+
+如果想要自行验证 wasm hash, 可以通过 srtool 来进行 darwinia/crab runtime.
+
+> 如上方阐述, 存在 [paritytech/srtool](https://hub.docker.com/r/paritytech/srtool) 以及 [chevdor/srtool](https://gitlab.com/chevdor/srtool) 两个库, Darwinia 使用的是 paritytech/srtool, 如果要自行验证也应该使用 paritytech/srtool, 保证自行编译使用的版本和 Darwinia 所使用的相同即可.
+
+为了能够正确编译, 你需要安装以下软件
+
+- [docker](https://docs.docker.com/engine/install/)
+- [git](https://git-scm.com/)
+
+一切就绪后, 在终端执行一下命令
+
+> 在此案例中, 使用 0.9.5-1 版本进行编译
+
+```bash
+git clone https://github.com/darwinia-network/darwinia.git
+cd darwinia
+git checkout 0.9.5-1 -b origin/0.9.5-1
+
+## compile darwinia runtime
+docker run --rm -it \
+  -e PACKAGE=darwinia-runtime \
+  -v $(pwd):/build \
+  paritytech/srtool:nightly-2020-10-27 \
+  build
+
+### compile crab runtime
+docker run --rm -it \
+  -e PACKAGE=crab-runtime \
+  -v $(pwd):/build \
+  paritytech/srtool:nightly-2020-10-27 \
+  build
+```
+
+
 
