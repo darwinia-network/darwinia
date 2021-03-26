@@ -27,7 +27,6 @@ jobs:
           target: wasm32-unknown-unknown
 
       - name: Cache darwinia target
-        id: cache-target
         uses: actions/cache@v2
         with:
           path: target
@@ -36,7 +35,7 @@ jobs:
       - name: Overall test
         env:
           RUST_TOOLCHAIN: nightly-2020-10-06
-        run: sh -f .maintain/overall-test.sh
+        run: .maintain/overall-test.sh
 
       - uses: 8398a7/action-slack@v3
         if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')

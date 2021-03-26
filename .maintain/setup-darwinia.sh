@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 #
 #
 #
 
-set -x
+set -xe
 
 BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
@@ -34,11 +34,6 @@ docker run --rm -i \
 mkdir -p ${WORK_PATH}/bin
 
 
-if [ "$ARCH" = "x86_64" ]; then
-  cp ${WORK_PATH}/target/release/darwinia ${WORK_PATH}/bin/darwinia_x86_64-linux-gnu
-fi
-if [ "$ARCH" = "aarch64" ]; then
-  cp ${WORK_PATH}/target/release/darwinia ${WORK_PATH}/bin/darwinia_aarch64-linux-gnu
-fi
+cp ${WORK_PATH}/target/release/darwinia ${WORK_PATH}/bin/darwinia_$ARCH-linux-gnu
 
 

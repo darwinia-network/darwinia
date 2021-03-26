@@ -3,7 +3,7 @@
 #
 
 
-set -x
+set -ex
 
 BIN_PATH=$(dirname $(readlink -f $0))
 
