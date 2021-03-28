@@ -29,11 +29,15 @@ docker run --rm -i \
 
 mkdir -p ${WORK_PATH}/bin
 
-_PROPOSAL_DARWINIA=$(grep 'Proposal :' ${WORK_PATH}/build-darwinia-wasm.log)
-_PROPOSAL_CRAB=$(grep 'Proposal :' ${WORK_PATH}/build-crab-wasm.log)
+_PROPOSAL_DARWINIA=$(cat ${WORK_PATH}/build-darwinia-wasm.log | grep 'Proposal\s\+:')
+_PROPOSAL_CRAB=$(cat ${WORK_PATH}/build-crab-wasm.log | grep 'Proposal\s\+:')
 
-PROPOSAL_DARWINIA=0x${PROPOSAL_DARWINIA#*0x}
-PROPOSAL_CRAB=0x${PROPOSAL_CRAB#*0x}
+PROPOSAL_DARWINIA=0x${_PROPOSAL_DARWINIA#*0x}
+PROPOSAL_CRAB=0x${_PROPOSAL_CRAB#*0x}
+
+PROPOSAL_DARWINIA=$(echo ${PROPOSAL_DARWINIA} | sed 's/[^[:print:]]\[0m//g')
+PROPOSAL_CRAB=$(echo ${PROPOSAL_CRAB} | sed 's/[^[:print:]]\[0m//g')
+
 
 echo ${PROPOSAL_DARWINIA} > ${WORK_PATH}/bin/${PROPOSAL_DARWINIA}.proposal.darwinia.txt
 echo ${PROPOSAL_CRAB} > ${WORK_PATH}/bin/${PROPOSAL_CRAB}.proposal.crab.txt

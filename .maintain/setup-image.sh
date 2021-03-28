@@ -9,7 +9,7 @@ BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
 
 
-BRANCH_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)
+TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)
 GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-8)
 
 IMAGE_ORIGIN_NAME=darwinia:${TAG_NAME}

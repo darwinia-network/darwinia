@@ -42,8 +42,6 @@ jobs:
 
 
       - name: Complete build
-        env:
-          TAG_NAME: ${{ steps.vars.outputs.tag }}
         run: .maintain/complete-build.sh
 
       - name: Release

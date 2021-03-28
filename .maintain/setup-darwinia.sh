@@ -8,8 +8,6 @@ set -xe
 BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
 
-ls -lah ${WORK_PATH}/target
-
 ARCH=$1
 
 IMAGE_RUST=
