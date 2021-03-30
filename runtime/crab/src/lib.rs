@@ -93,6 +93,7 @@ use darwinia_runtime_common::*;
 use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use ethereum_primitives::EthereumNetworkType;
+// use dvm_ethereum::account_basic::DVMAccountBasicMapping;
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
@@ -975,6 +976,73 @@ impl darwinia_crab_issuing::Trait for Runtime {
 	type WeightInfo = ();
 }
 
+// use darwinia_evm::{
+// 	Account as EVMAccount, AccountBasicMapping, EnsureAddressTruncated, FeeCalculator,
+// };
+// use darwinia_evm::{ConcatAddressMapping, Runner};
+// use sp_core::U256;
+
+// /// Fixed gas price of `1`.
+// pub struct FixedGasPrice;
+// impl FeeCalculator for FixedGasPrice {
+// 	fn min_gas_price() -> U256 {
+// 		// Gas price is always one token per gas.
+// 		0.into()
+// 	}
+// }
+
+// parameter_types! {
+// 	pub const ChainId: u64 = 43;
+// }
+
+// impl darwinia_evm::Trait for Runtime {
+// 	type FeeCalculator = FixedGasPrice;
+// 	type GasWeightMapping = ();
+// 	type CallOrigin = EnsureAddressTruncated;
+// 	type WithdrawOrigin = EnsureAddressTruncated;
+// 	type AddressMapping = ConcatAddressMapping;
+// 	type Currency = Balances;
+// 	type Event = Event;
+// 	type Precompiles = (
+// 		darwinia_evm_precompile_simple::ECRecover,
+// 		darwinia_evm_precompile_simple::Sha256,
+// 		darwinia_evm_precompile_simple::Ripemd160,
+// 		darwinia_evm_precompile_simple::Identity,
+// 		darwinia_evm_precompile_withdraw::WithDraw<Self>,
+// 	);
+// 	type ChainId = ChainId;
+// 	type AccountBasicMapping = DVMAccountBasicMapping<Self>;
+// 	type Runner = darwinia_evm::runner::stack::Runner<Self>;
+// }
+
+// use dvm_ethereum::IntermediateStateRoot;
+// use frame_support::{traits::FindAuthor, ConsensusEngineId};
+// pub struct EthereumFindAuthor<F>(sp_std::marker::PhantomData<F>);
+// impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F> {
+// 	fn find_author<'a, I>(digests: I) -> Option<H160>
+// 	where
+// 		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+// 	{
+// 		if let Some(author_index) = F::find_author(digests) {
+// 			let authority_id = Babe::authorities()[author_index as usize].clone();
+// 			return Some(H160::from_slice(&authority_id.0.to_raw_vec()[4..24]));
+// 		}
+// 		None
+// 	}
+// }
+
+// frame_support::parameter_types! {
+// 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
+// }
+
+// impl dvm_thereum::Trait for Runtime {
+// 	type Event = Event;
+// 	type FindAuthor = EthereumFindAuthor<Babe>;
+// 	type StateRoot = IntermediateStateRoot;
+// 	type BlockGasLimit = BlockGasLimit;
+// 	type RingCurrency = Ring;
+// }
+
 construct_runtime!(
 	pub enum Runtime
 	where
@@ -1048,6 +1116,9 @@ construct_runtime!(
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>} = 29,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage} = 30,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>} = 37,
+
+		// EVM: darwinia_evm::{Module, Config, Call, Storage, Event<T>} = 38,
+		// Ethereum: dvm_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned} = 39,
 	}
 );
 
