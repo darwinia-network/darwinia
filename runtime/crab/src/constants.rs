@@ -35,7 +35,7 @@ pub mod time {
 	#[cfg(feature = "dev")]
 	pub const BLOCKS_PER_SESSION: BlockNumber = MINUTES / 2;
 	#[cfg(not(feature = "dev"))]
-	pub const BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 3 * MINUTES;
 
 	#[cfg(feature = "dev")]
 	pub const SESSIONS_PER_ERA: SessionIndex = 3;
