@@ -313,9 +313,6 @@ parameter_types! {
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	pub OffchainSolutionWeightLimit: Weight = MaximumExtrinsicWeight::get()
-		.saturating_sub(BlockExecutionWeight::get())
-		.saturating_sub(ExtrinsicBaseWeight::get());
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
