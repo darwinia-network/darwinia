@@ -1,7 +1,4 @@
 {
-	"__[frame.system]__": {},
-	"Address": "AccountId",
-	"LookupSource": "AccountId",
 	"__[pallet.balances]__": {},
 	"BalanceInfo": null,
 	"BalanceLock": {
