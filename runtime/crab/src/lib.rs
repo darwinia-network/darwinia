@@ -80,7 +80,7 @@ use pallet_grandpa::{
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
-use pallet_transaction_payment::FeeDetails;
+use pallet_transaction_payment::{CurrencyAdapter, FeeDetails};
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
@@ -275,27 +275,11 @@ impl darwinia_balances::Config<KtonInstance> for Runtime {
 	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
 }
 
-pub struct DealWithFees;
-impl OnUnbalanced<NegativeImbalance<Runtime>> for DealWithFees {
-	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<Runtime>>) {
-		if let Some(fees) = fees_then_tips.next() {
-			// for fees, 80% to treasury, 20% to author
-			let mut split = fees.ration(80, 20);
-			if let Some(tips) = fees_then_tips.next() {
-				// for tips, if any, 80% to treasury, 20% to author (though this can be anything)
-				tips.ration_merge_into(80, 20, &mut split);
-			}
-			Treasury::on_unbalanced(split.0);
-			ToAuthor::on_unbalanced(split.1);
-		}
-	}
-}
 parameter_types! {
 	pub const TransactionByteFee: Balance = 5 * MILLI;
 }
 impl pallet_transaction_payment::Config for Runtime {
-	type Currency = Ring;
-	type OnTransactionPayment = DealWithFees;
+	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;

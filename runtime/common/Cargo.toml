@@ -16,6 +16,7 @@ static_assertions = { version = "1.1.0" }
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
 darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
 darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
+darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 # substrate frame
@@ -44,6 +45,7 @@ darwinia-frame-std       = [
 	"darwinia-balances/std",
 	"darwinia-staking/std",
 	"darwinia-support/std",
+	"darwinia-treasury/std",
 ]
 darwinia-primitives-std  = ["darwinia-primitives/std"]
 substrate-frame-std      = [

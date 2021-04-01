@@ -1600,6 +1600,7 @@ dependencies = [
  "darwinia-primitives",
  "darwinia-staking",
  "darwinia-support",
+ "darwinia-treasury",
  "frame-support",
  "frame-system",
  "pallet-authorship",
