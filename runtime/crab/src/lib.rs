@@ -191,44 +191,6 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MILLI;
-	pub const KtonExistentialDeposit: Balance = 10 * MICRO;
-	pub const MaxLocks: u32 = 50;
-}
-impl darwinia_balances::Config<RingInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = RingExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type OtherCurrencies = (Kton,);
-	type MaxLocks = MaxLocks;
-	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
-}
-impl darwinia_balances::Config<KtonInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = KtonExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type OtherCurrencies = (Ring,);
-	type MaxLocks = MaxLocks;
-	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const TransactionByteFee: Balance = 5 * MILLI;
-}
-impl pallet_transaction_payment::Config for Runtime {
-	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
-	type TransactionByteFee = TransactionByteFee;
-	type WeightToFee = WeightToFee;
-	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-}
-
-parameter_types! {
 	pub const UncleGenerations: BlockNumber = 0;
 }
 // TODO: substrate#2986 implement this properly

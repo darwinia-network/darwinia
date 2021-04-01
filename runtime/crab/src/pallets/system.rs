@@ -5,7 +5,6 @@ use sp_runtime::traits::BlakeTwo256;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use crate::{weights::frame_system::WeightInfo, *};
-use darwinia_runtime_common::{BlockLength, BlockWeights};
 
 frame_support::parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
