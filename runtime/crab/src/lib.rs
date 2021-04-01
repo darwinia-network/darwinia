@@ -69,8 +69,8 @@ use static_assertions::const_assert;
 use frame_support::{
 	construct_runtime, debug, parameter_types,
 	traits::{
-		ChangeMembers, Imbalance, InstanceFilter, KeyOwnerProofSystem, LockIdentifier,
-		OnUnbalanced, Randomness, U128CurrencyToVote,
+		ChangeMembers, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, Randomness,
+		U128CurrencyToVote,
 	},
 	weights::Weight,
 };
