@@ -182,6 +182,8 @@ parameter_types! {
 }
 impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
+	type BlockWeights = BlockWeights;
+	type BlockLength = BlockLength;
 	type Origin = Origin;
 	type Call = Call;
 	type Index = Nonce;
