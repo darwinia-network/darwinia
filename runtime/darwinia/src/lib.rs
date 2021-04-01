@@ -127,7 +127,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic as ExtrinsicT,
-		NumberFor, OpaqueKeys, SaturatedConversion, Verify,
+		NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, KeyTypeId, ModuleId, MultiAddress, Perbill, Percent, Permill,
