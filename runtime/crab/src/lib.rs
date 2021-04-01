@@ -980,7 +980,7 @@ impl darwinia_crab_issuing::Config for Runtime {
 	type WeightInfo = ();
 }
 
-construct_runtime!(
+construct_runtime! {
 	pub enum Runtime
 	where
 		Block = Block,
@@ -1054,7 +1054,7 @@ construct_runtime!(
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage} = 30,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>} = 37,
 	}
-);
+}
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
