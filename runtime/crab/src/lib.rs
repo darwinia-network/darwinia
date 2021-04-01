@@ -1321,91 +1321,10 @@ impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- crates.io ---
-		use array_bytes::hex_str_array_unchecked;
 		// --- substrate ---
-		use frame_support::{migration::*, Hashable};
+		// use frame_support::migration::*;
 
-		let broken_ledger_account = hex_str_array_unchecked!(
-			"0f998750e15fd7f31412bb097475cda9090a864a508ca288e201991622cb5a48",
-			32
-		);
-
-		if let Some(mut ledger) = get_storage_value::<
-			darwinia_staking::StakingLedger<AccountId, Balance, Balance, BlockNumber>,
-		>(
-			b"DarwiniaStaking",
-			b"Ledger",
-			&<[u8; 32]>::blake2_128_concat(&broken_ledger_account),
-		) {
-			ledger.active_deposit_ring = 10000000000000;
-
-			put_storage_value(
-				b"DarwiniaStaking",
-				b"Ledger",
-				&<[u8; 32]>::blake2_128_concat(&broken_ledger_account),
-				ledger,
-			);
-		}
-
-		<Runtime as frame_system::Config>::MaximumBlockWeight::get()
+		// <Runtime as frame_system::Config>::MaximumBlockWeight::get()
+		0
 	}
-}
-
-#[test]
-fn migration_should_work() {
-	// --- substrate ---
-	use frame_support::Hashable;
-	// --- darwinia ---
-	use darwinia_staking::{StakingLedger, TimeDepositItem};
-	use darwinia_support::balance::lock::Unbonding;
-
-	assert_eq!(
-		array_bytes::hex_str(
-			"0x",
-			<[u8; 32]>::blake2_128_concat(&array_bytes::hex_str_array_unchecked!(
-				"0f998750e15fd7f31412bb097475cda9090a864a508ca288e201991622cb5a48",
-				32
-			)),
-		),
-		"0xf24c0e43ba34796b2d6a47f3f74ecef00f998750e15fd7f31412bb097475cda9090a864a508ca288e201991622cb5a48"
-	);
-	assert_eq!(
-		<StakingLedger<AccountId, Balance, Balance, BlockNumber>>::decode(
-			&mut &*array_bytes::bytes_unchecked(
-				"0x0f998750e15fd7f31412bb097475cda9090a864a508ca288e201991622cb5a480fe71a7abbd99a010b00214fded41d0756c091d904040b00a0724e18090ba030989a73010ba09089d87a01e71a7abbd99a01000000000000000000040032ecd51401000000000000000000009792080056c091d904000000000000000000000000e01f000000200000002100000022000000230000002400000025000000260000002700000028000000290000002a0000002b0000002c0000002d0000002e0000002f000000300000003100000032000000330000003400000035000000360000003700000038000000390000003a0000003b0000003c0000003d0000003e0000003f000000400000004100000042000000430000004400000045000000460000004700000048000000490000004a0000004b0000004c0000004d0000004e0000004f00000050000000510000005200000053000000540000005500000056000000"
-			)
-		).unwrap(),
-		StakingLedger {
-			stash: array_bytes::hex_str_array_unchecked!(
-				"0f998750e15fd7f31412bb097475cda9090a864a508ca288e201991622cb5a48",
-				32
-			)
-			.into(),
-			active_ring: 451734920633063,
-			active_deposit_ring: 32800100000000,
-			active_kton: 20830077014,
-			deposit_items: vec![TimeDepositItem {
-				value: 10000000000000,
-				start_time: 1596026532000,
-				expire_time: 1627130532000,
-			}],
-			ring_staking_lock: darwinia_support::balance::lock::StakingLock {
-				staking_amount: 451734920633063,
-				unbondings: vec![Unbonding {
-					amount: 1189000000000,
-					until: 561815,
-				}],
-			},
-			kton_staking_lock: darwinia_support::balance::lock::StakingLock {
-				staking_amount: 20830077014,
-				unbondings: vec![],
-			},
-			claimed_rewards: vec![
-				31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-				53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-				75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
-			],
-		}
-	);
 }
