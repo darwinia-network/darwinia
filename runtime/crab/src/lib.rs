@@ -350,7 +350,8 @@ impl darwinia_staking::Config for Runtime {
 }
 
 parameter_types! {
-	pub OffencesWeightSoftLimit: Weight = Perbill::from_percent(60) * MaximumBlockWeight::get();
+	pub OffencesWeightSoftLimit: Weight = Perbill::from_percent(60)
+		* BlockWeights::get().max_block;
 }
 impl pallet_offences::Config for Runtime {
 	type Event = Event;
@@ -713,6 +714,8 @@ impl pallet_recovery::Config for Runtime {
 }
 
 parameter_types! {
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80)
+		* BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
 impl pallet_scheduler::Config for Runtime {
@@ -720,7 +723,7 @@ impl pallet_scheduler::Config for Runtime {
 	type Origin = Origin;
 	type PalletsOrigin = OriginCaller;
 	type Call = Call;
-	type MaximumWeight = MaximumBlockWeight;
+	type MaximumWeight = MaximumSchedulerWeight;
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
@@ -1320,7 +1323,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		// use frame_support::migration::*;
 
-		// <Runtime as frame_system::Config>::MaximumBlockWeight::get()
 		0
 	}
 }
