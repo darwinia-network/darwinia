@@ -1034,7 +1034,7 @@ impl darwinia_crab_backing::Config for Runtime {
 	type WeightInfo = ();
 }
 
-construct_runtime!(
+construct_runtime! {
 	pub enum Runtime
 	where
 		Block = Block,
@@ -1110,7 +1110,7 @@ construct_runtime!(
 		// Tron bridge.
 		TronBacking: darwinia_tron_backing::{Module, Storage, Config<T>} = 34,
 	}
-);
+}
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
