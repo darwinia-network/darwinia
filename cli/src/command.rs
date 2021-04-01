@@ -157,21 +157,25 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => darwinia_service::crab_new_light(config),
+						Role::Light => darwinia_service::crab_new_light(config)
+							.map(|(task_manager, _, _)| task_manager),
 						_ => darwinia_service::crab_new_full(config, authority_discovery_disabled)
-							.map(|(components, _)| components),
+							.map(|(task_manager, _, _)| task_manager),
 					}
+					.map_err(sc_cli::Error::Service)
 				})
 			} else if chain_spec.is_darwinia() {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => darwinia_service::darwinia_new_light(config),
+						Role::Light => darwinia_service::darwinia_new_light(config)
+							.map(|(task_manager, _, _)| task_manager),
 						_ => darwinia_service::darwinia_new_full(
 							config,
 							authority_discovery_disabled,
 						)
-						.map(|(components, _)| components),
+						.map(|(task_manager, _, _)| task_manager),
 					}
+					.map_err(sc_cli::Error::Service)
 				})
 			} else {
 				unreachable!()
@@ -325,7 +329,7 @@ pub fn run() -> sc_cli::Result<()> {
 				unreachable!()
 			}
 		}
-		Some(Subcommand::Key(cmd)) => cmd.run(),
+		Some(Subcommand::Key(cmd)) => cmd.run(&cli),
 		Some(Subcommand::Sign(cmd)) => cmd.run(),
 		Some(Subcommand::Verify(cmd)) => cmd.run(),
 		Some(Subcommand::Vanity(cmd)) => cmd.run(),
