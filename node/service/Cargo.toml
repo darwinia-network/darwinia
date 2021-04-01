@@ -47,6 +47,8 @@ pallet-im-online                           = { git = "https://github.com/darwini
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 # substrate primitives
+sc-consensus-slots     = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-keystore            = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 sp-api                 = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 sp-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 sp-block-builder       = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
