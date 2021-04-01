@@ -1374,11 +1374,16 @@ impl_runtime_apis! {
 }
 
 pub struct CustomOnRuntimeUpgrade;
+impl darwinia_elections_phragmen::migrations_2_0_0::ToV2 for CustomOnRuntimeUpgrade {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type Module = ElectionsPhragmen;
+}
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
 
-		0
+		darwinia_elections_phragmen::migrations_2_0_0::apply::<Self>(5 * MILLI, 100 * MILLI)
 	}
 }
