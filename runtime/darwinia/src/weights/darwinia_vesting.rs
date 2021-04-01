@@ -5,7 +5,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Trait> darwinia_vesting::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> darwinia_vesting::WeightInfo for WeightInfo<T> {
 	fn vest_locked(l: u32) -> Weight {
 		(53_484_000 as Weight)
 			.saturating_add((134_000 as Weight).saturating_mul(l as Weight))

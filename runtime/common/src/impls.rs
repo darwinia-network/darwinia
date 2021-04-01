@@ -42,13 +42,13 @@ darwinia_support::impl_account_data! {
 pub struct ToAuthor<R>(sp_std::marker::PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for ToAuthor<R>
 where
-	R: darwinia_balances::Trait<RingInstance> + pallet_authorship::Trait,
-	<R as frame_system::Trait>::AccountId: From<darwinia_primitives::AccountId>,
-	<R as frame_system::Trait>::AccountId: Into<darwinia_primitives::AccountId>,
-	<R as frame_system::Trait>::Event: From<
+	R: darwinia_balances::Config<RingInstance> + pallet_authorship::Config,
+	<R as frame_system::Config>::AccountId: From<darwinia_primitives::AccountId>,
+	<R as frame_system::Config>::AccountId: Into<darwinia_primitives::AccountId>,
+	<R as frame_system::Config>::Event: From<
 		darwinia_balances::RawEvent<
-			<R as frame_system::Trait>::AccountId,
-			<R as darwinia_balances::Trait<RingInstance>>::Balance,
+			<R as frame_system::Config>::AccountId,
+			<R as darwinia_balances::Config<RingInstance>>::Balance,
 			RingInstance,
 		>,
 	>,

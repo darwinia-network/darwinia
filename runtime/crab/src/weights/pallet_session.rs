@@ -5,7 +5,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Trait> pallet_session::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> pallet_session::WeightInfo for WeightInfo<T> {
 	fn set_keys() -> Weight {
 		(89_426_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(7 as Weight))

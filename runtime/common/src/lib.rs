@@ -51,7 +51,7 @@ pub type RingInstance = darwinia_balances::Instance0;
 pub type KtonInstance = darwinia_balances::Instance1;
 
 pub type NegativeImbalance<T> = <darwinia_balances::Module<T, RingInstance> as Currency<
-	<T as frame_system::Trait>::AccountId,
+	<T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
 
 /// We assume that an on-initialize consumes 10% of the weight on average, hence a single extrinsic

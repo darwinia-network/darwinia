@@ -5,7 +5,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Trait> darwinia_treasury::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> darwinia_treasury::WeightInfo for WeightInfo<T> {
 	fn propose_spend() -> Weight {
 		(52_217_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))

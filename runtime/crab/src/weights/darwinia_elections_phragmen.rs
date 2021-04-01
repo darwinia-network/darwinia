@@ -5,7 +5,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Trait> darwinia_elections_phragmen::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> darwinia_elections_phragmen::WeightInfo for WeightInfo<T> {
 	fn vote(v: u32) -> Weight {
 		(83_050_000 as Weight)
 			.saturating_add((124_000 as Weight).saturating_mul(v as Weight))
