@@ -1,5 +1,5 @@
 // --- substrate ---
-use pallet_transaction_payment::Config;
+use pallet_transaction_payment::{Config, CurrencyAdapter};
 // --- darwinia ---
 use crate::*;
 
