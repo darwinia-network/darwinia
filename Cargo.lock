@@ -835,6 +835,7 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 name = "crab-runtime"
 version = "0.9.5"
 dependencies = [
+ "array-bytes",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
@@ -859,6 +860,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "frame-system-rpc-runtime-api",
+ "log",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",

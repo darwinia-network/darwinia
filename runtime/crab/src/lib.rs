@@ -498,6 +498,33 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- substrate ---
 		// use frame_support::migration::*;
 
+		fn transfer_all<Module>(from: &AccountId, to: &AccountId)
+		where
+			Module: frame_support::traits::Currency<AccountId>,
+		{
+			if Module::transfer(
+				from,
+				to,
+				Module::free_balance(from),
+				frame_support::traits::ExistenceRequirement::AllowDeath,
+			).is_ok() {
+				log::info!("Migrate `ethbk`'s balance succeed");
+			} else {
+				log::info!("Migrate `ethbk`'s balance failed");
+			}
+		}
+
+		let ethereum_backing_module_account = EthereumBacking::account_id();
+		let multisig_account = array_bytes::hex2array_unchecked!(
+			// 5FGWcEpsd5TbDh14UGJEzRQENwrPXUt7e2ufzFzfcCEMesAQ
+			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8",
+			32
+		)
+		.into();
+
+		transfer_all::<Ring>(&ethereum_backing_module_account, &multisig_account);
+		transfer_all::<Kton>(&ethereum_backing_module_account, &multisig_account);
+
 		darwinia_elections_phragmen::migrations_2_0_0::apply::<Self>(5 * MILLI, COIN)
 	}
 }
