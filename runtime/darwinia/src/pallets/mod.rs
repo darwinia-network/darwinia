@@ -58,38 +58,38 @@ pub use treasury::*;
 pub mod sudo;
 pub use sudo::*;
 
-// pub mod utility;
-// pub use utility::*;
+// pub mod vesting;
+// pub use vesting::*;
 
-// pub mod identity;
-// pub use identity::*;
+pub mod utility;
+pub use utility::*;
 
-// pub mod society;
-// pub use society::*;
+pub mod identity;
+pub use identity::*;
 
-// pub mod recovery;
-// pub use recovery::*;
+pub mod society;
+pub use society::*;
 
-// pub mod scheduler;
-// pub use scheduler::*;
+pub mod recovery;
+pub use recovery::*;
+
+pub mod scheduler;
+pub use scheduler::*;
 
 // pub mod proxy;
 // pub use proxy::*;
 
-// pub mod multisig;
-// pub use multisig::*;
+pub mod multisig;
+pub use multisig::*;
 
-// pub mod crab_issuing;
-// pub use crab_issuing::*;
+pub mod ethereum_relay;
+pub use ethereum_relay::*;
 
-// pub mod ethereum_relay;
-// pub use ethereum_relay::*;
+pub mod ethereum_backing;
+pub use ethereum_backing::*;
 
-// pub mod ethereum_backing;
-// pub use ethereum_backing::*;
+pub mod relayer_game;
+pub use relayer_game::*;
 
-// pub mod relayer_game;
-// pub use relayer_game::*;
-
-// pub mod relay_authorities;
-// pub use relay_authorities::*;
+pub mod relay_authorities;
+pub use relay_authorities::*;

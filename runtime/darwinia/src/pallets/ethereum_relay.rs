@@ -10,8 +10,8 @@ use ethereum_primitives::EthereumNetworkType;
 
 frame_support::parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
-	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Ropsten;
-	pub const ConfirmPeriod: BlockNumber = 200;
+	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Mainnet;
+	pub const ConfirmPeriod: BlockNumber = 3 * DAYS;
 	pub const ApproveThreshold: Perbill = Perbill::from_percent(60);
 	pub const RejectThreshold: Perbill = Perbill::from_percent(1);
 }

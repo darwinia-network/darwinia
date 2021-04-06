@@ -106,10 +106,8 @@ use codec::{Decode, Encode};
 // --- substrate ---
 use frame_support::{
 	construct_runtime, debug,
-	traits::{InstanceFilter, KeyOwnerProofSystem, LockIdentifier, Randomness},
-	weights::Weight,
+	traits::{InstanceFilter, KeyOwnerProofSystem, Randomness},
 };
-use frame_system::{EnsureOneOf, EnsureRoot};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -118,10 +116,7 @@ use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-use sp_core::{
-	u32_trait::{_1, _2, _3, _5},
-	OpaqueMetadata,
-};
+use sp_core::OpaqueMetadata;
 use sp_runtime::{
 	create_runtime_str, generic,
 	traits::{
@@ -129,7 +124,7 @@ use sp_runtime::{
 		NumberFor, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, ModuleId, MultiAddress, Perbill, RuntimeDebug,
+	ApplyExtrinsicResult, ModuleId, MultiAddress, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
@@ -139,10 +134,8 @@ use sp_version::RuntimeVersion;
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
-use darwinia_relay_primitives::relay_authorities::OpCode;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
-use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, ()>;
@@ -215,95 +208,6 @@ impl darwinia_vesting::Config for Runtime {
 	type BlockNumberToBalance = ConvertInto;
 	type MinVestedTransfer = MinVestedTransfer;
 	type WeightInfo = weights::darwinia_vesting::WeightInfo<Runtime>;
-}
-
-impl pallet_utility::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
-}
-
-frame_support::parameter_types! {
-	// Minimum 100 bytes/CRING deposited (1 MILLI/byte)
-	pub const BasicDeposit: Balance = deposit(1, 258);
-	pub const FieldDeposit: Balance = deposit(0, 66);
-	pub const SubAccountDeposit: Balance = deposit(1, 53);
-	pub const MaxSubAccounts: u32 = 100;
-	pub const MaxAdditionalFields: u32 = 100;
-	pub const MaxRegistrars: u32 = 20;
-}
-impl pallet_identity::Config for Runtime {
-	type Event = Event;
-	type Currency = Ring;
-	type BasicDeposit = BasicDeposit;
-	type FieldDeposit = FieldDeposit;
-	type SubAccountDeposit = SubAccountDeposit;
-	type MaxSubAccounts = MaxSubAccounts;
-	type MaxAdditionalFields = MaxAdditionalFields;
-	type MaxRegistrars = MaxRegistrars;
-	type Slashed = Treasury;
-	type ForceOrigin = EnsureRootOrHalfCouncil;
-	type RegistrarOrigin = EnsureRootOrHalfCouncil;
-	type WeightInfo = weights::pallet_identity::WeightInfo<Runtime>;
-}
-
-frame_support::parameter_types! {
-	pub const SocietyModuleId: ModuleId = ModuleId(*b"da/socie");
-	pub const CandidateDeposit: Balance = 10 * COIN;
-	pub const WrongSideDeduction: Balance = 2 * COIN;
-	pub const MaxStrikes: u32 = 10;
-	pub const RotationPeriod: BlockNumber = 80 * HOURS;
-	pub const PeriodSpend: Balance = 500 * COIN;
-	pub const MaxLockDuration: BlockNumber = 36 * 30 * DAYS;
-	pub const ChallengePeriod: BlockNumber = 7 * DAYS;
-}
-impl pallet_society::Config for Runtime {
-	type Event = Event;
-	type ModuleId = SocietyModuleId;
-	type Currency = Ring;
-	type Randomness = RandomnessCollectiveFlip;
-	type CandidateDeposit = CandidateDeposit;
-	type WrongSideDeduction = WrongSideDeduction;
-	type MaxStrikes = MaxStrikes;
-	type PeriodSpend = PeriodSpend;
-	type MembershipChanged = ();
-	type RotationPeriod = RotationPeriod;
-	type MaxLockDuration = MaxLockDuration;
-	type FounderSetOrigin = EnsureRootOrHalfCouncil;
-	type SuspensionJudgementOrigin = pallet_society::EnsureFounder<Runtime>;
-	type ChallengePeriod = ChallengePeriod;
-}
-
-frame_support::parameter_types! {
-	pub const ConfigDepositBase: Balance = 5 * COIN;
-	pub const FriendDepositFactor: Balance = 50 * MILLI;
-	pub const MaxFriends: u16 = 9;
-	pub const RecoveryDeposit: Balance = 5 * COIN;
-}
-impl pallet_recovery::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type Currency = Ring;
-	type ConfigDepositBase = ConfigDepositBase;
-	type FriendDepositFactor = FriendDepositFactor;
-	type MaxFriends = MaxFriends;
-	type RecoveryDeposit = RecoveryDeposit;
-}
-
-frame_support::parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80)
-		* BlockWeights::get().max_block;
-	pub const MaxScheduledPerBlock: u32 = 50;
-}
-impl pallet_scheduler::Config for Runtime {
-	type Event = Event;
-	type Origin = Origin;
-	type PalletsOrigin = OriginCaller;
-	type Call = Call;
-	type MaximumWeight = MaximumSchedulerWeight;
-	type ScheduleOrigin = EnsureRoot<AccountId>;
-	type MaxScheduledPerBlock = MaxScheduledPerBlock;
-	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 }
 
 /// The type used to represent the kinds of proxying allowed.
@@ -420,124 +324,6 @@ impl pallet_proxy::Config for Runtime {
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
-}
-
-frame_support::parameter_types! {
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	pub const DepositBase: Balance = deposit(1, 88);
-	// Additional storage item size of 32 bytes.
-	pub const DepositFactor: Balance = deposit(0, 32);
-	pub const MaxSignatories: u16 = 100;
-}
-impl pallet_multisig::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type Currency = Ring;
-	type DepositBase = DepositBase;
-	type DepositFactor = DepositFactor;
-	type MaxSignatories = MaxSignatories;
-	type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
-}
-
-frame_support::parameter_types! {
-	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
-	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
-	pub const RingLockLimit: Balance = 10_000_000 * COIN;
-	pub const KtonLockLimit: Balance = 1_000 * COIN;
-	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
-	pub const AdvancedFee: Balance = 50 * COIN;
-	pub const SyncReward: Balance = 1_000 * COIN;
-}
-impl darwinia_ethereum_backing::Config for Runtime {
-	type ModuleId = EthereumBackingModuleId;
-	type FeeModuleId = EthereumBackingFeeModuleId;
-	type Event = Event;
-	type RedeemAccountId = AccountId;
-	type EthereumRelay = EthereumRelay;
-	type OnDepositRedeem = Staking;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type RingLockLimit = RingLockLimit;
-	type KtonLockLimit = KtonLockLimit;
-	type AdvancedFee = AdvancedFee;
-	type SyncReward = SyncReward;
-	type EcdsaAuthorities = EthereumRelayAuthorities;
-	type WeightInfo = ();
-}
-
-type EthereumRelayAuthoritiesInstance = darwinia_relay_authorities::Instance0;
-frame_support::parameter_types! {
-	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
-	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 7 * DAYS;
-	pub const MaxCandidates: usize = 7;
-	pub const OpCodes: (OpCode, OpCode) = (
-		[71, 159, 189, 249],
-		[180, 188, 244, 151]
-	);
-	pub const SignThreshold: Perbill = Perbill::from_percent(60);
-	pub const SubmitDuration: BlockNumber = 300;
-}
-impl darwinia_relay_authorities::Config<EthereumRelayAuthoritiesInstance> for Runtime {
-	type Event = Event;
-	type RingCurrency = Ring;
-	type LockId = EthereumRelayAuthoritiesLockId;
-	type TermDuration = EthereumRelayAuthoritiesTermDuration;
-	type MaxCandidates = MaxCandidates;
-	type AddOrigin = ApproveOrigin;
-	type RemoveOrigin = ApproveOrigin;
-	type ResetOrigin = ApproveOrigin;
-	type DarwiniaMMR = HeaderMMR;
-	type Sign = EthereumBacking;
-	type OpCodes = OpCodes;
-	type SignThreshold = SignThreshold;
-	type SubmitDuration = SubmitDuration;
-	type WeightInfo = ();
-}
-
-type TechnicalCommitteeApproveOrigin = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_3, _5, AccountId, TechnicalCollective>,
->;
-type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, TechnicalCollective>,
->;
-frame_support::parameter_types! {
-	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
-	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Mainnet;
-	pub const ConfirmPeriod: BlockNumber = 3 * DAYS;
-	pub const ApproveThreshold: Perbill = Perbill::from_percent(60);
-	pub const RejectThreshold: Perbill = Perbill::from_percent(1);
-}
-impl darwinia_ethereum_relay::Config for Runtime {
-	type ModuleId = EthereumRelayModuleId;
-	type Event = Event;
-	type EthereumNetwork = EthereumNetwork;
-	type Call = Call;
-	type Currency = Ring;
-	type RelayerGame = EthereumRelayerGame;
-	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
-	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
-	type ConfirmPeriod = ConfirmPeriod;
-	type TechnicalMembership = TechnicalMembership;
-	type ApproveThreshold = ApproveThreshold;
-	type RejectThreshold = RejectThreshold;
-	type WeightInfo = ();
-}
-
-type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
-frame_support::parameter_types! {
-	pub const EthereumRelayerGameLockId: LockIdentifier = *b"da/rgame";
-}
-impl darwinia_relayer_game::Config<EthereumRelayerGameInstance> for Runtime {
-	type RingCurrency = Ring;
-	type LockId = EthereumRelayerGameLockId;
-	type RingSlash = Treasury;
-	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
-	type RelayableChain = EthereumRelay;
-	type WeightInfo = ();
 }
 
 frame_support::parameter_types! {
