@@ -1,17 +1,29 @@
 // --- substrate ---
-use frame_support::weights::constants::RocksDbWeight;
+use frame_support::{traits::Filter, weights::constants::RocksDbWeight};
 use frame_system::Config;
 use sp_runtime::traits::BlakeTwo256;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use crate::{weights::frame_system::WeightInfo, *};
 
+pub struct BaseFilter;
+impl Filter<Call> for BaseFilter {
+	fn filter(call: &Call) -> bool {
+		match call {
+			Call::EthereumRelay(..)
+			| Call::EthereumBacking(..)
+			| Call::EthereumRelayAuthorities(..) => false,
+			_ => true,
+		}
+	}
+}
+
 frame_support::parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const SS58Prefix: u8 = 42;
 }
 impl Config for Runtime {
-	type BaseCallFilter = ();
+	type BaseCallFilter = BaseFilter;
 	type BlockWeights = BlockWeights;
 	type BlockLength = BlockLength;
 	type Origin = Origin;
