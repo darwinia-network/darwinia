@@ -6,11 +6,6 @@ use sp_core::u32_trait::{_1, _2, _3};
 use crate::{weights::darwinia_democracy::WeightInfo, *};
 use darwinia_democracy::Config;
 
-type EnsureRootOrHalfCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>,
->;
 frame_support::parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 7 * DAYS;
 	pub const VotingPeriod: BlockNumber = 7 * DAYS;

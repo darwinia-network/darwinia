@@ -24,6 +24,10 @@
 
 /// Constant values used within the runtime.
 pub mod constants;
+pub use constants::{currency::*, fee::*, relay::*, time::*};
+
+pub mod pallets;
+pub use pallets::*;
 
 pub mod wasm {
 	//! Make the WASM binary available.
@@ -50,9 +54,6 @@ pub mod wasm {
 	}
 }
 pub use wasm::*;
-
-pub mod pallets;
-pub use pallets::*;
 
 /// Weights for pallets used in the runtime.
 mod weights;
@@ -83,7 +84,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
-use constants::{currency::*, fee::*, relay::*, time::*};
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
