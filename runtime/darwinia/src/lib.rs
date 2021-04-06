@@ -90,16 +90,15 @@ pub mod wasm {
 		return WASM_BINARY;
 	}
 }
+pub use wasm::*;
 
 /// Weights for pallets used in the runtime.
 mod weights;
 
-// --- darwinia ---
 #[cfg(feature = "std")]
 pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
-pub use wasm::*;
 
 // --- crates ---
 use codec::Encode;

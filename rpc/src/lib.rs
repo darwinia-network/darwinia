@@ -20,7 +20,6 @@
 
 #![warn(missing_docs)]
 
-// --- substrate ---
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 
 // --- std ---

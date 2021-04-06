@@ -22,14 +22,13 @@
 pub mod chain_spec;
 pub mod client;
 
-// --- crates ---
 pub use codec::Codec;
-// --- substrate ---
+
 pub use sc_executor::NativeExecutionDispatch;
 pub use sc_service::{
 	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
 };
-// --- darwinia ---
+
 pub use chain_spec::{CrabChainSpec, DarwiniaChainSpec};
 pub use client::DarwiniaClient;
 pub use crab_runtime;
