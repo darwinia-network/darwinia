@@ -31,13 +31,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::System(..) |
 				Call::Babe(..) |
 				Call::Timestamp(..) |
-				Call::Indices(pallet_indices::Call::claim(..)) |
-				Call::Indices(pallet_indices::Call::free(..)) |
-				Call::Indices(pallet_indices::Call::freeze(..)) |
-				// Specifically omitting Indices `transfer`, `force_transfer`
 				// Specifically omitting the entire Balances pallet
 				Call::Authorship(..) |
-				Call::Democracy(..) |
 				Call::Staking(..) |
 				Call::Offences(..) |
 				Call::Session(..) |
@@ -49,7 +44,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::ElectionsPhragmen(..) |
 				Call::TechnicalMembership(..) |
 				Call::Treasury(..) |
-				Call::Claims(..) |
+				Call::Democracy(..) |
 				Call::Utility(..) |
 				Call::Identity(..) |
 				Call::Society(..) |
@@ -59,20 +54,25 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
+				Call::Vesting(darwinia_vesting::Call::vest(..)) |
+				Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
+				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
 				Call::Multisig(..) |
+				// Specifically omitting the entire CrabBacking pallet
 				// Specifically omitting the entire EthereumBacking pallet
 				Call::EthereumRelay(..) |
-				Call::HeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
-				                    // Specifically omitting the entire EthereumRelayAuthorities pallet
+				// Specifically omitting the entire TronBacking pallet
+				Call::HeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
-				Call::Democracy(..)
-					| Call::Council(..) | Call::TechnicalCommittee(..)
+				Call::Council(..)
+					| Call::TechnicalCommittee(..)
 					| Call::ElectionsPhragmen(..)
-					| Call::Treasury(..) | Call::Utility(..)
+					| Call::Treasury(..) | Call::Democracy(..)
+					| Call::Utility(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
 			ProxyType::IdentityJudgement => matches!(

@@ -102,11 +102,11 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 pub use wasm::*;
 
 // --- crates ---
-use codec::{Decode, Encode};
+use codec::Encode;
 // --- substrate ---
 use frame_support::{
-	construct_runtime, debug,
-	traits::{InstanceFilter, KeyOwnerProofSystem, Randomness},
+	debug,
+	traits::{KeyOwnerProofSystem, Randomness},
 };
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -118,13 +118,13 @@ use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
-	create_runtime_str, generic,
+	generic,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic as ExtrinsicT,
 		NumberFor, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, ModuleId, MultiAddress, RuntimeDebug,
+	ApplyExtrinsicResult, ModuleId, MultiAddress,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
@@ -178,8 +178,8 @@ type Ring = Balances;
 
 /// Runtime version (Darwinia).
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("Darwinia"),
-	impl_name: create_runtime_str!("Darwinia"),
+	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
+	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
 	spec_version: 23,
 	impl_version: 0,
@@ -199,153 +199,7 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-frame_support::parameter_types! {
-	pub const MinVestedTransfer: Balance = 100 * MILLI;
-}
-impl darwinia_vesting::Config for Runtime {
-	type Event = Event;
-	type Currency = Ring;
-	type BlockNumberToBalance = ConvertInto;
-	type MinVestedTransfer = MinVestedTransfer;
-	type WeightInfo = weights::darwinia_vesting::WeightInfo<Runtime>;
-}
-
-/// The type used to represent the kinds of proxying allowed.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
-pub enum ProxyType {
-	Any,
-	NonTransfer,
-	Governance,
-	Staking,
-	IdentityJudgement,
-	EthereumBridge,
-}
-impl Default for ProxyType {
-	fn default() -> Self {
-		Self::Any
-	}
-}
-impl InstanceFilter<Call> for ProxyType {
-	fn filter(&self, c: &Call) -> bool {
-		match self {
-			ProxyType::Any => true,
-			ProxyType::NonTransfer => matches!(
-				c,
-				Call::System(..) |
-				Call::Babe(..) |
-				Call::Timestamp(..) |
-				// Specifically omitting the entire Balances pallet
-				Call::Authorship(..) |
-				Call::Staking(..) |
-				Call::Offences(..) |
-				Call::Session(..) |
-				Call::Grandpa(..) |
-				Call::ImOnline(..) |
-				Call::AuthorityDiscovery(..) |
-				Call::Council(..) |
-				Call::TechnicalCommittee(..) |
-				Call::ElectionsPhragmen(..) |
-				Call::TechnicalMembership(..) |
-				Call::Treasury(..) |
-				Call::Democracy(..) |
-				Call::Utility(..) |
-				Call::Identity(..) |
-				Call::Society(..) |
-				Call::Recovery(pallet_recovery::Call::as_recovered(..)) |
-				Call::Recovery(pallet_recovery::Call::vouch_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::claim_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
-				Call::Vesting(darwinia_vesting::Call::vest(..)) |
-				Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
-				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
-				Call::Scheduler(..) |
-				Call::Proxy(..) |
-				Call::Multisig(..) |
-				// Specifically omitting the entire CrabBacking pallet
-				// Specifically omitting the entire EthereumBacking pallet
-				Call::EthereumRelay(..) |
-				// Specifically omitting the entire TronBacking pallet
-				Call::HeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
-			),
-			ProxyType::Governance => matches!(
-				c,
-				Call::Council(..)
-					| Call::TechnicalCommittee(..)
-					| Call::ElectionsPhragmen(..)
-					| Call::Treasury(..) | Call::Democracy(..)
-					| Call::Utility(..)
-			),
-			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
-			ProxyType::IdentityJudgement => matches!(
-				c,
-				Call::Identity(pallet_identity::Call::provide_judgement(..))
-					| Call::Utility(pallet_utility::Call::batch(..))
-			),
-			ProxyType::EthereumBridge => matches!(
-				c,
-				Call::EthereumBacking(..)
-					| Call::EthereumRelay(..)
-					| Call::EthereumRelayAuthorities(..)
-			),
-		}
-	}
-	fn is_superset(&self, o: &Self) -> bool {
-		match (self, o) {
-			(x, y) if x == y => true,
-			(ProxyType::Any, _) => true,
-			(_, ProxyType::Any) => false,
-			(ProxyType::NonTransfer, _) => true,
-			_ => false,
-		}
-	}
-}
-frame_support::parameter_types! {
-	// One storage item; key size 32, value size 8; .
-	pub const ProxyDepositBase: Balance = deposit(1, 8);
-	// Additional storage item size of 33 bytes.
-	pub const ProxyDepositFactor: Balance = deposit(0, 33);
-	pub const MaxProxies: u16 = 32;
-	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
-	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
-	pub const MaxPending: u16 = 32;
-}
-impl pallet_proxy::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type Currency = Balances;
-	type ProxyType = ProxyType;
-	type ProxyDepositBase = ProxyDepositBase;
-	type ProxyDepositFactor = ProxyDepositFactor;
-	type MaxProxies = MaxProxies;
-	type MaxPending = MaxPending;
-	type CallHasher = BlakeTwo256;
-	type AnnouncementDepositBase = AnnouncementDepositBase;
-	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
-}
-
-frame_support::parameter_types! {
-	pub const TronBackingModuleId: ModuleId = ModuleId(*b"da/trobk");
-}
-impl darwinia_tron_backing::Config for Runtime {
-	type ModuleId = TronBackingModuleId;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type WeightInfo = ();
-}
-
-frame_support::parameter_types! {
-	pub const CrabBackingModuleId: ModuleId = ModuleId(*b"da/crabk");
-}
-impl darwinia_crab_backing::Config for Runtime {
-	type ModuleId = CrabBackingModuleId;
-	type RingCurrency = Ring;
-	type WeightInfo = ();
-}
-
-construct_runtime! {
+frame_support::construct_runtime! {
 	pub enum Runtime
 	where
 		Block = Block,

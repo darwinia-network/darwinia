@@ -58,8 +58,8 @@ pub use treasury::*;
 pub mod sudo;
 pub use sudo::*;
 
-// pub mod vesting;
-// pub use vesting::*;
+pub mod vesting;
+pub use vesting::*;
 
 pub mod utility;
 pub use utility::*;
@@ -76,11 +76,14 @@ pub use recovery::*;
 pub mod scheduler;
 pub use scheduler::*;
 
-// pub mod proxy;
-// pub use proxy::*;
+pub mod proxy;
+pub use proxy::*;
 
 pub mod multisig;
 pub use multisig::*;
+
+pub mod crab_backing;
+pub use crab_backing::*;
 
 pub mod ethereum_relay;
 pub use ethereum_relay::*;
@@ -93,3 +96,6 @@ pub use relayer_game::*;
 
 pub mod relay_authorities;
 pub use relay_authorities::*;
+
+pub mod tron_backing;
+pub use tron_backing::*;
