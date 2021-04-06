@@ -24,6 +24,10 @@
 
 /// Constant values used within the runtime.
 pub mod constants;
+pub use constants::{currency::*, fee::*, relay::*, time::*};
+
+pub mod pallets;
+pub use pallets::*;
 
 #[cfg(feature = "std")]
 pub mod genesis_loader {
@@ -99,23 +103,18 @@ pub use wasm::*;
 
 // --- crates ---
 use codec::{Decode, Encode};
-use static_assertions::const_assert;
 // --- substrate ---
 use frame_support::{
-	construct_runtime, debug, parameter_types,
-	traits::{
-		ChangeMembers, Filter, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, Randomness,
-		U128CurrencyToVote,
-	},
+	construct_runtime, debug,
+	traits::{InstanceFilter, KeyOwnerProofSystem, LockIdentifier, Randomness},
 	weights::Weight,
 };
 use frame_system::{EnsureOneOf, EnsureRoot};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
-use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
-use pallet_transaction_payment::{CurrencyAdapter, FeeDetails};
+use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
@@ -124,33 +123,29 @@ use sp_core::{
 	OpaqueMetadata,
 };
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
+	create_runtime_str, generic,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic as ExtrinsicT,
-		NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Verify,
+		NumberFor, SaturatedConversion, StaticLookup, Verify,
 	},
-	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, KeyTypeId, ModuleId, MultiAddress, Perbill, Percent, Permill,
-	RuntimeDebug,
+	transaction_validity::{TransactionSource, TransactionValidity},
+	ApplyExtrinsicResult, ModuleId, MultiAddress, Perbill, RuntimeDebug,
 };
-use sp_staking::SessionIndex;
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
-use constants::{currency::*, fee::*, relay::*, time::*};
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_relay_primitives::relay_authorities::OpCode;
 use darwinia_runtime_common::*;
-use darwinia_staking::EraIndex;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use ethereum_primitives::EthereumNetworkType;
 
 /// The address format for describing accounts.
-type Address = MultiAddress<AccountId, ()>;
+pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
@@ -211,470 +206,7 @@ pub fn native_version() -> NativeVersion {
 	}
 }
 
-pub struct BaseFilter;
-impl Filter<Call> for BaseFilter {
-	fn filter(_: &Call) -> bool {
-		true
-	}
-}
-parameter_types! {
-	pub const Version: RuntimeVersion = VERSION;
-	pub const SS58Prefix: u8 = 18;
-}
-impl frame_system::Config for Runtime {
-	type BaseCallFilter = BaseFilter;
-	type BlockWeights = BlockWeights;
-	type BlockLength = BlockLength;
-	type Origin = Origin;
-	type Call = Call;
-	type Index = Nonce;
-	type BlockNumber = BlockNumber;
-	type Hash = Hash;
-	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = AccountIdLookup<AccountId, ()>;
-	type Header = generic::Header<BlockNumber, BlakeTwo256>;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type DbWeight = RocksDbWeight;
-	type Version = Version;
-	type PalletInfo = PalletInfo;
-	type AccountData = AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
-	type SS58Prefix = SS58Prefix;
-}
-
-parameter_types! {
-	pub const EpochDuration: u64 = BLOCKS_PER_SESSION as _;
-	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
-}
-impl pallet_babe::Config for Runtime {
-	type EpochDuration = EpochDuration;
-	type ExpectedBlockTime = ExpectedBlockTime;
-	// session module is the trigger
-	type EpochChangeTrigger = pallet_babe::ExternalTrigger;
-	type KeyOwnerProofSystem = Historical;
-	type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		pallet_babe::AuthorityId,
-	)>>::Proof;
-	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		pallet_babe::AuthorityId,
-	)>>::IdentificationTuple;
-	type HandleEquivocation =
-		pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
-	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const MinimumPeriod: Moment = SLOT_DURATION / 2;
-}
-impl pallet_timestamp::Config for Runtime {
-	type Moment = Moment;
-	type OnTimestampSet = Babe;
-	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MICRO;
-	pub const KtonExistentialDeposit: Balance = MICRO;
-	pub const MaxLocks: u32 = 50;
-}
-impl darwinia_balances::Config<RingInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = RingExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type OtherCurrencies = (Kton,);
-	type MaxLocks = MaxLocks;
-	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
-}
-impl darwinia_balances::Config<KtonInstance> for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = KtonExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type OtherCurrencies = (Ring,);
-	type MaxLocks = MaxLocks;
-	type WeightInfo = weights::darwinia_balances::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const TransactionByteFee: Balance = 50 * MICRO;
-}
-impl pallet_transaction_payment::Config for Runtime {
-	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
-	type TransactionByteFee = TransactionByteFee;
-	type WeightToFee = WeightToFee;
-	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-}
-
-parameter_types! {
-	pub const UncleGenerations: BlockNumber = 0;
-}
-// TODO: substrate#2986 implement this properly
-impl pallet_authorship::Config for Runtime {
-	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Babe>;
-	type UncleGenerations = UncleGenerations;
-	type FilterUncle = ();
-	type EventHandler = (Staking, ImOnline);
-}
-
-parameter_types! {
-	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
-	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
-	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
-	// slightly less than 14 days.
-	pub const SlashDeferDuration: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
-	// last 15 minutes of the last session will be for election.
-	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 16;
-	pub const MaxIterations: u32 = 5;
-	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
-	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	pub const Cap: Balance = CAP;
-	pub const TotalPower: Power = TOTAL_POWER;
-}
-impl darwinia_staking::Config for Runtime {
-	type Event = Event;
-	type ModuleId = StakingModuleId;
-	type UnixTime = Timestamp;
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = BondingDurationInEra;
-	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
-	type SlashDeferDuration = SlashDeferDuration;
-	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
-	type SessionInterface = Self;
-	type NextNewSession = Session;
-	type ElectionLookahead = ElectionLookahead;
-	type Call = Call;
-	type MaxIterations = MaxIterations;
-	type MinSolutionScoreBump = MinSolutionScoreBump;
-	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-	type UnsignedPriority = StakingUnsignedPriority;
-	// The unsigned solution weight targeted by the OCW. We set it to the maximum possible value of
-	// a single extrinsic.
-	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
-	type RingCurrency = Ring;
-	type RingRewardRemainder = Treasury;
-	type RingSlash = Treasury;
-	type RingReward = ();
-	type KtonCurrency = Kton;
-	type KtonSlash = Treasury;
-	type KtonReward = ();
-	type Cap = Cap;
-	type TotalPower = TotalPower;
-	type WeightInfo = weights::darwinia_staking::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub OffencesWeightSoftLimit: Weight = Perbill::from_percent(60)
-		* BlockWeights::get().max_block;
-}
-impl pallet_offences::Config for Runtime {
-	type Event = Event;
-	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = Staking;
-	type WeightSoftLimit = OffencesWeightSoftLimit;
-}
-
-impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = darwinia_staking::Exposure<AccountId, Balance, Balance>;
-	type FullIdentificationOf = darwinia_staking::ExposureOf<Runtime>;
-}
-
-impl_opaque_keys! {
-	pub struct SessionKeys {
-		pub babe: Babe,
-		pub grandpa: Grandpa,
-		pub im_online: ImOnline,
-		pub authority_discovery: AuthorityDiscovery,
-	}
-}
-parameter_types! {
-	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
-}
-impl pallet_session::Config for Runtime {
-	type Event = Event;
-	type ValidatorId = AccountId;
-	type ValidatorIdOf = darwinia_staking::StashOf<Self>;
-	type ShouldEndSession = Babe;
-	type NextSessionRotation = Babe;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
-	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = SessionKeys;
-	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
-	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
-}
-
-impl pallet_grandpa::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type KeyOwnerProof =
-		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
-	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		GrandpaId,
-	)>>::IdentificationTuple;
-	type KeyOwnerProofSystem = Historical;
-	type HandleEquivocation =
-		pallet_grandpa::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
-	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const SessionDuration: BlockNumber = BLOCKS_PER_SESSION as _;
-	pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-}
-impl pallet_im_online::Config for Runtime {
-	type AuthorityId = ImOnlineId;
-	type Event = Event;
-	type SessionDuration = SessionDuration;
-	type ReportUnresponsiveness = Offences;
-	type UnsignedPriority = ImOnlineUnsignedPriority;
-	type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
-}
-
-impl pallet_authority_discovery::Config for Runtime {}
-
-parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const CouncilMaxProposals: u32 = 100;
-	pub const CouncilMaxMembers: u32 = 100;
-	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
-	pub const TechnicalMaxProposals: u32 = 100;
-	pub const TechnicalMaxMembers: u32 = 100;
-}
-type CouncilCollective = pallet_collective::Instance0;
-impl pallet_collective::Config<CouncilCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = CouncilMotionDuration;
-	type MaxProposals = CouncilMaxProposals;
-	type MaxMembers = CouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-}
-type TechnicalCollective = pallet_collective::Instance1;
-impl pallet_collective::Config<TechnicalCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = TechnicalMotionDuration;
-	type MaxProposals = TechnicalMaxProposals;
-	type MaxMembers = TechnicalMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
-	pub const CandidacyBond: Balance = 100 * MILLI;
-	// 1 storage item created, key size is 32 bytes, value size is 16+16.
-	pub const VotingBondBase: Balance = deposit(1, 64);
-	// additional data per vote is 32 bytes (account id).
-	pub const VotingBondFactor: Balance = deposit(0, 32);
-	/// Daily council elections.
-	pub const TermDuration: BlockNumber = 7 * DAYS;
-	pub const DesiredMembers: u32 = 7;
-	pub const DesiredRunnersUp: u32 = 7;
-}
-// Make sure that there are no more than MaxMembers members elected via phragmen.
-const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
-impl darwinia_elections_phragmen::Config for Runtime {
-	type Event = Event;
-	type ModuleId = ElectionsPhragmenModuleId;
-	type Currency = Ring;
-	type ChangeMembers = Council;
-	type InitializeMembers = Council;
-	type CurrencyToVote = U128CurrencyToVote;
-	type CandidacyBond = CandidacyBond;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type LoserCandidate = Treasury;
-	type KickedMember = Treasury;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type TermDuration = TermDuration;
-	type WeightInfo = weights::darwinia_elections_phragmen::WeightInfo<Runtime>;
-}
-
-pub struct MembershipChangedGroup;
-impl ChangeMembers<AccountId> for MembershipChangedGroup {
-	fn change_members_sorted(
-		incoming: &[AccountId],
-		outgoing: &[AccountId],
-		sorted_new: &[AccountId],
-	) {
-		TechnicalCommittee::change_members_sorted(incoming, outgoing, sorted_new);
-		EthereumRelay::change_members_sorted(incoming, outgoing, sorted_new);
-	}
-}
-type EnsureRootOrHalfCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>,
->;
-impl pallet_membership::Config<pallet_membership::Instance0> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrHalfCouncil;
-	type RemoveOrigin = EnsureRootOrHalfCouncil;
-	type SwapOrigin = EnsureRootOrHalfCouncil;
-	type ResetOrigin = EnsureRootOrHalfCouncil;
-	type PrimeOrigin = EnsureRootOrHalfCouncil;
-	type MembershipInitialized = TechnicalCommittee;
-	type MembershipChanged = MembershipChangedGroup;
-}
-
-type ApproveOrigin = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
->;
-parameter_types! {
-	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const RingProposalBondMinimum: Balance = 100 * MILLI;
-	pub const KtonProposalBondMinimum: Balance = 100 * MILLI;
-	pub const SpendPeriod: BlockNumber = 24 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(1);
-	pub const TipCountdown: BlockNumber = 1 * DAYS;
-	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 1 * MILLI;
-	pub const DataDepositPerByte: Balance = 1 * MILLI;
-	pub const BountyDepositBase: Balance = 1 * COIN;
-	pub const BountyDepositPayoutDelay: BlockNumber = 8 * DAYS;
-	pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
-	pub const MaximumReasonLength: u32 = 16384;
-	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub const BountyValueMinimum: Balance = 10 * COIN;
-}
-impl darwinia_treasury::Config for Runtime {
-	type ModuleId = TreasuryModuleId;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = EnsureRootOrHalfCouncil;
-	type Tippers = ElectionsPhragmen;
-	type TipCountdown = TipCountdown;
-	type TipFindersFee = TipFindersFee;
-	type TipReportDepositBase = TipReportDepositBase;
-	type DataDepositPerByte = DataDepositPerByte;
-	type Event = Event;
-	type OnSlashRing = Treasury;
-	type OnSlashKton = Treasury;
-	type ProposalBond = ProposalBond;
-	type RingProposalBondMinimum = RingProposalBondMinimum;
-	type KtonProposalBondMinimum = KtonProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
-	type Burn = Burn;
-	type BountyDepositBase = BountyDepositBase;
-	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
-	type BountyUpdatePeriod = BountyUpdatePeriod;
-	type MaximumReasonLength = MaximumReasonLength;
-	type BountyCuratorDeposit = BountyCuratorDeposit;
-	type BountyValueMinimum = BountyValueMinimum;
-	type RingBurnDestination = ();
-	type KtonBurnDestination = ();
-	type WeightInfo = weights::darwinia_treasury::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 28 * DAYS;
-	pub const VotingPeriod: BlockNumber = 28 * DAYS;
-	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
-	pub const MinimumDeposit: Balance = 100 * COIN;
-	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
-	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	// One milli: $10,000 / MB
-	pub const PreimageByteDeposit: Balance = 1 * MILLI;
-	pub const InstantAllowed: bool = true;
-	pub const MaxVotes: u32 = 100;
-	pub const MaxProposals: u32 = 100;
-}
-impl darwinia_democracy::Config for Runtime {
-	type Proposal = Call;
-	type Event = Event;
-	type Currency = Balances;
-	type EnactmentPeriod = EnactmentPeriod;
-	type LaunchPeriod = LaunchPeriod;
-	type VotingPeriod = VotingPeriod;
-	type MinimumDeposit = MinimumDeposit;
-	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = frame_system::EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	/// A 60% super-majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin = frame_system::EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-	/// (NTB) vote.
-	type ExternalDefaultOrigin = frame_system::EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = frame_system::EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	type InstantOrigin = frame_system::EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	type InstantAllowed = InstantAllowed;
-	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>,
-		EnsureRoot<AccountId>,
-	>;
-	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = EnsureOneOf<
-		AccountId,
-		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
-		EnsureRoot<AccountId>,
-	>;
-	type BlacklistOrigin = EnsureRoot<AccountId>;
-	// Any single technical committee member may veto a coming council proposal, however they can
-	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-	type CooloffPeriod = CooloffPeriod;
-	type PreimageByteDeposit = PreimageByteDeposit;
-	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
-	type Slash = Treasury;
-	type Scheduler = Scheduler;
-	type PalletsOrigin = OriginCaller;
-	type MaxVotes = MaxVotes;
-	type WeightInfo = weights::darwinia_democracy::WeightInfo<Runtime>;
-	type MaxProposals = MaxProposals;
-}
-
-parameter_types! {
+frame_support::parameter_types! {
 	pub const MinVestedTransfer: Balance = 100 * MILLI;
 }
 impl darwinia_vesting::Config for Runtime {
@@ -691,7 +223,7 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	// Minimum 100 bytes/CRING deposited (1 MILLI/byte)
 	pub const BasicDeposit: Balance = deposit(1, 258);
 	pub const FieldDeposit: Balance = deposit(0, 66);
@@ -715,7 +247,7 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = weights::pallet_identity::WeightInfo<Runtime>;
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const SocietyModuleId: ModuleId = ModuleId(*b"da/socie");
 	pub const CandidateDeposit: Balance = 10 * COIN;
 	pub const WrongSideDeduction: Balance = 2 * COIN;
@@ -742,7 +274,7 @@ impl pallet_society::Config for Runtime {
 	type ChallengePeriod = ChallengePeriod;
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const ConfigDepositBase: Balance = 5 * COIN;
 	pub const FriendDepositFactor: Balance = 50 * MILLI;
 	pub const MaxFriends: u16 = 9;
@@ -758,7 +290,7 @@ impl pallet_recovery::Config for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80)
 		* BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
@@ -865,7 +397,7 @@ impl InstanceFilter<Call> for ProxyType {
 		}
 	}
 }
-parameter_types! {
+frame_support::parameter_types! {
 	// One storage item; key size 32, value size 8; .
 	pub const ProxyDepositBase: Balance = deposit(1, 8);
 	// Additional storage item size of 33 bytes.
@@ -890,7 +422,7 @@ impl pallet_proxy::Config for Runtime {
 	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
 	pub const DepositBase: Balance = deposit(1, 88);
 	// Additional storage item size of 32 bytes.
@@ -907,12 +439,7 @@ impl pallet_multisig::Config for Runtime {
 	type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
 }
 
-impl pallet_sudo::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-}
-
-parameter_types! {
+frame_support::parameter_types! {
 	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
 	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
 	pub const RingLockLimit: Balance = 10_000_000 * COIN;
@@ -939,7 +466,7 @@ impl darwinia_ethereum_backing::Config for Runtime {
 }
 
 type EthereumRelayAuthoritiesInstance = darwinia_relay_authorities::Instance0;
-parameter_types! {
+frame_support::parameter_types! {
 	pub const EthereumRelayAuthoritiesLockId: LockIdentifier = *b"ethrauth";
 	pub const EthereumRelayAuthoritiesTermDuration: BlockNumber = 7 * DAYS;
 	pub const MaxCandidates: usize = 7;
@@ -977,7 +504,7 @@ type EnsureRootOrHalfTechnicalComittee = EnsureOneOf<
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, TechnicalCollective>,
 >;
-parameter_types! {
+frame_support::parameter_types! {
 	pub const EthereumRelayModuleId: ModuleId = ModuleId(*b"da/ethrl");
 	pub const EthereumNetwork: EthereumNetworkType = EthereumNetworkType::Mainnet;
 	pub const ConfirmPeriod: BlockNumber = 3 * DAYS;
@@ -1001,7 +528,7 @@ impl darwinia_ethereum_relay::Config for Runtime {
 }
 
 type EthereumRelayerGameInstance = darwinia_relayer_game::Instance0;
-parameter_types! {
+frame_support::parameter_types! {
 	pub const EthereumRelayerGameLockId: LockIdentifier = *b"da/rgame";
 }
 impl darwinia_relayer_game::Config<EthereumRelayerGameInstance> for Runtime {
@@ -1013,7 +540,7 @@ impl darwinia_relayer_game::Config<EthereumRelayerGameInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const TronBackingModuleId: ModuleId = ModuleId(*b"da/trobk");
 }
 impl darwinia_tron_backing::Config for Runtime {
@@ -1023,9 +550,7 @@ impl darwinia_tron_backing::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl darwinia_header_mmr::Config for Runtime {}
-
-parameter_types! {
+frame_support::parameter_types! {
 	pub const CrabBackingModuleId: ModuleId = ModuleId(*b"da/crabk");
 }
 impl darwinia_crab_backing::Config for Runtime {
