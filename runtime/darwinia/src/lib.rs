@@ -229,12 +229,14 @@ frame_support::construct_runtime! {
 		HeaderMMR: darwinia_header_mmr::{Module, Call, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
+		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>} = 37,
 		Council: pallet_collective::<Instance0>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
 		TechnicalCommittee: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
 		ElectionsPhragmen: darwinia_elections_phragmen::{Module, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance0>::{Module, Call, Storage, Config<T>, Event<T>} = 19,
 		Treasury: darwinia_treasury::{Module, Call, Storage, Event<T>} = 20,
-		Democracy: darwinia_democracy::{Module, Call, Storage, Config, Event<T>} = 37,
+
+		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>} = 27,
 
 		// Vesting. Usable initially, but removed once all vesting is finished.
 		Vesting: darwinia_vesting::{Module, Call, Storage, Event<T>, Config<T>} = 21,
@@ -254,8 +256,6 @@ frame_support::construct_runtime! {
 		// System scheduler.
 		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>} = 26,
 
-		Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>} = 27,
-
 		// Proxy module. Late addition.
 		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>} = 28,
 
@@ -266,8 +266,8 @@ frame_support::construct_runtime! {
 		CrabBacking: darwinia_crab_backing::{Module, Storage} = 30,
 
 		// Ethereum bridge.
-		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelay: darwinia_ethereum_relay::{Module, Call, Storage, Config<T>, Event<T>} = 32,
+		EthereumBacking: darwinia_ethereum_backing::{Module, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Module, Storage} = 33,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Module, Call, Storage, Event<T>} = 36,
 
