@@ -17,8 +17,8 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 # crates
-futures         = { version = "=0.3.8" }
-parity-util-mem = { version = "*", default-features = false, features = ["jemalloc-global"] }
+futures         = { version = "0.3.13" }
+parity-util-mem = { version = "0.8.0", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli     = { path = "cli" }
 darwinia-service = { path = "node/service" }
