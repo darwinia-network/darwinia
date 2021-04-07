@@ -19,33 +19,33 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # crates
-log                  = { version = "0.4.13" }
-serde                = { version = "1.0.118", optional = true }
+log                  = { version = "0.4.14" }
+serde                = { version = "1.0.125", optional = true }
 structopt            = { version = "0.3.21" }
-tokio                = { version = "0.3.5", optional = true, features = ["rt-multi-thread"] }
-wasm-bindgen         = { version = "0.2.69", optional = true }
-wasm-bindgen-futures = { version = "0.4.19", optional = true }
+tokio                = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
+wasm-bindgen         = { version = "0.2.73", optional = true }
+wasm-bindgen-futures = { version = "0.4.23", optional = true }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
-sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sc-service    = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 # substrate primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 
 [features]
 default = [

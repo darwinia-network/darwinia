@@ -1,3 +1,21 @@
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2021 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
 // --- std ---
 use std::collections::BTreeMap;
 // --- substrate ---
@@ -107,7 +125,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		}
 
 		rings
-			.entry(array_bytes::hex_str_array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
 			.and_modify(|ring_| *ring_ += ring)
 			.or_insert(ring);
 
@@ -135,7 +153,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		let ring = ring / COIN;
 
 		rings
-			.entry(array_bytes::hex_str_array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
 			.and_modify(|ring_| *ring_ += ring)
 			.or_insert(ring);
 	}
@@ -155,7 +173,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		let kton = kton / COIN;
 
 		ktons
-			.entry(array_bytes::hex_str_array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
 			.and_modify(|kton_| *kton_ += kton)
 			.or_insert(kton);
 	}
@@ -166,16 +184,16 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	assert!(genesis_validator_1_stash_endowed);
 	assert!(genesis_validator_2_stash_endowed);
 
-	let root: AccountId = array_bytes::hex_str_array_unchecked!(ROOT, 32).into();
-	let da_crabk: AccountId = array_bytes::hex_str_array_unchecked!(DA_CRABK, 32).into();
-	let team_vesting: AccountId = array_bytes::hex_str_array_unchecked!(TEAM_VESTING, 32).into();
+	let root: AccountId = array_bytes::hex2array_unchecked!(ROOT, 32).into();
+	let da_crabk: AccountId = array_bytes::hex2array_unchecked!(DA_CRABK, 32).into();
+	let team_vesting: AccountId = array_bytes::hex2array_unchecked!(TEAM_VESTING, 32).into();
 	let foundation_vesting: AccountId =
-		array_bytes::hex_str_array_unchecked!(FOUNDATION_VESTING, 32).into();
+		array_bytes::hex2array_unchecked!(FOUNDATION_VESTING, 32).into();
 	let genesis_validator_1: (AccountId, AccountId, SessionKeys) = {
-		let stash = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_1_STASH, 32);
-		let controller = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_1_CONTROLLER, 32);
-		let session = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_1_SESSION, 32);
-		let grandpa = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_1_GRANDPA, 32);
+		let stash = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_STASH, 32);
+		let controller = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_CONTROLLER, 32);
+		let session = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_SESSION, 32);
+		let grandpa = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_GRANDPA, 32);
 
 		(
 			stash.into(),
@@ -189,10 +207,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		)
 	};
 	let genesis_validator_2: (AccountId, AccountId, SessionKeys) = {
-		let stash = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_2_STASH, 32);
-		let controller = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_2_CONTROLLER, 32);
-		let session = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_2_SESSION, 32);
-		let grandpa = array_bytes::hex_str_array_unchecked!(GENESIS_VALIDATOR_2_GRANDPA, 32);
+		let stash = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_STASH, 32);
+		let controller = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_CONTROLLER, 32);
+		let session = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_SESSION, 32);
+		let grandpa = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_GRANDPA, 32);
 
 		(
 			stash.into(),
@@ -280,10 +298,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		}),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex_str_array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: array_bytes::hex_str_array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: array_bytes::hex_str_array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: array_bytes::hex_str_array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
@@ -409,10 +427,10 @@ pub fn darwinia_testnet_genesis(
 		darwinia_vesting: Some(Default::default()),
 		pallet_sudo: Some(SudoConfig { key: root }),
 		darwinia_ethereum_backing: Some(EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex_str_array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: array_bytes::hex_str_array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: array_bytes::hex_str_array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: array_bytes::hex_str_array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
+			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
+			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
+			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
 			ring_locked: 1 << 56,
 			kton_locked: 1 << 56,
 			..Default::default()
