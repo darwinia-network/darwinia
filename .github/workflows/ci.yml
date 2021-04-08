@@ -19,13 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2021-03-15
-          override: true
-          target: wasm32-unknown-unknown
-
       - name: Cache darwinia target
         uses: actions/cache@v2
         with:
@@ -34,7 +27,7 @@ jobs:
 
       - name: Overall test
         env:
-          RUST_TOOLCHAIN: nightly-2021-03-15
+          RUST_TOOLCHAIN: nightly-2021-02-25
           OVERALL_TEST: true
         run: .maintain/setup-darwinia.sh
 

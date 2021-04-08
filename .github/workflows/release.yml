@@ -19,7 +19,7 @@ jobs:
 
       - name: Build darwinia
         env:
-          RUST_TOOLCHAIN: nightly-2021-03-15
+          RUST_TOOLCHAIN: nightly-2021-02-25
         run: |
           .maintain/setup-darwinia.sh
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Build wasm
         env:
-          RUST_TOOLCHAIN: nightly-2021-03-15
+          RUST_TOOLCHAIN: nightly-2021-02-25
         run: |
           .maintain/setup-wasm.sh
 
