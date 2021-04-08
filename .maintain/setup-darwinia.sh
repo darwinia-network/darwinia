@@ -43,22 +43,27 @@ fi
 mkdir -p ${WORK_PATH}/deploy/bin
 
 
+cross build \
+  --release \
+  --target x86_64-unknown-linux-gnu \
+  --sub-targets wasm32-unknown-unknown
+
+
 cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/darwinia_runtime.wasm \
   ${WORK_PATH}/deploy/bin/
 
 cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm \
   ${WORK_PATH}/deploy/bin/
 
-cross build \
-  --release \
-  --target x86_64-unknown-linux-gnu \
-  --sub-targets wasm32-unknown-unknown
 
-RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build \
-  --no-default-features \
-  --locked \
-  --release \
-  --target aarch64-unknown-linux-gnu
+## not support now, have build questions.
+## https://github.com/fewensa/darwinia/runs/2294261173?check_suite_focus=true#step:4:3092
+
+#RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build \
+#  --no-default-features \
+#  --locked \
+#  --release \
+#  --target aarch64-unknown-linux-gnu
 
 cd ${WORK_PATH}/deploy/bin/
 
@@ -66,8 +71,8 @@ cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/de
 tar cjSf darwinia-x86_64-linux-gnu.tar.bz2 darwinia
 mv ${WORK_PATH}/deploy/bin/darwinia ${WORK_PATH}/deploy/
 
-cp ${WORK_PATH}/target/aarch64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
-tar cjSf darwinia-aarch64-linux-gnu.tar.bz2 darwinia
-rm -rf ${WORK_PATH}/deploy/bin/darwinia
+#cp ${WORK_PATH}/target/aarch64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
+#tar cjSf darwinia-aarch64-linux-gnu.tar.bz2 darwinia
+#rm -rf ${WORK_PATH}/deploy/bin/darwinia
 
 
