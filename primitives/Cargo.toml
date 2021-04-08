@@ -10,13 +10,13 @@ version     = "0.9.5"
 
 [dependencies]
 # crates
-codec = { package = "parity-scale-codec", version = "1.3.5", default-features = false }
+codec = { package = "parity-scale-codec", version = "1.3.7", default-features = false }
 # substrate frame
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 # substrate primitives
-sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
-sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", branch = "common-library" }
+sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 
 [features]
 default = ["std"]
