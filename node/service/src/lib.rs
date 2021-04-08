@@ -43,7 +43,9 @@ use futures::stream::StreamExt;
 use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
 use sc_consensus::LongestChain;
-use sc_consensus_babe::{BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig};
+use sc_consensus_babe::{
+	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
+};
 use sc_executor::native_executor_instance;
 use sc_finality_grandpa::{
 	Config as GrandpaConfig, FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
@@ -57,7 +59,7 @@ use sc_service::{
 	BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder, PartialComponents,
 	RpcHandlers, SpawnTasksParams, TaskManager,
 };
-use sc_telemetry::{TelemetryConnectionNotifier, TelemetrySpan};
+use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{BasicPool, FullPool};
 use sp_api::ConstructRuntimeApi;
 use sp_consensus::{
@@ -190,6 +192,7 @@ fn new_partial<RuntimeApi, Executor>(
 				BabeLink<Block>,
 			),
 			GrandpaSharedVoterState,
+			Option<Telemetry>,
 		),
 	>,
 	ServiceError,
@@ -210,8 +213,25 @@ where
 	set_prometheus_registry(config)?;
 
 	let inherent_data_providers = InherentDataProviders::new();
+	let telemetry = config
+		.telemetry_endpoints
+		.clone()
+		.filter(|x| !x.is_empty())
+		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
+			let worker = TelemetryWorker::new(16)?;
+			let telemetry = worker.handle().new_telemetry(endpoints);
+			Ok((worker, telemetry))
+		})
+		.transpose()?;
 	let (client, backend, keystore_container, task_manager) =
-		sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config)?;
+		sc_service::new_full_parts::<Block, RuntimeApi, Executor>(
+			&config,
+			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+		)?;
+	let telemetry = telemetry.map(|(worker, telemetry)| {
+		task_manager.spawn_handle().spawn("telemetry", worker.run());
+		telemetry
+	});
 	let client = Arc::new(client);
 	let select_chain = LongestChain::new(backend.clone());
 	let transaction_pool = BasicPool::new_full(
@@ -228,6 +248,7 @@ where
 			&(client.clone() as Arc<_>),
 			select_chain.clone(),
 			grandpa_hard_forks,
+			telemetry.as_ref().map(|x| x.handle()),
 		)?;
 	let justification_import = grandpa_block_import.clone();
 	let (babe_import, babe_link) = sc_consensus_babe::block_import(
@@ -245,6 +266,7 @@ where
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
+		telemetry.as_ref().map(|x| x.handle()),
 	)?;
 	let justification_stream = grandpa_link.justification_stream();
 	let shared_authority_set = grandpa_link.shared_authority_set().clone();
@@ -298,7 +320,7 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (rpc_extensions_builder, import_setup, rpc_setup),
+		other: (rpc_extensions_builder, import_setup, rpc_setup, telemetry),
 	})
 }
 
@@ -344,7 +366,7 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (rpc_extensions_builder, import_setup, rpc_setup),
+		other: (rpc_extensions_builder, import_setup, rpc_setup, mut telemetry),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
 	if let Some(url) = &config.keystore_remote {
@@ -391,31 +413,27 @@ where
 	if config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
 			&config,
-			backend.clone(),
 			task_manager.spawn_handle(),
 			client.clone(),
 			network.clone(),
 		);
 	}
 
-	let telemetry_span = TelemetrySpan::new();
-	let _telemetry_span_entered = telemetry_span.enter();
-	let (rpc_handlers, telemetry_connection_notifier) =
-		sc_service::spawn_tasks(SpawnTasksParams {
-			config,
-			backend: backend.clone(),
-			client: client.clone(),
-			keystore: keystore_container.sync_keystore(),
-			network: network.clone(),
-			rpc_extensions_builder: Box::new(rpc_extensions_builder),
-			transaction_pool: transaction_pool.clone(),
-			task_manager: &mut task_manager,
-			on_demand: None,
-			remote_blockchain: None,
-			network_status_sinks,
-			system_rpc_tx,
-			telemetry_span: Some(telemetry_span.clone()),
-		})?;
+	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
+		config,
+		backend: backend.clone(),
+		client: client.clone(),
+		keystore: keystore_container.sync_keystore(),
+		network: network.clone(),
+		rpc_extensions_builder: Box::new(rpc_extensions_builder),
+		transaction_pool: transaction_pool.clone(),
+		task_manager: &mut task_manager,
+		on_demand: None,
+		remote_blockchain: None,
+		network_status_sinks,
+		system_rpc_tx,
+		telemetry: telemetry.as_mut(),
+	})?;
 
 	let (block_import, link_half, babe_link) = import_setup;
 
@@ -426,6 +444,7 @@ where
 			client.clone(),
 			transaction_pool,
 			prometheus_registry.as_ref(),
+			telemetry.as_ref().map(|x| x.handle()),
 		);
 		let babe_config = BabeParams {
 			keystore: keystore_container.sync_keystore(),
@@ -439,6 +458,8 @@ where
 			backoff_authoring_blocks,
 			babe_link,
 			can_author_with,
+			block_proposal_slot_portion: SlotProportion::new(0.5),
+			telemetry: telemetry.as_ref().map(|x| x.handle()),
 		};
 		let babe = sc_consensus_babe::start_babe(babe_config)?;
 
@@ -460,6 +481,7 @@ where
 		observer_enabled: false,
 		keystore,
 		is_authority: role.is_authority(),
+		telemetry: telemetry.as_ref().map(|x| x.handle()),
 	};
 	let enable_grandpa = !disable_grandpa;
 
@@ -468,7 +490,7 @@ where
 			config: grandpa_config,
 			link: link_half,
 			network: network.clone(),
-			telemetry_on_connect: telemetry_connection_notifier.map(|x| x.on_connect_stream()),
+			telemetry: telemetry.as_ref().map(|x| x.handle()),
 			voting_rule: GrandpaVotingRulesBuilder::default().build(),
 			prometheus_registry: prometheus_registry.clone(),
 			shared_voter_state,
@@ -513,14 +535,7 @@ where
 
 fn new_light<RuntimeApi, Executor>(
 	mut config: Configuration,
-) -> Result<
-	(
-		TaskManager,
-		RpcHandlers,
-		Option<TelemetryConnectionNotifier>,
-	),
-	ServiceError,
->
+) -> Result<(TaskManager, RpcHandlers), ServiceError>
 where
 	Executor: 'static + NativeExecutionDispatch,
 	RuntimeApi:
@@ -530,8 +545,32 @@ where
 {
 	set_prometheus_registry(&mut config)?;
 
+	let telemetry = config
+		.telemetry_endpoints
+		.clone()
+		.filter(|x| !x.is_empty())
+		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
+			#[cfg(feature = "browser")]
+			let transport = Some(sc_telemetry::ExtTransport::new(
+				libp2p_wasm_ext::ffi::websocket_transport(),
+			));
+			#[cfg(not(feature = "browser"))]
+			let transport = None;
+
+			let worker = TelemetryWorker::with_transport(16, transport)?;
+			let telemetry = worker.handle().new_telemetry(endpoints);
+			Ok((worker, telemetry))
+		})
+		.transpose()?;
 	let (client, backend, keystore_container, mut task_manager, on_demand) =
-		sc_service::new_light_parts::<Block, RuntimeApi, Executor>(&config)?;
+		sc_service::new_light_parts::<Block, RuntimeApi, Executor>(
+			&config,
+			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+		)?;
+	let mut telemetry = telemetry.map(|(worker, telemetry)| {
+		task_manager.spawn_handle().spawn("telemetry", worker.run());
+		telemetry
+	});
 
 	config
 		.network
@@ -550,6 +589,7 @@ where
 		client.clone(),
 		&(client.clone() as Arc<_>),
 		select_chain.clone(),
+		telemetry.as_ref().map(|x| x.handle()),
 	)?;
 	let justification_import = grandpa_block_import.clone();
 	let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
@@ -569,6 +609,7 @@ where
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		NeverCanAuthor,
+		telemetry.as_ref().map(|x| x.handle()),
 	)?;
 	let (network, network_status_sinks, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
@@ -584,7 +625,6 @@ where
 	if config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
 			&config,
-			backend.clone(),
 			task_manager.spawn_handle(),
 			client.clone(),
 			network.clone(),
@@ -598,28 +638,25 @@ where
 		pool: transaction_pool.clone(),
 	};
 	let rpc_extension = darwinia_rpc::create_light(light_deps);
-	let telemetry_span = TelemetrySpan::new();
-	let _telemetry_span_entered = telemetry_span.enter();
-	let (rpc_handlers, telemetry_connection_notifier) =
-		sc_service::spawn_tasks(SpawnTasksParams {
-			on_demand: Some(on_demand),
-			remote_blockchain: Some(backend.remote_blockchain()),
-			rpc_extensions_builder: Box::new(NoopRpcExtensionBuilder(rpc_extension)),
-			task_manager: &mut task_manager,
-			config,
-			keystore: keystore_container.sync_keystore(),
-			backend,
-			transaction_pool,
-			client,
-			network,
-			network_status_sinks,
-			system_rpc_tx,
-			telemetry_span: Some(telemetry_span.clone()),
-		})?;
+	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
+		on_demand: Some(on_demand),
+		remote_blockchain: Some(backend.remote_blockchain()),
+		rpc_extensions_builder: Box::new(NoopRpcExtensionBuilder(rpc_extension)),
+		task_manager: &mut task_manager,
+		config,
+		keystore: keystore_container.sync_keystore(),
+		backend,
+		transaction_pool,
+		client,
+		network,
+		network_status_sinks,
+		system_rpc_tx,
+		telemetry: telemetry.as_mut(),
+	})?;
 
 	network_starter.start_network();
 
-	Ok((task_manager, rpc_handlers, telemetry_connection_notifier))
+	Ok((task_manager, rpc_handlers))
 }
 
 /// Builds a new object suitable for chain operations.
@@ -673,16 +710,7 @@ pub fn crab_new_full(
 }
 
 /// Create a new Crab service for a light client.
-pub fn crab_new_light(
-	config: Configuration,
-) -> Result<
-	(
-		TaskManager,
-		RpcHandlers,
-		Option<TelemetryConnectionNotifier>,
-	),
-	ServiceError,
-> {
+pub fn crab_new_light(config: Configuration) -> Result<(TaskManager, RpcHandlers), ServiceError> {
 	new_light::<crab_runtime::RuntimeApi, CrabExecutor>(config)
 }
 
@@ -710,13 +738,6 @@ pub fn darwinia_new_full(
 /// Create a new Darwinia service for a light client.
 pub fn darwinia_new_light(
 	config: Configuration,
-) -> Result<
-	(
-		TaskManager,
-		RpcHandlers,
-		Option<TelemetryConnectionNotifier>,
-	),
-	ServiceError,
-> {
+) -> Result<(TaskManager, RpcHandlers), ServiceError> {
 	new_light::<darwinia_runtime::RuntimeApi, DarwiniaExecutor>(config)
 }

@@ -103,7 +103,7 @@ pub mod fee {
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
 				negative: false,
-				coeff_frac: Perbill::from_rational_approximation(p % q, q),
+				coeff_frac: Perbill::from_rational(p % q, q),
 				coeff_integer: p / q,
 			}]
 		}
@@ -149,11 +149,11 @@ pub mod relay {
 					sample_points.push(new_sample_points);
 				} else {
 					// Should never be reached
-					error!(target: "ethereum-relayer-game", "Sample Round - NOT EXISTED");
+					log::error!(target: "ethereum-relayer-game", "Sample Round - NOT EXISTED");
 				}
 			} else {
 				// Should never be reached
-				error!(target: "ethereum-relayer-game", "Sample Point - NOT EXISTED");
+				log::error!(target: "ethereum-relayer-game", "Sample Point - NOT EXISTED");
 			}
 		}
 

@@ -242,7 +242,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		},
-		pallet_babe: Default::default(),
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
 		darwinia_balances_Instance0: BalancesConfig { balances: rings.into_iter().collect() },
 		darwinia_balances_Instance1: KtonConfig { balances: ktons.into_iter().collect() },
 		darwinia_staking: StakingConfig {
@@ -381,7 +384,10 @@ pub fn darwinia_testnet_genesis(
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		},
-		pallet_babe: Default::default(),
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
 		darwinia_balances_Instance0: BalancesConfig {
 			balances: endowed_accounts
 				.iter()

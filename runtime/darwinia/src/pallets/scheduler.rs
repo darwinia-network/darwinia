@@ -8,7 +8,7 @@ use crate::{weights::pallet_scheduler::WeightInfo, *};
 
 frame_support::parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80)
-		* BlockWeights::get().max_block;
+		* RuntimeBlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
 impl Config for Runtime {

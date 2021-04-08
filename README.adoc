@@ -252,7 +252,7 @@ please kindly check following things before making an issue.
     ** `/ip4/35.234.33.88/tcp/30333/p2p/QmR4fARccJJA2o2Ac3fG2FcgatyGaoaZqUzymUDpvBZr7c`
     ** `/ip4/35.234.9.96/tcp/30333/p2p/QmPPGpFMgqSm9ZeeHubZk8UXpKdZMNRCk4Wkymm181bpve`
 
-Getting the runable darwinia binary from downloading the compiled executed binary directly or building from source code. 
+Getting the runable darwinia binary from downloading the compiled executed binary directly or building from source code.
 Then, type the command below to sync Crab network:
 [source, shell]
   ./darwinia \
@@ -350,7 +350,7 @@ And replace `<spec>` with one of the following (i.e. `cargo doc --package darwin
 [source, shell]
 darwinia-cli, ethash, fly-client,
 merkle-mountain-range, merkle-patricia-trie, eth-primitives
-* Darwinia Runtime Module Library
+* Darwinia Runtime Pallet Library
 [source, shell]
 darwinia-balances, darwinia-eth-backing, darwinia-eth-relay,
 darwinia-staking, darwinia-support

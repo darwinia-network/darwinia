@@ -133,7 +133,10 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		},
-		pallet_babe: Default::default(),
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
 		pallet_indices: Default::default(),
 		darwinia_balances_Instance0: BalancesConfig {
 			balances: endowed_accounts
@@ -191,14 +194,12 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance0: Default::default(),
-		darwinia_claims: Some({
-			ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			}
-		}),
+		darwinia_claims: ClaimsConfig {
+			claims_list: ClaimsList::from_file(
+				"node/service/res/crab/claims-list.json",
+				"CLAIMS_LIST_PATH",
+			),
+		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
@@ -274,7 +275,10 @@ pub fn crab_testnet_genesis(
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
 		},
-		pallet_babe: Default::default(),
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
 		pallet_indices: Default::default(),
 		darwinia_balances_Instance0: BalancesConfig {
 			balances: endowed_accounts
@@ -319,14 +323,12 @@ pub fn crab_testnet_genesis(
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance0: Default::default(),
-		darwinia_claims: Some({
-			ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			}
-		}),
+		darwinia_claims: ClaimsConfig {
+			claims_list: ClaimsList::from_file(
+				"node/service/res/crab/claims-list.json",
+				"CLAIMS_LIST_PATH",
+			),
+		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
