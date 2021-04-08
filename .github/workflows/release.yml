@@ -125,7 +125,7 @@ jobs:
           ALLOW_TAG_PREFIX: "true"
         with:
           args: |
-            release/bin/*
+            deploy/bin/*
 
       - uses: 8398a7/action-slack@v3
         if: failure()
