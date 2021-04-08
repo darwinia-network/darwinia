@@ -20,6 +20,8 @@ IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/darwinia:sha-${GITHUB_SHA_SHORT}
 
 DOCKERFILE_NAME=Dockerfile.darwinia.x86_64-linux-gnu
 
+chmod +x ${WORK_PATH}/deploy/darwinia
+
 docker build \
   -t ${IMAGE_ORIGIN_NAME} \
   -f ${WORK_PATH}/.maintain/docker/${DOCKERFILE_NAME} \
