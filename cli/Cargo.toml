@@ -26,26 +26,26 @@ tokio                = { version = "0.3.7", optional = true, features = ["rt-mul
 wasm-bindgen         = { version = "0.2.73", optional = true }
 wasm-bindgen-futures = { version = "0.4.23", optional = true }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
-sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # substrate primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 
 [features]
 default = [
