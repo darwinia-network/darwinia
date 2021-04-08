@@ -68,10 +68,12 @@ cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unk
 cd ${WORK_PATH}/deploy/bin/
 
 cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
+chmod +x darwinia
 tar cjSf darwinia-x86_64-linux-gnu.tar.bz2 darwinia
 mv ${WORK_PATH}/deploy/bin/darwinia ${WORK_PATH}/deploy/
 
 #cp ${WORK_PATH}/target/aarch64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
+#chmod +x darwinia
 #tar cjSf darwinia-aarch64-linux-gnu.tar.bz2 darwinia
 #rm -rf ${WORK_PATH}/deploy/bin/darwinia
 
