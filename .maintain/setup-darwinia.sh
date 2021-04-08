@@ -17,7 +17,7 @@ source ~/.cargo/env
 
 echo -e '\e[1;32m🔧 Building Docker Image(s)\e[0m'
 docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu .
-docker build -f .maintain/docker/Dockerfile.aarch64-linux-gnu -t aarch64-linux-gnu .
+#docker build -f .maintain/docker/Dockerfile.aarch64-linux-gnu -t aarch64-linux-gnu .
 
 
 cargo install cross \
