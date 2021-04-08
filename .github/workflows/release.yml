@@ -74,6 +74,8 @@ jobs:
 
       - name: Docker login
         uses: docker/login-action@v1
+        env:
+          REGISTRY_HOST: quay.io
         with:
           username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
           password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
