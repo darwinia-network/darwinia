@@ -103,4 +103,9 @@ pub enum Subcommand {
 
 	/// Sign a message, with a given (secret) key.
 	Sign(SignCmd),
+
+	/// Try some experimental command on the runtime. This includes migration and runtime-upgrade
+	/// testing.
+	#[cfg(feature = "try-runtime")]
+	TryRuntime(try_runtime_cli::TryRuntimeCmd),
 }

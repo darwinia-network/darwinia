@@ -11,6 +11,7 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type AuthorityId = AuthorityId;
 	type Event = Event;
+	type ValidatorSet = Historical;
 	type SessionDuration = SessionDuration;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;

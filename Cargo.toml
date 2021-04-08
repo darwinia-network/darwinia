@@ -25,10 +25,13 @@ darwinia-service = { path = "node/service" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
-dev     = [
+
+dev = [
 	"darwinia-service/dev",
 	"darwinia-cli/dev",
 ]
+
+try-runtime = ["darwinia-cli/try-runtime"]
 
 [workspace]
 members = [

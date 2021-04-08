@@ -61,10 +61,7 @@ mod weights;
 // --- crates ---
 use codec::Encode;
 // --- substrate ---
-use frame_support::{
-	debug,
-	traits::{KeyOwnerProofSystem, Randomness},
-};
+use frame_support::traits::{KeyOwnerProofSystem, Randomness};
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -162,7 +159,7 @@ frame_support::construct_runtime! {
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Storage} = 1,
 
 		// Must be before session.
-		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 2,
+		Babe: pallet_babe::{Module, Call, Storage, Config, ValidateUnsigned} = 2,
 
 		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent} = 3,
 		Indices: pallet_indices::{Module, Call, Storage, Config<T>, Event<T>} = 4,
@@ -172,6 +169,7 @@ frame_support::construct_runtime! {
 
 		// Consensus support.
 		Authorship: pallet_authorship::{Module, Call, Storage} = 6,
+		ElectionProviderMultiPhase: pallet_election_provider_multi_phase::{Module, Call, Storage, Event<T>, ValidateUnsigned} = 38,
 		Staking: darwinia_staking::{Module, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 25,
 		Offences: pallet_offences::{Module, Call, Storage, Event} = 7,
 		Historical: pallet_session_historical::{Module} = 8,
@@ -257,7 +255,7 @@ where
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
-				debug::warn!("Unable to create signed payload: {:?}", e);
+				log::warn!("Unable to create signed payload: {:?}", e);
 			})
 			.ok()?;
 		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
@@ -285,7 +283,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn execute_block(block: Block) {
-			Executive::execute_block(block)
+			Executive::execute_block(block);
 		}
 
 		fn initialize_block(header: &<Block as BlockT>::Header) {
@@ -387,7 +385,7 @@ sp_api::impl_runtime_apis! {
 			}
 		}
 
-		fn current_epoch_start() -> sp_consensus_babe::SlotNumber {
+		fn current_epoch_start() -> sp_consensus_babe::Slot {
 			Babe::current_epoch_start()
 		}
 
@@ -400,7 +398,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn generate_key_ownership_proof(
-			_slot_number: sp_consensus_babe::SlotNumber,
+			_slot: sp_consensus_babe::Slot,
 			authority_id: sp_consensus_babe::AuthorityId,
 		) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
 			Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
@@ -485,6 +483,14 @@ sp_api::impl_runtime_apis! {
 			Staking::power_of_rpc(account)
 		}
 	}
+
+	#[cfg(feature = "try-runtime")]
+	impl frame_try_runtime::TryRuntime<Block> for Runtime {
+		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
+			let weight = Executive::try_runtime_upgrade()?;
+			Ok((weight, RuntimeBlockWeights::get().max_block))
+		}
+	}
 }
 
 pub struct CustomOnRuntimeUpgrade;
@@ -507,7 +513,9 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 				to,
 				Module::free_balance(from),
 				frame_support::traits::ExistenceRequirement::AllowDeath,
-			).is_ok() {
+			)
+			.is_ok()
+			{
 				log::info!("Migrate `ethbk`'s balance succeed");
 			} else {
 				log::info!("Migrate `ethbk`'s balance failed");

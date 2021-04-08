@@ -111,8 +111,6 @@ pub mod fee {
 }
 
 pub mod relay {
-	// --- substrate ---
-	use frame_support::debug::error;
 	// --- darwinia ---
 	use super::currency::*;
 	use crate::*;

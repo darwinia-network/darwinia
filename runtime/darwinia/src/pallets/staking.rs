@@ -47,6 +47,7 @@ impl Config for Runtime {
 	// The unsigned solution weight targeted by the OCW. We set it to the maximum possible value of
 	// a single extrinsic.
 	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
+	type ElectionProvider = ElectionProviderMultiPhase;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;

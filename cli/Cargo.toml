@@ -30,12 +30,13 @@ darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/dar
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
-sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-client-api   = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-executor     = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-network      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-service      = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sc-tracing      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # substrate primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # this crate is used only to enable `trie-memory-tracker` feature
@@ -46,6 +47,7 @@ substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 
 [features]
 default = [
@@ -77,3 +79,8 @@ wasmtime            = [
 ]
 
 dev = ["darwinia-service/dev"]
+
+try-runtime = [
+	"darwinia-service/try-runtime",
+	"try-runtime-cli",
+]

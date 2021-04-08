@@ -100,7 +100,7 @@ native_executor_instance!(
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
-	sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+	sp_api::ApiExt<Block>
 	+ sp_api::Metadata<Block>
 	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
 	+ sp_block_builder::BlockBuilder<Block>
@@ -121,7 +121,7 @@ where
 impl<Api> RuntimeApiCollection for Api
 where
 	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+		+ sp_api::ApiExt<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>
@@ -190,7 +190,6 @@ fn new_partial<RuntimeApi, Executor>(
 				BabeLink<Block>,
 			),
 			GrandpaSharedVoterState,
-			Option<TelemetrySpan>,
 		),
 	>,
 	ServiceError,
@@ -211,7 +210,7 @@ where
 	set_prometheus_registry(config)?;
 
 	let inherent_data_providers = InherentDataProviders::new();
-	let (client, backend, keystore_container, task_manager, telemetry_span) =
+	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config)?;
 	let client = Arc::new(client);
 	let select_chain = LongestChain::new(backend.clone());
@@ -243,7 +242,7 @@ where
 		client.clone(),
 		select_chain.clone(),
 		inherent_data_providers.clone(),
-		&task_manager.spawn_handle(),
+		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
 	)?;
@@ -299,12 +298,7 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (
-			rpc_extensions_builder,
-			import_setup,
-			rpc_setup,
-			telemetry_span,
-		),
+		other: (rpc_extensions_builder, import_setup, rpc_setup),
 	})
 }
 
@@ -350,7 +344,7 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, telemetry_span),
+		other: (rpc_extensions_builder, import_setup, rpc_setup),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
 	if let Some(url) = &config.keystore_remote {
@@ -379,6 +373,7 @@ where
 			&config,
 			task_manager.spawn_handle(),
 			backend.clone(),
+			import_setup.1.shared_authority_set().clone(),
 		),
 	);
 
@@ -403,6 +398,8 @@ where
 		);
 	}
 
+	let telemetry_span = TelemetrySpan::new();
+	let _telemetry_span_entered = telemetry_span.enter();
 	let (rpc_handlers, telemetry_connection_notifier) =
 		sc_service::spawn_tasks(SpawnTasksParams {
 			config,
@@ -415,9 +412,9 @@ where
 			task_manager: &mut task_manager,
 			on_demand: None,
 			remote_blockchain: None,
-			telemetry_span,
 			network_status_sinks,
 			system_rpc_tx,
+			telemetry_span: Some(telemetry_span.clone()),
 		})?;
 
 	let (block_import, link_half, babe_link) = import_setup;
@@ -462,7 +459,7 @@ where
 		name: Some(name),
 		observer_enabled: false,
 		keystore,
-		is_authority: role.is_network_authority(),
+		is_authority: role.is_authority(),
 	};
 	let enable_grandpa = !disable_grandpa;
 
@@ -533,7 +530,7 @@ where
 {
 	set_prometheus_registry(&mut config)?;
 
-	let (client, backend, keystore_container, mut task_manager, on_demand, telemetry_span) =
+	let (client, backend, keystore_container, mut task_manager, on_demand) =
 		sc_service::new_light_parts::<Block, RuntimeApi, Executor>(&config)?;
 
 	config
@@ -569,7 +566,7 @@ where
 		client.clone(),
 		select_chain.clone(),
 		inherent_data_providers.clone(),
-		&task_manager.spawn_handle(),
+		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		NeverCanAuthor,
 	)?;
@@ -601,7 +598,8 @@ where
 		pool: transaction_pool.clone(),
 	};
 	let rpc_extension = darwinia_rpc::create_light(light_deps);
-
+	let telemetry_span = TelemetrySpan::new();
+	let _telemetry_span_entered = telemetry_span.enter();
 	let (rpc_handlers, telemetry_connection_notifier) =
 		sc_service::spawn_tasks(SpawnTasksParams {
 			on_demand: Some(on_demand),
@@ -616,7 +614,7 @@ where
 			network,
 			network_status_sinks,
 			system_rpc_tx,
-			telemetry_span,
+			telemetry_span: Some(telemetry_span.clone()),
 		})?;
 
 	network_starter.start_network();

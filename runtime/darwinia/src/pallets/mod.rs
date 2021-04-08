@@ -16,6 +16,9 @@ pub use transaction_payment::*;
 pub mod authorship;
 pub use authorship::*;
 
+pub mod election_provider_multi_phase;
+pub use election_provider_multi_phase::*;
+
 pub mod staking;
 pub use staking::*;
 
