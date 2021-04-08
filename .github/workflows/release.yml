@@ -21,7 +21,7 @@ jobs:
         env:
           RUST_TOOLCHAIN: nightly-2021-03-15
         run: |
-          .maintain/setup-darwinia.sh x86_64 || exit 1
+          .maintain/setup-darwinia.sh
 
       - name: Upload deploy
         uses: actions/upload-artifact@v2
