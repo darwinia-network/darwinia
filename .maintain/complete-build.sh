@@ -8,7 +8,7 @@ set -xe
 BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
 
-cd ${WORK_PATH}/bin
+cd ${WORK_PATH}/deploy/bin
 
 echo -e '\e[1;32m🔑 Generating File(s) Hash\e[0m'
 

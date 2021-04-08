@@ -14,9 +14,9 @@ GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-8)
 
 IMAGE_ORIGIN_NAME=darwinia:${TAG_NAME}
 
-IMAGE_PREFIX=quay.io/darwinia-network
+IMAGE_PREFIX=rogfan.jfrog.io/darwinia-network
 IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_ORIGIN_NAME}
-IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${GITHUB_SHA_SHORT}
+IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/darwinia:sha-${GITHUB_SHA_SHORT}
 
 DOCKERFILE_NAME=Dockerfile.darwinia.x86_64-linux-gnu
 

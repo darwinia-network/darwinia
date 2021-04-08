@@ -95,9 +95,9 @@ cargo test
 
 ## srtool
 
-需要特别说明的是, 在目前的发布方式中链上升级文件 wasm 使用 [srtool](https://github.com/paritytech/srtool) 进行编译, 在不同的机器/系统中所编译出来 wasm 文件会有些许不同, srtool 的目的就是为了统一编译环境, 使所有 wasm 是在相同的环境下进行编译的.
+需要特别说明的是, 在目前的发布方式中链上升级文件 wasm 使用 [srtool](https://gitlab.com/chevdor/srtool) 进行编译, 在不同的机器/系统中所编译出来 wasm 文件会有些许不同, srtool 的目的就是为了统一编译环境, 使所有 wasm 是在相同的环境下进行编译的.
 
-srtool 被发布在 Docker hub [paritytech/srtool](https://hub.docker.com/r/paritytech/srtool) 镜像中, 这个镜像是 Parity 根据 [chevdor/srtool](https://gitlab.com/chevdor/srtool) 所发布的. Parity 所维护的镜像相对更新并不及时, 并且只有一个可用的镜像标签, 目前编译使用的是 Parity 发布的镜像.
+srtool 被发布在 [chevdor/srtool](https://gitlab.com/chevdor/srtool), 主要有两次不同的版本, 首先是初始版本, 一个简单的 wasm 编译工具了, 但是自 [paritytech/substrate#8128](https://github.com/paritytech/substrate/pull/8128) 发布后, srtool 也进行了更新, 为了更小的运行时环境, srtool 默认启用了 [`on-chain-release-build`](https://gitlab.com/chevdor/srtool/-/blob/v0.9.9/scripts/getBuildOpts.sh#L20) features, 因此要求提供这个 features, 这个 features 是用来 [关闭 runtime logger](https://github.com/paritytech/polkadot/blob/f3e293756447a5be0b74c66c8b6f1faa22f2348d/runtime/kusama/Cargo.toml#L198-L203).
 
 
 ### 使用 srtool
@@ -105,7 +105,7 @@ srtool 被发布在 Docker hub [paritytech/srtool](https://hub.docker.com/r/pari
 
 关于 srtool 的使用方式, 这里进行简单的说明
 
-> 更详细的使用说明可以参考 [paritytech/srtool/README.adoc](https://github.com/paritytech/srtool/blob/master/README.adoc), 由于 Parity 更新的不及时, 这里文档所列出的部分使用方式并不能正常工作, 因为 Docke hub 中没有对应的镜像, 因此也可以去看 [chevdor/srtool/README.adoc](https://gitlab.com/chevdor/srtool/-/blob/master/README.adoc)
+> 更详细的使用说明可以参考 [chevdor/srtool/README.adoc](https://gitlab.com/chevdor/srtool), 因为 Docker hub 中没有对应的镜像, 因此也可以去看 [chevdor/srtool/README.adoc](https://gitlab.com/chevdor/srtool/-/blob/master/README.adoc)
 
 
 首先, srtool 支持的命令包括

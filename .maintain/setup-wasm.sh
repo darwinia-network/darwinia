@@ -11,23 +11,31 @@ WORK_PATH=${BIN_PATH}/../
 
 BRANCH_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)
 
+## notice:
+## `"-e BUILD_OPTS=--manifest-path /build/Cargo.toml"` is hack,
+## currently the darwinia don't support `--features on-chain-release-build` to disable runtime logger,
+## because the substrate latest version has not yet been merged,
+## when after do that and add `on-chain-release-build` features, this line can be remove.
+
 docker run --rm -i \
   -e PACKAGE=darwinia-runtime \
   -e VERBOSE=1 \
   -e CARGO_TERM_COLOR=always \
+  -e BUILD_OPTS="--manifest-path /build/Cargo.toml" \
   -v ${WORK_PATH}:/build \
-  paritytech/srtool:${RUST_TOOLCHAIN} | tee ${WORK_PATH}/build-darwinia-wasm.log
+  chevdor/srtool:${RUST_TOOLCHAIN} | tee ${WORK_PATH}/build-darwinia-wasm.log
 
 
 docker run --rm -i \
   -e PACKAGE=crab-runtime \
   -e VERBOSE=1 \
   -e CARGO_TERM_COLOR=always \
+  -e BUILD_OPTS="--manifest-path /build/Cargo.toml" \
   -v ${WORK_PATH}:/build \
-  paritytech/srtool:${RUST_TOOLCHAIN} | tee ${WORK_PATH}/build-crab-wasm.log
+  chevdor/srtool:${RUST_TOOLCHAIN} | tee ${WORK_PATH}/build-crab-wasm.log
 
 
-mkdir -p ${WORK_PATH}/bin
+mkdir -p ${WORK_PATH}/deploy/bin
 
 _PROPOSAL_DARWINIA=$(cat ${WORK_PATH}/build-darwinia-wasm.log | grep 'Proposal\s\+:')
 _PROPOSAL_CRAB=$(cat ${WORK_PATH}/build-crab-wasm.log | grep 'Proposal\s\+:')
@@ -39,13 +47,12 @@ PROPOSAL_DARWINIA=$(echo ${PROPOSAL_DARWINIA} | sed 's/[^[:print:]]\[0m//g')
 PROPOSAL_CRAB=$(echo ${PROPOSAL_CRAB} | sed 's/[^[:print:]]\[0m//g')
 
 
-echo ${PROPOSAL_DARWINIA} > ${WORK_PATH}/bin/${PROPOSAL_DARWINIA}.proposal.darwinia.txt
-echo ${PROPOSAL_CRAB} > ${WORK_PATH}/bin/${PROPOSAL_CRAB}.proposal.crab.txt
+echo ${PROPOSAL_DARWINIA} > ${WORK_PATH}/deploy/bin/${PROPOSAL_DARWINIA}.proposal.darwinia.txt
+echo ${PROPOSAL_CRAB} > ${WORK_PATH}/deploy/bin/${PROPOSAL_CRAB}.proposal.crab.txt
 
-cp ${WORK_PATH}/target/srtool/release/wbuild/darwinia-runtime/darwinia_runtime.compact.wasm ${WORK_PATH}/bin/
-cp ${WORK_PATH}/target/srtool/release/wbuild/crab-runtime/crab_runtime.compact.wasm ${WORK_PATH}/bin/
+cp ${WORK_PATH}/runtime/darwinia/target/srtool/release/wbuild/darwinia-runtime/darwinia_runtime.compact.wasm \
+  ${WORK_PATH}/deploy/bin/
+cp ${WORK_PATH}/runtime/crab/target/srtool/release/wbuild/crab-runtime/crab_runtime.compact.wasm \
+  ${WORK_PATH}/deploy/bin/
 
-cp ${WORK_PATH}/target/srtool/release/wbuild/target/wasm32-unknown-unknown/release/darwinia_runtime.wasm ${WORK_PATH}/bin/
-cp ${WORK_PATH}/target/srtool/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm ${WORK_PATH}/bin/
-
-ls ${WORK_PATH}/bin/
+ls ${WORK_PATH}/deploy/bin/

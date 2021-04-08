@@ -8,30 +8,64 @@ set -xe
 BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
 
-ARCH=$1
 
-IMAGE_RUST=
+echo -e '\e[1;32m📥 Installing Cross Compile Toolchain(s)\e[0m'
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+  sh -s -- -y --profile minimal --default-toolchain ${RUST_TOOLCHAIN}
+source ~/.cargo/env
 
-if [ "$ARCH" = "x86_64" ]; then
-  IMAGE_RUST=rust:1
+
+if [ -n "${OVERALL_TEST}" ]; then
+  cargo test
+  exit 0
 fi
-if [ "$ARCH" = "aarch64" ]; then
-  IMAGE_RUST=rustembedded/cross:aarch64-unknown-linux-gnu
-fi
-
-docker pull ${IMAGE_RUST}
-
-docker run --rm -i \
-  -v ${WORK_PATH}:/data/darwinia \
-  -e RUST_TOOLCHAIN=${RUST_TOOLCHAIN} \
-  -e CARGO_TERM_COLOR=always \
-  -e ARCH=${ARCH} \
-  ${IMAGE_RUST} \
-  sh -f /data/darwinia/.maintain/docker/_build-darwinia.sh
-
-mkdir -p ${WORK_PATH}/bin
 
 
-cp ${WORK_PATH}/target/release/darwinia ${WORK_PATH}/bin/darwinia_$ARCH-linux-gnu
+echo -e '\e[1;32m🔧 Building Docker Image(s)\e[0m'
+docker build -f .maintain/docker/Dockerfile.x86_64-linux-gnu -t x86_64-linux-gnu .
+docker build -f .maintain/docker/Dockerfile.aarch64-linux-gnu -t aarch64-linux-gnu .
+
+
+cargo install cross \
+  --git https://github.com/AurevoirXavier/cross \
+  --branch support-multi-sub-targets
+
+rustup target add \
+  x86_64-unknown-linux-gnu \
+  aarch64-unknown-linux-gnu \
+  wasm32-unknown-unknown
+
+
+cross build \
+  --release \
+  --target x86_64-unknown-linux-gnu \
+  --sub-targets wasm32-unknown-unknown
+
+#RUSTFLAGS='-C link-args=-latomic' SKIP_WASM_BUILD=1 cross build \
+#  --no-default-features \
+#  --locked \
+#  --release \
+#  --target aarch64-unknown-linux-gnu
+
+# deploy folder is required,
+# the x86_64 file will move to this folder,
+# the build-image step will use this file to build a docker image
+mkdir -p ${WORK_PATH}/deploy/bin
+
+cd ${WORK_PATH}/deploy/bin/
+
+cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
+tar cjSf darwinia-x86_64-linux-gnu.tar.bz2 darwinia
+mv darwinia ${WORK_PATH}/deploy/
+
+#cp ${WORK_PATH}/target/aarch64-unknown-linux-gnu/release/darwinia ${WORK_PATH}/deploy/bin/
+#tar cjSf darwinia-aarch64-linux-gnu.tar.bz2 darwinia
+#rm -rf darwinia
+
+cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/darwinia_runtime.wasm \
+  ${WORK_PATH}/deploy/bin/
+
+cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm \
+  ${WORK_PATH}/deploy/bin/
 
 
