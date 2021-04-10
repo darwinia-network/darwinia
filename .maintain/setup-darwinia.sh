@@ -49,13 +49,6 @@ cross build \
   --sub-targets wasm32-unknown-unknown
 
 
-cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/darwinia_runtime.wasm \
-  ${WORK_PATH}/deploy/bin/
-
-cp ${WORK_PATH}/target/x86_64-unknown-linux-gnu/release/wbuild/target/wasm32-unknown-unknown/release/crab_runtime.wasm \
-  ${WORK_PATH}/deploy/bin/
-
-
 ## not support now, have build questions.
 ## https://github.com/fewensa/darwinia/runs/2294261173?check_suite_focus=true#step:4:3092
 

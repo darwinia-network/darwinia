@@ -23,13 +23,17 @@ jobs:
         uses: actions/cache@v2
         with:
           path: target
-          key: ${{ runner.os }}-darwinia-target
+          key: ${{ runner.os }}-darwinia
+
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2021-02-25
+          override: true
+          target: wasm32-unknown-unknown
 
       - name: Overall test
-        env:
-          RUST_TOOLCHAIN: nightly-2021-02-25
-          OVERALL_TEST: true
-        run: .maintain/setup-darwinia.sh
+        run: cargo test
 
       - uses: 8398a7/action-slack@v3
         if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')

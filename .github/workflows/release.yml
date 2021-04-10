@@ -15,7 +15,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: target
-          key: ${{ runner.os }}-darwinia-target
+          key: ${{ runner.os }}-darwinia
 
       - name: Build darwinia
         env:
