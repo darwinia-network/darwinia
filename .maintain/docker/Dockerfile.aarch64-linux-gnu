@@ -21,9 +21,7 @@ FROM rustembedded/cross:aarch64-unknown-linux-gnu
 # only for aarch64
 
 # change mirrorlist
-RUN curl https://raw.githubusercontent.com/oooldking/script/master/superupdate.sh | bash && \
-	# update
-	apt update && apt upgrade -y && apt install -y \
+RUN apt update && apt upgrade -y && apt install -y \
 	# lib
 	libc6-dev-i386 \
 	# compiler

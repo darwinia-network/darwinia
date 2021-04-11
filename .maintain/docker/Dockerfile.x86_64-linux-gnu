@@ -21,9 +21,7 @@ FROM centos:7
 # for gernal linux
 
 # change mirrorlist
-RUN curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo && yum makecache \
-	# update
-	yum -y update && yum -y upgrade && yum -y install \
+RUN yum -y update && yum -y upgrade && yum -y install \
 	# tool
 	git make \
 	# compiler

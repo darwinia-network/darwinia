@@ -18,29 +18,19 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+
+      - name: Cache darwinia target
+        uses: actions/cache@v2
         with:
-          repository: itering/actions
-          path: .github/actions
-          persist-credentials: false
-          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
+          path: target
+          key: ${{ runner.os }}-darwinia
 
       - name: Install latest nightly
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2021-02-25
           override: true
           target: wasm32-unknown-unknown
-
-    #   - uses: actions/cache@v2
-    #     with:
-    #       path: |
-    #         ~/.cargo/registry
-    #         ~/.cargo/git
-    #         target
-    #       key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    #       restore-keys: |
-    #         ${{ runner.os }}-cargo-
 
       - name: Overall test
         run: cargo test

@@ -1,20 +1,76 @@
 name: Release
 on:
   push:
-    tags: ["*"]
+    tags:
+      - 'v*'
 
 jobs:
-  build-docker-image:
-    name: Build Docker image
+  build-binary:
+    name: Build binary
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+
+      - name: Cache darwinia target
+        uses: actions/cache@v2
         with:
-          repository: itering/actions
-          path: .github/actions
-          persist-credentials: false
-          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
+          path: target
+          key: ${{ runner.os }}-darwinia
+
+      - name: Build darwinia
+        env:
+          RUST_TOOLCHAIN: nightly-2021-02-25
+        run: |
+          .maintain/setup-darwinia.sh
+
+      - name: Upload deploy
+        uses: actions/upload-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: deploy
+
+      - uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,author,eventName,workflow,ref,commit
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+
+
+  build-wasm:
+    name: Build wasm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build wasm
+        env:
+          RUST_TOOLCHAIN: nightly-2021-02-25
+        run: |
+          .maintain/setup-wasm.sh
+
+      - name: Upload deploy
+        uses: actions/upload-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: deploy
+
+      - uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,author,eventName,workflow,ref,commit
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+
+
+  build-image:
+    name: Build image
+    runs-on: ubuntu-latest
+    needs: [build-binary]
+    steps:
+      - uses: actions/checkout@v2
 
       - name: Docker login
         uses: docker/login-action@v1
@@ -23,14 +79,55 @@ jobs:
           password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
           registry: quay.io
 
-      - uses: ./.github/actions/docker-build-deploy
+      - name: Download deploy
+        uses: actions/download-artifact@v2
         with:
-          deploy_phase: production
-          docker_registry: quay.io
-          trigger_token: ${{ secrets.ITERING_DEPLOYMENT_TRIGGER_TOKEN }}
-          trigger_endpoint: ${{ secrets.ITERING_DEPLOYMENT_TRIGGER_ENDPOINT }}
-          docker_build_options: -f .maintain/docker/Dockerfile
-          skip_deploy: true # for now
+          name: darwinia-artifact
+          path: deploy
+
+      - name: Setup image
+        env:
+          REGISTRY_HOST: quay.io
+        run: |
+          .maintain/setup-image.sh
+
+      - uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,author,eventName,workflow,ref,commit
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+
+
+  complete-build:
+    name: Complete build
+    runs-on: ubuntu-latest
+    needs: [build-image, build-wasm]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: deploy
+
+      - name: Complete build
+        run: .maintain/complete-build.sh
+
+      - name: Publish github release
+        uses: docker://antonyurchenko/git-release:latest
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRAFT_RELEASE: "false"
+          PRE_RELEASE: "false"
+          CHANGELOG_FILE: "CHANGELOG.md"
+          ALLOW_EMPTY_CHANGELOG: "false"
+          ALLOW_TAG_PREFIX: "true"
+        with:
+          args: |
+            deploy/bin/*
 
       - uses: 8398a7/action-slack@v3
         if: failure()
