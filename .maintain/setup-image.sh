@@ -30,5 +30,5 @@ docker build \
 docker tag ${IMAGE_ORIGIN_NAME} ${IMAGE_PUSH_NAME_TAG}
 docker tag ${IMAGE_ORIGIN_NAME} ${IMAGE_PUSH_NAME_SHA}
 
-docker push ${IMAGE_PUSH_NAME_TAG}
-docker push ${IMAGE_PUSH_NAME_SHA}
+#docker push ${IMAGE_PUSH_NAME_TAG}
+#docker push ${IMAGE_PUSH_NAME_SHA}
