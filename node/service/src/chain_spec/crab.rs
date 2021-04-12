@@ -33,6 +33,8 @@ use super::{
 };
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
+// --- crates ---
+use std::collections::BTreeMap;
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type CrabChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -224,6 +226,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 40_000_000 * COIN,
 		},
+		darwinia_evm: crab_runtime::EVMConfig { accounts:  BTreeMap::new(), },
+		dvm_ethereum: Default::default(),
 	}
 }
 
@@ -353,6 +357,8 @@ pub fn crab_testnet_genesis(
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 1 << 56
 		},
+		darwinia_evm: crab_runtime::EVMConfig { accounts:  BTreeMap::new(), },
+		dvm_ethereum: Default::default(),
 	}
 }
 

@@ -1774,6 +1774,7 @@ dependencies = [
  "array-bytes",
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
+ "darwinia-evm",
  "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-primitives",
  "darwinia-rpc",
