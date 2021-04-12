@@ -228,6 +228,10 @@ frame_support::construct_runtime! {
 		EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
+
+		// DVM
+		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
+		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
 	}
 }
 
