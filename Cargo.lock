@@ -907,6 +907,7 @@ dependencies = [
  "darwinia-support",
  "darwinia-treasury",
  "dvm-ethereum",
+ "dvm-rpc-runtime-api",
  "ethereum-primitives",
  "frame-executive",
  "frame-support",
