@@ -10,7 +10,7 @@ WORK_PATH=${BIN_PATH}/../
 
 
 TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)
-GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-8)
+GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
 
 IMAGE_ORIGIN_NAME=darwinia:${TAG_NAME}
 
