@@ -21,8 +21,6 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 
-#[cfg(feature = "browser")]
-mod browser;
 #[cfg(feature = "cli")]
 mod cli;
 #[cfg(feature = "cli")]
