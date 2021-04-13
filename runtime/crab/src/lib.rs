@@ -507,7 +507,9 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 				to,
 				Module::free_balance(from),
 				frame_support::traits::ExistenceRequirement::AllowDeath,
-			).is_ok() {
+			)
+			.is_ok()
+			{
 				log::info!("Migrate `ethbk`'s balance succeed");
 			} else {
 				log::info!("Migrate `ethbk`'s balance failed");
