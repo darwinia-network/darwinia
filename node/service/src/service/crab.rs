@@ -25,7 +25,6 @@ pub use sc_service::{
 	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
 };
 
-pub use crate::chain_spec::DarwiniaChainSpec;
 pub use crate::client::DarwiniaClient;
 use crate::service::set_prometheus_registry;
 pub use crab_runtime;
@@ -50,9 +49,8 @@ use sc_finality_grandpa::{
 use sc_keystore::LocalKeystore;
 use sc_network::Event;
 use sc_service::{
-	config::{KeystoreConfig, PrometheusConfig},
-	BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder, PartialComponents,
-	RpcHandlers, SpawnTasksParams, TaskManager,
+	config::KeystoreConfig, BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder,
+	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
 };
 use sc_telemetry::{TelemetryConnectionNotifier, TelemetrySpan};
 use sc_transaction_pool::{BasicPool, FullPool};
@@ -63,7 +61,6 @@ use sp_consensus::{
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
-use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Hash, Nonce, Power};
 use darwinia_rpc::crab::{
