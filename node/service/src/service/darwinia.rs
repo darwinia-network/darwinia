@@ -25,8 +25,9 @@ pub use sc_service::{
 	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
 };
 
-pub use crate::chain_spec::DarwiniaChainSpec;
-pub use crate::client::DarwiniaClient;
+use crate::chain_spec::DarwiniaChainSpec;
+use crate::client::DarwiniaClient;
+use crate::service::set_prometheus_registry;
 pub use darwinia_primitives::OpaqueBlock as Block;
 pub use darwinia_runtime;
 
@@ -129,33 +130,6 @@ where
 
 pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
 impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
-
-/// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
-pub trait IdentifyVariant {
-	/// Returns if this is a configuration for the `Crab` network.
-	fn is_crab(&self) -> bool;
-
-	/// Returns if this is a configuration for the `Darwinia` network.
-	fn is_darwinia(&self) -> bool;
-}
-impl IdentifyVariant for Box<dyn ChainSpec> {
-	fn is_crab(&self) -> bool {
-		self.id().starts_with("crab")
-	}
-
-	fn is_darwinia(&self) -> bool {
-		self.id().starts_with("darwinia")
-	}
-}
-
-// If we're using prometheus, use a registry with a prefix of `darwinia`.
-fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
-	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
-		*registry = Registry::new_custom(Some("darwinia".into()), None)?;
-	}
-
-	Ok(())
-}
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(

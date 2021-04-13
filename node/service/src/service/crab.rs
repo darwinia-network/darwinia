@@ -27,6 +27,7 @@ pub use sc_service::{
 
 pub use crate::chain_spec::DarwiniaChainSpec;
 pub use crate::client::DarwiniaClient;
+use crate::service::set_prometheus_registry;
 pub use crab_runtime;
 pub use darwinia_primitives::OpaqueBlock as Block;
 pub use darwinia_runtime;
@@ -65,7 +66,7 @@ use sp_trie::PrefixedMemoryDB;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia ---
 use darwinia_primitives::{AccountId, Balance, Hash, Nonce, Power};
-use darwinia_rpc::{
+use darwinia_rpc::crab::{
 	BabeDeps, DenyUnsafe, FullDeps, GrandpaDeps, LightDeps, RpcExtension, SubscriptionTaskExecutor,
 };
 
@@ -86,12 +87,6 @@ native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
-);
-
-native_executor_instance!(
-	pub DarwiniaExecutor,
-	darwinia_runtime::api::dispatch,
-	darwinia_runtime::native_version,
 );
 
 /// A set of APIs that darwinia-like runtimes must implement.
@@ -136,33 +131,6 @@ where
 
 pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
 impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
-
-/// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
-pub trait IdentifyVariant {
-	/// Returns if this is a configuration for the `Crab` network.
-	fn is_crab(&self) -> bool;
-
-	/// Returns if this is a configuration for the `Darwinia` network.
-	fn is_darwinia(&self) -> bool;
-}
-impl IdentifyVariant for Box<dyn ChainSpec> {
-	fn is_crab(&self) -> bool {
-		self.id().starts_with("crab")
-	}
-
-	fn is_darwinia(&self) -> bool {
-		self.id().starts_with("darwinia")
-	}
-}
-
-// If we're using prometheus, use a registry with a prefix of `darwinia`.
-fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
-	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
-		*registry = Registry::new_custom(Some("darwinia".into()), None)?;
-	}
-
-	Ok(())
-}
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
@@ -282,7 +250,7 @@ where
 				},
 			};
 
-			darwinia_rpc::create_full(deps)
+			darwinia_rpc::crab::create_full(deps)
 		}
 	};
 
@@ -596,7 +564,7 @@ where
 		client: client.clone(),
 		pool: transaction_pool.clone(),
 	};
-	let rpc_extension = darwinia_rpc::create_light(light_deps);
+	let rpc_extension = darwinia_rpc::crab::create_light(light_deps);
 
 	let (rpc_handlers, telemetry_connection_notifier) =
 		sc_service::spawn_tasks(SpawnTasksParams {
@@ -682,39 +650,4 @@ pub fn crab_new_light(
 	ServiceError,
 > {
 	new_light::<crab_runtime::RuntimeApi, CrabExecutor>(config)
-}
-
-/// Create a new Darwinia service for a full node.
-#[cfg(feature = "full-node")]
-pub fn darwinia_new_full(
-	config: Configuration,
-	authority_discovery_disabled: bool,
-) -> Result<
-	(
-		TaskManager,
-		Arc<impl DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
-		RpcHandlers,
-	),
-	ServiceError,
-> {
-	let (components, client, rpc_handlers) = new_full::<
-		darwinia_runtime::RuntimeApi,
-		DarwiniaExecutor,
-	>(config, authority_discovery_disabled)?;
-
-	Ok((components, client, rpc_handlers))
-}
-
-/// Create a new Darwinia service for a light client.
-pub fn darwinia_new_light(
-	config: Configuration,
-) -> Result<
-	(
-		TaskManager,
-		RpcHandlers,
-		Option<TelemetryConnectionNotifier>,
-	),
-	ServiceError,
-> {
-	new_light::<darwinia_runtime::RuntimeApi, DarwiniaExecutor>(config)
 }
