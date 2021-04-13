@@ -24,9 +24,7 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 // --- std ---
 use std::sync::Arc;
 // --- darwinia ---
-use darwinia_primitives::{
-	AccountId, Balance, BlockNumber, Hash, Nonce, OpaqueBlock as Block, Power,
-};
+use darwinia_primitives::{BlockNumber, Hash, OpaqueBlock as Block};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
