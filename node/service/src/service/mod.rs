@@ -19,7 +19,10 @@
 pub mod crab;
 pub mod darwinia;
 
+// --- std ---
+use std::sync::Arc;
 // --- substrate ---
+use sc_keystore::LocalKeystore;
 use sc_service::{config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError};
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
@@ -109,4 +112,11 @@ fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceErro
 	}
 
 	Ok(())
+}
+
+fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
+	// FIXME: here would the concrete keystore be built,
+	//        must return a concrete type (NOT `LocalKeystore`) that
+	//        implements `CryptoStore` and `SyncCryptoStore`
+	Err("Remote Keystore not supported.")
 }

@@ -35,7 +35,6 @@ use sc_finality_grandpa::{
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
 	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
-use sc_keystore::LocalKeystore;
 use sc_network::Event;
 use sc_service::{
 	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
@@ -51,11 +50,7 @@ use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
-use crate::client::CrabClient;
-use crate::service::{
-	set_prometheus_registry, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain,
-	LightBackend, LightClient, RuntimeApiCollection,
-};
+use crate::{client::CrabClient, service::*};
 use darwinia_primitives::OpaqueBlock as Block;
 use darwinia_rpc::{
 	crab::{FullDeps, LightDeps},
@@ -206,13 +201,6 @@ where
 			telemetry_span,
 		),
 	})
-}
-
-fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
-	// FIXME: here would the concrete keystore be built,
-	//        must return a concrete type (NOT `LocalKeystore`) that
-	//        implements `CryptoStore` and `SyncCryptoStore`
-	Err("Remote Keystore not supported.")
 }
 
 #[cfg(feature = "full-node")]
