@@ -26,8 +26,10 @@ pub use sc_service::{
 };
 
 use crate::client::DarwiniaClient;
-use crate::service::set_prometheus_registry;
-pub use darwinia_primitives::OpaqueBlock as Block;
+use crate::service::{
+	set_prometheus_registry, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain,
+	LightBackend, LightClient,
+};
 pub use darwinia_runtime;
 
 // --- std ---
@@ -61,23 +63,10 @@ use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
-use darwinia_primitives::{AccountId, Balance, Hash, Nonce, Power};
+use darwinia_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 use darwinia_rpc::darwinia::{
 	BabeDeps, DenyUnsafe, FullDeps, GrandpaDeps, LightDeps, RpcExtension, SubscriptionTaskExecutor,
 };
-
-type FullBackend = sc_service::TFullBackend<Block>;
-type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-type FullClient<RuntimeApi, Executor> = sc_service::TFullClient<Block, RuntimeApi, Executor>;
-type FullGrandpaBlockImport<RuntimeApi, Executor> = sc_finality_grandpa::GrandpaBlockImport<
-	FullBackend,
-	Block,
-	FullClient<RuntimeApi, Executor>,
-	FullSelectChain,
->;
-type LightBackend = sc_service::TLightBackendWithHash<Block, BlakeTwo256>;
-type LightClient<RuntimeApi, Executor> =
-	sc_service::TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
 
 native_executor_instance!(
 	pub DarwiniaExecutor,
