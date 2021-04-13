@@ -18,13 +18,6 @@
 
 //! Darwinia service. Specialized wrapper over substrate service.
 
-pub use codec::Codec;
-
-pub use sc_executor::NativeExecutionDispatch;
-pub use sc_service::{
-	ChainSpec, Configuration, TFullBackend, TFullClient, TLightBackend, TLightClient,
-};
-
 pub use darwinia_runtime;
 
 // --- std ---
@@ -36,7 +29,7 @@ use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
 use sc_consensus::LongestChain;
 use sc_consensus_babe::{BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig};
-use sc_executor::native_executor_instance;
+use sc_executor::{native_executor_instance, NativeExecutionDispatch};
 use sc_finality_grandpa::{
 	Config as GrandpaConfig, FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
@@ -45,8 +38,8 @@ use sc_finality_grandpa::{
 use sc_keystore::LocalKeystore;
 use sc_network::Event;
 use sc_service::{
-	config::KeystoreConfig, BuildNetworkParams, Error as ServiceError, NoopRpcExtensionBuilder,
-	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
+	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
+	NoopRpcExtensionBuilder, PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
 };
 use sc_telemetry::{TelemetryConnectionNotifier, TelemetrySpan};
 use sc_transaction_pool::{BasicPool, FullPool};
