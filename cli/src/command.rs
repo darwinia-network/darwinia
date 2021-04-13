@@ -30,7 +30,7 @@ use darwinia_service::service::crab::{crab_new_full, crab_new_light, crab_runtim
 use darwinia_service::service::darwinia::{
 	darwinia_new_full, darwinia_new_light, darwinia_runtime, DarwiniaExecutor,
 };
-use darwinia_service::{CrabChainSpec, DarwiniaChainSpec, service::IdentifyVariant};
+use darwinia_service::{service::IdentifyVariant, CrabChainSpec, DarwiniaChainSpec};
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {

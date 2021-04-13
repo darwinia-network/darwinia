@@ -58,7 +58,7 @@ use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
-use crate::client::DarwiniaClient;
+use crate::client::CrabClient;
 use crate::service::{
 	set_prometheus_registry, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain,
 	LightBackend, LightClient, RuntimeApiCollection,
@@ -569,7 +569,7 @@ pub fn crab_new_full(
 ) -> Result<
 	(
 		TaskManager,
-		Arc<impl DarwiniaClient<Block, FullBackend, crab_runtime::RuntimeApi>>,
+		Arc<impl CrabClient<Block, FullBackend, crab_runtime::RuntimeApi>>,
 		RpcHandlers,
 	),
 	ServiceError,
