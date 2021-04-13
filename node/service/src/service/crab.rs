@@ -74,9 +74,6 @@ native_executor_instance!(
 	crab_runtime::native_version,
 );
 
-pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
-impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
-
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
 	config: &mut Configuration,

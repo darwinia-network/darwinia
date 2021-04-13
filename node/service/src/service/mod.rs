@@ -19,6 +19,9 @@ type LightBackend = sc_service::TLightBackendWithHash<Block, BlakeTwo256>;
 type LightClient<RuntimeApi, Executor> =
 	sc_service::TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
 
+pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
+impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
+
 /// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
 pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Crab` network.
