@@ -27,37 +27,8 @@ use std::sync::Arc;
 // --- substrate ---
 use sp_api::ProvideRuntimeApi;
 // --- darwinia ---
-use darwinia_primitives::{
-	AccountId, Balance, BlockNumber, Hash, Nonce, OpaqueBlock as Block, Power,
-};
-
-/// A type representing all RPC extensions.
-pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
-
-/// Extra dependencies for BABE.
-pub struct BabeDeps {
-	/// BABE protocol config.
-	pub babe_config: sc_consensus_babe::Config,
-	/// BABE pending epoch changes.
-	pub shared_epoch_changes:
-		sc_consensus_epochs::SharedEpochChanges<Block, sc_consensus_babe::Epoch>,
-	/// The keystore that manages the keys of the node.
-	pub keystore: sp_keystore::SyncCryptoStorePtr,
-}
-
-/// Dependencies for GRANDPA
-pub struct GrandpaDeps<B> {
-	/// Voting round info.
-	pub shared_voter_state: sc_finality_grandpa::SharedVoterState,
-	/// Authority set info.
-	pub shared_authority_set: sc_finality_grandpa::SharedAuthoritySet<Hash, BlockNumber>,
-	/// Receives notifications about justification events from Grandpa.
-	pub justification_stream: sc_finality_grandpa::GrandpaJustificationStream<Block>,
-	/// Executor to drive the subscription manager in the Grandpa RPC handler.
-	pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
-	/// Finality proof provider.
-	pub finality_provider: Arc<sc_finality_grandpa::FinalityProofProvider<B, Block>>,
-}
+use crate::*;
+use darwinia_primitives::{Hash, OpaqueBlock as Block};
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B> {

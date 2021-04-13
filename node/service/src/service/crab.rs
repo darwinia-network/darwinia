@@ -57,8 +57,9 @@ use crate::service::{
 	LightBackend, LightClient, RuntimeApiCollection,
 };
 use darwinia_primitives::OpaqueBlock as Block;
-use darwinia_rpc::crab::{
-	BabeDeps, DenyUnsafe, FullDeps, GrandpaDeps, LightDeps, RpcExtension, SubscriptionTaskExecutor,
+use darwinia_rpc::{
+	crab::{FullDeps, LightDeps},
+	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,
 };
 
 native_executor_instance!(
