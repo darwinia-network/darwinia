@@ -641,8 +641,13 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		// --- substrate ---
-		// use frame_support::migration::*;
+		use dp_storage::PALLET_ETHEREUM_SCHEMA;
+		use dvm_ethereum::EthereumStorageSchema;
+
+		frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+			&PALLET_ETHEREUM_SCHEMA,
+			&EthereumStorageSchema::V1,
+		);
 
 		0
 	}

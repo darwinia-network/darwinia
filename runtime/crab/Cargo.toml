@@ -39,6 +39,7 @@ darwinia-staking                    = { default-features = false, git = "https:/
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dp-storage                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-ethereum                        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-rpc-runtime-api                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
@@ -123,6 +124,7 @@ std    = [
 	"darwinia-treasury/std",
 	"darwinia-primitives/std",
 	"darwinia-runtime-common/std",
+	"dp-storage/std",
 	"dvm-ethereum/std",
 	"dvm-rpc-runtime-api/std",
 	"frame-executive/std",
