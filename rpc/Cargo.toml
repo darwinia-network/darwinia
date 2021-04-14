@@ -23,7 +23,7 @@ dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-
 dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
-crab-runtime		= { path = "../runtime/crab" }
+crab-runtime        = { path = "../runtime/crab" }
 darwinia-primitives = { path = "../primitives" }
 # substrate client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
