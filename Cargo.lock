@@ -894,7 +894,9 @@ dependencies = [
  "darwinia-ethereum-backing",
  "darwinia-ethereum-relay",
  "darwinia-evm",
- "darwinia-evm-precompile",
+ "darwinia-evm-precompile-empty",
+ "darwinia-evm-precompile-simple",
+ "darwinia-evm-precompile-withdraw",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-primitives",
@@ -1468,49 +1470,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-evm-precompile"
-version = "2.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
-dependencies = [
- "darwinia-evm-precompile-empty",
- "darwinia-evm-precompile-kton",
- "darwinia-evm-precompile-simple",
- "darwinia-evm-precompile-withdraw",
-]
-
-[[package]]
 name = "darwinia-evm-precompile-empty"
 version = "2.1.0"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
 dependencies = [
  "dp-evm",
  "evm",
-]
-
-[[package]]
-name = "darwinia-evm-precompile-kton"
-version = "2.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
-dependencies = [
- "array-bytes",
- "darwinia-evm",
- "darwinia-support",
- "dp-evm",
- "dvm-ethereum",
- "ethabi",
- "ethereum-types",
- "evm",
- "frame-support",
- "frame-system",
- "hex",
- "pallet-timestamp",
- "parity-scale-codec",
- "ripemd160",
- "sha3 0.9.1",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

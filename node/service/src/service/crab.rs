@@ -41,8 +41,7 @@ use sc_finality_grandpa::{
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
 	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
-use sc_network::Event;
-use sc_network::NetworkService;
+use sc_network::{Event, NetworkService};
 use sc_service::{
 	config::KeystoreConfig, BasePath, BuildNetworkParams, Configuration, Error as ServiceError,
 	NoopRpcExtensionBuilder, PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,

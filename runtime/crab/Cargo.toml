@@ -27,7 +27,9 @@ darwinia-elections-phragmen         = { default-features = false, git = "https:/
 darwinia-ethereum-backing           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-ethereum-relay             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-evm                        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-darwinia-evm-precompile             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-evm-precompile-empty       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-evm-precompile-simple      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+darwinia-evm-precompile-withdraw    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-relay-authorities          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
@@ -107,7 +109,9 @@ std    = [
 	"darwinia-ethereum-backing/std",
 	"darwinia-ethereum-relay/std",
 	"darwinia-evm/std",
-	"darwinia-evm-precompile/std",
+	"darwinia-evm-precompile-empty/std",
+	"darwinia-evm-precompile-simple/std",
+	"darwinia-evm-precompile-withdraw/std",
 	"darwinia-header-mmr/std",
 	"darwinia-header-mmr-rpc-runtime-api/std",
 	"darwinia-relay-authorities/std",

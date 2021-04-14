@@ -10,8 +10,8 @@ version     = "0.9.6"
 
 [dependencies]
 # crates
-codec        		= { package = "parity-scale-codec", version = "2.0.1", default-features = false }
-jsonrpc-core 		= { version = "15.1.0" }
+code                = { package = "parity-scale-codec", version = "2.0.1", default-features = false }
+jsonrpc-core        = { version = "15.1.0" }
 jsonrpc-pubsub      = { version = "15.1.0" }
 # darwinia frame
 darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
