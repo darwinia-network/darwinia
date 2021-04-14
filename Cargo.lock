@@ -1648,11 +1648,18 @@ dependencies = [
 name = "darwinia-rpc"
 version = "0.9.6"
 dependencies = [
+ "crab-runtime",
  "darwinia-balances-rpc",
  "darwinia-header-mmr-rpc",
  "darwinia-primitives",
  "darwinia-staking-rpc",
+ "dc-db",
+ "dc-rpc",
+ "dp-rpc",
+ "dvm-ethereum",
+ "dvm-rpc-runtime-api",
  "jsonrpc-core",
+ "jsonrpc-pubsub",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "sc-chain-spec",
@@ -1662,6 +1669,7 @@ dependencies = [
  "sc-consensus-epochs",
  "sc-finality-grandpa",
  "sc-finality-grandpa-rpc",
+ "sc-network",
  "sc-rpc",
  "sc-sync-state-rpc",
  "sp-api",
@@ -1781,6 +1789,11 @@ dependencies = [
  "darwinia-rpc",
  "darwinia-runtime",
  "darwinia-staking-rpc-runtime-api",
+ "dc-db",
+ "dc-mapping-sync",
+ "dc-rpc",
+ "dp-rpc",
+ "dvm-rpc-runtime-api",
  "frame-system-rpc-runtime-api",
  "futures 0.3.13",
  "log",
@@ -1957,6 +1970,103 @@ dependencies = [
 ]
 
 [[package]]
+name = "dc-consensus"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "dc-db",
+ "derive_more",
+ "dp_consensus",
+ "dvm-rpc-runtime-api",
+ "futures 0.3.13",
+ "log",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sp-api",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-timestamp",
+ "substrate-prometheus-endpoint",
+]
+
+[[package]]
+name = "dc-db"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "kvdb",
+ "kvdb-rocksdb",
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "sp-core",
+ "sp-database",
+ "sp-runtime",
+]
+
+[[package]]
+name = "dc-mapping-sync"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "dc-consensus",
+ "dc-db",
+ "dp_consensus",
+ "dvm-rpc-runtime-api",
+ "futures 0.3.13",
+ "futures-timer 3.0.2",
+ "log",
+ "sc-client-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "dc-rpc"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "array-bytes",
+ "darwinia-evm",
+ "dc-consensus",
+ "dc-db",
+ "dp-rpc",
+ "dp-storage",
+ "dp_consensus",
+ "dvm-ethereum",
+ "dvm-rpc-core",
+ "dvm-rpc-runtime-api",
+ "ethereum",
+ "ethereum-types",
+ "evm",
+ "futures 0.3.13",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "jsonrpc-pubsub",
+ "libsecp256k1",
+ "log",
+ "parity-scale-codec",
+ "rand 0.7.3",
+ "rlp",
+ "sc-client-api",
+ "sc-network",
+ "sc-rpc",
+ "sc-service",
+ "sha3 0.8.2",
+ "sp-api",
+ "sp-blockchain",
+ "sp-io",
+ "sp-runtime",
+ "sp-storage",
+ "sp-transaction-pool",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2051,6 +2161,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "dp-rpc"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "ethereum-types",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "jsonrpc-pubsub",
+ "rustc-hex",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "dp-storage"
 version = "2.1.0"
 source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
@@ -2094,6 +2219,26 @@ dependencies = [
  "sha3 0.9.1",
  "sp-core",
  "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dvm-rpc-core"
+version = "2.1.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?branch=master#c353d150e4d02f0345653759876cd7ede88afc8e"
+dependencies = [
+ "darwinia-evm",
+ "dp-evm",
+ "dp-rpc",
+ "ethereum",
+ "ethereum-types",
+ "jsonrpc-core",
+ "jsonrpc-derive",
+ "jsonrpc-pubsub",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]

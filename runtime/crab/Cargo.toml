@@ -85,6 +85,7 @@ sp-runtime             = { default-features = false, git = "https://github.com/d
 sp-session             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-staking             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-std                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+# sc-network             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-transaction-pool    = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-version             = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 
@@ -161,6 +162,7 @@ std    = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	# "sc-network/std",
 ]
 
 dev          = []

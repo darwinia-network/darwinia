@@ -21,12 +21,16 @@
 pub use crab_runtime;
 
 // --- std ---
-use std::{sync::Arc, time::Duration};
+use std::{
+	collections::{BTreeMap, HashMap},
+	sync::{Arc, Mutex},
+	time::Duration,
+};
 // --- crates ---
 use futures::stream::StreamExt;
 // --- substrate ---
 use sc_basic_authorship::ProposerFactory;
-use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
+use sc_client_api::{BlockchainEvents, ExecutorProvider, RemoteBackend, StateBackendFor};
 use sc_consensus::LongestChain;
 use sc_consensus_babe::{
 	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
@@ -38,8 +42,9 @@ use sc_finality_grandpa::{
 	VotingRulesBuilder as GrandpaVotingRulesBuilder,
 };
 use sc_network::Event;
+use sc_network::NetworkService;
 use sc_service::{
-	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
+	config::KeystoreConfig, BasePath, BuildNetworkParams, Configuration, Error as ServiceError,
 	NoopRpcExtensionBuilder, PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
 };
 use sc_telemetry::{Telemetry, TelemetryWorker};
@@ -58,12 +63,78 @@ use darwinia_rpc::{
 	crab::{FullDeps, LightDeps},
 	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,
 };
+use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
+use dc_mapping_sync::MappingSyncWorker;
+use dc_rpc::EthTask;
+use dp_rpc::{FilterPool, PendingTransactions};
 
 native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
 );
+
+/// A set of APIs that darwinia-like runtimes must implement.
+pub trait RuntimeApiCollection:
+	sp_api::ApiExt<Block>
+	+ sp_api::Metadata<Block>
+	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
+	+ sp_block_builder::BlockBuilder<Block>
+	+ sp_consensus_babe::BabeApi<Block>
+	+ sp_finality_grandpa::GrandpaApi<Block>
+	+ sp_offchain::OffchainWorkerApi<Block>
+	+ sp_session::SessionKeys<Block>
+	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
+	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
+	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+	+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
+	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
+	+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>
+where
+	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+{
+}
+
+impl<Api> RuntimeApiCollection for Api
+where
+	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+		+ sp_api::ApiExt<Block>
+		+ sp_api::Metadata<Block>
+		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
+		+ sp_block_builder::BlockBuilder<Block>
+		+ sp_consensus_babe::BabeApi<Block>
+		+ sp_finality_grandpa::GrandpaApi<Block>
+		+ sp_offchain::OffchainWorkerApi<Block>
+		+ sp_session::SessionKeys<Block>
+		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
+		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
+		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
+		+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
+		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
+		+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
+	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+{
+}
+
+fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
+	let config_dir = config
+		.base_path
+		.as_ref()
+		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
+		.unwrap_or_else(|| {
+			// BasePath::from_project("", "", &darwinia_cli::cli::Cli::executable_name())
+			BasePath::from_project("", "", "crab").config_dir(config.chain_spec.id())
+		});
+	let database_dir = config_dir.join("dvm").join("db");
+
+	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
+		source: DatabaseSettingsSrc::RocksDb {
+			path: database_dir,
+			cache_size: 0,
+		},
+	})?))
+}
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
@@ -76,7 +147,12 @@ fn new_partial<RuntimeApi, Executor>(
 		DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			impl Fn(DenyUnsafe, SubscriptionTaskExecutor) -> RpcExtension,
+			impl Fn(
+				DenyUnsafe,
+				bool,
+				Arc<NetworkService<Block, Hash>>,
+				SubscriptionTaskExecutor,
+			) -> RpcExtension,
 			(
 				BabeBlockImport<
 					Block,
@@ -88,6 +164,9 @@ fn new_partial<RuntimeApi, Executor>(
 			),
 			GrandpaSharedVoterState,
 			Option<Telemetry>,
+			PendingTransactions,
+			Arc<Backend<Block>>,
+			Option<FilterPool>,
 		),
 	>,
 	ServiceError,
@@ -136,6 +215,7 @@ where
 		task_manager.spawn_handle(),
 		client.clone(),
 	);
+	let frontier_backend = open_frontier_backend(config)?;
 	let grandpa_hard_forks = vec![];
 	let (grandpa_block_import, grandpa_link) =
 		sc_finality_grandpa::block_import_with_authority_set_hard_forks(
@@ -174,14 +254,20 @@ where
 	let rpc_setup = shared_voter_state.clone();
 	let babe_config = babe_link.config().clone();
 	let shared_epoch_changes = babe_link.epoch_changes().clone();
+	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
+	let pending_transactions: PendingTransactions = Some(Arc::new(Mutex::new(HashMap::new())));
+	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let keystore = keystore_container.sync_keystore();
 		let transaction_pool = transaction_pool.clone();
 		let select_chain = select_chain.clone();
 		let chain_spec = config.chain_spec.cloned_box();
+		let pending_transactions = pending_transactions.clone();
+		let frontier_backend = frontier_backend.clone();
+		let filter_pool = filter_pool.clone();
 
-		move |deny_unsafe, subscription_executor| -> RpcExtension {
+		move |deny_unsafe, is_authority, network, subscription_executor| -> RpcExtension {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
@@ -200,9 +286,14 @@ where
 					subscription_executor,
 					finality_provider: finality_proof_provider.clone(),
 				},
+				is_authority,
+				network,
+				pending_transactions: pending_transactions.clone(),
+				backend: frontier_backend.clone(),
+				filter_pool: filter_pool.clone(),
 			};
 
-			darwinia_rpc::crab::create_full(deps)
+			darwinia_rpc::crab::create_full(deps, subscription_task_executor.clone())
 		}
 	};
 
@@ -215,7 +306,15 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, telemetry),
+		other: (
+			rpc_extensions_builder,
+			import_setup,
+			rpc_setup,
+			telemetry,
+			pending_transactions,
+			frontier_backend,
+			filter_pool,
+		),
 	})
 }
 
@@ -254,7 +353,16 @@ where
 		import_queue,
 		transaction_pool,
 		inherent_data_providers,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, mut telemetry),
+		other:
+			(
+				rpc_extensions_builder,
+				import_setup,
+				rpc_setup,
+				mut telemetry,
+				pending_transactions,
+				frontier_backend,
+				filter_pool,
+			),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
 	if let Some(url) = &config.keystore_remote {
@@ -313,7 +421,22 @@ where
 		client: client.clone(),
 		keystore: keystore_container.sync_keystore(),
 		network: network.clone(),
-		rpc_extensions_builder: Box::new(rpc_extensions_builder),
+		rpc_extensions_builder: {
+			let wrap_rpc_extensions_builder = {
+				let network = network.clone();
+
+				move |deny_unsafe, subscription_executor| -> RpcExtension {
+					rpc_extensions_builder(
+						deny_unsafe,
+						is_authority,
+						network.clone(),
+						subscription_executor,
+					)
+				}
+			};
+
+			Box::new(wrap_rpc_extensions_builder)
+		},
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		on_demand: None,
@@ -413,6 +536,41 @@ where
 		task_manager.spawn_handle().spawn(
 			"authority-discovery-worker",
 			authority_discovery_worker.run(),
+		);
+	}
+
+	// Spawn Frontier pending transactions maintenance task (as essential, otherwise we leak).
+	if let Some(pending_transactions) = pending_transactions {
+		const TRANSACTION_RETAIN_THRESHOLD: u64 = 5;
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-pending-transactions",
+			EthTask::pending_transaction_task(
+				Arc::clone(&client),
+				pending_transactions,
+				TRANSACTION_RETAIN_THRESHOLD,
+			),
+		);
+	}
+
+	task_manager.spawn_essential_handle().spawn(
+		"frontier-mapping-sync-worker",
+		MappingSyncWorker::new(
+			client.import_notification_stream(),
+			Duration::new(6, 0),
+			client.clone(),
+			backend.clone(),
+			frontier_backend.clone(),
+		)
+		.for_each(|()| futures::future::ready(())),
+	);
+
+	// Spawn Frontier EthFilterApi maintenance task.
+	if let Some(filter_pool) = filter_pool {
+		// Each filter is allowed to stay in the pool for 100 blocks.
+		const FILTER_RETAIN_THRESHOLD: u64 = 100;
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-filter-pool",
+			EthTask::filter_pool_task(Arc::clone(&client), filter_pool, FILTER_RETAIN_THRESHOLD),
 		);
 	}
 
