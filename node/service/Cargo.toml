@@ -21,14 +21,15 @@ darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-netwo
 darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-evm                        = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dc-db                 				= { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dc-rpc                 				= { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dc-mapping-sync                 	= { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dp-rpc                 				= { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-rpc-runtime-api                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dc-db                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dc-rpc                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dp-rpc                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dc-mapping-sync                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # TODO: change to local cli
 # darwinia-cli                 = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia-cli = { path = "../../cli" }
+
 # darwinia primitives
 darwinia-primitives = { path = "../../primitives" }
 # darwinia rpc

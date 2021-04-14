@@ -10,20 +10,20 @@ version     = "0.9.6"
 
 [dependencies]
 # crates
-codec        = { package = "parity-scale-codec", version = "2.0.1", default-features = false }
-jsonrpc-core = { version = "15.1.0" }
+codec        		= { package = "parity-scale-codec", version = "2.0.1", default-features = false }
+jsonrpc-core 		= { version = "15.1.0" }
+jsonrpc-pubsub      = { version = "15.1.0" }
 # darwinia frame
 darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dc-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dc-db                  = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-dvm-rpc-runtime-api            = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
-jsonrpc-pubsub      = { version = "15.1.0" }
-crab-runtime = { path = "../runtime/crab" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia primitives
+crab-runtime		= { path = "../runtime/crab" }
 darwinia-primitives = { path = "../primitives" }
 # substrate client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
@@ -39,6 +39,7 @@ sc-sync-state-rpc       = { git = "https://github.com/darwinia-network/substrate
 pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # substrate primitives
+sc-network          = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-api              = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-block-builder    = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-blockchain       = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
@@ -47,4 +48,3 @@ sp-consensus-babe   = { git = "https://github.com/darwinia-network/substrate.git
 sp-keystore         = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-runtime          = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 sp-transaction-pool = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-sc-network          = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
