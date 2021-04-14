@@ -33,7 +33,7 @@ use super::{
 };
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
-// --- crates ---
+// --- std ---
 use std::collections::BTreeMap;
 
 /// The `ChainSpec parametrised for Crab runtime`.
