@@ -751,12 +751,10 @@ version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "670ad68c9088c2a963aaa298cb369688cf3f9465ce5e2d4ca10e6e0098a1ce73"
 dependencies = [
- "js-sys",
  "libc",
  "num-integer",
  "num-traits",
  "time",
- "wasm-bindgen",
  "winapi 0.3.9",
 ]
 
@@ -833,16 +831,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "console_error_panic_hook"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8d976903543e0c48546a91908f21588a680a8c8f984df9a5d69feccb2b2a211"
-dependencies = [
- "cfg-if 0.1.10",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -894,7 +882,7 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 
 [[package]]
 name = "crab-runtime"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "array-bytes",
  "darwinia-balances",
@@ -1246,9 +1234,9 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
- "darwinia-cli 0.9.5",
+ "darwinia-cli 0.9.6",
  "darwinia-service",
  "futures 0.3.13",
  "parity-util-mem",
@@ -1317,7 +1305,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "darwinia-cli 2.1.0",
  "darwinia-service",
@@ -1332,7 +1320,6 @@ dependencies = [
  "sp-core",
  "sp-trie",
  "structopt",
- "substrate-browser-utils",
  "substrate-build-script-utils",
  "tokio 0.3.7",
  "try-runtime-cli",
@@ -1501,7 +1488,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-primitives"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -1554,7 +1541,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "darwinia-balances-rpc",
  "darwinia-header-mmr-rpc",
@@ -1585,7 +1572,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
@@ -1659,7 +1646,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime-common"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "darwinia-balances",
  "darwinia-primitives",
@@ -1678,7 +1665,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-service"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "array-bytes",
  "crab-runtime",
@@ -2664,10 +2651,6 @@ name = "futures-timer"
 version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e64b03909df88034c26dc1547e8970b91f98bdb65165d6a4e9110d94263dbb2c"
-dependencies = [
- "gloo-timers",
- "send_wrapper 0.4.0",
-]
 
 [[package]]
 name = "futures-util"
@@ -2731,10 +2714,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fc3cb4d91f53b50155bdcfd23f6a4c39ae1969c2ae85982b135750cccaf5fce"
 dependencies = [
  "cfg-if 1.0.0",
- "js-sys",
  "libc",
  "wasi 0.9.0+wasi-snapshot-preview1",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -2744,10 +2725,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if 1.0.0",
- "js-sys",
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -3190,9 +3169,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61124eeebbd69b8190558df225adf7e4caafce0d743919e5d6b19652314ec5ec"
 dependencies = [
  "cfg-if 1.0.0",
- "js-sys",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -3556,6 +3532,7 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "kvdb-web"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3574,6 +3551,8 @@ dependencies = [
 ]
 
 [[package]]
+=======
+>>>>>>> master
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7202,18 +7181,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "send_wrapper"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f638d531eccd6e23b980caf34876660d38e265409d8e99b397ab71eb3612fad0"
-
-[[package]]
-name = "send_wrapper"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "930c0acf610d3fdb5e2ab6213019aaa04e227ebe9547b0649ba599b16d788bd7"
-
-[[package]]
 name = "serde"
 version = "1.0.125"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8174,6 +8141,7 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "substrate-browser-utils"
 version = "0.9.0"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=rococo-v1.2#1404f2af4cbe90d35b4c8a1405a9452feb789adc"
@@ -8200,6 +8168,8 @@ dependencies = [
 ]
 
 [[package]]
+=======
+>>>>>>> master
 name = "substrate-build-script-utils"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=rococo-v1.2#1404f2af4cbe90d35b4c8a1405a9452feb789adc"

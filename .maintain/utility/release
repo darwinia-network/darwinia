@@ -34,7 +34,7 @@ cp ../wasm/* .
 cp ../target/x86_64-unknown-linux-gnu/release/darwinia .
 tar cjSf darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8.tar.bz2 darwinia
 rm darwinia
-cp ../target/x86_64-unknown-linux-gnu/release/darwinia .
+cp ../target/aarch64-unknown-linux-gnu/release/darwinia .
 tar cjSf darwinia-$1-aarch64-linux-gnu-glibc-2.23-llvm-3.8.tar.bz2 darwinia
 rm darwinia
 

@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.9.5"
+version     = "0.9.6"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -23,8 +23,6 @@ log                  = { version = "0.4.14" }
 serde                = { version = "1.0.125", optional = true }
 structopt            = { version = "0.3.21" }
 tokio                = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
-wasm-bindgen         = { version = "0.2.73", optional = true }
-wasm-bindgen-futures = { version = "0.4.23", optional = true }
 # darwinia client
 darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", branch = "master" }
 # darwinia service
@@ -41,9 +39,7 @@ try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
-# substrate utils
-substrate-browser-utils = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
@@ -65,12 +61,6 @@ cli = [
 	"darwinia-service/full-node",
 ]
 db  = ["darwinia-service/db"]
-
-browser = [
-	"wasm-bindgen",
-	"wasm-bindgen-futures",
-	"substrate-browser-utils",
-]
 
 trie-memory-tracker = ["sp-trie/memory-tracker"]
 wasmtime            = [
