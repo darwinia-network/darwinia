@@ -66,7 +66,7 @@ impl IdentifyVariant for Box<dyn ChainSpec> {
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
-	sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+	sp_api::ApiExt<Block>
 	+ sp_api::Metadata<Block>
 	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
 	+ sp_block_builder::BlockBuilder<Block>
@@ -88,7 +88,7 @@ where
 impl<Api> RuntimeApiCollection for Api
 where
 	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ sp_api::ApiExt<Block, Error = sp_blockchain::Error>
+		+ sp_api::ApiExt<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>

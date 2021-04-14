@@ -39,7 +39,7 @@ try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "rococo-v1.2" }

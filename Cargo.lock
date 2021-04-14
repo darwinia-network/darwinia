@@ -1323,8 +1323,6 @@ dependencies = [
  "substrate-build-script-utils",
  "tokio 0.3.7",
  "try-runtime-cli",
- "wasm-bindgen",
- "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -3532,27 +3530,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-name = "kvdb-web"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb1e98ba343d0b35f9009a8844cd2b87fa3192f7e79033ac05b00aeae0f3b0b5"
-dependencies = [
- "futures 0.3.13",
- "js-sys",
- "kvdb",
- "kvdb-memorydb",
- "log",
- "parity-util-mem",
- "parking_lot 0.11.1",
- "send_wrapper 0.5.0",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-=======
->>>>>>> master
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8141,35 +8118,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-name = "substrate-browser-utils"
-version = "0.9.0"
-source = "git+https://github.com/darwinia-network/substrate.git?tag=rococo-v1.2#1404f2af4cbe90d35b4c8a1405a9452feb789adc"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "futures 0.1.31",
- "futures 0.3.13",
- "futures-timer 3.0.2",
- "getrandom 0.2.2",
- "js-sys",
- "kvdb-web",
- "libp2p-wasm-ext",
- "log",
- "rand 0.7.3",
- "sc-chain-spec",
- "sc-informant",
- "sc-network",
- "sc-service",
- "sc-tracing",
- "sp-database",
- "wasm-bindgen",
- "wasm-bindgen-futures",
-]
-
-[[package]]
-=======
->>>>>>> master
 name = "substrate-build-script-utils"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate.git?tag=rococo-v1.2#1404f2af4cbe90d35b4c8a1405a9452feb789adc"

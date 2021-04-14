@@ -160,7 +160,7 @@ pub fn run() -> sc_cli::Result<()> {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
 						Role::Light => {
-							crab::crab_new_light(config).map(|(task_manager, _, _)| task_manager)
+							crab::crab_new_light(config).map(|(task_manager, _)| task_manager)
 						}
 						_ => crab::crab_new_full(config, authority_discovery_disabled)
 							.map(|(task_manager, _, _)| task_manager),
@@ -171,7 +171,7 @@ pub fn run() -> sc_cli::Result<()> {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
 						Role::Light => darwinia::darwinia_new_light(config)
-							.map(|(task_manager, _, _)| task_manager),
+							.map(|(task_manager, _)| task_manager),
 						_ => darwinia::darwinia_new_full(config, authority_discovery_disabled)
 							.map(|(task_manager, _, _)| task_manager),
 					}
