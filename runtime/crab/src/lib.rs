@@ -646,7 +646,6 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
-
 		use dp_storage::PALLET_ETHEREUM_SCHEMA;
 		use dvm_ethereum::EthereumStorageSchema;
 
