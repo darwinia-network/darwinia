@@ -439,12 +439,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
-name = "beef"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6736e2428df2ca2848d846c43e88745121a6654696e349ce0054a420815a7409"
-
-[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3443,15 +3437,13 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-http-client"
-version = "0.2.0-alpha.4"
+version = "0.2.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f482ce70886948b127a8b621638a1e7994f9d120acb90b41477ba81cdc635976"
+checksum = "7f1d8440e2617bdebdf45114e90f65aed3f14bf73e23d874dde8e4b764676fe9"
 dependencies = [
  "async-trait",
- "fnv",
  "futures 0.3.14",
  "hyper 0.13.10",
- "hyper-rustls",
  "jsonrpsee-types",
  "jsonrpsee-utils",
  "log",
@@ -3464,9 +3456,9 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-proc-macros"
-version = "0.2.0-alpha.4"
+version = "0.2.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e392bedb66803ec695b045edb7d9d1c213edcbeeffa77ddc7b42a80a68d01ed"
+checksum = "3cb3f732ccbeafd15cefb59c7c7b5ac6c553c2653613b63e5e7feb7f06a219e9"
 dependencies = [
  "Inflector",
  "proc-macro2",
@@ -3476,13 +3468,11 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-types"
-version = "0.2.0-alpha.4"
+version = "0.2.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e43240d3bfdbe0ade7f4b7148366729c0a228ec907c844c4c22f176b9b8d328"
+checksum = "5a8cd20c190e75dc56f7543b9d5713c3186351b301b5507ea6b85d8c403aac78"
 dependencies = [
- "anyhow",
  "async-trait",
- "beef",
  "futures 0.3.14",
  "log",
  "serde",
@@ -3493,21 +3483,16 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-utils"
-version = "0.2.0-alpha.4"
+version = "0.2.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7b1a214d8150d0b4881b8cf1b3053a7499210726fad669d9ff28cfa4f3c4f0a"
+checksum = "e51670a3b56e5fb0d325920ce317c76184b8afabfd7bc5009831229cfef0732b"
 dependencies = [
- "anyhow",
  "futures 0.3.14",
  "globset",
  "hyper 0.13.10",
  "jsonrpsee-types",
  "lazy_static",
  "log",
- "rustc-hash",
- "serde",
- "serde_json",
- "tokio 1.5.0",
  "unicase",
 ]
 
@@ -8554,16 +8539,6 @@ dependencies = [
  "num_cpus",
  "pin-project-lite 0.2.6",
  "slab",
-]
-
-[[package]]
-name = "tokio"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83f0c8e7c0addab50b663055baf787d0af7f413a46e6e7fb9559a4e4db7137a5"
-dependencies = [
- "autocfg",
- "pin-project-lite 0.2.6",
 ]
 
 [[package]]
