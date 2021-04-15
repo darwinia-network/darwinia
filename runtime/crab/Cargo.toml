@@ -45,7 +45,7 @@ frame-executive                            = { default-features = false, git = "
 frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 frame-system-rpc-runtime-api               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
-frame-try-runtime                          = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+frame-try-runtime                          = { default-features = false, optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 pallet-authority-discovery                 = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 pallet-authorship                          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 pallet-babe                                = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
@@ -110,6 +110,7 @@ std    = [
 	"darwinia-relayer-game/std",
 	"darwinia-staking/std",
 	"darwinia-staking-rpc-runtime-api/std",
+	"frame-try-runtime/std",
 	"darwinia-support/std",
 	"darwinia-treasury/std",
 	"darwinia-primitives/std",
