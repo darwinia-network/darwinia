@@ -326,16 +326,43 @@ pub fn run() -> sc_cli::Result<()> {
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.async_run(|config| {
-				// we don't need any of the components of new_partial, just a runtime, or a task
-				// manager to do `async_run`.
-				let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
-				let task_manager =
-					sc_service::TaskManager::new(config.task_executor.clone(), registry)
-						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+			let chain_spec = &runner.config().chain_spec;
 
-				Ok((cmd.run::<Block, Executor>(config), task_manager))
-			})
+			if chain_spec.is_crab() {
+				runner.async_run(|config| {
+					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
+					// we don't need any of the components of new_partial, just a runtime, or a task
+					// manager to do `async_run`.
+					let task_manager =
+						sc_service::TaskManager::new(config.task_executor.clone(), registry)
+							.map_err(|e| {
+								sc_cli::Error::Service(sc_service::Error::Prometheus(e))
+							})?;
+
+					Ok((
+						cmd.run::<crab_runtime::Block, CrabExecutor>(config),
+						task_manager,
+					))
+				})
+			} else if chain_spec.is_darwinia() {
+				runner.async_run(|config| {
+					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
+					// we don't need any of the components of new_partial, just a runtime, or a task
+					// manager to do `async_run`.
+					let task_manager =
+						sc_service::TaskManager::new(config.task_executor.clone(), registry)
+							.map_err(|e| {
+								sc_cli::Error::Service(sc_service::Error::Prometheus(e))
+							})?;
+
+					Ok((
+						cmd.run::<darwinia_runtime::Block, DarwiniaExecutor>(config),
+						task_manager,
+					))
+				})
+			} else {
+				unreachable!()
+			}
 		}
 	}
 }
