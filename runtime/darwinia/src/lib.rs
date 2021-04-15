@@ -103,7 +103,10 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates ---
 use codec::Encode;
 // --- substrate ---
-use frame_support::traits::{KeyOwnerProofSystem, Randomness};
+use frame_support::{
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	weights::Weight,
+};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -184,7 +187,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 23,
+	spec_version: 24,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -551,8 +554,8 @@ impl_runtime_apis! {
 }
 
 pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
 

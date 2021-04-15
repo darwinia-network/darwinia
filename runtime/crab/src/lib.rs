@@ -61,7 +61,10 @@ mod weights;
 // --- crates ---
 use codec::{Decode, Encode};
 // --- substrate ---
-use frame_support::traits::{KeyOwnerProofSystem, Randomness};
+use frame_support::{
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	weights::Weight,
+};
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -138,7 +141,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 42,
+	spec_version: 43,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -639,8 +642,11 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 }
 
 pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
+		// --- substrate ---
+		// use frame_support::migration::*;
+
 		use dp_storage::PALLET_ETHEREUM_SCHEMA;
 		use dvm_ethereum::EthereumStorageSchema;
 
@@ -648,7 +654,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			&PALLET_ETHEREUM_SCHEMA,
 			&EthereumStorageSchema::V1,
 		);
-
 		0
 	}
 }

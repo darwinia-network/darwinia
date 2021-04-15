@@ -4,7 +4,12 @@ use pallet_election_provider_multi_phase::{weights::SubstrateWeight, Config};
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia ---
 use crate::*;
-use darwinia_staking::CompactAssignments;
+
+sp_npos_elections::generate_solution_type!(
+	#[compact]
+	pub struct NposCompactSolution16::<u32, u16, sp_runtime::PerU16>(16)
+	// -------------------- ^^ <NominatorIndex, ValidatorIndex, Accuracy>
+);
 
 frame_support::parameter_types! {
 	// phase durations. 1/4 of the last session for each.
@@ -38,7 +43,7 @@ impl Config for Runtime {
 	type MinerTxPriority = MultiPhaseUnsignedPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
-	type CompactSolution = CompactAssignments;
+	type CompactSolution = NposCompactSolution16;
 	type Fallback = Fallback;
 	type WeightInfo = SubstrateWeight<Runtime>;
 	type BenchmarkingConfig = ();
