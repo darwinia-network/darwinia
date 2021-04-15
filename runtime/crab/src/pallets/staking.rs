@@ -2,6 +2,7 @@
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- substrate ---
+use sp_npos_elections::CompactSolution;
 use sp_runtime::ModuleId;
 use sp_staking::SessionIndex;
 // --- darwinia ---
@@ -23,6 +24,7 @@ frame_support::parameter_types! {
 	pub const TotalPower: Power = TOTAL_POWER;
 }
 impl Config for Runtime {
+	const MAX_NOMINATIONS: u32 = <NposCompactSolution16 as CompactSolution>::LIMIT as u32;
 	type Event = Event;
 	type ModuleId = StakingModuleId;
 	type UnixTime = Timestamp;

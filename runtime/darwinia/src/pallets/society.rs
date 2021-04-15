@@ -13,6 +13,7 @@ frame_support::parameter_types! {
 	pub const PeriodSpend: Balance = 500 * COIN;
 	pub const MaxLockDuration: BlockNumber = 36 * 30 * DAYS;
 	pub const ChallengePeriod: BlockNumber = 7 * DAYS;
+	pub const MaxCandidateIntake: u32 = 1;
 }
 impl Config for Runtime {
 	type Event = Event;
@@ -29,4 +30,5 @@ impl Config for Runtime {
 	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type SuspensionJudgementOrigin = EnsureFounder<Runtime>;
 	type ChallengePeriod = ChallengePeriod;
+	type MaxCandidateIntake = MaxCandidateIntake;
 }
