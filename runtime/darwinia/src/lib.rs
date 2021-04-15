@@ -103,7 +103,10 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates ---
 use codec::Encode;
 // --- substrate ---
-use frame_support::traits::{KeyOwnerProofSystem, Randomness};
+use frame_support::{
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	weights::Weight,
+};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -551,8 +554,8 @@ impl_runtime_apis! {
 }
 
 pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
 

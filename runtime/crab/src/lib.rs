@@ -61,7 +61,10 @@ mod weights;
 // --- crates ---
 use codec::Encode;
 // --- substrate ---
-use frame_support::traits::{KeyOwnerProofSystem, Randomness};
+use frame_support::{
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	weights::Weight,
+};
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -501,8 +504,8 @@ sp_api::impl_runtime_apis! {
 }
 
 pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
 
