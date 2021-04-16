@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// --- std ---
+use std::collections::BTreeMap;
 // --- substrate ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainType;
@@ -33,8 +35,6 @@ use super::{
 };
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
-// --- std ---
-use std::collections::BTreeMap;
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type CrabChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
