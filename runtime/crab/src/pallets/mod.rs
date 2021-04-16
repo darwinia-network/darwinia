@@ -102,3 +102,9 @@ pub use relayer_game::*;
 
 pub mod relay_authorities;
 pub use relay_authorities::*;
+
+pub mod evm;
+pub use evm::*;
+
+pub mod dvm;
+pub use dvm::*;

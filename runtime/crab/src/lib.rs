@@ -59,7 +59,7 @@ pub use wasm::*;
 mod weights;
 
 // --- crates ---
-use codec::Encode;
+use codec::{Decode, Encode};
 // --- substrate ---
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
@@ -70,7 +70,7 @@ use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::{AllowedSlots, BabeEpochConfiguration};
-use sp_core::OpaqueMetadata;
+use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
@@ -78,7 +78,7 @@ use sp_runtime::{
 		StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiAddress,
+	ApplyExtrinsicResult, MultiAddress, OpaqueExtrinsic,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
@@ -86,10 +86,12 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
+use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use dvm_rpc_runtime_api::TransactionStatus;
 
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, ()>;
@@ -231,6 +233,10 @@ frame_support::construct_runtime! {
 		EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
+
+		// DVM
+		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
+		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
 	}
 }
 
@@ -494,6 +500,119 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
+	impl dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block> for Runtime {
+		fn chain_id() -> u64 {
+			<Runtime as darwinia_evm::Config>::ChainId::get()
+		}
+
+		fn gas_price() -> U256 {
+			<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price()
+		}
+
+		fn account_basic(address: H160) -> EVMAccount {
+			use darwinia_evm::AccountBasic;
+
+			<Runtime as darwinia_evm::Config>::RingAccountBasic::account_basic(&address)
+		}
+
+		fn account_code_at(address: H160) -> Vec<u8> {
+			darwinia_evm::Module::<Runtime>::account_codes(address)
+		}
+
+		fn author() -> H160 {
+			<dvm_ethereum::Module<Runtime>>::find_author()
+		}
+
+		fn storage_at(address: H160, index: U256) -> H256 {
+			let mut tmp = [0u8; 32];
+			index.to_big_endian(&mut tmp);
+			darwinia_evm::Module::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+		}
+
+		fn call(
+			from: H160,
+			to: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			gas_price: Option<U256>,
+			nonce: Option<U256>,
+			estimate: bool,
+		) -> Result<darwinia_evm::CallInfo, sp_runtime::DispatchError> {
+			let config = if estimate {
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+				Some(config)
+			} else {
+				None
+			};
+
+			<Runtime as darwinia_evm::Config>::Runner::call(
+				from,
+				to,
+				data,
+				value,
+				gas_limit.low_u64(),
+				gas_price,
+				nonce,
+				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
+			).map_err(|err| err.into())
+		}
+
+		fn create(
+			from: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			gas_price: Option<U256>,
+			nonce: Option<U256>,
+			estimate: bool,
+		) -> Result<darwinia_evm::CreateInfo, sp_runtime::DispatchError> {
+			let config = if estimate {
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+				Some(config)
+			} else {
+				None
+			};
+
+			<Runtime as darwinia_evm::Config>::Runner::create(
+				from,
+				data,
+				value,
+				gas_limit.low_u64(),
+				gas_price,
+				nonce,
+				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
+			).map_err(|err| err.into())
+		}
+
+
+		fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
+			Ethereum::current_transaction_statuses()
+		}
+
+		fn current_block() -> Option<dvm_ethereum::Block> {
+			Ethereum::current_block()
+		}
+
+		fn current_receipts() -> Option<Vec<dvm_ethereum::Receipt>> {
+			Ethereum::current_receipts()
+		}
+
+		fn current_all() -> (
+			Option<dvm_ethereum::Block>,
+			Option<Vec<dvm_ethereum::Receipt>>,
+			Option<Vec<TransactionStatus>>
+		) {
+			(
+				Ethereum::current_block(),
+				Ethereum::current_receipts(),
+				Ethereum::current_transaction_statuses()
+			)
+		}
+	}
+
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
@@ -503,12 +622,39 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
+pub struct TransactionConverter;
+impl dvm_rpc_runtime_api::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> UncheckedExtrinsic {
+		UncheckedExtrinsic::new_unsigned(
+			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
+		)
+	}
+}
+impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> OpaqueExtrinsic {
+		let extrinsic = UncheckedExtrinsic::new_unsigned(
+			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
+		);
+		let encoded = extrinsic.encode();
+
+		OpaqueExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
+	}
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
 		// use frame_support::migration::*;
+		// --- darwinia ---
+		use dp_storage::PALLET_ETHEREUM_SCHEMA;
+		use dvm_ethereum::EthereumStorageSchema;
 
-		0
+		frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+			&PALLET_ETHEREUM_SCHEMA,
+			&EthereumStorageSchema::V1,
+		);
+
+		RuntimeBlockWeights::get().max_block
 	}
 }

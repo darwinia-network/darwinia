@@ -20,6 +20,13 @@ serde_json  = { version = "1.0.64" }
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+# dvm
+darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-db               = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 # darwinia primitives
 darwinia-primitives = { path = "../../primitives" }
 # darwinia rpc

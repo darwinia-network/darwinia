@@ -10,13 +10,20 @@ version     = "0.10.0"
 
 [dependencies]
 # crates
-codec        = { package = "parity-scale-codec", version = "2.0.1", default-features = false }
-jsonrpc-core = { version = "15.1.0" }
+code                = { package = "parity-scale-codec", version = "2.0.1", default-features = false }
+jsonrpc-core        = { version = "15.1.0" }
+jsonrpc-pubsub      = { version = "15.1.0" }
 # darwinia frame
 darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 # darwinia primitives
+crab-runtime        = { path = "../runtime/crab" }
 darwinia-primitives = { path = "../primitives" }
 # substrate client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
@@ -32,6 +39,7 @@ sc-sync-state-rpc       = { git = "https://github.com/darwinia-network/substrate
 pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 # substrate primitives
+sc-network          = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 sp-api              = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 sp-block-builder    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 sp-blockchain       = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }

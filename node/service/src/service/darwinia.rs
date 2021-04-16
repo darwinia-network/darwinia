@@ -65,6 +65,8 @@ native_executor_instance!(
 	darwinia_runtime::native_version,
 );
 
+impl_runtime_apis!();
+
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
 	config: &mut Configuration,

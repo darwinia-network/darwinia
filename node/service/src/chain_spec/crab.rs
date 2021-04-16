@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// --- std ---
+use std::collections::BTreeMap;
 // --- substrate ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainType;
@@ -224,6 +226,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 40_000_000 * COIN,
 		},
+		darwinia_evm: crab_runtime::EVMConfig { accounts:  BTreeMap::new(), },
+		dvm_ethereum: Default::default(),
 	}
 }
 
@@ -353,6 +357,8 @@ pub fn crab_testnet_genesis(
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 1 << 56
 		},
+		darwinia_evm: crab_runtime::EVMConfig { accounts:  BTreeMap::new(), },
+		dvm_ethereum: Default::default(),
 	}
 }
 
