@@ -73,48 +73,7 @@ native_executor_instance!(
 	crab_runtime::native_version,
 );
 
-/// A set of APIs that darwinia-like runtimes must implement.
-pub trait RuntimeApiCollection:
-	sp_api::ApiExt<Block>
-	+ sp_api::Metadata<Block>
-	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
-	+ sp_block_builder::BlockBuilder<Block>
-	+ sp_consensus_babe::BabeApi<Block>
-	+ sp_finality_grandpa::GrandpaApi<Block>
-	+ sp_offchain::OffchainWorkerApi<Block>
-	+ sp_session::SessionKeys<Block>
-	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-	+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
-	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-	+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>
-where
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
-
-impl<Api> RuntimeApiCollection for Api
-where
-	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ sp_api::ApiExt<Block>
-		+ sp_api::Metadata<Block>
-		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
-		+ sp_block_builder::BlockBuilder<Block>
-		+ sp_consensus_babe::BabeApi<Block>
-		+ sp_finality_grandpa::GrandpaApi<Block>
-		+ sp_offchain::OffchainWorkerApi<Block>
-		+ sp_session::SessionKeys<Block>
-		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-		+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
-		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-		+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
+impl_runtime_apis!(dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>);
 
 fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
 	let config_dir = config
@@ -213,7 +172,6 @@ where
 		task_manager.spawn_handle(),
 		client.clone(),
 	);
-	let frontier_backend = open_frontier_backend(config)?;
 	let grandpa_hard_forks = vec![];
 	let (grandpa_block_import, grandpa_link) =
 		sc_finality_grandpa::block_import_with_authority_set_hard_forks(
@@ -252,18 +210,23 @@ where
 	let rpc_setup = shared_voter_state.clone();
 	let babe_config = babe_link.config().clone();
 	let shared_epoch_changes = babe_link.epoch_changes().clone();
+	// <--- dvm ---
+	let frontier_backend = open_frontier_backend(config)?;
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let pending_transactions: PendingTransactions = Some(Arc::new(Mutex::new(HashMap::new())));
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+	// --- dvm --->
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let keystore = keystore_container.sync_keystore();
 		let transaction_pool = transaction_pool.clone();
 		let select_chain = select_chain.clone();
 		let chain_spec = config.chain_spec.cloned_box();
+		// <--- dvm ---
 		let pending_transactions = pending_transactions.clone();
 		let frontier_backend = frontier_backend.clone();
 		let filter_pool = filter_pool.clone();
+		// --- dvm --->
 
 		move |deny_unsafe, is_authority, network, subscription_executor| -> RpcExtension {
 			let deps = FullDeps {
@@ -284,11 +247,13 @@ where
 					subscription_executor,
 					finality_provider: finality_proof_provider.clone(),
 				},
+				// <--- dvm ---
 				is_authority,
 				network,
 				pending_transactions: pending_transactions.clone(),
 				backend: frontier_backend.clone(),
 				filter_pool: filter_pool.clone(),
+				// --- dvm --->
 			};
 
 			darwinia_rpc::crab::create_full(deps, subscription_task_executor.clone())
@@ -537,6 +502,7 @@ where
 		);
 	}
 
+	// <--- dvm ---
 	// Spawn Frontier pending transactions maintenance task (as essential, otherwise we leak).
 	if let Some(pending_transactions) = pending_transactions {
 		const TRANSACTION_RETAIN_THRESHOLD: u64 = 5;
@@ -571,6 +537,7 @@ where
 			EthTask::filter_pool_task(Arc::clone(&client), filter_pool, FILTER_RETAIN_THRESHOLD),
 		);
 	}
+	// --- dvm --->
 
 	network_starter.start_network();
 

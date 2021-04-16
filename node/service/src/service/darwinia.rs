@@ -65,46 +65,7 @@ native_executor_instance!(
 	darwinia_runtime::native_version,
 );
 
-/// A set of APIs that darwinia-like runtimes must implement.
-pub trait RuntimeApiCollection:
-	sp_api::ApiExt<Block>
-	+ sp_api::Metadata<Block>
-	+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
-	+ sp_block_builder::BlockBuilder<Block>
-	+ sp_consensus_babe::BabeApi<Block>
-	+ sp_finality_grandpa::GrandpaApi<Block>
-	+ sp_offchain::OffchainWorkerApi<Block>
-	+ sp_session::SessionKeys<Block>
-	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-	+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-	+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-	+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-	+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
-	+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-where
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
-
-impl<Api> RuntimeApiCollection for Api
-where
-	Api: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ sp_api::ApiExt<Block>
-		+ sp_api::Metadata<Block>
-		+ sp_authority_discovery::AuthorityDiscoveryApi<Block>
-		+ sp_block_builder::BlockBuilder<Block>
-		+ sp_consensus_babe::BabeApi<Block>
-		+ sp_finality_grandpa::GrandpaApi<Block>
-		+ sp_offchain::OffchainWorkerApi<Block>
-		+ sp_session::SessionKeys<Block>
-		+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
-		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-		+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-		+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
-		+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>,
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
-{
-}
+impl_runtime_apis!();
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
