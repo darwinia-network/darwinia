@@ -31,7 +31,6 @@ frame_support::parameter_types! {
 		.max_extrinsic.expect("Normal extrinsics have a weight limit configured; qed")
 		.saturating_sub(BlockExecutionWeight::get());
 }
-
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
