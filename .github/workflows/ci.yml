@@ -19,12 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache darwinia target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-darwinia
-
       - name: Install latest nightly
         uses: actions-rs/toolchain@v1
         with:
