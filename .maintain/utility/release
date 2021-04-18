@@ -9,7 +9,7 @@ docker build -f .maintain/docker/Dockerfile.aarch64-linux-gnu -t aarch64-linux-g
 echo -e '\e[1;32m📥 Installing Cross Compile Toolchain(s)\e[0m'
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain nightly-2020-10-06 &> /dev/null
 source ~/.cargo/env
-cargo install cross --git https://github.com/AurevoirXavier/cross --branch support-multi-sub-targets &> /dev/null
+cargo install cross --git https://github.com/l2ust/cross &> /dev/null
 rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu wasm32-unknown-unknown &> /dev/null
 
 echo -e "\e[1;32m🧬 Building darwinia-$1-x86_64-linux-gnu-glibc-2.17-llvm-3.8 \e[0m"
