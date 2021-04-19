@@ -11,12 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache darwinia target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-darwinia
-
       - name: Build darwinia
         env:
           RUST_TOOLCHAIN: nightly-2021-02-25
