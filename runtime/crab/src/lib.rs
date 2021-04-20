@@ -643,18 +643,52 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		// use frame_support::migration::*;
-		// --- darwinia ---
-		use dp_storage::PALLET_ETHEREUM_SCHEMA;
-		use dvm_ethereum::EthereumStorageSchema;
+	#[cfg(feature = "try-runtime")]
+	fn pre_upgrade() -> Result<(), &'static str> {
+		migration::try_runtime::pre_migrate()
+	}
 
+	fn on_runtime_upgrade() -> Weight {
+		migration::migration();
+
+		RuntimeBlockWeights::get().max_block
+	}
+}
+
+pub mod migration {
+	use dp_storage::PALLET_ETHEREUM_SCHEMA;
+	use dvm_ethereum::EthereumStorageSchema;
+
+	#[cfg(feature = "try-runtime")]
+	pub mod try_runtime {
+		use super::*;
+
+		pub fn pre_migrate() -> Result<(), &'static str> {
+			assert_eq!(
+				frame_support::storage::unhashed::get::<EthereumStorageSchema>(
+					&PALLET_ETHEREUM_SCHEMA,
+				),
+				None,
+			);
+
+			migration::migration();
+			assert_eq!(
+				frame_support::storage::unhashed::get::<EthereumStorageSchema>(
+					&PALLET_ETHEREUM_SCHEMA,
+				),
+				Some(EthereumStorageSchema::V1),
+			);
+			log::info!("Schema migration successfully!");
+
+			assert_eq!(1, 2);
+
+			Ok(())
+		}
+	}
+	pub fn migration() {
 		frame_support::storage::unhashed::put::<EthereumStorageSchema>(
 			&PALLET_ETHEREUM_SCHEMA,
 			&EthereumStorageSchema::V1,
 		);
-
-		RuntimeBlockWeights::get().max_block
 	}
 }
