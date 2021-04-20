@@ -24,7 +24,7 @@ darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-netwo
 darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 dc-db               = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
-dc-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+dc-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0", features = ["rpc_binary_search_estimate"]}
 dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 # darwinia primitives
