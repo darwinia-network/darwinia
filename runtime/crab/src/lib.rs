@@ -24,7 +24,7 @@
 
 /// Constant values used within the runtime.
 pub mod constants;
-pub use constants::{currency::*, fee::*, relay::*, time::*};
+pub use constants::{currency::*, fee::*, time::*};
 
 pub mod pallets;
 pub use pallets::*;
@@ -110,7 +110,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -229,10 +228,10 @@ frame_support::construct_runtime! {
 		CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config, Event<T>} = 35,
 
 		// Ethereum bridge.
-		EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,
-		EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
-		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
-		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
+		// EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,
+		// EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
+		// EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
+		// EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
@@ -267,7 +266,6 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -666,11 +664,119 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	fn on_runtime_upgrade() -> Weight {
 		// --- substrate ---
-		// use frame_support::migration::*;
-		use frame_support::storage::unhashed;
+		use frame_support::{
+			migration::*,
+			pallet_prelude::Blake2_128Concat,
+			storage::unhashed,
+			traits::{Currency, ExistenceRequirement},
+		};
+		use sp_runtime::{traits::AccountIdConversion, ModuleId};
 		// --- darwinia ---
+		use darwinia_support::traits::LockableCurrency;
 		use dp_storage::PALLET_ETHEREUM_SCHEMA;
 		use dvm_ethereum::EthereumStorageSchema;
+
+		fn transfer_all<Module>(from: &AccountId, to: &AccountId)
+		where
+			Module: Currency<AccountId>,
+		{
+			if Module::transfer(
+				from,
+				to,
+				Module::free_balance(from),
+				ExistenceRequirement::AllowDeath,
+			)
+			.is_ok()
+			{
+				log::info!("Migrate `ethbk`'s fee succeed");
+			} else {
+				log::info!("Migrate `ethbk`'s fee failed");
+			}
+		}
+
+		let ethereum_backing_module_account = ModuleId(*b"da/ethfe").into_account();
+		let multisig_account = array_bytes::hex2array_unchecked!(
+			// 5FGWcEpsd5TbDh14UGJEzRQENwrPXUt7e2ufzFzfcCEMesAQ
+			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8",
+			32
+		)
+		.into();
+
+		transfer_all::<Ring>(&ethereum_backing_module_account, &multisig_account);
+		transfer_all::<Kton>(&ethereum_backing_module_account, &multisig_account);
+
+		const BACKING: &[u8] = b"DarwiniaEthereumBacking";
+		remove_storage_prefix(BACKING, b"VerifiedProof", &[]);
+		remove_storage_prefix(BACKING, b"TokenRedeemAddress", &[]);
+		remove_storage_prefix(BACKING, b"DepositRedeemAddress", &[]);
+		remove_storage_prefix(BACKING, b"SetAuthoritiesAddress", &[]);
+		remove_storage_prefix(BACKING, b"RingTokenAddress", &[]);
+		remove_storage_prefix(BACKING, b"KtonTokenAddress", &[]);
+		remove_storage_prefix(BACKING, b"RedeemStatus", &[]);
+		remove_storage_prefix(BACKING, b"LockAssetEvents", &[]);
+
+		const RELAY: &[u8] = b"DarwiniaEthereumRelay";
+		remove_storage_prefix(RELAY, b"ConfirmedHeaderParcels", &[]);
+		remove_storage_prefix(RELAY, b"ConfirmedBlockNumbers", &[]);
+		remove_storage_prefix(RELAY, b"BestConfirmedBlockNumber", &[]);
+		remove_storage_prefix(RELAY, b"ConfirmedDepth", &[]);
+		remove_storage_prefix(RELAY, b"DagsMerkleRoots", &[]);
+		remove_storage_prefix(RELAY, b"ReceiptVerifyFee", &[]);
+		remove_storage_prefix(RELAY, b"PendingRelayHeaderParcels", &[]);
+
+		const RELAYER_GAME: &[u8] = b"Instance0DarwiniaRelayerGame";
+		const RELAYER_GAME_LOCK_IDENTIFIER: [u8; 8] = *b"da/rgame";
+		remove_storage_prefix(RELAYER_GAME, b"RelayHeaderParcelToResolve", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"Affirmations", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"BestConfirmedHeaderId", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"RoundCounts", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"AffirmTime", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"GamesToUpdate", &[]);
+		for (staker, _) in
+			<StorageKeyIterator<AccountId, Balance, Blake2_128Concat>>::new(RELAYER_GAME, b"Stakes")
+				.drain()
+		{
+			Ring::remove_lock(RELAYER_GAME_LOCK_IDENTIFIER, &staker);
+		}
+		remove_storage_prefix(RELAYER_GAME, b"Stakes", &[]);
+		remove_storage_prefix(RELAYER_GAME, b"GameSamplePoints", &[]);
+
+		type EthereumAddress = [u8; 20];
+		#[derive(Decode)]
+		struct RelayAuthority {
+			pub account_id: AccountId,
+			pub signer: EthereumAddress,
+			pub stake: Balance,
+			pub term: BlockNumber,
+		}
+		const RELAY_AUTHORITIES: &[u8] = b"Instance0DarwiniaRelayAuthorities";
+		const RELAY_AUTHORITIES_LOCK_IDENTIFIER: [u8; 8] = *b"ethrauth";
+		for RelayAuthority { account_id, .. } in
+			take_storage_value(RELAY_AUTHORITIES, b"Candidates", &[])
+		{
+			Ring::remove_lock(RELAY_AUTHORITIES_LOCK_IDENTIFIER, &account_id);
+		}
+		remove_storage_prefix(RELAY_AUTHORITIES, b"Candidates", &[]);
+		for RelayAuthority { account_id, .. } in
+			take_storage_value(RELAY_AUTHORITIES, b"Authorities", &[])
+		{
+			Ring::remove_lock(RELAY_AUTHORITIES_LOCK_IDENTIFIER, &account_id);
+		}
+		remove_storage_prefix(RELAY_AUTHORITIES, b"Authorities", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"NextAuthorities", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"NextTerm", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"AuthoritiesToSign", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"MMRRootsToSignKeys", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"MMRRootsToSign", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
+		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
 
 		unhashed::put::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA, &EthereumStorageSchema::V1);
 

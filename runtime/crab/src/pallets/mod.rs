@@ -91,18 +91,6 @@ pub use multisig::*;
 pub mod crab_issuing;
 pub use crab_issuing::*;
 
-pub mod ethereum_relay;
-pub use ethereum_relay::*;
-
-pub mod ethereum_backing;
-pub use ethereum_backing::*;
-
-pub mod relayer_game;
-pub use relayer_game::*;
-
-pub mod relay_authorities;
-pub use relay_authorities::*;
-
 pub mod evm;
 pub use evm::*;
 

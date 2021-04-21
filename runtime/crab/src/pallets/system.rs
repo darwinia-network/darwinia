@@ -8,13 +8,8 @@ use crate::{weights::frame_system::WeightInfo, *};
 
 pub struct BaseFilter;
 impl Filter<Call> for BaseFilter {
-	fn filter(call: &Call) -> bool {
-		match call {
-			Call::EthereumRelay(..)
-			| Call::EthereumBacking(..)
-			| Call::EthereumRelayAuthorities(..) => false,
-			_ => true,
-		}
+	fn filter(_: &Call) -> bool {
+		true
 	}
 }
 
