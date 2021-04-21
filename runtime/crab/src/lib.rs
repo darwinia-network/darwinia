@@ -645,50 +645,35 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		migration::try_runtime::pre_migrate()
+		// --- substrate ---
+		// use frame_support::migration::*;
+		use frame_support::storage::unhashed;
+		// --- darwinia ---
+		use dp_storage::PALLET_ETHEREUM_SCHEMA;
+		use dvm_ethereum::EthereumStorageSchema;
+
+		assert!(unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA).is_none());
+
+		Self::on_runtime_upgrade();
+
+		assert_eq!(
+			unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA),
+			Some(EthereumStorageSchema::V1),
+		);
+
+		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		migration::migration();
+		// --- substrate ---
+		// use frame_support::migration::*;
+		use frame_support::storage::unhashed;
+		// --- darwinia ---
+		use dp_storage::PALLET_ETHEREUM_SCHEMA;
+		use dvm_ethereum::EthereumStorageSchema;
+
+		unhashed::put::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA, &EthereumStorageSchema::V1);
 
 		RuntimeBlockWeights::get().max_block
-	}
-}
-
-pub mod migration {
-	use dp_storage::PALLET_ETHEREUM_SCHEMA;
-	use dvm_ethereum::EthereumStorageSchema;
-
-	#[cfg(feature = "try-runtime")]
-	pub mod try_runtime {
-		use super::*;
-
-		pub fn pre_migrate() -> Result<(), &'static str> {
-			assert_eq!(
-				frame_support::storage::unhashed::get::<EthereumStorageSchema>(
-					&PALLET_ETHEREUM_SCHEMA,
-				),
-				None,
-			);
-
-			migration::migration();
-			assert_eq!(
-				frame_support::storage::unhashed::get::<EthereumStorageSchema>(
-					&PALLET_ETHEREUM_SCHEMA,
-				),
-				Some(EthereumStorageSchema::V1),
-			);
-			log::info!("Schema migration successfully!");
-
-			assert_eq!(1, 2);
-
-			Ok(())
-		}
-	}
-	pub fn migration() {
-		frame_support::storage::unhashed::put::<EthereumStorageSchema>(
-			&PALLET_ETHEREUM_SCHEMA,
-			&EthereumStorageSchema::V1,
-		);
 	}
 }
