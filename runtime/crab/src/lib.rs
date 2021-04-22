@@ -660,7 +660,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		assert!(unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA).is_none());
 
 		Self::on_runtime_upgrade();
-		darwinia_staking::migrations::v6::pre_migrate::<Runtime>()
+		darwinia_staking::migrations::v6::pre_migrate::<Runtime>();
 
 		assert_eq!(
 			unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA),

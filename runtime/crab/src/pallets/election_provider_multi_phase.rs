@@ -1,5 +1,4 @@
 // --- substrate ---
-use frame_support::weights::{constants::BlockExecutionWeight, DispatchClass, Weight};
 use pallet_election_provider_multi_phase::{weights::SubstrateWeight, Config};
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia ---
@@ -23,7 +22,7 @@ frame_support::parameter_types! {
 	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
 
 	// miner configs
-	pub const NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
+	pub NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
 	pub const MinerMaxIterations: u32 = 10;
 }
 impl Config for Runtime {
