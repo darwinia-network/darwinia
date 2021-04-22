@@ -11,12 +11,6 @@ WORK_PATH=${BIN_PATH}/../
 
 BRANCH_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)
 
-## notice:
-## `"-e BUILD_OPTS=--manifest-path /build/Cargo.toml"` is hack,
-## currently the darwinia don't support `--features on-chain-release-build` to disable runtime logger,
-## because the substrate latest version has not yet been merged,
-## when after do that and add `on-chain-release-build` features, this line can be remove.
-
 ## 1. chevdor/srtool:nightly-2021-02-25 have a bug, --json and --app upside down, use other version need remove it.
 EXTRA_ARGS='--json'
 
@@ -24,7 +18,6 @@ docker run --rm -i \
   -e PACKAGE=darwinia-runtime \
   -e VERBOSE=1 \
   -e CARGO_TERM_COLOR=always \
-  -e BUILD_OPTS="--manifest-path /build/Cargo.toml" \
   -v ${WORK_PATH}:/build \
   chevdor/srtool:${RUST_TOOLCHAIN} build ${EXTRA_ARGS} \
   | tee ${WORK_PATH}/build-darwinia-wasm.log
@@ -34,7 +27,6 @@ docker run --rm -i \
   -e PACKAGE=crab-runtime \
   -e VERBOSE=1 \
   -e CARGO_TERM_COLOR=always \
-  -e BUILD_OPTS="--manifest-path /build/Cargo.toml" \
   -v ${WORK_PATH}:/build \
   chevdor/srtool:${RUST_TOOLCHAIN} build ${EXTRA_ARGS} \
   | tee ${WORK_PATH}/build-crab-wasm.log
