@@ -564,7 +564,7 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		pallet_staking::migrations::v6::pre_migrate::<Runtime>()
+		darwinia_staking::migrations::v6::pre_migrate::<Runtime>()
 	}
 
 	fn on_runtime_upgrade() -> Weight {
