@@ -1,6 +1,6 @@
 // --- substrate ---
 use pallet_election_provider_multi_phase::{weights::SubstrateWeight, Config};
-use sp_runtime::Perbill;
+use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia ---
 use crate::*;
 
@@ -33,7 +33,7 @@ impl Config for Runtime {
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type MinerMaxIterations = MinerMaxIterations;
 	type MinerMaxWeight = OffchainSolutionWeightLimit; // For now use the one from staking.;
-	type MinerTxPriority = OffchainSolutionWeightLimit;
+	type MinerTxPriority = NposSolutionPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
 	type CompactSolution = NposCompactSolution16;
