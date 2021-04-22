@@ -568,7 +568,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BABE_GENESIS_EPOCH_CONFIG);
+		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BabeEpochConfiguration {
+			allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
+			..BABE_GENESIS_EPOCH_CONFIG
+		});
 
 		RuntimeBlockWeights::get().max_block
 	}
