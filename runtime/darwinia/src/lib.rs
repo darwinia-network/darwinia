@@ -179,7 +179,7 @@ type Ring = Balances;
 /// The BABE epoch configuration at genesis.
 pub const BABE_GENESIS_EPOCH_CONFIG: BabeEpochConfiguration = BabeEpochConfiguration {
 	c: PRIMARY_PROBABILITY,
-	allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
+	allowed_slots: AllowedSlots::PrimaryAndSecondaryVRFSlots,
 };
 
 /// Runtime version (Darwinia).
@@ -438,10 +438,10 @@ impl_runtime_apis! {
 			sp_consensus_babe::BabeGenesisConfiguration {
 				slot_duration: Babe::slot_duration(),
 				epoch_length: EpochDuration::get(),
-				c: PRIMARY_PROBABILITY,
+				c: BABE_GENESIS_EPOCH_CONFIG.c,
 				genesis_authorities: Babe::authorities(),
 				randomness: Babe::randomness(),
-				allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+				allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
 			}
 		}
 
@@ -553,12 +553,17 @@ impl_runtime_apis! {
 	}
 }
 
+impl pallet_babe::migrations::BabePalletPrefix for Runtime {
+	fn pallet_prefix() -> &'static str {
+		"Babe"
+	}
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		// use frame_support::migration::*;
+		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BABE_GENESIS_EPOCH_CONFIG);
 
-		0
+		RuntimeBlockWeights::get().max_block
 	}
 }

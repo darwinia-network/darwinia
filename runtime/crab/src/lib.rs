@@ -132,7 +132,7 @@ type Ring = Balances;
 /// The BABE epoch configuration at genesis.
 pub const BABE_GENESIS_EPOCH_CONFIG: BabeEpochConfiguration = BabeEpochConfiguration {
 	c: PRIMARY_PROBABILITY,
-	allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
+	allowed_slots: AllowedSlots::PrimaryAndSecondaryVRFSlots,
 };
 
 /// Runtime version (Crab).
@@ -639,6 +639,12 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
+impl pallet_babe::migrations::BabePalletPrefix for Runtime {
+	fn pallet_prefix() -> &'static str {
+		"Babe"
+	}
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -779,6 +785,11 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
 
 		unhashed::put::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA, &EthereumStorageSchema::V1);
+
+		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BabeEpochConfiguration {
+			allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
+			..BABE_GENESIS_EPOCH_CONFIG
+		});
 
 		RuntimeBlockWeights::get().max_block
 	}
