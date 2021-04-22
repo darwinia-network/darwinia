@@ -3,8 +3,8 @@ use crate::{weights::darwinia_balances::WeightInfo, *};
 use darwinia_balances::Config;
 
 frame_support::parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MILLI;
-	pub const KtonExistentialDeposit: Balance = 10 * MICRO;
+	pub const RingExistentialDeposit: Balance = 0;
+	pub const KtonExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
 }
 impl Config<RingInstance> for Runtime {
