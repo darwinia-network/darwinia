@@ -547,6 +547,7 @@ impl_runtime_apis! {
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
+			log::info!("try-runtime::on_runtime_upgrade Darwinia.");
 			let weight = Executive::try_runtime_upgrade()?;
 			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
@@ -561,6 +562,11 @@ impl pallet_babe::migrations::BabePalletPrefix for Runtime {
 
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	#[cfg(feature = "try-runtime")]
+	fn pre_upgrade() -> Result<(), &'static str> {
+		pallet_staking::migrations::v6::pre_migrate::<Runtime>()
+	}
+
 	fn on_runtime_upgrade() -> Weight {
 		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BABE_GENESIS_EPOCH_CONFIG);
 

@@ -614,6 +614,7 @@ sp_api::impl_runtime_apis! {
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
+			log::info!("try-runtime::on_runtime_upgrade Crab.");
 			let weight = Executive::try_runtime_upgrade()?;
 			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
@@ -659,6 +660,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		assert!(unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA).is_none());
 
 		Self::on_runtime_upgrade();
+		darwinia_staking::migrations::v6::pre_migrate::<Runtime>()
 
 		assert_eq!(
 			unhashed::get::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA),

@@ -12,24 +12,18 @@ sp_npos_elections::generate_solution_type!(
 );
 
 frame_support::parameter_types! {
-	// phase durations. 1/4 of the last session for each.
-	pub const SignedPhase: u32 = BLOCKS_PER_SESSION / 4;
+	// no signed phase for now, just unsigned.
+	pub const SignedPhase: u32 = 0;
 	pub const UnsignedPhase: u32 = BLOCKS_PER_SESSION / 4;
 
-	// fallback: no need to do on-chain phragmen initially.
+	// fallback: run election on-chain.
 	pub const Fallback: pallet_election_provider_multi_phase::FallbackStrategy =
 		pallet_election_provider_multi_phase::FallbackStrategy::OnChain;
 
-	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(1u32, 10_000);
+	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
 
 	// miner configs
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	pub const MultiPhaseUnsignedPriority: TransactionPriority = StakingUnsignedPriority::get() - 1u64;
 	pub const MinerMaxIterations: u32 = 10;
-	pub MinerMaxWeight: Weight = RuntimeBlockWeights::get()
-		.get(DispatchClass::Normal)
-		.max_extrinsic.expect("Normal extrinsics have a weight limit configured; qed")
-		.saturating_sub(BlockExecutionWeight::get());
 }
 impl Config for Runtime {
 	type Event = Event;
@@ -38,7 +32,7 @@ impl Config for Runtime {
 	type UnsignedPhase = UnsignedPhase;
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type MinerMaxIterations = MinerMaxIterations;
-	type MinerMaxWeight = MinerMaxWeight;
+	type MinerMaxWeight = OffchainSolutionWeightLimit; // For now use the one from staking.;
 	type MinerTxPriority = MultiPhaseUnsignedPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
