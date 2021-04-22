@@ -778,14 +778,6 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		remove_storage_prefix(RELAY_AUTHORITIES, b"MMRRootsToSign", &[]);
 		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
 
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-		remove_storage_prefix(RELAY_AUTHORITIES, b"SubmitDuration", &[]);
-
 		unhashed::put::<EthereumStorageSchema>(&PALLET_ETHEREUM_SCHEMA, &EthereumStorageSchema::V1);
 
 		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BabeEpochConfiguration {
