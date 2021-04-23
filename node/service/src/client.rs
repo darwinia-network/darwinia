@@ -25,7 +25,7 @@ pub trait DarwiniaClient<Block, Backend, Runtime>:
 	+ Send
 	+ Sync
 	+ sc_client_api::BlockchainEvents<Block>
-	+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+	+ sp_api::CallApiAt<Block>
 	+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
 	+ sp_blockchain::HeaderBackend<Block>
 where
@@ -41,7 +41,7 @@ where
 	Client: Sized
 		+ Send
 		+ Sync
-		+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+		+ sp_api::CallApiAt<Block>
 		+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sc_client_api::BlockchainEvents<Block>,
@@ -56,7 +56,7 @@ pub trait CrabClient<Block, Backend, Runtime>:
 	+ Send
 	+ Sync
 	+ sc_client_api::BlockchainEvents<Block>
-	+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+	+ sp_api::CallApiAt<Block>
 	+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
 	+ sp_blockchain::HeaderBackend<Block>
 where
@@ -72,7 +72,7 @@ where
 	Client: Sized
 		+ Send
 		+ Sync
-		+ sp_api::CallApiAt<Block, Error = sp_blockchain::Error, StateBackend = Backend::State>
+		+ sp_api::CallApiAt<Block>
 		+ sp_api::ProvideRuntimeApi<Block, Api = Runtime::RuntimeApi>
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sc_client_api::BlockchainEvents<Block>,

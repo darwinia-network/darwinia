@@ -2,7 +2,8 @@
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- substrate ---
-use sp_runtime::{transaction_validity::TransactionPriority, ModuleId, Perbill};
+use sp_npos_elections::CompactSolution;
+use sp_runtime::ModuleId;
 use sp_staking::SessionIndex;
 // --- darwinia ---
 use crate::{weights::darwinia_staking::WeightInfo, *};
@@ -18,15 +19,12 @@ frame_support::parameter_types! {
 	pub const SlashDeferDuration: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 	// last 15 minutes of the last session will be for election.
-	pub const ElectionLookahead: BlockNumber = BLOCKS_PER_SESSION / 16;
-	pub const MaxIterations: u32 = 5;
-	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const Cap: Balance = CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
 impl Config for Runtime {
+	const MAX_NOMINATIONS: u32 = <NposCompactSolution16 as CompactSolution>::LIMIT as u32;
 	type Event = Event;
 	type ModuleId = StakingModuleId;
 	type UnixTime = Timestamp;
@@ -38,15 +36,8 @@ impl Config for Runtime {
 	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
 	type SessionInterface = Self;
 	type NextNewSession = Session;
-	type ElectionLookahead = ElectionLookahead;
-	type Call = Call;
-	type MaxIterations = MaxIterations;
-	type MinSolutionScoreBump = MinSolutionScoreBump;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-	type UnsignedPriority = StakingUnsignedPriority;
-	// The unsigned solution weight targeted by the OCW. We set it to the maximum possible value of
-	// a single extrinsic.
-	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
+	type ElectionProvider = ElectionProviderMultiPhase;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;

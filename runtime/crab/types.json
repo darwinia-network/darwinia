@@ -76,11 +76,6 @@
 		"kton_balance": "Compact<Balance>",
 		"power": "Power"
 	},
-	"ElectionResultT": {
-		"elected_stashes": "Vec<AccountId>",
-		"exposures": "Vec<(AccountId, ExposureT)>",
-		"compute": "ElectionCompute"
-	},
 	"RKT": {
 		"r": "Balance",
 		"k": "Balance"

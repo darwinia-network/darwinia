@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.9.6"
+version     = "0.10.0"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
@@ -24,24 +24,26 @@ serde                = { version = "1.0.125", optional = true }
 structopt            = { version = "0.3.21" }
 tokio                = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-0.9.6" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
-sc-cli        = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-executor   = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-network    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-service    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
-sc-tracing    = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+sc-client-api   = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+sc-executor     = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+sc-network      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+sc-service      = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+sc-tracing      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 # substrate primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 # this crate is used only to enable `trie-memory-tracker` feature
 # see https://github.com/paritytech/substrate/pull/6745
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-0.9.6" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
+try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.10.0" }
 
 [features]
 default = [
@@ -67,3 +69,8 @@ wasmtime            = [
 ]
 
 dev = ["darwinia-service/dev"]
+
+try-runtime = [
+	"darwinia-service/try-runtime",
+	"try-runtime-cli",
+]

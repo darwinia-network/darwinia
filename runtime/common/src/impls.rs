@@ -55,12 +55,12 @@ where
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
 		let numeric_amount = amount.peek();
-		let author = <pallet_authorship::Module<R>>::author();
-		<darwinia_balances::Module<R, RingInstance>>::resolve_creating(
-			&<pallet_authorship::Module<R>>::author(),
+		let author = <pallet_authorship::Pallet<R>>::author();
+		<darwinia_balances::Pallet<R, RingInstance>>::resolve_creating(
+			&<pallet_authorship::Pallet<R>>::author(),
 			amount,
 		);
-		<frame_system::Module<R>>::deposit_event(
+		<frame_system::Pallet<R>>::deposit_event(
 			<darwinia_balances::RawEvent<_, _, RingInstance>>::Deposit(author, numeric_amount),
 		);
 	}
@@ -72,7 +72,7 @@ where
 	R: darwinia_balances::Config<RingInstance>
 		+ darwinia_treasury::Config
 		+ pallet_authorship::Config,
-	darwinia_treasury::Module<R>: OnUnbalanced<NegativeImbalance<R>>,
+	darwinia_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
 	<R as frame_system::Config>::AccountId: From<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::AccountId: Into<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<
@@ -91,7 +91,7 @@ where
 				// for tips, if any, 100% to author
 				tips.merge_into(&mut split.1);
 			}
-			use darwinia_treasury::Module as Treasury;
+			use darwinia_treasury::Pallet as Treasury;
 			<Treasury<R> as OnUnbalanced<_>>::on_unbalanced(split.0);
 			<ToAuthor<R> as OnUnbalanced<_>>::on_unbalanced(split.1);
 		}

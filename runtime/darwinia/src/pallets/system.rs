@@ -19,8 +19,8 @@ frame_support::parameter_types! {
 }
 impl Config for Runtime {
 	type BaseCallFilter = BaseFilter;
-	type BlockWeights = BlockWeights;
-	type BlockLength = BlockLength;
+	type BlockWeights = RuntimeBlockWeights;
+	type BlockLength = RuntimeBlockLength;
 	type Origin = Origin;
 	type Call = Call;
 	type Index = Nonce;

@@ -19,6 +19,9 @@ pub use transaction_payment::*;
 pub mod authorship;
 pub use authorship::*;
 
+pub mod election_provider_multi_phase;
+pub use election_provider_multi_phase::*;
+
 pub mod staking;
 pub use staking::*;
 
@@ -88,14 +91,8 @@ pub use multisig::*;
 pub mod crab_issuing;
 pub use crab_issuing::*;
 
-pub mod ethereum_relay;
-pub use ethereum_relay::*;
+pub mod evm;
+pub use evm::*;
 
-pub mod ethereum_backing;
-pub use ethereum_backing::*;
-
-pub mod relayer_game;
-pub use relayer_game::*;
-
-pub mod relay_authorities;
-pub use relay_authorities::*;
+pub mod dvm;
+pub use dvm::*;

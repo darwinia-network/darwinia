@@ -41,7 +41,7 @@ use frame_support::{
 	traits::Currency,
 	weights::{constants::WEIGHT_PER_SECOND, DispatchClass, Weight},
 };
-use frame_system::limits;
+use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
 // --- darwinia ---
@@ -50,7 +50,7 @@ use darwinia_primitives::BlockNumber;
 pub type RingInstance = darwinia_balances::Instance0;
 pub type KtonInstance = darwinia_balances::Instance1;
 
-pub type NegativeImbalance<T> = <darwinia_balances::Module<T, RingInstance> as Currency<
+pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
 
@@ -76,10 +76,10 @@ parameter_types! {
 	/// See `multiplier_can_grow_from_zero`.
 	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
 	/// Maximum length of block. Up to 5MB.
-	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	pub RuntimeBlockLength: BlockLength =
+		BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Block weights base values and limits.
-	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
+	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
 		.base_block(BlockExecutionWeight::get())
 		.for_class(DispatchClass::all(), |weights| {
 			weights.base_extrinsic = ExtrinsicBaseWeight::get();
@@ -89,29 +89,29 @@ parameter_types! {
 		})
 		.for_class(DispatchClass::Operational, |weights| {
 			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
-			// Operational transactions have an extra reserved space, so that they
+			// Operational transactions have some extra reserved space, so that they
 			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
 			weights.reserved = Some(
-				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT,
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
 			);
 		})
 		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
 		.build_or_panic();
 }
 
-/// Parameterized slow adjusting fee updated based on
-/// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
-pub type SlowAdjustingFeeUpdate<R> =
-	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
-
 parameter_types! {
 	/// A limit for off-chain phragmen unsigned solution submission.
 	///
 	/// We want to keep it as high as possible, but can't risk having it reject,
 	/// so we always subtract the base block execution weight.
-	pub OffchainSolutionWeightLimit: Weight = BlockWeights::get()
+	pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
 		.get(DispatchClass::Normal)
 		.max_extrinsic
 		.expect("Normal extrinsics have weight limit configured by default; qed")
 		.saturating_sub(BlockExecutionWeight::get());
 }
+
+/// Parameterized slow adjusting fee updated based on
+/// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
+pub type SlowAdjustingFeeUpdate<R> =
+	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;

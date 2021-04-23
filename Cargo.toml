@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.9.6"
+version     = "0.10.0"
 
 [[bin]]
 name = "darwinia"
@@ -18,17 +18,20 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 # crates
 futures         = { version = "0.3.13" }
-parity-util-mem = { version = "0.8.0", default-features = false, features = ["jemalloc-global"] }
+parity-util-mem = { version = "0.9.0", default-features = false, features = ["jemalloc-global"] }
 # darwinia
 darwinia-cli     = { path = "cli" }
 darwinia-service = { path = "node/service" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
-dev     = [
+
+dev = [
 	"darwinia-service/dev",
 	"darwinia-cli/dev",
 ]
+
+try-runtime = ["darwinia-cli/try-runtime"]
 
 [workspace]
 members = [
@@ -44,6 +47,3 @@ members = [
 [profile.release]
 # Darwinia runtime requires unwinding.
 panic = "unwind"
-
-[patch."https://github.com/darwinia-network/rust-ethash.git"]
-ethash = { git = "https://github.com/darwinia-network/ethash.git", tag = "v1.0.0" }

@@ -8,7 +8,7 @@ use crate::*;
 
 frame_support::parameter_types! {
 	pub OffencesWeightSoftLimit: Weight = Perbill::from_percent(60)
-		* BlockWeights::get().max_block;
+		* RuntimeBlockWeights::get().max_block;
 }
 impl Config for Runtime {
 	type Event = Event;

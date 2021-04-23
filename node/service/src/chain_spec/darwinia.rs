@@ -238,14 +238,17 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		.or_insert(400_000_000 * COIN);
 
 	GenesisConfig {
-		frame_system: Some(SystemConfig {
+		frame_system: SystemConfig {
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
-		}),
-		pallet_babe: Some(Default::default()),
-		darwinia_balances_Instance0: Some(BalancesConfig { balances: rings.into_iter().collect() }),
-		darwinia_balances_Instance1: Some(KtonConfig { balances: ktons.into_iter().collect() }),
-		darwinia_staking: Some(StakingConfig {
+		},
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
+		darwinia_balances_Instance0: BalancesConfig { balances: rings.into_iter().collect() },
+		darwinia_balances_Instance1: KtonConfig { balances: ktons.into_iter().collect() },
+		darwinia_staking: StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
 			stakers: vec![
@@ -266,8 +269,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
-		}),
-		pallet_session: Some(SessionConfig {
+		},
+		pallet_session: SessionConfig {
 			keys: vec![
 				(
 					genesis_validator_1.0.clone(),
@@ -280,24 +283,24 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 					genesis_validator_2.2
 				)
 			]
-		}),
-		pallet_grandpa: Some(Default::default()),
-		pallet_im_online: Some(Default::default()),
-		pallet_authority_discovery: Some(Default::default()),
-		pallet_collective_Instance0: Some(Default::default()),
-		pallet_collective_Instance1: Some(Default::default()),
-		darwinia_elections_phragmen: Some(Default::default()),
-		pallet_membership_Instance0: Some(Default::default()),
-		darwinia_vesting: Some(VestingConfig {
+		},
+		pallet_grandpa: Default::default(),
+		pallet_im_online: Default::default(),
+		pallet_authority_discovery: Default::default(),
+		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance1: Default::default(),
+		darwinia_elections_phragmen: Default::default(),
+		pallet_membership_Instance0: Default::default(),
+		darwinia_vesting: VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
 				(team_vesting, 365 * DAYS, 365 * DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
 				(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * DAYS, 0)
 			]
-		}),
-		pallet_sudo: Some(SudoConfig { key: root }),
-		darwinia_ethereum_backing: Some(EthereumBackingConfig {
+		},
+		pallet_sudo: SudoConfig { key: root },
+		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
 			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
 			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
@@ -309,8 +312,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
 			kton_locked: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 			..Default::default()
-		}),
-		darwinia_ethereum_relay: Some(EthereumRelayConfig {
+		},
+		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_info: (
 				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
@@ -320,16 +323,16 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
-		}),
-		darwinia_tron_backing: Some(TronBackingConfig {
+		},
+		darwinia_tron_backing: TronBackingConfig {
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
 			// New York :   9/24/2020, 9:42:52 PM
 			backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 			backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
-		}),
-		darwinia_democracy: Some(Default::default()),
+		},
+		darwinia_democracy: Default::default(),
 	}
 }
 
@@ -377,26 +380,29 @@ pub fn darwinia_testnet_genesis(
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
 
 	GenesisConfig {
-		frame_system: Some(SystemConfig {
+		frame_system: SystemConfig {
 			code: wasm_binary_unwrap().to_vec(),
 			changes_trie_config: Default::default(),
-		}),
-		pallet_babe: Some(Default::default()),
-		darwinia_balances_Instance0: Some(BalancesConfig {
+		},
+		pallet_babe: BabeConfig {
+			authorities: vec![],
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+		},
+		darwinia_balances_Instance0: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 56))
 				.collect(),
-		}),
-		darwinia_balances_Instance1: Some(KtonConfig {
+		},
+		darwinia_balances_Instance1: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 56))
 				.collect(),
-		}),
-		darwinia_staking: Some(StakingConfig {
+		},
+		darwinia_staking: StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
 			stakers: initial_authorities
@@ -409,24 +415,24 @@ pub fn darwinia_testnet_genesis(
 			slash_reward_fraction: Perbill::from_percent(10),
 			payout_fraction: Perbill::from_percent(50),
 			..Default::default()
-		}),
-		pallet_session: Some(SessionConfig {
+		},
+		pallet_session: SessionConfig {
 			keys: initial_authorities
 				.iter()
 				.cloned()
 				.map(|x| (x.0.clone(), x.0, darwinia_session_keys(x.2, x.3, x.4, x.5)))
 				.collect(),
-		}),
-		pallet_grandpa: Some(Default::default()),
-		pallet_im_online: Some(Default::default()),
-		pallet_authority_discovery: Some(Default::default()),
-		pallet_collective_Instance0: Some(Default::default()),
-		pallet_collective_Instance1: Some(Default::default()),
-		darwinia_elections_phragmen: Some(Default::default()),
-		pallet_membership_Instance0: Some(Default::default()),
-		darwinia_vesting: Some(Default::default()),
-		pallet_sudo: Some(SudoConfig { key: root }),
-		darwinia_ethereum_backing: Some(EthereumBackingConfig {
+		},
+		pallet_grandpa: Default::default(),
+		pallet_im_online: Default::default(),
+		pallet_authority_discovery: Default::default(),
+		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance1: Default::default(),
+		darwinia_elections_phragmen: Default::default(),
+		pallet_membership_Instance0: Default::default(),
+		darwinia_vesting: Default::default(),
+		pallet_sudo: SudoConfig { key: root },
+		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
 			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
 			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
@@ -434,8 +440,8 @@ pub fn darwinia_testnet_genesis(
 			ring_locked: 1 << 56,
 			kton_locked: 1 << 56,
 			..Default::default()
-		}),
-		darwinia_ethereum_relay: Some(EthereumRelayConfig {
+		},
+		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_info: (
 				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
 				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
@@ -445,12 +451,12 @@ pub fn darwinia_testnet_genesis(
 				"DAG_MERKLE_ROOTS_PATH",
 			),
 			..Default::default()
-		}),
-		darwinia_tron_backing: Some(TronBackingConfig {
+		},
+		darwinia_tron_backing: TronBackingConfig {
 			backed_ring: 1 << 56,
 			backed_kton: 1 << 56,
-		}),
-		darwinia_democracy: Some(Default::default()),
+		},
+		darwinia_democracy: Default::default(),
 	}
 }
 
