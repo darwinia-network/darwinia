@@ -1,3 +1,66 @@
+## [0.10.0] - 2021-04-24
+
+### Darwinia 0.10.0
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |          24          |
+|   Crab   |          43          |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+| :-----------: | :-----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
+|  RaspberryPi  | aarch64 |       2.23       |       3.8       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.10.0
+```
+
+### Change Log
+
+#### Update(s)
+- Substrate Updates [C 513](https://github.com/darwinia-network/darwinia-common/pull/513), [C 566](https://github.com/darwinia-network/darwinia-common/pull/566), [C 586](https://github.com/darwinia-network/darwinia-common/pull/586)
+- Only For Darwinia Developers [T 5](https://github.com/darwinia-network/substrate-update-tracking/issues/5), [T 6](https://github.com/darwinia-network/substrate-update-tracking/issues/6), [T 7](https://github.com/darwinia-network/substrate-update-tracking/issues/7), [T 11](https://github.com/darwinia-network/substrate-update-tracking/issues/11)
+#### Fix(es)
+- None
+#### Migration(s)
+- https://github.com/paritytech/substrate/pull/8072 https://github.com/darwinia-network/darwinia/pull/641/commits/ee47efffe3e3086b7694034e888bfb90e54bdeeb
+- https://github.com/paritytech/substrate/pull/8113 included in pallet
+- https://github.com/paritytech/substrate/pull/8221 included in pellet
+
+---
+
+#### Darwinia Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+---
+
+#### Crab Custom
+##### Runtime
+- Remove Ropsten Bridge
+- Set `RingExistentialDeposit` & `KtonExistentialDeposit` to Zero
+- Add DVM
+##### Migration(s)
+- Move `ethfe` account's balances to multisig account #633
+- Remove Ropsten Bridge #633
+
+
 ## [0.9.6] - 2021-04-12
 
 ### Darwinia 0.9.6
