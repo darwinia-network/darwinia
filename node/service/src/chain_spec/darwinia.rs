@@ -246,8 +246,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			authorities: vec![],
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
 		},
-		darwinia_balances_Instance0: BalancesConfig { balances: rings.into_iter().collect() },
-		darwinia_balances_Instance1: KtonConfig { balances: ktons.into_iter().collect() },
+		darwinia_balances_Instance1: BalancesConfig { balances: rings.into_iter().collect() },
+		darwinia_balances_Instance2: KtonConfig { balances: ktons.into_iter().collect() },
 		darwinia_staking: StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -388,14 +388,14 @@ pub fn darwinia_testnet_genesis(
 			authorities: vec![],
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
 		},
-		darwinia_balances_Instance0: BalancesConfig {
+		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 56))
 				.collect(),
 		},
-		darwinia_balances_Instance1: KtonConfig {
+		darwinia_balances_Instance2: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()

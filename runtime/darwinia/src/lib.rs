@@ -220,8 +220,8 @@ frame_support::construct_runtime! {
 		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 2,
 
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
-		Balances: darwinia_balances::<Instance0>::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
-		Kton: darwinia_balances::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+		Balances: darwinia_balances::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
+		Kton: darwinia_balances::<Instance2>::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
 
 		// Consensus support.
@@ -554,24 +554,22 @@ impl_runtime_apis! {
 	}
 }
 
-impl pallet_babe::migrations::BabePalletPrefix for Runtime {
-	fn pallet_prefix() -> &'static str {
-		"Babe"
-	}
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		darwinia_staking::migrations::v6::pre_migrate::<Runtime>()
+		// --- substrate ---
+		// use frame_support::migration;
+
+		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BabeEpochConfiguration {
-			allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
-			..BABE_GENESIS_EPOCH_CONFIG
-		});
+		// --- substrate ---
+		use frame_support::migration;
+
+		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
+		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
 
 		RuntimeBlockWeights::get().max_block
 	}
