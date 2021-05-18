@@ -2510,9 +2510,9 @@ dependencies = [
 
 [[package]]
 name = "evm-core"
-version = "0.25.0"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b4eea3882c798813a6f92e8855ec1fc3f5ababd8b274cb81d4bedee701b478e"
+checksum = "e1e6640dd44ba663316c7121e0c6fee38000d8249127fd9221bfdc331f75cbfe"
 dependencies = [
  "funty",
  "parity-scale-codec",
