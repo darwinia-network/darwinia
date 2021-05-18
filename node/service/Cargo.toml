@@ -11,10 +11,10 @@ version     = "0.10.0"
 [dependencies]
 # crates
 array-bytes = { version = "1.1.0" }
-codec       = { package = "parity-scale-codec", version = "2.0.1", features = ["derive"] }
-futures     = { version = "0.3.13" }
+codec       = { package = "parity-scale-codec", version = "2.1.1", features = ["derive"] }
+futures     = { version = "0.3.15" }
 log         = { version = "0.4.14" }
-serde       = { version = "1.0.125", features = ["derive"] }
+serde       = { version = "1.0.126", features = ["derive"] }
 serde_json  = { version = "1.0.64" }
 # darwinia frame
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.0" }

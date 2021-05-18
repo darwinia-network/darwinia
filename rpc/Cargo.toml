@@ -10,7 +10,7 @@ version     = "0.10.0"
 
 [dependencies]
 # crates
-code           = { package = "parity-scale-codec", version = "2.0.1", default-features = false }
+code           = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
 jsonrpc-core   = { version = "15.1.0" }
 jsonrpc-pubsub = { version = "15.1.0" }
 # darwinia frame

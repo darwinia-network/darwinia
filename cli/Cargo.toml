@@ -20,7 +20,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates
 log                  = { version = "0.4.14" }
-serde                = { version = "1.0.125", optional = true }
+serde                = { version = "1.0.126", optional = true }
 structopt            = { version = "0.3.21" }
 tokio                = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
 # darwinia client
