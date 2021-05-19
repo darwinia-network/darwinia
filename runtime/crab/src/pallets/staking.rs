@@ -24,7 +24,7 @@ frame_support::parameter_types! {
 	pub const TotalPower: Power = TOTAL_POWER;
 }
 impl Config for Runtime {
-	const MAX_NOMINATIONS: u32 = <NposCompactSolution16 as CompactSolution>::LIMIT as u32;
+	const MAX_NOMINATIONS: u32 = <NposCompactSolution24 as CompactSolution>::LIMIT as u32;
 	type Event = Event;
 	type PalletId = StakingPalletId;
 	type UnixTime = Timestamp;
