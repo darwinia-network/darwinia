@@ -1,7 +1,7 @@
 // --- substrate ---
 use pallet_membership::{Config, Instance1};
 // --- darwinia ---
-use crate::*;
+use crate::{weights::pallet_membership::WeightInfo, *};
 
 impl Config<Instance1> for Runtime {
 	type Event = Event;
@@ -12,4 +12,6 @@ impl Config<Instance1> for Runtime {
 	type PrimeOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
+	type MaxMembers = TechnicalMaxMembers;
+	type WeightInfo = WeightInfo<Runtime>;
 }
