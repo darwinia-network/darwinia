@@ -1,4 +1,4 @@
-pub use darwinia_relayer_game::Instance0 as EthereumRelayerGameInstance;
+pub use darwinia_relayer_game::Instance1 as EthereumRelayerGameInstance;
 
 // --- substrate ---
 use frame_support::traits::LockIdentifier;

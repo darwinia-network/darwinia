@@ -276,8 +276,8 @@ frame_support::construct_runtime! {
 		// Ethereum bridge.
 		EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
 		EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
-		EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 33,
-		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 36,
+		EthereumRelayerGame: darwinia_relayer_game::<Instance1>::{Pallet, Storage} = 33,
+		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance1>::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
 		TronBacking: darwinia_tron_backing::{Pallet, Storage, Config<T>} = 34,
@@ -574,6 +574,16 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
 
 		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
+
+		migration::move_pallet(
+			b"Instance0DarwiniaRelayerGame",
+			b"Instance1DarwiniaRelayerGame",
+		);
+
+		migration::move_pallet(
+			b"Instance0DarwiniaRelayAuthorities",
+			b"Instance1DarwiniaRelayAuthorities",
+		);
 
 		RuntimeBlockWeights::get().max_block
 	}
