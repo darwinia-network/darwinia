@@ -290,7 +290,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_vesting: VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
@@ -429,7 +429,7 @@ pub fn darwinia_testnet_genesis(
 		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_vesting: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {

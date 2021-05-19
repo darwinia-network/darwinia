@@ -1,6 +1,6 @@
 // --- substrate ---
 use frame_support::traits::ChangeMembers;
-use pallet_membership::{Config, Instance0};
+use pallet_membership::{Config, Instance1};
 // --- darwinia ---
 use crate::*;
 

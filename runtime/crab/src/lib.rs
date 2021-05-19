@@ -194,7 +194,7 @@ frame_support::construct_runtime! {
 		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
 		TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		ElectionsPhragmen: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
-		TechnicalMembership: pallet_membership::<Instance0>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
+		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
 		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 32,
 		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 36,
 
@@ -658,6 +658,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
 
 		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
+
+		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
 
 		RuntimeBlockWeights::get().max_block
 	}
