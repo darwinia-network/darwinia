@@ -1,11 +1,12 @@
 // --- substrate ---
-use sp_runtime::{ModuleId, Percent, Permill};
+use frame_support::PalletId;
+use sp_runtime::{Percent, Permill};
 // --- darwinia ---
 use crate::{weights::darwinia_treasury::WeightInfo, *};
 use darwinia_treasury::Config;
 
 frame_support::parameter_types! {
-	pub const TreasuryModuleId: ModuleId = ModuleId(*b"da/trsry");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const RingProposalBondMinimum: Balance = 100 * MILLI;
 	pub const KtonProposalBondMinimum: Balance = 100 * MILLI;
@@ -24,7 +25,7 @@ frame_support::parameter_types! {
 	pub const MaxApprovals: u32 = 100;
 }
 impl Config for Runtime {
-	type ModuleId = TreasuryModuleId;
+	type PalletId = TreasuryPalletId;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
 	type ApproveOrigin = ApproveOrigin;

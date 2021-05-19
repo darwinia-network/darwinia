@@ -106,6 +106,7 @@ use codec::Encode;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
 	weights::Weight,
+	PalletId,
 };
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -124,7 +125,7 @@ use sp_runtime::{
 		NumberFor, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, ModuleId, MultiAddress,
+	ApplyExtrinsicResult, MultiAddress,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]

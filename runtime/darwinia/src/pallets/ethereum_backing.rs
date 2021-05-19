@@ -1,12 +1,12 @@
 // --- substrate ---
-use sp_runtime::ModuleId;
+use frame_support::PalletId;
 // --- darwinia ---
 use crate::*;
 use darwinia_ethereum_backing::Config;
 
 frame_support::parameter_types! {
-	pub const EthereumBackingModuleId: ModuleId = ModuleId(*b"da/ethbk");
-	pub const EthereumBackingFeeModuleId: ModuleId = ModuleId(*b"da/ethfe");
+	pub const EthereumBackingPalletId: PalletId = PalletId(*b"da/ethbk");
+	pub const EthereumBackingFeePalletId: PalletId = PalletId(*b"da/ethfe");
 	pub const RingLockLimit: Balance = 10_000_000 * COIN;
 	pub const KtonLockLimit: Balance = 1_000 * COIN;
 	// https://github.com/darwinia-network/darwinia-common/pull/377#issuecomment-730369387
@@ -14,8 +14,8 @@ frame_support::parameter_types! {
 	pub const SyncReward: Balance = 1_000 * COIN;
 }
 impl Config for Runtime {
-	type ModuleId = EthereumBackingModuleId;
-	type FeeModuleId = EthereumBackingFeeModuleId;
+	type PalletId = EthereumBackingPalletId;
+	type FeePalletId = EthereumBackingFeePalletId;
 	type Event = Event;
 	type RedeemAccountId = AccountId;
 	type EthereumRelay = EthereumRelay;

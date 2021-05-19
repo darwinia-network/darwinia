@@ -18,7 +18,7 @@ frame_support::parameter_types! {
 }
 impl Config for Runtime {
 	type Event = Event;
-	type ModuleId = PhragmenElectionPalletId;
+	type PalletId = PhragmenElectionPalletId;
 	type Currency = Ring;
 	type ChangeMembers = Council;
 	type InitializeMembers = Council;

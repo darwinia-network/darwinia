@@ -2,15 +2,15 @@
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- substrate ---
+use frame_support::PalletId;
 use sp_npos_elections::CompactSolution;
-use sp_runtime::ModuleId;
 use sp_staking::SessionIndex;
 // --- darwinia ---
 use crate::{weights::darwinia_staking::WeightInfo, *};
 use darwinia_staking::{Config, EraIndex};
 
 frame_support::parameter_types! {
-	pub const StakingModuleId: ModuleId = ModuleId(*b"da/staki");
+	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
@@ -26,7 +26,7 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	const MAX_NOMINATIONS: u32 = <NposCompactSolution16 as CompactSolution>::LIMIT as u32;
 	type Event = Event;
-	type ModuleId = StakingModuleId;
+	type PalletId = StakingPalletId;
 	type UnixTime = Timestamp;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDurationInEra = BondingDurationInEra;
