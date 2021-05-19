@@ -1,13 +1,17 @@
 // --- substrate ---
-use pallet_election_provider_multi_phase::{weights::SubstrateWeight, Config};
-use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
+use pallet_election_provider_multi_phase::Config;
+use sp_runtime::{transaction_validity::TransactionPriority, PerU16, Perbill};
 // --- darwinia ---
 use crate::*;
+use weights::pallet_election_provider_multi_phase::WeightInfo;
 
 sp_npos_elections::generate_solution_type!(
 	#[compact]
-	pub struct NposCompactSolution16::<u32, u16, sp_runtime::PerU16>(16)
-	// -------------------- ^^ <NominatorIndex, ValidatorIndex, Accuracy>
+	pub struct NposCompactSolution16::<
+		VoterIndex = u32,
+		TargetIndex = u16,
+		Accuracy = PerU16,
+	>(16)
 );
 
 frame_support::parameter_types! {
@@ -32,12 +36,13 @@ impl Config for Runtime {
 	type UnsignedPhase = UnsignedPhase;
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type MinerMaxIterations = MinerMaxIterations;
-	type MinerMaxWeight = OffchainSolutionWeightLimit; // For now use the one from staking.;
+	type MinerMaxWeight = OffchainSolutionWeightLimit;
+	type MinerMaxLength = OffchainSolutionLengthLimit;
 	type MinerTxPriority = NposSolutionPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
-	type CompactSolution = NposCompactSolution16;
+	type CompactSolution = NposCompactSolution24;
 	type Fallback = Fallback;
-	type WeightInfo = SubstrateWeight<Runtime>;
+	type WeightInfo = WeightInfo<Runtime>;
 	type BenchmarkingConfig = ();
 }

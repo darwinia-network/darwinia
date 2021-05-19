@@ -6,8 +6,11 @@ use crate::*;
 
 sp_npos_elections::generate_solution_type!(
 	#[compact]
-	pub struct NposCompactSolution16::<u32, u16, sp_runtime::PerU16>(16)
-	// -------------------- ^^ <NominatorIndex, ValidatorIndex, Accuracy>
+	pub struct NposCompactSolution24::<
+		VoterIndex = u32,
+		TargetIndex = u16,
+		Accuracy = sp_runtime::PerU16,
+	>(24)
 );
 
 frame_support::parameter_types! {
@@ -32,7 +35,8 @@ impl Config for Runtime {
 	type UnsignedPhase = UnsignedPhase;
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type MinerMaxIterations = MinerMaxIterations;
-	type MinerMaxWeight = OffchainSolutionWeightLimit; // For now use the one from staking.;
+	type MinerMaxWeight = OffchainSolutionWeightLimit;
+	type MinerMaxLength = OffchainSolutionLengthLimit;
 	type MinerTxPriority = NposSolutionPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
