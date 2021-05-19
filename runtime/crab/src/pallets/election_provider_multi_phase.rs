@@ -1,8 +1,8 @@
 // --- substrate ---
-use pallet_election_provider_multi_phase::{weights::SubstrateWeight, Config};
+use pallet_election_provider_multi_phase::Config;
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia ---
-use crate::*;
+use crate::{weights::pallet_election_provider_multi_phase::WeightInfo, *};
 
 sp_npos_elections::generate_solution_type!(
 	#[compact]
@@ -42,6 +42,6 @@ impl Config for Runtime {
 	type OnChainAccuracy = Perbill;
 	type CompactSolution = NposCompactSolution16;
 	type Fallback = Fallback;
-	type WeightInfo = SubstrateWeight<Runtime>;
+	type WeightInfo = WeightInfo<Runtime>;
 	type BenchmarkingConfig = ();
 }
