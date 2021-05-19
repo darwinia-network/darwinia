@@ -16,8 +16,10 @@ impl<T: frame_system::Config> darwinia_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn approve_proposal() -> Weight {
-		(11_351_000 as Weight)
+	fn approve_proposal(p: u32) -> Weight {
+		(11_712_000 as Weight)
+			// Standard Error: 0
+			.saturating_add((35_000 as Weight).saturating_mul(p as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
