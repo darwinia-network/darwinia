@@ -226,7 +226,7 @@ frame_support::construct_runtime! {
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Crab bridge.
-		CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config, Event<T>} = 35,
+		CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config} = 35,
 
 		// Ethereum bridge.
 		// EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,

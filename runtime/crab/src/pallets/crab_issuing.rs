@@ -8,7 +8,6 @@ frame_support::parameter_types! {
 	pub const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 }
 impl Config for Runtime {
-	type Event = Event;
 	type PalletId = CrabIssuingPalletId;
 	type RingCurrency = Ring;
 	type WeightInfo = ();
