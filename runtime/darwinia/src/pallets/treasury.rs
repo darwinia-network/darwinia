@@ -28,7 +28,7 @@ impl Config for Runtime {
 	type KtonCurrency = Kton;
 	type ApproveOrigin = ApproveOrigin;
 	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type Tippers = ElectionsPhragmen;
+	type Tippers = PhragmenElection;
 	type TipCountdown = TipCountdown;
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
