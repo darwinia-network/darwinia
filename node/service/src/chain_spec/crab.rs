@@ -135,7 +135,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 		},
 		pallet_indices: Default::default(),
-		darwinia_balances_Instance2: BalancesConfig {
+		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -150,7 +150,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 				)
 				.collect(),
 		},
-		darwinia_balances_Instance1: KtonConfig {
+		darwinia_balances_Instance2: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
