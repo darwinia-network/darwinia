@@ -5,7 +5,7 @@ use crate::{weights::darwinia_elections_phragmen::WeightInfo, *};
 use darwinia_elections_phragmen::Config;
 
 frame_support::parameter_types! {
-	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"phrelect";
+	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
 	pub const CandidacyBond: Balance = 100 * MILLI;
 	// 1 storage item created, key size is 32 bytes, value size is 16+16.
 	pub const VotingBondBase: Balance = deposit(1, 64);
@@ -18,7 +18,7 @@ frame_support::parameter_types! {
 }
 impl Config for Runtime {
 	type Event = Event;
-	type ModuleId = ElectionsPhragmenModuleId;
+	type ModuleId = PhragmenElectionPalletId;
 	type Currency = Ring;
 	type ChangeMembers = Council;
 	type InitializeMembers = Council;
