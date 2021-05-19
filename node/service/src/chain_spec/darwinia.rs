@@ -309,8 +309,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
 			// New York :   9/24/2020, 9:42:52 PM
-			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
-			kton_locked: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
+			backed_ring: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
+			backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {
@@ -437,8 +437,8 @@ pub fn darwinia_testnet_genesis(
 			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
 			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
 			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
-			ring_locked: 1 << 56,
-			kton_locked: 1 << 56,
+			backed_ring: 1 << 56,
+			backed_kton: 1 << 56,
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {
