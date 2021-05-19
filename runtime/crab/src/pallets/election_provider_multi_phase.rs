@@ -40,7 +40,7 @@ impl Config for Runtime {
 	type MinerTxPriority = NposSolutionPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
-	type CompactSolution = NposCompactSolution16;
+	type CompactSolution = NposCompactSolution24;
 	type Fallback = Fallback;
 	type WeightInfo = WeightInfo<Runtime>;
 	type BenchmarkingConfig = ();
