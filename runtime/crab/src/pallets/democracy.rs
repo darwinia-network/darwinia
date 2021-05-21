@@ -6,18 +6,30 @@ use sp_core::u32_trait::{_1, _2, _3};
 use crate::{weights::darwinia_democracy::WeightInfo, *};
 use darwinia_democracy::Config;
 
+#[cfg(feature = "dev")]
+frame_support::parameter_types! {
+	pub const LaunchPeriod: BlockNumber = 3 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 3 * MINUTES;
+	pub const FastTrackVotingPeriod: BlockNumber = 3 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 3 * MINUTES;
+	pub const CooloffPeriod: BlockNumber = 3 * MINUTES;
+}
+#[cfg(not(feature = "dev"))]
 frame_support::parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 7 * DAYS;
 	pub const VotingPeriod: BlockNumber = 7 * DAYS;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
-	pub const MinimumDeposit: Balance = 1 * MILLI;
 	pub const EnactmentPeriod: BlockNumber = 8 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
+}
+frame_support::parameter_types! {
+	pub const MinimumDeposit: Balance = 1 * MILLI;
 	pub const PreimageByteDeposit: Balance = 10 * NANO;
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }
+
 impl Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;

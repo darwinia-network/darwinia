@@ -36,16 +36,26 @@ pub type TechnicalCommitteeApproveOrigin = EnsureOneOf<
 	EnsureProportionMoreThan<_3, _5, AccountId, TechnicalCollective>,
 >;
 
+#[cfg(feature = "dev")]
+frame_support::parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 3 * MINUTES;
+	pub const TechnicalMotionDuration: BlockNumber = 3 * MINUTES;
+}
+#[cfg(not(feature = "dev"))]
 frame_support::parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
+	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
+}
+frame_support::parameter_types! {
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
-	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
 	pub const TechnicalMaxProposals: u32 = 100;
 	pub const TechnicalMaxMembers: u32 = 100;
 }
+
 // Make sure that there are no more than MaxMembers members elected via phragmen.
 static_assertions::const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
 impl Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
