@@ -101,6 +101,7 @@ frame_support::parameter_types! {
 	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
 	pub const MaxPending: u16 = 32;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Call = Call;

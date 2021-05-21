@@ -29,6 +29,7 @@ frame_support::parameter_types! {
 	pub NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
 	pub const MinerMaxIterations: u32 = 10;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;

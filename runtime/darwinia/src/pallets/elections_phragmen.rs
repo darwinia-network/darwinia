@@ -16,6 +16,7 @@ frame_support::parameter_types! {
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 7;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type PalletId = PhragmenElectionPalletId;

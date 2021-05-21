@@ -19,6 +19,7 @@ frame_support::parameter_types! {
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }
+
 impl Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;

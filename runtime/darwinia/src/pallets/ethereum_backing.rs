@@ -13,6 +13,7 @@ frame_support::parameter_types! {
 	pub const AdvancedFee: Balance = 50 * COIN;
 	pub const SyncReward: Balance = 1_000 * COIN;
 }
+
 impl Config for Runtime {
 	type PalletId = EthereumBackingPalletId;
 	type FeePalletId = EthereumBackingFeePalletId;

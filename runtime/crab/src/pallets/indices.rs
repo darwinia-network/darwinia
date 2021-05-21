@@ -6,6 +6,7 @@ use crate::{weights::pallet_indices::WeightInfo, *};
 frame_support::parameter_types! {
 	pub const IndexDeposit: Balance = 1 * COIN;
 }
+
 impl Config for Runtime {
 	type AccountIndex = AccountIndex;
 	type Currency = Ring;

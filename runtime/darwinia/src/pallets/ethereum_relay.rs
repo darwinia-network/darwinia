@@ -16,6 +16,7 @@ frame_support::parameter_types! {
 	pub const ApproveThreshold: Perbill = Perbill::from_percent(60);
 	pub const RejectThreshold: Perbill = Perbill::from_percent(1);
 }
+
 impl Config for Runtime {
 	type PalletId = EthereumRelayPalletId;
 	type Event = Event;
