@@ -942,6 +942,7 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "darwinia-treasury",
+ "darwinia-vesting",
  "dp-storage",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",

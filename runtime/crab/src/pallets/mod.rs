@@ -64,6 +64,9 @@ pub use treasury::*;
 pub mod sudo;
 pub use sudo::*;
 
+pub mod vesting;
+pub use vesting::*;
+
 pub mod claims;
 pub use claims::*;
 

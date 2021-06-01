@@ -216,6 +216,9 @@ frame_support::construct_runtime! {
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 22,
 
+		// Vesting. Usable initially, but removed once all vesting is finished.
+		Vesting: darwinia_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
+
 		// Claims. Usable initially.
 		Claims: darwinia_claims::{Pallet, Call, Storage, Config, Event<T>, ValidateUnsigned} = 27,
 
