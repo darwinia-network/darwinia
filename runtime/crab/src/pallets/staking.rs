@@ -21,7 +21,6 @@ frame_support::parameter_types! {
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
-	#[cfg(not(feature = "dev"))]
 	pub const SlashDeferDuration: EraIndex = 14 * DAYS
 		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
 }
