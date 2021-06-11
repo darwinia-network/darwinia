@@ -125,7 +125,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		}
 
 		rings
-			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex_into_unchecked(address))
 			.and_modify(|ring_| *ring_ += ring)
 			.or_insert(ring);
 
@@ -153,7 +153,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		let ring = ring / COIN;
 
 		rings
-			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex_into_unchecked(address))
 			.and_modify(|ring_| *ring_ += ring)
 			.or_insert(ring);
 	}
@@ -173,7 +173,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		let kton = kton / COIN;
 
 		ktons
-			.entry(array_bytes::hex2array_unchecked!(address, 32).into())
+			.entry(array_bytes::hex_into_unchecked(address))
 			.and_modify(|kton_| *kton_ += kton)
 			.or_insert(kton);
 	}
@@ -184,20 +184,19 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 	assert!(genesis_validator_1_stash_endowed);
 	assert!(genesis_validator_2_stash_endowed);
 
-	let root: AccountId = array_bytes::hex2array_unchecked!(ROOT, 32).into();
-	let da_crabk: AccountId = array_bytes::hex2array_unchecked!(DA_CRABK, 32).into();
-	let team_vesting: AccountId = array_bytes::hex2array_unchecked!(TEAM_VESTING, 32).into();
-	let foundation_vesting: AccountId =
-		array_bytes::hex2array_unchecked!(FOUNDATION_VESTING, 32).into();
+	let root: AccountId = array_bytes::hex_into_unchecked(ROOT);
+	let da_crabk: AccountId = array_bytes::hex_into_unchecked(DA_CRABK);
+	let team_vesting: AccountId = array_bytes::hex_into_unchecked(TEAM_VESTING);
+	let foundation_vesting: AccountId = array_bytes::hex_into_unchecked(FOUNDATION_VESTING);
 	let genesis_validator_1: (AccountId, AccountId, SessionKeys) = {
-		let stash = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_STASH, 32);
-		let controller = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_CONTROLLER, 32);
-		let session = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_SESSION, 32);
-		let grandpa = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_1_GRANDPA, 32);
+		let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_1_STASH);
+		let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_1_CONTROLLER);
+		let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_1_SESSION);
+		let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_1_GRANDPA);
 
 		(
-			stash.into(),
-			controller.into(),
+			stash,
+			controller,
 			darwinia_session_keys(
 				session.unchecked_into(),
 				grandpa.unchecked_into(),
@@ -207,14 +206,14 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		)
 	};
 	let genesis_validator_2: (AccountId, AccountId, SessionKeys) = {
-		let stash = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_STASH, 32);
-		let controller = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_CONTROLLER, 32);
-		let session = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_SESSION, 32);
-		let grandpa = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_2_GRANDPA, 32);
+		let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_2_STASH);
+		let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_2_CONTROLLER);
+		let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_2_SESSION);
+		let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_2_GRANDPA);
 
 		(
-			stash.into(),
-			controller.into(),
+			stash,
+			controller,
 			darwinia_session_keys(
 				session.unchecked_into(),
 				grandpa.unchecked_into(),
@@ -301,10 +300,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
+			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
+			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
+			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
@@ -433,10 +432,10 @@ pub fn darwinia_testnet_genesis(
 		darwinia_vesting: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex2array_unchecked!(TOKEN_REDEEM_ADDRESS, 20).into(),
-			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
-			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
-			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
+			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
+			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
+			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
+			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
 			backed_ring: 1 << 56,
 			backed_kton: 1 << 56,
 			..Default::default()
