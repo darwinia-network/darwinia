@@ -33,6 +33,9 @@ pub use sp_runtime::BuildStorage;
 #[cfg(feature = "std")]
 pub use darwinia_staking::StakerStatus;
 
+pub use darwinia_balances::Instance1 as RingInstance;
+pub use darwinia_balances::Instance2 as KtonInstance;
+
 // --- crates ---
 use static_assertions::const_assert;
 // --- substrate ---
@@ -46,9 +49,6 @@ use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
 // --- darwinia ---
 use darwinia_primitives::BlockNumber;
-
-pub type RingInstance = darwinia_balances::Instance0;
-pub type KtonInstance = darwinia_balances::Instance1;
 
 pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<
 	<T as frame_system::Config>::AccountId,
@@ -109,6 +109,14 @@ parameter_types! {
 		.max_extrinsic
 		.expect("Normal extrinsics have weight limit configured by default; qed")
 		.saturating_sub(BlockExecutionWeight::get());
+
+	/// A limit for off-chain phragmen unsigned solution length.
+	///
+	/// We allow up to 90% of the block's size to be consumed by the solution.
+	pub OffchainSolutionLengthLimit: u32 = Perbill::from_rational(90_u32, 100) *
+		*RuntimeBlockLength::get()
+		.max
+		.get(DispatchClass::Normal);
 }
 
 /// Parameterized slow adjusting fee updated based on

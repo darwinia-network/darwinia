@@ -9,6 +9,7 @@ frame_support::parameter_types! {
 	pub const MaxFriends: u16 = 9;
 	pub const RecoveryDeposit: Balance = 5 * COIN;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Call = Call;

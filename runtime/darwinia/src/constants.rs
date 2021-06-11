@@ -43,15 +43,13 @@ pub mod time {
 	// --- darwinia ---
 	use darwinia_primitives::{BlockNumber, Moment};
 
-	#[cfg(feature = "dev")]
-	pub const MILLISECS_PER_BLOCK: Moment = 3000;
 	#[cfg(not(feature = "dev"))]
 	pub const MILLISECS_PER_BLOCK: Moment = 6000;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
 	#[cfg(feature = "dev")]
-	pub const BLOCKS_PER_SESSION: BlockNumber = MINUTES / 2;
+	pub const BLOCKS_PER_SESSION: BlockNumber = 10 * MINUTES;
 	#[cfg(not(feature = "dev"))]
 	pub const BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
 

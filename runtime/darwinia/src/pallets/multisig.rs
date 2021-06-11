@@ -10,6 +10,7 @@ frame_support::parameter_types! {
 	pub const DepositFactor: Balance = deposit(0, 32);
 	pub const MaxSignatories: u16 = 100;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Call = Call;

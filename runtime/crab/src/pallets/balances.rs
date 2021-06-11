@@ -7,6 +7,7 @@ frame_support::parameter_types! {
 	pub const KtonExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
 }
+
 impl Config<RingInstance> for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();

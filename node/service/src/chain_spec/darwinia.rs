@@ -246,8 +246,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			authorities: vec![],
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
 		},
-		darwinia_balances_Instance0: BalancesConfig { balances: rings.into_iter().collect() },
-		darwinia_balances_Instance1: KtonConfig { balances: ktons.into_iter().collect() },
+		darwinia_balances_Instance1: BalancesConfig { balances: rings.into_iter().collect() },
+		darwinia_balances_Instance2: KtonConfig { balances: ktons.into_iter().collect() },
 		darwinia_staking: StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -287,10 +287,10 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_grandpa: Default::default(),
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
-		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_vesting: VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
@@ -309,8 +309,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			// Berlin :     9/25/2020, 10:42:52 AM
 			// Beijing:     9/25/2020, 9:42:52 AM
 			// New York :   9/24/2020, 9:42:52 PM
-			ring_locked: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
-			kton_locked: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
+			backed_ring: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
+			backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {
@@ -388,14 +388,14 @@ pub fn darwinia_testnet_genesis(
 			authorities: vec![],
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
 		},
-		darwinia_balances_Instance0: BalancesConfig {
+		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 56))
 				.collect(),
 		},
-		darwinia_balances_Instance1: KtonConfig {
+		darwinia_balances_Instance2: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -426,10 +426,10 @@ pub fn darwinia_testnet_genesis(
 		pallet_grandpa: Default::default(),
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
-		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_vesting: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
@@ -437,8 +437,8 @@ pub fn darwinia_testnet_genesis(
 			deposit_redeem_address: array_bytes::hex2array_unchecked!(DEPOSIT_REDEEM_ADDRESS, 20).into(),
 			ring_token_address: array_bytes::hex2array_unchecked!(RING_TOKEN_ADDRESS, 20).into(),
 			kton_token_address: array_bytes::hex2array_unchecked!(KTON_TOKEN_ADDRESS, 20).into(),
-			ring_locked: 1 << 56,
-			kton_locked: 1 << 56,
+			backed_ring: 1 << 56,
+			backed_kton: 1 << 56,
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {

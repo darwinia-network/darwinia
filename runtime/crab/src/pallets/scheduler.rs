@@ -11,6 +11,7 @@ frame_support::parameter_types! {
 		* RuntimeBlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Origin = Origin;

@@ -6,6 +6,7 @@ use crate::*;
 frame_support::parameter_types! {
 	pub const TransactionByteFee: Balance = 5 * MILLI;
 }
+
 impl Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
 	type TransactionByteFee = TransactionByteFee;

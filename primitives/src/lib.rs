@@ -79,14 +79,15 @@ pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 #[test]
 fn print_module_account() {
 	// --- substrate ---
+	use frame_support::PalletId;
 	use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat, Ss58AddressFormat::*};
-	use sp_runtime::{traits::AccountIdConversion, ModuleId};
+	use sp_runtime::traits::AccountIdConversion;
 
 	fn account_of(alias: [u8; 8], ss58_version: Ss58AddressFormat) {
 		set_default_ss58_version(ss58_version);
 
 		let alias_str = unsafe { core::str::from_utf8_unchecked(&alias) };
-		let id = <ModuleId as AccountIdConversion<AccountId>>::into_account(&ModuleId(alias));
+		let id = <PalletId as AccountIdConversion<AccountId>>::into_account(&PalletId(alias));
 
 		eprintln!("{}:\n\t{}\n\t{:?}", alias_str, id, id);
 	}

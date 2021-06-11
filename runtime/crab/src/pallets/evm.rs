@@ -1,12 +1,13 @@
 // --- substrate ---
-use sp_core::U256;
+use sp_core::{H160, U256};
+use sp_runtime::DispatchResult;
 // --- darwinia ---
 use crate::*;
 use darwinia_evm::{
 	runner::stack::Runner, ConcatAddressMapping, Config, EnsureAddressTruncated, FeeCalculator,
+	IssuingHandler,
 };
-use dvm_ethereum::account_basic::DvmAccountBasic;
-use dvm_ethereum::account_basic::{KtonRemainBalance, RingRemainBalance};
+use dvm_ethereum::account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance};
 
 /// Fixed gas price.
 pub struct FixedGasPrice;
@@ -49,7 +50,6 @@ impl Config for Runtime {
 	type FeeCalculator = FixedGasPrice;
 	type GasWeightMapping = ();
 	type CallOrigin = EnsureAddressTruncated;
-	type WithdrawOrigin = EnsureAddressTruncated;
 	type AddressMapping = ConcatAddressMapping;
 	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
@@ -60,4 +60,12 @@ impl Config for Runtime {
 	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
 	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
 	type Runner = Runner<Self>;
+	type IssuingHandler = DisableIssuing;
+}
+
+pub struct DisableIssuing;
+impl IssuingHandler for DisableIssuing {
+	fn handle(_: H160, _: H160, _: &[u8]) -> DispatchResult {
+		Err("unimplemented".into())
+	}
 }

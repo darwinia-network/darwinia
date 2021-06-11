@@ -10,6 +10,7 @@ frame_support::parameter_types! {
 	pub OffencesWeightSoftLimit: Weight = Perbill::from_percent(60)
 		* RuntimeBlockWeights::get().max_block;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type IdentificationTuple = IdentificationTuple<Self>;

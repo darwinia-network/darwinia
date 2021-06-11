@@ -45,13 +45,7 @@ where
 	R: darwinia_balances::Config<RingInstance> + pallet_authorship::Config,
 	<R as frame_system::Config>::AccountId: From<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::AccountId: Into<darwinia_primitives::AccountId>,
-	<R as frame_system::Config>::Event: From<
-		darwinia_balances::RawEvent<
-			<R as frame_system::Config>::AccountId,
-			<R as darwinia_balances::Config<RingInstance>>::Balance,
-			RingInstance,
-		>,
-	>,
+	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
 		let numeric_amount = amount.peek();
@@ -60,9 +54,10 @@ where
 			&<pallet_authorship::Pallet<R>>::author(),
 			amount,
 		);
-		<frame_system::Pallet<R>>::deposit_event(
-			<darwinia_balances::RawEvent<_, _, RingInstance>>::Deposit(author, numeric_amount),
-		);
+		<frame_system::Pallet<R>>::deposit_event(darwinia_balances::Event::Deposit(
+			author,
+			numeric_amount,
+		));
 	}
 }
 
@@ -75,13 +70,7 @@ where
 	darwinia_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
 	<R as frame_system::Config>::AccountId: From<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::AccountId: Into<darwinia_primitives::AccountId>,
-	<R as frame_system::Config>::Event: From<
-		darwinia_balances::RawEvent<
-			<R as frame_system::Config>::AccountId,
-			<R as darwinia_balances::Config<RingInstance>>::Balance,
-			RingInstance,
-		>,
-	>,
+	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<R>>) {
 		if let Some(fees) = fees_then_tips.next() {

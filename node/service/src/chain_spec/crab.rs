@@ -135,7 +135,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 		},
 		pallet_indices: Default::default(),
-		darwinia_balances_Instance0: BalancesConfig {
+		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -150,7 +150,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 				)
 				.collect(),
 		},
-		darwinia_balances_Instance1: KtonConfig {
+		darwinia_balances_Instance2: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -187,10 +187,10 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
 		darwinia_democracy: Default::default(),
-		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_claims: ClaimsConfig {
 			claims_list: ClaimsList::from_file(
 				"node/service/res/crab/claims-list.json",
@@ -198,6 +198,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 			),
 		},
 		pallet_sudo: SudoConfig { key: root },
+		darwinia_vesting: Default::default(),
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 40_000_000 * COIN,
 		},
@@ -256,14 +257,14 @@ pub fn crab_testnet_genesis(
 			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 		},
 		pallet_indices: Default::default(),
-		darwinia_balances_Instance0: BalancesConfig {
+		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 56))
 				.collect(),
 		},
-		darwinia_balances_Instance1: KtonConfig {
+		darwinia_balances_Instance2: KtonConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -295,10 +296,10 @@ pub fn crab_testnet_genesis(
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
 		darwinia_democracy: Default::default(),
-		pallet_collective_Instance0: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
-		pallet_membership_Instance0: Default::default(),
+		pallet_membership_Instance1: Default::default(),
 		darwinia_claims: ClaimsConfig {
 			claims_list: ClaimsList::from_file(
 				"node/service/res/crab/claims-list.json",
@@ -306,6 +307,7 @@ pub fn crab_testnet_genesis(
 			),
 		},
 		pallet_sudo: SudoConfig { key: root },
+		darwinia_vesting: Default::default(),
 		darwinia_crab_issuing: CrabIssuingConfig {
 			total_mapped_ring: 1 << 56,
 		},

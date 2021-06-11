@@ -12,6 +12,7 @@ frame_support::parameter_types! {
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
 }
+
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Ring;

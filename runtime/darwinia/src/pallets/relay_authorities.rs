@@ -1,4 +1,4 @@
-pub use darwinia_relay_authorities::Instance0 as EthereumRelayAuthoritiesInstance;
+pub use darwinia_relay_authorities::Instance1 as EthereumRelayAuthoritiesInstance;
 
 // --- substrate ---
 use frame_support::traits::LockIdentifier;
@@ -19,6 +19,7 @@ frame_support::parameter_types! {
 	pub const SignThreshold: Perbill = Perbill::from_percent(60);
 	pub const SubmitDuration: BlockNumber = 300;
 }
+
 impl Config<EthereumRelayAuthoritiesInstance> for Runtime {
 	type Event = Event;
 	type RingCurrency = Ring;
