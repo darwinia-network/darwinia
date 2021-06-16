@@ -121,8 +121,8 @@ use sp_core::OpaqueMetadata;
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT,
-		NumberFor, SaturatedConversion, StaticLookup, Verify,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT, NumberFor,
+		SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiAddress,
@@ -236,7 +236,7 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 13,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 15,
-		HeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
 		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 37,
@@ -536,7 +536,7 @@ impl_runtime_apis! {
 			block_number_of_member_leaf: u64,
 			block_number_of_last_leaf: u64
 		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
-			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
+			DarwiniaHeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 

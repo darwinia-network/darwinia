@@ -90,7 +90,7 @@ where
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 	// --- darwinia ---
 	use darwinia_balances_rpc::{Balances, BalancesApi};
-	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
+	use darwinia_header_mmr_rpc::{DarwiniaHeaderMMR, HeaderMMRApi};
 	use darwinia_staking_rpc::{Staking, StakingApi};
 
 	let FullDeps {
@@ -147,7 +147,7 @@ where
 		deny_unsafe,
 	)));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
-	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
+	io.extend_with(HeaderMMRApi::to_delegate(DarwiniaHeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
 
 	io

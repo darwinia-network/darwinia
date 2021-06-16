@@ -189,7 +189,7 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 13,
-		HeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
 		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
@@ -492,7 +492,7 @@ sp_api::impl_runtime_apis! {
 			block_number_of_member_leaf: u64,
 			block_number_of_last_leaf: u64
 		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
-			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
+			DarwiniaHeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 
