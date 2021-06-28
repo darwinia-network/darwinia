@@ -1281,7 +1281,7 @@ dependencies = [
 name = "darwinia"
 version = "0.10.0"
 dependencies = [
- "darwinia-cli 0.10.0",
+ "darwinia-cli",
  "darwinia-service",
  "futures 0.3.15",
  "parity-util-mem",
@@ -1351,7 +1351,6 @@ dependencies = [
 name = "darwinia-cli"
 version = "0.10.0"
 dependencies = [
- "darwinia-cli 2.3.0",
  "darwinia-service",
  "log",
  "sc-cli",
@@ -1367,19 +1366,6 @@ dependencies = [
  "substrate-build-script-utils",
  "tokio 0.3.7",
  "try-runtime-cli",
-]
-
-[[package]]
-name = "darwinia-cli"
-version = "2.3.0"
-source = "git+https://github.com/darwinia-network/darwinia-common.git?tag=darwinia-v0.11.0#4e2a5dff2b30cb37a404466f00953767a75b1980"
-dependencies = [
- "sc-cli",
- "sc-client-api",
- "sc-service",
- "sc-tracing",
- "serde",
- "toml",
 ]
 
 [[package]]
