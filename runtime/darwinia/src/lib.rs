@@ -564,14 +564,28 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		darwinia_staking::migrations::v6::pre_migrate::<Runtime>()
+		fn pre_upgrade() -> Result<(), &'static str> {
+			darwinia_header_mmr::migration::initialize_new_mmr_state::<Runtime>(
+				b"DarwiniaHeaderMMR",
+				2,
+			);
+			darwinia_relay_authorities::migration::migrate::<
+				Runtime,
+				EthereumRelayAuthoritiesInstance,
+			>(b"Instance0DarwiniaRelayAuthorities");
+
+			Ok(())
+		}
 	}
 
-	fn on_runtime_upgrade() -> Weight {
-		pallet_babe::migrations::add_epoch_configuration::<Runtime>(BabeEpochConfiguration {
-			allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
-			..BABE_GENESIS_EPOCH_CONFIG
-		});
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		darwinia_header_mmr::migration::initialize_new_mmr_state::<Runtime>(
+			b"DarwiniaHeaderMMR",
+			50,
+		);
+		darwinia_relay_authorities::migration::migrate::<Runtime, EthereumRelayAuthoritiesInstance>(
+			b"Instance0DarwiniaRelayAuthorities",
+		);
 
 		RuntimeBlockWeights::get().max_block
 	}
