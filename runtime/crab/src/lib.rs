@@ -703,12 +703,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		}
 
 		let ethereum_backing_module_account = ModuleId(*b"da/ethfe").into_account();
-		let multisig_account = array_bytes::hex2array_unchecked!(
+		let multisig_account = array_bytes::hex_into_unchecked(
 			// 5FGWcEpsd5TbDh14UGJEzRQENwrPXUt7e2ufzFzfcCEMesAQ
 			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8",
-			32
-		)
-		.into();
+		);
 
 		transfer_all::<Ring>(&ethereum_backing_module_account, &multisig_account);
 		transfer_all::<Kton>(&ethereum_backing_module_account, &multisig_account);

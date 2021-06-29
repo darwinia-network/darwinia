@@ -24,7 +24,7 @@ serde                = { version = "1.0.125", optional = true }
 structopt            = { version = "0.3.21" }
 tokio                = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
 # darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.0" }
+darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.10.1" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
