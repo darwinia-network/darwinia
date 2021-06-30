@@ -83,8 +83,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 	const GENESIS_VALIDATOR_ED: &'static str =
 		"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd";
 
-	let root: AccountId = array_bytes::hex2array_unchecked!(ROOT, 32).into();
-	let multi_sig: AccountId = array_bytes::hex2array_unchecked!(MULTI_SIG, 32).into();
+	let root: AccountId = array_bytes::hex_into_unchecked(ROOT);
+	let multi_sig: AccountId = array_bytes::hex_into_unchecked(MULTI_SIG);
 	let genesis_validator: (
 		AccountId,
 		AccountId,
@@ -93,14 +93,14 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		ImOnlineId,
 		AuthorityDiscoveryId,
 	) = {
-		let stash = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let controller = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let session = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_SR, 32);
-		let grandpa = array_bytes::hex2array_unchecked!(GENESIS_VALIDATOR_ED, 32);
+		let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_SR);
+		let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_SR);
+		let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_SR);
+		let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_ED);
 
 		(
-			stash.into(),
-			controller.into(),
+			stash,
+			controller,
 			session.unchecked_into(),
 			grandpa.unchecked_into(),
 			session.unchecked_into(),
@@ -122,7 +122,7 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		"0xc45f075b5b1aa0145c469f57bd741c02272c1c0c41e9518d5a32426030d98232",
 	]
 	.iter()
-	.map(|s| array_bytes::hex2array_unchecked!(s, 32).into())
+	.map(|s| array_bytes::hex_into_unchecked(s))
 	.collect::<Vec<_>>();
 
 	GenesisConfig {
