@@ -1,3 +1,69 @@
+## [0.10.1] - 2021-06-30
+
+### Darwinia 0.10.1
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |          25          |
+|   Crab   |          44          |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+*If there is any requirement of using MMR full nodes, please using `--enable-offchain-indexing 1` to enable the offchain indexing storage.*
+*若有任何关于使用 MMR 全节点数据的需求，请使用 `--enable-offchain-indexing 1` 以启用 offchain indexing 存储。*
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+| :-----------: | :-----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
+|  RaspberryPi  | aarch64 |       2.23       |       3.8       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.10.1
+```
+
+### Change Log
+
+#### Update(s)
+- [MMR Support Pruning](https://github.com/darwinia-network/darwinia-common/pull/673)
+#### Fix(es)
+- None
+#### Migration(s)
+- Pallet **header-mmr**
+  - Migrate `MMRCounter` to `MmrSize`
+  - Prune `MMRNodeList` till empty
+  - Build `Peaks` from `MMRNodeList`
+  - Initialize `PruningConfiguration` (initial pruning step `50`)
+- Pallet **relay-authorities**
+  - Remove `MMRRootsToSign`, `MMRRootsToSignKeys`
+
+---
+
+#### Darwinia Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+---
+
+#### Crab Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+
 ## [0.10.0] - 2021-04-24
 
 ### Darwinia 0.10.0
