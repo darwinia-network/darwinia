@@ -187,8 +187,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
 		darwinia_democracy: Default::default(),
-		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
 		darwinia_claims: ClaimsConfig {
@@ -296,8 +296,8 @@ pub fn crab_testnet_genesis(
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
 		darwinia_democracy: Default::default(),
-		pallet_collective_Instance2: Default::default(),
 		pallet_collective_Instance1: Default::default(),
+		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
 		darwinia_claims: ClaimsConfig {

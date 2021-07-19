@@ -1,4 +1,4 @@
-pub use pallet_collective::{Instance1 as TechnicalCollective, Instance2 as CouncilCollective};
+pub use pallet_collective::{Instance1 as CouncilCollective, Instance2 as TechnicalCollective};
 
 // --- substrate ---
 use frame_system::{EnsureOneOf, EnsureRoot};
