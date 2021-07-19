@@ -663,14 +663,26 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- substrate ---
-		// use frame_support::migration;
+		// --- paritytech ---
+		use frame_support::migration;
+
+		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
+		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
+
+		// Tech.Comm to Instance2
+		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
+		// Council to Instance1
+		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
+
+		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
+
+		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
+		// --- paritytech ---
 		use frame_support::migration;
 
 		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
