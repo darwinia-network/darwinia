@@ -661,7 +661,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
 		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
 
-		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
+		// Tech.Comm to Instance2
+		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
+		// Council to Instance1
+		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
 
 		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
 
