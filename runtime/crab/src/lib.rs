@@ -659,12 +659,13 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
+const BAD_SCHEDULE_KEY: BlockNumber = 2332800;
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- paritytech ---
-		use frame_support::migration;
+		use frame_support::{migration, storage::StorageMap};
 
 		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
 		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
@@ -677,13 +678,21 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
 
 		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
+
+		assert!(<pallet_scheduler::Agenda<Runtime>>::contains_key(
+			BAD_SCHEDULE_KEY
+		));
+		<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
+		assert!(!<pallet_scheduler::Agenda<Runtime>>::contains_key(
+			BAD_SCHEDULE_KEY
+		));
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
-		use frame_support::migration;
+		use frame_support::{migration, storage::StorageMap};
 
 		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
 		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
@@ -696,6 +705,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
 
 		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
+
+		<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
 
 		RuntimeBlockWeights::get().max_block
 	}
