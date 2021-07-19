@@ -64,7 +64,7 @@ impl InstanceFilter<Call> for ProxyType {
 				// Specifically omitting the entire EthereumBacking pallet
 				Call::EthereumRelay(..) |
 				// Specifically omitting the entire TronBacking pallet
-				Call::HeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
+				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
 			ProxyType::Governance => matches!(
 				c,

@@ -62,7 +62,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
 				Call::Multisig(..) |
-				Call::HeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
+				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
