@@ -2,7 +2,7 @@
 
 ### IMPORTANT
 **Please upgrade your node as SOON as possible!! Otherwise, your node might not sync the new blocks after enacting runtime.**
-**请尽快升级您的节点！！否则您的节点将有可能不会同步新的区块。**
+**请尽快升级您的节点！！否则升级后，您的节点将有可能不会同步新的区块。**
 
 #### Upgrade Window Period - 升级窗口期
   - Crab UTC 07-21-2021 ~ 07-24-2021
