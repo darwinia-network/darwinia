@@ -5,7 +5,7 @@
 **请尽快升级您的节点！！否则您的节点将有可能不会同步新的区块。**
 
 #### Upgrade Window Period - 升级窗口期
-  - Crab UTC 2021-07-21 ~ 07-24-2021
+  - Crab UTC 07-21-2021 ~ 07-24-2021
   - Darwinia UTC 07-28-2021 ~ 08-01-2021
 
 #### Breaking Change(s)
