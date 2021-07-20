@@ -1,4 +1,4 @@
-## [0.10.0] - 2021-07-20
+## [0.11.0] - 2021-07-20
 
 ### Breaking Change(s)
 **Please upgrade your node as SOON as possible!! Otherwise, your node might not sync the new blocks.**
@@ -24,9 +24,9 @@
 ### Resource
 
 #### Binary
-|               |  Arch   | glibc (at least) | llvm (at least) | pre-built |
-| :-----------: | :-----: | :--------------: | :-------------: | :-------: |
-| General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.17       |       3.8       |     ✔︎     |
 
 #### Docker
 ```docker
