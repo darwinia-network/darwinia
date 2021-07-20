@@ -659,55 +659,52 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
-const BAD_SCHEDULE_KEY: BlockNumber = 2332800;
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::{migration, storage::StorageMap};
-
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-		// Tech.Comm to Instance2
-		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
-		// Council to Instance1
-		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
-
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-		assert!(<pallet_scheduler::Agenda<Runtime>>::contains_key(
-			BAD_SCHEDULE_KEY
-		));
-		<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
-		assert!(!<pallet_scheduler::Agenda<Runtime>>::contains_key(
-			BAD_SCHEDULE_KEY
-		));
-
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::{migration, storage::StorageMap};
-
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-		// Tech.Comm to Instance2
-		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
-		// Council to Instance1
-		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
-
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-		<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
-
-		RuntimeBlockWeights::get().max_block
+		migrate()
 	}
+}
+
+fn migrate() -> Weight {
+	// --- paritytech ---
+	use frame_support::{migration, storage::StorageMap};
+
+	const BAD_SCHEDULE_KEY: BlockNumber = 2332800;
+
+	log::info!("Moving storage `Instance0DarwiniaBalances` to `Balances`");
+	migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
+	log::info!("Moving storage `Instance1DarwiniaBalances` to `Kton`");
+	migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
+
+	// Tech.Comm to Instance2
+	log::info!("Moving storage `Instance1Collective` to `Instance2Collective`");
+	migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
+	// Council to Instance1
+	log::info!("Moving storage `Instance0Collective` to `Instance1Collective`");
+	migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
+
+	log::info!("Moving storage `Instance0Membership` to `Instance1Membership`");
+	migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
+
+	log::info!("Moving storage `DarwiniaPhragmenElection` to `PhragmenElection`");
+	migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
+
+	#[cfg(feature = "try-runtime")]
+	assert!(<pallet_scheduler::Agenda<Runtime>>::contains_key(
+		BAD_SCHEDULE_KEY
+	));
+	log::info!("Removing bad schedule");
+	<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
+	#[cfg(feature = "try-runtime")]
+	assert!(!<pallet_scheduler::Agenda<Runtime>>::contains_key(
+		BAD_SCHEDULE_KEY
+	));
+
+	RuntimeBlockWeights::get().max_block
 }
