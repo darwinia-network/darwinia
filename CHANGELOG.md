@@ -24,7 +24,7 @@
 ### Resource
 
 #### Binary
-|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-built |
 | :-----------: | :-----: | :--------------: | :-------------: | :-------: |
 | General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
 
@@ -87,7 +87,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.0
 ### Resource
 
 #### Binary
-|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-built |
 | :-----------: | :-----: | :--------------: | :-------------: | :-------: |
 | General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
 |  RaspberryPi  | aarch64 |       2.23       |       3.8       |     ✔︎     |
@@ -150,7 +150,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.10.0
 ### Resource
 
 #### Binary
-|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-built |
 | :-----------: | :-----: | :--------------: | :-------------: | :-------: |
 | General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
 |  RaspberryPi  | aarch64 |       2.23       |       3.8       |     ✔︎     |
@@ -213,7 +213,7 @@ Some breaking changes in `ethash`/`parity-scale-codec v2.0.0`. So downgrade it.
 ### Resource
 
 #### Binary
-|               |  Arch   | glibc (at least) | llvm (at least) | pre-build |
+|               |  Arch   | glibc (at least) | llvm (at least) | pre-built |
 | :-----------: | :-----: | :--------------: | :-------------: | :-------: |
 | General Linux | x86_64  |       2.17       |       3.8       |     ✔︎     |
 |  RaspberryPi  | aarch64 |       2.23       |       3.8       |     ✔︎     |
