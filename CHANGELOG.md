@@ -6,7 +6,7 @@
 
 #### Upgrade Window Period - 升级窗口期
   - Crab UTC 07-21-2021 ~ 07-24-2021
-  - Darwinia UTC 07-28-2021 ~ 08-01-2021
+  - Darwinia: Now ~ UTC 07-28-2021
 
 #### Breaking Change(s)
 - [Use host max log level when initializing the `RuntimeLogger`](https://github.com/paritytech/substrate/pull/8655), which introduced a new host function, which will be a breaking change once the corresponding runtime is enacted.
@@ -255,5 +255,4 @@ docker pull quay.io/darwinia-network/darwinia:v0.9.5
 ##### Migration(s)
 - Remove Old Migration
 - Fix Crab Staking Ledger
-
 
