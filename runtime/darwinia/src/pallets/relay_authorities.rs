@@ -29,7 +29,7 @@ impl Config<EthereumRelayAuthoritiesInstance> for Runtime {
 	type AddOrigin = ApproveOrigin;
 	type RemoveOrigin = ApproveOrigin;
 	type ResetOrigin = ApproveOrigin;
-	type DarwiniaMMR = HeaderMMR;
+	type DarwiniaMMR = DarwiniaHeaderMMR;
 	type Sign = EthereumBacking;
 	type OpCodes = OpCodes;
 	type SignThreshold = SignThreshold;

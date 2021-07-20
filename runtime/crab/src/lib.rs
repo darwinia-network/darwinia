@@ -204,11 +204,11 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 13,
-		HeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
-		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
-		TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
+		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
 		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 32,
@@ -507,7 +507,7 @@ sp_api::impl_runtime_apis! {
 			block_number_of_member_leaf: u64,
 			block_number_of_last_leaf: u64
 		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
-			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
+			DarwiniaHeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 
@@ -663,25 +663,48 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- substrate ---
-		// use frame_support::migration;
-
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		use frame_support::migration;
-
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
-
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-		RuntimeBlockWeights::get().max_block
+		migrate()
 	}
+}
+
+fn migrate() -> Weight {
+	// --- paritytech ---
+	use frame_support::{migration, storage::StorageMap};
+
+	const BAD_SCHEDULE_KEY: BlockNumber = 2332800;
+
+	log::info!("Moving storage `Instance0DarwiniaBalances` to `Balances`");
+	migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
+	log::info!("Moving storage `Instance1DarwiniaBalances` to `Kton`");
+	migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
+
+	// Tech.Comm to Instance2
+	log::info!("Moving storage `Instance1Collective` to `Instance2Collective`");
+	migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
+	// Council to Instance1
+	log::info!("Moving storage `Instance0Collective` to `Instance1Collective`");
+	migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
+
+	log::info!("Moving storage `Instance0Membership` to `Instance1Membership`");
+	migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
+
+	log::info!("Moving storage `DarwiniaPhragmenElection` to `PhragmenElection`");
+	migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
+
+	#[cfg(feature = "try-runtime")]
+	assert!(<pallet_scheduler::Agenda<Runtime>>::contains_key(
+		BAD_SCHEDULE_KEY
+	));
+	log::info!("Removing bad schedule");
+	<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
+	#[cfg(feature = "try-runtime")]
+	assert!(!<pallet_scheduler::Agenda<Runtime>>::contains_key(
+		BAD_SCHEDULE_KEY
+	));
+
+	RuntimeBlockWeights::get().max_block
 }

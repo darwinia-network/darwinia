@@ -251,12 +251,12 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 13,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 15,
-		HeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
 		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 37,
-		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
-		TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
+		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 19,
 		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 20,
@@ -551,7 +551,7 @@ impl_runtime_apis! {
 			block_number_of_member_leaf: u64,
 			block_number_of_last_leaf: u64
 		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
-			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
+			DarwiniaHeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 
@@ -588,7 +588,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
 		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
 
-		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
+		// Tech.Comm to Instance2
+		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
+		// Council to Instance1
+		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
 
 		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
 
