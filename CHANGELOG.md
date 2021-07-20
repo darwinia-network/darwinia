@@ -33,7 +33,7 @@
 #### Binary
 |               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
 | :-----------: | :----: | :--------------: | :-------------: | :-------: |
-| General Linux | x86_64 |       2.17       |       3.8       |     ✔︎     |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
 
 #### Docker
 ```docker
