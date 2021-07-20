@@ -1,9 +1,9 @@
 ## [0.11.0] - 2021-07-20
 
 ### Breaking Change(s)
-**Please upgrade your node as SOON as possible!! Otherwise, your node might not sync the new blocks.**
-**请尽快升级您的节点！！否则您的节点将有可能不会同步新的区块。**
-- [Use host max log level when initializing the `RuntimeLogger`](Cargo.lockhttps://github.com/paritytech/substrate/pull/8655), which introduced a new host function
+**Please upgrade your node as SOON as possible!! Otherwise, your node might not sync the new blocks after enacting runtime.**
+**请尽快升级您的节点！！否则在Runtime升级后，您的节点将有可能不会同步新的区块。**
+- [Use host max log level when initializing the `RuntimeLogger`](https://github.com/paritytech/substrate/pull/8655), which introduced a new host function, which will be a breaking change once the corresponding runtime is enacted.
 
 ### Darwinia 0.11.0
 
