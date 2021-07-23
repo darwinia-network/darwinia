@@ -308,6 +308,7 @@ where
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
 	let disable_grandpa = config.disable_grandpa;
 	let name = config.network.node_name.clone();
+	let is_archive = config.state_pruning.is_archive();
 	let PartialComponents {
 		client,
 		backend,
@@ -523,17 +524,19 @@ where
 		);
 	}
 
-	task_manager.spawn_essential_handle().spawn(
-		"frontier-mapping-sync-worker",
-		MappingSyncWorker::new(
-			client.import_notification_stream(),
-			Duration::new(6, 0),
-			client.clone(),
-			backend.clone(),
-			frontier_backend.clone(),
-		)
-		.for_each(|()| futures::future::ready(())),
-	);
+	if is_archive {
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-mapping-sync-worker",
+			MappingSyncWorker::new(
+				client.import_notification_stream(),
+				Duration::new(6, 0),
+				client.clone(),
+				backend.clone(),
+				frontier_backend.clone(),
+			)
+			.for_each(|()| futures::future::ready(())),
+		);
+	}
 
 	// Spawn Frontier EthFilterApi maintenance task.
 	if let Some(filter_pool) = filter_pool {
