@@ -12,11 +12,11 @@ version     = "0.11.0"
 # crates
 codec = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
 # substrate frame
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.1" }
 # substrate primitives
-sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
-sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
-sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
+sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.1" }
+sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.1" }
+sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.1" }
 
 [features]
 default = ["std"]
@@ -27,8 +27,8 @@ std = [
 	"substrate-primitives-std",
 ]
 
-crates-std               = ["codec/std"]
-substrate-frame-std      = ["frame-system/std"]
+crates-std = ["codec/std"]
+substrate-frame-std = ["frame-system/std"]
 substrate-primitives-std = [
 	"sp-application-crypto/std",
 	"sp-core/std",
