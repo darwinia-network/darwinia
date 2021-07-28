@@ -1,3 +1,71 @@
+## [0.11.1] - 2021-07-28
+
+### Upgrade Priority: MEDIUM
+- With v0.11.1 client. Validators can specify a target gas price (e.g. `--target-gas-price=1000000000`) to adjust the EVM gas price. More detail can be found at [C 629](https://github.com/darwinia-network/darwinia-common/pull/629).
+
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.1
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1110         |
+|   Crab   |         1110         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.1
+```
+
+### Change Log
+
+#### Update(s)
+- Substrate Updates [C 624](https://github.com/darwinia-network/darwinia-common/pull/624) [C 631](https://github.com/darwinia-network/darwinia-common/pull/631)
+- Only For Darwinia Developers [C 21](https://github.com/darwinia-network/substrate-update-tracking/issues/21)
+#### Fix(es)
+- #685
+#### Migration(s)
+- https://github.com/paritytech/substrate/pull/8761 it's okay we never modify the `Recovery` in `construct_runtime!`
+- https://github.com/paritytech/substrate/pull/8762 we don't have this pallet
+
+---
+
+#### Darwinia Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+---
+
+#### Crab Custom
+##### Runtime
+- DVM Update [C 629](https://github.com/darwinia-network/darwinia-common/pull/629)
+##### Migration(s)
+- None
+
+
 ## [0.11.0] - 2021-07-20
 
 ### IMPORTANT
@@ -51,6 +119,8 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.0
   - https://github.com/darwinia-network/darwinia-common/pull/689
   - #675
 #### Migration(s)
+- https://github.com/paritytech/substrate/pull/8620 pallet level migration
+- https://github.com/paritytech/substrate/pull/8044 done
 - https://github.com/paritytech/substrate/pull/7936 done (last time remaining migration)
 - https://github.com/paritytech/substrate/pull/8414 pallet level migration
 - https://github.com/paritytech/substrate/pull/8687 it's okay
