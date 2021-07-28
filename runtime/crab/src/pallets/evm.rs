@@ -46,6 +46,7 @@ frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
 }
+
 impl Config for Runtime {
 	type FeeCalculator = FixedGasPrice;
 	type GasWeightMapping = ();
