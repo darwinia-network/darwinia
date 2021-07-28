@@ -44,7 +44,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.1
 - Substrate Updates [C 624](https://github.com/darwinia-network/darwinia-common/pull/624) [C 631](https://github.com/darwinia-network/darwinia-common/pull/631)
 - Only For Darwinia Developers [C 21](https://github.com/darwinia-network/substrate-update-tracking/issues/21)
 #### Fix(es)
-- None
+- #685
 #### Migration(s)
 - https://github.com/paritytech/substrate/pull/8761 it's okay we never modify the `Recovery` in `construct_runtime!`
 - https://github.com/paritytech/substrate/pull/8762 we don't have this pallet
