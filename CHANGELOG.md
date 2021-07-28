@@ -1,7 +1,7 @@
 ## [0.11.1] - 2021-07-28
 
 ### Upgrade Priority: MEDIUM
-- With v0.11.1 client. Validators can specify a target gas price (e.g. `--target-gas-price=1000000000`) to adjust the EVM gas price.
+- With v0.11.1 client. Validators can specify a target gas price (e.g. `--target-gas-price=1000000000`) to adjust the EVM gas price. More detail can be found at [C 629](https://github.com/darwinia-network/darwinia-common/pull/629).
 
 #### Upgrade Window Period - 升级窗口期
 - None
