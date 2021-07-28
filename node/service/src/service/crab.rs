@@ -144,7 +144,6 @@ where
 
 	set_prometheus_registry(config)?;
 
-	let inherent_data_providers = InherentDataProviders::new();
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -188,13 +187,24 @@ where
 		grandpa_block_import,
 		client.clone(),
 	)?;
+	let slot_duration = babe_link.config().slot_duration();
 	let import_queue = sc_consensus_babe::import_queue(
 		babe_link.clone(),
 		babe_import.clone(),
 		Some(Box::new(justification_import)),
 		client.clone(),
 		select_chain.clone(),
-		inherent_data_providers.clone(),
+		move |_, ()| async move {
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+			let slot =
+				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+					*timestamp,
+					slot_duration,
+				);
+
+			Ok((timestamp, slot))
+		},
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
@@ -268,7 +278,6 @@ where
 		keystore_container,
 		select_chain,
 		import_queue,
-		transaction_pool,
 		inherent_data_providers,
 		other: (
 			rpc_extensions_builder,
@@ -423,6 +432,8 @@ where
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|x| x.handle()),
 		);
+		let client_clone = client.clone();
+		let slot_duration = babe_link.config().slot_duration();
 		let babe_config = BabeParams {
 			keystore: keystore_container.sync_keystore(),
 			client: client.clone(),
@@ -430,7 +441,25 @@ where
 			block_import,
 			env: proposer,
 			sync_oracle: network.clone(),
-			inherent_data_providers: inherent_data_providers.clone(),
+			create_inherent_data_providers: move |parent, ()| {
+				let client_clone = client_clone.clone();
+				async move {
+					let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
+						&*client_clone,
+						parent,
+					)?;
+
+					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+					let slot =
+						sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+							*timestamp,
+							slot_duration,
+						);
+
+					Ok((timestamp, slot, uncles))
+				}
+			},
 			force_authoring,
 			backoff_authoring_blocks,
 			babe_link,
@@ -618,15 +647,28 @@ where
 		grandpa_block_import,
 		client.clone(),
 	)?;
-	let inherent_data_providers = InherentDataProviders::new();
 	// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
+	let slot_duration = babe_link.config().slot_duration();
 	let import_queue = sc_consensus_babe::import_queue(
 		babe_link,
 		babe_block_import,
 		Some(Box::new(justification_import)),
 		client.clone(),
 		select_chain.clone(),
-		inherent_data_providers.clone(),
+		move |_, ()| async move {
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+			let slot =
+				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+					*timestamp,
+					slot_duration,
+				);
+
+			let uncles =
+				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
+
+			Ok((timestamp, slot, uncles))
+		},
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		NeverCanAuthor,
