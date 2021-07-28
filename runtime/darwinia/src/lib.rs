@@ -571,48 +571,10 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- substrate ---
-		// use frame_support::migration;
-
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		use frame_support::migration;
-
-		log::info!("Moving storage `Instance0DarwiniaBalances` to `Balances`");
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		log::info!("Moving storage `Instance1DarwiniaBalances` to `Kton`");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-		// Tech.Comm to Instance2
-		log::info!("Moving storage `Instance1Collective` to `Instance2Collective`");
-		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
-		// Council to Instance1
-		log::info!("Moving storage `Instance0Collective` to `Instance1Collective`");
-		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
-
-		log::info!("Moving storage `Instance0Membership` to `Instance1Membership`");
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		log::info!("Moving storage `DarwiniaPhragmenElection` to `PhragmenElection`");
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-		log::info!(
-			"Moving storage `Instance0DarwiniaRelayerGame` to `Instance1DarwiniaRelayerGame`"
-		);
-		migration::move_pallet(
-			b"Instance0DarwiniaRelayerGame",
-			b"Instance1DarwiniaRelayerGame",
-		);
-
-		log::info!("Moving storage `Instance0DarwiniaRelayAuthorities` to `Instance1DarwiniaRelayAuthorities`");
-		migration::move_pallet(
-			b"Instance0DarwiniaRelayAuthorities",
-			b"Instance1DarwiniaRelayAuthorities",
-		);
-
-		RuntimeBlockWeights::get().max_block
+		0
 	}
 }
