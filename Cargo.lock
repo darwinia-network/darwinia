@@ -933,6 +933,7 @@ dependencies = [
  "darwinia-treasury",
  "darwinia-vesting",
  "dp-storage",
+ "dvm-dynamic-fee",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
@@ -2155,6 +2156,22 @@ dependencies = [
  "rlp",
  "sha3 0.8.2",
  "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dvm-dynamic-fee"
+version = "2.4.0"
+source = "git+https://github.com/darwinia-network/darwinia-common.git?tag=darwinia-v0.11.1#5be113e8971e3b1a16344e631a288a1e942fad0e"
+dependencies = [
+ "async-trait",
+ "darwinia-evm",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-inherents",
  "sp-runtime",
  "sp-std",
 ]

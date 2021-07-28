@@ -22,9 +22,9 @@
 
 // --- std ---
 use std::{collections::BTreeMap, sync::Arc};
-// --- substrate ---
+// --- paritytech ---
 use sp_api::ProvideRuntimeApi;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 use darwinia_primitives::{AccountId, Balance, Nonce, Power};
 use dp_rpc::{FilterPool, PendingTransactions};
@@ -46,6 +46,7 @@ pub struct FullDeps<C, P, SC, B> {
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
 	pub grandpa: GrandpaDeps<B>,
+	// <--- dvm ---
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
@@ -56,6 +57,9 @@ pub struct FullDeps<C, P, SC, B> {
 	pub filter_pool: Option<FilterPool>,
 	/// Backend.
 	pub backend: Arc<dc_db::Backend<Block>>,
+	/// Maximum number of logs in a query.
+	pub max_past_logs: u32,
+	// --- dvm --->
 }
 
 /// Light client extra dependencies.
@@ -81,8 +85,10 @@ where
 		+ Sync
 		+ ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
+		// <--- dvm ---
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::StorageProvider<Block, B>
+		// --- dvm --->
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
@@ -92,28 +98,32 @@ where
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
 	C::Api: darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>,
 	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
+	// <--- dvm ---
 	C::Api: dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
+	// --- dvm --->
 	P: 'static + Sync + Send + sp_transaction_pool::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
-	// --- substrate ---
+	// --- paritytech ---
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
 	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
 	use sc_sync_state_rpc::{SyncStateRpcApi, SyncStateRpcHandler};
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use crab_runtime::TransactionConverter;
 	use darwinia_balances_rpc::{Balances, BalancesApi};
 	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
 	use darwinia_staking_rpc::{Staking, StakingApi};
+	// <--- dvm ---
 	use dc_rpc::{
 		EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
 		HexEncodedIdProvider, NetApi, NetApiServer, OverrideHandle, RuntimeApiStorageOverride,
 		SchemaV1Override, StorageOverride, Web3Api, Web3ApiServer,
 	};
+	// --- dvm --->
 	use jsonrpc_pubsub::manager::SubscriptionManager;
 
 	let FullDeps {
@@ -124,11 +134,14 @@ where
 		deny_unsafe,
 		babe,
 		grandpa,
+		// < --- dvm ---
 		is_authority,
 		network,
 		pending_transactions,
 		filter_pool,
 		backend,
+		max_past_logs,
+		// --- dvm --->
 	} = deps;
 	let mut io = jsonrpc_core::IoHandler::default();
 
@@ -178,7 +191,7 @@ where
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	// DVM
+	// < --- dvm ---
 	let mut overrides_map = BTreeMap::new();
 	overrides_map.insert(
 		EthereumStorageSchema::V1,
@@ -198,6 +211,7 @@ where
 		pending_transactions.clone(),
 		backend,
 		is_authority,
+		max_past_logs,
 	)));
 	if let Some(filter_pool) = filter_pool {
 		io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
@@ -205,6 +219,7 @@ where
 			filter_pool.clone(),
 			500 as usize, // max stored filters
 			overrides.clone(),
+			max_past_logs,
 		)));
 	}
 	io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
@@ -220,8 +235,11 @@ where
 	io.extend_with(NetApiServer::to_delegate(NetApi::new(
 		client.clone(),
 		network,
+		// Whether to format the `peer_count` response as Hex (default) or not.
+		true,
 	)));
 	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
+	// --- dvm --->
 
 	io
 }
@@ -235,7 +253,7 @@ where
 	P: 'static + sp_transaction_pool::TransactionPool,
 	F: 'static + sc_client_api::Fetcher<Block>,
 {
-	// --- substrate ---
+	// --- paritytech ---
 	use substrate_frame_rpc_system::{LightSystem, SystemApi};
 
 	let LightDeps {
