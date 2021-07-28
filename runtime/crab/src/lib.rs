@@ -77,7 +77,7 @@ mod weights;
 use codec::{Decode, Encode};
 // --- substrate ---
 use frame_support::{
-	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
 };
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
@@ -101,7 +101,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use darwinia_evm::{Account as EVMAccount, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
@@ -255,6 +255,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
+		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Config, Event, Inherent} = 42,
 	}
 }
 
@@ -350,10 +351,6 @@ sp_api::impl_runtime_apis! {
 			data: sp_inherents::InherentData,
 		) -> sp_inherents::CheckInherentsResult {
 			data.check_extrinsics(&block)
-		}
-
-		fn random_seed() -> <Block as BlockT>::Hash {
-			pallet_babe::RandomnessFromOneEpochAgo::<Runtime>::random_seed().0
 		}
 	}
 
@@ -667,44 +664,6 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		migrate()
+		0
 	}
-}
-
-fn migrate() -> Weight {
-	// --- paritytech ---
-	use frame_support::{migration, storage::StorageMap};
-
-	const BAD_SCHEDULE_KEY: BlockNumber = 2332800;
-
-	log::info!("Moving storage `Instance0DarwiniaBalances` to `Balances`");
-	migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-	log::info!("Moving storage `Instance1DarwiniaBalances` to `Kton`");
-	migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-	// Tech.Comm to Instance2
-	log::info!("Moving storage `Instance1Collective` to `Instance2Collective`");
-	migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
-	// Council to Instance1
-	log::info!("Moving storage `Instance0Collective` to `Instance1Collective`");
-	migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
-
-	log::info!("Moving storage `Instance0Membership` to `Instance1Membership`");
-	migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-	log::info!("Moving storage `DarwiniaPhragmenElection` to `PhragmenElection`");
-	migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-	#[cfg(feature = "try-runtime")]
-	assert!(<pallet_scheduler::Agenda<Runtime>>::contains_key(
-		BAD_SCHEDULE_KEY
-	));
-	log::info!("Removing bad schedule");
-	<pallet_scheduler::Agenda<Runtime>>::remove(BAD_SCHEDULE_KEY);
-	#[cfg(feature = "try-runtime")]
-	assert!(!<pallet_scheduler::Agenda<Runtime>>::contains_key(
-		BAD_SCHEDULE_KEY
-	));
-
-	RuntimeBlockWeights::get().max_block
 }

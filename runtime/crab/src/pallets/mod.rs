@@ -99,3 +99,6 @@ pub use evm::*;
 
 pub mod dvm;
 pub use dvm::*;
+
+pub mod dynamic_fee;
+pub use dynamic_fee::*;
