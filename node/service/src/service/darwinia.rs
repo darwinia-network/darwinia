@@ -49,8 +49,7 @@ use sp_api::ConstructRuntimeApi;
 use sp_consensus::{
 	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
 };
-use sp_inherents::InherentDataProviders;
-use sp_runtime::traits::BlakeTwo256;
+use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
 use crate::{client::DarwiniaClient, service::*};
@@ -226,7 +225,7 @@ where
 		keystore_container,
 		select_chain,
 		import_queue,
-		inherent_data_providers,
+		transaction_pool,
 		other: (rpc_extensions_builder, import_setup, rpc_setup, telemetry),
 	})
 }
@@ -265,7 +264,6 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		inherent_data_providers,
 		other: (rpc_extensions_builder, import_setup, rpc_setup, mut telemetry),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 

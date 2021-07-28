@@ -26,6 +26,7 @@ dc-db               = { git = "https://github.com/darwinia-network/darwinia-comm
 dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.1" }
 dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.1" }
 dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.1" }
+dvm-dynamic-fee     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.1" }
 dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.1" }
 # darwinia primitives
 darwinia-primitives = { path = "../../primitives" }

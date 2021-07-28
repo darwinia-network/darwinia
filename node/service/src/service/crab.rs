@@ -53,8 +53,7 @@ use sp_api::ConstructRuntimeApi;
 use sp_consensus::{
 	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
 };
-use sp_inherents::InherentDataProviders;
-use sp_runtime::traits::BlakeTwo256;
+use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
 use crate::{client::CrabClient, service::*};
@@ -285,7 +284,7 @@ where
 		keystore_container,
 		select_chain,
 		import_queue,
-		inherent_data_providers,
+		transaction_pool,
 		other: (
 			rpc_extensions_builder,
 			import_setup,
@@ -335,7 +334,6 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		inherent_data_providers,
 		other:
 			(
 				rpc_extensions_builder,
@@ -467,7 +465,7 @@ where
 						target_gas_price.into(),
 					);
 
-					Ok((timestamp, slot, uncles, ))
+					Ok((timestamp, slot, uncles, dynamic_fee))
 				}
 			},
 			force_authoring,
@@ -735,6 +733,7 @@ where
 #[cfg(feature = "full-node")]
 pub fn new_chain_ops<Runtime, Dispatch>(
 	config: &mut Configuration,
+	max_past_logs: u32,
 	target_gas_price: u64,
 ) -> Result<
 	(
@@ -758,7 +757,7 @@ where
 		import_queue,
 		task_manager,
 		..
-	} = new_partial::<Runtime, Dispatch>(config, target_gas_price)?;
+	} = new_partial::<Runtime, Dispatch>(config, max_past_logs, target_gas_price)?;
 
 	Ok((client, backend, import_queue, task_manager))
 }
@@ -769,7 +768,7 @@ pub fn crab_new_full(
 	config: Configuration,
 	authority_discovery_disabled: bool,
 	max_past_logs: u32,
-	dynamic_fee_parameters: u64,
+	target_gas_price: u64,
 ) -> Result<
 	(
 		TaskManager,
