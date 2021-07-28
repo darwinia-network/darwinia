@@ -1,11 +1,8 @@
 // --- paritytech ---
-use sp_core::{H160, U256};
-use sp_runtime::DispatchResult;
+use sp_core::U256;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_evm::{
-	runner::stack::Runner, ConcatAddressMapping, Config, EnsureAddressTruncated, IssuingHandler,
-};
+use darwinia_evm::{runner::stack::Runner, ConcatAddressMapping, Config, EnsureAddressTruncated};
 use dvm_ethereum::account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance};
 
 pub type CrabPrecompiles<Runtime> = (
@@ -51,12 +48,5 @@ impl Config for Runtime {
 	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
 	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
 	type Runner = Runner<Self>;
-	type IssuingHandler = DisableIssuing;
-}
-
-pub struct DisableIssuing;
-impl IssuingHandler for DisableIssuing {
-	fn handle(_: H160, _: H160, _: &[u8]) -> DispatchResult {
-		Err("unimplemented".into())
-	}
+	type IssuingHandler = ();
 }
