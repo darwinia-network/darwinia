@@ -39,8 +39,6 @@ impl Config for Runtime {
 	type GasWeightMapping = ();
 	type CallOrigin = EnsureAddressTruncated;
 	type AddressMapping = ConcatAddressMapping;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
 	type Event = Event;
 	type Precompiles = CrabPrecompiles<Self>;
 	type ChainId = ChainId;
