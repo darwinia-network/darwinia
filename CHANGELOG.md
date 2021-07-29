@@ -49,7 +49,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.0-fix-storage
 
 #### Darwinia Custom
 ##### Runtime
-- None
+- Although this version is released after 1110, but it will be upgraded first before 1110
 ##### Migration(s)
 - Migrate `DarwiniaEthereumBacking` to `EthereumBacking`
 
