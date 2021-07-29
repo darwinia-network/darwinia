@@ -204,7 +204,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
 	// crate version ~0.11.0 := >=0.11.0, <0.12.0
-	spec_version: 1100,
+	spec_version: 1101,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -576,47 +576,45 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- substrate ---
-		// use frame_support::migration;
+		use frame_support::migration;
+
+		fn assert_new_storage(exists: bool) {
+			assert_eq!(
+				migration::have_storage_value(b"DarwiniaEthereumBacking", b"RingTokenAddress", &[]),
+				!exists
+			);
+			assert_eq!(
+				migration::have_storage_value(b"DarwiniaEthereumBacking", b"KtonTokenAddress", &[]),
+				!exists
+			);
+			assert_eq!(
+				migration::have_storage_value(b"EthereumBacking", b"RingTokenAddress", &[]),
+				exists
+			);
+			assert_eq!(
+				migration::have_storage_value(b"EthereumBacking", b"KtonTokenAddress", &[]),
+				exists
+			);
+		}
+
+		assert_new_storage(false);
+		migrate();
+		assert_new_storage(true);
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		use frame_support::migration;
-
-		log::info!("Moving storage `Instance0DarwiniaBalances` to `Balances`");
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		log::info!("Moving storage `Instance1DarwiniaBalances` to `Kton`");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
-
-		// Tech.Comm to Instance2
-		log::info!("Moving storage `Instance1Collective` to `Instance2Collective`");
-		migration::move_pallet(b"Instance1Collective", b"Instance2Collective");
-		// Council to Instance1
-		log::info!("Moving storage `Instance0Collective` to `Instance1Collective`");
-		migration::move_pallet(b"Instance0Collective", b"Instance1Collective");
-
-		log::info!("Moving storage `Instance0Membership` to `Instance1Membership`");
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		log::info!("Moving storage `DarwiniaPhragmenElection` to `PhragmenElection`");
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
-
-		log::info!(
-			"Moving storage `Instance0DarwiniaRelayerGame` to `Instance1DarwiniaRelayerGame`"
-		);
-		migration::move_pallet(
-			b"Instance0DarwiniaRelayerGame",
-			b"Instance1DarwiniaRelayerGame",
-		);
-
-		log::info!("Moving storage `Instance0DarwiniaRelayAuthorities` to `Instance1DarwiniaRelayAuthorities`");
-		migration::move_pallet(
-			b"Instance0DarwiniaRelayAuthorities",
-			b"Instance1DarwiniaRelayAuthorities",
-		);
+		migrate();
 
 		RuntimeBlockWeights::get().max_block
 	}
+}
+
+fn migrate() {
+	// --- substrate ---
+	use frame_support::migration;
+
+	log::info!("Moving storage `DarwiniaEthereumBacking` to `EthereumBacking`");
+	migration::move_pallet(b"DarwiniaEthereumBacking", b"EthereumBacking");
 }
