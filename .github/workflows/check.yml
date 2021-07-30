@@ -9,10 +9,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  DARWINIA_PORT_HTTP: 9001
-  DARWINIA_PORT_WS: 9002
-  CRAB_PORT_HTTP: 9100
-  CRAB_PORT_WS: 9101
+  PORT_HTTP: 9001
+  PORT_WS: 9002
 
 
 jobs:
@@ -34,38 +32,19 @@ jobs:
       - name: Build node
         run: cargo build --release
 
-      - name: Run darwinia
+      - name: Run node
         run: |
           ./target/release/darwinia \
             --tmp --dev \
             --rpc-cors=all \
-            --chain darwinia \
             --name node-check-darwinia \
-            --rpc-port $DARWINIA_PORT_HTTP \
-            --ws-port $DARWINIA_PORT_WS \
+            --rpc-port $PORT_HTTP \
+            --ws-port $PORT_WS \
             &
 
-      - name: Run crab
-        run: |
-          ./target/release/darwinia \
-            --tmp --dev \
-            --rpc-cors=all \
-            --chain crab \
-            --name node-check-crab \
-            --rpc-port $CRAB_PORT_HTTP \
-            --ws-port CRAB_PORT_WS \
-            &
-
-      - name: Check darwinia storage
+      - name: Check storage prefix
         run: |
           curl -vvv -L \
             -H "Content-Type: application/json" \
             -d '{"id":1, "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' \
-            127.0.0.1:$DARWINIA_PORT_HTTP
-
-      - name: Check crab storage
-        run: |
-          curl -vvv -L \
-            -H "Content-Type: application/json" \
-            -d '{"id":1, "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' \
-            127.0.0.1:$CRAB_PORT_HTTP
+            127.0.0.1:$PORT_HTTP
