@@ -17,7 +17,7 @@ env:
 
 jobs:
   run-node:
-    name: Background run nodes
+    name: Run nodes and check storage prefix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
