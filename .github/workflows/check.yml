@@ -9,11 +9,15 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  DARWINIA_PORT_HTTP: 9001
+  DARWINIA_PORT_WS: 9002
+  CRAB_PORT_HTTP: 9100
+  CRAB_PORT_WS: 9101
 
 
 jobs:
   run-node:
-    name: Build and Test
+    name: Background run nodes
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -27,3 +31,40 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
 
+      - name: Build node
+        run: cargo build --release
+
+      - name: Run darwinia
+        run: |
+          ./target/release/darwinia \
+            --tmp --dev \
+            --rpc-cors=all \
+            --chain darwinia \
+            --name node-check-darwinia \
+            --rpc-port $DARWINIA_PORT_HTTP \
+            --ws-port $DARWINIA_PORT_WS \
+            &
+
+      - name: Run crab
+        run: |
+          ./target/release/darwinia \
+            --tmp --dev \
+            --rpc-cors=all \
+            --chain crab \
+            --name node-check-crab \
+            --rpc-port $CRAB_PORT_HTTP \
+            --ws-port CRAB_PORT_WS \
+            &
+
+  check-storage:
+    name: Check Storage Prefix
+    runs-on: ubuntu-latest
+    needs: [run-node]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check darwinia storage
+        run: curl -vvv -L 127.0.0.1:$DARWINIA_PORT_HTTP
+
+      - name: Check crab storage
+        run: curl -vvv -L 127.0.0.1:$CRAB_PORT_HTTP
