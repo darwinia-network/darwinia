@@ -56,15 +56,16 @@ jobs:
             --ws-port CRAB_PORT_WS \
             &
 
-  check-storage:
-    name: Check Storage Prefix
-    runs-on: ubuntu-latest
-    needs: [run-node]
-    steps:
-      - uses: actions/checkout@v2
-
       - name: Check darwinia storage
-        run: curl -vvv -L 127.0.0.1:$DARWINIA_PORT_HTTP
+        run: |
+          curl -vvv -L \
+            -H "Content-Type: application/json" \
+            -d '{"id":1, "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' \
+            127.0.0.1:$DARWINIA_PORT_HTTP
 
       - name: Check crab storage
-        run: curl -vvv -L 127.0.0.1:$CRAB_PORT_HTTP
+        run: |
+          curl -vvv -L \
+            -H "Content-Type: application/json" \
+            -d '{"id":1, "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' \
+            127.0.0.1:$CRAB_PORT_HTTP
