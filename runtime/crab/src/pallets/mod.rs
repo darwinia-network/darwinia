@@ -94,8 +94,8 @@ pub use multisig::*;
 pub mod crab_issuing;
 pub use crab_issuing::*;
 
-pub mod evm;
-pub use evm::*;
+pub mod evm_;
+pub use evm_::*;
 
 pub mod dvm;
 pub use dvm::*;

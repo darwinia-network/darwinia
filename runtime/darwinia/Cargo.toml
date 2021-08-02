@@ -114,6 +114,7 @@ std = [
 	"darwinia-tron-backing/std",
 	"darwinia-vesting/std",
 	"darwinia-primitives/std",
+	"ethereum-primitives/std",
 	"darwinia-runtime-common/std",
 	"frame-executive/std",
 	"frame-support/std",

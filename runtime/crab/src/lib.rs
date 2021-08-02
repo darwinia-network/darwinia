@@ -106,6 +106,7 @@ use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntime
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use dvm_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use dvm_rpc_runtime_api::TransactionStatus;
 
 /// The address format for describing accounts.
@@ -268,7 +269,7 @@ where
 		account: AccountId,
 		nonce: <Runtime as frame_system::Config>::Index,
 	) -> Option<(Call, <UncheckedExtrinsic as ExtrinsicT>::SignaturePayload)> {
-		let period = BlockHashCount::get()
+		let period = BlockHashCountForCrab::get()
 			.checked_next_power_of_two()
 			.map(|c| c / 2)
 			.unwrap_or(2) as u64;
@@ -533,7 +534,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn author() -> H160 {
-			<dvm_ethereum::Pallet<Runtime>>::find_author()
+			<darwinia_evm::Pallet<Runtime>>::find_author()
 		}
 
 		fn storage_at(address: H160, index: U256) -> H256 {
@@ -623,6 +624,15 @@ sp_api::impl_runtime_apis! {
 				Ethereum::current_receipts(),
 				Ethereum::current_transaction_statuses()
 			)
+		}
+
+		fn extrinsic_filter(
+			xts: Vec<<Block as BlockT>::Extrinsic>,
+		) -> Vec<EthereumTransaction> {
+			xts.into_iter().filter_map(|xt| match xt.function {
+				Call::Ethereum(transact(t)) => Some(t),
+				_ => None
+			}).collect::<Vec<EthereumTransaction>>()
 		}
 	}
 
