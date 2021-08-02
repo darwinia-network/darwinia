@@ -315,12 +315,11 @@ pub fn run() -> sc_cli::Result<()> {
 		}
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-
-			// <--- dvm ---
 			let chain_spec = &runner.config().chain_spec;
 
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| {
+					// <--- dvm ---
 					// Remove dvm offchain db
 					let dvm_database_config = sc_service::DatabaseConfig::RocksDb {
 						path: darwinia_service::crab::dvm_database_dir(&config),
@@ -328,10 +327,13 @@ pub fn run() -> sc_cli::Result<()> {
 					};
 
 					cmd.run(dvm_database_config)?;
+					// --- dvm --->
+
 					cmd.run(config.database)
 				})
+			} else {
+				runner.sync_run(|config| cmd.run(config.database))
 			}
-			// --- dvm --->
 		}
 		Some(Subcommand::Revert(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
