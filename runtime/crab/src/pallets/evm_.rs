@@ -1,8 +1,8 @@
 // --- crates.io ---
-use evm::{Context, ExitError};
+use evm::{executor::PrecompileOutput, Context, ExitError};
 // --- paritytech ---
 use frame_support::{traits::FindAuthor, ConsensusEngineId};
-use sp_core::{H160, U256};
+use sp_core::{crypto::Public, H160, U256};
 use sp_std::marker::PhantomData;
 // --- darwinia-network ---
 use crate::*;
