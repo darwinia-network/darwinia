@@ -134,7 +134,7 @@ where
 		deny_unsafe,
 		babe,
 		grandpa,
-		// < --- dvm ---
+		// <--- dvm ---
 		is_authority,
 		network,
 		pending_transactions,
@@ -191,7 +191,7 @@ where
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	// < --- dvm ---
+	// <--- dvm ---
 	let mut overrides_map = BTreeMap::new();
 	overrides_map.insert(
 		EthereumStorageSchema::V1,
