@@ -1633,6 +1633,7 @@ dependencies = [
 name = "darwinia-primitives"
 version = "0.11.1"
 dependencies = [
+ "frame-support",
  "frame-system",
  "parity-scale-codec",
  "sp-application-crypto",

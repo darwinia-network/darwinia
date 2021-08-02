@@ -18,6 +18,10 @@ sp-application-crypto = { default-features = false, git = "https://github.com/da
 sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 
+[dev-dependencies]
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+
+
 [features]
 default = ["std"]
 
