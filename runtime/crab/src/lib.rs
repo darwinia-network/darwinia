@@ -529,7 +529,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_code_at(address: H160) -> Vec<u8> {
-			darwinia_evm::Module::<Runtime>::account_codes(address)
+			darwinia_evm::Pallet::<Runtime>::account_codes(address)
 		}
 
 		fn author() -> H160 {
@@ -539,7 +539,7 @@ sp_api::impl_runtime_apis! {
 		fn storage_at(address: H160, index: U256) -> H256 {
 			let mut tmp = [0u8; 32];
 			index.to_big_endian(&mut tmp);
-			darwinia_evm::Module::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+			darwinia_evm::Pallet::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
 		}
 
 		fn call(
