@@ -533,7 +533,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn author() -> H160 {
-			<dvm_ethereum::Module<Runtime>>::find_author()
+			<dvm_ethereum::Pallet<Runtime>>::find_author()
 		}
 
 		fn storage_at(address: H160, index: U256) -> H256 {
