@@ -315,7 +315,6 @@ pub fn crab_testnet_genesis(
 			accounts: BTreeMap::new(),
 		},
 		dvm_ethereum: Default::default(),
-		dvm_dynamic_fee: Default::default(),
 	}
 }
 
