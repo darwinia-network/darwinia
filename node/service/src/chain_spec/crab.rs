@@ -206,7 +206,6 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 			accounts: BTreeMap::new(),
 		},
 		dvm_ethereum: Default::default(),
-		dvm_dynamic_fee: Default::default(),
 	}
 }
 

@@ -254,7 +254,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
-		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Config, Event, Inherent} = 42,
+		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 	}
 }
 
