@@ -29,22 +29,9 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
 
-      - name: Build node
-        run: cargo build --release
-
-      - name: Run node
-        run: |
-          ./target/release/darwinia \
-            --tmp --dev \
-            --rpc-cors=all \
-            --name node-check-darwinia \
-            --rpc-port $PORT_HTTP \
-            --ws-port $PORT_WS \
-            &
-
       - name: Check storage prefix
         run: |
-          curl -vvv -L \
-            -H "Content-Type: application/json" \
-            -d '{"id":1, "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' \
-            127.0.0.1:$PORT_HTTP
+          cargo build --release
+          cargo install ci-bot --git https://github.com/darwinia-network/darwinia-kit
+          ci-bot storage-prefix --chain darwinia --exec ./target/release/darwinia
+          ci-bot storage-prefix --chain crab --exec ./target/release/darwinia
