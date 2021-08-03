@@ -203,7 +203,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1110,
+	spec_version: 1120,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -641,6 +641,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- darwinia-network ---
 		use darwinia_header_mmr::NodeIndex;
 
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
@@ -660,12 +661,23 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			&[]
 		));
 
+		log::info!("Migrate `EthereumRelay`...");
+		darwinia_ethereum_relay::migration::migrate(PARCEL);
+
+		log::info!("Migrate `EthereumRelayerGame`...");
+		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
+
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+
+		log::info!("Migrate `EthereumRelay`...");
 		darwinia_ethereum_relay::migration::migrate(PARCEL);
+
+		log::info!("Migrate `EthereumRelayerGame`...");
 		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
 
 		RuntimeBlockWeights::get().max_block

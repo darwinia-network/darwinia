@@ -156,13 +156,13 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 1110,
+	spec_version: 1120,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 5,
+	transaction_version: 6,
 };
 
 /// Native version.
@@ -674,6 +674,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- darwinia-network ---
 		use darwinia_header_mmr::NodeIndex;
 
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
@@ -697,6 +698,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		let number = System::block_number();
@@ -715,6 +717,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		if old_to_remove != 0 {
 			for to_remove in old_to_remove..=new_to_remove_before_finalize {
 				<frame_system::BlockHash<Runtime>>::remove(to_remove);
+
+				log::info!("Pruned `BlockHash` of Block `{}`", to_remove);
 			}
 		}
 

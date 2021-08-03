@@ -1,3 +1,132 @@
+## [0.11.2] - 2021-08-03
+
+### Upgrade Priority: LOW
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.2
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1120         |
+|   Crab   |         1120         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.2
+```
+
+#### Update(s)
+- Updates [C 604](https://github.com/darwinia-network/darwinia-common/pull/604), [C 644](https://github.com/darwinia-network/darwinia-common/pull/644), [C 648](https://github.com/darwinia-network/darwinia-common/pull/648), [C 652](https://github.com/darwinia-network/darwinia-common/pull/652), [C 654](https://github.com/darwinia-network/darwinia-common/pull/654), [C 686](https://gith,ub.com/darwinia-network/darwinia-common/pull/686), [C 703](https://github.com/darwinia-network/darwinia-common/pull/703), [C 708](https://github.com/darwinia-network/darwinia-common/pull/708), [C 718](https://github.com/darwinia-network/darwinia-common/pull/718), [C 729](https://github.com/darwinia-network/darwinia-common/pull/729)
+- Only For Darwinia Developers [R 22](https://github.com/darwinia-network/substrate-update-tracking/issues/22)
+#### Fix(es)
+- None
+#### Migration(s)
+- https://github.com/paritytech/substrate/pull/8773 we don't have this pallet
+- https://github.com/paritytech/substrate/pull/8769 it's okay we never modify the `Scheduler` in `construct_runtime!`
+- #696 Remove `darwinia-header-mmr`'s Patches
+
+---
+
+#### Darwinia Custom
+##### Update(s)
+- [Support London Updates](https://github.com/darwinia-network/darwinia-common/pull/708)
+##### Migration(s)
+- #696 Support London Updates
+
+---
+
+#### Crab Custom
+##### Update(s)
+- None
+##### Migration(s)
+- None
+
+
+## [0.11.0-fix-storage] - 2021-07-29
+
+### Upgrade Priority: LOW
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.0-fix-storage
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1101         |
+|   Crab   |         1100         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.0-fix-storage
+```
+
+### Change Log
+
+#### Update(s)
+- None
+#### Fix(es)
+- None
+#### Migration(s)
+- None
+
+---
+
+#### Darwinia Custom
+##### Runtime
+- Although this version is released after 1110, but it will be upgraded first before 1110
+##### Migration(s)
+- Migrate `DarwiniaEthereumBacking` to `EthereumBacking`
+
+---
+
+#### Crab Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+
 ## [0.11.1] - 2021-07-28
 
 ### Upgrade Priority: MEDIUM
