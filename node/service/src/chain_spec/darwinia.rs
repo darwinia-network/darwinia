@@ -243,10 +243,14 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		},
 		pallet_babe: BabeConfig {
 			authorities: vec![],
-			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 		},
-		darwinia_balances_Instance1: BalancesConfig { balances: rings.into_iter().collect() },
-		darwinia_balances_Instance2: KtonConfig { balances: ktons.into_iter().collect() },
+		darwinia_balances_Instance1: BalancesConfig {
+			balances: rings.into_iter().collect(),
+		},
+		darwinia_balances_Instance2: KtonConfig {
+			balances: ktons.into_iter().collect(),
+		},
 		darwinia_staking: StakingConfig {
 			minimum_validator_count: 1,
 			validator_count: 15,
@@ -255,14 +259,14 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 					genesis_validator_1.0.clone(),
 					genesis_validator_1.1.clone(),
 					COIN,
-					StakerStatus::Validator
+					StakerStatus::Validator,
 				),
 				(
 					genesis_validator_2.0.clone(),
 					genesis_validator_2.1.clone(),
 					COIN,
-					StakerStatus::Validator
-				)
+					StakerStatus::Validator,
+				),
 			],
 			force_era: Forcing::ForceNew,
 			slash_reward_fraction: Perbill::from_percent(10),
@@ -274,14 +278,14 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				(
 					genesis_validator_1.0.clone(),
 					genesis_validator_1.0,
-					genesis_validator_1.2
+					genesis_validator_1.2,
 				),
 				(
 					genesis_validator_2.0.clone(),
 					genesis_validator_2.0,
-					genesis_validator_2.2
-				)
-			]
+					genesis_validator_2.2,
+				),
+			],
 		},
 		pallet_grandpa: Default::default(),
 		pallet_im_online: Default::default(),
@@ -295,8 +299,13 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
 				(team_vesting, 365 * DAYS, 365 * DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
-				(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * DAYS, 0)
-			]
+				(
+					foundation_vesting,
+					0,
+					(5.00_f64 * 365.25_f64) as BlockNumber * DAYS,
+					0,
+				),
+			],
 		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_ethereum_backing: EthereumBackingConfig {
@@ -313,10 +322,31 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {
-			genesis_header_info: (
-				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
-				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
-			),
+			genesis_header_parcel: r#"{
+				"header": {
+					"difficulty": "0x1a76e148d47e3f",
+					"extraData": "0x626565706f6f6c2e6f72675f3622e3",
+					"gasLimit": "0xe4c4d7",
+					"gasUsed": "0xe49a99",
+					"hash": "0xf2d555dc534b52389877dc6c3db074fc40810e3c858949bbb9bfbc907318bdd3",
+					"logsBloom": "0x1226e522b431888c52a186a6bc361a1375930081649a046025492940aec1890d111c0120082c0d1117435383000b4930122689d62c22adc01ad27e8a42e12104b0500454200121bd79d6382ea0c65af40235a904046409b8b44c3602ca883503930483040a270970b566100c2009e940e016522b580d845f4f290e5a2d0d63360800b4c09e002ab632fc12c8028869a2973911011360c5483a26216a1d9803b9aadca1893005a8f36603eac4a942058098300280da0c8b2620e387aa12092a04ec13a063718d56c02aa31330279830048e1d1706150bb97666c877b2023221c7173ae13dd9c10080b964b14d208c64108dc32590e95880500e838a0f22129221",
+					"miner": "0x99c85bb64564d9ef9a99621301f22c9993cb89e3",
+					"mixHash": "0x37690063a5583ebc490c22f1ad1e96d82d5b18c5f69e34aaf048d4f9346bad61",
+					"nonce": "0x40b7a2b472de4a3c",
+					"number": "0xc5814b",
+					"parentHash": "0xaf7ec781faedb3524013da0561afef52aeae79f8f24b5a064d8b6e55c3d54587",
+					"receiptsRoot": "0x789dc0e01565ea1e4291c2b5bdd5e930aebc83bc3ab4646bb78d65fe3daad484",
+					"sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+					"size": "0x1092c",
+					"stateRoot": "0x2836918ac7e0f151d5594fc3276cf6c34cd7b6512d622e72fa393daff72752e1",
+					"timestamp": "0x61076b22",
+					"totalDifficulty": "0x5ffec465fc78e1f3319",
+					"transactions": [],
+					"transactionsRoot": "0xdca3e219bda6af76807a78ee412054aba59acc347b209d8db55e49836beb8d50",
+					"uncles": []
+				},
+				"parent_mmr_root": "0xef3b0e8e1c5b782216791ba8ed63982cdbd18287210f697add38085d832b4381"
+			}"#.into(),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
 				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",
@@ -385,7 +415,7 @@ pub fn darwinia_testnet_genesis(
 		},
 		pallet_babe: BabeConfig {
 			authorities: vec![],
-			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG)
+			epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 		},
 		darwinia_balances_Instance1: BalancesConfig {
 			balances: endowed_accounts
@@ -441,10 +471,31 @@ pub fn darwinia_testnet_genesis(
 			..Default::default()
 		},
 		darwinia_ethereum_relay: EthereumRelayConfig {
-			genesis_header_info: (
-				vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 29, 204, 77, 232, 222, 199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240, 161, 66, 253, 64, 212, 147, 71, 128, 17, 187, 232, 219, 78, 52, 123, 78, 140, 147, 124, 28, 131, 112, 228, 181, 237, 51, 173, 179, 219, 105, 203, 219, 122, 56, 225, 229, 11, 27, 130, 250, 215, 248, 151, 79, 181, 172, 120, 217, 172, 9, 155, 154, 213, 1, 139, 237, 194, 206, 10, 114, 218, 209, 130, 122, 23, 9, 218, 48, 88, 15, 5, 68, 86, 232, 31, 23, 27, 204, 85, 166, 255, 131, 69, 230, 146, 192, 248, 110, 91, 72, 224, 27, 153, 108, 173, 192, 1, 98, 47, 181, 227, 99, 180, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 132, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 136, 0, 0, 0, 0, 0, 0, 0, 66, 1, 212, 229, 103, 64, 248, 118, 174, 248, 192, 16, 184, 106, 64, 213, 245, 103, 69, 161, 24, 208, 144, 106, 52, 230, 154, 236, 140, 13, 177, 203, 143, 163],
-				b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".into()
-			),
+			genesis_header_parcel: r#"{
+				"header": {
+					"difficulty": "0x1a76e148d47e3f",
+					"extraData": "0x626565706f6f6c2e6f72675f3622e3",
+					"gasLimit": "0xe4c4d7",
+					"gasUsed": "0xe49a99",
+					"hash": "0xf2d555dc534b52389877dc6c3db074fc40810e3c858949bbb9bfbc907318bdd3",
+					"logsBloom": "0x1226e522b431888c52a186a6bc361a1375930081649a046025492940aec1890d111c0120082c0d1117435383000b4930122689d62c22adc01ad27e8a42e12104b0500454200121bd79d6382ea0c65af40235a904046409b8b44c3602ca883503930483040a270970b566100c2009e940e016522b580d845f4f290e5a2d0d63360800b4c09e002ab632fc12c8028869a2973911011360c5483a26216a1d9803b9aadca1893005a8f36603eac4a942058098300280da0c8b2620e387aa12092a04ec13a063718d56c02aa31330279830048e1d1706150bb97666c877b2023221c7173ae13dd9c10080b964b14d208c64108dc32590e95880500e838a0f22129221",
+					"miner": "0x99c85bb64564d9ef9a99621301f22c9993cb89e3",
+					"mixHash": "0x37690063a5583ebc490c22f1ad1e96d82d5b18c5f69e34aaf048d4f9346bad61",
+					"nonce": "0x40b7a2b472de4a3c",
+					"number": "0xc5814b",
+					"parentHash": "0xaf7ec781faedb3524013da0561afef52aeae79f8f24b5a064d8b6e55c3d54587",
+					"receiptsRoot": "0x789dc0e01565ea1e4291c2b5bdd5e930aebc83bc3ab4646bb78d65fe3daad484",
+					"sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+					"size": "0x1092c",
+					"stateRoot": "0x2836918ac7e0f151d5594fc3276cf6c34cd7b6512d622e72fa393daff72752e1",
+					"timestamp": "0x61076b22",
+					"totalDifficulty": "0x5ffec465fc78e1f3319",
+					"transactions": [],
+					"transactionsRoot": "0xdca3e219bda6af76807a78ee412054aba59acc347b209d8db55e49836beb8d50",
+					"uncles": []
+				},
+				"parent_mmr_root": "0xef3b0e8e1c5b782216791ba8ed63982cdbd18287210f697add38085d832b4381"
+			}"#.into(),
 			dags_merkle_roots_loader: DagsMerkleRootsLoader::from_file(
 				"node/service/res/ethereum/dags-merkle-roots.json",
 				"DAG_MERKLE_ROOTS_PATH",

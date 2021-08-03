@@ -190,6 +190,7 @@ pub fn run() -> sc_cli::Result<()> {
 		}
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		}
 		Some(Subcommand::CheckBlock(cmd)) => {
@@ -314,7 +315,25 @@ pub fn run() -> sc_cli::Result<()> {
 		}
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| cmd.run(config.database))
+			let chain_spec = &runner.config().chain_spec;
+
+			if chain_spec.is_crab() {
+				runner.sync_run(|config| {
+					// <--- dvm ---
+					// Remove dvm offchain db
+					let dvm_database_config = sc_service::DatabaseConfig::RocksDb {
+						path: darwinia_service::crab::dvm_database_dir(&config),
+						cache_size: 0,
+					};
+
+					cmd.run(dvm_database_config)?;
+					// --- dvm --->
+
+					cmd.run(config.database)
+				})
+			} else {
+				runner.sync_run(|config| cmd.run(config.database))
+			}
 		}
 		Some(Subcommand::Revert(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
