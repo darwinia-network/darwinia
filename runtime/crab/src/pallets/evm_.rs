@@ -7,7 +7,6 @@ use sp_std::marker::PhantomData;
 // --- darwinia-network ---
 use crate::*;
 use darwinia_evm::{runner::stack::Runner, ConcatAddressMapping, Config, EnsureAddressTruncated};
-use darwinia_evm_precompile_issuing::Issuing;
 use darwinia_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use darwinia_evm_precompile_transfer::Transfer;
 use dp_evm::{Precompile, PrecompileSet};
@@ -48,7 +47,6 @@ impl<R: darwinia_evm::Config> PrecompileSet for CrabPrecompiles<R> {
 			_ if address == addr(4) => Some(Identity::execute(input, target_gas, context)),
 			// Darwinia precompiles
 			_ if address == addr(21) => Some(<Transfer<R>>::execute(input, target_gas, context)),
-			_ if address == addr(23) => Some(<Issuing<R>>::execute(input, target_gas, context)),
 			_ => None,
 		}
 	}

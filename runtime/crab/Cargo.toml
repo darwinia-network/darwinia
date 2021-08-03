@@ -29,7 +29,6 @@ darwinia-democracy                = { default-features = false, git = "https://g
 darwinia-elections-phragmen       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 # <--- dvm ---
 darwinia-evm                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
-darwinia-evm-precompile-issuing  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-evm-precompile-simple   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-evm-precompile-transfer = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 # --- dvm --->
@@ -117,7 +116,6 @@ std = [
 	"darwinia-elections-phragmen/std",
 	# <--- dvm ---
 	"darwinia-evm/std",
-	"darwinia-evm-precompile-issuing/std",
 	"darwinia-evm-precompile-simple/std",
 	"darwinia-evm-precompile-transfer/std",
 	# --- dvm --->
