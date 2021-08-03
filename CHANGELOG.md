@@ -1,3 +1,67 @@
+## [0.11.0-fix-storage] - 2021-07-29
+
+### Upgrade Priority: LOG
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.0-fix-storage
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1101         |
+|   Crab   |         1100         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.0-fix-storage
+```
+
+### Change Log
+
+#### Update(s)
+- None
+#### Fix(es)
+- None
+#### Migration(s)
+- None
+
+---
+
+#### Darwinia Custom
+##### Runtime
+- Although this version is released after 1110, but it will be upgraded first before 1110
+##### Migration(s)
+- Migrate `DarwiniaEthereumBacking` to `EthereumBacking`
+
+---
+
+#### Crab Custom
+##### Runtime
+- None
+##### Migration(s)
+- None
+
+
 ## [0.11.1] - 2021-07-28
 
 ### Upgrade Priority: MEDIUM
