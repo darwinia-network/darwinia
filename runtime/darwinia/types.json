@@ -120,6 +120,7 @@
 		"gas_limit": "U256",
 		"difficulty": "U256",
 		"seal": "Vec<Bytes>",
+		"base_fee_per_gas": "Option<U256>",
 		"hash": "Option<H256>"
 	},
 	"EthereumAddress": "H160",
@@ -136,7 +137,7 @@
 		"logs": "Vec<LogEntry>",
 		"outcome": "TransactionOutcome"
 	},
-	"EthereumNetworkType": {
+	"EthereumNetwork": {
 		"_enum": {
 			"Mainnet": null,
 			"Ropsten": null
@@ -172,6 +173,7 @@
 	"RelayAuthorityMessage": "EcdsaMessage",
 	"RelayAuthoritySignature": "EcdsaSignature",
 	"__[pallet.header-mmr]__": {},
+	"NodeIndex": "u64",
 	"MerkleMountainRangeRootLog": {
 		"prefix": "[u8; 4; Prefix]",
 		"parent_mmr_root": "Hash"
@@ -207,6 +209,10 @@
 	"ScheduledAuthoritiesChangeT": {
 		"next_authorities": "Vec<RelayAuthorityT>",
 		"deadline": "BlockNumber"
+	},
+	"MmrRootToSign": {
+		"mmr_root": "Hash",
+		"signatures": "Vec<(EthereumAddress, EcdsaSignature)>"
 	},
 	"MMRRoot": "Hash",
 	"__[darwinia.runtime]__": {},

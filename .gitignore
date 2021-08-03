@@ -1,23 +1,12 @@
-# Cross Compile
-wasm
-
-# IDE
-.idea
-.vscode
-.ignore
-
-# macOS
+# System
 .DS_Store
 
-# PM2
-.pm2.json
+# Integrated Development Environment
+.idea
+.vscode
 
-# Release
-release/
-
-# Rust
-**/*.rs.bk
-**/target/
-.cargo-ok
-Cargo.toml.bak
-expand.rs
+# Package Manager
+## cargo
+/target
+## npm
+node_modules

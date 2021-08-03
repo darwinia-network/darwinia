@@ -23,6 +23,7 @@ pub use crab_runtime;
 // --- std ---
 use std::{
 	collections::{BTreeMap, HashMap},
+	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
@@ -75,7 +76,8 @@ native_executor_instance!(
 
 impl_runtime_apis!(dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>);
 
-fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
+// <--- dvm ---
+pub fn dvm_database_dir(config: &Configuration) -> PathBuf {
 	let config_dir = config
 		.base_path
 		.as_ref()
@@ -83,15 +85,19 @@ fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, 
 		.unwrap_or_else(|| {
 			BasePath::from_project("", "", "crab").config_dir(config.chain_spec.id())
 		});
-	let database_dir = config_dir.join("dvm").join("db");
 
+	config_dir.join("dvm").join("db")
+}
+
+fn open_dvm_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
 		source: DatabaseSettingsSrc::RocksDb {
-			path: database_dir,
+			path: dvm_database_dir(&config),
 			cache_size: 0,
 		},
 	})?))
 }
+// --- dvm --->
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
@@ -227,7 +233,7 @@ where
 	let babe_config = babe_link.config().clone();
 	let shared_epoch_changes = babe_link.epoch_changes().clone();
 	// <--- dvm ---
-	let frontier_backend = open_frontier_backend(config)?;
+	let dvm_backend = open_dvm_backend(config)?;
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let pending_transactions: PendingTransactions = Some(Arc::new(Mutex::new(HashMap::new())));
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
@@ -240,7 +246,7 @@ where
 		let chain_spec = config.chain_spec.cloned_box();
 		// <--- dvm ---
 		let pending_transactions = pending_transactions.clone();
-		let frontier_backend = frontier_backend.clone();
+		let dvm_backend = dvm_backend.clone();
 		let filter_pool = filter_pool.clone();
 		// --- dvm --->
 
@@ -267,7 +273,7 @@ where
 				is_authority,
 				network,
 				pending_transactions: pending_transactions.clone(),
-				backend: frontier_backend.clone(),
+				backend: dvm_backend.clone(),
 				filter_pool: filter_pool.clone(),
 				max_past_logs,
 				// --- dvm --->
@@ -291,7 +297,7 @@ where
 			rpc_setup,
 			telemetry,
 			pending_transactions,
-			frontier_backend,
+			dvm_backend,
 			filter_pool,
 		),
 	})
@@ -341,7 +347,7 @@ where
 				rpc_setup,
 				mut telemetry,
 				pending_transactions,
-				frontier_backend,
+				dvm_backend,
 				filter_pool,
 			),
 	} = new_partial::<RuntimeApi, Executor>(&mut config, max_past_logs, target_gas_price)?;
@@ -569,7 +575,7 @@ where
 				Duration::new(6, 0),
 				client.clone(),
 				backend.clone(),
-				frontier_backend.clone(),
+				dvm_backend.clone(),
 			)
 			.for_each(|()| futures::future::ready(())),
 		);

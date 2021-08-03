@@ -310,7 +310,7 @@ where
 		account: AccountId,
 		nonce: <Runtime as frame_system::Config>::Index,
 	) -> Option<(Call, <UncheckedExtrinsic as ExtrinsicT>::SignaturePayload)> {
-		let period = BlockHashCount::get()
+		let period = BlockHashCountForDarwinia::get()
 			.checked_next_power_of_two()
 			.map(|c| c / 2)
 			.unwrap_or(2) as u64;
@@ -566,14 +566,108 @@ impl_runtime_apis! {
 	}
 }
 
+const PARCEL: &[u8] = &[
+	175, 126, 199, 129, 250, 237, 179, 82, 64, 19, 218, 5, 97, 175, 239, 82, 174, 174, 121, 248,
+	242, 75, 90, 6, 77, 139, 110, 85, 195, 213, 69, 135, 34, 107, 7, 97, 0, 0, 0, 0, 75, 129, 197,
+	0, 0, 0, 0, 0, 153, 200, 91, 182, 69, 100, 217, 239, 154, 153, 98, 19, 1, 242, 44, 153, 147,
+	203, 137, 227, 220, 163, 226, 25, 189, 166, 175, 118, 128, 122, 120, 238, 65, 32, 84, 171, 165,
+	154, 204, 52, 123, 32, 157, 141, 181, 94, 73, 131, 107, 235, 141, 80, 29, 204, 77, 232, 222,
+	199, 93, 122, 171, 133, 181, 103, 182, 204, 212, 26, 211, 18, 69, 27, 148, 138, 116, 19, 240,
+	161, 66, 253, 64, 212, 147, 71, 60, 98, 101, 101, 112, 111, 111, 108, 46, 111, 114, 103, 95,
+	54, 34, 227, 40, 54, 145, 138, 199, 224, 241, 81, 213, 89, 79, 195, 39, 108, 246, 195, 76, 215,
+	182, 81, 45, 98, 46, 114, 250, 57, 61, 175, 247, 39, 82, 225, 120, 157, 192, 224, 21, 101, 234,
+	30, 66, 145, 194, 181, 189, 213, 233, 48, 174, 188, 131, 188, 58, 180, 100, 107, 183, 141, 101,
+	254, 61, 170, 212, 132, 18, 38, 229, 34, 180, 49, 136, 140, 82, 161, 134, 166, 188, 54, 26, 19,
+	117, 147, 0, 129, 100, 154, 4, 96, 37, 73, 41, 64, 174, 193, 137, 13, 17, 28, 1, 32, 8, 44, 13,
+	17, 23, 67, 83, 131, 0, 11, 73, 48, 18, 38, 137, 214, 44, 34, 173, 192, 26, 210, 126, 138, 66,
+	225, 33, 4, 176, 80, 4, 84, 32, 1, 33, 189, 121, 214, 56, 46, 160, 198, 90, 244, 2, 53, 169, 4,
+	4, 100, 9, 184, 180, 76, 54, 2, 202, 136, 53, 3, 147, 4, 131, 4, 10, 39, 9, 112, 181, 102, 16,
+	12, 32, 9, 233, 64, 224, 22, 82, 43, 88, 13, 132, 95, 79, 41, 14, 90, 45, 13, 99, 54, 8, 0,
+	180, 192, 158, 0, 42, 182, 50, 252, 18, 200, 2, 136, 105, 162, 151, 57, 17, 1, 19, 96, 197, 72,
+	58, 38, 33, 106, 29, 152, 3, 185, 170, 220, 161, 137, 48, 5, 168, 243, 102, 3, 234, 196, 169,
+	66, 5, 128, 152, 48, 2, 128, 218, 12, 139, 38, 32, 227, 135, 170, 18, 9, 42, 4, 236, 19, 160,
+	99, 113, 141, 86, 192, 42, 163, 19, 48, 39, 152, 48, 4, 142, 29, 23, 6, 21, 11, 185, 118, 102,
+	200, 119, 178, 2, 50, 33, 199, 23, 58, 225, 61, 217, 193, 0, 128, 185, 100, 177, 77, 32, 140,
+	100, 16, 141, 195, 37, 144, 233, 88, 128, 80, 14, 131, 138, 15, 34, 18, 146, 33, 153, 154, 228,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 215,
+	196, 228, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 63, 126, 212, 72, 225, 118, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 8, 132, 160, 55, 105, 0, 99, 165, 88, 62, 188, 73, 12, 34, 241, 173, 30, 150,
+	216, 45, 91, 24, 197, 246, 158, 52, 170, 240, 72, 212, 249, 52, 107, 173, 97, 36, 136, 64, 183,
+	162, 180, 114, 222, 74, 60, 0, 1, 242, 213, 85, 220, 83, 75, 82, 56, 152, 119, 220, 108, 61,
+	176, 116, 252, 64, 129, 14, 60, 133, 137, 73, 187, 185, 191, 188, 144, 115, 24, 189, 211, 239,
+	59, 14, 142, 28, 91, 120, 34, 22, 121, 27, 168, 237, 99, 152, 44, 219, 209, 130, 135, 33, 15,
+	105, 122, 221, 56, 8, 93, 131, 43, 67, 129,
+];
+
+#[test]
+fn assert_encoded_eq() {
+	darwinia_ethereum_relay::migration::assert_encoded_eq(
+		r#"{
+			"header": {
+				"difficulty": "0x1a76e148d47e3f",
+				"extraData": "0x626565706f6f6c2e6f72675f3622e3",
+				"gasLimit": "0xe4c4d7",
+				"gasUsed": "0xe49a99",
+				"hash": "0xf2d555dc534b52389877dc6c3db074fc40810e3c858949bbb9bfbc907318bdd3",
+				"logsBloom": "0x1226e522b431888c52a186a6bc361a1375930081649a046025492940aec1890d111c0120082c0d1117435383000b4930122689d62c22adc01ad27e8a42e12104b0500454200121bd79d6382ea0c65af40235a904046409b8b44c3602ca883503930483040a270970b566100c2009e940e016522b580d845f4f290e5a2d0d63360800b4c09e002ab632fc12c8028869a2973911011360c5483a26216a1d9803b9aadca1893005a8f36603eac4a942058098300280da0c8b2620e387aa12092a04ec13a063718d56c02aa31330279830048e1d1706150bb97666c877b2023221c7173ae13dd9c10080b964b14d208c64108dc32590e95880500e838a0f22129221",
+				"miner": "0x99c85bb64564d9ef9a99621301f22c9993cb89e3",
+				"mixHash": "0x37690063a5583ebc490c22f1ad1e96d82d5b18c5f69e34aaf048d4f9346bad61",
+				"nonce": "0x40b7a2b472de4a3c",
+				"number": "0xc5814b",
+				"parentHash": "0xaf7ec781faedb3524013da0561afef52aeae79f8f24b5a064d8b6e55c3d54587",
+				"receiptsRoot": "0x789dc0e01565ea1e4291c2b5bdd5e930aebc83bc3ab4646bb78d65fe3daad484",
+				"sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+				"size": "0x1092c",
+				"stateRoot": "0x2836918ac7e0f151d5594fc3276cf6c34cd7b6512d622e72fa393daff72752e1",
+				"timestamp": "0x61076b22",
+				"totalDifficulty": "0x5ffec465fc78e1f3319",
+				"transactions": [],
+				"transactionsRoot": "0xdca3e219bda6af76807a78ee412054aba59acc347b209d8db55e49836beb8d50",
+				"uncles": []
+			},
+			"parent_mmr_root": "0xef3b0e8e1c5b782216791ba8ed63982cdbd18287210f697add38085d832b4381"
+		}"#,
+		PARCEL,
+	)
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::{migration, Identity};
+		// --- darwinia-network ---
+		use darwinia_header_mmr::NodeIndex;
+
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+
+		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList"
+		)
+		.next()
+		.is_none());
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList",
+			&[]
+		));
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"PruningConfiguration",
+			&[]
+		));
+
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		0
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+		darwinia_ethereum_relay::migration::migrate(PARCEL);
+		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
+
+		RuntimeBlockWeights::get().max_block
 	}
 }
