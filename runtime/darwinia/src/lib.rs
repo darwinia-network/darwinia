@@ -641,21 +641,21 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- darwinia-network ---
 		use darwinia_header_mmr::NodeIndex;
 
-		darwinia_header_mmr::migration::migrate(b"HeaderMMR");
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
-			b"HeaderMMR",
+			b"DarwiniaHeaderMMR",
 			b"MMRNodeList"
 		)
 		.next()
 		.is_none());
 		assert!(!migration::have_storage_value(
-			b"HeaderMMR",
+			b"DarwiniaHeaderMMR",
 			b"MMRNodeList",
 			&[]
 		));
 		assert!(!migration::have_storage_value(
-			b"HeaderMMR",
+			b"DarwiniaHeaderMMR",
 			b"PruningConfiguration",
 			&[]
 		));
@@ -664,6 +664,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 		darwinia_ethereum_relay::migration::migrate(PARCEL);
 		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
 

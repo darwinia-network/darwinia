@@ -669,10 +669,36 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::{migration, Identity};
+		// --- darwinia-network ---
+		use darwinia_header_mmr::NodeIndex;
+
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+
+		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList"
+		)
+		.next()
+		.is_none());
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList",
+			&[]
+		));
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"PruningConfiguration",
+			&[]
+		));
+
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		0
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+
+		RuntimeBlockWeights::get().max_block
 	}
 }
