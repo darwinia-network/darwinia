@@ -674,6 +674,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- darwinia-network ---
 		use darwinia_header_mmr::NodeIndex;
 
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
@@ -697,6 +698,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
 		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
 		let number = System::block_number();
@@ -715,6 +717,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		if old_to_remove != 0 {
 			for to_remove in old_to_remove..=new_to_remove_before_finalize {
 				<frame_system::BlockHash<Runtime>>::remove(to_remove);
+
+				log::info!("Pruned `BlockHash` of Block `{}`", to_remove);
 			}
 		}
 
