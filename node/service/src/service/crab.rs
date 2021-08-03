@@ -23,9 +23,9 @@ pub use crab_runtime;
 // --- std ---
 use std::{
 	collections::{BTreeMap, HashMap},
+	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
-	path::PathBuf,
 };
 // --- crates ---
 use futures::stream::StreamExt;
@@ -83,8 +83,7 @@ pub fn dvm_database_dir(config: &Configuration) -> PathBuf {
 		.as_ref()
 		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
 		.unwrap_or_else(|| {
-			BasePath::from_project("", "", "crab")
-				.config_dir(config.chain_spec.id())
+			BasePath::from_project("", "", "crab").config_dir(config.chain_spec.id())
 		});
 
 	config_dir.join("dvm").join("db")
