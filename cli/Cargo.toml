@@ -74,3 +74,5 @@ try-runtime = [
 	"darwinia-service/try-runtime",
 	"try-runtime-cli",
 ]
+
+runtime-benchmarks = []
