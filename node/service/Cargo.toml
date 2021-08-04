@@ -98,4 +98,5 @@ try-runtime = [
 runtime-benchmarks = [
 	"frame-benchmarking-cli",
 	"crab-runtime/runtime-benchmarks",
+	"darwinia-runtime/runtime-benchmarks",
 ]

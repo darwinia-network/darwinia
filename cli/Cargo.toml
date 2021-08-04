@@ -29,6 +29,7 @@ darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/dar
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+"frame-benchmarking-cli" = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-executor     = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-network      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -75,4 +76,6 @@ try-runtime = [
 	"try-runtime-cli",
 ]
 
-runtime-benchmarks = []
+runtime-benchmarks = [
+	"frame-benchmarking-cli",
+]
