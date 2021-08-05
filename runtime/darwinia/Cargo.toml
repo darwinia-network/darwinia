@@ -36,14 +36,14 @@ darwinia-support                    = { default-features = false, git = "https:/
 darwinia-treasury                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-tron-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
-frame-benchmarking                         = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
-frame-system-benchmarking                  = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # darwinia primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # substrate frame
+frame-benchmarking                         = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+frame-system-benchmarking                  = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -120,7 +120,6 @@ std = [
 	"darwinia-runtime-common/std",
 	"frame-executive/std",
 	"frame-support/std",
-	"frame-benchmarking/std",
 	"frame-system/std",
 	"frame-system-rpc-runtime-api/std",
 	"frame-try-runtime/std",
@@ -180,8 +179,8 @@ on-chain-release-build = [
 runtime-benchmarks = [
 	"frame-benchmarking",
 	"frame-system-benchmarking",
-	"frame-system/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"pallet-society/runtime-benchmarks",
 ]

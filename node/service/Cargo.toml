@@ -52,7 +52,6 @@ sc-telemetry           = { git = "https://github.com/darwinia-network/substrate.
 sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # substrate frame
 frame-benchmarking                         = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
-frame-benchmarking-cli                     = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-im-online                           = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -96,7 +95,6 @@ try-runtime = [
 ]
 
 runtime-benchmarks = [
-	"frame-benchmarking-cli",
 	"crab-runtime/runtime-benchmarks",
 	"darwinia-runtime/runtime-benchmarks",
 ]

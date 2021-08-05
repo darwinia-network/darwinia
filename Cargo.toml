@@ -33,10 +33,7 @@ dev = [
 
 try-runtime = ["darwinia-cli/try-runtime"]
 
-runtime-benchmarks = [
-	"darwinia-cli/runtime-benchmarks",
-]
-
+runtime-benchmarks = ["darwinia-cli/runtime-benchmarks"]
 
 [workspace]
 members = [

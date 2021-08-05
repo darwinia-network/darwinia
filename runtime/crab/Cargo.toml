@@ -138,7 +138,6 @@ std = [
 	"dvm-dynamic-fee/std",
 	"dvm-rpc-runtime-api/std",
 	# --- dvm --->
-	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
