@@ -12,7 +12,9 @@
 
 ## Building from Source
 
-If you want to hack Darwinia, just grab the source code and build it. Make sure you have Rust and the support software installed.
+> NOTE: Substrate development for windows is not properly supported! It is highly recommend to use Windows Subsystem Linux (WSL) and follow the instructions for Ubuntu/Debian. Check out [Getting Started on Windows](https://substrate.dev/docs/en/knowledgebase/getting-started/windows-users) for more detail.
+
+For Unix-based user, just grab the source code and build it. Make sure you have Rust and the support software installed.
 
 Install Rust first:
 
