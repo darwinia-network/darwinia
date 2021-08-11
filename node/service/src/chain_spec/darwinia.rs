@@ -308,6 +308,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			],
 		},
 		pallet_sudo: SudoConfig { key: root },
+		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
@@ -461,6 +462,7 @@ pub fn darwinia_testnet_genesis(
 		pallet_membership_Instance1: Default::default(),
 		darwinia_vesting: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
+		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_backing: EthereumBackingConfig {
 			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
