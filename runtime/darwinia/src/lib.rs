@@ -636,50 +636,10 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::{migration, Identity};
-		// --- darwinia-network ---
-		use darwinia_header_mmr::NodeIndex;
-
-		log::info!("Migrate `DarwiniaHeaderMMR`...");
-		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
-
-		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
-			b"DarwiniaHeaderMMR",
-			b"MMRNodeList"
-		)
-		.next()
-		.is_none());
-		assert!(!migration::have_storage_value(
-			b"DarwiniaHeaderMMR",
-			b"MMRNodeList",
-			&[]
-		));
-		assert!(!migration::have_storage_value(
-			b"DarwiniaHeaderMMR",
-			b"PruningConfiguration",
-			&[]
-		));
-
-		log::info!("Migrate `EthereumRelay`...");
-		darwinia_ethereum_relay::migration::migrate(PARCEL);
-
-		log::info!("Migrate `EthereumRelayerGame`...");
-		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
-
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		log::info!("Migrate `DarwiniaHeaderMMR`...");
-		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
-
-		log::info!("Migrate `EthereumRelay`...");
-		darwinia_ethereum_relay::migration::migrate(PARCEL);
-
-		log::info!("Migrate `EthereumRelayerGame`...");
-		darwinia_relayer_game::migration::migrate::<Runtime, EthereumRelayerGameInstance>();
-
-		RuntimeBlockWeights::get().max_block
+		0
 	}
 }
