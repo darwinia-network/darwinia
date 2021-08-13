@@ -28,6 +28,7 @@ frame_support::parameter_types! {
 	// miner configs
 	pub NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
 	pub const MinerMaxIterations: u32 = 10;
+	pub const OffchainRepeat: BlockNumber = 5;
 }
 
 impl Config for Runtime {
@@ -38,7 +39,8 @@ impl Config for Runtime {
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type MinerMaxIterations = MinerMaxIterations;
 	type MinerMaxWeight = OffchainSolutionWeightLimit;
-	type MinerMaxLength = OffchainSolutionLengthLimit;
+	type MinerMaxLength = OffchainSolutionLengthLimit; // For now use the one from staking.
+	type OffchainRepeat = OffchainRepeat;
 	type MinerTxPriority = NposSolutionPriority;
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;

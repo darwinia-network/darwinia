@@ -23,6 +23,7 @@ pub use crab_runtime;
 // --- std ---
 use std::{
 	collections::{BTreeMap, HashMap},
+	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
@@ -53,8 +54,7 @@ use sp_api::ConstructRuntimeApi;
 use sp_consensus::{
 	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
 };
-use sp_inherents::InherentDataProviders;
-use sp_runtime::traits::BlakeTwo256;
+use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia ---
 use crate::{client::CrabClient, service::*};
@@ -76,7 +76,8 @@ native_executor_instance!(
 
 impl_runtime_apis!(dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>);
 
-fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
+// <--- dvm ---
+pub fn dvm_database_dir(config: &Configuration) -> PathBuf {
 	let config_dir = config
 		.base_path
 		.as_ref()
@@ -84,19 +85,25 @@ fn open_frontier_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, 
 		.unwrap_or_else(|| {
 			BasePath::from_project("", "", "crab").config_dir(config.chain_spec.id())
 		});
-	let database_dir = config_dir.join("dvm").join("db");
 
+	config_dir.join("dvm").join("db")
+}
+
+fn open_dvm_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
 		source: DatabaseSettingsSrc::RocksDb {
-			path: database_dir,
+			path: dvm_database_dir(&config),
 			cache_size: 0,
 		},
 	})?))
 }
+// --- dvm --->
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
 	config: &mut Configuration,
+	max_past_logs: u32,
+	target_gas_price: u64,
 ) -> Result<
 	PartialComponents<
 		FullClient<RuntimeApi, Executor>,
@@ -144,7 +151,6 @@ where
 
 	set_prometheus_registry(config)?;
 
-	let inherent_data_providers = InherentDataProviders::new();
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -188,13 +194,28 @@ where
 		grandpa_block_import,
 		client.clone(),
 	)?;
+	let slot_duration = babe_link.config().slot_duration();
 	let import_queue = sc_consensus_babe::import_queue(
 		babe_link.clone(),
 		babe_import.clone(),
 		Some(Box::new(justification_import)),
 		client.clone(),
 		select_chain.clone(),
-		inherent_data_providers.clone(),
+		move |_, ()| async move {
+			let uncles =
+				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let slot =
+				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+					*timestamp,
+					slot_duration,
+				);
+			let dynamic_fee = dvm_dynamic_fee::InherentDataProvider::from_target_gas_price(
+				target_gas_price.into(),
+			);
+
+			Ok((timestamp, slot, uncles, dynamic_fee))
+		},
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
@@ -212,7 +233,7 @@ where
 	let babe_config = babe_link.config().clone();
 	let shared_epoch_changes = babe_link.epoch_changes().clone();
 	// <--- dvm ---
-	let frontier_backend = open_frontier_backend(config)?;
+	let dvm_backend = open_dvm_backend(config)?;
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let pending_transactions: PendingTransactions = Some(Arc::new(Mutex::new(HashMap::new())));
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
@@ -225,7 +246,7 @@ where
 		let chain_spec = config.chain_spec.cloned_box();
 		// <--- dvm ---
 		let pending_transactions = pending_transactions.clone();
-		let frontier_backend = frontier_backend.clone();
+		let dvm_backend = dvm_backend.clone();
 		let filter_pool = filter_pool.clone();
 		// --- dvm --->
 
@@ -252,8 +273,9 @@ where
 				is_authority,
 				network,
 				pending_transactions: pending_transactions.clone(),
-				backend: frontier_backend.clone(),
+				backend: dvm_backend.clone(),
 				filter_pool: filter_pool.clone(),
+				max_past_logs,
 				// --- dvm --->
 			};
 
@@ -269,14 +291,13 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		inherent_data_providers,
 		other: (
 			rpc_extensions_builder,
 			import_setup,
 			rpc_setup,
 			telemetry,
 			pending_transactions,
-			frontier_backend,
+			dvm_backend,
 			filter_pool,
 		),
 	})
@@ -286,6 +307,8 @@ where
 fn new_full<RuntimeApi, Executor>(
 	mut config: Configuration,
 	authority_discovery_disabled: bool,
+	max_past_logs: u32,
+	target_gas_price: u64,
 ) -> Result<
 	(
 		TaskManager,
@@ -308,6 +331,7 @@ where
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
 	let disable_grandpa = config.disable_grandpa;
 	let name = config.network.node_name.clone();
+	let is_archive = config.state_pruning.is_archive();
 	let PartialComponents {
 		client,
 		backend,
@@ -316,7 +340,6 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		inherent_data_providers,
 		other:
 			(
 				rpc_extensions_builder,
@@ -324,10 +347,10 @@ where
 				rpc_setup,
 				mut telemetry,
 				pending_transactions,
-				frontier_backend,
+				dvm_backend,
 				filter_pool,
 			),
-	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
+	} = new_partial::<RuntimeApi, Executor>(&mut config, max_past_logs, target_gas_price)?;
 
 	if let Some(url) = &config.keystore_remote {
 		match remote_keystore(url) {
@@ -422,6 +445,8 @@ where
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|x| x.handle()),
 		);
+		let client_clone = client.clone();
+		let slot_duration = babe_link.config().slot_duration();
 		let babe_config = BabeParams {
 			keystore: keystore_container.sync_keystore(),
 			client: client.clone(),
@@ -429,7 +454,26 @@ where
 			block_import,
 			env: proposer,
 			sync_oracle: network.clone(),
-			inherent_data_providers: inherent_data_providers.clone(),
+			create_inherent_data_providers: move |parent, ()| {
+				let client_clone = client_clone.clone();
+				async move {
+					let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
+						&*client_clone,
+						parent,
+					)?;
+					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+					let slot =
+						sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+							*timestamp,
+							slot_duration,
+						);
+					let dynamic_fee = dvm_dynamic_fee::InherentDataProvider::from_target_gas_price(
+						target_gas_price.into(),
+					);
+
+					Ok((timestamp, slot, uncles, dynamic_fee))
+				}
+			},
 			force_authoring,
 			backoff_authoring_blocks,
 			babe_link,
@@ -523,17 +567,19 @@ where
 		);
 	}
 
-	task_manager.spawn_essential_handle().spawn(
-		"frontier-mapping-sync-worker",
-		MappingSyncWorker::new(
-			client.import_notification_stream(),
-			Duration::new(6, 0),
-			client.clone(),
-			backend.clone(),
-			frontier_backend.clone(),
-		)
-		.for_each(|()| futures::future::ready(())),
-	);
+	if is_archive {
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-mapping-sync-worker",
+			MappingSyncWorker::new(
+				client.import_notification_stream(),
+				Duration::new(6, 0),
+				client.clone(),
+				backend.clone(),
+				dvm_backend.clone(),
+			)
+			.for_each(|()| futures::future::ready(())),
+		);
+	}
 
 	// Spawn Frontier EthFilterApi maintenance task.
 	if let Some(filter_pool) = filter_pool {
@@ -615,15 +661,26 @@ where
 		grandpa_block_import,
 		client.clone(),
 	)?;
-	let inherent_data_providers = InherentDataProviders::new();
 	// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
+	let slot_duration = babe_link.config().slot_duration();
 	let import_queue = sc_consensus_babe::import_queue(
 		babe_link,
 		babe_block_import,
 		Some(Box::new(justification_import)),
 		client.clone(),
 		select_chain.clone(),
-		inherent_data_providers.clone(),
+		move |_, ()| async move {
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let slot =
+				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+					*timestamp,
+					slot_duration,
+				);
+			let uncles =
+				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
+
+			Ok((timestamp, slot, uncles))
+		},
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		NeverCanAuthor,
@@ -682,6 +739,8 @@ where
 #[cfg(feature = "full-node")]
 pub fn new_chain_ops<Runtime, Dispatch>(
 	config: &mut Configuration,
+	max_past_logs: u32,
+	target_gas_price: u64,
 ) -> Result<
 	(
 		Arc<FullClient<Runtime, Dispatch>>,
@@ -704,7 +763,7 @@ where
 		import_queue,
 		task_manager,
 		..
-	} = new_partial::<Runtime, Dispatch>(config)?;
+	} = new_partial::<Runtime, Dispatch>(config, max_past_logs, target_gas_price)?;
 
 	Ok((client, backend, import_queue, task_manager))
 }
@@ -714,6 +773,8 @@ where
 pub fn crab_new_full(
 	config: Configuration,
 	authority_discovery_disabled: bool,
+	max_past_logs: u32,
+	target_gas_price: u64,
 ) -> Result<
 	(
 		TaskManager,
@@ -722,8 +783,12 @@ pub fn crab_new_full(
 	),
 	ServiceError,
 > {
-	let (components, client, rpc_handlers) =
-		new_full::<crab_runtime::RuntimeApi, CrabExecutor>(config, authority_discovery_disabled)?;
+	let (components, client, rpc_handlers) = new_full::<crab_runtime::RuntimeApi, CrabExecutor>(
+		config,
+		authority_discovery_disabled,
+		max_past_logs,
+		target_gas_price,
+	)?;
 
 	Ok((components, client, rpc_handlers))
 }

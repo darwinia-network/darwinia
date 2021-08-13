@@ -32,24 +32,39 @@ pub use pallets::*;
 pub mod wasm {
 	//! Make the WASM binary available.
 
-	#[cfg(all(feature = "std", any(target_arch = "x86_64", target_arch = "x86")))]
+	#[cfg(all(
+		feature = "std",
+		any(target_arch = "x86_64", target_arch = "x86", target_vendor = "apple")
+	))]
 	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
+	#[cfg(all(
+		feature = "std",
+		not(any(target_arch = "x86_64", target_arch = "x86", target_vendor = "apple"))
+	))]
 	pub const WASM_BINARY: &[u8] = include_bytes!("../../../wasm/crab_runtime.compact.wasm");
-	#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
+	#[cfg(all(
+		feature = "std",
+		not(any(target_arch = "x86_64", target_arch = "x86", target_vendor = "apple"))
+	))]
 	pub const WASM_BINARY_BLOATY: &[u8] = include_bytes!("../../../wasm/crab_runtime.wasm");
 
 	#[cfg(feature = "std")]
 	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
 	pub fn wasm_binary_unwrap() -> &'static [u8] {
-		#[cfg(all(feature = "std", any(target_arch = "x86_64", target_arch = "x86")))]
+		#[cfg(all(
+			feature = "std",
+			any(target_arch = "x86_64", target_arch = "x86", target_vendor = "apple")
+		))]
 		return WASM_BINARY.expect(
 			"Development wasm binary is not available. This means the client is \
 						built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
 						production chains. Please rebuild with the flag disabled.",
 		);
-		#[cfg(all(feature = "std", not(any(target_arch = "x86_64", target_arch = "x86"))))]
+		#[cfg(all(
+			feature = "std",
+			not(any(target_arch = "x86_64", target_arch = "x86", target_vendor = "apple"))
+		))]
 		return WASM_BINARY;
 	}
 }
@@ -62,7 +77,7 @@ mod weights;
 use codec::{Decode, Encode};
 // --- substrate ---
 use frame_support::{
-	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade, Randomness},
+	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
 };
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
@@ -86,11 +101,12 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use darwinia_evm::{Account as EVMAccount, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
+use dvm_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use dvm_rpc_runtime_api::TransactionStatus;
 
 /// The address format for describing accounts.
@@ -140,14 +156,13 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	// crate version ~0.11.0 := >=0.11.0, <0.12.0
-	spec_version: 1100,
+	spec_version: 1120,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 5,
+	transaction_version: 6,
 };
 
 /// Native version.
@@ -189,11 +204,11 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 13,
-		HeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
-		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
-		TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
+		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
 		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 32,
@@ -240,6 +255,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
+		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 	}
 }
 
@@ -253,7 +269,7 @@ where
 		account: AccountId,
 		nonce: <Runtime as frame_system::Config>::Index,
 	) -> Option<(Call, <UncheckedExtrinsic as ExtrinsicT>::SignaturePayload)> {
-		let period = BlockHashCount::get()
+		let period = BlockHashCountForCrab::get()
 			.checked_next_power_of_two()
 			.map(|c| c / 2)
 			.unwrap_or(2) as u64;
@@ -335,10 +351,6 @@ sp_api::impl_runtime_apis! {
 			data: sp_inherents::InherentData,
 		) -> sp_inherents::CheckInherentsResult {
 			data.check_extrinsics(&block)
-		}
-
-		fn random_seed() -> <Block as BlockT>::Hash {
-			pallet_babe::RandomnessFromOneEpochAgo::<Runtime>::random_seed().0
 		}
 	}
 
@@ -492,7 +504,7 @@ sp_api::impl_runtime_apis! {
 			block_number_of_member_leaf: u64,
 			block_number_of_last_leaf: u64
 		) -> HeaderMMRRuntimeDispatchInfo<Hash> {
-			HeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
+			DarwiniaHeaderMMR::gen_proof_rpc(block_number_of_member_leaf, block_number_of_last_leaf )
 		}
 	}
 
@@ -518,17 +530,17 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_code_at(address: H160) -> Vec<u8> {
-			darwinia_evm::Module::<Runtime>::account_codes(address)
+			darwinia_evm::Pallet::<Runtime>::account_codes(address)
 		}
 
 		fn author() -> H160 {
-			<dvm_ethereum::Module<Runtime>>::find_author()
+			<darwinia_evm::Pallet<Runtime>>::find_author()
 		}
 
 		fn storage_at(address: H160, index: U256) -> H256 {
 			let mut tmp = [0u8; 32];
 			index.to_big_endian(&mut tmp);
-			darwinia_evm::Module::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+			darwinia_evm::Pallet::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
 		}
 
 		fn call(
@@ -613,6 +625,15 @@ sp_api::impl_runtime_apis! {
 				Ethereum::current_transaction_statuses()
 			)
 		}
+
+		fn extrinsic_filter(
+			xts: Vec<<Block as BlockT>::Extrinsic>,
+		) -> Vec<EthereumTransaction> {
+			xts.into_iter().filter_map(|xt| match xt.function {
+				Call::Ethereum(transact(t)) => Some(t),
+				_ => None
+			}).collect::<Vec<EthereumTransaction>>()
+		}
 	}
 
 	#[cfg(feature = "try-runtime")]
@@ -648,24 +669,58 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- substrate ---
-		// use frame_support::migration;
+		// --- paritytech ---
+		use frame_support::{migration, Identity};
+		// --- darwinia-network ---
+		use darwinia_header_mmr::NodeIndex;
+
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+
+		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList"
+		)
+		.next()
+		.is_none());
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"MMRNodeList",
+			&[]
+		));
+		assert!(!migration::have_storage_value(
+			b"DarwiniaHeaderMMR",
+			b"PruningConfiguration",
+			&[]
+		));
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- substrate ---
-		use frame_support::migration;
+		log::info!("Migrate `DarwiniaHeaderMMR`...");
+		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
 
-		migration::move_pallet(b"Instance0DarwiniaBalances", b"Balances");
-		migration::move_pallet(b"Instance1DarwiniaBalances", b"Kton");
+		let number = System::block_number();
+		// move block hash pruning window by one block
+		let old_block_hash_count = 2400;
+		let new_block_hash_count = BlockHashCountForCrab::get();
+		let old_to_remove = number
+			.saturating_sub(old_block_hash_count)
+			.saturating_sub(1);
+		let new_to_remove_before_finalize = number
+			.saturating_sub(new_block_hash_count)
+			.saturating_sub(1)
+			.saturating_sub(1);
 
-		migration::move_pallet(b"Instance0Collective", b"Instance2Collective");
+		// keep genesis hash
+		if old_to_remove != 0 {
+			for to_remove in old_to_remove..=new_to_remove_before_finalize {
+				<frame_system::BlockHash<Runtime>>::remove(to_remove);
 
-		migration::move_pallet(b"Instance0Membership", b"Instance1Membership");
-
-		migration::move_pallet(b"DarwiniaPhragmenElection", b"PhragmenElection");
+				log::info!("Pruned `BlockHash` of Block `{}`", to_remove);
+			}
+		}
 
 		RuntimeBlockWeights::get().max_block
 	}

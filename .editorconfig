@@ -15,11 +15,7 @@ charset=utf-8
 indent_size=4
 indent_style=space
 
-[*.{sh, yml, yaml}]
+[*.{sh,yml,yaml}]
 indent_size=2
 indent_style=space
 tab_width=8
-
-[Dockerfile*]
-indent_size=4
-indent_style=space

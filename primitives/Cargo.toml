@@ -6,17 +6,21 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-primitives"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.10.0"
+version     = "0.11.2"
 
 [dependencies]
 # crates
 codec = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
 # substrate frame
-frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
+frame-system = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # substrate primitives
-sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
-sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
-sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.0" }
+sp-application-crypto = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+sp-core               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+sp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+
+[dev-dependencies]
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+
 
 [features]
 default = ["std"]
@@ -27,8 +31,8 @@ std = [
 	"substrate-primitives-std",
 ]
 
-crates-std               = ["codec/std"]
-substrate-frame-std      = ["frame-system/std"]
+crates-std = ["codec/std"]
+substrate-frame-std = ["frame-system/std"]
 substrate-primitives-std = [
 	"sp-application-crypto/std",
 	"sp-core/std",

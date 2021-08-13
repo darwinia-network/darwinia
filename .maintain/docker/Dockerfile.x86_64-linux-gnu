@@ -16,13 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-FROM centos:7
+FROM ubuntu:16.04
 
 # for gernal linux
 
 # change mirrorlist
-RUN yum -y update && yum -y upgrade && yum -y install \
-	# tool
-	git make \
-	# compiler
-	clang gcc gcc-c++ llvm
+RUN apt update && apt install -y \
+    # tool
+    git make \
+    # compiler
+    gcc g++ clang-4.0
