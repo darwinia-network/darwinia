@@ -23,8 +23,6 @@ log       = { version = "0.4.14" }
 serde     = { version = "1.0.126", optional = true }
 structopt = { version = "0.3.21" }
 tokio     = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
-# darwinia client
-darwinia-cli = { optional = true, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 # darwinia service
 darwinia-service = { default-features = false, path = "../node/service" }
 # substrate client
@@ -57,7 +55,6 @@ cli = [
 	"sc-cli",
 	"sc-network",
 	"sc-tracing",
-	"darwinia-cli",
 	"darwinia-service/full-node",
 ]
 db = ["darwinia-service/db"]
