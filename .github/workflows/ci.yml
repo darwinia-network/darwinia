@@ -110,7 +110,8 @@ jobs:
         runs-on: ubuntu-latest
         needs: [build_kit, build_node_and_internal_test]
         outputs:
-            result: ${{ steps.run_checker.outputs.result }}
+            check_darwinia_result: ${{ steps.run_darwinia_checker.outputs.result }}
+            check_crab_result: ${{ steps.run_crab_checker.outputs.result }}
         steps:
             - name: Download kit
               uses: actions/download-artifact@v2
@@ -122,14 +123,22 @@ jobs:
                   name: node
             - name: Uncompress kit and node
               run: tar xf kit.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
-            - id: run_checker
+            - id: run_darwinia_checker
               name: Run checker
               run: |
-                  OUTPUT=$(./ci-bot storage-prefix --chain pangolin --exec ./darwinia)
+                  OUTPUT=$(./ci-bot storage-prefix --chain darwinia --exec ./darwinia)
                   OUTPUT="${OUTPUT//'%'/'%25'}​"
                   OUTPUT="${OUTPUT//$'\n'/'%0A'}"
                   OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-                  echo "::set-output name=result::$OUTPUT"
+                  echo "::set-output name=check_darwinia_result::$OUTPUT"
+            - id: run_crab_checker
+              name: Run checker
+              run: |
+                  OUTPUT=$(./ci-bot storage-prefix --chain crab --exec ./darwinia)
+                  OUTPUT="${OUTPUT//'%'/'%25'}​"
+                  OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+                  OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+                  echo "::set-output name=check_darwinia_result::$OUTPUT"
             - if: github.ref != 'refs/heads/master'
               uses: marocchino/sticky-pull-request-comment@v2
               with:
@@ -137,7 +146,11 @@ jobs:
                   message: |
                       Check storage prefix with ${{ github.sha }}.
                       ```diff
-                      ${{ steps.run_checker.outputs.result }}
+                      ${{ steps.run_darwinia_checker.outputs.result }}
+
+                      ---
+
+                      ${{ steps.run_crab_checker.outputs.result }}
                       ```
 
     clean_artifacts:
