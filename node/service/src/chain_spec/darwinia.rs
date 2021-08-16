@@ -290,10 +290,12 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_grandpa: Default::default(),
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
+		darwinia_democracy: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
+		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: VestingConfig {
 			vesting: vec![
 				// Team vesting: 1 year period start after 1 year since mainnet lanuch
@@ -307,20 +309,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				),
 			],
 		},
-		pallet_sudo: SudoConfig { key: root },
-		darwinia_ethereum_backing: EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
-			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
-			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
-			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
-			// Los Angeles: 9/24/2020, 7:42:52 PM
-			// Berlin :     9/25/2020, 10:42:52 AM
-			// Beijing:     9/25/2020, 9:42:52 AM
-			// New York :   9/24/2020, 9:42:52 PM
-			backed_ring: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
-			backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
-			..Default::default()
-		},
+		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_parcel: r#"{
 				"header": {
@@ -353,6 +342,19 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			),
 			..Default::default()
 		},
+		darwinia_ethereum_backing: EthereumBackingConfig {
+			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
+			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
+			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
+			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
+			// Los Angeles: 9/24/2020, 7:42:52 PM
+			// Berlin :     9/25/2020, 10:42:52 AM
+			// Beijing:     9/25/2020, 9:42:52 AM
+			// New York :   9/24/2020, 9:42:52 PM
+			backed_ring: 1_141_998_248_692_824_029_753_349_753_u128 / COIN + 1,
+			backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
+			..Default::default()
+		},
 		darwinia_tron_backing: TronBackingConfig {
 			// Los Angeles: 9/24/2020, 7:42:52 PM
 			// Berlin :     9/25/2020, 10:42:52 AM
@@ -361,7 +363,6 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 			backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 			backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 		},
-		darwinia_democracy: Default::default(),
 	}
 }
 
@@ -455,21 +456,14 @@ pub fn darwinia_testnet_genesis(
 		pallet_grandpa: Default::default(),
 		pallet_im_online: Default::default(),
 		pallet_authority_discovery: Default::default(),
+		darwinia_democracy: Default::default(),
 		pallet_collective_Instance1: Default::default(),
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
-		darwinia_vesting: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
-		darwinia_ethereum_backing: EthereumBackingConfig {
-			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
-			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
-			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
-			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
-			backed_ring: 1 << 56,
-			backed_kton: 1 << 56,
-			..Default::default()
-		},
+		darwinia_vesting: Default::default(),
+		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_parcel: r#"{
 				"header": {
@@ -502,11 +496,19 @@ pub fn darwinia_testnet_genesis(
 			),
 			..Default::default()
 		},
+		darwinia_ethereum_backing: EthereumBackingConfig {
+			token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
+			deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
+			ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
+			kton_token_address: array_bytes::hex_into_unchecked(KTON_TOKEN_ADDRESS),
+			backed_ring: 1 << 56,
+			backed_kton: 1 << 56,
+			..Default::default()
+		},
 		darwinia_tron_backing: TronBackingConfig {
 			backed_ring: 1 << 56,
 			backed_kton: 1 << 56,
 		},
-		darwinia_democracy: Default::default(),
 	}
 }
 

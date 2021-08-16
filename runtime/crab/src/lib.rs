@@ -670,27 +670,31 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- paritytech ---
-		use frame_support::{migration, Identity};
-		// --- darwinia-network ---
-		use darwinia_header_mmr::NodeIndex;
+		use frame_support::migration;
 
-		log::info!("Migrate `DarwiniaHeaderMMR`...");
-		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
 
-		assert!(migration::storage_key_iter::<NodeIndex, Hash, Identity>(
-			b"DarwiniaHeaderMMR",
-			b"MMRNodeList"
-		)
-		.next()
-		.is_none());
 		assert!(!migration::have_storage_value(
-			b"DarwiniaHeaderMMR",
-			b"MMRNodeList",
+			b"CrabIssuing",
+			b"TotalMappedRing",
+			&[]
+		));
+		assert!(migration::have_storage_value(
+			b"DarwiniaCrabIssuing",
+			b"TotalMappedRing",
+			&[]
+		));
+
+		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
+
+		assert!(migration::have_storage_value(
+			b"CrabIssuing",
+			b"TotalMappedRing",
 			&[]
 		));
 		assert!(!migration::have_storage_value(
-			b"DarwiniaHeaderMMR",
-			b"PruningConfiguration",
+			b"DarwiniaCrabIssuing",
+			b"TotalMappedRing",
 			&[]
 		));
 
@@ -698,29 +702,12 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		log::info!("Migrate `DarwiniaHeaderMMR`...");
-		darwinia_header_mmr::migration::migrate(b"DarwiniaHeaderMMR");
+		// --- paritytech ---
+		use frame_support::migration;
 
-		let number = System::block_number();
-		// move block hash pruning window by one block
-		let old_block_hash_count = 2400;
-		let new_block_hash_count = BlockHashCountForCrab::get();
-		let old_to_remove = number
-			.saturating_sub(old_block_hash_count)
-			.saturating_sub(1);
-		let new_to_remove_before_finalize = number
-			.saturating_sub(new_block_hash_count)
-			.saturating_sub(1)
-			.saturating_sub(1);
+		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
 
-		// keep genesis hash
-		if old_to_remove != 0 {
-			for to_remove in old_to_remove..=new_to_remove_before_finalize {
-				<frame_system::BlockHash<Runtime>>::remove(to_remove);
-
-				log::info!("Pruned `BlockHash` of Block `{}`", to_remove);
-			}
-		}
+		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
 
 		RuntimeBlockWeights::get().max_block
 	}
