@@ -106,9 +106,6 @@ jobs:
         name: Check storage prefix
         runs-on: ubuntu-latest
         needs: [build_kit, build_node_and_internal_test]
-        outputs:
-            check_darwinia_result: ${{ steps.run_darwinia_checker.outputs.result }}
-            check_crab_result: ${{ steps.run_crab_checker.outputs.result }}
         steps:
             - name: Download kit
               uses: actions/download-artifact@v2
@@ -120,10 +117,11 @@ jobs:
                   name: node
             - name: Uncompress kit and node
               run: tar xf kit.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
+            - run: ls -al .
             - id: run_darwinia_checker
               name: Run checker
               run: |
-                  OUTPUT=$(./ci-bot storage-prefix --chain darwinia --exec ./darwinia)
+                  OUTPUT=$(RUST_LOG=trace ./ci-bot storage-prefix --chain darwinia --exec ./darwinia)
                   OUTPUT="${OUTPUT//'%'/'%25'}​"
                   OUTPUT="${OUTPUT//$'\n'/'%0A'}"
                   OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -135,7 +133,7 @@ jobs:
                   OUTPUT="${OUTPUT//'%'/'%25'}​"
                   OUTPUT="${OUTPUT//$'\n'/'%0A'}"
                   OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-                  echo "::set-output name=check_darwinia_result::$OUTPUT"
+                  echo "::set-output name=check_crab_result::$OUTPUT"
             - if: github.ref != 'refs/heads/master'
               uses: marocchino/sticky-pull-request-comment@v2
               with:
@@ -143,11 +141,13 @@ jobs:
                   message: |
                       Check storage prefix with ${{ github.sha }}.
                       ```diff
-                      ${{ steps.run_darwinia_checker.outputs.result }}
+                      Crab
+                      ${{ steps.run_darwinia_checker.outputs.check_darwinia_result }}
 
                       ---
 
-                      ${{ steps.run_crab_checker.outputs.result }}
+                      Darwinia
+                      ${{ steps.run_crab_checker.outputs.check_crab_result }}
                       ```
 
     clean_artifacts:
