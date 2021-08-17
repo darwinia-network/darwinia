@@ -72,6 +72,7 @@ native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
+	frame_benchmarking::benchmarking::HostFunctions,
 );
 
 impl_runtime_apis!(dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>);

@@ -379,5 +379,21 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			}
 		}
+		#[cfg(feature = "runtime-benchmarks")]
+		Some(Subcommand::Benchmark(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			if chain_spec.is_crab() {
+				runner.sync_run(|config| cmd.run::<crab_runtime::Block, CrabExecutor>(config))
+			} else if chain_spec.is_darwinia() {
+				runner
+					.sync_run(|config| cmd.run::<darwinia_runtime::Block, DarwiniaExecutor>(config))
+			} else {
+				Err("Benchmarking wasn't enabled when building the node. \
+				You can enable it with `--features runtime-benchmarks`."
+					.into())
+			}
+		}
 	}
 }

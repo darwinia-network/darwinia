@@ -63,6 +63,7 @@ native_executor_instance!(
 	pub DarwiniaExecutor,
 	darwinia_runtime::api::dispatch,
 	darwinia_runtime::native_version,
+	frame_benchmarking::benchmarking::HostFunctions,
 );
 
 impl_runtime_apis!();
