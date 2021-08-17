@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_offences::Config;
 use pallet_session::historical::IdentificationTuple;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 impl Config for Runtime {

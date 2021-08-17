@@ -18,12 +18,12 @@
 
 //! Auxillary struct/enums for Darwinia runtime.
 
-// --- crates ---
+// --- crates.io ---
 use codec::{Decode, Encode};
-// --- substrate ---
+// --- paritytech ---
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 use sp_runtime::RuntimeDebug;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 darwinia_support::impl_account_data! {

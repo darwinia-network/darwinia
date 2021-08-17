@@ -18,9 +18,9 @@
 
 //! Darwinia CLI library.
 
-// --- crates ---
+// --- crates.io ---
 use structopt::StructOpt;
-// --- substrate ---
+// --- paritytech ---
 use sc_cli::{KeySubcommand, SignCmd, VanityCmd, VerifyCmd};
 
 #[allow(missing_docs)]

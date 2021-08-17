@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_sudo::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 impl Config for Runtime {

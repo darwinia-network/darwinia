@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::PalletId;
 use sp_runtime::{Percent, Permill};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::darwinia_treasury::WeightInfo, *};
 use darwinia_treasury::Config;
 

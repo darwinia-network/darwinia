@@ -1,8 +1,8 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::traits::KeyOwnerProofSystem;
 use pallet_babe::{AuthorityId, Config, EquivocationHandler, ExternalTrigger};
 use sp_core::crypto::KeyTypeId;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 frame_support::parameter_types! {

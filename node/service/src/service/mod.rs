@@ -67,12 +67,12 @@ pub mod darwinia;
 
 // --- std ---
 use std::sync::Arc;
-// --- substrate ---
+// --- paritytech ---
 use sc_keystore::LocalKeystore;
 use sc_service::{config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError};
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
-// --- darwinia ---
+// --- darwinia-network ---
 use darwinia_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 
 type FullBackend = sc_service::TFullBackend<Block>;

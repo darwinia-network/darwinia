@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::traits::ChangeMembers;
 use pallet_membership::{Config, Instance1};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_membership::WeightInfo, *};
 
 pub struct MembershipChangedGroup;

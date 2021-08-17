@@ -1,4 +1,4 @@
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 use darwinia_tron_backing::Config;
 

@@ -36,9 +36,9 @@ pub use darwinia_staking::StakerStatus;
 pub use darwinia_balances::Instance1 as RingInstance;
 pub use darwinia_balances::Instance2 as KtonInstance;
 
-// --- crates ---
+// --- crates.io ---
 use static_assertions::const_assert;
-// --- substrate ---
+// --- paritytech ---
 use frame_support::{
 	parameter_types,
 	traits::Currency,
@@ -47,7 +47,7 @@ use frame_support::{
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
-// --- darwinia ---
+// --- darwinia-network ---
 use darwinia_primitives::BlockNumber;
 
 pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<

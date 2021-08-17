@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_timestamp::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_timestamp::WeightInfo, *};
 
 frame_support::parameter_types! {

@@ -33,9 +33,9 @@ pub use pallets::*;
 pub mod genesis_loader {
 	// --- std ---
 	use std::fs::File;
-	// --- crates ---
+	// --- crates.io ---
 	use serde::{de::Error, Deserialize, Deserializer};
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use crate::*;
 
 	#[derive(Deserialize)]
@@ -115,9 +115,9 @@ pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
-// --- crates ---
+// --- crates.io ---
 use codec::Encode;
-// --- substrate ---
+// --- paritytech ---
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
@@ -146,7 +146,7 @@ use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-// --- darwinia ---
+// --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;

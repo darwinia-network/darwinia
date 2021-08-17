@@ -1,9 +1,9 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::{traits::Filter, weights::constants::RocksDbWeight};
 use frame_system::Config;
 use sp_runtime::traits::BlakeTwo256;
 use sp_version::RuntimeVersion;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::frame_system::WeightInfo, *};
 
 pub struct BaseFilter;

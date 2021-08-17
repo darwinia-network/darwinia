@@ -26,9 +26,9 @@ pub use darwinia::{
 pub mod crab;
 pub use crab::{crab_build_spec_config, crab_config, crab_development_config, CrabChainSpec};
 
-// --- crates ---
+// --- crates.io ---
 use serde::{Deserialize, Serialize};
-// --- substrate ---
+// --- paritytech ---
 use darwinia_primitives::{AccountId, AccountPublic};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;

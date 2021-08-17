@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_multisig::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_multisig::WeightInfo, *};
 
 frame_support::parameter_types! {

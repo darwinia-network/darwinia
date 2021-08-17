@@ -1,9 +1,9 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::weights::Weight;
 use frame_system::EnsureRoot;
 use pallet_scheduler::Config;
 use sp_runtime::Perbill;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_scheduler::WeightInfo, *};
 
 frame_support::parameter_types! {

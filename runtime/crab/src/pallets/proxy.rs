@@ -1,10 +1,10 @@
 // --- crates.io ---
 use codec::{Decode, Encode};
-// --- substrate ---
+// --- paritytech ---
 use frame_support::traits::InstanceFilter;
 use pallet_proxy::Config;
 use sp_runtime::{traits::BlakeTwo256, RuntimeDebug};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_proxy::WeightInfo, *};
 
 /// The type used to represent the kinds of proxying allowed.

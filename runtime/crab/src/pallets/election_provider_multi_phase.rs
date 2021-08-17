@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_election_provider_multi_phase::Config;
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_election_provider_multi_phase::WeightInfo, *};
 
 sp_npos_elections::generate_solution_type!(

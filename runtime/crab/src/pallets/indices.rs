@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_indices::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_indices::WeightInfo, *};
 
 frame_support::parameter_types! {

@@ -21,7 +21,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]
 
-// --- substrate ---
+// --- paritytech ---
 use sp_core::H256;
 use sp_runtime::{
 	generic,
@@ -78,7 +78,7 @@ pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 #[ignore]
 #[test]
 fn print_module_account() {
-	// --- substrate ---
+	// --- paritytech ---
 	use frame_support::PalletId;
 	use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat, Ss58AddressFormat::*};
 	use sp_runtime::traits::AccountIdConversion;

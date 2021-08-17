@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_utility::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_utility::WeightInfo, *};
 
 impl Config for Runtime {

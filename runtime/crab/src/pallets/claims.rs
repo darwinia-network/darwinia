@@ -1,9 +1,9 @@
 #[cfg(feature = "std")]
 pub use darwinia_claims::ClaimsList;
 
-// --- substrate ---
+// --- paritytech ---
 use frame_support::PalletId;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 use darwinia_claims::Config;
 
