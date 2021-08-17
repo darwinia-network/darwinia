@@ -51,6 +51,8 @@ ethereum-primitives = { default-features = false, git = "https://github.com/darw
 # darwinia runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # substrate frame
+frame-benchmarking                         = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+frame-system-benchmarking                  = { optional=true, default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -192,4 +194,13 @@ try-runtime = [
 # to make it smaller like logging for example.
 on-chain-release-build = [
 	"sp-api/disable-logging",
+]
+
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-system-benchmarking",
+	"frame-system/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-society/runtime-benchmarks",
 ]

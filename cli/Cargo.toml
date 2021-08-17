@@ -33,6 +33,8 @@ sc-network      = { optional = true, git = "https://github.com/darwinia-network/
 sc-service      = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-tracing      = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+# benchmark
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # substrate primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # this crate is used only to enable `trie-memory-tracker` feature
@@ -70,4 +72,9 @@ dev = ["darwinia-service/dev"]
 try-runtime = [
 	"darwinia-service/try-runtime",
 	"try-runtime-cli",
+]
+
+runtime-benchmarks = [
+	"frame-benchmarking-cli",
+	"darwinia-service/runtime-benchmarks",
 ]
