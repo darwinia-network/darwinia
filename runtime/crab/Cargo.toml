@@ -103,11 +103,13 @@ default = ["std"]
 
 no_std = []
 std = [
+	# crates.io
 	"codec/std",
 	# <--- dvm ---
 	"evm/std",
 	# --- dvm --->
 	"serde",
+	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
 	"darwinia-claims/std",
@@ -127,8 +129,10 @@ std = [
 	"darwinia-support/std",
 	"darwinia-treasury/std",
 	"darwinia-vesting/std",
+	# darwinia-network primitives
 	"darwinia-primitives/std",
 	"ethereum-primitives/std",
+	# darwinia-network runtime
 	"darwinia-runtime-common/std",
 	# <--- dvm ---
 	"dp-evm/std",
@@ -136,6 +140,7 @@ std = [
 	"dvm-dynamic-fee/std",
 	"dvm-rpc-runtime-api/std",
 	# --- dvm --->
+	# paritytech frame
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
@@ -163,6 +168,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-utility/std",
+	# paritytech primitives
 	"sp-api/std",
 	"sp-authority-discovery/std",
 	"sp-block-builder/std",

@@ -92,9 +92,11 @@ substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate.
 default = ["std"]
 
 std = [
+	# crates.io
 	"codec/std",
 	"serde",
 	"serde_json",
+	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
 	"darwinia-crab-backing/std",
@@ -113,9 +115,12 @@ std = [
 	"darwinia-treasury/std",
 	"darwinia-tron-backing/std",
 	"darwinia-vesting/std",
+	# darwinia-network primitives
 	"darwinia-primitives/std",
 	"ethereum-primitives/std",
+	# darwinia-network runtime
 	"darwinia-runtime-common/std",
+	# paritytech frame
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
@@ -143,6 +148,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-utility/std",
+	# paritytech primitives
 	"sp-api/std",
 	"sp-authority-discovery/std",
 	"sp-block-builder/std",

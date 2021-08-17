@@ -26,14 +26,11 @@ frame-support = { default-features = false, git = "https://github.com/darwinia-n
 default = ["std"]
 
 std = [
-	"crates-std",
-	"substrate-frame-std",
-	"substrate-primitives-std",
-]
-
-crates-std = ["codec/std"]
-substrate-frame-std = ["frame-system/std"]
-substrate-primitives-std = [
+	# crates.io
+	"codec/std",
+	# paritytech frame
+	"frame-system/std",
+	# paritytech primitives
 	"sp-application-crypto/std",
 	"sp-core/std",
 	"sp-runtime/std",
