@@ -86,7 +86,7 @@ jobs:
             - name: Uncompress kit
               run: tar xf kit.tar.zst -I pzstd
             - name: Run checker
-              run: ./ci-bot default-features --project-dir ../darwinia-common
+              run: ./ci-bot default-features --project-dir ../darwinia
 
     check_rust_code:
         name: Check Rust code
