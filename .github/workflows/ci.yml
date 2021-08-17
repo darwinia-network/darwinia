@@ -30,10 +30,7 @@ jobs:
                   command: build
                   args: --release --manifest-path ci-bot/Cargo.toml
             - name: Compress kit
-              run: |
-                  mv ci-bot avoid-same-name
-                  cp target/release/ci-bot .
-                  tar cf kit.tar.zst ci-bot -I pzstd
+              run: mv ci-bot avoid-same-name && cp target/release/ci-bot . && tar cf kit.tar.zst ci-bot -I pzstd
             - name: Upload kit
               uses: actions/upload-artifact@v2
               with:
