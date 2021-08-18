@@ -1,11 +1,11 @@
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
-// --- substrate ---
+// --- paritytech ---
 use frame_support::PalletId;
 use sp_npos_elections::CompactSolution;
 use sp_staking::SessionIndex;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::darwinia_staking::WeightInfo, *};
 use darwinia_staking::{Config, EraIndex};
 

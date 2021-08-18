@@ -1,6 +1,6 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_authority_discovery::Config;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 impl Config for Runtime {}

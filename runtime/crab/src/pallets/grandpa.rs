@@ -1,10 +1,10 @@
 pub use pallet_grandpa::AuthorityId as GrandpaId;
 
-// --- substrate ---
+// --- paritytech ---
 use frame_support::traits::KeyOwnerProofSystem;
 use pallet_grandpa::{Config, EquivocationHandler};
 use sp_core::crypto::KeyTypeId;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 impl Config for Runtime {

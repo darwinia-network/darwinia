@@ -2,37 +2,162 @@ name: CI
 on:
   push:
     branches:
+      - main
       - master
   pull_request:
     branches:
+      - main
       - master
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build-and-test:
-    name: Build and Test
+  build_kit:
+    name: Build kit
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Install latest nightly
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+        with:
+          repository: darwinia-network/darwinia-kit
+          ref: main
+      - name: Install Rust nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2021-02-25
-          override: true
-          target: wasm32-unknown-unknown
-
-      - name: Overall test
-        run: cargo test
-
-      - uses: 8398a7/action-slack@v3
-        if: failure() && (github.event_name == 'pull_request' && github.event.pull_request.draft == false || github.event_name != 'pull_request')
+          toolchain: nightly
+          default: true
+      - name: Build
+        uses: actions-rs/cargo@v1
         with:
-          status: ${{ job.status }}
-          fields: repo,author,eventName,workflow,ref,commit
+          command: build
+          args: --release --manifest-path ci-bot/Cargo.toml
+      - name: Compress kit
+        run: mv ci-bot avoid-same-name && cp target/release/ci-bot . && tar cf kit.tar.zst ci-bot -I pzstd
+      - name: Upload kit
+        uses: actions/upload-artifact@v2
+        with:
+          name: kit
+          path: kit.tar.zst
+
+  build_node_and_internal_test:
+    name: Build node and internal test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+      - name: Install Rust nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+          default: true
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+          CARGO_INCREMENTAL: 0
+      - name: Compress node
+        run: cp target/release/darwinia . && tar cf node.tar.zst darwinia -I pzstd
+      - name: Upload node
+        uses: actions/upload-artifact@v2
+        with:
+          name: node
+          path: node.tar.zst
+
+  check_default_features:
+    name: Check default features
+    runs-on: ubuntu-latest
+    needs: [build_kit]
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+      - name: Download kit
+        uses: actions/download-artifact@v2
+        with:
+          name: kit
+      - name: Uncompress kit
+        run: tar xf kit.tar.zst -I pzstd
+      - name: Run checker
+        run: ./ci-bot default-features --project-dir ../darwinia
+
+  check_rust_code:
+    name: Check Rust code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+      - name: Install Rust nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+          default: true
+      - name: Run checker
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  check_storage_prefix:
+    name: Check storage prefix
+    runs-on: ubuntu-latest
+    needs: [build_kit, build_node_and_internal_test]
+    steps:
+      - name: Download kit
+        uses: actions/download-artifact@v2
+        with:
+          name: kit
+      - name: Download node
+        uses: actions/download-artifact@v2
+        with:
+          name: node
+      - name: Uncompress kit and node
+        run: tar xf kit.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
+      - run: ls -al .
+      - id: run_darwinia_checker
+        name: Run checker
+        run: |
+          OUTPUT=$(RUST_LOG=trace ./ci-bot storage-prefix --chain darwinia --exec ./darwinia)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check_darwinia_result::$OUTPUT"
+      - id: run_crab_checker
+        name: Run checker
+        run: |
+          OUTPUT=$(./ci-bot storage-prefix --chain crab --exec ./darwinia)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check_crab_result::$OUTPUT"
+      - if: github.ref != 'refs/heads/master'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          append: true
+          message: |
+            Check storage prefix with ${{ github.sha }}.
+            ```diff
+            Crab
+            ${{ steps.run_darwinia_checker.outputs.check_darwinia_result }}
+
+            ---
+
+            Darwinia
+            ${{ steps.run_crab_checker.outputs.check_crab_result }}
+            ```
+
+  clean_artifacts:
+    name: Clean artifacts
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [check_storage_prefix]
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            kit
+            node

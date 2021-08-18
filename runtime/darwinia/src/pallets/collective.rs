@@ -1,12 +1,12 @@
 pub use pallet_collective::{Instance1 as CouncilCollective, Instance2 as TechnicalCollective};
 
-// --- substrate ---
+// --- paritytech ---
 use frame_system::{EnsureOneOf, EnsureRoot};
 use pallet_collective::{
 	Config, EnsureProportionAtLeast, EnsureProportionMoreThan, PrimeDefaultVote,
 };
 use sp_core::u32_trait::{_1, _2, _3, _5};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::pallet_collective::WeightInfo, *};
 
 pub type EnsureRootOrHalfCouncil = EnsureOneOf<

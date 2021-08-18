@@ -20,7 +20,7 @@
 
 /// Money matters.
 pub mod currency {
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use darwinia_primitives::{Balance, Power};
 
 	pub const NANO: Balance = 1;
@@ -38,9 +38,9 @@ pub mod currency {
 
 /// Time and blocks.
 pub mod time {
-	// --- substrate ---
+	// --- paritytech ---
 	use sp_staking::SessionIndex;
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use darwinia_primitives::{BlockNumber, Moment};
 
 	#[cfg(not(feature = "dev"))]
@@ -69,14 +69,14 @@ pub mod time {
 
 /// Fee-related.
 pub mod fee {
-	// --- crates ---
+	// --- crates.io ---
 	use smallvec::smallvec;
-	// --- substrate ---
+	// --- paritytech ---
 	use frame_support::weights::{
 		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use sp_runtime::Perbill;
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use super::currency::*;
 	use darwinia_primitives::Balance;
 	use darwinia_runtime_common::ExtrinsicBaseWeight;
@@ -109,7 +109,7 @@ pub mod fee {
 }
 
 pub mod relay {
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use super::currency::*;
 	use crate::*;
 	use darwinia_relay_primitives::relayer_game::*;

@@ -21,8 +21,8 @@ image = "x86_64-linux-gnu"
 
 [target.aarch64-unknown-linux-gnu]
 image = "aarch64-linux-gnu"
-	[target.aarch64-unknown-linux-gnu.env]
-	passthrough = [
-		"RUSTFLAGS",
-		"SKIP_WASM_BUILD",
-	]
+[target.aarch64-unknown-linux-gnu.env]
+passthrough = [
+	"RUSTFLAGS",
+	"SKIP_WASM_BUILD",
+]

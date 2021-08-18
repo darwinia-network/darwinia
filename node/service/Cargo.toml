@@ -9,14 +9,14 @@ repository  = "https://github.com/darwinia-network/darwinia/"
 version     = "0.11.1"
 
 [dependencies]
-# crates
+# crates.io
 array-bytes = { version = "1.3.3" }
 codec       = { package = "parity-scale-codec", version = "2.1.1", features = ["derive"] }
 futures     = { version = "0.3.15" }
 log         = { version = "0.4.14" }
 serde       = { version = "1.0.126", features = ["derive"] }
 serde_json  = { version = "1.0.64" }
-# darwinia frame
+# darwinia-network frame
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
@@ -28,14 +28,14 @@ dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https:
 dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 dvm-dynamic-fee     = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
-# darwinia primitives
+# darwinia-network primitives
 darwinia-primitives = { path = "../../primitives" }
-# darwinia rpc
+# darwinia-network rpc
 darwinia-rpc = { path = "../../rpc" }
-# darwinia runtime
+# darwinia-network runtime
 crab-runtime     = { path = "../../runtime/crab" }
 darwinia-runtime = { path = "../../runtime/darwinia" }
-# substrate client
+# paritytech client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-chain-spec          = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -50,13 +50,13 @@ sc-network             = { git = "https://github.com/darwinia-network/substrate.
 sc-service             = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-telemetry           = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
-# substrate frame
+# paritytech frame
 frame-benchmarking                         = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-im-online                           = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
-# substrate primitives
+# paritytech primitives
 sc-consensus-slots     = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sc-keystore            = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sp-api                 = { git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }

@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use pallet_authorship::Config;
 use pallet_session::FindAccountFromAuthorIndex;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 frame_support::parameter_types! {

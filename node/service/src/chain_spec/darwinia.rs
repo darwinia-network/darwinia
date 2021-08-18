@@ -18,7 +18,7 @@
 
 // --- std ---
 use std::collections::BTreeMap;
-// --- substrate ---
+// --- paritytech ---
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainType;
 use sc_finality_grandpa::AuthorityId as GrandpaId;
@@ -28,7 +28,7 @@ use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
-// --- darwinia ---
+// --- darwinia-network ---
 use super::{
 	get_account_id_from_seed, get_authority_keys_from_seed, testnet_accounts, Extensions,
 	DEFAULT_PROTOCOL_ID,

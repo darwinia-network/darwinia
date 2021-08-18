@@ -1,4 +1,4 @@
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::darwinia_balances::WeightInfo, *};
 use darwinia_balances::Config;
 

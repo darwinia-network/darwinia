@@ -1,7 +1,7 @@
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{weights::darwinia_vesting::WeightInfo, *};
 use darwinia_vesting::Config;
-// --- substrate ---
+// --- paritytech ---
 use sp_runtime::traits::ConvertInto;
 
 frame_support::parameter_types! {

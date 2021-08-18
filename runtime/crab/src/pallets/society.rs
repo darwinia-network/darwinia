@@ -1,7 +1,7 @@
-// --- substrate ---
+// --- paritytech ---
 use frame_support::PalletId;
 use pallet_society::{Config, EnsureFounder};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 
 #[cfg(feature = "dev")]

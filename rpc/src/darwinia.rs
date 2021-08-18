@@ -24,9 +24,9 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 
 // --- std ---
 use std::sync::Arc;
-// --- substrate ---
+// --- paritytech ---
 use sp_api::ProvideRuntimeApi;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 use darwinia_primitives::{AccountId, Balance, Nonce, Power};
 
@@ -82,13 +82,13 @@ where
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
-	// --- substrate ---
+	// --- paritytech ---
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
 	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
 	use sc_sync_state_rpc::{SyncStateRpcApi, SyncStateRpcHandler};
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
-	// --- darwinia ---
+	// --- darwinia-network ---
 	use darwinia_balances_rpc::{Balances, BalancesApi};
 	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
 	use darwinia_staking_rpc::{Staking, StakingApi};
@@ -162,7 +162,7 @@ where
 	P: 'static + sp_transaction_pool::TransactionPool,
 	F: 'static + sc_client_api::Fetcher<Block>,
 {
-	// --- substrate ---
+	// --- paritytech ---
 	use substrate_frame_rpc_system::{LightSystem, SystemApi};
 
 	let LightDeps {

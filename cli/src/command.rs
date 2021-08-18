@@ -24,7 +24,7 @@ use sc_service::ChainSpec;
 #[cfg(feature = "try-runtime")]
 use sc_service::TaskManager;
 use sp_core::crypto::Ss58AddressFormat;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::cli::{Cli, Subcommand};
 use darwinia_service::{
 	chain_spec,

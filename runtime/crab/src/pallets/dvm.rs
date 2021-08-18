@@ -1,4 +1,4 @@
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
 use dvm_ethereum::{Config, IntermediateStateRoot};
 

@@ -27,9 +27,9 @@ use std::{
 	sync::{Arc, Mutex},
 	time::Duration,
 };
-// --- crates ---
+// --- crates.io ---
 use futures::stream::StreamExt;
-// --- substrate ---
+// --- paritytech ---
 use sc_authority_discovery::WorkerConfig;
 use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{BlockchainEvents, ExecutorProvider, RemoteBackend, StateBackendFor};
@@ -56,7 +56,7 @@ use sp_consensus::{
 };
 use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::{client::CrabClient, service::*};
 use darwinia_primitives::OpaqueBlock as Block;
 use darwinia_rpc::{

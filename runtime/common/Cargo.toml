@@ -9,22 +9,22 @@ repository  = "https://github.com/darwinia-network/darwinia/"
 version     = "0.11.2"
 
 [dependencies]
-# crates
+# crates.io
 codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
 static_assertions = { version = "1.1.0" }
-# darwinia frame
+# darwinia-network frame
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
-# darwinia primitives
+# darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
-# substrate frame
+# paritytech frame
 frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
-# substrate primitives
+# paritytech primitives
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 
@@ -33,28 +33,21 @@ default = ["std"]
 
 no_std = []
 std = [
-	"crates-std",
-	"darwinia-frame-std",
-	"darwinia-primitives-std",
-	"substrate-frame-std",
-	"substrate-primitives-std",
-]
-
-crates-std = ["codec/std"]
-darwinia-frame-std = [
+	# crates.io
+	"codec/std",
+	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-staking/std",
 	"darwinia-support/std",
 	"darwinia-treasury/std",
-]
-darwinia-primitives-std = ["darwinia-primitives/std"]
-substrate-frame-std = [
+	# darwinia-network primitives
+	"darwinia-primitives/std",
+	# paritytech frame
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-authorship/std",
 	"pallet-transaction-payment/std",
-]
-substrate-primitives-std = [
+	# paritytech primitives
 	"sp-runtime/std",
 	"sp-std/std",
 ]
