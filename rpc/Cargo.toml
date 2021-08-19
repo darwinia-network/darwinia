@@ -14,14 +14,14 @@ code           = { package = "parity-scale-codec", version = "2.1.1", default-fe
 jsonrpc-core   = { version = "15.1.0" }
 jsonrpc-pubsub = { version = "15.1.0" }
 # darwinia-network frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
-dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.2" }
+darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 # darwinia-network primitives
 crab-runtime        = { path = "../runtime/crab" }
 darwinia-primitives = { path = "../primitives" }
