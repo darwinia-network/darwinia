@@ -295,6 +295,8 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
+		pallet_treasury: Default::default(),
+		pallet_treasury_Instance2: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: VestingConfig {
 			vesting: vec![
@@ -461,6 +463,8 @@ pub fn darwinia_testnet_genesis(
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
+		pallet_treasury: Default::default(),
+		pallet_treasury_Instance2: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: Default::default(),
 		darwinia_crab_backing: Default::default(),
