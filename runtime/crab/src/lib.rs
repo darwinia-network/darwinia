@@ -694,46 +694,10 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		assert!(!migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
-
-		assert!(migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(!migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
-
 		RuntimeBlockWeights::get().max_block
 	}
 }
