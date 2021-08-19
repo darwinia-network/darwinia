@@ -694,10 +694,14 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
+		darwinia_runtime_common::migrate_treasury();
+
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
+		darwinia_runtime_common::migrate_treasury();
+
 		RuntimeBlockWeights::get().max_block
 	}
 }
