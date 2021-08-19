@@ -258,7 +258,10 @@ frame_support::construct_runtime! {
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 19,
-		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 20,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 20,
+		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 39,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 40,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 41,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 27,
 

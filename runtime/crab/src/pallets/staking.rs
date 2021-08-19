@@ -53,7 +53,7 @@ impl Config for Runtime {
 	type RingSlash = Treasury;
 	type RingReward = ();
 	type KtonCurrency = Kton;
-	type KtonSlash = Treasury;
+	type KtonSlash = KtonTreasury;
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;

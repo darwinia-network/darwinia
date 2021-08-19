@@ -124,3 +124,82 @@ parameter_types! {
 /// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
 pub type SlowAdjustingFeeUpdate<R> =
 	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+
+pub fn migrate_treasury() {
+	// --- crates.io ---
+	use codec::{Decode, Encode};
+	// --- paritytech ---
+	use frame_support::{migration, StorageHasher, Twox64Concat};
+	// --- darwinia-network ---
+	use darwinia_primitives::*;
+
+	type ProposalIndex = u32;
+
+	const OLD_PREFIX: &[u8] = b"DarwiniaTreasury";
+	const NEW_PREFIX: &[u8] = b"Treasury";
+
+	migration::move_storage_from_pallet(b"ProposalCount", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`ProposalCount` Migrated");
+	migration::move_storage_from_pallet(b"Approvals", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`Approvals` Migrated");
+
+	#[derive(Encode, Decode)]
+	struct OldProposal {
+		proposer: AccountId,
+		beneficiary: AccountId,
+		ring_value: Balance,
+		kton_value: Balance,
+		ring_bond: Balance,
+		kton_bond: Balance,
+	}
+	#[derive(Encode, Decode)]
+	struct Proposal {
+		proposer: AccountId,
+		value: Balance,
+		beneficiary: AccountId,
+		bond: Balance,
+	}
+	for (index, old_proposal) in migration::storage_key_iter::<
+		ProposalIndex,
+		OldProposal,
+		Twox64Concat,
+	>(OLD_PREFIX, b"Proposals")
+	.drain()
+	{
+		let hash = Twox64Concat::hash(&index.encode());
+
+		if old_proposal.ring_value != 0 {
+			let new_proposal = Proposal {
+				proposer: old_proposal.proposer.clone(),
+				value: old_proposal.ring_value,
+				beneficiary: old_proposal.beneficiary.clone(),
+				bond: old_proposal.ring_bond,
+			};
+
+			migration::put_storage_value(NEW_PREFIX, b"Proposals", &hash, new_proposal);
+		}
+		if old_proposal.kton_value != 0 {
+			let new_proposal = Proposal {
+				proposer: old_proposal.proposer,
+				value: old_proposal.kton_value,
+				beneficiary: old_proposal.beneficiary,
+				bond: old_proposal.kton_bond,
+			};
+
+			migration::put_storage_value(b"Instance2Treasury", b"Proposals", &hash, new_proposal);
+		}
+	}
+	migration::remove_storage_prefix(OLD_PREFIX, b"Proposals", &[]);
+	log::info!("`Proposals` Migrated");
+
+	migration::move_storage_from_pallet(b"Tips", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`Tips` Migrated");
+	migration::move_storage_from_pallet(b"BountyCount", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`BountyCount` Migrated");
+	migration::move_storage_from_pallet(b"Bounties", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`Bounties` Migrated");
+	migration::move_storage_from_pallet(b"BountyDescriptions", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`BountyDescriptions` Migrated");
+	migration::move_storage_from_pallet(b"BountyApprovals", OLD_PREFIX, NEW_PREFIX);
+	log::info!("`BountyApprovals` Migrated");
+}

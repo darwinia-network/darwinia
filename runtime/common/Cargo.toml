@@ -11,12 +11,12 @@ version     = "0.11.2"
 [dependencies]
 # crates.io
 codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
+log               = { version = "0.4.14" }
 static_assertions = { version = "1.1.0" }
 # darwinia-network frame
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
-darwinia-treasury = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common.git", tag = "darwinia-v0.11.2" }
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 # paritytech frame
@@ -24,6 +24,7 @@ frame-support              = { default-features = false, git = "https://github.c
 frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
+pallet-treasury            = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 # paritytech primitives
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
 sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate.git", tag = "darwinia-v0.11.2" }
@@ -39,7 +40,6 @@ std = [
 	"darwinia-balances/std",
 	"darwinia-staking/std",
 	"darwinia-support/std",
-	"darwinia-treasury/std",
 	# darwinia-network primitives
 	"darwinia-primitives/std",
 	# paritytech frame
@@ -47,6 +47,7 @@ std = [
 	"frame-system/std",
 	"pallet-authorship/std",
 	"pallet-transaction-payment/std",
+	"pallet-treasury/std",
 	# paritytech primitives
 	"sp-runtime/std",
 	"sp-std/std",
