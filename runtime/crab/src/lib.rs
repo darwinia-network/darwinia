@@ -215,7 +215,7 @@ frame_support::construct_runtime! {
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 32,
 		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 43,
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 55,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
 
 		// Utility module.
 		Utility: pallet_utility::{Pallet, Call, Event} = 17,
