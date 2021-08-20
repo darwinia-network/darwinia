@@ -130,6 +130,7 @@ pub fn migrate_treasury() {
 	use codec::{Decode, Encode};
 	// --- paritytech ---
 	use frame_support::{migration, StorageHasher, Twox64Concat};
+	use sp_std::prelude::*;
 	// --- darwinia-network ---
 	use darwinia_primitives::*;
 
