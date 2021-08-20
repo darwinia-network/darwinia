@@ -137,11 +137,15 @@ pub fn migrate_treasury() {
 
 	const OLD_PREFIX: &[u8] = b"DarwiniaTreasury";
 	const NEW_PREFIX: &[u8] = b"Treasury";
+	const KTON_TREASURY_PREFIX: &[u8] = b"Instance2Treasury";
 
-	migration::move_storage_from_pallet(b"ProposalCount", OLD_PREFIX, NEW_PREFIX);
-	log::info!("`ProposalCount` Migrated");
-	migration::move_storage_from_pallet(b"Approvals", OLD_PREFIX, NEW_PREFIX);
-	log::info!("`Approvals` Migrated");
+	migration::remove_storage_prefix(OLD_PREFIX, b"ProposalCount", &[]);
+	log::info!("`ProposalCount` Removed");
+	let approvals =
+		migration::take_storage_value::<Vec<ProposalIndex>>(OLD_PREFIX, b"Approvals", &[])
+			.unwrap_or_default();
+	migration::remove_storage_prefix(OLD_PREFIX, b"Approvals", &[]);
+	log::info!("`Approvals` Removed");
 
 	#[derive(Encode, Decode)]
 	struct OldProposal {
@@ -159,6 +163,10 @@ pub fn migrate_treasury() {
 		beneficiary: AccountId,
 		bond: Balance,
 	}
+	let mut ring_proposals_count = 0 as ProposalIndex;
+	let mut kton_proposals_count = 0 as ProposalIndex;
+	let mut ring_approvals = vec![];
+	let mut kton_approvals = vec![];
 	for (index, old_proposal) in migration::storage_key_iter::<
 		ProposalIndex,
 		OldProposal,
@@ -176,7 +184,13 @@ pub fn migrate_treasury() {
 				bond: old_proposal.ring_bond,
 			};
 
+			ring_proposals_count += 1;
+
 			migration::put_storage_value(NEW_PREFIX, b"Proposals", &hash, new_proposal);
+
+			if approvals.contains(&index) {
+				ring_approvals.push(index);
+			}
 		}
 		if old_proposal.kton_value != 0 {
 			let new_proposal = Proposal {
@@ -186,11 +200,36 @@ pub fn migrate_treasury() {
 				bond: old_proposal.kton_bond,
 			};
 
-			migration::put_storage_value(b"Instance2Treasury", b"Proposals", &hash, new_proposal);
+			kton_proposals_count += 1;
+
+			migration::put_storage_value(KTON_TREASURY_PREFIX, b"Proposals", &hash, new_proposal);
+
+			if approvals.contains(&index) {
+				kton_approvals.push(index);
+			}
 		}
+	}
+	if ring_proposals_count != 0 {
+		migration::put_storage_value(NEW_PREFIX, b"ProposalCount", &[], ring_proposals_count);
+	}
+	if kton_proposals_count != 0 {
+		migration::put_storage_value(
+			KTON_TREASURY_PREFIX,
+			b"ProposalCount",
+			&[],
+			kton_proposals_count,
+		);
 	}
 	migration::remove_storage_prefix(OLD_PREFIX, b"Proposals", &[]);
 	log::info!("`Proposals` Migrated");
+
+	if !ring_approvals.is_empty() {
+		migration::put_storage_value(NEW_PREFIX, b"Approvals", &[], ring_approvals);
+	}
+	if !kton_approvals.is_empty() {
+		migration::put_storage_value(KTON_TREASURY_PREFIX, b"Approvals", &[], kton_approvals);
+	}
+	log::info!("`Approvals` Migrated");
 
 	migration::move_storage_from_pallet(b"Tips", OLD_PREFIX, NEW_PREFIX);
 	log::info!("`Tips` Migrated");
