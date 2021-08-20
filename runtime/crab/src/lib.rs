@@ -162,7 +162,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 6,
+	transaction_version: 7,
 };
 
 /// Native version.
@@ -207,12 +207,15 @@ frame_support::construct_runtime! {
 		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
+		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 36,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
-		Treasury: darwinia_treasury::{Pallet, Call, Storage, Event<T>} = 32,
-		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 36,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 32,
+		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 43,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
 
 		// Utility module.
 		Utility: pallet_utility::{Pallet, Call, Event} = 17,
@@ -691,45 +694,13 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		assert!(!migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
-
-		assert!(migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(!migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
+		darwinia_runtime_common::migrate_treasury();
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
+		darwinia_runtime_common::migrate_treasury();
 
 		RuntimeBlockWeights::get().max_block
 	}

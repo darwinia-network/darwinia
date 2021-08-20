@@ -91,15 +91,6 @@
 		"reporters": "Vec<AccountId>",
 		"payout": "RKT"
 	},
-	"__[pallet.treasury]__": {},
-	"TreasuryProposal": {
-		"proposer": "AccountId",
-		"beneficiary": "AccountId",
-		"ring_value": "Balance",
-		"kton_value": "Balance",
-		"ring_bond": "Balance",
-		"kton_bond": "Balance"
-	},
 	"__[pallet.bridge.crab]__": {},
 	"MappedRing": "u128",
 	"__[pallet.bridge.eth]__": {},

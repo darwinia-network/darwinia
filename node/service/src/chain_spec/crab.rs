@@ -191,6 +191,8 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
+		pallet_treasury: Default::default(),
+		pallet_treasury_Instance2: Default::default(),
 		darwinia_claims: ClaimsConfig {
 			claims_list: ClaimsList::from_file(
 				"node/service/res/crab/claims-list.json",
@@ -300,6 +302,8 @@ pub fn crab_testnet_genesis(
 		pallet_collective_Instance2: Default::default(),
 		darwinia_elections_phragmen: Default::default(),
 		pallet_membership_Instance1: Default::default(),
+		pallet_treasury: Default::default(),
+		pallet_treasury_Instance2: Default::default(),
 		darwinia_claims: ClaimsConfig {
 			claims_list: ClaimsList::from_file(
 				"node/service/res/crab/claims-list.json",

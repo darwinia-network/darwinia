@@ -58,6 +58,12 @@ pub use membership::*;
 pub mod treasury;
 pub use treasury::*;
 
+pub mod tips;
+pub use tips::*;
+
+pub mod bounties;
+pub use bounties::*;
+
 pub mod sudo;
 pub use sudo::*;
 

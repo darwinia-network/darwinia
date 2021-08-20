@@ -65,9 +65,9 @@ pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for DealWithFees<R>
 where
 	R: darwinia_balances::Config<RingInstance>
-		+ darwinia_treasury::Config
+		+ pallet_treasury::Config
 		+ pallet_authorship::Config,
-	darwinia_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
+	pallet_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
 	<R as frame_system::Config>::AccountId: From<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::AccountId: Into<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
@@ -80,7 +80,7 @@ where
 				// for tips, if any, 100% to author
 				tips.merge_into(&mut split.1);
 			}
-			use darwinia_treasury::Pallet as Treasury;
+			use pallet_treasury::Pallet as Treasury;
 			<Treasury<R> as OnUnbalanced<_>>::on_unbalanced(split.0);
 			<ToAuthor<R> as OnUnbalanced<_>>::on_unbalanced(split.1);
 		}
