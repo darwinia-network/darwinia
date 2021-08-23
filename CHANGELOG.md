@@ -37,18 +37,18 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.3
 ```
 
 #### Update(s)
-- https://github.com/darwinia-network/darwinia-common/pull/747 Pre-Verify for Ethereum Relay
-- https://github.com/darwinia-network/darwinia-common/pull/760 A dispatch call for internal transact
+- None
 #### Fix(es)
-- https://github.com/darwinia-network/darwinia-common/pull/770 Support New Receipt Type from EIP-2718, EIP-1559
+- None
 #### Migration(s)
-- https://github.com/darwinia-network/darwinia/pull/710 Treasury Migration
+- #710 Treasury Migration
 
 ---
 
 #### Darwinia Custom
 ##### Update(s)
-- None
+- https://github.com/darwinia-network/darwinia-common/pull/747 Pre-Verify for Ethereum Relay
+- https://github.com/darwinia-network/darwinia-common/pull/770 Support New Receipt Type from EIP-2718, EIP-1559
 ##### Migration(s)
 - None
 
@@ -56,9 +56,9 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.3
 
 #### Crab Custom
 ##### Update(s)
-- None
+- https://github.com/darwinia-network/darwinia-common/pull/760 A Dispatch Call for Internal Transact
 ##### Migration(s)
-- https://github.com/darwinia-network/darwinia/pull/705 Move DarwiniaCrabIssuing to CrabIssuing
+- #705 Move `DarwiniaCrabIssuing` to `CrabIssuing`
 
 ## [0.11.2] - 2021-08-03
 
