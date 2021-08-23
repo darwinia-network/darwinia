@@ -1,3 +1,65 @@
+## [0.11.3] - 2021-08-23
+
+### Upgrade Priority: LOW
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.3
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1130         |
+|   Crab   |         1130         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.3
+```
+
+#### Update(s)
+- https://github.com/darwinia-network/darwinia-common/pull/747 Pre-Verify for Ethereum Relay
+- https://github.com/darwinia-network/darwinia-common/pull/760 A dispatch call for internal transact
+#### Fix(es)
+- https://github.com/darwinia-network/darwinia-common/pull/770 Support New Receipt Type from EIP-2718, EIP-1559
+#### Migration(s)
+- https://github.com/darwinia-network/darwinia/pull/710 Treasury Migration
+
+---
+
+#### Darwinia Custom
+##### Update(s)
+- None
+##### Migration(s)
+- None
+
+---
+
+#### Crab Custom
+##### Update(s)
+- None
+##### Migration(s)
+- https://github.com/darwinia-network/darwinia/pull/705 Move DarwiniaCrabIssuing to CrabIssuing
+
 ## [0.11.2] - 2021-08-03
 
 ### Upgrade Priority: LOW
