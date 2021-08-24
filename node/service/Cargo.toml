@@ -36,20 +36,23 @@ darwinia-rpc = { path = "../../rpc" }
 crab-runtime     = { path = "../../runtime/crab" }
 darwinia-runtime = { path = "../../runtime/darwinia" }
 # paritytech client
-sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-chain-spec          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-client-api          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-client-db           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-consensus           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-consensus-babe      = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-consensus-uncles    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-executor            = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-network             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-service             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-telemetry           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-transaction-pool    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-authority-discovery        = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-basic-authorship           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-chain-spec                 = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-client-api                 = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-client-db                  = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-consensus                  = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-consensus-babe             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-consensus-slots            = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-consensus-uncles           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-executor                   = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-finality-grandpa           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-finality-grandpa-warp-sync = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-keystore                   = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-network                    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-service                    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-telemetry                  = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-transaction-pool           = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 # paritytech frame
 frame-benchmarking                         = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
@@ -57,8 +60,6 @@ pallet-im-online                           = { git = "https://github.com/darwini
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 # paritytech primitives
-sc-consensus-slots     = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-keystore            = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sp-api                 = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sp-authority-discovery = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sp-authorship          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
@@ -77,24 +78,26 @@ sp-transaction-pool    = { git = "https://github.com/darwinia-network/substrate"
 sp-trie                = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 
 [features]
-default = ["db", "full-node"]
-
-db        = ["sc-service/db"]
-full-node = []
-
-dev = [
-	"crab-runtime/dev",
-	"darwinia-runtime/dev",
+default = [
+	"db",
+	"full-node",
 ]
 
-# Enable features that allow the runtime to be tried and debugged. Name might be subject to change
-# in the near future.
+db = ["sc-service/db"]
+
+full-node = []
+
+runtime-benchmarks = [
+	"crab-runtime/runtime-benchmarks",
+	"darwinia-runtime/runtime-benchmarks",
+]
+
 try-runtime = [
 	"crab-runtime/try-runtime",
 	"darwinia-runtime/try-runtime",
 ]
 
-runtime-benchmarks = [
-	"crab-runtime/runtime-benchmarks",
-	"darwinia-runtime/runtime-benchmarks",
+dev = [
+	"crab-runtime/dev",
+	"darwinia-runtime/dev",
 ]
