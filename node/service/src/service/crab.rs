@@ -718,7 +718,6 @@ where
 		pool: transaction_pool.clone(),
 	};
 	let rpc_extension = darwinia_rpc::crab::create_light(light_deps);
-
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
 		on_demand: Some(on_demand),
 		remote_blockchain: Some(backend.remote_blockchain()),
