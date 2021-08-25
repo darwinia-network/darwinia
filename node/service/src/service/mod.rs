@@ -73,7 +73,7 @@ use sc_service::{config::PrometheusConfig, ChainSpec, Configuration, Error as Se
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia-network ---
-use darwinia_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
+use darwinia_primitives::OpaqueBlock as Block;
 
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
