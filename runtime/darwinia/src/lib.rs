@@ -136,8 +136,8 @@ use sp_core::OpaqueMetadata;
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, Extrinsic as ExtrinsicT, NumberFor,
-		SaturatedConversion, StaticLookup, Verify,
+		AccountIdLookup, Block as BlockT, Extrinsic as ExtrinsicT, NumberFor, SaturatedConversion,
+		StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiAddress,
@@ -156,7 +156,7 @@ use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispa
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+pub type Header = generic::Header<BlockNumber, Hashing>;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
