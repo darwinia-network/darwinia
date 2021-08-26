@@ -1,9 +1,7 @@
-pub mod chain_spec;
 pub mod client;
+
+pub mod chain_spec;
+pub use chain_spec::{crab::CrabChainSpec, darwinia::DarwiniaChainSpec};
+
 pub mod service;
-
-pub use service::crab;
-pub use service::darwinia;
-
-pub use chain_spec::crab::CrabChainSpec;
-pub use chain_spec::darwinia::DarwiniaChainSpec;
+pub use service::{crab, darwinia};

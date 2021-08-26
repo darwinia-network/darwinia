@@ -37,7 +37,7 @@ use sc_consensus::LongestChain;
 use sc_consensus_babe::{
 	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
 };
-use sc_executor::{native_executor_instance, NativeExecutionDispatch};
+use sc_executor::NativeExecutionDispatch;
 use sc_finality_grandpa::{
 	Config as GrandpaConfig, FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
 	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
@@ -57,8 +57,14 @@ use sp_consensus::{
 use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
-use crate::{client::CrabClient, service::*};
-use darwinia_primitives::OpaqueBlock as Block;
+use crate::{
+	client::CrabClient,
+	service::{
+		self, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain, LightBackend,
+		LightClient,
+	},
+};
+use darwinia_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 use darwinia_rpc::{
 	crab::{FullDeps, LightDeps},
 	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,
@@ -68,7 +74,7 @@ use dc_mapping_sync::MappingSyncWorker;
 use dc_rpc::EthTask;
 use dp_rpc::{FilterPool, PendingTransactions};
 
-native_executor_instance!(
+sc_executor::native_executor_instance!(
 	pub CrabExecutor,
 	crab_runtime::api::dispatch,
 	crab_runtime::native_version,
@@ -150,7 +156,7 @@ where
 		)));
 	}
 
-	set_prometheus_registry(config)?;
+	service::set_prometheus_registry(config)?;
 
 	let telemetry = config
 		.telemetry_endpoints
@@ -354,7 +360,7 @@ where
 	} = new_partial::<RuntimeApi, Executor>(&mut config, max_past_logs, target_gas_price)?;
 
 	if let Some(url) = &config.keystore_remote {
-		match remote_keystore(url) {
+		match service::remote_keystore(url) {
 			Ok(k) => keystore_container.set_remote_keystore(k),
 			Err(e) => {
 				return Err(ServiceError::Other(format!(
@@ -373,8 +379,6 @@ where
 		.network
 		.extra_sets
 		.push(sc_finality_grandpa::grandpa_peers_set_config());
-
-	#[cfg(feature = "cli")]
 	config.network.request_response_protocols.push(
 		sc_finality_grandpa_warp_sync::request_response_config_for_chain(
 			&config,
@@ -608,7 +612,7 @@ where
 	<RuntimeApi as ConstructRuntimeApi<Block, LightClient<RuntimeApi, Executor>>>::RuntimeApi:
 		RuntimeApiCollection<StateBackend = StateBackendFor<LightBackend, Block>>,
 {
-	set_prometheus_registry(&mut config)?;
+	service::set_prometheus_registry(&mut config)?;
 
 	let telemetry = config
 		.telemetry_endpoints
@@ -714,7 +718,6 @@ where
 		pool: transaction_pool.clone(),
 	};
 	let rpc_extension = darwinia_rpc::crab::create_light(light_deps);
-
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
 		on_demand: Some(on_demand),
 		remote_blockchain: Some(backend.remote_blockchain()),
