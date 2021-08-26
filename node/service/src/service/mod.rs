@@ -67,29 +67,32 @@ pub mod darwinia;
 
 // --- std ---
 use std::sync::Arc;
+// --- crates.io ---
+use codec::Codec;
 // --- paritytech ---
+use sc_consensus::LongestChain;
+use sc_finality_grandpa::GrandpaBlockImport;
 use sc_keystore::LocalKeystore;
-use sc_service::{config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError};
+use sc_service::{
+	config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError, TFullBackend,
+	TFullClient, TLightBackendWithHash, TLightClientWithBackend,
+};
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia-network ---
-use darwinia_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
+use darwinia_primitives::OpaqueBlock as Block;
 
-type FullBackend = sc_service::TFullBackend<Block>;
-type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-type FullClient<RuntimeApi, Executor> = sc_service::TFullClient<Block, RuntimeApi, Executor>;
-type FullGrandpaBlockImport<RuntimeApi, Executor> = sc_finality_grandpa::GrandpaBlockImport<
-	FullBackend,
-	Block,
-	FullClient<RuntimeApi, Executor>,
-	FullSelectChain,
->;
-type LightBackend = sc_service::TLightBackendWithHash<Block, BlakeTwo256>;
+type FullBackend = TFullBackend<Block>;
+type FullSelectChain = LongestChain<FullBackend, Block>;
+type FullClient<RuntimeApi, Executor> = TFullClient<Block, RuntimeApi, Executor>;
+type FullGrandpaBlockImport<RuntimeApi, Executor> =
+	GrandpaBlockImport<FullBackend, Block, FullClient<RuntimeApi, Executor>, FullSelectChain>;
+type LightBackend = TLightBackendWithHash<Block, BlakeTwo256>;
 type LightClient<RuntimeApi, Executor> =
-	sc_service::TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
+	TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
 
-pub trait RuntimeExtrinsic: codec::Codec + Send + Sync + 'static {}
-impl<E> RuntimeExtrinsic for E where E: codec::Codec + Send + Sync + 'static {}
+pub trait RuntimeExtrinsic: 'static + Send + Sync + Codec {}
+impl<E> RuntimeExtrinsic for E where E: 'static + Send + Sync + Codec {}
 
 /// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
 pub trait IdentifyVariant {
