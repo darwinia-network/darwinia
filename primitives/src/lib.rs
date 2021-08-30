@@ -54,6 +54,9 @@ pub type AccountIndex = u32;
 /// A hash of some data used by the relay chain.
 pub type Hash = H256;
 
+/// Hashing algorithm used by the chain.
+pub type Hashing = BlakeTwo256;
+
 /// Index of a transaction in the relay chain. 32-bit should be plenty.
 pub type Nonce = u32;
 
@@ -70,7 +73,7 @@ pub type Balance = u128;
 pub type Power = u32;
 
 /// Header type.
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+pub type Header = generic::Header<BlockNumber, Hashing>;
 
 /// Block type.
 pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
