@@ -82,9 +82,9 @@ impl SubstrateCli for Cli {
 		};
 
 		Ok(match id.to_lowercase().as_ref() {
-			"crab_service" => Box::new(crab_chain_spec::config()?),
-			"crab_service-dev" => Box::new(crab_chain_spec::development_config()),
-			"crab_service-genesis" => Box::new(crab_chain_spec::genesis_config()),
+			"crab" => Box::new(crab_chain_spec::config()?),
+			"crab-dev" => Box::new(crab_chain_spec::development_config()),
+			"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
 			"darwinia" => Box::new(darwinia_chain_spec::config()?),
 			"darwinia-dev" | "dev" => Box::new(darwinia_chain_spec::development_config()),
 			"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
