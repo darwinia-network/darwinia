@@ -17,7 +17,7 @@ crate-type = ["cdylib", "rlib"]
 log       = { version = "0.4.14" }
 structopt = { version = "0.3.21", optional = true }
 # darwinia-network service
-darwinia-service = { default-features = false, path = "../node/service" }
+service = { package = "darwinia-service", default-features = false, path = "../node/service" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
@@ -44,27 +44,33 @@ default = [
 ]
 
 cli = [
+	# crates.io
 	"structopt",
+	# paritytech
 	"sc-cli",
 	"sc-service",
 ]
 
-db = ["darwinia-service/db"]
+db = ["service/db"]
 
-full-node = ["darwinia-service/full-node"]
+full-node = ["service/full-node"]
 
 trie-memory-tracker = ["sp-trie/memory-tracker"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
-dev = ["darwinia-service/dev"]
+dev = ["service/dev"]
 
 runtime-benchmarks = [
+	# darwinia-network
+	"service/runtime-benchmarks",
+	# paritytech
 	"frame-benchmarking-cli",
-	"darwinia-service/runtime-benchmarks",
 ]
 
 try-runtime = [
-	"darwinia-service/try-runtime",
+	# darwinia-network
+	"service/try-runtime",
+	# paritytech
 	"try-runtime-cli",
 ]

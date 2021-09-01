@@ -627,7 +627,7 @@ dependencies = [
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=main#c9fe23aa081e2fb8353e96a33ad2f4c158d066b1"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=main#284897e8e1d9982c2752a790028dc7b1c3cf73db"
 dependencies = [
  "frame-support",
  "hash-db",
@@ -9673,7 +9673,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
  "cfg-if 1.0.0",
- "rand 0.8.4",
+ "rand 0.3.23",
  "static_assertions",
 ]
 
