@@ -19,17 +19,14 @@
 //! Darwinia chain configurations.
 
 pub mod darwinia;
-pub use darwinia::{
-	darwinia_build_spec_config, darwinia_config, darwinia_development_config, DarwiniaChainSpec,
-};
+pub use darwinia::ChainSpec as DarwiniaChainSpec;
 
 pub mod crab;
-pub use crab::{crab_build_spec_config, crab_config, crab_development_config, CrabChainSpec};
+pub use crab::ChainSpec as CrabChainSpec;
 
 // --- crates.io ---
 use serde::{Deserialize, Serialize};
 // --- paritytech ---
-use darwinia_primitives::{AccountId, AccountPublic};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
 use sc_finality_grandpa::AuthorityId as GrandpaId;
@@ -37,6 +34,8 @@ use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::IdentifyAccount;
+// --- darwinia-network ---
+use darwinia_primitives::{AccountId, AccountPublic};
 
 const DEFAULT_PROTOCOL_ID: &str = "dar";
 
@@ -87,21 +86,4 @@ pub fn get_authority_keys_from_seed(
 		get_from_seed::<ImOnlineId>(seed),
 		get_from_seed::<AuthorityDiscoveryId>(seed),
 	)
-}
-
-fn testnet_accounts() -> Vec<AccountId> {
-	vec![
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		get_account_id_from_seed::<sr25519::Public>("Bob"),
-		get_account_id_from_seed::<sr25519::Public>("Charlie"),
-		get_account_id_from_seed::<sr25519::Public>("Dave"),
-		get_account_id_from_seed::<sr25519::Public>("Eve"),
-		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-		get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-		get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-		get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-		get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-		get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-	]
 }
