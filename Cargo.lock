@@ -1758,7 +1758,6 @@ dependencies = [
  "darwinia-support",
  "frame-support",
  "frame-system",
- "log",
  "pallet-authorship",
  "pallet-transaction-payment",
  "pallet-treasury",
