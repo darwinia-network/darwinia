@@ -694,7 +694,7 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 fn migrate() -> Weight {
 	// --- paritytech ---
 	#[allow(unused)]
-	use frame_support::migration;
+	use frame_support::{migration, PalletId};
 
 	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
 
