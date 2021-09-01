@@ -20,11 +20,9 @@ static_assertions = { version = "1.1.0" }
 # darwinia-network frame
 darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-crab-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+darwinia-bridge-ethereum            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-ethereum-backing           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-ethereum-relay             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-relay-authorities          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
@@ -33,8 +31,9 @@ darwinia-relayer-game               = { default-features = false, git = "https:/
 darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-tron-backing               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
@@ -103,11 +102,9 @@ std = [
 	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
-	"darwinia-crab-backing/std",
+	"darwinia-bridge-ethereum/std",
 	"darwinia-democracy/std",
 	"darwinia-elections-phragmen/std",
-	"darwinia-ethereum-backing/std",
-	"darwinia-ethereum-relay/std",
 	"darwinia-header-mmr/std",
 	"darwinia-header-mmr-rpc-runtime-api/std",
 	"darwinia-relay-authorities/std",
@@ -116,8 +113,9 @@ std = [
 	"darwinia-staking/std",
 	"darwinia-staking-rpc-runtime-api/std",
 	"darwinia-support/std",
-	"darwinia-tron-backing/std",
 	"darwinia-vesting/std",
+	"to-ethereum-backing/std",
+	"to-tron-backing/std",
 	# darwinia-network primitives
 	"darwinia-primitives/std",
 	"ethereum-primitives/std",

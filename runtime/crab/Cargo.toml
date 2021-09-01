@@ -24,7 +24,6 @@ static_assertions = { version = "1.1.0" }
 darwinia-balances                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-claims                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-crab-issuing             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-democracy                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 darwinia-elections-phragmen       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
 # <--- dvm ---
@@ -117,7 +116,6 @@ std = [
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
 	"darwinia-claims/std",
-	"darwinia-crab-issuing/std",
 	"darwinia-democracy/std",
 	"darwinia-elections-phragmen/std",
 	# <--- dvm ---

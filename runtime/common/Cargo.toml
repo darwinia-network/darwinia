@@ -11,7 +11,6 @@ version     = "0.11.3"
 [dependencies]
 # crates.io
 codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
-log               = { version = "0.4.14" }
 static_assertions = { version = "1.1.0" }
 # darwinia-network frame
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
