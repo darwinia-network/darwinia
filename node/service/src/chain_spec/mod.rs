@@ -29,7 +29,6 @@ pub use crab::{crab_build_spec_config, crab_config, crab_development_config, Cra
 // --- crates.io ---
 use serde::{Deserialize, Serialize};
 // --- paritytech ---
-use darwinia_primitives::{AccountId, AccountPublic};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainSpecExtension;
 use sc_finality_grandpa::AuthorityId as GrandpaId;
@@ -37,6 +36,8 @@ use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::IdentifyAccount;
+// --- darwinia-network ---
+use darwinia_primitives::{AccountId, AccountPublic};
 
 const DEFAULT_PROTOCOL_ID: &str = "dar";
 

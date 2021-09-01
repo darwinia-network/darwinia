@@ -29,10 +29,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
-use super::{
-	get_account_id_from_seed, get_authority_keys_from_seed, testnet_accounts, Extensions,
-	DEFAULT_PROTOCOL_ID,
-};
+use super::{Extensions, DEFAULT_PROTOCOL_ID};
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
 
@@ -40,10 +37,6 @@ use darwinia_primitives::{AccountId, Balance};
 pub type CrabChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 const CRAB_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
-
-pub fn crab_config() -> Result<CrabChainSpec, String> {
-	CrabChainSpec::from_json_bytes(&include_bytes!("../../res/crab/crab.json")[..])
-}
 
 /// Session keys for Crab.
 pub fn crab_session_keys(
@@ -69,6 +62,10 @@ pub fn crab_properties() -> Properties {
 	properties.insert("tokenSymbol".into(), vec!["CRING", "CKTON"].into());
 
 	properties
+}
+
+pub fn crab_config() -> Result<CrabChainSpec, String> {
+	CrabChainSpec::from_json_bytes(&include_bytes!("../../res/crab/crab.json")[..])
 }
 
 pub fn crab_build_spec_genesis() -> GenesisConfig {
@@ -247,7 +244,7 @@ pub fn crab_testnet_genesis(
 	)>,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> GenesisConfig {
-	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
+	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(super::testnet_accounts);
 
 	GenesisConfig {
 		frame_system: SystemConfig {
@@ -326,13 +323,13 @@ pub fn crab_testnet_genesis(
 pub fn crab_development_config() -> CrabChainSpec {
 	fn crab_development_genesis() -> GenesisConfig {
 		crab_testnet_genesis(
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			vec![get_authority_keys_from_seed("Alice")],
+			super::get_account_id_from_seed::<sr25519::Public>("Alice"),
+			vec![super::get_authority_keys_from_seed("Alice")],
 			Some(vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				super::get_account_id_from_seed::<sr25519::Public>("Alice"),
+				super::get_account_id_from_seed::<sr25519::Public>("Bob"),
+				super::get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				super::get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 			]),
 		)
 	}

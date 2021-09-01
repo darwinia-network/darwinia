@@ -44,10 +44,6 @@ pub type DarwiniaChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensi
 
 const DARWINIA_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
-pub fn darwinia_config() -> Result<DarwiniaChainSpec, String> {
-	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../../res/darwinia/darwinia.json")[..])
-}
-
 /// Session keys for Darwinia.
 pub fn darwinia_session_keys(
 	babe: BabeId,
@@ -72,6 +68,10 @@ pub fn darwinia_properties() -> Properties {
 	properties.insert("tokenSymbol".into(), vec!["RING", "KTON"].into());
 
 	properties
+}
+
+pub fn darwinia_config() -> Result<DarwiniaChainSpec, String> {
+	DarwiniaChainSpec::from_json_bytes(&include_bytes!("../../res/darwinia/darwinia.json")[..])
 }
 
 pub fn darwinia_build_spec_genesis() -> GenesisConfig {
