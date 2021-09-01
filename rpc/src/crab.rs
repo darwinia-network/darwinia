@@ -81,7 +81,7 @@ where
 	C: 'static
 		+ Send
 		+ Sync
-		+ ap_api::ProvideRuntimeApi<Block>
+		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
 		// <--- dvm ---
 		+ sc_client_api::BlockchainEvents<Block>
