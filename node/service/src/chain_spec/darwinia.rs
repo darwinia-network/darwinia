@@ -311,7 +311,6 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 				),
 			],
 		},
-		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_parcel: r#"{
 				"header": {
@@ -467,7 +466,6 @@ pub fn darwinia_testnet_genesis(
 		pallet_treasury_Instance2: Default::default(),
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: Default::default(),
-		darwinia_crab_backing: Default::default(),
 		darwinia_ethereum_relay: EthereumRelayConfig {
 			genesis_header_parcel: r#"{
 				"header": {

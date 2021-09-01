@@ -948,7 +948,6 @@ dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
- "darwinia-crab-issuing",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-evm",
@@ -1391,29 +1390,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-crab-backing"
-version = "2.5.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#cb38ca134ab3c0df492dd2fdfe9bd00a87532bae"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "sp-runtime",
-]
-
-[[package]]
-name = "darwinia-crab-issuing"
-version = "2.6.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#cb38ca134ab3c0df492dd2fdfe9bd00a87532bae"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-runtime",
-]
-
-[[package]]
 name = "darwinia-democracy"
 version = "2.6.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#cb38ca134ab3c0df492dd2fdfe9bd00a87532bae"
@@ -1700,7 +1676,6 @@ version = "0.11.3"
 dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
- "darwinia-crab-backing",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-ethereum-backing",

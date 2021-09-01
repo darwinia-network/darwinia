@@ -201,9 +201,6 @@ pub fn crab_build_spec_genesis() -> GenesisConfig {
 		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: Default::default(),
-		darwinia_crab_issuing: CrabIssuingConfig {
-			total_mapped_ring: 40_000_000 * COIN,
-		},
 		darwinia_evm: crab_runtime::EVMConfig {
 			accounts: BTreeMap::new(),
 		},
@@ -312,9 +309,6 @@ pub fn crab_testnet_genesis(
 		},
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: Default::default(),
-		darwinia_crab_issuing: CrabIssuingConfig {
-			total_mapped_ring: 1 << 56,
-		},
 		darwinia_evm: crab_runtime::EVMConfig {
 			accounts: BTreeMap::new(),
 		},

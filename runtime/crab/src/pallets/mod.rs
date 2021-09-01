@@ -97,9 +97,6 @@ pub use proxy::*;
 pub mod multisig;
 pub use multisig::*;
 
-pub mod crab_issuing;
-pub use crab_issuing::*;
-
 pub mod evm_;
 pub use evm_::*;
 
