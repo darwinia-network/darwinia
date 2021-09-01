@@ -595,6 +595,9 @@ fn migrate() -> Weight {
 	#[allow(unused)]
 	use frame_support::migration;
 
+	// TODO: Move to S2S
+	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
+
 	0
 	// RuntimeBlockWeights::get().max_block
 }

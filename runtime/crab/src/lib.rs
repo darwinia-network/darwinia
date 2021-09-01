@@ -696,8 +696,13 @@ fn migrate() -> Weight {
 	#[allow(unused)]
 	use frame_support::migration;
 
-	0
-	// RuntimeBlockWeights::get().max_block
+	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
+
+	// TODO: Move to S2S
+	const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }
 
 pub struct CustomOnRuntimeUpgrade;
