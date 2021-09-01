@@ -694,12 +694,12 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 fn migrate() -> Weight {
 	// --- paritytech ---
 	#[allow(unused)]
-	use frame_support::{migration, PalletId};
+	use frame_support::migration;
 
 	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
 
 	// TODO: Move to S2S
-	const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
+	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
 	// 0
 	RuntimeBlockWeights::get().max_block
