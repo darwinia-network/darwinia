@@ -296,6 +296,8 @@ pub fn run() -> sc_cli::Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
+
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| {
 					// <--- dvm ---
@@ -351,6 +353,8 @@ pub fn run() -> sc_cli::Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
+
 			if chain_spec.is_crab() {
 				runner.async_run(|config| {
 					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
@@ -383,6 +387,8 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
 
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| cmd.run::<crab_runtime::Block, CrabExecutor>(config))
