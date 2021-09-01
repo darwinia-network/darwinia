@@ -300,7 +300,7 @@ pub fn darwinia_build_spec_genesis() -> GenesisConfig {
 		pallet_sudo: SudoConfig { key: root },
 		darwinia_vesting: VestingConfig {
 			vesting: vec![
-				// Team vesting: 1 year period start after 1 year since mainnet lanuch
+				// Team vesting: 1 year period start after 1 year since mainnet launch
 				(team_vesting, 365 * DAYS, 365 * DAYS, 0),
 				// Foundation vesting: 5 years period start when mainnet launch
 				(
