@@ -24,7 +24,7 @@ use sc_service::ChainSpec;
 #[cfg(feature = "try-runtime")]
 use sc_service::TaskManager;
 use sp_core::crypto::Ss58AddressFormat;
-// --- darwinia_service-network ---
+// --- darwinia-network ---
 use crate::cli::{Cli, Subcommand};
 use service::{
 	crab_chain_spec, crab_runtime, crab_service, darwinia_chain_spec, darwinia_runtime,
@@ -42,7 +42,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn executable_name() -> String {
-		"darwinia_service".into()
+		"darwinia".into()
 	}
 
 	fn description() -> String {
@@ -54,7 +54,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/darwinia_service-network/darwinia_service/issues/new".into()
+		"https://github.com/darwinia-network/darwinia/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -72,11 +72,11 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> Result<Box<dyn ChainSpec>, String> {
 		let id = if id.is_empty() {
 			let n = get_exec_name().unwrap_or_default();
-			["darwinia_service", "crab_service"]
+			["darwinia", "crab"]
 				.iter()
 				.cloned()
 				.find(|&chain| n.starts_with(chain))
-				.unwrap_or("darwinia_service")
+				.unwrap_or("darwinia")
 		} else {
 			id
 		};
@@ -85,9 +85,9 @@ impl SubstrateCli for Cli {
 			"crab_service" => Box::new(crab_chain_spec::config()?),
 			"crab_service-dev" => Box::new(crab_chain_spec::development_config()),
 			"crab_service-genesis" => Box::new(crab_chain_spec::genesis_config()),
-			"darwinia_service" => Box::new(darwinia_chain_spec::config()?),
-			"darwinia_service-dev" | "dev" => Box::new(darwinia_chain_spec::development_config()),
-			"darwinia_service-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
+			"darwinia" => Box::new(darwinia_chain_spec::config()?),
+			"darwinia-dev" | "dev" => Box::new(darwinia_chain_spec::development_config()),
+			"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
 			path => {
 				let path = PathBuf::from(path);
 				let chain_spec = Box::new(DarwiniaChainSpec::from_json_file(path.clone())?)
