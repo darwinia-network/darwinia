@@ -598,8 +598,10 @@ fn migrate() -> Weight {
 	// TODO: Move to S2S
 	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
-	0
-	// RuntimeBlockWeights::get().max_block
+	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }
 
 pub struct CustomOnRuntimeUpgrade;
