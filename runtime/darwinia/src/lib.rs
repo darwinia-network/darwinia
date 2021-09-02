@@ -111,7 +111,7 @@ pub use wasm::*;
 mod weights;
 
 #[cfg(feature = "std")]
-pub use darwinia_ethereum_relay::DagsMerkleRootsLoader;
+pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
@@ -171,7 +171,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel<Runtime>,
+	darwinia_bridge_ethereum::CheckEthereumRelayHeaderParcel<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -208,7 +208,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 3,
+	transaction_version: 4,
 };
 
 /// Native version.
@@ -289,16 +289,16 @@ frame_support::construct_runtime! {
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 29,
 
 		// Crab bridge.
-		CrabBacking: darwinia_crab_backing::{Pallet, Storage, Config<T>} = 30,
+		// CrabBacking: darwinia_crab_backing::{Pallet, Storage, Config<T>} = 30,
 
 		// Ethereum bridge.
-		EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
-		EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
+		EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
+		EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance1>::{Pallet, Storage} = 33,
 		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance1>::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
-		TronBacking: darwinia_tron_backing::{Pallet, Storage, Config<T>} = 34,
+		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
 	}
 }
 
@@ -329,7 +329,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			darwinia_ethereum_relay::CheckEthereumRelayHeaderParcel::<Runtime>::new(),
+			darwinia_bridge_ethereum::CheckEthereumRelayHeaderParcel::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -590,18 +590,28 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
+fn migrate() -> Weight {
+	// --- paritytech ---
+	#[allow(unused)]
+	use frame_support::migration;
+
+	// TODO: Move to S2S
+	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
+
+	0
+	// RuntimeBlockWeights::get().max_block
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		darwinia_runtime_common::migrate_treasury();
+		migrate();
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		darwinia_runtime_common::migrate_treasury();
-
-		RuntimeBlockWeights::get().max_block
+		migrate()
 	}
 }

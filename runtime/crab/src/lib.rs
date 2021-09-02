@@ -162,7 +162,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 7,
+	transaction_version: 8,
 };
 
 /// Native version.
@@ -247,11 +247,11 @@ frame_support::construct_runtime! {
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Crab bridge.
-		CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config} = 35,
+		// CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config} = 35,
 
 		// Ethereum bridge.
-		// EthereumRelay: darwinia_ethereum_relay::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,
-		// EthereumBacking: darwinia_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
+		// EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,
+		// EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
 		// EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
 		// EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
 
@@ -691,54 +691,30 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
+fn migrate() -> Weight {
+	// --- paritytech ---
+	#[allow(unused)]
+	use frame_support::migration;
+
+	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
+
+	// TODO: Move to S2S
+	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
+
+	// 0
+	RuntimeBlockWeights::get().max_block
+}
+
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		assert!(!migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
-
-		assert!(migration::have_storage_value(
-			b"CrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-		assert!(!migration::have_storage_value(
-			b"DarwiniaCrabIssuing",
-			b"TotalMappedRing",
-			&[]
-		));
-
-		darwinia_runtime_common::migrate_treasury();
+		migrate();
 
 		Ok(())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::migration;
-
-		log::info!("Migrate `DarwiniaCrabIssuing` to `CrabIssuing`");
-
-		migration::move_pallet(b"DarwiniaCrabIssuing", b"CrabIssuing");
-
-		darwinia_runtime_common::migrate_treasury();
-
-		RuntimeBlockWeights::get().max_block
+		migrate()
 	}
 }

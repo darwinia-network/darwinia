@@ -312,8 +312,7 @@ pub fn genesis_config() -> ChainSpec {
 					),
 				],
 			},
-			darwinia_crab_backing: Default::default(),
-			darwinia_ethereum_relay: EthereumRelayConfig {
+			darwinia_bridge_ethereum: EthereumRelayConfig {
 				genesis_header_parcel: r#"{
 					"header": {
 						"difficulty": "0x1a76e148d47e3f",
@@ -345,7 +344,7 @@ pub fn genesis_config() -> ChainSpec {
 				),
 				..Default::default()
 			},
-			darwinia_ethereum_backing: EthereumBackingConfig {
+			to_ethereum_backing: EthereumBackingConfig {
 				token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 				deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
 				ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
@@ -358,7 +357,7 @@ pub fn genesis_config() -> ChainSpec {
 				backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 				..Default::default()
 			},
-			darwinia_tron_backing: TronBackingConfig {
+			to_tron_backing: TronBackingConfig {
 				// Los Angeles: 9/24/2020, 7:42:52 PM
 				// Berlin :     9/25/2020, 10:42:52 AM
 				// Beijing:     9/25/2020, 9:42:52 AM
@@ -463,8 +462,7 @@ pub fn development_config() -> ChainSpec {
 			pallet_treasury_Instance2: Default::default(),
 			pallet_sudo: SudoConfig { key: root },
 			darwinia_vesting: Default::default(),
-			darwinia_crab_backing: Default::default(),
-			darwinia_ethereum_relay: EthereumRelayConfig {
+			darwinia_bridge_ethereum: EthereumRelayConfig {
 				genesis_header_parcel: r#"{
 					"header": {
 						"difficulty": "0x1a76e148d47e3f",
@@ -496,7 +494,7 @@ pub fn development_config() -> ChainSpec {
 				),
 				..Default::default()
 			},
-			darwinia_ethereum_backing: EthereumBackingConfig {
+			to_ethereum_backing: EthereumBackingConfig {
 				token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 				deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
 				ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
@@ -505,7 +503,7 @@ pub fn development_config() -> ChainSpec {
 				backed_kton: 1 << 56,
 				..Default::default()
 			},
-			darwinia_tron_backing: TronBackingConfig {
+			to_tron_backing: TronBackingConfig {
 				backed_ring: 1 << 56,
 				backed_kton: 1 << 56,
 			},
