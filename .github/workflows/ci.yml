@@ -19,10 +19,10 @@ jobs:
         with:
           repository: darwinia-network/darwinia-kit
           ref: main
-      - name: Install Rust nightly toolchain
+      - name: Install Rust nightly-2021-09-01 toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2021-09-01
           default: true
       - name: Build
         uses: actions-rs/cargo@v1
@@ -43,10 +43,10 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v2
-      - name: Install Rust nightly toolchain
+      - name: Install Rust nightly-2021-09-01 toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2021-09-01
           target: wasm32-unknown-unknown
           default: true
       - name: Build
@@ -91,10 +91,10 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v2
-      - name: Install Rust nightly toolchain
+      - name: Install Rust nightly-2021-09-01 toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2021-09-01
           target: wasm32-unknown-unknown
           default: true
       - name: Run checker
