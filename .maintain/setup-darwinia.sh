@@ -34,7 +34,8 @@ mkdir -p ${WORK_PATH}/deploy/bin
 cross build \
   --release \
   --target x86_64-unknown-linux-gnu \
-  --sub-targets wasm32-unknown-unknown
+  --sub-targets wasm32-unknown-unknown \
+  --locked
 
 ## not support now, have build questions.
 ## https://github.com/fewensa/darwinia/runs/2294261173?check_suite_focus=true#step:4:3092
