@@ -1,3 +1,66 @@
+## [0.11.4] - 2021-09-03
+
+### Upgrade Priority: LOW
+#### Upgrade Window Period - 升级窗口期
+- None
+
+#### Breaking Change(s)
+- None
+
+### Darwinia 0.11.4
+
+|  Chain   | Runtime Spec Version |
+| :------: | :------------------: |
+| Darwinia |         1140         |
+|   Crab   |         1140         |
+
+### Boot Flag
+
+#### Darwinia
+**Run with `--chain darwinia` or leave it empty to participate in Darwinia.**
+**使用 `--chain darwinia` 或不填写，参与到 Darwinia 网络。**
+
+#### Crab
+**Run with `--chain crab` to participate in Crab.**
+**使用 `--chain crab` ，参与到 Crab 网络。**
+
+### Resource
+
+#### Binary
+|               |  Arch  | glibc (at least) | llvm (at least) | pre-built |
+| :-----------: | :----: | :--------------: | :-------------: | :-------: |
+| General Linux | x86_64 |       2.23       |       4.0       |     ✔︎     |
+
+#### Docker
+```docker
+docker pull quay.io/darwinia-network/darwinia:v0.11.4
+```
+
+#### Update(s)
+- Refactor Features Control #719
+- Only For Darwinia Developers [R 20](https://github.com/darwinia-network/substrate-update-tracking/issues/20)
+#### Fix(es)
+- None
+#### Migration(s)
+- Correct Treasury Storage #724
+
+---
+
+#### Darwinia Custom
+##### Update(s)
+- None
+##### Migration(s)
+- Remove Crab Backing #782
+
+---
+
+#### Crab Custom
+##### Update(s)
+- None
+##### Migration(s)
+- Remove Crab Issuing #782
+
+
 ## [0.11.3] - 2021-08-23
 
 ### Upgrade Priority: LOW
@@ -59,6 +122,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.3
 - https://github.com/darwinia-network/darwinia-common/pull/760 A Dispatch Call for Internal Transact
 ##### Migration(s)
 - #705 Move `DarwiniaCrabIssuing` to `CrabIssuing`
+
 
 ## [0.11.2] - 2021-08-03
 
