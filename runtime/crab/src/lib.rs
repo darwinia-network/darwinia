@@ -701,6 +701,11 @@ fn migrate() -> Weight {
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
+	migration::put_storage_value(b"Treasury", b"ProposalCount", &[], 2 as u32);
+	migration::put_storage_value(b"Instance2Treasury", b"ProposalCount", &[], 2 as u32);
+
+	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
+
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
