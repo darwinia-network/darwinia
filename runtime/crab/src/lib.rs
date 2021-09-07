@@ -156,7 +156,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 1130,
+	spec_version: 1140,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -697,14 +697,18 @@ fn migrate() -> Weight {
 	use frame_support::migration;
 
 	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
+	log::info!("CrabIssuingTotalMappedRing Removed");
 
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
 	migration::put_storage_value(b"Treasury", b"ProposalCount", &[], 2 as u32);
+	log::info!("TreasuryPRoposalCount Migrated");
 	migration::put_storage_value(b"Instance2Treasury", b"ProposalCount", &[], 2 as u32);
+	log::info!("Instance2TreasuryProposalCount Migrated");
 
 	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
+	log::info!("TreasuryReasons Migrated");
 
 	// 0
 	RuntimeBlockWeights::get().max_block

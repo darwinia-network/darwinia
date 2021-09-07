@@ -202,7 +202,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1130,
+	spec_version: 1140,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -599,6 +599,7 @@ fn migrate() -> Weight {
 	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
 	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
+	log::info!("TreasuryReasons Migrated");
 
 	// 0
 	RuntimeBlockWeights::get().max_block
