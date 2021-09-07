@@ -599,6 +599,7 @@ fn migrate() -> Weight {
 	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
 	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
+	log::info("TreasuryReasons Migrated");
 
 	// 0
 	RuntimeBlockWeights::get().max_block
