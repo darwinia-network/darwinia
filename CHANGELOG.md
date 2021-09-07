@@ -38,6 +38,7 @@ docker pull quay.io/darwinia-network/darwinia:v0.11.4
 
 #### Update(s)
 - Refactor Features Control #719
+- Increase Treasury `ProposalBondMinimum` #734
 - Only For Darwinia Developers [R 20](https://github.com/darwinia-network/substrate-update-tracking/issues/20)
 #### Fix(es)
 - None
