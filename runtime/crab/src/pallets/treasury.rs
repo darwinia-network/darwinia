@@ -16,7 +16,8 @@ frame_support::parameter_types! {
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 20 * COIN;
+	pub const RingProposalBondMinimum: Balance = 10_000 * COIN;
+	pub const KtonProposalBondMinimum: Balance = 10 * COIN;
 	pub const Burn: Permill = Permill::from_percent(0);
 	pub const MaxApprovals: u32 = 100;
 }
@@ -31,7 +32,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type OnSlash = Treasury;
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMinimum = RingProposalBondMinimum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = Society;
@@ -47,7 +48,7 @@ impl Config<KtonTreasuryInstance> for Runtime {
 	type Event = Event;
 	type OnSlash = KtonTreasury;
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMinimum = KtonProposalBondMinimum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = ();
