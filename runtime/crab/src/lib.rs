@@ -699,8 +699,14 @@ fn migrate() -> Weight {
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-	0
-	// RuntimeBlockWeights::get().max_block
+	for (key, value) in
+		migration::storage_iter::<(AccountId, Balance)>(b"Indices", b"Accounts").drain()
+	{
+		migration::put_storage_value(b"Indices", b"Accounts", &key, (value.0, value.1, false));
+	}
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }
 
 pub struct CustomOnRuntimeUpgrade;
