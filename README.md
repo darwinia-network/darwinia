@@ -1,8 +1,7 @@
 [![CI](https://travis-ci.org/darwinia-network/darwinia.svg)](https://travis-ci.org/darwinia-network/darwinia])
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-
-# ![Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
+![Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
 **As an open cross-chain bridge protocol based on Substrate, Darwinia aims to build the Internet of Tokens, including decentralized tokens swap, exchange, and market.**
 
