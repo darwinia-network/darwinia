@@ -703,15 +703,20 @@ fn migrate() -> Weight {
 	const module: &[u8] = b"Indices";
 	const item: &[u8] = b"Accounts";
 
-	let hash = Blake2_128Concat::hash(1 as AccountIndex);
+	let index = 1 as AccountIndex;
 
 	if let Some((v0, v1)) =
 		migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
-			module, item, &hash,
+			module, item, index,
 		) {
 		let v2 = false;
 
-		migration::put_storage_value(module, item, &hash, (v0, v1, v2));
+		migration::put_storage_value(
+			module,
+			item,
+			index.using_encoded(Blake2_128Concat::hash).as_ref(),
+			(v0, v1, v2),
+		);
 	}
 
 	// 0
