@@ -695,14 +695,23 @@ fn migrate() -> Weight {
 	// --- paritytech ---
 	#[allow(unused)]
 	use frame_support::migration;
+	use frame_support::pallet_prelude::Blake2_128Concat;
 
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-	for (key, value) in
-		migration::storage_iter::<(AccountId, Balance)>(b"Indices", b"Accounts").drain()
-	{
-		migration::put_storage_value(b"Indices", b"Accounts", &key, (value.0, value.1, false));
+	const module: &[u8] = b"Indices";
+	const item: &[u8] = b"Accounts";
+
+	let hash = Blake2_128Concat::hash(1 as AccountIndex);
+
+	if let Some((v0, v1)) =
+		migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
+			module, item, hash,
+		) {
+		let v2 = false;
+
+		migration::put_storage_value(module, item, hash, (v0, v1, v2));
 	}
 
 	// 0
