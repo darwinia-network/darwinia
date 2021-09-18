@@ -1313,8 +1313,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-balances"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-balances-rpc-runtime-api",
  "darwinia-support",
@@ -1328,8 +1328,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-balances-rpc"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-balances-rpc-runtime-api",
  "jsonrpc-core",
@@ -1343,8 +1343,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-balances-rpc-runtime-api"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec",
@@ -1355,8 +1355,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-bridge-ethereum"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "blake2-rfc",
@@ -1379,8 +1379,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-claims"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "darwinia-support",
@@ -1415,8 +1415,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-democracy"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1430,8 +1430,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-elections-phragmen"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1447,8 +1447,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-evm"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "darwinia-balances",
@@ -1474,8 +1474,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-evm-precompile-simple"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "dp-evm",
  "evm",
@@ -1486,8 +1486,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-evm-precompile-transfer"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "darwinia-evm",
@@ -1511,8 +1511,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-header-mmr"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "ckb-merkle-mountain-range",
  "darwinia-header-mmr-rpc-runtime-api",
@@ -1531,8 +1531,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-header-mmr-rpc"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-header-mmr-rpc-runtime-api",
  "jsonrpc-core",
@@ -1546,8 +1546,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-header-mmr-rpc-runtime-api"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec",
@@ -1571,8 +1571,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-relay-authorities"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
@@ -1586,8 +1586,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-relay-primitives"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -1597,8 +1597,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-relayer-game"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
@@ -1812,8 +1812,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
@@ -1837,8 +1837,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-rpc"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "jsonrpc-core",
@@ -1852,8 +1852,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-rpc-runtime-api"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec",
@@ -1864,8 +1864,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-support"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "bp-runtime",
@@ -1885,8 +1885,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-vesting"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1924,9 +1924,11 @@ dependencies = [
 
 [[package]]
 name = "dc-db"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
+ "dp-storage",
+ "dvm-ethereum",
  "kvdb",
  "kvdb-rocksdb",
  "parity-scale-codec",
@@ -1938,8 +1940,8 @@ dependencies = [
 
 [[package]]
 name = "dc-mapping-sync"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "dc-db",
  "dp-consensus",
@@ -1955,8 +1957,8 @@ dependencies = [
 
 [[package]]
 name = "dc-rpc"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "dc-db",
@@ -2076,8 +2078,8 @@ dependencies = [
 
 [[package]]
 name = "dp-consensus"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2090,8 +2092,8 @@ dependencies = [
 
 [[package]]
 name = "dp-evm"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "evm",
  "impl-trait-for-tuples",
@@ -2103,8 +2105,8 @@ dependencies = [
 
 [[package]]
 name = "dp-rpc"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "ethereum-types",
  "jsonrpc-core",
@@ -2118,13 +2120,13 @@ dependencies = [
 
 [[package]]
 name = "dp-storage"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 
 [[package]]
 name = "dvm-dynamic-fee"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "async-trait",
  "darwinia-evm",
@@ -2138,8 +2140,8 @@ dependencies = [
 
 [[package]]
 name = "dvm-ethereum"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-evm",
  "darwinia-support",
@@ -2167,8 +2169,8 @@ dependencies = [
 
 [[package]]
 name = "dvm-rpc-core"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-evm",
  "dp-evm",
@@ -2187,8 +2189,8 @@ dependencies = [
 
 [[package]]
 name = "dvm-rpc-runtime-api"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "darwinia-evm",
  "darwinia-support",
@@ -2413,8 +2415,8 @@ dependencies = [
 
 [[package]]
 name = "ethereum-primitives"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "ethash",
@@ -4718,8 +4720,8 @@ checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 
 [[package]]
 name = "merkle-patricia-trie"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "hashbrown 0.9.1",
  "keccak-hash",
@@ -9143,8 +9145,8 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "to-ethereum-backing"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "array-bytes",
  "darwinia-relay-primitives",
@@ -9164,8 +9166,8 @@ dependencies = [
 
 [[package]]
 name = "to-tron-backing"
-version = "2.6.2"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#3269f9315a67ab17d03b57927eddfaafec7ee2ad"
+version = "2.6.4"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=master#e7fa03775942b1836c91c77c4f79d2292b604675"
 dependencies = [
  "frame-support",
  "frame-system",
