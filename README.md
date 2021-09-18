@@ -3,7 +3,7 @@
 
 ![Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
-**As an open cross-chain bridge protocol based on Substrate, Darwinia aims to build the Internet of Tokens, including decentralized tokens swap, exchange, and market.**
+**As an open cross-chain bridge protocol based on Substrate, Darwinia aims to build the internet of tokens, including decentralized tokens swap, exchange, and market.**
 
 👉 *The official Documents for [The Darwinia Network](https://darwinia.network/)*<br>
 👉 *The official Documents for [The Crab Network](https://docs.crab.network/)*<br>
