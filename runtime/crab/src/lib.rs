@@ -700,20 +700,20 @@ fn migrate() -> Weight {
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-	const module: &[u8] = b"Indices";
-	const item: &[u8] = b"Accounts";
+	const MODULE: &[u8] = b"Indices";
+	const ITEM: &[u8] = b"Accounts";
 
 	let index = 1 as AccountIndex;
 
 	if let Some((v0, v1)) =
 		migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
-			module, item, index,
+			MODULE, ITEM, index,
 		) {
 		let v2 = false;
 
 		migration::put_storage_value(
-			module,
-			item,
+			MODULE,
+			ITEM,
 			index.using_encoded(Blake2_128Concat::hash).as_ref(),
 			(v0, v1, v2),
 		);
