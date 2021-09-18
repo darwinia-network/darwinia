@@ -695,7 +695,7 @@ fn migrate() -> Weight {
 	// --- paritytech ---
 	#[allow(unused)]
 	use frame_support::migration;
-	use frame_support::pallet_prelude::Blake2_128Concat;
+	use frame_support::{pallet_prelude::Blake2_128Concat, StorageHasher};
 
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
