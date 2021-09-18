@@ -696,22 +696,11 @@ fn migrate() -> Weight {
 	#[allow(unused)]
 	use frame_support::migration;
 
-	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
-	log::info!("CrabIssuingTotalMappedRing Removed");
-
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-	migration::put_storage_value(b"Treasury", b"ProposalCount", &[], 2 as u32);
-	log::info!("TreasuryPRoposalCount Migrated");
-	migration::put_storage_value(b"Instance2Treasury", b"ProposalCount", &[], 2 as u32);
-	log::info!("Instance2TreasuryProposalCount Migrated");
-
-	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
-	log::info!("TreasuryReasons Migrated");
-
-	// 0
-	RuntimeBlockWeights::get().max_block
+	0
+	// RuntimeBlockWeights::get().max_block
 }
 
 pub struct CustomOnRuntimeUpgrade;
