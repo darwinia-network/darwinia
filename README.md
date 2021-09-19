@@ -65,7 +65,3 @@ cargo run --release -- --dev
 ## Contributing Guidelines
 
 [CONTRIBUTION](CONTRIBUTING.adoc)
-
-## License
-
-[LICENSE](https://github.com/darwinia-network/darwinia/blob/master/LICENSE)
