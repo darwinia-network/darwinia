@@ -23,6 +23,8 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 	- [Unofficial Group](https://t.me/darwinianetworkpricespeculation)
 - Matrix
 	- [Official Technical Room](https://matrix.to/#/#darwinia:matrix.org)
+- Discord
+	- [Official Server](https://discord.gg/uqa3snSGTj)
 - Slack
 	> Technical members are more active on this place. If you expect a quick response, here you go.
 	- PM [Support](mailto:support@darwinia.network) or [Xavier](mailto:xavier.lau@itering.com)
