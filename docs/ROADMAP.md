@@ -1,13 +1,11 @@
 # Darwinia RoadMap
 
 ## Introduction
-
 As an open cross-chain bridge protocol based on Substrate, Darwinia focuses on the construction of future Internet of Tokens, including decentralized tokens swap, exchange, and market.
 
 ## Development RoadMap
 
 ### The specifications of the project including:
-
 1. Darwinia bridge chain mainet core features
     - Dual token model design and implementation, the native tokens are RING and KTON.
     - RING token for payment and gas fees, can be locked to issue KTON
@@ -79,10 +77,8 @@ Release candidate for mainnet launch(2019Q4), with runtimes including cross-chai
 ### Crab Network (Expected 2020 03)
 Canary Network of Darwinia.
 
-
 ### Darwinia Mainnet (Expected 2020 Q2)
 There could more testnet for testing and security auditing and preparing for the mainnet launch at Q4 2019.
-
 
 ### Token Dex and Swap Protocol
 [TBD]
