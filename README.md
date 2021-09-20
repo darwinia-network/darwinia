@@ -26,6 +26,8 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - Slack
 	> Technical members are more active on this place. If you expect a quick response, here you go.
 	- PM [Support](mailto:support@darwinia.network) or [Xavier](mailto:xavier.lau@itering.com)
+- Reddit
+	- [Community](https://www.reddit.com/r/DarwiniaCommunity)
 - Twitter
 	- [Official Account](https://twitter.com/DarwiniaNetwork)
 - Medium
