@@ -20,7 +20,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 	- [Official Group](https://t.me/DarwiniaNetwork)
 	- [Official Group (CN)](https://t.me/DarwiniaNetworkCN)
 	- [Official Technical Group](https://t.me/DarwiniaDev)
-	- [Unofficial Group](https://t.me/darwinia)
+	- [Unofficial Group](https://t.me/darwinianetworkpricespeculation)
 - Matrix
 	- [Official Technical Room](https://matrix.to/#/#darwinia:matrix.org)
 - Slack
