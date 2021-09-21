@@ -695,20 +695,29 @@ fn migrate() -> Weight {
 	// --- paritytech ---
 	#[allow(unused)]
 	use frame_support::migration;
-
-	migration::remove_storage_prefix(b"CrabIssuing", b"TotalMappedRing", &[]);
-	log::info!("CrabIssuingTotalMappedRing Removed");
+	use frame_support::{pallet_prelude::Blake2_128Concat, StorageHasher};
 
 	// TODO: Move to S2S
 	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-	migration::put_storage_value(b"Treasury", b"ProposalCount", &[], 2 as u32);
-	log::info!("TreasuryPRoposalCount Migrated");
-	migration::put_storage_value(b"Instance2Treasury", b"ProposalCount", &[], 2 as u32);
-	log::info!("Instance2TreasuryProposalCount Migrated");
+	const MODULE: &[u8] = b"Indices";
+	const ITEM: &[u8] = b"Accounts";
 
-	migration::move_storage_from_pallet(b"Reasons", b"DarwiniaTreasury", b"Treasury");
-	log::info!("TreasuryReasons Migrated");
+	let index = 1 as AccountIndex;
+
+	if let Some((v0, v1)) =
+		migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
+			MODULE, ITEM, index,
+		) {
+		let v2 = false;
+
+		migration::put_storage_value(
+			MODULE,
+			ITEM,
+			index.using_encoded(Blake2_128Concat::hash).as_ref(),
+			(v0, v1, v2),
+		);
+	}
 
 	// 0
 	RuntimeBlockWeights::get().max_block

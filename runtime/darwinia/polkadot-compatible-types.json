@@ -54,16 +54,13 @@
 	},
 	"StakingLedgerT": {
 		"stash": "AccountId",
-		"active_ring": "Compact<Balance>",
-		"active_deposit_ring": "Compact<Balance>",
-		"active_kton": "Compact<Balance>",
-		"deposit_items": "Vec<TimeDepositItem>",
-		"ring_staking_lock": "StakingLock",
-		"kton_staking_lock": "StakingLock",
-		"claimed_rewards": "Vec<EraIndex>",
-		"total": "Compact<Balance>",
 		"active": "Compact<Balance>",
-		"unlocking": "Vec<UnlockChunk>"
+		"activeDepositRing": "Compact<Balance>",
+		"activeKton": "Compact<Balance>",
+		"depositItems": "Vec<TimeDepositItem>",
+		"ringStakingLock": "StakingLock",
+		"ktonStakingLock": "StakingLock",
+		"claimedRewards": "Vec<EraIndex>"
 	},
 	"TimeDepositItem": {
 		"value": "Compact<Balance>",
