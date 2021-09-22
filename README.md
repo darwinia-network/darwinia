@@ -35,7 +35,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - Medium
 	- [Official Account](https://darwinianetwork.medium.com)
 - Wechat
-	- Official Group: Add "**DarwiniaBot**" to get the link
+	- Official Group: Add "**DarwiniaBot**" to get the invitation link
 	- Official Account: "**DARWINIA**"
 - Weibo
 	- [Official Account](https://weibo.com/DarwiniaNetwork)
