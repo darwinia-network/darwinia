@@ -43,7 +43,7 @@ gh repo clone darwinia-network/darwinia
 # with git
 git clone https://github.com/darwinia-network/darwinia.git
 git checkout <version>
-cargo build --release
+cargo build --release --locked
 ```
 
 ## Networks
