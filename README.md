@@ -14,31 +14,14 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - [Darwinia Network Docs](https://docs.darwinia.network)
 - [Crab Network Docs](https://docs.crab.network)
 
-### Social Media
+### Technical Support
 - Telegram
-	- [Announcement Channel](https://t.me/DarwiniaNetwork_Announcement)
-	- [Official Group](https://t.me/DarwiniaNetwork)
-	- [Official Group (CN)](https://t.me/DarwiniaNetworkCN)
 	- [Official Technical Group](https://t.me/DarwiniaDev)
-	- [Unofficial Group](https://t.me/darwinianetworkpricespeculation)
 - Matrix
 	- [Official Technical Room](https://matrix.to/#/#darwinia:matrix.org)
-- Discord
-	- [Official Server](https://discord.gg/uqa3snSGTj)
 - Slack
 	> Technical members are more active on this place. If you expect a quick response, here you go.
 	- PM [Support](mailto:support@darwinia.network) or [Xavier](mailto:xavier.lau@itering.com)
-- Reddit
-	- [Community](https://www.reddit.com/r/DarwiniaCommunity)
-- Twitter
-	- [Official Account](https://twitter.com/DarwiniaNetwork)
-- Medium
-	- [Official Account](https://darwinianetwork.medium.com)
-- Wechat
-	- Official Group: Add "**DarwiniaBot**" to get the invitation link
-	- Official Account: "**DARWINIA**"
-- Weibo
-	- [Official Account](https://weibo.com/DarwiniaNetwork)
 
 ## Installation
 - Downloading pre-built binary from **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
