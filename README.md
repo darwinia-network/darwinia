@@ -4,7 +4,7 @@
 ![Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
 
 # Darwinia
-Implementation of a https://darwinia.network node in Rust based on the **Substrate** framework.
+Implementation of a https://darwinia.network node in **Rust** based on the **Substrate** framework.
 
 This repository contains runtimes for the **[Darwinia](https://darwinia.network)** and **[Crab](https://crab.network)** networks.
 
