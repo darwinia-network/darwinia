@@ -55,7 +55,10 @@ cargo install --git https://github.com/darwinia-network/darwinia --tag <version>
 
 ### Building via Source
 ```sh
+# with github-cli
 gh repo clone darwinia-network/darwinia
+# with git
+git clone https://github.com/darwinia-network/darwinia.git
 git checkout <version>
 cargo build --release
 ```
