@@ -1,5 +1,6 @@
 {
   "redirects": [
     { "source": "/", "destination": "/darwinia" }
-  ]
+  ],
+  "trailingSlash": true
 }
