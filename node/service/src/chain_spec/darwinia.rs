@@ -114,7 +114,7 @@ pub fn genesis_config() -> ChainSpec {
 
 		// Initialize Crab genesis swap
 		for (address, ring) in genesis_loader::load_genesis_swap_from_file(
-			"node/service/res/darwinia/swapped-cring.json",
+			"node/service/res/darwinia/swapped-crab.json",
 		)
 		.unwrap()
 		{
