@@ -1,3 +1,11 @@
+## [0.11.4-crab] - 2021-09-29
+
+### Upgrade Priority: PRETTY LOW
+
+This release only contains a token symbol update.
+For more detail check #746.
+
+
 ## [0.11.4] - 2021-09-03
 
 ### Upgrade Priority: LOW
