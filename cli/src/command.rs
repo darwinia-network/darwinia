@@ -26,14 +26,10 @@ use sc_service::TaskManager;
 use sp_core::crypto::Ss58AddressFormat;
 // --- darwinia-network ---
 use crate::cli::{Cli, Subcommand};
-use darwinia_service::{
-	chain_spec,
-	service::{
-		crab::{self, crab_runtime, CrabExecutor},
-		darwinia::{self, darwinia_runtime, DarwiniaExecutor},
-		IdentifyVariant,
-	},
-	CrabChainSpec, DarwiniaChainSpec,
+use service::{
+	crab_chain_spec, crab_runtime, crab_service, darwinia_chain_spec, darwinia_runtime,
+	darwinia_service, CrabChainSpec, CrabExecutor, DarwiniaChainSpec, DarwiniaExecutor,
+	IdentifyVariant,
 };
 
 impl SubstrateCli for Cli {
@@ -86,12 +82,12 @@ impl SubstrateCli for Cli {
 		};
 
 		Ok(match id.to_lowercase().as_ref() {
-			"crab" => Box::new(chain_spec::crab_config()?),
-			"crab-dev" => Box::new(chain_spec::crab_development_config()),
-			"crab-genesis" => Box::new(chain_spec::crab_build_spec_config()),
-			"darwinia" => Box::new(chain_spec::darwinia_config()?),
-			"darwinia-dev" | "dev" => Box::new(chain_spec::darwinia_development_config()),
-			"darwinia-genesis" => Box::new(chain_spec::darwinia_build_spec_config()),
+			"crab" => Box::new(crab_chain_spec::config()?),
+			"crab-dev" => Box::new(crab_chain_spec::development_config()),
+			"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
+			"darwinia" => Box::new(darwinia_chain_spec::config()?),
+			"darwinia-dev" | "dev" => Box::new(darwinia_chain_spec::development_config()),
+			"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
 			path => {
 				let path = PathBuf::from(path);
 				let chain_spec = Box::new(DarwiniaChainSpec::from_json_file(path.clone())?)
@@ -150,10 +146,9 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => {
-							crab::crab_new_light(config).map(|(task_manager, _)| task_manager)
-						}
-						_ => crab::crab_new_full(
+						Role::Light => crab_service::crab_new_light(config)
+							.map(|(task_manager, _)| task_manager),
+						_ => crab_service::crab_new_full(
 							config,
 							authority_discovery_disabled,
 							max_past_logs,
@@ -166,10 +161,13 @@ pub fn run() -> sc_cli::Result<()> {
 			} else {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => darwinia::darwinia_new_light(config)
+						Role::Light => darwinia_service::darwinia_new_light(config)
 							.map(|(task_manager, _)| task_manager),
-						_ => darwinia::darwinia_new_full(config, authority_discovery_disabled)
-							.map(|(task_manager, _, _)| task_manager),
+						_ => darwinia_service::darwinia_new_full(
+							config,
+							authority_discovery_disabled,
+						)
+						.map(|(task_manager, _, _)| task_manager),
 					}
 					.map_err(sc_cli::Error::Service)
 				})
@@ -189,7 +187,7 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
 					let (client, _, import_queue, task_manager) =
-						crab::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
+						crab_service::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
 							&mut config,
 							max_past_logs,
 							target_gas_price,
@@ -199,7 +197,7 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else {
 				runner.async_run(|mut config| {
-					let (client, _, import_queue, task_manager) = darwinia::new_chain_ops::<
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
@@ -217,7 +215,7 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
 					let (client, _, _, task_manager) =
-						crab::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
+						crab_service::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
 							&mut config,
 							max_past_logs,
 							target_gas_price,
@@ -227,7 +225,7 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else {
 				runner.async_run(|mut config| {
-					let (client, _, _, task_manager) = darwinia::new_chain_ops::<
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
@@ -245,7 +243,7 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
 					let (client, _, _, task_manager) =
-						crab::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
+						crab_service::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
 							&mut config,
 							max_past_logs,
 							target_gas_price,
@@ -255,7 +253,7 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else {
 				runner.async_run(|mut config| {
-					let (client, _, _, task_manager) = darwinia::new_chain_ops::<
+					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
@@ -273,7 +271,7 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
 					let (client, _, import_queue, task_manager) =
-						crab::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
+						crab_service::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
 							&mut config,
 							max_past_logs,
 							target_gas_price,
@@ -283,7 +281,7 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else {
 				runner.async_run(|mut config| {
-					let (client, _, import_queue, task_manager) = darwinia::new_chain_ops::<
+					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
@@ -296,12 +294,14 @@ pub fn run() -> sc_cli::Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
+
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| {
 					// <--- dvm ---
 					// Remove dvm offchain db
 					let dvm_database_config = sc_service::DatabaseConfig::RocksDb {
-						path: darwinia_service::crab::dvm_database_dir(&config),
+						path: crab_service::dvm_database_dir(&config),
 						cache_size: 0,
 					};
 
@@ -323,7 +323,7 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
 					let (client, backend, _, task_manager) =
-						crab::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
+						crab_service::new_chain_ops::<crab_runtime::RuntimeApi, CrabExecutor>(
 							&mut config,
 							max_past_logs,
 							target_gas_price,
@@ -333,7 +333,7 @@ pub fn run() -> sc_cli::Result<()> {
 				})
 			} else {
 				runner.async_run(|mut config| {
-					let (client, backend, _, task_manager) = darwinia::new_chain_ops::<
+					let (client, backend, _, task_manager) = darwinia_service::new_chain_ops::<
 						darwinia_runtime::RuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
@@ -350,6 +350,8 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::TryRuntime(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
 
 			if chain_spec.is_crab() {
 				runner.async_run(|config| {
@@ -383,6 +385,8 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
 
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| cmd.run::<crab_runtime::Block, CrabExecutor>(config))

@@ -24,8 +24,6 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 
 // --- std ---
 use std::sync::Arc;
-// --- paritytech ---
-use sp_api::ProvideRuntimeApi;
 // --- darwinia-network ---
 use crate::*;
 use darwinia_primitives::{AccountId, Balance, Nonce, Power};
@@ -66,7 +64,7 @@ where
 	C: 'static
 		+ Send
 		+ Sync
-		+ ProvideRuntimeApi<Block>
+		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
@@ -156,7 +154,11 @@ where
 /// Instantiate all RPC extensions for light node.
 pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
 where
-	C: 'static + Send + Sync + ProvideRuntimeApi<Block> + sp_blockchain::HeaderBackend<Block>,
+	C: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ProvideRuntimeApi<Block>
+		+ sp_blockchain::HeaderBackend<Block>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	P: 'static + sp_transaction_pool::TransactionPool,

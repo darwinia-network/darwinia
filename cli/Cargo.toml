@@ -7,12 +7,7 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.11.2"
-
-	[package.metadata.wasm-pack.profile.release]
-	# `wasm-opt` has some problems on linux, see
-	# https://github.com/rustwasm/wasm-pack/issues/781 etc.
-	wasm-opt = false
+version     = "0.11.4"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -20,25 +15,19 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # crates.io
 log       = { version = "0.4.14" }
-serde     = { version = "1.0.126", optional = true }
-structopt = { version = "0.3.21" }
-tokio     = { version = "0.3.7", optional = true, features = ["rt-multi-thread"] }
+structopt = { version = "0.3.21", optional = true }
 # darwinia-network service
-darwinia-service = { default-features = false, path = "../node/service" }
+service = { package = "darwinia-service", default-features = false, path = "../node/service" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-network      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-service      = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sc-tracing      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 # paritytech frame
 frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 # paritytech primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-# this crate is used only to enable `trie-memory-tracker` feature
-# see https://github.com/paritytech/substrate/pull/6745
 sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
 
 [build-dependencies]
@@ -49,32 +38,39 @@ try-runtime-cli              = { optional = true, git = "https://github.com/darw
 default = [
 	"cli",
 	"db",
+	"full-node",
+	"trie-memory-tracker",
+	"wasmtime",
 ]
 
 cli = [
-	"serde",
-	"tokio",
+	# crates.io
+	"structopt",
+	# paritytech
 	"sc-cli",
-	"sc-network",
-	"sc-tracing",
-	"darwinia-service/full-node",
+	"sc-service",
 ]
-db = ["darwinia-service/db"]
+
+db = ["service/db"]
+
+full-node = ["service/full-node"]
 
 trie-memory-tracker = ["sp-trie/memory-tracker"]
-wasmtime = [
-	"sc-cli/wasmtime",
-	"trie-memory-tracker",
-]
 
-dev = ["darwinia-service/dev"]
+wasmtime = ["sc-cli/wasmtime"]
 
-try-runtime = [
-	"darwinia-service/try-runtime",
-	"try-runtime-cli",
-]
+dev = ["service/dev"]
 
 runtime-benchmarks = [
+	# darwinia-network
+	"service/runtime-benchmarks",
+	# paritytech
 	"frame-benchmarking-cli",
-	"darwinia-service/runtime-benchmarks",
+]
+
+try-runtime = [
+	# darwinia-network
+	"service/try-runtime",
+	# paritytech
+	"try-runtime-cli",
 ]

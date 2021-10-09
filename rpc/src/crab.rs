@@ -16,14 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Darwinia-specific RPCs implementation.
+//! Crab-specific RPCs implementation.
 
 #![warn(missing_docs)]
 
 // --- std ---
 use std::{collections::BTreeMap, sync::Arc};
-// --- paritytech ---
-use sp_api::ProvideRuntimeApi;
 // --- darwinia-network ---
 use crate::*;
 use darwinia_primitives::{AccountId, Balance, Nonce, Power};
@@ -69,7 +67,7 @@ pub struct LightDeps<C, F, P> {
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
 	/// Remote access to the blockchain (async).
-	pub remote_blockchain: Arc<dyn sc_client_api::light::RemoteBlockchain<Block>>,
+	pub remote_blockchain: Arc<dyn sc_client_api::RemoteBlockchain<Block>>,
 	/// Fetcher instance.
 	pub fetcher: Arc<F>,
 }
@@ -83,7 +81,7 @@ where
 	C: 'static
 		+ Send
 		+ Sync
-		+ ProvideRuntimeApi<Block>
+		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
 		// <--- dvm ---
 		+ sc_client_api::BlockchainEvents<Block>
@@ -106,6 +104,8 @@ where
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
+	// --- crates.io ---
+	use jsonrpc_pubsub::manager::SubscriptionManager;
 	// --- paritytech ---
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
@@ -124,7 +124,6 @@ where
 		SchemaV1Override, StorageOverride, Web3Api, Web3ApiServer,
 	};
 	// --- dvm --->
-	use jsonrpc_pubsub::manager::SubscriptionManager;
 
 	let FullDeps {
 		client,
@@ -209,13 +208,14 @@ where
 		network.clone(),
 		overrides.clone(),
 		pending_transactions.clone(),
-		backend,
+		backend.clone(),
 		is_authority,
 		max_past_logs,
 	)));
 	if let Some(filter_pool) = filter_pool {
 		io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
 			client.clone(),
+			backend,
 			filter_pool.clone(),
 			500 as usize, // max stored filters
 			overrides.clone(),
@@ -247,7 +247,11 @@ where
 /// Instantiate all RPC extensions for light node.
 pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
 where
-	C: 'static + Send + Sync + ProvideRuntimeApi<Block> + sp_blockchain::HeaderBackend<Block>,
+	C: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ProvideRuntimeApi<Block>
+		+ sp_blockchain::HeaderBackend<Block>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	P: 'static + sp_transaction_pool::TransactionPool,

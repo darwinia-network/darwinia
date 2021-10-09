@@ -6,12 +6,11 @@ homepage    = "https://darwinia.network/"
 license     = "GPL-3.0"
 name        = "darwinia-runtime-common"
 repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.11.2"
+version     = "0.11.4"
 
 [dependencies]
 # crates.io
 codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
-log               = { version = "0.4.14" }
 static_assertions = { version = "1.1.0" }
 # darwinia-network frame
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }

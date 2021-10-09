@@ -1,7 +1,6 @@
 // --- paritytech ---
 use frame_support::{traits::Filter, weights::constants::RocksDbWeight};
 use frame_system::Config;
-use sp_runtime::traits::BlakeTwo256;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use crate::{weights::frame_system::WeightInfo, *};
@@ -27,7 +26,7 @@ impl Config for Runtime {
 	type Index = Nonce;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
-	type Hashing = BlakeTwo256;
+	type Hashing = Hashing;
 	type AccountId = AccountId;
 	type Lookup = AccountIdLookup<AccountId, ()>;
 	type Header = Header;

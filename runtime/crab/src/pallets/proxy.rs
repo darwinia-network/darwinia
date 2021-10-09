@@ -3,7 +3,7 @@ use codec::{Decode, Encode};
 // --- paritytech ---
 use frame_support::traits::InstanceFilter;
 use pallet_proxy::Config;
-use sp_runtime::{traits::BlakeTwo256, RuntimeDebug};
+use sp_runtime::RuntimeDebug;
 // --- darwinia-network ---
 use crate::{weights::pallet_proxy::WeightInfo, *};
 
@@ -116,7 +116,7 @@ impl Config for Runtime {
 	type ProxyDepositFactor = ProxyDepositFactor;
 	type MaxProxies = MaxProxies;
 	type MaxPending = MaxPending;
-	type CallHasher = BlakeTwo256;
+	type CallHasher = Hashing;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 	type WeightInfo = WeightInfo<Runtime>;

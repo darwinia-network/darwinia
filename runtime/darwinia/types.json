@@ -123,6 +123,11 @@
 		"proof": "Vec<H128>"
 	},
 	"EthereumReceipt": {
+		"Legacy": "LegacyReceipt",
+		"AccessList": "LegacyReceipt",
+		"EIP1559Transaction": "LegacyReceipt"
+	},
+	"LegacyReceipt": {
 		"gas_used": "U256",
 		"log_bloom": "Bloom",
 		"logs": "Vec<LogEntry>",
