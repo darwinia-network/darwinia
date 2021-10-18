@@ -101,7 +101,7 @@ jobs:
       - name: Uncompress subalfred
         run: tar xf subalfred.tar.zst -I pzstd
       - name: Run checker
-        run: ./subalfred default-features --project-dir ../darwinia
+        run: ./subalfred ci default-features -p ../darwinia
 
   check-with-node:
     name: Check with node
