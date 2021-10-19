@@ -126,14 +126,6 @@ jobs:
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
           echo "::set-output name=check-darwinia-runtime-version::$OUTPUT"
-      - id: check-crab-runtime-version
-        name: Check Crab runtime version
-        run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Crab -e ./darwinia)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-crab-runtime-version::$OUTPUT"
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
@@ -142,6 +134,14 @@ jobs:
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
           echo "::set-output name=check-darwinia-storage-prefix::$OUTPUT"
+      - id: check-crab-runtime-version
+        name: Check Crab runtime version
+        run: |
+          OUTPUT=$(./subalfred ci runtime-version -c Crab -e ./darwinia)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-crab-runtime-version::$OUTPUT"
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
