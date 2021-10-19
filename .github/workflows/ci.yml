@@ -10,14 +10,14 @@ on:
       - master
 
 jobs:
-  build_kit:
-    name: Build kit
+  build-subalfred:
+    name: Build subalfred
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v2
         with:
-          repository: darwinia-network/darwinia-kit
+          repository: l2ust/subalfred
           ref: main
       - name: Install Rust nightly-2021-09-01 toolchain
         uses: actions-rs/toolchain@v1
@@ -28,16 +28,34 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --manifest-path ci-bot/Cargo.toml
-      - name: Compress kit
-        run: mv ci-bot avoid-same-name && cp target/release/ci-bot . && tar cf kit.tar.zst ci-bot -I pzstd
-      - name: Upload kit
+          args: --release
+      - name: Compress subalfred
+        run: cp target/release/subalfred . && tar cf subalfred.tar.zst subalfred -I pzstd
+      - name: Upload subalfred
         uses: actions/upload-artifact@v2
         with:
-          name: kit
-          path: kit.tar.zst
+          name: subalfred
+          path: subalfred.tar.zst
 
-  build_node_and_internal_test:
+  check-rust-code:
+    name: Check Rust code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+      - name: Install Rust nightly-2021-09-01 toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2021-09-01
+          target: wasm32-unknown-unknown
+          default: true
+      - name: Run checker
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --locked
+
+  build-node-and-internal-test:
     name: Build node and internal test
     runs-on: ubuntu-latest
     steps:
@@ -69,96 +87,103 @@ jobs:
           name: node
           path: node.tar.zst
 
-  check_default_features:
+  check-default-features:
     name: Check default features
     runs-on: ubuntu-latest
-    needs: [build_kit]
+    needs: [build-subalfred]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v2
-      - name: Download kit
+      - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
-          name: kit
-      - name: Uncompress kit
-        run: tar xf kit.tar.zst -I pzstd
+          name: subalfred
+      - name: Uncompress subalfred
+        run: tar xf subalfred.tar.zst -I pzstd
       - name: Run checker
-        run: ./ci-bot default-features --project-dir ../darwinia
+        run: ./subalfred ci default-features -p ../darwinia
 
-  check_rust_code:
-    name: Check Rust code
+  check-with-node:
+    name: Check with node
     runs-on: ubuntu-latest
+    needs: [build-subalfred, build-node-and-internal-test]
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v2
-      - name: Install Rust nightly-2021-09-01 toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2021-09-01
-          target: wasm32-unknown-unknown
-          default: true
-      - name: Run checker
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --locked
-
-  check_storage_prefix:
-    name: Check storage prefix
-    runs-on: ubuntu-latest
-    needs: [build_kit, build_node_and_internal_test]
-    steps:
-      - name: Download kit
+      - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
-          name: kit
+          name: subalfred
       - name: Download node
         uses: actions/download-artifact@v2
         with:
           name: node
-      - name: Uncompress kit and node
-        run: tar xf kit.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
-      - run: ls -al .
-      - id: run_darwinia_checker
-        name: Run checker
+      - name: Uncompress subalfred and node
+        run: tar xf subalfred.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
+      - id: check-darwinia-runtime-version
+        name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(RUST_LOG=trace ./ci-bot storage-prefix --chain darwinia --exec ./darwinia)
+          OUTPUT=$(./subalfred ci runtime-version -c Darwinia -e ./darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check_darwinia_result::$OUTPUT"
-      - id: run_crab_checker
-        name: Run checker
+          echo "::set-output name=check-darwinia-runtime-version::$OUTPUT"
+      - id: check-darwinia-storage-prefix
+        name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(./ci-bot storage-prefix --chain crab --exec ./darwinia)
+          OUTPUT=$(./subalfred ci storage-prefix -c Darwinia -e ./darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check_crab_result::$OUTPUT"
+          echo "::set-output name=check-darwinia-storage-prefix::$OUTPUT"
+      - id: check-crab-runtime-version
+        name: Check Crab runtime version
+        run: |
+          OUTPUT=$(./subalfred ci runtime-version -c Crab -e ./darwinia)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-crab-runtime-version::$OUTPUT"
+      - id: check-crab-storage-prefix
+        name: Check Crab storage prefix
+        run: |
+          OUTPUT=$(./subalfred ci storage-prefix -c Crab -e ./darwinia)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-crab-storage-prefix::$OUTPUT"
       - if: github.ref != 'refs/heads/master'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           append: true
           message: |
-            Check storage prefix with ${{ github.sha }}.
-            ```diff
-            Crab
-            ${{ steps.run_darwinia_checker.outputs.check_darwinia_result }}
-
             ---
-
-            Darwinia
-            ${{ steps.run_crab_checker.outputs.check_crab_result }}
+            ## SHA ${{ github.event.pull_request.head.sha }}
+            ### Darwinia
+            #### Check Runtime Version
+            ```diff
+            ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
+            ```
+            #### Check Storage Prefix
+            ```diff
+            ${{ steps.check-darwinia-storage-prefix.outputs.check-darwinia-storage-prefix }}
+            ```
+            ### Crab
+            #### Check Runtime Version
+            ```diff
+            ${{ steps.check-crab-runtime-version.outputs.check-crab-runtime-version }}
+            ```
+            #### Check Storage Prefix
+            ```diff
+            ${{ steps.check-crab-storage-prefix.outputs.check-crab-storage-prefix }}
             ```
 
-  clean_artifacts:
+  clean-artifacts:
     name: Clean artifacts
     runs-on: ubuntu-latest
     if: always()
-    needs: [check_storage_prefix]
+    needs: [check-default-features, check-with-node]
     steps:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
-            kit
+            subalfred
             node
