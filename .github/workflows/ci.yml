@@ -156,7 +156,7 @@ jobs:
           append: true
           message: |
             ---
-            ## SHA ${{ github.sha }}
+            ## SHA ${{ github.event.pull_request.head.sha }}
             ### Darwinia
             #### Check Runtime Version
             ```diff
