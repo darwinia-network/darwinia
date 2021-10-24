@@ -172,7 +172,7 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v2
       - name: Run checker
-        run: subalfred ci default-features -p ../darwinia
+        run: subalfred ci default-features -p .darwinia
 
   check-with-node:
     name: Check with node
@@ -196,7 +196,7 @@ jobs:
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Darwinia -e ./darwinia)
+          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -204,7 +204,7 @@ jobs:
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Darwinia -e ./darwinia)
+          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -212,7 +212,7 @@ jobs:
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Crab -e ./darwinia)
+          OUTPUT=$(subalfred ci runtime-version -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -220,7 +220,7 @@ jobs:
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Crab -e ./darwinia)
+          OUTPUT=$(subalfred ci storage-prefix -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
