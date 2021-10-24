@@ -155,26 +155,28 @@ jobs:
         with:
           append: true
           message: |
-            ---
-            ## SHA ${{ github.event.pull_request.head.sha }}
-            ### Darwinia
-            #### Check Runtime Version
-            ```diff
-            ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
-            ```
-            #### Check Storage Prefix
-            ```diff
-            ${{ steps.check-darwinia-storage-prefix.outputs.check-darwinia-storage-prefix }}
-            ```
-            ### Crab
-            #### Check Runtime Version
-            ```diff
-            ${{ steps.check-crab-runtime-version.outputs.check-crab-runtime-version }}
-            ```
-            #### Check Storage Prefix
-            ```diff
-            ${{ steps.check-crab-storage-prefix.outputs.check-crab-storage-prefix }}
-            ```
+            <details>
+            <summary>Commit ${{ github.event.pull_request.head.sha }}</summary>
+
+            * Darwinia
+              Check Runtime Version
+              ```diff
+              ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
+              ```
+              Check Storage Prefix
+              ```diff
+              ${{ steps.check-darwinia-storage-prefix.outputs.check-darwinia-storage-prefix }}
+              ```
+            * Crab
+              Check Runtime Version
+              ```diff
+              ${{ steps.check-crab-runtime-version.outputs.check-crab-runtime-version }}
+              ```
+              Check Storage Prefix
+              ```diff
+              ${{ steps.check-crab-storage-prefix.outputs.check-crab-storage-prefix }}
+              ```
+            </details>
 
   clean-artifacts:
     name: Clean artifacts
