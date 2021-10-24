@@ -14,23 +14,44 @@ jobs:
     name: Build subalfred
     runs-on: ubuntu-latest
     steps:
+      - name: Install Rust nightly-2021-04-22 toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2021-04-22
+          default: true
+      - name: Install sccache
+        env:
+          SCCACHE_VERSION: v0.2.15
+          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
+        run: |
+          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
+          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
+          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
+          sudo chmod +x /usr/bin/sccache
+          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
       - name: Fetch latest code
         uses: actions/checkout@v2
         with:
           repository: l2ust/subalfred
           ref: main
-      - name: Install Rust nightly-2021-09-01 toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2021-09-01
-          default: true
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+        env:
+          SCCACHE_GCS_RW_MODE: READ_WRITE
+          SCCACHE_GCS_BUCKET: darwinia-build-cache
+          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
+          RUSTC_WRAPPER: sccache
+        # uses: actions-rs/cargo@v1
+        # with:
+        #   command: build
+        #   args: --release --locked
+        run: |
+          sccache --show-stats
+          cargo b --release --locked
+          sccache --show-stats
       - name: Compress subalfred
-        run: cp target/release/subalfred . && tar cf subalfred.tar.zst subalfred -I pzstd
+        run: |
+          cp target/release/subalfred .
+          tar cf subalfred.tar.zst subalfred -I pzstd
       - name: Upload subalfred
         uses: actions/upload-artifact@v2
         with:
@@ -41,46 +62,94 @@ jobs:
     name: Check Rust code
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v2
-      - name: Install Rust nightly-2021-09-01 toolchain
+      - name: Install Rust nightly-2021-04-22 toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2021-09-01
+          toolchain: nightly-2021-04-22
           target: wasm32-unknown-unknown
           default: true
+      - name: Install sccache
+        env:
+          SCCACHE_VERSION: v0.2.15
+          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
+        run: |
+          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
+          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
+          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
+          sudo chmod +x /usr/bin/sccache
+          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
+      - name: Fetch latest code
+        uses: actions/checkout@v2
       - name: Run checker
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --locked
+        env:
+          SCCACHE_GCS_RW_MODE: READ_WRITE
+          SCCACHE_GCS_BUCKET: darwinia-build-cache
+          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
+          RUSTC_WRAPPER: sccache
+        # uses: actions-rs/cargo@v1
+        # with:
+        #   command: check
+        #   args: --locked
+        run: |
+          sccache --show-stats
+          cargo c --locked
+          sccache --show-stats
 
   build-node-and-internal-test:
     name: Build node and internal test
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v2
-      - name: Install Rust nightly-2021-09-01 toolchain
+      - name: Install Rust nightly-2021-04-22 toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2021-09-01
+          toolchain: nightly-2021-04-22
           target: wasm32-unknown-unknown
           default: true
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --locked
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --all --locked
+      - name: Install sccache
         env:
+          SCCACHE_VERSION: v0.2.15
+          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
+        run: |
+          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
+          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
+          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
+          sudo chmod +x /usr/bin/sccache
+          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
+      - name: Fetch latest code
+        uses: actions/checkout@v2
+      - name: Build
+        env:
+          SCCACHE_GCS_RW_MODE: READ_WRITE
+          SCCACHE_GCS_BUCKET: darwinia-build-cache
+          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
+          RUSTC_WRAPPER: sccache
+        # uses: actions-rs/cargo@v1
+        # with:
+        #   command: build
+        #   args: --release --locked
+        run: |
+          sccache --show-stats
+          cargo b --release --locked
+          sccache --show-stats
+      - name: Test
+        env:
+          SCCACHE_GCS_RW_MODE: READ_WRITE
+          SCCACHE_GCS_BUCKET: darwinia-build-cache
+          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
+          RUSTC_WRAPPER: sccache
           CARGO_INCREMENTAL: 0
+        # uses: actions-rs/cargo@v1
+        # with:
+        #   command: test
+        #   args: --release --all --locked
+        run: |
+          sccache --show-stats
+          cargo test --release --all --locked
+          sccache --show-stats
       - name: Compress node
-        run: cp target/release/darwinia . && tar cf node.tar.zst darwinia -I pzstd
+        run: |
+          cp target/release/darwinia .
+          tar cf node.tar.zst darwinia -I pzstd
       - name: Upload node
         uses: actions/upload-artifact@v2
         with:
@@ -89,19 +158,21 @@ jobs:
 
   check-default-features:
     name: Check default features
-    runs-on: ubuntu-latest
     needs: [build-subalfred]
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v2
       - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
           name: subalfred
       - name: Uncompress subalfred
-        run: tar xf subalfred.tar.zst -I pzstd
+        run: |
+          tar xf subalfred.tar.zst -I pzstd
+          sudo mv subalfred /usr/bin
+      - name: Fetch latest code
+        uses: actions/checkout@v2
       - name: Run checker
-        run: ./subalfred ci default-features -p ../darwinia
+        run: subalfred ci default-features -p .darwinia
 
   check-with-node:
     name: Check with node
@@ -116,12 +187,16 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: node
-      - name: Uncompress subalfred and node
-        run: tar xf subalfred.tar.zst -I pzstd && tar xf node.tar.zst -I pzstd
+      - name: Uncompress node and subalfred
+        run: |
+          tar xf node.tar.zst -I pzstd
+          tar xf subalfred.tar.zst -I pzstd
+          sudo mv darwinia /usr/bin
+          sudo mv subalfred /usr/bin
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Darwinia -e ./darwinia)
+          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -129,7 +204,7 @@ jobs:
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Darwinia -e ./darwinia)
+          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -137,7 +212,7 @@ jobs:
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Crab -e ./darwinia)
+          OUTPUT=$(subalfred ci runtime-version -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -145,7 +220,7 @@ jobs:
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Crab -e ./darwinia)
+          OUTPUT=$(subalfred ci storage-prefix -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -180,12 +255,12 @@ jobs:
 
   clean-artifacts:
     name: Clean artifacts
-    runs-on: ubuntu-latest
-    if: always()
     needs: [check-default-features, check-with-node]
+    if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
             subalfred
             node
+    runs-on: ubuntu-latest
