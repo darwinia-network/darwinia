@@ -191,7 +191,7 @@ jobs:
         run: |
           tar xf node.tar.zst -I pzstd
           tar xf subalfred.tar.zst -I pzstd
-          sudo mv drml /usr/bin
+          sudo mv darwinia /usr/bin
           sudo mv subalfred /usr/bin
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
