@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 
-rustup default $1
+rustup default ${RUST_TOOLCHAIN}
 rustup target add wasm32-unknown-unknown
 
 mkdir -p /build/target/srtool
