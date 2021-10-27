@@ -590,28 +590,38 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
-fn migrate() -> Weight {
-	// --- paritytech ---
-	#[allow(unused)]
-	use frame_support::migration;
-
-	// TODO: Move to S2S
-	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
-
-	0
-	// RuntimeBlockWeights::get().max_block
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		// TODO: Move to S2S
+		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
+
+		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
+			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
+
+		pallet_grandpa::migrations::v3_1::migrate::<Runtime, Grandpa, _>(name)
+	}
+
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		migrate();
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
+			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
+
+		pallet_grandpa::migrations::v3_1::pre_migration::<Runtime, Grandpa, _>(name);
 
 		Ok(())
 	}
 
-	fn on_runtime_upgrade() -> Weight {
-		migrate()
+	#[cfg(feature = "try-runtime")]
+	fn post_upgrade() -> Result<(), &'static str> {
+		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
+
+		Ok(())
 	}
 }
