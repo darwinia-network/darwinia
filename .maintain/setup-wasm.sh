@@ -39,8 +39,6 @@ echo '' >> ${PATH_PROPOSAL_DARWINIA}
 cp ${WORK_PATH}/${_WASM_DARWINIA_COMPACT} ${WORK_PATH}/deploy/bin/
 cp ${WORK_PATH}/${_WASM_DARWINIA_COMPRESSED} ${WORK_PATH}/deploy/bin/
 
-rm -rf ${PATH_REPORT}
-
 
 # crab
 
@@ -66,7 +64,6 @@ echo '' >> ${PATH_PROPOSAL_CRAB}
 cp ${WORK_PATH}/${_WASM_CRAB_COMPACT} ${WORK_PATH}/deploy/bin/
 cp ${WORK_PATH}/${_WASM_CRAB_COMPRESSED} ${WORK_PATH}/deploy/bin/
 
-rm -rf ${PATH_REPORT}
 
 # view
 
