@@ -303,7 +303,7 @@ where
 		),
 	);
 
-	let (network, network_status_sinks, system_rpc_tx, network_starter) =
+	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -334,7 +334,6 @@ where
 		task_manager: &mut task_manager,
 		on_demand: None,
 		remote_blockchain: None,
-		network_status_sinks,
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
 	})?;
@@ -552,7 +551,7 @@ where
 		NeverCanAuthor,
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
-	let (network, network_status_sinks, system_rpc_tx, network_starter) =
+	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -610,7 +609,6 @@ where
 		transaction_pool,
 		client,
 		network,
-		network_status_sinks,
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
 	})?;

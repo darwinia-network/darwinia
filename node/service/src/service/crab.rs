@@ -388,7 +388,7 @@ where
 		),
 	);
 
-	let (network, network_status_sinks, system_rpc_tx, network_starter) =
+	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -434,7 +434,6 @@ where
 		task_manager: &mut task_manager,
 		on_demand: None,
 		remote_blockchain: None,
-		network_status_sinks,
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
 	})?;
@@ -695,7 +694,7 @@ where
 		NeverCanAuthor,
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
-	let (network, network_status_sinks, system_rpc_tx, network_starter) =
+	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -706,25 +705,24 @@ where
 			block_announce_validator_builder: None,
 		})?;
 
-		if enable_grandpa {
-			let name = config.network.node_name.clone();
+	if enable_grandpa {
+		let name = config.network.node_name.clone();
 
-			let config = sc_finality_grandpa::Config {
-				gossip_duration: Duration::from_millis(1000),
-				justification_period: 512,
-				name: Some(name),
-				observer_enabled: false,
-				keystore: None,
-				local_role: config.role.clone(),
-				telemetry: telemetry.as_ref().map(|x| x.handle()),
-			};
+		let config = sc_finality_grandpa::Config {
+			gossip_duration: Duration::from_millis(1000),
+			justification_period: 512,
+			name: Some(name),
+			observer_enabled: false,
+			keystore: None,
+			local_role: config.role.clone(),
+			telemetry: telemetry.as_ref().map(|x| x.handle()),
+		};
 
-			task_manager.spawn_handle().spawn_blocking(
-				"grandpa-observer",
-				sc_finality_grandpa::run_grandpa_observer(config, grandpa_link, network.clone())?,
-			);
-		}
-
+		task_manager.spawn_handle().spawn_blocking(
+			"grandpa-observer",
+			sc_finality_grandpa::run_grandpa_observer(config, grandpa_link, network.clone())?,
+		);
+	}
 
 	if config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
@@ -753,7 +751,6 @@ where
 		transaction_pool,
 		client,
 		network,
-		network_status_sinks,
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
 	})?;
