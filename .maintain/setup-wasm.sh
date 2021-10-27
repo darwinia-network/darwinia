@@ -26,10 +26,10 @@ docker run --rm -i \
   --entrypoint bash \
   chevdor/srtool:1.53.0 /build/.maintain/hack-srtool.sh
 
-_PROPOSAL_DARWINIA_COMPACT=$(cat ${PATH_REPORT} | jq .runtimes.compact.prop)
-_PROPOSAL_DARWINIA_COMPRESSED=$(cat ${PATH_REPORT} | jq .runtimes.compressed.prop)
-_WASM_DARWINIA_COMPACT=$(cat ${PATH_REPORT} | jq .runtimes.compact.wasm)
-_WASM_DARWINIA_COMPRESSED=$(cat ${PATH_REPORT} | jq .runtimes.compressed.wasm)
+_PROPOSAL_DARWINIA_COMPACT=$(cat ${PATH_REPORT} | jq -r .runtimes.compact.prop)
+_PROPOSAL_DARWINIA_COMPRESSED=$(cat ${PATH_REPORT} | jq -r .runtimes.compressed.prop)
+_WASM_DARWINIA_COMPACT=$(cat ${PATH_REPORT} | jq -r .runtimes.compact.wasm)
+_WASM_DARWINIA_COMPRESSED=$(cat ${PATH_REPORT} | jq -r .runtimes.compressed.wasm)
 
 PATH_PROPOSAL_DARWINIA=${WORK_PATH}/deploy/bin/proposal.darwinia.txt
 echo "compact: ${_PROPOSAL_DARWINIA_COMPACT}" >> ${PATH_PROPOSAL_DARWINIA}
@@ -53,10 +53,10 @@ docker run --rm -i \
   --entrypoint bash \
   chevdor/srtool:1.53.0 /build/.maintain/hack-srtool.sh
 
-_PROPOSAL_CRAB_COMPACT=$(cat ${PATH_REPORT} | jq .runtimes.compact.prop)
-_PROPOSAL_CRAB_COMPRESSED=$(cat ${PATH_REPORT} | jq .runtimes.compressed.prop)
-_WASM_CRAB_COMPACT=$(cat ${PATH_REPORT} | jq .runtimes.compact.wasm)
-_WASM_CRAB_COMPRESSED=$(cat ${PATH_REPORT} | jq .runtimes.compressed.wasm)
+_PROPOSAL_CRAB_COMPACT=$(cat ${PATH_REPORT} | jq -r .runtimes.compact.prop)
+_PROPOSAL_CRAB_COMPRESSED=$(cat ${PATH_REPORT} | jq -r .runtimes.compressed.prop)
+_WASM_CRAB_COMPACT=$(cat ${PATH_REPORT} | jq -r .runtimes.compact.wasm)
+_WASM_CRAB_COMPRESSED=$(cat ${PATH_REPORT} | jq -r .runtimes.compressed.wasm)
 
 PATH_PROPOSAL_CRAB=${WORK_PATH}/deploy/bin/proposal.crab.txt
 echo "compact: ${_PROPOSAL_CRAB_COMPACT}" >> ${PATH_PROPOSAL_CRAB}
