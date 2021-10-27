@@ -21,7 +21,7 @@
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
+use frame_support::traits::{Currency, Imbalance, MaxEncodedLen, OnUnbalanced};
 use sp_runtime::RuntimeDebug;
 // --- darwinia-network ---
 use crate::*;

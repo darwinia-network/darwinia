@@ -28,6 +28,9 @@ pallet-treasury            = { default-features = false, git = "https://github.c
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
 sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
 
+# will be removed in later substrate version
+max-encoded-len = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+
 [features]
 default = ["std"]
 
@@ -50,4 +53,5 @@ std = [
 	# paritytech primitives
 	"sp-runtime/std",
 	"sp-std/std",
+	"max-encoded-len/std",
 ]
