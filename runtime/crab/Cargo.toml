@@ -39,7 +39,6 @@ darwinia-support                    = { default-features = false, git = "https:/
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 # <--- dvm ---
 dp-evm              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
-dvm-dynamic-fee     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 dvm-ethereum        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 # --- dvm --->
@@ -141,7 +140,6 @@ std = [
 	# <--- dvm ---
 	"dp-evm/std",
 	"dvm-ethereum/std",
-	"dvm-dynamic-fee/std",
 	"dvm-rpc-runtime-api/std",
 	# --- dvm --->
 	# paritytech frame

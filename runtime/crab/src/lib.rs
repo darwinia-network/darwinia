@@ -101,7 +101,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_evm::{Account as EVMAccount, Runner};
+use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
@@ -258,7 +258,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
-		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 	}
 }
 
