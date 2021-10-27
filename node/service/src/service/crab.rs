@@ -458,6 +458,7 @@ where
 			block_import,
 			env: proposer,
 			sync_oracle: network.clone(),
+			justification_sync_link: network.clone(),
 			create_inherent_data_providers: move |parent, ()| {
 				let client_clone = client_clone.clone();
 				async move {
