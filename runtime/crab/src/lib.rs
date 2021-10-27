@@ -101,7 +101,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_evm::{Account as EVMAccount, Runner};
+use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
@@ -258,7 +258,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
-		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 	}
 }
 
@@ -723,6 +723,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			log::info!("[MIGRATED] Indices::Accounts");
 		}
 
+		migration::remove_storage_prefix(b"DynamicFee", b"MinGasPrice", &[]);
+
+		log::info!("[MIGRATED] DynamicFeeL::MinGasPrice");
+
 		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
 			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
 
@@ -735,6 +739,11 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- paritytech ---
 		use frame_support::traits::PalletInfo;
+		assert!(migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
 
 		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
 			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
@@ -746,6 +755,12 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
+		assert!(!migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
+
 		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
 
 		Ok(())

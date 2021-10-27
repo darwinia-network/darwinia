@@ -958,7 +958,6 @@ dependencies = [
  "darwinia-support",
  "darwinia-vesting",
  "dp-evm",
- "dvm-dynamic-fee",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
@@ -1781,7 +1780,6 @@ dependencies = [
  "dc-mapping-sync",
  "dc-rpc",
  "dp-rpc",
- "dvm-dynamic-fee",
  "dvm-rpc-runtime-api",
  "frame-benchmarking",
  "frame-system-rpc-runtime-api",
@@ -2148,21 +2146,6 @@ dependencies = [
 name = "dp-storage"
 version = "2.6.8"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.5#22a223e3c0855e04ae671e3e96cdd548bfbc5b85"
-
-[[package]]
-name = "dvm-dynamic-fee"
-version = "2.6.6"
-source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.5#22a223e3c0855e04ae671e3e96cdd548bfbc5b85"
-dependencies = [
- "async-trait",
- "darwinia-evm",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
-]
 
 [[package]]
 name = "dvm-ethereum"
