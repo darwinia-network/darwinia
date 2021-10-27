@@ -336,7 +336,7 @@ where
 	let force_authoring = config.force_authoring;
 	let backoff_authoring_blocks =
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
-	let disable_grandpa = config.disable_grandpa;
+	let enable_grandpa = !config.disable_grandpa;
 	let name = config.network.node_name.clone();
 	let is_archive = config.state_pruning.is_archive();
 	let PartialComponents {
@@ -441,7 +441,7 @@ where
 
 	let (block_import, link_half, babe_link) = import_setup;
 
-	if role.is_authority() {
+	if is_authority {
 		let can_author_with = CanAuthorWithNativeVersion::new(client.executor().clone());
 		let proposer = ProposerFactory::new(
 			task_manager.spawn_handle(),
@@ -493,41 +493,7 @@ where
 			.spawn_blocking("babe", babe);
 	}
 
-	let keystore = if is_authority {
-		Some(keystore_container.sync_keystore())
-	} else {
-		None
-	};
-	let grandpa_config = GrandpaConfig {
-		// FIXME substrate#1578 make this available through chainspec
-		gossip_duration: Duration::from_millis(1000),
-		justification_period: 512,
-		name: Some(name),
-		observer_enabled: false,
-		keystore,
-		is_authority: role.is_authority(),
-		telemetry: telemetry.as_ref().map(|x| x.handle()),
-	};
-	let enable_grandpa = !disable_grandpa;
-
-	if enable_grandpa {
-		let grandpa_config = GrandpaParams {
-			config: grandpa_config,
-			link: link_half,
-			network: network.clone(),
-			telemetry: telemetry.as_ref().map(|x| x.handle()),
-			voting_rule: GrandpaVotingRulesBuilder::default().build(),
-			prometheus_registry: prometheus_registry.clone(),
-			shared_voter_state,
-		};
-
-		task_manager.spawn_essential_handle().spawn_blocking(
-			"grandpa-voter",
-			sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
-		);
-	}
-
-	if role.is_authority() && !authority_discovery_disabled {
+	if is_authority && !authority_discovery_disabled {
 		let authority_discovery_role =
 			sc_authority_discovery::Role::PublishAndDiscover(keystore_container.keystore());
 		let dht_event_stream =
@@ -555,6 +521,39 @@ where
 		task_manager.spawn_handle().spawn(
 			"authority-discovery-worker",
 			authority_discovery_worker.run(),
+		);
+	}
+
+	let keystore = if is_authority {
+		Some(keystore_container.sync_keystore())
+	} else {
+		None
+	};
+	let grandpa_config = GrandpaConfig {
+		// FIXME substrate#1578 make this available through chainspec
+		gossip_duration: Duration::from_millis(1000),
+		justification_period: 512,
+		name: Some(name),
+		observer_enabled: false,
+		keystore,
+		local_role: role,
+		telemetry: telemetry.as_ref().map(|x| x.handle()),
+	};
+
+	if enable_grandpa {
+		let grandpa_config = GrandpaParams {
+			config: grandpa_config,
+			link: link_half,
+			network: network.clone(),
+			telemetry: telemetry.as_ref().map(|x| x.handle()),
+			voting_rule: GrandpaVotingRulesBuilder::default().build(),
+			prometheus_registry: prometheus_registry.clone(),
+			shared_voter_state,
+		};
+
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"grandpa-voter",
+			sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
 		);
 	}
 
@@ -659,7 +658,7 @@ where
 		client.clone(),
 		on_demand.clone(),
 	));
-	let (grandpa_block_import, _) = sc_finality_grandpa::block_import(
+	let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
 		client.clone(),
 		&(client.clone() as Arc<_>),
 		select_chain.clone(),
@@ -706,6 +705,26 @@ where
 			on_demand: Some(on_demand.clone()),
 			block_announce_validator_builder: None,
 		})?;
+
+		if enable_grandpa {
+			let name = config.network.node_name.clone();
+
+			let config = sc_finality_grandpa::Config {
+				gossip_duration: Duration::from_millis(1000),
+				justification_period: 512,
+				name: Some(name),
+				observer_enabled: false,
+				keystore: None,
+				local_role: config.role.clone(),
+				telemetry: telemetry.as_ref().map(|x| x.handle()),
+			};
+
+			task_manager.spawn_handle().spawn_blocking(
+				"grandpa-observer",
+				sc_finality_grandpa::run_grandpa_observer(config, grandpa_link, network.clone())?,
+			);
+		}
+
 
 	if config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
