@@ -723,6 +723,9 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 			log::info!("[MIGRATED] Indices::Accounts");
 		}
 
+		migration::remove_storage_prefix(b"DynamicFee", b"MinGasPrice", &[]);
+		log::info!("[MIGRATED] DynamicFee MinGasPrice item removed");
+
 		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
 			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
 
@@ -735,6 +738,11 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- paritytech ---
 		use frame_support::traits::PalletInfo;
+		assert!(migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
 
 		let name = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>()
 			.expect("grandpa is part of pallets in construct_runtime, so it has a name; qed");
@@ -746,6 +754,12 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
+		assert!(!migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
+
 		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
 
 		Ok(())

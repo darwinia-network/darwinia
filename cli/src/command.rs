@@ -123,7 +123,7 @@ fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
 /// Parses Darwinia specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
-	let max_past_logs = cli.run.dynamic_fee_parameters.max_past_logs;
+	let max_past_logs = cli.run.dvm_parameters.max_past_logs;
 
 	match &cli.subcommand {
 		None => {
