@@ -411,10 +411,10 @@ where
 					..Default::default()
 				},
 				client.clone(),
-				network,
+				network.clone(),
 				Box::pin(dht_event_stream),
 				authority_discovery_role,
-				prometheus_registry,
+				prometheus_registry.clone(),
 			);
 
 		task_manager.spawn_handle().spawn(
@@ -443,10 +443,10 @@ where
 		let grandpa_config = GrandpaParams {
 			config: grandpa_config,
 			link: link_half,
-			network: network.clone(),
+			network,
 			telemetry: telemetry.as_ref().map(|x| x.handle()),
 			voting_rule: GrandpaVotingRulesBuilder::default().build(),
-			prometheus_registry: prometheus_registry.clone(),
+			prometheus_registry,
 			shared_voter_state,
 		};
 
@@ -562,6 +562,7 @@ where
 			on_demand: Some(on_demand.clone()),
 			block_announce_validator_builder: None,
 		})?;
+	let enable_grandpa = !config.disable_grandpa;
 
 	if enable_grandpa {
 		let name = config.network.node_name.clone();

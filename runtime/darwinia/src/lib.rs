@@ -592,7 +592,7 @@ sp_api::impl_runtime_apis! {
 
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
 		use frame_support::traits::PalletInfo;
 

@@ -693,10 +693,10 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
 		use frame_support::{
-			log, migration, pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher,
+			migration, pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher,
 		};
 
 		// TODO: Move to S2S

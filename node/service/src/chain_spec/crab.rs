@@ -29,9 +29,9 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
+use super::*;
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
-use supper::*;
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -186,11 +186,11 @@ pub fn genesis_config() -> ChainSpec {
 			},
 			grandpa: Default::default(),
 			im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
+			authority_discovery: Default::default(),
 			democracy: Default::default(),
 			council: Default::default(),
 			technical_committee: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
+			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
@@ -289,11 +289,11 @@ pub fn development_config() -> ChainSpec {
 			},
 			grandpa: Default::default(),
 			im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
+			authority_discovery: Default::default(),
 			democracy: Default::default(),
 			council: Default::default(),
 			technical_committee: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
+			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
