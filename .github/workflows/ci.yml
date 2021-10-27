@@ -264,3 +264,15 @@ jobs:
             subalfred
             node
     runs-on: ubuntu-latest
+
+  test-build-wasm:
+    name: Build wasm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build wasm
+        env:
+          RUST_TOOLCHAIN: nightly-2021-04-22
+        run: |
+          .maintain/setup-wasm.sh
