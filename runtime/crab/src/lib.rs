@@ -207,7 +207,7 @@ frame_support::construct_runtime! {
 		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
-		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 36,
+		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
