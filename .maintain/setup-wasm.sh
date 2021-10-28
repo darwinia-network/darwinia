@@ -15,6 +15,8 @@ mkdir -p ${WORK_PATH}/deploy/bin
 
 PATH_REPORT=${WORK_PATH}/target/srtool/srtool-wasm-report*.txt
 
+# doc: https://github.com/darwinia-network/darwinia/pull/764#discussion_r737966278
+
 # darwinia
 
 docker run --rm -i \
