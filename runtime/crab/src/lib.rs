@@ -76,6 +76,8 @@ mod weights;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+#[allow(unused)]
+use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
@@ -695,9 +697,7 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
-		use frame_support::{
-			migration, pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher,
-		};
+		use frame_support::{pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher};
 
 		// TODO: Move to S2S
 		// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
@@ -739,6 +739,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<(), &'static str> {
 		// --- paritytech ---
 		use frame_support::traits::PalletInfo;
+
 		assert!(migration::have_storage_value(
 			b"DynamicFee",
 			b"MinGasPrice",

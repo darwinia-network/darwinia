@@ -118,6 +118,8 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
+#[allow(unused)]
+use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
