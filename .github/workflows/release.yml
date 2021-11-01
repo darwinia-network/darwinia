@@ -13,7 +13,7 @@ jobs:
 
       - name: Build darwinia
         env:
-          RUST_TOOLCHAIN: nightly-2021-02-25
+          RUST_TOOLCHAIN: nightly-2021-04-22
         run: |
           .maintain/setup-darwinia.sh
 
@@ -52,10 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
       - name: Build wasm
         env:
-          RUST_TOOLCHAIN: nightly-2021-02-25
+          RUST_TOOLCHAIN: nightly-2021-04-22
         run: |
           .maintain/setup-wasm.sh
 
