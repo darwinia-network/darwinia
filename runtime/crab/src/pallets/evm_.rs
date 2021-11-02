@@ -56,7 +56,7 @@ impl<R: darwinia_evm::Config> PrecompileSet for CrabPrecompiles<R> {
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> U256 {
-		U256::from(1 * COIN)
+		U256::from(10 * GWEI)
 	}
 }
 
