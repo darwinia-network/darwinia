@@ -6,9 +6,10 @@ use sp_core::{crypto::Public, H160, U256};
 use sp_std::marker::PhantomData;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_evm::{runner::stack::Runner, ConcatAddressMapping, Config, EnsureAddressTruncated};
+use darwinia_evm::{runner::stack::Runner, Config, EnsureAddressTruncated, FeeCalculator};
 use darwinia_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use darwinia_evm_precompile_transfer::Transfer;
+use darwinia_support::evm::ConcatConverter;
 use dp_evm::{Precompile, PrecompileSet};
 use dvm_ethereum::{
 	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
@@ -52,16 +53,23 @@ impl<R: darwinia_evm::Config> PrecompileSet for CrabPrecompiles<R> {
 	}
 }
 
+pub struct FixedGasPrice;
+impl FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> U256 {
+		U256::from(10 * GWEI)
+	}
+}
+
 frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
 }
 
 impl Config for Runtime {
-	type FeeCalculator = DynamicFee;
+	type FeeCalculator = FixedGasPrice;
 	type GasWeightMapping = ();
 	type CallOrigin = EnsureAddressTruncated<Self::AccountId>;
-	type AddressMapping = ConcatAddressMapping<Self::AccountId>;
+	type IntoAccountId = ConcatConverter<Self::AccountId>;
 	type FindAuthor = EthereumFindAuthor<Babe>;
 	type BlockHashMapping = EthereumBlockHashMapping<Self>;
 	type Event = Event;

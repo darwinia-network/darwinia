@@ -29,7 +29,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
-use super::{Extensions, DEFAULT_PROTOCOL_ID};
+use super::*;
 use crab_runtime::{constants::currency::COIN, *};
 use darwinia_primitives::{AccountId, Balance};
 
@@ -127,16 +127,16 @@ pub fn genesis_config() -> ChainSpec {
 		.collect::<Vec<_>>();
 
 		GenesisConfig {
-			frame_system: SystemConfig {
+			system: SystemConfig {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			pallet_babe: BabeConfig {
+			babe: BabeConfig {
 				authorities: vec![],
 				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 			},
-			pallet_indices: Default::default(),
-			darwinia_balances_Instance1: BalancesConfig {
+			indices: Default::default(),
+			balances: BalancesConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
@@ -151,14 +151,14 @@ pub fn genesis_config() -> ChainSpec {
 					)
 					.collect(),
 			},
-			darwinia_balances_Instance2: KtonConfig {
+			kton: KtonConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
 					.map(|k| (k, C_KTON_ENDOWMENT))
 					.collect(),
 			},
-			darwinia_staking: StakingConfig {
+			staking: StakingConfig {
 				minimum_validator_count: 1,
 				validator_count: 15,
 				stakers: vec![(
@@ -172,7 +172,7 @@ pub fn genesis_config() -> ChainSpec {
 				payout_fraction: Perbill::from_percent(50),
 				..Default::default()
 			},
-			pallet_session: SessionConfig {
+			session: SessionConfig {
 				keys: vec![(
 					genesis_validator.0.clone(),
 					genesis_validator.0,
@@ -184,28 +184,28 @@ pub fn genesis_config() -> ChainSpec {
 					),
 				)],
 			},
-			pallet_grandpa: Default::default(),
-			pallet_im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
-			darwinia_democracy: Default::default(),
-			pallet_collective_Instance1: Default::default(),
-			pallet_collective_Instance2: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
-			pallet_membership_Instance1: Default::default(),
-			pallet_treasury: Default::default(),
-			pallet_treasury_Instance2: Default::default(),
-			darwinia_claims: ClaimsConfig {
+			grandpa: Default::default(),
+			im_online: Default::default(),
+			authority_discovery: Default::default(),
+			democracy: Default::default(),
+			council: Default::default(),
+			technical_committee: Default::default(),
+			phragmen_election: Default::default(),
+			technical_membership: Default::default(),
+			treasury: Default::default(),
+			kton_treasury: Default::default(),
+			claims: ClaimsConfig {
 				claims_list: ClaimsList::from_file(
 					"node/service/res/crab/claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			},
-			pallet_sudo: SudoConfig { key: root },
-			darwinia_vesting: Default::default(),
-			darwinia_evm: crab_runtime::EVMConfig {
+			sudo: SudoConfig { key: root },
+			vesting: Default::default(),
+			evm: crab_runtime::EVMConfig {
 				accounts: BTreeMap::new(),
 			},
-			dvm_ethereum: Default::default(),
+			ethereum: Default::default(),
 		}
 	}
 
@@ -233,40 +233,40 @@ pub fn genesis_config() -> ChainSpec {
 /// Crab development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		let root = super::get_account_id_from_seed::<sr25519::Public>("Alice");
-		let initial_authorities = vec![super::get_authority_keys_from_seed("Alice")];
+		let root = get_account_id_from_seed::<sr25519::Public>("Alice");
+		let initial_authorities = vec![get_authority_keys_from_seed("Alice")];
 		let endowed_accounts = vec![
-			super::get_account_id_from_seed::<sr25519::Public>("Alice"),
-			super::get_account_id_from_seed::<sr25519::Public>("Bob"),
-			super::get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			super::get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
 
 		GenesisConfig {
-			frame_system: SystemConfig {
+			system: SystemConfig {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			pallet_babe: BabeConfig {
+			babe: BabeConfig {
 				authorities: vec![],
 				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 			},
-			pallet_indices: Default::default(),
-			darwinia_balances_Instance1: BalancesConfig {
+			indices: Default::default(),
+			balances: BalancesConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
 					.map(|k| (k, 1 << 56))
 					.collect(),
 			},
-			darwinia_balances_Instance2: KtonConfig {
+			kton: KtonConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
 					.map(|k| (k, 1 << 56))
 					.collect(),
 			},
-			darwinia_staking: StakingConfig {
+			staking: StakingConfig {
 				minimum_validator_count: 1,
 				validator_count: 15,
 				stakers: initial_authorities
@@ -280,35 +280,35 @@ pub fn development_config() -> ChainSpec {
 				payout_fraction: Perbill::from_percent(50),
 				..Default::default()
 			},
-			pallet_session: SessionConfig {
+			session: SessionConfig {
 				keys: initial_authorities
 					.iter()
 					.cloned()
 					.map(|x| (x.0.clone(), x.0, session_keys(x.2, x.3, x.4, x.5)))
 					.collect(),
 			},
-			pallet_grandpa: Default::default(),
-			pallet_im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
-			darwinia_democracy: Default::default(),
-			pallet_collective_Instance1: Default::default(),
-			pallet_collective_Instance2: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
-			pallet_membership_Instance1: Default::default(),
-			pallet_treasury: Default::default(),
-			pallet_treasury_Instance2: Default::default(),
-			darwinia_claims: ClaimsConfig {
+			grandpa: Default::default(),
+			im_online: Default::default(),
+			authority_discovery: Default::default(),
+			democracy: Default::default(),
+			council: Default::default(),
+			technical_committee: Default::default(),
+			phragmen_election: Default::default(),
+			technical_membership: Default::default(),
+			treasury: Default::default(),
+			kton_treasury: Default::default(),
+			claims: ClaimsConfig {
 				claims_list: ClaimsList::from_file(
 					"node/service/res/crab/claims-list.json",
 					"CLAIMS_LIST_PATH",
 				),
 			},
-			pallet_sudo: SudoConfig { key: root },
-			darwinia_vesting: Default::default(),
-			darwinia_evm: crab_runtime::EVMConfig {
+			sudo: SudoConfig { key: root },
+			vesting: Default::default(),
+			evm: crab_runtime::EVMConfig {
 				accounts: BTreeMap::new(),
 			},
-			dvm_ethereum: Default::default(),
+			ethereum: Default::default(),
 		}
 	}
 

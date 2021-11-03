@@ -13,20 +13,23 @@ version     = "0.11.4"
 codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
 static_assertions = { version = "1.1.0" }
 # darwinia-network frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
-darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "master" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
+darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
+darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 # paritytech frame
-frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-pallet-treasury            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
+frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+pallet-treasury            = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
 # paritytech primitives
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
+
+# will be removed in later substrate version
+max-encoded-len = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
 
 [features]
 default = ["std"]
@@ -50,4 +53,5 @@ std = [
 	# paritytech primitives
 	"sp-runtime/std",
 	"sp-std/std",
+	"max-encoded-len/std",
 ]

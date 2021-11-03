@@ -46,5 +46,6 @@ impl Config for Runtime {
 	type CompactSolution = NposCompactSolution24;
 	type Fallback = Fallback;
 	type WeightInfo = WeightInfo<Runtime>;
+	type ForceOrigin = EnsureRootOrHalfCouncil;
 	type BenchmarkingConfig = ();
 }

@@ -29,7 +29,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
-use super::{Extensions, DEFAULT_PROTOCOL_ID};
+use super::*;
 use darwinia_primitives::{AccountId, BlockNumber};
 use darwinia_runtime::{
 	constants::{currency::COIN, time::DAYS},
@@ -238,21 +238,21 @@ pub fn genesis_config() -> ChainSpec {
 			.or_insert(400_000_000 * COIN);
 
 		GenesisConfig {
-			frame_system: SystemConfig {
+			system: SystemConfig {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			pallet_babe: BabeConfig {
+			babe: BabeConfig {
 				authorities: vec![],
 				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 			},
-			darwinia_balances_Instance1: BalancesConfig {
+			balances: BalancesConfig {
 				balances: rings.into_iter().collect(),
 			},
-			darwinia_balances_Instance2: KtonConfig {
+			kton: KtonConfig {
 				balances: ktons.into_iter().collect(),
 			},
-			darwinia_staking: StakingConfig {
+			staking: StakingConfig {
 				minimum_validator_count: 1,
 				validator_count: 15,
 				stakers: vec![
@@ -274,7 +274,7 @@ pub fn genesis_config() -> ChainSpec {
 				payout_fraction: Perbill::from_percent(50),
 				..Default::default()
 			},
-			pallet_session: SessionConfig {
+			session: SessionConfig {
 				keys: vec![
 					(
 						genesis_validator_1.0.clone(),
@@ -288,18 +288,18 @@ pub fn genesis_config() -> ChainSpec {
 					),
 				],
 			},
-			pallet_grandpa: Default::default(),
-			pallet_im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
-			darwinia_democracy: Default::default(),
-			pallet_collective_Instance1: Default::default(),
-			pallet_collective_Instance2: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
-			pallet_membership_Instance1: Default::default(),
-			pallet_treasury: Default::default(),
-			pallet_treasury_Instance2: Default::default(),
-			pallet_sudo: SudoConfig { key: root },
-			darwinia_vesting: VestingConfig {
+			grandpa: Default::default(),
+			im_online: Default::default(),
+			authority_discovery: Default::default(),
+			democracy: Default::default(),
+			council: Default::default(),
+			technical_committee: Default::default(),
+			phragmen_election: Default::default(),
+			technical_membership: Default::default(),
+			treasury: Default::default(),
+			kton_treasury: Default::default(),
+			sudo: SudoConfig { key: root },
+			vesting: VestingConfig {
 				vesting: vec![
 					// Team vesting: 1 year period start after 1 year since mainnet launch
 					(team_vesting, 365 * DAYS, 365 * DAYS, 0),
@@ -312,7 +312,7 @@ pub fn genesis_config() -> ChainSpec {
 					),
 				],
 			},
-			darwinia_bridge_ethereum: EthereumRelayConfig {
+			ethereum_relay: EthereumRelayConfig {
 				genesis_header_parcel: r#"{
 					"header": {
 						"difficulty": "0x1a76e148d47e3f",
@@ -344,7 +344,7 @@ pub fn genesis_config() -> ChainSpec {
 				),
 				..Default::default()
 			},
-			to_ethereum_backing: EthereumBackingConfig {
+			ethereum_backing: EthereumBackingConfig {
 				token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 				deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
 				ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
@@ -357,7 +357,7 @@ pub fn genesis_config() -> ChainSpec {
 				backed_kton: 55_760_225_171_204_355_332_737_u128 / COIN + 1,
 				..Default::default()
 			},
-			to_tron_backing: TronBackingConfig {
+			tron_backing: TronBackingConfig {
 				// Los Angeles: 9/24/2020, 7:42:52 PM
 				// Berlin :     9/25/2020, 10:42:52 AM
 				// Beijing:     9/25/2020, 9:42:52 AM
@@ -397,39 +397,39 @@ pub fn development_config() -> ChainSpec {
 		const RING_TOKEN_ADDRESS: &'static str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
 		const KTON_TOKEN_ADDRESS: &'static str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
 
-		let root = super::get_account_id_from_seed::<sr25519::Public>("Alice");
-		let initial_authorities = vec![super::get_authority_keys_from_seed("Alice")];
+		let root = get_account_id_from_seed::<sr25519::Public>("Alice");
+		let initial_authorities = vec![get_authority_keys_from_seed("Alice")];
 		let endowed_accounts = vec![
-			super::get_account_id_from_seed::<sr25519::Public>("Alice"),
-			super::get_account_id_from_seed::<sr25519::Public>("Bob"),
-			super::get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			super::get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
 
 		GenesisConfig {
-			frame_system: SystemConfig {
+			system: SystemConfig {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			pallet_babe: BabeConfig {
+			babe: BabeConfig {
 				authorities: vec![],
 				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
 			},
-			darwinia_balances_Instance1: BalancesConfig {
+			balances: BalancesConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
 					.map(|k| (k, 1 << 56))
 					.collect(),
 			},
-			darwinia_balances_Instance2: KtonConfig {
+			kton: KtonConfig {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
 					.map(|k| (k, 1 << 56))
 					.collect(),
 			},
-			darwinia_staking: StakingConfig {
+			staking: StakingConfig {
 				minimum_validator_count: 1,
 				validator_count: 15,
 				stakers: initial_authorities
@@ -443,26 +443,26 @@ pub fn development_config() -> ChainSpec {
 				payout_fraction: Perbill::from_percent(50),
 				..Default::default()
 			},
-			pallet_session: SessionConfig {
+			session: SessionConfig {
 				keys: initial_authorities
 					.iter()
 					.cloned()
 					.map(|x| (x.0.clone(), x.0, session_keys(x.2, x.3, x.4, x.5)))
 					.collect(),
 			},
-			pallet_grandpa: Default::default(),
-			pallet_im_online: Default::default(),
-			pallet_authority_discovery: Default::default(),
-			darwinia_democracy: Default::default(),
-			pallet_collective_Instance1: Default::default(),
-			pallet_collective_Instance2: Default::default(),
-			darwinia_elections_phragmen: Default::default(),
-			pallet_membership_Instance1: Default::default(),
-			pallet_treasury: Default::default(),
-			pallet_treasury_Instance2: Default::default(),
-			pallet_sudo: SudoConfig { key: root },
-			darwinia_vesting: Default::default(),
-			darwinia_bridge_ethereum: EthereumRelayConfig {
+			grandpa: Default::default(),
+			im_online: Default::default(),
+			authority_discovery: Default::default(),
+			democracy: Default::default(),
+			council: Default::default(),
+			technical_committee: Default::default(),
+			phragmen_election: Default::default(),
+			technical_membership: Default::default(),
+			treasury: Default::default(),
+			kton_treasury: Default::default(),
+			sudo: SudoConfig { key: root },
+			vesting: Default::default(),
+			ethereum_relay: EthereumRelayConfig {
 				genesis_header_parcel: r#"{
 					"header": {
 						"difficulty": "0x1a76e148d47e3f",
@@ -494,7 +494,7 @@ pub fn development_config() -> ChainSpec {
 				),
 				..Default::default()
 			},
-			to_ethereum_backing: EthereumBackingConfig {
+			ethereum_backing: EthereumBackingConfig {
 				token_redeem_address: array_bytes::hex_into_unchecked(TOKEN_REDEEM_ADDRESS),
 				deposit_redeem_address: array_bytes::hex_into_unchecked(DEPOSIT_REDEEM_ADDRESS),
 				ring_token_address: array_bytes::hex_into_unchecked(RING_TOKEN_ADDRESS),
@@ -503,7 +503,7 @@ pub fn development_config() -> ChainSpec {
 				backed_kton: 1 << 56,
 				..Default::default()
 			},
-			to_tron_backing: TronBackingConfig {
+			tron_backing: TronBackingConfig {
 				backed_ring: 1 << 56,
 				backed_kton: 1 << 56,
 			},

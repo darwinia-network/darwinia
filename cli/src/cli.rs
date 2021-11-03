@@ -69,7 +69,7 @@ pub struct RunCmd {
 
 	#[allow(missing_docs)]
 	#[structopt(flatten)]
-	pub dynamic_fee_parameters: DynamicFeeParameters,
+	pub dvm_parameters: DvmParameters,
 }
 
 #[allow(missing_docs)]
@@ -120,12 +120,8 @@ pub enum Subcommand {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct DynamicFeeParameters {
+pub struct DvmParameters {
 	/// Maximum number of logs in a query.
 	#[structopt(long, default_value = "10000")]
 	pub max_past_logs: u32,
-
-	/// The dynamic-fee pallet target gas price set by block author
-	#[structopt(long, default_value = "1000000000")]
-	pub target_gas_price: u64,
 }

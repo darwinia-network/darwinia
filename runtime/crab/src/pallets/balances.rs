@@ -6,6 +6,7 @@ frame_support::parameter_types! {
 	pub const RingExistentialDeposit: Balance = 0;
 	pub const KtonExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl Config<RingInstance> for Runtime {
@@ -13,20 +14,26 @@ impl Config<RingInstance> for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = RingExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type OtherCurrencies = (Kton,);
 	type MaxLocks = MaxLocks;
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = WeightInfo<Runtime>;
+
+	type BalanceInfo = AccountData<Balance>;
+	type OtherCurrencies = (Kton,);
 }
 impl Config<KtonInstance> for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = KtonExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
 	type AccountStore = System;
-	type OtherCurrencies = (Ring,);
 	type MaxLocks = MaxLocks;
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = WeightInfo<Runtime>;
+
+	type BalanceInfo = AccountData<Balance>;
+	type OtherCurrencies = (Ring,);
 }

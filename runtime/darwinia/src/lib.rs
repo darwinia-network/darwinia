@@ -118,6 +118,8 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
+#[allow(unused)]
+use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
@@ -202,7 +204,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1140,
+	spec_version: 1150,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -252,7 +254,7 @@ frame_support::construct_runtime! {
 		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
-		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 37,
+		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
@@ -590,28 +592,38 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
-fn migrate() -> Weight {
-	// --- paritytech ---
-	#[allow(unused)]
-	use frame_support::migration;
-
-	// TODO: Move to S2S
-	// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
-
-	0
-	// RuntimeBlockWeights::get().max_block
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		// TODO: Move to S2S
+		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
+
+		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
+			pallet_grandpa::migrations::v3_1::migrate::<Runtime, Grandpa, _>(name)
+		} else {
+			0
+		}
+	}
+
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		migrate();
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
+			pallet_grandpa::migrations::v3_1::pre_migration::<Runtime, Grandpa, _>(name);
+		}
 
 		Ok(())
 	}
 
-	fn on_runtime_upgrade() -> Weight {
-		migrate()
+	#[cfg(feature = "try-runtime")]
+	fn post_upgrade() -> Result<(), &'static str> {
+		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
+
+		Ok(())
 	}
 }

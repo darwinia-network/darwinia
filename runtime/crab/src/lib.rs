@@ -76,6 +76,8 @@ mod weights;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+#[allow(unused)]
+use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
@@ -101,7 +103,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
-use darwinia_evm::{Account as EVMAccount, Runner};
+use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_primitives::*;
 use darwinia_runtime_common::*;
@@ -156,7 +158,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 1140,
+	spec_version: 1150,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -207,7 +209,7 @@ frame_support::construct_runtime! {
 		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
-		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config, Event<T>} = 36,
+		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
 		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
@@ -258,7 +260,7 @@ frame_support::construct_runtime! {
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
-		DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 	}
 }
 
@@ -691,48 +693,75 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
-fn migrate() -> Weight {
-	// --- paritytech ---
-	#[allow(unused)]
-	use frame_support::migration;
-	use frame_support::{pallet_prelude::Blake2_128Concat, StorageHasher};
-
-	// TODO: Move to S2S
-	// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
-
-	const MODULE: &[u8] = b"Indices";
-	const ITEM: &[u8] = b"Accounts";
-
-	let index = 1 as AccountIndex;
-
-	if let Some((v0, v1)) =
-		migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
-			MODULE, ITEM, index,
-		) {
-		let v2 = false;
-
-		migration::put_storage_value(
-			MODULE,
-			ITEM,
-			index.using_encoded(Blake2_128Concat::hash).as_ref(),
-			(v0, v1, v2),
-		);
-	}
-
-	// 0
-	RuntimeBlockWeights::get().max_block
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> Weight {
+		// --- paritytech ---
+		use frame_support::{pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher};
+
+		// TODO: Move to S2S
+		// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
+
+		const MODULE: &[u8] = b"Indices";
+		const ITEM: &[u8] = b"Accounts";
+
+		let index = 1 as AccountIndex;
+
+		if let Some((v0, v1)) =
+			migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
+				MODULE, ITEM, index,
+			) {
+			let v2 = false;
+
+			migration::put_storage_value(
+				MODULE,
+				ITEM,
+				index.using_encoded(Blake2_128Concat::hash).as_ref(),
+				(v0, v1, v2),
+			);
+
+			log::info!("[MIGRATED] Indices::Accounts");
+		}
+
+		migration::remove_storage_prefix(b"DynamicFee", b"MinGasPrice", &[]);
+
+		log::info!("[MIGRATED] DynamicFeeL::MinGasPrice");
+
+		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
+			pallet_grandpa::migrations::v3_1::migrate::<Runtime, Grandpa, _>(name);
+		}
+
+		RuntimeBlockWeights::get().max_block
+	}
+
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		migrate();
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		assert!(migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
+
+		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
+			pallet_grandpa::migrations::v3_1::pre_migration::<Runtime, Grandpa, _>(name);
+		}
 
 		Ok(())
 	}
 
-	fn on_runtime_upgrade() -> Weight {
-		migrate()
+	#[cfg(feature = "try-runtime")]
+	fn post_upgrade() -> Result<(), &'static str> {
+		assert!(!migration::have_storage_value(
+			b"DynamicFee",
+			b"MinGasPrice",
+			&[]
+		));
+
+		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
+
+		Ok(())
 	}
 }
