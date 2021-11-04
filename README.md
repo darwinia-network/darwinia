@@ -19,9 +19,6 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 	- [Official Technical Group](https://t.me/DarwiniaDev)
 - Matrix
 	- [Official Technical Room](https://matrix.to/#/#darwinia:matrix.org)
-- Slack
-	> Technical members are more active on this place. If you expect a quick response, here you go.
-	- PM [Support](mailto:support@darwinia.network) or [Xavier](mailto:xavier.lau@itering.com)
 
 ## Installation
 - Downloading pre-built binary from **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
