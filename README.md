@@ -12,7 +12,7 @@
 
 [![Twitter URL](https://img.shields.io/twitter/follow/DarwiniaNetwork?style=social)](https://twitter.com/DarwiniaNetwork)
 [![Telegram](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2FDarwiniaNetwork)](https://t.me/DarwiniaOfficial)
-[![Medium](https://badgen.net/badge/icon/medium?icon=medium&label)](https://darwinianetwork.medium.com)w
+[![Medium](https://badgen.net/badge/icon/medium?icon=medium&label)](https://darwinianetwork.medium.com)
 [![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/uqa3snSGTj)
 
 </div>
