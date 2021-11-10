@@ -53,7 +53,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - Building from source follow this **[guide](#build-from-source)**.
 
 ## Building
-> Make sure that you have the dependencies. Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
+> Make sure that you have all the required dependencies. Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
 
 ### Installing via Cargo
 ```sh
