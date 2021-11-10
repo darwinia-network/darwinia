@@ -190,6 +190,13 @@ jobs:
           md5sum * > ../md5sums.txt
           mv ../md5sums.txt ./
 
+      - uses: olegtarasov/get-tag@v2.1
+        id: tag-name
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 7
+
       - name: Generate template data
         run: |
           PROPOSAL_CRAB_COMPACT=$(cat deploy/crab_runtime.compact.wasm.json | jq -r .proposal_hash)
@@ -199,10 +206,22 @@ jobs:
           # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab_runtime.compact.compressed.wasm.json | jq -r .proposal_hash)
           # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia_runtime.compressed.compact.wasm.json | jq -r .proposal_hash)
 
+          IMAGE_NAME=darwinia
+          IMAGE_PREFIX=quay.io/darwinia-network
+          IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
+          IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
+
           JSON=$( jq -n \
             --arg proposal_crab "$PROPOSAL_CRAB_COMPACT" \
             --arg proposal_darwinia "$PROPOSAL_DARWINIA_COMPACT" \
-            '{ proposal_crab: $proposal_crab, proposal_darwinia: $proposal_darwinia }' )
+            --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
+            --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
+            '{
+              proposal_crab: $proposal_crab,
+              proposal_darwinia: $proposal_darwinia,
+              image_tag: $image_tag,
+              image_sha: $image_sha
+            }' )
           echo "$JSON" > shared/template_data.json
 
       - name: Render release page
@@ -215,5 +234,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "deploy/*"
-          bodyFile: "body.md"
+          bodyFile: ".maintain/release-template.md"
           token: ${{ secrets.GITHUB_TOKEN }}
