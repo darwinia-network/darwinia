@@ -22,7 +22,7 @@ jobs:
         run: |
           apt update -y
           apt install --no-install-recommends -y \
-            curl ca-certificates \
+            git curl ca-certificates \
             make gcc g++ clang-4.0
 
       - name: Install Rust toolchain
@@ -50,7 +50,7 @@ jobs:
           mv target/x86_64-unknown-linux-gnu/release/wbuild/crab-runtime/*.wasm shared/crab-runtime
           mv target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/*.wasm shared/darwinia-runtime
 
-      - name: Upload deploy
+      - name: Upload shared
         uses: actions/upload-artifact@v2
         with:
           name: darwinia-artifact
