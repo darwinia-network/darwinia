@@ -1,9 +1,22 @@
-[![CI](https://travis-ci.org/darwinia-network/darwinia.svg)](https://travis-ci.org/darwinia-network/darwinia])
+<div align="center">
+
+![Logo](https://infura-ipfs.io/ipfs/QmWm8Fdvjnu1afHGiyXQusGrBhTdZRyviNJNa6Dyx7Ujud)
+
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.io)
+[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=master)](https://github.com/darwinia-network/darwinia/actions/workflows/ci.yml)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/tags)
+[![Quay.io](https://img.shields.io/badge/quay-latest-blue.svg?logo=docker&logoColor=white)](https://quay.io/repository/darwinia-network/darwinia)
+[![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia)
+[![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia?color=red&style=plastic)](https://github.com/darwinia-network/darwinia)
 
-![Logo](https://github.com/darwinia-network/rfcs/raw/master/logo/darwinia.png)
+[![Twitter URL](https://img.shields.io/twitter/follow/DarwiniaNetwork?style=social)](https://twitter.com/DarwiniaNetwork)
+[![Telegram](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2FDarwiniaNetwork)](https://t.me/DarwiniaOfficial)
+[![Medium](https://badgen.net/badge/icon/medium?icon=medium&label)](https://darwinianetwork.medium.com)
+[![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/uqa3snSGTj)
 
-# Darwinia
+</div>
+
 Implementation of a https://darwinia.network node in **Rust** based on the **Substrate** framework.
 
 This repository contains runtimes for the **[Darwinia](https://darwinia.network)** and **[Crab](https://crab.network)** networks.
