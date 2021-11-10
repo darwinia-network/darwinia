@@ -1,0 +1,5 @@
+FROM debian:stable-slim
+RUN apt update && apt install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+COPY shared/darwinia /usr/local/bin/darwinia
+EXPOSE 30333 9933 9944
+ENTRYPOINT [ "/usr/local/bin/darwinia" ]
