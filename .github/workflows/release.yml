@@ -90,7 +90,7 @@ jobs:
             dpkg -i subwasm.deb && \
             subwasm --version
 
-      - name: Test subwasm for ${{ matrix.runtime }}
+      - name: Generate subwasm info for ${{ matrix.runtime }}
         run: |
           WASM=shared/${{ matrix.runtime }}/*.compact.wasm
           Z_WASM=shared/${{ matrix.runtime }}/*.compact.compressed.wasm
