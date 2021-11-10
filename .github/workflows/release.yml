@@ -60,7 +60,6 @@ jobs:
         # todo: set executable permissions for optimize-cache.sh
         run: sh -f .maintain/optimize-cache.sh
 
-
   test-subwasm:
     name: Test subwasm
     runs-on: ubuntu-latest
