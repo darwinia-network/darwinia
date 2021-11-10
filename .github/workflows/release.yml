@@ -98,8 +98,8 @@ jobs:
           INFO_WASM=$(subwasm -j info $WASM)
           INFO_Z_WASM=$(subwasm -j info $Z_WASM)
 
-          echo "$INFO_WASM" > $WASM.json
-          echo "$INFO_Z_WASM" > $Z_WASM.json
+          echo "$INFO_WASM" > shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.json
+          echo "$INFO_Z_WASM" > shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.json
 
       - name: Upload shared
         uses: actions/upload-artifact@v2
@@ -175,15 +175,15 @@ jobs:
           mv darwinia.tar.zst ../deploy/
 
           mv crab-runtime/*.compact.wasm ../deploy/
-          mv crab-runtime/*.compact.wasm.json ../deploy/
+          mv crab-runtime/*.compact.json ../deploy/
           mv darwinia-runtime/*.compact.wasm ../deploy/
-          mv darwinia-runtime/*.compact.wasm.json ../deploy/
+          mv darwinia-runtime/*.compact.json ../deploy/
 
 ## not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
 #          mv crab-runtime/*.compact.compressed.wasm ../deploy/
-#          mv crab-runtime/*.compact.compressed.wasm.json ../deploy/
+#          mv crab-runtime/*.compact.compressed.json ../deploy/
 #          mv darwinia-runtime/*.compact.compressed.wasm ../deploy/
-#          mv darwinia-runtime/*.compact.compressed.wasm.json ../deploy/
+#          mv darwinia-runtime/*.compact.compressed.json ../deploy/
 
       - name: Hash file
         run: |
@@ -200,12 +200,12 @@ jobs:
 
       - name: Generate template data
         run: |
-          PROPOSAL_CRAB_COMPACT=$(cat deploy/crab_runtime.compact.wasm.json | jq -r .proposal_hash)
-          PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia_runtime.compact.wasm.json | jq -r .proposal_hash)
+          PROPOSAL_CRAB_COMPACT=$(cat deploy/crab-runtime.compact.json | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia-runtime.compact.json | jq -r .proposal_hash)
 
           # # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-          # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab_runtime.compact.compressed.wasm.json | jq -r .proposal_hash)
-          # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia_runtime.compressed.compact.wasm.json | jq -r .proposal_hash)
+          # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
+          # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
 
           IMAGE_NAME=darwinia
           IMAGE_PREFIX=quay.io/darwinia-network
