@@ -194,9 +194,11 @@ jobs:
         run: |
           PROPOSAL_CRAB_COMPACT=$(cat deploy/crab_runtime.compact.wasm.json | jq -r .proposal_hash)
           PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia_runtime.compact.wasm.json | jq -r .proposal_hash)
-## not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-#          PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab_runtime.compact.compressed.wasm.json | jq -r .proposal_hash)
-#          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia_runtime.compressed.compact.wasm.json | jq -r .proposal_hash)
+
+          # # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+          # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab_runtime.compact.compressed.wasm.json | jq -r .proposal_hash)
+          # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia_runtime.compressed.compact.wasm.json | jq -r .proposal_hash)
+
           JSON=$( jq -n \
             --arg proposal_crab "$PROPOSAL_CRAB_COMPACT" \
             --arg proposal_darwinia "$PROPOSAL_DARWINIA_COMPACT" \
