@@ -1,13 +1,8 @@
 name: Rust docs
-#on:
-#  push:
-#    tags:
-#      - 'v*'
 on:
-  pull_request:
-    branches:
-      - main
-      - master
+  push:
+    tags:
+      - 'v*'
 
 
 jobs:

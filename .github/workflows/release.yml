@@ -1,13 +1,8 @@
 name: Release
-#on:
-#  push:
-#    tags:
-#      - 'v*'
 on:
-  pull_request:
-    branches:
-      - main
-      - master
+  push:
+    tags:
+      - 'v*'
 
 jobs:
 
@@ -96,8 +91,8 @@ jobs:
 
       - name: Test subwasm for ${{ matrix.runtime }}
         run: |
-          WASM=shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.wasm
-          Z_WASM=shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.wasm
+          WASM=shared/${{ matrix.runtime }}/*.compact.wasm
+          Z_WASM=shared/${{ matrix.runtime }}/*.compact.compressed.wasm
 
           INFO_WASM=$(subwasm -j info $WASM)
           INFO_Z_WASM=$(subwasm -j info $Z_WASM)
@@ -123,6 +118,13 @@ jobs:
           name: darwinia-artifact
           path: shared
 
+#      - name: Docker login
+#        uses: docker/login-action@v1
+#        with:
+#          username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
+#          password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
+#          registry: quay.io
+
       - uses: olegtarasov/get-tag@v2.1
         id: tag-name
       - uses: benjlevesque/short-sha@v1.2
@@ -130,19 +132,89 @@ jobs:
         with:
           length: 7
 
-      - name: Build image
+      - name: Build and publish docker image
         env:
           SHA: ${{ env.SHA }}
-          REGISTRY_HOST: quay.io
         run: |
           chmod +x shared/darwinia
 
           IMAGE_NAME=darwinia
-          IMAGE_PREFIX=${REGISTRY_HOST:-'quay.io'}/darwinia-network
+          IMAGE_PREFIX=quay.io/darwinia-network
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
           docker build \
-            -t ${IMAGE_NAME}:latest \
+            -t ${IMAGE_NAME} \
             -f .maintain/docker/${DOCKERFILE_NAME} \
             .
+
+#          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
+#          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
+#
+#          docker push ${IMAGE_PUSH_NAME_TAG}
+#          docker push ${IMAGE_PUSH_NAME_SHA}
+
+  complete-build:
+    name: Complete build
+    runs-on: ubuntu-latest
+    needs: [build-subwasm, build-image]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - name: Prepare deploy folder
+        run: |
+          chmod +x shared/darwinia
+
+          mkdir deploy
+          cd shared
+          tar cf darwinia.tar.zst darwinia -I pzstd
+          mv darwinia.tar.zst ../deploy/
+
+          mv crab-runtime/*.compact.wasm ../deploy/
+          mv crab-runtime/*.compact.wasm.json ../deploy/
+          mv darwinia-runtime/*.compact.wasm ../deploy/
+          mv darwinia-runtime/*.compact.wasm.json ../deploy/
+
+## not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+#          mv crab-runtime/*.compact.compressed.wasm ../deploy/
+#          mv crab-runtime/*.compact.compressed.wasm.json ../deploy/
+#          mv darwinia-runtime/*.compact.compressed.wasm ../deploy/
+#          mv darwinia-runtime/*.compact.compressed.wasm.json ../deploy/
+
+      - name: Hash file
+        run: |
+          cd deploy
+          md5sum * > ../md5sums.txt
+          mv ../md5sums.txt ./
+
+      - name: Generate template data
+        run: |
+          PROPOSAL_CRAB_COMPACT=$(cat deploy/crab_runtime.compact.wasm.json | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia_runtime.compact.wasm.json | jq -r .proposal_hash)
+## not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+#          PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab_runtime.compact.compressed.wasm.json | jq -r .proposal_hash)
+#          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia_runtime.compressed.compact.wasm.json | jq -r .proposal_hash)
+          JSON=$( jq -n \
+            --arg proposal_crab "$PROPOSAL_CRAB_COMPACT" \
+            --arg proposal_darwinia "$PROPOSAL_DARWINIA_COMPACT" \
+            '{
+               proposal_crab: $proposal_crab,
+               proposal_darwinia: $proposal_darwinia
+            }' )
+          echo "$JSON" > shared/template_data.json
+
+      - name: Render release page
+        uses: jayamanikharyono/jinja-action@v0.1
+        with:
+          datafile: shared/template_data.json
+          path: .maintain/release-template.md
+
+      - name: Publish github release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "deploy/*"
+          bodyFile: "body.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
