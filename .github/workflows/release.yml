@@ -21,7 +21,9 @@ jobs:
       - name: Install dependencies
         run: |
           apt update -y
-          apt install --no-install-recommends -y curl make gcc g++ clang-4.0
+          apt install --no-install-recommends -y \
+            curl ca-certificates \
+            make gcc g++ clang-4.0
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
