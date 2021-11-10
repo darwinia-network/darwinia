@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update -y
-          apt install --no-install-recommends -y make gcc g++ clang-4.0
+          apt install --no-install-recommends -y curl make gcc g++ clang-4.0
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -65,7 +65,7 @@ jobs:
     needs: [build-package]
     strategy:
       matrix:
-        runtime: [crab-runtime, pangolin-runtime]
+        runtime: [crab-runtime, darwinia-runtime]
     steps:
 
       - uses: actions/download-artifact@v2
