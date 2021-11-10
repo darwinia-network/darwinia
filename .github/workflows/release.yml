@@ -65,7 +65,9 @@ jobs:
     name: Test subwasm
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:16.04
+      # Currently, Same with srtool version v0.9.18
+      # https://github.com/paritytech/srtool/blob/v0.9.18/Dockerfile#L1
+      image: ubuntu:20.04
     needs: [build-package]
     strategy:
       matrix:
