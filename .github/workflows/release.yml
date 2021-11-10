@@ -97,8 +97,8 @@ jobs:
           INFO_WASM=$(subwasm -j info $WASM)
           INFO_Z_WASM=$(subwasm -j info $Z_WASM)
 
-          echo "$INFO_WASM" > shared/$WASM.json
-          echo "$INFO_Z_WASM" > shared/$INFO_Z_WASM.json
+          echo "$INFO_WASM" > $WASM.json
+          echo "$INFO_Z_WASM" > $INFO_Z_WASM.json
 
       - name: Upload shared
         uses: actions/upload-artifact@v2
@@ -145,12 +145,12 @@ jobs:
 
           docker build \
             -t ${IMAGE_NAME} \
-            -f .maintain/docker/${DOCKERFILE_NAME} \
+            -f .maintain/docker/Dockerfile \
             .
 
-#          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
-#          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
-#
+          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
+          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
+
 #          docker push ${IMAGE_PUSH_NAME_TAG}
 #          docker push ${IMAGE_PUSH_NAME_SHA}
 
@@ -212,13 +212,13 @@ jobs:
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
           JSON=$( jq -n \
-            --arg proposal_crab "$PROPOSAL_CRAB_COMPACT" \
-            --arg proposal_darwinia "$PROPOSAL_DARWINIA_COMPACT" \
+            --arg crab_proposal_compact "$PROPOSAL_CRAB_COMPACT" \
+            --arg darwinia_proposal_compact "$PROPOSAL_DARWINIA_COMPACT" \
             --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
             --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
             '{
-              proposal_crab: $proposal_crab,
-              proposal_darwinia: $proposal_darwinia,
+              crab_proposal_compact: $crab_proposal_compact,
+              darwinia_proposal_compact: $darwinia_proposal_compact,
               image_tag: $image_tag,
               image_sha: $image_sha
             }' )
