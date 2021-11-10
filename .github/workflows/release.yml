@@ -200,10 +200,7 @@ jobs:
           JSON=$( jq -n \
             --arg proposal_crab "$PROPOSAL_CRAB_COMPACT" \
             --arg proposal_darwinia "$PROPOSAL_DARWINIA_COMPACT" \
-            '{
-               proposal_crab: $proposal_crab,
-               proposal_darwinia: $proposal_darwinia
-            }' )
+            '{ proposal_crab: $proposal_crab, proposal_darwinia: $proposal_darwinia }' )
           echo "$JSON" > shared/template_data.json
 
       - name: Render release page
