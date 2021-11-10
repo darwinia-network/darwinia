@@ -52,7 +52,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - Using the docker image on **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
 - Building from source follow this **[guide](#build-from-source)**.
 
-### Building from Source
+## Building
 > Make sure that you have the dependencies. Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
 
 ### Installing via Cargo
@@ -60,7 +60,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 cargo install --git https://github.com/darwinia-network/darwinia --tag <version> --locked
 ```
 
-### Building via Source
+### Building from Source
 ```sh
 # with github-cli
 gh repo clone darwinia-network/darwinia
