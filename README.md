@@ -17,7 +17,8 @@
 
 </div>
 
-Implementation of a https://darwinia.network node in **Rust** based on the **Substrate** framework.
+## Introduction
+Implementation of a **https://darwinia.network** node in **Rust** based on the **Substrate** framework.
 
 This repository contains runtimes for the **[Darwinia](https://darwinia.network)** and **[Crab](https://crab.network)** networks.
 
