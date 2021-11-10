@@ -64,11 +64,18 @@ jobs:
   test-subwasm:
     name: Test subwasm
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:16.04
     needs: [build-package]
     strategy:
       matrix:
         runtime: [crab-runtime, darwinia-runtime]
     steps:
+      - name: Install dependencies
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y \
+            git curl ca-certificates
 
       - uses: actions/download-artifact@v2
         with:
