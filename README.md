@@ -25,16 +25,16 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 ## Resources
 
 ### Ecosystem
-- **[darwinia-common](https://github.com/darwinia-network/darwinia-common)**
+- **[darwinia-common](https://github.com/darwinia-network/darwinia-common)** 
   - Darwinia bridge core protocol implementation as runtime pallet
   - Pangolin and Pangoro testnet
 - **[darwinia-parachain](https://github.com/darwinia-network/darwinia-parachain)**
   - Darwinia's parachain on Polkadot/Kusama
-- **[darwinia-bridger-sol](https://github.com/darwinia-network/darwinia-bridger-sol)**
+- **[darwinia-bridge-sol](https://github.com/darwinia-network/darwinia-bridge-sol)**
   - Darwinia bridge solidity smart contracts
 - **[bridger](https://github.com/darwinia-network/bridger)**
   - Client for header relayers and message relayers in Darwinia's bridge network
-- **[smart-app](https://github.com/darwinia-network/bridger)**
+- **[smart-app](https://github.com/darwinia-network/smart-app)**
   - DVM, smart contract, and transfer RING/KTON between Substrate address and Ethereum address
 
 ### Documents
