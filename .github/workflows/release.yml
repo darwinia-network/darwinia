@@ -7,6 +7,7 @@ on:
 jobs:
 
   build-package:
+    name: Build package
     runs-on: ubuntu-latest
     container:
       image: ubuntu:16.04
@@ -98,7 +99,7 @@ jobs:
           INFO_Z_WASM=$(subwasm -j info $Z_WASM)
 
           echo "$INFO_WASM" > $WASM.json
-          echo "$INFO_Z_WASM" > $INFO_Z_WASM.json
+          echo "$INFO_Z_WASM" > $Z_WASM.json
 
       - name: Upload shared
         uses: actions/upload-artifact@v2
