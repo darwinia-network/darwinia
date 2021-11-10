@@ -25,16 +25,16 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 ## Resources
 
 ### Ecosystem
-- **[darwinia-common](https://github.com/darwinia-network/darwinia-common)** 
+- **[darwinia-common](https://github.com/darwinia-network/darwinia-common)** 🔥🔥🔥 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-common)](https://github.com/darwinia-network/darwinia-common) [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-common?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-common)
   - Darwinia bridge core protocol implementation as runtime pallet
   - Pangolin and Pangoro testnet
-- **[darwinia-parachain](https://github.com/darwinia-network/darwinia-parachain)**
+- **[darwinia-parachain](https://github.com/darwinia-network/darwinia-parachain)** 🔥🔥 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-parachain)](https://github.com/darwinia-network/darwinia-parachain) [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-parachain?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-parachain)
   - Darwinia's parachain on Polkadot/Kusama
-- **[darwinia-bridge-sol](https://github.com/darwinia-network/darwinia-bridge-sol)**
+- **[darwinia-bridge-sol](https://github.com/darwinia-network/darwinia-bridge-sol)** 🔥🔥 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-bridge-sol)](https://github.com/darwinia-network/darwinia-bridge-sol) [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-bridge-sol?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-bridge-sol)
   - Darwinia bridge solidity smart contracts
-- **[bridger](https://github.com/darwinia-network/bridger)**
+- **[bridger](https://github.com/darwinia-network/bridger)** 🔥🔥🔥 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger)](https://github.com/darwinia-network/bridger) [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger?color=red&style=plastic)](https://github.com/darwinia-network/bridger)
   - Client for header relayers and message relayers in Darwinia's bridge network
-- **[smart-app](https://github.com/darwinia-network/smart-app)**
+- **[smart-app](https://github.com/darwinia-network/smart-app)** 🔥🔥🔥 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/smart-app)](https://github.com/darwinia-network/smart-app) [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/smart-app?color=red&style=plastic)](https://github.com/darwinia-network/smart-app)
   - DVM, smart contract, and transfer RING/KTON between Substrate address and Ethereum address
 
 ### Documents
