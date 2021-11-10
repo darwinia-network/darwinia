@@ -26,7 +26,7 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 
 ### Ecosystem
 - **[darwinia-common](https://github.com/darwinia-network/darwinia-common)**
-  - Darwinia bridge core protocol implementation as runtime pallet library
+  - Darwinia bridge core protocol implementation as runtime pallet
   - Pangolin and Pangoro testnet
 - **[darwinia-parachain](https://github.com/darwinia-network/darwinia-parachain)**
   - Darwinia's parachain on Polkadot/Kusama
