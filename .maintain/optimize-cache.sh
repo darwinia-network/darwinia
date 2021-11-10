@@ -3,6 +3,11 @@
 
 set -x
 
+BIN_PATH=$(dirname $(readlink -f $0))
+WORK_PATH=${BIN_PATH}/../
+
+cd ${WORK_PATH}
+
 cargo clean -p pangolin-runtime --release
 cargo clean -p pangoro-runtime --release
 cargo clean -p librocksdb-sys --release
