@@ -8,13 +8,14 @@ WORK_PATH=${BIN_PATH}/../
 
 cd ${WORK_PATH}
 
-cargo clean -p pangolin-runtime --release
-cargo clean -p pangoro-runtime --release
+cargo clean -p crab-runtime --release
+cargo clean -p darwinia-runtime --release
 cargo clean -p librocksdb-sys --release
-cargo clean -p drml-service --release
+cargo clean -p darwinia-service --release
+cargo clean -p darwinia-cli --release
 
 
-rm -rf target/release/wbuild/pangolin-runtime/
-rm -rf target/release/wbuild/pangoro-runtime/
+rm -rf target/release/wbuild/crab-runtime/
+rm -rf target/release/wbuild/darwinia-runtime/
 rm -rf target/srtool
 rm -rf target/subwasm
