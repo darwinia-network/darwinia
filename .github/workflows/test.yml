@@ -1,4 +1,4 @@
-name: Release
+name: Release Test
 on:
   push:
     tags:
@@ -6,11 +6,9 @@ on:
 
 jobs:
 
-
-  complete-build:
+  test-complete-build:
     name: Complete build
     runs-on: ubuntu-latest
-    needs: [build-subwasm, build-image]
     steps:
       - uses: actions/checkout@v2
 
