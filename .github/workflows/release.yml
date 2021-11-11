@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v1*'
 
 jobs:
 
@@ -160,6 +160,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-subwasm, build-image]
     steps:
+      - uses: actions/checkout@v2
+
       - uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
