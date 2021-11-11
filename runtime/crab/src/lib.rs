@@ -696,72 +696,19 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::{pallet_prelude::Blake2_128Concat, traits::PalletInfo, StorageHasher};
-
 		// TODO: Move to S2S
 		// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-		const MODULE: &[u8] = b"Indices";
-		const ITEM: &[u8] = b"Accounts";
-
-		let index = 1 as AccountIndex;
-
-		if let Some((v0, v1)) =
-			migration::take_storage_item::<AccountIndex, (AccountId, Balance), Blake2_128Concat>(
-				MODULE, ITEM, index,
-			) {
-			let v2 = false;
-
-			migration::put_storage_value(
-				MODULE,
-				ITEM,
-				index.using_encoded(Blake2_128Concat::hash).as_ref(),
-				(v0, v1, v2),
-			);
-
-			log::info!("[MIGRATED] Indices::Accounts");
-		}
-
-		migration::remove_storage_prefix(b"DynamicFee", b"MinGasPrice", &[]);
-
-		log::info!("[MIGRATED] DynamicFeeL::MinGasPrice");
-
-		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
-			pallet_grandpa::migrations::v3_1::migrate::<Runtime, Grandpa, _>(name);
-		}
-
-		RuntimeBlockWeights::get().max_block
+		0
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::traits::PalletInfo;
-
-		assert!(migration::have_storage_value(
-			b"DynamicFee",
-			b"MinGasPrice",
-			&[]
-		));
-
-		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
-			pallet_grandpa::migrations::v3_1::pre_migration::<Runtime, Grandpa, _>(name);
-		}
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		assert!(!migration::have_storage_value(
-			b"DynamicFee",
-			b"MinGasPrice",
-			&[]
-		));
-
-		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
-
 		Ok(())
 	}
 }
