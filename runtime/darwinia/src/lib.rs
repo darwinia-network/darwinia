@@ -595,35 +595,19 @@ sp_api::impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::traits::PalletInfo;
-
 		// TODO: Move to S2S
 		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
-		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
-			pallet_grandpa::migrations::v3_1::migrate::<Runtime, Grandpa, _>(name)
-		} else {
-			0
-		}
+		0
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::traits::PalletInfo;
-
-		if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<Grandpa>() {
-			pallet_grandpa::migrations::v3_1::pre_migration::<Runtime, Grandpa, _>(name);
-		}
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		pallet_grandpa::migrations::v3_1::post_migration::<Grandpa>();
-
 		Ok(())
 	}
 }
