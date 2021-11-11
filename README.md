@@ -17,11 +17,21 @@
 
 </div>
 
-Implementation of a https://darwinia.network node in **Rust** based on the **Substrate** framework.
+## Introduction
+Implementation of a **https://darwinia.network** node in **Rust** based on the **Substrate** framework.
 
 This repository contains runtimes for the **[Darwinia](https://darwinia.network)** and **[Crab](https://crab.network)** networks.
 
 ## Resources
+
+### Ecosystem
+|                                    Project                                     |                                          Introduction                                           |                                                                       Code                                                                       |                                                                                         Activity                                                                                         |
+| :----------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|     [Darwinia Common](https://github.com/darwinia-network/darwinia-common)     | Darwinia bridge core protocol implementation as runtime pallet and Pangolin and Pangoro testnet |     [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-common)](https://github.com/darwinia-network/darwinia-common)     |     [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-common?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-common)     |
+|  [Darwinia Parachain](https://github.com/darwinia-network/darwinia-parachain)  |                             Darwinia's parachain on Polkadot/Kusama                             |  [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-parachain)](https://github.com/darwinia-network/darwinia-parachain)  |  [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-parachain?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-parachain)  |
+| [Darwinia Bridge Sol](https://github.com/darwinia-network/darwinia-bridge-sol) |                            Darwinia bridge solidity smart contracts                             | [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-bridge-sol)](https://github.com/darwinia-network/darwinia-bridge-sol) | [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-bridge-sol?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-bridge-sol) |
+|             [Bridger](https://github.com/darwinia-network/bridger)             |          Client for header relayers and message relayers in Darwinia's bridge network           |             [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger)](https://github.com/darwinia-network/bridger)             |             [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger?color=red&style=plastic)](https://github.com/darwinia-network/bridger)             |
+|           [Smart App](https://github.com/darwinia-network/smart-app)           |   DVM, smart contract, and transfer RING/KTON between Substrate address and Ethereum address    |           [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/smart-app)](https://github.com/darwinia-network/smart-app)           |           [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/smart-app?color=red&style=plastic)](https://github.com/darwinia-network/smart-app)           |
 
 ### Documents
 - [Darwinia Network Docs](https://docs.darwinia.network)
@@ -38,15 +48,17 @@ This repository contains runtimes for the **[Darwinia](https://darwinia.network)
 - Using the docker image on **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
 - Building from source follow this **[guide](#build-from-source)**.
 
-## Building from Source
-> Make sure that you have the dependencies. Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
+## Building
+> Make sure that you have all the required dependencies.
+>
+> Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
 
 ### Installing via Cargo
 ```sh
 cargo install --git https://github.com/darwinia-network/darwinia --tag <version> --locked
 ```
 
-### Building via Source
+### Building from Source
 ```sh
 # with github-cli
 gh repo clone darwinia-network/darwinia
