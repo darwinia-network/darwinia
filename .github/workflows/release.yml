@@ -119,12 +119,12 @@ jobs:
           name: darwinia-artifact
           path: shared
 
-#      - name: Docker login
-#        uses: docker/login-action@v1
-#        with:
-#          username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
-#          password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
-#          registry: quay.io
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
+          password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
+          registry: quay.io
 
       - uses: olegtarasov/get-tag@v2.1
         id: tag-name
@@ -152,8 +152,8 @@ jobs:
           docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
           docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
 
-#          docker push ${IMAGE_PUSH_NAME_TAG}
-#          docker push ${IMAGE_PUSH_NAME_SHA}
+          docker push ${IMAGE_PUSH_NAME_TAG}
+          docker push ${IMAGE_PUSH_NAME_SHA}
 
   complete-build:
     name: Complete build
