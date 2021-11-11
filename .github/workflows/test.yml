@@ -31,6 +31,7 @@ jobs:
               image_tag: $image_tag,
               image_sha: $image_sha
             }' )
+          mkdir -p shared
           echo "$JSON" > shared/template_data.json
 
       - name: Render release page
