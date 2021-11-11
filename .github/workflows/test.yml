@@ -33,6 +33,10 @@ jobs:
             }' )
           mkdir -p shared
           echo "$JSON" > shared/template_data.json
+          mkdir -p deploy
+          cp shared/template_data.json deploy/
+          tar -zcvf shared.tgz shared
+          mv shared.tgz deploy/
 
       - name: Render release page
         uses: jayamanikharyono/jinja-action@v0.1
