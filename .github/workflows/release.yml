@@ -239,3 +239,13 @@ jobs:
           artifacts: "deploy/*"
           bodyFile: ".maintain/release-template.md"
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  clean-artifacts:
+    name: Clean artifacts
+    needs: [complete-build]
+    if: always()
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: darwinia-artifact
+    runs-on: ubuntu-latest
