@@ -53,8 +53,7 @@ jobs:
           path: shared
 
       - name: Optimize cache
-        # todo: set executable permissions for optimize-cache.sh
-        run: sh -f .maintain/optimize-cache.sh
+        run: .maintain/optimize-cache.sh
 
   build-subwasm:
     name: Generate subwasm info
