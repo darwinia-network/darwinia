@@ -77,7 +77,7 @@ jobs:
         run: |
           curl -L https://github.com/chevdor/subwasm/releases/download/v${SUBWASM_VERSION}/subwasm_linux_amd64_v${SUBWASM_VERSION}.deb \
             --output subwasm.deb && \
-            dpkg -i subwasm.deb && \
+            sudo dpkg -i subwasm.deb && \
             subwasm --version
 
       - name: Generate subwasm info for ${{ matrix.runtime }}
