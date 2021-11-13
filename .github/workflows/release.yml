@@ -85,11 +85,11 @@ jobs:
           WASM=shared/${{ matrix.runtime }}/*.compact.wasm
           Z_WASM=shared/${{ matrix.runtime }}/*.compact.compressed.wasm
 
-          INFO_WASM=$(subwasm -j info $WASM)
-          INFO_Z_WASM=$(subwasm -j info $Z_WASM)
+          echo '${{ matrix.runtime }} compact subwasm info'
+          subwasm -j info $WASM | tee shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.json
 
-          echo "$INFO_WASM" > shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.json
-          echo "$INFO_Z_WASM" > shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.json
+          echo '${{ matrix.runtime }} compressed compact subwasm info'
+          subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.json
 
       - name: Upload shared
         uses: actions/upload-artifact@v2
@@ -156,19 +156,19 @@ jobs:
       - name: Prepare deploy folder
         run: |
           mkdir deploy
-          tar cf darwinia.tar.zst -C shared darwinia -I pzstd
-          mv darwinia.tar.zst deploy/
+          tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
+          mv darwinia-x86_64-linux-gnu.tar.zst deploy/
 
           mv shared/crab-runtime/*.compact.wasm deploy/
           mv shared/crab-runtime/*.compact.json deploy/
           mv shared/darwinia-runtime/*.compact.wasm deploy/
           mv shared/darwinia-runtime/*.compact.json deploy/
 
-# not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-#          mv shared/crab-runtime/*.compact.compressed.wasm deploy/
-#          mv shared/crab-runtime/*.compact.compressed.json deploy/
-#          mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
-#          mv shared/darwinia-runtime/*.compact.compressed.json deploy/
+          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+          # mv shared/crab-runtime/*.compact.compressed.wasm deploy/
+          # mv shared/crab-runtime/*.compact.compressed.json deploy/
+          # mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
+          # mv shared/darwinia-runtime/*.compact.compressed.json deploy/
 
       - name: Hash file
         run: |
@@ -195,16 +195,21 @@ jobs:
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
+          echo 'Template data:'
           jq -n \
             --arg crab_proposal_compact "$PROPOSAL_CRAB_COMPACT" \
             --arg darwinia_proposal_compact "$PROPOSAL_DARWINIA_COMPACT" \
             --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
             --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
+            --arg tag "$GIT_TAG_NAME" \
+            --arg sha "$SHA" \
             '{
               crab_proposal_compact: $crab_proposal_compact,
               darwinia_proposal_compact: $darwinia_proposal_compact,
               image_tag: $image_tag,
-              image_sha: $image_sha
+              image_sha: $image_sha,
+              tag: $tag,
+              sha: $sha
             }' | tee shared/template_data.json
 
       - name: Render release page

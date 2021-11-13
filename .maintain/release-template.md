@@ -18,13 +18,13 @@ Darwinia
 #### Docker
 
 ```docker
-docker pull quay.io/darwinia-network/darwinia:{{ image_tag }}
+docker pull {{ image_tag }}
 ```
 
 or
 
 ```docker
-docker pull quay.io/darwinia-network/darwinia:{{ image_sha }}
+docker pull {{ image_sha }}
 ```
 
 ### Changes
@@ -34,8 +34,8 @@ docker pull quay.io/darwinia-network/darwinia:{{ image_sha }}
 
 ### Proposal
 
-| Network  | Proposal Hash |
-| :------: | :------------: |
-| Darwinia |      {{ darwinia_proposal_compact }}      |
-|   Crab   |      {{ crab_proposal_compact }}      |
+| Network  | Proposal Hash                   |
+| :------- | :------------------------------ |
+| Darwinia | {{ darwinia_proposal_compact }} |
+| Crab     | {{ crab_proposal_compact }}     |
 
