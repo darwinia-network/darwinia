@@ -31,6 +31,7 @@ jobs:
 
       - name: Deploy rust docs
         run: |
+          # rename directory is required, more documents please search use keyword `vercel` in notion
           mv vercel.json target/doc
           mv target/doc target/${GITHUB_REPOSITORY#*/}
           cd target/${GITHUB_REPOSITORY#*/}
