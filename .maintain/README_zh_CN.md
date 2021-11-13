@@ -49,7 +49,7 @@ Darwinia 直接采用 subwasm 来进行 runtime wasm proposal hash 计算, 采�
 
 ### 验证
 
-如果想要自行验证 wasm hash, 可以通过 polkadot 钱包在上传 wasm 后会得到一个 proposal hash, 然后与 CI 发布的进行对比.
+如果想要自行验证 wasm hash, 可以通过 Polkadot 钱包在上传 wasm 后会得到一个 proposal hash, 然后与 CI 发布的进行对比.
 
 
 ### srtool

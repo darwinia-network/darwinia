@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 
-set -x
+set -xe
 
 BIN_PATH=$(dirname $(readlink -f $0))
 WORK_PATH=${BIN_PATH}/../
@@ -17,5 +17,3 @@ cargo clean -p darwinia-cli --release
 
 rm -rf target/release/wbuild/crab-runtime/
 rm -rf target/release/wbuild/darwinia-runtime/
-rm -rf target/srtool
-rm -rf target/subwasm

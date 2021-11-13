@@ -53,25 +53,16 @@ jobs:
           path: shared
 
       - name: Optimize cache
-        run: .maintain/optimize-cache.sh
+        run: .maintain/optimize-cache.sh || exit 0
 
   build-subwasm:
     name: Generate subwasm info
     runs-on: ubuntu-latest
-    container:
-      # Currently, Same with srtool version v0.9.18
-      # https://github.com/paritytech/srtool/blob/v0.9.18/Dockerfile#L1
-      image: ubuntu:20.04
     needs: [build-package]
     strategy:
       matrix:
         runtime: [crab-runtime, darwinia-runtime]
     steps:
-      - name: Install dependencies
-        run: |
-          apt update -y
-          apt install --no-install-recommends -y \
-            git curl ca-certificates
 
       - uses: actions/download-artifact@v2
         with:
@@ -133,11 +124,7 @@ jobs:
           length: 7
 
       - name: Build and publish docker image
-        env:
-          SHA: ${{ env.SHA }}
         run: |
-          chmod +x shared/darwinia
-
           IMAGE_NAME=darwinia
           IMAGE_PREFIX=quay.io/darwinia-network
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
@@ -168,29 +155,24 @@ jobs:
 
       - name: Prepare deploy folder
         run: |
-          chmod +x shared/darwinia
-
           mkdir deploy
-          cd shared
-          tar cf darwinia.tar.zst darwinia -I pzstd
-          mv darwinia.tar.zst ../deploy/
+          tar cf darwinia.tar.zst -C shared darwinia -I pzstd
+          mv darwinia.tar.zst deploy/
 
-          mv crab-runtime/*.compact.wasm ../deploy/
-          mv crab-runtime/*.compact.json ../deploy/
-          mv darwinia-runtime/*.compact.wasm ../deploy/
-          mv darwinia-runtime/*.compact.json ../deploy/
+          mv shared/crab-runtime/*.compact.wasm deploy/
+          mv shared/crab-runtime/*.compact.json deploy/
+          mv shared/darwinia-runtime/*.compact.wasm deploy/
+          mv shared/darwinia-runtime/*.compact.json deploy/
 
-## not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-#          mv crab-runtime/*.compact.compressed.wasm ../deploy/
-#          mv crab-runtime/*.compact.compressed.json ../deploy/
-#          mv darwinia-runtime/*.compact.compressed.wasm ../deploy/
-#          mv darwinia-runtime/*.compact.compressed.json ../deploy/
+# not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+#          mv shared/crab-runtime/*.compact.compressed.wasm deploy/
+#          mv shared/crab-runtime/*.compact.compressed.json deploy/
+#          mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
+#          mv shared/darwinia-runtime/*.compact.compressed.json deploy/
 
       - name: Hash file
         run: |
-          cd deploy
-          md5sum * > ../md5sums.txt
-          mv ../md5sums.txt ./
+          (cd deploy && sha256sum * | tee sha256sums.txt)
 
       - uses: olegtarasov/get-tag@v2.1
         id: tag-name
@@ -204,7 +186,7 @@ jobs:
           PROPOSAL_CRAB_COMPACT=$(cat deploy/crab-runtime.compact.json | jq -r .proposal_hash)
           PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia-runtime.compact.json | jq -r .proposal_hash)
 
-          # # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
           # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
           # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
 
@@ -213,7 +195,7 @@ jobs:
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
-          JSON=$( jq -n \
+          jq -n \
             --arg crab_proposal_compact "$PROPOSAL_CRAB_COMPACT" \
             --arg darwinia_proposal_compact "$PROPOSAL_DARWINIA_COMPACT" \
             --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
@@ -223,8 +205,7 @@ jobs:
               darwinia_proposal_compact: $darwinia_proposal_compact,
               image_tag: $image_tag,
               image_sha: $image_sha
-            }' )
-          echo "$JSON" > shared/template_data.json
+            }' | tee shared/template_data.json
 
       - name: Render release page
         uses: jayamanikharyono/jinja-action@v0.1
@@ -233,18 +214,19 @@ jobs:
           path: .maintain/release-template.md
 
       - name: Publish github release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v1
         with:
-          artifacts: "deploy/*"
-          bodyFile: ".maintain/release-template.md"
+          files: |
+            deploy/*
+          body_path: ".maintain/release-template.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
   clean-artifacts:
     name: Clean artifacts
     needs: [complete-build]
+    runs-on: ubuntu-latest
     if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: darwinia-artifact
-    runs-on: ubuntu-latest

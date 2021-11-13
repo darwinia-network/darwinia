@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install vercel
+      - name: Install vercel-cli
         run: npm i -g vercel
 
       - name: Build rust docs
