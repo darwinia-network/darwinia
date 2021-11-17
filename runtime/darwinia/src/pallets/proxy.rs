@@ -35,6 +35,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Timestamp(..) |
 				// Specifically omitting the entire Balances pallet
 				Call::Authorship(..) |
+				Call::Democracy(..) |
 				Call::Staking(..) |
 				Call::Session(..) |
 				Call::Grandpa(..) |
@@ -47,7 +48,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::KtonTreasury(..) |
 				Call::Tips(..) |
 				Call::Bounties(..) |
-				Call::Democracy(..) |
 				Call::Utility(..) |
 				Call::Identity(..) |
 				Call::Society(..) |
