@@ -245,13 +245,13 @@ frame_support::construct_runtime! {
 		Authorship: pallet_authorship::{Pallet, Call, Storage} = 7,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 38,
 		Staking: darwinia_staking::{Pallet, Call, Storage, Config<T>, Event<T>} = 8,
-		Offences: pallet_offences::{Pallet, Call, Storage, Event} = 9,
+		Offences: pallet_offences::{Pallet, Storage, Event} = 9,
 		Historical: pallet_session_historical::{Pallet} = 10,
 		Session: pallet_session::{Pallet, Call, Storage, Config<T>, Event} = 11,
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 13,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Call, Config} = 15,
-		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Call, Storage} = 35,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 15,
+		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
 		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
@@ -409,8 +409,10 @@ sp_api::impl_runtime_apis! {
 	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
 		fn validate_transaction(
 			source: TransactionSource,
-			tx: <Block as BlockT>::Extrinsic) -> TransactionValidity {
-			Executive::validate_transaction(source, tx)
+			tx: <Block as BlockT>::Extrinsic,
+			block_hash: <Block as BlockT>::Hash,
+		) -> TransactionValidity {
+			Executive::validate_transaction(source, tx, block_hash)
 		}
 	}
 
@@ -598,7 +600,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// TODO: Move to S2S
 		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
-		0
+		darwinia_staking::migration::migrate(b"Staking");
+
+		// 0
+		RuntimeBlockWeights::get().max_block
 	}
 
 	#[cfg(feature = "try-runtime")]

@@ -41,11 +41,9 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Authorship(..) |
 				Call::Democracy(..) |
 				Call::Staking(..) |
-				Call::Offences(..) |
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
-				Call::AuthorityDiscovery(..) |
 				Call::Council(..) |
 				Call::TechnicalCommittee(..) |
 				Call::PhragmenElection(..) |
@@ -66,8 +64,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
-				Call::Multisig(..) |
-				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
+				Call::Multisig(..) // Specifically omitting the entire CrabIssuing pallet
 			),
 			ProxyType::Governance => matches!(
 				c,

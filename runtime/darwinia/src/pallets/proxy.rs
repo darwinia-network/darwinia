@@ -35,12 +35,11 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Timestamp(..) |
 				// Specifically omitting the entire Balances pallet
 				Call::Authorship(..) |
+				Call::Democracy(..) |
 				Call::Staking(..) |
-				Call::Offences(..) |
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
-				Call::AuthorityDiscovery(..) |
 				Call::Council(..) |
 				Call::TechnicalCommittee(..) |
 				Call::PhragmenElection(..) |
@@ -49,7 +48,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::KtonTreasury(..) |
 				Call::Tips(..) |
 				Call::Bounties(..) |
-				Call::Democracy(..) |
 				Call::Utility(..) |
 				Call::Identity(..) |
 				Call::Society(..) |
@@ -67,9 +65,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Multisig(..) |
 				// Specifically omitting the entire CrabBacking pallet
 				// Specifically omitting the entire EthereumBacking pallet
-				Call::EthereumRelay(..) |
-				// Specifically omitting the entire TronBacking pallet
-				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
+				Call::EthereumRelay(..) // Specifically omitting the entire TronBacking pallet
+				                        // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
