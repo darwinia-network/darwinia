@@ -701,7 +701,7 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// TODO: Move to S2S
 		// const CrabIssuingPalletId: PalletId = PalletId(*b"da/crais");
 
-		darwinia_staking::migration::migrate("Staking");
+		darwinia_staking::migration::migrate(b"Staking");
 
 		// 0
 		RuntimeBlockWeights::get().max_block
