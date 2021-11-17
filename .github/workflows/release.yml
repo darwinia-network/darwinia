@@ -5,80 +5,109 @@ on:
       - 'v*'
 
 jobs:
-  build-binary:
-    name: Build binary
+
+  build-package:
+    name: Build package
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:16.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y \
+            git curl ca-certificates \
+            make gcc g++ clang-4.0
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2021-04-22
+          target: wasm32-unknown-unknown
+          default: true
+
+      - name: Cache target
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-target
 
       - name: Build darwinia
-        env:
-          RUST_TOOLCHAIN: nightly-2021-04-22
         run: |
-          .maintain/setup-darwinia.sh
+          cargo build --release --target x86_64-unknown-linux-gnu
 
-      - name: Upload deploy
+      - name: Collect shared
+        run: |
+          mkdir -p shared/crab-runtime
+          mkdir -p shared/darwinia-runtime
+          mv target/x86_64-unknown-linux-gnu/release/darwinia shared/
+          mv target/x86_64-unknown-linux-gnu/release/wbuild/crab-runtime/*.wasm shared/crab-runtime
+          mv target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/*.wasm shared/darwinia-runtime
+
+      - name: Upload shared
         uses: actions/upload-artifact@v2
         with:
           name: darwinia-artifact
-          path: deploy
+          path: shared
 
-      - name: Build rust docs
-        run: cargo doc --all --no-deps --release
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - name: Install vercel
-        run: npm i -g vercel
-      - name: Deploy rust docs
-        run: |
-          mv vercel.json target/doc
-          mv target/doc target/${GITHUB_REPOSITORY#*/}
-          cd target/${GITHUB_REPOSITORY#*/}
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --scope itering link --confirm
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --scope itering deploy --prod
+      - name: Optimize cache
+        run: .maintain/optimize-cache.sh || exit 0
 
-      - uses: 8398a7/action-slack@v3
-        if: failure()
-        with:
-          status: ${{ job.status }}
-          fields: repo,author,eventName,workflow,ref,commit
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
-
-
-  build-wasm:
-    name: Build wasm
+  build-subwasm:
+    name: Generate subwasm info
     runs-on: ubuntu-latest
+    needs: [build-package]
+    strategy:
+      matrix:
+        runtime: [crab-runtime, darwinia-runtime]
     steps:
-      - uses: actions/checkout@v2
-      - name: Build wasm
-        env:
-          RUST_TOOLCHAIN: nightly-2021-04-22
-        run: |
-          .maintain/setup-wasm.sh
 
-      - name: Upload deploy
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - name: Install subwasm
+        env:
+          # Currently, Same with srtool version v0.9.18
+          # https://github.com/paritytech/srtool/blob/v0.9.18/Dockerfile#L19
+          SUBWASM_VERSION: 0.15.0
+        run: |
+          curl -L https://github.com/chevdor/subwasm/releases/download/v${SUBWASM_VERSION}/subwasm_linux_amd64_v${SUBWASM_VERSION}.deb \
+            --output subwasm.deb && \
+            sudo dpkg -i subwasm.deb && \
+            subwasm --version
+
+      - name: Generate subwasm info for ${{ matrix.runtime }}
+        run: |
+          WASM=shared/${{ matrix.runtime }}/*.compact.wasm
+          Z_WASM=shared/${{ matrix.runtime }}/*.compact.compressed.wasm
+
+          echo '${{ matrix.runtime }} compact subwasm info'
+          subwasm -j info $WASM | tee shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.json
+
+          echo '${{ matrix.runtime }} compressed compact subwasm info'
+          subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.json
+
+      - name: Upload shared
         uses: actions/upload-artifact@v2
         with:
           name: darwinia-artifact
-          path: deploy
-
-      - uses: 8398a7/action-slack@v3
-        if: failure()
-        with:
-          status: ${{ job.status }}
-          fields: repo,author,eventName,workflow,ref,commit
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
-
+          path: shared
 
   build-image:
     name: Build image
     runs-on: ubuntu-latest
-    needs: [build-binary]
+    needs: [build-package]
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
 
       - name: Docker login
         uses: docker/login-action@v1
@@ -87,59 +116,122 @@ jobs:
           password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
           registry: quay.io
 
-      - name: Download deploy
-        uses: actions/download-artifact@v2
+      - uses: olegtarasov/get-tag@v2.1
+        id: tag-name
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
         with:
-          name: darwinia-artifact
-          path: deploy
+          length: 7
 
-      - name: Setup image
-        env:
-          REGISTRY_HOST: quay.io
+      - name: Build and publish docker image
         run: |
-          .maintain/setup-image.sh
+          IMAGE_NAME=darwinia
+          IMAGE_PREFIX=quay.io/darwinia-network
+          IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
+          IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
-      - uses: 8398a7/action-slack@v3
-        if: failure()
-        with:
-          status: ${{ job.status }}
-          fields: repo,author,eventName,workflow,ref,commit
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+          docker build \
+            -t ${IMAGE_NAME} \
+            -f .maintain/docker/Dockerfile \
+            .
 
+          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
+          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
+
+          docker push ${IMAGE_PUSH_NAME_TAG}
+          docker push ${IMAGE_PUSH_NAME_SHA}
 
   complete-build:
     name: Complete build
     runs-on: ubuntu-latest
-    needs: [build-image, build-wasm]
+    needs: [build-subwasm, build-image]
     steps:
       - uses: actions/checkout@v2
 
       - uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
-          path: deploy
+          path: shared
 
-      - name: Complete build
-        run: .maintain/complete-build.sh
+      - name: Prepare deploy folder
+        run: |
+          mkdir deploy
+          tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
+          mv darwinia-x86_64-linux-gnu.tar.zst deploy/
+
+          mv shared/crab-runtime/*.compact.wasm deploy/
+          mv shared/crab-runtime/*.compact.json deploy/
+          mv shared/darwinia-runtime/*.compact.wasm deploy/
+          mv shared/darwinia-runtime/*.compact.json deploy/
+
+          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+          # mv shared/crab-runtime/*.compact.compressed.wasm deploy/
+          # mv shared/crab-runtime/*.compact.compressed.json deploy/
+          # mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
+          # mv shared/darwinia-runtime/*.compact.compressed.json deploy/
+
+      - name: Hash file
+        run: |
+          (cd deploy && sha256sum * | tee sha256sums.txt)
+
+      - uses: olegtarasov/get-tag@v2.1
+        id: tag-name
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 7
+
+      - name: Generate template data
+        run: |
+          PROPOSAL_CRAB_COMPACT=$(cat deploy/crab-runtime.compact.json | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia-runtime.compact.json | jq -r .proposal_hash)
+
+          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
+          # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
+          # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
+
+          IMAGE_NAME=darwinia
+          IMAGE_PREFIX=quay.io/darwinia-network
+          IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
+          IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
+
+          echo 'Template data:'
+          jq -n \
+            --arg crab_proposal_compact "$PROPOSAL_CRAB_COMPACT" \
+            --arg darwinia_proposal_compact "$PROPOSAL_DARWINIA_COMPACT" \
+            --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
+            --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
+            --arg tag "$GIT_TAG_NAME" \
+            --arg sha "$SHA" \
+            '{
+              crab_proposal_compact: $crab_proposal_compact,
+              darwinia_proposal_compact: $darwinia_proposal_compact,
+              image_tag: $image_tag,
+              image_sha: $image_sha,
+              tag: $tag,
+              sha: $sha
+            }' | tee shared/template_data.json
+
+      - name: Render release page
+        uses: jayamanikharyono/jinja-action@v0.1
+        with:
+          datafile: shared/template_data.json
+          path: .maintain/release-template.md
 
       - name: Publish github release
-        uses: docker://antonyurchenko/git-release:latest
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRAFT_RELEASE: "false"
-          PRE_RELEASE: "false"
-          CHANGELOG_FILE: "CHANGELOG.md"
-          ALLOW_EMPTY_CHANGELOG: "false"
+        uses: softprops/action-gh-release@v1
         with:
-          args: |
-            deploy/bin/*
+          files: |
+            deploy/*
+          body_path: ".maintain/release-template.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: 8398a7/action-slack@v3
-        if: failure()
+  clean-artifacts:
+    name: Clean artifacts
+    runs-on: ubuntu-latest
+    needs: [complete-build]
+    if: always()
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
         with:
-          status: ${{ job.status }}
-          fields: repo,author,eventName,workflow,ref,commit
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+          name: darwinia-artifact
