@@ -45,7 +45,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
-				Call::AuthorityDiscovery(..) |
 				Call::Council(..) |
 				Call::TechnicalCommittee(..) |
 				Call::PhragmenElection(..) |
@@ -54,6 +53,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::KtonTreasury(..) |
 				Call::Tips(..) |
 				Call::Bounties(..) |
+				Call::Democracy(..) |
 				Call::Claims(..) |
 				Call::Utility(..) |
 				Call::Identity(..) |
@@ -66,8 +66,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
 				Call::Scheduler(..) |
 				Call::Proxy(..) |
-				Call::Multisig(..) |
-				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire CrabIssuing pallet
+				Call::Multisig(..) // Specifically omitting the entire CrabIssuing pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
@@ -76,6 +75,7 @@ impl InstanceFilter<Call> for ProxyType {
 					| Call::PhragmenElection(..)
 					| Call::Treasury(..) | Call::KtonTreasury(..)
 					| Call::Tips(..) | Call::Bounties(..)
+					| Call::Democracy(..)
 					| Call::Utility(..)
 			),
 			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),

@@ -40,7 +40,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
-				Call::AuthorityDiscovery(..) |
 				Call::Council(..) |
 				Call::TechnicalCommittee(..) |
 				Call::PhragmenElection(..) |
@@ -67,9 +66,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Multisig(..) |
 				// Specifically omitting the entire CrabBacking pallet
 				// Specifically omitting the entire EthereumBacking pallet
-				Call::EthereumRelay(..) |
-				// Specifically omitting the entire TronBacking pallet
-				Call::DarwiniaHeaderMMR(..) // Specifically omitting the entire EthereumRelayAuthorities pallet
+				Call::EthereumRelay(..) // Specifically omitting the entire TronBacking pallet
+				                        // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
 			ProxyType::Governance => matches!(
 				c,
