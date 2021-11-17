@@ -11,12 +11,12 @@ version     = "0.11.5"
 
 [dependencies]
 # crates.io
-codec             = { package = "parity-scale-codec", version = "2.1.1", default-features = false, features = ["derive"] }
-log               = { version = "0.4.14" }
-serde             = { version = "1.0.126", optional = true }
-serde_json        = { version = "1.0.64", optional = true }
-smallvec          = { version = "1.6.1" }
-static_assertions = { version = "1.1.0" }
+codec             = { package = "parity-scale-codec", version = "2.1", default-features = false, features = ["derive"] }
+log               = { version = "0.4" }
+serde             = { version = "1.0", optional = true }
+serde_json        = { version = "1.0", optional = true }
+smallvec          = { version = "1.6" }
+static_assertions = { version = "1.1" }
 # darwinia-network frame
 darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }

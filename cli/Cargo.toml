@@ -14,8 +14,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # crates.io
-log       = { version = "0.4.14" }
-structopt = { version = "0.3.21", optional = true }
+log       = { version = "0.4" }
+structopt = { version = "0.3", optional = true }
 # darwinia-network service
 service = { package = "darwinia-service", default-features = false, path = "../node/service" }
 # paritytech client

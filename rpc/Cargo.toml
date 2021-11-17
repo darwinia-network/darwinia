@@ -10,9 +10,9 @@ version     = "0.11.5"
 
 [dependencies]
 # crates.io
-code           = { package = "parity-scale-codec", version = "2.1.1", default-features = false }
-jsonrpc-core   = { version = "15.1.0" }
-jsonrpc-pubsub = { version = "15.1.0" }
+code           = { package = "parity-scale-codec", version = "2.1", default-features = false }
+jsonrpc-core   = { version = "15.1" }
+jsonrpc-pubsub = { version = "15.1" }
 # darwinia-network frame
 darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
 darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.5" }
