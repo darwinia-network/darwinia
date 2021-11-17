@@ -36,7 +36,6 @@ impl InstanceFilter<Call> for ProxyType {
 				// Specifically omitting the entire Balances pallet
 				Call::Authorship(..) |
 				Call::Staking(..) |
-				Call::Offences(..) |
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |

@@ -41,7 +41,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Authorship(..) |
 				Call::Democracy(..) |
 				Call::Staking(..) |
-				Call::Offences(..) |
 				Call::Session(..) |
 				Call::Grandpa(..) |
 				Call::ImOnline(..) |
