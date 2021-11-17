@@ -1,5 +1,5 @@
 // --- paritytech ---
-use pallet_election_provider_multi_phase::Config;
+use pallet_election_provider_multi_phase::{Config, FallbackStrategy};
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia-network ---
 use crate::{weights::pallet_election_provider_multi_phase::WeightInfo, *};
@@ -18,9 +18,14 @@ frame_support::parameter_types! {
 	pub const SignedPhase: u32 = 0;
 	pub const UnsignedPhase: u32 = BLOCKS_PER_SESSION / 4;
 
-	// fallback: run election on-chain.
-	pub const Fallback: pallet_election_provider_multi_phase::FallbackStrategy =
-		pallet_election_provider_multi_phase::FallbackStrategy::OnChain;
+	// signed config
+	pub const SignedMaxSubmissions: u32 = 10;
+	pub const SignedRewardBase: Balance = 1 * MILLI;
+	pub const SignedDepositBase: Balance = 1 * MILLI;
+	pub const SignedDepositByte: Balance = 1 * MICRO;
+
+	// fallback: no on-chain fallback.
+	pub const Fallback: FallbackStrategy = FallbackStrategy::Nothing;
 
 	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
 
@@ -41,6 +46,14 @@ impl Config for Runtime {
 	type MinerMaxLength = OffchainSolutionLengthLimit; // For now use the one from staking.
 	type OffchainRepeat = OffchainRepeat;
 	type MinerTxPriority = NposSolutionPriority;
+	type SignedMaxSubmissions = SignedMaxSubmissions;
+	type SignedRewardBase = SignedRewardBase;
+	type SignedDepositBase = SignedDepositBase;
+	type SignedDepositByte = SignedDepositByte;
+	type SignedDepositWeight = ();
+	type SignedMaxWeight = Self::MinerMaxWeight;
+	type SlashHandler = (); // burn slashes
+	type RewardHandler = (); // nothing to do upon rewards
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
 	type CompactSolution = NposCompactSolution24;
