@@ -475,7 +475,8 @@ where
 			backoff_authoring_blocks,
 			babe_link,
 			can_author_with,
-			block_proposal_slot_portion: SlotProportion::new(0.5),
+			block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
+			max_block_proposal_slot_portion: None,
 			telemetry: telemetry.as_ref().map(|x| x.handle()),
 		};
 		let babe = sc_consensus_babe::start_babe(babe_config)?;
