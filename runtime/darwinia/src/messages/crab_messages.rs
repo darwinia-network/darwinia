@@ -77,7 +77,7 @@ pub type FromCrabEncodedCall = FromBridgedChainEncodedMessageCall<Call>;
 // 	FromBridgedChainMessagesDeliveryProof<pangolin_primitives::Hash>;
 // /// Call-dispatch based message dispatch for Crab -> Darwinia messages.
 // pub type FromCrabMessageDispatch =
-// 	FromBridgedChainMessageDispatch<WithCrabMessageBridge, Runtime, Ring, WithCrabDispatch>;
+// 	FromBridgedChainMessageDispatch<WithCrabMessageBridge, Runtime, Ring, S2sBridgeDispatch>;
 
 // /// Initial value of `CrabToDarwiniaConversionRate` parameter.
 // pub const INITIAL_CRAB_TO_DARWINIA_CONVERSION_RATE: FixedU128 =
