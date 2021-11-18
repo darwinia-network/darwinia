@@ -16,7 +16,7 @@ impl Contains<Call> for S2sCallFilter {
 		// 	c,
 		// 	Call::Substrate2SubstrateBacking(to_substrate_backing::Call::unlock_from_remote(..))
 		// )
-		todo!()
+		false
 	}
 }
 
