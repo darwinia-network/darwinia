@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Darwinia types shared between the runtime and the Node-side code.
+//! Darwinia types shared between the runtime and the node-side code.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]

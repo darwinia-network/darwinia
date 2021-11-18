@@ -33,6 +33,7 @@ runtime-benchmarks = ["darwinia-cli/runtime-benchmarks"]
 [workspace]
 members = [
 	"cli",
+	"primitives/bridge",
 	"primitives/common",
 	"rpc",
 	"runtime/common",

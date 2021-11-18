@@ -600,6 +600,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-message-dispatch"
+version = "0.1.0"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?tag=darwinia-v0.11.6-1#786106c3b6d0a1303d45b0fa475a911afc9174cb"
+dependencies = [
+ "bp-runtime",
+ "frame-support",
+ "parity-scale-codec",
+ "sp-std",
+]
+
+[[package]]
 name = "bp-messages"
 version = "0.1.0"
 source = "git+https://github.com/darwinia-network/parity-bridges-common?tag=darwinia-v0.11.6-1#786106c3b6d0a1303d45b0fa475a911afc9174cb"
@@ -629,6 +640,15 @@ dependencies = [
  "sp-state-machine",
  "sp-std",
  "sp-trie",
+]
+
+[[package]]
+name = "bridge-primitives"
+version = "0.11.6"
+dependencies = [
+ "common-primitives",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -1680,6 +1700,8 @@ dependencies = [
 name = "darwinia-runtime"
 version = "0.11.6"
 dependencies = [
+ "bp-messages",
+ "bridge-primitives",
  "common-primitives",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
@@ -1710,6 +1732,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-babe",
  "pallet-bounties",
+ "pallet-bridge-dispatch",
  "pallet-collective",
  "pallet-election-provider-multi-phase",
  "pallet-grandpa",
@@ -5250,6 +5273,22 @@ dependencies = [
  "frame-system",
  "pallet-treasury",
  "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-bridge-dispatch"
+version = "0.1.0"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?tag=darwinia-v0.11.6-1#786106c3b6d0a1303d45b0fa475a911afc9174cb"
+dependencies = [
+ "bp-message-dispatch",
+ "bp-runtime",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]
@@ -9796,7 +9835,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
  "cfg-if 1.0.0",
- "rand 0.8.4",
+ "rand 0.3.23",
  "static_assertions",
 ]
 
