@@ -35,7 +35,7 @@ darwinia-vesting                    = { default-features = false, git = "https:/
 to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
 to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
 # darwinia-network primitives
-common-primitives = { default-features = false, path = "../../primitives" }
+common-primitives   = { default-features = false, path = "../../primitives/common" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
 # darwinia-network runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
