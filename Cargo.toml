@@ -2,10 +2,10 @@
 authors     = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node implementation in Rust"
 edition     = "2018"
-homepage    = "https://darwinia.network/"
+homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia"
-repository  = "https://github.com/darwinia-network/darwinia/"
+repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.11.5"
 
 [[bin]]
