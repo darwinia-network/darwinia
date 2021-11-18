@@ -42,7 +42,9 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
+	"runtime/crab/src/constants",
 	"runtime/darwinia",
+	"runtime/darwinia/src/constants",
 	"node/service",
 ]
 

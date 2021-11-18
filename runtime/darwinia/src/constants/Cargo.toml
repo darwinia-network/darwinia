@@ -1,0 +1,11 @@
+[package]
+authors    = ["Darwinia Network <hello@darwinia.network>"]
+edition    = "2018"
+homepage   = "https://darwinia.network"
+license    = "GPL-3.0"
+name       = "darwinia-constants"
+readme     = "README.md"
+repository = "https://github.com/darwinia-network/darwinia"
+version    = "0.11.6"
+
+[dependencies]

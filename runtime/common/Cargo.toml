@@ -17,7 +17,7 @@ darwinia-balances = { default-features = false, git = "https://github.com/darwin
 darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
 darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
 # darwinia-network primitives
-darwinia-primitives = { default-features = false, path = "../../primitives" }
+common-primitives = { default-features = false, path = "../../primitives" }
 # paritytech frame
 frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
@@ -43,7 +43,7 @@ std = [
 	"darwinia-staking/std",
 	"darwinia-support/std",
 	# darwinia-network primitives
-	"darwinia-primitives/std",
+	"common-primitives/std",
 	# paritytech frame
 	"frame-support/std",
 	"frame-system/std",

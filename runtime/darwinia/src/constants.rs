@@ -21,7 +21,7 @@
 /// Money matters.
 pub mod currency {
 	// --- darwinia-network ---
-	use darwinia_primitives::{Balance, Power};
+	use common_primitives::{Balance, Power};
 
 	pub const NANO: Balance = 1;
 	pub const MICRO: Balance = 1_000 * NANO;
@@ -41,7 +41,7 @@ pub mod time {
 	// --- paritytech ---
 	use sp_staking::SessionIndex;
 	// --- darwinia-network ---
-	use darwinia_primitives::{BlockNumber, Moment};
+	use common_primitives::{BlockNumber, Moment};
 
 	#[cfg(not(feature = "dev"))]
 	pub const MILLISECS_PER_BLOCK: Moment = 6000;
@@ -78,7 +78,7 @@ pub mod fee {
 	use sp_runtime::Perbill;
 	// --- darwinia-network ---
 	use super::currency::*;
-	use darwinia_primitives::Balance;
+	use common_primitives::Balance;
 	use darwinia_runtime_common::ExtrinsicBaseWeight;
 
 	/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the

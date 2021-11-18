@@ -85,7 +85,7 @@ use sc_service::{
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia-network ---
-use darwinia_primitives::OpaqueBlock as Block;
+use common_primitives::OpaqueBlock as Block;
 
 type FullBackend = TFullBackend<Block>;
 type FullSelectChain = LongestChain<FullBackend, Block>;

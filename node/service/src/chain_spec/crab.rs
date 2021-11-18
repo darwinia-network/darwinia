@@ -30,8 +30,8 @@ use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
+use common_primitives::{AccountId, Balance};
 use crab_runtime::{constants::currency::COIN, *};
-use darwinia_primitives::{AccountId, Balance};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;

@@ -881,6 +881,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "common-primitives"
+version = "0.11.6"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -952,10 +964,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crab-constants"
+version = "0.11.6"
+
+[[package]]
 name = "crab-runtime"
 version = "0.11.6"
 dependencies = [
  "array-bytes",
+ "common-primitives",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
@@ -966,7 +983,6 @@ dependencies = [
  "darwinia-evm-precompile-transfer",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
- "darwinia-primitives",
  "darwinia-runtime-common",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
@@ -1443,6 +1459,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-constants"
+version = "0.11.6"
+
+[[package]]
 name = "darwinia-democracy"
 version = "2.6.10"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-1#e44e99fb5e82c017c03205f7b28ced29488d4c82"
@@ -1588,18 +1608,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-primitives"
-version = "0.11.6"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "sp-application-crypto",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "darwinia-relay-authorities"
 version = "2.6.10"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-1#e44e99fb5e82c017c03205f7b28ced29488d4c82"
@@ -1644,10 +1652,10 @@ dependencies = [
 name = "darwinia-rpc"
 version = "0.11.6"
 dependencies = [
+ "common-primitives",
  "crab-runtime",
  "darwinia-balances-rpc",
  "darwinia-header-mmr-rpc",
- "darwinia-primitives",
  "darwinia-staking-rpc",
  "dc-db",
  "dc-rpc",
@@ -1683,6 +1691,7 @@ dependencies = [
 name = "darwinia-runtime"
 version = "0.11.6"
 dependencies = [
+ "common-primitives",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-bridge-ethereum",
@@ -1690,7 +1699,6 @@ dependencies = [
  "darwinia-elections-phragmen",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
- "darwinia-primitives",
  "darwinia-relay-authorities",
  "darwinia-relay-primitives",
  "darwinia-relayer-game",
@@ -1762,8 +1770,8 @@ dependencies = [
 name = "darwinia-runtime-common"
 version = "0.11.6"
 dependencies = [
+ "common-primitives",
  "darwinia-balances",
- "darwinia-primitives",
  "darwinia-staking",
  "darwinia-support",
  "frame-support",
@@ -1783,11 +1791,11 @@ name = "darwinia-service"
 version = "0.11.6"
 dependencies = [
  "array-bytes",
+ "common-primitives",
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-evm",
  "darwinia-header-mmr-rpc-runtime-api",
- "darwinia-primitives",
  "darwinia-rpc",
  "darwinia-runtime",
  "darwinia-staking-rpc-runtime-api",
