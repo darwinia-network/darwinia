@@ -108,3 +108,6 @@ pub use relay_authorities::*;
 
 pub mod tron_backing;
 pub use tron_backing::*;
+
+pub mod bridge_dispatch;
+pub use bridge_dispatch::*;
