@@ -22,10 +22,6 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-/// Constant values used within the runtime.
-pub mod constants;
-pub use constants::{currency::*, fee::*, relay::*, time::*};
-
 pub mod pallets;
 pub use pallets::*;
 
@@ -115,6 +111,8 @@ pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
+pub use common_primitives::*;
+
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
@@ -148,7 +146,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
-use common_primitives::*;
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_runtime_common::*;

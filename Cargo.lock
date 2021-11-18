@@ -884,10 +884,7 @@ dependencies = [
 name = "common-primitives"
 version = "0.11.6"
 dependencies = [
- "frame-support",
- "frame-system",
  "parity-scale-codec",
- "sp-application-crypto",
  "sp-core",
  "sp-runtime",
 ]
@@ -962,10 +959,6 @@ checksum = "95059428f66df56b63431fdb4e1947ed2190586af5c5a8a8b71122bdf5a7f469"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "crab-constants"
-version = "0.11.6"
 
 [[package]]
 name = "crab-runtime"
@@ -1457,10 +1450,6 @@ dependencies = [
  "substrate-build-script-utils",
  "try-runtime-cli",
 ]
-
-[[package]]
-name = "darwinia-constants"
-version = "0.11.6"
 
 [[package]]
 name = "darwinia-democracy"

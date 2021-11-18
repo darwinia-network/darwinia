@@ -16,7 +16,7 @@ sp_npos_elections::generate_solution_type!(
 frame_support::parameter_types! {
 	// no signed phase for now, just unsigned.
 	pub const SignedPhase: u32 = 0;
-	pub const UnsignedPhase: u32 = BLOCKS_PER_SESSION / 4;
+	pub const UnsignedPhase: u32 = CRAB_BLOCKS_PER_SESSION / 4;
 
 	// signed config
 	pub const SignedMaxSubmissions: u32 = 10;

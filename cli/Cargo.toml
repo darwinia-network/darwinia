@@ -59,8 +59,6 @@ trie-memory-tracker = ["sp-trie/memory-tracker"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
-dev = ["service/dev"]
-
 runtime-benchmarks = [
 	# darwinia-network
 	"service/runtime-benchmarks",

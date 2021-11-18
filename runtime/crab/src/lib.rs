@@ -22,10 +22,6 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-/// Constant values used within the runtime.
-pub mod constants;
-pub use constants::{currency::*, fee::*, time::*};
-
 pub mod pallets;
 pub use pallets::*;
 
@@ -70,6 +66,8 @@ pub mod wasm {
 }
 pub use wasm::*;
 
+pub use common_primitives::*;
+
 /// Weights for pallets used in the runtime.
 mod weights;
 
@@ -102,7 +100,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
-use common_primitives::*;
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;

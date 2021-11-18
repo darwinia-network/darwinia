@@ -26,11 +26,6 @@ darwinia-service = { path = "node/service" }
 [features]
 default = ["darwinia-cli/wasmtime"]
 
-dev = [
-	"darwinia-service/dev",
-	"darwinia-cli/dev",
-]
-
 try-runtime = ["darwinia-cli/try-runtime"]
 
 runtime-benchmarks = ["darwinia-cli/runtime-benchmarks"]
@@ -42,9 +37,7 @@ members = [
 	"rpc",
 	"runtime/common",
 	"runtime/crab",
-	"runtime/crab/src/constants",
 	"runtime/darwinia",
-	"runtime/darwinia/src/constants",
 	"node/service",
 ]
 
