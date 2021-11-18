@@ -41,8 +41,10 @@ ethereum-primitives = { default-features = false, git = "https://github.com/darw
 # darwinia-network runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # paritytech bridge frame
-bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-1" }
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-1" }
+# paritytech bridge primitives
+bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-1" }
+bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-1" }
 # paritytech frame
 frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
@@ -130,8 +132,10 @@ std = [
 	# darwinia-network runtime
 	"darwinia-runtime-common/std",
 	# paritytech bridge
-	"bp-messages/std",
 	"pallet-bridge-dispatch/std",
+	# paritytech bridge primitives
+	"bp-messages/std",
+	"bridge-runtime-common/std",
 	# paritytech frame
 	"frame-executive/std",
 	"frame-support/std",

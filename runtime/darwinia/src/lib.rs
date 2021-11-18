@@ -103,6 +103,9 @@ pub mod wasm {
 }
 pub use wasm::*;
 
+pub mod messages;
+pub use messages::*;
+
 /// Weights for pallets used in the runtime.
 mod weights;
 
@@ -298,6 +301,9 @@ frame_support::construct_runtime! {
 
 		// Tron bridge.
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
+
+		// S2S bridge.
+		BridgeDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
 	}
 }
 
