@@ -953,7 +953,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "array-bytes",
  "darwinia-balances",
@@ -1331,7 +1331,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "darwinia-cli",
  "darwinia-service",
@@ -1426,7 +1426,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "darwinia-service",
  "frame-benchmarking-cli",
@@ -1589,7 +1589,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-primitives"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1642,7 +1642,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "crab-runtime",
  "darwinia-balances-rpc",
@@ -1681,7 +1681,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
@@ -1760,7 +1760,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime-common"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "darwinia-balances",
  "darwinia-primitives",
@@ -1780,7 +1780,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-service"
-version = "0.11.5"
+version = "0.11.6"
 dependencies = [
  "array-bytes",
  "crab-runtime",
