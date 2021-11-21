@@ -26,10 +26,6 @@ use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128, MultiSignature, Mult
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
 // --- darwinia-network ---
 use crate::*;
-use bridge_primitives::{
-	DarwiniaFromThisChainMessageVerifier, CRAB_CHAIN_ID, DARWINIA_CHAIN_ID, DARWINIA_CRAB_LANE,
-	WITH_CRAB_MESSAGES_PALLET_NAME,
-};
 use dp_s2s::{CallParams, CreatePayload};
 
 /// The s2s backing pallet index in the darwinia chain runtime.
@@ -74,7 +70,7 @@ type FromDarwiniaMessagesProof = FromBridgedChainMessagesProof<Hash>;
 type ToDarwiniaMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<Hash>;
 /// Call-dispatch based message dispatch for Darwinia -> Crab messages.
 pub type FromDarwiniaMessageDispatch =
-	FromBridgedChainMessageDispatch<WithDarwiniaMessageBridge, Runtime, Ring, ()>;
+	FromBridgedChainMessageDispatch<WithDarwiniaMessageBridge, Runtime, Ring, S2sBridgeDispatch>;
 
 /// Initial value of `DarwiniaToCrabConversionRate` parameter.
 pub const INITIAL_DARWINIA_TO_CRAB_CONVERSION_RATE: FixedU128 =
@@ -189,9 +185,8 @@ impl messages::BridgedChainWithMessages for Darwinia {
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(
-			max_extrinsic_weight(),
-		);
+		let upper_limit =
+			messages::target::maximal_incoming_message_dispatch_weight(max_extrinsic_weight());
 
 		// we're charging for payload bytes in `WithDarwiniaMessageBridge::transaction_payment` function
 		//

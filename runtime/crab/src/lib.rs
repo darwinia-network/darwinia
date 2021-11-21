@@ -78,6 +78,7 @@ pub use common_primitives::*;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+use bridge_runtime_common::messages::MessageBridge;
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{
@@ -266,10 +267,10 @@ frame_support::construct_runtime! {
 
 		// S2S bridge.
 		BridgeDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
-		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
-		// BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
+		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
+		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
 
-		// FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 49,
+		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 49,
 	}
 }
 
@@ -531,6 +532,22 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
+	impl darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance> for Runtime {
+		fn market_fee() -> Option<Fee<Balance>> {
+			if let Some(fee) = FeeMarket::market_fee() {
+				return Some(Fee {
+					amount: fee,
+				});
+			}
+			None
+		}
+		fn in_process_orders() -> InProcessOrders {
+			return InProcessOrders {
+				orders: FeeMarket::in_process_orders(),
+			}
+		}
+	}
+
 	impl dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<Runtime as darwinia_evm::Config>::ChainId::get()
@@ -650,6 +667,63 @@ sp_api::impl_runtime_apis! {
 				Call::Ethereum(transact(t)) => Some(t),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
+		}
+	}
+
+	impl bridge_primitives::DarwiniaFinalityApi<Block> for Runtime {
+		fn best_finalized() -> (BlockNumber, Hash) {
+			let header = BridgeDarwiniaGrandpa::best_finalized();
+			(header.number, header.hash())
+		}
+
+		fn is_known_header(hash: Hash) -> bool {
+			BridgeDarwiniaGrandpa::is_known_header(hash)
+		}
+	}
+
+	impl bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_messages::ToDarwiniaMessagePayload> for Runtime {
+		fn estimate_message_delivery_and_dispatch_fee(
+			_lane_id: bp_messages::LaneId,
+			payload: darwinia_messages::ToDarwiniaMessagePayload,
+		) -> Option<Balance> {
+			bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<darwinia_messages::WithDarwiniaMessageBridge>(
+				&payload,
+				darwinia_messages::WithDarwiniaMessageBridge::RELAYER_FEE_PERCENT,
+			).ok()
+		}
+
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::MessageDetails<Balance>> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithDarwiniaMessages,
+				darwinia_messages::WithDarwiniaMessageBridge,
+			>(lane, begin, end)
+		}
+
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeDarwiniaMessages::outbound_latest_received_nonce(lane)
+		}
+
+		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeDarwiniaMessages::outbound_latest_generated_nonce(lane)
+		}
+	}
+
+	impl bridge_primitives::FromDarwiniaInboundLaneApi<Block> for Runtime {
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeDarwiniaMessages::inbound_latest_received_nonce(lane)
+		}
+
+		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeDarwiniaMessages::inbound_latest_confirmed_nonce(lane)
+		}
+
+		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
+			BridgeDarwiniaMessages::inbound_unrewarded_relayers_state(lane)
 		}
 	}
 
