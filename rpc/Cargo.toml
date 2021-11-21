@@ -15,6 +15,7 @@ jsonrpc-core   = { version = "15.1" }
 jsonrpc-pubsub = { version = "15.1" }
 # darwinia-network frame
 darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }

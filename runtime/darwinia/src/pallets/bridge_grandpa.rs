@@ -4,7 +4,6 @@ pub use pallet_bridge_grandpa::Instance1 as WithCrabGrandpa;
 use pallet_bridge_grandpa::{weights::RialtoWeight, Config};
 // --- darwinia-network ---
 use crate::*;
-use bridge_primitives::Crab;
 
 frame_support::parameter_types! {
 	// This is a pretty unscientific cap.

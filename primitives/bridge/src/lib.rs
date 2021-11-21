@@ -356,14 +356,8 @@ sp_api::decl_runtime_apis! {
 	}
 }
 
-// todo: Reserved for other chains, don't forget change bridge_id
-pub fn derive_account_from_crab_id(id: SourceAccount<AccountId>) -> AccountId {
-	let encoded_id = bp_runtime::derive_account_id(CRAB_CHAIN_ID, id);
-
-	AccountIdConverter::convert(encoded_id)
-}
-/// We use this to get the account on Darwinia (target) which is derived from Crab's (source)
-/// account. We do this so we can fund the derived account on Darwinia at Genesis to it can pay
+/// We use this to get the account on Crab (target) which is derived from Darwinia's (source)
+/// account. We do this so we can fund the derived account on Crab at Genesis to it can pay
 /// transaction fees.
 ///
 /// The reason we can use the same `AccountId` type for both chains is because they share the same
@@ -372,6 +366,20 @@ pub fn derive_account_from_crab_id(id: SourceAccount<AccountId>) -> AccountId {
 /// Note that this should only be used for testing.
 pub fn derive_account_from_darwinia_id(id: SourceAccount<AccountId>) -> AccountId {
 	let encoded_id = bp_runtime::derive_account_id(DARWINIA_CHAIN_ID, id);
+
+	AccountIdConverter::convert(encoded_id)
+}
+
+/// We use this to get the account on Darwinia (target) which is derived from Crab's (source)
+/// account. We do this so we can fund the derived account on Darwinia at Genesis to it can pay
+/// transaction fees.
+///
+/// The reason we can use the same `AccountId` type for both chains is because they share the same
+/// development seed phrase.
+///
+/// Note that this should only be used for testing.
+pub fn derive_account_from_crab_id(id: SourceAccount<AccountId>) -> AccountId {
+	let encoded_id = bp_runtime::derive_account_id(CRAB_CHAIN_ID, id);
 
 	AccountIdConverter::convert(encoded_id)
 }

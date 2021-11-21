@@ -6,7 +6,6 @@ use frame_support::traits::Contains;
 use pallet_bridge_dispatch::Config;
 // --- darwinia-network ---
 use crate::*;
-use bridge_primitives::AccountIdConverter;
 use crab_messages::FromCrabEncodedCall;
 
 pub struct S2sCallFilter;

@@ -1652,6 +1652,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-fee-market-rpc"
+version = "2.6.10"
+source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
+dependencies = [
+ "darwinia-fee-market-rpc-runtime-api",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "darwinia-fee-market-rpc-runtime-api"
+version = "2.6.10"
+source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
+dependencies = [
+ "bp-messages",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "darwinia-header-mmr"
 version = "2.6.10"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
@@ -1747,6 +1775,7 @@ dependencies = [
  "common-primitives",
  "crab-runtime",
  "darwinia-balances-rpc",
+ "darwinia-fee-market-rpc",
  "darwinia-header-mmr-rpc",
  "darwinia-staking-rpc",
  "dc-db",
@@ -1795,6 +1824,7 @@ dependencies = [
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-fee-market",
+ "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-relay-authorities",
@@ -1897,6 +1927,7 @@ dependencies = [
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-evm",
+ "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-rpc",
  "darwinia-runtime",

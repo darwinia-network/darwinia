@@ -6,10 +6,6 @@ use bp_runtime::ChainId;
 use pallet_bridge_messages::{weights::RialtoWeight, Config};
 // --- darwinia-network ---
 use crate::*;
-use bridge_primitives::{
-	AccountIdConverter, CRAB_CHAIN_ID, MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
-	MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE, MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
-};
 use darwinia_fee_market::s2s::{FeeMarketMessageAcceptedHandler, FeeMarketPayment};
 use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 use messages::crab_messages::{

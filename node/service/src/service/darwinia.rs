@@ -72,7 +72,7 @@ sc_executor::native_executor_instance!(
 	frame_benchmarking::benchmarking::HostFunctions,
 );
 
-impl_runtime_apis!();
+impl_runtime_apis![darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>];
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(

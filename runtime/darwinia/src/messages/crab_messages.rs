@@ -28,11 +28,6 @@ use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128, MultiSignature, Mult
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
 // --- darwinia-network ---
 use crate::*;
-use bridge_primitives::{
-	DarwiniaFromThisChainMessageVerifier, CRAB_CHAIN_ID, DARWINIA_CHAIN_ID, DARWINIA_CRAB_LANE,
-	WITH_DARWINIA_MESSAGES_PALLET_NAME,
-};
-use common_primitives::*;
 use dp_s2s::{CallParams, CreatePayload};
 
 /// Message payload for Darwinia -> Crab messages.
