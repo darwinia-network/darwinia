@@ -94,6 +94,7 @@ where
 	C::Api: sc_consensus_babe::BabeApi<Block>,
 	C::Api: sp_block_builder::BlockBuilder<Block>,
 	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
+	C::Api: darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>,
 	C::Api: darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>,
 	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	// <--- dvm ---
@@ -115,6 +116,7 @@ where
 	// --- darwinia-network ---
 	use crab_runtime::TransactionConverter;
 	use darwinia_balances_rpc::{Balances, BalancesApi};
+	use darwinia_fee_market_rpc::{FeeMarket, FeeMarketApi};
 	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
 	use darwinia_staking_rpc::{Staking, StakingApi};
 	// <--- dvm ---
@@ -187,6 +189,7 @@ where
 		deny_unsafe,
 	)));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
+	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 

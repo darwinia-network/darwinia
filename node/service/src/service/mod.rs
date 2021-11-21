@@ -34,7 +34,7 @@ macro_rules! impl_runtime_apis {
 			+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
 			+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
 			+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-			$(+ $extra_apis),*
+			$(+ $extra_apis)*
 		where
 			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
 		{
@@ -55,7 +55,7 @@ macro_rules! impl_runtime_apis {
 				+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
 				+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
 				+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
-				$(+ $extra_apis),*,
+				$(+ $extra_apis)*,
 			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
 		{
 		}

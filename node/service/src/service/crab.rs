@@ -81,7 +81,10 @@ sc_executor::native_executor_instance!(
 	frame_benchmarking::benchmarking::HostFunctions,
 );
 
-impl_runtime_apis![dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>];
+impl_runtime_apis![
+	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
+	dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>
+];
 
 // <--- dvm ---
 pub fn dvm_database_dir(config: &Configuration) -> PathBuf {
