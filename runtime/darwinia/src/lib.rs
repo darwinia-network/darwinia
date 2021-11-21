@@ -304,6 +304,10 @@ frame_support::construct_runtime! {
 
 		// S2S bridge.
 		BridgeDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
+		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 43,
+		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 44,
+
+		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 45,
 	}
 }
 

@@ -111,3 +111,12 @@ pub use tron_backing::*;
 
 pub mod bridge_dispatch;
 pub use bridge_dispatch::*;
+
+pub mod bridge_grandpa;
+pub use bridge_grandpa::*;
+
+pub mod bridge_message;
+pub use bridge_message::*;
+
+pub mod fee_market;
+pub use fee_market::*;

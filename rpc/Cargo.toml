@@ -14,14 +14,14 @@ code           = { package = "parity-scale-codec", version = "2.1", default-feat
 jsonrpc-core   = { version = "15.1" }
 jsonrpc-pubsub = { version = "15.1" }
 # darwinia-network frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
+darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 # darwinia-network primitives
 common-primitives = { path = "../primitives/common" }
 crab-runtime      = { path = "../runtime/crab" }

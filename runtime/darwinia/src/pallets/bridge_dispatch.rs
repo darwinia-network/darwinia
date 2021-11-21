@@ -11,7 +11,7 @@ use crab_messages::FromCrabEncodedCall;
 
 pub struct S2sCallFilter;
 impl Contains<Call> for S2sCallFilter {
-	fn contains(c: &Call) -> bool {
+	fn contains(_c: &Call) -> bool {
 		// matches!(
 		// 	c,
 		// 	Call::Substrate2SubstrateBacking(to_substrate_backing::Call::unlock_from_remote(..))
