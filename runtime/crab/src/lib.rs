@@ -66,10 +66,14 @@ pub mod wasm {
 }
 pub use wasm::*;
 
-pub use common_primitives::*;
+pub mod messages;
+pub use messages::*;
 
 /// Weights for pallets used in the runtime.
 mod weights;
+
+pub use bridge_primitives::*;
+pub use common_primitives::*;
 
 // --- crates.io ---
 use codec::{Decode, Encode};
@@ -102,6 +106,7 @@ use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
@@ -258,6 +263,13 @@ frame_support::construct_runtime! {
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+
+		// S2S bridge.
+		BridgeDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
+		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
+		// BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
+
+		// FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 49,
 	}
 }
 
