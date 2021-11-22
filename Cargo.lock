@@ -1069,7 +1069,6 @@ dependencies = [
  "darwinia-support",
  "darwinia-vesting",
  "dp-evm",
- "dp-s2s",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
@@ -1846,7 +1845,6 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "darwinia-vesting",
- "dp-s2s",
  "ethereum-primitives",
  "frame-benchmarking",
  "frame-executive",
@@ -2266,17 +2264,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
-name = "dp-asset"
-version = "2.6.10"
-source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
-dependencies = [
- "ethereum-primitives",
- "parity-scale-codec",
- "sha3 0.9.1",
- "sp-std",
-]
-
-[[package]]
 name = "dp-consensus"
 version = "2.6.10"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
@@ -2287,18 +2274,6 @@ dependencies = [
  "sha3 0.9.1",
  "sp-core",
  "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "dp-contract"
-version = "2.6.10"
-source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
-dependencies = [
- "dp-asset",
- "ethabi",
- "ethereum-primitives",
- "ethereum-types",
  "sp-std",
 ]
 
@@ -2340,22 +2315,6 @@ dependencies = [
  "rustc-hex",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "dp-s2s"
-version = "2.6.10"
-source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-2#47ed0c7af8b7958933572d4aae842da8d2fb6e0e"
-dependencies = [
- "array-bytes",
- "bp-message-dispatch",
- "bp-runtime",
- "dp-asset",
- "dp-contract",
- "parity-scale-codec",
- "sp-core",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

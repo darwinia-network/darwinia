@@ -21,13 +21,12 @@
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{
 	source_chain::TargetHeaderChain,
 	target_chain::{ProvedMessages, SourceHeaderChain},
 	InboundLaneData, LaneId, Message, MessageNonce, Parameter as MessagesParameter,
 };
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::ChainId;
 use bridge_runtime_common::messages::{
 	self,
 	source::{self, FromBridgedChainMessagesDeliveryProof, FromThisChainMessagePayload},
@@ -42,40 +41,40 @@ use frame_support::{
 	RuntimeDebug,
 };
 use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
-use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128, MultiSignature, MultiSigner};
+use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
 // --- darwinia-network ---
 use crate::*;
-use dp_s2s::{CallParams, CreatePayload};
+// use dp_s2s::{CallParams, CreatePayload};
 
 /// Message payload for Darwinia -> Crab messages.
 pub type ToCrabMessagePayload = FromThisChainMessagePayload<WithCrabMessageBridge>;
-/// The s2s issuing pallet index in the crab chain runtime
-pub const CRAB_S2S_ISSUING_PALLET_INDEX: u8 = 49;
 
-#[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
-pub struct ToCrabOutboundPayload;
+// /// The s2s issuing pallet index in the crab chain runtime
+// pub const CRAB_S2S_ISSUING_PALLET_INDEX: u8 = 49;
 
-impl CreatePayload<AccountId, MultiSigner, MultiSignature> for ToCrabOutboundPayload {
-	type Payload = ToCrabMessagePayload;
+// #[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+// pub struct ToCrabOutboundPayload;
+// impl CreatePayload<AccountId, MultiSigner, MultiSignature> for ToCrabOutboundPayload {
+// 	type Payload = ToCrabMessagePayload;
 
-	fn create(
-		origin: CallOrigin<AccountId, MultiSigner, MultiSignature>,
-		spec_version: u32,
-		weight: u64,
-		call_params: CallParams,
-		dispatch_fee_payment: DispatchFeePayment,
-	) -> Result<Self::Payload, &'static str> {
-		let call = Self::encode_call(CRAB_S2S_ISSUING_PALLET_INDEX, call_params)?;
-		return Ok(ToCrabMessagePayload {
-			spec_version,
-			weight,
-			origin,
-			call,
-			dispatch_fee_payment,
-		});
-	}
-}
+// 	fn create(
+// 		origin: CallOrigin<AccountId, MultiSigner, MultiSignature>,
+// 		spec_version: u32,
+// 		weight: u64,
+// 		call_params: CallParams,
+// 		dispatch_fee_payment: DispatchFeePayment,
+// 	) -> Result<Self::Payload, &'static str> {
+// 		let call = Self::encode_call(CRAB_S2S_ISSUING_PALLET_INDEX, call_params)?;
+// 		return Ok(ToCrabMessagePayload {
+// 			spec_version,
+// 			weight,
+// 			origin,
+// 			call,
+// 			dispatch_fee_payment,
+// 		});
+// 	}
+// }
 
 /// Message verifier for Darwinia -> Crab messages.
 pub type ToCrabMessageVerifier<R> = DarwiniaFromThisChainMessageVerifier<WithCrabMessageBridge, R>;

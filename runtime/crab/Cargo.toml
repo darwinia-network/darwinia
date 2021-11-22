@@ -49,7 +49,7 @@ common-primitives = { default-features = false, path = "../../primitives/common"
 # <--- dvm ---
 dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 # --- dvm --->
-dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
+# dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-2" }
 # darwinia-network runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
@@ -159,7 +159,7 @@ std = [
 	# <--- dvm ---
 	"dp-evm/std",
 	# --- dvm --->
-	"dp-s2s/std",
+	# "dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime
 	"darwinia-runtime-common/std",
