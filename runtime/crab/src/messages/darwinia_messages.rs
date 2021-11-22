@@ -86,7 +86,7 @@ type FromDarwiniaMessagesProof = FromBridgedChainMessagesProof<Hash>;
 type ToDarwiniaMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<Hash>;
 /// Call-dispatch based message dispatch for Darwinia -> Crab messages.
 pub type FromDarwiniaMessageDispatch =
-	FromBridgedChainMessageDispatch<WithDarwiniaMessageBridge, Runtime, Ring, S2sBridgeDispatch>;
+	FromBridgedChainMessageDispatch<WithDarwiniaMessageBridge, Runtime, Ring, WithDarwiniaDispatch>;
 
 /// Initial value of `DarwiniaToCrabConversionRate` parameter.
 pub const INITIAL_DARWINIA_TO_CRAB_CONVERSION_RATE: FixedU128 =

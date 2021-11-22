@@ -305,7 +305,7 @@ frame_support::construct_runtime! {
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
 
 		// S2S bridge.
-		BridgeDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
+		BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
 		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 

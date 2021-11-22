@@ -1,4 +1,4 @@
-pub use pallet_bridge_dispatch::Instance1 as S2sBridgeDispatch;
+pub use pallet_bridge_dispatch::Instance1 as WithDarwiniaDispatch;
 
 // --- paritytech ---
 use bp_messages::{LaneId, MessageNonce};
@@ -19,7 +19,7 @@ impl Contains<Call> for S2sCallFilter {
 	}
 }
 
-impl Config<S2sBridgeDispatch> for Runtime {
+impl Config<WithDarwiniaDispatch> for Runtime {
 	type Event = Event;
 	type BridgeMessageId = (LaneId, MessageNonce);
 	type Call = Call;
