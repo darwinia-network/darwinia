@@ -19,13 +19,12 @@
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{
 	source_chain::TargetHeaderChain,
 	target_chain::{ProvedMessages, SourceHeaderChain},
 	InboundLaneData, LaneId, Message, MessageNonce, Parameter as MessagesParameter,
 };
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::ChainId;
 use bridge_runtime_common::messages::{
 	self,
 	source::{self, FromBridgedChainMessagesDeliveryProof, FromThisChainMessagePayload},
@@ -40,7 +39,7 @@ use frame_support::{
 	RuntimeDebug,
 };
 use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
-use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128, MultiSignature, MultiSigner};
+use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
 // --- darwinia-network ---
 use crate::*;

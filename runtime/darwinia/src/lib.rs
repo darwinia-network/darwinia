@@ -120,7 +120,6 @@ pub use common_primitives::*;
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
-use bridge_runtime_common::messages::MessageBridge;
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{

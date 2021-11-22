@@ -28,7 +28,7 @@ use bp_messages::{
 	source_chain::{LaneMessageVerifier, Sender},
 	LaneId, MessageDetails, MessageNonce, OutboundLaneData, UnrewardedRelayersState,
 };
-use bp_runtime::{Chain, ChainId, SourceAccount};
+use bp_runtime::{Chain, ChainId};
 use bridge_runtime_common::messages::{
 	source::{
 		FromThisChainMessagePayload, BAD_ORIGIN, OUTBOUND_LANE_DISABLED, TOO_LOW_FEE,
