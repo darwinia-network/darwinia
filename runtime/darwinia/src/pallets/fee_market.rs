@@ -42,6 +42,7 @@ impl Config for Runtime {
 	type WeightInfo = ();
 }
 
+/// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;
 impl<T: Config> Slasher<T> for FeeMarketSlasher {
 	fn slash(locked_collateral: RingBalance<T>, timeout: T::BlockNumber) -> RingBalance<T> {
