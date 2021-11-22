@@ -63,7 +63,7 @@ pub const MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE: MessageNonce = 128;
 /// Maximal number of unconfirmed messages at inbound lane.
 pub const MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE: MessageNonce = 128;
 
-pub const DARWINIA_CRAB_LANE: [u8; 4] = *b"daca";
+pub const DARWINIA_CRAB_LANE: LaneId = [0; 4];
 
 // === Crab const define
 /// Bridge-with-Crab instance id.
