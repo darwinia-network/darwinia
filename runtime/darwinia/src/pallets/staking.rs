@@ -12,7 +12,7 @@ use darwinia_staking::{Config, EraIndex};
 #[cfg(feature = "dev")]
 frame_support::parameter_types! {
 	pub const BondingDurationInEra: BlockNumber = 2;
-	pub const BondingDurationInBlockNumber: BlockNumber = 2 * CRAB_SESSIONS_PER_ERA * CRAB_BLOCKS_PER_SESSION;
+	pub const BondingDurationInBlockNumber: BlockNumber = 2 * DARWINIA_SESSIONS_PER_ERA * DARWINIA_BLOCKS_PER_SESSION;
 	pub const SlashDeferDuration: EraIndex = 1;
 }
 #[cfg(not(feature = "dev"))]
