@@ -10,12 +10,12 @@ use darwinia_messages::FromDarwiniaEncodedCall;
 
 pub struct S2sCallFilter;
 impl Contains<Call> for S2sCallFilter {
-	fn contains(_c: &Call) -> bool {
-		// matches!(
-		// 	c,
-		// 	Call::Substrate2SubstrateBacking(to_substrate_backing::Call::unlock_from_remote(..))
-		// )
-		false
+	fn contains(c: &Call) -> bool {
+		matches!(
+			c,
+			// Call::Substrate2SubstrateBacking(to_substrate_backing::Call::unlock_from_remote(..))
+			Call::System(frame_system::Call::remark(_))
+		)
 	}
 }
 
