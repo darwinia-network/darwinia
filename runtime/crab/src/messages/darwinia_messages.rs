@@ -130,7 +130,7 @@ impl messages::ThisChainWithMessages for Crab {
 	type Call = Call;
 
 	fn is_outbound_lane_enabled(lane: &LaneId) -> bool {
-		*lane == [0, 0, 0, 0] || *lane == [0, 0, 0, 1] || *lane == DARWINIA_CRAB_LANE
+		*lane == DARWINIA_CRAB_LANE
 	}
 
 	fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
