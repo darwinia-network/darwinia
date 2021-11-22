@@ -3,7 +3,7 @@ pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 // --- paritytech ---
 use bp_messages::MessageNonce;
 use bp_runtime::ChainId;
-use pallet_bridge_messages::{weights::RialtoWeight, Config};
+use pallet_bridge_messages::Config;
 // --- darwinia-network ---
 use crate::{
 	messages::crab_messages::{
@@ -32,8 +32,7 @@ frame_support::parameter_types! {
 
 impl Config<WithCrabMessages> for Runtime {
 	type Event = Event;
-	// FIXME
-	type WeightInfo = RialtoWeight<Runtime>;
+	type WeightInfo = ();
 	type Parameter = DarwiniaToCrabMessagesParameter;
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
