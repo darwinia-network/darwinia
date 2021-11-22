@@ -209,13 +209,13 @@ impl Chain for Crab {
 ///   dispatch origin;
 /// - check that the sender has paid enough funds for both message delivery and dispatch.
 #[derive(RuntimeDebug)]
-pub struct DarwiniaFromThisChainMessageVerifier<B, R>(PhantomData<(B, R)>);
+pub struct FromThisChainMessageVerifier<B, R>(PhantomData<(B, R)>);
 impl<B, R>
 	LaneMessageVerifier<
 		AccountIdOf<ThisChain<B>>,
 		FromThisChainMessagePayload<B>,
 		BalanceOf<ThisChain<B>>,
-	> for DarwiniaFromThisChainMessageVerifier<B, R>
+	> for FromThisChainMessageVerifier<B, R>
 where
 	B: MessageBridge,
 	R: darwinia_fee_market::Config,
