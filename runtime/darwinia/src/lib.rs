@@ -700,27 +700,3 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		Ok(())
 	}
 }
-
-/// Crab account ownership digest from Darwinia.
-///
-/// The byte vector returned by this function should be signed with a Crab account private key.
-/// This way, the owner of `darwinia_account_id` on Darwinia proves that the Crab account private key
-/// is also under his control.
-pub fn darwinia_to_crab_account_ownership_digest<Call, AccountId, SpecVersion>(
-	crab_call: &Call,
-	darwinia_account_id: AccountId,
-	crab_spec_version: SpecVersion,
-) -> sp_std::vec::Vec<u8>
-where
-	Call: Encode,
-	AccountId: Encode,
-	SpecVersion: Encode,
-{
-	pallet_bridge_dispatch::account_ownership_digest(
-		crab_call,
-		darwinia_account_id,
-		crab_spec_version,
-		DARWINIA_CHAIN_ID,
-		CRAB_CHAIN_ID,
-	)
-}
