@@ -11,7 +11,9 @@ use crate::{
 	},
 	*,
 };
-use darwinia_fee_market::s2s::{FeeMarketMessageAcceptedHandler, FeeMarketPayment};
+use darwinia_fee_market::s2s::{
+	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
+};
 use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 
 frame_support::parameter_types! {
@@ -56,22 +58,9 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	>;
 
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = ToDo;
-	// type OnDeliveryConfirmed = (
-	// 	Substrate2SubstrateIssuing,
-	// 	FeeMarketMessageConfirmedHandler<Self>,
-	// );
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self>;
 
 	type SourceHeaderChain = Darwinia;
 	type MessageDispatch = FromDarwiniaMessageDispatch;
 	type BridgedChainId = BridgedChainId;
-}
-
-use bp_messages::{source_chain::OnDeliveryConfirmed, DeliveredMessages, LaneId};
-
-pub struct ToDo;
-impl OnDeliveryConfirmed for ToDo {
-	fn on_messages_delivered(_lane: &LaneId, _messages: &DeliveredMessages) -> Weight {
-		0
-	}
 }

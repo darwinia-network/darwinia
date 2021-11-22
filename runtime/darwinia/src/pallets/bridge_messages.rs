@@ -5,13 +5,17 @@ use bp_messages::MessageNonce;
 use bp_runtime::ChainId;
 use pallet_bridge_messages::{weights::RialtoWeight, Config};
 // --- darwinia-network ---
-use crate::*;
-use darwinia_fee_market::s2s::{FeeMarketMessageAcceptedHandler, FeeMarketPayment};
-use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
-use messages::crab_messages::{
-	Crab, DarwiniaToCrabMessagesParameter, FromCrabMessageDispatch, FromCrabMessagePayload,
-	ToCrabMessagePayload, ToCrabMessageVerifier,
+use crate::{
+	messages::crab_messages::{
+		Crab, DarwiniaToCrabMessagesParameter, FromCrabMessageDispatch, FromCrabMessagePayload,
+		ToCrabMessagePayload, ToCrabMessageVerifier,
+	},
+	*,
 };
+use darwinia_fee_market::s2s::{
+	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
+};
+use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
@@ -55,22 +59,9 @@ impl Config<WithCrabMessages> for Runtime {
 	>;
 
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = ToDo;
-	// type OnDeliveryConfirmed = (
-	// 	Substrate2SubstrateBacking,
-	// 	FeeMarketMessageConfirmedHandler<Self>,
-	// );
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self>;
 
 	type SourceHeaderChain = Crab;
 	type MessageDispatch = FromCrabMessageDispatch;
 	type BridgedChainId = BridgedChainId;
-}
-
-use bp_messages::{source_chain::OnDeliveryConfirmed, DeliveredMessages, LaneId};
-
-pub struct ToDo;
-impl OnDeliveryConfirmed for ToDo {
-	fn on_messages_delivered(_lane: &LaneId, _messages: &DeliveredMessages) -> Weight {
-		0
-	}
 }
