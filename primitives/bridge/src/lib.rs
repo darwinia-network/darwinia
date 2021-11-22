@@ -108,9 +108,9 @@ pub const FROM_CRAB_LATEST_CONFIRMED_NONCE_METHOD: &str =
 pub const FROM_CRAB_UNREWARDED_RELAYERS_STATE: &str =
 	"FromCrabInboundLaneApi_unrewarded_relayers_state";
 
-/// Name of the `ToCrabOutboundLaneApi::estimate_message_delivery_and_dispatch_fee` runtime method.
-pub const TO_CRAB_ESTIMATE_MESSAGE_FEE_METHOD: &str =
-	"ToCrabOutboundLaneApi_estimate_message_delivery_and_dispatch_fee";
+// /// Name of the `ToCrabOutboundLaneApi::estimate_message_delivery_and_dispatch_fee` runtime method.
+// pub const TO_CRAB_ESTIMATE_MESSAGE_FEE_METHOD: &str =
+// 	"ToCrabOutboundLaneApi_estimate_message_delivery_and_dispatch_fee";
 /// Name of the `ToCrabOutboundLaneApi::message_details` runtime method.
 pub const TO_CRAB_MESSAGE_DETAILS_METHOD: &str = "ToCrabOutboundLaneApi_message_details";
 /// Name of the `ToCrabOutboundLaneApi::latest_generated_nonce` runtime method.
@@ -141,9 +141,9 @@ pub const FROM_DARWINIA_LATEST_CONFIRMED_NONCE_METHOD: &str =
 pub const FROM_DARWINIA_UNREWARDED_RELAYERS_STATE: &str =
 	"FromDarwiniaInboundLaneApi_unrewarded_relayers_state";
 
-/// Name of the `ToDarwiniaOutboundLaneApi::estimate_message_delivery_and_dispatch_fee` runtime method.
-pub const TO_DARWINIA_ESTIMATE_MESSAGE_FEE_METHOD: &str =
-	"ToDarwiniaOutboundLaneApi_estimate_message_delivery_and_dispatch_fee";
+// /// Name of the `ToDarwiniaOutboundLaneApi::estimate_message_delivery_and_dispatch_fee` runtime method.
+// pub const TO_DARWINIA_ESTIMATE_MESSAGE_FEE_METHOD: &str =
+// 	"ToDarwiniaOutboundLaneApi_estimate_message_delivery_and_dispatch_fee";
 /// Name of the `ToCrabOutboundLaneApi::message_details` runtime method.
 pub const TO_DARWINIA_MESSAGE_DETAILS_METHOD: &str = "ToDarwiniaOutboundLaneApi_message_details";
 /// Name of the `ToDarwiniaOutboundLaneApi::latest_generated_nonce` runtime method.
@@ -284,19 +284,19 @@ sp_api::decl_runtime_apis! {
 	/// This API is implemented by runtimes that are sending messages to Crab chain, not the
 	/// Crab runtime itself.
 	pub trait ToCrabOutboundLaneApi<OutboundMessageFee: Parameter, OutboundPayload: Parameter> {
-		/// Estimate message delivery and dispatch fee that needs to be paid by the sender on
-		/// this chain.
-		///
-		/// Returns `None` if message is too expensive to be sent to Crab from this chain.
-		///
-		/// Please keep in mind that this method returns lowest message fee required for message
-		/// to be accepted to the lane. It may be good idea to pay a bit over this price to account
-		/// future exchange rate changes and guarantee that relayer would deliver your message
-		/// to the target chain.
-		fn estimate_message_delivery_and_dispatch_fee(
-			lane_id: LaneId,
-			payload: OutboundPayload,
-		) -> Option<OutboundMessageFee>;
+		// /// Estimate message delivery and dispatch fee that needs to be paid by the sender on
+		// /// this chain.
+		// ///
+		// /// Returns `None` if message is too expensive to be sent to Crab from this chain.
+		// ///
+		// /// Please keep in mind that this method returns lowest message fee required for message
+		// /// to be accepted to the lane. It may be good idea to pay a bit over this price to account
+		// /// future exchange rate changes and guarantee that relayer would deliver your message
+		// /// to the target chain.
+		// fn estimate_message_delivery_and_dispatch_fee(
+		// 	lane_id: LaneId,
+		// 	payload: OutboundPayload,
+		// ) -> Option<OutboundMessageFee>;
 		/// Returns dispatch weight, encoded payload size and delivery+dispatch fee of all
 		/// messages in given inclusive range.
 		///
@@ -340,19 +340,19 @@ sp_api::decl_runtime_apis! {
 	/// This API is implemented by runtimes that are sending messages to Darwinia chain, not the
 	/// Darwinia runtime itself.
 	pub trait ToDarwiniaOutboundLaneApi<OutboundMessageFee: Parameter, OutboundPayload: Parameter> {
-		/// Estimate message delivery and dispatch fee that needs to be paid by the sender on
-		/// this chain.
-		///
-		/// Returns `None` if message is too expensive to be sent to Darwinia from this chain.
-		///
-		/// Please keep in mind that this method returns lowest message fee required for message
-		/// to be accepted to the lane. It may be good idea to pay a bit over this price to account
-		/// future exchange rate changes and guarantee that relayer would deliver your message
-		/// to the target chain.
-		fn estimate_message_delivery_and_dispatch_fee(
-			lane_id: LaneId,
-			payload: OutboundPayload,
-		) -> Option<OutboundMessageFee>;
+		// /// Estimate message delivery and dispatch fee that needs to be paid by the sender on
+		// /// this chain.
+		// ///
+		// /// Returns `None` if message is too expensive to be sent to Darwinia from this chain.
+		// ///
+		// /// Please keep in mind that this method returns lowest message fee required for message
+		// /// to be accepted to the lane. It may be good idea to pay a bit over this price to account
+		// /// future exchange rate changes and guarantee that relayer would deliver your message
+		// /// to the target chain.
+		// fn estimate_message_delivery_and_dispatch_fee(
+		// 	lane_id: LaneId,
+		// 	payload: OutboundPayload,
+		// ) -> Option<OutboundMessageFee>;
 		/// Returns dispatch weight, encoded payload size and delivery+dispatch fee of all
 		/// messages in given inclusive range.
 		///
