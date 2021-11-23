@@ -157,6 +157,7 @@ jobs:
       - name: Prepare deploy folder
         run: |
           mkdir deploy
+          chmod +x shared/darwinia
           tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
 
