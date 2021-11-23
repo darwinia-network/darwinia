@@ -62,6 +62,7 @@ jobs:
     strategy:
       matrix:
         runtime: [crab-runtime, darwinia-runtime]
+      max-parallel: 1
     steps:
 
       - uses: actions/download-artifact@v2
