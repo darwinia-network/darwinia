@@ -130,6 +130,7 @@ jobs:
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
+          chmod +x shared/darwinia
           docker build \
             -t ${IMAGE_NAME} \
             -f .maintain/docker/Dockerfile \
@@ -156,6 +157,7 @@ jobs:
       - name: Prepare deploy folder
         run: |
           mkdir deploy
+          chmod +x shared/darwinia
           tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
 
