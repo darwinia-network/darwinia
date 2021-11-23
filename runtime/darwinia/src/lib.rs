@@ -22,10 +22,6 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-/// Constant values used within the runtime.
-pub mod constants;
-pub use constants::{currency::*, fee::*, relay::*, time::*};
-
 pub mod pallets;
 pub use pallets::*;
 
@@ -107,6 +103,9 @@ pub mod wasm {
 }
 pub use wasm::*;
 
+pub mod messages;
+pub use messages::*;
+
 /// Weights for pallets used in the runtime.
 mod weights;
 
@@ -114,6 +113,18 @@ mod weights;
 pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
+
+pub use bridge_primitives::*;
+pub use common_primitives::*;
+
+pub use frame_system::Call as SystemCall;
+pub use pallet_sudo::Call as SudoCall;
+
+pub use darwinia_balances::Call as BalancesCall;
+pub use darwinia_fee_market::Call as FeeMarketCall;
+
+pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
+pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 
 // --- crates.io ---
 use codec::Encode;
@@ -149,8 +160,8 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
+use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
-use darwinia_primitives::*;
 use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
@@ -204,13 +215,13 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 1150,
+	spec_version: 11_6_0,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
-	transaction_version: 4,
+	transaction_version: 0,
 };
 
 /// Native version.
@@ -301,6 +312,13 @@ frame_support::construct_runtime! {
 
 		// Tron bridge.
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
+
+		// S2S bridge.
+		BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
+		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
+		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
+
+		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 45,
 	}
 }
 
@@ -560,6 +578,80 @@ sp_api::impl_runtime_apis! {
 	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
+		}
+	}
+
+	impl darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance> for Runtime {
+		fn market_fee() -> Option<Fee<Balance>> {
+			if let Some(fee) = FeeMarket::market_fee() {
+				return Some(Fee {
+					amount: fee,
+				});
+			}
+			None
+		}
+
+		fn in_process_orders() -> InProcessOrders {
+			return InProcessOrders {
+				orders: FeeMarket::in_process_orders(),
+			}
+		}
+	}
+
+	impl bridge_primitives::CrabFinalityApi<Block> for Runtime {
+		fn best_finalized() -> (BlockNumber, Hash) {
+			let header = BridgeCrabGrandpa::best_finalized();
+			(header.number, header.hash())
+		}
+
+		fn is_known_header(hash: Hash) -> bool {
+			BridgeCrabGrandpa::is_known_header(hash)
+		}
+	}
+
+	impl bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
+		// fn estimate_message_delivery_and_dispatch_fee(
+		// 	_lane_id: bp_messages::LaneId,
+		// 	payload: crab_messages::ToCrabMessagePayload,
+		// ) -> Option<Balance> {
+		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<crab_messages::WithCrabMessageBridge>(
+		// 		&payload,
+		// 		crab_messages::WithCrabMessageBridge::RELAYER_FEE_PERCENT,
+		// 	).ok()
+		// }
+
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::MessageDetails<Balance>> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithCrabMessages,
+				crab_messages::WithCrabMessageBridge,
+			>(lane, begin, end)
+		}
+
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::outbound_latest_received_nonce(lane)
+		}
+
+		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::outbound_latest_generated_nonce(lane)
+		}
+	}
+
+	impl bridge_primitives::FromCrabInboundLaneApi<Block> for Runtime {
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::inbound_latest_received_nonce(lane)
+		}
+
+		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::inbound_latest_confirmed_nonce(lane)
+		}
+
+		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
+			BridgeCrabMessages::inbound_unrewarded_relayers_state(lane)
 		}
 	}
 

@@ -8,9 +8,9 @@ frame_support::parameter_types! {
 	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
 	pub const CandidacyBond: Balance = 100 * MILLI;
 	// 1 storage item created, key size is 32 bytes, value size is 16+16.
-	pub const VotingBondBase: Balance = deposit(1, 64);
+	pub const VotingBondBase: Balance = darwinia_deposit(1, 64);
 	// additional data per vote is 32 bytes (account id).
-	pub const VotingBondFactor: Balance = deposit(0, 32);
+	pub const VotingBondFactor: Balance = darwinia_deposit(0, 32);
 	/// Daily council elections.
 	pub const TermDuration: BlockNumber = 7 * DAYS;
 	pub const DesiredMembers: u32 = 7;

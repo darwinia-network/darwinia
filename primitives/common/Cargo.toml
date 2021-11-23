@@ -1,0 +1,27 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia node runtime common primitives"
+edition     = "2018"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "common-primitives"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "0.11.6"
+
+[dependencies]
+# crates.io
+codec = { package = "parity-scale-codec", version = "2.1", default-features = false }
+# paritytech primitives
+sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+
+[features]
+default = ["std"]
+
+std = [
+	# crates.io
+	"codec/std",
+	# paritytech primitives
+	"sp-core/std",
+	"sp-runtime/std",
+]

@@ -12,24 +12,24 @@ use darwinia_staking::{Config, EraIndex};
 #[cfg(feature = "dev")]
 frame_support::parameter_types! {
 	pub const BondingDurationInEra: BlockNumber = 2;
-	pub const BondingDurationInBlockNumber: BlockNumber = 2 * SESSIONS_PER_ERA * BLOCKS_PER_SESSION;
+	pub const BondingDurationInBlockNumber: BlockNumber = 2 * DARWINIA_SESSIONS_PER_ERA * DARWINIA_BLOCKS_PER_SESSION;
 	pub const SlashDeferDuration: EraIndex = 1;
 }
 #[cfg(not(feature = "dev"))]
 frame_support::parameter_types! {
 	pub const BondingDurationInEra: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION);
+		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
 	pub const SlashDeferDuration: EraIndex = 14 * DAYS
-		/ (SESSIONS_PER_ERA as BlockNumber * BLOCKS_PER_SESSION) - 1;
+		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION) - 1;
 }
 frame_support::parameter_types! {
 	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
-	pub const SessionsPerEra: SessionIndex = SESSIONS_PER_ERA;
+	pub const SessionsPerEra: SessionIndex = DARWINIA_SESSIONS_PER_ERA;
 	// last 15 minutes of the last session will be for election.
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const Cap: Balance = CAP;
+	pub const Cap: Balance = RING_HARD_CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
 

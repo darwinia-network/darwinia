@@ -40,7 +40,6 @@ pub use darwinia_balances::Instance2 as KtonInstance;
 use static_assertions::const_assert;
 // --- paritytech ---
 use frame_support::{
-	parameter_types,
 	traits::Currency,
 	weights::{constants::WEIGHT_PER_SECOND, DispatchClass, Weight},
 };
@@ -48,7 +47,7 @@ use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
 // --- darwinia-network ---
-use darwinia_primitives::BlockNumber;
+use common_primitives::BlockNumber;
 
 pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<
 	<T as frame_system::Config>::AccountId,
@@ -63,7 +62,8 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
-parameter_types! {
+
+frame_support::parameter_types! {
 	pub const BlockHashCountForCrab: BlockNumber = 256;
 	pub const BlockHashCountForDarwinia: BlockNumber = 2400;
 	/// The portion of the `NORMAL_DISPATCH_RATIO` that we adjust the fees with. Blocks filled less
@@ -100,7 +100,7 @@ parameter_types! {
 		.build_or_panic();
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	/// A limit for off-chain phragmen unsigned solution submission.
 	///
 	/// We want to keep it as high as possible, but can't risk having it reject,
@@ -124,3 +124,14 @@ parameter_types! {
 /// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
 pub type SlowAdjustingFeeUpdate<R> =
 	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+
+pub fn max_extrinsic_weight() -> Weight {
+	RuntimeBlockWeights::get()
+		.get(DispatchClass::Normal)
+		.max_extrinsic
+		.unwrap_or(Weight::MAX)
+}
+
+pub fn max_extrinsic_size() -> u32 {
+	*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
+}

@@ -3,11 +3,11 @@ authors     = ["Darwinia Network <hello@darwinia.network>"]
 build       = "build.rs"
 description = "Darwinia Client Node"
 edition     = "2018"
-homepage    = "https://darwinia.network/"
+homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
-repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.11.5"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "0.11.6"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -58,8 +58,6 @@ full-node = ["service/full-node"]
 trie-memory-tracker = ["sp-trie/memory-tracker"]
 
 wasmtime = ["sc-cli/wasmtime"]
-
-dev = ["service/dev"]
 
 runtime-benchmarks = [
 	# darwinia-network

@@ -168,6 +168,25 @@
 	"RelayAuthoritySigner": "EcdsaAddress",
 	"RelayAuthorityMessage": "EcdsaMessage",
 	"RelayAuthoritySignature": "EcdsaSignature",
+	"__[pallet.fee_market]__": null,
+	"Relayer": {
+		"id": "AccountId",
+		"collateral": "Balance",
+		"fee": "Balance"
+	},
+	"Order": {
+		"lane": "LaneId",
+		"message": "MessageNonce",
+		"sent_time": "BlockNumber",
+		"confirm_time": "BlockNumber",
+		"locked_collateral": "Balance",
+		"assigned_relayers": "Vec<PriorRelayer>"
+	},
+	"PriorRelayer": {
+		"id": "AccountId",
+		"fee": "Balance",
+		"valid_range": "BlockNumber"
+	},
 	"__[pallet.header-mmr]__": {},
 	"NodeIndex": "u64",
 	"MerkleMountainRangeRootLog": {

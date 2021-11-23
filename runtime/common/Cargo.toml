@@ -2,22 +2,22 @@
 authors     = ["Darwinia Network <hello@darwinia.network>"]
 description = "Darwinia node runtime common"
 edition     = "2018"
-homepage    = "https://darwinia.network/"
+homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-runtime-common"
-repository  = "https://github.com/darwinia-network/darwinia/"
-version     = "0.11.5"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "0.11.6"
 
 [dependencies]
 # crates.io
 codec             = { package = "parity-scale-codec", version = "2.1", default-features = false }
 static_assertions = { version = "1.1" }
 # darwinia-network frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
-darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-1" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network primitives
-darwinia-primitives = { default-features = false, path = "../../primitives" }
+common-primitives = { default-features = false, path = "../../primitives/common" }
 # paritytech frame
 frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
@@ -43,7 +43,7 @@ std = [
 	"darwinia-staking/std",
 	"darwinia-support/std",
 	# darwinia-network primitives
-	"darwinia-primitives/std",
+	"common-primitives/std",
 	# paritytech frame
 	"frame-support/std",
 	"frame-system/std",

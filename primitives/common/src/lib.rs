@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Darwinia types shared between the runtime and the Node-side code.
+//! Darwinia types shared between the runtime and the node-side code.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]
@@ -78,45 +78,52 @@ pub type Header = generic::Header<BlockNumber, Hashing>;
 /// Block type.
 pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 
-#[ignore]
-#[test]
-fn print_module_account() {
-	// --- paritytech ---
-	use frame_support::PalletId;
-	use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat, Ss58AddressFormat::*};
-	use sp_runtime::traits::AccountIdConversion;
+/// 1 in u128.
+pub const NANO: Balance = 1;
+/// 1_000 in u128.
+pub const MICRO: Balance = 1_000 * NANO;
+/// 1_000_000 in u128.
+pub const MILLI: Balance = 1_000 * MICRO;
+/// 1_000_000_000 in u128.
+pub const COIN: Balance = 1_000 * MILLI;
 
-	fn account_of(alias: [u8; 8], ss58_version: Ss58AddressFormat) {
-		set_default_ss58_version(ss58_version);
+/// GWEI for DVM.
+pub const GWEI: Balance = 1_000_000_000;
 
-		let alias_str = unsafe { core::str::from_utf8_unchecked(&alias) };
-		let id = <PalletId as AccountIdConversion<AccountId>>::into_account(&PalletId(alias));
+/// The hard cap of RING.
+pub const RING_HARD_CAP: Balance = 10_000_000_000 * COIN;
+/// The amount of total power.
+pub const TOTAL_POWER: Power = 1_000_000_000;
 
-		eprintln!("{}:\n\t{}\n\t{:?}", alias_str, id, id);
-	}
-
-	// da/trsry:
-	// 5EYCAe5gKAhKhPeR7nUZzpcX2f9eYoAhqtEHqnG433EfnCpQ
-	// 6d6f646c64612f74727372790000000000000000000000000000000000000000 (5EYCAe5g...)
-	account_of(*b"da/trsry", SubstrateAccount);
-	// da/ethbk:
-	// 2qeMxq616BhqvTW8a1bp2g7VKPAmpda1vXuAAz5TxV5ehivG
-	// 6d6f646c64612f657468626b0000000000000000000000000000000000000000 (2qeMxq61...)
-	account_of(*b"da/ethbk", DarwiniaAccount);
-	// da/crais:
-	// 5EYCAe5gKAhHQ8Hp3UUSqEGzsUtdrevrhUadXKWuwzDYmX9T
-	// 6d6f646c64612f63726169730000000000000000000000000000000000000000 (5EYCAe5g...)
-	account_of(*b"da/crais", SubstrateAccount);
-	// da/crabk:
-	// 2qeMxq616BhqeiaffX3gbqb4PPhBo3usSkjx7ZRRTkWexMAo
-	// 6d6f646c64612f637261626b0000000000000000000000000000000000000000 (2qeMxq61...)
-	account_of(*b"da/crabk", DarwiniaAccount);
-	// da/staki:
-	// 2qeMxq616BhspChjTR7DN4GHvDMvRApmawT35ayQijghNchk
-	// 6d6f646c64612f7374616b690000000000000000000000000000000000000000 (2qeMxq61...)
-	account_of(*b"da/staki", DarwiniaAccount);
-	// da/trobk:
-	// 2qeMxq616BhswyueZhqkyWntaMt8QXshns9rBbmWBs1k9G4V
-	// 6d6f646c64612f74726f626b0000000000000000000000000000000000000000 (2qeMxq61...)
-	account_of(*b"da/trobk", DarwiniaAccount);
+/// Deposit calculator for Darwinia.
+pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 20 * MILLI + (bytes as Balance) * 100 * NANO
 }
+/// Deposit calculator for Crab.
+pub const fn crab_deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 20 * COIN + (bytes as Balance) * 100 * MICRO
+}
+
+/// Block time of Darwinia/Crab.
+pub const MILLISECS_PER_BLOCK: Moment = 6000;
+
+/// Minute in Darwinia/Crab.
+pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+/// Hour in Darwinia/Crab.
+pub const HOURS: BlockNumber = 60 * MINUTES;
+/// Day in Darwinia/Crab.
+pub const DAYS: BlockNumber = 24 * HOURS;
+/// Slot duration in Darwinia/Crab.
+pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
+
+/// Session length of Crab.
+pub const CRAB_BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
+/// Era length of Crab.
+pub const CRAB_SESSIONS_PER_ERA: BlockNumber = 6;
+/// Session length of Darwinia.
+pub const DARWINIA_BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
+/// Era length of Darwinia.
+pub const DARWINIA_SESSIONS_PER_ERA: BlockNumber = 6;
+
+/// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
+pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);

@@ -6,7 +6,7 @@ use sp_core::crypto::KeyTypeId;
 use crate::*;
 
 frame_support::parameter_types! {
-	pub const EpochDuration: u64 = BLOCKS_PER_SESSION as _;
+	pub const EpochDuration: u64 = CRAB_BLOCKS_PER_SESSION as _;
 	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
 	pub const ReportLongevity: u64 =
 		BondingDurationInEra::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
