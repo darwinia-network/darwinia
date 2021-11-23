@@ -2,40 +2,42 @@ Darwinia
 ===
 
 
-## [0.90.x] - 2021-xx-xx
+## [0.11.6] - 2021-11-23
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
-| Darwinia |      115x      |       LOW        |
-|   Crab   |      115x      |       LOW        |
+| Darwinia |      1160      |       HIGH       |
+|   Crab   |      1160      |       HIGH       |
 
-### Resources
+## Resources
 
-#### Pre-Built
+### Pre-built Binary
 |  OS   |  Arch  | Glibc | LLVM  |                                                      Download                                                       |
 | :---: | :----: | :---: | :---: | :-----------------------------------------------------------------------------------------------------------------: |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.11.5/darwinia-x86_64-linux-gnu.tar.bz2) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.11.6/darwinia-x86_64-linux-gnu.tar.bz2) |
 
-#### Docker
+### Docker
 
+#### Pull with Tag
 ```docker
 docker pull {{ image_tag }}
 ```
 
-or
-
+#### Pull with SHA
 ```docker
 docker pull {{ image_sha }}
 ```
 
-### Changes
+## Notable Changes
+- Substrate common changes: https://github.com/paritytech/polkadot/releases/tag/v0.9.8
+- S2S audit: darwinia-network/darwinia-common#902
+- Migrate staking to attribute macro: darwinia-network/darwinia-common#902
+- Fix WASM execution: darwinia-network/darwinia-common#937 **!!IMPORTANT!!**
+- Integrate the basic S2S bridge into Darwinia/Common runtimes: darwinia-network/darwinia#787
 
-> Substrate common changes: https://github.com/paritytech/polkadot/releases/tag/v0.9.5
-- EVM related: darwinia-network/darwinia-common#817, darwinia-network/darwinia-common#837, darwinia-network/darwinia-common#867
+## Proposal Hashes
 
-### Proposal
-
-| Network  | Proposal Hash                   |
-| :------- | :------------------------------ |
+| Network  |          Proposal Hash          |
+| :------: | :-----------------------------: |
 | Darwinia | {{ darwinia_proposal_compact }} |
-| Crab     | {{ crab_proposal_compact }}     |
+|   Crab   |   {{ crab_proposal_compact }}   |
 
