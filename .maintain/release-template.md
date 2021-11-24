@@ -17,12 +17,12 @@ Darwinia
 
 ### Docker
 
-#### Pull with Tag
+#### Pull with the Git Tag
 ```docker
 docker pull {{ image_tag }}
 ```
 
-#### Pull with SHA
+#### Pull with the Git Commit SHA
 ```docker
 docker pull {{ image_sha }}
 ```
