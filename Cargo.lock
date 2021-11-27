@@ -1054,6 +1054,7 @@ dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-claims",
+ "darwinia-common-runtime",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-evm",
@@ -1063,7 +1064,6 @@ dependencies = [
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
- "darwinia-runtime-common",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
@@ -1542,6 +1542,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-common-runtime"
+version = "0.11.6"
+dependencies = [
+ "common-primitives",
+ "darwinia-balances",
+ "darwinia-support",
+ "frame-support",
+ "frame-system",
+ "max-encoded-len",
+ "pallet-authorship",
+ "pallet-transaction-payment",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+ "static_assertions",
+]
+
+[[package]]
 name = "darwinia-democracy"
 version = "2.6.10"
 source = "git+https://github.com/darwinia-network/darwinia-common?tag=darwinia-v0.11.6-3#ed73e1a2619107dbe02ce636f174c4570552c946"
@@ -1831,6 +1850,7 @@ dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-bridge-ethereum",
+ "darwinia-common-runtime",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-fee-market",
@@ -1840,7 +1860,6 @@ dependencies = [
  "darwinia-relay-authorities",
  "darwinia-relay-primitives",
  "darwinia-relayer-game",
- "darwinia-runtime-common",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
@@ -1905,25 +1924,6 @@ dependencies = [
  "substrate-wasm-builder",
  "to-ethereum-backing",
  "to-tron-backing",
-]
-
-[[package]]
-name = "darwinia-runtime-common"
-version = "0.11.6"
-dependencies = [
- "common-primitives",
- "darwinia-balances",
- "darwinia-support",
- "frame-support",
- "frame-system",
- "max-encoded-len",
- "pallet-authorship",
- "pallet-transaction-payment",
- "pallet-treasury",
- "parity-scale-codec",
- "sp-runtime",
- "sp-std",
- "static_assertions",
 ]
 
 [[package]]

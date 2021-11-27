@@ -52,7 +52,7 @@ dp-evm = { default-features = false, git = "https://github.com/darwinia-network/
 # dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network runtime
-darwinia-runtime-common = { default-features = false, path = "../common" }
+darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
@@ -162,7 +162,7 @@ std = [
 	# "dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime
-	"darwinia-runtime-common/std",
+	"darwinia-common-runtime/std",
 	# paritytech bridge
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
