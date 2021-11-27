@@ -72,6 +72,9 @@ pub use messages::*;
 /// Weights for pallets used in the runtime.
 mod weights;
 
+#[cfg(feature = "std")]
+pub use darwinia_staking::{Forcing, StakerStatus};
+
 pub use bridge_primitives::*;
 pub use common_primitives::*;
 

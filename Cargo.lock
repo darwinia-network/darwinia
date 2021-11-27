@@ -1913,7 +1913,6 @@ version = "0.11.6"
 dependencies = [
  "common-primitives",
  "darwinia-balances",
- "darwinia-staking",
  "darwinia-support",
  "frame-support",
  "frame-system",

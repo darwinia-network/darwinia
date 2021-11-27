@@ -1,6 +1,3 @@
-#[cfg(feature = "std")]
-pub use darwinia_staking::{Forcing, StakerStatus};
-
 // --- paritytech ---
 use frame_support::PalletId;
 use sp_npos_elections::CompactSolution;
