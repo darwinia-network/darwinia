@@ -113,27 +113,27 @@ jobs:
     needs: [basic-checks]
     runs-on: ubuntu-latest
     steps:
-      - name: Download drml
+      - name: Download darwinia
         uses: actions/download-artifact@v2
         with:
-          name: drml
+          name: darwinia
 
       - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
           name: subalfred
 
-      - name: Uncompress drml and subalfred
+      - name: Uncompress darwinia and subalfred
         run: |
-          tar xf drml.tar.zst -I pzstd
+          tar xf darwinia.tar.zst -I pzstd
           tar xf subalfred.tar.zst -I pzstd
-          sudo mv drml /usr/bin
+          sudo mv darwinia /usr/bin
           sudo mv subalfred /usr/bin
 
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(subalfred ci runtime-version -c Crab -e drml)
+          OUTPUT=$(subalfred ci runtime-version -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -142,7 +142,7 @@ jobs:
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Crab -e drml)
+          OUTPUT=$(subalfred ci storage-prefix -c Crab -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -151,7 +151,7 @@ jobs:
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e drml)
+          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -160,7 +160,7 @@ jobs:
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e drml)
+          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e darwinia)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
