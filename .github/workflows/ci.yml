@@ -1,230 +1,155 @@
-name: CI
+name: Checks
 on:
   push:
     branches:
       - main
       - master
+    paths:
+      - "**.rs"
+      - "**.toml"
+      - "**lock"
+      - "**.json"
+      - "**.yml"
   pull_request:
+    types: [opened, synchronize, ready_for_review]
     branches:
       - main
       - master
+    paths:
+      - "**.rs"
+      - "**.toml"
+      - "**lock"
+      - "**.json"
+      - "**.yml"
+
+env:
+  RUST_TOOLCHAIN: nightly
+  RUST_BACKTRACE: full
+  GITHUB_CACHE_VERSION: 0
 
 jobs:
-  build-subalfred:
-    name: Build subalfred
+  basic-checks:
+    name: Task ${{ matrix.action }} ${{ matrix.task.target }}
+    if: github.event_name == 'push' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        action: [build, test]
+        task:
+          - target: darwinia
+            repository: darwinia-network/darwinia
+          - target: subalfred
+            repository: l2ust/subalfred
+        exclude:
+          - action: test
+            task:
+              target: subalfred
+
     steps:
-      - name: Install Rust nightly-2021-04-22 toolchain
+      - name: Install Rust ${{ env.RUST_TOOLCHAIN }} toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2021-04-22
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           default: true
-      - name: Install sccache
-        env:
-          SCCACHE_VERSION: v0.2.15
-          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
-        run: |
-          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
-          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
-          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
-          sudo chmod +x /usr/bin/sccache
-          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
+
       - name: Fetch latest code
         uses: actions/checkout@v2
         with:
-          repository: l2ust/subalfred
-          ref: main
-      - name: Build
-        env:
-          SCCACHE_GCS_RW_MODE: READ_WRITE
-          SCCACHE_GCS_BUCKET: darwinia-build-cache
-          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
-          RUSTC_WRAPPER: sccache
-        # uses: actions-rs/cargo@v1
-        # with:
-        #   command: build
-        #   args: --release --locked
+          repository: ${{ matrix.task.repository }}
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            !target/debug/${{ matrix.task.target }}
+            target
+          key: ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
+
+      - name: Action ${{ matrix.action }}
         run: |
-          sccache --show-stats
-          cargo b --release --locked
-          sccache --show-stats
-      - name: Compress subalfred
-        run: |
-          cp target/release/subalfred .
-          tar cf subalfred.tar.zst subalfred -I pzstd
-      - name: Upload subalfred
+          cargo ${{ matrix.action }} --locked
+          if [ -f target/debug/${{ matrix.task.target }} ]; then mv target/debug/${{ matrix.task.target }} .; fi
+
+      - name: Upload ${{ matrix.task.target }}
+        if: matrix.action != 'test'
         uses: actions/upload-artifact@v2
         with:
-          name: subalfred
-          path: subalfred.tar.zst
+          name: ${{ matrix.task.target }}
+          path: ${{ matrix.task.target }}
 
-  check-rust-code:
-    name: Check Rust code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Rust nightly-2021-04-22 toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2021-04-22
-          target: wasm32-unknown-unknown
-          default: true
-      - name: Install sccache
-        env:
-          SCCACHE_VERSION: v0.2.15
-          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
-        run: |
-          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
-          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
-          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
-          sudo chmod +x /usr/bin/sccache
-          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
-      - name: Fetch latest code
-        uses: actions/checkout@v2
-      - name: Run checker
-        env:
-          SCCACHE_GCS_RW_MODE: READ_WRITE
-          SCCACHE_GCS_BUCKET: darwinia-build-cache
-          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
-          RUSTC_WRAPPER: sccache
-        # uses: actions-rs/cargo@v1
-        # with:
-        #   command: check
-        #   args: --locked
-        run: |
-          sccache --show-stats
-          cargo c --locked
-          sccache --show-stats
-
-  build-node-and-internal-test:
-    name: Build node and internal test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Rust nightly-2021-04-22 toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2021-04-22
-          target: wasm32-unknown-unknown
-          default: true
-      - name: Install sccache
-        env:
-          SCCACHE_VERSION: v0.2.15
-          SCCACHE_GCS_KEY: ${{ secrets.SCCACHE_GCS_KEY }}
-        run: |
-          export SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
-          curl -L https://github.com/mozilla/sccache/releases/download/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar xz
-          sudo mv -f $SCCACHE_FILE/sccache /usr/bin
-          sudo chmod +x /usr/bin/sccache
-          echo $SCCACHE_GCS_KEY > /home/runner/.gsc
-      - name: Fetch latest code
-        uses: actions/checkout@v2
-      - name: Build
-        env:
-          SCCACHE_GCS_RW_MODE: READ_WRITE
-          SCCACHE_GCS_BUCKET: darwinia-build-cache
-          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
-          RUSTC_WRAPPER: sccache
-        # uses: actions-rs/cargo@v1
-        # with:
-        #   command: build
-        #   args: --release --locked
-        run: |
-          sccache --show-stats
-          cargo b --release --locked
-          sccache --show-stats
-      - name: Test
-        env:
-          SCCACHE_GCS_RW_MODE: READ_WRITE
-          SCCACHE_GCS_BUCKET: darwinia-build-cache
-          SCCACHE_GCS_KEY_PATH: /home/runner/.gsc
-          RUSTC_WRAPPER: sccache
-          CARGO_INCREMENTAL: 0
-        # uses: actions-rs/cargo@v1
-        # with:
-        #   command: test
-        #   args: --release --all --locked
-        run: |
-          sccache --show-stats
-          cargo test --release --all --locked
-          sccache --show-stats
-      - name: Compress node
-        run: |
-          cp target/release/darwinia .
-          tar cf node.tar.zst darwinia -I pzstd
-      - name: Upload node
-        uses: actions/upload-artifact@v2
-        with:
-          name: node
-          path: node.tar.zst
-
-  check-default-features:
-    name: Check default features
-    needs: [build-subalfred]
+  code-checks:
+    name: Code checks
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [basic-checks]
     runs-on: ubuntu-latest
     steps:
       - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
           name: subalfred
-      - name: Uncompress subalfred
-        run: |
-          tar xf subalfred.tar.zst -I pzstd
-          sudo mv subalfred /usr/bin
+
       - name: Fetch latest code
         uses: actions/checkout@v2
-      - name: Run checker
-        run: subalfred ci default-features -p .darwinia
 
-  check-with-node:
-    name: Check with node
+      - name: Run checker
+        run: ./subalfred ci default-features -p ../darwinia-common
+
+  runtime-checks:
+    name: Runtime checks
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [basic-checks]
     runs-on: ubuntu-latest
-    needs: [build-subalfred, build-node-and-internal-test]
     steps:
+      - name: Download drml
+        uses: actions/download-artifact@v2
+        with:
+          name: drml
+
       - name: Download subalfred
         uses: actions/download-artifact@v2
         with:
           name: subalfred
-      - name: Download node
-        uses: actions/download-artifact@v2
-        with:
-          name: node
-      - name: Uncompress node and subalfred
-        run: |
-          tar xf node.tar.zst -I pzstd
-          tar xf subalfred.tar.zst -I pzstd
-          sudo mv darwinia /usr/bin
-          sudo mv subalfred /usr/bin
-      - id: check-darwinia-runtime-version
-        name: Check Darwinia runtime version
-        run: |
-          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e darwinia)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-darwinia-runtime-version::$OUTPUT"
-      - id: check-darwinia-storage-prefix
-        name: Check Darwinia storage prefix
-        run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e darwinia)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-darwinia-storage-prefix::$OUTPUT"
+
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(subalfred ci runtime-version -c Crab -e darwinia)
+          OUTPUT=$(./subalfred ci runtime-version -c Crab -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
           echo "::set-output name=check-crab-runtime-version::$OUTPUT"
+
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Crab -e darwinia)
+          OUTPUT=$(./subalfred ci storage-prefix -c Crab -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
           echo "::set-output name=check-crab-storage-prefix::$OUTPUT"
+
+      - id: check-darwinia-runtime-version
+        name: Check Darwinia runtime version
+        run: |
+          OUTPUT=$(./subalfred ci runtime-version -c Darwinia -e drml)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-darwinia-runtime-version::$OUTPUT"
+
+      - id: check-darwinia-storage-prefix
+        name: Check Darwinia storage prefix
+        run: |
+          OUTPUT=$(./subalfred ci storage-prefix -c Darwinia -e drml)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-darwinia-storage-prefix::$OUTPUT"
+
       - if: github.ref != 'refs/heads/master'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
@@ -232,16 +157,6 @@ jobs:
           message: |
             <details>
             <summary>Commit ${{ github.event.pull_request.head.sha }}</summary>
-
-            **Darwinia**
-            > Check Runtime Version
-            ```diff
-            ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
-            ```
-            > Check Storage Prefix
-            ```diff
-            ${{ steps.check-darwinia-storage-prefix.outputs.check-darwinia-storage-prefix }}
-            ```
 
             **Crab**
             > Check Runtime Version
@@ -252,16 +167,26 @@ jobs:
             ```diff
             ${{ steps.check-crab-storage-prefix.outputs.check-crab-storage-prefix }}
             ```
+
+            **Darwinia**
+            > Check Runtime Version
+            ```diff
+            ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
+            ```
+            > Check Storage Prefix
+            ```diff
+            ${{ steps.check-darwinia-storage-prefix.outputs.check-darwinia-storage-prefix }}
+            ```
             </details>
 
   clean-artifacts:
     name: Clean artifacts
-    needs: [check-default-features, check-with-node]
     if: always()
+    needs: [code-checks, runtime-checks]
     steps:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
+            darwinia
             subalfred
-            node
     runs-on: ubuntu-latest
