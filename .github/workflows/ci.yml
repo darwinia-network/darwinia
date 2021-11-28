@@ -72,14 +72,18 @@ jobs:
       - name: Action ${{ matrix.action }}
         run: |
           cargo ${{ matrix.action }} --locked
-          if [ -f target/debug/${{ matrix.task.target }} ]; then mv target/debug/${{ matrix.task.target }} .; fi
+
+      - name: Compress ${{ matrix.task.target }}
+        run: |
+          cp target/debug/${{ matrix.task.target }} .
+          tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
         if: matrix.action != 'test'
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.task.target }}
-          path: ${{ matrix.task.target }}
+          path: ${{ matrix.task.target }}.tar.zst
 
   code-checks:
     name: Code checks
@@ -92,11 +96,16 @@ jobs:
         with:
           name: subalfred
 
+      - name: Uncompress subalfred
+        run: |
+          tar xf subalfred.tar.zst -I pzstd
+          sudo mv subalfred /usr/bin
+
       - name: Fetch latest code
         uses: actions/checkout@v2
 
       - name: Run checker
-        run: ./subalfred ci default-features -p ../darwinia-common
+        run: subalfred ci default-features -p ../darwinia-common
 
   runtime-checks:
     name: Runtime checks
@@ -114,10 +123,17 @@ jobs:
         with:
           name: subalfred
 
+      - name: Uncompress drml and subalfred
+        run: |
+          tar xf drml.tar.zst -I pzstd
+          tar xf subalfred.tar.zst -I pzstd
+          sudo mv drml /usr/bin
+          sudo mv subalfred /usr/bin
+
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Crab -e drml)
+          OUTPUT=$(subalfred ci runtime-version -c Crab -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -126,7 +142,7 @@ jobs:
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Crab -e drml)
+          OUTPUT=$(subalfred ci storage-prefix -c Crab -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -135,7 +151,7 @@ jobs:
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(./subalfred ci runtime-version -c Darwinia -e drml)
+          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -144,7 +160,7 @@ jobs:
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(./subalfred ci storage-prefix -c Darwinia -e drml)
+          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e drml)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
