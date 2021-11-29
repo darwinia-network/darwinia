@@ -25,7 +25,7 @@ on:
 env:
   RUST_TOOLCHAIN: nightly
   RUST_BACKTRACE: full
-  GITHUB_CACHE_VERSION: 0
+  GITHUB_CACHE_VERSION: 1
 
 jobs:
   basic-checks:
@@ -63,17 +63,16 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            !target/debug/${{ matrix.task.target }}
             target
           key: ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
       - name: Action ${{ matrix.action }}
-        run: |
-          cargo ${{ matrix.action }} --locked
+        run: cargo ${{ matrix.action }} --locked
 
       - name: Compress ${{ matrix.task.target }}
+        if: matrix.action != 'test'
         run: |
           cp target/debug/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
@@ -84,6 +83,10 @@ jobs:
         with:
           name: ${{ matrix.task.target }}
           path: ${{ matrix.task.target }}.tar.zst
+
+      - name: Purge large cache
+        if: matrix.task.target == 'darwinia' && matrix.action == 'build'
+        run: .maintain/purge-large-cache.sh
 
   code-checks:
     name: Code checks
