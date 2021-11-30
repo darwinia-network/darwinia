@@ -1,6 +1,3 @@
-#[cfg(feature = "std")]
-pub use darwinia_staking::{Forcing, StakerStatus};
-
 // --- paritytech ---
 use frame_support::PalletId;
 use sp_npos_elections::CompactSolution;
@@ -17,12 +14,11 @@ frame_support::parameter_types! {
 }
 #[cfg(not(feature = "dev"))]
 frame_support::parameter_types! {
-	pub const BondingDurationInEra: EraIndex = 14 * DAYS
+	pub const BondingDurationInEra: EraIndex = BondingDurationInBlockNumber::get()
 		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
-	pub const SlashDeferDuration: EraIndex = 14 * DAYS
-		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION) - 1;
+	pub const SlashDeferDuration: EraIndex = BondingDurationInEra::get() - 1;
 }
 frame_support::parameter_types! {
 	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
