@@ -44,15 +44,15 @@ dvm-ethereum        = { default-features = false, git = "https://github.com/darw
 dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 # --- dvm --->
 # darwinia-network primitives
-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
+darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # <--- dvm ---
 dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 # --- dvm --->
 # dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 # darwinia-network runtime
-darwinia-runtime-common = { default-features = false, path = "../common" }
+darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
@@ -154,15 +154,15 @@ std = [
 	"dvm-rpc-runtime-api/std",
 	# --- dvm --->
 	# darwinia-network primitives
-	"bridge-primitives/std",
-	"common-primitives/std",
+	"darwinia-bridge-primitives/std",
+	"darwinia-common-primitives/std",
 	# <--- dvm ---
 	"dp-evm/std",
 	# --- dvm --->
 	# "dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime
-	"darwinia-runtime-common/std",
+	"darwinia-common-runtime/std",
 	# paritytech bridge
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",

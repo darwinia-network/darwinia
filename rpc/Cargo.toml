@@ -24,8 +24,8 @@ dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-
 dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 # darwinia-network primitives
-common-primitives = { path = "../primitives/common" }
-crab-runtime      = { path = "../runtime/crab" }
+crab-runtime               = { path = "../runtime/crab" }
+darwinia-common-primitives = { path = "../primitives/common" }
 # paritytech client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 sc-client-api           = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }

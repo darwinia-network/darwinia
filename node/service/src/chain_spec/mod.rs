@@ -35,7 +35,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::IdentifyAccount;
 // --- darwinia-network ---
-use common_primitives::{AccountId, AccountPublic};
+use darwinia_common_primitives::{AccountId, AccountPublic};
 
 const DEFAULT_PROTOCOL_ID: &str = "dar";
 
@@ -47,9 +47,13 @@ const DEFAULT_PROTOCOL_ID: &str = "dar";
 #[serde(rename_all = "camelCase")]
 pub struct Extensions {
 	/// Block numbers with known hashes.
-	pub fork_blocks: sc_client_api::ForkBlocks<common_primitives::OpaqueBlock>,
+	pub fork_blocks: sc_client_api::ForkBlocks<
+		darwinia_common_primitivesrimitivesrimitivesrimitives::OpaqueBlock,
+	>,
 	/// Known bad block hashes.
-	pub bad_blocks: sc_client_api::BadBlocks<common_primitives::OpaqueBlock>,
+	pub bad_blocks: sc_client_api::BadBlocks<
+		darwinia_common_primitivesrimitivesrimitivesrimitives::OpaqueBlock,
+	>,
 }
 
 /// Generate a crypto pair from seed.

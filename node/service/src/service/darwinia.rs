@@ -59,7 +59,7 @@ use crate::{
 		LightClient,
 	},
 };
-use common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
+use darwinia_common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 use darwinia_rpc::{
 	darwinia::{FullDeps, LightDeps},
 	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,

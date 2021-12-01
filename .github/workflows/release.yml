@@ -6,6 +6,9 @@ on:
 
 jobs:
 
+  ##
+  # Build the Rust package
+  ##
   build-package:
     name: Build package
     runs-on: ubuntu-latest
@@ -36,6 +39,7 @@ jobs:
 
       - name: Build darwinia
         run: |
+          echo "::set-output name=BUILD_AT::$(date --iso-8601=seconds)"
           cargo build --release --target x86_64-unknown-linux-gnu
 
       - name: Collect shared
@@ -55,6 +59,9 @@ jobs:
       - name: Optimize cache
         run: .maintain/optimize-cache.sh || exit 0
 
+  ##
+  # Generate subwasm info
+  ##
   build-subwasm:
     name: Generate subwasm info
     runs-on: ubuntu-latest
@@ -97,8 +104,11 @@ jobs:
           name: darwinia-artifact
           path: shared
 
-  build-image:
-    name: Build image
+  ##
+  # Build and publish the Docker image
+  ##
+  build-docker-image:
+    name: Build Docker image
     runs-on: ubuntu-latest
     needs: [build-package]
     steps:
@@ -123,6 +133,11 @@ jobs:
         with:
           length: 7
 
+      ##
+      # Uploading artifacts does not retain the file permissions,
+      # binaries should regain the executive permission before packing.
+      # See: https://github.com/actions/upload-artifact#permission-loss
+      ##
       - name: Build and publish docker image
         run: |
           IMAGE_NAME=darwinia
@@ -130,21 +145,26 @@ jobs:
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
           IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
 
+          chmod +x shared/darwinia # REQUIRED, see above
           docker build \
-            -t ${IMAGE_NAME} \
+            -t ${IMAGE_PUSH_NAME_TAG} \
+            -t ${IMAGE_PUSH_NAME_SHA} \
+            --build-arg CI_BUILD_AT=${{ needs.build-package.outputs.BUILD_AT }} \
+            --build-arg CI_GIT_TAG=${GIT_TAG_NAME} \
+            --build-arg CI_GIT_SHA=${{ github.sha }} \
             -f .maintain/docker/Dockerfile \
             .
-
-          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_TAG}
-          docker tag ${IMAGE_NAME} ${IMAGE_PUSH_NAME_SHA}
 
           docker push ${IMAGE_PUSH_NAME_TAG}
           docker push ${IMAGE_PUSH_NAME_SHA}
 
-  complete-build:
-    name: Complete build
+  ##
+  # Publish the release
+  ##
+  publish-release:
+    name: Publish release
     runs-on: ubuntu-latest
-    needs: [build-subwasm, build-image]
+    needs: [build-subwasm, build-docker-image]
     steps:
       - uses: actions/checkout@v2
 
@@ -155,8 +175,10 @@ jobs:
 
       - name: Prepare deploy folder
         run: |
-          mkdir deploy
+          chmod +x shared/darwinia # REQUIRED, same as Docker image
           tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
+
+          mkdir -p deploy
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
 
           mv shared/crab-runtime/*.compact.wasm deploy/
@@ -229,7 +251,7 @@ jobs:
   clean-artifacts:
     name: Clean artifacts
     runs-on: ubuntu-latest
-    needs: [complete-build]
+    needs: [publish-release]
     if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1

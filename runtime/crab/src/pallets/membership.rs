@@ -1,9 +1,9 @@
 // --- paritytech ---
-use pallet_membership::{Config, Instance1};
+use pallet_membership::{Config, Instance1 as TechnicalMembershipInstance};
 // --- darwinia-network ---
 use crate::{weights::pallet_membership::WeightInfo, *};
 
-impl Config<Instance1> for Runtime {
+impl Config<TechnicalMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type RemoveOrigin = EnsureRootOrMoreThanHalfCouncil;
