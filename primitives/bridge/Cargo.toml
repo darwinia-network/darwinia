@@ -10,7 +10,7 @@ version     = "0.11.6"
 
 [dependencies]
 # darwinia-network frame
-darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps-darwinia" }
 # darwinia-network primitives
 common-primitives = { default-features = false, path = "../common" }
 # paritytech bridge frame
