@@ -47,13 +47,9 @@ const DEFAULT_PROTOCOL_ID: &str = "dar";
 #[serde(rename_all = "camelCase")]
 pub struct Extensions {
 	/// Block numbers with known hashes.
-	pub fork_blocks: sc_client_api::ForkBlocks<
-		darwinia_common_primitivesrimitivesrimitivesrimitives::OpaqueBlock,
-	>,
+	pub fork_blocks: sc_client_api::ForkBlocks<darwinia_common_primitives::OpaqueBlock>,
 	/// Known bad block hashes.
-	pub bad_blocks: sc_client_api::BadBlocks<
-		darwinia_common_primitivesrimitivesrimitivesrimitives::OpaqueBlock,
-	>,
+	pub bad_blocks: sc_client_api::BadBlocks<darwinia_common_primitives::OpaqueBlock>,
 }
 
 /// Generate a crypto pair from seed.
