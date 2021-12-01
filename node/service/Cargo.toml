@@ -17,17 +17,17 @@ log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
 serde_json  = { version = "1.0" }
 # darwinia-network frame
-darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
 # dvm
-darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
+dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-4" }
 # darwinia-network primitives
 darwinia-common-primitives = { path = "../../primitives/common" }
 # darwinia-network rpc
