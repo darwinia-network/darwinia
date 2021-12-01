@@ -114,8 +114,8 @@ pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
-pub use bridge_primitives::*;
-pub use common_primitives::*;
+pub use darwinia_bridge_primitives::*;
+pub use darwinia_common_primitives::*;
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_sudo::Call as SudoCall;
@@ -598,7 +598,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::CrabFinalityApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::CrabFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
 			let header = BridgeCrabGrandpa::best_finalized();
 			(header.number, header.hash())
@@ -609,7 +609,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
+	impl darwinia_bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
 		// fn estimate_message_delivery_and_dispatch_fee(
 		// 	_lane_id: bp_messages::LaneId,
 		// 	payload: crab_messages::ToCrabMessagePayload,
@@ -641,7 +641,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::FromCrabInboundLaneApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::FromCrabInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgeCrabMessages::inbound_latest_received_nonce(lane)
 		}

@@ -37,8 +37,8 @@ darwinia-vesting                    = { default-features = false, git = "https:/
 to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network primitives
-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
+darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network runtime
@@ -135,8 +135,8 @@ std = [
 	"to-ethereum-backing/std",
 	"to-tron-backing/std",
 	# darwinia-network primitives
-	"bridge-primitives/std",
-	"common-primitives/std",
+	"darwinia-bridge-primitives/std",
+	"darwinia-common-primitives/std",
 	# "dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime

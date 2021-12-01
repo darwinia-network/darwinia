@@ -44,8 +44,8 @@ dvm-ethereum        = { default-features = false, git = "https://github.com/darw
 dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # --- dvm --->
 # darwinia-network primitives
-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
+darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # <--- dvm ---
 dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # --- dvm --->
@@ -154,8 +154,8 @@ std = [
 	"dvm-rpc-runtime-api/std",
 	# --- dvm --->
 	# darwinia-network primitives
-	"bridge-primitives/std",
-	"common-primitives/std",
+	"darwinia-bridge-primitives/std",
+	"darwinia-common-primitives/std",
 	# <--- dvm ---
 	"dp-evm/std",
 	# --- dvm --->

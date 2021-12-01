@@ -4,7 +4,7 @@ description = "Darwinia node runtime bridge primitives"
 edition     = "2018"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "bridge-primitives"
+name        = "darwinia-bridge-primitives"
 repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.11.6"
 
@@ -12,7 +12,7 @@ version     = "0.11.6"
 # darwinia-network frame
 darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network primitives
-common-primitives = { default-features = false, path = "../common" }
+darwinia-common-primitives = { default-features = false, path = "../common" }
 # paritytech bridge frame
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
 # paritytech bridge primitives
@@ -34,7 +34,7 @@ std = [
 	# darwinia-network frame
 	"darwinia-fee-market/std",
 	# darwinia-network primitives
-	"common-primitives/std",
+	"darwinia-common-primitives/std",
 	# paritytech bridge frame
 	"pallet-bridge-dispatch/std",
 	# paritytech bridge primitives
