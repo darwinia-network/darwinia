@@ -16,7 +16,7 @@ static_assertions = { version = "1.1" }
 darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network primitives
-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # paritytech frame
 frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
@@ -41,7 +41,7 @@ std = [
 	"darwinia-balances/std",
 	"darwinia-support/std",
 	# darwinia-network primitives
-	"common-primitives/std",
+	"darwinia-common-primitives/std",
 	# paritytech frame
 	"frame-support/std",
 	"frame-system/std",

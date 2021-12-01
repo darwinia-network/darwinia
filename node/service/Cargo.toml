@@ -29,7 +29,7 @@ dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https:
 dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
 # darwinia-network primitives
-common-primitives = { path = "../../primitives/common" }
+darwinia-common-primitives = { path = "../../primitives/common" }
 # darwinia-network rpc
 darwinia-rpc = { path = "../../rpc" }
 # darwinia-network runtime
