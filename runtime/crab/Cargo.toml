@@ -21,47 +21,47 @@ serde             = { version = "1.0", optional = true }
 smallvec          = { version = "1.6" }
 static_assertions = { version = "1.1" }
 # darwinia-network frame
-darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-claims                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-claims                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # <--- dvm ---
-darwinia-evm                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-evm-precompile-simple   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-evm-precompile-transfer = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-evm                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-evm-precompile-simple   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-evm-precompile-transfer = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # --- dvm --->
-darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # <--- dvm ---
-dvm-ethereum        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+dvm-ethereum        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # --- dvm --->
 # darwinia-network primitives
 bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
 common-primitives = { default-features = false, path = "../../primitives/common" }
 # <--- dvm ---
-dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # --- dvm --->
-# dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+# dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
+ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "bump-deps" }
 # darwinia-network runtime
 darwinia-runtime-common = { default-features = false, path = "../common" }
 # paritytech bridge frame
-pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
-pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
-pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
 # paritytech bridge primitives
-bp-message-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
-bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
-bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
-bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-3" }
+bp-message-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
+bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
+bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
+bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", tag = "darwinia-v0.11.6-4" }
 # paritytech frame
 frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
 frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
