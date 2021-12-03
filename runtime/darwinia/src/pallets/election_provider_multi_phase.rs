@@ -38,7 +38,7 @@ frame_support::parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
-	type Currency = Balances;
+	type Currency = Ring;
 	type SignedPhase = SignedPhase;
 	type UnsignedPhase = UnsignedPhase;
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
