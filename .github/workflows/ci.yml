@@ -74,7 +74,7 @@ jobs:
       - name: Compress ${{ matrix.task.target }}
         if: matrix.action != 'test'
         run: |
-          cp target/debug/${{ matrix.task.target }} .
+          mv target/debug/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
@@ -89,7 +89,7 @@ jobs:
         run: .maintain/purge-large-cache.sh
 
   code-checks:
-    name: Code checks
+    name: Task check code
     if: github.event_name == 'push' || !github.event.pull_request.draft
     needs: [basic-checks]
     runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
         run: subalfred ci default-features -p ../darwinia-common
 
   runtime-checks:
-    name: Runtime checks
+    name: Task check runtime
     if: github.event_name == 'push' || !github.event.pull_request.draft
     needs: [basic-checks]
     runs-on: ubuntu-latest
@@ -198,12 +198,13 @@ jobs:
             ```
             </details>
 
-  clean-artifacts:
-    name: Clean artifacts
+  housekeeping-checks:
+    name: Task check housekeeping
     if: always()
     needs: [code-checks, runtime-checks]
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - name: Clean artifacts
+        uses: geekyeggo/delete-artifact@v1
         with:
           name: |
             darwinia
