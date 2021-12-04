@@ -26,7 +26,7 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use std::sync::Arc;
 // --- darwinia-network ---
 use crate::*;
-use common_primitives::{AccountId, Balance, Nonce, Power};
+use darwinia_common_primitives::{AccountId, Balance, Nonce, Power};
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B> {

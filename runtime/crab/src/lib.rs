@@ -72,8 +72,11 @@ pub use messages::*;
 /// Weights for pallets used in the runtime.
 mod weights;
 
-pub use bridge_primitives::*;
-pub use common_primitives::*;
+#[cfg(feature = "std")]
+pub use darwinia_staking::{Forcing, StakerStatus};
+
+pub use darwinia_bridge_primitives::*;
+pub use darwinia_common_primitives::*;
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_sudo::Call as SudoCall;
@@ -114,10 +117,10 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
+use darwinia_common_runtime::*;
 use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
-use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 use dvm_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use dvm_rpc_runtime_api::TransactionStatus;
@@ -678,7 +681,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::DarwiniaFinalityApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::DarwiniaFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
 			let header = BridgeDarwiniaGrandpa::best_finalized();
 			(header.number, header.hash())
@@ -689,7 +692,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_messages::ToDarwiniaMessagePayload> for Runtime {
+	impl darwinia_bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_messages::ToDarwiniaMessagePayload> for Runtime {
 		// fn estimate_message_delivery_and_dispatch_fee(
 		// 	_lane_id: bp_messages::LaneId,
 		// 	payload: darwinia_messages::ToDarwiniaMessagePayload,
@@ -721,7 +724,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::FromDarwiniaInboundLaneApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::FromDarwiniaInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgeDarwiniaMessages::inbound_latest_received_nonce(lane)
 		}
