@@ -2,10 +2,9 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
-
   ##
   # Build the Rust package
   ##
@@ -70,7 +69,6 @@ jobs:
       matrix:
         runtime: [crab-runtime, darwinia-runtime]
     steps:
-
       - uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
@@ -238,14 +236,14 @@ jobs:
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
-          path: .maintain/release-template.md
+          path: .github/release-template.md
 
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             deploy/*
-          body_path: ".maintain/release-template.md"
+          body_path: ".github/release-template.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
   clean-artifacts:
