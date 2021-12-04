@@ -5,8 +5,8 @@ on:
 
 jobs:
   pre-release:
-    name: Pre release
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '[BOT CHECK]') && contains(github.event.comment.body, 'pre-release')
+    name: Pre-release
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '[BOT CHECK] pre-release')
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
