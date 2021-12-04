@@ -56,7 +56,7 @@ jobs:
           path: shared
 
       - name: Optimize cache
-        run: .maintain/optimize-cache.sh || exit 0
+        run: .github/optimize-cache.sh || exit 0
 
   ##
   # Generate subwasm info
