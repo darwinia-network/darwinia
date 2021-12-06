@@ -86,7 +86,7 @@ jobs:
 
       - name: Purge large cache
         if: matrix.task.target == 'darwinia' && matrix.action == 'build'
-        run: .maintain/purge-large-cache.sh
+        run: .github/purge-large-cache.sh
 
   code-checks:
     name: Task check code
