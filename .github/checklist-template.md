@@ -44,7 +44,6 @@ cc @fewensa
 cc @wi1dcard
 
 ### Subql
-
 - [ ] [subql-darwinia-mmr](https://github.com/darwinia-network/subql-darinwia-mmr)
 - [ ] [subql-crab](https://github.com/darwinia-network/subql-crab)
 
