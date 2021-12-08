@@ -15,7 +15,7 @@ codec             = { package = "parity-scale-codec", version = "2.1", default-f
 log               = { version = "0.4" }
 serde             = { version = "1.0", optional = true }
 serde_json        = { version = "1.0", optional = true }
-smallvec          = { version = "1.6" }
+smallvec          = { version = "1.7" }
 static_assertions = { version = "1.1" }
 # darwinia-network frame
 darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
