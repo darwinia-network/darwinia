@@ -1,3 +1,9 @@
+#![allow(unused_parens)]
+#![allow(unused_imports)]
+
+use frame_support::{traits::Get, weights::Weight};
+use sp_std::marker::PhantomData;
+
 /// Weight functions for `pallet_election_provider_multi_phase`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_election_provider_multi_phase::WeightInfo for WeightInfo<T> {
