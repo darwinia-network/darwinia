@@ -54,13 +54,13 @@ use crate::{
 	client::DarwiniaClient,
 	service::{
 		self, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain, LightBackend,
-		LightClient,
+		LightClient,RpcResult
 	},
 };
 use darwinia_common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 use darwinia_rpc::{
 	darwinia::{FullDeps, LightDeps},
-	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,
+	BabeDeps, DenyUnsafe, GrandpaDeps, SubscriptionTaskExecutor,
 };
 
 sc_executor::native_executor_instance!(
@@ -83,7 +83,7 @@ fn new_partial<RuntimeApi, Executor>(
 		DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			impl Fn(DenyUnsafe, SubscriptionTaskExecutor) -> RpcExtension,
+			impl Fn(DenyUnsafe, SubscriptionTaskExecutor) -> RpcResult,
 			(
 				BabeBlockImport<
 					Block,
@@ -198,7 +198,7 @@ where
 		let select_chain = select_chain.clone();
 		let chain_spec = config.chain_spec.cloned_box();
 
-		move |deny_unsafe, subscription_executor| -> RpcExtension {
+		move |deny_unsafe, subscription_executor| -> RpcResult {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
@@ -219,7 +219,7 @@ where
 				},
 			};
 
-			darwinia_rpc::darwinia::create_full(deps)
+			darwinia_rpc::darwinia::create_full(deps).map_err(Into::into)
 		}
 	};
 

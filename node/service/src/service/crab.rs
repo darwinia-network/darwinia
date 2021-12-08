@@ -284,6 +284,7 @@ where
 			};
 
 			darwinia_rpc::crab::create_full(deps, subscription_task_executor.clone())
+				.map_err(Into::into)
 		}
 	};
 
