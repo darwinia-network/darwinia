@@ -122,7 +122,6 @@ use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
-use dvm_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use dvm_rpc_runtime_api::TransactionStatus;
 
 /// The address format for describing accounts.
@@ -655,17 +654,17 @@ sp_api::impl_runtime_apis! {
 			Ethereum::current_transaction_statuses()
 		}
 
-		fn current_block() -> Option<dvm_ethereum::Block> {
+		fn current_block() -> Option<dvm_ethereum::EthereumBlockV0> {
 			Ethereum::current_block()
 		}
 
-		fn current_receipts() -> Option<Vec<dvm_ethereum::Receipt>> {
+		fn current_receipts() -> Option<Vec<dvm_ethereum::EthereumReceipt>> {
 			Ethereum::current_receipts()
 		}
 
 		fn current_all() -> (
-			Option<dvm_ethereum::Block>,
-			Option<Vec<dvm_ethereum::Receipt>>,
+			Option<dvm_ethereum::EthereumBlockV0>,
+			Option<Vec<dvm_ethereum::EthereumReceipt>>,
 			Option<Vec<TransactionStatus>>
 		) {
 			(
@@ -677,11 +676,11 @@ sp_api::impl_runtime_apis! {
 
 		fn extrinsic_filter(
 			xts: Vec<<Block as BlockT>::Extrinsic>,
-		) -> Vec<EthereumTransaction> {
+		) -> Vec<dvm_ethereum::TransactionV0> {
 			xts.into_iter().filter_map(|xt| match xt.function {
-				Call::Ethereum(transact(t)) => Some(t),
+				Call::Ethereum(dvm_ethereum::Call::transact(t)) => Some(t),
 				_ => None
-			}).collect::<Vec<EthereumTransaction>>()
+			}).collect::<Vec<dvm_ethereum::TransactionV0>>()
 		}
 	}
 
@@ -776,17 +775,14 @@ sp_api::impl_runtime_apis! {
 
 pub struct TransactionConverter;
 impl dvm_rpc_runtime_api::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> UncheckedExtrinsic {
-		UncheckedExtrinsic::new_unsigned(
-			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
-		)
+	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> UncheckedExtrinsic {
+		UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact(transaction).into())
 	}
 }
 impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> OpaqueExtrinsic {
-		let extrinsic = UncheckedExtrinsic::new_unsigned(
-			<dvm_ethereum::Call<Runtime>>::transact(transaction).into(),
-		);
+	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> OpaqueExtrinsic {
+		let extrinsic =
+			UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact(transaction).into());
 		let encoded = extrinsic.encode();
 
 		OpaqueExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
