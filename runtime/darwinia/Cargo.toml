@@ -2,7 +2,7 @@
 authors     = ["Darwinia Network <hello@darwinia.network>"]
 build       = "build.rs"
 description = "Darwinia node runtime for Darwinia network"
-edition     = "2018"
+edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-runtime"
