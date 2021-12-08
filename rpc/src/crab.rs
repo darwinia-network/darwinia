@@ -213,6 +213,7 @@ where
 		pending_transactions.clone(),
 		backend.clone(),
 		is_authority,
+		vec![],
 		max_past_logs,
 	)));
 	if let Some(filter_pool) = filter_pool {
