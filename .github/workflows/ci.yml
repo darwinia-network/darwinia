@@ -92,7 +92,7 @@ jobs:
       - name: Compress ${{ matrix.task.target }}
         if: matrix.action != 'test'
         run: |
-          mv target/debug/${{ matrix.task.target }} .
+          mv target/release/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
