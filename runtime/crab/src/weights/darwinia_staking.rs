@@ -5,9 +5,9 @@
 use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for pallet_staking.
+/// Weight functions for darwinia_staking.
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Config> pallet_staking::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 	// Storage: Staking Bonded (r:1 w:1)
 	// Storage: Staking Ledger (r:1 w:1)
 	// Storage: Staking CurrentEra (r:1 w:0)
