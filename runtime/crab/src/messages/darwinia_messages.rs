@@ -50,7 +50,7 @@ use dp_s2s::{CallParams, CreatePayload};
 pub type ToDarwiniaMessagePayload = FromThisChainMessagePayload<WithDarwiniaMessageBridge>;
 
 /// The s2s backing pallet index in the darwinia chain runtime.
-pub const DARWINIA_S2S_BACKING_PALLET_INDEX: u8 = 20;
+pub const DARWINIA_S2S_BACKING_PALLET_INDEX: u8 = 46;
 
 #[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
 pub struct ToDarwiniaOutboundPayLoad;

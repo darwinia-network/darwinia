@@ -52,7 +52,7 @@ use dp_s2s::{CallParams, CreatePayload};
 pub type ToCrabMessagePayload = FromThisChainMessagePayload<WithCrabMessageBridge>;
 
 /// The s2s issuing pallet index in the crab chain runtime
-pub const CRAB_S2S_ISSUING_PALLET_INDEX: u8 = 49;
+pub const CRAB_S2S_ISSUING_PALLET_INDEX: u8 = 50;
 
 #[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
 pub struct ToCrabOutboundPayload;
