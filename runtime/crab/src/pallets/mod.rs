@@ -115,8 +115,8 @@ pub use bridge_grandpa::*;
 pub mod bridge_messages;
 pub use bridge_messages::*;
 
-pub mod from_substrate_issuing_;
-pub use from_substrate_issuing_::*;
-
 pub mod fee_market;
 pub use fee_market::*;
+
+pub mod from_substrate_issuing_;
+pub use from_substrate_issuing_::*;
