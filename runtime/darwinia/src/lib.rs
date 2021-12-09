@@ -496,6 +496,10 @@ sp_api::impl_runtime_apis! {
 			Grandpa::grandpa_authorities()
 		}
 
+		fn current_set_id() -> fg_primitives::SetId {
+			Grandpa::current_set_id()
+		}
+
 		fn submit_report_equivocation_unsigned_extrinsic(
 			equivocation_proof: fg_primitives::EquivocationProof<
 				<Block as BlockT>::Hash,
@@ -692,7 +696,13 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// TODO: Move to S2S
 		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
-		darwinia_staking::migration::migrate(b"Staking");
+		migration::move_pallet(b"Instance2Treasury", b"KtonTreasury");
+
+		log::info!("`KtonTreasury` migrated.");
+
+		migration::remove_storage_prefix(b"FeeMarket", b"ConfirmedMessagesThisBlock", &[]);
+
+		log::info!("`ConfirmedMessagesThisBlock` removed.");
 
 		// 0
 		RuntimeBlockWeights::get().max_block

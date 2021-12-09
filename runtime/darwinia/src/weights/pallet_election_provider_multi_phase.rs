@@ -4,7 +4,7 @@
 use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for pallet_election_provider_multi_phase.
+/// Weight functions for `pallet_election_provider_multi_phase`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_election_provider_multi_phase::WeightInfo for WeightInfo<T> {
 	fn on_initialize_nothing() -> Weight {
@@ -25,7 +25,7 @@ impl<T: frame_system::Config> pallet_election_provider_multi_phase::WeightInfo f
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn elect_queued() -> Weight {
+	fn elect_queued(_v: u32, _t: u32, _a: u32, _d: u32) -> Weight {
 		(5_408_539_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(6 as Weight))
