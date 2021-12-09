@@ -71,35 +71,35 @@ pub fn config() -> Result<ChainSpec, String> {
 /// Darwinia config.
 pub fn genesis_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		const ROOT: &'static str =
+		const ROOT: & str =
 			"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
-		const DA_CRABK: &'static str =
+		const DA_CRABK: & str =
 			"0x6d6f646c64612f637261626b0000000000000000000000000000000000000000";
-		const TEAM_VESTING: &'static str =
+		const TEAM_VESTING: & str =
 			"0x88db6cf10428d2608cd2ca2209971d0227422dc1f53c6ec0848fa610848a6ed3";
-		const FOUNDATION_VESTING: &'static str =
+		const FOUNDATION_VESTING: & str =
 			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
-		const GENESIS_VALIDATOR_1_STASH: &'static str =
+		const GENESIS_VALIDATOR_1_STASH: & str =
 			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
-		const GENESIS_VALIDATOR_1_CONTROLLER: &'static str =
+		const GENESIS_VALIDATOR_1_CONTROLLER: & str =
 			"0x7e450358b1768b8cc1df515292a97ac9f14f3f2ec9705a7352ec70b380c7fa60";
-		const GENESIS_VALIDATOR_1_SESSION: &'static str =
+		const GENESIS_VALIDATOR_1_SESSION: & str =
 			"0x0ae0f956e21c3f0ca9ea9121b41a1c1fc567f6ba6ce8abfed000073bb3352511";
-		const GENESIS_VALIDATOR_1_GRANDPA: &'static str =
+		const GENESIS_VALIDATOR_1_GRANDPA: & str =
 			"0x14342647be14beb21000d518a326be1e9b01d96ef1415148043e4ae2c726d463";
-		const GENESIS_VALIDATOR_2_STASH: &'static str =
+		const GENESIS_VALIDATOR_2_STASH: & str =
 			"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f";
-		const GENESIS_VALIDATOR_2_CONTROLLER: &'static str =
+		const GENESIS_VALIDATOR_2_CONTROLLER: & str =
 			"0xb62d88e3f439fe9b5ea799b27bf7c6db5e795de1784f27b1bc051553499e420f";
-		const GENESIS_VALIDATOR_2_SESSION: &'static str =
+		const GENESIS_VALIDATOR_2_SESSION: & str =
 			"0xc8053dc90b1e4f4741c5c9088dcc1ee8758600fe8aa8702c178d91af1d191a17";
-		const GENESIS_VALIDATOR_2_GRANDPA: &'static str =
+		const GENESIS_VALIDATOR_2_GRANDPA: & str =
 			"0x229af404837dda8416b3f9ef22f4c3a8cc0103cd091bcdeb0d80776e6c3b99f1";
 
-		const TOKEN_REDEEM_ADDRESS: &'static str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
-		const DEPOSIT_REDEEM_ADDRESS: &'static str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
-		const RING_TOKEN_ADDRESS: &'static str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
-		const KTON_TOKEN_ADDRESS: &'static str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
+		const TOKEN_REDEEM_ADDRESS: & str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
+		const DEPOSIT_REDEEM_ADDRESS: & str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
+		const RING_TOKEN_ADDRESS: & str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
+		const KTON_TOKEN_ADDRESS: & str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
 
 		let mut rings = BTreeMap::new();
 		let mut ktons = BTreeMap::new();
@@ -390,10 +390,10 @@ pub fn genesis_config() -> ChainSpec {
 /// Darwinia development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		const TOKEN_REDEEM_ADDRESS: &'static str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
-		const DEPOSIT_REDEEM_ADDRESS: &'static str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
-		const RING_TOKEN_ADDRESS: &'static str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
-		const KTON_TOKEN_ADDRESS: &'static str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
+		const TOKEN_REDEEM_ADDRESS: & str = "0xea7938985898af7fd945b03b7bc2e405e744e913";
+		const DEPOSIT_REDEEM_ADDRESS: & str = "0x649fdf6ee483a96e020b889571e93700fbd82d88";
+		const RING_TOKEN_ADDRESS: & str = "0x9469d013805bffb7d3debe5e7839237e535ec483";
+		const KTON_TOKEN_ADDRESS: & str = "0x9f284e1337a815fe77d2ff4ae46544645b20c5ff";
 
 		let root = get_account_id_from_seed::<sr25519::Public>("Alice");
 		let initial_authorities = vec![get_authority_keys_from_seed("Alice")];
