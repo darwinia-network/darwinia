@@ -3,7 +3,7 @@ use bp_messages::LaneId;
 use bp_runtime::ChainId;
 use frame_support::PalletId;
 // --- darwinia-network ---
-use crate::{messages::crab_messages::ToCrabOutboundPayload, *};
+use crate::{messages::crab_message::ToCrabOutboundPayload, *};
 use darwinia_bridge_primitives::{AccountIdConverter, DARWINIA_CRAB_LANE};
 use darwinia_support::{evm::IntoH160, s2s::LatestMessageNoncer};
 use dp_asset::{TokenMetadata, NATIVE_TOKEN_TYPE};

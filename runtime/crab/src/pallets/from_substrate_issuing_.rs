@@ -4,7 +4,7 @@ use bp_runtime::ChainId;
 use frame_support::PalletId;
 use sp_runtime::AccountId32;
 // --- darwinia-network ---
-use crate::{messages::darwinia_messages::ToDarwiniaOutboundPayLoad, *};
+use crate::{messages::darwinia_message::ToDarwiniaOutboundPayLoad, *};
 use darwinia_bridge_primitives::{AccountIdConverter, DARWINIA_CHAIN_ID, DARWINIA_CRAB_LANE};
 use darwinia_support::{s2s::ToEthAddress, ChainName};
 use from_substrate_issuing::Config;

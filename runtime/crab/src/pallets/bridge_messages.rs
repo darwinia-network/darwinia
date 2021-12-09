@@ -5,7 +5,7 @@ use bp_messages::MessageNonce;
 use pallet_bridge_messages::Config;
 // --- darwinia-network ---
 use crate::{
-	darwinia_messages::{
+	darwinia_message::{
 		CrabToDarwiniaMessagesParameter, Darwinia, FromDarwiniaMessageDispatch,
 		FromDarwiniaMessagePayload, ToDarwiniaMessagePayload, ToDarwiniaMessageVerifier,
 	},

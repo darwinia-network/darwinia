@@ -616,14 +616,14 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
+	impl darwinia_bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_message::ToCrabMessagePayload> for Runtime {
 		// fn estimate_message_delivery_and_dispatch_fee(
 		// 	_lane_id: bp_messages::LaneId,
-		// 	payload: crab_messages::ToCrabMessagePayload,
+		// 	payload: crab_message::ToCrabMessagePayload,
 		// ) -> Option<Balance> {
-		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<crab_messages::WithCrabMessageBridge>(
+		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<crab_message::WithCrabMessageBridge>(
 		// 		&payload,
-		// 		crab_messages::WithCrabMessageBridge::RELAYER_FEE_PERCENT,
+		// 		crab_message::WithCrabMessageBridge::RELAYER_FEE_PERCENT,
 		// 	).ok()
 		// }
 
@@ -635,7 +635,7 @@ sp_api::impl_runtime_apis! {
 			bridge_runtime_common::messages_api::outbound_message_details::<
 				Runtime,
 				WithCrabMessages,
-				crab_messages::WithCrabMessageBridge,
+				crab_message::WithCrabMessageBridge,
 			>(lane, begin, end)
 		}
 

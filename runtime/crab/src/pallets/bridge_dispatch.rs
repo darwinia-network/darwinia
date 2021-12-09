@@ -6,7 +6,7 @@ use frame_support::traits::Contains;
 use pallet_bridge_dispatch::Config;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_messages::FromDarwiniaEncodedCall;
+use darwinia_message::FromDarwiniaEncodedCall;
 
 pub struct S2sCallFilter;
 impl Contains<Call> for S2sCallFilter {

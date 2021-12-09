@@ -698,14 +698,14 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_messages::ToDarwiniaMessagePayload> for Runtime {
+	impl darwinia_bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_message::ToDarwiniaMessagePayload> for Runtime {
 		// fn estimate_message_delivery_and_dispatch_fee(
 		// 	_lane_id: bp_messages::LaneId,
-		// 	payload: darwinia_messages::ToDarwiniaMessagePayload,
+		// 	payload: darwinia_message::ToDarwiniaMessagePayload,
 		// ) -> Option<Balance> {
-		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<darwinia_messages::WithDarwiniaMessageBridge>(
+		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<darwinia_message::WithDarwiniaMessageBridge>(
 		// 		&payload,
-		// 		darwinia_messages::WithDarwiniaMessageBridge::RELAYER_FEE_PERCENT,
+		// 		darwinia_message::WithDarwiniaMessageBridge::RELAYER_FEE_PERCENT,
 		// 	).ok()
 		// }
 
@@ -717,7 +717,7 @@ sp_api::impl_runtime_apis! {
 			bridge_runtime_common::messages_api::outbound_message_details::<
 				Runtime,
 				WithDarwiniaMessages,
-				darwinia_messages::WithDarwiniaMessageBridge,
+				darwinia_message::WithDarwiniaMessageBridge,
 			>(lane, begin, end)
 		}
 
