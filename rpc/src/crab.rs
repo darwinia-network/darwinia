@@ -76,7 +76,7 @@ pub struct LightDeps<C, F, P> {
 pub fn create_full<C, P, SC, B>(
 	deps: FullDeps<C, P, SC, B>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
-) -> RpcExtension
+) -> RpcResult
 where
 	C: 'static
 		+ Send
@@ -100,7 +100,7 @@ where
 	// <--- dvm ---
 	C::Api: dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
 	// --- dvm --->
-	P: 'static + Sync + Send + sp_transaction_pool::TransactionPool<Block = Block>,
+	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
@@ -187,7 +187,7 @@ where
 		shared_authority_set,
 		shared_epoch_changes,
 		deny_unsafe,
-	)));
+	)?));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
 	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
@@ -213,6 +213,7 @@ where
 		pending_transactions.clone(),
 		backend.clone(),
 		is_authority,
+		vec![],
 		max_past_logs,
 	)));
 	if let Some(filter_pool) = filter_pool {
@@ -244,7 +245,7 @@ where
 	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
 	// --- dvm --->
 
-	io
+	Ok(io)
 }
 
 /// Instantiate all RPC extensions for light node.
@@ -257,7 +258,7 @@ where
 		+ sp_blockchain::HeaderBackend<Block>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	P: 'static + sp_transaction_pool::TransactionPool,
+	P: 'static + sc_transaction_pool_api::TransactionPool,
 	F: 'static + sc_client_api::Fetcher<Block>,
 {
 	// --- paritytech ---

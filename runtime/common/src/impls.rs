@@ -19,9 +19,9 @@
 //! Auxillary struct/enums for Darwinia runtime.
 
 // --- crates.io ---
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 // --- paritytech ---
-use frame_support::traits::{Currency, Imbalance, MaxEncodedLen, OnUnbalanced};
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 use sp_runtime::RuntimeDebug;
 // --- darwinia-network ---
 use crate::*;

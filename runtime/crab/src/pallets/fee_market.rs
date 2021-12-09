@@ -12,7 +12,6 @@ frame_support::parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 
-	pub const AssignedRelayersNumber: u64 = 3;
 	pub const MinimumRelayFee: Balance = 15 * COIN;
 	pub const CollateralPerOrder: Balance = 50 * COIN;
 	pub const Slot: BlockNumber = 600;
@@ -31,7 +30,6 @@ impl Config for Runtime {
 	type CollateralPerOrder = CollateralPerOrder;
 	type Slot = Slot;
 
-	type AssignedRelayersNumber = AssignedRelayersNumber;
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
@@ -41,7 +39,6 @@ impl Config for Runtime {
 	type Event = Event;
 	type WeightInfo = ();
 }
-
 
 /// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;

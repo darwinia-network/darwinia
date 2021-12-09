@@ -1,13 +1,13 @@
 // --- paritytech ---
-use frame_support::{traits::Filter, weights::constants::RocksDbWeight};
+use frame_support::{traits::Contains, weights::constants::RocksDbWeight};
 use frame_system::Config;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use crate::{weights::frame_system::WeightInfo, *};
 
 pub struct BaseFilter;
-impl Filter<Call> for BaseFilter {
-	fn filter(_: &Call) -> bool {
+impl Contains<Call> for BaseFilter {
+	fn contains(_: &Call) -> bool {
 		true
 	}
 }
