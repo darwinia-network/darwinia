@@ -700,6 +700,10 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 		log::info!("`KtonTreasury` migrated.");
 
+		migration::remove_storage_prefix(b"FeeMarket", b"ConfirmedMessagesThisBlock", &[]);
+
+		log::info!("`ConfirmedMessagesThisBlock` removed.");
+
 		// 0
 		RuntimeBlockWeights::get().max_block
 	}
