@@ -25,7 +25,11 @@ on:
 env:
   RUST_TOOLCHAIN: nightly
   RUST_BACKTRACE: full
-  GITHUB_CACHE_VERSION: 1
+  RUSTC_WRAPPER: sccache
+  SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
+  SCCACHE_VERSION: v0.2.15
+  SCCACHE_DIR: /home/runner/.cache/sccache
+  GITHUB_CACHE_VERSION: 0
 
 jobs:
   basic-checks:
@@ -52,29 +56,43 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           default: true
 
+      - name: Install Sccache
+        run: |
+          export SCCACHE_FILE=sccache-${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl
+          curl -L ${{ env.SCCACHE_LINK }}/${{ env.SCCACHE_VERSION }}/$SCCACHE_FILE.tar.gz | tar xz
+          sudo mv $SCCACHE_FILE/sccache /usr/bin
+          sudo chmod u+x /usr/bin/sccache
+
       - name: Fetch latest code
         uses: actions/checkout@v2
         with:
           repository: ${{ matrix.task.repository }}
 
-      - name: Cache
+      - name: Cache cargo
         uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          key: cargo-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
+            cargo-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
+
+      - name: Cache sccache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.SCCACHE_DIR}}
+          key: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
       - name: Action ${{ matrix.action }}
-        run: cargo ${{ matrix.action }} --locked
+        run: cargo ${{ matrix.action }} --release --locked
 
       - name: Compress ${{ matrix.task.target }}
         if: matrix.action != 'test'
         run: |
-          mv target/debug/${{ matrix.task.target }} .
+          mv target/release/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
@@ -85,7 +103,7 @@ jobs:
           path: ${{ matrix.task.target }}.tar.zst
 
       - name: Purge large cache
-        if: matrix.task.target == 'darwinia' && matrix.action == 'build'
+        if: matrix.task.target == 'darwinia'
         run: .github/purge-large-cache.sh
 
   code-checks:
