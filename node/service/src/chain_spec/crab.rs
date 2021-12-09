@@ -72,8 +72,8 @@ pub fn config() -> Result<ChainSpec, String> {
 /// Crab genesis config.
 pub fn genesis_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		const C_RING_ENDOWMENT: Balance = 1_000_000 * COIN;
-		const C_KTON_ENDOWMENT: Balance = 10_000 * COIN;
+		const CRAB_ENDOWMENT: Balance = 1_000_000 * COIN;
+		const CKTON_ENDOWMENT: Balance = 10_000 * COIN;
 
 		const ROOT: &str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
 		const MULTI_SIG: &str =
@@ -139,12 +139,12 @@ pub fn genesis_config() -> ChainSpec {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
-					.map(|k| (k, C_RING_ENDOWMENT))
+					.map(|k| (k, CRAB_ENDOWMENT))
 					.chain(
 						vec![
 							(root.clone(), 25_000_000 * COIN),
 							(multi_sig, 700_000_000 * COIN),
-							(genesis_validator.0.clone(), C_RING_ENDOWMENT),
+							(genesis_validator.0.clone(), CRAB_ENDOWMENT),
 						]
 						.into_iter(),
 					)
@@ -154,7 +154,7 @@ pub fn genesis_config() -> ChainSpec {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
-					.map(|k| (k, C_KTON_ENDOWMENT))
+					.map(|k| (k, CKTON_ENDOWMENT))
 					.collect(),
 			},
 			staking: StakingConfig {
