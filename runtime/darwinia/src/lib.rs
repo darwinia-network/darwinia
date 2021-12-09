@@ -319,6 +319,9 @@ frame_support::construct_runtime! {
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 
 		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 45,
+		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
+
+		Substrate2SubstrateBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
 	}
 }
 

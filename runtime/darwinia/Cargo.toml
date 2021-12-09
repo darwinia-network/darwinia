@@ -35,12 +35,14 @@ darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https:/
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+to-substrate-backing                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # darwinia-network primitives
 darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
 darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
-# dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dp-asset                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dp-s2s                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+ethereum-primitives        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
@@ -131,11 +133,13 @@ std = [
 	"darwinia-support/std",
 	"darwinia-vesting/std",
 	"to-ethereum-backing/std",
+	"to-substrate-backing/std",
 	"to-tron-backing/std",
 	# darwinia-network primitives
 	"darwinia-bridge-primitives/std",
 	"darwinia-common-primitives/std",
-	# "dp-s2s/std",
+	"dp-asset/std",
+	"dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime
 	"darwinia-common-runtime/std",

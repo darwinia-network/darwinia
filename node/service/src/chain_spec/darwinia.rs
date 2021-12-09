@@ -362,6 +362,7 @@ pub fn genesis_config() -> ChainSpec {
 				backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
+			substrate_2_substrate_backing: Default::default(),
 		}
 	}
 
@@ -504,6 +505,7 @@ pub fn development_config() -> ChainSpec {
 				backed_ring: 1 << 56,
 				backed_kton: 1 << 56,
 			},
+			substrate_2_substrate_backing: Default::default(),
 		}
 	}
 

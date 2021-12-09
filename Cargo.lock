@@ -1849,6 +1849,8 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "darwinia-vesting",
+ "dp-asset",
+ "dp-s2s",
  "ethereum-primitives",
  "frame-benchmarking",
  "frame-election-provider-support",
@@ -1908,6 +1910,7 @@ dependencies = [
  "static_assertions",
  "substrate-wasm-builder",
  "to-ethereum-backing",
+ "to-substrate-backing",
  "to-tron-backing",
 ]
 
@@ -9474,6 +9477,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "to-substrate-backing"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#0a3e196edd0b4c41bc01d3414dad631f90d550e7"
+dependencies = [
+ "array-bytes",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-runtime",
+ "darwinia-support",
+ "dp-asset",
+ "dp-contract",
+ "dp-s2s",
+ "ethereum-primitives",
+ "ethereum-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "serde_json",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "to-tron-backing"
 version = "2.7.1"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#0a3e196edd0b4c41bc01d3414dad631f90d550e7"
@@ -9997,7 +10026,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
  "cfg-if 1.0.0",
- "rand 0.3.23",
+ "rand 0.8.4",
  "static_assertions",
 ]
 
