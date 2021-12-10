@@ -1,7 +1,7 @@
 // --- crates.io ---
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 // --- paritytech ---
-use frame_support::traits::{InstanceFilter, MaxEncodedLen};
+use frame_support::traits::InstanceFilter;
 use pallet_proxy::Config;
 use sp_runtime::RuntimeDebug;
 // --- darwinia-network ---
@@ -109,7 +109,7 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type Currency = Balances;
+	type Currency = Ring;
 	type ProxyType = ProxyType;
 	type ProxyDepositBase = ProxyDepositBase;
 	type ProxyDepositFactor = ProxyDepositFactor;

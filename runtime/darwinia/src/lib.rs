@@ -114,8 +114,8 @@ pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
 
-pub use bridge_primitives::*;
-pub use common_primitives::*;
+pub use darwinia_bridge_primitives::*;
+pub use darwinia_common_primitives::*;
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_sudo::Call as SudoCall;
@@ -160,9 +160,9 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
+use darwinia_common_runtime::*;
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_header_mmr_rpc_runtime_api::RuntimeDispatchInfo as HeaderMMRRuntimeDispatchInfo;
-use darwinia_runtime_common::*;
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 /// The address format for describing accounts.
@@ -496,6 +496,10 @@ sp_api::impl_runtime_apis! {
 			Grandpa::grandpa_authorities()
 		}
 
+		fn current_set_id() -> fg_primitives::SetId {
+			Grandpa::current_set_id()
+		}
+
 		fn submit_report_equivocation_unsigned_extrinsic(
 			equivocation_proof: fg_primitives::EquivocationProof<
 				<Block as BlockT>::Hash,
@@ -598,7 +602,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::CrabFinalityApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::CrabFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
 			let header = BridgeCrabGrandpa::best_finalized();
 			(header.number, header.hash())
@@ -609,7 +613,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
+	impl darwinia_bridge_primitives::ToCrabOutboundLaneApi<Block, Balance, crab_messages::ToCrabMessagePayload> for Runtime {
 		// fn estimate_message_delivery_and_dispatch_fee(
 		// 	_lane_id: bp_messages::LaneId,
 		// 	payload: crab_messages::ToCrabMessagePayload,
@@ -641,7 +645,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bridge_primitives::FromCrabInboundLaneApi<Block> for Runtime {
+	impl darwinia_bridge_primitives::FromCrabInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgeCrabMessages::inbound_latest_received_nonce(lane)
 		}
@@ -692,7 +696,13 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// TODO: Move to S2S
 		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
 
-		darwinia_staking::migration::migrate(b"Staking");
+		migration::move_pallet(b"Instance2Treasury", b"KtonTreasury");
+
+		log::info!("`KtonTreasury` migrated.");
+
+		migration::remove_storage_prefix(b"FeeMarket", b"ConfirmedMessagesThisBlock", &[]);
+
+		log::info!("`ConfirmedMessagesThisBlock` removed.");
 
 		// 0
 		RuntimeBlockWeights::get().max_block

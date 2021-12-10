@@ -1,10 +1,10 @@
 [package]
 authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia node runtime common"
-edition     = "2018"
+description = "Darwinia node common runtime"
+edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "darwinia-runtime-common"
+name        = "darwinia-common-runtime"
 repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.11.6"
 
@@ -13,23 +13,19 @@ version     = "0.11.6"
 codec             = { package = "parity-scale-codec", version = "2.1", default-features = false }
 static_assertions = { version = "1.1" }
 # darwinia-network frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-staking  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
-darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", tag = "darwinia-v0.11.6-3" }
+darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # darwinia-network primitives
-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # paritytech frame
-frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-pallet-treasury            = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+pallet-authorship          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+pallet-treasury            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 # paritytech primitives
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-
-# will be removed in later substrate version
-max-encoded-len = { default-features = false, git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 
 [features]
 default = ["std"]
@@ -40,10 +36,9 @@ std = [
 	"codec/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
-	"darwinia-staking/std",
 	"darwinia-support/std",
 	# darwinia-network primitives
-	"common-primitives/std",
+	"darwinia-common-primitives/std",
 	# paritytech frame
 	"frame-support/std",
 	"frame-system/std",
@@ -53,5 +48,4 @@ std = [
 	# paritytech primitives
 	"sp-runtime/std",
 	"sp-std/std",
-	"max-encoded-len/std",
 ]

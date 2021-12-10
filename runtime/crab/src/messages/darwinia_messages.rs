@@ -155,17 +155,18 @@ impl messages::ThisChainWithMessages for Crab {
 
 	fn estimate_delivery_confirmation_transaction() -> MessageTransaction<Weight> {
 		let inbound_data_size = InboundLaneData::<AccountId>::encoded_size_hint(
-			bridge_primitives::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE,
+			darwinia_bridge_primitives::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE,
 			1,
 			1,
 		)
 		.unwrap_or(u32::MAX);
 
 		MessageTransaction {
-			dispatch_weight: bridge_primitives::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
+			dispatch_weight:
+				darwinia_bridge_primitives::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
 			size: inbound_data_size
-				.saturating_add(bridge_primitives::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(bridge_primitives::TX_EXTRA_BYTES),
+				.saturating_add(darwinia_bridge_primitives::EXTRA_STORAGE_PROOF_SIZE)
+				.saturating_add(darwinia_bridge_primitives::TX_EXTRA_BYTES),
 		}
 	}
 
@@ -223,17 +224,17 @@ impl messages::BridgedChainWithMessages for Darwinia {
 
 		MessageTransaction {
 			dispatch_weight: extra_bytes_in_payload
-				.saturating_mul(bridge_primitives::ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT)
-				.saturating_add(bridge_primitives::DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT)
+				.saturating_mul(darwinia_bridge_primitives::ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT)
+				.saturating_add(darwinia_bridge_primitives::DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT)
 				.saturating_add(message_dispatch_weight)
 				.saturating_sub(if include_pay_dispatch_fee_cost {
 					0
 				} else {
-					bridge_primitives::PAY_INBOUND_DISPATCH_FEE_WEIGHT
+					darwinia_bridge_primitives::PAY_INBOUND_DISPATCH_FEE_WEIGHT
 				}),
 			size: message_payload_len
-				.saturating_add(bridge_primitives::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(bridge_primitives::TX_EXTRA_BYTES),
+				.saturating_add(darwinia_bridge_primitives::EXTRA_STORAGE_PROOF_SIZE)
+				.saturating_add(darwinia_bridge_primitives::TX_EXTRA_BYTES),
 		}
 	}
 

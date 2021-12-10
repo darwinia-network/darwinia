@@ -33,7 +33,7 @@ use futures::stream::StreamExt;
 use sc_authority_discovery::WorkerConfig;
 use sc_basic_authorship::ProposerFactory;
 use sc_client_api::{BlockchainEvents, ExecutorProvider, RemoteBackend, StateBackendFor};
-use sc_consensus::LongestChain;
+use sc_consensus::{BasicQueue, DefaultImportQueue, LongestChain};
 use sc_consensus_babe::{
 	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
 };
@@ -51,9 +51,7 @@ use sc_service::{
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{BasicPool, FullPool};
 use sp_api::ConstructRuntimeApi;
-use sp_consensus::{
-	import_queue::BasicQueue, CanAuthorWithNativeVersion, DefaultImportQueue, NeverCanAuthor,
-};
+use sp_consensus::{CanAuthorWithNativeVersion, NeverCanAuthor};
 use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
@@ -61,13 +59,13 @@ use crate::{
 	client::CrabClient,
 	service::{
 		self, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain, LightBackend,
-		LightClient,
+		LightClient, RpcResult,
 	},
 };
-use common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
+use darwinia_common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
 use darwinia_rpc::{
 	crab::{FullDeps, LightDeps},
-	BabeDeps, DenyUnsafe, GrandpaDeps, RpcExtension, SubscriptionTaskExecutor,
+	BabeDeps, DenyUnsafe, GrandpaDeps, SubscriptionTaskExecutor,
 };
 use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
@@ -126,7 +124,7 @@ fn new_partial<RuntimeApi, Executor>(
 				bool,
 				Arc<NetworkService<Block, Hash>>,
 				SubscriptionTaskExecutor,
-			) -> RpcExtension,
+			) -> RpcResult,
 			(
 				BabeBlockImport<
 					Block,
@@ -256,7 +254,7 @@ where
 		let filter_pool = filter_pool.clone();
 		// --- dvm --->
 
-		move |deny_unsafe, is_authority, network, subscription_executor| -> RpcExtension {
+		move |deny_unsafe, is_authority, network, subscription_executor| -> RpcResult {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
@@ -286,6 +284,7 @@ where
 			};
 
 			darwinia_rpc::crab::create_full(deps, subscription_task_executor.clone())
+				.map_err(Into::into)
 		}
 	};
 
@@ -377,15 +376,11 @@ where
 		.network
 		.extra_sets
 		.push(sc_finality_grandpa::grandpa_peers_set_config());
-	config.network.request_response_protocols.push(
-		sc_finality_grandpa_warp_sync::request_response_config_for_chain(
-			&config,
-			task_manager.spawn_handle(),
-			backend.clone(),
-			import_setup.1.shared_authority_set().clone(),
-		),
-	);
 
+	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+		backend.clone(),
+		import_setup.1.shared_authority_set().clone(),
+	));
 	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
@@ -395,6 +390,7 @@ where
 			import_queue,
 			on_demand: None,
 			block_announce_validator_builder: None,
+			warp_sync: Some(warp_sync),
 		})?;
 
 	if config.offchain_worker.enabled {
@@ -416,7 +412,7 @@ where
 			let wrap_rpc_extensions_builder = {
 				let network = network.clone();
 
-				move |deny_unsafe, subscription_executor| -> RpcExtension {
+				move |deny_unsafe, subscription_executor| -> RpcResult {
 					rpc_extensions_builder(
 						deny_unsafe,
 						is_authority,
@@ -691,6 +687,10 @@ where
 		NeverCanAuthor,
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
+	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+		backend.clone(),
+		grandpa_link.shared_authority_set().clone(),
+	));
 	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
 			config: &config,
@@ -700,6 +700,7 @@ where
 			import_queue,
 			on_demand: Some(on_demand.clone()),
 			block_announce_validator_builder: None,
+			warp_sync: Some(warp_sync),
 		})?;
 	let enable_grandpa = !config.disable_grandpa;
 

@@ -12,7 +12,6 @@ frame_support::parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 
-	pub const AssignedRelayersNumber: u64 = 3;
 	pub const MinimumRelayFee: Balance = 15 * COIN;
 	pub const CollateralPerOrder: Balance = 50 * COIN;
 	pub const Slot: BlockNumber = 600;
@@ -27,7 +26,6 @@ impl Config for Runtime {
 	type TreasuryPalletId = TreasuryPalletId;
 	type LockId = FeeMarketLockId;
 
-	type AssignedRelayersNumber = AssignedRelayersNumber;
 	type MinimumRelayFee = MinimumRelayFee;
 	type CollateralPerOrder = CollateralPerOrder;
 	type Slot = Slot;

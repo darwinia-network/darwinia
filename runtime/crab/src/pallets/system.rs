@@ -1,13 +1,13 @@
 // --- paritytech ---
-use frame_support::{traits::Filter, weights::constants::RocksDbWeight};
+use frame_support::{traits::Contains, weights::constants::RocksDbWeight};
 use frame_system::Config;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use crate::{weights::frame_system::WeightInfo, *};
 
 pub struct BaseFilter;
-impl Filter<Call> for BaseFilter {
-	fn filter(_: &Call) -> bool {
+impl Contains<Call> for BaseFilter {
+	fn contains(_: &Call) -> bool {
 		true
 	}
 }
@@ -21,6 +21,7 @@ impl Config for Runtime {
 	type BaseCallFilter = BaseFilter;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
+	type DbWeight = RocksDbWeight;
 	type Origin = Origin;
 	type Call = Call;
 	type Index = Nonce;
@@ -32,7 +33,6 @@ impl Config for Runtime {
 	type Header = Header;
 	type Event = Event;
 	type BlockHashCount = BlockHashCountForCrab;
-	type DbWeight = RocksDbWeight;
 	type Version = Version;
 	type PalletInfo = PalletInfo;
 	type AccountData = AccountData<Balance>;
