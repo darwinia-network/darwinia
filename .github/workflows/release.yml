@@ -176,10 +176,12 @@ jobs:
       - name: Prepare deploy folder
         run: |
           chmod +x shared/darwinia # REQUIRED, same as Docker image
+          tar cf darwinia-x86_64-linux-gnu.tar.zst -C shared darwinia -I pzstd
           tar cjSf darwinia-x86_64-linux-gnu.tar.bz2 -C shared darwinia
 
           mkdir -p deploy
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
+          mv darwinia-x86_64-linux-gnu.tar.bz2 deploy/
 
           mv shared/crab-runtime/*.compact.wasm deploy/
           mv shared/crab-runtime/*.compact.json deploy/
