@@ -1045,7 +1045,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "from-ethereum-issuing",
  "from-substrate-issuing",
  "log",
  "pallet-authority-discovery",
@@ -3118,30 +3117,6 @@ dependencies = [
  "frame-support",
  "parity-scale-codec",
  "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "from-ethereum-issuing"
-version = "2.7.1"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
-dependencies = [
- "array-bytes",
- "darwinia-bridge-ethereum",
- "darwinia-evm",
- "darwinia-relay-primitives",
- "darwinia-support",
- "dp-contract",
- "dp-evm",
- "dvm-ethereum",
- "ethereum-primitives",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "sha3 0.9.1",
  "sp-runtime",
  "sp-std",
 ]
