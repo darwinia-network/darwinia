@@ -134,7 +134,6 @@ use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
-	PalletId,
 };
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -696,8 +695,18 @@ sp_api::impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		// TODO: Move to S2S
-		// const CrabBackingPalletId: PalletId = PalletId(*b"da/crabk");
+		// --- paritytech ---
+		use frame_support::PalletId;
+		use frame_system::RawOrigin;
+		use sp_runtime::traits::AccountIdConversion;
+
+		let result = Ring::transfer_all(
+			RawOrigin::Signed(PalletId(*b"da/crabk").into_account()).into(),
+			S2sBackingPalletId::get().into_account(),
+			false,
+		);
+
+		log::info!("{:?}, migrated.", result);
 
 		migration::move_pallet(b"Instance2Treasury", b"KtonTreasury");
 
@@ -713,11 +722,25 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::PalletId;
+		use sp_runtime::traits::{AccountIdConversion, Zero};
+
+		assert!(!Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
+		assert!(Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
+
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::PalletId;
+		use sp_runtime::traits::{AccountIdConversion, Zero};
+
+		assert!(!Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
+		assert!(Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
+
 		Ok(())
 	}
 }
