@@ -6,7 +6,7 @@ use bp_runtime::ChainId;
 use pallet_bridge_messages::Config;
 // --- darwinia-network ---
 use crate::{
-	messages::crab_messages::{
+	messages::crab_message::{
 		Crab, DarwiniaToCrabMessagesParameter, FromCrabMessageDispatch, FromCrabMessagePayload,
 		ToCrabMessagePayload, ToCrabMessageVerifier,
 	},

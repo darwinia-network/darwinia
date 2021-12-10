@@ -30,8 +30,8 @@ use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
-use darwinia_common_primitives::{AccountId, Balance, COIN};
 use crab_runtime::*;
+use darwinia_common_primitives::{AccountId, Balance, COIN};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -72,16 +72,15 @@ pub fn config() -> Result<ChainSpec, String> {
 /// Crab genesis config.
 pub fn genesis_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		const C_RING_ENDOWMENT: Balance = 1_000_000 * COIN;
-		const C_KTON_ENDOWMENT: Balance = 10_000 * COIN;
+		const CRAB_ENDOWMENT: Balance = 1_000_000 * COIN;
+		const CKTON_ENDOWMENT: Balance = 10_000 * COIN;
 
-		const ROOT: &'static str =
-			"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
-		const MULTI_SIG: &'static str =
+		const ROOT: &str = "0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49";
+		const MULTI_SIG: &str =
 			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8";
-		const GENESIS_VALIDATOR_SR: &'static str =
+		const GENESIS_VALIDATOR_SR: &str =
 			"0xb4f7f03bebc56ebe96bc52ea5ed3159d45a0ce3a8d7f082983c33ef133274747";
-		const GENESIS_VALIDATOR_ED: &'static str =
+		const GENESIS_VALIDATOR_ED: &str =
 			"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd";
 
 		let root: AccountId = array_bytes::hex_into_unchecked(ROOT);
@@ -140,12 +139,12 @@ pub fn genesis_config() -> ChainSpec {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
-					.map(|k| (k, C_RING_ENDOWMENT))
+					.map(|k| (k, CRAB_ENDOWMENT))
 					.chain(
 						vec![
 							(root.clone(), 25_000_000 * COIN),
 							(multi_sig, 700_000_000 * COIN),
-							(genesis_validator.0.clone(), C_RING_ENDOWMENT),
+							(genesis_validator.0.clone(), CRAB_ENDOWMENT),
 						]
 						.into_iter(),
 					)
@@ -155,7 +154,7 @@ pub fn genesis_config() -> ChainSpec {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
-					.map(|k| (k, C_KTON_ENDOWMENT))
+					.map(|k| (k, CKTON_ENDOWMENT))
 					.collect(),
 			},
 			staking: StakingConfig {
@@ -206,6 +205,7 @@ pub fn genesis_config() -> ChainSpec {
 				accounts: BTreeMap::new(),
 			},
 			ethereum: Default::default(),
+			from_darwinia_issuing: Default::default(),
 		}
 	}
 
@@ -309,6 +309,7 @@ pub fn development_config() -> ChainSpec {
 				accounts: BTreeMap::new(),
 			},
 			ethereum: Default::default(),
+			from_darwinia_issuing: Default::default(),
 		}
 	}
 

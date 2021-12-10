@@ -1,4 +1,5 @@
 hard_tabs                = true
+imports_granularity      = "Crate"
 max_width                = 100
 newline_style            = "Unix"
 reorder_imports          = true

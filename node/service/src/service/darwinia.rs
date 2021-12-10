@@ -54,7 +54,7 @@ use crate::{
 	client::DarwiniaClient,
 	service::{
 		self, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain, LightBackend,
-		LightClient,RpcResult
+		LightClient, RpcResult,
 	},
 };
 use darwinia_common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};

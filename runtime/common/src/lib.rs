@@ -26,8 +26,7 @@ pub use impls::*;
 
 pub use frame_support::weights::constants::{ExtrinsicBaseWeight, RocksDbWeight};
 
-pub use darwinia_balances::Instance1 as RingInstance;
-pub use darwinia_balances::Instance2 as KtonInstance;
+pub use darwinia_balances::{Instance1 as RingInstance, Instance2 as KtonInstance};
 
 // --- crates.io ---
 use static_assertions::const_assert;

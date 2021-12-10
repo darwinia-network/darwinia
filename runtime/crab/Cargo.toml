@@ -29,9 +29,11 @@ darwinia-elections-phragmen         = { default-features = false, git = "https:/
 darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # <--- dvm ---
-darwinia-evm                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-evm-precompile-simple   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-evm-precompile-transfer = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-evm-precompile-simple     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # --- dvm --->
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
@@ -39,6 +41,7 @@ darwinia-staking                    = { default-features = false, git = "https:/
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+from-substrate-issuing              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # <--- dvm ---
 dvm-ethereum        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
@@ -49,8 +52,9 @@ darwinia-common-primitives = { default-features = false, path = "../../primitive
 # <--- dvm ---
 dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # --- dvm --->
-# dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-relay-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dp-s2s                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+ethereum-primitives       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
@@ -136,6 +140,8 @@ std = [
 	"darwinia-fee-market/std",
 	"darwinia-fee-market-rpc-runtime-api/std",
 	# <--- dvm ---
+	"darwinia-evm-precompile-bridge-s2s/std",
+	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm/std",
 	"darwinia-evm-precompile-simple/std",
 	"darwinia-evm-precompile-transfer/std",
@@ -147,6 +153,7 @@ std = [
 	"frame-try-runtime/std",
 	"darwinia-support/std",
 	"darwinia-vesting/std",
+	"from-substrate-issuing/std",
 	# <--- dvm ---
 	"dvm-ethereum/std",
 	"dvm-rpc-runtime-api/std",
@@ -157,7 +164,8 @@ std = [
 	# <--- dvm ---
 	"dp-evm/std",
 	# --- dvm --->
-	# "dp-s2s/std",
+	"darwinia-relay-primitives/std",
+	"dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime
 	"darwinia-common-runtime/std",

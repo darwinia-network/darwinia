@@ -1,3 +1,5 @@
+// --- paritytech ---
+use frame_support::PalletId;
 // --- darwinia-network ---
 use crate::*;
 use to_tron_backing::Config;
