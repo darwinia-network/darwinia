@@ -29,7 +29,7 @@ frame_support::parameter_types! {
 		b"RING".to_vec(),
 		9,
 	);
-	pub const S2sBackingPalletId: PalletId = PalletId(*b"da/s2sba");
+	pub const S2sBackingPalletId: PalletId = PalletId(*b"da/tcrbk");
 	pub const MaxLockRingAmountPerTx: Balance = 10_000 * COIN;
 	pub const BridgeCrabLaneId: LaneId = DARWINIA_CRAB_LANE;
 }

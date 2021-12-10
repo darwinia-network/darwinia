@@ -20,7 +20,7 @@ impl ToEthAddress<AccountId32> for TruncateToEthAddress {
 }
 
 frame_support::parameter_types! {
-	pub const S2sIssuingPalletId: PalletId = PalletId(*b"da/s2sis");
+	pub const S2sIssuingPalletId: PalletId = PalletId(*b"da/fdais");
 	pub const DarwiniaChainId: ChainId = DARWINIA_CHAIN_ID;
 	pub const BridgeDarwiniaLaneId: LaneId = DARWINIA_CRAB_LANE;
 	pub DarwiniaName: ChainName = (b"Darwinia").to_vec();

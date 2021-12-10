@@ -283,7 +283,7 @@ frame_support::construct_runtime! {
 		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 49,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
-		Substrate2SubstrateIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
+		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
 	}
 }
 
