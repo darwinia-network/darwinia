@@ -1,5 +1,5 @@
 ---
-title: v0.11.6 Release Checklist
+title: v0.11.7 Release Checklist
 ---
 
 ## Node
