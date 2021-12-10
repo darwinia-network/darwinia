@@ -7,7 +7,7 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-cli"
 repository  = "https://github.com/darwinia-network/darwinia"
-version     = "0.11.6"
+version     = "0.11.7"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
