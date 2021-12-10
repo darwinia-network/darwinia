@@ -14,6 +14,7 @@ Darwinia
 |  OS   |  Arch  | Glibc | LLVM  |                                                      Download                                                       |
 | :---: | :----: | :---: | :---: | :-----------------------------------------------------------------------------------------------------------------: |
 | Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/v0.11.6/darwinia-x86_64-linux-gnu.tar.zst) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.11.6/darwinia-x86_64-linux-gnu.tar.bz2) |
 
 ### Docker
 
