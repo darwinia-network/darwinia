@@ -23,7 +23,7 @@ frame_support::parameter_types! {
 	pub const S2sIssuingPalletId: PalletId = PalletId(*b"da/fdais");
 	pub const DarwiniaChainId: ChainId = DARWINIA_CHAIN_ID;
 	pub const BridgeDarwiniaLaneId: LaneId = DARWINIA_CRAB_LANE;
-	pub DarwiniaName: ChainName = (b"Darwinia").to_vec();
+	pub BackingChainName: ChainName = (b"Darwinia").to_vec();
 }
 
 impl Config for Runtime {
@@ -36,6 +36,6 @@ impl Config for Runtime {
 	type ToEthAddressT = TruncateToEthAddress;
 	type OutboundPayloadCreator = ToDarwiniaOutboundPayLoad;
 	type InternalTransactHandler = Ethereum;
-	type BackingChainName = DarwiniaName;
+	type BackingChainName = BackingChainName;
 	type MessageLaneId = BridgeDarwiniaLaneId;
 }
