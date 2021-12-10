@@ -1018,12 +1018,15 @@ dependencies = [
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-evm",
+ "darwinia-evm-precompile-bridge-s2s",
+ "darwinia-evm-precompile-dispatch",
  "darwinia-evm-precompile-simple",
  "darwinia-evm-precompile-transfer",
  "darwinia-fee-market",
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
  "darwinia-header-mmr-rpc-runtime-api",
+ "darwinia-relay-primitives",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
@@ -1042,6 +1045,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "from-ethereum-issuing",
  "from-substrate-issuing",
  "log",
  "pallet-authority-discovery",
@@ -1606,6 +1610,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-evm-precompile-bridge-s2s"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
+dependencies = [
+ "bp-message-dispatch",
+ "bp-runtime",
+ "darwinia-evm",
+ "darwinia-evm-precompile-utils",
+ "darwinia-support",
+ "dp-contract",
+ "dp-evm",
+ "dp-s2s",
+ "evm",
+ "frame-support",
+ "from-substrate-issuing",
+ "log",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-std",
+]
+
+[[package]]
+name = "darwinia-evm-precompile-dispatch"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
+dependencies = [
+ "darwinia-evm",
+ "darwinia-support",
+ "dp-evm",
+ "evm",
+ "frame-support",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+]
+
+[[package]]
 name = "darwinia-evm-precompile-simple"
 version = "2.7.1"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
@@ -1640,6 +1682,29 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "darwinia-evm-precompile-utils"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
+dependencies = [
+ "darwinia-evm-precompile-utils-macro",
+ "darwinia-support",
+ "evm",
+]
+
+[[package]]
+name = "darwinia-evm-precompile-utils-macro"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
+dependencies = [
+ "evm",
+ "proc-macro2",
+ "quote",
+ "sha3 0.9.1",
+ "sp-std",
+ "syn",
 ]
 
 [[package]]
@@ -3053,6 +3118,30 @@ dependencies = [
  "frame-support",
  "parity-scale-codec",
  "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "from-ethereum-issuing"
+version = "2.7.1"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.11.7#b2009c595cc521e76ef408f5ca7d24fd0036ea04"
+dependencies = [
+ "array-bytes",
+ "darwinia-bridge-ethereum",
+ "darwinia-evm",
+ "darwinia-relay-primitives",
+ "darwinia-support",
+ "dp-contract",
+ "dp-evm",
+ "dvm-ethereum",
+ "ethereum-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "sha3 0.9.1",
  "sp-runtime",
  "sp-std",
 ]
@@ -10026,7 +10115,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
  "cfg-if 1.0.0",
- "rand 0.8.4",
+ "rand 0.3.23",
  "static_assertions",
 ]
 
