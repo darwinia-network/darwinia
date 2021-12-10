@@ -15,7 +15,7 @@ impl Contains<Call> for S2sCallFilter {
 			c,
 			Call::System(frame_system::Call::remark(_))
 				| Call::System(frame_system::Call::remark_with_event(_))
-				| Call::Substrate2SubstrateBacking(to_substrate_backing::Call::unlock_from_remote(
+				| Call::ToCrabBacking(to_substrate_backing::Call::unlock_from_remote(
 					..
 				))
 		)

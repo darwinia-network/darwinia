@@ -205,7 +205,7 @@ pub fn genesis_config() -> ChainSpec {
 				accounts: BTreeMap::new(),
 			},
 			ethereum: Default::default(),
-			substrate_2_substrate_issuing: Default::default(),
+			from_darwinia_issuing: Default::default(),
 		}
 	}
 
@@ -309,7 +309,7 @@ pub fn development_config() -> ChainSpec {
 				accounts: BTreeMap::new(),
 			},
 			ethereum: Default::default(),
-			substrate_2_substrate_issuing: Default::default(),
+			from_darwinia_issuing: Default::default(),
 		}
 	}
 

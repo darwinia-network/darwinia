@@ -15,11 +15,8 @@ impl Contains<Call> for S2sCallFilter {
 			c,
 			Call::System(frame_system::Call::remark(_))
 				| Call::System(frame_system::Call::remark_with_event(_))
-				| Call::Substrate2SubstrateIssuing(
-					from_substrate_issuing::Call::register_from_remote(..)
-				) | Call::Substrate2SubstrateIssuing(from_substrate_issuing::Call::issue_from_remote(
-				..
-			))
+				| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::register_from_remote(..))
+				| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote(..))
 		)
 	}
 }
