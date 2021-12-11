@@ -696,14 +696,20 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
-		use frame_support::PalletId;
-		use frame_system::RawOrigin;
+		use frame_support::{
+			traits::{tokens::fungible::Inspect, Currency, ExistenceRequirement},
+			PalletId,
+		};
 		use sp_runtime::traits::AccountIdConversion;
 
-		let result = Ring::transfer_all(
-			RawOrigin::Signed(PalletId(*b"da/crabk").into_account()).into(),
-			S2sBackingPalletId::get().into_account(),
-			false,
+		let transactor = PalletId(*b"da/crabk").into_account();
+		let reducible_balance = Ring::reducible_balance(&transactor, false);
+		let dest = S2sBackingPalletId::get().into_account();
+		let result = <Ring as Currency<_>>::transfer(
+			&transactor,
+			&dest,
+			reducible_balance,
+			ExistenceRequirement::AllowDeath,
 		);
 
 		log::info!("{:?}, migrated.", result);
@@ -726,6 +732,15 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		use frame_support::PalletId;
 		use sp_runtime::traits::{AccountIdConversion, Zero};
 
+		log::info!(
+			"{}",
+			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
+		);
+		log::info!(
+			"{}",
+			Ring::free_balance(&S2sBackingPalletId::get().into_account())
+		);
+
 		assert!(!Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
 		assert!(Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
 
@@ -737,6 +752,15 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		// --- paritytech ---
 		use frame_support::PalletId;
 		use sp_runtime::traits::{AccountIdConversion, Zero};
+
+		log::info!(
+			"{}",
+			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
+		);
+		log::info!(
+			"{}",
+			Ring::free_balance(&S2sBackingPalletId::get().into_account())
+		);
 
 		assert!(Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
 		assert!(!Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
