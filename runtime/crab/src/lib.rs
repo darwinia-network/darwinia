@@ -796,17 +796,32 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		// --- paritytech ---
-		use frame_support::PalletId;
-		use frame_system::RawOrigin;
+		use frame_support::{
+			traits::{tokens::fungible::Inspect, Currency, ExistenceRequirement},
+			PalletId,
+		};
 		use sp_runtime::traits::AccountIdConversion;
 
-		let result = Ring::transfer_all(
-			RawOrigin::Signed(PalletId(*b"da/crais").into_account()).into(),
-			TreasuryPalletId::get().into_account(),
-			false,
+		let transactor = PalletId(*b"da/crais").into_account();
+		let reducible_balance = Ring::reducible_balance(&transactor, false);
+		let dest = TreasuryPalletId::get().into_account();
+		let treasury_balance = Ring::free_balance(&dest);
+		let result = <Ring as Currency<_>>::transfer(
+			&transactor,
+			&dest,
+			reducible_balance,
+			ExistenceRequirement::AllowDeath,
 		);
+		let migrated_treasury_balance = Ring::free_balance(&dest);
 
 		log::info!("{:?}, migrated.", result);
+		log::info!(
+			"{} + {} == {} ({})",
+			treasury_balance,
+			reducible_balance,
+			migrated_treasury_balance,
+			treasury_balance + reducible_balance == migrated_treasury_balance
+		);
 
 		migration::move_pallet(b"Instance2Treasury", b"KtonTreasury");
 
@@ -826,8 +841,16 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		use frame_support::PalletId;
 		use sp_runtime::traits::{AccountIdConversion, Zero};
 
+		log::info!(
+			"{}",
+			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
+		);
+		log::info!(
+			"{}",
+			Ring::free_balance(&TreasuryPalletId::get().into_account())
+		);
+
 		assert!(!Ring::free_balance(&PalletId(*b"da/crais").into_account()).is_zero());
-		assert!(Ring::free_balance(&TreasuryPalletId::get().into_account()).is_zero());
 
 		Ok(())
 	}
@@ -838,8 +861,16 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		use frame_support::PalletId;
 		use sp_runtime::traits::{AccountIdConversion, Zero};
 
+		log::info!(
+			"{}",
+			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
+		);
+		log::info!(
+			"{}",
+			Ring::free_balance(&TreasuryPalletId::get().into_account())
+		);
+
 		assert!(Ring::free_balance(&PalletId(*b"da/crais").into_account()).is_zero());
-		assert!(!Ring::free_balance(&TreasuryPalletId::get().into_account()).is_zero());
 
 		Ok(())
 	}
