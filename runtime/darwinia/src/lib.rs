@@ -738,8 +738,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		use frame_support::PalletId;
 		use sp_runtime::traits::{AccountIdConversion, Zero};
 
-		assert!(!Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
-		assert!(Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
+		assert!(Ring::free_balance(&PalletId(*b"da/crabk").into_account()).is_zero());
+		assert!(!Ring::free_balance(&S2sBackingPalletId::get().into_account()).is_zero());
 
 		Ok(())
 	}
