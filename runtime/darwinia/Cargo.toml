@@ -46,14 +46,14 @@ ethereum-primitives        = { default-features = false, git = "https://github.c
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
-pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
-pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
-pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
 # paritytech bridge primitives
-bp-message-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
-bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
-bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
-bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.7" }
+bp-message-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
+bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
+bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
+bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "realtime-version-darwinia" }
 # paritytech frame
 frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 frame-election-provider-support            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
