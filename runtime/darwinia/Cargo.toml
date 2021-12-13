@@ -18,31 +18,31 @@ serde_json        = { version = "1.0", optional = true }
 smallvec          = { version = "1.7" }
 static_assertions = { version = "1.1" }
 # darwinia-network frame
-darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-bridge-ethereum            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-relay-authorities          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-relay-primitives           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-relayer-game               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-to-substrate-backing                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-bridge-ethereum            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-relay-authorities          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-relay-primitives           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-relayer-game               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+to-ethereum-backing                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+to-substrate-backing                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
 # darwinia-network primitives
 darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
 darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
-dp-asset                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dp-s2s                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-ethereum-primitives        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dp-asset                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dp-s2s                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+ethereum-primitives        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame

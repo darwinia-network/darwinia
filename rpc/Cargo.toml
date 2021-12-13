@@ -14,15 +14,15 @@ code           = { package = "parity-scale-codec", version = "2.1", default-feat
 jsonrpc-core   = { version = "15.1" }
 jsonrpc-pubsub = { version = "15.1" }
 # darwinia-network frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
-dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
 # darwinia-network primitives
 crab-runtime               = { path = "../runtime/crab" }
 darwinia-common-primitives = { path = "../primitives/common" }
