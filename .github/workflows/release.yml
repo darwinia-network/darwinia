@@ -50,7 +50,7 @@ jobs:
           mv target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/*.wasm shared/darwinia-runtime
 
       - name: Upload shared
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: darwinia-artifact
           path: shared
@@ -97,7 +97,7 @@ jobs:
           subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}/${{ matrix.runtime }}.compact.compressed.json
 
       - name: Upload shared
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: darwinia-artifact
           path: shared
