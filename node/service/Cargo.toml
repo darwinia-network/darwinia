@@ -17,17 +17,17 @@ log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
 serde_json  = { version = "1.0" }
 # darwinia-network frame
-darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-header-mmr-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # dvm
-darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
-dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "realtime-runtime" }
+darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dp-rpc              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
+dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.7" }
 # darwinia-network primitives
 darwinia-common-primitives = { path = "../../primitives/common" }
 # darwinia-network rpc
