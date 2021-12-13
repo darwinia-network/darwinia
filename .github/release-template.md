@@ -1,7 +1,6 @@
 Darwinia
 ===
 
-
 ## [0.11.7] - 2021-11-23
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
