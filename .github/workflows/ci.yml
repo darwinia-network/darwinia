@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload ${{ matrix.task.target }}
         if: matrix.action != 'test'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: ${{ matrix.task.target }}
           path: ${{ matrix.task.target }}.tar.zst
