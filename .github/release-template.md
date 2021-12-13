@@ -1,20 +1,19 @@
 Darwinia
 ===
 
-
-## [0.11.6] - 2021-11-23
+## [0.11.7] - 2021-11-23
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
-| Darwinia |      1160      |       HIGH       |
-|   Crab   |      1160      |       HIGH       |
+| Darwinia |      1170      |       LOW        |
+|   Crab   |      1170      |       LOW        |
 
 ## Resources
 
 ### Pre-built Binary
 |  OS   |  Arch  | Glibc | LLVM  |                                                      Download                                                       |
 | :---: | :----: | :---: | :---: | :-----------------------------------------------------------------------------------------------------------------: |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/v0.11.6/darwinia-x86_64-linux-gnu.tar.zst) |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.11.6/darwinia-x86_64-linux-gnu.tar.bz2) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/v0.11.7/darwinia-x86_64-linux-gnu.tar.zst) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.11.7/darwinia-x86_64-linux-gnu.tar.bz2) |
 
 ### Docker
 
@@ -29,11 +28,8 @@ docker pull {{ image_sha }}
 ```
 
 ## Notable Changes
-- Substrate common changes: https://github.com/paritytech/polkadot/releases/tag/v0.9.8
-- S2S audit: darwinia-network/darwinia-common#902
-- Migrate staking to attribute macro: darwinia-network/darwinia-common#902
-- Fix WASM execution: darwinia-network/darwinia-common#937 **!!IMPORTANT!!**
-- Integrate the basic S2S bridge into Darwinia/Common runtimes: darwinia-network/darwinia#787
+- Substrate common changes: https://github.com/paritytech/polkadot/releases/tag/v0.9.9
+- Integrate the wormhole pallets into Darwinia: darwinia-network/darwinia#812
 
 ## Proposal Hashes
 
