@@ -2,10 +2,13 @@ Darwinia
 ===
 
 ## [0.11.8] - 2021-12-15
+
+> :warning: **This release introduces a new host function. Please upgrade your node prior to the next runtime upgrade of Crab or Darwinia in order for your node to continue syncing.**
+
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
-| Darwinia |      1180      |       LOW        |
-|   Crab   |      1180      |       LOW        |
+| Darwinia |      1180      |       HIGH       |
+|   Crab   |      1180      |       HIGH       |
 
 ## Resources
 
