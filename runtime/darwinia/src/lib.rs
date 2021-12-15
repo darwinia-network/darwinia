@@ -695,17 +695,8 @@ sp_api::impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		let result = <to_substrate_backing::TransactionInfos<Runtime>>::remove_all(None);
-
-		// `KillStorageResult` does not implement the `Debug` trait.
-		// So, we print the result in codec-style.
-		log::info!(
-			"Try to remove invalid `TransactionInfos`: {:?}",
-			result.encode()
-		);
-
-		// 0
-		RuntimeBlockWeights::get().max_block
+		0
+		// RuntimeBlockWeights::get().max_block
 	}
 
 	#[cfg(feature = "try-runtime")]
