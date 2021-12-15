@@ -1,11 +1,11 @@
 Darwinia
 ===
 
-## [0.11.7] - 2021-11-23
+## [0.11.7-1] - 2021-12-15
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
-| Darwinia |      1170      |       LOW        |
-|   Crab   |      1170      |       LOW        |
+| Darwinia |      1171      |       LOW        |
+|   Crab   |      1171      |       LOW        |
 
 ## Resources
 
@@ -28,8 +28,7 @@ docker pull {{ image_sha }}
 ```
 
 ## Notable Changes
-- Substrate common changes: https://github.com/paritytech/polkadot/releases/tag/v0.9.9
-- Integrate the wormhole pallets into Darwinia: darwinia-network/darwinia#812
+- Enable wormhole in `OnDeliveryConfirmed`: darwinia-network/darwinia#819
 
 ## Proposal Hashes
 
