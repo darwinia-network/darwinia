@@ -2,7 +2,7 @@
 use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
 use frame_support::PalletId;
 use pallet_election_provider_multi_phase::OnChainConfig;
-use sp_npos_elections::CompactSolution;
+use sp_npos_elections::NposSolution;
 use sp_staking::SessionIndex;
 // --- darwinia-network ---
 use crate::{weights::darwinia_staking::WeightInfo, *};
@@ -32,7 +32,7 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	const MAX_NOMINATIONS: u32 = <NposCompactSolution24 as CompactSolution>::LIMIT as u32;
+	const MAX_NOMINATIONS: u32 = <NposCompactSolution24 as NposSolution>::LIMIT as u32;
 	type Event = Event;
 	type PalletId = StakingPalletId;
 	type UnixTime = Timestamp;
