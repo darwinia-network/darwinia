@@ -1,5 +1,5 @@
 ---
-title: v0.11.7 Release Checklist
+title: Runtime Upgrade Checklist
 ---
 
 ## Node
@@ -44,7 +44,8 @@ cc @fewensa
 cc @wi1dcard
 
 ### Subql
-- [ ] [subql-darwinia-mmr](https://github.com/darwinia-network/subql-darinwia-mmr)
-- [ ] [subql-crab](https://github.com/darwinia-network/subql-crab)
+- [ ] [Darwinia MMR](https://github.com/darwinia-network/subql-darinwia-mmr)
+- [ ] [Darwinia Bridger](https://github.com/darwinia-network/subql-darinwia-bridger)
+- [ ] [Crab](https://github.com/darwinia-network/subql-crab)
 
 cc @sxlwar
