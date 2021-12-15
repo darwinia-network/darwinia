@@ -795,83 +795,17 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		// --- paritytech ---
-		use frame_support::{
-			traits::{tokens::fungible::Inspect, Currency, ExistenceRequirement},
-			PalletId,
-		};
-		use sp_runtime::traits::AccountIdConversion;
-
-		let transactor = PalletId(*b"da/crais").into_account();
-		let reducible_balance = Ring::reducible_balance(&transactor, false);
-		let dest = TreasuryPalletId::get().into_account();
-		let treasury_balance = Ring::free_balance(&dest);
-		let result = <Ring as Currency<_>>::transfer(
-			&transactor,
-			&dest,
-			reducible_balance,
-			ExistenceRequirement::AllowDeath,
-		);
-		let migrated_treasury_balance = Ring::free_balance(&dest);
-
-		log::info!("{:?}, migrated.", result);
-		log::info!(
-			"{} + {} == {} ({})",
-			treasury_balance,
-			reducible_balance,
-			migrated_treasury_balance,
-			treasury_balance + reducible_balance == migrated_treasury_balance
-		);
-
-		migration::move_pallet(b"Instance2Treasury", b"KtonTreasury");
-
-		log::info!("`KtonTreasury` migrated.");
-
-		migration::remove_storage_prefix(b"FeeMarket", b"ConfirmedMessagesThisBlock", &[]);
-
-		log::info!("`ConfirmedMessagesThisBlock` removed.");
-
-		// 0
-		RuntimeBlockWeights::get().max_block
+		0
+		// RuntimeBlockWeights::get().max_block
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::PalletId;
-		use sp_runtime::traits::{AccountIdConversion, Zero};
-
-		log::info!(
-			"{}",
-			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
-		);
-		log::info!(
-			"{}",
-			Ring::free_balance(&TreasuryPalletId::get().into_account())
-		);
-
-		assert!(!Ring::free_balance(&PalletId(*b"da/crais").into_account()).is_zero());
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::PalletId;
-		use sp_runtime::traits::{AccountIdConversion, Zero};
-
-		log::info!(
-			"{}",
-			Ring::free_balance(&PalletId(*b"da/crabk").into_account())
-		);
-		log::info!(
-			"{}",
-			Ring::free_balance(&TreasuryPalletId::get().into_account())
-		);
-
-		assert!(Ring::free_balance(&PalletId(*b"da/crais").into_account()).is_zero());
-
 		Ok(())
 	}
 }
