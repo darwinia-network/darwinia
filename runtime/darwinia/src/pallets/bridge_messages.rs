@@ -58,7 +58,7 @@ impl Config<WithCrabMessages> for Runtime {
 	>;
 
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self>;
+	type OnDeliveryConfirmed = (ToCrabBacking, FeeMarketMessageConfirmedHandler<Self>);
 
 	type SourceHeaderChain = Crab;
 	type MessageDispatch = FromCrabMessageDispatch;

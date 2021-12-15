@@ -57,7 +57,7 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	>;
 
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self>;
+	type OnDeliveryConfirmed = (FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self>);
 
 	type SourceHeaderChain = Darwinia;
 	type MessageDispatch = FromDarwiniaMessageDispatch;
