@@ -88,8 +88,8 @@ impl SubstrateCli for Cli {
 			"darwinia" => Box::new(darwinia_chain_spec::config()?),
 			"darwinia-dev" | "dev" => Box::new(darwinia_chain_spec::development_config()),
 			"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
-			path => {
-				let path = PathBuf::from(path);
+			_ => {
+				let path = PathBuf::from(id);
 				let chain_spec = Box::new(DarwiniaChainSpec::from_json_file(path.clone())?)
 					as Box<dyn ChainSpec>;
 
