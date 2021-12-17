@@ -214,7 +214,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 11_7_1,
+	spec_version: 11_8_0,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -695,17 +695,8 @@ sp_api::impl_runtime_apis! {
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
-		let result = <to_substrate_backing::TransactionInfos<Runtime>>::remove_all(None);
-
-		// `KillStorageResult` does not implement the `Debug` trait.
-		// So, we print the result in codec-style.
-		log::info!(
-			"Try to remove invalid `TransactionInfos`: {:?}",
-			result.encode()
-		);
-
-		// 0
-		RuntimeBlockWeights::get().max_block
+		0
+		// RuntimeBlockWeights::get().max_block
 	}
 
 	#[cfg(feature = "try-runtime")]

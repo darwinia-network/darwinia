@@ -57,7 +57,7 @@ impl Config for Runtime {
 	type RewardHandler = (); // nothing to do upon rewards
 	type DataProvider = Staking;
 	type OnChainAccuracy = Perbill;
-	type CompactSolution = NposCompactSolution24;
+	type Solution = NposCompactSolution24;
 	type Fallback = Fallback;
 	type WeightInfo = WeightInfo<Runtime>;
 	type ForceOrigin = EnsureRootOrHalfCouncil;
