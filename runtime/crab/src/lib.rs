@@ -25,6 +25,7 @@
 pub mod pallets;
 pub use pallets::*;
 
+#[cfg(not(feature = "no-wasm"))]
 pub mod wasm {
 	//! Make the WASM binary available.
 
@@ -64,6 +65,7 @@ pub mod wasm {
 		return WASM_BINARY;
 	}
 }
+#[cfg(not(feature = "no-wasm"))]
 pub use wasm::*;
 
 pub mod messages;

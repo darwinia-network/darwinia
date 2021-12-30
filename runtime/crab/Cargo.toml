@@ -228,8 +228,8 @@ std = [
 	"sp-version/std",
 ]
 
-dev          = []
-only-staking = []
+dev     = []
+no-wasm = []
 
 try-runtime = [
 	"frame-executive/try-runtime",
