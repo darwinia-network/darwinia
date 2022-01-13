@@ -1,3 +1,4 @@
+edition                  = "2021"
 hard_tabs                = true
 imports_granularity      = "Crate"
 max_width                = 100
