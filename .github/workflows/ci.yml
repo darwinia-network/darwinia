@@ -29,7 +29,7 @@ env:
   SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
   SCCACHE_VERSION: v0.2.15
   SCCACHE_DIR: /home/runner/.cache/sccache
-  GITHUB_CACHE_VERSION: 0
+  GITHUB_CACHE_VERSION: 1
 
 jobs:
   basic-checks:
@@ -43,7 +43,7 @@ jobs:
           - target: darwinia
             repository: darwinia-network/darwinia
           - target: subalfred
-            repository: l2ust/subalfred
+            repository: hack-ink/subalfred
         exclude:
           - action: test
             task:
@@ -63,7 +63,16 @@ jobs:
           sudo mv $SCCACHE_FILE/sccache /usr/bin
           sudo chmod u+x /usr/bin/sccache
 
+      # TODO: remove this after upgrade to metadata v14
       - name: Fetch latest code
+        if: matrix.task.target == 'subalfred'
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ matrix.task.repository }}
+          ref: "bak"
+
+      - name: Fetch latest code
+        if: matrix.task.target != 'subalfred'
         uses: actions/checkout@v2
         with:
           repository: ${{ matrix.task.repository }}
@@ -87,12 +96,12 @@ jobs:
           restore-keys: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
       - name: Action ${{ matrix.action }}
-        run: cargo ${{ matrix.action }} --release --locked
+        run: cargo ${{ matrix.action }} --locked
 
       - name: Compress ${{ matrix.task.target }}
         if: matrix.action != 'test'
         run: |
-          mv target/release/${{ matrix.task.target }} .
+          mv target/debug/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
