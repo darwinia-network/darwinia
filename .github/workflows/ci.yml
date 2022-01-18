@@ -43,7 +43,7 @@ jobs:
           - target: darwinia
             repository: darwinia-network/darwinia
           - target: subalfred
-            repository: l2ust/subalfred
+            repository: hack-ink/subalfred
         exclude:
           - action: test
             task:
