@@ -88,19 +88,19 @@ jobs:
 
       # TODO: remove this after upgrade to metadata v14
       - name: Action ${{ matrix.action }}
-        if: matrix.task.name.target == 'subalfred'
+        if: matrix.task.target == 'subalfred'
         run: |
           git checkout bak
-          cargo ${{ matrix.action }} --release --locked
+          cargo ${{ matrix.action }} --locked
 
       - name: Action ${{ matrix.action }}
-        if: matrix.task.name.target != 'subalfred'
-        run: cargo ${{ matrix.action }} --release --locked
+        if: matrix.task.target != 'subalfred'
+        run: cargo ${{ matrix.action }} --locked
 
       - name: Compress ${{ matrix.task.target }}
         if: matrix.action != 'test'
         run: |
-          mv target/release/${{ matrix.task.target }} .
+          mv target/debug/${{ matrix.task.target }} .
           tar cf ${{ matrix.task.target }}.tar.zst ${{ matrix.task.target }} -I pzstd
 
       - name: Upload ${{ matrix.task.target }}
