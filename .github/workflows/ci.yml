@@ -86,7 +86,15 @@ jobs:
           key: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
+      # TODO: remove this after upgrade to metadata v14
       - name: Action ${{ matrix.action }}
+        if: matrix.task.name.target == 'subalfred'
+        run: |
+          git checkout bak
+          cargo ${{ matrix.action }} --release --locked
+
+      - name: Action ${{ matrix.action }}
+        if: matrix.task.name.target != 'subalfred'
         run: cargo ${{ matrix.action }} --release --locked
 
       - name: Compress ${{ matrix.task.target }}
