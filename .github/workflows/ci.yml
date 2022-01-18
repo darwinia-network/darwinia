@@ -63,7 +63,16 @@ jobs:
           sudo mv $SCCACHE_FILE/sccache /usr/bin
           sudo chmod u+x /usr/bin/sccache
 
+      # TODO: remove this after upgrade to metadata v14
       - name: Fetch latest code
+        if: matrix.task.target == 'subalfred'
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ matrix.task.repository }}
+          ref: "bak"
+
+      - name: Fetch latest code
+        if: matrix.task.target != 'subalfred'
         uses: actions/checkout@v2
         with:
           repository: ${{ matrix.task.repository }}
@@ -86,15 +95,7 @@ jobs:
           key: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: sccache-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
-      # TODO: remove this after upgrade to metadata v14
       - name: Action ${{ matrix.action }}
-        if: matrix.task.target == 'subalfred'
-        run: |
-          git checkout bak
-          cargo ${{ matrix.action }} --locked
-
-      - name: Action ${{ matrix.action }}
-        if: matrix.task.target != 'subalfred'
         run: cargo ${{ matrix.action }} --locked
 
       - name: Compress ${{ matrix.task.target }}
