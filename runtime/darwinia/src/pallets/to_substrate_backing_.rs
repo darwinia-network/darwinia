@@ -30,7 +30,7 @@ frame_support::parameter_types! {
 		9,
 	);
 	pub const S2sBackingPalletId: PalletId = PalletId(*b"da/tcrbk");
-	pub const MaxLockRingAmountPerTx: Balance = 100_000 * COIN;
+	pub const MaxLockRingAmountPerTx: Balance = 1_000_000 * COIN;
 	pub const BridgeCrabLaneId: LaneId = DARWINIA_CRAB_LANE;
 }
 
