@@ -10,22 +10,22 @@ version     = "0.11.8"
 
 [dependencies]
 # darwinia-network frame
-darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
+darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 # darwinia-network primitives
 darwinia-common-primitives = { default-features = false, path = "../common" }
 # paritytech bridge frame
-pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.8" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.12.0" }
 # paritytech bridge primitives
-bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.8" }
-bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.8" }
-bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.11.8" }
+bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.12.0" }
+bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.12.0" }
+bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/parity-bridges-common", branch = "darwinia-v0.12.0" }
 # paritytech frame
-frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech primitives
-sp-api     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sp-api     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-std     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 
 [features]
 default = ["std"]

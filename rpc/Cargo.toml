@@ -14,38 +14,38 @@ code           = { package = "parity-scale-codec", version = "2.1", default-feat
 jsonrpc-core   = { version = "15.1" }
 jsonrpc-pubsub = { version = "15.1" }
 # darwinia-network frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
-dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.11.8" }
+darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 # darwinia-network primitives
 crab-runtime               = { path = "../runtime/crab" }
 darwinia-common-primitives = { path = "../primitives/common" }
 # paritytech client
-sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-client-api           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-consensus-babe       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-consensus-babe-rpc   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-consensus-epochs     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-finality-grandpa     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-rpc                  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-sync-state-rpc       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-transaction-pool-api = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-client-api           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-consensus-babe       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-consensus-babe-rpc   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-consensus-epochs     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-finality-grandpa     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-rpc                  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-sync-state-rpc       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-transaction-pool-api = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech frame
-pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech primitives
-sc-network        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-api            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-block-builder  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-blockchain     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-consensus      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-keystore       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-runtime        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sc-network        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-api            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-block-builder  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-blockchain     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-consensus      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-keystore       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sp-runtime        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
