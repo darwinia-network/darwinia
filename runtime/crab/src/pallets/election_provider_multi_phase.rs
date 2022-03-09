@@ -1,5 +1,8 @@
 // --- paritytech ---
-use pallet_election_provider_multi_phase::{Config, FallbackStrategy};
+use frame_election_provider_support::{onchain, SequentialPhragmen};
+use pallet_election_provider_multi_phase::{
+	BenchmarkingConfig, Config, FallbackStrategy, NoFallback, SolutionAccuracyOf,
+};
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia-network ---
 use crate::{weights::pallet_election_provider_multi_phase::WeightInfo, *};
@@ -24,15 +27,11 @@ frame_support::parameter_types! {
 	pub const SignedDepositBase: Balance = 1 * MILLI;
 	pub const SignedDepositByte: Balance = 1 * MICRO;
 
-	// fallback: no on-chain fallback.
-	pub const Fallback: FallbackStrategy = FallbackStrategy::Nothing;
-
 	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
 
 	// miner configs
 	pub NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
-	pub const MinerMaxIterations: u32 = 10;
-	pub const OffchainRepeat: BlockNumber = 5;
+	pub OffchainRepeat: BlockNumber = 5;
 }
 
 impl Config for Runtime {
@@ -42,7 +41,6 @@ impl Config for Runtime {
 	type SignedPhase = SignedPhase;
 	type UnsignedPhase = UnsignedPhase;
 	type SolutionImprovementThreshold = SolutionImprovementThreshold;
-	type MinerMaxIterations = MinerMaxIterations;
 	type MinerMaxWeight = OffchainSolutionWeightLimit;
 	type MinerMaxLength = OffchainSolutionLengthLimit; // For now use the one from staking.
 	type OffchainRepeat = OffchainRepeat;
@@ -56,10 +54,15 @@ impl Config for Runtime {
 	type SlashHandler = (); // burn slashes
 	type RewardHandler = (); // nothing to do upon rewards
 	type DataProvider = Staking;
-	type OnChainAccuracy = Perbill;
 	type Solution = NposCompactSolution24;
-	type Fallback = Fallback;
+	type Fallback = NoFallback<Self>;
+	type Solver = SequentialPhragmen<AccountId, SolutionAccuracyOf<Self>, OffchainRandomBalancing>;
 	type WeightInfo = WeightInfo<Runtime>;
 	type ForceOrigin = EnsureRootOrHalfCouncil;
 	type BenchmarkingConfig = ();
+}
+
+impl onchain::Config for Runtime {
+	type Accuracy = Perbill;
+	type DataProvider = Staking;
 }

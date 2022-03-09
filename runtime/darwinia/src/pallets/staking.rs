@@ -46,7 +46,7 @@ impl Config for Runtime {
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type ElectionProvider = ElectionProviderMultiPhase;
-	type GenesisElectionProvider = OnChainSequentialPhragmen<OnChainConfig<Self>>;
+	type GenesisElectionProvider = GenesisElectionOf<Self>;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;

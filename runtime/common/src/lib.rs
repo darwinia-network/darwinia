@@ -31,6 +31,7 @@ pub use darwinia_balances::{Instance1 as RingInstance, Instance2 as KtonInstance
 // --- crates.io ---
 use static_assertions::const_assert;
 // --- paritytech ---
+use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
 use frame_support::{
 	traits::Currency,
 	weights::{
@@ -48,6 +49,17 @@ pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as C
 	<T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
 
+/// The accuracy type used for genesis election provider;
+pub type OnOnChainAccuracy = Perbill;
+
+/// The election provider of the genesis
+pub type GenesisElectionOf<T> = OnChainSequentialPhragmen<T>;
+
+/// Parameterized slow adjusting fee updated based on
+/// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
+pub type SlowAdjustingFeeUpdate<R> =
+	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+
 /// We assume that an on-initialize consumes 2.5% of the weight on average, hence a single extrinsic
 /// will not be allowed to consume more than `AvailableBlockRatio - 2.5%`.
 pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
@@ -57,6 +69,10 @@ pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
+
+/// Maximum number of iterations for balancing that will be executed in the embedded miner of
+/// pallet-election-provider-multi-phase.
+pub const MINER_MAX_ITERATIONS: u32 = 10;
 
 frame_support::parameter_types! {
 	pub const BlockHashCountForCrab: BlockNumber = 256;
@@ -114,11 +130,6 @@ frame_support::parameter_types! {
 		.max
 		.get(DispatchClass::Normal);
 }
-
-/// Parameterized slow adjusting fee updated based on
-/// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
-pub type SlowAdjustingFeeUpdate<R> =
-	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
 
 pub fn max_extrinsic_weight() -> Weight {
 	RuntimeBlockWeights::get()
