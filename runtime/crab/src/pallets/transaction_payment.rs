@@ -37,11 +37,15 @@ impl WeightToFeePolynomial for WeightToFee {
 
 frame_support::parameter_types! {
 	pub const TransactionByteFee: Balance = 5 * MILLI;
+	/// This value increases the priority of `Operational` transactions by adding
+	/// a "virtual tip" that's equal to the `OperationalFeeMultiplier * final_fee`.
+	pub const OperationalFeeMultiplier: u8 = 5;
 }
 
 impl Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Ring, DealWithFees<Self>>;
 	type TransactionByteFee = TransactionByteFee;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
 }
