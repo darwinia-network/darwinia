@@ -20,7 +20,7 @@ darwinia-header-mmr-rpc = { git = "https://github.com/darwinia-network/darwinia-
 darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dc-db                   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dc-rpc                  = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
-dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+# dp-rpc                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dvm-ethereum            = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dvm-rpc-runtime-api     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 # darwinia-network primitives

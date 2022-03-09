@@ -20,6 +20,7 @@
 
 // --- crates.io ---
 use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 use sp_runtime::RuntimeDebug;

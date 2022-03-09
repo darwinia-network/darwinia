@@ -32,7 +32,7 @@ darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https:/
 darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
-darwinia-evm-precompile-simple     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+# darwinia-evm-precompile-simple     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 # --- dvm --->
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
@@ -50,7 +50,7 @@ dvm-rpc-runtime-api = { default-features = false, git = "https://github.com/darw
 darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
 darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
 # <--- dvm ---
-dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+# dp-evm = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 # --- dvm --->
 darwinia-relay-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dp-s2s                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
@@ -143,7 +143,7 @@ std = [
 	"darwinia-evm-precompile-bridge-s2s/std",
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm/std",
-	"darwinia-evm-precompile-simple/std",
+	# "darwinia-evm-precompile-simple/std",
 	"darwinia-evm-precompile-transfer/std",
 	# --- dvm --->
 	"darwinia-header-mmr/std",
@@ -162,7 +162,7 @@ std = [
 	"darwinia-bridge-primitives/std",
 	"darwinia-common-primitives/std",
 	# <--- dvm ---
-	"dp-evm/std",
+	# "dp-evm/std",
 	# --- dvm --->
 	"darwinia-relay-primitives/std",
 	"dp-s2s/std",
