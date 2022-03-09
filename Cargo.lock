@@ -1514,6 +1514,8 @@ dependencies = [
  "pallet-treasury",
  "parity-scale-codec",
  "scale-info",
+ "sp-io 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.0)",
+ "sp-npos-elections",
  "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.0)",
  "sp-std 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.0)",
  "static_assertions",

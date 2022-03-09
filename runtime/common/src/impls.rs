@@ -23,7 +23,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // --- paritytech ---
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{traits::TrailingZeroInput, RuntimeDebug};
 // --- darwinia-network ---
 use crate::*;
 
@@ -95,7 +95,6 @@ impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::Extend
 	for OffchainRandomBalancing
 {
 	fn get() -> Option<(usize, sp_npos_elections::ExtendedBalance)> {
-		use sp_runtime::{codec::Decode, traits::TrailingZeroInput};
 		let iters = match MINER_MAX_ITERATIONS {
 			0 => 0,
 			max @ _ => {
