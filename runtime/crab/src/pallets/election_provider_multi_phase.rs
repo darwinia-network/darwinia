@@ -32,6 +32,11 @@ frame_support::parameter_types! {
 	// miner configs
 	pub NposSolutionPriority: TransactionPriority = Perbill::from_percent(90) * TransactionPriority::max_value();
 	pub OffchainRepeat: BlockNumber = 5;
+
+	/// Whilst `UseNominatorsAndUpdateBagsList` or `UseNominatorsMap` is in use, this can still be a
+	/// very large value. Once the `BagsList` is in full motion, staking might open its door to many
+	/// more nominators, and this value should instead be what is a "safe" number (e.g. 22500).
+	pub const VoterSnapshotPerBlock: u32 = 22_500;
 }
 
 impl Config for Runtime {
@@ -60,6 +65,7 @@ impl Config for Runtime {
 	type WeightInfo = WeightInfo<Runtime>;
 	type ForceOrigin = EnsureRootOrHalfCouncil;
 	type BenchmarkingConfig = ();
+	type VoterSnapshotPerBlock = VoterSnapshotPerBlock;
 }
 
 impl onchain::Config for Runtime {

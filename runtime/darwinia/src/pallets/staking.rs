@@ -6,7 +6,7 @@ use sp_npos_elections::NposSolution;
 use sp_staking::SessionIndex;
 // --- darwinia-network ---
 use crate::{weights::darwinia_staking::WeightInfo, *};
-use darwinia_staking::{Config, EraIndex};
+use darwinia_staking::{Config, EraIndex, UseNominatorsMap};
 
 #[cfg(feature = "dev")]
 frame_support::parameter_types! {
@@ -47,6 +47,9 @@ impl Config for Runtime {
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type ElectionProvider = ElectionProviderMultiPhase;
 	type GenesisElectionProvider = GenesisElectionOf<Self>;
+	// Use the nominator map to iter voter AND no-ops for all SortedListProvider hooks. The migration
+	// to bags-list is a no-op, but the storage version will be updated.
+	type SortedListProvider = UseNominatorsMap<Self>;
 	type RingCurrency = Ring;
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;
