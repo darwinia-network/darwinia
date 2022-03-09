@@ -72,12 +72,18 @@ use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use dc_rpc::EthTask;
 use dp_rpc::{FilterPool, PendingTransactions};
 
-sc_executor::native_executor_instance!(
-	pub CrabExecutor,
-	crab_runtime::api::dispatch,
-	crab_runtime::native_version,
-	frame_benchmarking::benchmarking::HostFunctions,
-);
+pub struct Executor;
+impl NativeExecutionDispatch for Executor {
+	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+
+	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
+		crab_runtime::api::dispatch(method, data)
+	}
+
+	fn native_version() -> sc_executor::NativeVersion {
+		crab_runtime::native_version()
+	}
+}
 
 impl_runtime_apis![
 	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
