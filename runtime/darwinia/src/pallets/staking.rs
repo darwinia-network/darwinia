@@ -1,11 +1,10 @@
 // --- paritytech ---
 use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
 use frame_support::PalletId;
-use pallet_election_provider_multi_phase::OnChainConfig;
 use sp_npos_elections::NposSolution;
 use sp_staking::SessionIndex;
 // --- darwinia-network ---
-use crate::{weights::darwinia_staking::WeightInfo, *};
+use crate::*;
 use darwinia_staking::{Config, EraIndex, UseNominatorsMap};
 
 #[cfg(feature = "dev")]
@@ -59,5 +58,5 @@ impl Config for Runtime {
 	type KtonReward = ();
 	type Cap = Cap;
 	type TotalPower = TotalPower;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

@@ -1,12 +1,11 @@
 // --- paritytech ---
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use pallet_election_provider_multi_phase::{
-	BenchmarkingConfig, Config, FallbackStrategy, NoFallback, SolutionAccuracyOf,
+	BenchmarkingConfig, Config, NoFallback, SolutionAccuracyOf,
 };
 use sp_runtime::{transaction_validity::TransactionPriority, PerU16, Perbill};
 // --- darwinia-network ---
 use crate::*;
-use weights::pallet_election_provider_multi_phase::WeightInfo;
 
 sp_npos_elections::generate_solution_type!(
 	#[compact]
@@ -63,7 +62,7 @@ impl Config for Runtime {
 	type Solution = NposCompactSolution16;
 	type Fallback = NoFallback<Self>;
 	type Solver = SequentialPhragmen<AccountId, SolutionAccuracyOf<Self>, OffchainRandomBalancing>;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 	type ForceOrigin = EnsureRootOrHalfCouncil;
 	type BenchmarkingConfig = BenchmarkConfig;
 	type VoterSnapshotPerBlock = VoterSnapshotPerBlock;

@@ -1,7 +1,7 @@
 // --- paritytech ---
 use pallet_multisig::Config;
 // --- darwinia-network ---
-use crate::{weights::pallet_multisig::WeightInfo, *};
+use crate::*;
 
 frame_support::parameter_types! {
 	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
@@ -18,5 +18,5 @@ impl Config for Runtime {
 	type DepositBase = DepositBase;
 	type DepositFactor = DepositFactor;
 	type MaxSignatories = MaxSignatories;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

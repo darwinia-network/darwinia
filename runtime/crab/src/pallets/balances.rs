@@ -1,5 +1,5 @@
 // --- darwinia-network ---
-use crate::{weights::darwinia_balances::WeightInfo, *};
+use crate::*;
 use darwinia_balances::Config;
 
 frame_support::parameter_types! {
@@ -18,7 +18,7 @@ impl Config<RingInstance> for Runtime {
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 
 	type BalanceInfo = AccountData<Balance>;
 	type OtherCurrencies = (Kton,);
@@ -32,7 +32,7 @@ impl Config<KtonInstance> for Runtime {
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 
 	type BalanceInfo = AccountData<Balance>;
 	type OtherCurrencies = (Ring,);

@@ -2,7 +2,7 @@
 use pallet_im_online::{sr25519::AuthorityId, Config};
 use sp_runtime::transaction_validity::TransactionPriority;
 // --- darwinia-network ---
-use crate::{weights::pallet_im_online::WeightInfo, *};
+use crate::*;
 
 frame_support::parameter_types! {
 	pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
@@ -18,7 +18,7 @@ impl Config for Runtime {
 	type ValidatorSet = Historical;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 	type MaxKeys = MaxKeys;
 	type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
 	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;

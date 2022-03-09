@@ -1,5 +1,5 @@
 // --- darwinia-network ---
-use crate::{weights::darwinia_vesting::WeightInfo, *};
+use crate::*;
 use darwinia_vesting::Config;
 // --- paritytech ---
 use sp_runtime::traits::ConvertInto;
@@ -13,7 +13,7 @@ impl Config for Runtime {
 	type Currency = Ring;
 	type BlockNumberToBalance = ConvertInto;
 	type MinVestedTransfer = MinVestedTransfer;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 
 	// `VestingInfo` encode length is 36bytes. 28 schedules gets encoded as 1009 bytes, which is the
 	// highest number of schedules that encodes less than 2^10.

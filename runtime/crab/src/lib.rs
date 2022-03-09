@@ -47,8 +47,9 @@ pub use wasm::*;
 pub mod messages;
 pub use messages::*;
 
-/// Weights for pallets used in the runtime.
-mod weights;
+// TODO: Benchmark
+// /// Weights for pallets used in the runtime.
+// mod weights;
 
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};

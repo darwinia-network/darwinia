@@ -3,7 +3,7 @@ use frame_system::{EnsureOneOf, EnsureRoot};
 use pallet_collective::{EnsureMember, EnsureProportionAtLeast};
 use sp_core::u32_trait::{_1, _2, _3};
 // --- darwinia-network ---
-use crate::{weights::darwinia_democracy::WeightInfo, *};
+use crate::*;
 use darwinia_democracy::Config;
 
 #[cfg(feature = "dev")]
@@ -73,5 +73,5 @@ impl Config for Runtime {
 	type MaxVotes = MaxVotes;
 	type OperationalPreimageOrigin = EnsureMember<AccountId, CouncilCollective>;
 	type MaxProposals = MaxProposals;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

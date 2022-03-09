@@ -1,7 +1,7 @@
 // --- paritytech ---
 use pallet_membership::{Config, Instance1 as TechnicalMembershipInstance};
 // --- darwinia-network ---
-use crate::{weights::pallet_membership::WeightInfo, *};
+use crate::*;
 
 impl Config<TechnicalMembershipInstance> for Runtime {
 	type Event = Event;
@@ -13,5 +13,5 @@ impl Config<TechnicalMembershipInstance> for Runtime {
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
 	type MaxMembers = TechnicalMaxMembers;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }
