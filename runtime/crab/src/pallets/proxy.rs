@@ -1,5 +1,6 @@
 // --- crates.io ---
 use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use frame_support::traits::InstanceFilter;
 use pallet_proxy::Config;
@@ -9,7 +10,17 @@ use crate::*;
 
 /// The type used to represent the kinds of proxying allowed.
 #[derive(
-	Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen,
+	Copy,
+	Clone,
+	Eq,
+	PartialEq,
+	Ord,
+	PartialOrd,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
 )]
 pub enum ProxyType {
 	Any,
@@ -30,56 +41,58 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Any => true,
 			ProxyType::NonTransfer => matches!(
 				c,
-				Call::System(..) |
-				Call::Babe(..) |
-				Call::Timestamp(..) |
-				Call::Indices(pallet_indices::Call::claim(..)) |
-				Call::Indices(pallet_indices::Call::free(..)) |
-				Call::Indices(pallet_indices::Call::freeze(..)) |
+				Call::System{ .. } |
+				Call::Babe{ .. } |
+				Call::Timestamp{ .. } |
+				Call::Indices(pallet_indices::Call::claim{ .. }) |
+				Call::Indices(pallet_indices::Call::free{ .. }) |
+				Call::Indices(pallet_indices::Call::freeze{ .. }) |
 				// Specifically omitting Indices `transfer`, `force_transfer`
 				// Specifically omitting the entire Balances pallet
-				Call::Authorship(..) |
-				Call::Democracy(..) |
-				Call::Staking(..) |
-				Call::Session(..) |
-				Call::Grandpa(..) |
-				Call::ImOnline(..) |
-				Call::Council(..) |
-				Call::TechnicalCommittee(..) |
-				Call::PhragmenElection(..) |
-				Call::TechnicalMembership(..) |
-				Call::Treasury(..) |
-				Call::KtonTreasury(..) |
-				Call::Tips(..) |
-				Call::Bounties(..) |
-				Call::Claims(..) |
-				Call::Utility(..) |
-				Call::Identity(..) |
-				Call::Society(..) |
-				Call::Recovery(pallet_recovery::Call::as_recovered(..)) |
-				Call::Recovery(pallet_recovery::Call::vouch_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::claim_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
-				Call::Scheduler(..) |
-				Call::Proxy(..) |
-				Call::Multisig(..) // Specifically omitting the entire CrabIssuing pallet
+				Call::Authorship{ .. } |
+				Call::Democracy{ .. } |
+				Call::Staking{ .. } |
+				Call::Session{ .. } |
+				Call::Grandpa{ .. } |
+				Call::ImOnline{ .. } |
+				Call::Council{ .. } |
+				Call::TechnicalCommittee{ .. } |
+				Call::PhragmenElection{ .. } |
+				Call::TechnicalMembership{ .. } |
+				Call::Treasury{ .. } |
+				Call::KtonTreasury{ .. } |
+				Call::Tips{ .. } |
+				Call::Bounties{ .. } |
+				Call::Claims{ .. } |
+				Call::Utility{ .. } |
+				Call::Identity{ .. } |
+				Call::Society{ .. } |
+				Call::Recovery(pallet_recovery::Call::as_recovered{ .. }) |
+				Call::Recovery(pallet_recovery::Call::vouch_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::claim_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::close_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::remove_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::cancel_recovered{ .. }) |
+				Call::Scheduler{ .. } |
+				Call::Proxy{ .. } |
+				Call::Multisig{ .. } // Specifically omitting the entire CrabIssuing pallet
 			),
-			ProxyType::Governance => matches!(
-				c,
-				Call::Democracy(..)
-					| Call::Council(..) | Call::TechnicalCommittee(..)
-					| Call::PhragmenElection(..)
-					| Call::Treasury(..) | Call::KtonTreasury(..)
-					| Call::Tips(..) | Call::Bounties(..)
-					| Call::Utility(..)
-			),
-			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
+			ProxyType::Governance => {
+				matches!(
+					c,
+					Call::Democracy { .. }
+						| Call::Council { .. } | Call::TechnicalCommittee { .. }
+						| Call::PhragmenElection { .. }
+						| Call::Treasury { .. } | Call::KtonTreasury { .. }
+						| Call::Tips { .. } | Call::Bounties { .. }
+						| Call::Utility { .. }
+				)
+			}
+			ProxyType::Staking => matches!(c, Call::Staking { .. } | Call::Utility { .. }),
 			ProxyType::IdentityJudgement => matches!(
 				c,
-				Call::Identity(pallet_identity::Call::provide_judgement(..))
-					| Call::Utility(pallet_utility::Call::batch(..))
+				Call::Identity(pallet_identity::Call::provide_judgement { .. })
+					| Call::Utility(pallet_utility::Call::batch { .. })
 			),
 			ProxyType::EthereumBridge => false,
 		}

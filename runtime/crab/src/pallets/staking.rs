@@ -1,7 +1,6 @@
 // --- paritytech ---
 use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
 use frame_support::PalletId;
-use pallet_election_provider_multi_phase::OnChainConfig;
 use sp_npos_elections::NposSolution;
 use sp_staking::SessionIndex;
 // --- darwinia-network ---

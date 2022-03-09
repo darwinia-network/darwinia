@@ -1,7 +1,7 @@
 // --- paritytech ---
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use pallet_election_provider_multi_phase::{
-	BenchmarkingConfig, Config, FallbackStrategy, NoFallback, SolutionAccuracyOf,
+	BenchmarkingConfig, Config, NoFallback, SolutionAccuracyOf,
 };
 use sp_runtime::{transaction_validity::TransactionPriority, Perbill};
 // --- darwinia-network ---

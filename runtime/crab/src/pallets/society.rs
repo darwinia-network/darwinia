@@ -38,7 +38,7 @@ impl Config for Runtime {
 	type RotationPeriod = RotationPeriod;
 	type MaxLockDuration = MaxLockDuration;
 	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type SuspensionJudgementOrigin = EnsureFounder<Runtime>;
+	type SuspensionJudgementOrigin = EnsureFounder<Self>;
 	type ChallengePeriod = ChallengePeriod;
 	type MaxCandidateIntake = MaxCandidateIntake;
 }
