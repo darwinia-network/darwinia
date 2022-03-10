@@ -16,13 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// #![warn(missing_docs)]
+
 pub mod crab;
 pub mod darwinia;
 
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 
 // --- std ---
-use std::{error::Error, sync::Arc};
+use std::{error::Error, str::FromStr, sync::Arc};
 // --- darwinia-network ---
 use darwinia_common_primitives::{BlockNumber, Hash, OpaqueBlock as Block};
 
@@ -54,4 +56,44 @@ pub struct GrandpaDeps<B> {
 	pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
 	/// Finality proof provider.
 	pub finality_provider: Arc<sc_finality_grandpa::FinalityProofProvider<B, Block>>,
+}
+
+/// Ethereum RPC configurations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct EthRpcConfig {
+	pub ethapi: Vec<EthApiCmd>,
+	pub ethapi_max_permits: u32,
+	pub ethapi_trace_max_count: u32,
+	pub ethapi_trace_cache_duration: u64,
+	pub eth_log_block_cache: usize,
+	pub max_past_logs: u32,
+}
+
+#[derive(Clone)]
+pub struct EthRpcRequesters {
+	pub debug: Option<dc_rpc::DebugRequester>,
+	pub trace: Option<dc_rpc::CacheRequester>,
+}
+
+/// Ethereum RPC Commands.
+#[derive(Clone, Debug, PartialEq)]
+pub enum EthApiCmd {
+	Debug,
+	Trace,
+}
+impl FromStr for EthApiCmd {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(match s {
+			"debug" => Self::Debug,
+			"trace" => Self::Trace,
+			_ => {
+				return Err(format!(
+					"`{}` is not recognized as a supported Ethereum Api",
+					s
+				))
+			}
+		})
+	}
 }

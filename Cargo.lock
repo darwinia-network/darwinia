@@ -1043,11 +1043,13 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "darwinia-vesting",
+ "dp-evm-trace-apis",
  "dp-s2s",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
- "evm",
+ "fp-evm",
+ "fp-self-contained",
  "frame-benchmarking",
  "frame-election-provider-support",
  "frame-executive",
@@ -1067,6 +1069,7 @@ dependencies = [
  "pallet-bridge-messages",
  "pallet-collective",
  "pallet-election-provider-multi-phase",
+ "pallet-evm-precompile-simple",
  "pallet-grandpa",
  "pallet-identity",
  "pallet-im-online",
@@ -1476,6 +1479,7 @@ dependencies = [
 name = "darwinia-cli"
 version = "0.11.8"
 dependencies = [
+ "darwinia-rpc",
  "darwinia-service",
  "frame-benchmarking-cli",
  "log",
@@ -1816,8 +1820,10 @@ dependencies = [
  "darwinia-staking-rpc",
  "dc-db",
  "dc-rpc",
+ "dp-evm-trace-apis",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
+ "fc-rpc-core",
  "jsonrpc-core",
  "jsonrpc-pubsub",
  "pallet-transaction-payment-rpc",
@@ -1832,6 +1838,7 @@ dependencies = [
  "sc-network",
  "sc-rpc",
  "sc-sync-state-rpc",
+ "sc-transaction-pool",
  "sc-transaction-pool-api",
  "sp-api",
  "sp-block-builder",
@@ -1953,7 +1960,9 @@ dependencies = [
  "dc-db",
  "dc-mapping-sync",
  "dc-rpc",
+ "dp-evm-trace-apis",
  "dvm-rpc-runtime-api",
+ "fc-rpc-core",
  "frame-benchmarking",
  "frame-system-rpc-runtime-api",
  "futures 0.3.21",
@@ -1997,6 +2006,7 @@ dependencies = [
  "sp-transaction-pool",
  "sp-trie",
  "substrate-prometheus-endpoint",
+ "tokio",
 ]
 
 [[package]]
@@ -5551,6 +5561,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompile-simple"
+version = "2.0.0-dev"
+source = "git+https://github.com/darwinia-network/frontier?branch=darwinia-v0.12.0#a049818ea9b24447b5a871b8007c5c22b69d1a46"
+dependencies = [
+ "fp-evm",
+ "ripemd160",
+ "sp-core",
+ "sp-io",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.0#3d4179829374772b3e38d0b2cb2e7d1faaca56fd"
@@ -6773,6 +6794,17 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "ripemd160"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2eca4ecc81b7f313189bf73ce724400a07da2a6dac19588b03c8bd76a2dcc251"
+dependencies = [
+ "block-buffer 0.9.0",
+ "digest 0.9.0",
+ "opaque-debug 0.3.0",
 ]
 
 [[package]]

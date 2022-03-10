@@ -1,5 +1,4 @@
 // --- paritytech ---
-use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
 use frame_support::PalletId;
 use sp_npos_elections::NposSolution;
 use sp_staking::SessionIndex;

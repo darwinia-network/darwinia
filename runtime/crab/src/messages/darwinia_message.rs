@@ -18,6 +18,7 @@
 
 // --- crates.io ---
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use bp_message_dispatch::CallOrigin;
 use bp_messages::{
@@ -52,7 +53,7 @@ pub type ToDarwiniaMessagePayload = FromThisChainMessagePayload<WithDarwiniaMess
 /// The s2s backing pallet index in the darwinia chain runtime.
 pub const DARWINIA_S2S_BACKING_PALLET_INDEX: u8 = 46;
 
-#[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct ToDarwiniaOutboundPayLoad;
 impl CreatePayload<AccountId, AccountPublic, Signature> for ToDarwiniaOutboundPayLoad {
 	type Payload = ToDarwiniaMessagePayload;
@@ -99,7 +100,7 @@ frame_support::parameter_types! {
 }
 
 /// Crab -> Darwinia message lane pallet parameters.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum CrabToDarwiniaMessagesParameter {
 	/// The conversion formula we use is: `CrabTokens = DarwiniaTokens * conversion_rate`.
 	DarwiniaToCrabConversionRate(FixedU128),

@@ -27,7 +27,7 @@ use futures::stream::StreamExt;
 // --- paritytech ---
 use sc_authority_discovery::WorkerConfig;
 use sc_basic_authorship::ProposerFactory;
-use sc_client_api::{ExecutorProvider, RemoteBackend, StateBackendFor};
+use sc_client_api::{ExecutorProvider, StateBackendFor};
 use sc_consensus::{BasicQueue, DefaultImportQueue, LongestChain};
 use sc_consensus_babe::{
 	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
@@ -41,27 +41,21 @@ use sc_finality_grandpa::{
 use sc_network::Event;
 use sc_service::{
 	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
-	NoopRpcExtensionBuilder, PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
+	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
 };
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{BasicPool, FullPool};
 use sp_api::ConstructRuntimeApi;
-use sp_consensus::{CanAuthorWithNativeVersion, NeverCanAuthor};
-use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
+use sp_consensus::CanAuthorWithNativeVersion;
+use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
 use crate::{
 	client::DarwiniaClient,
-	service::{
-		self, FullBackend, FullClient, FullGrandpaBlockImport, FullSelectChain, LightBackend,
-		LightClient, RpcResult,
-	},
+	service::{self, RpcResult, *},
 };
-use darwinia_common_primitives::{AccountId, Balance, Hash, Nonce, OpaqueBlock as Block, Power};
-use darwinia_rpc::{
-	darwinia::{FullDeps, LightDeps},
-	BabeDeps, DenyUnsafe, GrandpaDeps, SubscriptionTaskExecutor,
-};
+use darwinia_common_primitives::*;
+use darwinia_rpc::{darwinia::FullDeps, *};
 
 pub struct Executor;
 impl NativeExecutionDispatch for Executor {
@@ -130,10 +124,16 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
+	let executor = <NativeElseWasmExecutor<Executor>>::new(
+		config.wasm_method,
+		config.default_heap_pages,
+		config.max_runtime_instances,
+	);
 	let (client, backend, keystore_container, task_manager) =
-		sc_service::new_full_parts::<Block, RuntimeApi, Executor>(
+		sc_service::new_full_parts::<Block, RuntimeApi, _>(
 			&config,
 			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+			executor,
 		)?;
 	let telemetry = telemetry.map(|(worker, telemetry)| {
 		task_manager.spawn_handle().spawn("telemetry", worker.run());
@@ -463,164 +463,6 @@ where
 	Ok((task_manager, client, rpc_handlers))
 }
 
-fn new_light<RuntimeApi, Executor>(
-	mut config: Configuration,
-) -> Result<(TaskManager, RpcHandlers), ServiceError>
-where
-	Executor: 'static + NativeExecutionDispatch,
-	RuntimeApi:
-		'static + Send + Sync + ConstructRuntimeApi<Block, LightClient<RuntimeApi, Executor>>,
-	<RuntimeApi as ConstructRuntimeApi<Block, LightClient<RuntimeApi, Executor>>>::RuntimeApi:
-		RuntimeApiCollection<StateBackend = StateBackendFor<LightBackend, Block>>,
-{
-	service::set_prometheus_registry(&mut config)?;
-
-	let telemetry = config
-		.telemetry_endpoints
-		.clone()
-		.filter(|x| !x.is_empty())
-		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
-			let worker = TelemetryWorker::new(16)?;
-			let telemetry = worker.handle().new_telemetry(endpoints);
-
-			Ok((worker, telemetry))
-		})
-		.transpose()?;
-	let (client, backend, keystore_container, mut task_manager, on_demand) =
-		sc_service::new_light_parts::<Block, RuntimeApi, Executor>(
-			&config,
-			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
-		)?;
-	let mut telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager.spawn_handle().spawn("telemetry", worker.run());
-		telemetry
-	});
-
-	config
-		.network
-		.extra_sets
-		.push(sc_finality_grandpa::grandpa_peers_set_config());
-
-	let select_chain = LongestChain::new(backend.clone());
-	let transaction_pool = Arc::new(BasicPool::new_light(
-		config.transaction_pool.clone(),
-		config.prometheus_registry(),
-		task_manager.spawn_essential_handle(),
-		client.clone(),
-		on_demand.clone(),
-	));
-	let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
-		client.clone(),
-		&(client.clone() as Arc<_>),
-		select_chain.clone(),
-		telemetry.as_ref().map(|x| x.handle()),
-	)?;
-	let justification_import = grandpa_block_import.clone();
-	let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-		BabeConfig::get_or_compute(&*client)?,
-		grandpa_block_import,
-		client.clone(),
-	)?;
-	// FIXME: pruning task isn't started since light client doesn't do `AuthoritySetup`.
-	let slot_duration = babe_link.config().slot_duration();
-	let import_queue = sc_consensus_babe::import_queue(
-		babe_link,
-		babe_block_import,
-		Some(Box::new(justification_import)),
-		client.clone(),
-		select_chain.clone(),
-		move |_, ()| async move {
-			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-			let slot =
-				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
-					*timestamp,
-					slot_duration,
-				);
-
-			let uncles =
-				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
-
-			Ok((timestamp, slot, uncles))
-		},
-		&task_manager.spawn_essential_handle(),
-		config.prometheus_registry(),
-		NeverCanAuthor,
-		telemetry.as_ref().map(|x| x.handle()),
-	)?;
-	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
-		backend.clone(),
-		grandpa_link.shared_authority_set().clone(),
-	));
-	let (network, system_rpc_tx, network_starter) =
-		sc_service::build_network(BuildNetworkParams {
-			config: &config,
-			client: client.clone(),
-			transaction_pool: transaction_pool.clone(),
-			spawn_handle: task_manager.spawn_handle(),
-			import_queue,
-			on_demand: Some(on_demand.clone()),
-			block_announce_validator_builder: None,
-			warp_sync: Some(warp_sync),
-		})?;
-	let enable_grandpa = !config.disable_grandpa;
-
-	if enable_grandpa {
-		let name = config.network.node_name.clone();
-
-		let config = sc_finality_grandpa::Config {
-			gossip_duration: Duration::from_millis(1000),
-			justification_period: 512,
-			name: Some(name),
-			observer_enabled: false,
-			keystore: None,
-			local_role: config.role.clone(),
-			telemetry: telemetry.as_ref().map(|x| x.handle()),
-		};
-
-		task_manager.spawn_handle().spawn_blocking(
-			"grandpa-observer",
-			sc_finality_grandpa::run_grandpa_observer(config, grandpa_link, network.clone())?,
-		);
-	}
-
-	if config.offchain_worker.enabled {
-		sc_service::build_offchain_workers(
-			&config,
-			task_manager.spawn_handle(),
-			client.clone(),
-			network.clone(),
-		);
-	}
-
-	let light_deps = LightDeps {
-		remote_blockchain: backend.remote_blockchain(),
-		fetcher: on_demand.clone(),
-		client: client.clone(),
-		pool: transaction_pool.clone(),
-	};
-	let rpc_extension = darwinia_rpc::darwinia::create_light(light_deps);
-
-	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
-		on_demand: Some(on_demand),
-		remote_blockchain: Some(backend.remote_blockchain()),
-		rpc_extensions_builder: Box::new(NoopRpcExtensionBuilder(rpc_extension)),
-		task_manager: &mut task_manager,
-		config,
-		keystore: keystore_container.sync_keystore(),
-		backend,
-		transaction_pool,
-		client,
-		network,
-		system_rpc_tx,
-		telemetry: telemetry.as_mut(),
-	})?;
-
-	network_starter.start_network();
-
-	Ok((task_manager, rpc_handlers))
-}
-
 /// Builds a new object suitable for chain operations.
 #[cfg(feature = "full-node")]
 pub fn new_chain_ops<Runtime, Dispatch>(
@@ -671,11 +513,4 @@ pub fn darwinia_new_full(
 	>(config, authority_discovery_disabled)?;
 
 	Ok((components, client, rpc_handlers))
-}
-
-/// Create a new Darwinia service for a light client.
-pub fn darwinia_new_light(
-	config: Configuration,
-) -> Result<(TaskManager, RpcHandlers), ServiceError> {
-	new_light::<darwinia_runtime::RuntimeApi, DarwiniaExecutor>(config)
 }

@@ -18,13 +18,13 @@
 
 //! Darwinia-specific RPCs implementation.
 
-#![warn(missing_docs)]
-
 // --- std ---
 use std::sync::Arc;
+// --- crates.io ---
+use jsonrpc_core::IoHandler;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_common_primitives::{AccountId, Balance, Nonce, Power};
+use darwinia_common_primitives::*;
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B> {
@@ -42,18 +42,6 @@ pub struct FullDeps<C, P, SC, B> {
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
 	pub grandpa: GrandpaDeps<B>,
-}
-
-/// Light client extra dependencies.
-pub struct LightDeps<C, F, P> {
-	/// The client instance to use.
-	pub client: Arc<C>,
-	/// Transaction pool instance.
-	pub pool: Arc<P>,
-	/// Remote access to the blockchain (async).
-	pub remote_blockchain: Arc<dyn sc_client_api::light::RemoteBlockchain<Block>>,
-	/// Fetcher instance.
-	pub fetcher: Arc<F>,
 }
 
 /// Instantiate all RPC extensions.
@@ -80,16 +68,16 @@ where
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
 	// --- paritytech ---
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
-	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
-	use sc_sync_state_rpc::{SyncStateRpcApi, SyncStateRpcHandler};
-	use substrate_frame_rpc_system::{FullSystem, SystemApi};
+	use pallet_transaction_payment_rpc::*;
+	use sc_consensus_babe_rpc::*;
+	use sc_finality_grandpa_rpc::*;
+	use sc_sync_state_rpc::*;
+	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
-	use darwinia_balances_rpc::{Balances, BalancesApi};
-	use darwinia_fee_market_rpc::{FeeMarket, FeeMarketApi};
-	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
-	use darwinia_staking_rpc::{Staking, StakingApi};
+	use darwinia_balances_rpc::*;
+	use darwinia_fee_market_rpc::*;
+	use darwinia_header_mmr_rpc::*;
+	use darwinia_staking_rpc::*;
 
 	let FullDeps {
 		client,
@@ -100,7 +88,7 @@ where
 		babe,
 		grandpa,
 	} = deps;
-	let mut io = jsonrpc_core::IoHandler::default();
+	let mut io = IoHandler::default();
 
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(
 		client.clone(),
@@ -150,35 +138,4 @@ where
 	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
 
 	Ok(io)
-}
-
-/// Instantiate all RPC extensions for light node.
-pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
-where
-	C: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ProvideRuntimeApi<Block>
-		+ sp_blockchain::HeaderBackend<Block>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	P: 'static + sc_transaction_pool_api::TransactionPool,
-	F: 'static + sc_client_api::Fetcher<Block>,
-{
-	// --- paritytech ---
-	use substrate_frame_rpc_system::{LightSystem, SystemApi};
-
-	let LightDeps {
-		client,
-		pool,
-		remote_blockchain,
-		fetcher,
-	} = deps;
-	let mut io = jsonrpc_core::IoHandler::default();
-
-	io.extend_with(SystemApi::<Hash, AccountId, Nonce>::to_delegate(
-		LightSystem::new(client, remote_blockchain, fetcher, pool),
-	));
-
-	io
 }

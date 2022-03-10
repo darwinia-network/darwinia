@@ -70,19 +70,21 @@ pub mod darwinia;
 pub use darwinia::Executor as DarwiniaExecutor;
 pub use darwinia_runtime;
 
+pub mod dvm_tasks;
+
 // --- std ---
 use std::sync::Arc;
 // --- crates.io ---
 use codec::Codec;
 // --- paritytech ---
 use sc_consensus::LongestChain;
+use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::GrandpaBlockImport;
 use sc_keystore::LocalKeystore;
 use sc_service::{
 	config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError, TFullBackend,
-	TFullClient, TLightBackendWithHash, TLightClientWithBackend,
+	TFullClient,
 };
-use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 // --- darwinia-network ---
 use darwinia_common_primitives::OpaqueBlock as Block;
@@ -90,12 +92,10 @@ use darwinia_rpc::RpcExtension;
 
 type FullBackend = TFullBackend<Block>;
 type FullSelectChain = LongestChain<FullBackend, Block>;
-type FullClient<RuntimeApi, Executor> = TFullClient<Block, RuntimeApi, Executor>;
+type FullClient<RuntimeApi, Executor> =
+	TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>;
 type FullGrandpaBlockImport<RuntimeApi, Executor> =
 	GrandpaBlockImport<FullBackend, Block, FullClient<RuntimeApi, Executor>, FullSelectChain>;
-type LightBackend = TLightBackendWithHash<Block, BlakeTwo256>;
-type LightClient<RuntimeApi, Executor> =
-	TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
 
 type RpcResult = Result<RpcExtension, ServiceError>;
 

@@ -20,12 +20,13 @@
 use std::path::PathBuf;
 // --- paritytech ---
 use sc_cli::{Role, RuntimeVersion, SubstrateCli};
-use sc_service::ChainSpec;
 #[cfg(feature = "try-runtime")]
 use sc_service::TaskManager;
+use sc_service::{ChainSpec, DatabaseSource};
 use sp_core::crypto::Ss58AddressFormat;
 // --- darwinia-network ---
 use crate::cli::{Cli, Subcommand};
+use darwinia_rpc::{EthApiCmd, EthRpcConfig};
 use service::{
 	crab_chain_spec, crab_runtime, crab_service, darwinia_chain_spec, darwinia_runtime,
 	darwinia_service, CrabChainSpec, CrabExecutor, DarwiniaChainSpec, DarwiniaExecutor,
@@ -120,10 +121,31 @@ fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
 	sp_core::crypto::set_default_ss58_version(ss58_version);
 }
 
+fn validate_trace_environment(cli: &Cli) -> sc_cli::Result<()> {
+	if (cli.run.dvm_args.ethapi.contains(&EthApiCmd::Debug)
+		|| cli.run.dvm_args.ethapi.contains(&EthApiCmd::Trace))
+		&& cli.run.base.import_params.wasm_runtime_overrides.is_none()
+	{
+		return Err(
+			"`debug` or `trace` namespaces requires `--wasm-runtime-overrides /path/to/overrides`."
+				.into(),
+		);
+	}
+	Ok(())
+}
+
 /// Parses Darwinia specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
-	let max_past_logs = cli.run.dvm_parameters.max_past_logs;
+	let _ = validate_trace_environment(&cli)?;
+	let eth_rpc_config = EthRpcConfig {
+		ethapi: cli.run.dvm_args.ethapi.clone(),
+		ethapi_max_permits: cli.run.dvm_args.ethapi_max_permits,
+		ethapi_trace_max_count: cli.run.dvm_args.ethapi_trace_max_count,
+		ethapi_trace_cache_duration: cli.run.dvm_args.ethapi_trace_cache_duration,
+		eth_log_block_cache: cli.run.dvm_args.eth_log_block_cache,
+		max_past_logs: cli.run.dvm_args.max_past_logs,
+	};
 
 	match &cli.subcommand {
 		None => {
@@ -145,12 +167,11 @@ pub fn run() -> sc_cli::Result<()> {
 			if chain_spec.is_crab() {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => crab_service::crab_new_light(config)
-							.map(|(task_manager, _)| task_manager),
+						Role::Light => panic!("Not support light client"),
 						_ => crab_service::crab_new_full(
 							config,
 							authority_discovery_disabled,
-							max_past_logs,
+							eth_rpc_config,
 						)
 						.map(|(task_manager, _, _)| task_manager),
 					}
@@ -159,8 +180,7 @@ pub fn run() -> sc_cli::Result<()> {
 			} else {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
-						Role::Light => darwinia_service::darwinia_new_light(config)
-							.map(|(task_manager, _)| task_manager),
+						Role::Light => panic!("Not support light client"),
 						_ => darwinia_service::darwinia_new_full(
 							config,
 							authority_discovery_disabled,
@@ -187,7 +207,7 @@ pub fn run() -> sc_cli::Result<()> {
 					let (client, _, import_queue, task_manager) = crab_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						CrabExecutor,
-					>(&mut config, max_past_logs)?;
+					>(&mut config)?;
 
 					Ok((cmd.run(client, import_queue), task_manager))
 				})
@@ -213,7 +233,7 @@ pub fn run() -> sc_cli::Result<()> {
 					let (client, _, _, task_manager) = crab_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						CrabExecutor,
-					>(&mut config, max_past_logs)?;
+					>(&mut config)?;
 
 					Ok((cmd.run(client, config.database), task_manager))
 				})
@@ -239,7 +259,7 @@ pub fn run() -> sc_cli::Result<()> {
 					let (client, _, _, task_manager) = crab_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						CrabExecutor,
-					>(&mut config, max_past_logs)?;
+					>(&mut config)?;
 
 					Ok((cmd.run(client, config.chain_spec), task_manager))
 				})
@@ -265,7 +285,7 @@ pub fn run() -> sc_cli::Result<()> {
 					let (client, _, import_queue, task_manager) = crab_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						CrabExecutor,
-					>(&mut config, max_past_logs)?;
+					>(&mut config)?;
 
 					Ok((cmd.run(client, import_queue), task_manager))
 				})
@@ -288,16 +308,13 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.sync_run(|config| {
-					// <--- dvm ---
 					// Remove dvm offchain db
-					let dvm_database_config = sc_service::DatabaseConfig::RocksDb {
+					let dvm_database_config = DatabaseSource::RocksDb {
 						path: crab_service::dvm_database_dir(&config),
 						cache_size: 0,
 					};
 
 					cmd.run(dvm_database_config)?;
-					// --- dvm --->
-
 					cmd.run(config.database)
 				})
 			} else {
@@ -315,7 +332,7 @@ pub fn run() -> sc_cli::Result<()> {
 					let (client, backend, _, task_manager) = crab_service::new_chain_ops::<
 						crab_runtime::RuntimeApi,
 						CrabExecutor,
-					>(&mut config, max_past_logs)?;
+					>(&mut config)?;
 
 					Ok((cmd.run(client, backend), task_manager))
 				})

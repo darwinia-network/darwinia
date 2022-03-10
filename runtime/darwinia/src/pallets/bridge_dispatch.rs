@@ -13,8 +13,8 @@ impl Contains<Call> for S2sCallFilter {
 	fn contains(c: &Call) -> bool {
 		matches!(
 			c,
-			Call::System(frame_system::Call::remark{ .. })
-				| Call::System(frame_system::Call::remark_with_event{ .. })
+			Call::System(frame_system::Call::remark { .. })
+				| Call::System(frame_system::Call::remark_with_event { .. })
 				| Call::ToCrabBacking(to_substrate_backing::Call::unlock_from_remote { .. })
 		)
 	}
