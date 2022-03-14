@@ -40,7 +40,6 @@ default = [
 	"cli",
 	"db",
 	"full-node",
-	"trie-memory-tracker",
 	"wasmtime",
 ]
 
@@ -55,8 +54,6 @@ cli = [
 db = ["service/db"]
 
 full-node = ["service/full-node"]
-
-trie-memory-tracker = ["sp-trie/memory-tracker"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
