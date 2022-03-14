@@ -232,6 +232,7 @@ where
 	)));
 	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client.clone())));
 
+	// TODO: The evm tracing related RPCs is not supported for Crab network.
 	// let ethapi_cmd = eth_rpc_config.ethapi.clone();
 	// if ethapi_cmd.contains(&EthApiCmd::Debug) || ethapi_cmd.contains(&EthApiCmd::Trace) {
 	// 	if let Some(trace_filter_requester) = tracing_requesters.trace {
