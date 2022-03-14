@@ -58,6 +58,8 @@ where
 	pub backend: Arc<dc_db::Backend<Block>>,
 	/// Graph pool instance.
 	pub graph: Arc<sc_transaction_pool::Pool<A>>,
+	/// Rpc requester for evm trace
+	pub tracing_requesters: EthRpcRequesters,
 	/// Ethereum RPC Config.
 	pub eth_rpc_config: EthRpcConfig,
 }
@@ -124,6 +126,7 @@ where
 		filter_pool,
 		backend,
 		graph,
+		tracing_requesters,
 		eth_rpc_config,
 	} = deps;
 	let mut io = IoHandler::default();
@@ -227,7 +230,22 @@ where
 		// Whether to format the `peer_count` response as Hex (default) or not.
 		true,
 	)));
-	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
+	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client.clone())));
+
+	let ethapi_cmd = eth_rpc_config.ethapi.clone();
+	if ethapi_cmd.contains(&EthApiCmd::Debug) || ethapi_cmd.contains(&EthApiCmd::Trace) {
+		if let Some(trace_filter_requester) = tracing_requesters.trace {
+			io.extend_with(TraceApiServer::to_delegate(Trace::new(
+				client,
+				trace_filter_requester,
+				eth_rpc_config.ethapi_trace_max_count,
+			)));
+		}
+
+		if let Some(debug_requester) = tracing_requesters.debug {
+			io.extend_with(DebugApiServer::to_delegate(Debug::new(debug_requester)));
+		}
+	}
 
 	Ok(io)
 }

@@ -1044,6 +1044,8 @@ dependencies = [
  "darwinia-support",
  "darwinia-vesting",
  "dp-evm-trace-apis",
+ "dp-evm-trace-events",
+ "dp-evm-tracer",
  "dp-s2s",
  "dvm-ethereum",
  "dvm-rpc-runtime-api",
@@ -1090,8 +1092,10 @@ dependencies = [
  "pallet-treasury",
  "pallet-utility",
  "parity-scale-codec 2.3.1",
+ "rlp",
  "scale-info 1.0.0",
  "serde",
+ "sha3 0.8.2",
  "smallvec",
  "sp-api",
  "sp-authority-discovery",
@@ -1958,6 +1962,7 @@ dependencies = [
  "dc-mapping-sync",
  "dc-rpc",
  "dp-evm-trace-apis",
+ "dp-evm-trace-ext",
  "dvm-rpc-runtime-api",
  "fc-rpc-core",
  "frame-benchmarking",
@@ -2380,12 +2385,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "dp-evm-trace-ext"
+version = "2.8.0"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#fa8740db1b5dcbbff439b7830428660696fe7556"
+dependencies = [
+ "dp-evm-trace-events",
+ "ethereum-types",
+ "parity-scale-codec 2.3.1",
+ "sp-externalities",
+ "sp-runtime-interface",
+ "sp-std",
+]
+
+[[package]]
 name = "dp-evm-trace-rpc"
 version = "2.8.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#fa8740db1b5dcbbff439b7830428660696fe7556"
 dependencies = [
  "ethereum-types",
  "serde",
+]
+
+[[package]]
+name = "dp-evm-tracer"
+version = "2.8.0"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#fa8740db1b5dcbbff439b7830428660696fe7556"
+dependencies = [
+ "dp-evm-trace-events",
+ "dp-evm-trace-ext",
+ "ethereum-types",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "parity-scale-codec 2.3.1",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

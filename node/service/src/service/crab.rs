@@ -58,7 +58,7 @@ use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
 use crate::{
 	client::CrabClient,
-	service::{self, RpcResult, *},
+	service::{self, dvm_tasks::DvmTasksParams, RpcResult, *},
 };
 use darwinia_common_primitives::*;
 use darwinia_rpc::{crab::FullDeps, *};
@@ -66,7 +66,10 @@ use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 pub struct Executor;
 impl NativeExecutionDispatch for Executor {
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		dp_evm_trace_ext::dvm_ext::HostFunctions,
+	);
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		crab_runtime::api::dispatch(method, data)
@@ -253,7 +256,7 @@ where
 {
 	let role = config.role.clone();
 	let is_authority = role.is_authority();
-	// let is_archive = config.state_pruning.is_archive();
+	let is_archive = config.state_pruning.is_archive();
 	let force_authoring = config.force_authoring;
 	let disable_grandpa = config.disable_grandpa;
 	let name = config.network.node_name.clone();
@@ -317,15 +320,15 @@ where
 
 	let dvm_backend = open_dvm_backend(&config)?;
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
-	// let eth_tracing_requesters = dvm_tasks::spawn(DvmTasksParams {
-	// 	task_manager: &task_manager,
-	// 	client: client.clone(),
-	// 	substrate_backend: backend.clone(),
-	// 	dvm_backend: dvm_backend.clone(),
-	// 	filter_pool: filter_pool.clone(),
-	// 	is_archive,
-	// 	rpc_config: eth_rpc_config.clone(),
-	// });
+	let tracing_requesters = dvm_tasks::spawn(DvmTasksParams {
+		task_manager: &task_manager,
+		client: client.clone(),
+		substrate_backend: backend.clone(),
+		dvm_backend: dvm_backend.clone(),
+		filter_pool: filter_pool.clone(),
+		is_archive,
+		rpc_config: eth_rpc_config.clone(),
+	});
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();
@@ -368,7 +371,7 @@ where
 				},
 				backend: dvm_backend.clone(),
 				filter_pool: filter_pool.clone(),
-				// eth_tracing_requesters: tracing_requesters.clone(),
+				tracing_requesters: tracing_requesters.clone(),
 				eth_rpc_config: eth_rpc_config.clone(),
 			};
 

@@ -27,6 +27,7 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use std::{error::Error, str::FromStr, sync::Arc};
 // --- darwinia-network ---
 use darwinia_common_primitives::{BlockNumber, Hash, OpaqueBlock as Block};
+use dc_rpc::{CacheRequester as TraceFilterCacheRequester, DebugRequester};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
@@ -56,6 +57,12 @@ pub struct GrandpaDeps<B> {
 	pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
 	/// Finality proof provider.
 	pub finality_provider: Arc<sc_finality_grandpa::FinalityProofProvider<B, Block>>,
+}
+
+#[derive(Clone)]
+pub struct RpcRequesters {
+	pub debug: Option<DebugRequester>,
+	pub trace: Option<TraceFilterCacheRequester>,
 }
 
 /// Ethereum RPC configurations.
