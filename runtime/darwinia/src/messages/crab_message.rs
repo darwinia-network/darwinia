@@ -205,7 +205,7 @@ impl messages::ChainWithMessages for Crab {
 }
 impl messages::BridgedChainWithMessages for Crab {
 	fn maximal_extrinsic_size() -> u32 {
-		max_extrinsic_size()
+		darwinia_bridge_primitives::Crab::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {

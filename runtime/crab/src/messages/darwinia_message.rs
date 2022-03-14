@@ -203,7 +203,7 @@ impl messages::ChainWithMessages for Darwinia {
 }
 impl messages::BridgedChainWithMessages for Darwinia {
 	fn maximal_extrinsic_size() -> u32 {
-		max_extrinsic_size()
+		darwinia_bridge_primitives::Darwinia::max_extrinsic_weight(),
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {

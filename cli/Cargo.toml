@@ -29,7 +29,6 @@ try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/
 frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech primitives
 sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }

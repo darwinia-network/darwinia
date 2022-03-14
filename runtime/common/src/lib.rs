@@ -130,14 +130,3 @@ frame_support::parameter_types! {
 		.max
 		.get(DispatchClass::Normal);
 }
-
-pub fn max_extrinsic_weight() -> Weight {
-	RuntimeBlockWeights::get()
-		.get(DispatchClass::Normal)
-		.max_extrinsic
-		.unwrap_or(Weight::MAX)
-}
-
-pub fn max_extrinsic_size() -> u32 {
-	*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
-}
