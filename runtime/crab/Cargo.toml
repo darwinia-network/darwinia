@@ -105,11 +105,15 @@ darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://
 darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dp-evm-trace-apis                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dvm-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dvm-rpc-runtime-api                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.0" }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.0" }
 pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.0" }
+rlp                                = { version = "0.5", optional = true, default-features = false }
+sha3                               = { version = "0.8", optional = true, default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
@@ -208,15 +212,26 @@ std = [
 	"darwinia-evm-precompile-bridge-s2s/std",
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-transfer/std",
+	"dp-evm-trace-events/std",
+	"dp-evm-tracer/std",
 	"dvm-ethereum/std",
 	"dvm-rpc-runtime-api/std",
 	"fp-evm/std",
 	"fp-self-contained/std",
 	"pallet-evm-precompile-simple/std",
+	"rlp/std",
+	"sha3/std",
 ]
 
 dev     = []
 no-wasm = []
+
+evm-tracing = [
+	"dp-evm-trace-events",
+	"dp-evm-tracer",
+	"rlp",
+	"sha3",
+]
 
 try-runtime = [
 	"frame-executive/try-runtime",

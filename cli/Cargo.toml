@@ -18,7 +18,7 @@ log       = { version = "0.4" }
 structopt = { version = "0.3", optional = true }
 # darwinia-network service
 darwinia-rpc = { path = "../rpc" }
-service      = { package = "darwinia-service", default-features = false, path = "../node/service" }
+service      = { package = "darwinia-service", path = "../node/service" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
@@ -55,6 +55,8 @@ db = ["service/db"]
 full-node = ["service/full-node"]
 
 wasmtime = ["sc-cli/wasmtime"]
+
+evm-tracing = ["service/evm-tracing"]
 
 runtime-benchmarks = [
 	# darwinia-network

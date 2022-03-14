@@ -25,6 +25,11 @@ darwinia-service = { path = "node/service" }
 [features]
 default = ["darwinia-cli/wasmtime"]
 
+evm-tracing =[
+	"darwinia-cli/evm-tracing",
+	"darwinia-service/evm-tracing"
+]
+
 try-runtime = ["darwinia-cli/try-runtime"]
 
 runtime-benchmarks = ["darwinia-cli/runtime-benchmarks"]
