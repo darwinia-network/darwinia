@@ -126,7 +126,7 @@ where
 		filter_pool,
 		backend,
 		graph,
-		_tracing_requesters,
+		tracing_requesters: _,
 		eth_rpc_config,
 	} = deps;
 	let mut io = IoHandler::default();
