@@ -26,7 +26,7 @@ use bp_messages::{
 	target_chain::{ProvedMessages, SourceHeaderChain},
 	InboundLaneData, LaneId, Message, MessageNonce, Parameter as MessagesParameter,
 };
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::{messages::DispatchFeePayment, Chain, ChainId};
 use bridge_runtime_common::messages::{
 	self,
 	source::{self, FromBridgedChainMessagesDeliveryProof, FromThisChainMessagePayload},
@@ -203,13 +203,14 @@ impl messages::ChainWithMessages for Darwinia {
 }
 impl messages::BridgedChainWithMessages for Darwinia {
 	fn maximal_extrinsic_size() -> u32 {
-		darwinia_bridge_primitives::Darwinia::max_extrinsic_weight(),
+		darwinia_bridge_primitives::Darwinia::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit =
-			messages::target::maximal_incoming_message_dispatch_weight(max_extrinsic_weight());
+		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(
+			darwinia_bridge_primitives::Darwinia::max_extrinsic_weight(),
+		);
 
 		// we're charging for payload bytes in `WithDarwiniaMessageBridge::transaction_payment` function
 		//
