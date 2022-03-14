@@ -320,7 +320,7 @@ where
 
 	let dvm_backend = open_dvm_backend(&config)?;
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
-	let tracing_requesters = dvm_tasks::spawn(DvmTasksParams {
+	let eth_tracing_requesters = dvm_tasks::spawn(DvmTasksParams {
 		task_manager: &task_manager,
 		client: client.clone(),
 		substrate_backend: backend.clone(),
@@ -371,7 +371,7 @@ where
 				},
 				backend: dvm_backend.clone(),
 				filter_pool: filter_pool.clone(),
-				tracing_requesters: tracing_requesters.clone(),
+				tracing_requesters: eth_tracing_requesters.clone(),
 				eth_rpc_config: eth_rpc_config.clone(),
 			};
 

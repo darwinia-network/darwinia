@@ -76,8 +76,8 @@ dc-db               = { git = "https://github.com/darwinia-network/darwinia-comm
 dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dp-evm-trace-apis   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
-dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 dp-evm-trace-ext    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
+dvm-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 fc-rpc-core         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.0" }
 
 [features]
