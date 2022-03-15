@@ -18,8 +18,6 @@
 
 //! Crab service. Specialized wrapper over substrate service.
 
-pub use crab_runtime;
-
 // --- std ---
 use std::{
 	collections::BTreeMap,
@@ -57,7 +55,7 @@ use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
 use crate::{
 	client::CrabClient,
-	service::{self, dvm::DvmTaskParams, RpcResult, *},
+	service::{self, dvm::DvmTaskParams, RpcServiceResult, *},
 };
 use darwinia_common_primitives::*;
 use darwinia_rpc::{crab::FullDeps, *};
@@ -328,7 +326,7 @@ where
 		let shared_voter_state = shared_voter_state.clone();
 		let network = network.clone();
 
-		move |deny_unsafe, subscription_executor| -> RpcResult {
+		move |deny_unsafe, subscription_executor| -> RpcServiceResult {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),

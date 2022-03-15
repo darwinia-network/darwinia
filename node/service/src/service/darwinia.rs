@@ -18,47 +18,14 @@
 
 //! Darwinia service. Specialized wrapper over substrate service.
 
-pub use darwinia_runtime;
-
 // --- std ---
-use std::{sync::Arc, time::Duration};
-// --- crates.io ---
-use futures::stream::StreamExt;
-// --- paritytech ---
-use sc_authority_discovery::WorkerConfig;
-use sc_basic_authorship::ProposerFactory;
-use sc_client_api::{ExecutorProvider, StateBackendFor};
-use sc_consensus::{BasicQueue, DefaultImportQueue, LongestChain};
-use sc_consensus_babe::{
-	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
-};
-use sc_executor::NativeExecutionDispatch;
-use sc_finality_grandpa::{
-	Config as GrandpaConfig, FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
-	LinkHalf, SharedVoterState as GrandpaSharedVoterState,
-	VotingRulesBuilder as GrandpaVotingRulesBuilder,
-};
-use sc_network::Event;
-use sc_service::{
-	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
-	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
-};
-use sc_telemetry::{Telemetry, TelemetryWorker};
-use sc_transaction_pool::{BasicPool, FullPool};
-use sp_api::ConstructRuntimeApi;
-use sp_consensus::CanAuthorWithNativeVersion;
-use sp_runtime::traits::BlakeTwo256;
-use sp_trie::PrefixedMemoryDB;
+use std::sync::Arc;
 // --- darwinia-network ---
-use crate::{
-	client::DarwiniaClient,
-	service::{self, RpcResult, *},
-};
-use darwinia_common_primitives::*;
-use darwinia_rpc::{darwinia::FullDeps, *};
+use super::*;
+use darwinia_common_primitives::{OpaqueBlock as Block, *};
 
 pub struct Executor;
-impl NativeExecutionDispatch for Executor {
+impl sc_executor::NativeExecutionDispatch for Executor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -74,51 +41,64 @@ impl_runtime_apis![darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Bala
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
-	config: &mut Configuration,
-) -> Result<
-	PartialComponents<
+	config: &mut sc_service::Configuration,
+) -> ServiceResult<
+	sc_service::PartialComponents<
 		FullClient<RuntimeApi, Executor>,
 		FullBackend,
 		FullSelectChain,
-		DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
-		FullPool<Block, FullClient<RuntimeApi, Executor>>,
+		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
+		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			impl Fn(DenyUnsafe, SubscriptionTaskExecutor) -> RpcResult,
 			(
-				BabeBlockImport<
+				sc_consensus_babe::BabeBlockImport<
 					Block,
 					FullClient<RuntimeApi, Executor>,
 					FullGrandpaBlockImport<RuntimeApi, Executor>,
 				>,
-				LinkHalf<Block, FullClient<RuntimeApi, Executor>, FullSelectChain>,
-				BabeLink<Block>,
+				sc_finality_grandpa::LinkHalf<
+					Block,
+					FullClient<RuntimeApi, Executor>,
+					FullSelectChain,
+				>,
+				sc_consensus_babe::BabeLink<Block>,
 			),
-			GrandpaSharedVoterState,
-			Option<Telemetry>,
+			Option<sc_telemetry::Telemetry>,
 		),
 	>,
-	ServiceError,
 >
 where
-	Executor: 'static + NativeExecutionDispatch,
-	RuntimeApi:
-		'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi:
-		RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
+	// --- paritytech ---
+	use sc_client_api::ExecutorProvider;
+	use sc_consensus::LongestChain;
+	use sc_consensus_babe::Config as BabeConfig;
+	use sc_executor::NativeElseWasmExecutor;
+	use sc_service::{Error as ServiceError, PartialComponents};
+	use sc_telemetry::{Error as TelemetryError, TelemetryWorker};
+	use sc_transaction_pool::BasicPool;
+	use sp_consensus::CanAuthorWithNativeVersion;
+
 	if config.keystore_remote.is_some() {
 		return Err(ServiceError::Other(format!(
 			"Remote Keystores are not supported."
 		)));
 	}
 
-	service::set_prometheus_registry(config)?;
+	set_prometheus_registry(config)?;
 
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
 		.filter(|x| !x.is_empty())
-		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
+		.map(|endpoints| -> Result<_, TelemetryError> {
 			let worker = TelemetryWorker::new(16)?;
 			let telemetry = worker.handle().new_telemetry(endpoints);
 			Ok((worker, telemetry))
@@ -186,48 +166,7 @@ where
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
-	let justification_stream = grandpa_link.justification_stream();
-	let shared_authority_set = grandpa_link.shared_authority_set().clone();
-	let shared_voter_state = GrandpaSharedVoterState::empty();
-	let finality_proof_provider = GrandpaFinalityProofProvider::new_for_service(
-		backend.clone(),
-		Some(shared_authority_set.clone()),
-	);
 	let import_setup = (babe_import.clone(), grandpa_link, babe_link.clone());
-	let rpc_setup = shared_voter_state.clone();
-	let babe_config = babe_link.config().clone();
-	let shared_epoch_changes = babe_link.epoch_changes().clone();
-	let rpc_extensions_builder = {
-		let client = client.clone();
-		let keystore = keystore_container.sync_keystore();
-		let transaction_pool = transaction_pool.clone();
-		let select_chain = select_chain.clone();
-		let chain_spec = config.chain_spec.cloned_box();
-
-		move |deny_unsafe, subscription_executor| -> RpcResult {
-			let deps = FullDeps {
-				client: client.clone(),
-				pool: transaction_pool.clone(),
-				select_chain: select_chain.clone(),
-				chain_spec: chain_spec.cloned_box(),
-				deny_unsafe,
-				babe: BabeDeps {
-					babe_config: babe_config.clone(),
-					shared_epoch_changes: shared_epoch_changes.clone(),
-					keystore: keystore.clone(),
-				},
-				grandpa: GrandpaDeps {
-					shared_voter_state: shared_voter_state.clone(),
-					shared_authority_set: shared_authority_set.clone(),
-					justification_stream: justification_stream.clone(),
-					subscription_executor,
-					finality_proof_provider: finality_proof_provider.clone(),
-				},
-			};
-
-			darwinia_rpc::darwinia::create_full(deps).map_err(Into::into)
-		}
-	};
 
 	Ok(PartialComponents {
 		client,
@@ -237,36 +176,64 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, telemetry),
+		other: (import_setup, telemetry),
 	})
 }
 
 #[cfg(feature = "full-node")]
 fn new_full<RuntimeApi, Executor>(
-	mut config: Configuration,
+	mut config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
-) -> Result<
-	(
-		TaskManager,
-		Arc<FullClient<RuntimeApi, Executor>>,
-		RpcHandlers,
-	),
-	ServiceError,
->
+) -> ServiceResult<(
+	sc_service::TaskManager,
+	Arc<FullClient<RuntimeApi, Executor>>,
+	sc_service::RpcHandlers,
+)>
 where
-	Executor: 'static + NativeExecutionDispatch,
-	RuntimeApi:
-		'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi:
-		RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
+	// -- std ---
+	use std::time::Duration;
+	// --- crates.io ---
+	use futures::stream::StreamExt;
+	// --- paritytech ---
+	use sc_authority_discovery::WorkerConfig;
+	use sc_basic_authorship::ProposerFactory;
+	use sc_client_api::ExecutorProvider;
+	use sc_consensus_babe::{BabeParams, SlotProportion};
+	use sc_finality_grandpa::{
+		warp_proof::NetworkProvider, Config as GrandpaConfig,
+		FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
+		SharedVoterState as GrandpaSharedVoterState,
+		VotingRulesBuilder as GrandpaVotingRulesBuilder,
+	};
+	use sc_network::Event;
+	use sc_service::{BuildNetworkParams, PartialComponents, SpawnTasksParams};
+	use sp_consensus::CanAuthorWithNativeVersion;
+	// --- darwinia-network ---
+	use darwinia_rpc::{darwinia::*, *};
+
 	let role = config.role.clone();
 	let is_authority = role.is_authority();
 	let force_authoring = config.force_authoring;
+	let disable_grandpa = config.disable_grandpa;
+	let name = config.network.node_name.clone();
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let auth_disc_publish_non_global_ips = config.network.allow_non_globals_in_dht;
+
+	config
+		.network
+		.extra_sets
+		.push(sc_finality_grandpa::grandpa_peers_set_config());
+
 	let backoff_authoring_blocks =
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
-	let enable_grandpa = !config.disable_grandpa;
-	let name = config.network.node_name.clone();
 	let PartialComponents {
 		client,
 		backend,
@@ -275,7 +242,7 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, mut telemetry),
+		other: ((babe_import, grandpa_link, babe_link), mut telemetry),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
 	// if let Some(url) = &config.keystore_remote {
@@ -290,18 +257,9 @@ where
 	// 	};
 	// }
 
-	let prometheus_registry = config.prometheus_registry().cloned();
-	let shared_voter_state = rpc_setup;
-	let auth_disc_publish_non_global_ips = config.network.allow_non_globals_in_dht;
-
-	config
-		.network
-		.extra_sets
-		.push(sc_finality_grandpa::grandpa_peers_set_config());
-
-	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+	let warp_sync = Arc::new(NetworkProvider::new(
 		backend.clone(),
-		import_setup.1.shared_authority_set().clone(),
+		grandpa_link.shared_authority_set().clone(),
 	));
 	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {
@@ -324,13 +282,53 @@ where
 		);
 	}
 
+	let shared_voter_state = GrandpaSharedVoterState::empty();
+	let babe_config = babe_link.config().clone();
+	let shared_epoch_changes = babe_link.epoch_changes().clone();
+	let justification_stream = grandpa_link.justification_stream();
+	let shared_authority_set = grandpa_link.shared_authority_set().clone();
+	let finality_proof_provider = GrandpaFinalityProofProvider::new_for_service(
+		backend.clone(),
+		Some(shared_authority_set.clone()),
+	);
+	let rpc_extensions_builder = Box::new({
+		let client = client.clone();
+		let keystore = keystore_container.sync_keystore();
+		let transaction_pool = transaction_pool.clone();
+		let select_chain = select_chain.clone();
+		let chain_spec = config.chain_spec.cloned_box();
+		let shared_voter_state = shared_voter_state.clone();
+
+		move |deny_unsafe, subscription_executor: SubscriptionTaskExecutor| -> RpcServiceResult {
+			darwinia_rpc::darwinia::create_full(FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				select_chain: select_chain.clone(),
+				chain_spec: chain_spec.cloned_box(),
+				deny_unsafe,
+				babe: BabeDeps {
+					babe_config: babe_config.clone(),
+					shared_epoch_changes: shared_epoch_changes.clone(),
+					keystore: keystore.clone(),
+				},
+				grandpa: GrandpaDeps {
+					shared_voter_state: shared_voter_state.clone(),
+					shared_authority_set: shared_authority_set.clone(),
+					justification_stream: justification_stream.clone(),
+					subscription_executor: subscription_executor.clone(),
+					finality_proof_provider: finality_proof_provider.clone(),
+				},
+			})
+			.map_err(Into::into)
+		}
+	});
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
 		config,
 		backend: backend.clone(),
 		client: client.clone(),
 		keystore: keystore_container.sync_keystore(),
 		network: network.clone(),
-		rpc_extensions_builder: Box::new(rpc_extensions_builder),
+		rpc_extensions_builder,
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		on_demand: None,
@@ -338,8 +336,6 @@ where
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
 	})?;
-
-	let (block_import, link_half, babe_link) = import_setup;
 
 	if is_authority {
 		let can_author_with = CanAuthorWithNativeVersion::new(client.executor().clone());
@@ -356,7 +352,7 @@ where
 			keystore: keystore_container.sync_keystore(),
 			client: client.clone(),
 			select_chain,
-			block_import,
+			block_import: babe_import,
 			env: proposer,
 			sync_oracle: network.clone(),
 			justification_sync_link: network.clone(),
@@ -430,21 +426,20 @@ where
 	} else {
 		None
 	};
-	let grandpa_config = GrandpaConfig {
-		// FIXME substrate#1578 make this available through chainspec
-		gossip_duration: Duration::from_millis(1000),
-		justification_period: 512,
-		name: Some(name),
-		observer_enabled: false,
-		keystore,
-		local_role: role,
-		telemetry: telemetry.as_ref().map(|x| x.handle()),
-	};
 
-	if enable_grandpa {
+	if !disable_grandpa {
 		let grandpa_config = GrandpaParams {
-			config: grandpa_config,
-			link: link_half,
+			config: GrandpaConfig {
+				// FIXME substrate#1578 make this available through chainspec
+				gossip_duration: Duration::from_millis(1000),
+				justification_period: 512,
+				name: Some(name),
+				observer_enabled: false,
+				keystore,
+				local_role: role,
+				telemetry: telemetry.as_ref().map(|x| x.handle()),
+			},
+			link: grandpa_link,
 			network,
 			telemetry: telemetry.as_ref().map(|x| x.handle()),
 			voting_rule: GrandpaVotingRulesBuilder::default().build(),
@@ -466,21 +461,23 @@ where
 /// Builds a new object suitable for chain operations.
 #[cfg(feature = "full-node")]
 pub fn new_chain_ops<Runtime, Dispatch>(
-	config: &mut Configuration,
-) -> Result<
-	(
-		Arc<FullClient<Runtime, Dispatch>>,
-		Arc<FullBackend>,
-		BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
-		TaskManager,
-	),
-	ServiceError,
->
+	config: &mut sc_service::Configuration,
+) -> ServiceResult<(
+	Arc<FullClient<Runtime, Dispatch>>,
+	Arc<FullBackend>,
+	sc_consensus::BasicQueue<Block, sp_trie::PrefixedMemoryDB<Hashing>>,
+	sc_service::TaskManager,
+)>
 where
-	Dispatch: 'static + NativeExecutionDispatch,
-	Runtime: 'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<Runtime, Dispatch>>,
-	Runtime::RuntimeApi: RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+	Runtime:
+		'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<Runtime, Dispatch>>,
+	Runtime::RuntimeApi:
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Dispatch: 'static + sc_executor::NativeExecutionDispatch,
 {
+	// --- paritytech ---
+	use sc_service::{config::KeystoreConfig, PartialComponents};
+
 	config.keystore = KeystoreConfig::InMemory;
 
 	let PartialComponents {
@@ -497,16 +494,13 @@ where
 /// Create a new Darwinia service for a full node.
 #[cfg(feature = "full-node")]
 pub fn darwinia_new_full(
-	config: Configuration,
+	config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
-) -> Result<
-	(
-		TaskManager,
-		Arc<impl DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
-		RpcHandlers,
-	),
-	ServiceError,
-> {
+) -> ServiceResult<(
+	sc_service::TaskManager,
+	Arc<impl crate::client::DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
+	sc_service::RpcHandlers,
+)> {
 	let (components, client, rpc_handlers) = new_full::<
 		darwinia_runtime::RuntimeApi,
 		DarwiniaExecutor,
