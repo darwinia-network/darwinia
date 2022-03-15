@@ -11,7 +11,7 @@ cd ${WORK_PATH}
 cargo clean -p crab-runtime --release
 cargo clean -p darwinia-runtime --release
 cargo clean -p librocksdb-sys --release
-cargo clean -p darwinia-service --release
+cargo clean -p darwinia-node-service --release
 cargo clean -p darwinia-cli --release
 
 

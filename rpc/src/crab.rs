@@ -19,15 +19,10 @@
 //! Crab-specific RPCs implementation.
 
 // --- std ---
-use std::{collections::BTreeMap, sync::Arc};
-// --- crates.io ---
-use jsonrpc_core::IoHandler;
-// --- parity-tech ---
-use sc_rpc::SubscriptionTaskExecutor;
+use std::sync::Arc;
 // --- darwinia-network ---
 use crate::*;
 use darwinia_common_primitives::*;
-use dvm_ethereum::EthereumStorageSchema;
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B, A>
@@ -43,25 +38,13 @@ where
 	/// A copy of the chain spec.
 	pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
 	/// Whether to deny unsafe calls
-	pub deny_unsafe: DenyUnsafe,
+	pub deny_unsafe: sc_rpc::DenyUnsafe,
 	/// BABE specific dependencies.
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
 	pub grandpa: GrandpaDeps<B>,
-	/// The Node authority flag
-	pub is_authority: bool,
-	/// Network service
-	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
-	/// EthFilterApi pool.
-	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
-	/// Backend.
-	pub backend: Arc<dc_db::Backend<Block>>,
-	/// Graph pool instance.
-	pub graph: Arc<sc_transaction_pool::Pool<A>>,
-	/// Rpc requester for evm trace
-	pub tracing_requesters: EthRpcRequesters,
-	/// Ethereum RPC Config.
-	pub eth_rpc_config: EthRpcConfig,
+	/// DVM related rpc helper.
+	pub eth: EthDeps<A>,
 }
 
 /// Instantiate all RPC extensions.
@@ -75,29 +58,30 @@ where
 		+ Sync
 		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
-		// <--- dvm ---
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::StorageProvider<Block, B>
-		// --- dvm --->
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	C::Api: sc_consensus_babe::BabeApi<Block>,
-	C::Api: sp_block_builder::BlockBuilder<Block>,
-	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
-	C::Api: darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>,
-	C::Api: darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>,
-	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
-	C::Api: dp_evm_trace_apis::DebugRuntimeApi<Block>,
-	C::Api: dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
+	C::Api: sp_block_builder::BlockBuilder<Block>
+		+ sc_consensus_babe::BabeApi<Block>
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
+		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
+		+ darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>
+		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
+		+ dp_evm_trace_apis::DebugRuntimeApi<Block>
+		+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 {
+	// --- std ---
+	use std::collections::BTreeMap;
 	// --- crates.io ---
+	use jsonrpc_core::IoHandler;
 	use jsonrpc_pubsub::manager::SubscriptionManager;
 	// --- paritytech ---
 	use pallet_transaction_payment_rpc::*;
@@ -112,6 +96,7 @@ where
 	use darwinia_header_mmr_rpc::*;
 	use darwinia_staking_rpc::*;
 	use dc_rpc::*;
+	use dvm_ethereum::EthereumStorageSchema;
 
 	let FullDeps {
 		client,
@@ -119,15 +104,39 @@ where
 		select_chain,
 		chain_spec,
 		deny_unsafe,
-		babe,
-		grandpa,
-		is_authority,
-		network,
-		filter_pool,
-		backend,
-		graph,
-		tracing_requesters: _,
-		eth_rpc_config,
+		babe: BabeDeps {
+			keystore,
+			babe_config,
+			shared_epoch_changes,
+		},
+		grandpa:
+			GrandpaDeps {
+				shared_voter_state,
+				shared_authority_set,
+				justification_stream,
+				subscription_executor,
+				finality_proof_provider,
+			},
+		eth:
+			EthDeps {
+				config:
+					EthRpcConfig {
+						ethapi_debug_targets,
+						ethapi_trace_max_count,
+						max_past_logs,
+						fee_history_limit,
+						..
+					},
+				graph,
+				is_authority,
+				network,
+				filter_pool,
+				backend,
+				// fee_history_cache,
+				// overrides,
+				// block_data_cache,
+				rpc_requesters,
+			},
 	} = deps;
 	let mut io = IoHandler::default();
 
@@ -139,11 +148,6 @@ where
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
 	)));
-	let BabeDeps {
-		keystore,
-		babe_config,
-		shared_epoch_changes,
-	} = babe;
 	io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
 		client.clone(),
 		shared_epoch_changes.clone(),
@@ -152,19 +156,12 @@ where
 		select_chain,
 		deny_unsafe,
 	)));
-	let GrandpaDeps {
-		shared_voter_state,
-		shared_authority_set,
-		justification_stream,
-		subscription_executor,
-		finality_provider,
-	} = grandpa;
 	io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
 		shared_authority_set.clone(),
 		shared_voter_state,
 		justification_stream,
 		subscription_executor,
-		finality_provider,
+		finality_proof_provider,
 	)));
 	io.extend_with(SyncStateRpcApi::to_delegate(SyncStateRpcHandler::new(
 		chain_spec,
@@ -200,7 +197,7 @@ where
 		backend.clone(),
 		is_authority,
 		vec![],
-		eth_rpc_config.max_past_logs,
+		max_past_logs,
 		block_data_cache.clone(),
 	)));
 	if let Some(filter_pool) = filter_pool {
@@ -210,7 +207,7 @@ where
 			filter_pool.clone(),
 			500 as usize, // max stored filters
 			overrides.clone(),
-			eth_rpc_config.max_past_logs,
+			max_past_logs,
 			block_data_cache.clone(),
 		)));
 	}
@@ -230,16 +227,16 @@ where
 		// Whether to format the `peer_count` response as Hex (default) or not.
 		true,
 	)));
-	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client.clone())));
+	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
 
 	// TODO: The evm tracing related RPCs is not supported for Crab network.
-	// let ethapi_cmd = eth_rpc_config.ethapi.clone();
+	// let ethapi_cmd = ethapi.clone();
 	// if ethapi_cmd.contains(&EthApiCmd::Debug) || ethapi_cmd.contains(&EthApiCmd::Trace) {
 	// 	if let Some(trace_filter_requester) = tracing_requesters.trace {
 	// 		io.extend_with(TraceApiServer::to_delegate(Trace::new(
 	// 			client,
 	// 			trace_filter_requester,
-	// 			eth_rpc_config.ethapi_trace_max_count,
+	// 			ethapi_trace_max_count,
 	// 		)));
 	// 	}
 

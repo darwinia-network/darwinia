@@ -4,7 +4,7 @@ description = "Darwinia node service"
 edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "darwinia-service"
+name        = "darwinia-node-service"
 repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.11.8"
 

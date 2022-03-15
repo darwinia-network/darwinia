@@ -17,20 +17,20 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // --- std ---
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 // --- paritytech ---
-use sc_cli::{Role, RuntimeVersion, SubstrateCli};
-#[cfg(feature = "try-runtime")]
-use sc_service::TaskManager;
+use sc_cli::{Error as CliError, Result as CliResult, Role, RuntimeVersion, SubstrateCli};
 use sc_service::{ChainSpec, DatabaseSource};
+#[cfg(feature = "try-runtime")]
+use sc_service::{Error as ServiceError, TaskManager};
 use sp_core::crypto::Ss58AddressFormat;
 // --- darwinia-network ---
-use crate::cli::{Cli, Subcommand};
-use darwinia_rpc::{EthApiCmd, EthRpcConfig};
-use service::{
-	crab_chain_spec, crab_runtime, crab_service, darwinia_chain_spec, darwinia_runtime,
-	darwinia_service, CrabChainSpec, CrabExecutor, DarwiniaChainSpec, DarwiniaExecutor,
-	IdentifyVariant,
+use crate::cli::*;
+#[cfg(any(feature = "try-runtime", feature = "runtime-benchmarks"))]
+use darwinia_common_primitives::OpaqueBlock as Block;
+use darwinia_node_service::{
+	crab_runtime::RuntimeApi as CrabRuntimeApi, darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi,
+	*,
 };
 
 impl SubstrateCli for Cli {
@@ -104,55 +104,15 @@ impl SubstrateCli for Cli {
 	}
 }
 
-fn get_exec_name() -> Option<String> {
-	std::env::current_exe()
-		.ok()
-		.and_then(|pb| pb.file_name().map(|s| s.to_os_string()))
-		.and_then(|s| s.into_string().ok())
-}
-
-fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
-	let ss58_version = if spec.is_crab() {
-		Ss58AddressFormat::SubstrateAccount
-	} else {
-		Ss58AddressFormat::DarwiniaAccount
-	};
-
-	sp_core::crypto::set_default_ss58_version(ss58_version);
-}
-
-fn validate_trace_environment(cli: &Cli) -> sc_cli::Result<()> {
-	if (cli.run.dvm_args.ethapi.contains(&EthApiCmd::Debug)
-		|| cli.run.dvm_args.ethapi.contains(&EthApiCmd::Trace))
-		&& cli.run.base.import_params.wasm_runtime_overrides.is_none()
-	{
-		return Err(
-			"`debug` or `trace` namespaces requires `--wasm-runtime-overrides /path/to/overrides`."
-				.into(),
-		);
-	}
-	Ok(())
-}
-
 /// Parses Darwinia specific CLI arguments and run the service.
-pub fn run() -> sc_cli::Result<()> {
+pub fn run() -> CliResult<()> {
 	let cli = Cli::from_args();
-	let _ = validate_trace_environment(&cli)?;
-	let eth_rpc_config = EthRpcConfig {
-		ethapi: cli.run.dvm_args.ethapi.clone(),
-		ethapi_max_permits: cli.run.dvm_args.ethapi_max_permits,
-		ethapi_trace_max_count: cli.run.dvm_args.ethapi_trace_max_count,
-		ethapi_trace_cache_duration: cli.run.dvm_args.ethapi_trace_cache_duration,
-		eth_log_block_cache: cli.run.dvm_args.eth_log_block_cache,
-		max_past_logs: cli.run.dvm_args.max_past_logs,
-	};
 
 	match &cli.subcommand {
 		None => {
-			let authority_discovery_disabled = cli.run.authority_discovery_disabled;
-			let runner = cli
-				.create_runner(&cli.run.base)
-				.map_err(sc_cli::Error::from)?;
+			validate_trace_environment(&cli)?;
+
+			let runner = cli.create_runner(&cli.run.base).map_err(CliError::from)?;
 			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
@@ -163,6 +123,9 @@ pub fn run() -> sc_cli::Result<()> {
 			log::info!(" | |  | |/ _` | '__\\ \\ /\\ / / | '_ \\| |/ _` |");
 			log::info!(" | |__| | (_| | |   \\ V  V /| | | | | | (_| |");
 			log::info!(" |_____/ \\__,_|_|    \\_/\\_/ |_|_| |_|_|\\__,_|");
+
+			let authority_discovery_disabled = cli.run.authority_discovery_disabled;
+			let eth_rpc_config = cli.run.dvm_args.build_eth_rpc_config();
 
 			if chain_spec.is_crab() {
 				runner.run_node_until_exit(|config| async move {
@@ -175,7 +138,7 @@ pub fn run() -> sc_cli::Result<()> {
 						)
 						.map(|(task_manager, _, _)| task_manager),
 					}
-					.map_err(sc_cli::Error::Service)
+					.map_err(CliError::from)
 				})
 			} else {
 				runner.run_node_until_exit(|config| async move {
@@ -187,7 +150,7 @@ pub fn run() -> sc_cli::Result<()> {
 						)
 						.map(|(task_manager, _, _)| task_manager),
 					}
-					.map_err(sc_cli::Error::Service)
+					.map_err(CliError::from)
 				})
 			}
 		}
@@ -204,17 +167,15 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
-					let (client, _, import_queue, task_manager) = crab_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						CrabExecutor,
-					>(&mut config)?;
+					let (client, _, import_queue, task_manager) =
+						crab_service::new_chain_ops::<CrabRuntimeApi, CrabExecutor>(&mut config)?;
 
 					Ok((cmd.run(client, import_queue), task_manager))
 				})
 			} else {
 				runner.async_run(|mut config| {
 					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
-						darwinia_runtime::RuntimeApi,
+						DarwiniaRuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
 
@@ -230,17 +191,15 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
-					let (client, _, _, task_manager) = crab_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						CrabExecutor,
-					>(&mut config)?;
+					let (client, _, _, task_manager) =
+						crab_service::new_chain_ops::<CrabRuntimeApi, CrabExecutor>(&mut config)?;
 
 					Ok((cmd.run(client, config.database), task_manager))
 				})
 			} else {
 				runner.async_run(|mut config| {
 					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
-						darwinia_runtime::RuntimeApi,
+						DarwiniaRuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
 
@@ -256,17 +215,15 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
-					let (client, _, _, task_manager) = crab_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						CrabExecutor,
-					>(&mut config)?;
+					let (client, _, _, task_manager) =
+						crab_service::new_chain_ops::<CrabRuntimeApi, CrabExecutor>(&mut config)?;
 
 					Ok((cmd.run(client, config.chain_spec), task_manager))
 				})
 			} else {
 				runner.async_run(|mut config| {
 					let (client, _, _, task_manager) = darwinia_service::new_chain_ops::<
-						darwinia_runtime::RuntimeApi,
+						DarwiniaRuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
 
@@ -282,17 +239,15 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
-					let (client, _, import_queue, task_manager) = crab_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						CrabExecutor,
-					>(&mut config)?;
+					let (client, _, import_queue, task_manager) =
+						crab_service::new_chain_ops::<CrabRuntimeApi, CrabExecutor>(&mut config)?;
 
 					Ok((cmd.run(client, import_queue), task_manager))
 				})
 			} else {
 				runner.async_run(|mut config| {
 					let (client, _, import_queue, task_manager) = darwinia_service::new_chain_ops::<
-						darwinia_runtime::RuntimeApi,
+						DarwiniaRuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
 
@@ -329,17 +284,15 @@ pub fn run() -> sc_cli::Result<()> {
 
 			if chain_spec.is_crab() {
 				runner.async_run(|mut config| {
-					let (client, backend, _, task_manager) = crab_service::new_chain_ops::<
-						crab_runtime::RuntimeApi,
-						CrabExecutor,
-					>(&mut config)?;
+					let (client, backend, _, task_manager) =
+						crab_service::new_chain_ops::<CrabRuntimeApi, CrabExecutor>(&mut config)?;
 
 					Ok((cmd.run(client, backend), task_manager))
 				})
 			} else {
 				runner.async_run(|mut config| {
 					let (client, backend, _, task_manager) = darwinia_service::new_chain_ops::<
-						darwinia_runtime::RuntimeApi,
+						DarwiniaRuntimeApi,
 						DarwiniaExecutor,
 					>(&mut config)?;
 
@@ -364,12 +317,9 @@ pub fn run() -> sc_cli::Result<()> {
 					// we don't need any of the components of new_partial, just a runtime, or a task
 					// manager to do `async_run`.
 					let task_manager = TaskManager::new(config.tokio_handle.clone(), registry)
-						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+						.map_err(|e| CliError::from(ServiceError::Prometheus(e)))?;
 
-					Ok((
-						cmd.run::<crab_runtime::Block, CrabExecutor>(config),
-						task_manager,
-					))
+					Ok((cmd.run::<Block, CrabExecutor>(config), task_manager))
 				})
 			} else {
 				runner.async_run(|config| {
@@ -377,12 +327,9 @@ pub fn run() -> sc_cli::Result<()> {
 					// we don't need any of the components of new_partial, just a runtime, or a task
 					// manager to do `async_run`.
 					let task_manager = TaskManager::new(config.tokio_handle.clone(), registry)
-						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+						.map_err(|e| CliError::from(ServiceError::Prometheus(e)))?;
 
-					Ok((
-						cmd.run::<darwinia_runtime::Block, DarwiniaExecutor>(config),
-						task_manager,
-					))
+					Ok((cmd.run::<Block, DarwiniaExecutor>(config), task_manager))
 				})
 			}
 		}
@@ -394,15 +341,49 @@ pub fn run() -> sc_cli::Result<()> {
 			set_default_ss58_version(chain_spec);
 
 			if chain_spec.is_crab() {
-				runner.sync_run(|config| cmd.run::<crab_runtime::Block, CrabExecutor>(config))
+				runner.sync_run(|config| cmd.run::<Block, CrabExecutor>(config))
 			} else if chain_spec.is_darwinia() {
-				runner
-					.sync_run(|config| cmd.run::<darwinia_runtime::Block, DarwiniaExecutor>(config))
+				runner.sync_run(|config| cmd.run::<Block, DarwiniaExecutor>(config))
 			} else {
 				Err("Benchmarking wasn't enabled when building the node. \
 				You can enable it with `--features runtime-benchmarks`."
 					.into())
 			}
 		}
+	}
+}
+
+fn get_exec_name() -> Option<String> {
+	env::current_exe()
+		.ok()?
+		.file_name()
+		.map(|name| name.to_string_lossy().into_owned())
+}
+
+fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
+	let ss58_version = if spec.is_crab() {
+		Ss58AddressFormat::SubstrateAccount
+	} else {
+		Ss58AddressFormat::DarwiniaAccount
+	};
+
+	sp_core::crypto::set_default_ss58_version(ss58_version);
+}
+
+fn validate_trace_environment(cli: &Cli) -> CliResult<()> {
+	if cli
+		.run
+		.dvm_args
+		.ethapi_debug_targets
+		.iter()
+		.any(|target| matches!(target.as_str(), "debug" | "trace"))
+		&& cli.run.base.import_params.wasm_runtime_overrides.is_none()
+	{
+		Err(
+			"`debug` or `trace` namespaces requires `--wasm-runtime-overrides /path/to/overrides`."
+				.into(),
+		)
+	} else {
+		Ok(())
 	}
 }

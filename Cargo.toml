@@ -19,15 +19,15 @@ maintenance = { status = "actively-developed" }
 # crates.io
 futures = { version = "0.3" }
 # darwinia-network
-darwinia-cli     = { path = "cli" }
-darwinia-service = { path = "node/service" }
+darwinia-cli          = { path = "cli" }
+darwinia-node-service = { path = "node/service" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
 
-evm-tracing =[
+evm-tracing = [
 	"darwinia-cli/evm-tracing",
-	"darwinia-service/evm-tracing"
+	"darwinia-node-service/evm-tracing",
 ]
 
 try-runtime = ["darwinia-cli/try-runtime"]

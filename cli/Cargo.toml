@@ -17,8 +17,9 @@ crate-type = ["cdylib", "rlib"]
 log       = { version = "0.4" }
 structopt = { version = "0.3", optional = true }
 # darwinia-network service
-darwinia-rpc = { path = "../rpc" }
-service      = { package = "darwinia-service", path = "../node/service" }
+darwinia-common-primitives = { optional = true, path = "../primitives/common" }
+darwinia-node-service      = { path = "../node/service" }
+darwinia-rpc               = { path = "../rpc" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
@@ -50,24 +51,25 @@ cli = [
 	"sc-service",
 ]
 
-db = ["service/db"]
+db = ["darwinia-node-service/db"]
 
-full-node = ["service/full-node"]
+full-node = ["darwinia-node-service/full-node"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
-evm-tracing = ["service/evm-tracing"]
+evm-tracing = ["darwinia-node-service/evm-tracing"]
 
 runtime-benchmarks = [
 	# darwinia-network
-	"service/runtime-benchmarks",
+	"darwinia-node-service/runtime-benchmarks",
 	# paritytech
 	"frame-benchmarking-cli",
 ]
 
 try-runtime = [
 	# darwinia-network
-	"service/try-runtime",
+	"darwinia-common-primitives",
+	"darwinia-node-service/try-runtime",
 	# paritytech
 	"try-runtime-cli",
 ]

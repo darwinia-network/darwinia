@@ -116,14 +116,14 @@ where
 		shared_authority_set,
 		justification_stream,
 		subscription_executor,
-		finality_provider,
+		finality_proof_provider,
 	} = grandpa;
 	io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
 		shared_authority_set.clone(),
 		shared_voter_state,
 		justification_stream,
 		subscription_executor,
-		finality_provider,
+		finality_proof_provider,
 	)));
 	io.extend_with(SyncStateRpcApi::to_delegate(SyncStateRpcHandler::new(
 		chain_spec,

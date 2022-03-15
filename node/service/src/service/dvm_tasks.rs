@@ -31,13 +31,13 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
 // --- darwinia-network ---
-use darwinia_rpc::{EthApiCmd, EthRpcConfig, EthRpcRequesters};
+use darwinia_rpc::{EthRpcConfig, EthRpcRequesters};
 use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use dc_rpc::{CacheTask, DebugTask, EthTask};
 use dp_evm_trace_apis::DebugRuntimeApi;
 use dvm_rpc_runtime_api::EthereumRuntimeRPCApi;
 
-pub fn spawn<B, C, BE>(params: DvmTasksParams<B, C, BE>) -> EthRpcRequesters
+pub fn spawn<B, C, BE>(params: DvmTaskParams<B, C, BE>) -> EthRpcRequesters
 where
 	C: ProvideRuntimeApi<B> + BlockOf,
 	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError> + 'static,
@@ -48,7 +48,7 @@ where
 	B::Header: HeaderT<Number = u32>,
 	BE: Backend<B> + 'static,
 {
-	let DvmTasksParams {
+	let DvmTaskParams {
 		task_manager,
 		client,
 		substrate_backend,
@@ -90,23 +90,33 @@ where
 		);
 	}
 
-	let cmd = rpc_config.ethapi.clone();
-	if cmd.contains(&EthApiCmd::Debug) || cmd.contains(&EthApiCmd::Trace) {
+	if rpc_config
+		.ethapi_debug_targets
+		.iter()
+		.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
+	{
 		let permit_pool = Arc::new(Semaphore::new(rpc_config.ethapi_max_permits as usize));
-		let (trace_filter_task, trace_filter_requester) =
-			if rpc_config.ethapi.contains(&EthApiCmd::Trace) {
-				let (trace_filter_task, trace_filter_requester) = CacheTask::create(
-					Arc::clone(&client),
-					Arc::clone(&substrate_backend),
-					Duration::from_secs(rpc_config.ethapi_trace_cache_duration),
-					Arc::clone(&permit_pool),
-				);
-				(Some(trace_filter_task), Some(trace_filter_requester))
-			} else {
-				(None, None)
-			};
+		let (trace_filter_task, trace_filter_requester) = if rpc_config
+			.ethapi_debug_targets
+			.iter()
+			.any(|target| target.as_str() == "trace")
+		{
+			let (trace_filter_task, trace_filter_requester) = CacheTask::create(
+				Arc::clone(&client),
+				Arc::clone(&substrate_backend),
+				Duration::from_secs(rpc_config.ethapi_trace_cache_duration),
+				Arc::clone(&permit_pool),
+			);
+			(Some(trace_filter_task), Some(trace_filter_requester))
+		} else {
+			(None, None)
+		};
 
-		let (debug_task, debug_requester) = if rpc_config.ethapi.contains(&EthApiCmd::Debug) {
+		let (debug_task, debug_requester) = if rpc_config
+			.ethapi_debug_targets
+			.iter()
+			.any(|target| target.as_str() == "debug")
+		{
 			let (debug_task, debug_requester) = DebugTask::task(
 				Arc::clone(&client),
 				Arc::clone(&substrate_backend),
@@ -133,7 +143,7 @@ where
 			params
 				.task_manager
 				.spawn_essential_handle()
-				.spawn("ethapi-debug", debug_task);
+				.spawn("ethapi_debug_targets-debug", debug_task);
 		}
 
 		return EthRpcRequesters {
@@ -148,7 +158,7 @@ where
 	}
 }
 
-pub struct DvmTasksParams<'a, B: BlockT, C, BE> {
+pub struct DvmTaskParams<'a, B: BlockT, C, BE> {
 	pub task_manager: &'a TaskManager,
 	pub client: Arc<C>,
 	pub substrate_backend: Arc<BE>,

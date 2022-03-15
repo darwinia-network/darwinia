@@ -221,7 +221,7 @@ where
 					shared_authority_set: shared_authority_set.clone(),
 					justification_stream: justification_stream.clone(),
 					subscription_executor,
-					finality_provider: finality_proof_provider.clone(),
+					finality_proof_provider: finality_proof_provider.clone(),
 				},
 			};
 

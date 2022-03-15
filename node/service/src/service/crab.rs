@@ -58,7 +58,7 @@ use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
 use crate::{
 	client::CrabClient,
-	service::{self, dvm_tasks::DvmTasksParams, RpcResult, *},
+	service::{self, dvm_tasks::DvmTaskParams, RpcResult, *},
 };
 use darwinia_common_primitives::*;
 use darwinia_rpc::{crab::FullDeps, *};
@@ -320,7 +320,7 @@ where
 
 	let dvm_backend = open_dvm_backend(&config)?;
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
-	let eth_tracing_requesters = dvm_tasks::spawn(DvmTasksParams {
+	let eth_rpc_requesters = dvm_tasks::spawn(DvmTaskParams {
 		task_manager: &task_manager,
 		client: client.clone(),
 		substrate_backend: backend.clone(),
@@ -328,7 +328,10 @@ where
 		filter_pool: filter_pool.clone(),
 		is_archive,
 		rpc_config: eth_rpc_config.clone(),
+		// fee_history_cache: fee_history_cache.clone(),
+		// overrides: overrides.clone(),
 	});
+	// .spawn_task();
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();
@@ -339,24 +342,22 @@ where
 		backend.clone(),
 		Some(shared_authority_set.clone()),
 	);
-	let rpc_extensions_builder = {
+	let rpc_extensions_builder = Box::new({
 		let client = client.clone();
 		let keystore = keystore_container.sync_keystore();
 		let transaction_pool = transaction_pool.clone();
 		let select_chain = select_chain.clone();
 		let chain_spec = config.chain_spec.cloned_box();
 		let shared_voter_state = shared_voter_state.clone();
+		let network = network.clone();
 
-		move |deny_unsafe, is_authority, network, subscription_executor| -> RpcResult {
+		move |deny_unsafe, subscription_executor| -> RpcResult {
 			let deps = FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
-				graph: transaction_pool.pool().clone(),
 				select_chain: select_chain.clone(),
 				chain_spec: chain_spec.cloned_box(),
 				deny_unsafe,
-				is_authority,
-				network,
 				babe: BabeDeps {
 					babe_config: babe_config.clone(),
 					shared_epoch_changes: shared_epoch_changes.clone(),
@@ -367,39 +368,33 @@ where
 					shared_authority_set: shared_authority_set.clone(),
 					justification_stream: justification_stream.clone(),
 					subscription_executor,
-					finality_provider: finality_proof_provider.clone(),
+					finality_proof_provider: finality_proof_provider.clone(),
 				},
-				backend: dvm_backend.clone(),
-				filter_pool: filter_pool.clone(),
-				tracing_requesters: eth_tracing_requesters.clone(),
-				eth_rpc_config: eth_rpc_config.clone(),
+				eth: EthDeps {
+					config: eth_rpc_config.clone(),
+					graph: transaction_pool.pool().clone(),
+					is_authority,
+					network: network.clone(),
+					filter_pool: filter_pool.clone(),
+					backend: dvm_backend.clone(),
+					// fee_history_cache: fee_history_cache.clone(),
+					// overrides: overrides.clone(),
+					// block_data_cache: block_data_cache.clone(),
+					rpc_requesters: eth_rpc_requesters.clone(),
+				},
 			};
 
 			darwinia_rpc::crab::create_full(deps, subscription_task_executor.clone())
 				.map_err(Into::into)
 		}
-	};
+	});
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
 		config,
 		backend,
 		client: client.clone(),
 		keystore: keystore_container.sync_keystore(),
 		network: network.clone(),
-		rpc_extensions_builder: {
-			let network = network.clone();
-			let wrap_rpc_extensions_builder = {
-				move |deny_unsafe, subscription_executor| -> RpcResult {
-					rpc_extensions_builder(
-						deny_unsafe,
-						is_authority,
-						network.clone(),
-						subscription_executor,
-					)
-				}
-			};
-
-			Box::new(wrap_rpc_extensions_builder)
-		},
+		rpc_extensions_builder,
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		on_demand: None,
