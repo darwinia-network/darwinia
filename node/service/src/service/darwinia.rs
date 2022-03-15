@@ -271,24 +271,24 @@ where
 		client,
 		backend,
 		mut task_manager,
-		mut keystore_container,
+		keystore_container,
 		select_chain,
 		import_queue,
 		transaction_pool,
 		other: (rpc_extensions_builder, import_setup, rpc_setup, mut telemetry),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
-	if let Some(url) = &config.keystore_remote {
-		match service::remote_keystore(url) {
-			Ok(k) => keystore_container.set_remote_keystore(k),
-			Err(e) => {
-				return Err(ServiceError::Other(format!(
-					"Error hooking up remote keystore for {}: {}",
-					url, e
-				)))
-			}
-		};
-	}
+	// if let Some(url) = &config.keystore_remote {
+	// 	match service::remote_keystore(url) {
+	// 		Ok(k) => keystore_container.set_remote_keystore(k),
+	// 		Err(e) => {
+	// 			return Err(ServiceError::Other(format!(
+	// 				"Error hooking up remote keystore for {}: {}",
+	// 				url, e
+	// 			)))
+	// 		}
+	// 	};
+	// }
 
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let shared_voter_state = rpc_setup;

@@ -262,7 +262,7 @@ pub fn run() -> CliResult<()> {
 				runner.sync_run(|config| {
 					// Remove dvm offchain db
 					let dvm_database_config = DatabaseSource::RocksDb {
-						path: crab_service::dvm_database_dir(&config),
+						path: darwinia_node_service::dvm::db_path(&config),
 						cache_size: 0,
 					};
 

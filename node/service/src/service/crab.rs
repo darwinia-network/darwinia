@@ -23,7 +23,6 @@ pub use crab_runtime;
 // --- std ---
 use std::{
 	collections::BTreeMap,
-	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
@@ -46,7 +45,7 @@ use sc_finality_grandpa::{
 };
 use sc_network::Event;
 use sc_service::{
-	config::KeystoreConfig, BasePath, BuildNetworkParams, Configuration, Error as ServiceError,
+	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
 	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
 };
 use sc_telemetry::{Telemetry, TelemetryWorker};
@@ -58,11 +57,10 @@ use sp_trie::PrefixedMemoryDB;
 // --- darwinia-network ---
 use crate::{
 	client::CrabClient,
-	service::{self, dvm_tasks::DvmTaskParams, RpcResult, *},
+	service::{self, dvm::DvmTaskParams, RpcResult, *},
 };
 use darwinia_common_primitives::*;
 use darwinia_rpc::{crab::FullDeps, *};
-use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 pub struct Executor;
 impl NativeExecutionDispatch for Executor {
@@ -85,27 +83,6 @@ impl_runtime_apis![
 	dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
 	dp_evm_trace_apis::DebugRuntimeApi<Block>
 ];
-
-pub fn dvm_database_dir(config: &Configuration) -> PathBuf {
-	let config_dir = config
-		.base_path
-		.as_ref()
-		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
-		.unwrap_or_else(|| {
-			BasePath::from_project("", "", "crab").config_dir(config.chain_spec.id())
-		});
-
-	config_dir.join("dvm").join("db")
-}
-
-fn open_dvm_backend(config: &Configuration) -> Result<Arc<Backend<Block>>, String> {
-	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
-		source: DatabaseSettingsSrc::RocksDb {
-			path: dvm_database_dir(&config),
-			cache_size: 0,
-		},
-	})?))
-}
 
 #[cfg(feature = "full-node")]
 fn new_partial<RuntimeApi, Executor>(
@@ -274,24 +251,24 @@ where
 		client,
 		backend,
 		mut task_manager,
-		mut keystore_container,
+		keystore_container,
 		select_chain,
 		import_queue,
 		transaction_pool,
 		other: ((babe_import, grandpa_link, babe_link), mut telemetry),
 	} = new_partial::<RuntimeApi, Executor>(&mut config)?;
 
-	if let Some(url) = &config.keystore_remote {
-		match service::remote_keystore(url) {
-			Ok(k) => keystore_container.set_remote_keystore(k),
-			Err(e) => {
-				return Err(ServiceError::Other(format!(
-					"Error hooking up remote keystore for {}: {}",
-					url, e
-				)))
-			}
-		};
-	}
+	// if let Some(url) = &config.keystore_remote {
+	// 	match service::remote_keystore(url) {
+	// 		Ok(k) => keystore_container.set_remote_keystore(k),
+	// 		Err(e) => {
+	// 			return Err(ServiceError::Other(format!(
+	// 				"Error hooking up remote keystore for {}: {}",
+	// 				url, e
+	// 			)))
+	// 		}
+	// 	};
+	// }
 
 	let warp_sync = Arc::new(NetworkProvider::new(
 		backend.clone(),
@@ -318,9 +295,9 @@ where
 		);
 	}
 
-	let dvm_backend = open_dvm_backend(&config)?;
+	let dvm_backend = dvm::open_backend(&config)?;
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
-	let eth_rpc_requesters = dvm_tasks::spawn(DvmTaskParams {
+	let eth_rpc_requesters = DvmTaskParams {
 		task_manager: &task_manager,
 		client: client.clone(),
 		substrate_backend: backend.clone(),
@@ -330,8 +307,8 @@ where
 		rpc_config: eth_rpc_config.clone(),
 		// fee_history_cache: fee_history_cache.clone(),
 		// overrides: overrides.clone(),
-	});
-	// .spawn_task();
+	}
+	.spawn_task();
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();

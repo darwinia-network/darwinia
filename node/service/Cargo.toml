@@ -41,7 +41,6 @@ sc-consensus-slots     = { git = "https://github.com/darwinia-network/substrate"
 sc-consensus-uncles    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-executor            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-sc-keystore            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-network             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-service             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 sc-sync-state-rpc      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }

@@ -68,17 +68,14 @@ pub use crab::Executor as CrabExecutor;
 pub mod darwinia;
 pub use darwinia::Executor as DarwiniaExecutor;
 
-pub mod dvm_tasks;
+pub mod dvm;
 
-// --- std ---
-use std::sync::Arc;
 // --- crates.io ---
 use codec::Codec;
 // --- paritytech ---
 use sc_consensus::LongestChain;
 use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::GrandpaBlockImport;
-use sc_keystore::LocalKeystore;
 use sc_service::{
 	config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError, TFullBackend,
 	TFullClient,
@@ -125,11 +122,4 @@ fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceErro
 	}
 
 	Ok(())
-}
-
-fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
-	// FIXME: here would the concrete keystore be built,
-	//        must return a concrete type (NOT `LocalKeystore`) that
-	//        implements `CryptoStore` and `SyncCryptoStore`
-	Err("Remote Keystore not supported.")
 }
