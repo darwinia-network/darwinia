@@ -212,6 +212,7 @@ std = [
 	"darwinia-evm-precompile-bridge-s2s/std",
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-transfer/std",
+	"dp-evm-trace-apis/std",
 	"dp-evm-trace-events/std",
 	"dp-evm-tracer/std",
 	"dvm-ethereum/std",
