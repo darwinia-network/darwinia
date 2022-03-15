@@ -124,7 +124,7 @@ where
 						ethapi_debug_targets,
 						ethapi_trace_max_count,
 						max_past_logs,
-						fee_history_limit,
+						// fee_history_limit,
 						..
 					},
 				graph,
@@ -175,14 +175,12 @@ where
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	let mut overrides_map = BTreeMap::new();
-	overrides_map.insert(
-		EthereumStorageSchema::V1,
-		Box::new(SchemaV1Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
 	let overrides = Arc::new(OverrideHandle {
-		schemas: overrides_map,
+		schemas: BTreeMap::from_iter([(
+			EthereumStorageSchema::V1,
+			Box::new(SchemaV1Override::new(client.clone()))
+				as Box<dyn StorageOverride<_> + Send + Sync>,
+		)]),
 		fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
 	});
 	let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
@@ -227,23 +225,68 @@ where
 		// Whether to format the `peer_count` response as Hex (default) or not.
 		true,
 	)));
-	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
+	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client.clone())));
 
-	// TODO: The evm tracing related RPCs is not supported for Crab network.
-	// let ethapi_cmd = ethapi.clone();
-	// if ethapi_cmd.contains(&EthApiCmd::Debug) || ethapi_cmd.contains(&EthApiCmd::Trace) {
-	// 	if let Some(trace_filter_requester) = tracing_requesters.trace {
-	// 		io.extend_with(TraceApiServer::to_delegate(Trace::new(
-	// 			client,
-	// 			trace_filter_requester,
-	// 			ethapi_trace_max_count,
-	// 		)));
-	// 	}
+	if ethapi_debug_targets
+		.iter()
+		.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
+	{
+		if let Some(trace_filter_requester) = rpc_requesters.trace {
+			io.extend_with(TraceApiServer::to_delegate(Trace::new(
+				client,
+				trace_filter_requester,
+				ethapi_trace_max_count,
+			)));
+		}
 
-	// 	if let Some(debug_requester) = tracing_requesters.debug {
-	// 		io.extend_with(DebugApiServer::to_delegate(Debug::new(debug_requester)));
-	// 	}
-	// }
+		if let Some(debug_requester) = rpc_requesters.debug {
+			io.extend_with(DebugApiServer::to_delegate(Debug::new(debug_requester)));
+		}
+	}
 
 	Ok(io)
 }
+
+// pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<fc_rpc::OverrideHandle<Block>>
+// where
+// 	C: 'static
+// 		+ Send
+// 		+ Sync
+// 		+ sc_client_api::backend::AuxStore
+// 		+ sc_client_api::backend::StorageProvider<Block, BE>
+// 		+ sp_api::ProvideRuntimeApi<Block>
+// 		+ sp_blockchain::HeaderBackend<Block>
+// 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
+// 	C::Api: sp_api::ApiExt<Block>
+// 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+// 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
+// 	BE: 'static + sc_client_api::backend::Backend<Block>,
+// 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
+// {
+// 	// --- std ---
+// 	use std::collections::BTreeMap;
+// 	// --- paritytech ---
+// 	use fc_rpc::*;
+// 	use fp_storage::EthereumStorageSchema;
+
+// 	Arc::new(OverrideHandle {
+// 		schemas: BTreeMap::from_iter([
+// 			(
+// 				EthereumStorageSchema::V1,
+// 				Box::new(SchemaV1Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 			(
+// 				EthereumStorageSchema::V2,
+// 				Box::new(SchemaV2Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 			(
+// 				EthereumStorageSchema::V3,
+// 				Box::new(SchemaV3Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 		]),
+// 		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
+// 	})
+// }

@@ -54,14 +54,14 @@ where
 		+ sc_client_api::AuxStore
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	C::Api: sc_consensus_babe::BabeApi<Block>,
-	C::Api: sp_block_builder::BlockBuilder<Block>,
-	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
-	C::Api: darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>,
-	C::Api: darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>,
-	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
+	C::Api: sp_block_builder::BlockBuilder<Block>
+		+ sc_consensus_babe::BabeApi<Block>
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
+		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
+		+ darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>
+		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + sc_transaction_pool_api::TransactionPool,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
@@ -85,8 +85,19 @@ where
 		select_chain,
 		chain_spec,
 		deny_unsafe,
-		babe,
-		grandpa,
+		babe: BabeDeps {
+			keystore,
+			babe_config,
+			shared_epoch_changes,
+		},
+		grandpa:
+			GrandpaDeps {
+				shared_voter_state,
+				shared_authority_set,
+				justification_stream,
+				subscription_executor,
+				finality_proof_provider,
+			},
 	} = deps;
 	let mut io = IoHandler::default();
 
@@ -98,11 +109,6 @@ where
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
 	)));
-	let BabeDeps {
-		keystore,
-		babe_config,
-		shared_epoch_changes,
-	} = babe;
 	io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
 		client.clone(),
 		shared_epoch_changes.clone(),
@@ -111,13 +117,6 @@ where
 		select_chain,
 		deny_unsafe,
 	)));
-	let GrandpaDeps {
-		shared_voter_state,
-		shared_authority_set,
-		justification_stream,
-		subscription_executor,
-		finality_proof_provider,
-	} = grandpa;
 	io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
 		shared_authority_set.clone(),
 		shared_voter_state,

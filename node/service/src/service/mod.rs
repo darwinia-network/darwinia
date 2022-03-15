@@ -64,11 +64,9 @@ macro_rules! impl_runtime_apis {
 
 pub mod crab;
 pub use crab::Executor as CrabExecutor;
-pub use crab_runtime;
 
 pub mod darwinia;
 pub use darwinia::Executor as DarwiniaExecutor;
-pub use darwinia_runtime;
 
 pub mod dvm_tasks;
 

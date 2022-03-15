@@ -23,15 +23,12 @@ use sc_cli::{Error as CliError, Result as CliResult, Role, RuntimeVersion, Subst
 use sc_service::{ChainSpec, DatabaseSource};
 #[cfg(feature = "try-runtime")]
 use sc_service::{Error as ServiceError, TaskManager};
-use sp_core::crypto::Ss58AddressFormat;
+use sp_core::crypto::{self, Ss58AddressFormat};
 // --- darwinia-network ---
 use crate::cli::*;
 #[cfg(any(feature = "try-runtime", feature = "runtime-benchmarks"))]
 use darwinia_common_primitives::OpaqueBlock as Block;
-use darwinia_node_service::{
-	crab_runtime::RuntimeApi as CrabRuntimeApi, darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi,
-	*,
-};
+use darwinia_node_service::*;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
@@ -367,7 +364,7 @@ fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
 		Ss58AddressFormat::DarwiniaAccount
 	};
 
-	sp_core::crypto::set_default_ss58_version(ss58_version);
+	crypto::set_default_ss58_version(ss58_version);
 }
 
 fn validate_trace_environment(cli: &Cli) -> CliResult<()> {
