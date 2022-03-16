@@ -19,49 +19,19 @@
 //! Crab service. Specialized wrapper over substrate service.
 
 // --- std ---
-use std::{
-	collections::BTreeMap,
-	sync::{Arc, Mutex},
-	time::Duration,
-};
-// --- crates.io ---
-use futures::stream::StreamExt;
-// --- paritytech ---
-use fc_rpc_core::types::FilterPool;
-use sc_authority_discovery::WorkerConfig;
-use sc_basic_authorship::ProposerFactory;
-use sc_client_api::{ExecutorProvider, StateBackendFor};
-use sc_consensus::{BasicQueue, DefaultImportQueue, LongestChain};
-use sc_consensus_babe::{
-	BabeBlockImport, BabeLink, BabeParams, Config as BabeConfig, SlotProportion,
-};
-use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
-use sc_finality_grandpa::{
-	warp_proof::NetworkProvider, Config as GrandpaConfig,
-	FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams, LinkHalf,
-	SharedVoterState as GrandpaSharedVoterState, VotingRulesBuilder as GrandpaVotingRulesBuilder,
-};
-use sc_network::Event;
-use sc_service::{
-	config::KeystoreConfig, BuildNetworkParams, Configuration, Error as ServiceError,
-	PartialComponents, RpcHandlers, SpawnTasksParams, TaskManager,
-};
-use sc_telemetry::{Telemetry, TelemetryWorker};
-use sc_transaction_pool::{BasicPool, FullPool};
-use sp_api::ConstructRuntimeApi;
-use sp_consensus::CanAuthorWithNativeVersion;
-use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
-use sp_trie::PrefixedMemoryDB;
+use std::sync::Arc;
 // --- darwinia-network ---
-use crate::{
-	client::CrabClient,
-	service::{self, dvm::DvmTaskParams, RpcServiceResult, *},
-};
-use darwinia_common_primitives::*;
-use darwinia_rpc::{crab::FullDeps, *};
+use super::*;
+use darwinia_common_primitives::{OpaqueBlock as Block, *};
+
+impl_runtime_apis![
+	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
+	dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
+	dp_evm_trace_apis::DebugRuntimeApi<Block>
+];
 
 pub struct Executor;
-impl NativeExecutionDispatch for Executor {
+impl sc_executor::NativeExecutionDispatch for Executor {
 	type ExtendHostFunctions = (
 		frame_benchmarking::benchmarking::HostFunctions,
 		dp_evm_trace_ext::dvm_ext::HostFunctions,
@@ -76,159 +46,101 @@ impl NativeExecutionDispatch for Executor {
 	}
 }
 
-impl_runtime_apis![
-	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
-	dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
-	dp_evm_trace_apis::DebugRuntimeApi<Block>
-];
-
+/// Builds a new object suitable for chain operations.
 #[cfg(feature = "full-node")]
-fn new_partial<RuntimeApi, Executor>(
-	config: &mut Configuration,
-) -> Result<
-	PartialComponents<
-		FullClient<RuntimeApi, Executor>,
-		FullBackend,
-		FullSelectChain,
-		DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
-		FullPool<Block, FullClient<RuntimeApi, Executor>>,
-		(
-			(
-				BabeBlockImport<
-					Block,
-					FullClient<RuntimeApi, Executor>,
-					FullGrandpaBlockImport<RuntimeApi, Executor>,
-				>,
-				LinkHalf<Block, FullClient<RuntimeApi, Executor>, FullSelectChain>,
-				BabeLink<Block>,
-			),
-			Option<Telemetry>,
-		),
-	>,
-	ServiceError,
->
+pub fn new_chain_ops<Runtime, Dispatch>(
+	config: &mut sc_service::Configuration,
+) -> ServiceResult<(
+	Arc<FullClient<Runtime, Dispatch>>,
+	Arc<FullBackend>,
+	sc_consensus::BasicQueue<Block, sp_trie::PrefixedMemoryDB<Hashing>>,
+	sc_service::TaskManager,
+)>
 where
-	Executor: 'static + NativeExecutionDispatch,
-	RuntimeApi:
-		'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
-	RuntimeApi::RuntimeApi:
-		RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+	Runtime:
+		'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<Runtime, Dispatch>>,
+	Runtime::RuntimeApi:
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Dispatch: 'static + sc_executor::NativeExecutionDispatch,
 {
-	if config.keystore_remote.is_some() {
-		return Err(ServiceError::Other(format!(
-			"Remote Keystores are not supported."
-		)));
-	}
+	// --- paritytech ---
+	use sc_service::{config::KeystoreConfig, PartialComponents};
 
-	service::set_prometheus_registry(config)?;
+	config.keystore = KeystoreConfig::InMemory;
 
-	let telemetry = config
-		.telemetry_endpoints
-		.clone()
-		.filter(|x| !x.is_empty())
-		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
-			let worker = TelemetryWorker::new(16)?;
-			let telemetry = worker.handle().new_telemetry(endpoints);
-			Ok((worker, telemetry))
-		})
-		.transpose()?;
-	let executor = <NativeElseWasmExecutor<Executor>>::new(
-		config.wasm_method,
-		config.default_heap_pages,
-		config.max_runtime_instances,
-	);
-	let (client, backend, keystore_container, task_manager) =
-		sc_service::new_full_parts::<Block, RuntimeApi, _>(
-			&config,
-			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
-			executor,
-		)?;
-	let telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager.spawn_handle().spawn("telemetry", worker.run());
-		telemetry
-	});
-	let client = Arc::new(client);
-	let select_chain = LongestChain::new(backend.clone());
-	let transaction_pool = BasicPool::new_full(
-		config.transaction_pool.clone(),
-		config.role.is_authority().into(),
-		config.prometheus_registry(),
-		task_manager.spawn_essential_handle(),
-		client.clone(),
-	);
-	let grandpa_hard_forks = vec![];
-	let (grandpa_block_import, grandpa_link) =
-		sc_finality_grandpa::block_import_with_authority_set_hard_forks(
-			client.clone(),
-			&(client.clone() as Arc<_>),
-			select_chain.clone(),
-			grandpa_hard_forks,
-			telemetry.as_ref().map(|x| x.handle()),
-		)?;
-	let justification_import = grandpa_block_import.clone();
-	let (babe_import, babe_link) = sc_consensus_babe::block_import(
-		BabeConfig::get_or_compute(&*client)?,
-		grandpa_block_import,
-		client.clone(),
-	)?;
-	let slot_duration = babe_link.config().slot_duration();
-	let import_queue = sc_consensus_babe::import_queue(
-		babe_link.clone(),
-		babe_import.clone(),
-		Some(Box::new(justification_import)),
-		client.clone(),
-		select_chain.clone(),
-		move |_, ()| async move {
-			let uncles =
-				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
-			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-			let slot =
-				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
-					*timestamp,
-					slot_duration,
-				);
-
-			Ok((timestamp, slot, uncles))
-		},
-		&task_manager.spawn_essential_handle(),
-		config.prometheus_registry(),
-		CanAuthorWithNativeVersion::new(client.executor().clone()),
-		telemetry.as_ref().map(|x| x.handle()),
-	)?;
-	let import_setup = (babe_import.clone(), grandpa_link, babe_link.clone());
-
-	Ok(PartialComponents {
+	let PartialComponents {
 		client,
 		backend,
-		task_manager,
-		keystore_container,
-		select_chain,
 		import_queue,
-		transaction_pool,
-		other: (import_setup, telemetry),
-	})
+		task_manager,
+		..
+	} = new_partial::<Runtime, Dispatch>(config)?;
+
+	Ok((client, backend, import_queue, task_manager))
+}
+
+/// Create a new Crab service for a full node.
+#[cfg(feature = "full-node")]
+pub fn crab_new_full(
+	config: sc_service::Configuration,
+	authority_discovery_disabled: bool,
+	eth_rpc_config: darwinia_rpc::EthRpcConfig,
+) -> ServiceResult<(
+	sc_service::TaskManager,
+	Arc<impl crate::client::CrabClient<Block, FullBackend, crab_runtime::RuntimeApi>>,
+	sc_service::RpcHandlers,
+)> {
+	let (components, client, rpc_handlers) = new_full::<crab_runtime::RuntimeApi, Executor>(
+		config,
+		authority_discovery_disabled,
+		eth_rpc_config,
+	)?;
+
+	Ok((components, client, rpc_handlers))
 }
 
 #[cfg(feature = "full-node")]
 fn new_full<RuntimeApi, Executor>(
-	mut config: Configuration,
+	mut config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
-	eth_rpc_config: EthRpcConfig,
-) -> Result<
-	(
-		TaskManager,
-		Arc<FullClient<RuntimeApi, Executor>>,
-		RpcHandlers,
-	),
-	ServiceError,
->
+	eth_rpc_config: darwinia_rpc::EthRpcConfig,
+) -> ServiceResult<(
+	sc_service::TaskManager,
+	Arc<FullClient<RuntimeApi, Executor>>,
+	sc_service::RpcHandlers,
+)>
 where
-	Executor: 'static + NativeExecutionDispatch,
-	RuntimeApi:
-		'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi:
-		RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
+	// -- std ---
+	use std::{collections::BTreeMap, sync::Mutex, time::Duration};
+	// --- crates.io ---
+	use futures::stream::StreamExt;
+	// --- paritytech ---
+	use fc_rpc_core::types::FilterPool;
+	use sc_authority_discovery::WorkerConfig;
+	use sc_basic_authorship::ProposerFactory;
+	use sc_client_api::ExecutorProvider;
+	use sc_consensus_babe::{BabeParams, SlotProportion};
+	use sc_finality_grandpa::{
+		warp_proof::NetworkProvider, Config as GrandpaConfig,
+		FinalityProofProvider as GrandpaFinalityProofProvider, GrandpaParams,
+		SharedVoterState as GrandpaSharedVoterState,
+		VotingRulesBuilder as GrandpaVotingRulesBuilder,
+	};
+	use sc_network::Event;
+	use sc_service::{BuildNetworkParams, PartialComponents, SpawnTasksParams};
+	use sp_consensus::CanAuthorWithNativeVersion;
+	// --- darwinia-network ---
+	use darwinia_rpc::{crab::*, *};
+	use dvm::DvmTaskParams;
+
 	let role = config.role.clone();
 	let is_authority = role.is_authority();
 	let is_archive = config.state_pruning.is_archive();
@@ -399,6 +311,7 @@ where
 			justification_sync_link: network.clone(),
 			create_inherent_data_providers: move |parent, ()| {
 				let client_clone = client_clone.clone();
+
 				async move {
 					let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
 						&*client_clone,
@@ -465,21 +378,19 @@ where
 	} else {
 		None
 	};
-	let grandpa_config = GrandpaConfig {
-		// FIXME substrate#1578 make this available through chainspec
-		gossip_duration: Duration::from_millis(1000),
-		justification_period: 512,
-		name: Some(name),
-		observer_enabled: false,
-		keystore,
-		local_role: role,
-		telemetry: telemetry.as_ref().map(|x| x.handle()),
-	};
-	let enable_grandpa = !disable_grandpa;
 
-	if enable_grandpa {
+	if !disable_grandpa {
 		let grandpa_config = GrandpaParams {
-			config: grandpa_config,
+			config: GrandpaConfig {
+				// FIXME substrate#1578 make this available through chainspec
+				gossip_duration: Duration::from_millis(1000),
+				justification_period: 512,
+				name: Some(name),
+				observer_enabled: false,
+				keystore,
+				local_role: role,
+				telemetry: telemetry.as_ref().map(|x| x.handle()),
+			},
 			link: grandpa_link,
 			network,
 			telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -499,56 +410,146 @@ where
 	Ok((task_manager, client, rpc_handlers))
 }
 
-/// Builds a new object suitable for chain operations.
 #[cfg(feature = "full-node")]
-pub fn new_chain_ops<Runtime, Dispatch>(
-	config: &mut Configuration,
-) -> Result<
-	(
-		Arc<FullClient<Runtime, Dispatch>>,
-		Arc<FullBackend>,
-		BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
-		TaskManager,
-	),
-	ServiceError,
+fn new_partial<RuntimeApi, Executor>(
+	config: &mut sc_service::Configuration,
+) -> ServiceResult<
+	sc_service::PartialComponents<
+		FullClient<RuntimeApi, Executor>,
+		FullBackend,
+		FullSelectChain,
+		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
+		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
+		(
+			(
+				sc_consensus_babe::BabeBlockImport<
+					Block,
+					FullClient<RuntimeApi, Executor>,
+					FullGrandpaBlockImport<RuntimeApi, Executor>,
+				>,
+				sc_finality_grandpa::LinkHalf<
+					Block,
+					FullClient<RuntimeApi, Executor>,
+					FullSelectChain,
+				>,
+				sc_consensus_babe::BabeLink<Block>,
+			),
+			Option<sc_telemetry::Telemetry>,
+		),
+	>,
 >
 where
-	Dispatch: 'static + NativeExecutionDispatch,
-	Runtime: 'static + Send + Sync + ConstructRuntimeApi<Block, FullClient<Runtime, Dispatch>>,
-	Runtime::RuntimeApi: RuntimeApiCollection<StateBackend = StateBackendFor<FullBackend, Block>>,
+	RuntimeApi: 'static
+		+ Send
+		+ Sync
+		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi::RuntimeApi:
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	config.keystore = KeystoreConfig::InMemory;
+	// --- paritytech ---
+	use sc_client_api::ExecutorProvider;
+	use sc_consensus::LongestChain;
+	use sc_consensus_babe::Config as BabeConfig;
+	use sc_executor::NativeElseWasmExecutor;
+	use sc_service::{Error as ServiceError, PartialComponents};
+	use sc_telemetry::{Error as TelemetryError, TelemetryWorker};
+	use sc_transaction_pool::BasicPool;
+	use sp_consensus::CanAuthorWithNativeVersion;
+	use sp_runtime::traits::Block as BlockT;
 
-	let PartialComponents {
+	if config.keystore_remote.is_some() {
+		return Err(ServiceError::Other(format!(
+			"Remote Keystores are not supported."
+		)));
+	}
+
+	set_prometheus_registry(config)?;
+
+	let telemetry = config
+		.telemetry_endpoints
+		.clone()
+		.filter(|x| !x.is_empty())
+		.map(|endpoints| -> Result<_, TelemetryError> {
+			let worker = TelemetryWorker::new(16)?;
+			let telemetry = worker.handle().new_telemetry(endpoints);
+
+			Ok((worker, telemetry))
+		})
+		.transpose()?;
+	let executor = <NativeElseWasmExecutor<Executor>>::new(
+		config.wasm_method,
+		config.default_heap_pages,
+		config.max_runtime_instances,
+	);
+	let (client, backend, keystore_container, task_manager) =
+		sc_service::new_full_parts::<Block, RuntimeApi, _>(
+			&config,
+			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+			executor,
+		)?;
+	let telemetry = telemetry.map(|(worker, telemetry)| {
+		task_manager.spawn_handle().spawn("telemetry", worker.run());
+		telemetry
+	});
+	let client = Arc::new(client);
+	let select_chain = LongestChain::new(backend.clone());
+	let transaction_pool = BasicPool::new_full(
+		config.transaction_pool.clone(),
+		config.role.is_authority().into(),
+		config.prometheus_registry(),
+		task_manager.spawn_essential_handle(),
+		client.clone(),
+	);
+	let grandpa_hard_forks = vec![];
+	let (grandpa_block_import, grandpa_link) =
+		sc_finality_grandpa::block_import_with_authority_set_hard_forks(
+			client.clone(),
+			&(client.clone() as Arc<_>),
+			select_chain.clone(),
+			grandpa_hard_forks,
+			telemetry.as_ref().map(|x| x.handle()),
+		)?;
+	let justification_import = grandpa_block_import.clone();
+	let (babe_import, babe_link) = sc_consensus_babe::block_import(
+		BabeConfig::get_or_compute(&*client)?,
+		grandpa_block_import,
+		client.clone(),
+	)?;
+	let slot_duration = babe_link.config().slot_duration();
+	let import_queue = sc_consensus_babe::import_queue(
+		babe_link.clone(),
+		babe_import.clone(),
+		Some(Box::new(justification_import)),
+		client.clone(),
+		select_chain.clone(),
+		move |_, ()| async move {
+			let uncles =
+				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let slot =
+				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
+					*timestamp,
+					slot_duration,
+				);
+
+			Ok((timestamp, slot, uncles))
+		},
+		&task_manager.spawn_essential_handle(),
+		config.prometheus_registry(),
+		CanAuthorWithNativeVersion::new(client.executor().clone()),
+		telemetry.as_ref().map(|x| x.handle()),
+	)?;
+	let import_setup = (babe_import.clone(), grandpa_link, babe_link.clone());
+
+	Ok(PartialComponents {
 		client,
 		backend,
-		import_queue,
 		task_manager,
-		..
-	} = new_partial::<Runtime, Dispatch>(config)?;
-
-	Ok((client, backend, import_queue, task_manager))
-}
-
-/// Create a new Crab service for a full node.
-#[cfg(feature = "full-node")]
-pub fn crab_new_full(
-	config: Configuration,
-	authority_discovery_disabled: bool,
-	eth_rpc_config: EthRpcConfig,
-) -> Result<
-	(
-		TaskManager,
-		Arc<impl CrabClient<Block, FullBackend, crab_runtime::RuntimeApi>>,
-		RpcHandlers,
-	),
-	ServiceError,
-> {
-	let (components, client, rpc_handlers) = new_full::<crab_runtime::RuntimeApi, CrabExecutor>(
-		config,
-		authority_discovery_disabled,
-		eth_rpc_config,
-	)?;
-
-	Ok((components, client, rpc_handlers))
+		keystore_container,
+		select_chain,
+		import_queue,
+		transaction_pool,
+		other: (import_setup, telemetry),
+	})
 }
