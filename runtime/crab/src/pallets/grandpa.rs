@@ -20,4 +20,5 @@ impl Config for Runtime {
 	type HandleEquivocation =
 		EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
 	type WeightInfo = ();
+	type MaxAuthorities = MaxAuthorities;
 }

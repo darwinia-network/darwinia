@@ -17,29 +17,29 @@ crate-type = ["cdylib", "rlib"]
 log       = { version = "0.4" }
 structopt = { version = "0.3", optional = true }
 # darwinia-network service
-service = { package = "darwinia-service", default-features = false, path = "../node/service" }
+darwinia-common-primitives = { optional = true, path = "../primitives/common" }
+darwinia-node-service      = { path = "../node/service" }
+darwinia-rpc               = { path = "../rpc" }
 # paritytech client
-sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech frame
-frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 # paritytech primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-sp-trie = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
-try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
 
 [features]
 default = [
 	"cli",
 	"db",
 	"full-node",
-	"trie-memory-tracker",
 	"wasmtime",
 ]
 
@@ -51,24 +51,25 @@ cli = [
 	"sc-service",
 ]
 
-db = ["service/db"]
+db = ["darwinia-node-service/db"]
 
-full-node = ["service/full-node"]
-
-trie-memory-tracker = ["sp-trie/memory-tracker"]
+full-node = ["darwinia-node-service/full-node"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
+evm-tracing = ["darwinia-node-service/evm-tracing"]
+
 runtime-benchmarks = [
 	# darwinia-network
-	"service/runtime-benchmarks",
+	"darwinia-node-service/runtime-benchmarks",
 	# paritytech
 	"frame-benchmarking-cli",
 ]
 
 try-runtime = [
 	# darwinia-network
-	"service/try-runtime",
+	"darwinia-common-primitives",
+	"darwinia-node-service/try-runtime",
 	# paritytech
 	"try-runtime-cli",
 ]

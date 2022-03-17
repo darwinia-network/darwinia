@@ -6,7 +6,7 @@ pub use chain_spec::{
 };
 
 pub mod service;
-pub use service::{
-	crab as crab_service, crab_runtime, darwinia as darwinia_service, darwinia_runtime,
-	CrabExecutor, DarwiniaExecutor, IdentifyVariant,
-};
+pub use service::{crab as crab_service, darwinia as darwinia_service, *};
+
+pub use crab_runtime::{self, RuntimeApi as CrabRuntimeApi};
+pub use darwinia_runtime::{self, RuntimeApi as DarwiniaRuntimeApi};

@@ -20,6 +20,7 @@
 
 // --- crates.io ---
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use bp_message_dispatch::CallOrigin;
 use bp_messages::{
@@ -27,7 +28,7 @@ use bp_messages::{
 	target_chain::{ProvedMessages, SourceHeaderChain},
 	InboundLaneData, LaneId, Message, MessageNonce, Parameter as MessagesParameter,
 };
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::{messages::DispatchFeePayment, Chain, ChainId};
 use bridge_runtime_common::messages::{
 	self,
 	source::{self, FromBridgedChainMessagesDeliveryProof, FromThisChainMessagePayload},
@@ -54,7 +55,7 @@ pub type ToCrabMessagePayload = FromThisChainMessagePayload<WithCrabMessageBridg
 /// The s2s issuing pallet index in the crab chain runtime
 pub const CRAB_S2S_ISSUING_PALLET_INDEX: u8 = 50;
 
-#[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct ToCrabOutboundPayload;
 impl CreatePayload<AccountId, AccountPublic, Signature> for ToCrabOutboundPayload {
 	type Payload = ToCrabMessagePayload;
@@ -101,7 +102,7 @@ frame_support::parameter_types! {
 }
 
 /// Darwinia -> Crab message lane pallet parameters.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum DarwiniaToCrabMessagesParameter {
 	/// The conversion formula we use is: `DarwiniaTokens = CrabTokens * conversion_rate`.
 	CrabToDarwiniaConversionRate(FixedU128),
@@ -128,7 +129,11 @@ impl MessageBridge for WithCrabMessageBridge {
 	type ThisChain = Darwinia;
 	type BridgedChain = Crab;
 
-	fn bridged_balance_to_this_balance(bridged_balance: Balance) -> Balance {
+	fn bridged_balance_to_this_balance(
+		bridged_balance: Balance,
+		// TODO: S2S
+		_bridged_to_this_conversion_rate_override: Option<FixedU128>,
+	) -> Balance {
 		Balance::try_from(CrabToDarwiniaConversionRate::get().saturating_mul_int(bridged_balance))
 			.unwrap_or(Balance::MAX)
 	}
@@ -200,13 +205,14 @@ impl messages::ChainWithMessages for Crab {
 }
 impl messages::BridgedChainWithMessages for Crab {
 	fn maximal_extrinsic_size() -> u32 {
-		max_extrinsic_size()
+		darwinia_bridge_primitives::Crab::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit =
-			messages::target::maximal_incoming_message_dispatch_weight(max_extrinsic_weight());
+		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(
+			darwinia_bridge_primitives::Crab::max_extrinsic_weight(),
+		);
 
 		// we're charging for payload bytes in `WithCrabMessageBridge::transaction_payment` function
 		//

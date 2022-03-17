@@ -1,5 +1,6 @@
 // --- paritytech ---
 use frame_support::PalletId;
+use pallet_babe::RandomnessFromOneEpochAgo;
 use pallet_society::{Config, EnsureFounder};
 // --- darwinia-network ---
 use crate::*;
@@ -29,7 +30,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type PalletId = SocietyPalletId;
 	type Currency = Ring;
-	type Randomness = RandomnessCollectiveFlip;
+	type Randomness = RandomnessFromOneEpochAgo<Self>;
 	type CandidateDeposit = CandidateDeposit;
 	type WrongSideDeduction = WrongSideDeduction;
 	type MaxStrikes = MaxStrikes;
@@ -38,7 +39,7 @@ impl Config for Runtime {
 	type RotationPeriod = RotationPeriod;
 	type MaxLockDuration = MaxLockDuration;
 	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type SuspensionJudgementOrigin = EnsureFounder<Runtime>;
+	type SuspensionJudgementOrigin = EnsureFounder<Self>;
 	type ChallengePeriod = ChallengePeriod;
 	type MaxCandidateIntake = MaxCandidateIntake;
 }

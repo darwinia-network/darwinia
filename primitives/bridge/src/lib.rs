@@ -36,12 +36,16 @@ use bridge_runtime_common::messages::{
 	},
 	AccountIdOf, BalanceOf, MessageBridge, ThisChain, ThisChainWithMessages,
 };
-use frame_support::{weights::Weight, Parameter};
+use frame_support::{
+	weights::{DispatchClass, Weight},
+	Parameter,
+};
 use sp_core::H256;
 use sp_runtime::{traits::Convert, RuntimeDebug};
 use sp_std::prelude::*;
 // --- darwinia-network ---
 use darwinia_common_primitives::*;
+use darwinia_common_runtime::{RuntimeBlockLength, RuntimeBlockWeights};
 use darwinia_fee_market::RingBalance;
 
 /// Maximal size (in bytes) of encoded (using `Encode::encode()`) account id.
@@ -177,6 +181,17 @@ impl Chain for Darwinia {
 	type Balance = Balance;
 	type Index = Nonce;
 	type Signature = Signature;
+
+	fn max_extrinsic_size() -> u32 {
+		*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
+	}
+
+	fn max_extrinsic_weight() -> Weight {
+		RuntimeBlockWeights::get()
+			.get(DispatchClass::Normal)
+			.max_extrinsic
+			.unwrap_or(Weight::MAX)
+	}
 }
 
 /// Crab chain.
@@ -191,6 +206,17 @@ impl Chain for Crab {
 	type Balance = Balance;
 	type Index = Nonce;
 	type Signature = Signature;
+
+	fn max_extrinsic_size() -> u32 {
+		*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
+	}
+
+	fn max_extrinsic_weight() -> Weight {
+		RuntimeBlockWeights::get()
+			.get(DispatchClass::Normal)
+			.max_extrinsic
+			.unwrap_or(Weight::MAX)
+	}
 }
 
 /// Message verifier that is doing all basic checks.

@@ -36,7 +36,7 @@ macro_rules! impl_runtime_apis {
 			+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 			$(+ $extra_apis)*
 		where
-			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<Hashing>,
 		{
 		}
 		impl<Api> RuntimeApiCollection for Api
@@ -56,51 +56,36 @@ macro_rules! impl_runtime_apis {
 				+ darwinia_header_mmr_rpc_runtime_api::HeaderMMRApi<Block, Hash>
 				+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 				$(+ $extra_apis)*,
-			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<Hashing>,
 		{
 		}
 	};
 }
 
 pub mod crab;
-pub use crab::CrabExecutor;
-pub use crab_runtime;
+pub use crab::Executor as CrabExecutor;
 
 pub mod darwinia;
-pub use darwinia::DarwiniaExecutor;
-pub use darwinia_runtime;
+pub use darwinia::Executor as DarwiniaExecutor;
 
-// --- std ---
-use std::sync::Arc;
-// --- crates.io ---
-use codec::Codec;
-// --- paritytech ---
-use sc_consensus::LongestChain;
-use sc_finality_grandpa::GrandpaBlockImport;
-use sc_keystore::LocalKeystore;
-use sc_service::{
-	config::PrometheusConfig, ChainSpec, Configuration, Error as ServiceError, TFullBackend,
-	TFullClient, TLightBackendWithHash, TLightClientWithBackend,
-};
-use sp_runtime::traits::BlakeTwo256;
-use substrate_prometheus_endpoint::Registry;
+pub mod dvm;
+
 // --- darwinia-network ---
 use darwinia_common_primitives::OpaqueBlock as Block;
-use darwinia_rpc::RpcExtension;
 
-type FullBackend = TFullBackend<Block>;
-type FullSelectChain = LongestChain<FullBackend, Block>;
-type FullClient<RuntimeApi, Executor> = TFullClient<Block, RuntimeApi, Executor>;
-type FullGrandpaBlockImport<RuntimeApi, Executor> =
-	GrandpaBlockImport<FullBackend, Block, FullClient<RuntimeApi, Executor>, FullSelectChain>;
-type LightBackend = TLightBackendWithHash<Block, BlakeTwo256>;
-type LightClient<RuntimeApi, Executor> =
-	TLightClientWithBackend<Block, RuntimeApi, Executor, LightBackend>;
+type FullBackend = sc_service::TFullBackend<Block>;
+type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+type FullClient<RuntimeApi, Executor> =
+	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+type FullGrandpaBlockImport<RuntimeApi, Executor> = sc_finality_grandpa::GrandpaBlockImport<
+	FullBackend,
+	Block,
+	FullClient<RuntimeApi, Executor>,
+	FullSelectChain,
+>;
 
-type RpcResult = Result<RpcExtension, ServiceError>;
-
-pub trait RuntimeExtrinsic: 'static + Send + Sync + Codec {}
-impl<E> RuntimeExtrinsic for E where E: 'static + Send + Sync + Codec {}
+type ServiceResult<T> = Result<T, sc_service::Error>;
+type RpcServiceResult = Result<darwinia_rpc::RpcExtension, sc_service::Error>;
 
 /// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
 pub trait IdentifyVariant {
@@ -110,7 +95,7 @@ pub trait IdentifyVariant {
 	/// Returns true if this configuration is for a development network.
 	fn is_dev(&self) -> bool;
 }
-impl IdentifyVariant for Box<dyn ChainSpec> {
+impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 	fn is_crab(&self) -> bool {
 		self.id().starts_with("crab")
 	}
@@ -121,17 +106,14 @@ impl IdentifyVariant for Box<dyn ChainSpec> {
 }
 
 // If we're using prometheus, use a registry with a prefix of `darwinia`.
-fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
+fn set_prometheus_registry(config: &mut sc_service::Configuration) -> ServiceResult<()> {
+	// --- paritytech ---
+	use sc_service::config::PrometheusConfig;
+	use substrate_prometheus_endpoint::Registry;
+
 	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
 		*registry = Registry::new_custom(Some("darwinia".into()), None)?;
 	}
 
 	Ok(())
-}
-
-fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
-	// FIXME: here would the concrete keystore be built,
-	//        must return a concrete type (NOT `LocalKeystore`) that
-	//        implements `CryptoStore` and `SyncCryptoStore`
-	Err("Remote Keystore not supported.")
 }

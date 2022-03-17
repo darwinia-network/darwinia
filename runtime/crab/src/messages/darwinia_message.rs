@@ -18,6 +18,7 @@
 
 // --- crates.io ---
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use bp_message_dispatch::CallOrigin;
 use bp_messages::{
@@ -25,7 +26,7 @@ use bp_messages::{
 	target_chain::{ProvedMessages, SourceHeaderChain},
 	InboundLaneData, LaneId, Message, MessageNonce, Parameter as MessagesParameter,
 };
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::{messages::DispatchFeePayment, Chain, ChainId};
 use bridge_runtime_common::messages::{
 	self,
 	source::{self, FromBridgedChainMessagesDeliveryProof, FromThisChainMessagePayload},
@@ -52,7 +53,7 @@ pub type ToDarwiniaMessagePayload = FromThisChainMessagePayload<WithDarwiniaMess
 /// The s2s backing pallet index in the darwinia chain runtime.
 pub const DARWINIA_S2S_BACKING_PALLET_INDEX: u8 = 46;
 
-#[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct ToDarwiniaOutboundPayLoad;
 impl CreatePayload<AccountId, AccountPublic, Signature> for ToDarwiniaOutboundPayLoad {
 	type Payload = ToDarwiniaMessagePayload;
@@ -99,7 +100,7 @@ frame_support::parameter_types! {
 }
 
 /// Crab -> Darwinia message lane pallet parameters.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum CrabToDarwiniaMessagesParameter {
 	/// The conversion formula we use is: `CrabTokens = DarwiniaTokens * conversion_rate`.
 	DarwiniaToCrabConversionRate(FixedU128),
@@ -126,7 +127,11 @@ impl MessageBridge for WithDarwiniaMessageBridge {
 	type ThisChain = Crab;
 	type BridgedChain = Darwinia;
 
-	fn bridged_balance_to_this_balance(bridged_balance: Balance) -> Balance {
+	fn bridged_balance_to_this_balance(
+		bridged_balance: Balance,
+		// TODO: S2S
+		_bridged_to_this_conversion_rate_override: Option<FixedU128>,
+	) -> Balance {
 		Balance::try_from(DarwiniaToCrabConversionRate::get().saturating_mul_int(bridged_balance))
 			.unwrap_or(Balance::MAX)
 	}
@@ -198,13 +203,14 @@ impl messages::ChainWithMessages for Darwinia {
 }
 impl messages::BridgedChainWithMessages for Darwinia {
 	fn maximal_extrinsic_size() -> u32 {
-		max_extrinsic_size()
+		darwinia_bridge_primitives::Darwinia::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit =
-			messages::target::maximal_incoming_message_dispatch_weight(max_extrinsic_weight());
+		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(
+			darwinia_bridge_primitives::Darwinia::max_extrinsic_weight(),
+		);
 
 		// we're charging for payload bytes in `WithDarwiniaMessageBridge::transaction_payment` function
 		//

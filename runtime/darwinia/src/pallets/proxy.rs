@@ -1,15 +1,26 @@
 // --- crates.io ---
 use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use frame_support::traits::InstanceFilter;
 use pallet_proxy::Config;
 use sp_runtime::RuntimeDebug;
 // --- darwinia-network ---
-use crate::{weights::pallet_proxy::WeightInfo, *};
+use crate::*;
 
 /// The type used to represent the kinds of proxying allowed.
 #[derive(
-	Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen,
+	Copy,
+	Clone,
+	Eq,
+	PartialEq,
+	Ord,
+	PartialOrd,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
 )]
 pub enum ProxyType {
 	Any,
@@ -30,65 +41,66 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Any => true,
 			ProxyType::NonTransfer => matches!(
 				c,
-				Call::System(..) |
-				Call::Babe(..) |
-				Call::Timestamp(..) |
+				Call::System{ .. } |
+				Call::Babe{ .. } |
+				Call::Timestamp{ .. } |
 				// Specifically omitting the entire Balances pallet
-				Call::Authorship(..) |
-				Call::Democracy(..) |
-				Call::Staking(..) |
-				Call::Session(..) |
-				Call::Grandpa(..) |
-				Call::ImOnline(..) |
-				Call::Council(..) |
-				Call::TechnicalCommittee(..) |
-				Call::PhragmenElection(..) |
-				Call::TechnicalMembership(..) |
-				Call::Treasury(..) |
-				Call::KtonTreasury(..) |
-				Call::Tips(..) |
-				Call::Bounties(..) |
-				Call::Utility(..) |
-				Call::Identity(..) |
-				Call::Society(..) |
-				Call::Recovery(pallet_recovery::Call::as_recovered(..)) |
-				Call::Recovery(pallet_recovery::Call::vouch_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::claim_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::close_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::remove_recovery(..)) |
-				Call::Recovery(pallet_recovery::Call::cancel_recovered(..)) |
-				Call::Vesting(darwinia_vesting::Call::vest(..)) |
-				Call::Vesting(darwinia_vesting::Call::vest_other(..)) |
+				Call::Authorship{ .. } |
+				Call::Democracy{ .. } |
+				Call::Staking{ .. } |
+				Call::Session{ .. } |
+				Call::Grandpa{ .. } |
+				Call::ImOnline{ .. } |
+				Call::Council{ .. } |
+				Call::TechnicalCommittee{ .. } |
+				Call::PhragmenElection{ .. } |
+				Call::TechnicalMembership{ .. } |
+				Call::Treasury{ .. } |
+				Call::KtonTreasury{ .. } |
+				Call::Tips{ .. } |
+				Call::Bounties{ .. } |
+				Call::Utility{ .. } |
+				Call::Identity{ .. } |
+				Call::Society{ .. } |
+				Call::Recovery(pallet_recovery::Call::as_recovered{ .. }) |
+				Call::Recovery(pallet_recovery::Call::vouch_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::claim_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::close_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::remove_recovery{ .. }) |
+				Call::Recovery(pallet_recovery::Call::cancel_recovered{ .. }) |
+				Call::Vesting(darwinia_vesting::Call::vest{ .. }) |
+				Call::Vesting(darwinia_vesting::Call::vest_other{ .. }) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
-				Call::Scheduler(..) |
-				Call::Proxy(..) |
-				Call::Multisig(..) |
+				Call::Scheduler{ .. } |
+				Call::Proxy{ .. } |
+				Call::Multisig{ .. } |
 				// Specifically omitting the entire CrabBacking pallet
 				// Specifically omitting the entire EthereumBacking pallet
-				Call::EthereumRelay(..) // Specifically omitting the entire TronBacking pallet
-				                        // Specifically omitting the entire EthereumRelayAuthorities pallet
+				Call::EthereumRelay{ .. } // Specifically omitting the entire TronBacking pallet
+				                          // Specifically omitting the entire EthereumRelayAuthorities pallet
 			),
-			ProxyType::Governance => matches!(
-				c,
-				Call::Council(..)
-					| Call::TechnicalCommittee(..)
-					| Call::PhragmenElection(..)
-					| Call::Treasury(..) | Call::KtonTreasury(..)
-					| Call::Tips(..) | Call::Bounties(..)
-					| Call::Democracy(..)
-					| Call::Utility(..)
-			),
-			ProxyType::Staking => matches!(c, Call::Staking(..) | Call::Utility(..)),
+			ProxyType::Governance => {
+				matches!(
+					c,
+					Call::Council { .. }
+						| Call::TechnicalCommittee { .. }
+						| Call::PhragmenElection { .. }
+						| Call::Treasury { .. } | Call::KtonTreasury { .. }
+						| Call::Tips { .. } | Call::Bounties { .. }
+						| Call::Democracy { .. } | Call::Utility { .. }
+				)
+			}
+			ProxyType::Staking => matches!(c, Call::Staking { .. } | Call::Utility { .. }),
 			ProxyType::IdentityJudgement => matches!(
 				c,
-				Call::Identity(pallet_identity::Call::provide_judgement(..))
-					| Call::Utility(pallet_utility::Call::batch(..))
+				Call::Identity(pallet_identity::Call::provide_judgement { .. })
+					| Call::Utility(pallet_utility::Call::batch { .. })
 			),
 			ProxyType::EthereumBridge => matches!(
 				c,
-				Call::EthereumBacking(..)
-					| Call::EthereumRelay(..)
-					| Call::EthereumRelayAuthorities(..)
+				Call::EthereumBacking { .. }
+					| Call::EthereumRelay { .. }
+					| Call::EthereumRelayAuthorities { .. }
 			),
 		}
 	}
@@ -126,5 +138,5 @@ impl Config for Runtime {
 	type CallHasher = Hashing;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

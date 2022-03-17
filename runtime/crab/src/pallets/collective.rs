@@ -7,7 +7,7 @@ use pallet_collective::{
 };
 use sp_core::u32_trait::{_1, _2, _3, _5};
 // --- darwinia-network ---
-use crate::{weights::pallet_collective::WeightInfo, *};
+use crate::*;
 
 pub type EnsureRootOrHalfCouncil = EnsureOneOf<
 	AccountId,
@@ -64,7 +64,7 @@ impl Config<CouncilCollective> for Runtime {
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
 	type DefaultVote = PrimeDefaultVote;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }
 impl Config<TechnicalCollective> for Runtime {
 	type Origin = Origin;
@@ -74,5 +74,5 @@ impl Config<TechnicalCollective> for Runtime {
 	type MaxProposals = TechnicalMaxProposals;
 	type MaxMembers = TechnicalMaxMembers;
 	type DefaultVote = PrimeDefaultVote;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

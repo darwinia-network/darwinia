@@ -1,7 +1,7 @@
 // --- paritytech ---
 use frame_support::traits::{LockIdentifier, U128CurrencyToVote};
 // --- darwinia-network ---
-use crate::{weights::darwinia_elections_phragmen::WeightInfo, *};
+use crate::*;
 use darwinia_elections_phragmen::Config;
 
 frame_support::parameter_types! {
@@ -32,5 +32,5 @@ impl Config for Runtime {
 	type DesiredMembers = DesiredMembers;
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type TermDuration = TermDuration;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

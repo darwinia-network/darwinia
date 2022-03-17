@@ -3,7 +3,7 @@ use pallet_session::{historical::NoteHistoricalRoot, Config};
 use sp_runtime::{traits::OpaqueKeys, Perbill};
 use sp_std::prelude::*;
 // --- darwinia-network ---
-use crate::{weights::pallet_session::WeightInfo, *};
+use crate::*;
 use darwinia_staking::StashOf;
 
 sp_runtime::impl_opaque_keys! {
@@ -29,5 +29,5 @@ impl Config for Runtime {
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
-	type WeightInfo = WeightInfo<Runtime>;
+	type WeightInfo = ();
 }

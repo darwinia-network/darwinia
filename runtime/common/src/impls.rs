@@ -20,9 +20,10 @@
 
 // --- crates.io ---
 use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 // --- paritytech ---
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{traits::TrailingZeroInput, RuntimeDebug};
 // --- darwinia-network ---
 use crate::*;
 
@@ -43,8 +44,8 @@ pub struct ToAuthor<R>(sp_std::marker::PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for ToAuthor<R>
 where
 	R: darwinia_balances::Config<RingInstance> + pallet_authorship::Config,
-	<R as frame_system::Config>::AccountId: From<darwinia_common_primitives::AccountId>,
-	<R as frame_system::Config>::AccountId: Into<darwinia_common_primitives::AccountId>,
+	<R as frame_system::Config>::AccountId:
+		From<darwinia_common_primitives::AccountId> + Into<darwinia_common_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
@@ -68,21 +69,44 @@ where
 		+ pallet_treasury::Config
 		+ pallet_authorship::Config,
 	pallet_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
-	<R as frame_system::Config>::AccountId: From<darwinia_common_primitives::AccountId>,
-	<R as frame_system::Config>::AccountId: Into<darwinia_common_primitives::AccountId>,
+	<R as frame_system::Config>::AccountId:
+		From<darwinia_common_primitives::AccountId> + Into<darwinia_common_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<R>>) {
 		if let Some(fees) = fees_then_tips.next() {
 			// for fees, 80% to treasury, 20% to author
 			let mut split = fees.ration(80, 20);
+
 			if let Some(tips) = fees_then_tips.next() {
 				// for tips, if any, 100% to author
 				tips.merge_into(&mut split.1);
 			}
-			use pallet_treasury::Pallet as Treasury;
-			<Treasury<R> as OnUnbalanced<_>>::on_unbalanced(split.0);
+
+			<pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(split.0);
 			<ToAuthor<R> as OnUnbalanced<_>>::on_unbalanced(split.1);
 		}
+	}
+}
+
+/// A source of random balance for the NPoS Solver, which is meant to be run by the OCW election
+/// miner.
+pub struct OffchainRandomBalancing;
+impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::ExtendedBalance)>>
+	for OffchainRandomBalancing
+{
+	fn get() -> Option<(usize, sp_npos_elections::ExtendedBalance)> {
+		let iters = match MINER_MAX_ITERATIONS {
+			0 => 0,
+			max @ _ => {
+				let seed = sp_io::offchain::random_seed();
+				let random = <u32>::decode(&mut TrailingZeroInput::new(&seed))
+					.expect("input is padded with zeroes; qed")
+					% max.saturating_add(1);
+				random as usize
+			}
+		};
+
+		Some((iters, 0))
 	}
 }

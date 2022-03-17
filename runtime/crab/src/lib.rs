@@ -47,8 +47,9 @@ pub use wasm::*;
 pub mod messages;
 pub use messages::*;
 
-/// Weights for pallets used in the runtime.
-mod weights;
+// TODO: Benchmark
+// /// Weights for pallets used in the runtime.
+// mod weights;
 
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
@@ -83,10 +84,10 @@ use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, Block as BlockT, Extrinsic as ExtrinsicT, NumberFor, SaturatedConversion,
-		StaticLookup, Verify,
+		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
+		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
-	transaction_validity::{TransactionSource, TransactionValidity},
+	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, MultiAddress, OpaqueExtrinsic,
 };
 use sp_std::prelude::*;
@@ -121,7 +122,8 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
@@ -176,7 +178,6 @@ frame_support::construct_runtime! {
 	{
 		// Basic stuff; balances is uncallable initially.
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 1,
 
 		// Must be before session.
 		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 2,
@@ -250,7 +251,7 @@ frame_support::construct_runtime! {
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
-		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 40,
+		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 
 		// S2S bridge.
@@ -316,6 +317,53 @@ where
 	type OverarchingCall = Call;
 }
 
+impl fp_self_contained::SelfContainedCall for Call {
+	type SignedInfo = H160;
+
+	fn is_self_contained(&self) -> bool {
+		match self {
+			Call::Ethereum(call) => call.is_self_contained(),
+			_ => false,
+		}
+	}
+
+	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
+		match self {
+			Call::Ethereum(call) => call.check_self_contained(),
+			_ => None,
+		}
+	}
+
+	fn validate_self_contained(&self, info: &Self::SignedInfo) -> Option<TransactionValidity> {
+		match self {
+			Call::Ethereum(call) => call.validate_self_contained(info),
+			_ => None,
+		}
+	}
+
+	fn pre_dispatch_self_contained(
+		&self,
+		info: &Self::SignedInfo,
+	) -> Option<Result<(), TransactionValidityError>> {
+		match self {
+			Call::Ethereum(call) => call.pre_dispatch_self_contained(info),
+			_ => None,
+		}
+	}
+
+	fn apply_self_contained(
+		self,
+		info: Self::SignedInfo,
+	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
+		match self {
+			call @ Call::Ethereum(dvm_ethereum::Call::transact { .. }) => Some(call.dispatch(
+				Origin::from(dvm_ethereum::RawOrigin::EthereumTransaction(info)),
+			)),
+			_ => None,
+		}
+	}
+}
+
 sp_api::impl_runtime_apis! {
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
@@ -333,7 +381,7 @@ sp_api::impl_runtime_apis! {
 
 	impl sp_api::Metadata<Block> for Runtime {
 		fn metadata() -> OpaqueMetadata {
-			Runtime::metadata().into()
+			OpaqueMetadata::new(Runtime::metadata().into())
 		}
 	}
 
@@ -393,7 +441,7 @@ sp_api::impl_runtime_apis! {
 				slot_duration: Babe::slot_duration(),
 				epoch_length: EpochDuration::get(),
 				c: BABE_GENESIS_EPOCH_CONFIG.c,
-				genesis_authorities: Babe::authorities(),
+				genesis_authorities: Babe::authorities().to_vec(),
 				randomness: Babe::randomness(),
 				allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
 			}
@@ -639,13 +687,13 @@ sp_api::impl_runtime_apis! {
 			Ethereum::current_block()
 		}
 
-		fn current_receipts() -> Option<Vec<dvm_ethereum::EthereumReceipt>> {
+		fn current_receipts() -> Option<Vec<dvm_ethereum::EthereumReceiptV0>> {
 			Ethereum::current_receipts()
 		}
 
 		fn current_all() -> (
 			Option<dvm_ethereum::EthereumBlockV0>,
-			Option<Vec<dvm_ethereum::EthereumReceipt>>,
+			Option<Vec<dvm_ethereum::EthereumReceiptV0>>,
 			Option<Vec<TransactionStatus>>
 		) {
 			(
@@ -658,10 +706,92 @@ sp_api::impl_runtime_apis! {
 		fn extrinsic_filter(
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<dvm_ethereum::TransactionV0> {
-			xts.into_iter().filter_map(|xt| match xt.function {
-				Call::Ethereum(dvm_ethereum::Call::transact(t)) => Some(t),
+			xts.into_iter().filter_map(|xt| match xt.0.function {
+				Call::Ethereum(dvm_ethereum::Call::transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect::<Vec<dvm_ethereum::TransactionV0>>()
+		}
+	}
+
+	impl dp_evm_trace_apis::DebugRuntimeApi<Block> for Runtime {
+		fn trace_transaction(
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_traced_transaction: &dvm_ethereum::TransactionV0,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use dp_evm_tracer::tracer::EvmTracer;
+				use dvm_ethereum::Call::transact;
+				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
+				// transactions that preceded the requested transaction.
+				for ext in _extrinsics.into_iter() {
+					let _ = match &ext.0.function {
+						Call::Ethereum(transact { transaction }) => {
+							if transaction == _traced_transaction {
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+								return Ok(());
+							} else {
+								Executive::apply_extrinsic(ext)
+							}
+						}
+						_ => Executive::apply_extrinsic(ext),
+					};
+				}
+
+				Err(sp_runtime::DispatchError::Other(
+					"Failed to find Ethereum transaction among the extrinsics.",
+				))
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
+		}
+		fn trace_block(
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_known_transactions: Vec<H256>,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use dp_evm_tracer::tracer::EvmTracer;
+				use sha3::{Digest, Keccak256};
+				use dvm_ethereum::Call::transact;
+
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+
+				// Apply all extrinsics. Ethereum extrinsics are traced.
+				for ext in _extrinsics.into_iter() {
+					match &ext.0.function {
+						Call::Ethereum(transact { transaction }) => {
+							let eth_extrinsic_hash =
+								H256::from_slice(Keccak256::digest(&rlp::encode(transaction)).as_slice());
+							if _known_transactions.contains(&eth_extrinsic_hash) {
+								// Each known extrinsic is a new call stack.
+								EvmTracer::emit_new();
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+							} else {
+								let _ = Executive::apply_extrinsic(ext);
+							}
+						}
+						_ => {
+							let _ = Executive::apply_extrinsic(ext);
+						}
+					};
+				}
+
+				Ok(())
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
 		}
 	}
 
@@ -724,10 +854,17 @@ sp_api::impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
-			log::info!("try-runtime::on_runtime_upgrade Crab.");
-			let weight = Executive::try_runtime_upgrade()?;
-			Ok((weight, RuntimeBlockWeights::get().max_block))
+		fn on_runtime_upgrade() -> (Weight, Weight) {
+			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
+			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
+			// right here and right now.
+			let weight = Executive::try_runtime_upgrade().unwrap();
+
+			(weight, RuntimeBlockWeights::get().max_block)
+		}
+
+		fn execute_block_no_check(block: Block) -> Weight {
+			Executive::execute_block_no_check(block)
 		}
 	}
 
@@ -757,33 +894,113 @@ sp_api::impl_runtime_apis! {
 pub struct TransactionConverter;
 impl dvm_rpc_runtime_api::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
 	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> UncheckedExtrinsic {
-		UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact(transaction).into())
+		UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into())
 	}
 }
 impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
 	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> OpaqueExtrinsic {
 		let extrinsic =
-			UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact(transaction).into());
+			UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into());
 		let encoded = extrinsic.encode();
 
 		OpaqueExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
 	}
 }
 
-pub struct CustomOnRuntimeUpgrade;
-impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	fn on_runtime_upgrade() -> Weight {
-		0
-		// RuntimeBlockWeights::get().max_block
+const TECHNICAL_MEMBERSHIP_OLD_PREFIX: &str = "Instance1Membership";
+const TIPS_OLD_PREFIX: &str = "Treasury";
+const COUNCIL_OLD_PREFIX: &str = "Instance1Collective";
+const TECHNICAL_COMMITTEE_OLD_PREFIX: &str = "Instance2Collective";
+
+fn migrate() -> Weight {
+	// --- paritytech ---
+	use frame_support::traits::PalletInfo;
+
+	if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
+	{
+		pallet_membership::migrations::v4::migrate::<Runtime, TechnicalMembership, _>(
+			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
+			name,
+		);
 	}
 
+	pallet_tips::migrations::v4::migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
+	pallet_collective::migrations::v4::migrate::<Runtime, Council, _>(COUNCIL_OLD_PREFIX);
+	pallet_collective::migrations::v4::migrate::<Runtime, TechnicalCommittee, _>(
+		TECHNICAL_COMMITTEE_OLD_PREFIX,
+	);
+
+	migration::remove_storage_prefix(b"RandomnessCollectiveFlip", b"RandomMaterial", b"");
+
+	// Migrate the version to new style.
+	// But this will also update the version.
+	// To bypass the check `if on_chain_storage_version < 4 {`, put this to the last one.
+	frame_support::migrations::migrate_from_pallet_version_to_storage_version::<AllPalletsWithSystem>(
+		&RocksDbWeight::get(),
+	);
+
+	// 0
+	RuntimeBlockWeights::get().max_block
+}
+
+pub struct CustomOnRuntimeUpgrade;
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::traits::{PalletInfo, StorageVersion};
+
+		{
+			// Presume we have already migrated the version to the new style.
+			frame_support::migrations::migrate_from_pallet_version_to_storage_version::<
+				AllPalletsWithSystem,
+			>(&RocksDbWeight::get());
+
+			// Revert the version.
+			StorageVersion::new(3).put::<TechnicalMembership>();
+			StorageVersion::new(3).put::<Tips>();
+			StorageVersion::new(3).put::<Council>();
+			StorageVersion::new(3).put::<TechnicalCommittee>();
+		}
+
+		let name = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
+			.expect("TechnicalMembership is part of runtime, so it has a name; qed");
+
+		pallet_membership::migrations::v4::pre_migrate::<TechnicalMembership, _>(
+			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
+			name,
+		);
+		pallet_tips::migrations::v4::pre_migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
+		pallet_collective::migrations::v4::pre_migrate::<Council, _>(COUNCIL_OLD_PREFIX);
+		pallet_collective::migrations::v4::pre_migrate::<TechnicalCommittee, _>(
+			TECHNICAL_COMMITTEE_OLD_PREFIX,
+		);
+
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
+		// --- paritytech ---
+		use frame_support::traits::PalletInfo;
+
+		let name = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
+			.expect("TechnicalMembership is part of runtime, so it has a name; qed");
+
+		pallet_membership::migrations::v4::post_migrate::<TechnicalMembership, _>(
+			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
+			name,
+		);
+		pallet_tips::migrations::v4::post_migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
+		pallet_collective::migrations::v4::post_migrate::<Council, _>(COUNCIL_OLD_PREFIX);
+		pallet_collective::migrations::v4::post_migrate::<TechnicalCommittee, _>(
+			TECHNICAL_COMMITTEE_OLD_PREFIX,
+		);
+
 		Ok(())
+	}
+
+	fn on_runtime_upgrade() -> Weight {
+		migrate()
 	}
 }

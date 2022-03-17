@@ -18,18 +18,17 @@
 
 //! Crab-specific RPCs implementation.
 
-#![warn(missing_docs)]
-
 // --- std ---
-use std::{collections::BTreeMap, sync::Arc};
+use std::sync::Arc;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_common_primitives::{AccountId, Balance, Nonce, Power};
-use dp_rpc::{FilterPool, PendingTransactions};
-use dvm_ethereum::EthereumStorageSchema;
+use darwinia_common_primitives::*;
 
 /// Full client dependencies
-pub struct FullDeps<C, P, SC, B> {
+pub struct FullDeps<C, P, SC, B, A>
+where
+	A: sc_transaction_pool::ChainApi,
+{
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -44,38 +43,14 @@ pub struct FullDeps<C, P, SC, B> {
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
 	pub grandpa: GrandpaDeps<B>,
-	// <--- dvm ---
-	/// The Node authority flag
-	pub is_authority: bool,
-	/// Network service
-	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
-	/// Ethereum pending transactions.
-	pub pending_transactions: PendingTransactions,
-	/// EthFilterApi pool.
-	pub filter_pool: Option<FilterPool>,
-	/// Backend.
-	pub backend: Arc<dc_db::Backend<Block>>,
-	/// Maximum number of logs in a query.
-	pub max_past_logs: u32,
-	// --- dvm --->
-}
-
-/// Light client extra dependencies.
-pub struct LightDeps<C, F, P> {
-	/// The client instance to use.
-	pub client: Arc<C>,
-	/// Transaction pool instance.
-	pub pool: Arc<P>,
-	/// Remote access to the blockchain (async).
-	pub remote_blockchain: Arc<dyn sc_client_api::RemoteBlockchain<Block>>,
-	/// Fetcher instance.
-	pub fetcher: Arc<F>,
+	/// DVM related rpc helper.
+	pub eth: EthDeps<A>,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, SC, B>(
-	deps: FullDeps<C, P, SC, B>,
-	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
+pub fn create_full<C, P, SC, B, A>(
+	deps: FullDeps<C, P, SC, B, A>,
+	subscription_task_executor: SubscriptionTaskExecutor,
 ) -> RpcResult
 where
 	C: 'static
@@ -83,49 +58,45 @@ where
 		+ Sync
 		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
-		// <--- dvm ---
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::StorageProvider<Block, B>
-		// --- dvm --->
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	C::Api: sc_consensus_babe::BabeApi<Block>,
-	C::Api: sp_block_builder::BlockBuilder<Block>,
-	C::Api: darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
-	C::Api: darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>,
-	C::Api: darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>,
-	C::Api: darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
-	// <--- dvm ---
-	C::Api: dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
-	// --- dvm --->
+	C::Api: sp_block_builder::BlockBuilder<Block>
+		+ sc_consensus_babe::BabeApi<Block>
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
+		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
+		+ darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>
+		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
+		+ dp_evm_trace_apis::DebugRuntimeApi<Block>
+		+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
+	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 {
+	// --- std ---
+	use std::collections::BTreeMap;
 	// --- crates.io ---
+	use jsonrpc_core::IoHandler;
 	use jsonrpc_pubsub::manager::SubscriptionManager;
 	// --- paritytech ---
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-	use sc_consensus_babe_rpc::{BabeApi, BabeRpcHandler};
-	use sc_finality_grandpa_rpc::{GrandpaApi, GrandpaRpcHandler};
-	use sc_sync_state_rpc::{SyncStateRpcApi, SyncStateRpcHandler};
-	use substrate_frame_rpc_system::{FullSystem, SystemApi};
+	use pallet_transaction_payment_rpc::*;
+	use sc_consensus_babe_rpc::*;
+	use sc_finality_grandpa_rpc::*;
+	use sc_sync_state_rpc::*;
+	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
 	use crab_runtime::TransactionConverter;
-	use darwinia_balances_rpc::{Balances, BalancesApi};
-	use darwinia_fee_market_rpc::{FeeMarket, FeeMarketApi};
-	use darwinia_header_mmr_rpc::{HeaderMMR, HeaderMMRApi};
-	use darwinia_staking_rpc::{Staking, StakingApi};
-	// <--- dvm ---
-	use dc_rpc::{
-		EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
-		HexEncodedIdProvider, NetApi, NetApiServer, OverrideHandle, RuntimeApiStorageOverride,
-		SchemaV1Override, StorageOverride, Web3Api, Web3ApiServer,
-	};
-	// --- dvm --->
+	use darwinia_balances_rpc::*;
+	use darwinia_fee_market_rpc::*;
+	use darwinia_header_mmr_rpc::*;
+	use darwinia_staking_rpc::*;
+	use dc_rpc::*;
+	use dvm_ethereum::EthereumStorageSchema;
 
 	let FullDeps {
 		client,
@@ -133,18 +104,41 @@ where
 		select_chain,
 		chain_spec,
 		deny_unsafe,
-		babe,
-		grandpa,
-		// <--- dvm ---
-		is_authority,
-		network,
-		pending_transactions,
-		filter_pool,
-		backend,
-		max_past_logs,
-		// --- dvm --->
+		babe: BabeDeps {
+			keystore,
+			babe_config,
+			shared_epoch_changes,
+		},
+		grandpa:
+			GrandpaDeps {
+				shared_voter_state,
+				shared_authority_set,
+				justification_stream,
+				subscription_executor,
+				finality_proof_provider,
+			},
+		eth:
+			EthDeps {
+				config:
+					EthRpcConfig {
+						ethapi_debug_targets,
+						ethapi_trace_max_count,
+						max_past_logs,
+						// fee_history_limit,
+						..
+					},
+				graph,
+				is_authority,
+				network,
+				filter_pool,
+				backend,
+				// fee_history_cache,
+				// overrides,
+				// block_data_cache,
+				rpc_requesters,
+			},
 	} = deps;
-	let mut io = jsonrpc_core::IoHandler::default();
+	let mut io = IoHandler::default();
 
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(
 		client.clone(),
@@ -154,11 +148,6 @@ where
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
 		client.clone(),
 	)));
-	let BabeDeps {
-		keystore,
-		babe_config,
-		shared_epoch_changes,
-	} = babe;
 	io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
 		client.clone(),
 		shared_epoch_changes.clone(),
@@ -167,19 +156,12 @@ where
 		select_chain,
 		deny_unsafe,
 	)));
-	let GrandpaDeps {
-		shared_voter_state,
-		shared_authority_set,
-		justification_stream,
-		subscription_executor,
-		finality_provider,
-	} = grandpa;
 	io.extend_with(GrandpaApi::to_delegate(GrandpaRpcHandler::new(
 		shared_authority_set.clone(),
 		shared_voter_state,
 		justification_stream,
 		subscription_executor,
-		finality_provider,
+		finality_proof_provider,
 	)));
 	io.extend_with(SyncStateRpcApi::to_delegate(SyncStateRpcHandler::new(
 		chain_spec,
@@ -193,28 +175,28 @@ where
 	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	// <--- dvm ---
-	let mut overrides_map = BTreeMap::new();
-	overrides_map.insert(
-		EthereumStorageSchema::V1,
-		Box::new(SchemaV1Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
 	let overrides = Arc::new(OverrideHandle {
-		schemas: overrides_map,
+		schemas: BTreeMap::from_iter([(
+			EthereumStorageSchema::V1,
+			Box::new(SchemaV1Override::new(client.clone()))
+				as Box<dyn StorageOverride<_> + Send + Sync>,
+		)]),
 		fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
 	});
+	let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
+
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),
+		graph,
 		TransactionConverter,
 		network.clone(),
 		overrides.clone(),
-		pending_transactions.clone(),
 		backend.clone(),
 		is_authority,
 		vec![],
 		max_past_logs,
+		block_data_cache.clone(),
 	)));
 	if let Some(filter_pool) = filter_pool {
 		io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
@@ -224,6 +206,7 @@ where
 			500 as usize, // max stored filters
 			overrides.clone(),
 			max_past_logs,
+			block_data_cache.clone(),
 		)));
 	}
 	io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
@@ -242,39 +225,68 @@ where
 		// Whether to format the `peer_count` response as Hex (default) or not.
 		true,
 	)));
-	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client)));
-	// --- dvm --->
+	io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(client.clone())));
+
+	if ethapi_debug_targets
+		.iter()
+		.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
+	{
+		if let Some(trace_filter_requester) = rpc_requesters.trace {
+			io.extend_with(TraceApiServer::to_delegate(Trace::new(
+				client,
+				trace_filter_requester,
+				ethapi_trace_max_count,
+			)));
+		}
+
+		if let Some(debug_requester) = rpc_requesters.debug {
+			io.extend_with(DebugApiServer::to_delegate(Debug::new(debug_requester)));
+		}
+	}
 
 	Ok(io)
 }
 
-/// Instantiate all RPC extensions for light node.
-pub fn create_light<C, P, F>(deps: LightDeps<C, F, P>) -> RpcExtension
-where
-	C: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ProvideRuntimeApi<Block>
-		+ sp_blockchain::HeaderBackend<Block>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	P: 'static + sc_transaction_pool_api::TransactionPool,
-	F: 'static + sc_client_api::Fetcher<Block>,
-{
-	// --- paritytech ---
-	use substrate_frame_rpc_system::{LightSystem, SystemApi};
+// pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<fc_rpc::OverrideHandle<Block>>
+// where
+// 	C: 'static
+// 		+ Send
+// 		+ Sync
+// 		+ sc_client_api::backend::AuxStore
+// 		+ sc_client_api::backend::StorageProvider<Block, BE>
+// 		+ sp_api::ProvideRuntimeApi<Block>
+// 		+ sp_blockchain::HeaderBackend<Block>
+// 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
+// 	C::Api: sp_api::ApiExt<Block>
+// 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+// 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
+// 	BE: 'static + sc_client_api::backend::Backend<Block>,
+// 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
+// {
+// 	// --- std ---
+// 	use std::collections::BTreeMap;
+// 	// --- paritytech ---
+// 	use fc_rpc::*;
+// 	use fp_storage::EthereumStorageSchema;
 
-	let LightDeps {
-		client,
-		pool,
-		remote_blockchain,
-		fetcher,
-	} = deps;
-	let mut io = jsonrpc_core::IoHandler::default();
-
-	io.extend_with(SystemApi::<Hash, AccountId, Nonce>::to_delegate(
-		LightSystem::new(client, remote_blockchain, fetcher, pool),
-	));
-
-	io
-}
+// 	Arc::new(OverrideHandle {
+// 		schemas: BTreeMap::from_iter([
+// 			(
+// 				EthereumStorageSchema::V1,
+// 				Box::new(SchemaV1Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 			(
+// 				EthereumStorageSchema::V2,
+// 				Box::new(SchemaV2Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 			(
+// 				EthereumStorageSchema::V3,
+// 				Box::new(SchemaV3Override::new(client.clone()))
+// 					as Box<dyn StorageOverride<_> + Send + Sync>,
+// 			),
+// 		]),
+// 		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
+// 	})
+// }

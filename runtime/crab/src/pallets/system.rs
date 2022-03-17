@@ -3,7 +3,7 @@ use frame_support::{traits::Contains, weights::constants::RocksDbWeight};
 use frame_system::Config;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
-use crate::{weights::frame_system::WeightInfo, *};
+use crate::*;
 
 pub struct BaseFilter;
 impl Contains<Call> for BaseFilter {
@@ -38,7 +38,7 @@ impl Config for Runtime {
 	type AccountData = AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type SystemWeightInfo = WeightInfo<Runtime>;
+	type SystemWeightInfo = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
 }
