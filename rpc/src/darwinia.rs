@@ -60,7 +60,6 @@ where
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
 		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
-		+ darwinia_header_mmr_rpc::HeaderMMRRuntimeApi<Block, Hash>
 		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + sc_transaction_pool_api::TransactionPool,
 	SC: 'static + sp_consensus::SelectChain<Block>,
@@ -76,7 +75,6 @@ where
 	// --- darwinia-network ---
 	use darwinia_balances_rpc::*;
 	use darwinia_fee_market_rpc::*;
-	use darwinia_header_mmr_rpc::*;
 	use darwinia_staking_rpc::*;
 
 	let FullDeps {
@@ -133,7 +131,6 @@ where
 	)?));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
 	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
-	io.extend_with(HeaderMMRApi::to_delegate(HeaderMMR::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
 
 	Ok(io)

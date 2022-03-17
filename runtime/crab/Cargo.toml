@@ -27,7 +27,6 @@ darwinia-elections-phragmen         = { default-features = false, git = "https:/
 darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-fee-market-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
-darwinia-header-mmr-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.0" }
@@ -136,7 +135,6 @@ std = [
 	"darwinia-fee-market/std",
 	"darwinia-fee-market-rpc-runtime-api/std",
 	"darwinia-header-mmr/std",
-	"darwinia-header-mmr-rpc-runtime-api/std",
 	"darwinia-staking/std",
 	"darwinia-staking-rpc-runtime-api/std",
 	"frame-try-runtime/std",
