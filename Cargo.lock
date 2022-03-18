@@ -1037,7 +1037,6 @@ dependencies = [
  "darwinia-fee-market",
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
- "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-relay-primitives",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
@@ -1741,21 +1740,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-header-mmr-rpc"
-version = "2.8.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#fa8740db1b5dcbbff439b7830428660696fe7556"
-dependencies = [
- "darwinia-header-mmr-rpc-runtime-api",
- "jsonrpc-core",
- "jsonrpc-core-client",
- "jsonrpc-derive",
- "parity-scale-codec 2.3.1",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
-]
-
-[[package]]
 name = "darwinia-header-mmr-rpc-runtime-api"
 version = "2.8.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#fa8740db1b5dcbbff439b7830428660696fe7556"
@@ -1778,7 +1762,6 @@ dependencies = [
  "darwinia-common-primitives",
  "darwinia-evm",
  "darwinia-fee-market-rpc-runtime-api",
- "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-rpc",
  "darwinia-runtime",
  "darwinia-staking-rpc-runtime-api",
@@ -1885,7 +1868,6 @@ dependencies = [
  "darwinia-balances-rpc",
  "darwinia-common-primitives",
  "darwinia-fee-market-rpc",
- "darwinia-header-mmr-rpc",
  "darwinia-staking-rpc",
  "dc-db",
  "dc-rpc",
@@ -1938,7 +1920,6 @@ dependencies = [
  "darwinia-fee-market",
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
- "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-relay-authorities",
  "darwinia-relay-primitives",
  "darwinia-relayer-game",
