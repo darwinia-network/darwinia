@@ -1015,7 +1015,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "array-bytes",
  "bp-message-dispatch",
@@ -1365,7 +1365,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "darwinia-cli",
  "darwinia-node-service",
@@ -1442,7 +1442,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-bridge-primitives"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1479,7 +1479,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "darwinia-common-primitives",
  "darwinia-node-service",
@@ -1498,7 +1498,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-primitives"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "parity-scale-codec 2.3.1",
  "sp-core",
@@ -1507,7 +1507,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "darwinia-balances",
  "darwinia-common-primitives",
@@ -1754,7 +1754,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-node-service"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "array-bytes",
  "crab-runtime",
@@ -1862,7 +1862,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "crab-runtime",
  "darwinia-balances-rpc",
@@ -1903,7 +1903,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "0.11.8"
+version = "0.12.0"
 dependencies = [
  "bp-message-dispatch",
  "bp-messages",
