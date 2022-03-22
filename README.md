@@ -88,7 +88,7 @@ You can see your node on [telemetry](https://telemetry.polkadot.io/#list/0x34f61
 ## Contributing
 
 ### Roadmap
-[Roadmap](docs/ROADMAP.md)
+[Roadmap](https://itering.notion.site/9617e154ec884b07a7cee9a056374e42?v=0c3e4d9f257646c486a32a0425ee3a93)
 
 ### Contributing Guidelines
 [Contributing Guidelines](docs/CONTRIBUTING.adoc)
