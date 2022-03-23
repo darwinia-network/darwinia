@@ -34,13 +34,6 @@ docker pull {{ image_sha }}
 
 ## Proposal Hashes
 
-Compact
-
-| Network  |          Proposal Hash          |
-| :------: | :-----------------------------: |
-| Darwinia | {{ darwinia_proposal_compact }} |
-|   Crab   |   {{ crab_proposal_compact }}   |
-
 Compressed
 
 | Network  |            Proposal Hash           |
