@@ -34,8 +34,6 @@ docker pull {{ image_sha }}
 
 ## Proposal Hashes
 
-Compressed
-
 | Network  |            Proposal Hash           |
 | :------: | :--------------------------------: |
 | Darwinia | {{ darwinia_proposal_compressed }} |
