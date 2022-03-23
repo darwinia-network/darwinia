@@ -216,8 +216,6 @@ jobs:
             --arg tag "$GIT_TAG_NAME" \
             --arg sha "$SHA" \
             '{
-              crab_proposal_compact: $crab_proposal_compact,
-              darwinia_proposal_compact: $darwinia_proposal_compact,
               crab_proposal_compressed: $crab_proposal_compressed,
               darwinia_proposal_compressed: $darwinia_proposal_compressed,
               image_tag: $image_tag,
