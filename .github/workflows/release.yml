@@ -181,16 +181,10 @@ jobs:
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
           mv darwinia-x86_64-linux-gnu.tar.bz2 deploy/
 
-          mv shared/crab-runtime/*.compact.wasm deploy/
-          mv shared/crab-runtime/*.compact.json deploy/
-          mv shared/darwinia-runtime/*.compact.wasm deploy/
-          mv shared/darwinia-runtime/*.compact.json deploy/
-
-          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-          # mv shared/crab-runtime/*.compact.compressed.wasm deploy/
-          # mv shared/crab-runtime/*.compact.compressed.json deploy/
-          # mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
-          # mv shared/darwinia-runtime/*.compact.compressed.json deploy/
+          mv shared/crab-runtime/*.compact.compressed.wasm deploy/
+          mv shared/crab-runtime/*.compact.compressed.json deploy/
+          mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
+          mv shared/darwinia-runtime/*.compact.compressed.json deploy/
 
       - name: Hash file
         run: |
@@ -205,12 +199,8 @@ jobs:
 
       - name: Generate template data
         run: |
-          PROPOSAL_CRAB_COMPACT=$(cat deploy/crab-runtime.compact.json | jq -r .proposal_hash)
-          PROPOSAL_DARWINIA_COMPACT=$(cat deploy/darwinia-runtime.compact.json | jq -r .proposal_hash)
-
-          # not open for now. https://github.com/darwinia-network/darwinia/pull/779#issuecomment-964911852
-          # PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
-          # PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
+          PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
 
           IMAGE_NAME=darwinia
           IMAGE_PREFIX=quay.io/darwinia-network
@@ -219,15 +209,15 @@ jobs:
 
           echo 'Template data:'
           jq -n \
-            --arg crab_proposal_compact "$PROPOSAL_CRAB_COMPACT" \
-            --arg darwinia_proposal_compact "$PROPOSAL_DARWINIA_COMPACT" \
+            --arg crab_proposal_compressed "$PROPOSAL_CRAB_COMPRESSED" \
+            --arg darwinia_proposal_compressed "$PROPOSAL_DARWINIA_COMPRESSED" \
             --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
             --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
             --arg tag "$GIT_TAG_NAME" \
             --arg sha "$SHA" \
             '{
-              crab_proposal_compact: $crab_proposal_compact,
-              darwinia_proposal_compact: $darwinia_proposal_compact,
+              crab_proposal_compressed: $crab_proposal_compressed,
+              darwinia_proposal_compressed: $darwinia_proposal_compressed,
               image_tag: $image_tag,
               image_sha: $image_sha,
               tag: $tag,
