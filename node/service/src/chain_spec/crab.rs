@@ -210,8 +210,10 @@ pub fn genesis_config() -> ChainSpec {
 	}
 
 	let boot_nodes = vec![
-		"/dns/g1.p2p.crab.darwinia.network/tcp/30333/p2p/12D3KooWFqHZkyv6iabxxqiHdNjWb4c7EfmBqMNCyqLCCVZm8yyQ".parse().unwrap(),
-		"/dns/g2.p2p.crab.darwinia.network/tcp/30333/p2p/12D3KooWPiza2NAD6CjdBGtfUd3pfDnZXysYKzumejGHafW3Y8xP".parse().unwrap()
+		"/dns/g1.crab-p2p.darwinia.network/tcp/30333/p2p/12D3KooWFqHZkyv6iabxxqiHdNjWb4c7EfmBqMNCyqLCCVZm8yyQ".parse().unwrap(),
+		"/dns/g2.crab-p2p.darwinia.network/tcp/30333/p2p/12D3KooWPiza2NAD6CjdBGtfUd3pfDnZXysYKzumejGHafW3Y8xP".parse().unwrap(),
+		"/dns/g1.crab-p2p.darwinia.network/tcp/30334/ws/p2p/12D3KooWFqHZkyv6iabxxqiHdNjWb4c7EfmBqMNCyqLCCVZm8yyQ".parse().unwrap(),
+		"/dns/g2.crab-p2p.darwinia.network/tcp/30334/ws/p2p/12D3KooWPiza2NAD6CjdBGtfUd3pfDnZXysYKzumejGHafW3Y8xP".parse().unwrap(),
 	];
 
 	ChainSpec::from_genesis(
