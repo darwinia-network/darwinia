@@ -366,7 +366,9 @@ pub fn genesis_config() -> ChainSpec {
 
 	let boot_nodes = vec![
 		"/dns4/g1.p2p.darwinia.network/tcp/30333/p2p/12D3KooWANEQE69Td86QUy68Lim3rZR5mxsMviGYdi14ErzCfdht".parse().unwrap(),
-		"/dns4/g2.p2p.darwinia.network/tcp/30333/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap()
+		"/dns4/g2.p2p.darwinia.network/tcp/30333/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap(),
+		"/dns4/g1.p2p.darwinia.network/tcp/30334/ws/p2p/12D3KooWANEQE69Td86QUy68Lim3rZR5mxsMviGYdi14ErzCfdht".parse().unwrap(),
+		"/dns4/g2.p2p.darwinia.network/tcp/30334/ws/p2p/12D3KooWBxWFD4zdSd2HQTxXNysJ7s248PsKjKKW4DnyiS47i49D".parse().unwrap(),
 	];
 
 	ChainSpec::from_genesis(

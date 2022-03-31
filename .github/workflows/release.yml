@@ -200,7 +200,7 @@ jobs:
       - name: Generate template data
         run: |
           PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
-          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compressed.compact.json | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compact.compressed.json | jq -r .proposal_hash)
 
           IMAGE_NAME=darwinia
           IMAGE_PREFIX=quay.io/darwinia-network
