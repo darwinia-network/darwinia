@@ -22,5 +22,10 @@ LABEL network.darwinia.image.created="${CI_BUILD_AT}" \
 	network.darwinia.image.title="Darwinia" \
 	network.darwinia.image.description="Implementation of a https://darwinia.network node in Rust based on the Substrate framework."
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openssl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY shared/darwinia /usr/local/bin/darwinia
 ENTRYPOINT [ "/usr/local/bin/darwinia" ]
