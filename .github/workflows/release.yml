@@ -127,7 +127,8 @@ jobs:
 
       - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
         run: |
-          Z_WASM_CRAB=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
+          set -xe
+          Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
 
           echo '${{ matrix.runtime }}-runtime compressed compact subwasm info'
           subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}-runtime/${{ matrix.runtime }}-runtime.compact.compressed.json
