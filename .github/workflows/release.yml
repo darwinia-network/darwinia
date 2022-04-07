@@ -189,7 +189,7 @@ jobs:
   publish-release:
     name: Publish release
     runs-on: ubuntu-latest
-    needs: [build-subwasm, build-docker-image]
+    needs: [build-package, build-subwasm, build-docker-image]
     steps:
       - uses: actions/checkout@v2
 
