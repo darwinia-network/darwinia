@@ -184,6 +184,8 @@ jobs:
       ##
       - name: Build and publish docker image
         run: |
+          # todo: just test, please remove it when merge
+          GIT_TAG_NAME=fake-tag
           IMAGE_NAME=darwinia
           IMAGE_PREFIX=quay.io/darwinia-network
           IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
