@@ -230,6 +230,8 @@ jobs:
           mv darwinia-x86_64-linux-gnu.tar.zst deploy/
           mv darwinia-x86_64-linux-gnu.tar.bz2 deploy/
 
+          mv shared/crab-runtime/*.compact.compressed.wasm deploy/
+          mv shared/crab-runtime/*.compact.compressed.json deploy/
           mv shared/darwinia-runtime/*.compact.compressed.wasm deploy/
           mv shared/darwinia-runtime/*.compact.compressed.json deploy/
 
