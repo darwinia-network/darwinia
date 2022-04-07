@@ -57,6 +57,14 @@ jobs:
       - name: Optimize cache
         run: .github/optimize-cache.sh || exit 0
 
+      - uses: vishnudxb/cancel-workflow@v1.2
+        if: failure()
+        with:
+          repo: darwinia-network/bridger
+          workflow_id: ${{ github.run_id }}
+          access_token: ${{ github.token }}
+
+
   ##
   # Generate subwasm info
   ##
@@ -65,6 +73,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:16.04
+    strategy:
+      matrix:
+        runtime: [crab, darwinia]
     steps:
       - uses: actions/checkout@v2
 
@@ -100,25 +111,24 @@ jobs:
 
       - name: Build darwinia
         run: |
-          echo "::set-output name=BUILD_AT::$(date --iso-8601=seconds)"
-          cargo build --features on-chain-release-build --release --target x86_64-unknown-linux-gnu
+          set -xe
+          RUNTIME_DIR=runtime/${{ matrix.runtime }}
+          pushd "$RUNTIME_DIR" > /dev/null
+            cargo build --features on-chain-release-build --release --target x86_64-unknown-linux-gnu
+          popd > /dev/null
 
       - name: Collect shared
         run: |
-          mkdir -p shared/crab-runtime
-          mkdir -p shared/darwinia-runtime
-          mv target/x86_64-unknown-linux-gnu/release/wbuild/crab-runtime/*.wasm shared/crab-runtime
-          mv target/x86_64-unknown-linux-gnu/release/wbuild/darwinia-runtime/*.wasm shared/darwinia-runtime
+          mkdir -p shared/${{ matrix.runtime }}-runtime
+          mv target/x86_64-unknown-linux-gnu/release/wbuild/${{ matrix.runtime }}-runtime/*.wasm \
+            shared/${{ matrix.runtime }}-runtime
 
-      - name: Generate subwasm info
+      - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
         run: |
-          Z_WASM_CRAB=shared/crab-runtime/*.compact.compressed.wasm
-          Z_WASM_DARWINIA=shared/crawinia-runtime/*.compact.compressed.wasm
+          Z_WASM_CRAB=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
 
-          echo 'crab-runtime compressed compact subwasm info'
-          subwasm -j info $Z_WASM | tee shared/crab-runtime/crab-runtime.compact.compressed.json
-          echo 'darwinia-runtime compressed compact subwasm info'
-          subwasm -j info $Z_WASM | tee shared/darwinia-runtime/darwinia-runtime.compact.compressed.json
+          echo '${{ matrix.runtime }}-runtime compressed compact subwasm info'
+          subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}-runtime/${{ matrix.runtime }}-runtime.compact.compressed.json
 
       - name: Upload shared
         uses: actions/upload-artifact@v2.2.4
@@ -128,6 +138,13 @@ jobs:
 
       - name: Optimize cache
         run: .github/optimize-cache.sh || exit 0
+
+      - uses: vishnudxb/cancel-workflow@v1.2
+        if: failure()
+        with:
+          repo: darwinia-network/bridger
+          workflow_id: ${{ github.run_id }}
+          access_token: ${{ github.token }}
 
   ##
   # Build and publish the Docker image
