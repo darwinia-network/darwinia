@@ -113,9 +113,11 @@ jobs:
         run: |
           set -xe
           RUNTIME_DIR=runtime/${{ matrix.runtime }}
-          pushd "$RUNTIME_DIR" > /dev/null
-            cargo build --features on-chain-release-build --release --target x86_64-unknown-linux-gnu
-          popd > /dev/null
+          cargo build \
+            --manifest-path runtime/${{ matrix.runtime }}/Cargo.toml
+            --features on-chain-release-build \
+            --release \
+            --target x86_64-unknown-linux-gnu
 
       - name: Collect shared
         run: |
