@@ -114,7 +114,7 @@ jobs:
           set -xe
           RUNTIME_DIR=runtime/${{ matrix.runtime }}
           cargo build \
-            --manifest-path runtime/${{ matrix.runtime }}/Cargo.toml
+            --manifest-path runtime/${{ matrix.runtime }}/Cargo.toml \
             --features on-chain-release-build \
             --release \
             --target x86_64-unknown-linux-gnu
