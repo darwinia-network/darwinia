@@ -27,6 +27,7 @@ use darwinia_common_primitives::{OpaqueBlock as Block, *};
 impl_runtime_apis![
 	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
 	fp_rpc::EthereumRuntimeRPCApi<Block>,
+	fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 ];
 
