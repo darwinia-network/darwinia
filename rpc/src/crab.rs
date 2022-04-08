@@ -172,33 +172,20 @@ where
 	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	let mut overrides_map = BTreeMap::new();
-	overrides_map.insert(
-		EthereumStorageSchema::V1,
-		Box::new(SchemaV1Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
-	overrides_map.insert(
-		EthereumStorageSchema::V2,
-		Box::new(SchemaV2Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
-
 	let convert_transaction: Option<NoTransactionConverter> = None;
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),
 		graph,
-		convert_transaction,
+		<Option<NoTransactionConverter>>::None,
 		network.clone(),
 		vec![],
 		overrides.clone(),
 		backend.clone(),
 		is_authority,
-		vec![],
 		max_past_logs,
 		block_data_cache.clone(),
-		rpc_config.fee_history_limit,
+		fee_history_limit,
 		fee_history_cache,
 	)));
 	if let Some(filter_pool) = filter_pool {

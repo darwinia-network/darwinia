@@ -74,12 +74,12 @@ where
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// DVM Backend.
 	pub backend: Arc<dc_db::Backend<Block>>,
-	// /// Fee history cache.
-	// pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
-	// /// Ethereum data access overrides.
-	// pub overrides: Arc<sc_rpc::OverrideHandle<Block>>,
-	// // Cache for Ethereum block data.
-	// pub block_data_cache: Arc<dc_rpc::EthBlockDataCache<Block>>,
+	/// Fee history cache.
+	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
+	/// Ethereum data access overrides.
+	pub overrides: Arc<sc_rpc::OverrideHandle<Block>>,
+	/// Cache for Ethereum block data.
+	pub block_data_cache: Arc<dc_rpc::EthBlockDataCache<Block>>,
 	/// RPC requester for evm trace.
 	pub rpc_requesters: EthRpcRequesters,
 }
