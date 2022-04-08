@@ -79,7 +79,7 @@ where
 	/// Ethereum data access overrides.
 	pub overrides: Arc<sc_rpc::OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
-	pub block_data_cache: Arc<dc_rpc::EthBlockDataCache<Block>>,
+	pub block_data_cache: Arc<darwinia_client_rpc::EthBlockDataCache<Block>>,
 	/// RPC requester for evm trace.
 	pub rpc_requesters: EthRpcRequesters,
 }
@@ -97,6 +97,6 @@ pub struct EthRpcConfig {
 
 #[derive(Clone)]
 pub struct EthRpcRequesters {
-	pub debug: Option<dc_rpc::DebugRequester>,
-	pub trace: Option<dc_rpc::CacheRequester>,
+	pub debug: Option<darwinia_client_rpc::DebugRequester>,
+	pub trace: Option<darwinia_client_rpc::CacheRequester>,
 }

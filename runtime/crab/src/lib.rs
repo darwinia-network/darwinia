@@ -69,7 +69,7 @@ pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
-use dvm_ethereum::EthereumStorageSchema;
+use darwinia_ethereum::EthereumStorageSchema;
 use fp_storage::{EthereumStorageSchema, PALLET_ETHEREUM_SCHEMA};
 #[allow(unused)]
 use frame_support::migration;
@@ -253,7 +253,7 @@ frame_support::construct_runtime! {
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
-		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
+		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
@@ -359,8 +359,8 @@ impl fp_self_contained::SelfContainedCall for Call {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ Call::Ethereum(dvm_ethereum::Call::transact { .. }) => Some(call.dispatch(
-				Origin::from(dvm_ethereum::RawOrigin::EthereumTransaction(info)),
+			call @ Call::Ethereum(darwinia_ethereum::Call::transact { .. }) => Some(call.dispatch(
+				Origin::from(darwinia_ethereum::RawOrigin::EthereumTransaction(info)),
 			)),
 			_ => None,
 		}
@@ -684,17 +684,17 @@ sp_api::impl_runtime_apis! {
 			Ethereum::current_transaction_statuses()
 		}
 
-		fn current_block() -> Option<dvm_ethereum::Block> {
+		fn current_block() -> Option<darwinia_ethereum::Block> {
 			Ethereum::current_block()
 		}
 
-		fn current_receipts() -> Option<Vec<dvm_ethereum::Receipt>> {
+		fn current_receipts() -> Option<Vec<darwinia_ethereum::Receipt>> {
 			Ethereum::current_receipts()
 		}
 
 		fn current_all() -> (
-			Option<dvm_ethereum::Block>,
-			Option<Vec<dvm_ethereum::Receipt>>,
+			Option<darwinia_ethereum::Block>,
+			Option<Vec<darwinia_ethereum::Receipt>>,
 			Option<Vec<TransactionStatus>>
 		) {
 			(
@@ -706,9 +706,9 @@ sp_api::impl_runtime_apis! {
 
 		fn extrinsic_filter(
 			xts: Vec<<Block as BlockT>::Extrinsic>,
-		) -> Vec<dvm_ethereum::Transaction> {
+		) -> Vec<darwinia_ethereum::Transaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				Call::Ethereum(dvm_ethereum::Call::transact { transaction }) => Some(transaction),
+				Call::Ethereum(darwinia_ethereum::Call::transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect()
 		}
@@ -719,9 +719,9 @@ sp_api::impl_runtime_apis! {
 	}
 
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
-		fn convert_transaction(transaction: dvm_ethereum::Transaction) -> <Block as BlockT>::Extrinsic {
+		fn convert_transaction(transaction: darwinia_ethereum::Transaction) -> <Block as BlockT>::Extrinsic {
 			UncheckedExtrinsic::new_unsigned(
-				dvm_ethereum::Call::<Runtime>::transact { transaction }.into(),
+				darwinia_ethereum::Call::<Runtime>::transact { transaction }.into(),
 			)
 		}
 	}
@@ -729,7 +729,7 @@ sp_api::impl_runtime_apis! {
 	impl dp_evm_trace_apis::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_traced_transaction: &dvm_ethereum::Transaction,
+			_traced_transaction: &darwinia_ethereum::Transaction,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -737,7 +737,7 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use dp_evm_tracer::tracer::EvmTracer;
-				use dvm_ethereum::Call::transact;
+				use darwinia_ethereum::Call::transact;
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
 				for ext in _extrinsics.into_iter() {
@@ -774,7 +774,7 @@ sp_api::impl_runtime_apis! {
 			{
 				use dp_evm_tracer::tracer::EvmTracer;
 				use sha3::{Digest, Keccak256};
-				use dvm_ethereum::Call::transact;
+				use darwinia_ethereum::Call::transact;
 
 				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
 				config.estimate = true;

@@ -106,7 +106,7 @@ darwinia-evm-precompile-transfer   = { default-features = false, git = "https://
 dp-evm-trace-apis                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dvm-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
 fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
@@ -224,7 +224,7 @@ std = [
 	"dp-evm-trace-apis/std",
 	# "dp-evm-trace-events/std",
 	"dp-evm-tracer/std",
-	"dvm-ethereum/std",
+	"darwinia-ethereum/std",
 	"fp-rpc/std",
 	"fp-evm/std",
 	"fp-self-contained/std",

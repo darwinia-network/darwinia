@@ -1046,7 +1046,7 @@ dependencies = [
  "dp-evm-trace-events",
  "dp-evm-tracer",
  "dp-s2s",
- "dvm-ethereum",
+ "darwinia-ethereum",
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
  "fp-evm",
@@ -1768,7 +1768,7 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "dc-db",
  "dc-mapping-sync",
- "dc-rpc",
+ "darwinia-client-rpc",
  "dp-evm-trace-apis",
  "dp-evm-trace-ext",
  "dvm-rpc-runtime-api",
@@ -1871,9 +1871,9 @@ dependencies = [
  "darwinia-fee-market-rpc",
  "darwinia-staking-rpc",
  "dc-db",
- "dc-rpc",
+ "darwinia-client-rpc",
  "dp-evm-trace-apis",
- "dvm-ethereum",
+ "darwinia-ethereum",
  "dvm-rpc-runtime-api",
  "fc-rpc-core",
  "jsonrpc-core",
@@ -2111,7 +2111,7 @@ name = "dc-db"
 version = "2.8.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#72938232b144d201e7d15f6766b7ff560768a08e"
 dependencies = [
- "dvm-ethereum",
+ "darwinia-ethereum",
  "fp-evm",
  "fp-storage",
  "kvdb",
@@ -2141,7 +2141,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dc-rpc"
+name = "darwinia-client-rpc"
 version = "2.8.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#72938232b144d201e7d15f6766b7ff560768a08e"
 dependencies = [
@@ -2151,7 +2151,7 @@ dependencies = [
  "dp-consensus",
  "dp-evm-trace-apis",
  "dp-evm-trace-rpc",
- "dvm-ethereum",
+ "darwinia-ethereum",
  "dvm-rpc-core",
  "dvm-rpc-runtime-api",
  "ethereum 0.10.0",
@@ -2436,7 +2436,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dvm-ethereum"
+name = "darwinia-ethereum"
 version = "2.8.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.0#72938232b144d201e7d15f6766b7ff560768a08e"
 dependencies = [
@@ -3202,7 +3202,7 @@ dependencies = [
  "dp-asset",
  "dp-contract",
  "dp-s2s",
- "dvm-ethereum",
+ "darwinia-ethereum",
  "ethereum-primitives",
  "ethereum-types",
  "fp-evm",

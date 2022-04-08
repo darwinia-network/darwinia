@@ -1,6 +1,6 @@
 // --- darwinia-network ---
 use crate::*;
-use dvm_ethereum::{Config, IntermediateStateRoot};
+use darwinia_ethereum::{Config, IntermediateStateRoot};
 // --- paritytech ---
 use frame_support::PalletId;
 

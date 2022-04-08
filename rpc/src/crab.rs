@@ -91,10 +91,10 @@ where
 	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
 	use darwinia_balances_rpc::*;
+	use darwinia_client_rpc::*;
+	use darwinia_ethereum::EthereumStorageSchema;
 	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
-	use dc_rpc::*;
-	use dvm_ethereum::EthereumStorageSchema;
 
 	let FullDeps {
 		client,

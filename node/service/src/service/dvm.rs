@@ -19,8 +19,8 @@
 // --- std ---
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
+use darwinia_client_rpc::{CacheTask, DebugTask};
 use darwinia_common_primitives::{OpaqueBlock as Block, *};
-use dc_rpc::{CacheTask, DebugTask};
 use fc_db::Backend as DvmBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, OverrideHandle};
@@ -67,11 +67,11 @@ where
 		use futures::StreamExt;
 		use tokio::sync::Semaphore;
 		// --- paritytech ---
+		use darwinia_client_rpc::EthTask;
 		use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
-		use dc_rpc::EthTask;
 		// --- darwinia-network ---
+		use darwinia_client_rpc::{CacheTask, DebugTask};
 		use darwinia_rpc::{EthRpcConfig, EthRpcRequesters};
-		use dc_rpc::{CacheTask, DebugTask};
 
 		let DvmTaskParams {
 			task_manager,
