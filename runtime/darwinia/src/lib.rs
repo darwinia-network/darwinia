@@ -142,8 +142,6 @@ use darwinia_common_runtime::*;
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
-/// The address format for describing accounts.
-pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, Hashing>;
 /// Block type as expected by this runtime.
