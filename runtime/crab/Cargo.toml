@@ -107,12 +107,16 @@ dp-evm-trace-apis                  = { default-features = false, git = "https://
 # dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dvm-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dvm-rpc-runtime-api                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
 fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 rlp                                = { version = "0.5", optional = true, default-features = false }
 sha3                               = { version = "0.8", optional = true, default-features = false }
+fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+pallet-base-fee              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+pallet-evm                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+
 
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
@@ -214,12 +218,15 @@ std = [
 	# "dp-evm-trace-events/std",
 	# "dp-evm-tracer/std",
 	"dvm-ethereum/std",
-	"dvm-rpc-runtime-api/std",
+	"fp-rpc/std",
 	"fp-evm/std",
 	"fp-self-contained/std",
 	"pallet-evm-precompile-simple/std",
 	# "rlp/std",
 	# "sha3/std",
+	"fp-storage/std",
+	"pallet-base-fee/std",
+	"pallet-evm/std",
 ]
 
 dev     = []

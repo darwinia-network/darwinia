@@ -69,12 +69,15 @@ pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+use dvm_ethereum::EthereumStorageSchema;
+use fp_storage::PALLET_ETHEREUM_SCHEMA;
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
 };
+use pallet_evm::FeeCalculator;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -100,7 +103,7 @@ use darwinia_common_runtime::*;
 use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
-use dvm_rpc_runtime_api::TransactionStatus;
+use fp_rpc::TransactionStatus;
 
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, ()>;
@@ -252,6 +255,7 @@ frame_support::construct_runtime! {
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
 		// S2S bridge.
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
@@ -581,7 +585,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block> for Runtime {
+	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<Runtime as darwinia_evm::Config>::ChainId::get()
 		}
@@ -616,7 +620,8 @@ sp_api::impl_runtime_apis! {
 			data: Vec<u8>,
 			value: U256,
 			gas_limit: U256,
-			gas_price: Option<U256>,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
 		) -> Result<darwinia_evm::CallInfo, sp_runtime::DispatchError> {
@@ -634,8 +639,10 @@ sp_api::impl_runtime_apis! {
 				data,
 				value,
 				gas_limit.low_u64(),
-				gas_price,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
 				nonce,
+				Vec::new(),
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
 			).map_err(|err| err.into())
 		}
@@ -645,7 +652,8 @@ sp_api::impl_runtime_apis! {
 			data: Vec<u8>,
 			value: U256,
 			gas_limit: U256,
-			gas_price: Option<U256>,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
 		) -> Result<darwinia_evm::CreateInfo, sp_runtime::DispatchError> {
@@ -662,8 +670,10 @@ sp_api::impl_runtime_apis! {
 				data,
 				value,
 				gas_limit.low_u64(),
-				gas_price,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
 				nonce,
+				Vec::new(),
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
 			).map_err(|err| err.into())
 		}
@@ -673,7 +683,7 @@ sp_api::impl_runtime_apis! {
 			Ethereum::current_transaction_statuses()
 		}
 
-		fn current_block() -> Option<dvm_ethereum::EthereumBlockV0> {
+		fn current_block() -> Option<dvm_ethereum::Block> {
 			Ethereum::current_block()
 		}
 
@@ -682,7 +692,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn current_all() -> (
-			Option<dvm_ethereum::EthereumBlockV0>,
+			Option<dvm_ethereum::Block>,
 			Option<Vec<dvm_ethereum::EthereumReceiptV0>>,
 			Option<Vec<TransactionStatus>>
 		) {
@@ -695,18 +705,18 @@ sp_api::impl_runtime_apis! {
 
 		fn extrinsic_filter(
 			xts: Vec<<Block as BlockT>::Extrinsic>,
-		) -> Vec<dvm_ethereum::TransactionV0> {
+		) -> Vec<dvm_ethereum::Transaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
 				Call::Ethereum(dvm_ethereum::Call::transact { transaction }) => Some(transaction),
 				_ => None
-			}).collect::<Vec<dvm_ethereum::TransactionV0>>()
+			}).collect()
 		}
 	}
 
 	impl dp_evm_trace_apis::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_traced_transaction: &dvm_ethereum::TransactionV0,
+			_traced_transaction: &dvm_ethereum::Transaction,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -882,13 +892,13 @@ sp_api::impl_runtime_apis! {
 }
 
 pub struct TransactionConverter;
-impl dvm_rpc_runtime_api::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> UncheckedExtrinsic {
+impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> UncheckedExtrinsic {
 		UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into())
 	}
 }
-impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> OpaqueExtrinsic {
+impl fp_rpc::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
+	fn convert_transaction(&self, transaction: dvm_ethereum::Transaction) -> OpaqueExtrinsic {
 		let extrinsic =
 			UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into());
 		let encoded = extrinsic.encode();
@@ -898,7 +908,12 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 }
 
 fn migrate() -> Weight {
-	0
+	frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+		&PALLET_ETHEREUM_SCHEMA,
+		&EthereumStorageSchema::V2,
+	);
+	// 0
+	RuntimeBlockWeights::get().max_block
 }
 
 pub struct CustomOnRuntimeUpgrade;

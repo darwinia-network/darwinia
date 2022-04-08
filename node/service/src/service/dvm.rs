@@ -46,7 +46,7 @@ where
 			+ sc_client_api::BlockOf
 			+ sc_client_api::BlockchainEvents<B>,
 		C::Api: sp_block_builder::BlockBuilder<B>
-			+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<B>
+			+ fp_rpc::EthereumRuntimeRPCApi<B>
 			+ dp_evm_trace_apis::DebugRuntimeApi<B>,
 		B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 		B::Header: sp_api::HeaderT<Number = BlockNumber>,
@@ -84,7 +84,11 @@ where
 		// Spawn schema cache maintenance task.
 		task_manager.spawn_essential_handle().spawn(
 			"frontier-schema-cache-task",
-			EthTask::ethereum_schema_cache_task(Arc::clone(&client), Arc::clone(&dvm_backend)),
+			EthTask::ethereum_schema_cache_task(
+				Arc::clone(&client),
+				Arc::clone(&dvm_backend),
+				dvm_ethereum::EthereumStorageSchema::V2,
+			),
 		);
 
 		// Spawn mapping sync worker task.

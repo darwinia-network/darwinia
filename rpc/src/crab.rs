@@ -70,7 +70,7 @@ where
 		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
 		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
 		+ dp_evm_trace_apis::DebugRuntimeApi<Block>
-		+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
@@ -172,14 +172,17 @@ where
 	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	let overrides = Arc::new(OverrideHandle {
-		schemas: BTreeMap::from_iter([(
-			EthereumStorageSchema::V1,
-			Box::new(SchemaV1Override::new(client.clone()))
-				as Box<dyn StorageOverride<_> + Send + Sync>,
-		)]),
-		fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
-	});
+	let mut overrides_map = BTreeMap::new();
+	overrides_map.insert(
+		EthereumStorageSchema::V1,
+		Box::new(SchemaV1Override::new(client.clone()))
+			as Box<dyn StorageOverride<_> + Send + Sync>,
+	);
+	overrides_map.insert(
+		EthereumStorageSchema::V2,
+		Box::new(SchemaV2Override::new(client.clone()))
+			as Box<dyn StorageOverride<_> + Send + Sync>,
+	);
 	let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
 
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
