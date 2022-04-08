@@ -20,6 +20,13 @@
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
 use darwinia_common_primitives::{OpaqueBlock as Block, *};
+use dc_rpc::{CacheTask, DebugTask};
+use fc_db::Backend as DvmBackend;
+use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+use fc_rpc::{EthTask, OverrideHandle};
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use sc_client_api::BlockchainEvents;
+use sp_blockchain::Error as BlockChainError;
 
 pub struct DvmTaskParams<'a, B, C, BE>
 where
@@ -28,10 +35,12 @@ where
 	pub task_manager: &'a sc_service::TaskManager,
 	pub client: Arc<C>,
 	pub substrate_backend: Arc<BE>,
-	pub dvm_backend: Arc<dc_db::Backend<B>>,
+	pub dvm_backend: Arc<DvmBackend<B>>,
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	pub is_archive: bool,
 	pub rpc_config: darwinia_rpc::EthRpcConfig,
+	pub fee_history_cache: FeeHistoryCache,
+	pub overrides: Arc<OverrideHandle<B>>,
 }
 impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where
@@ -76,23 +85,28 @@ where
 					ethapi_debug_targets,
 					ethapi_max_permits,
 					ethapi_trace_cache_duration,
-					// fee_history_limit,
-					..
+					fee_history_limit,
+					overrides,
 				},
 		} = self;
 
-		// Spawn schema cache maintenance task.
-		task_manager.spawn_essential_handle().spawn(
-			"frontier-schema-cache-task",
-			EthTask::ethereum_schema_cache_task(
-				Arc::clone(&client),
-				Arc::clone(&dvm_backend),
-				dvm_ethereum::EthereumStorageSchema::V2,
-			),
-		);
-
-		// Spawn mapping sync worker task.
 		if is_archive {
+			// Spawn schema cache maintenance task.
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-schema-cache-task",
+				EthTask::ethereum_schema_cache_task(Arc::clone(&client), Arc::clone(&dvm_backend)),
+			);
+			// Spawn Frontier FeeHistory cache maintenance task.
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-fee-history",
+				EthTask::fee_history_task(
+					Arc::clone(&client),
+					Arc::clone(&overrides),
+					fee_history_cache,
+					rpc_config.fee_history_limit,
+				),
+			);
+			// Spawn mapping sync worker task.
 			task_manager.spawn_essential_handle().spawn(
 				"frontier-mapping-sync-worker",
 				MappingSyncWorker::new(
@@ -105,19 +119,19 @@ where
 				)
 				.for_each(|()| futures::future::ready(())),
 			);
-		}
-		// Spawn EthFilterApi maintenance task.
-		if let Some(filter_pool) = filter_pool {
-			// Each filter is allowed to stay in the pool for 100 blocks.
-			const FILTER_RETAIN_THRESHOLD: u64 = 100;
-			task_manager.spawn_essential_handle().spawn(
-				"frontier-filter-pool",
-				EthTask::filter_pool_task(
-					Arc::clone(&client),
-					filter_pool,
-					FILTER_RETAIN_THRESHOLD,
-				),
-			);
+			// Spawn EthFilterApi maintenance task.
+			if let Some(filter_pool) = filter_pool {
+				// Each filter is allowed to stay in the pool for 100 blocks.
+				const FILTER_RETAIN_THRESHOLD: u64 = 100;
+				task_manager.spawn_essential_handle().spawn(
+					"frontier-filter-pool",
+					EthTask::filter_pool_task(
+						Arc::clone(&client),
+						filter_pool,
+						FILTER_RETAIN_THRESHOLD,
+					),
+				);
+			}
 		}
 
 		if ethapi_debug_targets

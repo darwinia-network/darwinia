@@ -70,7 +70,8 @@ where
 		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
 		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
 		+ dp_evm_trace_apis::DebugRuntimeApi<Block>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>,
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
@@ -89,7 +90,6 @@ where
 	use sc_sync_state_rpc::*;
 	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
-	use crab_runtime::TransactionConverter;
 	use darwinia_balances_rpc::*;
 	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
@@ -122,7 +122,7 @@ where
 						ethapi_debug_targets,
 						ethapi_trace_max_count,
 						max_past_logs,
-						// fee_history_limit,
+						fee_history_limit,
 						..
 					},
 				graph,
@@ -130,9 +130,9 @@ where
 				network,
 				filter_pool,
 				backend,
-				// fee_history_cache,
-				// overrides,
-				// block_data_cache,
+				fee_history_cache,
+				overrides,
+				block_data_cache,
 				rpc_requesters,
 			},
 	} = deps;
@@ -183,20 +183,23 @@ where
 		Box::new(SchemaV2Override::new(client.clone()))
 			as Box<dyn StorageOverride<_> + Send + Sync>,
 	);
-	let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
 
+	let convert_transaction: Option<NoTransactionConverter> = None;
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),
 		graph,
-		TransactionConverter,
+		convert_transaction,
 		network.clone(),
+		vec![],
 		overrides.clone(),
 		backend.clone(),
 		is_authority,
 		vec![],
 		max_past_logs,
 		block_data_cache.clone(),
+		rpc_config.fee_history_limit,
+		fee_history_cache,
 	)));
 	if let Some(filter_pool) = filter_pool {
 		io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
@@ -204,7 +207,6 @@ where
 			backend,
 			filter_pool.clone(),
 			500 as usize, // max stored filters
-			overrides.clone(),
 			max_past_logs,
 			block_data_cache.clone(),
 		)));
@@ -247,46 +249,46 @@ where
 	Ok(io)
 }
 
-// pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<fc_rpc::OverrideHandle<Block>>
-// where
-// 	C: 'static
-// 		+ Send
-// 		+ Sync
-// 		+ sc_client_api::backend::AuxStore
-// 		+ sc_client_api::backend::StorageProvider<Block, BE>
-// 		+ sp_api::ProvideRuntimeApi<Block>
-// 		+ sp_blockchain::HeaderBackend<Block>
-// 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
-// 	C::Api: sp_api::ApiExt<Block>
-// 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-// 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
-// 	BE: 'static + sc_client_api::backend::Backend<Block>,
-// 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
-// {
-// 	// --- std ---
-// 	use std::collections::BTreeMap;
-// 	// --- paritytech ---
-// 	use fc_rpc::*;
-// 	use fp_storage::EthereumStorageSchema;
+pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<fc_rpc::OverrideHandle<Block>>
+where
+	C: 'static
+		+ Send
+		+ Sync
+		+ sc_client_api::backend::AuxStore
+		+ sc_client_api::backend::StorageProvider<Block, BE>
+		+ sp_api::ProvideRuntimeApi<Block>
+		+ sp_blockchain::HeaderBackend<Block>
+		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
+	C::Api: sp_api::ApiExt<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
+	BE: 'static + sc_client_api::backend::Backend<Block>,
+	BE::State: sc_client_api::backend::StateBackend<Hashing>,
+{
+	// --- std ---
+	use std::collections::BTreeMap;
+	// --- paritytech ---
+	use fc_rpc::*;
+	use fp_storage::EthereumStorageSchema;
 
-// 	Arc::new(OverrideHandle {
-// 		schemas: BTreeMap::from_iter([
-// 			(
-// 				EthereumStorageSchema::V1,
-// 				Box::new(SchemaV1Override::new(client.clone()))
-// 					as Box<dyn StorageOverride<_> + Send + Sync>,
-// 			),
-// 			(
-// 				EthereumStorageSchema::V2,
-// 				Box::new(SchemaV2Override::new(client.clone()))
-// 					as Box<dyn StorageOverride<_> + Send + Sync>,
-// 			),
-// 			(
-// 				EthereumStorageSchema::V3,
-// 				Box::new(SchemaV3Override::new(client.clone()))
-// 					as Box<dyn StorageOverride<_> + Send + Sync>,
-// 			),
-// 		]),
-// 		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
-// 	})
-// }
+	Arc::new(OverrideHandle {
+		schemas: BTreeMap::from_iter([
+			(
+				EthereumStorageSchema::V1,
+				Box::new(SchemaV1Override::new(client.clone()))
+					as Box<dyn StorageOverride<_> + Send + Sync>,
+			),
+			(
+				EthereumStorageSchema::V2,
+				Box::new(SchemaV2Override::new(client.clone()))
+					as Box<dyn StorageOverride<_> + Send + Sync>,
+			),
+			(
+				EthereumStorageSchema::V3,
+				Box::new(SchemaV3Override::new(client.clone()))
+					as Box<dyn StorageOverride<_> + Send + Sync>,
+			),
+		]),
+		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
+	})
+}

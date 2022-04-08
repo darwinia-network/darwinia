@@ -70,13 +70,18 @@ sp-transaction-pool    = { git = "https://github.com/darwinia-network/substrate"
 sp-trie                = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 # evm
 darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+# dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+# dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dc-rpc              = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-trace-apis   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-trace-ext    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fc-rpc-core         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fc-db           = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1-dev" }
+# fc-rpc          = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1-dev", features = ["rpc_binary_search_estimate"] }
+# fc-rpc-core     = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1-dev" }
+fc-mapping-sync = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1-dev" }
+# fp-rpc          = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1-dev" }
 
 [features]
 default = [
