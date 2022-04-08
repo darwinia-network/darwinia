@@ -108,3 +108,7 @@ zeroize           = { opt-level = 3 }
 [profile.release]
 # Darwinia runtime requires unwinding.
 panic = "unwind"
+
+[profile.release-lto]
+inherits = "release"
+lto      = true
