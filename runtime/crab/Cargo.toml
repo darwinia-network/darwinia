@@ -104,7 +104,7 @@ darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://
 darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-trace-apis                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+# dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dvm-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dvm-rpc-runtime-api                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
@@ -211,22 +211,22 @@ std = [
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-transfer/std",
 	"dp-evm-trace-apis/std",
-	"dp-evm-trace-events/std",
-	"dp-evm-tracer/std",
+	# "dp-evm-trace-events/std",
+	# "dp-evm-tracer/std",
 	"dvm-ethereum/std",
 	"dvm-rpc-runtime-api/std",
 	"fp-evm/std",
 	"fp-self-contained/std",
 	"pallet-evm-precompile-simple/std",
-	"rlp/std",
-	"sha3/std",
+	# "rlp/std",
+	# "sha3/std",
 ]
 
 dev     = []
 no-wasm = []
 
 evm-tracing = [
-	"dp-evm-trace-events",
+	# "dp-evm-trace-events",
 	"dp-evm-tracer",
 	"rlp",
 	"sha3",
