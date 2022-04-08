@@ -129,8 +129,6 @@ impl MessageBridge for WithDarwiniaMessageBridge {
 
 	fn bridged_balance_to_this_balance(
 		bridged_balance: Balance,
-		// TODO: S2S
-		_bridged_to_this_conversion_rate_override: Option<FixedU128>,
 	) -> Balance {
 		Balance::try_from(DarwiniaToCrabConversionRate::get().saturating_mul_int(bridged_balance))
 			.unwrap_or(Balance::MAX)
