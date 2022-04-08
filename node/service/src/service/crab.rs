@@ -27,7 +27,7 @@ use darwinia_common_primitives::{OpaqueBlock as Block, *};
 impl_runtime_apis![
 	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
 	fp_rpc::EthereumRuntimeRPCApi<Block>,
-	dp_evm_trace_apis::DebugRuntimeApi<Block>
+	moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 ];
 
 pub struct Executor;

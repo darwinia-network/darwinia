@@ -56,7 +56,7 @@ where
 			+ sc_client_api::BlockchainEvents<B>,
 		C::Api: sp_block_builder::BlockBuilder<B>
 			+ fp_rpc::EthereumRuntimeRPCApi<B>
-			+ dp_evm_trace_apis::DebugRuntimeApi<B>,
+			+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 		B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 		B::Header: sp_api::HeaderT<Number = BlockNumber>,
 		BE: 'static + sc_client_api::backend::Backend<B>,
@@ -72,6 +72,8 @@ where
 		// --- darwinia-network ---
 		use darwinia_client_rpc::{CacheTask, DebugTask};
 		use darwinia_rpc::{EthRpcConfig, EthRpcRequesters};
+		use moonbeam_rpc_debug::DebugHandler;
+		use moonbeam_rpc_trace::CacheTask;
 
 		let DvmTaskParams {
 			task_manager,
@@ -159,7 +161,7 @@ where
 				.iter()
 				.any(|target| target.as_str() == "debug")
 			{
-				let (debug_task, debug_requester) = DebugTask::task(
+				let (debug_task, debug_requester) = DebugHandler::task(
 					Arc::clone(&client),
 					Arc::clone(&substrate_backend),
 					Arc::clone(&dvm_backend),

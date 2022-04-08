@@ -47,7 +47,9 @@ sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate", bra
 sp-keystore       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sp-runtime        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 # evm
-dp-evm-trace-apis   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-ethereum        = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fc-rpc-core         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }

@@ -69,7 +69,7 @@ where
 		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
 		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
 		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
-		+ dp_evm_trace_apis::DebugRuntimeApi<Block>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
@@ -95,6 +95,8 @@ where
 	use darwinia_ethereum::EthereumStorageSchema;
 	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
+	use moonbeam_rpc_debug::*;
+	use moonbeam_rpc_trace::*;
 
 	let FullDeps {
 		client,
@@ -221,7 +223,7 @@ where
 		.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
 	{
 		if let Some(trace_filter_requester) = rpc_requesters.trace {
-			io.extend_with(TraceApiServer::to_delegate(Trace::new(
+			io.extend_with(TraceServer::to_delegate(Trace::new(
 				client,
 				trace_filter_requester,
 				ethapi_trace_max_count,
@@ -229,7 +231,7 @@ where
 		}
 
 		if let Some(debug_requester) = rpc_requesters.debug {
-			io.extend_with(DebugApiServer::to_delegate(Debug::new(debug_requester)));
+			io.extend_with(DebugServer::to_delegate(Debug::new(debug_requester)));
 		}
 	}
 

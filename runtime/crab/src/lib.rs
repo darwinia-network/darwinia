@@ -724,7 +724,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl dp_evm_trace_apis::DebugRuntimeApi<Block> for Runtime {
+	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
 			_traced_transaction: &darwinia_ethereum::Transaction,
