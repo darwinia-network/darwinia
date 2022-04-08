@@ -274,11 +274,11 @@ jobs:
           datafile: shared/template_data.json
           path: .github/release-template.md
 
-      - name: Verify
-        run: |
-          set -xe
-          cat .github/release-template.md
-          ls -la deploy/
+#      - name: Verify
+#        run: |
+#          set -xe
+#          cat .github/release-template.md
+#          ls -la deploy/
 
       - name: Publish github release
         uses: softprops/action-gh-release@v1
