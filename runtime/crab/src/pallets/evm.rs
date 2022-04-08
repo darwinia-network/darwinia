@@ -82,7 +82,7 @@ impl LatestMessageNoncer for ToDarwiniaMessageSender {
 pub struct CrabPrecompiles<R>(PhantomData<R>);
 impl<R> CrabPrecompiles<R>
 where
-	R: darwinia_evm::Config,
+	R: darwinia_ethereum::Config,
 {
 	pub fn new() -> Self {
 		Self(Default::default())
@@ -101,7 +101,7 @@ where
 	EthereumBridge<R>: Precompile,
 	Sub2SubBridge<R, ToPangoroMessageSender>: Precompile,
 	Dispatch<R>: Precompile,
-	R: darwinia_evm::Config,
+	R: darwinia_ethereum::Config,
 {
 	fn execute(
 		address: H160,

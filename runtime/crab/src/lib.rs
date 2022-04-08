@@ -251,7 +251,7 @@ frame_support::construct_runtime! {
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
-		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
+		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
