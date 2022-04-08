@@ -129,9 +129,7 @@ impl MessageBridge for WithCrabMessageBridge {
 	type ThisChain = Darwinia;
 	type BridgedChain = Crab;
 
-	fn bridged_balance_to_this_balance(
-		bridged_balance: Balance,
-	) -> Balance {
+	fn bridged_balance_to_this_balance(bridged_balance: Balance) -> Balance {
 		Balance::try_from(CrabToDarwiniaConversionRate::get().saturating_mul_int(bridged_balance))
 			.unwrap_or(Balance::MAX)
 	}

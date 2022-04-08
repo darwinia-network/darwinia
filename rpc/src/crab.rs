@@ -50,32 +50,32 @@ where
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, SC, B, A>(
 	deps: FullDeps<C, P, SC, B, A>,
-	subscription_task_executor: SubscriptionTaskExecutor,
+	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 ) -> RpcResult
 where
 	C: 'static
 		+ Send
 		+ Sync
-		+ sp_api::ProvideRuntimeApi<Block>
 		+ sc_client_api::AuxStore
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::StorageProvider<Block, B>
+		+ sp_api::ProvideRuntimeApi<Block>
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
-	C::Api: sp_block_builder::BlockBuilder<Block>
-		+ sc_consensus_babe::BabeApi<Block>
+	C::Api: sc_consensus_babe::BabeApi<Block>
+		+ sp_block_builder::BlockBuilder<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
-		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
-		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
-		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
+		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
+		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
-	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
+	B::State: sc_client_api::StateBackend<Hashing>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 {
 	// --- std ---
@@ -84,6 +84,8 @@ where
 	use jsonrpc_core::IoHandler;
 	use jsonrpc_pubsub::manager::SubscriptionManager;
 	// --- paritytech ---
+	use fc_rpc::*;
+	use fp_rpc::*;
 	use pallet_transaction_payment_rpc::*;
 	use sc_consensus_babe_rpc::*;
 	use sc_finality_grandpa_rpc::*;
@@ -91,8 +93,6 @@ where
 	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
 	use darwinia_balances_rpc::*;
-	use darwinia_client_rpc::*;
-	use darwinia_ethereum::EthereumStorageSchema;
 	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
 	use moonbeam_rpc_debug::*;

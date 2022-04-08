@@ -123,7 +123,8 @@ where
 	// --- crates.io ---
 	use futures::stream::StreamExt;
 	// --- paritytech ---
-	use fc_rpc_core::types::FilterPool;
+	use fc_rpc::EthBlockDataCache;
+	use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 	use sc_authority_discovery::WorkerConfig;
 	use sc_basic_authorship::ProposerFactory;
 	use sc_client_api::ExecutorProvider;
@@ -211,8 +212,8 @@ where
 	let block_data_cache = Arc::new(EthBlockDataCache::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),
-		rpc_config.eth_log_block_cache,
-		rpc_config.eth_log_block_cache,
+		eth_rpc_config.eth_log_block_cache,
+		eth_rpc_config.eth_log_block_cache,
 	));
 	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
 	let eth_rpc_requesters = DvmTaskParams {

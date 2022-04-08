@@ -105,7 +105,7 @@ darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://
 darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-ethereum                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-ethereum                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
 fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
@@ -115,6 +115,7 @@ sha3                               = { version = "0.8", optional = true, default
 # fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-base-fee              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 # fp-evm                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 # fp-rpc                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 # fp-self-contained            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
@@ -122,7 +123,7 @@ pallet-evm                   = { default-features = false, git = "https://github
 # pallet-base-fee              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 # pallet-evm                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 # pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-primitives-debug = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1-dev" }
+moonbeam-rpc-primitives-debug = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 
 
 [build-dependencies]
@@ -233,6 +234,7 @@ std = [
 	# "fp-storage/std",
 	"pallet-base-fee/std",
 	"pallet-evm/std",
+	"fp-storage/std",
 	"moonbeam-rpc-primitives-debug/std",
 ]
 

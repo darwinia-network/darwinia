@@ -99,12 +99,12 @@ where
 impl<R> PrecompileSet for CrabPrecompiles<R>
 where
 	Transfer<R>: Precompile,
-	EthereumBridge<R>: Precompile,
-	Sub2SubBridge<R, ToPangoroMessageSender>: Precompile,
+	Sub2SubBridge<R, ToDarwiniaMessageSender>: Precompile,
 	Dispatch<R>: Precompile,
 	R: darwinia_ethereum::Config,
 {
 	fn execute(
+		&self,
 		address: H160,
 		input: &[u8],
 		target_gas: Option<u64>,
@@ -146,7 +146,7 @@ impl FeeCalculator for FixedGasPrice {
 frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
 	pub BlockGasLimit: U256 = u32::MAX.into();
-	pub PrecompilesValue: PangolinPrecompiles<Runtime> = PangolinPrecompiles::<_>::new();
+	pub PrecompilesValue: CrabPrecompiles<Runtime> = CrabPrecompiles::<_>::new();
 }
 
 impl Config for Runtime {

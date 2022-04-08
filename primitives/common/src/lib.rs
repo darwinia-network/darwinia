@@ -26,7 +26,7 @@ use sp_core::H256;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, OpaqueExtrinsic,
+	MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 
 /// An index to a block.

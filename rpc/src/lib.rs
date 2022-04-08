@@ -73,13 +73,13 @@ where
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// DVM Backend.
-	pub backend: Arc<dc_db::Backend<Block>>,
+	pub backend: Arc<fc_db::Backend<Block>>,
 	/// Fee history cache.
 	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
 	/// Ethereum data access overrides.
-	pub overrides: Arc<sc_rpc::OverrideHandle<Block>>,
+	pub overrides: Arc<fc_rpc::OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
-	pub block_data_cache: Arc<darwinia_client_rpc::EthBlockDataCache<Block>>,
+	pub block_data_cache: Arc<fc_rpc::EthBlockDataCache<Block>>,
 	/// RPC requester for evm trace.
 	pub rpc_requesters: EthRpcRequesters,
 }
@@ -97,6 +97,6 @@ pub struct EthRpcConfig {
 
 #[derive(Clone)]
 pub struct EthRpcRequesters {
-	pub debug: Option<darwinia_client_rpc::DebugRequester>,
-	pub trace: Option<darwinia_client_rpc::CacheRequester>,
+	pub debug: Option<moonbeam_rpc_debug::DebugRequester>,
+	pub trace: Option<moonbeam_rpc_trace::CacheRequester>,
 }

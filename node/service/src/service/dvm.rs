@@ -19,12 +19,12 @@
 // --- std ---
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
-use darwinia_client_rpc::{CacheTask, DebugTask};
 use darwinia_common_primitives::{OpaqueBlock as Block, *};
 use fc_db::Backend as DvmBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use moonbeam_rpc_trace::CacheTask;
 use sc_client_api::BlockchainEvents;
 use sp_blockchain::Error as BlockChainError;
 
@@ -53,13 +53,16 @@ where
 			+ sp_blockchain::HeaderBackend<B>
 			+ sp_blockchain::HeaderMetadata<B, Error = sp_blockchain::Error>
 			+ sc_client_api::BlockOf
-			+ sc_client_api::BlockchainEvents<B>,
+			+ sc_client_api::BlockchainEvents<B>
+			+ sc_client_api::backend::StorageProvider<B, BE>,
 		C::Api: sp_block_builder::BlockBuilder<B>
 			+ fp_rpc::EthereumRuntimeRPCApi<B>
+			+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 			+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 		B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 		B::Header: sp_api::HeaderT<Number = BlockNumber>,
 		BE: 'static + sc_client_api::backend::Backend<B>,
+		BE::State: sc_client_api::backend::StateBackend<Hashing>,
 	{
 		// --- std ---
 		use std::time::Duration;
@@ -67,10 +70,9 @@ where
 		use futures::StreamExt;
 		use tokio::sync::Semaphore;
 		// --- paritytech ---
-		use darwinia_client_rpc::EthTask;
-		use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+		use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+		use fc_rpc::EthTask;
 		// --- darwinia-network ---
-		use darwinia_client_rpc::{CacheTask, DebugTask};
 		use darwinia_rpc::{EthRpcConfig, EthRpcRequesters};
 		use moonbeam_rpc_debug::DebugHandler;
 		use moonbeam_rpc_trace::CacheTask;
@@ -88,8 +90,10 @@ where
 					ethapi_max_permits,
 					ethapi_trace_cache_duration,
 					fee_history_limit,
-					overrides,
+					..
 				},
+			fee_history_cache,
+			overrides,
 		} = self;
 
 		if is_archive {
@@ -105,7 +109,7 @@ where
 					Arc::clone(&client),
 					Arc::clone(&overrides),
 					fee_history_cache,
-					rpc_config.fee_history_limit,
+					fee_history_limit,
 				),
 			);
 			// Spawn mapping sync worker task.
@@ -214,9 +218,9 @@ pub fn db_path(config: &sc_service::Configuration) -> PathBuf {
 
 pub fn open_backend(
 	config: &sc_service::Configuration,
-) -> Result<Arc<dc_db::Backend<Block>>, String> {
+) -> Result<Arc<fc_db::Backend<Block>>, String> {
 	// --- darwinia-network ---
-	use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
+	use fc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
 		source: DatabaseSettingsSrc::RocksDb {
