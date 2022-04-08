@@ -783,9 +783,7 @@ sp_api::impl_runtime_apis! {
 				for ext in _extrinsics.into_iter() {
 					match &ext.0.function {
 						Call::Ethereum(transact { transaction }) => {
-							let eth_extrinsic_hash =
-								H256::from_slice(Keccak256::digest(&rlp::encode(transaction)).as_slice());
-							if _known_transactions.contains(&eth_extrinsic_hash) {
+							if _known_transactions.contains(&transaction.hash()) {
 								// Each known extrinsic is a new call stack.
 								EvmTracer::emit_new();
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
