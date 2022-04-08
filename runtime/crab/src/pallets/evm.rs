@@ -11,6 +11,7 @@ use frame_support::{
 };
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use sp_core::{crypto::Public, H160, U256};
+use pallet_session::FindAccountFromAuthorIndex;
 // --- darwinia-network ---
 use crate::{messages::darwinia_message::ToDarwiniaMessagePayload, *};
 use darwinia_ethereum::{
@@ -163,7 +164,7 @@ impl Config for Runtime {
 	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
 	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
 	type Runner = Runner<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter;
+	type OnChargeTransaction = EVMCurrencyAdapter<FindAccountFromAuthorIndex<Self, Babe>>;
 }
 
 fn addr(a: u64) -> H160 {
