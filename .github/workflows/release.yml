@@ -197,8 +197,8 @@ jobs:
             -f .maintain/docker/Dockerfile \
             .
 
-          # docker push ${IMAGE_PUSH_NAME_TAG}
-          # docker push ${IMAGE_PUSH_NAME_SHA}
+          docker push ${IMAGE_PUSH_NAME_TAG}
+          docker push ${IMAGE_PUSH_NAME_SHA}
 
   ##
   # Publish the release
