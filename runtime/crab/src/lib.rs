@@ -897,11 +897,6 @@ impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionCon
 	}
 }
 
-const TECHNICAL_MEMBERSHIP_OLD_PREFIX: &str = "Instance1Membership";
-const TIPS_OLD_PREFIX: &str = "Treasury";
-const COUNCIL_OLD_PREFIX: &str = "Instance1Collective";
-const TECHNICAL_COMMITTEE_OLD_PREFIX: &str = "Instance2Collective";
-
 fn migrate() -> Weight {
 	0
 }
