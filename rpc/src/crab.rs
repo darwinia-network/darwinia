@@ -84,6 +84,8 @@ where
 	// --- paritytech ---
 	use fc_rpc::*;
 	use fp_rpc::*;
+	use moonbeam_rpc_debug::*;
+	use moonbeam_rpc_trace::*;
 	use pallet_transaction_payment_rpc::*;
 	use sc_consensus_babe_rpc::*;
 	use sc_finality_grandpa_rpc::*;
@@ -93,8 +95,6 @@ where
 	use darwinia_balances_rpc::*;
 	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
-	use moonbeam_rpc_debug::*;
-	use moonbeam_rpc_trace::*;
 
 	let FullDeps {
 		client,

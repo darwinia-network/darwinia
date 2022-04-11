@@ -20,10 +20,6 @@
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
 use darwinia_common_primitives::{OpaqueBlock as Block, *};
-// --- paritytech ---
-use fc_db::Backend as DvmBackend;
-use fc_rpc::OverrideHandle;
-use fc_rpc_core::types::FeeHistoryCache;
 
 pub struct DvmTaskParams<'a, B, C, BE>
 where
@@ -32,12 +28,12 @@ where
 	pub task_manager: &'a sc_service::TaskManager,
 	pub client: Arc<C>,
 	pub substrate_backend: Arc<BE>,
-	pub dvm_backend: Arc<DvmBackend<B>>,
+	pub dvm_backend: Arc<fc_db::Backend<B>>,
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	pub is_archive: bool,
 	pub rpc_config: darwinia_rpc::EthRpcConfig,
-	pub fee_history_cache: FeeHistoryCache,
-	pub overrides: Arc<OverrideHandle<B>>,
+	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
+	pub overrides: Arc<fc_rpc::OverrideHandle<B>>,
 }
 impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where

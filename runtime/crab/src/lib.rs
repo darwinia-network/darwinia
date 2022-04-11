@@ -69,6 +69,7 @@ pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+use fp_rpc::TransactionStatus;
 use fp_storage::{EthereumStorageSchema, PALLET_ETHEREUM_SCHEMA};
 #[allow(unused)]
 use frame_support::migration;
@@ -102,7 +103,6 @@ use darwinia_common_runtime::*;
 use darwinia_evm::{Account as EVMAccount, Runner};
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
-use fp_rpc::TransactionStatus;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;

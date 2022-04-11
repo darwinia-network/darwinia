@@ -4,7 +4,7 @@ pub use sp_runtime::{Perbill, Permill};
 use crate::*;
 
 frame_support::parameter_types! {
-	pub IsActive: bool = true;
+	pub IsActive: bool = false;
 	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 

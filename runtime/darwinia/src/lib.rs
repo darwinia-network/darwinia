@@ -666,6 +666,7 @@ sp_api::impl_runtime_apis! {
 }
 
 fn migrate() -> Weight {
+	// RuntimeBlockWeights::get().max_block
 	0
 }
 
