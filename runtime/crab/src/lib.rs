@@ -771,7 +771,6 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use dp_evm_tracer::tracer::EvmTracer;
-				use sha3::{Digest, Keccak256};
 				use darwinia_ethereum::Call::transact;
 
 				let mut config = <Runtime as darwinia_evm::Config>::config().clone();

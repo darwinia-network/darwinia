@@ -46,8 +46,6 @@ fp-storage                         = { default-features = false, git = "https://
 pallet-base-fee                    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-rlp                                = { optional = true, default-features = false, version = "0.5" }
-sha3                               = { optional = true, default-features = false, version = "0.8" }
 moonbeam-rpc-primitives-debug      = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
 darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
@@ -157,8 +155,6 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-evm/std",
 	"pallet-evm-precompile-simple/std",
-	"rlp/std",
-	"sha3/std",
 	"moonbeam-rpc-primitives-debug/std",
 	# darwinia-network primitives
 	"darwinia-bridge-primitives/std",
@@ -231,8 +227,6 @@ no-wasm = []
 
 evm-tracing = [
 	"dp-evm-tracer",
-	"rlp",
-	"sha3",
 ]
 
 try-runtime = [

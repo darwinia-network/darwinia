@@ -32,6 +32,7 @@ use sp_runtime::Perbill;
 use super::*;
 use crab_runtime::*;
 use darwinia_common_primitives::{AccountId, Balance, COIN};
+use darwinia_evm::GenesisAccount;
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -244,6 +245,14 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
+		let mut evm_accounts = BTreeMap::new();
+		evm_accounts.insert(
+			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+			GenesisAccount {
+				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
+				..Default::default()
+			},
+		);
 
 		GenesisConfig {
 			system: SystemConfig {
@@ -309,7 +318,7 @@ pub fn development_config() -> ChainSpec {
 			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
 			evm: crab_runtime::EVMConfig {
-				accounts: BTreeMap::new(),
+				accounts: evm_accounts,
 			},
 			ethereum: Default::default(),
 			base_fee: Default::default(),
