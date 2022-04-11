@@ -32,6 +32,23 @@ darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https:/
 darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 from-substrate-issuing              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+# darwinia-network dvm
+darwinia-ethereum                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fp-rpc                             = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
+fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fp-storage                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+pallet-base-fee                    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+pallet-evm                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+rlp                                = { optional = true, default-features = false, version = "0.5" }
+sha3                               = { optional = true, default-features = false, version = "0.8" }
+moonbeam-rpc-primitives-debug      = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
 darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
 darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
@@ -98,33 +115,6 @@ sp-staking             = { default-features = false, git = "https://github.com/d
 sp-std                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sp-transaction-pool    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sp-version             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
-# evm
-darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-evm-precompile-bridge-s2s = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-evm-precompile-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-evm-precompile-transfer   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-# dp-evm-trace-events                = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dp-evm-tracer                      = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-ethereum                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
-fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-rlp                                = { version = "0.5", optional = true, default-features = false }
-sha3                               = { version = "0.8", optional = true, default-features = false }
-# fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-pallet-base-fee              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-pallet-evm                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fp-evm                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fp-rpc                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fp-self-contained            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fp-storage                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# pallet-base-fee              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# pallet-evm                   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-primitives-debug = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
-
 
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
@@ -153,6 +143,23 @@ std = [
 	"darwinia-support/std",
 	"darwinia-vesting/std",
 	"from-substrate-issuing/std",
+	# darwinia-network dvm
+	"darwinia-ethereum/std",
+	"darwinia-evm/std",
+	"darwinia-evm-precompile-bridge-s2s/std",
+	"darwinia-evm-precompile-dispatch/std",
+	"darwinia-evm-precompile-transfer/std",
+	"dp-evm-tracer/std",
+	"fp-evm/std",
+	"fp-rpc/std",
+	"fp-self-contained/std",
+	"fp-storage/std",
+	"pallet-base-fee/std",
+	"pallet-evm/std",
+	"pallet-evm-precompile-simple/std",
+	"rlp/std",
+	"sha3/std",
+	"moonbeam-rpc-primitives-debug/std",
 	# darwinia-network primitives
 	"darwinia-bridge-primitives/std",
 	"darwinia-common-primitives/std",
@@ -217,32 +224,12 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
-	# evm
-	"darwinia-evm/std",
-	"darwinia-evm-precompile-bridge-s2s/std",
-	"darwinia-evm-precompile-dispatch/std",
-	"darwinia-evm-precompile-transfer/std",
-	# "dp-evm-trace-events/std",
-	"dp-evm-tracer/std",
-	"darwinia-ethereum/std",
-	"fp-rpc/std",
-	"fp-evm/std",
-	"fp-self-contained/std",
-	"pallet-evm-precompile-simple/std",
-	"rlp/std",
-	"sha3/std",
-	# "fp-storage/std",
-	"pallet-base-fee/std",
-	"pallet-evm/std",
-	"fp-storage/std",
-	"moonbeam-rpc-primitives-debug/std",
 ]
 
 dev     = []
 no-wasm = []
 
 evm-tracing = [
-	# "dp-evm-trace-events",
 	"dp-evm-tracer",
 	"rlp",
 	"sha3",

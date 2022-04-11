@@ -90,7 +90,7 @@ use sp_runtime::{
 		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, MultiAddress, OpaqueExtrinsic,
+	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]

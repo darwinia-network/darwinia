@@ -21,6 +21,17 @@ tokio       = { version = "1.17" }
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+# darwinia-network dvm
+darwinia-evm                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+dp-evm-trace-ext              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fc-rpc                        = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fc-rpc-core                   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fp-rpc                        = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fc-mapping-sync               = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
 darwinia-common-primitives = { path = "../../primitives/common" }
 # darwinia-network rpc
@@ -68,23 +79,6 @@ sp-session             = { git = "https://github.com/darwinia-network/substrate"
 sp-timestamp           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sp-transaction-pool    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sp-trie                = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
-# evm
-darwinia-evm        = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-# dc-db               = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-# dc-mapping-sync     = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-# darwinia-client-rpc   = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dp-evm-trace-ext    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-fp-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fc-rpc = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fc-rpc-core         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fc-db           = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fc-rpc          = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", features = ["rpc_binary_search_estimate"] }
-# fc-rpc-core     = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fc-mapping-sync = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-# fp-rpc          = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 
 [features]
 default = [

@@ -20,13 +20,10 @@
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
 use darwinia_common_primitives::{OpaqueBlock as Block, *};
+// --- paritytech ---
 use fc_db::Backend as DvmBackend;
-use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
-use fc_rpc::{EthTask, OverrideHandle};
-use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
-use moonbeam_rpc_trace::CacheTask;
-use sc_client_api::BlockchainEvents;
-use sp_blockchain::Error as BlockChainError;
+use fc_rpc::OverrideHandle;
+use fc_rpc_core::types::FeeHistoryCache;
 
 pub struct DvmTaskParams<'a, B, C, BE>
 where

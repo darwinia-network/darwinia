@@ -130,7 +130,7 @@ use sp_runtime::{
 		StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiAddress,
+	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]

@@ -4,9 +4,7 @@ use core::marker::PhantomData;
 use bp_messages::LaneId;
 use fp_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
 use frame_support::{
-	dispatch::Dispatchable,
 	traits::{FindAuthor, PalletInfoAccess},
-	weights::{GetDispatchInfo, PostDispatchInfo},
 	ConsensusEngineId,
 };
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};

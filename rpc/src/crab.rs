@@ -78,8 +78,6 @@ where
 	B::State: sc_client_api::StateBackend<Hashing>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 {
-	// --- std ---
-	use std::collections::BTreeMap;
 	// --- crates.io ---
 	use jsonrpc_core::IoHandler;
 	use jsonrpc_pubsub::manager::SubscriptionManager;
@@ -174,7 +172,6 @@ where
 	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 
-	let convert_transaction: Option<NoTransactionConverter> = None;
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),
