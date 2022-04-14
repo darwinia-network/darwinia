@@ -28,8 +28,8 @@ moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moo
 moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
-crab-runtime               = { path = "../runtime/crab" }
-darwinia-common-primitives = { path = "../primitives/common" }
+crab-runtime        = { path = "../runtime/crab" }
+darwinia-primitives = { path = "../primitives" }
 # paritytech client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sc-client-api           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }

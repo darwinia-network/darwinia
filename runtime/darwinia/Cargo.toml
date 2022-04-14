@@ -38,11 +38,10 @@ to-ethereum-backing                 = { default-features = false, git = "https:/
 to-substrate-backing                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 to-tron-backing                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
-darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
-darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
-dp-asset                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-dp-s2s                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-ethereum-primitives        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-primitives = { default-features = false, path = "../../primitives" }
+dp-asset            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech bridge frame
@@ -135,8 +134,7 @@ std = [
 	"to-substrate-backing/std",
 	"to-tron-backing/std",
 	# darwinia-network primitives
-	"darwinia-bridge-primitives/std",
-	"darwinia-common-primitives/std",
+	"darwinia-primitives/std",
 	"dp-asset/std",
 	"dp-s2s/std",
 	"ethereum-primitives/std",

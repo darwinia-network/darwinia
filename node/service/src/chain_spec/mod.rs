@@ -37,7 +37,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::IdentifyAccount;
 // --- darwinia-network ---
-use darwinia_common_primitives::{AccountId, AccountPublic, OpaqueBlock};
+use darwinia_primitives::{AccountId, AccountPublic, OpaqueBlock};
 
 const DEFAULT_PROTOCOL_ID: &str = "dar";
 

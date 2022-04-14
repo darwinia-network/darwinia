@@ -94,7 +94,7 @@ pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 pub use darwinia_bridge_primitives::*;
-pub use darwinia_common_primitives::*;
+pub use darwinia_primitives::*;
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_sudo::Call as SudoCall;

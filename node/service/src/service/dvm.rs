@@ -19,7 +19,7 @@
 // --- std ---
 use std::{path::PathBuf, sync::Arc};
 // --- darwinia-network ---
-use darwinia_common_primitives::{OpaqueBlock as Block, *};
+use darwinia_primitives::{OpaqueBlock as Block, *};
 
 pub struct DvmTaskParams<'a, B, C, BE>
 where

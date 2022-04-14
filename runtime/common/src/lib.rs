@@ -43,7 +43,7 @@ use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
 // --- darwinia-network ---
-use darwinia_common_primitives::BlockNumber;
+use darwinia_primitives::BlockNumber;
 
 pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<
 	<T as frame_system::Config>::AccountId,

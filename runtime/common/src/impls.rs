@@ -33,7 +33,7 @@ darwinia_support::impl_account_data! {
 		RingInstance,
 		KtonInstance
 	where
-		Balance = darwinia_common_primitives::Balance
+		Balance = darwinia_primitives::Balance
 	{
 		// other data
 	}
@@ -45,7 +45,7 @@ impl<R> OnUnbalanced<NegativeImbalance<R>> for ToAuthor<R>
 where
 	R: darwinia_balances::Config<RingInstance> + pallet_authorship::Config,
 	<R as frame_system::Config>::AccountId:
-		From<darwinia_common_primitives::AccountId> + Into<darwinia_common_primitives::AccountId>,
+		From<darwinia_primitives::AccountId> + Into<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
@@ -70,7 +70,7 @@ where
 		+ pallet_authorship::Config,
 	pallet_treasury::Pallet<R>: OnUnbalanced<NegativeImbalance<R>>,
 	<R as frame_system::Config>::AccountId:
-		From<darwinia_common_primitives::AccountId> + Into<darwinia_common_primitives::AccountId>,
+		From<darwinia_primitives::AccountId> + Into<darwinia_primitives::AccountId>,
 	<R as frame_system::Config>::Event: From<darwinia_balances::Event<R, RingInstance>>,
 {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<R>>) {

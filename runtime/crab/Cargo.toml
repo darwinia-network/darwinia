@@ -43,13 +43,12 @@ fp-evm                             = { default-features = false, git = "https://
 fp-rpc                             = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1", default-features = false }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fp-storage                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+moonbeam-rpc-primitives-debug      = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 pallet-base-fee                    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 pallet-evm-precompile-simple       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-moonbeam-rpc-primitives-debug      = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
-darwinia-bridge-primitives = { default-features = false, path = "../../primitives/bridge" }
-darwinia-common-primitives = { default-features = false, path = "../../primitives/common" }
+darwinia-primitives        = { default-features = false, path = "../../primitives" }
 darwinia-relay-primitives  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-s2s                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 ethereum-primitives        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
@@ -157,8 +156,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 	"moonbeam-rpc-primitives-debug/std",
 	# darwinia-network primitives
-	"darwinia-bridge-primitives/std",
-	"darwinia-common-primitives/std",
+	"darwinia-primitives/std",
 	"darwinia-relay-primitives/std",
 	"dp-s2s/std",
 	"ethereum-primitives/std",

@@ -22,7 +22,7 @@
 use std::sync::Arc;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_common_primitives::*;
+use darwinia_primitives::*;
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B, A>

@@ -69,7 +69,7 @@ pub use darwinia::Executor as DarwiniaExecutor;
 pub mod dvm;
 
 // --- darwinia-network ---
-use darwinia_common_primitives::OpaqueBlock as Block;
+use darwinia_primitives::OpaqueBlock as Block;
 
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;

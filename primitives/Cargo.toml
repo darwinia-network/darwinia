@@ -4,7 +4,7 @@ description = "Darwinia node runtime common primitives"
 edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "darwinia-common-primitives"
+name        = "darwinia-primitives"
 repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.12.0"
 

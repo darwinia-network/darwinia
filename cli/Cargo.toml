@@ -17,9 +17,9 @@ crate-type = ["cdylib", "rlib"]
 log       = { version = "0.4" }
 structopt = { version = "0.3", optional = true }
 # darwinia-network service
-darwinia-common-primitives = { optional = true, path = "../primitives/common" }
-darwinia-node-service      = { path = "../node/service" }
-darwinia-rpc               = { path = "../rpc" }
+darwinia-node-service = { path = "../node/service" }
+darwinia-primitives   = { optional = true, path = "../primitives" }
+darwinia-rpc          = { path = "../rpc" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
@@ -68,7 +68,7 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia-network
-	"darwinia-common-primitives",
+	"darwinia-primitives",
 	"darwinia-node-service/try-runtime",
 	# paritytech
 	"try-runtime-cli",

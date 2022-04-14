@@ -24,7 +24,7 @@ use std::sync::Arc;
 use jsonrpc_core::IoHandler;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_common_primitives::*;
+use darwinia_primitives::*;
 
 /// Full client dependencies
 pub struct FullDeps<C, P, SC, B> {

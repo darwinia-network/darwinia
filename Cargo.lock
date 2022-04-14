@@ -1057,9 +1057,7 @@ dependencies = [
  "bridge-runtime-common",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
- "darwinia-bridge-primitives",
  "darwinia-claims",
- "darwinia-common-primitives",
  "darwinia-common-runtime",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
@@ -1071,6 +1069,7 @@ dependencies = [
  "darwinia-fee-market",
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
+ "darwinia-primitives",
  "darwinia-relay-primitives",
  "darwinia-staking",
  "darwinia-staking-rpc-runtime-api",
@@ -1475,24 +1474,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-bridge-primitives"
-version = "0.12.0"
-dependencies = [
- "bp-messages",
- "bp-runtime",
- "bridge-runtime-common",
- "darwinia-common-primitives",
- "darwinia-common-runtime",
- "darwinia-fee-market",
- "frame-support",
- "pallet-bridge-dispatch",
- "sp-api",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "darwinia-claims"
 version = "2.8.7"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.1#c2d839239cbaebf57b1284e422619003fedd823a"
@@ -1515,8 +1496,8 @@ dependencies = [
 name = "darwinia-cli"
 version = "0.12.0"
 dependencies = [
- "darwinia-common-primitives",
  "darwinia-node-service",
+ "darwinia-primitives",
  "darwinia-rpc",
  "frame-benchmarking-cli",
  "log",
@@ -1531,20 +1512,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-common-primitives"
-version = "0.12.0"
-dependencies = [
- "parity-scale-codec 2.3.1",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "darwinia-common-runtime"
 version = "0.12.0"
 dependencies = [
  "darwinia-balances",
- "darwinia-common-primitives",
+ "darwinia-primitives",
  "darwinia-support",
  "frame-election-provider-support",
  "frame-support",
@@ -1828,9 +1800,9 @@ dependencies = [
  "array-bytes",
  "crab-runtime",
  "darwinia-balances-rpc-runtime-api",
- "darwinia-common-primitives",
  "darwinia-evm",
  "darwinia-fee-market-rpc-runtime-api",
+ "darwinia-primitives",
  "darwinia-rpc",
  "darwinia-runtime",
  "darwinia-staking-rpc-runtime-api",
@@ -1889,6 +1861,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-primitives"
+version = "0.12.0"
+dependencies = [
+ "parity-scale-codec 2.3.1",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "darwinia-relay-authorities"
 version = "2.8.7"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.1#c2d839239cbaebf57b1284e422619003fedd823a"
@@ -1937,9 +1918,9 @@ version = "0.12.0"
 dependencies = [
  "crab-runtime",
  "darwinia-balances-rpc",
- "darwinia-common-primitives",
  "darwinia-ethereum",
  "darwinia-fee-market-rpc",
+ "darwinia-primitives",
  "darwinia-staking-rpc",
  "fc-db",
  "fc-rpc",
@@ -1986,14 +1967,13 @@ dependencies = [
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
  "darwinia-bridge-ethereum",
- "darwinia-bridge-primitives",
- "darwinia-common-primitives",
  "darwinia-common-runtime",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
  "darwinia-fee-market",
  "darwinia-fee-market-rpc-runtime-api",
  "darwinia-header-mmr",
+ "darwinia-primitives",
  "darwinia-relay-authorities",
  "darwinia-relay-primitives",
  "darwinia-relayer-game",

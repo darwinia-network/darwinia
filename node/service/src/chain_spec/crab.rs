@@ -31,8 +31,8 @@ use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
 use crab_runtime::*;
-use darwinia_common_primitives::{AccountId, Balance, COIN};
 use darwinia_evm::GenesisAccount;
+use darwinia_primitives::{AccountId, Balance, COIN};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
