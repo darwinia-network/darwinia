@@ -109,7 +109,6 @@ zeroize           = { opt-level = 3 }
 # Darwinia runtime requires unwinding.
 panic = "unwind"
 
-[patch.crates-io]
-evm           = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.0" }
-evm-gasometer = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.0" }
-evm-runtime   = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.0" }
+[profile.release-lto]
+inherits = "release"
+lto      = true

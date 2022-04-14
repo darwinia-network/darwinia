@@ -28,10 +28,12 @@ where
 	pub task_manager: &'a sc_service::TaskManager,
 	pub client: Arc<C>,
 	pub substrate_backend: Arc<BE>,
-	pub dvm_backend: Arc<dc_db::Backend<B>>,
+	pub dvm_backend: Arc<fc_db::Backend<B>>,
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	pub is_archive: bool,
 	pub rpc_config: darwinia_rpc::EthRpcConfig,
+	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
+	pub overrides: Arc<fc_rpc::OverrideHandle<B>>,
 }
 impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where
@@ -44,13 +46,16 @@ where
 			+ sp_blockchain::HeaderBackend<B>
 			+ sp_blockchain::HeaderMetadata<B, Error = sp_blockchain::Error>
 			+ sc_client_api::BlockOf
-			+ sc_client_api::BlockchainEvents<B>,
+			+ sc_client_api::BlockchainEvents<B>
+			+ sc_client_api::backend::StorageProvider<B, BE>,
 		C::Api: sp_block_builder::BlockBuilder<B>
-			+ dvm_rpc_runtime_api::EthereumRuntimeRPCApi<B>
-			+ dp_evm_trace_apis::DebugRuntimeApi<B>,
+			+ fp_rpc::EthereumRuntimeRPCApi<B>
+			+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+			+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 		B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 		B::Header: sp_api::HeaderT<Number = BlockNumber>,
 		BE: 'static + sc_client_api::backend::Backend<B>,
+		BE::State: sc_client_api::backend::StateBackend<Hashing>,
 	{
 		// --- std ---
 		use std::time::Duration;
@@ -58,11 +63,12 @@ where
 		use futures::StreamExt;
 		use tokio::sync::Semaphore;
 		// --- paritytech ---
-		use dc_mapping_sync::{MappingSyncWorker, SyncStrategy};
-		use dc_rpc::EthTask;
+		use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+		use fc_rpc::EthTask;
 		// --- darwinia-network ---
 		use darwinia_rpc::{EthRpcConfig, EthRpcRequesters};
-		use dc_rpc::{CacheTask, DebugTask};
+		use moonbeam_rpc_debug::DebugHandler;
+		use moonbeam_rpc_trace::CacheTask;
 
 		let DvmTaskParams {
 			task_manager,
@@ -76,19 +82,30 @@ where
 					ethapi_debug_targets,
 					ethapi_max_permits,
 					ethapi_trace_cache_duration,
-					// fee_history_limit,
+					fee_history_limit,
 					..
 				},
+			fee_history_cache,
+			overrides,
 		} = self;
 
-		// Spawn schema cache maintenance task.
-		task_manager.spawn_essential_handle().spawn(
-			"frontier-schema-cache-task",
-			EthTask::ethereum_schema_cache_task(Arc::clone(&client), Arc::clone(&dvm_backend)),
-		);
-
-		// Spawn mapping sync worker task.
 		if is_archive {
+			// Spawn schema cache maintenance task.
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-schema-cache-task",
+				EthTask::ethereum_schema_cache_task(Arc::clone(&client), Arc::clone(&dvm_backend)),
+			);
+			// Spawn Frontier FeeHistory cache maintenance task.
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-fee-history",
+				EthTask::fee_history_task(
+					Arc::clone(&client),
+					Arc::clone(&overrides),
+					fee_history_cache,
+					fee_history_limit,
+				),
+			);
+			// Spawn mapping sync worker task.
 			task_manager.spawn_essential_handle().spawn(
 				"frontier-mapping-sync-worker",
 				MappingSyncWorker::new(
@@ -101,19 +118,19 @@ where
 				)
 				.for_each(|()| futures::future::ready(())),
 			);
-		}
-		// Spawn EthFilterApi maintenance task.
-		if let Some(filter_pool) = filter_pool {
-			// Each filter is allowed to stay in the pool for 100 blocks.
-			const FILTER_RETAIN_THRESHOLD: u64 = 100;
-			task_manager.spawn_essential_handle().spawn(
-				"frontier-filter-pool",
-				EthTask::filter_pool_task(
-					Arc::clone(&client),
-					filter_pool,
-					FILTER_RETAIN_THRESHOLD,
-				),
-			);
+			// Spawn EthFilterApi maintenance task.
+			if let Some(filter_pool) = filter_pool {
+				// Each filter is allowed to stay in the pool for 100 blocks.
+				const FILTER_RETAIN_THRESHOLD: u64 = 100;
+				task_manager.spawn_essential_handle().spawn(
+					"frontier-filter-pool",
+					EthTask::filter_pool_task(
+						Arc::clone(&client),
+						filter_pool,
+						FILTER_RETAIN_THRESHOLD,
+					),
+				);
+			}
 		}
 
 		if ethapi_debug_targets
@@ -130,6 +147,7 @@ where
 					Arc::clone(&substrate_backend),
 					Duration::from_secs(ethapi_trace_cache_duration),
 					Arc::clone(&permit_pool),
+					Arc::clone(&overrides),
 				);
 				(Some(trace_filter_task), Some(trace_filter_requester))
 			} else {
@@ -140,11 +158,12 @@ where
 				.iter()
 				.any(|target| target.as_str() == "debug")
 			{
-				let (debug_task, debug_requester) = DebugTask::task(
+				let (debug_task, debug_requester) = DebugHandler::task(
 					Arc::clone(&client),
 					Arc::clone(&substrate_backend),
 					Arc::clone(&dvm_backend),
 					Arc::clone(&permit_pool),
+					Arc::clone(&overrides),
 				);
 				(Some(debug_task), Some(debug_requester))
 			} else {
@@ -192,9 +211,9 @@ pub fn db_path(config: &sc_service::Configuration) -> PathBuf {
 
 pub fn open_backend(
 	config: &sc_service::Configuration,
-) -> Result<Arc<dc_db::Backend<Block>>, String> {
+) -> Result<Arc<fc_db::Backend<Block>>, String> {
 	// --- darwinia-network ---
-	use dc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
+	use fc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
 		source: DatabaseSettingsSrc::RocksDb {

@@ -26,8 +26,9 @@ use darwinia_common_primitives::{OpaqueBlock as Block, *};
 
 impl_runtime_apis![
 	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,
-	dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block>,
-	dp_evm_trace_apis::DebugRuntimeApi<Block>
+	fp_rpc::EthereumRuntimeRPCApi<Block>,
+	fp_rpc::ConvertTransactionRuntimeApi<Block>,
+	moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 ];
 
 pub struct Executor;
@@ -123,7 +124,8 @@ where
 	// --- crates.io ---
 	use futures::stream::StreamExt;
 	// --- paritytech ---
-	use fc_rpc_core::types::FilterPool;
+	use fc_rpc::EthBlockDataCache;
+	use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 	use sc_authority_discovery::WorkerConfig;
 	use sc_basic_authorship::ProposerFactory;
 	use sc_client_api::ExecutorProvider;
@@ -207,6 +209,14 @@ where
 
 	let dvm_backend = dvm::open_backend(&config)?;
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+	let overrides = overrides_handle(client.clone());
+	let block_data_cache = Arc::new(EthBlockDataCache::new(
+		task_manager.spawn_handle(),
+		overrides.clone(),
+		eth_rpc_config.eth_log_block_cache,
+		eth_rpc_config.eth_log_block_cache,
+	));
+	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
 	let eth_rpc_requesters = DvmTaskParams {
 		task_manager: &task_manager,
 		client: client.clone(),
@@ -215,8 +225,8 @@ where
 		filter_pool: filter_pool.clone(),
 		is_archive,
 		rpc_config: eth_rpc_config.clone(),
-		// fee_history_cache: fee_history_cache.clone(),
-		// overrides: overrides.clone(),
+		fee_history_cache: fee_history_cache.clone(),
+		overrides: overrides.clone(),
 	}
 	.spawn_task();
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
@@ -264,9 +274,9 @@ where
 					network: network.clone(),
 					filter_pool: filter_pool.clone(),
 					backend: dvm_backend.clone(),
-					// fee_history_cache: fee_history_cache.clone(),
-					// overrides: overrides.clone(),
-					// block_data_cache: block_data_cache.clone(),
+					fee_history_cache: fee_history_cache.clone(),
+					overrides: overrides.clone(),
+					block_data_cache: block_data_cache.clone(),
 					rpc_requesters: eth_rpc_requesters.clone(),
 				},
 			};

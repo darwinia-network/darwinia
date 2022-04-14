@@ -69,12 +69,15 @@ pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+use fp_rpc::TransactionStatus;
+use fp_storage::{EthereumStorageSchema, PALLET_ETHEREUM_SCHEMA};
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{
 	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
 	weights::Weight,
 };
+use pallet_evm::FeeCalculator;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -88,7 +91,7 @@ use sp_runtime::{
 		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, MultiAddress, OpaqueExtrinsic,
+	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
 #[cfg(any(feature = "std", test))]
@@ -97,13 +100,10 @@ use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_common_runtime::*;
-use darwinia_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use darwinia_evm::{Account as EVMAccount, Runner};
 use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
-use dvm_rpc_runtime_api::TransactionStatus;
 
-/// The address format for describing accounts.
-pub type Address = MultiAddress<AccountId, ()>;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
@@ -250,8 +250,9 @@ frame_support::construct_runtime! {
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
-		Ethereum: dvm_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 40,
+		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 40,
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
+		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
 		// S2S bridge.
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
@@ -355,8 +356,8 @@ impl fp_self_contained::SelfContainedCall for Call {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ Call::Ethereum(dvm_ethereum::Call::transact { .. }) => Some(call.dispatch(
-				Origin::from(dvm_ethereum::RawOrigin::EthereumTransaction(info)),
+			call @ Call::Ethereum(darwinia_ethereum::Call::transact { .. }) => Some(call.dispatch(
+				Origin::from(darwinia_ethereum::RawOrigin::EthereumTransaction(info)),
 			)),
 			_ => None,
 		}
@@ -581,7 +582,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl dvm_rpc_runtime_api::EthereumRuntimeRPCApi<Block> for Runtime {
+	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<Runtime as darwinia_evm::Config>::ChainId::get()
 		}
@@ -616,9 +617,11 @@ sp_api::impl_runtime_apis! {
 			data: Vec<u8>,
 			value: U256,
 			gas_limit: U256,
-			gas_price: Option<U256>,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<darwinia_evm::CallInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
 				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
@@ -634,8 +637,10 @@ sp_api::impl_runtime_apis! {
 				data,
 				value,
 				gas_limit.low_u64(),
-				gas_price,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
 				nonce,
+				access_list.unwrap_or_default(),
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
 			).map_err(|err| err.into())
 		}
@@ -645,9 +650,11 @@ sp_api::impl_runtime_apis! {
 			data: Vec<u8>,
 			value: U256,
 			gas_limit: U256,
-			gas_price: Option<U256>,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<darwinia_evm::CreateInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
 				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
@@ -662,8 +669,10 @@ sp_api::impl_runtime_apis! {
 				data,
 				value,
 				gas_limit.low_u64(),
-				gas_price,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
 				nonce,
+				access_list.unwrap_or_default(),
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
 			).map_err(|err| err.into())
 		}
@@ -673,17 +682,17 @@ sp_api::impl_runtime_apis! {
 			Ethereum::current_transaction_statuses()
 		}
 
-		fn current_block() -> Option<dvm_ethereum::EthereumBlockV0> {
+		fn current_block() -> Option<darwinia_ethereum::Block> {
 			Ethereum::current_block()
 		}
 
-		fn current_receipts() -> Option<Vec<dvm_ethereum::EthereumReceiptV0>> {
+		fn current_receipts() -> Option<Vec<darwinia_ethereum::Receipt>> {
 			Ethereum::current_receipts()
 		}
 
 		fn current_all() -> (
-			Option<dvm_ethereum::EthereumBlockV0>,
-			Option<Vec<dvm_ethereum::EthereumReceiptV0>>,
+			Option<darwinia_ethereum::Block>,
+			Option<Vec<darwinia_ethereum::Receipt>>,
 			Option<Vec<TransactionStatus>>
 		) {
 			(
@@ -695,18 +704,30 @@ sp_api::impl_runtime_apis! {
 
 		fn extrinsic_filter(
 			xts: Vec<<Block as BlockT>::Extrinsic>,
-		) -> Vec<dvm_ethereum::TransactionV0> {
+		) -> Vec<darwinia_ethereum::Transaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				Call::Ethereum(dvm_ethereum::Call::transact { transaction }) => Some(transaction),
+				Call::Ethereum(darwinia_ethereum::Call::transact { transaction }) => Some(transaction),
 				_ => None
-			}).collect::<Vec<dvm_ethereum::TransactionV0>>()
+			}).collect()
+		}
+
+		fn elasticity() -> Option<Permill> {
+			Some(BaseFee::elasticity())
 		}
 	}
 
-	impl dp_evm_trace_apis::DebugRuntimeApi<Block> for Runtime {
+	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
+		fn convert_transaction(transaction: darwinia_ethereum::Transaction) -> <Block as BlockT>::Extrinsic {
+			UncheckedExtrinsic::new_unsigned(
+				darwinia_ethereum::Call::<Runtime>::transact { transaction }.into(),
+			)
+		}
+	}
+
+	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_traced_transaction: &dvm_ethereum::TransactionV0,
+			_traced_transaction: &darwinia_ethereum::Transaction,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -714,7 +735,7 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use dp_evm_tracer::tracer::EvmTracer;
-				use dvm_ethereum::Call::transact;
+				use darwinia_ethereum::Call::transact;
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
 				for ext in _extrinsics.into_iter() {
@@ -750,8 +771,7 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use dp_evm_tracer::tracer::EvmTracer;
-				use sha3::{Digest, Keccak256};
-				use dvm_ethereum::Call::transact;
+				use darwinia_ethereum::Call::transact;
 
 				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
 				config.estimate = true;
@@ -760,9 +780,7 @@ sp_api::impl_runtime_apis! {
 				for ext in _extrinsics.into_iter() {
 					match &ext.0.function {
 						Call::Ethereum(transact { transaction }) => {
-							let eth_extrinsic_hash =
-								H256::from_slice(Keccak256::digest(&rlp::encode(transaction)).as_slice());
-							if _known_transactions.contains(&eth_extrinsic_hash) {
+							if _known_transactions.contains(&transaction.hash()) {
 								// Each known extrinsic is a new call stack.
 								EvmTracer::emit_new();
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
@@ -881,54 +899,11 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
-pub struct TransactionConverter;
-impl dvm_rpc_runtime_api::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> UncheckedExtrinsic {
-		UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into())
-	}
-}
-impl dvm_rpc_runtime_api::ConvertTransaction<OpaqueExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: dvm_ethereum::TransactionV0) -> OpaqueExtrinsic {
-		let extrinsic =
-			UncheckedExtrinsic::new_unsigned(dvm_ethereum::Call::transact { transaction }.into());
-		let encoded = extrinsic.encode();
-
-		OpaqueExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
-	}
-}
-
-const TECHNICAL_MEMBERSHIP_OLD_PREFIX: &str = "Instance1Membership";
-const TIPS_OLD_PREFIX: &str = "Treasury";
-const COUNCIL_OLD_PREFIX: &str = "Instance1Collective";
-const TECHNICAL_COMMITTEE_OLD_PREFIX: &str = "Instance2Collective";
-
 fn migrate() -> Weight {
-	// --- paritytech ---
-	use frame_support::traits::PalletInfo;
-
-	if let Some(name) = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
-	{
-		pallet_membership::migrations::v4::migrate::<Runtime, TechnicalMembership, _>(
-			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
-			name,
-		);
-	}
-
-	pallet_tips::migrations::v4::migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
-	pallet_collective::migrations::v4::migrate::<Runtime, Council, _>(COUNCIL_OLD_PREFIX);
-	pallet_collective::migrations::v4::migrate::<Runtime, TechnicalCommittee, _>(
-		TECHNICAL_COMMITTEE_OLD_PREFIX,
+	frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+		&PALLET_ETHEREUM_SCHEMA,
+		&EthereumStorageSchema::V3,
 	);
-
-	migration::remove_storage_prefix(b"RandomnessCollectiveFlip", b"RandomMaterial", b"");
-
-	// Migrate the version to new style.
-	// But this will also update the version.
-	// To bypass the check `if on_chain_storage_version < 4 {`, put this to the last one.
-	frame_support::migrations::migrate_from_pallet_version_to_storage_version::<AllPalletsWithSystem>(
-		&RocksDbWeight::get(),
-	);
-
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
@@ -937,56 +912,11 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::traits::{PalletInfo, StorageVersion};
-
-		{
-			// Presume we have already migrated the version to the new style.
-			frame_support::migrations::migrate_from_pallet_version_to_storage_version::<
-				AllPalletsWithSystem,
-			>(&RocksDbWeight::get());
-
-			// Revert the version.
-			StorageVersion::new(3).put::<TechnicalMembership>();
-			StorageVersion::new(3).put::<Tips>();
-			StorageVersion::new(3).put::<Council>();
-			StorageVersion::new(3).put::<TechnicalCommittee>();
-		}
-
-		let name = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
-			.expect("TechnicalMembership is part of runtime, so it has a name; qed");
-
-		pallet_membership::migrations::v4::pre_migrate::<TechnicalMembership, _>(
-			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
-			name,
-		);
-		pallet_tips::migrations::v4::pre_migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
-		pallet_collective::migrations::v4::pre_migrate::<Council, _>(COUNCIL_OLD_PREFIX);
-		pallet_collective::migrations::v4::pre_migrate::<TechnicalCommittee, _>(
-			TECHNICAL_COMMITTEE_OLD_PREFIX,
-		);
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		// --- paritytech ---
-		use frame_support::traits::PalletInfo;
-
-		let name = <Runtime as frame_system::Config>::PalletInfo::name::<TechnicalMembership>()
-			.expect("TechnicalMembership is part of runtime, so it has a name; qed");
-
-		pallet_membership::migrations::v4::post_migrate::<TechnicalMembership, _>(
-			TECHNICAL_MEMBERSHIP_OLD_PREFIX,
-			name,
-		);
-		pallet_tips::migrations::v4::post_migrate::<Runtime, Tips, _>(TIPS_OLD_PREFIX);
-		pallet_collective::migrations::v4::post_migrate::<Council, _>(COUNCIL_OLD_PREFIX);
-		pallet_collective::migrations::v4::post_migrate::<TechnicalCommittee, _>(
-			TECHNICAL_COMMITTEE_OLD_PREFIX,
-		);
-
 		Ok(())
 	}
 

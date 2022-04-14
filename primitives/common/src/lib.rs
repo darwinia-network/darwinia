@@ -26,7 +26,7 @@ use sp_core::H256;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, OpaqueExtrinsic,
+	MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 
 /// An index to a block.
@@ -56,6 +56,9 @@ pub type Hash = H256;
 
 /// Hashing algorithm used by the chain.
 pub type Hashing = BlakeTwo256;
+
+/// The address format for describing accounts.
+pub type Address = MultiAddress<AccountId, ()>;
 
 /// Index of a transaction in the relay chain. 32-bit should be plenty.
 pub type Nonce = u32;
