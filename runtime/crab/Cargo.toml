@@ -222,9 +222,6 @@ std = [
 	"sp-version/std",
 ]
 
-dev     = []
-no-wasm = []
-
 evm-tracing = [
 	"dp-evm-tracer",
 ]

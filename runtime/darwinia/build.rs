@@ -17,11 +17,9 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // --- paritytech ---
-#[cfg(not(feature = "no-wasm"))]
 use substrate_wasm_builder::WasmBuilder;
 
 fn main() {
-	#[cfg(not(feature = "no-wasm"))]
 	WasmBuilder::new()
 		.with_current_project()
 		.import_memory()
