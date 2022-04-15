@@ -13,9 +13,14 @@ version     = "0.12.0"
 codec             = { package = "parity-scale-codec", version = "2.3", default-features = false }
 scale-info        = { version = "1.0", default-features = false }
 static_assertions = { version = "1.1" }
+# darwinia-bridges-substrate
+bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
 # darwinia-network frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
-darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-balances   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-fee-market = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
+darwinia-support    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 # paritytech frame
@@ -39,8 +44,13 @@ std = [
 	# crates.io
 	"codec/std",
 	"scale-info/std",
+	# darwinia-bridges-substrate
+	"bp-messages/std",
+	"bridge-runtime-common/std",
+	"pallet-bridge-dispatch/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
+	"darwinia-fee-market/std",
 	"darwinia-support/std",
 	# darwinia-network primitives
 	"darwinia-primitives/std",

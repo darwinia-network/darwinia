@@ -1,12 +1,11 @@
 pub use pallet_bridge_dispatch::Instance1 as WithCrabDispatch;
 
 // --- paritytech ---
-use bp_messages::{LaneId, MessageNonce};
 use frame_support::traits::Contains;
-use pallet_bridge_dispatch::Config;
 // --- darwinia-network ---
 use crate::*;
-use crab_message::FromCrabEncodedCall;
+use bp_messages::{LaneId, MessageNonce};
+use pallet_bridge_dispatch::Config;
 
 pub struct S2sCallFilter;
 impl Contains<Call> for S2sCallFilter {
@@ -25,9 +24,9 @@ impl Config<WithCrabDispatch> for Runtime {
 	type BridgeMessageId = (LaneId, MessageNonce);
 	type Call = Call;
 	type CallFilter = S2sCallFilter;
-	type EncodedCall = FromCrabEncodedCall;
-	type SourceChainAccountId = AccountId;
-	type TargetChainAccountPublic = AccountPublic;
-	type TargetChainSignature = Signature;
-	type AccountIdConverter = AccountIdConverter;
+	type EncodedCall = bm_crab::FromCrabEncodedCall;
+	type SourceChainAccountId = bp_crab::AccountId;
+	type TargetChainAccountPublic = bp_darwinia::AccountPublic;
+	type TargetChainSignature = bp_darwinia::Signature;
+	type AccountIdConverter = bp_darwinia::AccountIdConverter;
 }

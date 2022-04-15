@@ -1,10 +1,10 @@
 // --- paritytech ---
-use bp_messages::LaneId;
-use bp_runtime::ChainId;
 use frame_support::PalletId;
 // --- darwinia-network ---
-use crate::{messages::crab_message::ToCrabOutboundPayload, *};
-use darwinia_bridge_primitives::{AccountIdConverter, DARWINIA_CRAB_LANE};
+use crate::*;
+use bp_messages::LaneId;
+use bp_runtime::{ChainId, CRAB_CHAIN_ID};
+use bridge_runtime_common::lanes::DARWINIA_CRAB_LANE;
 use darwinia_support::{evm::IntoH160, s2s::LatestMessageNoncer};
 use dp_asset::{TokenMetadata, NATIVE_TOKEN_TYPE};
 use to_substrate_backing::Config;
@@ -41,9 +41,9 @@ impl Config for Runtime {
 	type RingMetadata = RingMetadata;
 	type MaxLockRingAmountPerTx = MaxLockRingAmountPerTx;
 	type RingCurrency = Ring;
-	type BridgedAccountIdConverter = AccountIdConverter;
+	type BridgedAccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = CrabChainId;
-	type OutboundPayloadCreator = ToCrabOutboundPayload;
+	type OutboundPayloadCreator = bm_crab::ToCrabOutboundPayload;
 	type MessageNoncer = CrabMessageNoncer;
 	type MessageLaneId = BridgeCrabLaneId;
 	type MessagesBridge = BridgeCrabMessages;
