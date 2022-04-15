@@ -26,9 +26,9 @@ use sc_service::{Error as ServiceError, TaskManager};
 use sp_core::crypto::{self, Ss58AddressFormat};
 // --- darwinia-network ---
 use crate::cli::*;
-#[cfg(any(feature = "try-runtime", feature = "runtime-benchmarks"))]
-use darwinia_common_primitives::OpaqueBlock as Block;
 use darwinia_node_service::*;
+#[cfg(any(feature = "try-runtime", feature = "runtime-benchmarks"))]
+use darwinia_primitives::OpaqueBlock as Block;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {

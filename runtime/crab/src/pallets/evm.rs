@@ -1,7 +1,6 @@
 // --- core ---
 use core::marker::PhantomData;
 // --- paritytech ---
-use bp_messages::LaneId;
 use fp_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
 use frame_support::{
 	traits::{FindAuthor, PalletInfoAccess},
@@ -11,7 +10,8 @@ use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_session::FindAccountFromAuthorIndex;
 use sp_core::{crypto::Public, H160, U256};
 // --- darwinia-network ---
-use crate::{messages::darwinia_message::ToDarwiniaMessagePayload, *};
+use crate::*;
+use bp_messages::LaneId;
 use darwinia_ethereum::{
 	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
@@ -47,13 +47,13 @@ impl RelayMessageSender for ToDarwiniaMessageSender {
 		payload: Vec<u8>,
 		fee: u128,
 	) -> Result<Vec<u8>, &'static str> {
-		let payload = ToDarwiniaMessagePayload::decode(&mut payload.as_slice())
+		let payload = bm_darwinia::ToDarwiniaMessagePayload::decode(&mut payload.as_slice())
 			.map_err(|_| "decode darwinia payload failed")?;
 		let call: Call = match message_pallet_index {
 			_ if message_pallet_index as usize
 				== <BridgeDarwiniaMessages as PalletInfoAccess>::index() =>
 			{
-				BridgeMessagesCall::<Runtime, WithDarwiniaMessages>::send_message {
+				pallet_bridge_messages::Call::<Runtime, WithDarwiniaMessages>::send_message {
 					lane_id,
 					payload,
 					delivery_and_dispatch_fee: fee.saturated_into(),

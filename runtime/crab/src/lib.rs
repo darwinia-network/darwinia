@@ -25,6 +25,9 @@
 pub mod pallets;
 pub use pallets::*;
 
+pub mod bridges_message;
+pub use bridges_message::*;
+
 #[cfg(not(feature = "no-wasm"))]
 pub mod wasm {
 	//! Make the WASM binary available.
@@ -44,27 +47,13 @@ pub mod wasm {
 #[cfg(not(feature = "no-wasm"))]
 pub use wasm::*;
 
-pub mod messages;
-pub use messages::*;
-
 // TODO: Benchmark
 // /// Weights for pallets used in the runtime.
 // mod weights;
 
+pub use darwinia_primitives::*;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
-
-pub use darwinia_bridge_primitives::*;
-pub use darwinia_common_primitives::*;
-
-pub use frame_system::Call as SystemCall;
-pub use pallet_sudo::Call as SudoCall;
-
-pub use darwinia_balances::Call as BalancesCall;
-pub use darwinia_fee_market::Call as FeeMarketCall;
-
-pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
-pub use pallet_bridge_messages::Call as BridgeMessagesCall;
 
 // --- crates.io ---
 use codec::{Decode, Encode};
@@ -803,28 +792,14 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_bridge_primitives::DarwiniaFinalityApi<Block> for Runtime {
+	impl bp_darwinia::DarwiniaFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
 			let header = BridgeDarwiniaGrandpa::best_finalized();
 			(header.number, header.hash())
 		}
-
-		fn is_known_header(hash: Hash) -> bool {
-			BridgeDarwiniaGrandpa::is_known_header(hash)
-		}
 	}
 
-	impl darwinia_bridge_primitives::ToDarwiniaOutboundLaneApi<Block, Balance, darwinia_message::ToDarwiniaMessagePayload> for Runtime {
-		// fn estimate_message_delivery_and_dispatch_fee(
-		// 	_lane_id: bp_messages::LaneId,
-		// 	payload: darwinia_message::ToDarwiniaMessagePayload,
-		// ) -> Option<Balance> {
-		// 	bridge_runtime_common::messages::source::estimate_message_dispatch_and_delivery_fee::<darwinia_message::WithDarwiniaMessageBridge>(
-		// 		&payload,
-		// 		darwinia_message::WithDarwiniaMessageBridge::RELAYER_FEE_PERCENT,
-		// 	).ok()
-		// }
-
+	impl bp_darwinia::ToDarwiniaOutboundLaneApi<Block, Balance, bm_darwinia::ToDarwiniaMessagePayload> for Runtime {
 		fn message_details(
 			lane: bp_messages::LaneId,
 			begin: bp_messages::MessageNonce,
@@ -833,7 +808,7 @@ sp_api::impl_runtime_apis! {
 			bridge_runtime_common::messages_api::outbound_message_details::<
 				Runtime,
 				WithDarwiniaMessages,
-				darwinia_message::WithDarwiniaMessageBridge,
+				bm_darwinia::WithDarwiniaMessageBridge,
 			>(lane, begin, end)
 		}
 
@@ -846,7 +821,7 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_bridge_primitives::FromDarwiniaInboundLaneApi<Block> for Runtime {
+	impl bp_darwinia::FromDarwiniaInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgeDarwiniaMessages::inbound_latest_received_nonce(lane)
 		}

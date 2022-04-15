@@ -1,9 +1,8 @@
 pub use pallet_bridge_grandpa::Instance1 as WithCrabGrandpa;
 
-// --- paritytech ---
-use pallet_bridge_grandpa::Config;
 // --- darwinia-network ---
 use crate::*;
+use pallet_bridge_grandpa::Config;
 
 frame_support::parameter_types! {
 	// This is a pretty unscientific cap.
@@ -15,11 +14,11 @@ frame_support::parameter_types! {
 	//
 	// Assuming the worst case of every header being finalized, we will keep headers for at least a
 	// week.
-	pub const HeadersToKeep: u32 = 7 * DAYS as u32;
+	pub const HeadersToKeep: u32 = 7 * bp_crab::DAYS as u32;
 }
 
 impl Config<WithCrabGrandpa> for Runtime {
-	type BridgedChain = Crab;
+	type BridgedChain = bp_crab::Crab;
 	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
 	type WeightInfo = ();

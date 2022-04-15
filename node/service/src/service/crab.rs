@@ -22,7 +22,7 @@
 use std::sync::Arc;
 // --- darwinia-network ---
 use super::*;
-use darwinia_common_primitives::{OpaqueBlock as Block, *};
+use darwinia_primitives::{OpaqueBlock as Block, *};
 
 impl_runtime_apis![
 	darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>,

@@ -25,15 +25,15 @@ darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-netwo
 darwinia-evm                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 dp-evm-trace-ext              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
+fc-mapping-sync               = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fc-rpc                        = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fc-rpc-core                   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 fp-rpc                        = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
-fc-mapping-sync               = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.1" }
 moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.1" }
 # darwinia-network primitives
-darwinia-common-primitives = { path = "../../primitives/common" }
+darwinia-primitives = { path = "../../primitives" }
 # darwinia-network rpc
 darwinia-rpc = { path = "../../rpc" }
 # darwinia-network runtime
