@@ -90,11 +90,9 @@ pub use messages::*;
 
 #[cfg(feature = "std")]
 pub use darwinia_bridge_ethereum::DagsMerkleRootsLoader;
+pub use darwinia_primitives::*;
 #[cfg(feature = "std")]
 pub use darwinia_staking::{Forcing, StakerStatus};
-
-pub use darwinia_bridge_primitives::*;
-pub use darwinia_primitives::*;
 
 // --- crates.io ---
 use codec::Encode;
