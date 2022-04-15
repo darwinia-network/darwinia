@@ -96,15 +96,6 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 pub use darwinia_bridge_primitives::*;
 pub use darwinia_primitives::*;
 
-pub use frame_system::Call as SystemCall;
-pub use pallet_sudo::Call as SudoCall;
-
-pub use darwinia_balances::Call as BalancesCall;
-pub use darwinia_fee_market::Call as FeeMarketCall;
-
-pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
-pub use pallet_bridge_messages::Call as BridgeMessagesCall;
-
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
