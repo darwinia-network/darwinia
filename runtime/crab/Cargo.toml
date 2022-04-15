@@ -18,6 +18,16 @@ scale-info        = { version = "1.0", default-features = false }
 serde             = { version = "1.0", optional = true }
 smallvec          = { version = "1.7" }
 static_assertions = { version = "1.1" }
+# darwinia-bridges-substrate
+bp-crab                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bp-darwinia            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.1" }
 # darwinia-network frame
 darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
@@ -54,15 +64,6 @@ dp-s2s                    = { default-features = false, git = "https://github.co
 ethereum-primitives       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.1" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
-# paritytech bridge frame
-pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-# paritytech bridge primitives
-bp-message-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-bp-messages           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-bp-runtime            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
-bridge-runtime-common = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "xavier-bp" }
 # paritytech frame
 frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
 frame-election-provider-support            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
@@ -125,6 +126,16 @@ std = [
 	"codec/std",
 	"scale-info/std",
 	"serde",
+	# darwinia-bridges-susbtrate
+	"bp-crab/std",
+	"bp-darwinia/std",
+	"bp-message-dispatch/std",
+	"bp-messages/std",
+	"bp-runtime/std",
+	"bridge-runtime-common/std",
+	"pallet-bridge-dispatch/std",
+	"pallet-bridge-grandpa/std",
+	"pallet-bridge-messages/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
@@ -162,15 +173,6 @@ std = [
 	"ethereum-primitives/std",
 	# darwinia-network runtime
 	"darwinia-common-runtime/std",
-	# paritytech bridge
-	"pallet-bridge-dispatch/std",
-	"pallet-bridge-grandpa/std",
-	"pallet-bridge-messages/std",
-	"bp-message-dispatch/std",
-	# paritytech bridge primitives
-	"bp-messages/std",
-	"bp-runtime/std",
-	"bridge-runtime-common/std",
 	# paritytech frame
 	"frame-benchmarking/std",
 	"frame-election-provider-support/std",

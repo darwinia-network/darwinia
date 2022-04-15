@@ -16,4 +16,5 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub mod darwinia_message;
+pub mod darwinia;
+pub use darwinia as bm_darwinia;

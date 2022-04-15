@@ -25,6 +25,9 @@
 pub mod pallets;
 pub use pallets::*;
 
+pub mod bridges_message;
+pub use bridges_message::*;
+
 #[cfg(not(feature = "no-wasm"))]
 pub mod wasm {
 	//! Make the WASM binary available.
@@ -43,9 +46,6 @@ pub mod wasm {
 }
 #[cfg(not(feature = "no-wasm"))]
 pub use wasm::*;
-
-pub mod messages;
-pub use messages::*;
 
 // TODO: Benchmark
 // /// Weights for pallets used in the runtime.

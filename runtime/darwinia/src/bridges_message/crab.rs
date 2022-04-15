@@ -265,7 +265,7 @@ impl BridgedChainWithMessages for Crab {
 		)
 	}
 }
-impl TargetHeaderChain<ToCrabMessagePayload, AccountId> for Crab {
+impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::AccountId> for Crab {
 	type Error = &'static str;
 	// The proof is:
 	// - hash of the header this proof has been created with;
@@ -279,7 +279,7 @@ impl TargetHeaderChain<ToCrabMessagePayload, AccountId> for Crab {
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<bp_darwinia::AccountId>), Self::Error> {
 		source::verify_messages_delivery_proof::<WithCrabMessageBridge, Runtime, WithCrabGrandpa>(
 			proof,
 		)
