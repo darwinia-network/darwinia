@@ -13,9 +13,9 @@ use pallet_bridge_messages::Config;
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
-		bp_darwinia::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE;
+		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub const MaxUnconfirmedMessagesAtInboundLane: MessageNonce =
-		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE;
+		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	// `IdentityFee` is used by Darwinia => we may use weight directly
 	pub const GetDeliveryConfirmationTransactionFee: Balance =
 		bp_darwinia::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT as _;
@@ -38,10 +38,10 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	type InboundMessageFee = bp_darwinia::Balance;
 	type InboundRelayer = bp_darwinia::AccountId;
 
-	type AccountIdConverter = AccountIdConverter;
+	type AccountIdConverter = bp_crab::AccountIdConverter;
 
 	type TargetHeaderChain = bm_darwinia::Darwinia;
-	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier
+	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier;
 	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<
 		Runtime,
 		WithDarwiniaMessages,
