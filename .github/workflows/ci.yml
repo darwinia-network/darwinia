@@ -63,16 +63,7 @@ jobs:
           sudo mv $SCCACHE_FILE/sccache /usr/bin
           sudo chmod u+x /usr/bin/sccache
 
-      # TODO: remove this after upgrade to metadata v14
       - name: Fetch latest code
-        if: matrix.task.target == 'subalfred'
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ matrix.task.repository }}
-          ref: "bak"
-
-      - name: Fetch latest code
-        if: matrix.task.target != 'subalfred'
         uses: actions/checkout@v2
         with:
           repository: ${{ matrix.task.repository }}
@@ -85,8 +76,7 @@ jobs:
             ~/.cargo/git
             target
           key: cargo-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
+          restore-keys: cargo-${{ matrix.action }}-${{ matrix.task.target }}-${{ env.GITHUB_CACHE_VERSION }}-
 
       - name: Cache sccache
         uses: actions/cache@v2
@@ -106,7 +96,7 @@ jobs:
 
       - name: Upload ${{ matrix.task.target }}
         if: matrix.action != 'test'
-        uses: actions/upload-artifact@v2.2.4
+        uses: actions/upload-artifact
         with:
           name: ${{ matrix.task.target }}
           path: ${{ matrix.task.target }}.tar.zst
@@ -135,7 +125,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run checker
-        run: subalfred ci default-features -p ../darwinia-common
+        run: subalfred check default-features -p ../darwinia-common
 
   runtime-checks:
     name: Task check runtime
@@ -163,7 +153,7 @@ jobs:
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(subalfred ci runtime-version -c Crab -e darwinia)
+          OUTPUT=$(subalfred check runtime-version -e darwinia -c crab -l https://crab-rpc.darwinia.network)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -172,7 +162,7 @@ jobs:
       - id: check-crab-storage-prefix
         name: Check Crab storage prefix
         run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Crab -e darwinia)
+          OUTPUT=$(subalfred check storage-prefix -e darwinia -c crab -l https://crab-rpc.darwinia.network)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -181,7 +171,7 @@ jobs:
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(subalfred ci runtime-version -c Darwinia -e darwinia)
+          OUTPUT=$(subalfred check runtime-version -e darwinia -c darwinia -l https://rpc.darwinia.network)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -190,7 +180,7 @@ jobs:
       - id: check-darwinia-storage-prefix
         name: Check Darwinia storage prefix
         run: |
-          OUTPUT=$(subalfred ci storage-prefix -c Darwinia -e darwinia)
+          OUTPUT=$(subalfred check storage-prefix -e darwinia -c darwinia -l https://rpc.darwinia.network)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
