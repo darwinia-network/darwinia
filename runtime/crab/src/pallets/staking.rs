@@ -10,7 +10,7 @@ frame_support::parameter_types! {
 	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
 	pub const SessionsPerEra: SessionIndex = CRAB_SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = BondingDurationInBlockNumber::get()
-	/ (CRAB_SESSIONS_PER_ERA as BlockNumber * CRAB_BLOCKS_PER_SESSION);
+		/ (CRAB_SESSIONS_PER_ERA as BlockNumber * CRAB_BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
 	pub const SlashDeferDuration: EraIndex = BondingDurationInEra::get() - 1;
