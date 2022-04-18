@@ -90,6 +90,11 @@ db = ["sc-service/db"]
 
 full-node = []
 
+fast-runtime = [
+	"crab-runtime/fast-runtime",
+	"darwinia-runtime/fast-runtime",
+]
+
 evm-tracing = ["crab-runtime/evm-tracing"]
 
 runtime-benchmarks = [

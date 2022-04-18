@@ -28,7 +28,6 @@ pub use pallets::*;
 pub mod bridges_message;
 pub use bridges_message::*;
 
-#[cfg(not(feature = "no-wasm"))]
 pub mod wasm {
 	//! Make the WASM binary available.
 
@@ -44,7 +43,6 @@ pub mod wasm {
 		);
 	}
 }
-#[cfg(not(feature = "no-wasm"))]
 pub use wasm::*;
 
 // TODO: Benchmark

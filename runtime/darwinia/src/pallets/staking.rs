@@ -6,23 +6,14 @@ use sp_staking::SessionIndex;
 use crate::*;
 use darwinia_staking::{Config, EraIndex, UseNominatorsMap};
 
-#[cfg(feature = "dev")]
 frame_support::parameter_types! {
-	pub const BondingDurationInEra: BlockNumber = 2;
-	pub const BondingDurationInBlockNumber: BlockNumber = 2 * DARWINIA_SESSIONS_PER_ERA * DARWINIA_BLOCKS_PER_SESSION;
-	pub const SlashDeferDuration: EraIndex = 1;
-}
-#[cfg(not(feature = "dev"))]
-frame_support::parameter_types! {
+	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
+	pub const SessionsPerEra: SessionIndex = DARWINIA_SESSIONS_PER_ERA;
 	pub const BondingDurationInEra: EraIndex = BondingDurationInBlockNumber::get()
 		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION);
 	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
 	// slightly less than 14 days.
 	pub const SlashDeferDuration: EraIndex = BondingDurationInEra::get() - 1;
-}
-frame_support::parameter_types! {
-	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
-	pub const SessionsPerEra: SessionIndex = DARWINIA_SESSIONS_PER_ERA;
 	// last 15 minutes of the last session will be for election.
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const Cap: Balance = RING_HARD_CAP;

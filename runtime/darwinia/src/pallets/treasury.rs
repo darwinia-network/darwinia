@@ -5,19 +5,12 @@ use sp_runtime::Permill;
 use crate::*;
 use pallet_treasury::{Config, Instance2 as KtonTreasuryInstance};
 
-#[cfg(feature = "dev")]
-frame_support::parameter_types! {
-	pub const SpendPeriod: BlockNumber = 3 * MINUTES;
-}
-#[cfg(not(feature = "dev"))]
-frame_support::parameter_types! {
-	pub const SpendPeriod: BlockNumber = 24 * DAYS;
-}
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const RingProposalBondMinimum: Balance = 1_000 * COIN;
 	pub const KtonProposalBondMinimum: Balance = 1 * COIN;
+	pub const SpendPeriod: BlockNumber = 24 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(1);
 	pub const MaxApprovals: u32 = 100;
 }

@@ -287,7 +287,7 @@ pub fn development_config() -> ChainSpec {
 					.map(|x| (x.0, x.1, 1 << 56, StakerStatus::Validator))
 					.collect(),
 				invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
-				force_era: Forcing::ForceAlways,
+				force_era: Forcing::ForceNew,
 				slash_reward_fraction: Perbill::from_percent(10),
 				payout_fraction: Perbill::from_percent(50),
 				..Default::default()

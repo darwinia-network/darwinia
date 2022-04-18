@@ -65,7 +65,6 @@ pub mod genesis_loader {
 	}
 }
 
-#[cfg(not(feature = "no-wasm"))]
 pub mod wasm {
 	//! Make the WASM binary available.
 
@@ -81,7 +80,6 @@ pub mod wasm {
 		);
 	}
 }
-#[cfg(not(feature = "no-wasm"))]
 pub use wasm::*;
 
 // TODO: Benchmark
