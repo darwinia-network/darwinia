@@ -36,17 +36,9 @@ pub type TechnicalCommitteeApproveOrigin = EnsureOneOf<
 	EnsureProportionMoreThan<_3, _5, AccountId, TechnicalCollective>,
 >;
 
-#[cfg(feature = "dev")]
-frame_support::parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 3 * MINUTES;
-	pub const TechnicalMotionDuration: BlockNumber = 3 * MINUTES;
-}
-#[cfg(not(feature = "dev"))]
 frame_support::parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
 	pub const TechnicalMotionDuration: BlockNumber = 3 * DAYS;
-}
-frame_support::parameter_types! {
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
 	pub const TechnicalMaxProposals: u32 = 100;
