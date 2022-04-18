@@ -222,6 +222,8 @@ std = [
 	"sp-version/std",
 ]
 
+fast-runtime = ["darwinia-primitives/fast-runtime"]
+
 evm-tracing = [
 	"dp-evm-tracer",
 ]

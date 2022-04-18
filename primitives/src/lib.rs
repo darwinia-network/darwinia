@@ -29,6 +29,17 @@ use sp_runtime::{
 	MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 
+macro_rules! development_or_production {
+	($doc:expr, $name:ident, $type:ty, $development_value:expr, $production_value:expr) => {
+		#[doc = $doc]
+		#[cfg(feature = "fast-runtime")]
+		pub const $name: $type = $development_value;
+		#[doc = $doc]
+		#[cfg(not(feature = "fast-runtime"))]
+		pub const $name: $type = $production_value;
+	};
+}
+
 /// An index to a block.
 /// 32-bits will allow for 136 years of blocks assuming 1 block per second.
 pub type BlockNumber = u32;
@@ -112,21 +123,51 @@ pub const MILLISECS_PER_BLOCK: Moment = 6000;
 
 /// Minute in Darwinia/Crab.
 pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-/// Hour in Darwinia/Crab.
-pub const HOURS: BlockNumber = 60 * MINUTES;
-/// Day in Darwinia/Crab.
-pub const DAYS: BlockNumber = 24 * HOURS;
+development_or_production! {
+	"Hour in Darwinia/Crab.",
+	HOURS,
+	BlockNumber,
+	2 * MINUTES,
+	60 * MINUTES
+}
+development_or_production! {
+	"Day in Darwinia/Crab.",
+	DAYS,
+	BlockNumber,
+	2 * HOURS,
+	24 * HOURS
+}
 /// Slot duration in Darwinia/Crab.
 pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
-/// Session length of Crab.
-pub const CRAB_BLOCKS_PER_SESSION: BlockNumber = 1 * HOURS;
-/// Era length of Crab.
-pub const CRAB_SESSIONS_PER_ERA: BlockNumber = 6;
-/// Session length of Darwinia.
-pub const DARWINIA_BLOCKS_PER_SESSION: BlockNumber = 4 * HOURS;
-/// Era length of Darwinia.
-pub const DARWINIA_SESSIONS_PER_ERA: BlockNumber = 6;
+development_or_production! {
+	"Session length of Darwinia.",
+	DARWINIA_BLOCKS_PER_SESSION,
+	BlockNumber,
+	MINUTES / 2,
+	4 * HOURS
+}
+development_or_production! {
+	"Era length of Darwinia.",
+	DARWINIA_SESSIONS_PER_ERA,
+	BlockNumber,
+	1,
+	6
+}
+development_or_production! {
+	"Session length of Crab.",
+	CRAB_BLOCKS_PER_SESSION,
+	BlockNumber,
+	MINUTES / 2,
+	1 * HOURS
+}
+development_or_production! {
+	"Era length of Crab.",
+	CRAB_SESSIONS_PER_ERA,
+	BlockNumber,
+	1,
+	6
+}
 
 /// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);

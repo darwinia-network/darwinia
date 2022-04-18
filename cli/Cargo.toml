@@ -57,6 +57,8 @@ full-node = ["darwinia-node-service/full-node"]
 
 wasmtime = ["sc-cli/wasmtime"]
 
+fast-runtime = ["darwinia-node-service/fast-runtime"]
+
 evm-tracing = ["darwinia-node-service/evm-tracing"]
 
 runtime-benchmarks = [
