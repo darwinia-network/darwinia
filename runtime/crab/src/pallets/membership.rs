@@ -12,6 +12,6 @@ impl Config<TechnicalMembershipInstance> for Runtime {
 	type PrimeOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
-	type MaxMembers = TechnicalMaxMembers;
+	type MaxMembers = MaxMembers;
 	type WeightInfo = ();
 }

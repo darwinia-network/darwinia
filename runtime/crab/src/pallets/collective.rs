@@ -37,24 +37,21 @@ pub type TechnicalCommitteeApproveOrigin = EnsureOneOf<
 >;
 
 frame_support::parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
-	pub const TechnicalMotionDuration: BlockNumber = 3 * DAYS;
-	pub const CouncilMaxProposals: u32 = 100;
-	pub const CouncilMaxMembers: u32 = 100;
-	pub const TechnicalMaxProposals: u32 = 100;
-	pub const TechnicalMaxMembers: u32 = 100;
+	pub const MotionDuration: BlockNumber = 3 * DAYS;
+	pub const MaxProposals: u32 = 100;
+	pub const MaxMembers: u32 = 100;
 }
 
 // Make sure that there are no more than MaxMembers members elected via phragmen.
-static_assertions::const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+static_assertions::const_assert!(DesiredMembers::get() <= MaxMembers::get());
 
 impl Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = CouncilMotionDuration;
-	type MaxProposals = CouncilMaxProposals;
-	type MaxMembers = CouncilMaxMembers;
+	type MotionDuration = MotionDuration;
+	type MaxProposals = MaxProposals;
+	type MaxMembers = MaxMembers;
 	type DefaultVote = PrimeDefaultVote;
 	type WeightInfo = ();
 }
@@ -62,9 +59,9 @@ impl Config<TechnicalCollective> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = TechnicalMotionDuration;
-	type MaxProposals = TechnicalMaxProposals;
-	type MaxMembers = TechnicalMaxMembers;
+	type MotionDuration = MotionDuration;
+	type MaxProposals = MaxProposals;
+	type MaxMembers = MaxMembers;
 	type DefaultVote = PrimeDefaultVote;
 	type WeightInfo = ();
 }

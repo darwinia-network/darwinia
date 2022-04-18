@@ -43,7 +43,7 @@ frame_support::parameter_types! {
 }
 
 // Make sure that there are no more than MaxMembers members elected via phragmen.
-static_assertions::const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+static_assertions::const_assert!(DesiredMembers::get() <= MaxMembers::get());
 
 impl Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
