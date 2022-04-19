@@ -41,7 +41,7 @@ cc @fewensa
 - **Bridge**
   - [ ] **Darwinia** (MMR roots to sign，Pending headers)
 
-cc @wi1dcard
+cc @fewensa
 
 ### Subql
 - [ ] [Darwinia MMR](https://github.com/darwinia-network/subql-darinwia-mmr)
