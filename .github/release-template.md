@@ -28,12 +28,12 @@ docker pull {{ image_tag }}
 docker pull {{ image_sha }}
 ```
 
-## Changelog
-[Project Release](https://github.com/orgs/darwinia-network/projects/8/views/1)
-
 ## Proposal Hashes
 
 | Network  |           Proposal Hash            |
 | :------: | :--------------------------------: |
 | Darwinia | {{ darwinia_proposal_compressed }} |
 |   Crab   |   {{ crab_proposal_compressed }}   |
+
+## Changelog
+[Project Release](https://github.com/orgs/darwinia-network/projects/8/views/1)
