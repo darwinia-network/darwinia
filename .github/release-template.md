@@ -1,12 +1,17 @@
 Darwinia
 ===
 
+‼️ MANDATORY: This is a MANDATORY priority release and you must upgrade as as soon as possible.
+
+⚠️ It is critical that you update your client before the chain switches to the new runtimes. If you do not update your client before the new runtime is enacted, your node will stop handling parachains functionalities properly until you upgrade.
+Also note that PR #9543 is a breaking change for the Prometheus metrics.
+
 ## [0.12.1] - 2022-04-20
 
 | Network  | Native Runtime | Upgrade Priority |
 | :------: | :------------: | :--------------: |
 | Darwinia |      1210      |       LOW        |
-|   Crab   |      1210      |       LOW        |
+|   Crab   |      1210      |    MANDATORY     |
 
 ## Resources
 
