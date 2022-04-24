@@ -4,7 +4,8 @@ Darwinia
 ‼️ MANDATORY: This is a MANDATORY priority release and you must upgrade as as soon as possible.
 
 ⚠️ It is critical that you update your client before the chain switches to the new runtimes. If you do not update your client before the new runtime is enacted, your node will stop handling parachains functionalities properly until you upgrade.
-Also note that PR #9543 is a breaking change for the Prometheus metrics.
+The changes motivating this priority level are:
+- [EVM storage schema update](https://github.com/darwinia-network/darwinia/pull/864#issuecomment-1107740096)
 
 ## [0.12.1] - 2022-04-20
 
