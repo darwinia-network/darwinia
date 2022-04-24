@@ -28,7 +28,7 @@ env:
   SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
   SCCACHE_VERSION: v0.2.15
   SCCACHE_DIR: /home/runner/.cache/sccache
-  GITHUB_CACHE_VERSION: 1
+  GITHUB_CACHE_VERSION: 0
 
 jobs:
   basic-checks:
