@@ -9,10 +9,10 @@ The changes motivating this priority level are:
 
 ## [{{ tag }}] - 2022-04-20
 
-| Network  |        Native Runtime       | Upgrade Priority |
-| :------: | :-------------------------: | :--------------: |
-| Darwinia | {{ darwinia_core_version }} |       LOW        |
-|   Crab   |   {{ crab_core_version }}   |    MANDATORY     |
+| Network  |         Native Runtime         | Upgrade Priority |
+| :------: | :----------------------------: | :--------------: |
+| Darwinia | {{ darwinia_runtime_version }} |       LOW        |
+|   Crab   |   {{ crab_runtime_version }}   |    MANDATORY     |
 
 ## Resources
 
