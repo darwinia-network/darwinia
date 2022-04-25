@@ -7,7 +7,7 @@ Darwinia
 The changes motivating this priority level are:
 - [EVM storage schema update](https://github.com/darwinia-network/darwinia/pull/864#issuecomment-1107740096)
 
-## [{{ tag }}] - 2022-04-20
+## [{{ tag }}]
 
 | Network  |         Native Runtime         | Upgrade Priority |
 | :------: | :----------------------------: | :--------------: |
