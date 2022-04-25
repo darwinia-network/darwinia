@@ -243,27 +243,28 @@ jobs:
 
       - name: Generate template data
         run: |
-          PROPOSAL_CRAB_COMPRESSED=$(cat deploy/crab-runtime.compact.compressed.json | jq -r .proposal_hash)
-          PROPOSAL_DARWINIA_COMPRESSED=$(cat deploy/darwinia-runtime.compact.compressed.json | jq -r .proposal_hash)
+          REGEX_CORE_VERSION='s/.*-\([0-9]*\)[ ].*/\1/g'
+          FILE_CRAB=deploy/crab-runtime.compact.compressed.json
+          FILE_DARWINIA=deploy/darwinia-runtime.compact.compressed.json
 
-          IMAGE_NAME=darwinia
-          IMAGE_PREFIX=quay.io/darwinia-network
-          IMAGE_PUSH_NAME_TAG=${IMAGE_PREFIX}/${IMAGE_NAME}:${GIT_TAG_NAME}
-          IMAGE_PUSH_NAME_SHA=${IMAGE_PREFIX}/${IMAGE_NAME}:sha-${SHA}
+          PROPOSAL_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .proposal_hash)
+          PROPOSAL_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .proposal_hash)
+          RUNTIME_VERSION_CRAB=$(cat ${FILE_CRAB} | jq -r .core_version | sed "${REGEX_CORE_VERSION}")
+          RUNTIME_VERSION_DARWINIA=$(cat ${FILE_DARWINIA} | jq -r .core_version | sed "${REGEX_CORE_VERSION}")
 
           echo 'Template data:'
           jq -n \
             --arg crab_proposal_compressed "$PROPOSAL_CRAB_COMPRESSED" \
             --arg darwinia_proposal_compressed "$PROPOSAL_DARWINIA_COMPRESSED" \
-            --arg image_tag "$IMAGE_PUSH_NAME_TAG" \
-            --arg image_sha "$IMAGE_PUSH_NAME_SHA" \
+            --arg crab_runtime_version "$RUNTIME_VERSION_CRAB" \
+            --arg darwinia_runtime_version "$RUNTIME_VERSION_DARWINIA" \
             --arg tag "$GIT_TAG_NAME" \
             --arg sha "$SHA" \
             '{
               crab_proposal_compressed: $crab_proposal_compressed,
               darwinia_proposal_compressed: $darwinia_proposal_compressed,
-              image_tag: $image_tag,
-              image_sha: $image_sha,
+              crab_runtime_version: $crab_runtime_version,
+              darwinia_runtime_version: $darwinia_runtime_version,
               tag: $tag,
               sha: $sha
             }' | tee shared/template_data.json

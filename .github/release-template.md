@@ -7,31 +7,31 @@ Darwinia
 The changes motivating this priority level are:
 - [EVM storage schema update](https://github.com/darwinia-network/darwinia/pull/864#issuecomment-1107740096)
 
-## [0.12.1] - 2022-04-20
+## [{{ tag }}] - 2022-04-20
 
-| Network  | Native Runtime | Upgrade Priority |
-| :------: | :------------: | :--------------: |
-| Darwinia |      1210      |       LOW        |
-|   Crab   |      1210      |    MANDATORY     |
+| Network  |         Native Runtime         | Upgrade Priority |
+| :------: | :----------------------------: | :--------------: |
+| Darwinia | {{ darwinia_runtime_version }} |       LOW        |
+|   Crab   |   {{ crab_runtime_version }}   |    MANDATORY     |
 
 ## Resources
 
 ### Pre-built Binary
 |  OS   |  Arch  | Glibc | LLVM  |                                                      Download                                                       |
 | :---: | :----: | :---: | :---: | :-----------------------------------------------------------------------------------------------------------------: |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/v0.12.1/darwinia-x86_64-linux-gnu.tar.zst) |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/v0.12.1/darwinia-x86_64-linux-gnu.tar.bz2) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia-x86_64-linux-gnu.tar.zst) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia-x86_64-linux-gnu.tar.bz2) |
 
 ### Docker
 
 #### Pull with the Git Tag
 ```docker
-docker pull {{ image_tag }}
+docker pull quay.io/darwinia-network/darwinia:{{ tag }}
 ```
 
 #### Pull with the Git Commit SHA
 ```docker
-docker pull {{ image_sha }}
+docker pull quay.io/darwinia-network/darwinia:sha-{{ sha }}
 ```
 
 ## Proposal Hashes
