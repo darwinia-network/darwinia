@@ -9,10 +9,10 @@ The changes motivating this priority level are:
 
 ## [{{ tag }}] - 2022-04-20
 
-| Network  | Native Runtime | Upgrade Priority |
-| :------: | :------------: | :--------------: |
-| Darwinia |      1210      |       LOW        |
-|   Crab   |      1210      |    MANDATORY     |
+| Network  |        Native Runtime       | Upgrade Priority |
+| :------: | :-------------------------: | :--------------: |
+| Darwinia | {{ darwinia_core_version }} |       LOW        |
+|   Crab   | {{ crab_core_version }}     |    MANDATORY     |
 
 ## Resources
 
@@ -26,12 +26,12 @@ The changes motivating this priority level are:
 
 #### Pull with the Git Tag
 ```docker
-docker pull {{ image_tag }}
+docker pull quay.io/darwinia-network/darwinia:{{ tag }}
 ```
 
 #### Pull with the Git Commit SHA
 ```docker
-docker pull {{ image_sha }}
+docker pull quay.io/darwinia-network/darwinia:sha-{{ sha }}
 ```
 
 ## Proposal Hashes
