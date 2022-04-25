@@ -12,7 +12,7 @@ The changes motivating this priority level are:
 | Network  |        Native Runtime       | Upgrade Priority |
 | :------: | :-------------------------: | :--------------: |
 | Darwinia | {{ darwinia_core_version }} |       LOW        |
-|   Crab   | {{ crab_core_version }}     |    MANDATORY     |
+|   Crab   |   {{ crab_core_version }}   |    MANDATORY     |
 
 ## Resources
 
