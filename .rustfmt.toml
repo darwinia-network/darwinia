@@ -1,9 +1,29 @@
-edition                  = "2021"
-hard_tabs                = true
-imports_granularity      = "Crate"
-max_width                = 100
-newline_style            = "Unix"
-reorder_imports          = true
-reorder_modules          = true
-tab_spaces               = 4
-use_field_init_shorthand = true
+# Basic
+edition    = "2021"
+hard_tabs  = true
+max_width  = 100
+tab_spaces = 4
+
+# Imports
+imports_granularity = "Crate"
+reorder_imports     = true
+
+# Format comments
+comment_width = 100
+wrap_comments = true
+
+# Misc
+match_arm_blocks           = false
+match_block_trailing_comma = true
+newline_style              = "Unix"
+reorder_impl_items         = true
+reorder_modules            = true
+use_field_init_shorthand   = true
+use_small_heuristics       = "Max"
+
+# Wait for stablization
+# format_code_in_doc_comments = true
+
+# Could give it a try
+# group_imports          = "StdExternalCrate"
+# inline_attribute_width = 100
