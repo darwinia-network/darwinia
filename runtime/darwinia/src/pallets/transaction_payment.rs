@@ -22,6 +22,7 @@ use crate::*;
 pub struct WeightToFee;
 impl WeightToFeePolynomial for WeightToFee {
 	type Balance = Balance;
+
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 		// in Darwinia, extrinsic base weight (smallest non-zero weight) is mapped to 10 MILLI:
 		let p = 10 * MILLI;
@@ -43,9 +44,9 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type OnChargeTransaction = CurrencyAdapter<Ring, DealWithFees<Self>>;
-	type TransactionByteFee = TransactionByteFee;
-	type OperationalFeeMultiplier = OperationalFeeMultiplier;
-	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
+	type OnChargeTransaction = CurrencyAdapter<Ring, DealWithFees<Self>>;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
+	type TransactionByteFee = TransactionByteFee;
+	type WeightToFee = WeightToFee;
 }

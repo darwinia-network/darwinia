@@ -21,32 +21,32 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
-	type PalletId = StakingPalletId;
-	type UnixTime = Timestamp;
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDurationInEra = BondingDurationInEra;
 	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
-	type SlashDeferDuration = SlashDeferDuration;
-	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
-	type SessionInterface = Self;
-	type NextNewSession = Session;
-	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type BondingDurationInEra = BondingDurationInEra;
+	type Cap = Cap;
 	type ElectionProvider = ElectionProviderMultiPhase;
+	type Event = Event;
 	type GenesisElectionProvider = GenesisElectionOf<Self>;
-	// Use the nominator map to iter voter AND no-ops for all SortedListProvider hooks. The migration
-	// to bags-list is a no-op, but the storage version will be updated.
-	type SortedListProvider = UseNominatorsMap<Self>;
+	type KtonCurrency = Kton;
+	type KtonReward = ();
+	type KtonSlash = KtonTreasury;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type NextNewSession = Session;
+	type PalletId = StakingPalletId;
 	type RingCurrency = Ring;
+	type RingReward = ();
 	type RingRewardRemainder = Treasury;
 	type RingSlash = Treasury;
-	type RingReward = ();
-	type KtonCurrency = Kton;
-	type KtonSlash = KtonTreasury;
-	type KtonReward = ();
-	type Cap = Cap;
+	type SessionInterface = Self;
+	type SessionsPerEra = SessionsPerEra;
+	/// A super-majority of the council can cancel the slash.
+	type SlashCancelOrigin = EnsureRootOrHalfCouncil;
+	type SlashDeferDuration = SlashDeferDuration;
+	// Use the nominator map to iter voter AND no-ops for all SortedListProvider hooks. The
+	// migration to bags-list is a no-op, but the storage version will be updated.
+	type SortedListProvider = UseNominatorsMap<Self>;
 	type TotalPower = TotalPower;
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 
 	const MAX_NOMINATIONS: u32 = <NposCompactSolution24 as NposSolution>::LIMIT as u32;

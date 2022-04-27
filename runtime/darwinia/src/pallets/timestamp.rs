@@ -8,8 +8,8 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
+	type MinimumPeriod = MinimumPeriod;
 	type Moment = Moment;
 	type OnTimestampSet = Babe;
-	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = ();
 }

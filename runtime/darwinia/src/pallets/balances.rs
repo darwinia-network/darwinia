@@ -10,30 +10,28 @@ frame_support::parameter_types! {
 }
 
 impl Config<RingInstance> for Runtime {
+	type AccountStore = System;
 	type Balance = Balance;
+	type BalanceInfo = AccountData<Balance>;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = RingExistentialDeposit;
-	type AccountStore = System;
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
+	type OtherCurrencies = (Kton,);
 	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
-
-	type BalanceInfo = AccountData<Balance>;
-	type OtherCurrencies = (Kton,);
 }
 impl Config<KtonInstance> for Runtime {
+	type AccountStore = System;
 	type Balance = Balance;
+	type BalanceInfo = AccountData<Balance>;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = KtonExistentialDeposit;
-	type AccountStore = System;
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
+	type OtherCurrencies = (Ring,);
 	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
-
-	type BalanceInfo = AccountData<Balance>;
-	type OtherCurrencies = (Ring,);
 }

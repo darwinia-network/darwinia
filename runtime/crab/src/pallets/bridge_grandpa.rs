@@ -19,7 +19,7 @@ frame_support::parameter_types! {
 
 impl Config<WithDarwiniaGrandpa> for Runtime {
 	type BridgedChain = bp_darwinia::Darwinia;
-	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }

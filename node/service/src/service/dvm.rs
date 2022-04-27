@@ -133,42 +133,35 @@ where
 			}
 		}
 
-		if ethapi_debug_targets
-			.iter()
-			.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
-		{
+		if ethapi_debug_targets.iter().any(|cmd| matches!(cmd.as_str(), "debug" | "trace")) {
 			let permit_pool = Arc::new(Semaphore::new(ethapi_max_permits as usize));
-			let (trace_filter_task, trace_filter_requester) = if ethapi_debug_targets
-				.iter()
-				.any(|target| target.as_str() == "trace")
-			{
-				let (trace_filter_task, trace_filter_requester) = CacheTask::create(
-					Arc::clone(&client),
-					Arc::clone(&substrate_backend),
-					Duration::from_secs(ethapi_trace_cache_duration),
-					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
-				);
-				(Some(trace_filter_task), Some(trace_filter_requester))
-			} else {
-				(None, None)
-			};
+			let (trace_filter_task, trace_filter_requester) =
+				if ethapi_debug_targets.iter().any(|target| target.as_str() == "trace") {
+					let (trace_filter_task, trace_filter_requester) = CacheTask::create(
+						Arc::clone(&client),
+						Arc::clone(&substrate_backend),
+						Duration::from_secs(ethapi_trace_cache_duration),
+						Arc::clone(&permit_pool),
+						Arc::clone(&overrides),
+					);
+					(Some(trace_filter_task), Some(trace_filter_requester))
+				} else {
+					(None, None)
+				};
 
-			let (debug_task, debug_requester) = if ethapi_debug_targets
-				.iter()
-				.any(|target| target.as_str() == "debug")
-			{
-				let (debug_task, debug_requester) = DebugHandler::task(
-					Arc::clone(&client),
-					Arc::clone(&substrate_backend),
-					Arc::clone(&dvm_backend),
-					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
-				);
-				(Some(debug_task), Some(debug_requester))
-			} else {
-				(None, None)
-			};
+			let (debug_task, debug_requester) =
+				if ethapi_debug_targets.iter().any(|target| target.as_str() == "debug") {
+					let (debug_task, debug_requester) = DebugHandler::task(
+						Arc::clone(&client),
+						Arc::clone(&substrate_backend),
+						Arc::clone(&dvm_backend),
+						Arc::clone(&permit_pool),
+						Arc::clone(&overrides),
+					);
+					(Some(debug_task), Some(debug_requester))
+				} else {
+					(None, None)
+				};
 
 			// `trace_filter` cache task. Essential.
 			// Proxies rpc requests to it's handler.
@@ -186,16 +179,10 @@ where
 					.spawn("ethapi_debug_targets-debug", debug_task);
 			}
 
-			return EthRpcRequesters {
-				debug: debug_requester,
-				trace: trace_filter_requester,
-			};
+			return EthRpcRequesters { debug: debug_requester, trace: trace_filter_requester };
 		}
 
-		EthRpcRequesters {
-			debug: None,
-			trace: None,
-		}
+		EthRpcRequesters { debug: None, trace: None }
 	}
 }
 
@@ -216,9 +203,6 @@ pub fn open_backend(
 	use fc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
-		source: DatabaseSettingsSrc::RocksDb {
-			path: db_path(&config),
-			cache_size: 0,
-		},
+		source: DatabaseSettingsSrc::RocksDb { path: db_path(&config), cache_size: 0 },
 	})?))
 }

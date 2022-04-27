@@ -20,14 +20,14 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
+	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 	type Event = Event;
+	type Keys = SessionKeys;
+	type NextSessionRotation = Babe;
+	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type SessionManager = NoteHistoricalRoot<Self, Staking>;
+	type ShouldEndSession = Babe;
 	type ValidatorId = AccountId;
 	type ValidatorIdOf = StashOf<Self>;
-	type ShouldEndSession = Babe;
-	type NextSessionRotation = Babe;
-	type SessionManager = NoteHistoricalRoot<Self, Staking>;
-	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = SessionKeys;
-	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 	type WeightInfo = ();
 }

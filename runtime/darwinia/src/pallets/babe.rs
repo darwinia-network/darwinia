@@ -13,20 +13,20 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type EpochDuration = EpochDuration;
-	type ExpectedBlockTime = ExpectedBlockTime;
+	type DisabledValidators = Session;
 	// session module is the trigger
 	type EpochChangeTrigger = ExternalTrigger;
-	type DisabledValidators = Session;
-	type KeyOwnerProofSystem = Historical;
-	type KeyOwnerProof =
-		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, AuthorityId)>>::Proof;
+	type EpochDuration = EpochDuration;
+	type ExpectedBlockTime = ExpectedBlockTime;
+	type HandleEquivocation =
+		EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
 		AuthorityId,
 	)>>::IdentificationTuple;
-	type HandleEquivocation =
-		EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
-	type WeightInfo = ();
+	type KeyOwnerProof =
+		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, AuthorityId)>>::Proof;
+	type KeyOwnerProofSystem = Historical;
 	type MaxAuthorities = MaxAuthorities;
+	type WeightInfo = ();
 }

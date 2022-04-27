@@ -9,9 +9,9 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type PalletId = DvmPalletId;
 	type Event = Event;
-	type StateRoot = IntermediateStateRoot;
-	type RingCurrency = Ring;
 	type KtonCurrency = Kton;
+	type PalletId = DvmPalletId;
+	type RingCurrency = Ring;
+	type StateRoot = IntermediateStateRoot;
 }

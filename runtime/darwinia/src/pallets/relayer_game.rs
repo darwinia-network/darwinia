@@ -10,8 +10,8 @@ use ethereum_primitives::EthereumBlockNumber;
 
 pub struct EthereumRelayerGameAdjustor;
 impl AdjustableRelayerGame for EthereumRelayerGameAdjustor {
-	type Moment = BlockNumber;
 	type Balance = Balance;
+	type Moment = BlockNumber;
 	type RelayHeaderId = EthereumBlockNumber;
 
 	fn max_active_games() -> u8 {
@@ -64,10 +64,10 @@ frame_support::parameter_types! {
 }
 
 impl Config<EthereumRelayerGameInstance> for Runtime {
-	type RingCurrency = Ring;
 	type LockId = EthereumRelayerGameLockId;
-	type RingSlash = Treasury;
-	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
 	type RelayableChain = EthereumRelay;
+	type RelayerGameAdjustor = EthereumRelayerGameAdjustor;
+	type RingCurrency = Ring;
+	type RingSlash = Treasury;
 	type WeightInfo = ();
 }
