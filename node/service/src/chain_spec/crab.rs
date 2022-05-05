@@ -46,12 +46,7 @@ pub fn session_keys(
 	im_online: ImOnlineId,
 	authority_discovery: AuthorityDiscoveryId,
 ) -> SessionKeys {
-	SessionKeys {
-		babe,
-		grandpa,
-		im_online,
-		authority_discovery,
-	}
+	SessionKeys { babe, grandpa, im_online, authority_discovery }
 }
 
 /// Properties for Crab.
@@ -131,10 +126,7 @@ pub fn genesis_config() -> ChainSpec {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			babe: BabeConfig {
-				authorities: vec![],
-				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
-			},
+			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
 			indices: Default::default(),
 			balances: BalancesConfig {
 				balances: endowed_accounts
@@ -152,11 +144,7 @@ pub fn genesis_config() -> ChainSpec {
 					.collect(),
 			},
 			kton: KtonConfig {
-				balances: endowed_accounts
-					.iter()
-					.cloned()
-					.map(|k| (k, CKTON_ENDOWMENT))
-					.collect(),
+				balances: endowed_accounts.iter().cloned().map(|k| (k, CKTON_ENDOWMENT)).collect(),
 			},
 			staking: StakingConfig {
 				minimum_validator_count: 1,
@@ -202,9 +190,7 @@ pub fn genesis_config() -> ChainSpec {
 			},
 			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
-			evm: crab_runtime::EVMConfig {
-				accounts: BTreeMap::new(),
-			},
+			evm: crab_runtime::EVMConfig { accounts: BTreeMap::new() },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),
@@ -259,24 +245,13 @@ pub fn development_config() -> ChainSpec {
 				code: wasm_binary_unwrap().to_vec(),
 				changes_trie_config: Default::default(),
 			},
-			babe: BabeConfig {
-				authorities: vec![],
-				epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
-			},
+			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
 			indices: Default::default(),
 			balances: BalancesConfig {
-				balances: endowed_accounts
-					.iter()
-					.cloned()
-					.map(|k| (k, 1 << 56))
-					.collect(),
+				balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 56)).collect(),
 			},
 			kton: KtonConfig {
-				balances: endowed_accounts
-					.iter()
-					.cloned()
-					.map(|k| (k, 1 << 56))
-					.collect(),
+				balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 56)).collect(),
 			},
 			staking: StakingConfig {
 				minimum_validator_count: 1,
@@ -317,9 +292,7 @@ pub fn development_config() -> ChainSpec {
 			},
 			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
-			evm: crab_runtime::EVMConfig {
-				accounts: evm_accounts,
-			},
+			evm: crab_runtime::EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),

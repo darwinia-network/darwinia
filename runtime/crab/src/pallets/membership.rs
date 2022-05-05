@@ -4,14 +4,14 @@ use pallet_membership::{Config, Instance1 as TechnicalMembershipInstance};
 use crate::*;
 
 impl Config<TechnicalMembershipInstance> for Runtime {
-	type Event = Event;
 	type AddOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type RemoveOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type SwapOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type ResetOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type PrimeOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type MembershipInitialized = TechnicalCommittee;
-	type MembershipChanged = TechnicalCommittee;
+	type Event = Event;
 	type MaxMembers = MaxMembers;
+	type MembershipChanged = TechnicalCommittee;
+	type MembershipInitialized = TechnicalCommittee;
+	type PrimeOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type RemoveOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type ResetOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type SwapOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type WeightInfo = ();
 }

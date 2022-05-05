@@ -24,24 +24,16 @@ frame_support::parameter_types! {
 }
 
 impl Config<WithCrabMessages> for Runtime {
-	type Event = Event;
-	type WeightInfo = ();
-	type Parameter = bm_crab::DarwiniaToCrabMessagesParameter;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
-
-	type OutboundPayload = bm_crab::ToCrabMessagePayload;
-	type OutboundMessageFee = bp_darwinia::Balance;
-
-	type InboundPayload = bm_crab::FromCrabMessagePayload;
-	type InboundMessageFee = bp_crab::Balance;
-	type InboundRelayer = bp_crab::AccountId;
-
 	type AccountIdConverter = bp_darwinia::AccountIdConverter;
-
-	type TargetHeaderChain = bm_crab::Crab;
+	type BridgedChainId = BridgedChainId;
+	type Event = Event;
+	type InboundMessageFee = bp_crab::Balance;
+	type InboundPayload = bm_crab::FromCrabMessagePayload;
+	type InboundRelayer = bp_crab::AccountId;
 	type LaneMessageVerifier = bm_crab::ToCrabMessageVerifier;
+	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
 	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<
 		Runtime,
 		WithCrabMessages,
@@ -49,11 +41,13 @@ impl Config<WithCrabMessages> for Runtime {
 		GetDeliveryConfirmationTransactionFee,
 		RootAccountForPayments,
 	>;
-
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = (ToCrabBacking, FeeMarketMessageConfirmedHandler<Self>);
-
-	type SourceHeaderChain = bm_crab::Crab;
 	type MessageDispatch = bm_crab::FromCrabMessageDispatch;
-	type BridgedChainId = BridgedChainId;
+	type OnDeliveryConfirmed = (ToCrabBacking, FeeMarketMessageConfirmedHandler<Self>);
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
+	type OutboundMessageFee = bp_darwinia::Balance;
+	type OutboundPayload = bm_crab::ToCrabMessagePayload;
+	type Parameter = bm_crab::DarwiniaToCrabMessagesParameter;
+	type SourceHeaderChain = bm_crab::Crab;
+	type TargetHeaderChain = bm_crab::Crab;
+	type WeightInfo = ();
 }

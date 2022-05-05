@@ -108,7 +108,7 @@ impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::Extend
 					.expect("input is padded with zeroes; qed")
 					% max.saturating_add(1);
 				random as usize
-			}
+			},
 		};
 
 		Some((iters, 0))
@@ -125,10 +125,9 @@ impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::Extend
 /// Following checks are made:
 ///
 /// - message is rejected if its lane is currently blocked;
-/// - message is rejected if there are too many pending (undelivered) messages at the outbound
-///   lane;
-/// - check that the sender has rights to dispatch the call on target chain using provided
-///   dispatch origin;
+/// - message is rejected if there are too many pending (undelivered) messages at the outbound lane;
+/// - check that the sender has rights to dispatch the call on target chain using provided dispatch
+///   origin;
 /// - check that the sender has paid enough funds for both message delivery and dispatch.
 #[derive(RuntimeDebug)]
 pub struct FromThisChainMessageVerifier<B, R>(PhantomData<(B, R)>);

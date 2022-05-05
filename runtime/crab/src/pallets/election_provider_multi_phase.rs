@@ -40,32 +40,35 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
+	type BenchmarkingConfig = BenchmarkConfig;
 	type Currency = Ring;
+	// nothing to do upon rewards
+	type DataProvider = Staking;
 	type EstimateCallFee = TransactionPayment;
-	type SignedPhase = SignedPhase;
-	type UnsignedPhase = UnsignedPhase;
-	type SolutionImprovementThreshold = SolutionImprovementThreshold;
+	type Event = Event;
+	type Fallback = NoFallback<Self>;
+	type ForceOrigin = EnsureRootOrHalfCouncil;
+	type MinerMaxLength = OffchainSolutionLengthLimit;
 	type MinerMaxWeight = OffchainSolutionWeightLimit;
-	type MinerMaxLength = OffchainSolutionLengthLimit; // For now use the one from staking.
-	type OffchainRepeat = OffchainRepeat;
 	type MinerTxPriority = NposSolutionPriority;
-	type SignedMaxSubmissions = SignedMaxSubmissions;
-	type SignedRewardBase = SignedRewardBase;
+	// For now use the one from staking.
+	type OffchainRepeat = OffchainRepeat;
+	// burn slashes
+	type RewardHandler = ();
 	type SignedDepositBase = SignedDepositBase;
 	type SignedDepositByte = SignedDepositByte;
 	type SignedDepositWeight = ();
+	type SignedMaxSubmissions = SignedMaxSubmissions;
 	type SignedMaxWeight = Self::MinerMaxWeight;
-	type SlashHandler = (); // burn slashes
-	type RewardHandler = (); // nothing to do upon rewards
-	type DataProvider = Staking;
+	type SignedPhase = SignedPhase;
+	type SignedRewardBase = SignedRewardBase;
+	type SlashHandler = ();
 	type Solution = NposCompactSolution24;
-	type Fallback = NoFallback<Self>;
+	type SolutionImprovementThreshold = SolutionImprovementThreshold;
 	type Solver = SequentialPhragmen<AccountId, SolutionAccuracyOf<Self>, OffchainRandomBalancing>;
-	type WeightInfo = ();
-	type ForceOrigin = EnsureRootOrHalfCouncil;
-	type BenchmarkingConfig = BenchmarkConfig;
+	type UnsignedPhase = UnsignedPhase;
 	type VoterSnapshotPerBlock = VoterSnapshotPerBlock;
+	type WeightInfo = ();
 }
 
 impl onchain::Config for Runtime {
@@ -78,11 +81,11 @@ impl onchain::Config for Runtime {
 /// since the staking is bounded and the weight pipeline takes hours for this single pallet.
 pub struct BenchmarkConfig;
 impl BenchmarkingConfig for BenchmarkConfig {
-	const VOTERS: [u32; 2] = [1000, 2000];
-	const TARGETS: [u32; 2] = [500, 1000];
 	const ACTIVE_VOTERS: [u32; 2] = [500, 800];
 	const DESIRED_TARGETS: [u32; 2] = [200, 400];
-	const SNAPSHOT_MAXIMUM_VOTERS: u32 = 1000;
-	const MINER_MAXIMUM_VOTERS: u32 = 1000;
 	const MAXIMUM_TARGETS: u32 = 300;
+	const MINER_MAXIMUM_VOTERS: u32 = 1000;
+	const SNAPSHOT_MAXIMUM_VOTERS: u32 = 1000;
+	const TARGETS: [u32; 2] = [500, 1000];
+	const VOTERS: [u32; 2] = [1000, 2000];
 }

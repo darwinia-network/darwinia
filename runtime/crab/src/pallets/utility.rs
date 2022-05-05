@@ -4,7 +4,7 @@ use pallet_utility::Config;
 use crate::*;
 
 impl Config for Runtime {
-	type Event = Event;
 	type Call = Call;
+	type Event = Event;
 	type WeightInfo = ();
 }

@@ -18,19 +18,19 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
-	type PalletId = SocietyPalletId;
-	type Currency = Ring;
-	type Randomness = RandomnessFromOneEpochAgo<Self>;
 	type CandidateDeposit = CandidateDeposit;
-	type WrongSideDeduction = WrongSideDeduction;
-	type MaxStrikes = MaxStrikes;
-	type PeriodSpend = PeriodSpend;
-	type MembershipChanged = ();
-	type RotationPeriod = RotationPeriod;
-	type MaxLockDuration = MaxLockDuration;
-	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type SuspensionJudgementOrigin = EnsureFounder<Self>;
 	type ChallengePeriod = ChallengePeriod;
+	type Currency = Ring;
+	type Event = Event;
+	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type MaxCandidateIntake = MaxCandidateIntake;
+	type MaxLockDuration = MaxLockDuration;
+	type MaxStrikes = MaxStrikes;
+	type MembershipChanged = ();
+	type PalletId = SocietyPalletId;
+	type PeriodSpend = PeriodSpend;
+	type Randomness = RandomnessFromOneEpochAgo<Self>;
+	type RotationPeriod = RotationPeriod;
+	type SuspensionJudgementOrigin = EnsureFounder<Self>;
+	type WrongSideDeduction = WrongSideDeduction;
 }

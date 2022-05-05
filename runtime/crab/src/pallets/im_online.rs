@@ -14,12 +14,12 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type AuthorityId = AuthorityId;
 	type Event = Event;
+	type MaxKeys = MaxKeys;
+	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
+	type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
 	type NextSessionRotation = Babe;
-	type ValidatorSet = Historical;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
+	type ValidatorSet = Historical;
 	type WeightInfo = ();
-	type MaxKeys = MaxKeys;
-	type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
-	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }

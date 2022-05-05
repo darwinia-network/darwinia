@@ -18,17 +18,17 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type PalletId = EthereumRelayPalletId;
-	type Event = Event;
+	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
+	type ApproveThreshold = ApproveThreshold;
 	type BridgedNetwork = EthereumRelayBridgeNetwork;
 	type Call = Call;
-	type Currency = Ring;
-	type RelayerGame = EthereumRelayerGame;
-	type ApproveOrigin = TechnicalCommitteeApproveOrigin;
-	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
 	type ConfirmPeriod = ConfirmPeriod;
-	type TechnicalMembership = TechnicalMembership;
-	type ApproveThreshold = ApproveThreshold;
+	type Currency = Ring;
+	type Event = Event;
+	type PalletId = EthereumRelayPalletId;
+	type RejectOrigin = EnsureRootOrHalfTechnicalComittee;
 	type RejectThreshold = RejectThreshold;
+	type RelayerGame = EthereumRelayerGame;
+	type TechnicalMembership = TechnicalMembership;
 	type WeightInfo = ();
 }

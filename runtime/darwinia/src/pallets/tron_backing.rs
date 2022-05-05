@@ -9,8 +9,8 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
+	type KtonCurrency = Kton;
 	type PalletId = TronBackingPalletId;
 	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
 	type WeightInfo = ();
 }

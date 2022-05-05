@@ -14,16 +14,16 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
-	type Currency = Ring;
 	type BasicDeposit = BasicDeposit;
+	type Currency = Ring;
+	type Event = Event;
 	type FieldDeposit = FieldDeposit;
-	type SubAccountDeposit = SubAccountDeposit;
-	type MaxSubAccounts = MaxSubAccounts;
+	type ForceOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type MaxAdditionalFields = MaxAdditionalFields;
 	type MaxRegistrars = MaxRegistrars;
-	type Slashed = Treasury;
-	type ForceOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type MaxSubAccounts = MaxSubAccounts;
 	type RegistrarOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type Slashed = Treasury;
+	type SubAccountDeposit = SubAccountDeposit;
 	type WeightInfo = ();
 }

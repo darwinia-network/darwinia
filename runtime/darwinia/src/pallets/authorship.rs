@@ -10,8 +10,8 @@ frame_support::parameter_types! {
 
 // TODO: substrate#2986 implement this properly
 impl Config for Runtime {
+	type EventHandler = (Staking, ImOnline);
+	type FilterUncle = ();
 	type FindAuthor = FindAccountFromAuthorIndex<Self, Babe>;
 	type UncleGenerations = UncleGenerations;
-	type FilterUncle = ();
-	type EventHandler = (Staking, ImOnline);
 }

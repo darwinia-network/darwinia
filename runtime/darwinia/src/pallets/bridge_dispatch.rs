@@ -20,13 +20,13 @@ impl Contains<Call> for S2sCallFilter {
 }
 
 impl Config<WithCrabDispatch> for Runtime {
-	type Event = Event;
+	type AccountIdConverter = bp_darwinia::AccountIdConverter;
 	type BridgeMessageId = (LaneId, MessageNonce);
 	type Call = Call;
 	type CallFilter = S2sCallFilter;
 	type EncodedCall = bm_crab::FromCrabEncodedCall;
+	type Event = Event;
 	type SourceChainAccountId = bp_crab::AccountId;
 	type TargetChainAccountPublic = bp_darwinia::AccountPublic;
 	type TargetChainSignature = bp_darwinia::Signature;
-	type AccountIdConverter = bp_darwinia::AccountIdConverter;
 }

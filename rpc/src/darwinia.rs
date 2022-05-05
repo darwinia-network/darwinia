@@ -83,11 +83,7 @@ where
 		select_chain,
 		chain_spec,
 		deny_unsafe,
-		babe: BabeDeps {
-			keystore,
-			babe_config,
-			shared_epoch_changes,
-		},
+		babe: BabeDeps { keystore, babe_config, shared_epoch_changes },
 		grandpa:
 			GrandpaDeps {
 				shared_voter_state,
@@ -99,14 +95,8 @@ where
 	} = deps;
 	let mut io = IoHandler::default();
 
-	io.extend_with(SystemApi::to_delegate(FullSystem::new(
-		client.clone(),
-		pool,
-		deny_unsafe,
-	)));
-	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
-		client.clone(),
-	)));
+	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
+	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
 	io.extend_with(BabeApi::to_delegate(BabeRpcHandler::new(
 		client.clone(),
 		shared_epoch_changes.clone(),

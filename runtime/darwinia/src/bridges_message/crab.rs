@@ -116,9 +116,8 @@ pub enum DarwiniaToCrabMessagesParameter {
 impl Parameter for DarwiniaToCrabMessagesParameter {
 	fn save(&self) {
 		match *self {
-			DarwiniaToCrabMessagesParameter::CrabToDarwiniaConversionRate(ref conversion_rate) => {
-				CrabToDarwiniaConversionRate::set(conversion_rate)
-			}
+			DarwiniaToCrabMessagesParameter::CrabToDarwiniaConversionRate(ref conversion_rate) =>
+				CrabToDarwiniaConversionRate::set(conversion_rate),
 		}
 	}
 }
@@ -127,14 +126,14 @@ impl Parameter for DarwiniaToCrabMessagesParameter {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct WithCrabMessageBridge;
 impl MessageBridge for WithCrabMessageBridge {
-	type ThisChain = Darwinia;
 	type BridgedChain = Crab;
+	type ThisChain = Darwinia;
 
-	const RELAYER_FEE_PERCENT: u32 = 10;
-	const THIS_CHAIN_ID: ChainId = DARWINIA_CHAIN_ID;
 	const BRIDGED_CHAIN_ID: ChainId = CRAB_CHAIN_ID;
 	const BRIDGED_MESSAGES_PALLET_NAME: &'static str =
 		bp_darwinia::WITH_DARWINIA_MESSAGES_PALLET_NAME;
+	const RELAYER_FEE_PERCENT: u32 = 10;
+	const THIS_CHAIN_ID: ChainId = DARWINIA_CHAIN_ID;
 
 	fn bridged_balance_to_this_balance(
 		bridged_balance: BalanceOf<Self::BridgedChain>,
@@ -150,12 +149,12 @@ impl MessageBridge for WithCrabMessageBridge {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Darwinia;
 impl ChainWithMessages for Darwinia {
-	type Hash = bp_darwinia::Hash;
 	type AccountId = bp_darwinia::AccountId;
-	type Signer = bp_darwinia::AccountPublic;
-	type Signature = bp_darwinia::Signature;
-	type Weight = Weight;
 	type Balance = bp_darwinia::Balance;
+	type Hash = bp_darwinia::Hash;
+	type Signature = bp_darwinia::Signature;
+	type Signer = bp_darwinia::AccountPublic;
+	type Weight = Weight;
 }
 impl ThisChainWithMessages for Darwinia {
 	type Call = Call;
@@ -187,9 +186,7 @@ impl ThisChainWithMessages for Darwinia {
 	fn transaction_payment(transaction: MessageTransaction<Weight>) -> Self::Balance {
 		// in our testnets, both per-byte fee and weight-to-fee are 1:1
 		messages::transaction_payment(
-			bp_darwinia::RuntimeBlockWeights::get()
-				.get(DispatchClass::Normal)
-				.base_extrinsic,
+			bp_darwinia::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
 			1,
 			FixedU128::zero(),
 			|weight| weight as _,
@@ -202,12 +199,12 @@ impl ThisChainWithMessages for Darwinia {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Crab;
 impl ChainWithMessages for Crab {
-	type Hash = bp_crab::Hash;
 	type AccountId = bp_crab::AccountId;
-	type Signer = bp_crab::AccountPublic;
-	type Signature = bp_crab::Signature;
-	type Weight = Weight;
 	type Balance = bp_crab::Balance;
+	type Hash = bp_crab::Hash;
+	type Signature = bp_crab::Signature;
+	type Signer = bp_crab::AccountPublic;
+	type Weight = Weight;
 }
 impl BridgedChainWithMessages for Crab {
 	fn maximal_extrinsic_size() -> u32 {
@@ -221,8 +218,8 @@ impl BridgedChainWithMessages for Crab {
 
 		// we're charging for payload bytes in `WithCrabMessageBridge::transaction_payment` function
 		//
-		// this bridge may be used to deliver all kind of messages, so we're not making any assumptions about
-		// minimal dispatch weight here
+		// this bridge may be used to deliver all kind of messages, so we're not making any
+		// assumptions about minimal dispatch weight here
 
 		0..=upper_limit
 	}
@@ -255,9 +252,7 @@ impl BridgedChainWithMessages for Crab {
 	fn transaction_payment(transaction: MessageTransaction<Weight>) -> Self::Balance {
 		// in our testnets, both per-byte fee and weight-to-fee are 1:1
 		messages::transaction_payment(
-			bp_crab::RuntimeBlockWeights::get()
-				.get(DispatchClass::Normal)
-				.base_extrinsic,
+			bp_crab::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
 			1,
 			FixedU128::zero(),
 			|weight| weight as _,
