@@ -14,9 +14,8 @@ code           = { package = "parity-scale-codec", version = "2.3", default-feat
 jsonrpc-core   = { version = "18.0" }
 jsonrpc-pubsub = { version = "18.0" }
 # darwinia-network frame
-darwinia-balances-rpc   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-fee-market-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-staking-rpc    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-balances-rpc = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-staking-rpc  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 # darwinia-network dvm
 darwinia-ethereum             = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }

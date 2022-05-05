@@ -56,7 +56,7 @@ pub type FromDarwiniaMessagePayload = FromBridgedChainMessagePayload<WithDarwini
 
 /// Message verifier for Crab -> Darwinia messages.
 pub type ToDarwiniaMessageVerifier =
-	FromThisChainMessageVerifier<WithDarwiniaMessageBridge, Runtime>;
+	FromThisChainMessageVerifier<WithDarwiniaMessageBridge, Runtime, WithDarwiniaFeeMarket>;
 
 /// Encoded Crab Call as it comes from Darwinia.
 pub type FromDarwiniaEncodedCall = FromBridgedChainEncodedMessageCall<Call>;

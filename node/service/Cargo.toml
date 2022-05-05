@@ -19,7 +19,6 @@ serde_json  = { version = "1.0" }
 tokio       = { version = "1.17" }
 # darwinia-network frame
 darwinia-balances-rpc-runtime-api   = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-fee-market-rpc-runtime-api = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-staking-rpc-runtime-api    = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 # darwinia-network dvm
 darwinia-evm                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }

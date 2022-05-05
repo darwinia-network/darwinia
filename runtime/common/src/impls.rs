@@ -131,18 +131,19 @@ impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::Extend
 ///   dispatch origin;
 /// - check that the sender has paid enough funds for both message delivery and dispatch.
 #[derive(RuntimeDebug)]
-pub struct FromThisChainMessageVerifier<B, R>(PhantomData<(B, R)>);
-impl<B, R>
+pub struct FromThisChainMessageVerifier<B, R, I>(PhantomData<(B, R, I)>);
+impl<B, R, I>
 	LaneMessageVerifier<
 		AccountIdOf<ThisChain<B>>,
 		FromThisChainMessagePayload<B>,
 		BalanceOf<ThisChain<B>>,
-	> for FromThisChainMessageVerifier<B, R>
+	> for FromThisChainMessageVerifier<B, R, I>
 where
 	B: MessageBridge,
-	R: darwinia_fee_market::Config,
+	R: darwinia_fee_market::Config<I>,
+	I: 'static,
 	AccountIdOf<ThisChain<B>>: PartialEq + Clone,
-	darwinia_fee_market::RingBalance<R>: From<BalanceOf<ThisChain<B>>>,
+	darwinia_fee_market::RingBalance<R, I>: From<BalanceOf<ThisChain<B>>>,
 {
 	type Error = &'static str;
 
@@ -174,8 +175,9 @@ where
 
 		// Do the delivery_and_dispatch_fee. We assume that the delivery and dispatch fee always
 		// greater than the fee market provided fee.
-		let message_fee: darwinia_fee_market::RingBalance<R> = (*delivery_and_dispatch_fee).into();
-		if let Some(market_fee) = darwinia_fee_market::Pallet::<R>::market_fee() {
+		let message_fee: darwinia_fee_market::RingBalance<R, I> =
+			(*delivery_and_dispatch_fee).into();
+		if let Some(market_fee) = darwinia_fee_market::Pallet::<R, I>::market_fee() {
 			// compare with actual fee paid
 			if message_fee < market_fee {
 				return Err(TOO_LOW_FEE);

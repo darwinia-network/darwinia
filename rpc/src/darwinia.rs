@@ -59,7 +59,6 @@ where
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
-		+ darwinia_fee_market_rpc::FeeMarketRuntimeApi<Block, Balance>
 		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + sc_transaction_pool_api::TransactionPool,
 	SC: 'static + sp_consensus::SelectChain<Block>,
@@ -74,7 +73,6 @@ where
 	use substrate_frame_rpc_system::*;
 	// --- darwinia-network ---
 	use darwinia_balances_rpc::*;
-	use darwinia_fee_market_rpc::*;
 	use darwinia_staking_rpc::*;
 
 	let FullDeps {
@@ -130,7 +128,6 @@ where
 		deny_unsafe,
 	)?));
 	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
-	io.extend_with(FeeMarketApi::to_delegate(FeeMarket::new(client.clone())));
 	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
 
 	Ok(io)
