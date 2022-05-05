@@ -48,7 +48,6 @@ dp-evm-tracer                      = { optional = true, default-features = false
 fp-evm                             = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }
 fp-rpc                             = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2", default-features = false }
 fp-self-contained                  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }
-fp-storage                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }
 moonbeam-rpc-primitives-debug      = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.2" }
 pallet-base-fee                    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }
 pallet-evm                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.2" }
@@ -156,7 +155,6 @@ std = [
 	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
-	"fp-storage/std",
 	"pallet-base-fee/std",
 	"pallet-evm/std",
 	"pallet-evm-precompile-simple/std",
