@@ -73,9 +73,6 @@ pub use sudo::*;
 pub mod vesting;
 pub use vesting::*;
 
-pub mod claims;
-pub use claims::*;
-
 pub mod utility;
 pub use utility::*;
 

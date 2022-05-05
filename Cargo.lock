@@ -1105,7 +1105,6 @@ dependencies = [
  "bridge-runtime-common",
  "darwinia-balances",
  "darwinia-balances-rpc-runtime-api",
- "darwinia-claims",
  "darwinia-common-runtime",
  "darwinia-democracy",
  "darwinia-elections-phragmen",
@@ -1515,25 +1514,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "darwinia-claims"
-version = "2.8.10"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.2#12cb3d1da3bc53a748b785691b4a7bd3e4c630ae"
-dependencies = [
- "array-bytes",
- "darwinia-support",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec 2.3.1",
- "scale-info 1.0.0",
- "serde",
- "serde_json",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]

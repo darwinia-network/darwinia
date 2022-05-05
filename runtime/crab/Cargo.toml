@@ -29,18 +29,17 @@ pallet-bridge-dispatch = { default-features = false, git = "https://github.com/d
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 # darwinia-network frame
-darwinia-balances                   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-balances-rpc-runtime-api   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-claims                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-democracy                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-elections-phragmen         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-fee-market                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-header-mmr                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-staking                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-staking-rpc-runtime-api    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-support                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-vesting                    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-from-substrate-issuing              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-balances                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-democracy                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-elections-phragmen       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-fee-market               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-header-mmr               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-staking                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-staking-rpc-runtime-api  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-support                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+darwinia-vesting                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
+from-substrate-issuing            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 # darwinia-network dvm
 darwinia-ethereum                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
@@ -137,7 +136,6 @@ std = [
 	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-balances-rpc-runtime-api/std",
-	"darwinia-claims/std",
 	"darwinia-democracy/std",
 	"darwinia-elections-phragmen/std",
 	"darwinia-fee-market/std",

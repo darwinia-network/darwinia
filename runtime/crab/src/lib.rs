@@ -212,23 +212,11 @@ frame_support::construct_runtime! {
 		// Vesting. Usable initially, but removed once all vesting is finished.
 		Vesting: darwinia_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
 
-		// Claims. Usable initially.
-		Claims: darwinia_claims::{Pallet, Call, Storage, Config, Event<T>, ValidateUnsigned} = 27,
-
 		// Proxy module. Late addition.
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
-
-		// Crab bridge.
-		// CrabIssuing: darwinia_crab_issuing::{Pallet, Call, Storage, Config} = 35,
-
-		// Ethereum bridge.
-		// EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 29,
-		// EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 28,
-		// EthereumRelayerGame: darwinia_relayer_game::<Instance0>::{Pallet, Storage} = 30,
-		// EthereumRelayAuthorities: darwinia_relay_authorities::<Instance0>::{Pallet, Call, Storage, Event<T>} = 37,
 
 		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
