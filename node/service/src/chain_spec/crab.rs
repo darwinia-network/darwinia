@@ -182,12 +182,6 @@ pub fn genesis_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			claims: ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			},
 			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
 			evm: crab_runtime::EVMConfig { accounts: BTreeMap::new() },
@@ -284,12 +278,6 @@ pub fn development_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			claims: ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			},
 			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
 			evm: crab_runtime::EVMConfig { accounts: evm_accounts },
