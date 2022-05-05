@@ -93,7 +93,7 @@ where
 impl<R> PrecompileSet for CrabPrecompiles<R>
 where
 	Transfer<R>: Precompile,
-	Sub2SubBridge<R, ToDarwiniaMessageSender>: Precompile,
+	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
 	Dispatch<R>: Precompile,
 	R: darwinia_ethereum::Config,
 {
@@ -114,9 +114,11 @@ where
 			// Darwinia precompiles
 			a if a == addr(21) =>
 				Some(<Transfer<R>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(24) => Some(<Sub2SubBridge<R, ToDarwiniaMessageSender>>::execute(
-				input, target_gas, context, is_static,
-			)),
+			a if a == addr(24) => Some(<Sub2SubBridge<
+				R,
+				ToDarwiniaMessageSender,
+				bm_darwinia::ToDarwiniaOutboundPayLoad,
+			>>::execute(input, target_gas, context, is_static)),
 			a if a == addr(25) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
 			_ => None,

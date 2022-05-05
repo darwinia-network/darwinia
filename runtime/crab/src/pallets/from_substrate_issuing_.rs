@@ -33,7 +33,6 @@ impl Config for Runtime {
 	type Event = Event;
 	type InternalTransactHandler = Ethereum;
 	type MessageLaneId = BridgeDarwiniaLaneId;
-	type OutboundPayloadCreator = bm_darwinia::ToDarwiniaOutboundPayLoad;
 	type PalletId = S2sIssuingPalletId;
 	type RingCurrency = Ring;
 	type ToEthAddressT = TruncateToEthAddress;

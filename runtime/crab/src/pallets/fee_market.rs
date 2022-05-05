@@ -1,3 +1,5 @@
+pub use darwinia_fee_market::Instance1 as WithDarwiniaFeeMarket;
+
 // --- core ---
 use core::cmp;
 // --- substrate ---
@@ -21,7 +23,7 @@ frame_support::parameter_types! {
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
 }
 
-impl Config for Runtime {
+impl Config<WithDarwiniaFeeMarket> for Runtime {
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
@@ -39,8 +41,12 @@ impl Config for Runtime {
 
 /// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;
-impl<T: Config> Slasher<T> for FeeMarketSlasher {
-	fn slash(locked_collateral: RingBalance<T>, timeout: T::BlockNumber) -> RingBalance<T> {
+impl<T, I> Slasher<T, I> for FeeMarketSlasher
+where
+	T: Config<I>,
+	I: 'static,
+{
+	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
 		let slash_each_block = 2 * COIN;
 		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))

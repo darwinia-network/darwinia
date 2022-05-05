@@ -79,6 +79,9 @@ pub mod wasm {
 }
 pub use wasm::*;
 
+mod migrations;
+use migrations::*;
+
 // TODO: Benchmark
 // /// Weights for pallets used in the runtime.
 // mod weights;
@@ -94,10 +97,7 @@ use codec::Encode;
 // --- paritytech ---
 #[allow(unused)]
 use frame_support::migration;
-use frame_support::{
-	traits::{KeyOwnerProofSystem, OnRuntimeUpgrade},
-	weights::Weight,
-};
+use frame_support::traits::KeyOwnerProofSystem;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -123,7 +123,6 @@ use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_common_runtime::*;
-use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 /// Block header type as expected by this runtime.
@@ -174,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 12_1_0,
+	spec_version: 12_2_0,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -273,7 +272,7 @@ frame_support::construct_runtime! {
 		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 45,
+		FeeMarket: darwinia_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
@@ -532,23 +531,6 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance> for Runtime {
-		fn market_fee() -> Option<Fee<Balance>> {
-			if let Some(fee) = FeeMarket::market_fee() {
-				return Some(Fee {
-					amount: fee,
-				});
-			}
-			None
-		}
-
-		fn in_process_orders() -> InProcessOrders {
-			return InProcessOrders {
-				orders: FeeMarket::in_process_orders(),
-			}
-		}
-	}
-
 	impl bp_crab::CrabFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
 			let header = BridgeCrabGrandpa::best_finalized();
@@ -594,7 +576,7 @@ sp_api::impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade() -> (Weight, Weight) {
+		fn on_runtime_upgrade() -> (frame_support::weights::Weight, frame_support::weights::Weight) {
 			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
@@ -603,7 +585,7 @@ sp_api::impl_runtime_apis! {
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
-		fn execute_block_no_check(block: Block) -> Weight {
+		fn execute_block_no_check(block: Block) -> frame_support::weights::Weight {
 			Executive::execute_block_no_check(block)
 		}
 	}
@@ -627,27 +609,5 @@ sp_api::impl_runtime_apis! {
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
 		}
-	}
-}
-
-fn migrate() -> Weight {
-	// RuntimeBlockWeights::get().max_block
-	0
-}
-
-pub struct CustomOnRuntimeUpgrade;
-impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-	#[cfg(feature = "try-runtime")]
-	fn pre_upgrade() -> Result<(), &'static str> {
-		Ok(())
-	}
-
-	#[cfg(feature = "try-runtime")]
-	fn post_upgrade() -> Result<(), &'static str> {
-		Ok(())
-	}
-
-	fn on_runtime_upgrade() -> Weight {
-		migrate()
 	}
 }
