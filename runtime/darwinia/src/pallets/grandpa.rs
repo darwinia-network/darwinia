@@ -8,17 +8,17 @@ use sp_core::crypto::KeyTypeId;
 use crate::*;
 
 impl Config for Runtime {
-	type Event = Event;
 	type Call = Call;
-	type KeyOwnerProof =
-		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+	type Event = Event;
+	type HandleEquivocation =
+		EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
 		GrandpaId,
 	)>>::IdentificationTuple;
+	type KeyOwnerProof =
+		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
 	type KeyOwnerProofSystem = Historical;
-	type HandleEquivocation =
-		EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
-	type WeightInfo = ();
 	type MaxAuthorities = MaxAuthorities;
+	type WeightInfo = ();
 }

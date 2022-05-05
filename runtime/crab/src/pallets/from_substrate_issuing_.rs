@@ -27,14 +27,14 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type PalletId = S2sIssuingPalletId;
-	type Event = Event;
-	type WeightInfo = ();
-	type RingCurrency = Ring;
+	type BackingChainName = BackingChainName;
 	type BridgedAccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = DarwiniaChainId;
-	type ToEthAddressT = TruncateToEthAddress;
+	type Event = Event;
 	type InternalTransactHandler = Ethereum;
-	type BackingChainName = BackingChainName;
 	type MessageLaneId = BridgeDarwiniaLaneId;
+	type PalletId = S2sIssuingPalletId;
+	type RingCurrency = Ring;
+	type ToEthAddressT = TruncateToEthAddress;
+	type WeightInfo = ();
 }

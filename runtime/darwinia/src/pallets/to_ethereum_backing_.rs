@@ -15,18 +15,18 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type PalletId = EthereumBackingPalletId;
-	type FeePalletId = EthereumBackingFeePalletId;
-	type Event = Event;
-	type RedeemAccountId = AccountId;
-	type EthereumRelay = EthereumRelay;
-	type OnDepositRedeem = Staking;
-	type RingCurrency = Ring;
-	type KtonCurrency = Kton;
-	type RingLockLimit = RingLockLimit;
-	type KtonLockLimit = KtonLockLimit;
 	type AdvancedFee = AdvancedFee;
-	type SyncReward = SyncReward;
 	type EcdsaAuthorities = EthereumRelayAuthorities;
+	type EthereumRelay = EthereumRelay;
+	type Event = Event;
+	type FeePalletId = EthereumBackingFeePalletId;
+	type KtonCurrency = Kton;
+	type KtonLockLimit = KtonLockLimit;
+	type OnDepositRedeem = Staking;
+	type PalletId = EthereumBackingPalletId;
+	type RedeemAccountId = AccountId;
+	type RingCurrency = Ring;
+	type RingLockLimit = RingLockLimit;
+	type SyncReward = SyncReward;
 	type WeightInfo = ();
 }

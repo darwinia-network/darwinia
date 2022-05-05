@@ -13,12 +13,12 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
 	type DataDepositPerByte = DataDepositPerByte;
+	type Event = Event;
 	type MaximumReasonLength = MaximumReasonLength;
-	type Tippers = PhragmenElection;
 	type TipCountdown = TipCountdown;
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
+	type Tippers = PhragmenElection;
 	type WeightInfo = ();
 }

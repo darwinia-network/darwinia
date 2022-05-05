@@ -24,34 +24,26 @@ frame_support::parameter_types! {
 }
 
 impl Config<WithDarwiniaMessages> for Runtime {
-	type Event = Event;
-	type WeightInfo = ();
-	type Parameter = bm_darwinia::CrabToDarwiniaMessagesParameter;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
-
-	type OutboundPayload = bm_darwinia::ToDarwiniaMessagePayload;
-	type OutboundMessageFee = bp_crab::Balance;
-
-	type InboundPayload = bm_darwinia::FromDarwiniaMessagePayload;
-	type InboundMessageFee = bp_darwinia::Balance;
-	type InboundRelayer = bp_darwinia::AccountId;
-
 	type AccountIdConverter = bp_crab::AccountIdConverter;
-
-	type TargetHeaderChain = bm_darwinia::Darwinia;
+	type BridgedChainId = BridgedChainId;
+	type Event = Event;
+	type InboundMessageFee = bp_darwinia::Balance;
+	type InboundPayload = bm_darwinia::FromDarwiniaMessagePayload;
+	type InboundRelayer = bp_darwinia::AccountId;
 	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier;
+	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
 	type MessageDeliveryAndDispatchPayment =
 		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring, RootAccountForPayments>;
-
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
-	type OnDeliveryConfirmed = (
-		FromDarwiniaIssuing,
-		FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>,
-	);
-
-	type SourceHeaderChain = bm_darwinia::Darwinia;
 	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;
-	type BridgedChainId = BridgedChainId;
+	type OnDeliveryConfirmed =
+		(FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>);
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
+	type OutboundMessageFee = bp_crab::Balance;
+	type OutboundPayload = bm_darwinia::ToDarwiniaMessagePayload;
+	type Parameter = bm_darwinia::CrabToDarwiniaMessagesParameter;
+	type SourceHeaderChain = bm_darwinia::Darwinia;
+	type TargetHeaderChain = bm_darwinia::Darwinia;
+	type WeightInfo = ();
 }

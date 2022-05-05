@@ -15,37 +15,37 @@ frame_support::parameter_types! {
 	pub const MaxApprovals: u32 = 100;
 }
 
-// In order to use `Tips`, which bounded by `pallet_treasury::Config` rather `pallet_treasury::Config<I>`
-// Still use `DefaultInstance` here instead `Instance1`
+// In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
+// `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
 impl Config for Runtime {
-	type PalletId = TreasuryPalletId;
-	type Currency = Ring;
 	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type Event = Event;
-	type OnSlash = Treasury;
-	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = RingProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = Society;
-	type WeightInfo = ();
-	type SpendFunds = Bounties;
+	type Currency = Ring;
+	type Event = Event;
 	type MaxApprovals = MaxApprovals;
+	type OnSlash = Treasury;
+	type PalletId = TreasuryPalletId;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = RingProposalBondMinimum;
+	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type SpendFunds = Bounties;
+	type SpendPeriod = SpendPeriod;
+	type WeightInfo = ();
 }
 impl Config<KtonTreasuryInstance> for Runtime {
-	type PalletId = TreasuryPalletId;
-	type Currency = Kton;
 	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type Event = Event;
-	type OnSlash = KtonTreasury;
-	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = KtonProposalBondMinimum;
-	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = ();
-	type WeightInfo = ();
-	type SpendFunds = ();
+	type Currency = Kton;
+	type Event = Event;
 	type MaxApprovals = MaxApprovals;
+	type OnSlash = KtonTreasury;
+	type PalletId = TreasuryPalletId;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = KtonProposalBondMinimum;
+	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type SpendFunds = ();
+	type SpendPeriod = SpendPeriod;
+	type WeightInfo = ();
 }

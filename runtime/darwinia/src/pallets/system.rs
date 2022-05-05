@@ -18,27 +18,27 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
+	type AccountData = AccountData<Balance>;
+	type AccountId = AccountId;
 	type BaseCallFilter = BaseFilter;
-	type BlockWeights = RuntimeBlockWeights;
+	type BlockHashCount = BlockHashCountForDarwinia;
 	type BlockLength = RuntimeBlockLength;
-	type DbWeight = RocksDbWeight;
-	type Origin = Origin;
-	type Call = Call;
-	type Index = Nonce;
 	type BlockNumber = BlockNumber;
+	type BlockWeights = RuntimeBlockWeights;
+	type Call = Call;
+	type DbWeight = RocksDbWeight;
+	type Event = Event;
 	type Hash = Hash;
 	type Hashing = Hashing;
-	type AccountId = AccountId;
-	type Lookup = AccountIdLookup<AccountId, ()>;
 	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCountForDarwinia;
-	type Version = Version;
-	type PalletInfo = PalletInfo;
-	type AccountData = AccountData<Balance>;
-	type OnNewAccount = ();
+	type Index = Nonce;
+	type Lookup = AccountIdLookup<AccountId, ()>;
 	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = SS58Prefix;
+	type OnNewAccount = ();
 	type OnSetCode = ();
+	type Origin = Origin;
+	type PalletInfo = PalletInfo;
+	type SS58Prefix = SS58Prefix;
+	type SystemWeightInfo = ();
+	type Version = Version;
 }

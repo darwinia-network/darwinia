@@ -61,13 +61,8 @@ where
 
 	config.keystore = KeystoreConfig::InMemory;
 
-	let PartialComponents {
-		client,
-		backend,
-		import_queue,
-		task_manager,
-		..
-	} = new_partial::<Runtime, Dispatch>(config)?;
+	let PartialComponents { client, backend, import_queue, task_manager, .. } =
+		new_partial::<Runtime, Dispatch>(config)?;
 
 	Ok((client, backend, import_queue, task_manager))
 }
@@ -135,10 +130,7 @@ where
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let auth_disc_publish_non_global_ips = config.network.allow_non_globals_in_dht;
 
-	config
-		.network
-		.extra_sets
-		.push(sc_finality_grandpa::grandpa_peers_set_config());
+	config.network.extra_sets.push(sc_finality_grandpa::grandpa_peers_set_config());
 
 	let backoff_authoring_blocks =
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
@@ -293,23 +285,19 @@ where
 		};
 		let babe = sc_consensus_babe::start_babe(babe_config)?;
 
-		task_manager
-			.spawn_essential_handle()
-			.spawn_blocking("babe", babe);
+		task_manager.spawn_essential_handle().spawn_blocking("babe", babe);
 	}
 
 	if is_authority && !authority_discovery_disabled {
 		let authority_discovery_role =
 			sc_authority_discovery::Role::PublishAndDiscover(keystore_container.keystore());
 		let dht_event_stream =
-			network
-				.event_stream("authority-discovery")
-				.filter_map(|e| async move {
-					match e {
-						Event::Dht(e) => Some(e),
-						_ => None,
-					}
-				});
+			network.event_stream("authority-discovery").filter_map(|e| async move {
+				match e {
+					Event::Dht(e) => Some(e),
+					_ => None,
+				}
+			});
 		let (authority_discovery_worker, _service) =
 			sc_authority_discovery::new_worker_and_service_with_config(
 				WorkerConfig {
@@ -323,17 +311,12 @@ where
 				prometheus_registry.clone(),
 			);
 
-		task_manager.spawn_handle().spawn(
-			"authority-discovery-worker",
-			authority_discovery_worker.run(),
-		);
+		task_manager
+			.spawn_handle()
+			.spawn("authority-discovery-worker", authority_discovery_worker.run());
 	}
 
-	let keystore = if is_authority {
-		Some(keystore_container.sync_keystore())
-	} else {
-		None
-	};
+	let keystore = if is_authority { Some(keystore_container.sync_keystore()) } else { None };
 
 	if !disable_grandpa {
 		let grandpa_config = GrandpaParams {
@@ -414,9 +397,7 @@ where
 	use sp_consensus::CanAuthorWithNativeVersion;
 
 	if config.keystore_remote.is_some() {
-		return Err(ServiceError::Other(format!(
-			"Remote Keystores are not supported."
-		)));
+		return Err(ServiceError::Other(format!("Remote Keystores are not supported.")));
 	}
 
 	set_prometheus_registry(config)?;

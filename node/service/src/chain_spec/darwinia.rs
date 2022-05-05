@@ -45,12 +45,7 @@ pub fn session_keys(
 	im_online: ImOnlineId,
 	authority_discovery: AuthorityDiscoveryId,
 ) -> SessionKeys {
-	SessionKeys {
-		babe,
-		grandpa,
-		im_online,
-		authority_discovery,
-	}
+	SessionKeys { babe, grandpa, im_online, authority_discovery }
 }
 
 /// Properties for Darwinia.

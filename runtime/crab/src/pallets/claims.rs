@@ -14,8 +14,8 @@ frame_support::parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
+	type MoveClaimOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type PalletId = ClaimsPalletId;
 	type Prefix = Prefix;
 	type RingCurrency = Ring;
-	type MoveClaimOrigin = EnsureRootOrMoreThanHalfCouncil;
 }

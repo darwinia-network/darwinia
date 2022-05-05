@@ -35,16 +35,16 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
-	type WeightInfo = ();
-	type PalletId = S2sBackingPalletId;
-	type RingMetadata = RingMetadata;
-	type MaxLockRingAmountPerTx = MaxLockRingAmountPerTx;
-	type RingCurrency = Ring;
 	type BridgedAccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = CrabChainId;
-	type OutboundPayloadCreator = bm_crab::ToCrabOutboundPayload;
-	type MessageNoncer = CrabMessageNoncer;
+	type Event = Event;
+	type MaxLockRingAmountPerTx = MaxLockRingAmountPerTx;
 	type MessageLaneId = BridgeCrabLaneId;
+	type MessageNoncer = CrabMessageNoncer;
 	type MessagesBridge = BridgeCrabMessages;
+	type OutboundPayloadCreator = bm_crab::ToCrabOutboundPayload;
+	type PalletId = S2sBackingPalletId;
+	type RingCurrency = Ring;
+	type RingMetadata = RingMetadata;
+	type WeightInfo = ();
 }

@@ -19,7 +19,7 @@ frame_support::parameter_types! {
 
 impl Config<WithCrabGrandpa> for Runtime {
 	type BridgedChain = bp_crab::Crab;
-	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }

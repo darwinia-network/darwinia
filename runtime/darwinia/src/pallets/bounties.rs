@@ -13,13 +13,13 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
+	type BountyCuratorDeposit = BountyCuratorDeposit;
 	type BountyDepositBase = BountyDepositBase;
 	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
 	type BountyUpdatePeriod = BountyUpdatePeriod;
-	type BountyCuratorDeposit = BountyCuratorDeposit;
 	type BountyValueMinimum = BountyValueMinimum;
 	type DataDepositPerByte = DataDepositPerByte;
+	type Event = Event;
 	type MaximumReasonLength = MaximumReasonLength;
 	type WeightInfo = ();
 }

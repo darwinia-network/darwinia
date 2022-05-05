@@ -11,10 +11,10 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
 	type Call = Call;
-	type Currency = Ring;
 	type ConfigDepositBase = ConfigDepositBase;
+	type Currency = Ring;
+	type Event = Event;
 	type FriendDepositFactor = FriendDepositFactor;
 	type MaxFriends = MaxFriends;
 	type RecoveryDeposit = RecoveryDeposit;

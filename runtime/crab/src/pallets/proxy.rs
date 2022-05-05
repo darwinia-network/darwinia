@@ -87,7 +87,7 @@ impl InstanceFilter<Call> for ProxyType {
 						| Call::Tips { .. } | Call::Bounties { .. }
 						| Call::Utility { .. }
 				)
-			}
+			},
 			ProxyType::Staking => matches!(c, Call::Staking { .. } | Call::Utility { .. }),
 			ProxyType::IdentityJudgement => matches!(
 				c,
@@ -97,6 +97,7 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::EthereumBridge => false,
 		}
 	}
+
 	fn is_superset(&self, o: &Self) -> bool {
 		match (self, o) {
 			(x, y) if x == y => true,
@@ -120,16 +121,16 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type Event = Event;
-	type Call = Call;
-	type Currency = Ring;
-	type ProxyType = ProxyType;
-	type ProxyDepositBase = ProxyDepositBase;
-	type ProxyDepositFactor = ProxyDepositFactor;
-	type MaxProxies = MaxProxies;
-	type MaxPending = MaxPending;
-	type CallHasher = Hashing;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+	type Call = Call;
+	type CallHasher = Hashing;
+	type Currency = Ring;
+	type Event = Event;
+	type MaxPending = MaxPending;
+	type MaxProxies = MaxProxies;
+	type ProxyDepositBase = ProxyDepositBase;
+	type ProxyDepositFactor = ProxyDepositFactor;
+	type ProxyType = ProxyType;
 	type WeightInfo = ();
 }

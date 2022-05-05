@@ -56,10 +56,7 @@ pub mod genesis_loader {
 	pub fn load_genesis_swap_from_file(path: &str) -> Result<Vec<(String, Balance)>, String> {
 		serde_json::from_reader(File::open(path).map_err(|e| e.to_string())?)
 			.map(|accounts: Vec<Account>| {
-				accounts
-					.into_iter()
-					.map(|Account { target, amount }| (target, amount))
-					.collect()
+				accounts.into_iter().map(|Account { target, amount }| (target, amount)).collect()
 			})
 			.map_err(|e| e.to_string())
 	}
@@ -188,10 +185,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// Native version.
 #[cfg(any(feature = "std", test))]
 pub fn native_version() -> NativeVersion {
-	NativeVersion {
-		runtime_version: VERSION,
-		can_author_with: Default::default(),
-	}
+	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
 frame_support::construct_runtime! {
@@ -300,9 +294,7 @@ where
 			.map(|c| c / 2)
 			.unwrap_or(2) as u64;
 
-		let current_block = System::block_number()
-			.saturated_into::<u64>()
-			.saturating_sub(1);
+		let current_block = System::block_number().saturated_into::<u64>().saturating_sub(1);
 		let tip = 0;
 		let extra: SignedExtra = (
 			frame_system::CheckSpecVersion::<Runtime>::new(),
