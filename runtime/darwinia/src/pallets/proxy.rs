@@ -68,8 +68,8 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Recovery(pallet_recovery::Call::close_recovery{ .. }) |
 				Call::Recovery(pallet_recovery::Call::remove_recovery{ .. }) |
 				Call::Recovery(pallet_recovery::Call::cancel_recovered{ .. }) |
-				Call::Vesting(darwinia_vesting::Call::vest{ .. }) |
-				Call::Vesting(darwinia_vesting::Call::vest_other{ .. }) |
+				Call::Vesting(pallet_vesting::Call::vest{ .. }) |
+				Call::Vesting(pallet_vesting::Call::vest_other{ .. }) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
 				Call::Scheduler{ .. } |
 				Call::Proxy{ .. } |

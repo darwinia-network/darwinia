@@ -1,7 +1,7 @@
 // --- darwinia-network ---
 use crate::*;
-use darwinia_vesting::Config;
 // --- paritytech ---
+use pallet_vesting::Config;
 use sp_runtime::traits::ConvertInto;
 
 frame_support::parameter_types! {

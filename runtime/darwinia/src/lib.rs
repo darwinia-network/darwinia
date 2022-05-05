@@ -126,7 +126,6 @@ use sp_version::RuntimeVersion;
 // --- darwinia-network ---
 use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_common_runtime::*;
-use darwinia_fee_market_rpc_runtime_api::{Fee, InProcessOrders};
 use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 /// Block header type as expected by this runtime.
@@ -226,10 +225,10 @@ frame_support::construct_runtime! {
 		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Storage} = 35,
 
 		// Governance stuff; uncallable initially.
-		Democracy: darwinia_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
+		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 16,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 17,
-		PhragmenElection: darwinia_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
+		PhragmenElection: pallet_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 19,
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 20,
 		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 39,
@@ -239,7 +238,7 @@ frame_support::construct_runtime! {
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 27,
 
 		// Vesting. Usable initially, but removed once all vesting is finished.
-		Vesting: darwinia_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
 
 		// Utility module.
 		Utility: pallet_utility::{Pallet, Call, Event} = 22,
@@ -279,7 +278,7 @@ frame_support::construct_runtime! {
 		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>} = 45,
+		FeeMarket: darwinia_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
@@ -537,23 +536,6 @@ sp_api::impl_runtime_apis! {
 	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
 		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
 			Staking::power_of_rpc(account)
-		}
-	}
-
-	impl darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance> for Runtime {
-		fn market_fee() -> Option<Fee<Balance>> {
-			if let Some(fee) = FeeMarket::market_fee() {
-				return Some(Fee {
-					amount: fee,
-				});
-			}
-			None
-		}
-
-		fn in_process_orders() -> InProcessOrders {
-			return InProcessOrders {
-				orders: FeeMarket::in_process_orders(),
-			}
 		}
 	}
 

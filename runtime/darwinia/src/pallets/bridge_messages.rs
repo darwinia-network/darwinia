@@ -42,16 +42,14 @@ impl Config<WithCrabMessages> for Runtime {
 
 	type TargetHeaderChain = bm_crab::Crab;
 	type LaneMessageVerifier = bm_crab::ToCrabMessageVerifier;
-	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<
-		Runtime,
-		WithCrabMessages,
-		Ring,
-		GetDeliveryConfirmationTransactionFee,
-		RootAccountForPayments,
-	>;
+	type MessageDeliveryAndDispatchPayment =
+		FeeMarketPayment<Self, WithCrabFeeMarket, Ring, RootAccountForPayments>;
 
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = (ToCrabBacking, FeeMarketMessageConfirmedHandler<Self>);
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabFeeMarket>;
+	type OnDeliveryConfirmed = (
+		ToCrabBacking,
+		FeeMarketMessageConfirmedHandler<Self, WithCrabFeeMarket>,
+	);
 
 	type SourceHeaderChain = bm_crab::Crab;
 	type MessageDispatch = bm_crab::FromCrabMessageDispatch;

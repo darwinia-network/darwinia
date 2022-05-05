@@ -42,16 +42,14 @@ impl Config<WithDarwiniaMessages> for Runtime {
 
 	type TargetHeaderChain = bm_darwinia::Darwinia;
 	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier;
-	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<
-		Runtime,
-		WithDarwiniaMessages,
-		Ring,
-		GetDeliveryConfirmationTransactionFee,
-		RootAccountForPayments,
-	>;
+	type MessageDeliveryAndDispatchPayment =
+		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring, RootAccountForPayments>;
 
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = (FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self>);
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
+	type OnDeliveryConfirmed = (
+		FromDarwiniaIssuing,
+		FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>,
+	);
 
 	type SourceHeaderChain = bm_darwinia::Darwinia;
 	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;

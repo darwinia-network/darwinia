@@ -34,7 +34,6 @@ impl Config for Runtime {
 	type BridgedAccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = DarwiniaChainId;
 	type ToEthAddressT = TruncateToEthAddress;
-	type OutboundPayloadCreator = bm_darwinia::ToDarwiniaOutboundPayLoad;
 	type InternalTransactHandler = Ethereum;
 	type BackingChainName = BackingChainName;
 	type MessageLaneId = BridgeDarwiniaLaneId;

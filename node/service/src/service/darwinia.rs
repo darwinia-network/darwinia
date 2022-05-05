@@ -24,7 +24,7 @@ use std::sync::Arc;
 use super::*;
 use darwinia_primitives::{OpaqueBlock as Block, *};
 
-impl_runtime_apis![darwinia_fee_market_rpc_runtime_api::FeeMarketApi<Block, Balance>];
+impl_runtime_apis![];
 
 pub struct Executor;
 impl sc_executor::NativeExecutionDispatch for Executor {
