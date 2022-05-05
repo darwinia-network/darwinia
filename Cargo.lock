@@ -1128,7 +1128,6 @@ dependencies = [
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
- "fp-storage",
  "frame-benchmarking",
  "frame-election-provider-support",
  "frame-executive",
