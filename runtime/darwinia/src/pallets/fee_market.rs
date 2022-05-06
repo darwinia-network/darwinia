@@ -19,7 +19,9 @@ where
 	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
 		let slash_each_block = 2 * COIN;
 		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
-			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
+			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(
+				slash_each_block,
+			))
 			.unique_saturated_into();
 
 		cmp::min(locked_collateral, slash_value)
@@ -41,6 +43,14 @@ frame_support::parameter_types! {
 }
 
 impl Config<WithCrabFeeMarket> for Runtime {
+	type PalletId = FeeMarketPalletId;
+	type TreasuryPalletId = TreasuryPalletId;
+	type LockId = FeeMarketLockId;
+
+	type MinimumRelayFee = MinimumRelayFee;
+	type CollateralPerOrder = CollateralPerOrder;
+	type Slot = Slot;
+
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;

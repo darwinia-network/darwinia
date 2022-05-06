@@ -24,6 +24,14 @@ frame_support::parameter_types! {
 }
 
 impl Config<WithDarwiniaFeeMarket> for Runtime {
+	type PalletId = FeeMarketPalletId;
+	type TreasuryPalletId = TreasuryPalletId;
+	type LockId = FeeMarketLockId;
+
+	type MinimumRelayFee = MinimumRelayFee;
+	type CollateralPerOrder = CollateralPerOrder;
+	type Slot = Slot;
+
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;

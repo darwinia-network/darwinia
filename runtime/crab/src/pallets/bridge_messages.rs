@@ -25,6 +25,20 @@ frame_support::parameter_types! {
 
 impl Config<WithDarwiniaMessages> for Runtime {
 	type AccountIdConverter = bp_crab::AccountIdConverter;
+
+	type TargetHeaderChain = bm_darwinia::Darwinia;
+	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier;
+	type MessageDeliveryAndDispatchPayment =
+		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring, RootAccountForPayments>;
+
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
+	type OnDeliveryConfirmed = (
+		FromDarwiniaIssuing,
+		FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>,
+	);
+
+	type SourceHeaderChain = bm_darwinia::Darwinia;
+	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;
 	type BridgedChainId = BridgedChainId;
 	type Event = Event;
 	type InboundMessageFee = bp_darwinia::Balance;

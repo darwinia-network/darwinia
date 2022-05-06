@@ -30,7 +30,7 @@ impl Config for Runtime {
 	type BackingChainName = BackingChainName;
 	type BridgedAccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = DarwiniaChainId;
-	type Event = Event;
+	type ToEthAddressT = TruncateToEthAddress;
 	type InternalTransactHandler = Ethereum;
 	type MessageLaneId = BridgeDarwiniaLaneId;
 	type PalletId = S2sIssuingPalletId;

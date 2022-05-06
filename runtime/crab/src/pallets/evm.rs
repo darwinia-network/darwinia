@@ -112,15 +112,17 @@ where
 			a if a == addr(3) => Some(Ripemd160::execute(input, target_gas, context, is_static)),
 			a if a == addr(4) => Some(Identity::execute(input, target_gas, context, is_static)),
 			// Darwinia precompiles
-			a if a == addr(21) =>
-				Some(<Transfer<R>>::execute(input, target_gas, context, is_static)),
+			a if a == addr(21) => Some(<Transfer<R>>::execute(
+				input, target_gas, context, is_static,
+			)),
 			a if a == addr(24) => Some(<Sub2SubBridge<
 				R,
 				ToDarwiniaMessageSender,
 				bm_darwinia::ToDarwiniaOutboundPayLoad,
 			>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(25) =>
-				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+			a if a == addr(25) => Some(<Dispatch<R>>::execute(
+				input, target_gas, context, is_static,
+			)),
 			_ => None,
 		}
 	}
