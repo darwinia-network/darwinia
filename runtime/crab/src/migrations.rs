@@ -9,6 +9,9 @@ use crate::*;
 use darwinia_support::traits::LockableCurrency;
 
 fn migrate() -> Weight {
+	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromEth", &[]);
+	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromTron", &[]);
+
 	let claims_pallet_id = PalletId(*b"da/claim");
 	let claims_pallet_account = claims_pallet_id.into_account();
 	let treasury_account = PalletId(*b"da/trsry").into_account();
