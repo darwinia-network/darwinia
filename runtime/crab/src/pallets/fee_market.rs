@@ -1,4 +1,4 @@
-pub use darwinia_fee_market::Instance1 as WithDarwiniaFeeMarket;
+pub use pallet_fee_market::Instance1 as WithDarwiniaFeeMarket;
 
 // --- core ---
 use core::cmp;
@@ -7,7 +7,7 @@ use frame_support::{traits::LockIdentifier, PalletId};
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
 // --- darwinia ---
 use crate::*;
-use darwinia_fee_market::{Config, RingBalance, Slasher};
+use pallet_fee_market::{Config, RingBalance, Slasher};
 
 frame_support::parameter_types! {
 	pub const FeeMarketPalletId: PalletId = PalletId(*b"da/feemk");

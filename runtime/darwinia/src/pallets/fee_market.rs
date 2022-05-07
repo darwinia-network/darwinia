@@ -1,13 +1,13 @@
-pub use darwinia_fee_market::Instance1 as WithCrabFeeMarket;
+pub use pallet_fee_market::Instance1 as WithCrabFeeMarket;
 
 // --- core ---
 use core::cmp;
-// --- substrate ---
+// --- paritytech ---
 use frame_support::{traits::LockIdentifier, PalletId};
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
-use darwinia_fee_market::{Config, RingBalance, Slasher};
+use pallet_fee_market::{Config, RingBalance, Slasher};
 
 /// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;
@@ -19,9 +19,7 @@ where
 	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
 		let slash_each_block = 2 * COIN;
 		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
-			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(
-				slash_each_block,
-			))
+			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
 			.unique_saturated_into();
 
 		cmp::min(locked_collateral, slash_value)
@@ -43,25 +41,23 @@ frame_support::parameter_types! {
 }
 
 impl Config<WithCrabFeeMarket> for Runtime {
-	type PalletId = FeeMarketPalletId;
-	type TreasuryPalletId = TreasuryPalletId;
-	type LockId = FeeMarketLockId;
-
-	type MinimumRelayFee = MinimumRelayFee;
-	type CollateralPerOrder = CollateralPerOrder;
-	type Slot = Slot;
-
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
+	type CollateralPerOrder = CollateralPerOrder;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Event = Event;
 	type LockId = FeeMarketLockId;
+	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
+	type MinimumRelayFee = MinimumRelayFee;
+	type PalletId = FeeMarketPalletId;
 	type PalletId = FeeMarketPalletId;
 	type RingCurrency = Ring;
 	type Slasher = FeeMarketSlasher;
 	type Slot = Slot;
+	type Slot = Slot;
+	type TreasuryPalletId = TreasuryPalletId;
 	type TreasuryPalletId = TreasuryPalletId;
 	type WeightInfo = ();
 }

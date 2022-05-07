@@ -241,7 +241,7 @@ frame_support::construct_runtime! {
 		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
 
-		FeeMarket: darwinia_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
+		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,

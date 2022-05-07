@@ -28,11 +28,11 @@ bridge-runtime-common  = { default-features = false, git = "https://github.com/d
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
+pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 # darwinia-network frame
 darwinia-balances                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-balances-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-bridge-ethereum          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
-darwinia-fee-market               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-header-mmr               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-relay-authorities        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
 darwinia-relay-primitives         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
@@ -124,10 +124,10 @@ std = [
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
+	"pallet-fee-market/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
 	"darwinia-bridge-ethereum/std",
-	"darwinia-fee-market/std",
 	"darwinia-header-mmr/std",
 	"darwinia-relay-authorities/std",
 	"darwinia-relay-primitives/std",
