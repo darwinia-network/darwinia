@@ -4,11 +4,11 @@ pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_CHAIN_ID};
-use darwinia_fee_market::s2s::{
-	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
-};
 use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 use pallet_bridge_messages::Config;
+use pallet_fee_market::s2s::{
+	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
+};
 
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;

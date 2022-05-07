@@ -5,11 +5,6 @@ use frame_support::{migration, traits::OnRuntimeUpgrade, weights::Weight};
 #[allow(unused)]
 use crate::*;
 
-fn migrate() -> Weight {
-	0
-	// RuntimeBlockWeights::get().max_block
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -25,4 +20,12 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		migrate()
 	}
+}
+
+fn migrate() -> Weight {
+	darwinia_balances::migration::migrate::<Runtime, RingInstance>();
+	darwinia_balances::migration::migrate::<Runtime, KtonInstance>();
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }

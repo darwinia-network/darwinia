@@ -139,10 +139,10 @@ impl<B, R, I>
 	> for FromThisChainMessageVerifier<B, R, I>
 where
 	B: MessageBridge,
-	R: darwinia_fee_market::Config<I>,
+	R: pallet_fee_market::Config<I>,
 	I: 'static,
 	AccountIdOf<ThisChain<B>>: PartialEq + Clone,
-	darwinia_fee_market::RingBalance<R, I>: From<BalanceOf<ThisChain<B>>>,
+	pallet_fee_market::BalanceOf<R, I>: From<BalanceOf<ThisChain<B>>>,
 {
 	type Error = &'static str;
 
@@ -174,9 +174,8 @@ where
 
 		// Do the delivery_and_dispatch_fee. We assume that the delivery and dispatch fee always
 		// greater than the fee market provided fee.
-		let message_fee: darwinia_fee_market::RingBalance<R, I> =
-			(*delivery_and_dispatch_fee).into();
-		if let Some(market_fee) = darwinia_fee_market::Pallet::<R, I>::market_fee() {
+		let message_fee: pallet_fee_market::BalanceOf<R, I> = (*delivery_and_dispatch_fee).into();
+		if let Some(market_fee) = pallet_fee_market::Pallet::<R, I>::market_fee() {
 			// compare with actual fee paid
 			if message_fee < market_fee {
 				return Err(TOO_LOW_FEE);
