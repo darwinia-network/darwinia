@@ -7,7 +7,7 @@ use frame_support::{traits::LockIdentifier, PalletId};
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
 // --- darwinia-network ---
 use crate::*;
-use pallet_fee_market::{Config, RingBalance, Slasher};
+use pallet_fee_market::{BalanceOf, Config, Slasher};
 
 /// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;
@@ -16,7 +16,7 @@ where
 	T: Config<I>,
 	I: 'static,
 {
-	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
+	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
 		let slash_each_block = 2 * COIN;
 		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
@@ -43,21 +43,15 @@ frame_support::parameter_types! {
 impl Config<WithCrabFeeMarket> for Runtime {
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
-	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
+	type Currency = Ring;
 	type Event = Event;
-	type LockId = FeeMarketLockId;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
-	type MinimumRelayFee = MinimumRelayFee;
 	type PalletId = FeeMarketPalletId;
-	type PalletId = FeeMarketPalletId;
-	type RingCurrency = Ring;
 	type Slasher = FeeMarketSlasher;
 	type Slot = Slot;
-	type Slot = Slot;
-	type TreasuryPalletId = TreasuryPalletId;
 	type TreasuryPalletId = TreasuryPalletId;
 	type WeightInfo = ();
 }

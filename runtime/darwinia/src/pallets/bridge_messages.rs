@@ -4,11 +4,11 @@ pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_CHAIN_ID};
+use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
+use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
 	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
 };
-use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
-use pallet_bridge_messages::Config;
 
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
@@ -25,20 +25,6 @@ frame_support::parameter_types! {
 
 impl Config<WithCrabMessages> for Runtime {
 	type AccountIdConverter = bp_darwinia::AccountIdConverter;
-
-	type TargetHeaderChain = bm_crab::Crab;
-	type LaneMessageVerifier = bm_crab::ToCrabMessageVerifier;
-	type MessageDeliveryAndDispatchPayment =
-		FeeMarketPayment<Self, WithCrabFeeMarket, Ring, RootAccountForPayments>;
-
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabFeeMarket>;
-	type OnDeliveryConfirmed = (
-		ToCrabBacking,
-		FeeMarketMessageConfirmedHandler<Self, WithCrabFeeMarket>,
-	);
-
-	type SourceHeaderChain = bm_crab::Crab;
-	type MessageDispatch = bm_crab::FromCrabMessageDispatch;
 	type BridgedChainId = BridgedChainId;
 	type Event = Event;
 	type InboundMessageFee = bp_crab::Balance;
