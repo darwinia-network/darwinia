@@ -26,6 +26,8 @@ fn migrate() -> Weight {
 	darwinia_balances::migration::migrate::<Runtime, RingInstance>();
 	darwinia_balances::migration::migrate::<Runtime, KtonInstance>();
 
+	migration::remove_storage_prefix(b"Sudo", b"Key", &[]);
+
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
