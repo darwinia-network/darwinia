@@ -1,12 +1,14 @@
 // --- paritytech ---
 #[allow(unused)]
 use frame_support::{migration, traits::OnRuntimeUpgrade, weights::Weight};
-use frame_support::{traits::Currency, PalletId};
+use frame_support::{
+	traits::{Currency, LockableCurrency},
+	PalletId,
+};
 use sp_runtime::traits::AccountIdConversion;
 // --- darwinia-network ---
 #[allow(unused)]
 use crate::*;
-use darwinia_support::traits::LockableCurrency;
 
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
