@@ -20,6 +20,7 @@ smallvec          = { version = "1.7" }
 static_assertions = { version = "1.1" }
 # darwinia-bridges-substrate
 bp-crab                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
+bp-crab-parachain      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 bp-darwinia            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 bp-kusama              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
@@ -128,6 +129,7 @@ std = [
 	"serde",
 	# darwinia-bridges-susbtrate
 	"bp-crab/std",
+	"bp-crab-parachain/std",
 	"bp-kusama/std",
 	"bp-darwinia/std",
 	"bp-message-dispatch/std",

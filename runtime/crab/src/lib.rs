@@ -249,6 +249,7 @@ frame_support::construct_runtime! {
 		// Crab <> Crab parachain
 		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
 		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
+		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Call, Storage} = 54,
 	}
 }
 
