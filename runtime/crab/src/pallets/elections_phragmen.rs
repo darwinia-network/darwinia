@@ -1,8 +1,8 @@
 // --- paritytech ---
 use frame_support::traits::{LockIdentifier, U128CurrencyToVote};
+use pallet_elections_phragmen::Config;
 // --- darwinia-network ---
 use crate::*;
-use darwinia_elections_phragmen::Config;
 
 frame_support::parameter_types! {
 	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";

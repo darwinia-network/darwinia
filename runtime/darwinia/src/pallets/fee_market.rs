@@ -1,13 +1,13 @@
-pub use darwinia_fee_market::Instance1 as WithCrabFeeMarket;
+pub use pallet_fee_market::Instance1 as WithCrabFeeMarket;
 
 // --- core ---
 use core::cmp;
-// --- substrate ---
+// --- paritytech ---
 use frame_support::{traits::LockIdentifier, PalletId};
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
-// --- darwinia ---
+// --- darwinia-network ---
 use crate::*;
-use darwinia_fee_market::{Config, RingBalance, Slasher};
+use pallet_fee_market::{BalanceOf, Config, Slasher};
 
 /// Slash 2 COINs for every delayed delivery each block.
 pub struct FeeMarketSlasher;
@@ -16,7 +16,7 @@ where
 	T: Config<I>,
 	I: 'static,
 {
-	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
+	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
 		let slash_each_block = 2 * COIN;
 		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
@@ -32,7 +32,7 @@ frame_support::parameter_types! {
 
 	pub const MinimumRelayFee: Balance = 15 * COIN;
 	pub const CollateralPerOrder: Balance = 50 * COIN;
-	pub const Slot: BlockNumber = 600;
+	pub const Slot: BlockNumber = 300;
 
 	pub const AssignedRelayersRewardRatio: Permill = Permill::from_percent(60);
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
@@ -43,12 +43,12 @@ impl Config<WithCrabFeeMarket> for Runtime {
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
+	type Currency = Ring;
 	type Event = Event;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
 	type PalletId = FeeMarketPalletId;
-	type RingCurrency = Ring;
 	type Slasher = FeeMarketSlasher;
 	type Slot = Slot;
 	type TreasuryPalletId = TreasuryPalletId;

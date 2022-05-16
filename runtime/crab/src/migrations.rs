@@ -8,24 +8,6 @@ use sp_runtime::traits::AccountIdConversion;
 use crate::*;
 use darwinia_support::traits::LockableCurrency;
 
-fn migrate() -> Weight {
-	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromEth", &[]);
-	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromTron", &[]);
-
-	let claims_pallet_id = PalletId(*b"da/claim");
-	let claims_pallet_account = claims_pallet_id.into_account();
-	let treasury_account = PalletId(*b"da/trsry").into_account();
-
-	// We mint this ED before. Clean it.
-	Ring::remove_lock(claims_pallet_id.0, &claims_pallet_account);
-	let _ = Ring::slash(&claims_pallet_account, 1 * COIN);
-	// Transfer all balances to treasury account.
-	let _ = Ring::transfer_all(Origin::signed(claims_pallet_account), treasury_account, false);
-
-	// 0
-	RuntimeBlockWeights::get().max_block
-}
-
 pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -49,4 +31,25 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn on_runtime_upgrade() -> Weight {
 		migrate()
 	}
+}
+
+fn migrate() -> Weight {
+	darwinia_balances::migration::migrate::<Runtime, RingInstance>();
+	darwinia_balances::migration::migrate::<Runtime, KtonInstance>();
+
+	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromEth", &[]);
+	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromTron", &[]);
+
+	let claims_pallet_id = PalletId(*b"da/claim");
+	let claims_pallet_account = claims_pallet_id.into_account();
+	let treasury_account = PalletId(*b"da/trsry").into_account();
+
+	// We mint this ED before. Clean it.
+	Ring::remove_lock(claims_pallet_id.0, &claims_pallet_account);
+	let _ = Ring::slash(&claims_pallet_account, 1 * COIN);
+	// Transfer all balances to treasury account.
+	let _ = Ring::transfer_all(Origin::signed(claims_pallet_account), treasury_account, false);
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }
