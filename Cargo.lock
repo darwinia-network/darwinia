@@ -726,6 +726,7 @@ dependencies = [
  "frame-support",
  "parity-scale-codec 2.3.1",
  "scale-info 1.0.0",
+ "serde",
  "sp-core",
 ]
 
@@ -739,7 +740,9 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec 2.3.1",
+ "parity-util-mem",
  "scale-info 1.0.0",
+ "serde",
  "sp-api",
  "sp-core",
  "sp-runtime",
@@ -1160,6 +1163,7 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
+ "pallet-bridge-parachains",
  "pallet-collective",
  "pallet-democracy",
  "pallet-election-provider-multi-phase",
@@ -5625,6 +5629,7 @@ dependencies = [
  "pallet-bridge-grandpa",
  "parity-scale-codec 2.3.1",
  "scale-info 1.0.0",
+ "serde",
  "sp-core",
  "sp-runtime",
  "sp-std",

@@ -29,6 +29,7 @@ bridge-runtime-common  = { default-features = false, git = "https://github.com/d
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
+pallet-bridge-parachains = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.2" }
 # darwinia-network frame
 darwinia-balances                 = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.2" }
@@ -127,6 +128,7 @@ std = [
 	"serde",
 	# darwinia-bridges-susbtrate
 	"bp-crab/std",
+	"bp-kusama/std",
 	"bp-darwinia/std",
 	"bp-message-dispatch/std",
 	"bp-messages/std",
@@ -135,6 +137,7 @@ std = [
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
+	"pallet-bridge-parachains/std",
 	"pallet-fee-market/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
