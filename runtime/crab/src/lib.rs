@@ -245,6 +245,9 @@ frame_support::construct_runtime! {
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
+
+		// Crab <> Crab parachain
+		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
 	}
 }
 
