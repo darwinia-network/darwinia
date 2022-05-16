@@ -63,7 +63,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::KtonTreasury{ .. } |
 				Call::Tips{ .. } |
 				Call::Bounties{ .. } |
-				Call::Claims{ .. } |
 				Call::Utility{ .. } |
 				Call::Identity{ .. } |
 				Call::Society{ .. } |
