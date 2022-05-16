@@ -87,7 +87,6 @@ pallet-recovery                            = { default-features = false, git = "
 pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 pallet-session                             = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 pallet-society                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-pallet-sudo                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 pallet-timestamp                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 pallet-tips                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 pallet-transaction-payment                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
@@ -191,7 +190,6 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-society/std",
-	"pallet-sudo/std",
 	"pallet-timestamp/std",
 	"pallet-tips/std",
 	"pallet-transaction-payment/std",

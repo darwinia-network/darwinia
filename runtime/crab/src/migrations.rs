@@ -52,6 +52,8 @@ fn migrate() -> Weight {
 	// Transfer all balances to treasury account.
 	let _ = Ring::transfer_all(Origin::signed(claims_pallet_account), treasury_account, false);
 
+	migration::remove_storage_prefix(b"Sudo", b"Key", &[]);
+
 	// 0
 	RuntimeBlockWeights::get().max_block
 }

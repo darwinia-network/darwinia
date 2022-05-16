@@ -1161,7 +1161,6 @@ dependencies = [
  "pallet-scheduler",
  "pallet-session",
  "pallet-society",
- "pallet-sudo",
  "pallet-timestamp",
  "pallet-tips",
  "pallet-transaction-payment",
