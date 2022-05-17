@@ -817,6 +817,56 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
+	impl bp_crab_parachain::CrabParachainFinalityApi<Block> for Runtime{
+		fn best_finalized() -> (bp_crab_parachain::BlockNumber, bp_crab_parachain::Hash) {
+			use codec::Decode;
+			use sp_runtime::traits::Header;
+
+			let best_crab_parachain_head =
+				pallet_bridge_parachains::Pallet::<Runtime, WithKusamaParachainsInstance>::best_parachain_head(
+					bm_crab_parachain::CRAB_PARACHAIN_ID.into()
+				)
+				.and_then(|encoded_header| bp_crab_parachain::Header::decode(&mut &encoded_header.0[..]).ok());
+			match best_crab_parachain_head {
+				Some(head) => (*head.number(), head.hash()),
+				None => (Default::default(), Default::default()),
+			}
+		}
+	}
+
+	impl bp_crab_parachain::ToCrabParachainOutboundLaneApi<Block, Balance, bm_crab_parachain::ToCrabParachainMessagePayload> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::MessageDetails<Balance>> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithCrabParachainMessages,
+				bm_crab_parachain::WithCrabParachainMessageBridge,
+			>(lane, begin, end)
+		}
+
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabParachainMessages::outbound_latest_received_nonce(lane)
+		}
+		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabParachainMessages::outbound_latest_generated_nonce(lane)
+		}
+	}
+
+	impl bp_crab_parachain::FromCrabParachainInboundLaneApi<Block> for Runtime {
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabParachainMessages::inbound_latest_received_nonce(lane)
+		}
+		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabParachainMessages::inbound_latest_confirmed_nonce(lane)
+		}
+		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
+			BridgeCrabParachainMessages::inbound_unrewarded_relayers_state(lane)
+		}
+	}
+
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade() -> (frame_support::weights::Weight, frame_support::weights::Weight) {
