@@ -40,7 +40,7 @@ use bridge_runtime_common::{
 		BalanceOf, *,
 	},
 };
-use drml_common_runtime::impls::FromThisChainMessageVerifier;
+use darwinia_common_runtime::impls::FromThisChainMessageVerifier;
 use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
 
 /// Message delivery proof for Crab -> CrabParachain messages.

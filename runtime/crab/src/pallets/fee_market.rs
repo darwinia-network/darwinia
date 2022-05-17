@@ -1,9 +1,11 @@
-pub use pallet_fee_market::{Instance1 as WithDarwiniaFeeMarket, Instance2 as WithCrabParachainFeeMarket};
+pub use pallet_fee_market::{
+	Instance1 as WithDarwiniaFeeMarket, Instance2 as WithCrabParachainFeeMarket,
+};
 
 // --- core ---
 use core::cmp;
 // --- paritytech ---
-use frame_support::{traits::LockIdentifier, PalletId};
+use frame_support::traits::LockIdentifier;
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
 // --- darwinia-network ---
 use crate::*;
@@ -27,10 +29,7 @@ where
 }
 
 frame_support::parameter_types! {
-	// TODO: remove palletId
-	pub const DarwiniaFeeMarketPalletId: PalletId = PalletId(*b"da/feemk");
 	pub const DarwiniaFeeMarketLockId: LockIdentifier = *b"da/feelf";
-	pub const CrabParachainFeeMarketPalletId: PalletId = PalletId(*b"da/feecp");
 	pub const CrabParachainFeeMarketLockId: LockIdentifier = *b"da/feecp";
 
 	pub const MinimumRelayFee: Balance = 15 * COIN;
@@ -51,7 +50,6 @@ impl Config<WithDarwiniaFeeMarket> for Runtime {
 	type LockId = DarwiniaFeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
-	type PalletId = DarwiniaFeeMarketPalletId;
 	type Slasher = FeeMarketSlasher;
 	type Slot = Slot;
 	type TreasuryPalletId = TreasuryPalletId;
@@ -67,7 +65,6 @@ impl Config<WithCrabParachainFeeMarket> for Runtime {
 	type LockId = CrabParachainFeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
-	type PalletId = CrabParachainFeeMarketPalletId;
 	type Slasher = FeeMarketSlasher;
 	type Slot = Slot;
 	type TreasuryPalletId = TreasuryPalletId;

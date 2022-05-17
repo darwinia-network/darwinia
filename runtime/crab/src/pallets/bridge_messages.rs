@@ -3,7 +3,7 @@ pub use pallet_bridge_messages::{Instance1 as WithDarwiniaMessages, Instance2 as
 // --- darwinia-network ---
 use crate::*;
 use bp_messages::MessageNonce;
-use bp_runtime::{ChainId, DARWINIA_CHAIN_ID};
+use bp_runtime::{ChainId, DARWINIA_CHAIN_ID, CRAB_PARACHAIN_CHAIN_ID};
 use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
@@ -26,6 +26,7 @@ frame_support::parameter_types! {
 	pub const GetDeliveryConfirmationTransactionFee: Balance =
 		bp_darwinia::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT as _;
 	pub const BridgedChainId: ChainId = DARWINIA_CHAIN_ID;
+	pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_CHAIN_ID;
 	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::into_account_id((&b"root"[..]).into_h160()));
 }
 
