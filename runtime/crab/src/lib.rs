@@ -242,6 +242,7 @@ frame_support::construct_runtime! {
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
 
 		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
+		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
@@ -250,6 +251,7 @@ frame_support::construct_runtime! {
 		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
 		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
 		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Call, Storage} = 54,
+		BridgeCrabParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
 	}
 }
 
