@@ -182,13 +182,6 @@ pub fn genesis_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			claims: ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			},
-			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
 			evm: crab_runtime::EVMConfig { accounts: BTreeMap::new() },
 			ethereum: Default::default(),
@@ -223,7 +216,6 @@ pub fn genesis_config() -> ChainSpec {
 /// Crab development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
 	fn genesis() -> GenesisConfig {
-		let root = get_account_id_from_seed::<sr25519::Public>("Alice");
 		let initial_authorities = vec![get_authority_keys_from_seed("Alice")];
 		let endowed_accounts = vec![
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -284,13 +276,6 @@ pub fn development_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			claims: ClaimsConfig {
-				claims_list: ClaimsList::from_file(
-					"node/service/res/crab/claims-list.json",
-					"CLAIMS_LIST_PATH",
-				),
-			},
-			sudo: SudoConfig { key: root },
 			vesting: Default::default(),
 			evm: crab_runtime::EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
