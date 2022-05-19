@@ -3,7 +3,7 @@ pub use pallet_fee_market::Instance1 as WithDarwiniaFeeMarket;
 // --- core ---
 use core::cmp;
 // --- paritytech ---
-use frame_support::{traits::LockIdentifier, PalletId};
+use frame_support::traits::LockIdentifier;
 use sp_runtime::{traits::UniqueSaturatedInto, Permill};
 // --- darwinia-network ---
 use crate::*;
