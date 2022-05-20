@@ -114,3 +114,6 @@ pub use fee_market::*;
 
 pub mod from_substrate_issuing_;
 pub use from_substrate_issuing_::*;
+
+pub mod bridge_parachains;
+pub use bridge_parachains::*;

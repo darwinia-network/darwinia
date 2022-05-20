@@ -1,4 +1,4 @@
-pub use pallet_bridge_grandpa::Instance1 as WithDarwiniaGrandpa;
+pub use pallet_bridge_grandpa::{Instance1 as WithDarwiniaGrandpa, Instance2 as WithKusamaGrandpa};
 
 // --- darwinia-network ---
 use crate::*;
@@ -19,6 +19,13 @@ frame_support::parameter_types! {
 
 impl Config<WithDarwiniaGrandpa> for Runtime {
 	type BridgedChain = bp_darwinia::Darwinia;
+	type HeadersToKeep = HeadersToKeep;
+	type MaxRequests = MaxRequests;
+	type WeightInfo = ();
+}
+
+impl Config<WithKusamaGrandpa> for Runtime {
+	type BridgedChain = bp_kusama::Kusama;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
