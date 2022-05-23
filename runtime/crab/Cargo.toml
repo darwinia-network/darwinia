@@ -226,6 +226,15 @@ evm-tracing = [
 	"dp-evm-tracer",
 ]
 
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-system-benchmarking",
+	"frame-system/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-society/runtime-benchmarks",
+]
+
 try-runtime = [
 	"frame-executive/try-runtime",
 	"frame-try-runtime",
@@ -236,13 +245,4 @@ try-runtime = [
 # to make it smaller like logging for example.
 on-chain-release-build = [
 	"sp-api/disable-logging",
-]
-
-runtime-benchmarks = [
-	"frame-benchmarking",
-	"frame-system-benchmarking",
-	"frame-system/runtime-benchmarks",
-	"frame-support/runtime-benchmarks",
-	"pallet-collective/runtime-benchmarks",
-	"pallet-society/runtime-benchmarks",
 ]

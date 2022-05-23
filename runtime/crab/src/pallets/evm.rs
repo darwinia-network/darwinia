@@ -3,6 +3,7 @@ use core::marker::PhantomData;
 // --- paritytech ---
 use fp_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
 use frame_support::{
+	pallet_prelude::Weight,
 	traits::{FindAuthor, PalletInfoAccess},
 	ConsensusEngineId,
 };
@@ -16,7 +17,9 @@ use darwinia_ethereum::{
 	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
 };
-use darwinia_evm::{runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated};
+use darwinia_evm::{
+	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
+};
 use darwinia_evm_precompile_bridge_s2s::Sub2SubBridge;
 use darwinia_evm_precompile_dispatch::Dispatch;
 use darwinia_evm_precompile_transfer::Transfer;
@@ -137,9 +140,20 @@ impl FeeCalculator for FixedGasPrice {
 	}
 }
 
+pub struct FixedGasWeightMapping;
+impl GasWeightMapping for FixedGasWeightMapping {
+	fn gas_to_weight(gas: u64) -> Weight {
+		gas.saturating_mul(WEIGHT_PER_GAS)
+	}
+
+	fn weight_to_gas(weight: Weight) -> u64 {
+		u64::try_from(weight.wrapping_div(WEIGHT_PER_GAS)).unwrap_or(u32::MAX as u64)
+	}
+}
+
 frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
-	pub BlockGasLimit: U256 = u32::MAX.into();
+	pub BlockGasLimit: U256 = (NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS).into();
 	pub PrecompilesValue: CrabPrecompiles<Runtime> = CrabPrecompiles::<_>::new();
 }
 
@@ -151,7 +165,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type FeeCalculator = FixedGasPrice;
 	type FindAuthor = EthereumFindAuthor<Babe>;
-	type GasWeightMapping = ();
+	type GasWeightMapping = FixedGasWeightMapping;
 	type IntoAccountId = ConcatConverter<Self::AccountId>;
 	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
 	type OnChargeTransaction = EVMCurrencyAdapter<FindAccountFromAuthorIndex<Self, Babe>>;

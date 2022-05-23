@@ -29,9 +29,9 @@ fast-runtime = ["darwinia-cli/fast-runtime"]
 
 evm-tracing = ["darwinia-cli/evm-tracing"]
 
-try-runtime = ["darwinia-cli/try-runtime"]
-
 runtime-benchmarks = ["darwinia-cli/runtime-benchmarks"]
+
+try-runtime = ["darwinia-cli/try-runtime"]
 
 [workspace]
 members = [
