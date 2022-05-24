@@ -28,8 +28,8 @@ use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
 use sp_std::ops::RangeInclusive;
 // --- darwinia-network ---
 use crate::*;
-use bp_messages::{source_chain::*, target_chain::*, *};
 use bp_kusama::parachains::ParaId;
+use bp_messages::{source_chain::*, target_chain::*, *};
 use bp_runtime::{ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
@@ -47,8 +47,7 @@ use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
 type ToCrabParachainMessagesDeliveryProof =
 	FromBridgedChainMessagesDeliveryProof<bp_crab_parachain::Hash>;
 /// Message proof for CrabParachain -> Crab  messages.
-type FromCrabParachainMessagesProof =
-	FromBridgedChainMessagesProof<bp_crab_parachain::Hash>;
+type FromCrabParachainMessagesProof = FromBridgedChainMessagesProof<bp_crab_parachain::Hash>;
 
 /// Message payload for Crab -> CrabParachain messages.
 pub type ToCrabParachainMessagePayload =
@@ -110,8 +109,7 @@ impl MessageBridge for WithCrabParachainMessageBridge {
 	type ThisChain = Crab;
 
 	const BRIDGED_CHAIN_ID: ChainId = CRAB_PARACHAIN_CHAIN_ID;
-	const BRIDGED_MESSAGES_PALLET_NAME: &'static str =
-		bp_crab::WITH_CRAB_MESSAGES_PALLET_NAME;
+	const BRIDGED_MESSAGES_PALLET_NAME: &'static str = bp_crab::WITH_CRAB_MESSAGES_PALLET_NAME;
 	const RELAYER_FEE_PERCENT: u32 = 10;
 	const THIS_CHAIN_ID: ChainId = CRAB_CHAIN_ID;
 
@@ -225,9 +223,7 @@ impl BridgedChainWithMessages for CrabParachain {
 	fn transaction_payment(transaction: MessageTransaction<Weight>) -> Self::Balance {
 		// in our testnets, both per-byte fee and weight-to-fee are 1:1
 		messages::transaction_payment(
-			bp_crab_parachain::RuntimeBlockWeights::get()
-				.get(DispatchClass::Normal)
-				.base_extrinsic,
+			bp_crab_parachain::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
 			1,
 			FixedU128::zero(),
 			|weight| weight as _,

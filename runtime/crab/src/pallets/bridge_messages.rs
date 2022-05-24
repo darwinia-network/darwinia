@@ -1,9 +1,11 @@
-pub use pallet_bridge_messages::{Instance1 as WithDarwiniaMessages, Instance2 as WithCrabParachainMessages};
+pub use pallet_bridge_messages::{
+	Instance1 as WithDarwiniaMessages, Instance2 as WithCrabParachainMessages,
+};
 
 // --- darwinia-network ---
 use crate::*;
 use bp_messages::MessageNonce;
-use bp_runtime::{ChainId, DARWINIA_CHAIN_ID, CRAB_PARACHAIN_CHAIN_ID};
+use bp_runtime::{ChainId, CRAB_PARACHAIN_CHAIN_ID, DARWINIA_CHAIN_ID};
 use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
@@ -16,7 +18,7 @@ frame_support::parameter_types! {
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub const DarwiniaMaxUnconfirmedMessagesAtInboundLane: MessageNonce =
 		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	
+
 	pub const CrabParachainMaxUnconfirmedMessagesAtInboundLane: MessageNonce =
 		bp_crab_parachain::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const CrabParachainMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
@@ -40,7 +42,8 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier;
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = DarwiniaMaxUnconfirmedMessagesAtInboundLane;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane =
+		DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane;
 	type MessageDeliveryAndDispatchPayment =
 		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring, RootAccountForPayments>;
 	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;
@@ -54,7 +57,6 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	type TargetHeaderChain = bm_darwinia::Darwinia;
 	type WeightInfo = ();
 }
-
 
 impl Config<WithCrabParachainMessages> for Runtime {
 	type AccountIdConverter = bp_crab::AccountIdConverter;
@@ -71,10 +73,8 @@ impl Config<WithCrabParachainMessages> for Runtime {
 	type MessageDeliveryAndDispatchPayment =
 		FeeMarketPayment<Self, WithCrabParachainFeeMarket, Ring, RootAccountForPayments>;
 	type MessageDispatch = bm_crab_parachain::FromCrabParachainMessageDispatch;
-	type OnDeliveryConfirmed = (
-		FromDarwiniaIssuing,
-		FeeMarketMessageConfirmedHandler<Self, WithCrabParachainFeeMarket>,
-	);
+	type OnDeliveryConfirmed =
+		(FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self, WithCrabParachainFeeMarket>);
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabParachainFeeMarket>;
 	type OutboundMessageFee = Balance;
 	type OutboundPayload = bm_crab_parachain::ToCrabParachainMessagePayload;
