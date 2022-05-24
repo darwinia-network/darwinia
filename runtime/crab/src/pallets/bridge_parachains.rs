@@ -10,6 +10,6 @@ frame_support::parameter_types! {
 
 impl Config<WithKusamaParachainsInstance> for Runtime {
 	type BridgesGrandpaPalletInstance = WithKusamaGrandpa;
-	type HeadsToKeep = HeadersToKeep;
+	type HeadsToKeep = KusamaHeadersToKeep;
 	type ParasPalletName = KusamaParasPalletName;
 }
