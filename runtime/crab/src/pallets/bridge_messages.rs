@@ -13,28 +13,26 @@ use pallet_fee_market::s2s::{
 };
 
 frame_support::parameter_types! {
+	// Shared configurations.
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
+	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::into_account_id((&b"root"[..]).into_h160()));
+	// Darwinia configurations.
 	pub const DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub const DarwiniaMaxUnconfirmedMessagesAtInboundLane: MessageNonce =
 		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-
+	pub const DarwiniaChainId: ChainId = DARWINIA_CHAIN_ID;
+	// Crab Parachain configurations.
 	pub const CrabParachainMaxUnconfirmedMessagesAtInboundLane: MessageNonce =
 		bp_crab_parachain::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const CrabParachainMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_crab_parachain::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
-
-	// `IdentityFee` is used by Darwinia => we may use weight directly
-	pub const GetDeliveryConfirmationTransactionFee: Balance =
-		bp_darwinia::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT as _;
-	pub const BridgedChainId: ChainId = DARWINIA_CHAIN_ID;
-	pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_CHAIN_ID;
-	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::into_account_id((&b"root"[..]).into_h160()));
+		pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_CHAIN_ID;
 }
 
 impl Config<WithDarwiniaMessages> for Runtime {
 	type AccountIdConverter = bp_crab::AccountIdConverter;
-	type BridgedChainId = BridgedChainId;
+	type BridgedChainId = DarwiniaChainId;
 	type Event = Event;
 	type InboundMessageFee = bp_darwinia::Balance;
 	type InboundPayload = bm_darwinia::FromDarwiniaMessagePayload;
@@ -76,7 +74,7 @@ impl Config<WithCrabParachainMessages> for Runtime {
 	type OnDeliveryConfirmed =
 		(FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self, WithCrabParachainFeeMarket>);
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabParachainFeeMarket>;
-	type OutboundMessageFee = Balance;
+	type OutboundMessageFee = bp_crab::Balance;
 	type OutboundPayload = bm_crab_parachain::ToCrabParachainMessagePayload;
 	type Parameter = bm_crab_parachain::CrabToCrabParachainParameter;
 	type SourceHeaderChain = bm_crab_parachain::CrabParachain;
