@@ -14,19 +14,20 @@ frame_support::parameter_types! {
 	//
 	// Assuming the worst case of every header being finalized, we will keep headers for at least a
 	// week.
-	pub const HeadersToKeep: u32 = 7 * bp_darwinia::DAYS as u32;
+	pub const DarwiniaHeadersToKeep: u32 = 7 * bp_darwinia::DAYS as u32;
+	pub const KusamaHeadersToKeep: u32 = 7 * bp_kusama::DAYS as u32;
 }
 
 impl Config<WithDarwiniaGrandpa> for Runtime {
 	type BridgedChain = bp_darwinia::Darwinia;
-	type HeadersToKeep = HeadersToKeep;
+	type HeadersToKeep = DarwiniaHeadersToKeep;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
 
 impl Config<WithKusamaGrandpa> for Runtime {
 	type BridgedChain = bp_kusama::Kusama;
-	type HeadersToKeep = HeadersToKeep;
+	type HeadersToKeep = KusamaHeadersToKeep;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }

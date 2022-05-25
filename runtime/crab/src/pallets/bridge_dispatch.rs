@@ -1,4 +1,6 @@
-pub use pallet_bridge_dispatch::{Instance1 as WithDarwiniaDispatch, Instance2 as WithCrabParachainDispatch};
+pub use pallet_bridge_dispatch::{
+	Instance1 as WithDarwiniaDispatch, Instance2 as WithCrabParachainDispatch,
+};
 
 // --- paritytech ---
 use frame_support::traits::Contains;
@@ -32,7 +34,6 @@ impl Config<WithDarwiniaDispatch> for Runtime {
 	type TargetChainAccountPublic = bp_crab::AccountPublic;
 	type TargetChainSignature = bp_crab::Signature;
 }
-
 
 impl Config<WithCrabParachainDispatch> for Runtime {
 	type AccountIdConverter = bp_crab_parachain::AccountIdConverter;

@@ -53,6 +53,7 @@ fn migrate() -> Weight {
 	let _ = Ring::transfer_all(Origin::signed(claims_pallet_account), treasury_account, false);
 
 	migration::remove_storage_prefix(b"Sudo", b"Key", &[]);
+	migration::move_pallet(b"FeeMarket", b"DarwiniaFeeMarket");
 
 	// 0
 	RuntimeBlockWeights::get().max_block
