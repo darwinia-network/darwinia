@@ -221,22 +221,21 @@ frame_support::construct_runtime! {
 		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
-		// S2S bridge.
+		// Crab <> Darwinia.
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
 		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
+		// Crab <> Crab Parachain.
+		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
+		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
+		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 54,
+		BridgeCrabParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
 
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
-
-		// Crab <> Crab parachain
-		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
-		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
-		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 54,
-		BridgeCrabParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
 	}
 }
 
