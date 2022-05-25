@@ -27,7 +27,7 @@ frame_support::parameter_types! {
 		bp_crab_parachain::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const CrabParachainMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_crab_parachain::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
-		pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_CHAIN_ID;
+	pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_CHAIN_ID;
 }
 
 impl Config<WithDarwiniaMessages> for Runtime {
