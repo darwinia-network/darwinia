@@ -31,39 +31,48 @@ fn migrate() -> Weight {
 	migration::storage_iter::<StakingLedger<AccountId, Balance, Balance, BlockNumber>>(
 		b"Staking", b"Ledger",
 	)
-	.for_each(|(_k, StakingLedger { stash, ring_staking_lock, kton_staking_lock, .. })| {
-		let all_ring_lock = ring_staking_lock.total_unbond();
-		let valid_ring_lock = ring_staking_lock.total_unbond_at(now);
+	.for_each(
+		|(
+			_k,
+			StakingLedger {
+				stash, active, active_kton, ring_staking_lock, kton_staking_lock, ..
+			},
+		)| {
+			let all_ring_lock = ring_staking_lock.total_unbond();
+			let valid_ring_lock = ring_staking_lock.total_unbond_at(now);
 
-		if let Some(surplus_ring) = all_ring_lock.checked_sub(valid_ring_lock) {
-			<darwinia_balances::Locks<Runtime, RingInstance>>::mutate(&stash, |locks| {
-				// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut` here.
-				for i in 0..locks.len() {
-					let lock = &mut locks[i];
+			if all_ring_lock != valid_ring_lock {
+				<darwinia_balances::Locks<Runtime, RingInstance>>::mutate(&stash, |locks| {
+					// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut`
+					// here.
+					for i in 0..locks.len() {
+						let lock = &mut locks[i];
 
-					if lock.id == STAKING_ID {
-						lock.amount -= surplus_ring;
+						if lock.id == STAKING_ID {
+							lock.amount = active + valid_ring_lock;
+						}
 					}
-				}
-			});
-		}
+				});
+			}
 
-		let all_kton_lock = kton_staking_lock.total_unbond();
-		let valid_kton_lock = kton_staking_lock.total_unbond_at(now);
+			let all_kton_lock = kton_staking_lock.total_unbond();
+			let valid_kton_lock = kton_staking_lock.total_unbond_at(now);
 
-		if let Some(surplus_kton) = all_kton_lock.checked_sub(valid_kton_lock) {
-			<darwinia_balances::Locks<Runtime, KtonInstance>>::mutate(&stash, |locks| {
-				// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut` here.
-				for i in 0..locks.len() {
-					let lock = &mut locks[i];
+			if all_kton_lock != valid_kton_lock {
+				<darwinia_balances::Locks<Runtime, KtonInstance>>::mutate(&stash, |locks| {
+					// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut`
+					// here.
+					for i in 0..locks.len() {
+						let lock = &mut locks[i];
 
-					if lock.id == STAKING_ID {
-						lock.amount -= surplus_kton;
+						if lock.id == STAKING_ID {
+							lock.amount = active_kton + valid_kton_lock;
+						}
 					}
-				}
-			});
-		}
-	});
+				});
+			}
+		},
+	);
 
 	// 0
 	RuntimeBlockWeights::get().max_block
