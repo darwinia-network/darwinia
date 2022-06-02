@@ -1,11 +1,6 @@
 // --- paritytech ---
 #[allow(unused)]
 use frame_support::{migration, traits::OnRuntimeUpgrade, weights::Weight};
-use frame_support::{
-	traits::{Currency, LockableCurrency},
-	PalletId,
-};
-use sp_runtime::traits::AccountIdConversion;
 // --- darwinia-network ---
 #[allow(unused)]
 use crate::*;
@@ -14,19 +9,11 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		let claims_pallet_account = PalletId(*b"da/claim").into_account();
-
-		assert!(Ring::free_balance(&claims_pallet_account) != 0);
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		let claims_pallet_account = PalletId(*b"da/claim").into_account();
-
-		assert!(Ring::free_balance(&claims_pallet_account) == 0);
-
 		Ok(())
 	}
 
@@ -36,24 +23,47 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	darwinia_balances::migration::migrate::<Runtime, RingInstance>();
-	darwinia_balances::migration::migrate::<Runtime, KtonInstance>();
+	// --- darwinia-network ---
+	use darwinia_staking::{StakingLedger, STAKING_ID};
 
-	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromEth", &[]);
-	migration::remove_storage_prefix(b"DarwiniaClaims", b"ClaimsFromTron", &[]);
+	let now = System::block_number();
 
-	let claims_pallet_id = PalletId(*b"da/claim");
-	let claims_pallet_account = claims_pallet_id.into_account();
-	let treasury_account = PalletId(*b"da/trsry").into_account();
+	migration::storage_iter::<StakingLedger<AccountId, Balance, Balance, BlockNumber>>(
+		b"Staking", b"Ledger",
+	)
+	.for_each(|(_k, StakingLedger { stash, ring_staking_lock, kton_staking_lock, .. })| {
+		let all_ring_lock = ring_staking_lock.total_unbond();
+		let valid_ring_lock = ring_staking_lock.total_unbond_at(now);
 
-	// We mint this ED before. Clean it.
-	Ring::remove_lock(claims_pallet_id.0, &claims_pallet_account);
-	let _ = Ring::slash(&claims_pallet_account, 1 * COIN);
-	// Transfer all balances to treasury account.
-	let _ = Ring::transfer_all(Origin::signed(claims_pallet_account), treasury_account, false);
+		if let Some(surplus_ring) = all_ring_lock.checked_sub(valid_ring_lock) {
+			<darwinia_balances::Locks<Runtime, RingInstance>>::mutate(&stash, |locks| {
+				// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut` here.
+				for i in 0..locks.len() {
+					let lock = &mut locks[i];
 
-	migration::remove_storage_prefix(b"Sudo", b"Key", &[]);
-	migration::move_pallet(b"FeeMarket", b"DarwiniaFeeMarket");
+					if lock.id == STAKING_ID {
+						lock.amount -= surplus_ring;
+					}
+				}
+			});
+		}
+
+		let all_kton_lock = kton_staking_lock.total_unbond();
+		let valid_kton_lock = kton_staking_lock.total_unbond_at(now);
+
+		if let Some(surplus_kton) = all_kton_lock.checked_sub(valid_kton_lock) {
+			<darwinia_balances::Locks<Runtime, KtonInstance>>::mutate(&stash, |locks| {
+				// `WeakBoundedVec` only implement `IndexMut`, otherwise we can use `iter_mut` here.
+				for i in 0..locks.len() {
+					let lock = &mut locks[i];
+
+					if lock.id == STAKING_ID {
+						lock.amount -= surplus_kton;
+					}
+				}
+			});
+		}
+	});
 
 	// 0
 	RuntimeBlockWeights::get().max_block
