@@ -10,7 +10,7 @@ frame_support::parameter_types! {
 	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
 	// call per block.
 	pub const MaxRequests: u32 = 50;
-	pub const CrabHeadersToKeep: u32 = 1_000;
+	pub const CrabHeadersToKeep: u32 = 6_000;
 }
 
 impl Config<WithCrabGrandpa> for Runtime {
