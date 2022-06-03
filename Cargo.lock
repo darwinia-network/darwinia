@@ -1169,7 +1169,6 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "from-substrate-issuing",
- "log",
  "moonbeam-rpc-primitives-debug",
  "pallet-authority-discovery",
  "pallet-authorship",
