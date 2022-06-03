@@ -109,6 +109,7 @@ where
 		context: &Context,
 		is_static: bool,
 	) -> Option<PrecompileResult> {
+		// Filter known precompile addresses except Ethereum officials
 		if self.is_precompile(address) && address > addr(4) && address != context.address {
 			return Some(Err(PrecompileFailure::Revert {
 				exit_status: ExitRevert::Reverted,
