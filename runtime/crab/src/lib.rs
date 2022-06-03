@@ -60,9 +60,7 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 use codec::{Decode, Encode};
 // --- paritytech ---
 use fp_rpc::TransactionStatus;
-#[allow(unused)]
-use frame_support::migration;
-use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
+use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
 use pallet_evm::FeeCalculator;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
@@ -134,7 +132,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
 	authoring_version: 0,
-	spec_version: 12_2_3,
+	spec_version: 12_2_4,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
