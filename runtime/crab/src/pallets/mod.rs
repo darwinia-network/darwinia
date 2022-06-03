@@ -91,8 +91,8 @@ pub use proxy::*;
 pub mod multisig;
 pub use multisig::*;
 
-pub mod evm;
-pub use evm::*;
+pub mod evm_;
+pub use evm_::*;
 
 pub mod ethereum;
 pub use ethereum::*;
