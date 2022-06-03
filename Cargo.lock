@@ -1156,6 +1156,7 @@ dependencies = [
  "dp-evm-tracer",
  "dp-s2s",
  "ethereum-primitives",
+ "evm",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

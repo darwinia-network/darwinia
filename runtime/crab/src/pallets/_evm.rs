@@ -1,7 +1,8 @@
 // --- core ---
 use core::marker::PhantomData;
+use evm::ExitRevert;
 // --- paritytech ---
-use fp_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
+use fp_evm::{Context, Precompile, PrecompileResult, PrecompileSet, PrecompileFailure};
 use frame_support::{
 	pallet_prelude::Weight,
 	traits::{FindAuthor, PalletInfoAccess},
@@ -108,6 +109,14 @@ where
 		context: &Context,
 		is_static: bool,
 	) -> Option<PrecompileResult> {
+		if self.is_precompile(address) && address > addr(4) && address != context.address {
+			return Some(Err(PrecompileFailure::Revert {
+				exit_status: ExitRevert::Reverted,
+				output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+				cost: 0,
+			}));
+		};
+
 		match address {
 			// Ethereum precompiles
 			a if a == addr(1) => Some(ECRecover::execute(input, target_gas, context, is_static)),

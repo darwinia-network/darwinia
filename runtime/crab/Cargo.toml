@@ -13,7 +13,8 @@ version     = "0.12.2"
 # crates.io
 array-bytes       = { version = "1.4" }
 codec             = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
-log               = { version = "0.4" }
+evm               = { version = "0.33.1", default-features = false, features = ["with-codec"] }
+log               = { version = "0.4.2" }
 scale-info        = { version = "1.0", default-features = false }
 serde             = { version = "1.0", optional = true }
 smallvec          = { version = "1.7" }
@@ -123,6 +124,7 @@ no_std = []
 std = [
 	# crates.io
 	"codec/std",
+	"evm/std",
 	"scale-info/std",
 	"serde",
 	# darwinia-bridges-susbtrate
