@@ -40,7 +40,7 @@ impl Config for Runtime {
 	type SessionInterface = Self;
 	type SessionsPerEra = SessionsPerEra;
 	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = AtLeastHalf<CouncilCollective>;
+	type SlashCancelOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type SlashDeferDuration = SlashDeferDuration;
 	// Use the nominator map to iter voter AND no-ops for all SortedListProvider hooks. The
 	// migration to bags-list is a no-op, but the storage version will be updated.

@@ -22,26 +22,26 @@ impl Config for Runtime {
 	type BlacklistOrigin = Root;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
-	type CancelProposalOrigin = All<TechnicalCollective>;
+	type CancelProposalOrigin = RootOrAll<TechnicalCollective>;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = AtLeastTwoThird<CouncilCollective>;
+	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
 	type CooloffPeriod = CooloffPeriod;
 	type Currency = Ring;
 	type EnactmentPeriod = EnactmentPeriod;
 	type Event = Event;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = All<CouncilCollective>;
+	type ExternalDefaultOrigin = RootOrAll<CouncilCollective>;
 	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin = AtLeastHalf<CouncilCollective>;
+	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = AtLeastHalf<CouncilCollective>;
+	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = AtLeastTwoThird<TechnicalCollective>;
+	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type InstantAllowed = InstantAllowed;
-	type InstantOrigin = All<TechnicalCollective>;
+	type InstantOrigin = RootOrAll<TechnicalCollective>;
 	type LaunchPeriod = LaunchPeriod;
 	type MaxProposals = MaxProposals;
 	type MaxVotes = MaxVotes;

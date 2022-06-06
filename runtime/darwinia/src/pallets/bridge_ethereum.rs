@@ -18,7 +18,7 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type ApproveOrigin = AtLeastThreeFifth<TechnicalCollective>;
+	type ApproveOrigin = RootOrAtLeastThreeFifth<TechnicalCollective>;
 	type ApproveThreshold = ApproveThreshold;
 	type BridgedNetwork = EthereumRelayBridgeNetwork;
 	type Call = Call;
@@ -26,7 +26,7 @@ impl Config for Runtime {
 	type Currency = Ring;
 	type Event = Event;
 	type PalletId = EthereumRelayPalletId;
-	type RejectOrigin = AtLeastHalf<TechnicalCollective>;
+	type RejectOrigin = RootOrAtLeastHalf<TechnicalCollective>;
 	type RejectThreshold = RejectThreshold;
 	type RelayerGame = EthereumRelayerGame;
 	type TechnicalMembership = TechnicalMembership;

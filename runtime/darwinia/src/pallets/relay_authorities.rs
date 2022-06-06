@@ -21,14 +21,14 @@ frame_support::parameter_types! {
 }
 
 impl Config<EthereumRelayAuthoritiesInstance> for Runtime {
-	type AddOrigin = AtLeastThreeFifth<CouncilCollective>;
+	type AddOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type DarwiniaMMR = DarwiniaHeaderMMR;
 	type Event = Event;
 	type LockId = EthereumRelayAuthoritiesLockId;
 	type MaxCandidates = MaxCandidates;
 	type OpCodes = OpCodes;
-	type RemoveOrigin = AtLeastThreeFifth<CouncilCollective>;
-	type ResetOrigin = AtLeastThreeFifth<CouncilCollective>;
+	type RemoveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
+	type ResetOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type RingCurrency = Ring;
 	type Sign = EthereumBacking;
 	type SignThreshold = SignThreshold;

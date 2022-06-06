@@ -18,11 +18,11 @@ impl Config for Runtime {
 	type Currency = Ring;
 	type Event = Event;
 	type FieldDeposit = FieldDeposit;
-	type ForceOrigin = MoreThanHalf<CouncilCollective>;
+	type ForceOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type MaxAdditionalFields = MaxAdditionalFields;
 	type MaxRegistrars = MaxRegistrars;
 	type MaxSubAccounts = MaxSubAccounts;
-	type RegistrarOrigin = MoreThanHalf<CouncilCollective>;
+	type RegistrarOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type Slashed = Treasury;
 	type SubAccountDeposit = SubAccountDeposit;
 	type WeightInfo = ();

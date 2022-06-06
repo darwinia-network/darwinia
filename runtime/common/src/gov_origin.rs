@@ -7,17 +7,17 @@ use darwinia_primitives::AccountId;
 
 pub type Root = EnsureRoot<AccountId>;
 
-pub type AtLeastHalf<Collective> =
+pub type RootOrAtLeastHalf<Collective> =
 	EnsureOneOf<AccountId, Root, EnsureProportionAtLeast<_1, _2, AccountId, Collective>>;
 
-pub type MoreThanHalf<Collective> =
+pub type RootOrMoreThanHalf<Collective> =
 	EnsureOneOf<AccountId, Root, EnsureProportionMoreThan<_1, _2, AccountId, Collective>>;
 
-pub type AtLeastTwoThird<Collective> =
+pub type RootOrAtLeastTwoThird<Collective> =
 	EnsureOneOf<AccountId, Root, EnsureProportionAtLeast<_2, _3, AccountId, Collective>>;
 
-pub type AtLeastThreeFifth<Collective> =
+pub type RootOrAtLeastThreeFifth<Collective> =
 	EnsureOneOf<AccountId, Root, EnsureProportionAtLeast<_3, _5, AccountId, Collective>>;
 
-pub type All<Collective> =
+pub type RootOrAll<Collective> =
 	EnsureOneOf<AccountId, Root, EnsureProportionAtLeast<_1, _1, AccountId, Collective>>;
