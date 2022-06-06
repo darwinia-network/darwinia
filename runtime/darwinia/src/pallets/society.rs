@@ -22,7 +22,7 @@ impl Config for Runtime {
 	type ChallengePeriod = ChallengePeriod;
 	type Currency = Ring;
 	type Event = Event;
-	type FounderSetOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type FounderSetOrigin = MoreThanHalf<CouncilCollective>;
 	type MaxCandidateIntake = MaxCandidateIntake;
 	type MaxLockDuration = MaxLockDuration;
 	type MaxStrikes = MaxStrikes;
