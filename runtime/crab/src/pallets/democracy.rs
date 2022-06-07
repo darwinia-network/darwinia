@@ -1,8 +1,6 @@
 // --- paritytech ---
-use frame_system::{EnsureOneOf, EnsureRoot};
-use pallet_collective::{EnsureMember, EnsureProportionAtLeast};
+use pallet_collective::EnsureMember;
 use pallet_democracy::Config;
-use sp_core::u32_trait::{_1, _2, _3};
 // --- darwinia-network ---
 use crate::*;
 
@@ -20,33 +18,29 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type BlacklistOrigin = EnsureRoot<AccountId>;
+	type BlacklistOrigin = Root;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
-	type CancelProposalOrigin = EnsureOneOf<
-		AccountId,
-		EnsureRoot<AccountId>,
-		EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
-	>;
+	type CancelProposalOrigin = RootOrAll<TechnicalCollective>;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
+	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
 	type CooloffPeriod = CooloffPeriod;
 	type Currency = Ring;
 	type EnactmentPeriod = EnactmentPeriod;
 	type Event = Event;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
+	type ExternalDefaultOrigin = RootOrAll<CouncilCollective>;
 	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin = EnsureRootOrHalfCouncil;
+	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = EnsureRootOrHalfCouncil;
+	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
+	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type InstantAllowed = InstantAllowed;
-	type InstantOrigin = EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>;
+	type InstantOrigin = RootOrAll<TechnicalCollective>;
 	type LaunchPeriod = LaunchPeriod;
 	type MaxProposals = MaxProposals;
 	type MaxVotes = MaxVotes;

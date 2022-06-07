@@ -20,6 +20,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod gov_origin;
+pub use gov_origin::*;
+
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
 pub use impls::*;

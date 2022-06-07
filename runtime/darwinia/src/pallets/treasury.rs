@@ -18,7 +18,7 @@ frame_support::parameter_types! {
 // In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
 // `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
 impl Config for Runtime {
-	type ApproveOrigin = ApproveOrigin;
+	type ApproveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type Burn = Burn;
 	type BurnDestination = Society;
 	type Currency = Ring;
@@ -28,13 +28,13 @@ impl Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMinimum = RingProposalBondMinimum;
-	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type RejectOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type SpendFunds = Bounties;
 	type SpendPeriod = SpendPeriod;
 	type WeightInfo = ();
 }
 impl Config<KtonTreasuryInstance> for Runtime {
-	type ApproveOrigin = ApproveOrigin;
+	type ApproveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type Burn = Burn;
 	type BurnDestination = ();
 	type Currency = Kton;
@@ -44,7 +44,7 @@ impl Config<KtonTreasuryInstance> for Runtime {
 	type PalletId = TreasuryPalletId;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMinimum = KtonProposalBondMinimum;
-	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type RejectOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type SpendFunds = ();
 	type SpendPeriod = SpendPeriod;
 	type WeightInfo = ();
