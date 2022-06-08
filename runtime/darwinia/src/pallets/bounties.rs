@@ -5,11 +5,11 @@ use crate::*;
 use pallet_bounties::Config;
 
 frame_support::parameter_types! {
-	pub const BountyDepositBase: Balance = 1 * COIN;
+	pub const BountyDepositBase: Balance = darwinia_deposit(1, 0);
 	pub const BountyDepositPayoutDelay: BlockNumber = 8 * DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub const BountyValueMinimum: Balance = 10 * COIN;
+	pub const BountyValueMinimum: Balance = 20_000 * COIN;
 }
 
 impl Config for Runtime {

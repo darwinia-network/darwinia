@@ -7,6 +7,7 @@ use crate::*;
 
 frame_support::parameter_types! {
 	pub const SocietyPalletId: PalletId = PalletId(*b"da/socie");
+	// TODO: update this
 	pub const CandidateDeposit: Balance = 10 * COIN;
 	pub const WrongSideDeduction: Balance = 2 * COIN;
 	pub const MaxStrikes: u32 = 10;

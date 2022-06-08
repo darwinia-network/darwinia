@@ -24,8 +24,8 @@ impl WeightToFeePolynomial for WeightToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Darwinia, extrinsic base weight (smallest non-zero weight) is mapped to 10 MILLI:
-		let p = 10 * MILLI;
+		// in Darwinia, extrinsic base weight (smallest non-zero weight) is mapped to 100 MILLI:
+		let p = 100 * MILLI;
 		let q = Balance::from(ExtrinsicBaseWeight::get());
 		smallvec![WeightToFeeCoefficient {
 			degree: 1,
@@ -37,7 +37,7 @@ impl WeightToFeePolynomial for WeightToFee {
 }
 
 frame_support::parameter_types! {
-	pub const TransactionByteFee: Balance = 50 * MICRO;
+	pub const TransactionByteFee: Balance = 2 * MILLI;
 	/// This value increases the priority of `Operational` transactions by adding
 	/// a "virtual tip" that's equal to the `OperationalFeeMultiplier * final_fee`.
 	pub const OperationalFeeMultiplier: u8 = 5;

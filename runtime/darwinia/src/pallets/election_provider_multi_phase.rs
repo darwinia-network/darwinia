@@ -23,9 +23,14 @@ frame_support::parameter_types! {
 
 	// signed config
 	pub const SignedMaxSubmissions: u32 = 10;
-	pub const SignedRewardBase: Balance = 1 * MILLI;
+	// Each good submission will get 10 RING as reward.
+	pub const SignedRewardBase: Balance = 10 * COIN;
 	pub const SignedDepositBase: Balance = 1 * MILLI;
+		// TODO: update this
+	// pub const SignedDepositBase: Balance = crab_deposit(2, 0);
 	pub const SignedDepositByte: Balance = 1 * MICRO;
+	// TODO: update this
+	// pub const SignedDepositByte: Balance = deposit(0, 10) / 1024;
 
 	pub SolutionImprovementThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
 

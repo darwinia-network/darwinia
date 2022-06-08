@@ -8,6 +8,7 @@ frame_support::parameter_types! {
 	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
 	pub const CandidacyBond: Balance = 1 * COIN;
 	// 1 storage item created, key size is 32 bytes, value size is 16+16.
+	// TODO:check if this change need a migration
 	pub const VotingBondBase: Balance = crab_deposit(1, 64);
 	// additional data per vote is 32 bytes (account id).
 	pub const VotingBondFactor: Balance = crab_deposit(0, 32);

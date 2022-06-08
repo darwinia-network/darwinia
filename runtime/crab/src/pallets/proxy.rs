@@ -110,6 +110,7 @@ impl InstanceFilter<Call> for ProxyType {
 
 frame_support::parameter_types! {
 	// One storage item; key size 32, value size 8; .
+	// TODO: check if this change need a migration
 	pub const ProxyDepositBase: Balance = crab_deposit(1, 8);
 	// Additional storage item size of 33 bytes.
 	pub const ProxyDepositFactor: Balance = crab_deposit(0, 33);
