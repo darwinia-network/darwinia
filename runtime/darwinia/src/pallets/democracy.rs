@@ -8,12 +8,11 @@ frame_support::parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
 	pub const LaunchPeriod: BlockNumber = 28 * DAYS;
 	pub const VotingPeriod: BlockNumber = 28 * DAYS;
-	pub const MinimumDeposit: Balance = 100 * COIN;
+	pub const MinimumDeposit: Balance = DARWINIA_PROPOSAL_REQUIREMENT;
 	pub const InstantAllowed: bool = true;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	// One milli: $10,000 / MB
-	pub const PreimageByteDeposit: Balance = 1 * MILLI;
+	pub const PreimageByteDeposit: Balance = darwinia_deposit(0, 1);
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }

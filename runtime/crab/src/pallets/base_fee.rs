@@ -5,6 +5,7 @@ use crate::*;
 
 frame_support::parameter_types! {
 	pub IsActive: bool = false;
+	// TODO: update this
 	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 

@@ -8,11 +8,11 @@ frame_support::parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 8 * DAYS;
 	pub const LaunchPeriod: BlockNumber = 7 * DAYS;
 	pub const VotingPeriod: BlockNumber = 7 * DAYS;
-	pub const MinimumDeposit: Balance = 1 * MILLI;
+	pub const MinimumDeposit: Balance = CRAB_PROPOSAL_REQUIREMENT;
 	pub const InstantAllowed: bool = true;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	pub const PreimageByteDeposit: Balance = 10 * NANO;
+	pub const PreimageByteDeposit: Balance = crab_deposit(0, 1);
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }

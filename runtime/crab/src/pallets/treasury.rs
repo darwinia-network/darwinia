@@ -8,8 +8,8 @@ use pallet_treasury::{Config, Instance2 as KtonTreasuryInstance};
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const RingProposalBondMinimum: Balance = 10_000 * COIN;
-	pub const KtonProposalBondMinimum: Balance = 10 * COIN;
+	pub const RingProposalBondMinimum: Balance = CRAB_PROPOSAL_REQUIREMENT;
+	pub const KtonProposalBondMinimum: Balance = 25 * COIN;
 	pub const SpendPeriod: BlockNumber = 6 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
 	pub const MaxApprovals: u32 = 100;

@@ -4,6 +4,7 @@ use pallet_recovery::Config;
 use crate::*;
 
 frame_support::parameter_types! {
+	// TODO: update this
 	pub const ConfigDepositBase: Balance = 5 * COIN;
 	pub const FriendDepositFactor: Balance = 50 * MILLI;
 	pub const MaxFriends: u16 = 9;
