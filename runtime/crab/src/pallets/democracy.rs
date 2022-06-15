@@ -12,9 +12,7 @@ frame_support::parameter_types! {
 	pub const InstantAllowed: bool = true;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	// First try
-	// 50 CRAB/MB
-	pub const PreimageByteDeposit: Balance = 50 * MILLI;
+	pub const PreimageByteDeposit: Balance = crab_deposit(0, 1);
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }

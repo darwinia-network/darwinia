@@ -12,9 +12,7 @@ frame_support::parameter_types! {
 	pub const InstantAllowed: bool = true;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	// FIrst try
-	// 10 RING/MB
-	pub const PreimageByteDeposit: Balance = 10 * MILLI;
+	pub const PreimageByteDeposit: Balance = darwinia_deposit(0, 1);
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }
