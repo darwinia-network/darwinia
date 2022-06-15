@@ -129,6 +129,15 @@ pub const fn crab_deposit(items: u32, bytes: u32) -> Balance {
 	// items as Balance * 500 * COIN + (bytes as Balance) * 500 * MILLI
 }
 
+/// Old deposit calculator for Darwinia.
+pub const fn old_darwinia_deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 20 * MILLI + (bytes as Balance) * 100 * NANO
+}
+/// Old deposit calculator for Crab.
+pub const fn old_crab_deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 20 * COIN + (bytes as Balance) * 100 * MICRO
+}
+
 /// Block time of Darwinia/Crab.
 pub const MILLISECS_PER_BLOCK: Moment = 6000;
 
