@@ -109,6 +109,11 @@ pub const RING_HARD_CAP: Balance = 10_000_000_000 * COIN;
 /// The amount of total power.
 pub const TOTAL_POWER: Power = 1_000_000_000;
 
+/// Darwinia proposal base fee.
+pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5000 * COIN;
+/// Crab proposal base fee.
+pub const CRAB_PROPOSAL_REQUIREMENT: Balance = 25000 * COIN;
+
 /// Deposit calculator for Darwinia.
 /// 100 RING for the base fee, 102.4 RING/MB.
 pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
