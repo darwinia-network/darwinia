@@ -31,8 +31,6 @@ macro_rules! impl_runtime_apis {
 			+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
 			+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
 			+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-			+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-			+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 			$(+ $extra_apis)*
 		where
 			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<Hashing>,
@@ -51,8 +49,6 @@ macro_rules! impl_runtime_apis {
 				+ sp_session::SessionKeys<Block>
 				+ frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce>
 				+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-				+ darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance>
-				+ darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power>
 				$(+ $extra_apis)*,
 			<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<Hashing>,
 		{

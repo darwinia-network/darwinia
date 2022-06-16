@@ -68,8 +68,6 @@ where
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
-		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
-		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	SC: 'static + sp_consensus::SelectChain<Block>,
@@ -90,9 +88,6 @@ where
 	use sc_finality_grandpa_rpc::*;
 	use sc_sync_state_rpc::*;
 	use substrate_frame_rpc_system::*;
-	// --- darwinia-network ---
-	use darwinia_balances_rpc::*;
-	use darwinia_staking_rpc::*;
 
 	let FullDeps {
 		client,
@@ -160,8 +155,6 @@ where
 		shared_epoch_changes,
 		deny_unsafe,
 	)?));
-	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
-	io.extend_with(StakingApi::to_delegate(Staking::new(client.clone())));
 	io.extend_with(EthApiServer::to_delegate(EthApi::new(
 		client.clone(),
 		pool.clone(),

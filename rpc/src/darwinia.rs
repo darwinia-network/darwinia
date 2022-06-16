@@ -58,8 +58,6 @@ where
 		+ sc_consensus_babe::BabeApi<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ darwinia_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>
-		+ darwinia_staking_rpc::StakingRuntimeApi<Block, AccountId, Power>,
 	P: 'static + sc_transaction_pool_api::TransactionPool,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,
@@ -71,9 +69,6 @@ where
 	use sc_finality_grandpa_rpc::*;
 	use sc_sync_state_rpc::*;
 	use substrate_frame_rpc_system::*;
-	// --- darwinia-network ---
-	use darwinia_balances_rpc::*;
-	use darwinia_staking_rpc::*;
 
 	let FullDeps {
 		client,
