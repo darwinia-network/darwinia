@@ -508,7 +508,7 @@ sp_api::impl_runtime_apis! {
 		fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
 		}
-	}g
+	}
 
 	impl bp_crab::CrabFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (BlockNumber, Hash) {
