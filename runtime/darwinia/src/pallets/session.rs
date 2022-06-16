@@ -1,6 +1,6 @@
 // --- paritytech ---
 use pallet_session::{historical::NoteHistoricalRoot, Config};
-use sp_runtime::{traits::OpaqueKeys, Perbill};
+use sp_runtime::traits::OpaqueKeys;
 use sp_std::prelude::*;
 // --- darwinia-network ---
 use crate::*;
@@ -13,10 +13,6 @@ sp_runtime::impl_opaque_keys! {
 		pub im_online: ImOnline,
 		pub authority_discovery: AuthorityDiscovery,
 	}
-}
-
-frame_support::parameter_types! {
-	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
 }
 
 impl Config for Runtime {

@@ -57,7 +57,7 @@ where
 	C::Api: sp_block_builder::BlockBuilder<Block>
 		+ sc_consensus_babe::BabeApi<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
-		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	P: 'static + sc_transaction_pool_api::TransactionPool,
 	SC: 'static + sp_consensus::SelectChain<Block>,
 	B: 'static + Send + Sync + sc_client_api::Backend<Block>,

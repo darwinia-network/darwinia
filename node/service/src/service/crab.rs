@@ -174,6 +174,7 @@ where
 	let warp_sync = Arc::new(NetworkProvider::new(
 		backend.clone(),
 		grandpa_link.shared_authority_set().clone(),
+		Vec::new(),
 	));
 	let (network, system_rpc_tx, network_starter) =
 		sc_service::build_network(BuildNetworkParams {

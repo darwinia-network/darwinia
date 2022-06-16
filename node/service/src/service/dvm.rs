@@ -114,6 +114,8 @@ where
 					client.clone(),
 					substrate_backend.clone(),
 					dvm_backend.clone(),
+					3,
+					0,
 					SyncStrategy::Normal,
 				)
 				.for_each(|()| futures::future::ready(())),
