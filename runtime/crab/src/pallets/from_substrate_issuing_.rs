@@ -32,9 +32,9 @@ impl OutboundMessager<AccountId32> for OutboundMessageDataInfo {
 	}
 
 	fn get_valid_message_sender(nonce: MessageNonce) -> Result<AccountId32, &'static str> {
-		let data = BridgePangoroMessages::outbound_message_data(DARWINIA_CRAB_LANE, nonce)
+		let data = BridgeDarwiniaMessages::outbound_message_data(DARWINIA_CRAB_LANE, nonce)
 			.ok_or_else(|| "Invalid outbound message data")?;
-		let payload = bm_pangoro::ToPangoroMessagePayload::decode(&mut &data.payload[..])
+		let payload = bm_darwinia::ToDarwiniaMessagePayload::decode(&mut &data.payload[..])
 			.map_err(|_| "decode message payload failed")?;
 		match payload.origin {
 			CallOrigin::SourceAccount(account_id) => Ok(account_id),
