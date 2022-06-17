@@ -16,7 +16,6 @@ sp_runtime::impl_opaque_keys! {
 }
 
 impl Config for Runtime {
-	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
 	type Event = Event;
 	type Keys = SessionKeys;
 	type NextSessionRotation = Babe;
