@@ -146,6 +146,7 @@ std = [
 	"frame-try-runtime/std",
 	"darwinia-support/std",
 	"from-substrate-issuing/std",
+	"to-parachain-backing/std",
 	# darwinia-network dvm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",
