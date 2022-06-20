@@ -11,6 +11,8 @@ use bridge_runtime_common::lanes::CRAB_CRAB_PARACHAIN_LANE;
 use darwinia_support::s2s::LatestMessageNoncer;
 use to_parachain_backing::{Config, IssueFromRemotePayload, IssuingCall};
 
+pub const CRAB_PARACHAIN_ISSUING_PALLET_INDEX: u8 = 24;
+
 pub struct CrabParachainMessageNoncer;
 impl LatestMessageNoncer for CrabParachainMessageNoncer {
 	fn outbound_latest_generated_nonce(lane_id: LaneId) -> u64 {
@@ -22,7 +24,6 @@ impl LatestMessageNoncer for CrabParachainMessageNoncer {
 	}
 }
 
-pub const CRAB_PARACHAIN_ISSUING_PALLET_INDEX: u8 = 24;
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct ToCrabParachainOutboundPayLoad;
 impl
