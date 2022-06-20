@@ -38,6 +38,7 @@ darwinia-header-mmr    = { default-features = false, git = "https://github.com/d
 darwinia-staking       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
 darwinia-support       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
 from-substrate-issuing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
+to-parachain-backing   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
 # darwinia-network dvm
 darwinia-ethereum                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
 darwinia-evm                       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }

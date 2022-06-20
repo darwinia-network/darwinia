@@ -683,19 +683,20 @@ dependencies = [
 [[package]]
 name = "bp-message-dispatch"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#142b5f83185717487e1b4df882c36ea837e4cd6e"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#3fb097c5ca82d449c5be6973df74daa4b07d1964"
 dependencies = [
  "bp-runtime",
  "frame-support",
  "parity-scale-codec",
  "scale-info",
+ "sp-runtime",
  "sp-std",
 ]
 
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#142b5f83185717487e1b4df882c36ea837e4cd6e"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#3fb097c5ca82d449c5be6973df74daa4b07d1964"
 dependencies = [
  "bitvec",
  "bp-runtime",
@@ -746,7 +747,7 @@ dependencies = [
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#142b5f83185717487e1b4df882c36ea837e4cd6e"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=darwinia-v0.12.3#3fb097c5ca82d449c5be6973df74daa4b07d1964"
 dependencies = [
  "frame-support",
  "hash-db",
@@ -1192,6 +1193,7 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
+ "to-parachain-backing",
 ]
 
 [[package]]
@@ -9283,6 +9285,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "to-parachain-backing"
+version = "2.8.12"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#0e8d77831758e0e64a588ab81314f6589347d88f"
+dependencies = [
+ "array-bytes",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-runtime",
+ "darwinia-support",
+ "ethereum-types",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "to-substrate-backing"
 version = "2.8.12"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#0e8d77831758e0e64a588ab81314f6589347d88f"
@@ -9599,7 +9620,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "rand 0.8.5",
  "static_assertions",
 ]

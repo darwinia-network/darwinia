@@ -187,6 +187,7 @@ pub fn genesis_config() -> ChainSpec {
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),
+			to_parachain_backing: Default::default(),
 		}
 	}
 
@@ -281,6 +282,7 @@ pub fn development_config() -> ChainSpec {
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),
+			to_parachain_backing: Default::default(),
 		}
 	}
 
