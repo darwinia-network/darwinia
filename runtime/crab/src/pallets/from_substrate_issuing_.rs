@@ -9,21 +9,8 @@ use bp_message_dispatch::CallOrigin;
 use bp_messages::{LaneId, MessageNonce};
 use bp_runtime::{ChainId, DARWINIA_CHAIN_ID};
 use bridge_runtime_common::lanes::DARWINIA_CRAB_LANE;
-use darwinia_support::{
-	s2s::{OutboundMessager, ToEthAddress},
-	ChainName,
-};
+use darwinia_support::{s2s::OutboundMessager, ChainName};
 use from_substrate_issuing::Config;
-
-// Convert from AccountId32 to H160
-pub struct TruncateToEthAddress;
-impl ToEthAddress<AccountId32> for TruncateToEthAddress {
-	fn into_ethereum_id(address: &AccountId32) -> H160 {
-		let account20: &[u8] = &address.as_ref();
-
-		H160::from_slice(&account20[..20])
-	}
-}
 
 pub struct OutboundMessageDataInfo;
 impl OutboundMessager<AccountId32> for OutboundMessageDataInfo {
@@ -58,6 +45,5 @@ impl Config for Runtime {
 	type OutboundMessager = OutboundMessageDataInfo;
 	type PalletId = S2sIssuingPalletId;
 	type RingCurrency = Ring;
-	type ToEthAddressT = TruncateToEthAddress;
 	type WeightInfo = ();
 }
