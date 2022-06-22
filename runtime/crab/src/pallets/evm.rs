@@ -100,7 +100,7 @@ where
 	}
 
 	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 26]
+		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 26, 1024, 1025]
 			.into_iter()
 			.map(|x| addr(x))
 			.collect()
@@ -109,11 +109,11 @@ where
 
 impl<R> PrecompileSet for CrabPrecompiles<R>
 where
-	Transfer<R>: Precompile,
-	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
 	Dispatch<R>: Precompile,
-	StateStorage<R, StorageFilter>: Precompile,
 	R: darwinia_ethereum::Config,
+	StateStorage<R, StorageFilter>: Precompile,
+	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
+	Transfer<R>: Precompile,
 {
 	fn execute(
 		&self,
@@ -143,7 +143,7 @@ where
 			a if a == addr(7) => Some(Bn128Mul::execute(input, target_gas, context, is_static)),
 			a if a == addr(8) => Some(Bn128Pairing::execute(input, target_gas, context, is_static)),
 			a if a == addr(9) => Some(Blake2F::execute(input, target_gas, context, is_static)),
-			// Darwinia precompiles
+			// Darwinia precompiles: 1024+ for stable precompiles.
 			a if a == addr(21) =>
 				Some(<Transfer<R>>::execute(input, target_gas, context, is_static)),
 			a if a == addr(24) => Some(<Sub2SubBridge<
@@ -156,6 +156,12 @@ where
 			a if a == addr(26) => Some(<StateStorage<R, StorageFilter>>::execute(
 				input, target_gas, context, is_static,
 			)),
+			a if a == addr(1024) => Some(<StateStorage<R, StorageFilter>>::execute(
+				input, target_gas, context, is_static,
+			)),
+			a if a == addr(1025) =>
+				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+
 			_ => None,
 		}
 	}
