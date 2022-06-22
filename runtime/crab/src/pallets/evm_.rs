@@ -10,6 +10,8 @@ use frame_support::{
 	ConsensusEngineId, StorageHasher, Twox128,
 };
 use pallet_evm_precompile_blake2::Blake2F;
+use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
+use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_session::FindAccountFromAuthorIndex;
 use sp_core::{crypto::Public, H160, U256};
@@ -100,7 +102,10 @@ where
 	}
 
 	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-		sp_std::vec![1, 2, 3, 4, 9, 21, 24, 25, 26].into_iter().map(|x| addr(x)).collect()
+		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 26]
+			.into_iter()
+			.map(|x| addr(x))
+			.collect()
 	}
 }
 
@@ -135,6 +140,10 @@ where
 			a if a == addr(2) => Some(Sha256::execute(input, target_gas, context, is_static)),
 			a if a == addr(3) => Some(Ripemd160::execute(input, target_gas, context, is_static)),
 			a if a == addr(4) => Some(Identity::execute(input, target_gas, context, is_static)),
+			a if a == addr(5) => Some(Modexp::execute(input, target_gas, context, is_static)),
+			a if a == addr(6) => Some(Bn128Add::execute(input, target_gas, context, is_static)),
+			a if a == addr(7) => Some(Bn128Mul::execute(input, target_gas, context, is_static)),
+			a if a == addr(8) => Some(Bn128Pairing::execute(input, target_gas, context, is_static)),
 			a if a == addr(9) => Some(Blake2F::execute(input, target_gas, context, is_static)),
 			// Darwinia precompiles
 			a if a == addr(21) =>
