@@ -1,9 +1,7 @@
 // --- core ---
 use core::marker::PhantomData;
-// --- crates.io ---
-use evm::ExitRevert;
 // --- paritytech ---
-use fp_evm::{Context, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
+use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
 use frame_support::{
 	pallet_prelude::Weight,
 	traits::{FindAuthor, PalletInfoAccess},
