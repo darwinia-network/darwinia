@@ -53,6 +53,7 @@ moonbeam-rpc-primitives-debug         = { default-features = false, git = "https
 pallet-base-fee                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 pallet-evm                            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 pallet-evm-precompile-simple          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
+pallet-evm-precompile-blake2          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 # darwinia-network primitives
 darwinia-primitives       = { default-features = false, path = "../../primitives" }
 darwinia-relay-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
@@ -153,6 +154,7 @@ std = [
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-state-storage/std",
 	"darwinia-evm-precompile-transfer/std",
+	"pallet-evm-precompile-blake2/std",
 	"dp-evm-tracer/std",
 	"fp-evm/std",
 	"fp-rpc/std",
