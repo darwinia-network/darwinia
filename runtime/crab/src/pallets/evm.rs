@@ -151,11 +151,10 @@ where
 				ToDarwiniaMessageSender,
 				bm_darwinia::ToDarwiniaOutboundPayLoad,
 			>>::execute(input, target_gas, context, is_static)),
+			// There are two Dispatch precompile instance now, the 25-Dispatch reserved to
+			// keep the compatibility, which will be removed in the future.
 			a if a == addr(25) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(26) => Some(<StateStorage<R, StorageFilter>>::execute(
-				input, target_gas, context, is_static,
-			)),
 			a if a == addr(1024) => Some(<StateStorage<R, StorageFilter>>::execute(
 				input, target_gas, context, is_static,
 			)),
