@@ -32,7 +32,7 @@ use sp_std::{convert::TryFrom, ops::RangeInclusive};
 use crate::*;
 use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{messages::*, *};
+use bp_runtime::{messages::*, ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{

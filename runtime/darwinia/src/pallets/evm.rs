@@ -5,6 +5,7 @@ use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResul
 use frame_support::{
 	pallet_prelude::Weight, traits::FindAuthor, ConsensusEngineId, StorageHasher, Twox128,
 };
+use pallet_evm::FeeCalculator;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
@@ -112,9 +113,6 @@ where
 			a if a == addr(1025) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
 			// Darwinia precompiles: 2048+ for experimental precompiles.
-			a if a == addr(2048) =>
-				Some(<BLS12381<R>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(2049) => Some(<MPT<R>>::execute(input, target_gas, context, is_static)),
 			_ => None,
 		}
 	}
