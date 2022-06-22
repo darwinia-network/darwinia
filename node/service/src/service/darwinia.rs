@@ -24,11 +24,16 @@ use std::sync::Arc;
 use super::*;
 use darwinia_primitives::{OpaqueBlock as Block, *};
 
-impl_runtime_apis![];
+impl_runtime_apis![
+	fp_rpc::EthereumRuntimeRPCApi<Block>,
+	fp_rpc::ConvertTransactionRuntimeApi<Block>,
+	moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+];
 
 pub struct Executor;
 impl sc_executor::NativeExecutionDispatch for Executor {
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+	type ExtendHostFunctions =
+		(frame_benchmarking::benchmarking::HostFunctions, dp_evm_trace_ext::dvm_ext::HostFunctions);
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		darwinia_runtime::api::dispatch(method, data)
@@ -72,13 +77,17 @@ where
 pub fn darwinia_new_full(
 	config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
+	eth_rpc_config: darwinia_rpc::EthRpcConfig,
 ) -> ServiceResult<(
 	sc_service::TaskManager,
 	Arc<impl crate::client::DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
 	sc_service::RpcHandlers,
 )> {
-	let (components, client, rpc_handlers) =
-		new_full::<darwinia_runtime::RuntimeApi, Executor>(config, authority_discovery_disabled)?;
+	let (components, client, rpc_handlers) = new_full::<darwinia_runtime::RuntimeApi, Executor>(
+		config,
+		authority_discovery_disabled,
+		eth_rpc_config,
+	)?;
 
 	Ok((components, client, rpc_handlers))
 }
@@ -87,6 +96,7 @@ pub fn darwinia_new_full(
 fn new_full<RuntimeApi, Executor>(
 	mut config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
+	eth_rpc_config: darwinia_rpc::EthRpcConfig,
 ) -> ServiceResult<(
 	sc_service::TaskManager,
 	Arc<FullClient<RuntimeApi, Executor>>,
@@ -102,10 +112,12 @@ where
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	// -- std ---
-	use std::time::Duration;
+	use std::{collections::BTreeMap, sync::Mutex, time::Duration};
 	// --- crates.io ---
 	use futures::stream::StreamExt;
 	// --- paritytech ---
+	use fc_rpc::EthBlockDataCache;
+	use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 	use sc_authority_discovery::WorkerConfig;
 	use sc_basic_authorship::ProposerFactory;
 	use sc_client_api::ExecutorProvider;
@@ -121,9 +133,11 @@ where
 	use sp_consensus::CanAuthorWithNativeVersion;
 	// --- darwinia-network ---
 	use darwinia_rpc::{darwinia::*, *};
+	use dvm::DvmTaskParams;
 
 	let role = config.role.clone();
 	let is_authority = role.is_authority();
+	let is_archive = config.state_pruning.is_archive();
 	let force_authoring = config.force_authoring;
 	let disable_grandpa = config.disable_grandpa;
 	let name = config.network.node_name.clone();
@@ -183,6 +197,29 @@ where
 		);
 	}
 
+	let dvm_backend = dvm::open_backend(&config)?;
+	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+	let overrides = overrides_handle(client.clone());
+	let block_data_cache = Arc::new(EthBlockDataCache::new(
+		task_manager.spawn_handle(),
+		overrides.clone(),
+		eth_rpc_config.eth_log_block_cache,
+		eth_rpc_config.eth_log_block_cache,
+	));
+	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
+	let eth_rpc_requesters = DvmTaskParams {
+		task_manager: &task_manager,
+		client: client.clone(),
+		substrate_backend: backend.clone(),
+		dvm_backend: dvm_backend.clone(),
+		filter_pool: filter_pool.clone(),
+		is_archive,
+		rpc_config: eth_rpc_config.clone(),
+		fee_history_cache: fee_history_cache.clone(),
+		overrides: overrides.clone(),
+	}
+	.spawn_task();
+	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();
 	let shared_epoch_changes = babe_link.epoch_changes().clone();
@@ -199,6 +236,7 @@ where
 		let select_chain = select_chain.clone();
 		let chain_spec = config.chain_spec.cloned_box();
 		let shared_voter_state = shared_voter_state.clone();
+		let network = network.clone();
 
 		move |deny_unsafe, subscription_executor: SubscriptionTaskExecutor| -> RpcServiceResult {
 			let deps = FullDeps {
@@ -219,9 +257,22 @@ where
 					subscription_executor: subscription_executor.clone(),
 					finality_proof_provider: finality_proof_provider.clone(),
 				},
+				eth: EthDeps {
+					config: eth_rpc_config.clone(),
+					graph: transaction_pool.pool().clone(),
+					is_authority,
+					network: network.clone(),
+					filter_pool: filter_pool.clone(),
+					backend: dvm_backend.clone(),
+					fee_history_cache: fee_history_cache.clone(),
+					overrides: overrides.clone(),
+					block_data_cache: block_data_cache.clone(),
+					rpc_requesters: eth_rpc_requesters.clone(),
+				},
 			};
 
-			darwinia_rpc::darwinia::create_full(deps).map_err(Into::into)
+			darwinia_rpc::darwinia::create_full(deps, subscription_task_executor.clone())
+				.map_err(Into::into)
 		}
 	});
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {

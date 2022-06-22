@@ -144,6 +144,7 @@ pub fn run() -> CliResult<()> {
 						_ => darwinia_service::darwinia_new_full(
 							config,
 							authority_discovery_disabled,
+							eth_rpc_config,
 						)
 						.map(|(task_manager, _, _)| task_manager),
 					}
