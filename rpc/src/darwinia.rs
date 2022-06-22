@@ -112,8 +112,6 @@ where
 		shared_epoch_changes,
 		deny_unsafe,
 	)?));
-	io.extend_with(BalancesApi::to_delegate(Balances::new(client.clone())));
-	io.extend_with(StakingApi::to_delegate(Staking::new(client)));
 
 	Ok(io)
 }

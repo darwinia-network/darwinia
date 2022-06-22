@@ -23,19 +23,20 @@ use darwinia_support::evm::{
 };
 use pallet_bridge_dispatch::Config;
 
-pub struct S2sCallFilter;
-impl Contains<Call> for S2sCallFilter {
-	fn contains(c: &Call) -> bool {
-		matches!(
-			c,
-			Call::System(frame_system::Call::remark { .. })
-				| Call::System(frame_system::Call::remark_with_event { .. })
-				| Call::FromDarwiniaIssuing(
-					from_substrate_issuing::Call::register_from_remote { .. }
-				) | Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote { .. })
-		)
-	}
-}
+// FIXME
+// pub struct S2sCallFilter;
+// impl Contains<Call> for S2sCallFilter {
+// 	fn contains(c: &Call) -> bool {
+// 		matches!(
+// 			c,
+// 			Call::System(frame_system::Call::remark { .. })
+// 				| Call::System(frame_system::Call::remark_with_event { .. })
+// 				| Call::FromDarwiniaIssuing(
+// 					from_substrate_issuing::Call::register_from_remote { .. }
+// 				) | Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote { .. })
+// 		)
+// 	}
+// }
 
 frame_support::parameter_types! {
 	pub const MaxUsableBalanceFromRelayer: Balance = 100 * COIN;
@@ -43,7 +44,7 @@ frame_support::parameter_types! {
 
 /// Ensure the account has enough balance to withdraw.
 fn evm_ensure_can_withdraw(
-	who: &bp_pangolin::AccountId,
+	who: &bp_crab::AccountId,
 	amount: U256,
 	reasons: WithdrawReasons,
 ) -> Result<(), TransactionValidityError> {
@@ -82,9 +83,9 @@ fn evm_ensure_can_withdraw(
 }
 
 pub struct CallValidator;
-impl CallValidate<bp_pangolin::AccountId, Origin, Call> for CallValidator {
+impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 	fn check_receiving_before_dispatch(
-		relayer_account: &bp_pangolin::AccountId,
+		relayer_account: &bp_crab::AccountId,
 		call: &Call,
 	) -> Result<(), &'static str> {
 		match call {
@@ -119,7 +120,7 @@ impl CallValidate<bp_pangolin::AccountId, Origin, Call> for CallValidator {
 	}
 
 	fn call_validate(
-		relayer_account: &bp_pangolin::AccountId,
+		relayer_account: &bp_crab::AccountId,
 		origin: &Origin,
 		call: &Call,
 	) -> Result<(), TransactionValidityError> {
