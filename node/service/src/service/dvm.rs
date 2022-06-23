@@ -114,6 +114,7 @@ where
 					client.clone(),
 					substrate_backend.clone(),
 					dvm_backend.clone(),
+					// TODO: SET THE TRACE POINT
 					3,
 					0,
 					SyncStrategy::Normal,
