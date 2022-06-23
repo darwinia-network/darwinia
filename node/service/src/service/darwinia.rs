@@ -21,7 +21,7 @@
 // --- std ---
 use std::sync::Arc;
 // --- darwinia-network ---
-use super::*;
+use crate::service::{self, *};
 use darwinia_primitives::OpaqueBlock as Block;
 
 pub struct Executor;
@@ -40,7 +40,7 @@ impl sc_executor::NativeExecutionDispatch for Executor {
 
 /// Create a new Darwinia service for a full node.
 #[cfg(feature = "full-node")]
-pub fn darwinia_new_full(
+pub fn new_full(
 	config: sc_service::Configuration,
 	authority_discovery_disabled: bool,
 	eth_rpc_config: darwinia_rpc::EthRpcConfig,
@@ -49,11 +49,12 @@ pub fn darwinia_new_full(
 	Arc<impl crate::client::DarwiniaClient<Block, FullBackend, darwinia_runtime::RuntimeApi>>,
 	sc_service::RpcHandlers,
 )> {
-	let (components, client, rpc_handlers) = new_full::<darwinia_runtime::RuntimeApi, Executor>(
-		config,
-		authority_discovery_disabled,
-		eth_rpc_config,
-	)?;
+	let (components, client, rpc_handlers) =
+		service::new_full::<darwinia_runtime::RuntimeApi, Executor>(
+			config,
+			authority_discovery_disabled,
+			eth_rpc_config,
+		)?;
 
 	Ok((components, client, rpc_handlers))
 }

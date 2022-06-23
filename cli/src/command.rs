@@ -128,7 +128,7 @@ pub fn run() -> CliResult<()> {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
 						Role::Light => panic!("Not support light client"),
-						_ => crab_service::crab_new_full(
+						_ => crab_service::new_full(
 							config,
 							authority_discovery_disabled,
 							eth_rpc_config,
@@ -141,7 +141,7 @@ pub fn run() -> CliResult<()> {
 				runner.run_node_until_exit(|config| async move {
 					match config.role {
 						Role::Light => panic!("Not support light client"),
-						_ => darwinia_service::darwinia_new_full(
+						_ => darwinia_service::new_full(
 							config,
 							authority_discovery_disabled,
 							eth_rpc_config,
