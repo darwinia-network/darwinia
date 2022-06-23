@@ -357,7 +357,7 @@ pub fn genesis_config() -> ChainSpec {
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
 			to_crab_backing: Default::default(),
-			evm: darwinia_runtime::EVMConfig { accounts: BTreeMap::new() },
+			evm: EVMConfig { accounts: BTreeMap::new() },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 		}
@@ -513,8 +513,7 @@ pub fn development_config() -> ChainSpec {
 				backed_kton: 1 << 56,
 			},
 			to_crab_backing: Default::default(),
-			// TODO: Extract this config
-			evm: darwinia_runtime::EVMConfig { accounts: evm_accounts },
+			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 		}

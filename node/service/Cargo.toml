@@ -91,7 +91,10 @@ fast-runtime = [
 	"darwinia-runtime/fast-runtime",
 ]
 
-evm-tracing = ["crab-runtime/evm-tracing"]
+evm-tracing = [
+	"crab-runtime/evm-tracing",
+	"darwinia-runtime/evm-tracing",
+]
 
 runtime-benchmarks = [
 	"crab-runtime/runtime-benchmarks",
