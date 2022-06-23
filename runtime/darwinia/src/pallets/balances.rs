@@ -3,8 +3,8 @@ use crate::*;
 use darwinia_balances::Config;
 
 frame_support::parameter_types! {
-	pub const RingExistentialDeposit: Balance = 100 * MICRO;
-	pub const KtonExistentialDeposit: Balance = MICRO;
+	pub const RingExistentialDeposit: Balance = 0;
+	pub const KtonExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = 50;
 }
