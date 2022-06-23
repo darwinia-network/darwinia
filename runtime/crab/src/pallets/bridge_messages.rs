@@ -16,7 +16,7 @@ frame_support::parameter_types! {
 	// Shared configurations.
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
 	// 0x726f6f7400000000000000000000000000000000, b"root"
-	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::derive_substrate_address(H160([0x72u8, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])));
+	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::derive_substrate_address(H160([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])));
 	// Darwinia configurations.
 	pub const DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;

@@ -11,7 +11,6 @@ use sp_runtime::{
 	traits::UniqueSaturatedInto,
 	transaction_validity::{InvalidTransaction, TransactionValidityError},
 };
-use sp_std::cmp;
 // --- darwinia-network ---
 use crate::*;
 use bp_message_dispatch::{CallValidate, IntoDispatchOrigin as IntoDispatchOriginT};
@@ -25,46 +24,6 @@ use pallet_bridge_dispatch::Config;
 
 frame_support::parameter_types! {
 	pub const MaxUsableBalanceFromRelayer: Balance = 100 * COIN;
-}
-
-/// Ensure the account has enough balance to withdraw.
-fn evm_ensure_can_withdraw(
-	who: &bp_crab::AccountId,
-	amount: U256,
-	reasons: WithdrawReasons,
-) -> Result<(), TransactionValidityError> {
-	// Ensure the evm balance of the account large than the withdraw amount
-	let old_evm_balance = <Runtime as darwinia_evm::Config>::RingAccountBasic::account_balance(who);
-	let (_old_sub, old_remaining) = old_evm_balance.div_mod(U256::from(POW_9));
-	ensure!(
-		old_evm_balance > amount,
-		TransactionValidityError::Invalid(InvalidTransaction::Payment)
-	);
-
-	// Because of precision difference, the amount also needs to convert.
-	let (mut amount_sub, amount_remaining) = amount.div_mod(U256::from(POW_9));
-	if old_remaining < amount_remaining {
-		// Add 1, if the substrate balance part touched
-		amount_sub = amount_sub.saturating_add(U256::from(1));
-	}
-
-	// Calculate the new substrate balance part
-	let new_evm_balance = old_evm_balance.saturating_sub(amount);
-	let (new_sub, _new_remaining) = new_evm_balance.div_mod(U256::from(POW_9));
-
-	// Ensure the account underlying substrate account has no liquidity restrictions.
-	ensure!(
-		Ring::ensure_can_withdraw(
-			who,
-			amount_sub.low_u128().unique_saturated_into(),
-			reasons,
-			new_sub.low_u128().unique_saturated_into(),
-		)
-		.is_ok(),
-		TransactionValidityError::Invalid(InvalidTransaction::Payment)
-	);
-
-	Ok(())
 }
 
 pub struct CallValidator;
@@ -83,20 +42,11 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 
 						// Ensure the relayer's account has enough balance to withdraw. If not,
 						// reject the call.
-						ensure!(
-							evm_ensure_can_withdraw(
-								relayer_account,
-								cmp::min(
-									fee,
-									decimal_convert(MaxUsableBalanceFromRelayer::get(), None)
-								),
-								WithdrawReasons::TRANSFER
-							)
-							.is_ok(),
-							TransactionValidityError::Invalid(InvalidTransaction::Payment)
-						);
-
-						Ok(())
+						Ok(evm_ensure_can_withdraw(
+							relayer_account,
+							fee.min(decimal_convert(MaxUsableBalanceFromRelayer::get(), None)),
+							WithdrawReasons::TRANSFER,
+						)?)
 					},
 					_ => Ok(()),
 				},
@@ -116,42 +66,36 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 					OriginCaller::Ethereum(RawOrigin::EthereumTransaction(id)) => match tx {
 						Transaction::Legacy(t) => {
 							// Only non-payable call supported.
-							if t.value != U256::zero() {
-								return Err(TransactionValidityError::Invalid(
-									InvalidTransaction::Payment,
-								));
-							}
+							ensure!(
+								t.value.is_zero(),
+								TransactionValidityError::Invalid(InvalidTransaction::Payment,)
+							);
+
+							// Use fixed gas price now.
 							let gas_price =
 								<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price();
 							let fee = t.gas_limit.saturating_mul(gas_price);
 
 							// MaxUsableBalanceFromRelayer is the cap limitation for fee in case
 							// gas_limit is too large for relayer
-							if fee > decimal_convert(MaxUsableBalanceFromRelayer::get(), None) {
-								return Err(TransactionValidityError::Invalid(
-									InvalidTransaction::Custom(2u8),
-								));
-							}
+							ensure!(
+								fee <= decimal_convert(MaxUsableBalanceFromRelayer::get(), None),
+								TransactionValidityError::Invalid(InvalidTransaction::Custom(2))
+							);
 
 							// Already done `evm_ensure_can_withdraw` in
 							// check_receiving_before_dispatch
 							let derived_substrate_address =
 								<Runtime as darwinia_evm::Config>::IntoAccountId::derive_substrate_address(*id);
 
-							let result =
-								<Runtime as darwinia_evm::Config>::RingAccountBasic::transfer(
-									&relayer_account,
-									&derived_substrate_address,
-									fee,
-								);
-
-							if result.is_err() {
-								return Err(TransactionValidityError::Invalid(
-									InvalidTransaction::Custom(3u8),
-								));
-							}
-
-							Ok(())
+							<Runtime as darwinia_evm::Config>::RingAccountBasic::transfer(
+								&relayer_account,
+								&derived_substrate_address,
+								fee,
+							)
+							.map_err(|_| {
+								TransactionValidityError::Invalid(InvalidTransaction::Custom(3))
+							})
 						},
 						_ =>
 							Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(1u8))),
@@ -183,6 +127,41 @@ impl IntoDispatchOriginT<bp_crab::AccountId, Call, Origin> for IntoDispatchOrigi
 			_ => frame_system::RawOrigin::Signed(id.clone()).into(),
 		}
 	}
+}
+
+/// Ensure the account has enough balance to withdraw.
+fn evm_ensure_can_withdraw(
+	who: &bp_crab::AccountId,
+	amount: U256,
+	reasons: WithdrawReasons,
+) -> Result<(), TransactionValidityError> {
+	// Ensure the evm balance of the account large than the withdraw amount
+	let old_evm_balance = <Runtime as darwinia_evm::Config>::RingAccountBasic::account_balance(who);
+	let (_old_sub, old_remaining) = old_evm_balance.div_mod(U256::from(POW_9));
+	ensure!(
+		old_evm_balance > amount,
+		TransactionValidityError::Invalid(InvalidTransaction::Payment)
+	);
+
+	// Because of precision difference, the amount also needs to convert.
+	let (mut amount_sub, amount_remaining) = amount.div_mod(U256::from(POW_9));
+	if old_remaining < amount_remaining {
+		// Add 1, if the substrate balance part touched
+		amount_sub = amount_sub.saturating_add(U256::from(1));
+	}
+
+	// Calculate the new substrate balance part
+	let new_evm_balance = old_evm_balance.saturating_sub(amount);
+	let (new_sub, _new_remaining) = new_evm_balance.div_mod(U256::from(POW_9));
+
+	// Ensure the account underlying substrate account has no liquidity restrictions.
+	Ring::ensure_can_withdraw(
+		who,
+		amount_sub.low_u128().unique_saturated_into(),
+		reasons,
+		new_sub.low_u128().unique_saturated_into(),
+	)
+	.map_err(|_| TransactionValidityError::Invalid(InvalidTransaction::Payment))
 }
 
 impl Config<WithDarwiniaDispatch> for Runtime {
