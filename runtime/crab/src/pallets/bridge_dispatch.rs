@@ -23,21 +23,6 @@ use darwinia_support::evm::{
 };
 use pallet_bridge_dispatch::Config;
 
-// FIXME
-// pub struct S2sCallFilter;
-// impl Contains<Call> for S2sCallFilter {
-// 	fn contains(c: &Call) -> bool {
-// 		matches!(
-// 			c,
-// 			Call::System(frame_system::Call::remark { .. })
-// 				| Call::System(frame_system::Call::remark_with_event { .. })
-// 				| Call::FromDarwiniaIssuing(
-// 					from_substrate_issuing::Call::register_from_remote { .. }
-// 				) | Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote { .. })
-// 		)
-// 	}
-// }
-
 frame_support::parameter_types! {
 	pub const MaxUsableBalanceFromRelayer: Balance = 100 * COIN;
 }
@@ -174,7 +159,15 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 					_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(0u8))),
 				}
 			},
-			_ => Ok(()),
+			Call::System(frame_system::Call::remark { .. })
+			| Call::System(frame_system::Call::remark_with_event { .. })
+			| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::register_from_remote {
+				..
+			})
+			| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote {
+				..
+			}) => Ok(()),
+			_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 		}
 	}
 }

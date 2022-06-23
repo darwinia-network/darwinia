@@ -23,14 +23,13 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	// TODO:
-	// use dvm_ethereum::EthereumStorageSchema;
-	// use fp_storage::PALLET_ETHEREUM_SCHEMA;
+	use fp_storage::{EthereumStorageSchema, PALLET_ETHEREUM_SCHEMA};
 
-	// frame_support::storage::unhashed::put::<EthereumStorageSchema>(
-	// 	&PALLET_ETHEREUM_SCHEMA,
-	// 	&EthereumStorageSchema::V1,
-	// );
+	frame_support::storage::unhashed::put::<EthereumStorageSchema>(
+		&PALLET_ETHEREUM_SCHEMA,
+		&EthereumStorageSchema::V3,
+	);
+
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
