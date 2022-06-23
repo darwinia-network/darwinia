@@ -114,7 +114,6 @@ use sp_runtime::{
 		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
 		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
-	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
@@ -277,6 +276,7 @@ frame_support::construct_runtime! {
 
 		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
 
+		// DVM
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 47,
 		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 48,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 49,
