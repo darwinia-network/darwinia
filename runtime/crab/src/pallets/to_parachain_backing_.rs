@@ -62,7 +62,7 @@ impl
 
 frame_support::parameter_types! {
 	pub const CrabParachainChainId: ChainId = CRAB_PARACHAIN_ID;
-	pub const S2sBackingPalletId: PalletId = PalletId(*b"pl/s2sba");
+	pub const S2sBackingPalletId: PalletId = PalletId(*b"da/s2sba");
 	pub const MaxLockRingAmountPerTx: Balance = 1_000_000 * COIN;
 	pub const BridgeCrabParachainLaneId: LaneId = CRAB_CRAB_PARACHAIN_LANE;
 }
