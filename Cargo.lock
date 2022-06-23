@@ -117,9 +117,9 @@ dependencies = [
 
 [[package]]
 name = "array-bytes"
-version = "1.5.2"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b48bc78d3fa4a9a0925d5009f731cbf7e5613d2a4f1a937208f6dde89a287bab"
+checksum = "c5b210fcebfebcdd3ac59145390e5a4c16a980f4a18d4b676cd96dee09926854"
 dependencies = [
  "serde",
 ]
@@ -1193,6 +1193,7 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
+ "to-parachain-backing",
 ]
 
 [[package]]
@@ -3626,9 +3627,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.9.0"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c6392766afd7964e2531940894cffe4bd8d7d17dbc3c1c4857040fd4b33bdb3"
+checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
 dependencies = [
  "autocfg",
  "hashbrown 0.12.1",
@@ -5961,9 +5962,9 @@ dependencies = [
 
 [[package]]
 name = "parity-db"
-version = "0.3.13"
+version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55a7901b85874402471e131de3332dde0e51f38432c69a3853627c8e25433048"
+checksum = "966eb23bd3a09758b8dac09f82b9d417c00f14e5d46171bf04cffdd9cb2e1eb1"
 dependencies = [
  "blake2-rfc",
  "crc32fast",
@@ -9111,9 +9112,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.96"
+version = "1.0.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0748dd251e24453cb8717f0354206b91557e4ec8703673a4b30208f2abaf1ebf"
+checksum = "c50aef8a904de4c23c788f104b7dddc7d6f79c647c7c8ce4cc8f73eb0ca773dd"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9285,6 +9286,26 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "to-parachain-backing"
+version = "2.8.13"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#10debc33632ea7e720ff98d1e9c2251794072832"
+dependencies = [
+ "array-bytes",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-runtime",
+ "darwinia-support",
+ "ethereum-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
  "sp-runtime",
  "sp-std",
 ]
