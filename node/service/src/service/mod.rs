@@ -231,7 +231,7 @@ where
 		fee_history_cache: fee_history_cache.clone(),
 		overrides: overrides.clone(),
 	}
-	.spawn_task();
+	.spawn_task(&config.impl_name);
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();

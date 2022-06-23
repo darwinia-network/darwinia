@@ -39,7 +39,7 @@ impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where
 	B: sp_runtime::traits::Block,
 {
-	pub fn spawn_task(self) -> darwinia_rpc::EthRpcRequesters
+	pub fn spawn_task(self, network: &str) -> darwinia_rpc::EthRpcRequesters
 	where
 		C: 'static
 			+ sp_api::ProvideRuntimeApi<B>
@@ -114,9 +114,9 @@ where
 					client.clone(),
 					substrate_backend.clone(),
 					dvm_backend.clone(),
-					// TODO: SET THE TRACE POINT
 					3,
-					0,
+					// TODO: improve this later
+					if network == "Crab" { 4969901 } else { 9100000 },
 					SyncStrategy::Normal,
 				)
 				.for_each(|()| futures::future::ready(())),
