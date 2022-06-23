@@ -132,7 +132,7 @@ where
 	use sc_service::{BuildNetworkParams, PartialComponents, SpawnTasksParams};
 	use sp_consensus::CanAuthorWithNativeVersion;
 	// --- darwinia-network ---
-	use darwinia_rpc::{darwinia::*, *};
+	use darwinia_rpc::*;
 	use dvm::DvmTaskParams;
 
 	let role = config.role.clone();
@@ -271,8 +271,7 @@ where
 				},
 			};
 
-			darwinia_rpc::darwinia::create_full(deps, subscription_task_executor.clone())
-				.map_err(Into::into)
+			darwinia_rpc::create_full(deps, subscription_task_executor.clone()).map_err(Into::into)
 		}
 	});
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
