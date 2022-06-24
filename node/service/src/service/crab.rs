@@ -513,8 +513,6 @@ where
 		client.clone(),
 		select_chain.clone(),
 		move |_, ()| async move {
-			let uncles =
-				sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 			let slot =
 				sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
@@ -522,7 +520,7 @@ where
 					slot_duration,
 				);
 
-			Ok((timestamp, slot, uncles))
+			Ok((timestamp, slot))
 		},
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
