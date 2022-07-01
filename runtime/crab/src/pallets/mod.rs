@@ -117,3 +117,6 @@ pub use from_substrate_issuing_::*;
 
 pub mod bridge_parachains;
 pub use bridge_parachains::*;
+
+pub mod to_parachain_backing_;
+pub use to_parachain_backing_::*;

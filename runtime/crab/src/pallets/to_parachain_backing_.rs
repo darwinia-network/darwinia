@@ -27,22 +27,13 @@ impl LatestMessageNoncer for CrabParachainMessageNoncer {
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct ToCrabParachainOutboundPayLoad;
-impl
-	IssueFromRemotePayload<
-		bp_crab::AccountId,
-		bp_crab::AccountPublic,
-		bp_crab::Signature,
-		Runtime,
-	> for ToCrabParachainOutboundPayLoad
+impl IssueFromRemotePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature, Runtime>
+	for ToCrabParachainOutboundPayLoad
 {
 	type Payload = ToCrabParachainOutboundPayLoad;
 
 	fn create(
-		origin: CallOrigin<
-			bp_crab::AccountId,
-			bp_crab::AccountPublic,
-			bp_crab::Signature,
-		>,
+		origin: CallOrigin<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature>,
 		spec_version: u32,
 		weight: u64,
 		call_params: IssuingCall<Runtime>,
