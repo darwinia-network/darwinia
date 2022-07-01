@@ -325,10 +325,6 @@ where
 				let client_clone = client_clone.clone();
 
 				async move {
-					let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
-						&*client_clone,
-						parent,
-					)?;
 					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 					let slot =
 						sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
@@ -336,7 +332,7 @@ where
 							slot_duration,
 						);
 
-					Ok((timestamp, slot, uncles))
+					Ok((timestamp, slot))
 				}
 			},
 			force_authoring,
