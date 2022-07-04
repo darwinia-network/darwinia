@@ -102,7 +102,7 @@ where
 	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
 		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 1024, 1025]
 			.into_iter()
-			.map(|x| addr(x))
+			.map(addr)
 			.collect()
 	}
 }
@@ -188,6 +188,10 @@ impl GasWeightMapping for FixedGasWeightMapping {
 	}
 }
 
+fn addr(a: u64) -> H160 {
+	H160::from_low_u64_be(a)
+}
+
 frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
 	pub BlockGasLimit: U256 = (NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS).into();
@@ -210,8 +214,4 @@ impl Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
 	type Runner = Runner<Self>;
-}
-
-fn addr(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
 }
