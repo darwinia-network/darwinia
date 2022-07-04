@@ -1,14 +1,15 @@
 // --- core ---
 use core::marker::PhantomData;
-// --- crates.io ---
-use evm::ExitRevert;
 // --- paritytech ---
-use fp_evm::{Context, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
+use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
 use frame_support::{
 	pallet_prelude::Weight,
 	traits::{FindAuthor, PalletInfoAccess},
-	ConsensusEngineId,
+	ConsensusEngineId, StorageHasher, Twox128,
 };
+use pallet_evm_precompile_blake2::Blake2F;
+use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
+use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_session::FindAccountFromAuthorIndex;
 use sp_core::{crypto::Public, H160, U256};
@@ -24,6 +25,7 @@ use darwinia_evm::{
 };
 use darwinia_evm_precompile_bridge_s2s::Sub2SubBridge;
 use darwinia_evm_precompile_dispatch::Dispatch;
+use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
 use darwinia_evm_precompile_transfer::Transfer;
 use darwinia_support::{
 	evm::ConcatConverter,
@@ -81,6 +83,13 @@ impl LatestMessageNoncer for ToDarwiniaMessageSender {
 	}
 }
 
+pub struct StorageFilter;
+impl StorageFilterT for StorageFilter {
+	fn allow(prefix: &[u8]) -> bool {
+		prefix != Twox128::hash(b"EVM") && prefix != Twox128::hash(b"Ethereum")
+	}
+}
+
 pub struct CrabPrecompiles<R>(PhantomData<R>);
 impl<R> CrabPrecompiles<R>
 where
@@ -91,16 +100,20 @@ where
 	}
 
 	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-		sp_std::vec![1, 2, 3, 4, 21, 24, 25].into_iter().map(|x| addr(x)).collect()
+		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 1024, 1025]
+			.into_iter()
+			.map(addr)
+			.collect()
 	}
 }
 
 impl<R> PrecompileSet for CrabPrecompiles<R>
 where
-	Transfer<R>: Precompile,
-	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
 	Dispatch<R>: Precompile,
 	R: darwinia_ethereum::Config,
+	StateStorage<R, StorageFilter>: Precompile,
+	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
+	Transfer<R>: Precompile,
 {
 	fn execute(
 		&self,
@@ -125,7 +138,12 @@ where
 			a if a == addr(2) => Some(Sha256::execute(input, target_gas, context, is_static)),
 			a if a == addr(3) => Some(Ripemd160::execute(input, target_gas, context, is_static)),
 			a if a == addr(4) => Some(Identity::execute(input, target_gas, context, is_static)),
-			// Darwinia precompiles
+			a if a == addr(5) => Some(Modexp::execute(input, target_gas, context, is_static)),
+			a if a == addr(6) => Some(Bn128Add::execute(input, target_gas, context, is_static)),
+			a if a == addr(7) => Some(Bn128Mul::execute(input, target_gas, context, is_static)),
+			a if a == addr(8) => Some(Bn128Pairing::execute(input, target_gas, context, is_static)),
+			a if a == addr(9) => Some(Blake2F::execute(input, target_gas, context, is_static)),
+			// Darwinia precompiles: 1024+ for stable precompiles.
 			a if a == addr(21) =>
 				Some(<Transfer<R>>::execute(input, target_gas, context, is_static)),
 			a if a == addr(24) => Some(<Sub2SubBridge<
@@ -133,8 +151,16 @@ where
 				ToDarwiniaMessageSender,
 				bm_darwinia::ToDarwiniaOutboundPayLoad,
 			>>::execute(input, target_gas, context, is_static)),
+			// There are two Dispatch precompile instance now, the 25-Dispatch reserved to
+			// keep the compatibility, which will be removed in the future.
 			a if a == addr(25) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+			a if a == addr(1024) => Some(<StateStorage<R, StorageFilter>>::execute(
+				input, target_gas, context, is_static,
+			)),
+			a if a == addr(1025) =>
+				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+
 			_ => None,
 		}
 	}
@@ -162,6 +188,10 @@ impl GasWeightMapping for FixedGasWeightMapping {
 	}
 }
 
+fn addr(a: u64) -> H160 {
+	H160::from_low_u64_be(a)
+}
+
 frame_support::parameter_types! {
 	pub const ChainId: u64 = 44;
 	pub BlockGasLimit: U256 = (NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS).into();
@@ -184,8 +214,4 @@ impl Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
 	type Runner = Runner<Self>;
-}
-
-fn addr(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
 }

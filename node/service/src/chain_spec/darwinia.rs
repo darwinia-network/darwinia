@@ -30,6 +30,7 @@ use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
+use darwinia_evm::GenesisAccount;
 use darwinia_primitives::{AccountId, BlockNumber, COIN, DAYS};
 use darwinia_runtime::*;
 
@@ -116,7 +117,7 @@ pub fn genesis_config() -> ChainSpec {
 			}
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 
@@ -144,7 +145,7 @@ pub fn genesis_config() -> ChainSpec {
 			let ring = ring / COIN;
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 		}
@@ -164,7 +165,7 @@ pub fn genesis_config() -> ChainSpec {
 			let kton = kton / COIN;
 
 			ktons
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|kton_| *kton_ += kton)
 				.or_insert(kton);
 		}
@@ -356,6 +357,9 @@ pub fn genesis_config() -> ChainSpec {
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
 			to_crab_backing: Default::default(),
+			evm: EVMConfig { accounts: BTreeMap::new() },
+			ethereum: Default::default(),
+			base_fee: Default::default(),
 		}
 	}
 
@@ -398,6 +402,13 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
+		let evm_accounts = BTreeMap::from_iter([(
+			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+			GenesisAccount {
+				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
+				..Default::default()
+			},
+		)]);
 
 		GenesisConfig {
 			system: SystemConfig {
@@ -501,6 +512,9 @@ pub fn development_config() -> ChainSpec {
 				backed_kton: 1 << 56,
 			},
 			to_crab_backing: Default::default(),
+			evm: EVMConfig { accounts: evm_accounts },
+			ethereum: Default::default(),
+			base_fee: Default::default(),
 		}
 	}
 

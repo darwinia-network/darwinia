@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// --- core ---
+use core::ops::RangeInclusive;
 // --- crates.io ---
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
@@ -25,12 +27,12 @@ use frame_support::{
 	RuntimeDebug,
 };
 use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
-use sp_std::ops::RangeInclusive;
 // --- darwinia-network ---
 use crate::*;
 use bp_kusama::parachains::ParaId;
+use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{ChainId, *};
+use bp_runtime::{messages::DispatchFeePayment, ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
@@ -42,6 +44,7 @@ use bridge_runtime_common::{
 };
 use darwinia_common_runtime::impls::FromThisChainMessageVerifier;
 use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
+use to_parachain_backing::{IssueFromRemotePayload, IssuingCall};
 
 /// Message delivery proof for Crab -> CrabParachain messages.
 type ToCrabParachainMessagesDeliveryProof =
@@ -83,6 +86,26 @@ pub const INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE: FixedU128 =
 frame_support::parameter_types! {
 	/// CrabParachain to Crab conversion rate. Initially we trate both tokens as equal.
 	pub storage CrabParachainToCrabConversionRate: FixedU128 = INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE;
+}
+
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+pub struct ToCrabParachainOutboundPayLoad;
+impl IssueFromRemotePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature, Runtime>
+	for ToCrabParachainOutboundPayLoad
+{
+	type Payload = ToCrabParachainMessagePayload;
+
+	fn create(
+		origin: CallOrigin<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature>,
+		spec_version: u32,
+		weight: u64,
+		call_params: IssuingCall<Runtime>,
+		dispatch_fee_payment: DispatchFeePayment,
+	) -> Result<Self::Payload, &'static str> {
+		let mut call = vec![CRAB_PARACHAIN_ISSUING_PALLET_INDEX];
+		call.append(&mut call_params.encode());
+		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
+	}
 }
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]

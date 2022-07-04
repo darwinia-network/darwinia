@@ -32,7 +32,7 @@ use sp_std::{convert::TryFrom, ops::RangeInclusive};
 use crate::*;
 use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{messages::*, *};
+use bp_runtime::{messages::*, ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
@@ -98,13 +98,7 @@ impl CreatePayload<bp_darwinia::AccountId, bp_darwinia::AccountPublic, bp_darwin
 		dispatch_fee_payment: DispatchFeePayment,
 	) -> Result<Self::Payload, &'static str> {
 		let call = Self::encode_call(CRAB_S2S_ISSUING_PALLET_INDEX, call_params)?;
-		return Ok(ToCrabMessagePayload {
-			spec_version,
-			weight,
-			origin,
-			call,
-			dispatch_fee_payment,
-		});
+		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
 	}
 }
 

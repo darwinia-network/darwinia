@@ -6,7 +6,7 @@ pub use pallet_bridge_messages::{
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_PARACHAIN_CHAIN_ID, DARWINIA_CHAIN_ID};
-use darwinia_support::evm::{ConcatConverter, DeriveEthereumAddress, DeriveSubstrateAddress};
+use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
 	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
