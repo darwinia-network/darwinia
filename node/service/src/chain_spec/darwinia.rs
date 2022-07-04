@@ -117,7 +117,7 @@ pub fn genesis_config() -> ChainSpec {
 			}
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 
@@ -145,7 +145,7 @@ pub fn genesis_config() -> ChainSpec {
 			let ring = ring / COIN;
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 		}
@@ -165,7 +165,7 @@ pub fn genesis_config() -> ChainSpec {
 			let kton = kton / COIN;
 
 			ktons
-				.entry(array_bytes::hex_into_unchecked(address))
+				.entry(array_bytes::hex_into_unchecked(&address))
 				.and_modify(|kton_| *kton_ += kton)
 				.or_insert(kton);
 		}

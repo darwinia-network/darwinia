@@ -98,13 +98,7 @@ impl CreatePayload<bp_darwinia::AccountId, bp_darwinia::AccountPublic, bp_darwin
 		dispatch_fee_payment: DispatchFeePayment,
 	) -> Result<Self::Payload, &'static str> {
 		let call = Self::encode_call(CRAB_S2S_ISSUING_PALLET_INDEX, call_params)?;
-		return Ok(ToCrabMessagePayload {
-			spec_version,
-			weight,
-			origin,
-			call,
-			dispatch_fee_payment,
-		});
+		return Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment });
 	}
 }
 
