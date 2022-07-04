@@ -518,49 +518,6 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl bp_crab::CrabFinalityApi<Block> for Runtime {
-		fn best_finalized() -> (BlockNumber, Hash) {
-			let header = BridgeCrabGrandpa::best_finalized();
-			(header.number, header.hash())
-		}
-	}
-
-	impl bp_crab::ToCrabOutboundLaneApi<Block, Balance, bm_crab::ToCrabMessagePayload> for Runtime {
-		fn message_details(
-			lane: bp_messages::LaneId,
-			begin: bp_messages::MessageNonce,
-			end: bp_messages::MessageNonce,
-		) -> Vec<bp_messages::MessageDetails<Balance>> {
-			bridge_runtime_common::messages_api::outbound_message_details::<
-				Runtime,
-				WithCrabMessages,
-				bm_crab::WithCrabMessageBridge,
-			>(lane, begin, end)
-		}
-
-		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
-			BridgeCrabMessages::outbound_latest_received_nonce(lane)
-		}
-
-		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
-			BridgeCrabMessages::outbound_latest_generated_nonce(lane)
-		}
-	}
-
-	impl bp_crab::FromCrabInboundLaneApi<Block> for Runtime {
-		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
-			BridgeCrabMessages::inbound_latest_received_nonce(lane)
-		}
-
-		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
-			BridgeCrabMessages::inbound_latest_confirmed_nonce(lane)
-		}
-
-		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
-			BridgeCrabMessages::inbound_unrewarded_relayers_state(lane)
-		}
-	}
-
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<Runtime as darwinia_evm::Config>::ChainId::get()
@@ -786,6 +743,49 @@ sp_api::impl_runtime_apis! {
 			Err(sp_runtime::DispatchError::Other(
 				"Missing `evm-tracing` compile time feature flag.",
 			))
+		}
+	}
+
+	impl bp_crab::CrabFinalityApi<Block> for Runtime {
+		fn best_finalized() -> (BlockNumber, Hash) {
+			let header = BridgeCrabGrandpa::best_finalized();
+			(header.number, header.hash())
+		}
+	}
+
+	impl bp_crab::ToCrabOutboundLaneApi<Block, Balance, bm_crab::ToCrabMessagePayload> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::MessageDetails<Balance>> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithCrabMessages,
+				bm_crab::WithCrabMessageBridge,
+			>(lane, begin, end)
+		}
+
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::outbound_latest_received_nonce(lane)
+		}
+
+		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::outbound_latest_generated_nonce(lane)
+		}
+	}
+
+	impl bp_crab::FromCrabInboundLaneApi<Block> for Runtime {
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::inbound_latest_received_nonce(lane)
+		}
+
+		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgeCrabMessages::inbound_latest_confirmed_nonce(lane)
+		}
+
+		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
+			BridgeCrabMessages::inbound_unrewarded_relayers_state(lane)
 		}
 	}
 
