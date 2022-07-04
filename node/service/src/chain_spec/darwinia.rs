@@ -402,14 +402,13 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
-		let mut evm_accounts = BTreeMap::new();
-		evm_accounts.insert(
+		let evm_accounts = BTreeMap::from_iter([(
 			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
 				..Default::default()
 			},
-		);
+		)]);
 
 		GenesisConfig {
 			system: SystemConfig {
