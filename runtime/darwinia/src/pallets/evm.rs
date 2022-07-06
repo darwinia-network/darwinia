@@ -57,7 +57,7 @@ where
 	}
 
 	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 1024, 1025].into_iter().map(addr).collect()
+		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 1024, 1025].into_iter().map(addr).collect()
 	}
 }
 
