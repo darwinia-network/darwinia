@@ -34,12 +34,13 @@ where
 	pub rpc_config: darwinia_rpc::EthRpcConfig,
 	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
 	pub overrides: Arc<fc_rpc::OverrideHandle<B>>,
+	pub sync_from: BlockNumber,
 }
 impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where
 	B: sp_runtime::traits::Block,
 {
-	pub fn spawn_task(self, network: &str) -> darwinia_rpc::EthRpcRequesters
+	pub fn spawn_task(self) -> darwinia_rpc::EthRpcRequesters
 	where
 		C: 'static
 			+ sp_api::ProvideRuntimeApi<B>
@@ -87,7 +88,10 @@ where
 				},
 			fee_history_cache,
 			overrides,
+			sync_from,
 		} = self;
+
+		log::info!("DVM mapping worker starts syncing from {sync_from}");
 
 		if is_archive {
 			// Spawn schema cache maintenance task.
@@ -115,12 +119,7 @@ where
 					substrate_backend.clone(),
 					dvm_backend.clone(),
 					3,
-					// TODO: improve this later
-					match network {
-						"Darwinia" => 9100000,
-						"Darwinia Crab" => 4969901,
-						_ => panic!("Unknown Network: {network}"),
-					},
+					sync_from,
 					SyncStrategy::Normal,
 				)
 				.for_each(|()| futures::future::ready(())),

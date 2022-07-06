@@ -519,7 +519,7 @@ pub fn development_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Development",
+		"Darwinia Development Testnet",
 		"darwinia_dev",
 		ChainType::Development,
 		genesis,

@@ -199,7 +199,7 @@ pub fn genesis_config() -> ChainSpec {
 	];
 
 	ChainSpec::from_genesis(
-		"Crab",
+		"Darwinia Crab",
 		"crab",
 		ChainType::Live,
 		genesis,
@@ -286,7 +286,7 @@ pub fn development_config() -> ChainSpec {
 	}
 
 	ChainSpec::from_genesis(
-		"Development",
+		"Crab Development Testnet",
 		"crab_dev",
 		ChainType::Development,
 		genesis,

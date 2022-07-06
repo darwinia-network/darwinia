@@ -230,8 +230,13 @@ where
 		rpc_config: eth_rpc_config.clone(),
 		fee_history_cache: fee_history_cache.clone(),
 		overrides: overrides.clone(),
+		sync_from: match config.chain_spec.name() {
+			"Darwinia" => 9100000,
+			"Darwinia Crab" => 4969901,
+			_ => 0,
+		},
 	}
-	.spawn_task(&config.impl_name);
+	.spawn_task();
 	let subscription_task_executor = SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 	let shared_voter_state = GrandpaSharedVoterState::empty();
 	let babe_config = babe_link.config().clone();
