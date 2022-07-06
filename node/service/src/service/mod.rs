@@ -312,6 +312,7 @@ where
 			telemetry.as_ref().map(|x| x.handle()),
 		);
 		let slot_duration = babe_link.config().slot_duration();
+		let client_clone = client.clone();
 		let babe_config = BabeParams {
 			keystore: keystore_container.sync_keystore(),
 			client: client.clone(),
@@ -320,20 +321,24 @@ where
 			env: proposer,
 			sync_oracle: network.clone(),
 			justification_sync_link: network.clone(),
-			create_inherent_data_providers: move |_, ()| async move {
-				// TODO: https://github.com/paritytech/polkadot/pull/5750
-				let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
-					&*client_clone,
-					parent,
-				)?;
-				let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-				let slot =
+			create_inherent_data_providers: move |parent, ()| {
+				let client_clone = client_clone.clone();
+
+				async move {
+					// TODO: https://github.com/paritytech/polkadot/pull/5750
+					let uncles = sc_consensus_uncles::create_uncles_inherent_data_provider(
+						&*client_clone,
+						parent,
+					)?;
+					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+					let slot =
 					sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
 						*timestamp,
 						slot_duration,
 					);
 
-				Ok((timestamp, slot))
+					Ok((timestamp, slot, uncles))
+				}
 			},
 			force_authoring,
 			backoff_authoring_blocks,
