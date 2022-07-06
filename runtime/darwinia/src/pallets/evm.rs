@@ -137,7 +137,7 @@ fn addr(a: u64) -> H160 {
 }
 
 frame_support::parameter_types! {
-	pub const ChainId: u64 = 45;
+	pub const ChainId: u64 = 46;
 	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS);
 	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
 }
