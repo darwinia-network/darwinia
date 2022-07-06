@@ -116,7 +116,11 @@ where
 					dvm_backend.clone(),
 					3,
 					// TODO: improve this later
-					if network == "Crab" { 4969901 } else { 9100000 },
+					match network {
+						"Darwinia" => 9100000,
+						"Darwinia Crab" => 4969901,
+						_ => panic!("Unknown Network: {network}"),
+					},
 					SyncStrategy::Normal,
 				)
 				.for_each(|()| futures::future::ready(())),
