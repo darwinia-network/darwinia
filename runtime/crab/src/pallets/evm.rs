@@ -99,11 +99,23 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-		sp_std::vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 21, 24, 25, 1024, 1025]
-			.into_iter()
-			.map(addr)
-			.collect()
+	pub fn used_addresses() -> [H160; 14] {
+		[
+			addr(1),
+			addr(2),
+			addr(3),
+			addr(4),
+			addr(5),
+			addr(6),
+			addr(7),
+			addr(8),
+			addr(9),
+			addr(21),
+			addr(24),
+			addr(25),
+			addr(1024),
+			addr(1025),
+		]
 	}
 }
 
