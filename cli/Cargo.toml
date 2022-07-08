@@ -21,19 +21,19 @@ darwinia-node-service = { path = "../node/service" }
 darwinia-primitives   = { optional = true, path = "../primitives" }
 darwinia-rpc          = { path = "../rpc" }
 # paritytech client
-sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 # paritytech frame
-frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+frame-benchmarking-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 # paritytech primitives
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+substrate-build-script-utils = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+try-runtime-cli              = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 
 [features]
 default = [

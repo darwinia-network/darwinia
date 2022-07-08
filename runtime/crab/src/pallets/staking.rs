@@ -1,6 +1,7 @@
 // --- paritytech ---
 use frame_support::PalletId;
 use sp_npos_elections::NposSolution;
+use sp_runtime::Perbill;
 use sp_staking::SessionIndex;
 // --- darwinia-network ---
 use crate::*;
@@ -16,6 +17,7 @@ frame_support::parameter_types! {
 	pub const SlashDeferDuration: EraIndex = BondingDurationInEra::get() - 1;
 	// quarter of the last session will be for election.
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
+	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
 	pub const Cap: Balance = RING_HARD_CAP;
 	pub const TotalPower: Power = TOTAL_POWER;
 }
@@ -32,6 +34,7 @@ impl Config for Runtime {
 	type KtonSlash = KtonTreasury;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type NextNewSession = Session;
+	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
 	type PalletId = StakingPalletId;
 	type RingCurrency = Ring;
 	type RingReward = ();

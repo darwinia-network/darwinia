@@ -92,7 +92,7 @@ impl CreatePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signatur
 		dispatch_fee_payment: DispatchFeePayment,
 	) -> Result<Self::Payload, &'static str> {
 		let call = Self::encode_call(DARWINIA_S2S_BACKING_PALLET_INDEX, call_params)?;
-		Ok(ToDarwiniaMessagePayload { spec_version, weight, origin, call, dispatch_fee_payment })
+		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
 	}
 }
 

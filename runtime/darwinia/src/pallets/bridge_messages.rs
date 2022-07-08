@@ -4,14 +4,18 @@ pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_CHAIN_ID};
-use darwinia_support::evm::{ConcatConverter, IntoAccountId, IntoH160};
+use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
 	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
 };
+// --- paritytech ---
+use sp_core::H160;
 
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
+	// 0x726f6f7400000000000000000000000000000000, b"root"
+	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::derive_substrate_address(H160([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])));
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_crab::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub const MaxUnconfirmedMessagesAtInboundLane: MessageNonce =
@@ -20,7 +24,6 @@ frame_support::parameter_types! {
 	pub const GetDeliveryConfirmationTransactionFee: Balance =
 		bp_crab::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT as _;
 	pub const BridgedChainId: ChainId = CRAB_CHAIN_ID;
-	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::into_account_id((&b"root"[..]).into_h160()));
 }
 
 impl Config<WithCrabMessages> for Runtime {
