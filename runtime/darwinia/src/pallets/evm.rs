@@ -68,7 +68,7 @@ where
 			addr(8),
 			addr(9),
 			addr(1024),
-			addr(1025)
+			addr(1025),
 		]
 	}
 }
