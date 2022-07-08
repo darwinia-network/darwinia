@@ -1892,7 +1892,6 @@ dependencies = [
  "darwinia-evm-precompile-bridge-s2s",
  "darwinia-evm-precompile-dispatch",
  "darwinia-evm-precompile-state-storage",
- "darwinia-evm-precompile-transfer",
  "darwinia-header-mmr",
  "darwinia-primitives",
  "darwinia-relay-authorities",
