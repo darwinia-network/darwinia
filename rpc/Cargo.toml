@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-rpc"
 repository  = "https://github.com/darwinia-network/darwinia"
-version     = "0.12.2"
+version     = "0.12.3"
 
 [dependencies]
 # crates.io
@@ -16,7 +16,7 @@ jsonrpc-pubsub = { version = "18.0" }
 # darwinia-network dvm
 darwinia-ethereum             = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-fc-rpc                        = { features = [ "rpc_binary_search_estimate" ], git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
+fc-rpc                        = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 fc-rpc-core                   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 fp-rpc                        = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
 fp-storage                    = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
