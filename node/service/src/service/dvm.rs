@@ -34,6 +34,7 @@ where
 	pub rpc_config: darwinia_rpc::EthRpcConfig,
 	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
 	pub overrides: Arc<fc_rpc::OverrideHandle<B>>,
+	pub sync_from: BlockNumber,
 }
 impl<'a, B, C, BE> DvmTaskParams<'a, B, C, BE>
 where
@@ -87,7 +88,10 @@ where
 				},
 			fee_history_cache,
 			overrides,
+			sync_from,
 		} = self;
+
+		log::info!("DVM mapping worker starts syncing from {sync_from}");
 
 		if is_archive {
 			// Spawn schema cache maintenance task.
@@ -114,6 +118,8 @@ where
 					client.clone(),
 					substrate_backend.clone(),
 					dvm_backend.clone(),
+					3,
+					sync_from,
 					SyncStrategy::Normal,
 				)
 				.for_each(|()| futures::future::ready(())),

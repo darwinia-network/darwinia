@@ -6,14 +6,14 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-primitives"
 repository  = "https://github.com/darwinia-network/darwinia"
-version     = "0.12.2"
+version     = "0.12.3"
 
 [dependencies]
 # crates.io
 codec = { package = "parity-scale-codec", version = "2.3", default-features = false }
 # paritytech primitives
-sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 
 [features]
 default = ["std"]

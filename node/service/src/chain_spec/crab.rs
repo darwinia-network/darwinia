@@ -183,10 +183,11 @@ pub fn genesis_config() -> ChainSpec {
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
 			vesting: Default::default(),
-			evm: crab_runtime::EVMConfig { accounts: BTreeMap::new() },
+			evm: EVMConfig { accounts: BTreeMap::new() },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),
+			to_crab_parachain_backing: Default::default(),
 		}
 	}
 
@@ -198,7 +199,7 @@ pub fn genesis_config() -> ChainSpec {
 	];
 
 	ChainSpec::from_genesis(
-		"Crab",
+		"Darwinia Crab",
 		"crab",
 		ChainType::Live,
 		genesis,
@@ -223,14 +224,13 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
-		let mut evm_accounts = BTreeMap::new();
-		evm_accounts.insert(
+		let evm_accounts = BTreeMap::from_iter([(
 			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
 				..Default::default()
 			},
-		);
+		)]);
 
 		GenesisConfig {
 			system: SystemConfig {
@@ -277,15 +277,16 @@ pub fn development_config() -> ChainSpec {
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
 			vesting: Default::default(),
-			evm: crab_runtime::EVMConfig { accounts: evm_accounts },
+			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 			from_darwinia_issuing: Default::default(),
+			to_crab_parachain_backing: Default::default(),
 		}
 	}
 
 	ChainSpec::from_genesis(
-		"Development",
+		"Crab Development Testnet",
 		"crab_dev",
 		ChainType::Development,
 		genesis,

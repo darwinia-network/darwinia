@@ -97,7 +97,8 @@ use codec::Encode;
 // --- paritytech ---
 #[allow(unused)]
 use frame_support::migration;
-use frame_support::traits::KeyOwnerProofSystem;
+use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
+use pallet_evm::FeeCalculator;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -106,14 +107,13 @@ use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::{AllowedSlots, BabeEpochConfiguration};
-use sp_core::OpaqueMetadata;
+use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, Block as BlockT, Extrinsic as ExtrinsicT, NumberFor, SaturatedConversion,
-		StaticLookup, Verify,
+		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
+		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
-	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
@@ -121,9 +121,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // --- darwinia-network ---
-use darwinia_balances_rpc_runtime_api::RuntimeDispatchInfo as BalancesRuntimeDispatchInfo;
 use darwinia_common_runtime::*;
-use darwinia_staking_rpc_runtime_api::RuntimeDispatchInfo as StakingRuntimeDispatchInfo;
 
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, Hashing>;
@@ -145,7 +143,8 @@ pub type SignedExtra = (
 	darwinia_bridge_ethereum::CheckEthereumRelayHeaderParcel<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
@@ -173,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 12_2_0,
+	spec_version: 12_3_0,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -276,6 +275,11 @@ frame_support::construct_runtime! {
 		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
+
+		// DVM
+		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 47,
+		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 48,
+		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 49,
 	}
 }
 
@@ -329,6 +333,8 @@ where
 	type OverarchingCall = Call;
 }
 
+darwinia_common_runtime::impl_self_contained_call!();
+
 sp_api::impl_runtime_apis! {
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
@@ -381,10 +387,10 @@ sp_api::impl_runtime_apis! {
 
 	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
 		fn validate_transaction(
-			source: TransactionSource,
+			source: sp_runtime::transaction_validity::TransactionSource,
 			tx: <Block as BlockT>::Extrinsic,
 			block_hash: <Block as BlockT>::Hash,
-		) -> TransactionValidity {
+		) -> sp_runtime::transaction_validity::TransactionValidity {
 			Executive::validate_transaction(source, tx, block_hash)
 		}
 	}
@@ -512,22 +518,231 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl darwinia_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance> for Runtime {
-		fn usable_balance(
-			instance: u8,
-			account: AccountId
-		) -> BalancesRuntimeDispatchInfo<Balance> {
-			match instance {
-				0 => Ring::usable_balance_rpc(account),
-				1 => Kton::usable_balance_rpc(account),
-				_ => Default::default()
-			}
+	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
+		fn chain_id() -> u64 {
+			<Runtime as darwinia_evm::Config>::ChainId::get()
+		}
+
+		fn gas_price() -> U256 {
+			<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price()
+		}
+
+		fn account_basic(address: H160) -> darwinia_evm::Account {
+			// --- darwinia-network ---
+			use darwinia_evm::AccountBasic;
+
+			<Runtime as darwinia_evm::Config>::RingAccountBasic::account_basic(&address)
+		}
+
+		fn account_code_at(address: H160) -> Vec<u8> {
+			darwinia_evm::Pallet::<Runtime>::account_codes(address)
+		}
+
+		fn author() -> H160 {
+			<darwinia_evm::Pallet<Runtime>>::find_author()
+		}
+
+		fn storage_at(address: H160, index: U256) -> H256 {
+			let mut tmp = [0u8; 32];
+			index.to_big_endian(&mut tmp);
+			darwinia_evm::Pallet::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+		}
+
+		fn call(
+			from: H160,
+			to: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
+			nonce: Option<U256>,
+			estimate: bool,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
+		) -> Result<darwinia_evm::CallInfo, sp_runtime::DispatchError> {
+			// --- darwinia-network ---
+			use darwinia_evm::Runner;
+
+			let config = if estimate {
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+				Some(config)
+			} else {
+				None
+			};
+
+			<Runtime as darwinia_evm::Config>::Runner::call(
+				from,
+				to,
+				data,
+				value,
+				gas_limit.low_u64(),
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
+				nonce,
+				access_list.unwrap_or_default(),
+				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
+			).map_err(|err| err.into())
+		}
+
+		fn create(
+			from: H160,
+			data: Vec<u8>,
+			value: U256,
+			gas_limit: U256,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
+			nonce: Option<U256>,
+			estimate: bool,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
+		) -> Result<darwinia_evm::CreateInfo, sp_runtime::DispatchError> {
+			// --- darwinia-network ---
+			use darwinia_evm::Runner;
+
+			let config = if estimate {
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+				Some(config)
+			} else {
+				None
+			};
+
+			<Runtime as darwinia_evm::Config>::Runner::create(
+				from,
+				data,
+				value,
+				gas_limit.low_u64(),
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
+				nonce,
+				access_list.unwrap_or_default(),
+				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
+			).map_err(|err| err.into())
+		}
+
+
+		fn current_transaction_statuses() -> Option<Vec<fp_rpc::TransactionStatus>> {
+			Ethereum::current_transaction_statuses()
+		}
+
+		fn current_block() -> Option<darwinia_ethereum::Block> {
+			Ethereum::current_block()
+		}
+
+		fn current_receipts() -> Option<Vec<darwinia_ethereum::Receipt>> {
+			Ethereum::current_receipts()
+		}
+
+		fn current_all() -> (
+			Option<darwinia_ethereum::Block>,
+			Option<Vec<darwinia_ethereum::Receipt>>,
+			Option<Vec<fp_rpc::TransactionStatus>>
+		) {
+			(
+				Ethereum::current_block(),
+				Ethereum::current_receipts(),
+				Ethereum::current_transaction_statuses()
+			)
+		}
+
+		fn extrinsic_filter(
+			xts: Vec<<Block as BlockT>::Extrinsic>,
+		) -> Vec<darwinia_ethereum::Transaction> {
+			xts.into_iter().filter_map(|xt| match xt.0.function {
+				Call::Ethereum(darwinia_ethereum::Call::transact { transaction }) => Some(transaction),
+				_ => None
+			}).collect()
+		}
+
+		fn elasticity() -> Option<Permill> {
+			Some(BaseFee::elasticity())
 		}
 	}
 
-	impl darwinia_staking_rpc_runtime_api::StakingApi<Block, AccountId, Power> for Runtime {
-		fn power_of(account: AccountId) -> StakingRuntimeDispatchInfo<Power> {
-			Staking::power_of_rpc(account)
+	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
+		fn convert_transaction(transaction: darwinia_ethereum::Transaction) -> <Block as BlockT>::Extrinsic {
+			UncheckedExtrinsic::new_unsigned(
+				darwinia_ethereum::Call::<Runtime>::transact { transaction }.into(),
+			)
+		}
+	}
+
+	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
+		fn trace_transaction(
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_traced_transaction: &darwinia_ethereum::Transaction,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use dp_evm_tracer::tracer::EvmTracer;
+				use darwinia_ethereum::Call::transact;
+				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
+				// transactions that preceded the requested transaction.
+				for ext in _extrinsics.into_iter() {
+					let _ = match &ext.0.function {
+						Call::Ethereum(transact { transaction }) => {
+							if transaction == _traced_transaction {
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+								return Ok(());
+							} else {
+								Executive::apply_extrinsic(ext)
+							}
+						}
+						_ => Executive::apply_extrinsic(ext),
+					};
+				}
+
+				Err(sp_runtime::DispatchError::Other(
+					"Failed to find Ethereum transaction among the extrinsics.",
+				))
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
+		}
+		fn trace_block(
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_known_transactions: Vec<H256>,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use dp_evm_tracer::tracer::EvmTracer;
+				use darwinia_ethereum::Call::transact;
+
+				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				config.estimate = true;
+
+				// Apply all extrinsics. Ethereum extrinsics are traced.
+				for ext in _extrinsics.into_iter() {
+					match &ext.0.function {
+						Call::Ethereum(transact { transaction }) => {
+							if _known_transactions.contains(&transaction.hash()) {
+								// Each known extrinsic is a new call stack.
+								EvmTracer::emit_new();
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+							} else {
+								let _ = Executive::apply_extrinsic(ext);
+							}
+						}
+						_ => {
+							let _ = Executive::apply_extrinsic(ext);
+						}
+					};
+				}
+
+				Ok(())
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
 		}
 	}
 
@@ -547,7 +762,6 @@ sp_api::impl_runtime_apis! {
 
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
 
-			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
 		}
 	}
