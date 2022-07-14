@@ -110,6 +110,9 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 			})
 			| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote {
 				..
+			})
+			| Call::ToCrabParachainBacking(to_parachain_backing::Call::unlock_from_remote {
+				..
 			}) => Ok(()),
 			_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 		}
