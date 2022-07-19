@@ -108,6 +108,7 @@ jobs:
           sudo chmod u+x /usr/bin/subalfred
       - name: Fetch latest code
         uses: actions/checkout@v3
+      - name: Check
         run: |
           unset RUSTC_WRAPPER
           subalfred check std-feature
