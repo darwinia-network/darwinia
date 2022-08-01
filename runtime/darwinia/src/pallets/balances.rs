@@ -17,7 +17,6 @@ impl Config<RingInstance> for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
-	type OtherCurrencies = (Kton,);
 	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
@@ -30,7 +29,6 @@ impl Config<KtonInstance> for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
-	type OtherCurrencies = (Ring,);
 	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
