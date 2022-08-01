@@ -11,7 +11,6 @@ version     = "0.12.3-2"
 
 [dependencies]
 # crates.io
-array-bytes       = { version = "1.4" }
 codec             = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
 scale-info        = { version = "1.0", default-features = false }
 serde             = { version = "1.0", optional = true }

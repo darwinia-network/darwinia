@@ -125,6 +125,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "array-bytes"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30725d201df311b571b927e5a175a394e3763e11451c2e6415a84dc6e891fb6d"
+
+[[package]]
 name = "arrayref"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1100,7 +1106,6 @@ dependencies = [
 name = "crab-runtime"
 version = "0.12.3-2"
 dependencies = [
- "array-bytes",
  "bp-crab",
  "bp-crab-parachain",
  "bp-darwinia",
@@ -1471,7 +1476,7 @@ name = "darwinia-bridge-ethereum"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "blake2-rfc",
  "ckb-merkle-mountain-range",
  "darwinia-relay-primitives",
@@ -1574,7 +1579,7 @@ name = "darwinia-evm"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "darwinia-balances",
  "darwinia-support",
  "evm",
@@ -1655,7 +1660,7 @@ name = "darwinia-evm-precompile-transfer"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "darwinia-ethereum",
  "darwinia-evm",
  "darwinia-evm-precompile-utils",
@@ -1721,7 +1726,7 @@ dependencies = [
 name = "darwinia-node-service"
 version = "0.12.3-2"
 dependencies = [
- "array-bytes",
+ "array-bytes 2.0.1",
  "crab-runtime",
  "darwinia-evm",
  "darwinia-primitives",
@@ -2197,7 +2202,7 @@ name = "dp-s2s"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "bp-message-dispatch",
  "bp-runtime",
  "dp-asset",
@@ -2400,7 +2405,7 @@ name = "ethereum-primitives"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "ethash",
  "ethbloom",
  "ethereum-types",
@@ -3024,7 +3029,7 @@ name = "from-substrate-issuing"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
@@ -9391,7 +9396,7 @@ name = "to-ethereum-backing"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "darwinia-relay-primitives",
  "darwinia-support",
  "ethabi",
@@ -9412,7 +9417,7 @@ name = "to-parachain-backing"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
@@ -9432,7 +9437,7 @@ name = "to-substrate-backing"
 version = "2.8.13"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.3#9570fff96289a79844d19668ddd66f668a6c1fb6"
 dependencies = [
- "array-bytes",
+ "array-bytes 1.6.0",
  "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
