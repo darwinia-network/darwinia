@@ -13,7 +13,7 @@ use sp_runtime::{
 };
 // --- darwinia-network ---
 use crate::*;
-use bp_message_dispatch::{CallValidate, IntoDispatchOrigin as IntoDispatchOriginT, Everything};
+use bp_message_dispatch::{CallValidate, Everything, IntoDispatchOrigin as IntoDispatchOriginT};
 use bp_messages::{LaneId, MessageNonce};
 use darwinia_ethereum::{RawOrigin, Transaction};
 use darwinia_evm::AccountBasic;
@@ -184,7 +184,7 @@ impl Config<WithCrabParachainDispatch> for Runtime {
 	type AccountIdConverter = bp_crab_parachain::AccountIdConverter;
 	type BridgeMessageId = (LaneId, MessageNonce);
 	type Call = Call;
-	type CallValidator = Everything;
+	type CallValidator = CallValidator;
 	type EncodedCall = bm_crab_parachain::FromCrabParachainEncodedCall;
 	type Event = Event;
 	type IntoDispatchOrigin = IntoDispatchOrigin;
