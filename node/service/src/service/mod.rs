@@ -231,7 +231,7 @@ where
 		fee_history_cache: fee_history_cache.clone(),
 		overrides: overrides.clone(),
 		sync_from: match config.chain_spec.name() {
-			"Darwinia" => 9_355_000,
+			"Darwinia" => 9_453_251,
 			"Darwinia Crab" => 4_969_901,
 			_ => 0,
 		},
