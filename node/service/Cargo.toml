@@ -44,7 +44,6 @@ sc-client-db           = { git = "https://github.com/darwinia-network/substrate"
 sc-consensus           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sc-consensus-babe      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sc-consensus-slots     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sc-consensus-uncles    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sc-executor            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sc-finality-grandpa    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sc-network             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
