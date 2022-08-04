@@ -97,10 +97,9 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 								TransactionValidityError::Invalid(InvalidTransaction::Custom(3))
 							})
 						},
-						_ =>
-							Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(1u8))),
+						_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(1))),
 					},
-					_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(0u8))),
+					_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Custom(0))),
 				}
 			},
 			Call::System(frame_system::Call::remark { .. })
