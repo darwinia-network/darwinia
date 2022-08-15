@@ -124,7 +124,7 @@ where
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> U256 {
-		U256::from(1 * GWEI)
+		U256::from(GWEI)
 	}
 }
 
@@ -135,7 +135,7 @@ impl GasWeightMapping for FixedGasWeightMapping {
 	}
 
 	fn weight_to_gas(weight: Weight) -> u64 {
-		u64::try_from(weight.wrapping_div(WEIGHT_PER_GAS)).unwrap_or(u32::MAX as u64)
+		weight.wrapping_div(WEIGHT_PER_GAS)
 	}
 }
 

@@ -15,7 +15,7 @@ use pallet_session::FindAccountFromAuthorIndex;
 use sp_core::{crypto::Public, H160, U256};
 // --- darwinia-network ---
 use crate::*;
-use bp_messages::LaneId;
+use bp_messages::{LaneId,MessageNonce};
 use darwinia_ethereum::{
 	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
@@ -66,7 +66,7 @@ impl RelayMessageSender for ToDarwiniaMessageSender {
 				}
 				.into(),
 			_ => {
-				return Err("invalid pallet index".into());
+				return Err("invalid pallet index");
 			},
 		};
 
@@ -74,12 +74,12 @@ impl RelayMessageSender for ToDarwiniaMessageSender {
 	}
 }
 impl LatestMessageNoncer for ToDarwiniaMessageSender {
-	fn outbound_latest_generated_nonce(lane_id: LaneId) -> u64 {
-		BridgeDarwiniaMessages::outbound_latest_generated_nonce(lane_id).into()
+	fn outbound_latest_generated_nonce(lane_id: LaneId) -> MessageNonce {
+		BridgeDarwiniaMessages::outbound_latest_generated_nonce(lane_id)
 	}
 
-	fn inbound_latest_received_nonce(lane_id: LaneId) -> u64 {
-		BridgeDarwiniaMessages::inbound_latest_received_nonce(lane_id).into()
+	fn inbound_latest_received_nonce(lane_id: LaneId) -> MessageNonce {
+		BridgeDarwiniaMessages::inbound_latest_received_nonce(lane_id)
 	}
 }
 
@@ -185,7 +185,7 @@ where
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> U256 {
-		U256::from(1 * GWEI)
+		U256::from(GWEI)
 	}
 }
 
@@ -196,7 +196,7 @@ impl GasWeightMapping for FixedGasWeightMapping {
 	}
 
 	fn weight_to_gas(weight: Weight) -> u64 {
-		u64::try_from(weight.wrapping_div(WEIGHT_PER_GAS)).unwrap_or(u32::MAX as u64)
+		weight.wrapping_div(WEIGHT_PER_GAS)
 	}
 }
 

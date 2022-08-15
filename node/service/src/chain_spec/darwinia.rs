@@ -137,9 +137,8 @@ pub fn genesis_config() -> ChainSpec {
 		]
 		.concat()
 		{
-			match format!("0x{}", address).as_ref() {
-				DA_CRABK => da_crabk_endowed = true,
-				_ => (),
+			if let DA_CRABK = format!("0x{}", address).as_ref() {
+				da_crabk_endowed = true
 			}
 
 			let ring = ring / COIN;

@@ -2,7 +2,7 @@
 use frame_support::PalletId;
 // --- darwinia-network ---
 use crate::*;
-use bp_messages::LaneId;
+use bp_messages::{LaneId, MessageNonce};
 use bp_runtime::{ChainId, CRAB_PARACHAIN_CHAIN_ID};
 use bridge_runtime_common::lanes::CRAB_CRAB_PARACHAIN_LANE;
 use darwinia_support::s2s::LatestMessageNoncer;
@@ -12,12 +12,12 @@ pub const CRAB_PARACHAIN_ISSUING_PALLET_INDEX: u8 = 24;
 
 pub struct CrabParachainMessageNoncer;
 impl LatestMessageNoncer for CrabParachainMessageNoncer {
-	fn outbound_latest_generated_nonce(lane_id: LaneId) -> u64 {
-		BridgeCrabParachainMessages::outbound_latest_generated_nonce(lane_id).into()
+	fn outbound_latest_generated_nonce(lane_id: LaneId) -> MessageNonce {
+		BridgeCrabParachainMessages::outbound_latest_generated_nonce(lane_id)
 	}
 
-	fn inbound_latest_received_nonce(lane_id: LaneId) -> u64 {
-		BridgeCrabParachainMessages::inbound_latest_received_nonce(lane_id).into()
+	fn inbound_latest_received_nonce(lane_id: LaneId) -> MessageNonce {
+		BridgeCrabParachainMessages::inbound_latest_received_nonce(lane_id)
 	}
 }
 

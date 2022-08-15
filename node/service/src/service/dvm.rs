@@ -204,6 +204,6 @@ pub fn open_backend(
 	use fc_db::{Backend, DatabaseSettings, DatabaseSettingsSrc};
 
 	Ok(Arc::new(Backend::<Block>::new(&DatabaseSettings {
-		source: DatabaseSettingsSrc::RocksDb { path: db_path(&config), cache_size: 0 },
+		source: DatabaseSettingsSrc::RocksDb { path: db_path(config), cache_size: 0 },
 	})?))
 }

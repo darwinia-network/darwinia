@@ -33,23 +33,19 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 		call: &Call,
 	) -> Result<(), &'static str> {
 		match call {
-			Call::Ethereum(darwinia_ethereum::Call::message_transact { transaction: tx }) =>
-				match tx {
-					Transaction::Legacy(t) => {
-						let gas_price =
-							<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price();
-						let fee = t.gas_limit.saturating_mul(gas_price);
+			Call::Ethereum(darwinia_ethereum::Call::message_transact { transaction: Transaction::Legacy(t) }) => {
+				let gas_price =
+					<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price();
+				let fee = t.gas_limit.saturating_mul(gas_price);
 
-						// Ensure the relayer's account has enough balance to withdraw. If not,
-						// reject the call.
-						Ok(evm_ensure_can_withdraw(
-							relayer_account,
-							fee.min(decimal_convert(MaxUsableBalanceFromRelayer::get(), None)),
-							WithdrawReasons::TRANSFER,
-						)?)
-					},
-					_ => Ok(()),
-				},
+				// Ensure the relayer's account has enough balance to withdraw. If not,
+				// reject the call.
+				Ok(evm_ensure_can_withdraw(
+					relayer_account,
+					fee.min(decimal_convert(MaxUsableBalanceFromRelayer::get(), None)),
+					WithdrawReasons::TRANSFER,
+				)?)
+			}
 			_ => Ok(()),
 		}
 	}
@@ -60,7 +56,7 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 		call: &Call,
 	) -> Result<(), TransactionValidityError> {
 		match call {
-			// Note: Only supprt Ethereum::message_transact(LegacyTransaction)
+			// Note: Only support Ethereum::message_transact(LegacyTransaction)
 			Call::Ethereum(darwinia_ethereum::Call::message_transact { transaction: tx }) => {
 				match origin.caller() {
 					OriginCaller::Ethereum(RawOrigin::EthereumTransaction(id)) => match tx {
@@ -89,7 +85,7 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 								<Runtime as darwinia_evm::Config>::IntoAccountId::derive_substrate_address(*id);
 
 							<Runtime as darwinia_evm::Config>::RingAccountBasic::transfer(
-								&relayer_account,
+								relayer_account,
 								&derived_substrate_address,
 								fee,
 							)

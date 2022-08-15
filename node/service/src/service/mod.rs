@@ -272,7 +272,7 @@ where
 					shared_voter_state: shared_voter_state.clone(),
 					shared_authority_set: shared_authority_set.clone(),
 					justification_stream: justification_stream.clone(),
-					subscription_executor: subscription_executor.clone(),
+					subscription_executor,
 					finality_proof_provider: finality_proof_provider.clone(),
 				},
 				eth: EthDeps {
@@ -294,7 +294,7 @@ where
 	});
 	let rpc_handlers = sc_service::spawn_tasks(SpawnTasksParams {
 		config,
-		backend: backend.clone(),
+		backend,
 		client: client.clone(),
 		keystore: keystore_container.sync_keystore(),
 		network: network.clone(),
@@ -325,18 +325,15 @@ where
 			env: proposer,
 			sync_oracle: network.clone(),
 			justification_sync_link: network.clone(),
-			create_inherent_data_providers: move |_, ()| {
-				async move {
-					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-					let slot =
-
+			create_inherent_data_providers: move |_, ()| async move {
+				let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+				let slot =
 					sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
 						*timestamp,
 						slot_duration,
 					);
 
-					Ok((timestamp, slot))
-				}
+				Ok((timestamp, slot))
 			},
 			force_authoring,
 			backoff_authoring_blocks,
@@ -460,7 +457,7 @@ where
 	use sp_consensus::CanAuthorWithNativeVersion;
 
 	if config.keystore_remote.is_some() {
-		return Err(ServiceError::Other(format!("Remote Keystores are not supported.")));
+		return Err(ServiceError::Other("Remote Keystores are not supported.".into()));
 	}
 
 	set_prometheus_registry(config)?;
@@ -483,7 +480,7 @@ where
 	);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
-			&config,
+			config,
 			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
 			executor,
 		)?;
@@ -537,7 +534,7 @@ where
 		CanAuthorWithNativeVersion::new(client.executor().clone()),
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
-	let import_setup = (babe_import.clone(), grandpa_link, babe_link.clone());
+	let import_setup = (babe_import, grandpa_link, babe_link);
 
 	Ok(PartialComponents {
 		client,

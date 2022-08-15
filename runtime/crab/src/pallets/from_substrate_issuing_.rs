@@ -15,17 +15,17 @@ use from_substrate_issuing::Config;
 pub struct OutboundMessageDataInfo;
 impl OutboundMessenger<AccountId32> for OutboundMessageDataInfo {
 	fn check_lane_id(lane_id: &LaneId) -> bool {
-		return *lane_id == DARWINIA_CRAB_LANE;
+		*lane_id == DARWINIA_CRAB_LANE
 	}
 
 	fn get_valid_message_sender(nonce: MessageNonce) -> Result<AccountId32, &'static str> {
 		let data = BridgeDarwiniaMessages::outbound_message_data(DARWINIA_CRAB_LANE, nonce)
-			.ok_or_else(|| "Invalid outbound message data")?;
+			.ok_or("Invalid outbound message data")?;
 		let payload = bm_darwinia::ToDarwiniaMessagePayload::decode(&mut &data.payload[..])
 			.map_err(|_| "decode message payload failed")?;
 		match payload.origin {
 			CallOrigin::SourceAccount(account_id) => Ok(account_id),
-			_ => Err("Invalid Account Type".into()),
+			_ => Err("Invalid Account Type"),
 		}
 	}
 }
