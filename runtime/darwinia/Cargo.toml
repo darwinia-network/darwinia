@@ -60,6 +60,7 @@ pallet-evm-precompile-simple          = { default-features = false, git = "https
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 dp-asset            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+dp-relayer-game     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 # darwinia-network runtime
@@ -171,6 +172,7 @@ std = [
 	# darwinia-network primitives
 	"darwinia-primitives/std",
 	"dp-asset/std",
+	"dp-relayer-game/std",
 	"dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime

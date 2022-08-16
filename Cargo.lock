@@ -1853,6 +1853,7 @@ dependencies = [
  "darwinia-support",
  "dp-asset",
  "dp-evm-tracer",
+ "dp-relayer-game",
  "dp-s2s",
  "ethereum-primitives",
  "fp-evm",

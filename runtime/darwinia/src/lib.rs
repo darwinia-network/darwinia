@@ -261,7 +261,7 @@ frame_support::construct_runtime! {
 		EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
 		EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance1>::{Pallet, Storage} = 33,
-		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance1>::{Pallet, Call, Storage, Event<T>} = 36,
+		EthereumRelayAuthorities: darwinia_relay_authority::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
