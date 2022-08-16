@@ -31,10 +31,11 @@ impl CallValidate<bp_darwinia::AccountId, Origin, Call> for CallValidator {
 		call: &Call,
 	) -> Result<(), &'static str> {
 		match call {
-			Call::Ethereum(darwinia_ethereum::Call::message_transact { transaction: Transaction::Legacy(t) }) => {
+			Call::Ethereum(darwinia_ethereum::Call::message_transact {
+				transaction: Transaction::Legacy(t),
+			}) => {
 				// Use fixed gas price now.
-				let gas_price =
-					<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price();
+				let gas_price = <Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price();
 				let fee = t.gas_limit.saturating_mul(gas_price);
 
 				// Ensure the relayer's account has enough balance to withdraw. If not,
@@ -125,7 +126,8 @@ fn evm_ensure_can_withdraw(
 	reasons: WithdrawReasons,
 ) -> Result<(), TransactionValidityError> {
 	// Ensure the evm balance of the account large than the withdraw amount
-	let old_evm_balance = <Runtime as darwinia_evm::Config>::RingBalanceAdapter::account_balance(who);
+	let old_evm_balance =
+		<Runtime as darwinia_evm::Config>::RingBalanceAdapter::account_balance(who);
 	let (_old_sub, old_remaining) = old_evm_balance.div_mod(U256::from(POW_9));
 	ensure!(
 		old_evm_balance > amount,

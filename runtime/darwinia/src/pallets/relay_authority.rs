@@ -32,8 +32,8 @@ impl Config for Runtime {
 	type LockId = EthereumRelayAuthoritiesLockId;
 	type MaxMembers = RelayAuthorityMaxMembers;
 	type MaxSchedules = MaxSchedules;
-	type MmrRootT = Self::Hash;
 	type MmrRoot = MmrRoot;
+	type MmrRootT = Self::Hash;
 	type OpCodes = OpCodes;
 	type RemoveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type ResetOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;

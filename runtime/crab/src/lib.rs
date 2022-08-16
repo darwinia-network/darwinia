@@ -61,7 +61,7 @@ use codec::{Decode, Encode};
 // --- paritytech ---
 use fp_rpc::TransactionStatus;
 use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use pallet_evm::FeeCalculator;
+use fp_evm::FeeCalculator;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -515,6 +515,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::call(
 				from,
@@ -526,8 +527,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 		fn create(
@@ -548,6 +550,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::create(
 				from,
@@ -558,8 +561,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 

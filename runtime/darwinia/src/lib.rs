@@ -98,7 +98,7 @@ use codec::Encode;
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use pallet_evm::FeeCalculator;
+use fp_evm::FeeCalculator;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -567,6 +567,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::call(
 				from,
@@ -578,8 +579,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 		fn create(
@@ -603,6 +605,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::create(
 				from,
@@ -613,8 +616,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 

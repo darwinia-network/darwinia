@@ -5,7 +5,6 @@ use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResul
 use frame_support::{
 	pallet_prelude::Weight, traits::FindAuthor, ConsensusEngineId, StorageHasher, Twox128,
 };
-use pallet_evm::FeeCalculator;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;

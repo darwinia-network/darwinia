@@ -15,20 +15,20 @@ impl<T, I> Slasher<T, I> for FeeMarketSlasher
 where
 	T: Config<I>,
 	I: 'static,
-	{
-		fn cal_slash_amount(
-			collateral_per_order: BalanceOf<T, I>,
-			timeout: T::BlockNumber,
-		) -> BalanceOf<T, I> {
-			const SLASH_PER_BLOCK: Balance = 2 * COIN;
+{
+	fn cal_slash_amount(
+		collateral_per_order: BalanceOf<T, I>,
+		timeout: T::BlockNumber,
+	) -> BalanceOf<T, I> {
+		const SLASH_PER_BLOCK: Balance = 2 * COIN;
 
-			let collateral_per_order = collateral_per_order.saturated_into::<Balance>();
-			let timeout = timeout.saturated_into::<Balance>();
-			let slash_value = timeout.saturating_mul(SLASH_PER_BLOCK);
+		let collateral_per_order = collateral_per_order.saturated_into::<Balance>();
+		let timeout = timeout.saturated_into::<Balance>();
+		let slash_value = timeout.saturating_mul(SLASH_PER_BLOCK);
 
-			cmp::min(collateral_per_order, slash_value).saturated_into()
-		}
+		cmp::min(collateral_per_order, slash_value).saturated_into()
 	}
+}
 
 frame_support::parameter_types! {
 	pub const MinimumRelayFee: Balance = 15 * COIN;

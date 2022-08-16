@@ -18,7 +18,6 @@ serde       = { version = "1.0", features = ["derive"] }
 serde_json  = { version = "1.0" }
 tokio       = { version = "1.17" }
 # darwinia-network dvm
-darwinia-evm                  = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 dp-evm-trace-ext              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 fc-mapping-sync               = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
@@ -35,6 +34,8 @@ darwinia-rpc = { path = "../../rpc" }
 # darwinia-network runtime
 crab-runtime     = { path = "../../runtime/crab" }
 darwinia-runtime = { path = "../../runtime/darwinia" }
+# frontier primitives
+fp-evm = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 # paritytech client
 sc-authority-discovery = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sc-basic-authorship    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
