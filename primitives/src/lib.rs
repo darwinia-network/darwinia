@@ -25,7 +25,7 @@
 use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
-	traits::{BlakeTwo256, IdentifyAccount,LookupError, StaticLookup, Verify},
+	traits::{BlakeTwo256, IdentifyAccount, LookupError, StaticLookup, Verify},
 	MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
 // --- darwinia-network ---

@@ -95,10 +95,10 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
+use fp_evm::FeeCalculator;
 #[allow(unused)]
 use frame_support::migration;
 use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use fp_evm::FeeCalculator;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -111,8 +111,8 @@ use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
-		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
+		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor, PostDispatchInfoOf,
+		SaturatedConversion, StaticLookup, Verify,
 	},
 	ApplyExtrinsicResult,
 };

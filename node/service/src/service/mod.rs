@@ -368,9 +368,11 @@ where
 				prometheus_registry.clone(),
 			);
 
-		task_manager
-			.spawn_handle()
-			.spawn("authority-discovery-worker", Some("authority-discovery"), authority_discovery_worker.run());
+		task_manager.spawn_handle().spawn(
+			"authority-discovery-worker",
+			Some("authority-discovery"),
+			authority_discovery_worker.run(),
+		);
 	}
 
 	let keystore = if is_authority { Some(keystore_container.sync_keystore()) } else { None };

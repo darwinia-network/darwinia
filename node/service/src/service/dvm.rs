@@ -170,17 +170,21 @@ where
 			// `trace_filter` cache task. Essential.
 			// Proxies rpc requests to it's handler.
 			if let Some(trace_filter_task) = trace_filter_task {
-				task_manager
-					.spawn_essential_handle()
-					.spawn("trace-filter-cache", Some("frontier"), trace_filter_task);
+				task_manager.spawn_essential_handle().spawn(
+					"trace-filter-cache",
+					Some("frontier"),
+					trace_filter_task,
+				);
 			}
 
 			// `debug` task if enabled. Essential.
 			// Proxies rpc requests to it's handler.
 			if let Some(debug_task) = debug_task {
-				task_manager
-					.spawn_essential_handle()
-					.spawn("ethapi_debug_targets-debug", Some("evm-tracing"), debug_task);
+				task_manager.spawn_essential_handle().spawn(
+					"ethapi_debug_targets-debug",
+					Some("evm-tracing"),
+					debug_task,
+				);
 			}
 
 			return EthRpcRequesters { debug: debug_requester, trace: trace_filter_requester };
