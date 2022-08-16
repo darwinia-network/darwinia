@@ -4,7 +4,7 @@ pub use pallet_fee_market::Instance1 as WithCrabFeeMarket;
 use core::cmp;
 // --- paritytech ---
 use frame_support::traits::LockIdentifier;
-use sp_runtime::{traits::UniqueSaturatedInto, Permill};
+use sp_runtime::{Permill, SaturatedConversion};
 // --- darwinia-network ---
 use crate::*;
 use pallet_fee_market::{BalanceOf, Config, Slasher};
@@ -15,35 +15,41 @@ impl<T, I> Slasher<T, I> for FeeMarketSlasher
 where
 	T: Config<I>,
 	I: 'static,
-{
-	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
-		let slash_each_block = 2 * COIN;
-		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
-			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
-			.unique_saturated_into();
+	{
+		fn cal_slash_amount(
+			collateral_per_order: BalanceOf<T, I>,
+			timeout: T::BlockNumber,
+		) -> BalanceOf<T, I> {
+			const SLASH_PER_BLOCK: Balance = 2 * COIN;
 
-		cmp::min(locked_collateral, slash_value)
+			let collateral_per_order = collateral_per_order.saturated_into::<Balance>();
+			let timeout = timeout.saturated_into::<Balance>();
+			let slash_value = timeout.saturating_mul(SLASH_PER_BLOCK);
+
+			cmp::min(collateral_per_order, slash_value).saturated_into()
+		}
 	}
-}
 
 frame_support::parameter_types! {
-	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
-
 	pub const MinimumRelayFee: Balance = 15 * COIN;
 	pub const CollateralPerOrder: Balance = 50 * COIN;
 	pub const Slot: BlockNumber = 300;
 
-	pub const AssignedRelayersRewardRatio: Permill = Permill::from_percent(60);
+	pub const GuardRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
+	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
+
+	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 }
 
 impl Config<WithCrabFeeMarket> for Runtime {
-	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
+	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Ring;
 	type Event = Event;
+	type GuardRelayersRewardRatio = GuardRelayersRewardRatio;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
