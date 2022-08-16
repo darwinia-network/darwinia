@@ -93,7 +93,7 @@ impl frame_support::pallet_prelude::Get<Option<(usize, sp_npos_elections::Extend
 	fn get() -> Option<(usize, sp_npos_elections::ExtendedBalance)> {
 		let iters = match MINER_MAX_ITERATIONS {
 			0 => 0,
-			max @ _ => {
+			max => {
 				let seed = sp_io::offchain::random_seed();
 				let random = <u32>::decode(&mut TrailingZeroInput::new(&seed))
 					.expect("input is padded with zeroes; qed")

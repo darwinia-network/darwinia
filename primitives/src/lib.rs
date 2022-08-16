@@ -179,7 +179,7 @@ development_or_production! {
 	CRAB_BLOCKS_PER_SESSION,
 	BlockNumber,
 	MINUTES / 2,
-	1 * HOURS
+	HOURS
 }
 development_or_production! {
 	"Era length of Crab.",

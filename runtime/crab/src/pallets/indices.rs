@@ -4,7 +4,7 @@ use pallet_indices::Config;
 use crate::*;
 
 frame_support::parameter_types! {
-	pub const IndexDeposit: Balance = 1 * COIN;
+	pub const IndexDeposit: Balance = COIN;
 }
 
 impl Config for Runtime {

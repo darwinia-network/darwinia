@@ -84,7 +84,7 @@ pub const INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE: FixedU128 =
 	FixedU128::from_inner(FixedU128::DIV);
 
 frame_support::parameter_types! {
-	/// CrabParachain to Crab conversion rate. Initially we trate both tokens as equal.
+	/// CrabParachain to Crab conversion rate. Initially we treat both tokens as equal.
 	pub storage CrabParachainToCrabConversionRate: FixedU128 = INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE;
 }
 
@@ -139,10 +139,7 @@ impl MessageBridge for WithCrabParachainMessageBridge {
 	fn bridged_balance_to_this_balance(
 		bridged_balance: BalanceOf<Self::BridgedChain>,
 	) -> BalanceOf<Self::ThisChain> {
-		<BalanceOf<Self::ThisChain>>::try_from(
-			CrabParachainToCrabConversionRate::get().saturating_mul_int(bridged_balance),
-		)
-		.unwrap_or(<BalanceOf<Self::ThisChain>>::MAX)
+		CrabParachainToCrabConversionRate::get().saturating_mul_int(bridged_balance)
 	}
 }
 

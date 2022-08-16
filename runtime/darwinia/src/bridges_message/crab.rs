@@ -133,10 +133,7 @@ impl MessageBridge for WithCrabMessageBridge {
 	fn bridged_balance_to_this_balance(
 		bridged_balance: BalanceOf<Self::BridgedChain>,
 	) -> BalanceOf<Self::ThisChain> {
-		<BalanceOf<Self::ThisChain>>::try_from(
-			CrabToDarwiniaConversionRate::get().saturating_mul_int(bridged_balance),
-		)
-		.unwrap_or(<BalanceOf<Self::ThisChain>>::MAX)
+		CrabToDarwiniaConversionRate::get().saturating_mul_int(bridged_balance)
 	}
 }
 

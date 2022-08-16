@@ -135,7 +135,7 @@ pub fn genesis_config() -> ChainSpec {
 					.map(|k| (k, CRAB_ENDOWMENT))
 					.chain(
 						vec![
-							(root.clone(), 25_000_000 * COIN),
+							(root, 25_000_000 * COIN),
 							(multi_sig, 700_000_000 * COIN),
 							(genesis_validator.0.clone(), CRAB_ENDOWMENT),
 						]
