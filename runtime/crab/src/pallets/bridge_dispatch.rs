@@ -16,7 +16,7 @@ use crate::*;
 use bp_message_dispatch::{CallValidate, IntoDispatchOrigin as IntoDispatchOriginT};
 use bp_messages::{LaneId, MessageNonce};
 use darwinia_ethereum::{RawOrigin, Transaction};
-use darwinia_evm::AccountBasic;
+use darwinia_evm::CurrencyAdapt;
 use darwinia_support::evm::{
 	decimal_convert, DeriveEthereumAddress, DeriveSubstrateAddress, POW_9,
 };
@@ -84,7 +84,7 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 							let derived_substrate_address =
 								<Runtime as darwinia_evm::Config>::IntoAccountId::derive_substrate_address(*id);
 
-							<Runtime as darwinia_evm::Config>::RingAccountBasic::transfer(
+							<Runtime as darwinia_evm::Config>::RingBalanceAdapter::evm_transfer(
 								relayer_account,
 								&derived_substrate_address,
 								fee,
@@ -134,7 +134,7 @@ fn evm_ensure_can_withdraw(
 	reasons: WithdrawReasons,
 ) -> Result<(), TransactionValidityError> {
 	// Ensure the evm balance of the account large than the withdraw amount
-	let old_evm_balance = <Runtime as darwinia_evm::Config>::RingAccountBasic::account_balance(who);
+	let old_evm_balance = <Runtime as darwinia_evm::Config>::RingBalanceAdapter::account_balance(who);
 	let (_old_sub, old_remaining) = old_evm_balance.div_mod(U256::from(POW_9));
 	ensure!(
 		old_evm_balance > amount,

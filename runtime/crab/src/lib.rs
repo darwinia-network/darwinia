@@ -479,9 +479,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			use darwinia_evm::AccountBasic;
-
-			<Runtime as darwinia_evm::Config>::RingAccountBasic::account_basic(&address)
+			EVM::account_basic(&address)
 		}
 
 		fn account_code_at(address: H160) -> Vec<u8> {
