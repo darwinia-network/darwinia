@@ -71,7 +71,7 @@ use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
+		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
 		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
 	},
 	ApplyExtrinsicResult,

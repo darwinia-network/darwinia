@@ -32,7 +32,7 @@ impl Config for Runtime {
 	type Hashing = Hashing;
 	type Header = Header;
 	type Index = Nonce;
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = DarwiniaAccountLookup;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();

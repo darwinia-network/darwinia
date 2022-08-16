@@ -1749,6 +1749,7 @@ dependencies = [
 name = "darwinia-primitives"
 version = "0.12.3-2"
 dependencies = [
+ "darwinia-support",
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",

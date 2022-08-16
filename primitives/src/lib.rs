@@ -22,12 +22,14 @@
 #![warn(missing_docs)]
 
 // --- paritytech ---
-use sp_core::H256;
+use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
-	traits::{BlakeTwo256, IdentifyAccount, Verify},
+	traits::{BlakeTwo256, IdentifyAccount,LookupError, StaticLookup, Verify},
 	MultiAddress, MultiSignature, OpaqueExtrinsic,
 };
+// --- darwinia-network ---
+use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 
 macro_rules! development_or_production {
 	($doc:expr, $name:ident, $type:ty, $development_value:expr, $production_value:expr) => {
@@ -191,3 +193,25 @@ development_or_production! {
 
 /// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
+
+/// Darwinia custom account lookup.
+///
+/// Compatible with the Substrate and DVM address.
+pub enum DarwiniaAccountLookup {}
+impl StaticLookup for DarwiniaAccountLookup {
+	type Source = Address;
+	type Target = AccountId;
+
+	fn lookup(x: Self::Source) -> Result<Self::Target, LookupError> {
+		match x {
+			Self::Source::Id(i) => Ok(i),
+			Self::Source::Address20(address) =>
+				Ok(ConcatConverter::derive_substrate_address(&H160(address))),
+			_ => Err(LookupError),
+		}
+	}
+
+	fn unlookup(x: Self::Target) -> Self::Source {
+		Self::Source::Id(x)
+	}
+}
