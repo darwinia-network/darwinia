@@ -97,7 +97,7 @@ use codec::Encode;
 // --- paritytech ---
 #[allow(unused)]
 use frame_support::migration;
-use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
+use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
 use pallet_evm::FeeCalculator;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
