@@ -19,107 +19,106 @@ serde_json        = { version = "1.0", optional = true }
 smallvec          = { version = "1.7" }
 static_assertions = { version = "1.1" }
 # darwinia-messages-substrate
-bp-crab                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-bp-darwinia            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
-pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.3" }
+bp-crab                = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+bp-darwinia            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
+pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
 # darwinia-network frame
-darwinia-balances          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-bridge-ethereum   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-header-mmr        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-relay-authorities = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-relay-primitives  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-relayer-game      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-staking           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-support           = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-to-ethereum-backing        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-to-substrate-backing       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-to-tron-backing            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
+darwinia-balances        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-bridge-ethereum = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-header-mmr      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-relay-authority = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-relayer-game    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-staking         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-support         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+to-ethereum-backing      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+to-substrate-backing     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+to-tron-backing          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 # darwinia-network dvm
-darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-evm-precompile-bridge-s2s    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-evm-precompile-dispatch      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-darwinia-evm-precompile-state-storage = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-dp-evm-tracer                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-fp-evm                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-fp-rpc                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-fp-self-contained                     = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-fp-storage                            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-moonbeam-rpc-primitives-debug         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.3" }
-pallet-base-fee                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-pallet-evm                            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-pallet-evm-precompile-blake2          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-pallet-evm-precompile-bn128           = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-pallet-evm-precompile-modexp          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
-pallet-evm-precompile-simple          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.3" }
+darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-evm-precompile-bridge-s2s    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-evm-precompile-dispatch      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-evm-precompile-state-storage = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+dp-evm-tracer                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+fp-evm                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+fp-rpc                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+fp-self-contained                     = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+fp-storage                            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+moonbeam-rpc-primitives-debug         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
+pallet-base-fee                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+pallet-evm                            = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+pallet-evm-precompile-blake2          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+pallet-evm-precompile-bn128           = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+pallet-evm-precompile-modexp          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
+pallet-evm-precompile-simple          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
-dp-asset            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
-ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.3" }
+dp-asset            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 # darwinia-network runtime
 darwinia-common-runtime = { default-features = false, path = "../common" }
 # paritytech frame
-frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-election-provider-support            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-system-benchmarking                  = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-system-rpc-runtime-api               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-frame-try-runtime                          = { default-features = false, optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-authority-discovery                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-authorship                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-babe                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-bounties                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-collective                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-democracy                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-election-provider-multi-phase       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-elections-phragmen                  = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-grandpa                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-identity                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-im-online                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-proxy                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-recovery                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-session                             = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-society                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-sudo                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-timestamp                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-tips                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-transaction-payment                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-treasury                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-utility                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-pallet-vesting                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-election-provider-support            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-system-benchmarking                  = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-system-rpc-runtime-api               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+frame-try-runtime                          = { default-features = false, optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-authority-discovery                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-authorship                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-babe                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-bounties                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-collective                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-democracy                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-election-provider-multi-phase       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-elections-phragmen                  = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-grandpa                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-identity                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-im-online                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-proxy                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-recovery                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-session                             = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-society                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-sudo                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-timestamp                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-tips                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-transaction-payment                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-treasury                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-utility                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+pallet-vesting                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 # paritytech primitives
-sp-api                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-block-builder       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-consensus-babe      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-core                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-inherents           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-npos-elections      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-offchain            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-session             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-staking             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-std                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-transaction-pool    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
-sp-version             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sp-api                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-block-builder       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-consensus-babe      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-core                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-inherents           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-npos-elections      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-offchain            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-session             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-staking             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-std                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-transaction-pool    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
+sp-version             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 
 [build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 
 [features]
 default = ["std"]
@@ -145,8 +144,7 @@ std = [
 	"darwinia-balances/std",
 	"darwinia-bridge-ethereum/std",
 	"darwinia-header-mmr/std",
-	"darwinia-relay-authorities/std",
-	"darwinia-relay-primitives/std",
+	"darwinia-relay-authority/std",
 	"darwinia-relayer-game/std",
 	"darwinia-staking/std",
 	"darwinia-support/std",
