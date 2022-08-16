@@ -82,7 +82,7 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 							// Already done `evm_ensure_can_withdraw` in
 							// check_receiving_before_dispatch
 							let derived_substrate_address =
-								<Runtime as darwinia_evm::Config>::IntoAccountId::derive_substrate_address(*id);
+								<Runtime as darwinia_evm::Config>::IntoAccountId::derive_substrate_address(id);
 
 							<Runtime as darwinia_evm::Config>::RingBalanceAdapter::evm_transfer(
 								relayer_account,
