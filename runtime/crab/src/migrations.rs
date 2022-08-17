@@ -23,6 +23,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	0
-	// RuntimeBlockWeights::get().max_block
+	migration::move_pallet(b"DarwiniaHeaderMMR", b"DarwiniaHeaderMmr");
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }

@@ -174,7 +174,7 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 13,
-		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Storage} = 31,
+		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
