@@ -3,7 +3,7 @@ pub use pallet_bridge_dispatch::Instance1 as WithCrabDispatch;
 // --- paritytech ---
 use frame_support::{
 	ensure,
-	traits::{OriginTrait, WithdrawReasons}
+	traits::{OriginTrait, WithdrawReasons},
 };
 use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidityError};
 // --- darwinia-network ---
@@ -39,7 +39,8 @@ impl CallValidate<bp_darwinia::AccountId, Origin, Call> for CallValidator {
 					relayer_account,
 					fee.min(decimal_convert(MaxUsableBalanceFromRelayer::get(), None)),
 					WithdrawReasons::all(),
-				).map_err(|_| TransactionValidityError::Invalid(InvalidTransaction::Payment))?)
+				)
+				.map_err(|_| TransactionValidityError::Invalid(InvalidTransaction::Payment))?)
 			},
 			_ => Ok(()),
 		}

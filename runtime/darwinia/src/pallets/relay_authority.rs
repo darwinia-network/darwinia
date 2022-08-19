@@ -8,7 +8,7 @@ use darwinia_relay_authority::{Config, EcdsaSign, OpCode};
 pub enum MmrRoot {}
 impl Get<Option<Hash>> for MmrRoot {
 	fn get() -> Option<Hash> {
-		DarwiniaHeaderMMR::get_root()
+		DarwiniaHeaderMmr::get_root()
 	}
 }
 

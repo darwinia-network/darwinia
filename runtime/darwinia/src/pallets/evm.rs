@@ -21,6 +21,7 @@ use darwinia_evm::{
 	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
 };
 use darwinia_evm_precompile_dispatch::Dispatch;
+use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
 use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
 use darwinia_support::evm::ConcatConverter;
 
@@ -45,6 +46,21 @@ impl StorageFilterT for StorageFilter {
 	}
 }
 
+struct KtonERC20MetaData;
+impl Erc20Metadata for KtonERC20MetaData {
+	fn name() -> &'static str {
+		"KTON ERC20"
+	}
+
+	fn symbol() -> &'static str {
+		"KTON"
+	}
+
+	fn decimals() -> u8 {
+		18
+	}
+}
+
 pub struct DarwiniaPrecompiles<R>(PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where
@@ -54,7 +70,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 11] {
+	pub fn used_addresses() -> [H160; 12] {
 		[
 			addr(1),
 			addr(2),
@@ -67,6 +83,7 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
+			addr(1026),
 		]
 	}
 }
@@ -111,6 +128,9 @@ where
 			)),
 			a if a == addr(1025) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+			a if a == addr(1026) => Some(<KtonERC20<R, KtonERC20MetaData>>::execute(
+				input, target_gas, context, is_static,
+			)),
 			_ => None,
 		}
 	}

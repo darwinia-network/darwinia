@@ -23,6 +23,26 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
+	use frame_support::StorageHasher;
+
+	// TODO
+	let from = AccountId::from([]);
+	let to = AccountId::from([]);
+
+	let _ = Kton::transfer_all(Origin::signed(from.clone()), Address::from(to.clone()), false);
+	if let Some(v) = migration::take_storage_value::<Balance>(
+		b"Ethereum",
+		b"RemainingKtonBalance",
+		&frame_support::Blake2_128Concat::hash(from.as_ref()),
+	) {
+		migration::put_storage_value(
+			b"Ethereum",
+			b"RemainingKtonBalance",
+			&frame_support::Blake2_128Concat::hash(to.as_ref()),
+			v,
+		);
+	}
+
 	migration::move_pallet(b"DarwiniaHeaderMMR", b"DarwiniaHeaderMmr");
 
 	// 0

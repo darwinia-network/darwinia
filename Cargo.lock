@@ -1094,6 +1094,7 @@ dependencies = [
  "darwinia-evm",
  "darwinia-evm-precompile-bridge-s2s",
  "darwinia-evm-precompile-dispatch",
+ "darwinia-evm-precompile-kton",
  "darwinia-evm-precompile-state-storage",
  "darwinia-evm-precompile-transfer",
  "darwinia-header-mmr",
@@ -1608,6 +1609,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-evm-precompile-kton"
+version = "2.9.0"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.4#abac1625557de380ee4cb78cb8872537a93d1d65"
+dependencies = [
+ "darwinia-balances",
+ "darwinia-evm",
+ "darwinia-evm-precompile-utils",
+ "darwinia-support",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "num_enum",
+ "sp-core",
+]
+
+[[package]]
 name = "darwinia-evm-precompile-state-storage"
 version = "2.9.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.4#abac1625557de380ee4cb78cb8872537a93d1d65"
@@ -1844,6 +1861,7 @@ dependencies = [
  "darwinia-evm",
  "darwinia-evm-precompile-bridge-s2s",
  "darwinia-evm-precompile-dispatch",
+ "darwinia-evm-precompile-kton",
  "darwinia-evm-precompile-state-storage",
  "darwinia-header-mmr",
  "darwinia-primitives",
