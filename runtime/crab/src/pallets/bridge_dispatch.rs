@@ -40,7 +40,8 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 					relayer_account,
 					fee.min(decimal_convert(MaxUsableBalanceFromRelayer::get(), None)),
 					WithdrawReasons::all(),
-				).map_err(|_| TransactionValidityError::Invalid(InvalidTransaction::Payment))?)
+				)
+				.map_err(|_| TransactionValidityError::Invalid(InvalidTransaction::Payment))?)
 			},
 			_ => Ok(()),
 		}
