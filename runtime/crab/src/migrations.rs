@@ -25,11 +25,12 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 fn migrate() -> Weight {
 	use frame_support::StorageHasher;
 
-	// 0x159933C635570D5042723359fbD1619dFe83D3f3(5ELRpquT7C3mWtjeoTzuGDz3Df1pPt7UekEogDKMcMViEZFF)
+	// WKTON: 0x159933C635570D5042723359fbD1619dFe83D3f3(5ELRpquT7C3mWtjeoTzuGDz3Df1pPt7UekEogDKMcMViEZFF)
 	let from = AccountId::from([
 		100, 118, 109, 58, 0, 0, 0, 0, 0, 0, 0, 21, 153, 51, 198, 53, 87, 13, 80, 66, 114, 51, 89,
 		251, 209, 97, 157, 254, 131, 211, 243, 210,
 	]);
+	// Migration:
 	// 0xD5f4940704Eb4cE5e4b51877d49B58A3e93531b6(5ELRpquT7C3mWtjesSS6XvZDxwT8PMpDGJNaDGWLH3rFEsgf)
 	let to = AccountId::from([
 		100, 118, 109, 58, 0, 0, 0, 0, 0, 0, 0, 213, 244, 148, 7, 4, 235, 76, 229, 228, 181, 24,
