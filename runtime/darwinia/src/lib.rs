@@ -216,6 +216,7 @@ frame_support::construct_runtime! {
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 15,
 		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 35,
+		EcdsaRelayAuthority: darwinia_relay_authority::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Governance stuff; uncallable initially.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
@@ -261,7 +262,6 @@ frame_support::construct_runtime! {
 		EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
 		EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance1>::{Pallet, Storage} = 33,
-		EthereumRelayAuthorities: darwinia_relay_authority::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
