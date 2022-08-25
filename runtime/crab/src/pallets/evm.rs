@@ -15,9 +15,9 @@ use pallet_session::FindAccountFromAuthorIndex;
 use sp_core::{crypto::Public, H160, U256};
 // --- darwinia-network ---
 use crate::*;
-use bp_messages::{LaneId,MessageNonce};
+use bp_messages::{LaneId, MessageNonce};
 use darwinia_ethereum::{
-	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
+	adapter::{CurrencyAdapter, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
 };
 use darwinia_evm::{
@@ -25,6 +25,7 @@ use darwinia_evm::{
 };
 use darwinia_evm_precompile_bridge_s2s::Sub2SubBridge;
 use darwinia_evm_precompile_dispatch::Dispatch;
+use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
 use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
 use darwinia_evm_precompile_transfer::Transfer;
 use darwinia_support::{
@@ -90,6 +91,21 @@ impl StorageFilterT for StorageFilter {
 	}
 }
 
+struct KtonERC20MetaData;
+impl Erc20Metadata for KtonERC20MetaData {
+	fn name() -> &'static str {
+		"CKTON ERC20"
+	}
+
+	fn symbol() -> &'static str {
+		"CKTON"
+	}
+
+	fn decimals() -> u8 {
+		18
+	}
+}
+
 pub struct CrabPrecompiles<R>(PhantomData<R>);
 impl<R> CrabPrecompiles<R>
 where
@@ -99,7 +115,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 14] {
+	pub fn used_addresses() -> [H160; 15] {
 		[
 			addr(1),
 			addr(2),
@@ -115,6 +131,7 @@ where
 			addr(25),
 			addr(1024),
 			addr(1025),
+			addr(1026),
 		]
 	}
 }
@@ -172,7 +189,9 @@ where
 			)),
 			a if a == addr(1025) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
-
+			a if a == addr(1026) => Some(<KtonERC20<R, KtonERC20MetaData>>::execute(
+				input, target_gas, context, is_static,
+			)),
 			_ => None,
 		}
 	}
@@ -220,10 +239,10 @@ impl Config for Runtime {
 	type FindAuthor = EthereumFindAuthor<Babe>;
 	type GasWeightMapping = FixedGasWeightMapping;
 	type IntoAccountId = ConcatConverter<Self::AccountId>;
-	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
+	type KtonBalanceAdapter = CurrencyAdapter<Self, Kton, KtonRemainBalance>;
 	type OnChargeTransaction = EVMCurrencyAdapter<FindAccountFromAuthorIndex<Self, Babe>>;
 	type PrecompilesType = CrabPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
-	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
+	type RingBalanceAdapter = CurrencyAdapter<Self, Ring, RingRemainBalance>;
 	type Runner = Runner<Self>;
 }

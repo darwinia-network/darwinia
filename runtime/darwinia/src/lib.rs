@@ -95,10 +95,10 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates.io ---
 use codec::Encode;
 // --- paritytech ---
+use fp_evm::FeeCalculator;
 #[allow(unused)]
 use frame_support::migration;
-use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use pallet_evm::FeeCalculator;
+use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -111,8 +111,8 @@ use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
-		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
+		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor, PostDispatchInfoOf,
+		SaturatedConversion, StaticLookup, Verify,
 	},
 	ApplyExtrinsicResult,
 };
@@ -215,7 +215,8 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 13,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 15,
-		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Storage} = 35,
+		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 35,
+		EcdsaRelayAuthority: darwinia_relay_authority::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Governance stuff; uncallable initially.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
@@ -261,7 +262,6 @@ frame_support::construct_runtime! {
 		EthereumRelay: darwinia_bridge_ethereum::{Pallet, Call, Storage, Config<T>, Event<T>} = 32,
 		EthereumBacking: to_ethereum_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 31,
 		EthereumRelayerGame: darwinia_relayer_game::<Instance1>::{Pallet, Storage} = 33,
-		EthereumRelayAuthorities: darwinia_relay_authorities::<Instance1>::{Pallet, Call, Storage, Event<T>} = 36,
 
 		// Tron bridge.
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
@@ -528,10 +528,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> darwinia_evm::Account {
-			// --- darwinia-network ---
-			use darwinia_evm::AccountBasic;
-
-			<Runtime as darwinia_evm::Config>::RingAccountBasic::account_basic(&address)
+			EVM::account_basic(&address)
 		}
 
 		fn account_code_at(address: H160) -> Vec<u8> {
@@ -570,6 +567,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::call(
 				from,
@@ -581,8 +579,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 		fn create(
@@ -606,6 +605,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::create(
 				from,
@@ -616,8 +616,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 

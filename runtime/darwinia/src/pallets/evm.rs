@@ -5,7 +5,6 @@ use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResul
 use frame_support::{
 	pallet_prelude::Weight, traits::FindAuthor, ConsensusEngineId, StorageHasher, Twox128,
 };
-use pallet_evm::FeeCalculator;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
@@ -15,13 +14,14 @@ use sp_core::{crypto::Public, H160, U256};
 // --- darwinia-network ---
 use crate::*;
 use darwinia_ethereum::{
-	account_basic::{DvmAccountBasic, KtonRemainBalance, RingRemainBalance},
+	adapter::{CurrencyAdapter, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
 };
 use darwinia_evm::{
 	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
 };
 use darwinia_evm_precompile_dispatch::Dispatch;
+use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
 use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
 use darwinia_support::evm::ConcatConverter;
 
@@ -46,6 +46,21 @@ impl StorageFilterT for StorageFilter {
 	}
 }
 
+struct KtonERC20MetaData;
+impl Erc20Metadata for KtonERC20MetaData {
+	fn name() -> &'static str {
+		"KTON ERC20"
+	}
+
+	fn symbol() -> &'static str {
+		"KTON"
+	}
+
+	fn decimals() -> u8 {
+		18
+	}
+}
+
 pub struct DarwiniaPrecompiles<R>(PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where
@@ -55,7 +70,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 11] {
+	pub fn used_addresses() -> [H160; 12] {
 		[
 			addr(1),
 			addr(2),
@@ -68,6 +83,7 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
+			addr(1026),
 		]
 	}
 }
@@ -112,6 +128,9 @@ where
 			)),
 			a if a == addr(1025) =>
 				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
+			a if a == addr(1026) => Some(<KtonERC20<R, KtonERC20MetaData>>::execute(
+				input, target_gas, context, is_static,
+			)),
 			_ => None,
 		}
 	}
@@ -159,10 +178,10 @@ impl Config for Runtime {
 	type FindAuthor = EthereumFindAuthor<Babe>;
 	type GasWeightMapping = FixedGasWeightMapping;
 	type IntoAccountId = ConcatConverter<Self::AccountId>;
-	type KtonAccountBasic = DvmAccountBasic<Self, Kton, KtonRemainBalance>;
+	type KtonBalanceAdapter = CurrencyAdapter<Self, Kton, KtonRemainBalance>;
 	type OnChargeTransaction = EVMCurrencyAdapter<FindAccountFromAuthorIndex<Self, Babe>>;
 	type PrecompilesType = DarwiniaPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
-	type RingAccountBasic = DvmAccountBasic<Self, Ring, RingRemainBalance>;
+	type RingBalanceAdapter = CurrencyAdapter<Self, Ring, RingRemainBalance>;
 	type Runner = Runner<Self>;
 }

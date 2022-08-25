@@ -19,6 +19,7 @@
 // --- std ---
 use std::collections::BTreeMap;
 // --- paritytech ---
+use fp_evm::GenesisAccount;
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::ChainType;
 use sc_finality_grandpa::AuthorityId as GrandpaId;
@@ -31,7 +32,6 @@ use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
 use crab_runtime::*;
-use darwinia_evm::GenesisAccount;
 use darwinia_primitives::{AccountId, Balance, COIN};
 
 /// The `ChainSpec parametrised for Crab runtime`.
@@ -122,10 +122,7 @@ pub fn genesis_config() -> ChainSpec {
 		.collect::<Vec<_>>();
 
 		GenesisConfig {
-			system: SystemConfig {
-				code: wasm_binary_unwrap().to_vec(),
-				changes_trie_config: Default::default(),
-			},
+			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },
 			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
 			indices: Default::default(),
 			balances: BalancesConfig {
@@ -228,15 +225,14 @@ pub fn development_config() -> ChainSpec {
 			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
-				..Default::default()
+				code: Default::default(),
+				nonce: Default::default(),
+				storage: Default::default(),
 			},
 		)]);
 
 		GenesisConfig {
-			system: SystemConfig {
-				code: wasm_binary_unwrap().to_vec(),
-				changes_trie_config: Default::default(),
-			},
+			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },
 			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
 			indices: Default::default(),
 			balances: BalancesConfig {

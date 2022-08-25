@@ -237,9 +237,8 @@ where
 		network.clone(),
 		vec![],
 		overrides.clone(),
-		backend,
+		backend.clone(),
 		is_authority,
-		max_past_logs,
 		block_data_cache.clone(),
 		fee_history_limit,
 		fee_history_cache,
@@ -247,6 +246,7 @@ where
 	if let Some(filter_pool) = filter_pool {
 		io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
 			client.clone(),
+			backend,
 			filter_pool,
 			500, // max stored filters
 			max_past_logs,

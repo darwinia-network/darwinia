@@ -23,6 +23,9 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	0
-	// RuntimeBlockWeights::get().max_block
+	migration::move_pallet(b"DarwiniaHeaderMMR", b"DarwiniaHeaderMmr");
+	migration::move_pallet(b"Instance1DarwiniaRelayAuthorities", b"EcdsaRelayAuthority");
+
+	// 0
+	RuntimeBlockWeights::get().max_block
 }

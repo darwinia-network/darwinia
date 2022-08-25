@@ -59,9 +59,9 @@ pub use darwinia_staking::{Forcing, StakerStatus};
 // --- crates.io ---
 use codec::{Decode, Encode};
 // --- paritytech ---
+use fp_evm::FeeCalculator;
 use fp_rpc::TransactionStatus;
 use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use pallet_evm::FeeCalculator;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -71,8 +71,8 @@ use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{
-		AccountIdLookup, Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor,
-		PostDispatchInfoOf, SaturatedConversion, StaticLookup, Verify,
+		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor, PostDispatchInfoOf,
+		SaturatedConversion, StaticLookup, Verify,
 	},
 	ApplyExtrinsicResult,
 };
@@ -174,7 +174,7 @@ frame_support::construct_runtime! {
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 13,
-		DarwiniaHeaderMMR: darwinia_header_mmr::{Pallet, Storage} = 31,
+		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 31,
 
 		// Governance stuff; uncallable initially.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
@@ -479,9 +479,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			use darwinia_evm::AccountBasic;
-
-			<Runtime as darwinia_evm::Config>::RingAccountBasic::account_basic(&address)
+			EVM::account_basic(&address)
 		}
 
 		fn account_code_at(address: H160) -> Vec<u8> {
@@ -517,6 +515,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::call(
 				from,
@@ -528,8 +527,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 		fn create(
@@ -550,6 +550,7 @@ sp_api::impl_runtime_apis! {
 			} else {
 				None
 			};
+			let is_transactional = false;
 
 			<Runtime as darwinia_evm::Config>::Runner::create(
 				from,
@@ -560,8 +561,9 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
+				is_transactional,
 				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			)
+			).map_err(Into::into)
 		}
 
 

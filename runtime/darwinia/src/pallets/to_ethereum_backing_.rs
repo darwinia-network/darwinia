@@ -16,7 +16,7 @@ frame_support::parameter_types! {
 
 impl Config for Runtime {
 	type AdvancedFee = AdvancedFee;
-	type EcdsaAuthorities = EthereumRelayAuthorities;
+	type EcdsaRelayAuthority = EcdsaRelayAuthority;
 	type EthereumRelay = EthereumRelay;
 	type Event = Event;
 	type FeePalletId = EthereumBackingFeePalletId;

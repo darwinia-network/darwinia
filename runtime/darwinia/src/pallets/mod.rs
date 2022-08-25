@@ -100,8 +100,8 @@ pub use to_ethereum_backing_::*;
 pub mod relayer_game;
 pub use relayer_game::*;
 
-pub mod relay_authorities;
-pub use relay_authorities::*;
+pub mod relay_authority;
+pub use relay_authority::*;
 
 pub mod tron_backing;
 pub use tron_backing::*;
