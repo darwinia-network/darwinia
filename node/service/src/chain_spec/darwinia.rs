@@ -282,7 +282,17 @@ pub fn genesis_config() -> ChainSpec {
 			authority_discovery: Default::default(),
 			message_gadget: Default::default(),
 			ecdsa_relay_authority: Default::default(),
-			ecdsa_authority: Default::default(),
+			ecdsa_authority: EcdsaAuthorityConfig {
+				authorities: [
+					"0x953d65e6054b7eb1629f996238c0aa9b4e2dbfe9",
+					"0x7c9b3d4cfc78c681b7460acde2801452aef073a9",
+					"0x717c38fd5fdecb1b105a470f861b33a6b0f9f7b8",
+					"0x3e25247CfF03F99a7D83b28F207112234feE73a6",
+				]
+				.iter()
+				.filter_map(|s| array_bytes::hex_into(s).ok())
+				.collect()
+			},
 			democracy: Default::default(),
 			council: Default::default(),
 			technical_committee: Default::default(),
