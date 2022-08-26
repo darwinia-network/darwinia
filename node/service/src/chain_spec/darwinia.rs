@@ -280,6 +280,9 @@ pub fn genesis_config() -> ChainSpec {
 			grandpa: Default::default(),
 			im_online: Default::default(),
 			authority_discovery: Default::default(),
+			message_gadget: Default::default(),
+			ecdsa_relay_authority: Default::default(),
+			ecdsa_authority: Default::default(),
 			democracy: Default::default(),
 			council: Default::default(),
 			technical_committee: Default::default(),
@@ -456,6 +459,11 @@ pub fn development_config() -> ChainSpec {
 			grandpa: Default::default(),
 			im_online: Default::default(),
 			authority_discovery: Default::default(),
+			message_gadget: Default::default(),
+			ecdsa_relay_authority: Default::default(),
+			ecdsa_authority: EcdsaAuthorityConfig {
+				authorities: vec![array_bytes::hex_into_unchecked("0x68898db1012808808c903f390909c52d9f706749")]
+			},
 			democracy: Default::default(),
 			council: Default::default(),
 			technical_committee: Default::default(),
