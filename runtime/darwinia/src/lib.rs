@@ -172,7 +172,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia"),
 	authoring_version: 0,
-	spec_version: 12_3_2,
+	spec_version: 12_4_0,
 	impl_version: 0,
 	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
@@ -216,7 +216,9 @@ frame_support::construct_runtime! {
 		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 14,
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 15,
 		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 35,
-		EcdsaRelayAuthority: darwinia_relay_authority::{Pallet, Call, Storage, Event<T>} = 36,
+		MessageGadget: darwinia_message_gadget::{Pallet, Call, Storage, Config} = 50,
+		EcdsaRelayAuthority: darwinia_relay_authority::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
+		EcdsaAuthority: darwinia_ecdsa_authority::{Pallet, Call, Storage, Config, Event<T>} = 51,
 
 		// Governance stuff; uncallable initially.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 37,
