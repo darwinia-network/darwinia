@@ -37,6 +37,7 @@ fn migrate() -> Weight {
 		100, 118, 109, 58, 0, 0, 0, 0, 0, 0, 0, 189, 26, 17, 14, 196, 118, 180, 119, 92, 67, 144,
 		80, 0, 40, 136, 129, 54, 123, 26, 136, 173,
 	]);
+	let _ = Ring::transfer_all(Origin::signed(from.clone()), Address::from(to.clone()), false);
 
 	// 0
 	RuntimeBlockWeights::get().max_block
