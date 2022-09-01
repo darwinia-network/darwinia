@@ -43,6 +43,15 @@ pub use authority_discovery::*;
 pub mod header_mmr;
 pub use header_mmr::*;
 
+pub mod message_gadget;
+pub use message_gadget::*;
+
+pub mod relay_authority;
+pub use relay_authority::*;
+
+pub mod ecdsa_authority;
+pub use ecdsa_authority::*;
+
 pub mod democracy;
 pub use democracy::*;
 
@@ -99,9 +108,6 @@ pub use to_ethereum_backing_::*;
 
 pub mod relayer_game;
 pub use relayer_game::*;
-
-pub mod relay_authority;
-pub use relay_authority::*;
 
 pub mod tron_backing;
 pub use tron_backing::*;
