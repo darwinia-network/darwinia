@@ -438,7 +438,7 @@ pub fn development_config() -> ChainSpec {
 				stakers: initial_authorities
 					.iter()
 					.cloned()
-					.map(|x| (x.0, x.1, 1 << 56, StakerStatus::Validator))
+					.map(|x| (x.0, x.1, COIN, StakerStatus::Validator))
 					.collect(),
 				invulnerables: initial_authorities.iter().cloned().map(|x| x.0).collect(),
 				force_era: Forcing::ForceNew,
