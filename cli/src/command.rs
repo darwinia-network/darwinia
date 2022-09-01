@@ -351,7 +351,7 @@ fn get_exec_name() -> Option<String> {
 	env::current_exe().ok()?.file_name().map(|name| name.to_string_lossy().into_owned())
 }
 
-fn set_default_ss58_version(spec: &Box<dyn ChainSpec>) {
+fn set_default_ss58_version(spec: &dyn IdentifyVariant) {
 	let ss58_version = if spec.is_crab() {
 		Ss58AddressFormatRegistry::SubstrateAccount
 	} else {
