@@ -57,7 +57,7 @@ jobs:
       - uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
-          repo: darwinia-network/bridger
+          repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
@@ -141,7 +141,7 @@ jobs:
       - uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
-          repo: darwinia-network/bridger
+          repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
