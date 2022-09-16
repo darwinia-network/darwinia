@@ -160,6 +160,7 @@ std = [
 	# darwinia-network dvm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",
+	"darwinia-evm-precompile-bls12-381/std",
 	"darwinia-evm-precompile-bridge-s2s/std",
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-kton/std",
@@ -172,7 +173,6 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-evm-precompile-blake2/std",
-	"darwinia-evm-precompile-bls12-381/std",
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-modexp/std",
 	"moonbeam-rpc-primitives-debug/std",
