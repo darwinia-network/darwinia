@@ -83,6 +83,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "amcl"
+version = "0.3.0"
+source = "git+https://github.com/darwinia-network/milagro_bls#076d5fb697b304534b26cb8b7fe488b9a7e70a99"
+
+[[package]]
 name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1588,6 +1593,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-evm-precompile-bls12-381"
+version = "2.9.3"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.4#d86bad8813250dd0f04fe7baedd0d8d9784a459f"
+dependencies = [
+ "darwinia-evm",
+ "darwinia-evm-precompile-utils",
+ "dp-contract",
+ "fp-evm",
+ "milagro_bls",
+ "num_enum",
+ "sp-std",
+]
+
+[[package]]
 name = "darwinia-evm-precompile-bridge-s2s"
 version = "2.9.3"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.4#d86bad8813250dd0f04fe7baedd0d8d9784a459f"
@@ -1891,6 +1910,7 @@ dependencies = [
  "darwinia-ecdsa-authority",
  "darwinia-ethereum",
  "darwinia-evm",
+ "darwinia-evm-precompile-bls12-381",
  "darwinia-evm-precompile-bridge-s2s",
  "darwinia-evm-precompile-dispatch",
  "darwinia-evm-precompile-kton",
@@ -4875,6 +4895,18 @@ dependencies = [
  "byteorder",
  "keccak",
  "rand_core 0.5.1",
+ "zeroize",
+]
+
+[[package]]
+name = "milagro_bls"
+version = "1.5.0"
+source = "git+https://github.com/darwinia-network/milagro_bls#076d5fb697b304534b26cb8b7fe488b9a7e70a99"
+dependencies = [
+ "amcl",
+ "hex",
+ "lazy_static",
+ "rand 0.8.5",
  "zeroize",
 ]
 

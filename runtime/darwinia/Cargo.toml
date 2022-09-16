@@ -45,6 +45,7 @@ to-tron-backing          = { default-features = false, git = "https://github.com
 # darwinia-network dvm
 darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
+darwinia-evm-precompile-bls12-381     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm-precompile-bridge-s2s    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm-precompile-dispatch      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm-precompile-kton          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
@@ -159,6 +160,7 @@ std = [
 	# darwinia-network dvm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",
+	"darwinia-evm-precompile-bls12-381/std",
 	"darwinia-evm-precompile-bridge-s2s/std",
 	"darwinia-evm-precompile-dispatch/std",
 	"darwinia-evm-precompile-kton/std",
