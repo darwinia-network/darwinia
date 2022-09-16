@@ -21,6 +21,7 @@ use darwinia_evm::{
 	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
 };
 use darwinia_evm_precompile_dispatch::Dispatch;
+use darwinia_evm_precompile_bls12_381::BLS12381;
 use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
 use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
 use darwinia_support::evm::ConcatConverter;
@@ -70,7 +71,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 12] {
+	pub fn used_addresses() -> [H160; 13] {
 		[
 			addr(1),
 			addr(2),
@@ -84,6 +85,7 @@ where
 			addr(1024),
 			addr(1025),
 			addr(1026),
+			addr(2048),
 		]
 	}
 }
@@ -131,6 +133,9 @@ where
 			a if a == addr(1026) => Some(<KtonERC20<R, KtonERC20MetaData>>::execute(
 				input, target_gas, context, is_static,
 			)),
+			// Darwinia precompiles: 2048+ for experimental precompiles.
+			a if a == addr(2048) =>
+				Some(<BLS12381<R>>::execute(input, target_gas, context, is_static)),
 			_ => None,
 		}
 	}
