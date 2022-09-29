@@ -74,11 +74,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Scheduler{ .. } |
 				Call::Proxy{ .. } |
 				Call::Multisig{ .. } |
-				// Specifically omitting the entire CrabBacking pallet
-				// Specifically omitting the entire EthereumBacking pallet
-				Call::EthereumRelay{ .. } /* Specifically omitting the entire TronBacking pallet
-				                           * Specifically omitting the entire
-				                           * EcdsaRelayAuthority pallet */
+				Call::EcdsaAuthority{ .. }
 			),
 			ProxyType::Governance => {
 				matches!(
@@ -99,9 +95,7 @@ impl InstanceFilter<Call> for ProxyType {
 			),
 			ProxyType::EthereumBridge => matches!(
 				c,
-				Call::EthereumBacking { .. }
-					| Call::EthereumRelay { .. }
-					| Call::EcdsaRelayAuthority { .. }
+				Call::EcdsaAuthority { .. }
 			),
 		}
 	}

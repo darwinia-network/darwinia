@@ -31,18 +31,14 @@ pallet-bridge-messages = { default-features = false, git = "https://github.com/d
 pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.4" }
 # darwinia-network frame
 darwinia-balances        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-darwinia-bridge-ethereum = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-ecdsa-authority = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-header-mmr      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-message-gadget  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-darwinia-relay-authority = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-darwinia-relayer-game    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-staking         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-support         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-to-ethereum-backing      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 to-substrate-backing     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 to-tron-backing          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-# darwinia-network dvm
+# darwinia-network evm
 darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm-precompile-bls12-381     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
@@ -64,7 +60,6 @@ pallet-evm-precompile-simple          = { default-features = false, git = "https
 # darwinia-network primitives
 darwinia-primitives = { default-features = false, path = "../../primitives" }
 dp-asset            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-dp-relayer-game     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 dp-s2s              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 ethereum-primitives = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 # darwinia-network runtime
@@ -146,18 +141,14 @@ std = [
 	"pallet-fee-market/std",
 	# darwinia-network frame
 	"darwinia-balances/std",
-	"darwinia-bridge-ethereum/std",
 	"darwinia-ecdsa-authority/std",
 	"darwinia-header-mmr/std",
 	"darwinia-message-gadget/std",
-	"darwinia-relay-authority/std",
-	"darwinia-relayer-game/std",
 	"darwinia-staking/std",
 	"darwinia-support/std",
-	"to-ethereum-backing/std",
 	"to-substrate-backing/std",
 	"to-tron-backing/std",
-	# darwinia-network dvm
+	# darwinia-network evm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",
 	"darwinia-evm-precompile-bls12-381/std",
@@ -179,7 +170,6 @@ std = [
 	# darwinia-network primitives
 	"darwinia-primitives/std",
 	"dp-asset/std",
-	"dp-relayer-game/std",
 	"dp-s2s/std",
 	"ethereum-primitives/std",
 	# darwinia-network runtime

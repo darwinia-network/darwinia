@@ -125,7 +125,8 @@ pub const BABE_GENESIS_EPOCH_CONFIG: BabeEpochConfiguration = BabeEpochConfigura
 	allowed_slots: AllowedSlots::PrimaryAndSecondaryVRFSlots,
 };
 
-/// Runtime version (Crab).
+/// Runtime version.
+#[allow(clippy::inconsistent_digit_grouping)]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab"),
 	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
@@ -152,7 +153,6 @@ frame_support::construct_runtime! {
 		NodeBlock = OpaqueBlock,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		// Basic stuff; balances is uncallable initially.
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
 
 		// Must be before session.
@@ -164,7 +164,7 @@ frame_support::construct_runtime! {
 		Kton: darwinia_balances::<Instance2>::{Pallet, Call, Storage, Config<T>, Event<T>} = 24,
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 5,
 
-		// Consensus support.
+		// Consensus things.
 		Authorship: pallet_authorship::{Pallet, Call, Storage} = 6,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 38,
 		Staking: darwinia_staking::{Pallet, Call, Storage, Config<T>, Event<T>} = 25,
@@ -176,7 +176,7 @@ frame_support::construct_runtime! {
 		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 13,
 		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 31,
 
-		// Governance stuff; uncallable initially.
+		// Governance things.
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
 		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
@@ -187,34 +187,25 @@ frame_support::construct_runtime! {
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
 
-		// Utility module.
 		Utility: pallet_utility::{Pallet, Call, Event} = 17,
 
-		// Less simple identity module.
 		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 18,
 
-		// Society module.
 		Society: pallet_society::{Pallet, Call, Storage, Event<T>} = 19,
 
-		// Social recovery module.
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 20,
 
-		// System scheduler.
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 21,
 
-		// Vesting. Usable initially, but removed once all vesting is finished.
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
 
-		// Proxy module. Late addition.
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 33,
 
-		// Multisig module. Late addition.
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
 
-		// DVM
+		// Evm things.
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 40,
-		// DynamicFee: dvm_dynamic_fee::{Pallet, Call, Storage, Inherent} = 42,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
 
 		// Crab <> Darwinia.
@@ -229,7 +220,6 @@ frame_support::construct_runtime! {
 
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
-		// TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>},
 
 		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
 		ToCrabParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 57,

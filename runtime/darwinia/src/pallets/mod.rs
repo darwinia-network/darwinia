@@ -46,9 +46,6 @@ pub use header_mmr::*;
 pub mod message_gadget;
 pub use message_gadget::*;
 
-pub mod relay_authority;
-pub use relay_authority::*;
-
 pub mod ecdsa_authority;
 pub use ecdsa_authority::*;
 
@@ -99,15 +96,6 @@ pub use proxy::*;
 
 pub mod multisig;
 pub use multisig::*;
-
-pub mod bridge_ethereum;
-pub use bridge_ethereum::*;
-
-pub mod to_ethereum_backing_;
-pub use to_ethereum_backing_::*;
-
-pub mod relayer_game;
-pub use relayer_game::*;
 
 pub mod tron_backing;
 pub use tron_backing::*;

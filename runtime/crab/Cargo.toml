@@ -37,7 +37,7 @@ darwinia-staking       = { default-features = false, git = "https://github.com/d
 darwinia-support       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 from-substrate-issuing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 to-parachain-backing   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
-# darwinia-network dvm
+# darwinia-network evm
 darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 darwinia-evm-precompile-bridge-s2s    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
@@ -147,7 +147,7 @@ std = [
 	"darwinia-support/std",
 	"from-substrate-issuing/std",
 	"to-parachain-backing/std",
-	# darwinia-network dvm
+	# darwinia-network evm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",
 	"darwinia-evm-precompile-bridge-s2s/std",
