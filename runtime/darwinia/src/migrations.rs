@@ -54,7 +54,7 @@ fn migrate() -> Weight {
 		// TODO: check if we have left some balances locks
 		(
 			// FrameV1 name.
-			b"DarwiniaRelayerGameInstance1",
+			b"Instance1DarwiniaRelayerGame",
 			&[
 				b"RelayHeaderParcelToResolve",
 				b"Affirmations",
