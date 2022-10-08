@@ -1,8 +1,6 @@
 Darwinia
 ===
 
-## [{{ tag }}]
-
 | Network  |         Native Runtime         | Upgrade Priority |
 | :------: | :----------------------------: | :--------------: |
 | Darwinia | {{ darwinia_runtime_version }} |       LOW        |
@@ -30,10 +28,10 @@ docker pull quay.io/darwinia-network/darwinia:sha-{{ sha }}
 
 ## Proposal Hashes
 
-| Network  |           Proposal Hash            |
-| :------: | :--------------------------------: |
-| Darwinia | {{ darwinia_proposal_compressed }} |
-|   Crab   |   {{ crab_proposal_compressed }}   |
+| Network  |            Proposal Hash             |
+| :------: | :----------------------------------: |
+| Darwinia | `{{ darwinia_proposal_compressed }}` |
+|   Crab   |   `{{ crab_proposal_compressed }}`   |
 
 ## Changelog
 [Project Release](https://github.com/orgs/darwinia-network/projects/8/views/1)
