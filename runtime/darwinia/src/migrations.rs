@@ -23,23 +23,90 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	let authorities = [
-		"0x953d65e6054b7eb1629f996238c0aa9b4e2dbfe9",
-		"0x7c9b3d4cfc78c681b7460acde2801452aef073a9",
-		"0x717c38fd5fdecb1b105a470f861b33a6b0f9f7b8",
-		"0x3e25247CfF03F99a7D83b28F207112234feE73a6",
-		"0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9",
-	]
-	.iter()
-	.filter_map(|s| array_bytes::hex_into(s).ok())
-	.collect::<Vec<_>>();
+	let storages: &[(&[u8], &[&[u8]])] = &[
+		// TODO: check if we have left some balances locks
+		(
+			b"EcdsaRelayAuthority",
+			&[
+				b"Candidates",
+				b"Authorities",
+				b"NextAuthorities",
+				b"NextTerm",
+				b"AuthoritiesToSign",
+				b"MmrRootsToSignKeys",
+				b"MmrRootsToSign",
+				b"SubmitDuration",
+			],
+		),
+		(
+			// FrameV1 name.
+			b"DarwiniaEthereumRelay",
+			&[
+				b"ConfirmedHeaderParcels",
+				b"ConfirmedBlockNumbers",
+				b"BestConfirmedBlockNumber",
+				b"ConfirmedDepth",
+				b"DagsMerkleRoots",
+				b"ReceiptVerifyFee",
+				b"PendingRelayHeaderParcels",
+			],
+		),
+		// TODO: check if we have left some balances locks
+		(
+			// FrameV1 name.
+			b"Instance1DarwiniaRelayerGame",
+			&[
+				b"RelayHeaderParcelToResolve",
+				b"Affirmations",
+				b"BestConfirmedHeaderId",
+				b"RoundCounts",
+				b"AffirmTime",
+				b"GamesToUpdate",
+				b"Stakes",
+				b"GameSamplePoints",
+			],
+		),
+		(
+			b"EthereumBacking",
+			&[
+				b"TokenRedeemAddress",
+				b"DepositRedeemAddress",
+				b"SetAuthoritiesAddress",
+				b"RingTokenAddress",
+				b"KtonTokenAddress",
+				b"RedeemStatus",
+				b"LockAssetEvents",
+			],
+		),
+	];
+	storages.iter().for_each(|(module, items)| {
+		items.iter().for_each(|item| migration::remove_storage_prefix(module, item, &[]))
+	});
 
-	if !authorities.is_empty() {
-		if let Ok(authorities) = frame_support::BoundedVec::try_from(authorities) {
-			<darwinia_ecdsa_authority::Authorities<Runtime>>::put(authorities.clone());
-			<darwinia_ecdsa_authority::NextAuthorities<Runtime>>::put(authorities);
-		}
-	}
+	// Helix DAO multisig address:
+	// - 0xBd1a110ec476b4775c43905000288881367B1a88
+	// - 2qSbd2umtD4KmV2X89YfqmCQgDraEabAaLNFiR96xUJ1m31G
+	// - 0x64766d3a00000000000000bd1a110ec476b4775c43905000288881367b1a88ad
+	let dest = array_bytes::hex_into_unchecked::<AccountId, 32>(
+		"0x64766d3a00000000000000bd1a110ec476b4775c43905000288881367b1a88ad",
+	);
+	// Ethereum backing account:
+	// - modlda/ethbk
+	// - 2qeMxq616BhqvTW8a1bp2g7VKPAmpda1vXuAAz5TxV5ehivG
+	// - 0x6d6f646c64612f657468626b0000000000000000000000000000000000000000
+	let origin = array_bytes::hex_into_unchecked::<AccountId, 32>(
+		"0x6d6f646c64612f657468626b0000000000000000000000000000000000000000",
+	);
+	<darwinia_balances::Pallet<Runtime, RingInstance>>::transfer_all(
+		Origin::signed(origin.clone()),
+		dest.clone().into(),
+		false,
+	);
+	<darwinia_balances::Pallet<Runtime, KtonInstance>>::transfer_all(
+		Origin::signed(origin),
+		dest.into(),
+		false,
+	);
 
 	// 0
 	RuntimeBlockWeights::get().max_block

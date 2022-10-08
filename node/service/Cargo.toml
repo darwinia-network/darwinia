@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-node-service"
 repository  = "https://github.com/darwinia-network/darwinia"
-version     = "0.12.4-2"
+version     = "0.12.4-3"
 
 [dependencies]
 # crates.io
@@ -17,7 +17,14 @@ log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
 serde_json  = { version = "1.0" }
 tokio       = { version = "1.17" }
-# darwinia-network dvm
+# darwinia-network primitives
+darwinia-primitives = { path = "../../primitives" }
+# darwinia-network rpc
+darwinia-rpc = { path = "../../rpc" }
+# darwinia-network runtime
+crab-runtime     = { path = "../../runtime/crab" }
+darwinia-runtime = { path = "../../runtime/darwinia" }
+# darwinia-network evm
 dp-evm-trace-ext              = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 fc-mapping-sync               = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
@@ -27,13 +34,6 @@ fp-rpc                        = { git = "https://github.com/darwinia-network/fro
 moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
 moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
 moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
-# darwinia-network primitives
-darwinia-primitives = { path = "../../primitives" }
-# darwinia-network rpc
-darwinia-rpc = { path = "../../rpc" }
-# darwinia-network runtime
-crab-runtime     = { path = "../../runtime/crab" }
-darwinia-runtime = { path = "../../runtime/darwinia" }
 # frontier primitives
 fp-evm = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 # paritytech client
