@@ -22,8 +22,6 @@ darwinia-primitives   = { optional = true, path = "../primitives" }
 darwinia-rpc          = { path = "../rpc" }
 # paritytech client
 sc-cli          = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
-sc-client-api   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
-sc-executor     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sc-service      = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 try-runtime-cli = { optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 # paritytech frame

@@ -10,7 +10,6 @@ version     = "0.12.4-3"
 
 [dependencies]
 # crates.io
-codec = { package = "parity-scale-codec", version = "2.3", default-features = false }
 # paritytech primitives
 sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
@@ -22,7 +21,6 @@ default = ["std"]
 
 std = [
 	# crates.io
-	"codec/std",
 	# paritytech primitives
 	"sp-core/std",
 	"sp-runtime/std",
