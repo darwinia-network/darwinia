@@ -61,7 +61,7 @@ use codec::{Decode, Encode};
 // --- paritytech ---
 use fp_evm::FeeCalculator;
 use fp_rpc::TransactionStatus;
-use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
+use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::FeeDetails;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
@@ -252,9 +252,7 @@ where
 			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
-			.map_err(|e| {
-				frame_support::log::warn!("Unable to create signed payload: {:?}", e);
-			})
+			.map_err(|e| log::warn!("Unable to create signed payload: {:?}", e))
 			.ok()?;
 		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
 		let (call, extra, _) = raw_payload.deconstruct();

@@ -16,9 +16,8 @@ path = "src/main.rs"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-# crates.io
 # darwinia-network
-darwinia-cli          = { path = "cli" }
+darwinia-cli = { path = "cli" }
 
 [features]
 default = ["darwinia-cli/wasmtime"]
