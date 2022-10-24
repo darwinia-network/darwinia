@@ -10,11 +10,9 @@ version     = "0.12.4-3"
 
 [dependencies]
 # crates.io
-code           = { package = "parity-scale-codec", version = "2.3", default-features = false }
 jsonrpc-core   = { version = "18.0" }
 jsonrpc-pubsub = { version = "18.0" }
 # darwinia-network dvm
-darwinia-ethereum             = { git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.4" }
 fc-db                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 fc-rpc                        = { features = ["rpc_binary_search_estimate"], git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
 fc-rpc-core                   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.4" }
@@ -24,7 +22,6 @@ moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moo
 moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
 moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.4" }
 # darwinia-network primitives
-crab-runtime        = { path = "../runtime/crab" }
 darwinia-primitives = { path = "../primitives" }
 # paritytech client
 sc-chain-spec           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
@@ -47,6 +44,4 @@ sp-api            = { git = "https://github.com/darwinia-network/substrate", bra
 sp-block-builder  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sp-blockchain     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sp-consensus      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
-sp-consensus-babe = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sp-keystore       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
-sp-runtime        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }

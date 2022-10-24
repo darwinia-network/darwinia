@@ -96,7 +96,7 @@ use codec::Encode;
 use fp_evm::FeeCalculator;
 #[allow(unused)]
 use frame_support::migration;
-use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
+use frame_support::{traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -291,7 +291,7 @@ where
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
-				log::warn!("Unable to create signed payload: {:?}", e);
+				frame_support::log::warn!("Unable to create signed payload: {:?}", e);
 			})
 			.ok()?;
 		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;

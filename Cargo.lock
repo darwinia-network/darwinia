@@ -1105,7 +1105,6 @@ dependencies = [
  "darwinia-support",
  "dp-evm-tracer",
  "dp-s2s",
- "ethereum-primitives",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
@@ -1158,7 +1157,6 @@ dependencies = [
  "pallet-vesting",
  "parity-scale-codec",
  "scale-info",
- "serde",
  "smallvec",
  "sp-api",
  "sp-authority-discovery",
@@ -1428,8 +1426,6 @@ name = "darwinia"
 version = "0.12.4-3"
 dependencies = [
  "darwinia-cli",
- "darwinia-node-service",
- "futures 0.3.21",
 ]
 
 [[package]]
@@ -1455,8 +1451,6 @@ dependencies = [
  "frame-benchmarking-cli",
  "log",
  "sc-cli",
- "sc-client-api",
- "sc-executor",
  "sc-service",
  "sp-core",
  "structopt",
@@ -1746,12 +1740,10 @@ dependencies = [
  "moonbeam-rpc-trace",
  "pallet-im-online",
  "pallet-transaction-payment-rpc-runtime-api",
- "parity-scale-codec",
  "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-client-api",
- "sc-client-db",
  "sc-consensus",
  "sc-consensus-babe",
  "sc-consensus-slots",
@@ -1763,17 +1755,14 @@ dependencies = [
  "sc-telemetry",
  "sc-transaction-pool",
  "serde",
- "serde_json",
  "sp-api",
  "sp-authority-discovery",
- "sp-authorship",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-babe",
  "sp-core",
  "sp-finality-grandpa",
- "sp-inherents",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -1789,7 +1778,6 @@ name = "darwinia-primitives"
 version = "0.12.4-3"
 dependencies = [
  "darwinia-support",
- "parity-scale-codec",
  "sp-core",
  "sp-runtime",
 ]
@@ -1798,8 +1786,6 @@ dependencies = [
 name = "darwinia-rpc"
 version = "0.12.4-3"
 dependencies = [
- "crab-runtime",
- "darwinia-ethereum",
  "darwinia-primitives",
  "fc-db",
  "fc-rpc",
@@ -1812,7 +1798,6 @@ dependencies = [
  "moonbeam-rpc-primitives-debug",
  "moonbeam-rpc-trace",
  "pallet-transaction-payment-rpc",
- "parity-scale-codec",
  "sc-chain-spec",
  "sc-client-api",
  "sc-consensus-babe",
@@ -1829,9 +1814,7 @@ dependencies = [
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
- "sp-consensus-babe",
  "sp-keystore",
- "sp-runtime",
  "substrate-frame-rpc-system",
 ]
 
@@ -1852,7 +1835,6 @@ dependencies = [
  "darwinia-ethereum",
  "darwinia-evm",
  "darwinia-evm-precompile-bls12-381",
- "darwinia-evm-precompile-bridge-s2s",
  "darwinia-evm-precompile-dispatch",
  "darwinia-evm-precompile-kton",
  "darwinia-evm-precompile-state-storage",
@@ -1864,11 +1846,9 @@ dependencies = [
  "dp-asset",
  "dp-evm-tracer",
  "dp-s2s",
- "ethereum-primitives",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
- "fp-storage",
  "frame-benchmarking",
  "frame-election-provider-support",
  "frame-executive",
