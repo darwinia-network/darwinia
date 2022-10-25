@@ -107,3 +107,8 @@ panic = "unwind"
 [profile.release-lto]
 inherits = "release"
 lto      = true
+
+[patch.crates-io]
+evm           = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.4" }
+evm-gasometer = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.4" }
+evm-runtime   = { git = "https://github.com/darwinia-network/evm", branch = "darwinia-v0.12.4" }

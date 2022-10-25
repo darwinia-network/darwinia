@@ -93,10 +93,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement { .. })
 					| Call::Utility(pallet_utility::Call::batch { .. })
 			),
-			ProxyType::EthereumBridge => matches!(
-				c,
-				Call::EcdsaAuthority { .. }
-			),
+			ProxyType::EthereumBridge => matches!(c, Call::EcdsaAuthority { .. }),
 		}
 	}
 
