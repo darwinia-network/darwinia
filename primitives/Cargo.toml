@@ -9,7 +9,6 @@ repository  = "https://github.com/darwinia-network/darwinia"
 version     = "0.12.4-3"
 
 [dependencies]
-# crates.io
 # paritytech primitives
 sp-core    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
 sp-runtime = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
@@ -20,7 +19,6 @@ darwinia-support = { default-features = false, git = "https://github.com/darwini
 default = ["std"]
 
 std = [
-	# crates.io
 	# paritytech primitives
 	"sp-core/std",
 	"sp-runtime/std",
