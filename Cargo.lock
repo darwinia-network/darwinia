@@ -1530,8 +1530,6 @@ dependencies = [
 name = "darwinia-common-runtime"
 version = "0.12.4-3"
 dependencies = [
- "bp-messages",
- "bridge-runtime-common",
  "darwinia-balances",
  "darwinia-primitives",
  "darwinia-support",
@@ -1539,9 +1537,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-authorship",
- "pallet-bridge-dispatch",
  "pallet-collective",
- "pallet-fee-market",
  "pallet-transaction-payment",
  "pallet-treasury",
  "parity-scale-codec",
