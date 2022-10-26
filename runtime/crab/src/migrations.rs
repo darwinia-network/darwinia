@@ -29,9 +29,8 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 fn migrate() -> Weight {
 	Scheduler::migrate_v2_to_v3();
 
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 	for precompile in CrabPrecompiles::<Runtime>::used_addresses() {
-		EVM::create_account(&precompile, REVERT_BYTECODE.to_vec());
+		EVM::create_account(&precompile, vec![0x60, 0x00, 0x60, 0x00, 0xFD]);
 	}
 
 	// 0

@@ -194,11 +194,10 @@ development_or_production! {
 /// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
-// This is the simplest bytecode to revert without returning any data.
-// We will pre-deploy it under all of our precompiles to ensure they can be called from
-// within contracts.
-// (PUSH1 0x00 PUSH1 0x00 REVERT)
-const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+/// This is the simplest bytecode to revert without returning any data.
+/// We will pre-deploy it under all of our precompiles to ensure they can be called from
+/// within contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 /// Darwinia custom account lookup.
 ///

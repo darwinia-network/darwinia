@@ -191,12 +191,10 @@ pub fn genesis_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			vesting: Default::default(),
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			from_darwinia_issuing: Default::default(),
 			to_crab_parachain_backing: Default::default(),
 		}
 	}
@@ -296,12 +294,10 @@ pub fn development_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			vesting: Default::default(),
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			from_darwinia_issuing: Default::default(),
 			to_crab_parachain_backing: Default::default(),
 		}
 	}

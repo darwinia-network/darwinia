@@ -35,6 +35,7 @@ use bridge_runtime_common::{
 		*,
 	},
 };
+use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 
 /// Messages delivery proof for Crab -> Darwinia messages.
 type ToDarwiniaMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<bp_darwinia::Hash>;
@@ -193,5 +194,21 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
 			proof,
 			messages_count,
 		)
+	}
+}
+
+impl SenderOrigin<crate::AccountId> for crate::Origin {
+	fn linked_account(&self) -> Option<crate::AccountId> {
+		match self.caller {
+			crate::OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
+				Some(submitter.clone()),
+			crate::OriginCaller::system(frame_system::RawOrigin::Root) => {
+				// 0x726f6f7400000000000000000000000000000000, b"root"
+				Some(ConcatConverter::<_>::derive_substrate_address(&H160([
+					0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				])))
+			},
+			_ => None,
+		}
 	}
 }

@@ -289,7 +289,6 @@ pub fn genesis_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			sudo: SudoConfig { key: Some(root) },
 			vesting: VestingConfig {
 				vesting: vec![
@@ -307,7 +306,6 @@ pub fn genesis_config() -> ChainSpec {
 				backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
-			to_crab_backing: Default::default(),
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
@@ -349,7 +347,7 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
-		let evm_accounts = BTreeMap::from_iter([(
+		let mut evm_accounts = BTreeMap::from_iter([(
 			array_bytes::hex_n_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
@@ -358,7 +356,7 @@ pub fn development_config() -> ChainSpec {
 				storage: Default::default(),
 			},
 		)]);
-		for precompile in CrabPrecompiles::<Runtime>::used_addresses() {
+		for precompile in DarwiniaPrecompiles::<Runtime>::used_addresses() {
 			evm_accounts.insert(
 				precompile,
 				GenesisAccount {
@@ -415,11 +413,9 @@ pub fn development_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			sudo: SudoConfig { key: Some(root) },
 			vesting: Default::default(),
 			tron_backing: TronBackingConfig { backed_ring: 1 << 56, backed_kton: 1 << 56 },
-			to_crab_backing: Default::default(),
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
