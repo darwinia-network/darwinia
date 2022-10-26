@@ -31,7 +31,7 @@ use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
-use darwinia_primitives::{AccountId, BlockNumber, COIN, DAYS};
+use darwinia_primitives::{AccountId, BlockNumber, COIN, DAYS, REVERT_BYTECODE};
 use darwinia_runtime::*;
 
 /// The `ChainSpec parametrised for Darwinia runtime`.
@@ -222,6 +222,19 @@ pub fn genesis_config() -> ChainSpec {
 			.and_modify(|ring| *ring += 400_000_000 * COIN)
 			.or_insert(400_000_000 * COIN);
 
+		let mut evm_accounts = BTreeMap::new();
+		for precompile in DarwiniaPrecompiles::<Runtime>::used_addresses() {
+			evm_accounts.insert(
+				precompile,
+				GenesisAccount {
+					nonce: Default::default(),
+					balance: Default::default(),
+					storage: Default::default(),
+					code: REVERT_BYTECODE.to_vec(),
+				},
+			);
+		}
+
 		GenesisConfig {
 			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },
 			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
@@ -295,7 +308,7 @@ pub fn genesis_config() -> ChainSpec {
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
 			to_crab_backing: Default::default(),
-			evm: EVMConfig { accounts: BTreeMap::new() },
+			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
 		}
@@ -345,6 +358,17 @@ pub fn development_config() -> ChainSpec {
 				storage: Default::default(),
 			},
 		)]);
+		for precompile in CrabPrecompiles::<Runtime>::used_addresses() {
+			evm_accounts.insert(
+				precompile,
+				GenesisAccount {
+					nonce: Default::default(),
+					balance: Default::default(),
+					storage: Default::default(),
+					code: REVERT_BYTECODE.to_vec(),
+				},
+			);
+		}
 
 		GenesisConfig {
 			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },

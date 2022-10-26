@@ -50,8 +50,8 @@ impl Config<WithDarwiniaFeeMarket> for Runtime {
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Ring;
-	type Event = Event;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
+	type Event = Event;
 	type LockId = DarwiniaFeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
@@ -66,8 +66,8 @@ impl Config<WithCrabParachainFeeMarket> for Runtime {
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Ring;
-	type Event = Event;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
+	type Event = Event;
 	type LockId = CrabParachainFeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
