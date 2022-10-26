@@ -79,8 +79,8 @@ pub fn genesis_config() -> ChainSpec {
 		const GENESIS_VALIDATOR_ED: &str =
 			"0x6a282c7674945c039a9289b702376ae168e8b67c9ed320054e2a019015f236fd";
 
-		let root: AccountId = array_bytes::hex_into_unchecked(ROOT);
-		let multi_sig: AccountId = array_bytes::hex_into_unchecked(MULTI_SIG);
+		let root: AccountId = array_bytes::hex_n_into_unchecked(ROOT);
+		let multi_sig: AccountId = array_bytes::hex_n_into_unchecked(MULTI_SIG);
 		let genesis_validator: (
 			AccountId,
 			AccountId,
@@ -89,8 +89,8 @@ pub fn genesis_config() -> ChainSpec {
 			ImOnlineId,
 			AuthorityDiscoveryId,
 		) = {
-			let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_SR);
-			let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_SR);
+			let stash = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_SR);
+			let controller = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_SR);
 			let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_SR);
 			let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_ED);
 
@@ -118,7 +118,7 @@ pub fn genesis_config() -> ChainSpec {
 			"0xc45f075b5b1aa0145c469f57bd741c02272c1c0c41e9518d5a32426030d98232",
 		]
 		.iter()
-		.map(|s| array_bytes::hex_into_unchecked(s))
+		.map(|s| array_bytes::hex_n_into_unchecked(s))
 		.collect::<Vec<_>>();
 
 		GenesisConfig {
@@ -222,7 +222,7 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
 		let evm_accounts = BTreeMap::from_iter([(
-			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+			array_bytes::hex_n_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
 				code: Default::default(),

@@ -112,7 +112,7 @@ pub fn genesis_config() -> ChainSpec {
 			}
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(&address))
+				.entry(array_bytes::hex_n_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 
@@ -139,7 +139,7 @@ pub fn genesis_config() -> ChainSpec {
 			let ring = ring / COIN;
 
 			rings
-				.entry(array_bytes::hex_into_unchecked(&address))
+				.entry(array_bytes::hex_n_into_unchecked(&address))
 				.and_modify(|ring_| *ring_ += ring)
 				.or_insert(ring);
 		}
@@ -159,7 +159,7 @@ pub fn genesis_config() -> ChainSpec {
 			let kton = kton / COIN;
 
 			ktons
-				.entry(array_bytes::hex_into_unchecked(&address))
+				.entry(array_bytes::hex_n_into_unchecked(&address))
 				.and_modify(|kton_| *kton_ += kton)
 				.or_insert(kton);
 		}
@@ -170,13 +170,13 @@ pub fn genesis_config() -> ChainSpec {
 		assert!(genesis_validator_1_stash_endowed);
 		assert!(genesis_validator_2_stash_endowed);
 
-		let root: AccountId = array_bytes::hex_into_unchecked(ROOT);
-		let da_crabk: AccountId = array_bytes::hex_into_unchecked(DA_CRABK);
-		let team_vesting: AccountId = array_bytes::hex_into_unchecked(TEAM_VESTING);
-		let foundation_vesting: AccountId = array_bytes::hex_into_unchecked(FOUNDATION_VESTING);
+		let root: AccountId = array_bytes::hex_n_into_unchecked(ROOT);
+		let da_crabk: AccountId = array_bytes::hex_n_into_unchecked(DA_CRABK);
+		let team_vesting: AccountId = array_bytes::hex_n_into_unchecked(TEAM_VESTING);
+		let foundation_vesting: AccountId = array_bytes::hex_n_into_unchecked(FOUNDATION_VESTING);
 		let genesis_validator_1: (AccountId, AccountId, SessionKeys) = {
-			let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_1_STASH);
-			let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_1_CONTROLLER);
+			let stash = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_1_STASH);
+			let controller = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_1_CONTROLLER);
 			let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_1_SESSION);
 			let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_1_GRANDPA);
 
@@ -192,8 +192,8 @@ pub fn genesis_config() -> ChainSpec {
 			)
 		};
 		let genesis_validator_2: (AccountId, AccountId, SessionKeys) = {
-			let stash = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_2_STASH);
-			let controller = array_bytes::hex_into_unchecked(GENESIS_VALIDATOR_2_CONTROLLER);
+			let stash = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_2_STASH);
+			let controller = array_bytes::hex_n_into_unchecked(GENESIS_VALIDATOR_2_CONTROLLER);
 			let session = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_2_SESSION);
 			let grandpa = array_bytes::hex2array_unchecked(GENESIS_VALIDATOR_2_GRANDPA);
 
@@ -267,7 +267,7 @@ pub fn genesis_config() -> ChainSpec {
 					"0x3e25247CfF03F99a7D83b28F207112234feE73a6",
 				]
 				.iter()
-				.filter_map(|s| array_bytes::hex_into(s).ok())
+				.filter_map(|s| array_bytes::hex_n_into(s).ok())
 				.collect(),
 			},
 			democracy: Default::default(),
@@ -336,7 +336,7 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
 		let evm_accounts = BTreeMap::from_iter([(
-			array_bytes::hex_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+			array_bytes::hex_n_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
 			GenesisAccount {
 				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
 				code: Default::default(),
@@ -380,7 +380,7 @@ pub fn development_config() -> ChainSpec {
 			authority_discovery: Default::default(),
 			message_gadget: Default::default(),
 			ecdsa_authority: EcdsaAuthorityConfig {
-				authorities: vec![array_bytes::hex_into_unchecked(
+				authorities: vec![array_bytes::hex_n_into_unchecked(
 					"0x68898db1012808808c903f390909c52d9f706749",
 				)],
 			},
