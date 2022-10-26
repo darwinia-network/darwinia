@@ -33,6 +33,15 @@ fn migrate() -> Weight {
 		EVM::create_account(&precompile, vec![0x60, 0x00, 0x60, 0x00, 0xFD]);
 	}
 
+	let module = b"ToCrabBacking";
+	migration::remove_storage_prefix(module, b"SecureLimitedPeriod", &[]);
+	migration::remove_storage_prefix(module, b"SecureLimitedRingAmount", &[]);
+	migration::remove_storage_prefix(module, b"TransactionInfos", &[]);
+	migration::remove_storage_prefix(module, b"RemoteMappingTokenFactoryAccount", &[]);
+
+	// TODO
+	// Do we need a migration for KtonTreasury?
+
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
