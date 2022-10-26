@@ -5,19 +5,24 @@ use crate::*;
 use bp_messages::{LaneId, MessageNonce};
 use bp_runtime::{ChainId, CRAB_PARACHAIN_CHAIN_ID};
 use bridge_runtime_common::lanes::CRAB_CRAB_PARACHAIN_LANE;
-use darwinia_support::s2s::LatestMessageNoncer;
-use to_parachain_backing::Config;
+use to_parachain_backing::{Config, LatestMessageNoncer};
 
 pub const CRAB_PARACHAIN_ISSUING_PALLET_INDEX: u8 = 24;
 
 pub struct CrabParachainMessageNoncer;
 impl LatestMessageNoncer for CrabParachainMessageNoncer {
 	fn outbound_latest_generated_nonce(lane_id: LaneId) -> MessageNonce {
-		BridgeCrabParachainMessages::outbound_latest_generated_nonce(lane_id)
+		pallet_bridge_messages::OutboundLanes::<Runtime, WithCrabParachainMessages>::get(
+			&lane_id,
+		)
+		.latest_generated_nonce
 	}
 
 	fn inbound_latest_received_nonce(lane_id: LaneId) -> MessageNonce {
-		BridgeCrabParachainMessages::inbound_latest_received_nonce(lane_id)
+		pallet_bridge_messages::InboundLanes::<Runtime, WithCrabParachainMessages>::get(
+			&lane_id,
+		)
+		.last_delivered_nonce()
 	}
 }
 

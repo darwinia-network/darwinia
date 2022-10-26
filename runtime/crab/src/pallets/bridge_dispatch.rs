@@ -97,12 +97,6 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 			},
 			Call::System(frame_system::Call::remark { .. })
 			| Call::System(frame_system::Call::remark_with_event { .. })
-			| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::register_from_remote {
-				..
-			})
-			| Call::FromDarwiniaIssuing(from_substrate_issuing::Call::issue_from_remote {
-				..
-			})
 			| Call::ToCrabParachainBacking(to_parachain_backing::Call::unlock_from_remote {
 				..
 			}) => Ok(()),

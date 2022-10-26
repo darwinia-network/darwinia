@@ -45,7 +45,8 @@ impl Config for Runtime {
 	type NoPreimagePostponement = NoPreimagePostponement;
 	type Origin = Origin;
 	type OriginPrivilegeCmp = OriginPrivilegeCmp;
+	type PalletsOrigin = OriginCaller;
 	type PreimageProvider = Preimage;
-	type ScheduleOrigin = EnsureRoot<AccountId>;
+	type ScheduleOrigin = Root;
 	type WeightInfo = ();
 }

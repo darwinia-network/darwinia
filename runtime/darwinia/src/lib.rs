@@ -225,7 +225,6 @@ frame_support::construct_runtime! {
 		PhragmenElection: pallet_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 19,
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 20,
-		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 40,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 41,
 
@@ -242,7 +241,7 @@ frame_support::construct_runtime! {
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 25,
 
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 26,
-		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 50,
+		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 52,
 
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 28,
 
@@ -256,8 +255,6 @@ frame_support::construct_runtime! {
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 
 		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
-
-		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
 
 		// Evm.
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 47,

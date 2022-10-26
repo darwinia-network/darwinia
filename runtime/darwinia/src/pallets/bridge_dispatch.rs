@@ -95,8 +95,7 @@ impl CallValidate<bp_darwinia::AccountId, Origin, Call> for CallValidator {
 				}
 			},
 			Call::System(frame_system::Call::remark { .. })
-			| Call::System(frame_system::Call::remark_with_event { .. })
-			| Call::ToCrabBacking(to_substrate_backing::Call::unlock_from_remote { .. }) => Ok(()),
+			| Call::System(frame_system::Call::remark_with_event { .. }) => Ok(()),
 			_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 		}
 	}

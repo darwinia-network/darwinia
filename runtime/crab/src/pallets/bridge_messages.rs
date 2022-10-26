@@ -6,7 +6,6 @@ pub use pallet_bridge_messages::{
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_PARACHAIN_CHAIN_ID, DARWINIA_CHAIN_ID};
-use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
 	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
@@ -15,8 +14,6 @@ use pallet_fee_market::s2s::{
 frame_support::parameter_types! {
 	// Shared configurations.
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
-	// 0x726f6f7400000000000000000000000000000000, b"root"
-	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::derive_substrate_address(&H160([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])));
 	// Darwinia configurations.
 	pub const DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
@@ -43,11 +40,9 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	type MaxUnconfirmedMessagesAtInboundLane = DarwiniaMaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane =
 		DarwiniaMaxUnrewardedRelayerEntriesAtInboundLane;
-	type MessageDeliveryAndDispatchPayment =
-		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring, RootAccountForPayments>;
+	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<Self, WithDarwiniaFeeMarket, Ring>;
 	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;
-	type OnDeliveryConfirmed =
-		(FromDarwiniaIssuing, FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>);
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>;
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
 	type OutboundMessageFee = bp_crab::Balance;
 	type OutboundPayload = bm_darwinia::ToDarwiniaMessagePayload;
@@ -70,7 +65,7 @@ impl Config<WithCrabParachainMessages> for Runtime {
 	type MaxUnrewardedRelayerEntriesAtInboundLane =
 		CrabParachainMaxUnrewardedRelayerEntriesAtInboundLane;
 	type MessageDeliveryAndDispatchPayment =
-		FeeMarketPayment<Self, WithCrabParachainFeeMarket, Ring, RootAccountForPayments>;
+		FeeMarketPayment<Self, WithCrabParachainFeeMarket, Ring>;
 	type MessageDispatch = bm_crab_parachain::FromCrabParachainMessageDispatch;
 	type OnDeliveryConfirmed = (
 		ToCrabParachainBacking,

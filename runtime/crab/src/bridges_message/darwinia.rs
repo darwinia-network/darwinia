@@ -25,19 +25,16 @@ use sp_runtime::{FixedPointNumber, FixedU128};
 use sp_std::{ops::RangeInclusive, prelude::*};
 // --- darwinia-network ---
 use crate::*;
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{messages::*, ChainId, *};
+use bp_runtime::{ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
-		self,
 		source::{self, *},
 		target::{self, *},
-		BalanceOf, *,
+		*,
 	},
 };
-use dp_s2s::{CallParams, CreatePayload};
 
 /// Messages delivery proof for Crab -> Darwinia messages.
 type ToDarwiniaMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<bp_darwinia::Hash>;
@@ -72,25 +69,6 @@ frame_support::parameter_types! {
 	pub storage DarwiniaToCrabConversionRate: FixedU128 = INITIAL_DARWINIA_TO_CRAB_CONVERSION_RATE;
 }
 
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct ToDarwiniaOutboundPayLoad;
-impl CreatePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature>
-	for ToDarwiniaOutboundPayLoad
-{
-	type Payload = ToDarwiniaMessagePayload;
-
-	fn create(
-		origin: CallOrigin<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature>,
-		spec_version: u32,
-		weight: u64,
-		call_params: CallParams,
-		dispatch_fee_payment: DispatchFeePayment,
-	) -> Result<Self::Payload, &'static str> {
-		let call = Self::encode_call(DARWINIA_S2S_BACKING_PALLET_INDEX, call_params)?;
-		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
-	}
-}
-
 /// Crab -> Darwinia message lane pallet parameters.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum CrabToDarwiniaMessagesParameter {
@@ -117,12 +95,6 @@ impl MessageBridge for WithDarwiniaMessageBridge {
 	const BRIDGED_MESSAGES_PALLET_NAME: &'static str = bp_crab::WITH_CRAB_MESSAGES_PALLET_NAME;
 	const RELAYER_FEE_PERCENT: u32 = 10;
 	const THIS_CHAIN_ID: ChainId = CRAB_CHAIN_ID;
-
-	fn bridged_balance_to_this_balance(
-		bridged_balance: BalanceOf<Self::BridgedChain>,
-	) -> BalanceOf<Self::ThisChain> {
-		DarwiniaToCrabConversionRate::get().saturating_mul_int(bridged_balance)
-	}
 }
 
 /// Crab chain from message lane point of view.
@@ -138,29 +110,14 @@ impl ChainWithMessages for Crab {
 }
 impl ThisChainWithMessages for Crab {
 	type Call = Call;
+	type Origin = Origin;
 
-	fn is_outbound_lane_enabled(lane: &LaneId) -> bool {
+	fn is_message_accepted(_send_origin: &Self::Origin, lane: &LaneId) -> bool {
 		*lane == DARWINIA_CRAB_LANE
 	}
 
 	fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 		MessageNonce::MAX
-	}
-
-	fn estimate_delivery_confirmation_transaction() -> MessageTransaction<Weight> {
-		let inbound_data_size = InboundLaneData::<Self::AccountId>::encoded_size_hint(
-			bp_darwinia::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE,
-			1,
-			1,
-		)
-		.unwrap_or(u32::MAX);
-
-		MessageTransaction {
-			dispatch_weight: bp_darwinia::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
-			size: inbound_data_size
-				.saturating_add(bp_darwinia::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(bp_darwinia::TX_EXTRA_BYTES),
-		}
 	}
 }
 

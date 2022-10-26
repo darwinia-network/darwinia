@@ -57,7 +57,7 @@ pub use darwinia_primitives::*;
 pub use darwinia_staking::{Forcing, StakerStatus};
 
 // --- crates.io ---
-use codec::{Decode, Encode};
+use codec::Encode;
 // --- paritytech ---
 use fp_evm::FeeCalculator;
 use fp_rpc::TransactionStatus;
@@ -185,7 +185,6 @@ frame_support::construct_runtime! {
 		PhragmenElection: pallet_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 32,
-		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 43,
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
 
@@ -224,7 +223,6 @@ frame_support::construct_runtime! {
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
 
-		FromDarwiniaIssuing: from_substrate_issuing::{Pallet, Call, Storage, Config, Event<T>} = 50,
 		ToCrabParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 57,
 	}
 }

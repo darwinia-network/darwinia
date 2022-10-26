@@ -4,18 +4,13 @@ pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 use crate::*;
 use bp_messages::MessageNonce;
 use bp_runtime::{ChainId, CRAB_CHAIN_ID};
-use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 use pallet_bridge_messages::Config;
 use pallet_fee_market::s2s::{
 	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
 };
-// --- paritytech ---
-use sp_core::H160;
 
 frame_support::parameter_types! {
 	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
-	// 0x726f6f7400000000000000000000000000000000, b"root"
-	pub RootAccountForPayments: Option<AccountId> = Some(ConcatConverter::<_>::derive_substrate_address(&H160([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])));
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
 		bp_crab::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub const MaxUnconfirmedMessagesAtInboundLane: MessageNonce =
@@ -37,11 +32,9 @@ impl Config<WithCrabMessages> for Runtime {
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MessageDeliveryAndDispatchPayment =
-		FeeMarketPayment<Self, WithCrabFeeMarket, Ring, RootAccountForPayments>;
+	type MessageDeliveryAndDispatchPayment = FeeMarketPayment<Self, WithCrabFeeMarket, Ring>;
 	type MessageDispatch = bm_crab::FromCrabMessageDispatch;
-	type OnDeliveryConfirmed =
-		(ToCrabBacking, FeeMarketMessageConfirmedHandler<Self, WithCrabFeeMarket>);
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, WithCrabFeeMarket>;
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabFeeMarket>;
 	type OutboundMessageFee = bp_darwinia::Balance;
 	type OutboundPayload = bm_crab::ToCrabMessagePayload;

@@ -31,7 +31,7 @@ impl Config for Runtime {
 	type GenesisElectionProvider = GenesisElectionOf<Self>;
 	type KtonCurrency = Kton;
 	type KtonReward = ();
-	type KtonSlash = KtonTreasury;
+	type KtonSlash = ();
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type NextNewSession = Session;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;

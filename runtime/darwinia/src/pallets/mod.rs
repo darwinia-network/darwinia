@@ -118,9 +118,6 @@ pub use bridge_messages::*;
 pub mod fee_market;
 pub use fee_market::*;
 
-pub mod to_substrate_backing_;
-pub use to_substrate_backing_::*;
-
 pub mod evm;
 pub use evm::*;
 
