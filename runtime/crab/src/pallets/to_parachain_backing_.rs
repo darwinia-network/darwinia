@@ -12,17 +12,13 @@ pub const CRAB_PARACHAIN_ISSUING_PALLET_INDEX: u8 = 24;
 pub struct CrabParachainMessageNoncer;
 impl LatestMessageNoncer for CrabParachainMessageNoncer {
 	fn outbound_latest_generated_nonce(lane_id: LaneId) -> MessageNonce {
-		pallet_bridge_messages::OutboundLanes::<Runtime, WithCrabParachainMessages>::get(
-			&lane_id,
-		)
-		.latest_generated_nonce
+		pallet_bridge_messages::OutboundLanes::<Runtime, WithCrabParachainMessages>::get(&lane_id)
+			.latest_generated_nonce
 	}
 
 	fn inbound_latest_received_nonce(lane_id: LaneId) -> MessageNonce {
-		pallet_bridge_messages::InboundLanes::<Runtime, WithCrabParachainMessages>::get(
-			&lane_id,
-		)
-		.last_delivered_nonce()
+		pallet_bridge_messages::InboundLanes::<Runtime, WithCrabParachainMessages>::get(&lane_id)
+			.last_delivered_nonce()
 	}
 }
 

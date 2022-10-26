@@ -48,8 +48,8 @@ impl Config<WithCrabFeeMarket> for Runtime {
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Ring;
-	type Event = Event;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
+	type Event = Event;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
