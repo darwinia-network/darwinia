@@ -92,6 +92,7 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -111,7 +112,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPallets,
+	AllPalletsWithSystem,
 	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
@@ -138,6 +139,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
 	transaction_version: 0,
+	state_version: 0,
 };
 
 /// Native version.
@@ -196,6 +198,7 @@ frame_support::construct_runtime! {
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 20,
 
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 21,
+		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 58,
 
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
 
@@ -243,6 +246,7 @@ where
 		let current_block = System::block_number().saturated_into::<u64>().saturating_sub(1);
 		let tip = 0;
 		let extra: SignedExtra = (
+			frame_system::CheckNonZeroSender::<Runtime>::new(),
 			frame_system::CheckSpecVersion::<Runtime>::new(),
 			frame_system::CheckTxVersion::<Runtime>::new(),
 			frame_system::CheckGenesis::<Runtime>::new(),

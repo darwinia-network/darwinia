@@ -33,6 +33,7 @@ impl Config for Runtime {
 	type Header = Header;
 	type Index = Nonce;
 	type Lookup = DarwiniaAccountLookup;
+	type MaxConsumers = ConstU32<16>;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();

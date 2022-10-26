@@ -206,6 +206,7 @@ pub fn genesis_config() -> ChainSpec {
 				.expect("Crab telemetry url is valid; qed"),
 		),
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)
@@ -289,6 +290,7 @@ pub fn development_config() -> ChainSpec {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)

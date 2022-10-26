@@ -277,7 +277,7 @@ pub fn genesis_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			sudo: SudoConfig { key: root },
+			sudo: SudoConfig { key: Some(root) },
 			vesting: VestingConfig {
 				vesting: vec![
 					// Team vesting: 1 year period start after 1 year since mainnet launch
@@ -319,6 +319,7 @@ pub fn genesis_config() -> ChainSpec {
 				.expect("Darwinia telemetry url is valid; qed"),
 		),
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)
@@ -391,7 +392,7 @@ pub fn development_config() -> ChainSpec {
 			technical_membership: Default::default(),
 			treasury: Default::default(),
 			kton_treasury: Default::default(),
-			sudo: SudoConfig { key: root },
+			sudo: SudoConfig { key: Some(root) },
 			vesting: Default::default(),
 			tron_backing: TronBackingConfig { backed_ring: 1 << 56, backed_kton: 1 << 56 },
 			to_crab_backing: Default::default(),
@@ -409,6 +410,7 @@ pub fn development_config() -> ChainSpec {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)

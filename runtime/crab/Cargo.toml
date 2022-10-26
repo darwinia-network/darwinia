@@ -79,6 +79,7 @@ pallet-indices                             = { default-features = false, git = "
 pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+pallet-preimage                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 pallet-proxy                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 pallet-recovery                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
@@ -184,6 +185,7 @@ std = [
 	"pallet-membership/std",
 	"pallet-multisig/std",
 	"pallet-offences/std",
+	"pallet-preimage/std",
 	"pallet-proxy/std",
 	"pallet-recovery/std",
 	"pallet-scheduler/std",

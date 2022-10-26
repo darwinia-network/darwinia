@@ -156,8 +156,15 @@ where
 	let name = config.network.node_name.clone();
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let auth_disc_publish_non_global_ips = config.network.allow_non_globals_in_dht;
+	let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+		&client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+		&config.chain_spec,
+	);
 
-	config.network.extra_sets.push(sc_finality_grandpa::grandpa_peers_set_config());
+	config
+		.network
+		.extra_sets
+		.push(sc_finality_grandpa::grandpa_peers_set_config(grandpa_protocol_name.clone()));
 
 	let backoff_authoring_blocks =
 		Some(sc_consensus_slots::BackoffAuthoringOnFinalizedHeadLagging::default());
@@ -388,6 +395,7 @@ where
 				keystore,
 				local_role: role,
 				telemetry: telemetry.as_ref().map(|x| x.handle()),
+				protocol_name: grandpa_protocol_name,
 			},
 			link: grandpa_link,
 			network,
@@ -477,6 +485,7 @@ where
 		config.wasm_method,
 		config.default_heap_pages,
 		config.max_runtime_instances,
+		config.runtime_cache_size,
 	);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
@@ -508,7 +517,7 @@ where
 		)?;
 	let justification_import = grandpa_block_import.clone();
 	let (babe_import, babe_link) = sc_consensus_babe::block_import(
-		BabeConfig::get_or_compute(&*client)?,
+		BabeConfig::get(&*client)?,
 		grandpa_block_import,
 		client.clone(),
 	)?;

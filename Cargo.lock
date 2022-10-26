@@ -1168,6 +1168,7 @@ dependencies = [
  "pallet-membership",
  "pallet-multisig",
  "pallet-offences",
+ "pallet-preimage",
  "pallet-proxy",
  "pallet-recovery",
  "pallet-scheduler",
@@ -1912,6 +1913,7 @@ dependencies = [
  "pallet-membership",
  "pallet-multisig",
  "pallet-offences",
+ "pallet-preimage",
  "pallet-proxy",
  "pallet-recovery",
  "pallet-scheduler",
@@ -5769,6 +5771,22 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-preimage"
+version = "4.0.0-dev"
+source = "git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.5#9d8aa8802c0da0d4449afbd6f629edbcc0102640"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 

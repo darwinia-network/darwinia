@@ -45,7 +45,7 @@ frame_support::parameter_types! {
 }
 
 impl Config for Runtime {
-	type BenchmarkingConfig = BenchmarkConfig;
+	type BenchmarkingConfig = ElectionProviderBenchmarkConfig;
 	type Currency = Ring;
 	// nothing to do upon rewards
 	type DataProvider = Staking;
@@ -84,8 +84,8 @@ impl onchain::Config for Runtime {
 /// The numbers configured here could always be more than the the maximum limits of staking pallet
 /// to ensure election snapshot will not run out of memory. For now, we set them to smaller values
 /// since the staking is bounded and the weight pipeline takes hours for this single pallet.
-pub struct BenchmarkConfig;
-impl BenchmarkingConfig for BenchmarkConfig {
+pub struct ElectionProviderBenchmarkConfig;
+impl BenchmarkingConfig for ElectionProviderBenchmarkConfig {
 	const ACTIVE_VOTERS: [u32; 2] = [500, 800];
 	const DESIRED_TARGETS: [u32; 2] = [200, 400];
 	const MAXIMUM_TARGETS: u32 = 300;

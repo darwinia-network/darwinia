@@ -50,10 +50,9 @@ where
 	R: darwinia_balances::Config<RingInstance> + pallet_authorship::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
-		<darwinia_balances::Pallet<R, RingInstance>>::resolve_creating(
-			&<pallet_authorship::Pallet<R>>::author(),
-			amount,
-		);
+		if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
+			<darwinia_balances::Pallet<R, RingInstance>>::resolve_creating(&author, amount);
+		}
 	}
 }
 
