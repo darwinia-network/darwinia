@@ -10,7 +10,7 @@ version     = "0.12.4-3"
 
 [dependencies]
 # crates.io
-array-bytes = { version = "2.0" }
+array-bytes = { version = "4.1" }
 futures     = { version = "0.3" }
 log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
