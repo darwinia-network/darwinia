@@ -43,9 +43,6 @@ fn migrate() -> Weight {
 		items.iter().for_each(|item| migration::remove_storage_prefix(module, item, hash));
 	});
 
-	// TODO
-	// Do we need a migration for KtonTreasury?
-
 	// 0
 	RuntimeBlockWeights::get().max_block
 }
