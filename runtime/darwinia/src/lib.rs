@@ -228,38 +228,38 @@ frame_support::construct_runtime! {
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 40,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 41,
 
+		// Utility things.
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 27,
-
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-
 		Utility: pallet_utility::{Pallet, Call, Event} = 22,
-
 		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 23,
-
 		Society: pallet_society::{Pallet, Call, Storage, Event<T>} = 24,
-
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 25,
-
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 26,
 		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 52,
-
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 28,
-
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 29,
-
-		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
-
-		// Darwinia <> Crab.
-		BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
-		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
-		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
-
-		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
 
 		// Evm.
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 47,
 		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 48,
 		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 49,
+
+		// Darwinia <> Crab.
+		BridgeCrabGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 43,
+		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
+		BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 42,
+		// Darwinia <> Darwinia Parachain.
+		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 53,
+		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 54,
+		BridgeDarwiniaParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
+		BridgeDarwiniaParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 55,
+		// Fee market things.
+		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
+		DarwiniaParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 57,
+
+		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
+		ToDarwiniaParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 58,
 	}
 }
 

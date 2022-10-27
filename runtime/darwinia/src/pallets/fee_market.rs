@@ -1,4 +1,6 @@
-pub use pallet_fee_market::Instance1 as WithCrabFeeMarket;
+pub use pallet_fee_market::{
+	Instance1 as WithCrabFeeMarket, Instance2 as WithDarwiniaParachainFeeMarket,
+};
 
 // --- core ---
 use core::cmp;
@@ -31,6 +33,9 @@ where
 }
 
 frame_support::parameter_types! {
+	pub const CrabFeeMarketLockId: LockIdentifier = *b"da/feelf";
+	pub const DarwiniaParachainFeeMarketLockId: LockIdentifier = *b"da/feedp";
+
 	pub const MinimumRelayFee: Balance = 15 * COIN;
 	pub const CollateralPerOrder: Balance = 50 * COIN;
 	pub const Slot: BlockNumber = 300;
@@ -39,8 +44,6 @@ frame_support::parameter_types! {
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
-
-	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 }
 
 impl Config<WithCrabFeeMarket> for Runtime {
@@ -50,7 +53,22 @@ impl Config<WithCrabFeeMarket> for Runtime {
 	type Currency = Ring;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
 	type Event = Event;
-	type LockId = FeeMarketLockId;
+	type LockId = CrabFeeMarketLockId;
+	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
+	type MinimumRelayFee = MinimumRelayFee;
+	type Slasher = FeeMarketSlasher;
+	type Slot = Slot;
+	type TreasuryPalletId = TreasuryPalletId;
+	type WeightInfo = ();
+}
+impl Config<WithDarwiniaParachainFeeMarket> for Runtime {
+	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
+	type CollateralPerOrder = CollateralPerOrder;
+	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
+	type Currency = Ring;
+	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
+	type Event = Event;
+	type LockId = DarwiniaParachainFeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
 	type Slasher = FeeMarketSlasher;

@@ -18,3 +18,6 @@
 
 pub mod crab;
 pub use crab as bm_crab;
+
+pub mod darwinia_parachain;
+pub use darwinia_parachain as bm_darwinia_parachain;

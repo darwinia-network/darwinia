@@ -71,7 +71,7 @@ pub type FromCrabParachainMessageDispatch = FromBridgedChainMessageDispatch<
 	WithCrabParachainDispatch,
 >;
 
-/// Identifier of CrabParachain registered in the kusama relay chain.
+/// Identifier of CrabParachain registered in the Kusama relay chain.
 pub const CRAB_PARACHAIN_ID: u32 = 2105;
 
 pub const INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE: FixedU128 =
@@ -103,15 +103,15 @@ impl IssueFromRemotePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab:
 }
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum CrabToCrabParachainParameter {
+pub enum CrabToCrabParachainMessageParameter {
 	/// The conversion formula we use is: `CrabTokens = CrabParachainTokens *
 	/// conversion_rate`.
 	CrabParachainToCrabConversionRate(FixedU128),
 }
-impl Parameter for CrabToCrabParachainParameter {
+impl Parameter for CrabToCrabParachainMessageParameter {
 	fn save(&self) {
 		match *self {
-			CrabToCrabParachainParameter::CrabParachainToCrabConversionRate(
+			CrabToCrabParachainMessageParameter::CrabParachainToCrabConversionRate(
 				ref conversion_rate,
 			) => CrabParachainToCrabConversionRate::set(conversion_rate),
 		}
