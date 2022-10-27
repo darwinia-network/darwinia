@@ -131,6 +131,7 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -150,7 +151,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPallets,
+	AllPalletsWithSystem,
 	CustomOnRuntimeUpgrade,
 >;
 /// The payload being signed in transactions.
@@ -177,6 +178,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	#[cfg(feature = "disable-runtime-api")]
 	apis: sp_version::create_apis_vec![[]],
 	transaction_version: 0,
+	state_version: 0,
 };
 
 /// Native version.
@@ -223,7 +225,6 @@ frame_support::construct_runtime! {
 		PhragmenElection: pallet_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 18,
 		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 19,
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 20,
-		KtonTreasury: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 39,
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 40,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 41,
 
@@ -240,6 +241,7 @@ frame_support::construct_runtime! {
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 25,
 
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 26,
+		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 52,
 
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 28,
 
@@ -253,8 +255,6 @@ frame_support::construct_runtime! {
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 44,
 
 		FeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 45,
-
-		ToCrabBacking: to_substrate_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 46,
 
 		// Evm.
 		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 47,
@@ -281,6 +281,7 @@ where
 		let current_block = System::block_number().saturated_into::<u64>().saturating_sub(1);
 		let tip = 0;
 		let extra: SignedExtra = (
+			frame_system::CheckNonZeroSender::<Runtime>::new(),
 			frame_system::CheckSpecVersion::<Runtime>::new(),
 			frame_system::CheckTxVersion::<Runtime>::new(),
 			frame_system::CheckGenesis::<Runtime>::new(),

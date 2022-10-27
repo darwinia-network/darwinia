@@ -56,7 +56,6 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::PhragmenElection{ .. } |
 				Call::TechnicalMembership{ .. } |
 				Call::Treasury{ .. } |
-				Call::KtonTreasury{ .. } |
 				Call::Tips{ .. } |
 				Call::Bounties{ .. } |
 				Call::Utility{ .. } |
@@ -82,9 +81,9 @@ impl InstanceFilter<Call> for ProxyType {
 					Call::Council { .. }
 						| Call::TechnicalCommittee { .. }
 						| Call::PhragmenElection { .. }
-						| Call::Treasury { .. } | Call::KtonTreasury { .. }
-						| Call::Tips { .. } | Call::Bounties { .. }
-						| Call::Democracy { .. } | Call::Utility { .. }
+						| Call::Treasury { .. } | Call::Tips { .. }
+						| Call::Bounties { .. } | Call::Democracy { .. }
+						| Call::Utility { .. }
 				)
 			},
 			ProxyType::Staking => matches!(c, Call::Staking { .. } | Call::Utility { .. }),
@@ -93,10 +92,7 @@ impl InstanceFilter<Call> for ProxyType {
 				Call::Identity(pallet_identity::Call::provide_judgement { .. })
 					| Call::Utility(pallet_utility::Call::batch { .. })
 			),
-			ProxyType::EthereumBridge => matches!(
-				c,
-				Call::EcdsaAuthority { .. }
-			),
+			ProxyType::EthereumBridge => matches!(c, Call::EcdsaAuthority { .. }),
 		}
 	}
 

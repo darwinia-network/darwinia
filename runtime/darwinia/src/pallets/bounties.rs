@@ -18,6 +18,7 @@ impl Config for Runtime {
 	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
 	type BountyUpdatePeriod = BountyUpdatePeriod;
 	type BountyValueMinimum = BountyValueMinimum;
+	type ChildBountyManager = ();
 	type DataDepositPerByte = DataDepositPerByte;
 	type Event = Event;
 	type MaximumReasonLength = MaximumReasonLength;

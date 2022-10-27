@@ -1,3 +1,6 @@
+pub mod shared_imports;
+pub use shared_imports::*;
+
 pub mod system;
 pub use system::*;
 
@@ -85,6 +88,9 @@ pub use recovery::*;
 pub mod scheduler;
 pub use scheduler::*;
 
+pub mod preimage;
+pub use preimage::*;
+
 pub mod proxy;
 pub use proxy::*;
 
@@ -111,9 +117,6 @@ pub use bridge_messages::*;
 
 pub mod fee_market;
 pub use fee_market::*;
-
-pub mod from_substrate_issuing_;
-pub use from_substrate_issuing_::*;
 
 pub mod bridge_parachains;
 pub use bridge_parachains::*;

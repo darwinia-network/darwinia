@@ -2,10 +2,10 @@
 use frame_support::PalletId;
 use sp_npos_elections::NposSolution;
 use sp_runtime::Perbill;
-use sp_staking::SessionIndex;
+use sp_staking::{EraIndex, SessionIndex};
 // --- darwinia-network ---
 use crate::*;
-use darwinia_staking::{Config, EraIndex, UseNominatorsMap};
+use darwinia_staking::{Config, UseNominatorsMap};
 
 frame_support::parameter_types! {
 	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
@@ -31,7 +31,7 @@ impl Config for Runtime {
 	type GenesisElectionProvider = GenesisElectionOf<Self>;
 	type KtonCurrency = Kton;
 	type KtonReward = ();
-	type KtonSlash = KtonTreasury;
+	type KtonSlash = ();
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type NextNewSession = Session;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;

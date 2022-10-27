@@ -32,7 +32,7 @@ use sp_runtime::Perbill;
 // --- darwinia-network ---
 use super::*;
 use crab_runtime::*;
-use darwinia_primitives::{AccountId, Balance, COIN};
+use darwinia_primitives::{AccountId, Balance, COIN, REVERT_BYTECODE};
 
 /// The `ChainSpec parametrised for Crab runtime`.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -121,6 +121,19 @@ pub fn genesis_config() -> ChainSpec {
 		.map(|s| array_bytes::hex_n_into_unchecked(s))
 		.collect::<Vec<_>>();
 
+		let mut evm_accounts = BTreeMap::new();
+		for precompile in CrabPrecompiles::<Runtime>::used_addresses() {
+			evm_accounts.insert(
+				precompile,
+				GenesisAccount {
+					nonce: Default::default(),
+					balance: Default::default(),
+					storage: Default::default(),
+					code: REVERT_BYTECODE.to_vec(),
+				},
+			);
+		}
+
 		GenesisConfig {
 			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },
 			babe: BabeConfig { authorities: vec![], epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
@@ -178,12 +191,10 @@ pub fn genesis_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			vesting: Default::default(),
-			evm: EVMConfig { accounts: BTreeMap::new() },
+			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			from_darwinia_issuing: Default::default(),
 			to_crab_parachain_backing: Default::default(),
 		}
 	}
@@ -206,6 +217,7 @@ pub fn genesis_config() -> ChainSpec {
 				.expect("Crab telemetry url is valid; qed"),
 		),
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)
@@ -221,15 +233,30 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
 		];
-		let evm_accounts = BTreeMap::from_iter([(
-			array_bytes::hex_n_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
-			GenesisAccount {
-				balance: (123_456_789_000_000_000_000_090 as Balance).into(),
-				code: Default::default(),
-				nonce: Default::default(),
-				storage: Default::default(),
-			},
-		)]);
+		let evm_accounts = {
+			let mut map = BTreeMap::new();
+			map.insert(
+				array_bytes::hex_n_into_unchecked("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+				GenesisAccount {
+					balance: (123_456_789_000_000_000_000_090 as Balance).into(),
+					code: Default::default(),
+					nonce: Default::default(),
+					storage: Default::default(),
+				},
+			);
+			for precompile in CrabPrecompiles::<Runtime>::used_addresses() {
+				map.insert(
+					precompile,
+					GenesisAccount {
+						nonce: Default::default(),
+						balance: Default::default(),
+						storage: Default::default(),
+						code: REVERT_BYTECODE.to_vec(),
+					},
+				);
+			}
+			map
+		};
 
 		GenesisConfig {
 			system: SystemConfig { code: wasm_binary_unwrap().to_vec() },
@@ -271,12 +298,10 @@ pub fn development_config() -> ChainSpec {
 			phragmen_election: Default::default(),
 			technical_membership: Default::default(),
 			treasury: Default::default(),
-			kton_treasury: Default::default(),
 			vesting: Default::default(),
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			from_darwinia_issuing: Default::default(),
 			to_crab_parachain_backing: Default::default(),
 		}
 	}
@@ -289,6 +314,7 @@ pub fn development_config() -> ChainSpec {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
+		None,
 		Some(properties()),
 		Default::default(),
 	)

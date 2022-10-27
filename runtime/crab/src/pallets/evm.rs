@@ -3,19 +3,16 @@ use core::marker::PhantomData;
 // --- paritytech ---
 use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
 use frame_support::{
-	pallet_prelude::Weight,
-	traits::{FindAuthor, PalletInfoAccess},
-	ConsensusEngineId, StorageHasher, Twox128,
+	pallet_prelude::Weight, traits::FindAuthor, ConsensusEngineId, StorageHasher, Twox128,
 };
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_session::FindAccountFromAuthorIndex;
-use sp_core::{crypto::Public, H160, U256};
+use sp_core::{crypto::ByteArray, H160, U256};
 // --- darwinia-network ---
 use crate::*;
-use bp_messages::{LaneId, MessageNonce};
 use darwinia_ethereum::{
 	adapter::{CurrencyAdapter, KtonRemainBalance, RingRemainBalance},
 	EthereumBlockHashMapping,
@@ -23,15 +20,10 @@ use darwinia_ethereum::{
 use darwinia_evm::{
 	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
 };
-use darwinia_evm_precompile_bridge_s2s::Sub2SubBridge;
 use darwinia_evm_precompile_dispatch::Dispatch;
 use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
 use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
-use darwinia_evm_precompile_transfer::Transfer;
-use darwinia_support::{
-	evm::ConcatConverter,
-	s2s::{LatestMessageNoncer, RelayMessageSender},
-};
+use darwinia_support::evm::ConcatConverter;
 
 pub struct EthereumFindAuthor<F>(PhantomData<F>);
 impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F> {
@@ -44,43 +36,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F> {
 
 			H160::from_slice(&authority_id.0.to_raw_vec()[4..24])
 		})
-	}
-}
-
-pub struct ToDarwiniaMessageSender;
-impl RelayMessageSender for ToDarwiniaMessageSender {
-	fn encode_send_message(
-		message_pallet_index: u32,
-		lane_id: LaneId,
-		payload: Vec<u8>,
-		fee: u128,
-	) -> Result<Vec<u8>, &'static str> {
-		let payload = bm_darwinia::ToDarwiniaMessagePayload::decode(&mut payload.as_slice())
-			.map_err(|_| "decode darwinia payload failed")?;
-		let call: Call = match message_pallet_index {
-			_ if message_pallet_index as usize
-				== <BridgeDarwiniaMessages as PalletInfoAccess>::index() =>
-				pallet_bridge_messages::Call::<Runtime, WithDarwiniaMessages>::send_message {
-					lane_id,
-					payload,
-					delivery_and_dispatch_fee: fee.saturated_into(),
-				}
-				.into(),
-			_ => {
-				return Err("invalid pallet index");
-			},
-		};
-
-		Ok(call.encode())
-	}
-}
-impl LatestMessageNoncer for ToDarwiniaMessageSender {
-	fn outbound_latest_generated_nonce(lane_id: LaneId) -> MessageNonce {
-		BridgeDarwiniaMessages::outbound_latest_generated_nonce(lane_id)
-	}
-
-	fn inbound_latest_received_nonce(lane_id: LaneId) -> MessageNonce {
-		BridgeDarwiniaMessages::inbound_latest_received_nonce(lane_id)
 	}
 }
 
@@ -115,7 +70,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 15] {
+	pub fn used_addresses() -> [H160; 12] {
 		[
 			addr(1),
 			addr(2),
@@ -126,9 +81,6 @@ where
 			addr(7),
 			addr(8),
 			addr(9),
-			addr(21),
-			addr(24),
-			addr(25),
 			addr(1024),
 			addr(1025),
 			addr(1026),
@@ -141,8 +93,6 @@ where
 	Dispatch<R>: Precompile,
 	R: darwinia_ethereum::Config,
 	StateStorage<R, StorageFilter>: Precompile,
-	Sub2SubBridge<R, ToDarwiniaMessageSender, bm_darwinia::ToDarwiniaOutboundPayLoad>: Precompile,
-	Transfer<R>: Precompile,
 {
 	fn execute(
 		&self,
@@ -173,17 +123,6 @@ where
 			a if a == addr(8) => Some(Bn128Pairing::execute(input, target_gas, context, is_static)),
 			a if a == addr(9) => Some(Blake2F::execute(input, target_gas, context, is_static)),
 			// Darwinia precompiles: 1024+ for stable precompiles.
-			a if a == addr(21) =>
-				Some(<Transfer<R>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(24) => Some(<Sub2SubBridge<
-				R,
-				ToDarwiniaMessageSender,
-				bm_darwinia::ToDarwiniaOutboundPayLoad,
-			>>::execute(input, target_gas, context, is_static)),
-			// There are two Dispatch precompile instance now, the 25-Dispatch reserved to
-			// keep the compatibility, which will be removed in the future.
-			a if a == addr(25) =>
-				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
 			a if a == addr(1024) => Some(<StateStorage<R, StorageFilter>>::execute(
 				input, target_gas, context, is_static,
 			)),

@@ -22,29 +22,22 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // --- paritytech ---
-use frame_support::{
-	weights::{DispatchClass, Weight},
-	RuntimeDebug,
-};
-use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
+use frame_support::{weights::Weight, RuntimeDebug};
+use sp_runtime::{FixedPointNumber, FixedU128};
 use sp_std::{ops::RangeInclusive, prelude::*};
 // --- darwinia-network ---
 use crate::*;
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{messages::*, ChainId, *};
+use bp_runtime::{ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
-		self,
 		source::{self, *},
 		target::{self, *},
-		BalanceOf, *,
+		*,
 	},
 };
-use darwinia_common_runtime::impls::FromThisChainMessageVerifier;
-use dp_s2s::{CallParams, CreatePayload};
-use pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH;
+use darwinia_support::evm::{ConcatConverter, DeriveSubstrateAddress};
 
 /// Messages delivery proof for Darwinia -> Crab messages.
 type ToCrabMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<bp_crab::Hash>;
@@ -79,29 +72,6 @@ frame_support::parameter_types! {
 	pub storage CrabToDarwiniaConversionRate: FixedU128 = INITIAL_CRAB_TO_DARWINIA_CONVERSION_RATE;
 }
 
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct ToCrabOutboundPayload;
-impl CreatePayload<bp_darwinia::AccountId, bp_darwinia::AccountPublic, bp_darwinia::Signature>
-	for ToCrabOutboundPayload
-{
-	type Payload = ToCrabMessagePayload;
-
-	fn create(
-		origin: CallOrigin<
-			bp_darwinia::AccountId,
-			bp_darwinia::AccountPublic,
-			bp_darwinia::Signature,
-		>,
-		spec_version: u32,
-		weight: u64,
-		call_params: CallParams,
-		dispatch_fee_payment: DispatchFeePayment,
-	) -> Result<Self::Payload, &'static str> {
-		let call = Self::encode_call(CRAB_S2S_ISSUING_PALLET_INDEX, call_params)?;
-		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
-	}
-}
-
 /// Darwinia -> Crab message lane pallet parameters.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum DarwiniaToCrabMessagesParameter {
@@ -129,12 +99,6 @@ impl MessageBridge for WithCrabMessageBridge {
 		bp_darwinia::WITH_DARWINIA_MESSAGES_PALLET_NAME;
 	const RELAYER_FEE_PERCENT: u32 = 10;
 	const THIS_CHAIN_ID: ChainId = DARWINIA_CHAIN_ID;
-
-	fn bridged_balance_to_this_balance(
-		bridged_balance: BalanceOf<Self::BridgedChain>,
-	) -> BalanceOf<Self::ThisChain> {
-		CrabToDarwiniaConversionRate::get().saturating_mul_int(bridged_balance)
-	}
 }
 
 /// Darwinia chain from message lane point of view.
@@ -150,40 +114,14 @@ impl ChainWithMessages for Darwinia {
 }
 impl ThisChainWithMessages for Darwinia {
 	type Call = Call;
+	type Origin = Origin;
 
-	fn is_outbound_lane_enabled(lane: &LaneId) -> bool {
+	fn is_message_accepted(_send_origin: &Self::Origin, lane: &LaneId) -> bool {
 		*lane == DARWINIA_CRAB_LANE
 	}
 
 	fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 		MessageNonce::MAX
-	}
-
-	fn estimate_delivery_confirmation_transaction() -> MessageTransaction<Weight> {
-		let inbound_data_size = InboundLaneData::<Self::AccountId>::encoded_size_hint(
-			bp_crab::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE,
-			1,
-			1,
-		)
-		.unwrap_or(u32::MAX);
-
-		MessageTransaction {
-			dispatch_weight: bp_crab::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
-			size: inbound_data_size
-				.saturating_add(bp_crab::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(bp_crab::TX_EXTRA_BYTES),
-		}
-	}
-
-	fn transaction_payment(transaction: MessageTransaction<Weight>) -> Self::Balance {
-		// in our testnets, both per-byte fee and weight-to-fee are 1:1
-		messages::transaction_payment(
-			bp_darwinia::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
-			1,
-			FixedU128::zero(),
-			|weight| weight as _,
-			transaction,
-		)
 	}
 }
 
@@ -214,42 +152,6 @@ impl BridgedChainWithMessages for Crab {
 		// assumptions about minimal dispatch weight here
 
 		0..=upper_limit
-	}
-
-	fn estimate_delivery_transaction(
-		message_payload: &[u8],
-		include_pay_dispatch_fee_cost: bool,
-		message_dispatch_weight: Weight,
-	) -> MessageTransaction<Weight> {
-		let message_payload_len = u32::try_from(message_payload.len()).unwrap_or(u32::MAX);
-		let extra_bytes_in_payload = Weight::from(message_payload_len)
-			.saturating_sub(EXPECTED_DEFAULT_MESSAGE_LENGTH.into());
-
-		MessageTransaction {
-			dispatch_weight: extra_bytes_in_payload
-				.saturating_mul(bp_crab::ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT)
-				.saturating_add(bp_crab::DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT)
-				.saturating_add(message_dispatch_weight)
-				.saturating_sub(if include_pay_dispatch_fee_cost {
-					0
-				} else {
-					bp_crab::PAY_INBOUND_DISPATCH_FEE_WEIGHT
-				}),
-			size: message_payload_len
-				.saturating_add(bp_crab::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(bp_crab::TX_EXTRA_BYTES),
-		}
-	}
-
-	fn transaction_payment(transaction: MessageTransaction<Weight>) -> Self::Balance {
-		// in our testnets, both per-byte fee and weight-to-fee are 1:1
-		messages::transaction_payment(
-			bp_crab::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
-			1,
-			FixedU128::zero(),
-			|weight| weight as _,
-			transaction,
-		)
 	}
 }
 impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::AccountId> for Crab {
@@ -289,5 +191,21 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
 			proof,
 			messages_count,
 		)
+	}
+}
+
+impl SenderOrigin<crate::AccountId> for crate::Origin {
+	fn linked_account(&self) -> Option<crate::AccountId> {
+		match self.caller {
+			crate::OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
+				Some(submitter.clone()),
+			crate::OriginCaller::system(frame_system::RawOrigin::Root) => {
+				// 0x726f6f7400000000000000000000000000000000, b"root"
+				Some(ConcatConverter::<_>::derive_substrate_address(&H160([
+					0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				])))
+			},
+			_ => None,
+		}
 	}
 }
