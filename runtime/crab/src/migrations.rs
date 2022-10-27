@@ -33,9 +33,15 @@ fn migrate() -> Weight {
 		EVM::create_account(&precompile, vec![0x60, 0x00, 0x60, 0x00, 0xFD]);
 	}
 
-	let module = b"FromDarwiniaIssuing";
-	migration::remove_storage_prefix(module, b"MappingFactoryAddress", &[]);
-	migration::remove_storage_prefix(module, b"RemoteBackingAccount", &[]);
+	let removed_items: &[(&[u8], &[&[u8]])] = &[
+		(b"FromDarwiniaIssuing", &[b"MappingFactoryAddress", b"RemoteBackingAccount"]),
+		(b"KtonTreasury", &[b"ProposalCount", b"Proposals", b"Approvals"]),
+	];
+	let hash = &[];
+
+	removed_items.iter().for_each(|(module, items)| {
+		items.iter().for_each(|item| migration::remove_storage_prefix(module, item, hash));
+	});
 
 	// TODO
 	// Do we need a migration for KtonTreasury?

@@ -39,8 +39,23 @@ fn migrate() -> Weight {
 	migration::remove_storage_prefix(module, b"TransactionInfos", &[]);
 	migration::remove_storage_prefix(module, b"RemoteMappingTokenFactoryAccount", &[]);
 
-	// TODO
-	// Do we need a migration for KtonTreasury?
+	let removed_items: &[(&[u8], &[&[u8]])] = &[
+		(
+			b"ToCrabBacking",
+			&[
+				b"SecureLimitedPeriod",
+				b"SecureLimitedRingAmount",
+				b"TransactionInfos",
+				b"RemoteMappingTokenFactoryAccount",
+			],
+		),
+		(b"KtonTreasury", &[b"ProposalCount", b"Proposals", b"Approvals"]),
+	];
+	let hash = &[];
+
+	removed_items.iter().for_each(|(module, items)| {
+		items.iter().for_each(|item| migration::remove_storage_prefix(module, item, hash));
+	});
 
 	// 0
 	RuntimeBlockWeights::get().max_block
