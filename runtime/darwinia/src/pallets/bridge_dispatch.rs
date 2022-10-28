@@ -137,6 +137,6 @@ impl Config<WithDarwiniaParachainDispatch> for Runtime {
 	type Event = Event;
 	type IntoDispatchOrigin = IntoDispatchOrigin;
 	type SourceChainAccountId = bp_darwinia_parachain::AccountId;
-	type TargetChainAccountPublic = bp_crab::AccountPublic;
+	type TargetChainAccountPublic = bp_darwinia::AccountPublic;
 	type TargetChainSignature = bp_crab::Signature;
 }
