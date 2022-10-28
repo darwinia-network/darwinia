@@ -26,10 +26,9 @@ use frame_support::{weights::Weight, RuntimeDebug};
 use sp_runtime::{FixedPointNumber, FixedU128};
 // --- darwinia-network ---
 use crate::*;
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
 use bp_polkadot::parachains::ParaId;
-use bp_runtime::{messages::DispatchFeePayment, ChainId, *};
+use bp_runtime::{ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
@@ -38,7 +37,6 @@ use bridge_runtime_common::{
 		*,
 	},
 };
-use to_parachain_backing::{IssueFromRemotePayload, IssuingCall};
 
 /// Message delivery proof for Darwinia -> DarwiniaParachain messages.
 type ToDarwiniaParachainMessagesDeliveryProof =
@@ -81,35 +79,6 @@ pub const INITIAL_DARWINIA_PARACHAIN_TO_DARWINIA_CONVERSION_RATE: FixedU128 =
 frame_support::parameter_types! {
 	/// DarwiniaParachain to Darwinia conversion rate. Initially we treat both tokens as equal.
 	pub storage DarwiniaParachainToDarwiniaConversionRate: FixedU128 = INITIAL_DARWINIA_PARACHAIN_TO_DARWINIA_CONVERSION_RATE;
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct ToDarwiniaParachainOutboundPayLoad;
-impl
-	IssueFromRemotePayload<
-		bp_darwinia::AccountId,
-		bp_darwinia::AccountPublic,
-		bp_darwinia::Signature,
-		Runtime,
-	> for ToDarwiniaParachainOutboundPayLoad
-{
-	type Payload = ToDarwiniaParachainMessagePayload;
-
-	fn create(
-		origin: CallOrigin<
-			bp_darwinia::AccountId,
-			bp_darwinia::AccountPublic,
-			bp_darwinia::Signature,
-		>,
-		spec_version: u32,
-		weight: u64,
-		call_params: IssuingCall<Runtime>,
-		dispatch_fee_payment: DispatchFeePayment,
-	) -> Result<Self::Payload, &'static str> {
-		let mut call = vec![DARWINIA_PARACHAIN_ISSUING_PALLET_INDEX];
-		call.append(&mut call_params.encode());
-		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
-	}
 }
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
