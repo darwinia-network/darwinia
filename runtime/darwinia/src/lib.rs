@@ -259,7 +259,6 @@ frame_support::construct_runtime! {
 		DarwiniaParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 57,
 
 		TronBacking: to_tron_backing::{Pallet, Storage, Config<T>} = 34,
-		ToDarwiniaParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 58,
 	}
 }
 

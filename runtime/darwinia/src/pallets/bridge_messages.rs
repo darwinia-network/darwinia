@@ -65,10 +65,8 @@ impl Config<WithDarwiniaParachainMessages> for Runtime {
 	type MessageDeliveryAndDispatchPayment =
 		FeeMarketPayment<Self, WithDarwiniaParachainFeeMarket, Ring>;
 	type MessageDispatch = bm_darwinia_parachain::FromDarwiniaParachainMessageDispatch;
-	type OnDeliveryConfirmed = (
-		ToDarwiniaParachainBacking,
-		FeeMarketMessageConfirmedHandler<Self, WithDarwiniaParachainFeeMarket>,
-	);
+	type OnDeliveryConfirmed =
+		FeeMarketMessageConfirmedHandler<Self, WithDarwiniaParachainFeeMarket>;
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaParachainFeeMarket>;
 	type OutboundMessageFee = bp_darwinia::Balance;
 	type OutboundPayload = bm_darwinia_parachain::ToDarwiniaParachainMessagePayload;
