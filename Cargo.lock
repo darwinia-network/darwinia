@@ -1978,7 +1978,6 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
- "to-parachain-backing",
  "to-tron-backing",
 ]
 
