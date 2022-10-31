@@ -216,8 +216,6 @@ frame_support::construct_runtime! {
 		// Fee market things.
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
-
-		ToCrabParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 57,
 	}
 }
 

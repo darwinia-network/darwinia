@@ -1231,7 +1231,6 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
- "to-parachain-backing",
 ]
 
 [[package]]
@@ -9384,26 +9383,6 @@ name = "tinyvec_macros"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
-
-[[package]]
-name = "to-parachain-backing"
-version = "2.10.1"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=darwinia-v0.12.5#3737da1393cca3c6e17aca70f9271ba0cdc48c1a"
-dependencies = [
- "array-bytes 2.0.2",
- "bp-message-dispatch",
- "bp-messages",
- "bp-runtime",
- "darwinia-support",
- "ethereum-types",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
- "sp-std",
-]
 
 [[package]]
 name = "to-tron-backing"
