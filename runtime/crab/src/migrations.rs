@@ -36,6 +36,7 @@ fn migrate() -> Weight {
 	let removed_items: &[(&[u8], &[&[u8]])] = &[
 		(b"FromDarwiniaIssuing", &[b"MappingFactoryAddress", b"RemoteBackingAccount"]),
 		(b"KtonTreasury", &[b"ProposalCount", b"Proposals", b"Approvals"]),
+		(b"ToCrabParachainBacking", &[b"SecureLimitedPeriod", b"TransactionInfos", b"RemoteMappingTokenFactoryAccount"]),
 	];
 	let hash = &[];
 
