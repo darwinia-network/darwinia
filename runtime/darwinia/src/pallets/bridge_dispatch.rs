@@ -129,7 +129,7 @@ impl Config<WithCrabDispatch> for Runtime {
 	type TargetChainSignature = bp_darwinia::Signature;
 }
 impl Config<WithDarwiniaParachainDispatch> for Runtime {
-	type AccountIdConverter = bp_darwinia_parachain::AccountIdConverter;
+	type AccountIdConverter = bp_darwinia::AccountIdConverter;
 	type BridgeMessageId = (LaneId, MessageNonce);
 	type Call = Call;
 	type CallValidator = CallValidator;
@@ -138,5 +138,5 @@ impl Config<WithDarwiniaParachainDispatch> for Runtime {
 	type IntoDispatchOrigin = IntoDispatchOrigin;
 	type SourceChainAccountId = bp_darwinia_parachain::AccountId;
 	type TargetChainAccountPublic = bp_darwinia::AccountPublic;
-	type TargetChainSignature = bp_crab::Signature;
+	type TargetChainSignature = bp_darwinia_parachain::Signature;
 }
