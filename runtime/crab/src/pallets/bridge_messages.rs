@@ -51,7 +51,6 @@ impl Config<WithDarwiniaMessages> for Runtime {
 	type TargetHeaderChain = bm_darwinia::Darwinia;
 	type WeightInfo = ();
 }
-
 impl Config<WithCrabParachainMessages> for Runtime {
 	type AccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = CrabParachainChainId;
@@ -67,14 +66,11 @@ impl Config<WithCrabParachainMessages> for Runtime {
 	type MessageDeliveryAndDispatchPayment =
 		FeeMarketPayment<Self, WithCrabParachainFeeMarket, Ring>;
 	type MessageDispatch = bm_crab_parachain::FromCrabParachainMessageDispatch;
-	type OnDeliveryConfirmed = (
-		ToCrabParachainBacking,
-		FeeMarketMessageConfirmedHandler<Self, WithCrabParachainFeeMarket>,
-	);
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, WithCrabParachainFeeMarket>;
 	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithCrabParachainFeeMarket>;
 	type OutboundMessageFee = bp_crab::Balance;
 	type OutboundPayload = bm_crab_parachain::ToCrabParachainMessagePayload;
-	type Parameter = bm_crab_parachain::CrabToCrabParachainParameter;
+	type Parameter = bm_crab_parachain::CrabToCrabParachainMessageParameter;
 	type SourceHeaderChain = bm_crab_parachain::CrabParachain;
 	type TargetHeaderChain = bm_crab_parachain::CrabParachain;
 	type WeightInfo = ();

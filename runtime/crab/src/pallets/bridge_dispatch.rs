@@ -96,10 +96,7 @@ impl CallValidate<bp_crab::AccountId, Origin, Call> for CallValidator {
 				}
 			},
 			Call::System(frame_system::Call::remark { .. })
-			| Call::System(frame_system::Call::remark_with_event { .. })
-			| Call::ToCrabParachainBacking(to_parachain_backing::Call::unlock_from_remote {
-				..
-			}) => Ok(()),
+			| Call::System(frame_system::Call::remark_with_event { .. }) => Ok(()),
 			_ => Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 		}
 	}
@@ -130,7 +127,6 @@ impl Config<WithDarwiniaDispatch> for Runtime {
 	type TargetChainAccountPublic = bp_crab::AccountPublic;
 	type TargetChainSignature = bp_crab::Signature;
 }
-
 impl Config<WithCrabParachainDispatch> for Runtime {
 	type AccountIdConverter = bp_crab_parachain::AccountIdConverter;
 	type BridgeMessageId = (LaneId, MessageNonce);

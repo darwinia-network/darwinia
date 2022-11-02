@@ -298,6 +298,9 @@ pub fn genesis_config() -> ChainSpec {
 					(foundation_vesting, 0, (5.00_f64 * 365.25_f64) as BlockNumber * DAYS, 0),
 				],
 			},
+			evm: EVMConfig { accounts: evm_accounts },
+			ethereum: Default::default(),
+			base_fee: Default::default(),
 			tron_backing: TronBackingConfig {
 				// Los Angeles: 9/24/2020, 7:42:52 PM
 				// Berlin :     9/25/2020, 10:42:52 AM
@@ -306,9 +309,6 @@ pub fn genesis_config() -> ChainSpec {
 				backed_ring: 90_403_994_952_547_849_178_882_078_u128 / COIN + 1,
 				backed_kton: 1_357_120_581_926_771_954_238_u128 / COIN + 1,
 			},
-			evm: EVMConfig { accounts: evm_accounts },
-			ethereum: Default::default(),
-			base_fee: Default::default(),
 		}
 	}
 
@@ -419,10 +419,10 @@ pub fn development_config() -> ChainSpec {
 			treasury: Default::default(),
 			sudo: SudoConfig { key: Some(root) },
 			vesting: Default::default(),
-			tron_backing: TronBackingConfig { backed_ring: 1 << 56, backed_kton: 1 << 56 },
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
+			tron_backing: TronBackingConfig { backed_ring: 1 << 56, backed_kton: 1 << 56 },
 		}
 	}
 

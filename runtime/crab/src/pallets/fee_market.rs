@@ -60,7 +60,6 @@ impl Config<WithDarwiniaFeeMarket> for Runtime {
 	type TreasuryPalletId = TreasuryPalletId;
 	type WeightInfo = ();
 }
-
 impl Config<WithCrabParachainFeeMarket> for Runtime {
 	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
 	type CollateralPerOrder = CollateralPerOrder;

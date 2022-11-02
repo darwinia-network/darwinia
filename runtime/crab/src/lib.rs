@@ -188,21 +188,15 @@ frame_support::construct_runtime! {
 		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
 
+		// Utility things.
 		Utility: pallet_utility::{Pallet, Call, Event} = 17,
-
 		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 18,
-
 		Society: pallet_society::{Pallet, Call, Storage, Event<T>} = 19,
-
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 20,
-
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 21,
 		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 58,
-
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
-
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 33,
-
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Evm things.
@@ -212,18 +206,16 @@ frame_support::construct_runtime! {
 
 		// Crab <> Darwinia.
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
-		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
+		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
 		// Crab <> Crab Parachain.
 		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
 		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
-		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 54,
 		BridgeCrabParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
-
+		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 54,
+		// Fee market things.
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
 		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
-
-		ToCrabParachainBacking: to_parachain_backing::{Pallet, Call, Storage, Config<T>, Event<T>} = 57,
 	}
 }
 

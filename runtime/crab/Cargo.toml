@@ -30,11 +30,10 @@ pallet-bridge-messages   = { default-features = false, git = "https://github.com
 pallet-bridge-parachains = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
 pallet-fee-market        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
 # darwinia-network frame
-darwinia-balances    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-header-mmr  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-staking     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-support     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-to-parachain-backing = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
+darwinia-balances   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
+darwinia-header-mmr = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
+darwinia-staking    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
+darwinia-support    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
 # darwinia-network evm
 darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
 darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
@@ -142,7 +141,6 @@ std = [
 	"darwinia-staking/std",
 	"frame-try-runtime/std",
 	"darwinia-support/std",
-	"to-parachain-backing/std",
 	# darwinia-network evm
 	"darwinia-ethereum/std",
 	"darwinia-evm/std",

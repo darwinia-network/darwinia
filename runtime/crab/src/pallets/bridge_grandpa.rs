@@ -20,7 +20,6 @@ impl Config<WithDarwiniaGrandpa> for Runtime {
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
-
 impl Config<WithKusamaGrandpa> for Runtime {
 	type BridgedChain = bp_kusama::Kusama;
 	type HeadersToKeep = KusamaHeadersToKeep;

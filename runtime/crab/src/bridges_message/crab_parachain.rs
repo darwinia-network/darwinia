@@ -27,9 +27,8 @@ use sp_runtime::{FixedPointNumber, FixedU128};
 // --- darwinia-network ---
 use crate::*;
 use bp_kusama::parachains::ParaId;
-use bp_message_dispatch::CallOrigin;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_runtime::{messages::DispatchFeePayment, ChainId, *};
+use bp_runtime::{ChainId, *};
 use bridge_runtime_common::{
 	lanes::*,
 	messages::{
@@ -38,7 +37,6 @@ use bridge_runtime_common::{
 		*,
 	},
 };
-use to_parachain_backing::{IssueFromRemotePayload, IssuingCall};
 
 /// Message delivery proof for Crab -> CrabParachain messages.
 type ToCrabParachainMessagesDeliveryProof =
@@ -71,7 +69,7 @@ pub type FromCrabParachainMessageDispatch = FromBridgedChainMessageDispatch<
 	WithCrabParachainDispatch,
 >;
 
-/// Identifier of CrabParachain registered in the kusama relay chain.
+/// Identifier of CrabParachain registered in the Kusama relay chain.
 pub const CRAB_PARACHAIN_ID: u32 = 2105;
 
 pub const INITIAL_CRAB_PARACHAIN_TO_CRAB_CONVERSION_RATE: FixedU128 =
@@ -83,35 +81,15 @@ frame_support::parameter_types! {
 }
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct ToCrabParachainOutboundPayLoad;
-impl IssueFromRemotePayload<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature, Runtime>
-	for ToCrabParachainOutboundPayLoad
-{
-	type Payload = ToCrabParachainMessagePayload;
-
-	fn create(
-		origin: CallOrigin<bp_crab::AccountId, bp_crab::AccountPublic, bp_crab::Signature>,
-		spec_version: u32,
-		weight: u64,
-		call_params: IssuingCall<Runtime>,
-		dispatch_fee_payment: DispatchFeePayment,
-	) -> Result<Self::Payload, &'static str> {
-		let mut call = vec![CRAB_PARACHAIN_ISSUING_PALLET_INDEX];
-		call.append(&mut call_params.encode());
-		Ok(Self::Payload { spec_version, weight, origin, call, dispatch_fee_payment })
-	}
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum CrabToCrabParachainParameter {
+pub enum CrabToCrabParachainMessageParameter {
 	/// The conversion formula we use is: `CrabTokens = CrabParachainTokens *
 	/// conversion_rate`.
 	CrabParachainToCrabConversionRate(FixedU128),
 }
-impl Parameter for CrabToCrabParachainParameter {
+impl Parameter for CrabToCrabParachainMessageParameter {
 	fn save(&self) {
 		match *self {
-			CrabToCrabParachainParameter::CrabParachainToCrabConversionRate(
+			CrabToCrabParachainMessageParameter::CrabParachainToCrabConversionRate(
 				ref conversion_rate,
 			) => CrabParachainToCrabConversionRate::set(conversion_rate),
 		}

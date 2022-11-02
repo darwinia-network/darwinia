@@ -195,7 +195,6 @@ pub fn genesis_config() -> ChainSpec {
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			to_crab_parachain_backing: Default::default(),
 		}
 	}
 
@@ -302,7 +301,6 @@ pub fn development_config() -> ChainSpec {
 			evm: EVMConfig { accounts: evm_accounts },
 			ethereum: Default::default(),
 			base_fee: Default::default(),
-			to_crab_parachain_backing: Default::default(),
 		}
 	}
 
