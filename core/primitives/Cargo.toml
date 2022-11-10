@@ -1,0 +1,21 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia chain core primitives."
+edition     = "2021"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "dc-primitives"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "6.0.0"
+
+[dependencies]
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+std = [
+	"sp-core/std",
+	"sp-runtime/std",
+]
