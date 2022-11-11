@@ -52,17 +52,17 @@ pub fn create_full<C, P>(
 	deps: FullDeps<C, P>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
-	C: ProvideRuntimeApi<Block>
-		+ HeaderBackend<Block>
-		+ AuxStore
-		+ HeaderMetadata<Block, Error = BlockChainError>
+	C: 'static
 		+ Send
 		+ Sync
-		+ 'static,
+		+ ProvideRuntimeApi<Block>
+		+ HeaderBackend<Block>
+		+ AuxStore
+		+ HeaderMetadata<Block, Error = BlockChainError>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 		+ BlockBuilder<Block>,
-	P: TransactionPool + Sync + Send + 'static,
+	P: 'static + Send + Sync + TransactionPool,
 {
 	// substrate
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
