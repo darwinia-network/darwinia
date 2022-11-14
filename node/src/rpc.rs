@@ -27,87 +27,71 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use std::sync::Arc;
 // darwinia
 use dc_primitives::*;
-// frontier
-use fc_rpc::{EthBlockDataCacheTask, OverrideHandle};
-use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
-use fp_rpc::NoTransactionConverter;
-// substrate
-use sc_client_api::{
-	backend::{AuxStore, Backend, StateBackend, StorageProvider},
-	BlockchainEvents,
-};
-use sc_network::NetworkService;
-use sc_transaction_pool::{ChainApi, Pool};
-use sc_transaction_pool_api::TransactionPool;
-use sp_api::ProvideRuntimeApi;
-use sp_block_builder::BlockBuilder;
-use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
 
 /// Full client dependencies
-pub struct FullDeps<C, P, A: ChainApi> {
+pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
 	/// Graph pool instance.
-	pub graph: Arc<Pool<A>>,
+	pub graph: Arc<sc_transaction_pool::Pool<A>>,
 	/// Whether to deny unsafe calls
-	pub deny_unsafe: DenyUnsafe,
+	pub deny_unsafe: sc_rpc::DenyUnsafe,
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<NetworkService<Block, Hash>>,
+	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
 	/// EthFilterApi pool.
-	pub filter_pool: Option<FilterPool>,
+	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.
 	pub backend: Arc<fc_db::Backend<Block>>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Fee history cache.
-	pub fee_history_cache: FeeHistoryCache,
+	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
 	/// Maximum fee history cache size.
-	pub fee_history_cache_limit: FeeHistoryCacheLimit,
+	pub fee_history_cache_limit: fc_rpc_core::types::FeeHistoryCacheLimit,
 	/// Ethereum data access overrides.
-	pub overrides: Arc<OverrideHandle<Block>>,
+	pub overrides: Arc<fc_rpc::OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
-	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
 }
 
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
-	subscription_task_executor: SubscriptionTaskExecutor,
+	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
-	BE: 'static + Backend<Block>,
-	BE::State: StateBackend<Hashing>,
+	BE: 'static + sc_client_api::backend::Backend<Block>,
+	BE::State: sc_client_api::backend::StateBackend<Hashing>,
 	C: 'static
 		+ Send
 		+ Sync
-		+ ProvideRuntimeApi<Block>
-		+ HeaderBackend<Block>
-		+ StorageProvider<Block, BE>
-		+ BlockchainEvents<Block>
-		+ AuxStore
-		+ HeaderMetadata<Block, Error = BlockChainError>
-		+ ProvideRuntimeApi<Block>
-		+ AuxStore,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+		+ sc_client_api::backend::StorageProvider<Block, BE>
+		+ sc_client_api::BlockchainEvents<Block>
+		+ sc_client_api::backend::AuxStore
+		+ sp_api::ProvideRuntimeApi<Block>
+		+ sp_blockchain::HeaderBackend<Block>
+		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
+	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ BlockBuilder<Block>,
-	P: 'static + Sync + Send + TransactionPool<Block = Block>,
-	A: 'static + ChainApi<Block = Block>,
+		+ sp_block_builder::BlockBuilder<Block>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
+	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 {
 	// frontier
 	use fc_rpc::{
 		Eth, EthApiServer, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer, Net,
 		NetApiServer, Web3, Web3ApiServer,
 	};
+	use fp_rpc::NoTransactionConverter;
 	// substrate
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
@@ -131,7 +115,6 @@ where
 
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
-
 	module.merge(
 		Eth::new(
 			client.clone(),
@@ -175,7 +158,6 @@ where
 		)
 		.into_rpc(),
 	)?;
-
 	module.merge(
 		Net::new(
 			client.clone(),
@@ -185,7 +167,6 @@ where
 		)
 		.into_rpc(),
 	)?;
-
 	module.merge(Web3::new(client).into_rpc())?;
 
 	Ok(module)
