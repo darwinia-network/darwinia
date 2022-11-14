@@ -16,6 +16,7 @@ substrate-build-script-utils = { git = "https://github.com/paritytech/substrate"
 # crates.io
 clap      = { version = "3.2", features = ["derive"] }
 codec     = { package = "parity-scale-codec", version = "3.2" }
+futures   = { version = "0.3" }
 jsonrpsee = { version = "0.15", features = ["server"] }
 log       = { version = "0.4" }
 serde     = { version = "1.0", features = ["derive"] }
@@ -37,12 +38,23 @@ cumulus-relay-chain-rpc-interface       = { git = "https://github.com/paritytech
 darwinia-runtime = { path = "../runtime" }
 dc-primitives    = { path = "../core/primitives" }
 
+# frontier
+fc-cli          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-consensus    = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-db           = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-rpc          = { features = ["rpc_binary_search_estimate"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-rpc-core     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-evm          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-rpc          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-storage      = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+
 # polkadot
 polkadot-cli        = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 polkadot-parachain  = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 polkadot-service    = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
-xcm                 = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm                 = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 
 # substrate
 frame-benchmarking             = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }

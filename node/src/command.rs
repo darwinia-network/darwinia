@@ -27,9 +27,12 @@ use cumulus_primitives_core::ParaId;
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
+	frontier_service,
 	service::{self, DarwiniaRuntimeExecutor},
 };
 use darwinia_runtime::{Block, RuntimeApi};
+// frontier
+use fc_db::frontier_database_dir;
 // substrate
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use sc_cli::{
@@ -38,7 +41,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	TaskManager,
+	DatabaseSource, TaskManager,
 };
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
@@ -311,11 +314,26 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
+				// Remove Frontier DB.
+				let db_config_dir = frontier_service::db_config_dir(&config);
+				let frontier_database_config = match config.database {
+					DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+						path: frontier_database_dir(&db_config_dir, "db"),
+						cache_size: 0,
+					},
+					DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+						path: frontier_database_dir(&db_config_dir, "paritydb"),
+					},
+					_ =>
+						return Err(format!("Cannot purge `{:?}` database", config.database).into()),
+				};
+
+				cmd.base.run(frontier_database_config)?;
+
 				let polkadot_cli = RelayChainCli::new(
 					&config,
 					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
 				);
-
 				let polkadot_config = SubstrateCli::create_configuration(
 					&polkadot_cli,
 					&polkadot_cli,
@@ -339,6 +357,16 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				cmd.run(&*spec)
+			})
+		},
+		// TODO: https://github.com/darwinia-network/darwinia-2.0/issues/35
+		Some(Subcommand::FrontierDb(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| {
+				// let PartialComponents { client, other, .. } = service::new_partial(&config,
+				// &cli)?; let frontier_backend = other.2;
+				// cmd.run::<_, Block>(client, frontier_backend)
+				todo!();
 			})
 		},
 		Some(Subcommand::Benchmark(cmd)) => {
@@ -441,6 +469,8 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
+				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
+
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
 				info!("Parachain genesis state: {}", genesis_state);
@@ -452,6 +482,7 @@ pub fn run() -> Result<()> {
 					collator_options,
 					id,
 					hwbench,
+					eth_rpc_config,
 				)
 				.await
 				.map(|r| r.0)
@@ -460,7 +491,6 @@ pub fn run() -> Result<()> {
 		},
 	}
 }
-
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {

@@ -23,6 +23,8 @@
 mod chain_spec;
 mod cli;
 mod command;
+// TODO: move to another place
+mod frontier_service;
 mod rpc;
 mod service;
 

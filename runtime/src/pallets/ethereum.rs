@@ -16,50 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-mod system;
-pub use system::*;
+// darwinia
+use crate::*;
 
-mod timestamp;
-pub use timestamp::*;
-
-mod authorship;
-pub use authorship::*;
-
-mod balances;
-pub use balances::*;
-
-mod transaction_payment;
-pub use transaction_payment::*;
-
-mod parachain_system;
-pub use parachain_system::*;
-
-mod parachain_info_;
-pub use parachain_info_::*;
-
-mod aura_ext;
-pub use aura_ext::*;
-
-mod xcmp_queue;
-pub use xcmp_queue::*;
-
-mod dmp_queue;
-pub use dmp_queue::*;
-
-mod session;
-pub use session::*;
-
-mod aura;
-pub use aura::*;
-
-mod collator_selection;
-pub use collator_selection::*;
-
-mod ethereum;
-pub use ethereum::*;
-
-mod evm;
-pub use evm::*;
-
-mod base_fee;
-pub use base_fee::*;
+impl pallet_ethereum::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+}

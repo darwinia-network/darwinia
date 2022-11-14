@@ -16,50 +16,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-mod system;
-pub use system::*;
+// darwinia
+use crate::*;
 
-mod timestamp;
-pub use timestamp::*;
+frame_support::parameter_types! {
+	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+}
 
-mod authorship;
-pub use authorship::*;
+pub struct BaseFeeThreshold;
+impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
+	fn lower() -> Permill {
+		Permill::zero()
+	}
 
-mod balances;
-pub use balances::*;
+	fn ideal() -> Permill {
+		Permill::from_parts(500_000)
+	}
 
-mod transaction_payment;
-pub use transaction_payment::*;
+	fn upper() -> Permill {
+		Permill::from_parts(1_000_000)
+	}
+}
 
-mod parachain_system;
-pub use parachain_system::*;
-
-mod parachain_info_;
-pub use parachain_info_::*;
-
-mod aura_ext;
-pub use aura_ext::*;
-
-mod xcmp_queue;
-pub use xcmp_queue::*;
-
-mod dmp_queue;
-pub use dmp_queue::*;
-
-mod session;
-pub use session::*;
-
-mod aura;
-pub use aura::*;
-
-mod collator_selection;
-pub use collator_selection::*;
-
-mod ethereum;
-pub use ethereum::*;
-
-mod evm;
-pub use evm::*;
-
-mod base_fee;
-pub use base_fee::*;
+impl pallet_base_fee::Config for Runtime {
+	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
+	type DefaultElasticity = DefaultElasticity;
+	type RuntimeEvent = RuntimeEvent;
+	type Threshold = BaseFeeThreshold;
+}

@@ -18,17 +18,21 @@
 
 #![allow(clippy::derive_partial_eq_without_eq)]
 
+// std
+use std::{collections::BTreeMap, str::FromStr};
 // crates.io
 use serde::{Deserialize, Serialize};
 // cumulus
 use cumulus_primitives_core::ParaId;
 // darwinia
-use darwinia_runtime::{AuraId, EXISTENTIAL_DEPOSIT};
+use darwinia_runtime::{AuraId, DarwiniaPrecompiles, EvmConfig, Runtime, EXISTENTIAL_DEPOSIT};
 use dc_primitives::*;
+// frontier
+use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
-use sp_core::{sr25519, Pair, Public};
+use sp_core::{sr25519, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -36,6 +40,11 @@ pub type ChainSpec = sc_service::GenericChainSpec<darwinia_runtime::GenesisConfi
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
+
+/// This is the simplest bytecode to revert without returning any data.
+/// We will pre-deploy it under all of our precompiles to ensure they can be called from within
+/// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -240,5 +249,48 @@ fn testnet_genesis(
 		polkadot_xcm: darwinia_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+		ethereum: Default::default(),
+		evm: EvmConfig {
+			accounts: {
+				let mut map = BTreeMap::new();
+				map.insert(
+					// Testing account.
+					H160::from_str("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b")
+						.expect("internal `H160` is valid; qed"),
+					GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal `U256` is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+				map.insert(
+					// Benchmarking account.
+					H160::from_str("1000000000000000000000000000000000000001")
+						.expect("internal `H160` is valid; qed"),
+					GenesisAccount {
+						nonce: U256::from(1),
+						balance: U256::from(1_000_000_000_000_000_000_000_000_u128),
+						storage: Default::default(),
+						code: vec![0x00],
+					},
+				);
+
+				for precompile in DarwiniaPrecompiles::<Runtime>::used_addresses() {
+					map.insert(
+						precompile,
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: REVERT_BYTECODE.to_vec(),
+						},
+					);
+				}
+				map
+			},
+		},
+		base_fee: Default::default(),
 	}
 }

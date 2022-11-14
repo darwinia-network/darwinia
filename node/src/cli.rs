@@ -49,6 +49,9 @@ pub enum Subcommand {
 	/// Export the genesis wasm of the parachain.
 	ExportGenesisWasm(cumulus_client_cli::ExportGenesisWasmCommand),
 
+	/// Db meta columns information.
+	FrontierDb(fc_cli::FrontierDbCmd),
+
 	/// Sub-commands concerned with benchmarking.
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[clap(subcommand)]
@@ -84,6 +87,9 @@ pub struct Cli {
 	/// Relay chain arguments
 	#[clap(raw = true)]
 	pub relay_chain_args: Vec<String>,
+
+	#[clap(flatten)]
+	pub eth_args: EthArgs,
 }
 
 #[derive(Debug)]
@@ -108,4 +114,47 @@ impl RelayChainCli {
 		let base_path = para_config.base_path.as_ref().map(|x| x.path().join("polkadot"));
 		Self { base_path, chain_id, base: clap::Parser::parse_from(relay_chain_args) }
 	}
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct EthArgs {
+	/// Size in bytes of the LRU cache for block data.
+	#[clap(long, default_value = "300000000")]
+	pub eth_log_block_cache: usize,
+
+	/// Size of the LRU cache for block data and their transaction statuses.
+	#[clap(long, default_value = "300000000")]
+	pub eth_statuses_cache: usize,
+
+	/// Maximum number of logs in a query.
+	#[clap(long, default_value = "10000")]
+	pub max_past_logs: u32,
+
+	/// Maximum fee history cache size.
+	#[clap(long, default_value = "2048")]
+	pub fee_history_limit: u64,
+}
+impl EthArgs {
+	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
+		EthRpcConfig {
+			eth_statuses_cache: self.eth_statuses_cache,
+			eth_log_block_cache: self.eth_log_block_cache,
+			max_past_logs: self.max_past_logs,
+			fee_history_limit: self.fee_history_limit,
+		}
+	}
+}
+
+pub struct EthRpcConfig {
+	/// Size in bytes of the LRU cache for block data.
+	pub eth_log_block_cache: usize,
+
+	/// Size in bytes of the LRU cache for transactions statuses data.
+	pub eth_statuses_cache: usize,
+
+	/// Maximum fee history cache size.
+	pub fee_history_limit: u64,
+
+	/// Maximum fee history cache size.
+	pub max_past_logs: u32,
 }
