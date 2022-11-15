@@ -362,7 +362,7 @@ pub fn run() -> Result<()> {
 		// TODO: https://github.com/darwinia-network/darwinia-2.0/issues/35
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| {
+			runner.sync_run(|_config| {
 				// let PartialComponents { client, other, .. } = service::new_partial(&config,
 				// &cli)?; let frontier_backend = other.2;
 				// cmd.run::<_, Block>(client, frontier_backend)

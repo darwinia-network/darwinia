@@ -29,9 +29,6 @@ pub use pallets::*;
 
 mod weights;
 
-mod xcm_config;
-use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
-
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
 // crates.io

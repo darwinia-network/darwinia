@@ -113,7 +113,7 @@ jobs:
       - name: Check
         run: |
           unset RUSTC_WRAPPER
-          subalfred check features runtime
+          subalfred check features runtime/darwinia
 
   runtime-checks:
     name: Task check runtime

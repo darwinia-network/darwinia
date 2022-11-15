@@ -63,3 +63,6 @@ pub use evm::*;
 
 mod base_fee;
 pub use base_fee::*;
+
+mod polkadot_xcm;
+pub use polkadot_xcm::*;

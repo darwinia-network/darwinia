@@ -1,0 +1,27 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia Common Runtime"
+edition     = "2021"
+homepage    = "https://darwinia.network/"
+license     = "GPL-3.0"
+name        = "darwinia-common-runtime"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "6.0.0"
+
+[dependencies]
+# polkadot
+xcm          = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+# substrate
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+std = [
+	# polkadot
+	"xcm/std",
+	"xcm-executor/std",
+	# substrate
+	"frame-support/std",
+]

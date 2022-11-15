@@ -5,5 +5,5 @@ panic = "unwind"
 members = [
 	"core/*",
 	"node",
-	"runtime",
+	"runtime/*",
 ]

@@ -35,7 +35,8 @@ parachain-info                  = { default-features = false, git = "https://git
 cumulus-pallet-session-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
 
 # darwinia
-dc-primitives = { default-features = false, path = "../core/primitives" }
+darwinia-common-runtime = { default-features = false, path = "../common" }
+dc-primitives           = { default-features = false, path = "../../core/primitives" }
 
 # frontier
 fp-evm                       = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
@@ -88,9 +89,7 @@ frame-system-benchmarking = { optional = true, default-features = false, git = "
 frame-try-runtime         = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
 [features]
-default = [
-	"std",
-]
+default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
@@ -111,6 +110,7 @@ std = [
 	"cumulus-pallet-session-benchmarking?/std",
 
 	# darwinia
+	"darwinia-common-runtime/std",
 	"dc-primitives/std",
 
 	# frontier
