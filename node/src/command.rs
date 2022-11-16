@@ -20,7 +20,6 @@
 use std::net::SocketAddr;
 // crates.io
 use codec::Encode;
-use log::info;
 // cumulus
 use cumulus_primitives_core::ParaId;
 // darwinia
@@ -41,7 +40,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	DatabaseSource, TaskManager,
+	DatabaseSource, PartialComponents, TaskManager,
 };
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
@@ -53,10 +52,9 @@ macro_rules! construct_async_run {
 			let $components = service::new_partial::<
 				RuntimeApi,
 				DarwiniaRuntimeExecutor,
-				_
 			>(
 				&$config,
-				crate::service::parachain_build_import_queue,
+				&$cli.eth_args.build_eth_rpc_config()
 			)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
@@ -283,6 +281,7 @@ pub fn run() -> Result<()> {
 	match &cli.subcommand {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		},
 		Some(Subcommand::CheckBlock(cmd)) => {
@@ -346,6 +345,7 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				let state_version = Cli::native_runtime_version(&spec).state_version();
@@ -354,23 +354,27 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				cmd.run(&*spec)
 			})
 		},
-		// TODO: https://github.com/darwinia-network/darwinia-2.0/issues/35
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|_config| {
-				// let PartialComponents { client, other, .. } = service::new_partial(&config,
-				// &cli)?; let frontier_backend = other.2;
-				// cmd.run::<_, Block>(client, frontier_backend)
-				todo!();
+
+			runner.sync_run(|config| {
+				let PartialComponents { client, other: (frontier_backend, ..), .. } =
+					service::new_partial::<RuntimeApi, DarwiniaRuntimeExecutor>(
+						&config,
+						&cli.eth_args.build_eth_rpc_config(),
+					)?;
+				cmd.run::<_, dc_primitives::Block>(client, frontier_backend)
 			})
 		},
 		Some(Subcommand::Benchmark(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+
 			// Switch on the concrete benchmark sub-command-
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) =>
@@ -382,9 +386,9 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = service::new_partial::<RuntimeApi, DarwiniaRuntimeExecutor, _>(
+					let partials = service::new_partial::<RuntimeApi, DarwiniaRuntimeExecutor>(
 						&config,
-						crate::service::parachain_build_import_queue,
+						&cli.eth_args.build_eth_rpc_config(),
 					)?;
 					cmd.run(partials.client)
 				}),
@@ -416,7 +420,6 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::TryRuntime(cmd)) => {
 			if cfg!(feature = "try-runtime") {
 				let runner = cli.create_runner(cmd)?;
-
 				// grab the task manager.
 				let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
 				let task_manager =
@@ -443,38 +446,31 @@ pub fn run() -> Result<()> {
 				} else {
 					None
 				};
-
 				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
 					.ok_or("Could not find parachain ID in chain-spec.")?;
-
 				let polkadot_cli = RelayChainCli::new(
 					&config,
 					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
 				);
-
 				let id = ParaId::from(para_id);
-
 				let parachain_account =
 					AccountIdConversion::<polkadot_primitives::v2::AccountId>::into_account_truncating(&id);
-
 				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
 				let block: Block =
 					cumulus_client_cli::generate_genesis_block(&*config.chain_spec, state_version)
 						.map_err(|e| format!("{:?}", e))?;
 				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
-
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
-
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
-				info!("Parachain id: {:?}", id);
-				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
-				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+				log::info!("Parachain id: {:?}", id);
+				log::info!("Parachain Account: {}", parachain_account);
+				log::info!("Parachain genesis state: {}", genesis_state);
+				log::info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				crate::service::start_parachain_node(
 					config,
@@ -482,7 +478,7 @@ pub fn run() -> Result<()> {
 					collator_options,
 					id,
 					hwbench,
-					eth_rpc_config,
+					&eth_rpc_config,
 				)
 				.await
 				.map(|r| r.0)
