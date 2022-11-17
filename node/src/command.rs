@@ -470,7 +470,10 @@ pub fn run() -> Result<()> {
 				log::info!("Parachain id: {:?}", id);
 				log::info!("Parachain Account: {}", parachain_account);
 				log::info!("Parachain genesis state: {}", genesis_state);
-				log::info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+				log::info!(
+					"Is collating: {}",
+					if config.role.is_authority() { "yes" } else { "no" }
+				);
 
 				crate::service::start_parachain_node(
 					config,

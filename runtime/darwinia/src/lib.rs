@@ -209,8 +209,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	state_version: 1,
 };
 
-/// The existential deposit. Set to 1/10 of the Connected Relay Chain.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
+/// The existential deposit.
+pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]

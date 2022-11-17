@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 // cumulus
 use cumulus_primitives_core::ParaId;
 // darwinia
-use darwinia_runtime::{AuraId, DarwiniaPrecompiles, EvmConfig, Runtime, EXISTENTIAL_DEPOSIT};
+use darwinia_runtime::{AuraId, DarwiniaPrecompiles, EvmConfig, Runtime};
 use dc_primitives::*;
 // frontier
 use fp_evm::GenesisAccount;
@@ -226,7 +226,7 @@ fn testnet_genesis(
 		parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: darwinia_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+			candidacy_bond: UNIT,
 			..Default::default()
 		},
 		session: darwinia_runtime::SessionConfig {
