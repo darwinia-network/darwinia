@@ -38,6 +38,17 @@ cumulus-pallet-session-benchmarking = { optional = true, default-features = fals
 darwinia-common-runtime = { default-features = false, path = "../common" }
 dc-primitives           = { default-features = false, path = "../../core/primitives" }
 
+# darwinia-messages-substrate
+bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-polkadot-core       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+
 # frontier
 fp-evm                       = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 fp-rpc                       = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
@@ -113,6 +124,17 @@ std = [
 	"darwinia-common-runtime/std",
 	"dc-primitives/std",
 
+	# darwinia-messages-substrate
+	"bp-message-dispatch/std",
+	"bp-messages/std",
+	"bp-runtime/std",
+	"bp-polkadot-core/std",
+	"bridge-runtime-common/std",
+	"pallet-bridge-dispatch/std",
+	"pallet-bridge-grandpa/std",
+	"pallet-bridge-messages/std",
+	"pallet-fee-market/std",
+
 	# frontier
 	"fp-evm/std",
 	"fp-rpc/std",
@@ -175,6 +197,12 @@ runtime-benchmarks = [
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
 	# cumulus optional
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
+
+	# darwinia-messages-substrate
+	"bridge-runtime-common/runtime-benchmarks",
+	"pallet-bridge-grandpa/runtime-benchmarks",
+	"pallet-bridge-messages/runtime-benchmarks",
+	"pallet-fee-market/runtime-benchmarks",
 
 	# frontier
 	"pallet-ethereum/runtime-benchmarks",
