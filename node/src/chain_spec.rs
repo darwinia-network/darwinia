@@ -96,7 +96,7 @@ pub fn session_keys(keys: AuraId) -> darwinia_runtime::SessionKeys {
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenSymbol".into(), "RING".into());
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 18.into());
 
@@ -140,7 +140,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		None,
 		None,
-		None,
+		Some(properties),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 1000,
@@ -151,7 +151,7 @@ pub fn development_config() -> ChainSpec {
 pub fn local_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenSymbol".into(), "RING".into());
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 18.into());
 
@@ -205,6 +205,70 @@ pub fn local_testnet_config() -> ChainSpec {
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 1000,
+		},
+	)
+}
+
+pub fn shell_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "RING".into());
+	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("ss58Format".into(), 18.into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"Darwinia",
+		// ID
+		"darwinia",
+		ChainType::Live,
+		move || {
+			darwinia_runtime::GenesisConfig {
+				system: darwinia_runtime::SystemConfig {
+					code: darwinia_runtime::WASM_BINARY
+						.expect("WASM binary was not build, please build it!")
+						.to_vec(),
+				},
+				balances: Default::default(),
+				parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: 2046.into() },
+				collator_selection: darwinia_runtime::CollatorSelectionConfig {
+					invulnerables: vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
+					..Default::default()
+				},
+				session: darwinia_runtime::SessionConfig {
+					keys: vec![(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						session_keys(get_collator_keys_from_seed("Alice")),
+					)],
+				},
+				// no need to pass anything to aura, in fact it will panic if we do. Session will
+				// take care of this.
+				aura: Default::default(),
+				aura_ext: Default::default(),
+				parachain_system: Default::default(),
+				polkadot_xcm: darwinia_runtime::PolkadotXcmConfig {
+					safe_xcm_version: Some(SAFE_XCM_VERSION),
+				},
+				ethereum: Default::default(),
+				evm: Default::default(),
+				base_fee: Default::default(),
+			}
+		},
+		// Bootnodes
+		Vec::new(),
+		// Telemetry
+		None,
+		// Protocol ID
+		Some("darwinia"),
+		// Fork ID
+		None,
+		// Properties
+		Some(properties),
+		// Extensions
+		Extensions {
+			relay_chain: "polkadot".into(), // You MUST set this to the correct network!
+			para_id: 2046,
 		},
 	)
 }
