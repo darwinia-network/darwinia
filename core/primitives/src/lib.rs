@@ -28,7 +28,7 @@
 #![deny(missing_docs)]
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = sp_runtime::MultiSignature;
+pub type Signature = account::EthereumSignature;
 
 /// Some way of identifying an account on the chain.
 /// We intentionally make it equivalent to the public key of our transaction signing scheme.
@@ -50,7 +50,7 @@ pub type Hash = sp_core::H256;
 pub type BlockNumber = u32;
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+pub type Address = AccountId;
 
 /// Hashing type
 pub type Hashing = sp_runtime::traits::BlakeTwo256;
@@ -97,6 +97,3 @@ pub const MWEI: Balance = 1_000 * KWEI;
 pub const KWEI: Balance = 1_000 * WEI;
 /// 1 wei — 1
 pub const WEI: Balance = 1;
-
-/// Darwinia EVM addresses specific prefix.
-pub const EVM_ADDR_PREFIX: &[u8] = b"dvm:";

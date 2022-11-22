@@ -20,12 +20,11 @@
 use crate::*;
 use darwinia_precompile_bls12_381::BLS12381;
 use darwinia_precompile_state_storage::{EthereumStorageFilter, StateStorage};
-use dc_primitives::EVM_ADDR_PREFIX;
 // frontier
 use pallet_ethereum::EthereumBlockHashMapping;
 use pallet_evm::{
-	AddressMapping, EnsureAddressTruncated, FeeCalculator, FixedGasWeightMapping, Precompile,
-	PrecompileHandle, PrecompileResult, PrecompileSet,
+	AddressMapping, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,
+	Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
 };
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
@@ -72,21 +71,15 @@ impl FeeCalculator for FixedGasPrice {
 		(U256::from(GWEI), Weight::zero())
 	}
 }
-pub struct ConcatAddressMapping;
-impl<AccountId> AddressMapping<AccountId> for ConcatAddressMapping
-where
-	AccountId: From<[u8; 32]>,
-{
-	fn into_account_id(address: H160) -> AccountId {
-		let check_sum = |account_id: &[u8; 32]| -> u8 {
-			account_id[1..31].iter().fold(account_id[0], |sum, &byte| sum ^ byte)
-		};
 
-		let mut raw_account = [0u8; 32];
-		raw_account[0..4].copy_from_slice(EVM_ADDR_PREFIX);
-		raw_account[11..31].copy_from_slice(&address[..]);
-		raw_account[31] = check_sum(&raw_account);
-		raw_account.into()
+// TODO: Integrate to the upstream repo
+pub struct FromH160;
+impl<T> AddressMapping<T> for FromH160
+where
+	T: From<H160>,
+{
+	fn into_account_id(address: H160) -> T {
+		address.into()
 	}
 }
 
@@ -149,10 +142,10 @@ where
 }
 
 impl pallet_evm::Config for Runtime {
-	type AddressMapping = ConcatAddressMapping;
+	type AddressMapping = FromH160;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = EthereumBlockHashMapping<Self>;
-	type CallOrigin = EnsureAddressTruncated;
+	type CallOrigin = EnsureAddressRoot<AccountId>;
 	type ChainId = ChainId;
 	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
@@ -164,7 +157,7 @@ impl pallet_evm::Config for Runtime {
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightPerGas = WeightPerGas;
-	type WithdrawOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressNever<AccountId>;
 }
 
 fn addr(a: u64) -> H160 {

@@ -22,7 +22,7 @@
 use codec::{Decode, Encode, MaxEncodedLen};
 // frontier
 use fp_evm::{Precompile, PrecompileSet};
-use pallet_evm::AddressMapping;
+use pallet_evm::IdentityAddressMapping;
 // parity
 use frame_support::{
 	pallet_prelude::Weight,
@@ -33,7 +33,6 @@ use sp_core::{H160, H256, U256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	AccountId32,
 };
 use sp_std::{marker::PhantomData, prelude::*};
 // darwinia
@@ -41,6 +40,7 @@ use crate::*;
 
 pub type Block = frame_system::mocking::MockBlock<TestRuntime>;
 pub type Balance = u64;
+pub type AccountId = H160;
 pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
 
 #[derive(
@@ -86,7 +86,7 @@ frame_support::parameter_types! {
 }
 impl frame_system::Config for TestRuntime {
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type AccountId = AccountId32;
+	type AccountId = AccountId;
 	type BaseCallFilter = Everything;
 	type BlockHashCount = ();
 	type BlockLength = ();
@@ -177,15 +177,6 @@ fn addr(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
 }
 
-pub struct HashedAddressMapping;
-impl AddressMapping<AccountId32> for HashedAddressMapping {
-	fn into_account_id(address: H160) -> AccountId32 {
-		let mut data = [0u8; 32];
-		data[0..20].copy_from_slice(&address[..]);
-		AccountId32::from(Into::<[u8; 32]>::into(data))
-	}
-}
-
 frame_support::parameter_types! {
 	pub const TransactionByteFee: u64 = 1;
 	pub const ChainId: u64 = 42;
@@ -197,10 +188,10 @@ frame_support::parameter_types! {
 pub type PCall = StateStorageCall<TestRuntime, StorageFilter>;
 
 impl pallet_evm::Config for TestRuntime {
-	type AddressMapping = HashedAddressMapping;
+	type AddressMapping = IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
-	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId32>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
 	type ChainId = ChainId;
 	type Currency = Balances;
 	type FeeCalculator = ();
@@ -212,7 +203,7 @@ impl pallet_evm::Config for TestRuntime {
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightPerGas = WeightPerGas;
-	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId32>;
+	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
 frame_support::construct_runtime! {
@@ -231,20 +222,11 @@ frame_support::construct_runtime! {
 #[derive(Default)]
 pub(crate) struct ExtBuilder {
 	// endowed accounts with balances
-	balances: Vec<(AccountId32, Balance)>,
+	balances: Vec<(AccountId, Balance)>,
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(H160, Balance)>) -> Self {
-		let balances = balances
-			.iter()
-			.map(|(account, amount)| {
-				(
-					<TestRuntime as pallet_evm::Config>::AddressMapping::into_account_id(*account),
-					*amount,
-				)
-			})
-			.collect();
+	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
 		self.balances = balances;
 		self
 	}

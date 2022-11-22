@@ -32,11 +32,27 @@ use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
-use sp_core::{sr25519, Pair, Public, H160, U256};
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_core::{Pair, Public, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<darwinia_runtime::GenesisConfig, Extensions>;
+
+// These are are testnet-only keys.
+// address     = "0x75a1807b6aff253070b96ed9e43c0c5c17c7e1d4"
+// public-key  = "0x036ae37e38766cd9be397dfd42486d8aeb46c30d4b0526d12dc9f5eb6a8e4c09f5"
+// secret-seed = "0x63c24046f3b744c8cd8f74e91d9e3603577035f3119ac1389db0f461e591375d"
+#[allow(unused)]
+const COLLATOR_A: &str = "0x75a1807b6aff253070b96ed9e43c0c5c17c7e1d4";
+// address     = "0x5f69def84585715b92d397b1e92d4bf26d48d6b7"
+// public-key  = "0x03f6230f7fd8bd24a3814753c5bdd0417d5e00149e15b4bac130887e925c6a53a0"
+// secret-seed = "0xee92a5c93339cb59bdad8c088c1b3adbae7ec94110681d871ab3beb8ac6530b2"
+#[allow(unused)]
+const COLLATOR_B: &str = "0x5f69def84585715b92d397b1e92d4bf26d48d6b7";
+// address     = "0xa4e3cf11462254ed4b7ce00079eb11ca2a8b5393"
+// public-key  = "0x0218893313cc713836d57c60daedd28ee0b0823a167469af37e16f970fdb5305ef"
+// secret-seed = "0x68ade89c684eb715ad047d9a54f8a07457840194091622736d742503d148966a"
+#[allow(unused)]
+const COLLATOR_C: &str = "0xa4e3cf11462254ed4b7ce00079eb11ca2a8b5393";
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -69,21 +85,11 @@ impl Extensions {
 	}
 }
 
-type AccountPublic = <Signature as Verify>::Signer;
-
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
 pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 	get_from_seed::<AuraId>(seed)
-}
-
-/// Helper function to generate an account ID from seed
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Generate the session keys from individual elements.
@@ -111,27 +117,19 @@ pub fn development_config() -> ChainSpec {
 				// initial collators.
 				vec![
 					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						array_bytes::hex_n_into_unchecked(COLLATOR_A),
+						// Make `--alice` available for testnet.
 						get_collator_keys_from_seed("Alice"),
 					),
 					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
+						array_bytes::hex_n_into_unchecked(COLLATOR_B),
+						// Make `--bob` available for testnet.
 						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					array_bytes::hex_n_into_unchecked(COLLATOR_A),
+					array_bytes::hex_n_into_unchecked(COLLATOR_B),
 				],
 				1000.into(),
 			)
@@ -166,27 +164,19 @@ pub fn local_testnet_config() -> ChainSpec {
 				// initial collators.
 				vec![
 					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						array_bytes::hex_n_into_unchecked(COLLATOR_A),
+						// Make `--alice` available for testnet.
 						get_collator_keys_from_seed("Alice"),
 					),
 					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
+						array_bytes::hex_n_into_unchecked(COLLATOR_B),
+						// Make `--bob` available for testnet.
 						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					array_bytes::hex_n_into_unchecked(COLLATOR_A),
+					array_bytes::hex_n_into_unchecked(COLLATOR_B),
 				],
 				1000.into(),
 			)
@@ -231,14 +221,16 @@ pub fn shell_config() -> ChainSpec {
 				},
 				balances: Default::default(),
 				parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: 2046.into() },
+				// TODO: update this before final release
 				collator_selection: darwinia_runtime::CollatorSelectionConfig {
-					invulnerables: vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
+					invulnerables: vec![array_bytes::hex_n_into_unchecked(COLLATOR_A)],
 					..Default::default()
 				},
+				// TODO: update this before final release
 				session: darwinia_runtime::SessionConfig {
 					keys: vec![(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						array_bytes::hex_n_into_unchecked(COLLATOR_A),
+						array_bytes::hex_n_into_unchecked(COLLATOR_A),
 						session_keys(get_collator_keys_from_seed("Alice")),
 					)],
 				},
@@ -280,9 +272,7 @@ fn testnet_genesis(
 ) -> darwinia_runtime::GenesisConfig {
 	darwinia_runtime::GenesisConfig {
 		system: darwinia_runtime::SystemConfig {
-			code: darwinia_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
+			code: darwinia_runtime::WASM_BINARY.unwrap().to_vec(),
 		},
 		balances: darwinia_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
@@ -298,7 +288,7 @@ fn testnet_genesis(
 				.into_iter()
 				.map(|(acc, aura)| {
 					(
-						acc.clone(),        // account id
+						acc,                // account id
 						acc,                // validator id
 						session_keys(aura), // session keys
 					)
@@ -316,43 +306,44 @@ fn testnet_genesis(
 		ethereum: Default::default(),
 		evm: EvmConfig {
 			accounts: {
-				let mut map = BTreeMap::new();
-				map.insert(
-					// Testing account.
-					H160::from_str("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-						.expect("internal `H160` is valid; qed"),
-					GenesisAccount {
-						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-							.expect("internal `U256` is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map.insert(
-					// Benchmarking account.
-					H160::from_str("1000000000000000000000000000000000000001")
-						.expect("internal `H160` is valid; qed"),
-					GenesisAccount {
-						nonce: U256::from(1),
-						balance: U256::from(1_000_000_000_000_000_000_000_000_u128),
-						storage: Default::default(),
-						code: vec![0x00],
-					},
-				);
-
-				for precompile in DarwiniaPrecompiles::<Runtime>::used_addresses() {
-					map.insert(
-						precompile,
-						GenesisAccount {
-							nonce: Default::default(),
-							balance: Default::default(),
-							storage: Default::default(),
-							code: REVERT_BYTECODE.to_vec(),
-						},
-					);
-				}
-				map
+				BTreeMap::from_iter(
+					DarwiniaPrecompiles::<Runtime>::used_addresses()
+						.iter()
+						.map(|p| {
+							(
+								p.to_owned(),
+								GenesisAccount {
+									nonce: Default::default(),
+									balance: Default::default(),
+									storage: Default::default(),
+									code: REVERT_BYTECODE.to_vec(),
+								},
+							)
+						})
+						.chain([
+							// Testing account.
+							(
+								H160::from_str("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b")
+									.unwrap(),
+								GenesisAccount {
+									balance: (10_000_000 * UNIT).into(),
+									code: Default::default(),
+									nonce: Default::default(),
+									storage: Default::default(),
+								},
+							),
+							// Benchmarking account.
+							(
+								H160::from_str("1000000000000000000000000000000000000001").unwrap(),
+								GenesisAccount {
+									nonce: 1.into(),
+									balance: (10_000_000 * UNIT).into(),
+									storage: Default::default(),
+									code: vec![0x00],
+								},
+							),
+						]),
+				)
 			},
 		},
 		base_fee: Default::default(),

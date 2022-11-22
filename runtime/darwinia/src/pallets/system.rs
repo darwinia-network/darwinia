@@ -83,7 +83,7 @@ impl frame_system::Config for Runtime {
 	/// The index type for storing how many extrinsics an account has signed.
 	type Index = Index;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = sp_runtime::traits::AccountIdLookup<AccountId, ()>;
+	type Lookup = sp_runtime::traits::IdentityLookup<AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	/// What to do if an account is fully reaped from the system.
 	type OnKilledAccount = ();

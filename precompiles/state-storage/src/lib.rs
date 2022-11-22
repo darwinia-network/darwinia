@@ -39,14 +39,6 @@ pub trait StorageFilterT {
 pub struct StateStorage<Runtime, Filter> {
 	_marker: PhantomData<(Runtime, Filter)>,
 }
-
-pub struct EthereumStorageFilter;
-impl StorageFilterT for EthereumStorageFilter {
-	fn allow(prefix: &[u8]) -> bool {
-		prefix != Twox128::hash(b"EVM") && prefix != Twox128::hash(b"Ethereum")
-	}
-}
-
 #[precompile_utils::precompile]
 impl<Runtime, Filter> StateStorage<Runtime, Filter>
 where
@@ -66,7 +58,14 @@ where
 			return Err(revert("Read restriction"));
 		}
 
-		let output = frame_support::storage::unhashed::get_raw(&bytes);
+		let output = frame_support::storage::unhashed::get_raw(bytes);
 		Ok(output.unwrap_or_default().as_slice().into())
+	}
+}
+
+pub struct EthereumStorageFilter;
+impl StorageFilterT for EthereumStorageFilter {
+	fn allow(prefix: &[u8]) -> bool {
+		prefix != Twox128::hash(b"EVM") && prefix != Twox128::hash(b"Ethereum")
 	}
 }

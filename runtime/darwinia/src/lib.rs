@@ -100,6 +100,38 @@ pub type Executive = frame_executive::Executive<
 	AllPalletsWithSystem,
 >;
 
+// TODO: move to impl.rs
+pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
+impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
+	for DealWithFees<R>
+where
+	R: pallet_balances::Config, /* R: pallet_balances::Config + pallet_treasury::Config,
+	                             * pallet_treasury::Pallet<R>:
+	                             * OnUnbalanced<pallet_balances::NegativeImbalance<R>>, */
+{
+	// this seems to be called for substrate-based transactions
+	fn on_unbalanceds<B>(
+		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
+	) {
+		if let Some(fees) = fees_then_tips.next() {
+			// for fees, 80% are burned, 20% to the treasury
+			// let (_, to_treasury) = fees.ration(80, 20);
+			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
+			// total_supply accordingly
+			// <pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+		}
+	}
+
+	// this is called from pallet_evm for Ethereum-based transactions
+	// (technically, it calls on_unbalanced, which calls this when non-zero)
+	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
+		// Balances pallet automatically burns dropped Negative Imbalances by decreasing
+		// total_supply accordingly
+		// let (_, to_treasury) = amount.ration(80, 20);
+		// <pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+	}
+}
+
 impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	type SignedInfo = H160;
 
@@ -187,12 +219,6 @@ impl WeightToFeePolynomial for WeightToFee {
 			coeff_frac: Perbill::from_rational(p % q, q),
 			coeff_integer: p / q,
 		}]
-	}
-}
-
-sp_runtime::impl_opaque_keys! {
-	pub struct SessionKeys {
-		pub aura: Aura,
 	}
 }
 

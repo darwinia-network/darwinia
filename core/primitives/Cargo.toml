@@ -10,12 +10,19 @@ repository  = "https://github.com/darwinia-network/darwinia"
 version     = "6.0.0"
 
 [dependencies]
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+# moonbeam
+account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
+# substrate
+sp-core    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
 
 [features]
 default = ["std"]
 std = [
+	# moonbeam
+	"account/std",
+	# substrate
 	"sp-core/std",
 	"sp-runtime/std",
 ]

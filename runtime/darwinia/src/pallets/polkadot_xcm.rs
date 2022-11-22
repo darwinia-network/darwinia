@@ -19,10 +19,11 @@
 // darwinia
 use crate::*;
 use darwinia_common_runtime::xcm_barrier::*;
+// moonbeam
+use xcm_primitives::*;
 // polkadot
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
-use polkadot_runtime_common::impls::ToAuthor;
 use xcm::latest::prelude::*;
 use xcm_builder::*;
 use xcm_executor::XcmExecutor;
@@ -55,8 +56,8 @@ pub type LocationToAccountId = (
 	ParentIsPreset<AccountId>,
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
 	SiblingParachainConvertsVia<Sibling, AccountId>,
-	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
-	AccountId32Aliases<RelayNetwork, AccountId>,
+	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
+	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -74,7 +75,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
 	// Native signed account converter; this just converts an `AccountId32` origin into a normal
 	// `RuntimeOrigin::Signed` origin of the same 32-byte value.
-	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
+	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	XcmPassthrough<RuntimeOrigin>,
 );
@@ -117,18 +118,18 @@ impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type SubscriptionService = PolkadotXcm;
 	type Trader =
-		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, DealWithFees<Runtime>>;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
 pub type XcmRouter = (
 	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, ()>,
+	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
 );

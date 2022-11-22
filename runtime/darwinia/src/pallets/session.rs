@@ -19,6 +19,12 @@
 // darwinia
 use crate::*;
 
+sp_runtime::impl_opaque_keys! {
+	pub struct SessionKeys {
+		pub aura: Aura,
+	}
+}
+
 frame_support::parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
 	pub const Offset: u32 = 0;
