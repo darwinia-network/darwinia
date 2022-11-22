@@ -18,6 +18,8 @@
 
 // darwinia
 use crate::*;
+use darwinia_precompile_bls12_381::BLS12381;
+use darwinia_precompile_state_storage::{EthereumStorageFilter, StateStorage};
 use dc_primitives::EVM_ADDR_PREFIX;
 // frontier
 use pallet_ethereum::EthereumBlockHashMapping;
@@ -27,6 +29,7 @@ use pallet_evm::{
 };
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
+use pallet_evm_precompile_dispatch::Dispatch;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 // substrate
@@ -69,7 +72,6 @@ impl FeeCalculator for FixedGasPrice {
 		(U256::from(GWEI), Weight::zero())
 	}
 }
-
 pub struct ConcatAddressMapping;
 impl<AccountId> AddressMapping<AccountId> for ConcatAddressMapping
 where
@@ -98,8 +100,21 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 9] {
-		[addr(1), addr(2), addr(3), addr(4), addr(5), addr(6), addr(7), addr(8), addr(9)]
+	pub fn used_addresses() -> [H160; 12] {
+		[
+			addr(1),
+			addr(2),
+			addr(3),
+			addr(4),
+			addr(5),
+			addr(6),
+			addr(7),
+			addr(8),
+			addr(9),
+			addr(1024),
+			addr(1025),
+			addr(2048),
+		]
 	}
 }
 impl<R> PrecompileSet for DarwiniaPrecompiles<R>
@@ -118,7 +133,12 @@ where
 			a if a == addr(7) => Some(Bn128Mul::execute(handle)),
 			a if a == addr(8) => Some(Bn128Pairing::execute(handle)),
 			a if a == addr(9) => Some(Blake2F::execute(handle)),
-			// Non-Frontier specific nor Ethereum precompiles:
+			// Darwinia precompiles: 1024+ for stable precompiles.
+			a if a == addr(1024) =>
+				Some(<StateStorage<Runtime, EthereumStorageFilter>>::execute(handle)),
+			a if a == addr(1025) => Some(<Dispatch<Runtime>>::execute(handle)),
+			// Darwinia precompiles: 2048+ for experimental precompiles.
+			a if a == addr(2048) => Some(<BLS12381<Runtime>>::execute(handle)),
 			_ => None,
 		}
 	}
