@@ -275,7 +275,7 @@ fn testnet_genesis(
 			code: darwinia_runtime::WASM_BINARY.unwrap().to_vec(),
 		},
 		balances: darwinia_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
 		},
 		parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: darwinia_runtime::CollatorSelectionConfig {
