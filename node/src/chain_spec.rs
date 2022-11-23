@@ -37,30 +37,21 @@ use sp_core::{Pair, Public, H160};
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<darwinia_runtime::GenesisConfig, Extensions>;
 
-// These are are testnet-only keys.
-// address     = "0x75a1807b6aff253070b96ed9e43c0c5c17c7e1d4"
-// public-key  = "0x036ae37e38766cd9be397dfd42486d8aeb46c30d4b0526d12dc9f5eb6a8e4c09f5"
-// secret-seed = "0x63c24046f3b744c8cd8f74e91d9e3603577035f3119ac1389db0f461e591375d"
-#[allow(unused)]
-const COLLATOR_A: &str = "0x75a1807b6aff253070b96ed9e43c0c5c17c7e1d4";
-// address     = "0x5f69def84585715b92d397b1e92d4bf26d48d6b7"
-// public-key  = "0x03f6230f7fd8bd24a3814753c5bdd0417d5e00149e15b4bac130887e925c6a53a0"
-// secret-seed = "0xee92a5c93339cb59bdad8c088c1b3adbae7ec94110681d871ab3beb8ac6530b2"
-#[allow(unused)]
-const COLLATOR_B: &str = "0x5f69def84585715b92d397b1e92d4bf26d48d6b7";
-// address     = "0xa4e3cf11462254ed4b7ce00079eb11ca2a8b5393"
-// public-key  = "0x0218893313cc713836d57c60daedd28ee0b0823a167469af37e16f970fdb5305ef"
-// secret-seed = "0x68ade89c684eb715ad047d9a54f8a07457840194091622736d742503d148966a"
-#[allow(unused)]
-const COLLATOR_C: &str = "0xa4e3cf11462254ed4b7ce00079eb11ca2a8b5393";
-
-/// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
-
 /// This is the simplest bytecode to revert without returning any data.
 /// We will pre-deploy it under all of our precompiles to ensure they can be called from within
 /// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
 pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+// These are are testnet-only keys.
+const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
+const CHARLETH: &str = "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
+const DOROTHY: &str = "0x773539d4Ac0e786233D90A233654ccEE26a613D9";
+const ETHAN: &str = "0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
+const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
+
+/// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -116,20 +107,24 @@ pub fn development_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
+					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(COLLATOR_A),
-						// Make `--alice` available for testnet.
+						array_bytes::hex_n_into_unchecked(ALITH),
 						get_collator_keys_from_seed("Alice"),
 					),
+					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(COLLATOR_B),
-						// Make `--bob` available for testnet.
+						array_bytes::hex_n_into_unchecked(BALTATHAR),
 						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				vec![
-					array_bytes::hex_n_into_unchecked(COLLATOR_A),
-					array_bytes::hex_n_into_unchecked(COLLATOR_B),
+					array_bytes::hex_n_into_unchecked(ALITH),
+					array_bytes::hex_n_into_unchecked(BALTATHAR),
+					array_bytes::hex_n_into_unchecked(CHARLETH),
+					array_bytes::hex_n_into_unchecked(DOROTHY),
+					array_bytes::hex_n_into_unchecked(ETHAN),
+					array_bytes::hex_n_into_unchecked(FAITH),
 				],
 				1000.into(),
 			)
@@ -163,20 +158,24 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
+					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(COLLATOR_A),
-						// Make `--alice` available for testnet.
+						array_bytes::hex_n_into_unchecked(ALITH),
 						get_collator_keys_from_seed("Alice"),
 					),
+					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(COLLATOR_B),
-						// Make `--bob` available for testnet.
+						array_bytes::hex_n_into_unchecked(BALTATHAR),
 						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				vec![
-					array_bytes::hex_n_into_unchecked(COLLATOR_A),
-					array_bytes::hex_n_into_unchecked(COLLATOR_B),
+					array_bytes::hex_n_into_unchecked(ALITH),
+					array_bytes::hex_n_into_unchecked(BALTATHAR),
+					array_bytes::hex_n_into_unchecked(CHARLETH),
+					array_bytes::hex_n_into_unchecked(DOROTHY),
+					array_bytes::hex_n_into_unchecked(ETHAN),
+					array_bytes::hex_n_into_unchecked(FAITH),
 				],
 				1000.into(),
 			)
@@ -223,14 +222,14 @@ pub fn shell_config() -> ChainSpec {
 				parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: 2046.into() },
 				// TODO: update this before final release
 				collator_selection: darwinia_runtime::CollatorSelectionConfig {
-					invulnerables: vec![array_bytes::hex_n_into_unchecked(COLLATOR_A)],
+					invulnerables: vec![array_bytes::hex_n_into_unchecked(ALITH)],
 					..Default::default()
 				},
 				// TODO: update this before final release
 				session: darwinia_runtime::SessionConfig {
 					keys: vec![(
-						array_bytes::hex_n_into_unchecked(COLLATOR_A),
-						array_bytes::hex_n_into_unchecked(COLLATOR_A),
+						array_bytes::hex_n_into_unchecked(ALITH),
+						array_bytes::hex_n_into_unchecked(ALITH),
 						session_keys(get_collator_keys_from_seed("Alice")),
 					)],
 				},
