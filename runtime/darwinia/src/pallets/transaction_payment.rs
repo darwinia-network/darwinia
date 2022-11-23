@@ -19,17 +19,12 @@
 // darwinia
 use crate::*;
 
-frame_support::parameter_types! {
-	/// Relay Chain `TransactionByteFee` / 10
-	pub const TransactionByteFee: Balance = 10 * MICROUNIT;
-	pub const OperationalFeeMultiplier: u8 = 5;
-}
-
 impl pallet_transaction_payment::Config for Runtime {
 	type FeeMultiplierUpdate = polkadot_runtime_common::SlowAdjustingFeeUpdate<Self>;
-	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
+	// Relay Chain `TransactionByteFee` / 10
+	type LengthToFee = ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
 	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
-	type OperationalFeeMultiplier = OperationalFeeMultiplier;
+	type OperationalFeeMultiplier = sp_runtime::traits::ConstU8<5>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightToFee = WeightToFee;
 }

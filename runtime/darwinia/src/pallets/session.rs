@@ -28,7 +28,6 @@ sp_runtime::impl_opaque_keys! {
 frame_support::parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
 	pub const Offset: u32 = 0;
-	pub const MaxAuthorities: u32 = 100_000;
 }
 
 impl pallet_session::Config for Runtime {

@@ -16,7 +16,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(not(feature = "std"), no_std)]
+// darwinia
+use crate::*;
 
-pub mod gov_origin;
-pub mod xcm_barrier;
+impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
+	type AddOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
+	type MembershipChanged = TechnicalCommittee;
+	type MembershipInitialized = TechnicalCommittee;
+	type PrimeOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type RemoveOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type ResetOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type RuntimeEvent = RuntimeEvent;
+	type SwapOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type WeightInfo = ();
+}

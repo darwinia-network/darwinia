@@ -205,6 +205,7 @@ pub fn shell_config() -> ChainSpec {
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 18.into());
 
+	// TODO: update this before final release
 	ChainSpec::from_genesis(
 		// Name
 		"Darwinia",
@@ -213,19 +214,24 @@ pub fn shell_config() -> ChainSpec {
 		ChainType::Live,
 		move || {
 			darwinia_runtime::GenesisConfig {
+				// System stuff.
 				system: darwinia_runtime::SystemConfig {
 					code: darwinia_runtime::WASM_BINARY
 						.expect("WASM binary was not build, please build it!")
 						.to_vec(),
 				},
-				balances: Default::default(),
+				parachain_system: Default::default(),
 				parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: 2046.into() },
-				// TODO: update this before final release
+
+				// Monetary stuff.
+				balances: Default::default(),
+				transaction_payment: Default::default(),
+
+				// Consensus stuff.
 				collator_selection: darwinia_runtime::CollatorSelectionConfig {
 					invulnerables: vec![array_bytes::hex_n_into_unchecked(ALITH)],
 					..Default::default()
 				},
-				// TODO: update this before final release
 				session: darwinia_runtime::SessionConfig {
 					keys: vec![(
 						array_bytes::hex_n_into_unchecked(ALITH),
@@ -237,10 +243,25 @@ pub fn shell_config() -> ChainSpec {
 				// take care of this.
 				aura: Default::default(),
 				aura_ext: Default::default(),
-				parachain_system: Default::default(),
+
+				// Governance stuff.
+				democracy: Default::default(),
+				council: Default::default(),
+				technical_committee: Default::default(),
+				phragmen_election: Default::default(),
+				technical_membership: Default::default(),
+				treasury: Default::default(),
+
+				// Utility stuff.
+				sudo: Default::default(),
+				vesting: Default::default(),
+
+				// XCM stuff.
 				polkadot_xcm: darwinia_runtime::PolkadotXcmConfig {
 					safe_xcm_version: Some(SAFE_XCM_VERSION),
 				},
+
+				// EVM stuff.
 				ethereum: Default::default(),
 				evm: Default::default(),
 				base_fee: Default::default(),
@@ -270,13 +291,20 @@ fn testnet_genesis(
 	id: ParaId,
 ) -> darwinia_runtime::GenesisConfig {
 	darwinia_runtime::GenesisConfig {
+		// System stuff.
 		system: darwinia_runtime::SystemConfig {
 			code: darwinia_runtime::WASM_BINARY.unwrap().to_vec(),
 		},
+		parachain_system: Default::default(),
+		parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: id },
+
+		// Monetary stuff.
 		balances: darwinia_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
 		},
-		parachain_info: darwinia_runtime::ParachainInfoConfig { parachain_id: id },
+		transaction_payment: Default::default(),
+
+		// Consensus stuff.
 		collator_selection: darwinia_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: UNIT,
@@ -298,10 +326,25 @@ fn testnet_genesis(
 		// of this.
 		aura: Default::default(),
 		aura_ext: Default::default(),
-		parachain_system: Default::default(),
+
+		// Governance stuff.
+		democracy: Default::default(),
+		council: Default::default(),
+		technical_committee: Default::default(),
+		phragmen_election: Default::default(),
+		technical_membership: Default::default(),
+		treasury: Default::default(),
+
+		// Utility stuff.
+		sudo: Default::default(),
+		vesting: Default::default(),
+
+		// XCM stuff.
 		polkadot_xcm: darwinia_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+
+		// EVM stuff.
 		ethereum: Default::default(),
 		evm: EvmConfig {
 			accounts: {

@@ -16,7 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(not(feature = "std"), no_std)]
+// darwinia
+use crate::*;
 
-pub mod gov_origin;
-pub mod xcm_barrier;
+impl pallet_preimage::Config for Runtime {
+	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
+	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
+	type Currency = Balances;
+	type ManagerOrigin = Root;
+	type MaxSize = ConstU32<{ 4096 * 1024 }>;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+}

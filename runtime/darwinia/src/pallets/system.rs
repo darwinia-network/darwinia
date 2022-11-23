@@ -32,7 +32,6 @@ pub const MAXIMUM_BLOCK_WEIGHT: Weight =
 	frame_support::weights::constants::WEIGHT_PER_SECOND.saturating_div(2);
 
 frame_support::parameter_types! {
-	pub const BlockHashCount: BlockNumber = 2400;
 	pub const Version: sp_version::RuntimeVersion = VERSION;
 	pub RuntimeBlockLength: frame_system::limits::BlockLength =
 		frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
@@ -54,7 +53,6 @@ frame_support::parameter_types! {
 		})
 		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
 		.build_or_panic();
-	pub const SS58Prefix: u8 = 42;
 }
 
 impl frame_system::Config for Runtime {
@@ -65,7 +63,7 @@ impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = frame_support::traits::Everything;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-	type BlockHashCount = BlockHashCount;
+	type BlockHashCount = ConstU32<2400>;
 	/// The maximum length of a block (in bytes).
 	type BlockLength = RuntimeBlockLength;
 	/// The index type for blocks.
@@ -100,7 +98,7 @@ impl frame_system::Config for Runtime {
 	/// The ubiquitous origin type.
 	type RuntimeOrigin = RuntimeOrigin;
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-	type SS58Prefix = SS58Prefix;
+	type SS58Prefix = ConstU16<18>;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	/// Runtime version.

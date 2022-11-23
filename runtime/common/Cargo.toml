@@ -10,18 +10,30 @@ repository  = "https://github.com/darwinia-network/darwinia"
 version     = "6.0.0"
 
 [dependencies]
+# darwinia
+dc-primitives = { default-features = false, path = "../../core/primitives" }
+
 # polkadot
 xcm          = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+
 # substrate
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-support     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-collective = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
 [features]
 default = ["std"]
 std = [
+	# darwinia
+	"dc-primitives/std",
+
 	# polkadot
 	"xcm/std",
 	"xcm-executor/std",
+
 	# substrate
 	"frame-support/std",
+	"frame-system/std",
+	"pallet-collective/std",
 ]

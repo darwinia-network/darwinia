@@ -31,8 +31,6 @@ mod weights;
 
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
-// crates.io
-use smallvec::smallvec;
 // cumulus
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 // darwinia
@@ -43,6 +41,7 @@ use xcm_executor::XcmExecutor;
 // substrate
 use frame_support::{
 	dispatch::DispatchClass,
+	traits::{Imbalance, OnUnbalanced},
 	weights::{
 		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
@@ -100,14 +99,38 @@ pub type Executive = frame_executive::Executive<
 	AllPalletsWithSystem,
 >;
 
+/// Darwinia proposal base fee.
+pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5000 * UNIT;
+
+/// Runtime version.
+#[sp_version::runtime_version]
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
+	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
+	authoring_version: 0,
+	spec_version: 6_0_0_0,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 0,
+	state_version: 0,
+};
+
+/// Deposit calculator for Darwinia.
+/// 100 UNIT for the base fee, 102.4 UNIT/MB.
+pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+	// First try.
+	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
+	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
+}
+
 // TODO: move to impl.rs
 pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
 impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
 	for DealWithFees<R>
 where
-	R: pallet_balances::Config, /* R: pallet_balances::Config + pallet_treasury::Config,
-	                             * pallet_treasury::Pallet<R>:
-	                             * OnUnbalanced<pallet_balances::NegativeImbalance<R>>, */
+	R: pallet_balances::Config,
+	R: pallet_balances::Config + pallet_treasury::Config,
+	pallet_treasury::Pallet<R>: OnUnbalanced<pallet_balances::NegativeImbalance<R>>,
 {
 	// this seems to be called for substrate-based transactions
 	fn on_unbalanceds<B>(
@@ -115,10 +138,11 @@ where
 	) {
 		if let Some(fees) = fees_then_tips.next() {
 			// for fees, 80% are burned, 20% to the treasury
-			// let (_, to_treasury) = fees.ration(80, 20);
+			let (_, to_treasury) = fees.ration(80, 20);
+
 			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 			// total_supply accordingly
-			// <pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+			<pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
 		}
 	}
 
@@ -127,8 +151,9 @@ where
 	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
 		// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 		// total_supply accordingly
-		// let (_, to_treasury) = amount.ration(80, 20);
-		// <pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+		let (_, to_treasury) = amount.ration(80, 20);
+
+		<pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
 	}
 }
 
@@ -213,7 +238,7 @@ impl WeightToFeePolynomial for WeightToFee {
 		// here, we map to 1/10 of that, or 1/10 MILLIUNIT
 		let p = MILLIUNIT / 10;
 		let q = 100 * Balance::from(weights::ExtrinsicBaseWeight::get().ref_time());
-		smallvec![WeightToFeeCoefficient {
+		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
 			coeff_frac: Perbill::from_rational(p % q, q),
@@ -221,22 +246,6 @@ impl WeightToFeePolynomial for WeightToFee {
 		}]
 	}
 }
-
-/// Runtime version.
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
-	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
-	authoring_version: 0,
-	spec_version: 6_0_0_0,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 0,
-	state_version: 0,
-};
-
-/// The existential deposit.
-pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -252,34 +261,53 @@ frame_support::construct_runtime! {
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		// System stuff.
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
-		ParachainSystem: cumulus_pallet_parachain_system::{
-			Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
-		} = 1,
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
-		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		Timestamp: pallet_timestamp = 2,
+		ParachainInfo: parachain_info = 3,
 
 		// Monetary stuff.
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
-		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 5,
+		// Leave 4 here.
+		// To keep balances consistent with the existing XCM configurations.
+		Balances: pallet_balances = 5,
+		TransactionPayment: pallet_transaction_payment = 6,
 
 		// Consensus stuff.
-		Authorship: pallet_authorship::{Pallet, Call, Storage} = 6,
-		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 7,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 8,
-		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 9,
-		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 10,
+		Authorship: pallet_authorship = 7,
+		CollatorSelection: pallet_collator_selection = 8,
+		Session: pallet_session = 9,
+		Aura: pallet_aura = 10,
+		AuraExt: cumulus_pallet_aura_ext = 11,
+
+		// Governance stuff.
+		Democracy: pallet_democracy = 12,
+		Council: pallet_collective::<Instance1> = 13,
+		TechnicalCommittee: pallet_collective::<Instance2> = 14,
+		PhragmenElection: pallet_elections_phragmen = 15,
+		TechnicalMembership: pallet_membership::<Instance1> = 16,
+		Treasury: pallet_treasury = 17,
+		Tips: pallet_tips = 18,
+
+		// Utility stuff.
+		Sudo: pallet_sudo = 19,
+		Vesting: pallet_vesting = 20,
+		Utility: pallet_utility = 21,
+		Identity: pallet_identity = 22,
+		Scheduler: pallet_scheduler = 23,
+		Preimage: pallet_preimage = 24,
+		Proxy: pallet_proxy = 25,
+		Multisig: pallet_multisig = 26,
 
 		// XCM stuff.
-		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 11,
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Config} = 12,
-		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 13,
-		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 14,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 27,
+		PolkadotXcm: pallet_xcm = 28,
+		CumulusXcm: cumulus_pallet_xcm = 29,
+		DmpQueue: cumulus_pallet_dmp_queue = 30,
 
 		// EVM stuff.
-		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Config, Event, Origin} = 15,
-		Evm: pallet_evm::{Pallet, Call, Storage, Config, Event<T>} = 16,
-		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 17,
+		Ethereum: pallet_ethereum = 31,
+		Evm: pallet_evm = 32,
+		BaseFee: pallet_base_fee = 33,
 	}
 }
 
@@ -419,7 +447,7 @@ sp_api::impl_runtime_apis! {
 
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
-			<Runtime as pallet_evm::Config>::ChainId::get()
+			<<Runtime as pallet_evm::Config>::ChainId as frame_support::traits::Get<u64>>::get()
 		}
 
 		fn account_basic(address: H160) -> pallet_evm::Account {

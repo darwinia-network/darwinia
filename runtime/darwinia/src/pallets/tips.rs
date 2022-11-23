@@ -16,7 +16,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(not(feature = "std"), no_std)]
+// darwinia
+use crate::*;
 
-pub mod gov_origin;
-pub mod xcm_barrier;
+frame_support::parameter_types! {
+	pub const TipFindersFee: sp_runtime::Percent = sp_runtime::Percent::from_percent(20);
+}
+
+impl pallet_tips::Config for Runtime {
+	type DataDepositPerByte = ConstU128<{ darwinia_deposit(0, 1) }>;
+	type MaximumReasonLength = ConstU32<16384>;
+	type RuntimeEvent = RuntimeEvent;
+	type TipCountdown = ConstU32<DAYS>;
+	type TipFindersFee = TipFindersFee;
+	type TipReportDepositBase = ConstU128<{ 100 * UNIT }>;
+	type Tippers = PhragmenElection;
+	type WeightInfo = ();
+}

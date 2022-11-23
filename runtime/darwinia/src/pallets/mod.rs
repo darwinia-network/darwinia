@@ -16,53 +16,84 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+mod shared_imports {
+	// darwinia
+	pub use darwinia_common_runtime::gov_origin::*;
+	// substrate
+	pub use sp_runtime::traits::{ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8};
+}
+pub use shared_imports::*;
+
+// System stuffs.
 mod system;
 pub use system::*;
 
-mod timestamp;
-pub use timestamp::*;
-
-mod authorship;
-pub use authorship::*;
-
-mod balances;
-pub use balances::*;
-
-mod transaction_payment;
-pub use transaction_payment::*;
-
 mod parachain_system;
-pub use parachain_system::*;
+
+mod timestamp;
 
 mod parachain_info_;
-pub use parachain_info_::*;
 
-mod aura_ext;
-pub use aura_ext::*;
+// Monetary stuff.
+mod balances;
 
-mod xcmp_queue;
-pub use xcmp_queue::*;
+mod transaction_payment;
 
-mod dmp_queue;
-pub use dmp_queue::*;
+// Consensus stuff.
+mod authorship;
+
+mod collator_selection;
 
 mod session;
 pub use session::*;
 
 mod aura;
-pub use aura::*;
 
-mod collator_selection;
-pub use collator_selection::*;
+mod aura_ext;
 
+// Governance stuff.
+mod democracy;
+
+mod collective;
+pub use collective::*;
+
+mod elections_phragmen;
+
+mod membership;
+
+mod treasury;
+
+mod tips;
+
+// Utility stuff.
+mod sudo;
+
+mod vesting;
+
+mod utility;
+
+mod identity;
+
+mod scheduler;
+
+mod preimage;
+
+mod proxy;
+
+mod multisig;
+
+// XCM stuff.
+mod xcmp_queue;
+
+mod polkadot_xcm;
+pub use polkadot_xcm::*;
+
+mod dmp_queue;
+
+// EVM stuff.
 mod ethereum;
-pub use ethereum::*;
 
 mod evm;
 pub use evm::*;
 
 mod base_fee;
-pub use base_fee::*;
-
-mod polkadot_xcm;
-pub use polkadot_xcm::*;
