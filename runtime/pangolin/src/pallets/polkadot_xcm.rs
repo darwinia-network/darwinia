@@ -45,7 +45,7 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 >;
 
 frame_support::parameter_types! {
-	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+	pub const RelayNetwork: NetworkId = NetworkId::Any;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 }
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used

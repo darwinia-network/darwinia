@@ -135,10 +135,26 @@ jobs:
         run: |
           tar xf darwinia.tar.zst -I pzstd
           sudo mv darwinia /usr/bin
+      - id: check-crab-runtime-version
+        name: Check Crab runtime version
+        run: |
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-local --live https://rpc.polkadot.io --property version)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-crab-runtime-version::$OUTPUT"
+      - id: check-crab-runtime-storage
+        name: Check Crab runtime storage
+        run: |
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-local --live https://rpc.polkadot.io --property storage)
+          OUTPUT="${OUTPUT//'%'/'%25'}​"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "::set-output name=check-crab-runtime-storage::$OUTPUT"
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain local --live https://rpc.polkadot.io --property version)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-local --live https://rpc.polkadot.io --property version)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -146,7 +162,7 @@ jobs:
       - id: check-darwinia-runtime-storage
         name: Check Darwinia runtime storage
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain local --live https://rpc.polkadot.io --property storage)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-local --live https://rpc.polkadot.io --property storage)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"

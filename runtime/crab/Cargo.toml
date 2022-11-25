@@ -1,0 +1,329 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Crab runtime."
+edition     = "2021"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "crab-runtime"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "6.0.0"
+
+[build-dependencies]
+substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[dependencies]
+# crates.io
+codec             = { package = "parity-scale-codec", version = "3.2", default-features = false, features = ["derive"] }
+scale-info        = { version = "2.3", default-features = false, features = ["derive"] }
+smallvec          = { version = "1.10" }
+static_assertions = { version = "1.1" }
+# crates.io optional
+array-bytes = { version = "4.1", optional = true }
+
+# cumulus
+cumulus-pallet-aura-ext         = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-pallet-dmp-queue        = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-pallet-parachain-system = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-pallet-xcm              = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-pallet-xcmp-queue       = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-primitives-core         = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-primitives-timestamp    = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+cumulus-primitives-utility      = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+pallet-collator-selection       = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+parachain-info                  = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+# cumulus optional
+cumulus-pallet-session-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
+
+# darwinia
+darwinia-common-runtime           = { default-features = false, path = "../common" }
+darwinia-precompile-bls12-381     = { default-features = false, path = "../../precompiles/bls12-381" }
+darwinia-precompile-state-storage = { default-features = false, path = "../../precompiles/state-storage" }
+dc-primitives                     = { default-features = false, path = "../../core/primitives" }
+
+# darwinia-messages-substrate
+bp-message-dispatch    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-polkadot-core       = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+bridge-runtime-common  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
+
+# frontier
+fp-evm                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-rpc                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-self-contained              = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-base-fee                = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-ethereum                = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm                     = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-blake2   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-bn128    = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-dispatch = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-modexp   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+
+# moonbeam
+xcm-primitives = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
+
+# polkadot
+pallet-xcm              = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+polkadot-parachain      = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+polkadot-runtime-common = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm                     = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm-builder             = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm-executor            = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+
+# substrate
+frame-executive                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-support                              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system                               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system-rpc-runtime-api               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-aura                                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-authorship                          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-balances                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-collective                          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-democracy                           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-elections-phragmen                  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-identity                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-membership                          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-multisig                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-preimage                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-proxy                               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-scheduler                           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-session                             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-sudo                                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-timestamp                           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-tips                                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-transaction-payment                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-treasury                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-utility                             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-vesting                             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-api                                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-block-builder                           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-consensus-aura                          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-core                                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-inherents                               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io                                      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-offchain                                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-runtime                                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-session                                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-std                                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-transaction-pool                        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-version                                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+# substrate optional
+frame-benchmarking        = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-try-runtime         = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+std = [
+	# crates.io
+	"codec/std",
+	"scale-info/std",
+
+	# cumulus
+	"cumulus-pallet-aura-ext/std",
+	"cumulus-pallet-dmp-queue/std",
+	"cumulus-pallet-parachain-system/std",
+	"cumulus-pallet-xcm/std",
+	"cumulus-pallet-xcmp-queue/std",
+	"cumulus-primitives-core/std",
+	"cumulus-primitives-timestamp/std",
+	"cumulus-primitives-utility/std",
+	"pallet-collator-selection/std",
+	"parachain-info/std",
+	# cumulus optional
+	"cumulus-pallet-session-benchmarking?/std",
+
+	# darwinia
+	"darwinia-common-runtime/std",
+	"darwinia-precompile-bls12-381/std",
+	"darwinia-precompile-state-storage/std",
+	"dc-primitives/std",
+
+	# darwinia-messages-substrate
+	"bp-message-dispatch/std",
+	"bp-messages/std",
+	"bp-runtime/std",
+	"bp-polkadot-core/std",
+	"bridge-runtime-common/std",
+	"pallet-bridge-dispatch/std",
+	"pallet-bridge-grandpa/std",
+	"pallet-bridge-messages/std",
+	"pallet-fee-market/std",
+
+	# frontier
+	"fp-evm/std",
+	"fp-rpc/std",
+	"fp-self-contained/std",
+	"pallet-base-fee/std",
+	"pallet-ethereum/std",
+	"pallet-evm/std",
+	"pallet-evm-precompile-blake2/std",
+	"pallet-evm-precompile-bn128/std",
+	"pallet-evm-precompile-dispatch/std",
+	"pallet-evm-precompile-modexp/std",
+	"pallet-evm-precompile-simple/std",
+
+	# moonbeam
+	"xcm-primitives/std",
+
+	# polkadot
+	"pallet-xcm/std",
+	"polkadot-parachain/std",
+	"polkadot-runtime-common/std",
+	"xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
+
+	# substrate
+	"frame-executive/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-system-rpc-runtime-api/std",
+	"pallet-aura/std",
+	"pallet-authorship/std",
+	"pallet-balances/std",
+	"pallet-collective/std",
+	"pallet-democracy/std",
+	"pallet-elections-phragmen/std",
+	"pallet-membership/std",
+	"pallet-identity/std",
+	"pallet-multisig/std",
+	"pallet-preimage/std",
+	"pallet-proxy/std",
+	"pallet-scheduler/std",
+	"pallet-session/std",
+	"pallet-sudo/std",
+	"pallet-timestamp/std",
+	"pallet-tips/std",
+	"pallet-transaction-payment-rpc-runtime-api/std",
+	"pallet-transaction-payment/std",
+	"pallet-treasury/std",
+	"pallet-utility/std",
+	"pallet-vesting/std",
+	"sp-api/std",
+	"sp-block-builder/std",
+	"sp-consensus-aura/std",
+	"sp-core/std",
+	"sp-inherents/std",
+	"sp-io/std",
+	"sp-offchain/std",
+	"sp-runtime/std",
+	"sp-session/std",
+	"sp-std/std",
+	"sp-transaction-pool/std",
+	"sp-version/std",
+	# substrate optional
+	"frame-benchmarking?/std",
+	"frame-system-benchmarking?/std",
+	"frame-try-runtime?/std",
+
+]
+
+runtime-benchmarks = [
+	# crates.io
+	"array-bytes",
+
+	# cumulus
+	"pallet-collator-selection/runtime-benchmarks",
+	"cumulus-pallet-parachain-system/runtime-benchmarks",
+	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	# cumulus optional
+	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
+
+	# darwinia-messages-substrate
+	"bridge-runtime-common/runtime-benchmarks",
+	"pallet-bridge-grandpa/runtime-benchmarks",
+	"pallet-bridge-messages/runtime-benchmarks",
+	"pallet-fee-market/runtime-benchmarks",
+
+	# frontier
+	"pallet-ethereum/runtime-benchmarks",
+	"pallet-evm/runtime-benchmarks",
+
+	# moonbeam
+	"xcm-primitives/runtime-benchmarks",
+
+	# polkadot
+	"pallet-xcm/runtime-benchmarks",
+	"polkadot-parachain/runtime-benchmarks",
+	"polkadot-runtime-common/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
+
+	# substrate
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"pallet-balances/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-democracy/runtime-benchmarks",
+	"pallet-elections-phragmen/runtime-benchmarks",
+	"pallet-membership/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
+	"pallet-multisig/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
+	"pallet-proxy/runtime-benchmarks",
+	"pallet-scheduler/runtime-benchmarks",
+	"pallet-timestamp/runtime-benchmarks",
+	"pallet-tips/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
+	"pallet-vesting/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	# substrate optional
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-system-benchmarking/runtime-benchmarks",
+]
+
+try-runtime = [
+	# cumulus
+	"cumulus-pallet-aura-ext/try-runtime",
+	"cumulus-pallet-dmp-queue/try-runtime",
+	"cumulus-pallet-parachain-system/try-runtime",
+	"cumulus-pallet-xcm/try-runtime",
+	"cumulus-pallet-xcmp-queue/try-runtime",
+	"pallet-collator-selection/try-runtime",
+	"parachain-info/try-runtime",
+
+	# frontier
+	"pallet-base-fee/try-runtime",
+	"pallet-ethereum/try-runtime",
+	"pallet-evm/try-runtime",
+
+	# polkadot
+	"pallet-xcm/try-runtime",
+	"polkadot-runtime-common/try-runtime",
+
+	# substrate
+	"frame-executive/try-runtime",
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-aura/try-runtime",
+	"pallet-authorship/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-democracy/try-runtime",
+	"pallet-elections-phragmen/try-runtime",
+	"pallet-membership/try-runtime",
+	"pallet-identity/try-runtime",
+	"pallet-multisig/try-runtime",
+	"pallet-preimage/try-runtime",
+	"pallet-proxy/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"pallet-tips/try-runtime",
+	"pallet-transaction-payment/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-utility/try-runtime",
+	"pallet-vesting/try-runtime",
+	# substrate optional
+	"frame-try-runtime",
+]

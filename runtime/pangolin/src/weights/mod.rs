@@ -16,17 +16,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// darwinia
-use crate::*;
+//! Expose the auto generated weight files.
 
-impl pallet_multisig::Config for Runtime {
-	type Currency = Balances;
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	type DepositBase = ConstU128<{ darwinia_deposit(1, 88) }>;
-	// Additional storage item size of 32 bytes.
-	type DepositFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
-	type MaxSignatories = ConstU16<100>;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
-}
+#![allow(clippy::unnecessary_cast)]
+
+pub mod block_weights;
+pub use block_weights::constants::BlockExecutionWeight;
+
+pub mod extrinsic_weights;
+pub use extrinsic_weights::constants::ExtrinsicBaseWeight;
+
+pub mod paritydb_weights;
+pub use paritydb_weights::constants::ParityDbWeight;
+
+pub mod rocksdb_weights;
+pub use rocksdb_weights::constants::RocksDbWeight;
+
+pub mod cumulus_pallet_xcmp_queue;
+pub mod frame_system;
+pub mod pallet_balances;
+pub mod pallet_collator_selection;
+pub mod pallet_session;
+pub mod pallet_timestamp;

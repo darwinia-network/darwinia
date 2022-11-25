@@ -36,8 +36,10 @@ cumulus-relay-chain-interface           = { git = "https://github.com/paritytech
 cumulus-relay-chain-rpc-interface       = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.30" }
 
 # darwinia
+crab-runtime = { path = "../runtime/crab" }
 darwinia-runtime = { path = "../runtime/darwinia" }
 dc-primitives    = { path = "../core/primitives" }
+pangolin-runtime = { path = "../runtime/pangolin" }
 
 # frontier
 fc-cli          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
@@ -85,6 +87,7 @@ sp-consensus                   = { git = "https://github.com/paritytech/substrat
 sp-consensus-aura              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-core                        = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-inherents                   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-keystore                    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-offchain                    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-runtime                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }

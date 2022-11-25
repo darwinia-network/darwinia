@@ -18,6 +18,13 @@
 
 //! Service and service factory implementation. Specialized wrapper over substrate service.
 
+pub mod executors;
+pub use executors::*;
+
+pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
+pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
+pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
+
 // std
 use std::{
 	collections::BTreeMap,
@@ -36,6 +43,31 @@ use sp_runtime::app_crypto::AppKey;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+
+/// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
+pub trait IdentifyVariant {
+	/// Returns if this is a configuration for the `Crab` network.
+	fn is_crab(&self) -> bool;
+
+	/// Returns if this is a configuration for the `Pangolin` network.
+	fn is_pangolin(&self) -> bool;
+
+	/// Returns true if this configuration is for a development network.
+	fn is_dev(&self) -> bool;
+}
+impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
+	fn is_crab(&self) -> bool {
+		self.id().starts_with("crab")
+	}
+
+	fn is_pangolin(&self) -> bool {
+		self.id().starts_with("pangolin")
+	}
+
+	fn is_dev(&self) -> bool {
+		self.id().ends_with("dev")
+	}
+}
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
@@ -67,20 +99,6 @@ impl<Api> RuntimeApiCollection for Api where
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 {
-}
-
-/// Native executor instance.
-pub struct DarwiniaRuntimeExecutor;
-impl sc_executor::NativeExecutionDispatch for DarwiniaRuntimeExecutor {
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-
-	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		darwinia_runtime::api::dispatch(method, data)
-	}
-
-	fn native_version() -> sc_executor::NativeVersion {
-		darwinia_runtime::native_version()
-	}
 }
 
 /// Starts a `ServiceBuilder` for a full service.

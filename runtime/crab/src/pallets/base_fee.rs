@@ -19,14 +19,29 @@
 // darwinia
 use crate::*;
 
-impl pallet_multisig::Config for Runtime {
-	type Currency = Balances;
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	type DepositBase = ConstU128<{ darwinia_deposit(1, 88) }>;
-	// Additional storage item size of 32 bytes.
-	type DepositFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
-	type MaxSignatories = ConstU16<100>;
-	type RuntimeCall = RuntimeCall;
+frame_support::parameter_types! {
+	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+}
+
+pub struct BaseFeeThreshold;
+impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
+	fn lower() -> Permill {
+		Permill::zero()
+	}
+
+	fn ideal() -> Permill {
+		Permill::from_parts(500_000)
+	}
+
+	fn upper() -> Permill {
+		Permill::from_parts(1_000_000)
+	}
+}
+
+impl pallet_base_fee::Config for Runtime {
+	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
+	type DefaultElasticity = DefaultElasticity;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type Threshold = BaseFeeThreshold;
 }

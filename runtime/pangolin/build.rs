@@ -16,17 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// darwinia
-use crate::*;
+// crates.io
+use substrate_wasm_builder::WasmBuilder;
 
-impl pallet_multisig::Config for Runtime {
-	type Currency = Balances;
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	type DepositBase = ConstU128<{ darwinia_deposit(1, 88) }>;
-	// Additional storage item size of 32 bytes.
-	type DepositFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
-	type MaxSignatories = ConstU16<100>;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+fn main() {
+	WasmBuilder::new().with_current_project().export_heap_base().import_memory().build()
 }

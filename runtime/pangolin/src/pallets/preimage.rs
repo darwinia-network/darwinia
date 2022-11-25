@@ -19,14 +19,12 @@
 // darwinia
 use crate::*;
 
-impl pallet_multisig::Config for Runtime {
+impl pallet_preimage::Config for Runtime {
+	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
+	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
 	type Currency = Balances;
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	type DepositBase = ConstU128<{ darwinia_deposit(1, 88) }>;
-	// Additional storage item size of 32 bytes.
-	type DepositFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
-	type MaxSignatories = ConstU16<100>;
-	type RuntimeCall = RuntimeCall;
+	type ManagerOrigin = Root;
+	type MaxSize = ConstU32<{ 4096 * 1024 }>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
