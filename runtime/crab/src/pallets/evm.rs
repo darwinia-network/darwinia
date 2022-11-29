@@ -18,6 +18,7 @@
 
 // darwinia
 use crate::*;
+use darwinia_precompile_assets::{AccountToAssetId, ERC20Assets};
 use darwinia_precompile_bls12_381::BLS12381;
 use darwinia_precompile_state_storage::{EthereumStorageFilter, StateStorage};
 // frontier
@@ -82,6 +83,14 @@ where
 	}
 }
 
+pub struct AssetIdConverter;
+impl AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
+	fn account_to_asset_id(account_id: AccountId) -> AssetId {
+		let addr: H160 = account_id.into();
+		addr.to_low_u64_be()
+	}
+}
+
 pub struct CrabPrecompiles<R>(PhantomData<R>);
 impl<R> CrabPrecompiles<R>
 where
@@ -92,7 +101,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 12] {
+	pub fn used_addresses() -> [H160; 13] {
 		[
 			addr(1),
 			addr(2),
@@ -105,6 +114,7 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
+			addr(1026), // For KTON asset
 			addr(2048),
 		]
 	}
@@ -125,11 +135,15 @@ where
 			a if a == addr(7) => Some(Bn128Mul::execute(handle)),
 			a if a == addr(8) => Some(Bn128Pairing::execute(handle)),
 			a if a == addr(9) => Some(Blake2F::execute(handle)),
-			// Darwinia precompiles: 1024+ for stable precompiles.
+			// Darwinia precompiles: [1024, 2048) for stable precompiles.
 			a if a == addr(1024) =>
 				Some(<StateStorage<Runtime, EthereumStorageFilter>>::execute(handle)),
 			a if a == addr(1025) => Some(<Dispatch<Runtime>>::execute(handle)),
-			// Darwinia precompiles: 2048+ for experimental precompiles.
+			// [1026, 1536) reserved for assets precompiles.
+			a if (1026..1536).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
+				Some(<ERC20Assets<Runtime, AssetIdConverter>>::execute(handle)),
+			// [1536, 2048) reserved for other stable precompiles.
+			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) => Some(<BLS12381<Runtime>>::execute(handle)),
 			_ => None,
 		}
