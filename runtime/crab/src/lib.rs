@@ -313,6 +313,7 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 31,
 		Evm: pallet_evm = 32,
 		BaseFee: pallet_base_fee = 33,
+		MessageTransact: darwinia_message_transact = 39,
 
 		// S2S stuff
 		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1> = 35,

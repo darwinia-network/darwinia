@@ -23,7 +23,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 // frontier
 use fp_evm::{Precompile, PrecompileSet};
 use pallet_evm::IdentityAddressMapping;
-// parity
+// substrate
 use frame_support::{
 	pallet_prelude::Weight,
 	traits::{ConstU32, Everything},

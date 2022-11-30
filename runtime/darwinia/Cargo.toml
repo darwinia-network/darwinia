@@ -37,6 +37,7 @@ cumulus-pallet-session-benchmarking = { optional = true, default-features = fals
 
 # darwinia
 darwinia-common-runtime           = { default-features = false, path = "../common" }
+darwinia-message-transact         = { default-features = false, path = "../../pallets/message-transact" }
 darwinia-precompile-assets        = { default-features = false, path = "../../precompiles/assets" }
 darwinia-precompile-bls12-381     = { default-features = false, path = "../../precompiles/bls12-381" }
 darwinia-precompile-state-storage = { default-features = false, path = "../../precompiles/state-storage" }
@@ -144,6 +145,7 @@ std = [
 
 	# darwinia
 	"darwinia-common-runtime/std",
+	"darwinia-message-transact/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-state-storage/std",

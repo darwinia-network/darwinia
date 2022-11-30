@@ -101,6 +101,8 @@ pub use evm::*;
 
 mod base_fee;
 
+mod message_transact;
+
 // S2S stuff
 mod bridge_dispatch;
 pub use bridge_dispatch::*;
