@@ -97,3 +97,6 @@ pub const MWEI: Balance = 1_000 * KWEI;
 pub const KWEI: Balance = 1_000 * WEI;
 /// 1 wei — 1
 pub const WEI: Balance = 1;
+
+/// Base balance required for the XCM unit weight
+pub const BASE_WEIGHT_FEE: Balance = GWEI;
