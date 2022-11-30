@@ -16,11 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(not(feature = "std"), no_std)]
+pub use pallet_bridge_grandpa::Instance1 as WithCrabGrandpa;
 
-pub mod gov_origin;
-pub mod xcm_barrier;
+// darwinia
+use crate::*;
+use pallet_bridge_grandpa::Config;
 
-pub use bp_darwinia_core as bp_crab;
-pub use bp_darwinia_core as bp_darwinia;
-pub use bp_darwinia_core as bp_pangolin;
+frame_support::parameter_types! {
+	// This is a pretty unscientific cap.
+	//
+	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
+	// call per block.
+	pub const MaxRequests: u32 = 50;
+	pub const CrabHeadersToKeep: u32 = 500;
+}
+
+impl Config<WithCrabGrandpa> for Runtime {
+	type BridgedChain = bp_crab::DarwiniaLike;
+	type HeadersToKeep = CrabHeadersToKeep;
+	type MaxBridgedAuthorities = ();
+	type MaxBridgedHeaderSize = ();
+	type MaxRequests = MaxRequests;
+	type WeightInfo = ();
+}

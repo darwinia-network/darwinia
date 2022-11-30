@@ -27,8 +27,12 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod pallets;
 pub use pallets::*;
 
+mod bridges_message;
+pub use bridges_message::*;
+
 mod weights;
 
+pub use darwinia_common_runtime::*;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
 // cumulus
@@ -309,6 +313,12 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 31,
 		Evm: pallet_evm = 32,
 		BaseFee: pallet_base_fee = 33,
+
+		// S2S stuff
+		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1> = 35,
+		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 36,
+		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 37,
+		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 38
 	}
 }
 

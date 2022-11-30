@@ -16,11 +16,5 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
-pub mod gov_origin;
-pub mod xcm_barrier;
-
-pub use bp_darwinia_core as bp_crab;
-pub use bp_darwinia_core as bp_darwinia;
-pub use bp_darwinia_core as bp_pangolin;
+pub mod crab;
+pub use crab as bm_crab;
