@@ -32,6 +32,8 @@ use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_dispatch::Dispatch;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
+// moonbeam
+use precompile_utils::prelude::*;
 // substrate
 use frame_support::{traits::FindAuthor, ConsensusEngineId};
 use sp_core::crypto::ByteArray;
@@ -124,7 +126,13 @@ where
 	R: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
-		match handle.code_address() {
+		let (code_address, caller) = (handle.code_address(), handle.context().caller);
+		// Filter known precompile addresses except Ethereum officials
+		if self.is_precompile(code_address) && code_address > addr(9) && code_address != caller {
+			return Some(Err(revert("cannot be called with DELEGATECALL or CALLCODE")));
+		};
+
+		match code_address {
 			// Ethereum precompiles:
 			a if a == addr(1) => Some(ECRecover::execute(handle)),
 			a if a == addr(2) => Some(Sha256::execute(handle)),
@@ -159,7 +167,7 @@ impl pallet_evm::Config for Runtime {
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = EthereumBlockHashMapping<Self>;
 	type CallOrigin = EnsureAddressRoot<AccountId>;
-	type ChainId = ConstU64<43>;
+	type ChainId = ConstU64<46>;
 	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
 	type FindAuthor = FindAuthorTruncated<Aura>;

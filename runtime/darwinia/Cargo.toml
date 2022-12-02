@@ -55,7 +55,6 @@ pallet-bridge-messages = { default-features = false, git = "https://github.com/d
 pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
 
 # frontier
-fp-evm                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 fp-rpc                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 fp-self-contained              = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 pallet-base-fee                = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
@@ -68,7 +67,8 @@ pallet-evm-precompile-modexp   = { default-features = false, git = "https://gith
 pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 
 # moonbeam
-xcm-primitives = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
+precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30"}
+xcm-primitives   = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
 
 # polkadot
 pallet-xcm              = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
@@ -163,7 +163,6 @@ std = [
 	"pallet-fee-market/std",
 
 	# frontier
-	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
 	"pallet-base-fee/std",
@@ -176,6 +175,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 
 	# moonbeam
+	"precompile-utils/std",
 	"xcm-primitives/std",
 
 	# polkadot
