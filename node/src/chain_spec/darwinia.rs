@@ -78,7 +78,7 @@ pub fn development_config() -> ChainSpec {
 					array_bytes::hex_n_into_unchecked(ETHAN),
 					array_bytes::hex_n_into_unchecked(FAITH),
 				],
-				1000.into(),
+				2046.into(),
 			)
 		},
 		Vec::new(),
@@ -88,7 +88,7 @@ pub fn development_config() -> ChainSpec {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2046,
 		},
 	)
 }
@@ -129,7 +129,7 @@ pub fn local_testnet_config() -> ChainSpec {
 					array_bytes::hex_n_into_unchecked(ETHAN),
 					array_bytes::hex_n_into_unchecked(FAITH),
 				],
-				1000.into(),
+				2046.into(),
 			)
 		},
 		// Bootnodes
@@ -145,7 +145,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2046,
 		},
 	)
 }
