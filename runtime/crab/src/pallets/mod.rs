@@ -41,6 +41,8 @@ mod transaction_payment;
 
 mod assets;
 
+mod migrate;
+
 // Consensus stuff.
 mod authorship;
 

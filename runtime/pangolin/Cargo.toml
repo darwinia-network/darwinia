@@ -36,6 +36,7 @@ parachain-info                  = { default-features = false, git = "https://git
 cumulus-pallet-session-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30" }
 
 # darwinia
+darwinia-account-migration        = { default-features = false, path = "../../pallet/account-migration" }
 darwinia-common-runtime           = { default-features = false, path = "../common" }
 darwinia-message-transact         = { default-features = false, path = "../../pallet/message-transact" }
 darwinia-precompile-assets        = { default-features = false, path = "../../precompile/assets" }
@@ -144,6 +145,7 @@ std = [
 	"cumulus-pallet-session-benchmarking?/std",
 
 	# darwinia
+	"darwinia-account-migration/std",
 	"darwinia-common-runtime/std",
 	"darwinia-message-transact/std",
 	"darwinia-precompile-assets/std",

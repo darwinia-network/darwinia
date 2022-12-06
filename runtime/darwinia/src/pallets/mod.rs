@@ -43,6 +43,7 @@ mod assets;
 
 mod deposit;
 
+mod migrate;
 // Consensus stuff.
 mod authorship;
 
