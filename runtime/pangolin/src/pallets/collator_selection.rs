@@ -23,10 +23,6 @@ use crate::*;
 pub type CollatorSelectionUpdateOrigin = EnsureRoot<AccountId>;
 frame_support::parameter_types! {
 	pub const PotId: PalletId = PalletId(*b"PotStake");
-	pub const MaxCandidates: u32 = 1000;
-	pub const MinCandidates: u32 = 5;
-	pub const SessionLength: BlockNumber = 6 * HOURS;
-	pub const MaxInvulnerables: u32 = 100;
 	pub const ExecutiveBody: BodyId = BodyId::Executive;
 }
 
@@ -34,9 +30,9 @@ impl pallet_collator_selection::Config for Runtime {
 	type Currency = Balances;
 	// should be a multiple of session or things will get inconsistent
 	type KickThreshold = Period;
-	type MaxCandidates = MaxCandidates;
-	type MaxInvulnerables = MaxInvulnerables;
-	type MinCandidates = MinCandidates;
+	type MaxCandidates = ConstU32<1000>;
+	type MaxInvulnerables = ConstU32<100>;
+	type MinCandidates = ConstU32<5>;
 	type PotId = PotId;
 	type RuntimeEvent = RuntimeEvent;
 	type UpdateOrigin = CollatorSelectionUpdateOrigin;

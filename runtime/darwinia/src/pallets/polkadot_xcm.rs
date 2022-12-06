@@ -18,24 +18,13 @@
 
 // darwinia
 use crate::*;
-use darwinia_common_runtime::xcm_configs::*;
-// moonbeam
-use xcm_primitives::*;
-// polkadot
-use pallet_xcm::XcmPassthrough;
-use polkadot_parachain::primitives::Sibling;
-use xcm::latest::prelude::*;
-use xcm_builder::*;
-use xcm_executor::XcmExecutor;
-// substrate
-use frame_support::traits::{Everything, Nothing, PalletInfoAccess};
 
 /// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = CurrencyAdapter<
+pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	// Use this currency:
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<AnchoringSelfReserve>,
+	xcm_builder::IsConcrete<AnchoringSelfReserve>,
 	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
@@ -45,7 +34,7 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 >;
 
 frame_support::parameter_types! {
-	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+	pub const RelayNetwork: xcm::latest::prelude::NetworkId = xcm::latest::prelude::NetworkId::Polkadot;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 }
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -53,11 +42,11 @@ frame_support::parameter_types! {
 /// `Transact` in order to determine the dispatch Origin.
 pub type LocationToAccountId = (
 	// The parent (Relay-chain) origin converts to the parent `AccountId`.
-	ParentIsPreset<AccountId>,
+	xcm_builder::ParentIsPreset<AccountId>,
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
-	SiblingParachainConvertsVia<Sibling, AccountId>,
+	xcm_builder::SiblingParachainConvertsVia<polkadot_parachain::primitives::Sibling, AccountId>,
 	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
-	AccountKey20Aliases<RelayNetwork, AccountId>,
+	xcm_builder::AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -66,42 +55,44 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Sovereign account converter; this attempts to derive an `AccountId` from the origin location
 	// using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
 	// foreign chains who want to have a local sovereign account on this chain which they control.
-	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
+	xcm_builder::SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
 	// Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
 	// recognized.
-	RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
+	xcm_builder::RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
 	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
 	// recognized.
-	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
+	xcm_builder::SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
 	// Native signed account converter; this just converts an `AccountKey20` origin into a normal
 	// `RuntimeOrigin::Signed` origin of the same 20-byte value.
-	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
+	xcm_builder::SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
-	XcmPassthrough<RuntimeOrigin>,
+	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
 
-pub type Barrier = DenyThenTry<
-	DenyReserveTransferToRelayChain,
+pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
+	darwinia_common_runtime::xcm_configs::DenyReserveTransferToRelayChain,
 	(
-		TakeWeightCredit,
-		AllowTopLevelPaidExecutionFrom<Everything>,
+		xcm_builder::TakeWeightCredit,
+		xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 		// Parent and its exec plurality get free execution
-		AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
+		xcm_builder::AllowUnpaidExecutionFrom<
+			darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+		>,
 		// Expected responses are OK.
-		AllowKnownQueryResponses<PolkadotXcm>,
+		xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
 		// Subscriptions for version tracking are OK.
-		AllowSubscriptionsFrom<ParentOrSiblings>,
+		xcm_builder::AllowSubscriptionsFrom<darwinia_common_runtime::xcm_configs::ParentOrSiblings>,
 	),
 >;
 
 frame_support::parameter_types! {
 	pub const MaxInstructions: u32 = 100;
-	pub AnchoringSelfReserve: MultiLocation = MultiLocation::new(
+	pub AnchoringSelfReserve: xcm::latest::prelude::MultiLocation = xcm::latest::prelude::MultiLocation::new(
 		0,
-		X1(PalletInstance(<Balances as PalletInfoAccess>::index() as u8))
+		xcm::latest::prelude::X1(xcm::latest::prelude::PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
 	);
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	pub Ancestry: xcm::latest::prelude::MultiLocation = xcm::latest::prelude::Parachain(ParachainInfo::parachain_id().into()).into();
 	pub UnitWeightCost: u64 = 1_000_000_000;
 }
 
@@ -112,27 +103,28 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type IsReserve = NativeAsset;
+	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
 	// Teleporting is disabled.
-	type LocationInverter = LocationInverter<Ancestry>;
+	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type ResponseHandler = PolkadotXcm;
 	type RuntimeCall = RuntimeCall;
 	type SubscriptionService = PolkadotXcm;
-	type Trader = UsingComponents<
-		ConstantMultiplier<Balance, XcmBaseWeightFee>,
+	type Trader = xcm_builder::UsingComponents<
+		ConstantMultiplier<Balance, darwinia_common_runtime::xcm_configs::XcmBaseWeightFee>,
 		AnchoringSelfReserve,
 		AccountId,
 		Balances,
 		DealWithFees<Runtime>,
 	>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
+pub type LocalOriginToLocation =
+	xcm_primitives::SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
 pub type XcmRouter = (
@@ -145,25 +137,25 @@ pub type XcmRouter = (
 impl pallet_xcm::Config for Runtime {
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
-	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type LocationInverter = LocationInverter<Ancestry>;
+	type ExecuteXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type XcmExecuteFilter = Nothing;
+	type SendXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type XcmExecuteFilter = frame_support::traits::Nothing;
 	// ^ Disable dispatchable execute on the XCM pallet.
 	// Needs to be `Everything` for local testing.
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
-	type XcmReserveTransferFilter = Nothing;
+	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+	type XcmReserveTransferFilter = frame_support::traits::Nothing;
 	type XcmRouter = XcmRouter;
-	type XcmTeleportFilter = Nothing;
+	type XcmTeleportFilter = frame_support::traits::Nothing;
 
 	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
+	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }

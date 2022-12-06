@@ -18,53 +18,57 @@
 
 pub use pallet_fee_market::Instance1 as WithDarwiniaFeeMarket;
 
-// --- core ---
-use core::cmp;
-// --- substrate ---
-use frame_support::{traits::LockIdentifier, PalletId};
-use sp_runtime::{traits::UniqueSaturatedInto, Permill};
-// --- darwinia ---
+// darwinia
 use crate::*;
-use pallet_fee_market::{BalanceOf, Config, Slasher};
 
 pub struct FeeMarketSlasher;
-impl<T: Config<I>, I: 'static> Slasher<T, I> for FeeMarketSlasher {
-	fn calc_amount(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
-		let slash_each_block = 2 * UNIT;
-		let slash_value = UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
-			.saturating_mul(UniqueSaturatedInto::<Balance>::unique_saturated_into(slash_each_block))
-			.unique_saturated_into();
 
-		cmp::min(locked_collateral, slash_value)
+impl<T: pallet_fee_market::Config<I>, I: 'static> pallet_fee_market::Slasher<T, I>
+	for FeeMarketSlasher
+{
+	fn calc_amount(
+		locked_collateral: pallet_fee_market::BalanceOf<T, I>,
+		timeout: T::BlockNumber,
+	) -> pallet_fee_market::BalanceOf<T, I> {
+		// substrate
+		use sp_runtime::traits::UniqueSaturatedInto;
+
+		let slash_each_block = 2 * UNIT;
+		let slash_value =
+			sp_runtime::traits::UniqueSaturatedInto::<Balance>::unique_saturated_into(timeout)
+				.saturating_mul(
+					sp_runtime::traits::UniqueSaturatedInto::<Balance>::unique_saturated_into(
+						slash_each_block,
+					),
+				)
+				.unique_saturated_into();
+
+		core::cmp::min(locked_collateral, slash_value)
 	}
 }
 
 frame_support::parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
-	pub const FeeMarketLockId: LockIdentifier = *b"da/feecr";
+	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
+	pub const FeeMarketLockId: frame_support::traits::LockIdentifier = *b"da/feecr";
 
-	pub const MinimumRelayFee: Balance = 15 * UNIT;
-	pub const CollateralPerOrder: Balance = 50 * UNIT;
-	pub const Slot: BlockNumber = 600;
-
-	pub const DutyRelayersRewardRatio: Permill = Permill::from_percent(60);
-	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
-	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
-	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
+	pub const DutyRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(60);
+	pub const MessageRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(80);
+	pub const ConfirmRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(20);
+	pub const AssignedRelayerSlashRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(20);
 }
 
-impl Config<WithDarwiniaFeeMarket> for Runtime {
+impl pallet_fee_market::Config<WithDarwiniaFeeMarket> for Runtime {
 	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
-	type CollateralPerOrder = CollateralPerOrder;
+	type CollateralPerOrder = ConstU128<{ 50 * UNIT }>;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
-	type MinimumRelayFee = MinimumRelayFee;
+	type MinimumRelayFee = ConstU128<{ 15 * UNIT }>;
 	type RuntimeEvent = RuntimeEvent;
 	type Slasher = FeeMarketSlasher;
-	type Slot = Slot;
+	type Slot = ConstU32<600>;
 	type TreasuryPalletId = TreasuryPalletId;
 	type WeightInfo = ();
 }

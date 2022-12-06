@@ -19,15 +19,9 @@
 use pallet_bridge_messages::Instance1 as WithDarwiniaMessages;
 
 // darwinia
-use crate::{bm_darwinia::ToDarwiniaMaximalOutboundPayloadSize, *};
-use bp_messages::{source_chain::SenderOrigin, MessageNonce};
-use bp_runtime::{ChainId, DARWINIA_CHAIN_ID};
-use pallet_bridge_messages::Config;
-use pallet_fee_market::s2s::{
-	FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler, FeeMarketPayment,
-};
+use crate::*;
 
-impl SenderOrigin<AccountId> for RuntimeOrigin {
+impl bp_messages::source_chain::SenderOrigin<AccountId> for RuntimeOrigin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
 			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
@@ -38,31 +32,32 @@ impl SenderOrigin<AccountId> for RuntimeOrigin {
 }
 
 frame_support::parameter_types! {
-	pub const MaxMessagesToPruneAtOnce: MessageNonce = 8;
-	pub const BridgedChainId: ChainId = DARWINIA_CHAIN_ID;
-	pub const MaxUnconfirmedMessagesAtInboundLane: MessageNonce =
+	pub const BridgedChainId: bp_runtime::ChainId = bp_runtime::DARWINIA_CHAIN_ID;
+	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
 		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	pub const MaxUnrewardedRelayerEntriesAtInboundLane: MessageNonce =
+	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
-impl Config<WithDarwiniaMessages> for Runtime {
+impl pallet_bridge_messages::Config<WithDarwiniaMessages> for Runtime {
 	type AccountIdConverter = bp_crab::AccountIdConverter;
 	type BridgedChainId = BridgedChainId;
 	type InboundMessageFee = bp_darwinia::Balance;
 	type InboundPayload = bm_darwinia::FromDarwiniaMessagePayload;
 	type InboundRelayer = bp_darwinia::AccountId;
 	type LaneMessageVerifier = bm_darwinia::ToDarwiniaMessageVerifier<Self>;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxMessagesToPruneAtOnce = ConstU64<8>;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaximalOutboundPayloadSize = ToDarwiniaMaximalOutboundPayloadSize;
+	type MaximalOutboundPayloadSize = bm_darwinia::ToDarwiniaMaximalOutboundPayloadSize;
 	type MessageDeliveryAndDispatchPayment =
-		FeeMarketPayment<Self, WithDarwiniaFeeMarket, Balances>;
+		pallet_fee_market::s2s::FeeMarketPayment<Self, WithDarwiniaFeeMarket, Balances>;
 	type MessageDispatch = bm_darwinia::FromDarwiniaMessageDispatch;
-	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>;
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
+	type OnDeliveryConfirmed =
+		pallet_fee_market::s2s::FeeMarketMessageConfirmedHandler<Self, WithDarwiniaFeeMarket>;
+	type OnMessageAccepted =
+		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
 	type OutboundMessageFee = bp_crab::Balance;
 	type OutboundPayload = bm_darwinia::ToDarwiniaMessagePayload;
 	type Parameter = bm_darwinia::CrabToDarwiniaParameter;

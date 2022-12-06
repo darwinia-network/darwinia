@@ -20,22 +20,12 @@ pub use pallet_bridge_grandpa::Instance1 as WithDarwiniaGrandpa;
 
 // darwinia
 use crate::*;
-use pallet_bridge_grandpa::Config;
 
-frame_support::parameter_types! {
-	// This is a pretty unscientific cap.
-	//
-	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
-	// call per block.
-	pub const MaxRequests: u32 = 50;
-	pub const DarwiniaHeadersToKeep: u32 = 500;
-}
-
-impl Config<WithDarwiniaGrandpa> for Runtime {
+impl pallet_bridge_grandpa::Config<WithDarwiniaGrandpa> for Runtime {
 	type BridgedChain = bp_darwinia::DarwiniaLike;
-	type HeadersToKeep = DarwiniaHeadersToKeep;
+	type HeadersToKeep = ConstU32<500>;
 	type MaxBridgedAuthorities = ();
 	type MaxBridgedHeaderSize = ();
-	type MaxRequests = MaxRequests;
+	type MaxRequests = ConstU32<50>;
 	type WeightInfo = ();
 }
