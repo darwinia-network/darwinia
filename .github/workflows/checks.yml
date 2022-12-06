@@ -138,7 +138,7 @@ jobs:
       - id: check-crab-runtime-version
         name: Check Crab runtime version
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-local --live https://rpc.polkadot.io --property version)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-dev --live https://rpc.polkadot.io --property version)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -146,7 +146,7 @@ jobs:
       - id: check-crab-runtime-storage
         name: Check Crab runtime storage
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-local --live https://rpc.polkadot.io --property storage)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-dev --live https://rpc.polkadot.io --property storage)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -154,7 +154,7 @@ jobs:
       - id: check-darwinia-runtime-version
         name: Check Darwinia runtime version
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-local --live https://rpc.polkadot.io --property version)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-dev --live https://rpc.polkadot.io --property version)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
@@ -162,7 +162,7 @@ jobs:
       - id: check-darwinia-runtime-storage
         name: Check Darwinia runtime storage
         run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-local --live https://rpc.polkadot.io --property storage)
+          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-dev --live https://rpc.polkadot.io --property storage)
           OUTPUT="${OUTPUT//'%'/'%25'}​"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"

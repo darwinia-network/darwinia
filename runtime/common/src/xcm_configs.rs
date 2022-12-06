@@ -18,11 +18,16 @@
 
 // core
 use core::marker::PhantomData;
+// darwinia
+use dc_primitives::GWEI;
 // polkadot
 use xcm::latest::{prelude::*, Weight as XCMWeight};
 use xcm_executor::traits::ShouldExecute;
 // substrate
-use frame_support::log;
+use frame_support::{log, traits::ConstU128};
+
+/// Base balance required for the XCM unit weight.
+pub type XcmBaseWeightFee = ConstU128<GWEI>;
 
 frame_support::match_types! {
 	pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {

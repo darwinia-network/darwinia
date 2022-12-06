@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+#![allow(clippy::derive_partial_eq_without_eq)]
+
 pub mod darwinia;
 pub use darwinia::{self as darwinia_chain_spec, ChainSpec as DarwiniaChainSpec};
 
@@ -28,14 +30,14 @@ pub use pangolin::{self as pangolin_chain_spec, ChainSpec as PangolinChainSpec};
 // crates.io
 use serde::{Deserialize, Serialize};
 // substrate
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
+use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
 
-/// This is the simplest bytecode to revert without returning any data.
-/// We will pre-deploy it under all of our precompiles to ensure they can be called from within
-/// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
-pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from within
+// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
+const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 // These are are testnet-only keys.
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -64,16 +66,21 @@ impl Extensions {
 	}
 }
 
-/// Helper function to generate a crypto pair from seed
-pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
+fn properties(token_symbol: &str) -> Properties {
+	let mut properties = Properties::new();
+
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("ss58Format".into(), 18.into());
+
+	properties
+}
+
+fn get_collator_keys_from_seed(seed: &str) -> AuraId {
+	get_from_seed::<AuraId>(seed)
+}
+fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
 	TPublic::Pair::from_string(&format!("//{}", seed), None)
 		.expect("static values are valid; qed")
 		.public()
-}
-
-/// Generate collator keys from seed.
-///
-/// This function's return type must always match the session keys of the chain in tuple format.
-pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
-	get_from_seed::<AuraId>(seed)
 }

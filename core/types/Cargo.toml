@@ -1,0 +1,10 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Darwinia core types."
+edition     = "2021"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "dc-types"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "6.0.0"

@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// paritytech
+// darwinia
+use dc_primitives::AccountId;
+// substrate
 use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
 use pallet_collective::{EnsureProportionAtLeast, EnsureProportionMoreThan};
-// darwinia
-use dc_primitives::AccountId;
 
 pub type Root = EnsureRoot<AccountId>;
 

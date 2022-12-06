@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::*;
-use darwinia_common_runtime::xcm_barrier::*;
+use darwinia_common_runtime::xcm_configs::*;
 // moonbeam
 use xcm_primitives::*;
 // polkadot
@@ -121,7 +121,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
 	type SubscriptionService = PolkadotXcm;
 	type Trader = UsingComponents<
-		ConstantMultiplier<Balance, ConstU128<{ BASE_WEIGHT_FEE }>>,
+		ConstantMultiplier<Balance, XcmBaseWeightFee>,
 		AnchoringSelfReserve,
 		AccountId,
 		Balances,

@@ -84,7 +84,7 @@ impl IntoDispatchOriginT<AccountId, RuntimeCall, RuntimeOrigin> for IntoDispatch
 			RuntimeCall::MessageTransact(darwinia_message_transact::Call::message_transact {
 				..
 			}) => darwinia_message_transact::LcmpEthOrigin::MessageTransact(H160(id.0)).into(),
-			_ => frame_system::RawOrigin::Signed(id.clone()).into(),
+			_ => frame_system::RawOrigin::Signed(*id).into(),
 		}
 	}
 }

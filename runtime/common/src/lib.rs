@@ -17,9 +17,11 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// TODO:
+// #![deny(missing_docs)]
 
 pub mod gov_origin;
-pub mod xcm_barrier;
+pub mod xcm_configs;
 
 pub use bp_darwinia_core as bp_crab;
 pub use bp_darwinia_core as bp_darwinia;

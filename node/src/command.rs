@@ -603,7 +603,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"darwinia" => Box::new(darwinia_chain_spec::config()),
 		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
-		"darwinia-local" => Box::new(darwinia_chain_spec::local_testnet_config()),
+		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
 		"crab" => Box::new(crab_chain_spec::config()),
 		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
 		"crab-dev" => Box::new(crab_chain_spec::development_config()),

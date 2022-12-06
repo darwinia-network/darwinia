@@ -224,7 +224,7 @@ where
 		let value = Self::u256_to_amount(value).in_field("value")?;
 		{
 			let caller: AccountIdOf<Runtime> = handle.context().caller.into();
-			let from: AccountIdOf<Runtime> = from.clone().into();
+			let from: AccountIdOf<Runtime> = from.into();
 			let to: AccountIdOf<Runtime> = to.into();
 
 			// If caller is "from", it can spend as much as it wants from its own balance.
@@ -300,7 +300,7 @@ where
 		let value = Self::u256_to_amount(value).in_field("value")?;
 		{
 			let origin: AccountIdOf<Runtime> = handle.context().caller.into();
-			let to: AccountIdOf<Runtime> = to.clone().into();
+			let to: AccountIdOf<Runtime> = to.into();
 
 			RuntimeHelper::<Runtime>::try_dispatch(
 				handle,
@@ -334,7 +334,7 @@ where
 		let value = Self::u256_to_amount(value).in_field("value")?;
 		{
 			let origin: AccountIdOf<Runtime> = handle.context().caller.into();
-			let from: AccountIdOf<Runtime> = from.clone().into();
+			let from: AccountIdOf<Runtime> = from.into();
 
 			RuntimeHelper::<Runtime>::try_dispatch(
 				handle,

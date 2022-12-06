@@ -26,7 +26,6 @@ pub use shared_imports::*;
 
 // System stuffs.
 mod assets;
-pub use assets::*;
 
 mod system;
 pub use system::*;
