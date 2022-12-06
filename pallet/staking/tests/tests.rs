@@ -70,7 +70,7 @@ fn stake_should_work() {
 		);
 
 		// Stake 500 RING, 500 KTON and 2 deposits.
-		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 2);
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 200 * UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 200 * UNIT, 1));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 500 * UNIT, 500 * UNIT, vec![1, 2]));
@@ -184,7 +184,7 @@ fn claim_should_work() {
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 2 * UNIT, 2 * UNIT, vec![0, 1, 2]));
-		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 2);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, UNIT, Vec::new()));
@@ -209,7 +209,7 @@ fn claim_should_work() {
 
 		// 4 expired.
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 2);
 		assert_eq!(Balances::free_balance(1), 996 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
@@ -227,7 +227,7 @@ fn claim_should_work() {
 		// 5 expired.
 		Efflux::block(1);
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 2);
 		assert_eq!(Assets::balance(0, 1), 999 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
@@ -245,7 +245,7 @@ fn claim_should_work() {
 		// 6 expired.
 		Efflux::block(1);
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 2);
 		assert_eq!(Assets::balance(0, 1), 999 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
@@ -263,7 +263,7 @@ fn claim_should_work() {
 		// 7 expired.
 		Efflux::block(2);
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(1).consumers, 0);
+		assert_eq!(System::account(1).consumers, 1);
 		assert_eq!(Balances::free_balance(1), 997 * UNIT);
 		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT + 22_842_639_593_907);
 		assert!(Staking::ledger_of(1).is_none());

@@ -137,13 +137,8 @@ pub mod pallet {
 	/// The items must be sorted by the id.
 	#[pallet::storage]
 	#[pallet::getter(fn deposit_of)]
-	pub type Deposits<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		T::AccountId,
-		BoundedVec<Deposit, T::MaxDeposits>,
-		ValueQuery,
-	>;
+	pub type Deposits<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, T::MaxDeposits>>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -169,6 +164,16 @@ pub mod pallet {
 			}
 
 			<Deposits<T>>::try_mutate(&who, |ds| {
+				let ds = if let Some(ds) = ds {
+					ds
+				} else {
+					<frame_system::Pallet<T>>::inc_consumers(&who)?;
+
+					*ds = Some(Default::default());
+
+					ds.as_mut().expect("[pallet::deposit] `ds` must be some; qed")
+				};
+
 				// Keep the list sorted in increasing order.
 				// And find the missing id.
 				let id = match ds.iter().map(|d| d.id).try_fold(0, |i, id| match i.cmp(&id) {
@@ -190,12 +195,13 @@ pub mod pallet {
 						in_use: false,
 					},
 				)
-				.map_err(|_| <Error<T>>::ExceedMaxDeposits)
+				.map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
+
+				DispatchResult::Ok(())
 			})?;
 			T::Ring::transfer(&who, &Self::account_id(), amount, KeepAlive)?;
 			T::Kton::mint(&who, dc_inflation::deposit_interest(amount, months))?;
 
-			// TODO: account ref
 			// TODO: event?
 
 			Ok(())
@@ -207,8 +213,9 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			let now = T::UnixTime::now().as_millis();
 			let mut claimed = 0;
+			let _ = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
+				let Some(ds) = maybe_ds else { return Err(()); };
 
-			<Deposits<T>>::mutate(&who, |ds| {
 				ds.retain(|d| {
 					if d.expired_time <= now && !d.in_use {
 						claimed += d.value;
@@ -218,10 +225,18 @@ pub mod pallet {
 						true
 					}
 				});
+
+				if ds.is_empty() {
+					<frame_system::Pallet<T>>::dec_consumers(&who);
+
+					*maybe_ds = None;
+				}
+
+				Ok(())
 			});
+
 			T::Ring::transfer(&Self::account_id(), &who, claimed, AllowDeath)?;
 
-			// TODO: account ref
 			// TODO: event?
 
 			Ok(())
@@ -250,6 +265,7 @@ where
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
 		<Deposits<T>>::try_mutate(who, |ds| {
+			let Some(ds) = ds else { return Err(<Error<T>>::DepositNotFound)?; };
 			let Some(d) = ds.iter_mut().find(|d| d.id == item) else {
 			    return Err(<Error<T>>::DepositNotFound)?;
 			};
@@ -266,6 +282,7 @@ where
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
 		<Deposits<T>>::try_mutate(who, |ds| {
+			let Some(ds) = ds else { return Err(<Error<T>>::DepositNotFound)?; };
 			let Some(d) = ds.iter_mut().find(|d| d.id == item) else {
 			    return Err(<Error<T>>::DepositNotFound)?;
 			};
@@ -288,8 +305,9 @@ where
 
 	fn amount(who: &Self::AccountId, item: Self::Item) -> Self::Amount {
 		<Deposits<T>>::get(who)
-			.into_iter()
-			.find_map(|d| if d.id == item { Some(d.value) } else { None })
+			.and_then(|ds| {
+				ds.into_iter().find_map(|d| if d.id == item { Some(d.value) } else { None })
+			})
 			.unwrap_or_default()
 	}
 }
