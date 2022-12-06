@@ -164,7 +164,7 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for MockCallValidator {
 	) -> Result<(), &'static str> {
 		match call {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) => {
-				let total_payment = crate::total_payment::<TestRuntime>(tx.into());
+				let total_payment = crate::total_payment::<TestRuntime>((&**tx).into());
 				let relayer = pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer_account).0;
 
 				ensure!(relayer.balance >= total_payment, "Insufficient balance");
@@ -183,7 +183,7 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for MockCallValidator {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) =>
 				match origin.caller {
 					OriginCaller::MessageTransact(LcmpEthOrigin::MessageTransact(id)) => {
-						let total_payment = crate::total_payment::<TestRuntime>(tx.into());
+						let total_payment = crate::total_payment::<TestRuntime>((&**tx).into());
 						pallet_balances::Pallet::<TestRuntime>::transfer(
 							RawOrigin::Signed(*relayer_account).into(),
 							id,

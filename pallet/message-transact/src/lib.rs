@@ -23,6 +23,8 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+// core
+use core::borrow::BorrowMut;
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use ethereum::TransactionV2 as Transaction;
@@ -35,6 +37,7 @@ use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
 use frame_support::{traits::EnsureOrigin, PalletError, RuntimeDebug};
 use sp_core::{H160, U256};
+use sp_std::boxed::Box;
 
 pub use pallet::*;
 
@@ -107,36 +110,36 @@ pub mod pallet {
 		#[pallet::weight({
 			let without_base_extrinsic_weight = true;
 			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight({
-				let transaction_data: TransactionData = transaction.into();
+				let transaction_data: TransactionData = (&**transaction).into();
 				transaction_data.gas_limit.unique_saturated_into()
 			}, without_base_extrinsic_weight)
 		})]
 		pub fn message_transact(
 			origin: OriginFor<T>,
-			transaction: Transaction,
+			mut transaction: Box<Transaction>,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_message_transact(origin)?;
 			let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 			let base_fee = T::FeeCalculator::min_gas_price().0;
 
-			let mut transaction_mut = transaction;
+			let transaction_mut = transaction.borrow_mut();
 			match transaction_mut {
-				Transaction::Legacy(ref mut tx) => {
+				Transaction::Legacy(tx) => {
 					tx.nonce = who.nonce;
 					tx.gas_price = base_fee;
 				},
-				Transaction::EIP2930(ref mut tx) => {
+				Transaction::EIP2930(tx) => {
 					tx.nonce = who.nonce;
 					tx.gas_price = base_fee;
 				},
-				Transaction::EIP1559(ref mut tx) => {
+				Transaction::EIP1559(tx) => {
 					tx.nonce = who.nonce;
 					tx.max_fee_per_gas = base_fee;
 					tx.max_priority_fee_per_gas = U256::zero();
 				},
 			};
 
-			let transaction_data: TransactionData = (&transaction_mut).into();
+			let transaction_data: TransactionData = (&*transaction).into();
 			let _ = CheckEvmTransaction::<EvmTxErrorWrapper>::new(
 				CheckEvmTransactionConfig {
 					evm_config: T::config(),
@@ -153,7 +156,7 @@ pub mod pallet {
 			.and_then(|v| v.with_balance_for(&who))
 			.map_err(|e| <Error<T>>::MessageTransactError(e))?;
 
-			T::ValidatedTransaction::apply(source, transaction_mut)
+			T::ValidatedTransaction::apply(source, *transaction)
 		}
 	}
 }

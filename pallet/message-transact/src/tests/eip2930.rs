@@ -53,8 +53,9 @@ fn test_dispatch_eip2930_transaction_works() {
 			let mock_message_id = [0; 4];
 			let unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call =
-				RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: t });
+			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
+				transaction: Box::new(t),
+			});
 			let message = prepare_message(call);
 
 			let result = Dispatch::dispatch(
@@ -94,8 +95,9 @@ fn test_dispatch_eip2930_transaction_weight_mismatch() {
 			// 62500001 * 16000 > 1_000_000_000_000
 			unsigned_tx.gas_limit = U256::from(62500001);
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call =
-				RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: t });
+			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
+				transaction: Box::new(t),
+			});
 			let message = prepare_message(call);
 
 			let result = Dispatch::dispatch(
@@ -135,8 +137,9 @@ fn test_dispatch_eip2930_transaction_with_autoset_nonce() {
 			let mut unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			unsigned_tx.nonce = U256::MAX;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call =
-				RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: t });
+			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
+				transaction: Box::new(t),
+			});
 			let message = prepare_message(call);
 
 			let result = Dispatch::dispatch(
@@ -169,8 +172,9 @@ fn test_dispatch_eip2930_transaction_with_autoset_gas_price() {
 			unsigned_tx.gas_price =
 				<TestRuntime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call =
-				RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: t });
+			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
+				transaction: Box::new(t),
+			});
 			let message = prepare_message(call);
 
 			let result = Dispatch::dispatch(
@@ -203,8 +207,9 @@ fn test_dispatch_eip2930_transaction_with_insufficient_relayer_balance() {
 			let mock_message_id = [0; 4];
 			let unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call =
-				RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: t });
+			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
+				transaction: Box::new(t),
+			});
 			let message = prepare_message(call);
 
 			// Failed in pre-dispatch balance check

@@ -39,7 +39,7 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for CallValidator {
 			RuntimeCall::MessageTransact(MessageTransactCall::message_transact {
 				transaction: tx,
 			}) => {
-				let total_payment = total_payment::<Runtime>(tx.into());
+				let total_payment = total_payment::<Runtime>((&**tx).into());
 				let relayer =
 					pallet_evm::Pallet::<Runtime>::account_basic(&H160(relayer_account.0)).0;
 
@@ -60,7 +60,7 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for CallValidator {
 				transaction: tx,
 			}) => match origin.caller {
 				OriginCaller::MessageTransact(LcmpEthOrigin::MessageTransact(id)) => {
-					let total_payment = total_payment::<Runtime>(tx.into());
+					let total_payment = total_payment::<Runtime>((&**tx).into());
 					pallet_balances::Pallet::<Runtime>::transfer(
 						RawOrigin::Signed(*relayer_account).into(),
 						id.into(),
