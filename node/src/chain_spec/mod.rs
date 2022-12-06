@@ -50,6 +50,8 @@ const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
+const PROTOCOL_ID: &str = "dar";
+
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
 #[serde(deny_unknown_fields)]
@@ -66,12 +68,12 @@ impl Extensions {
 	}
 }
 
-fn properties(token_symbol: &str) -> Properties {
+fn properties(token_symbol: &str, ss58_format: u16) -> Properties {
 	let mut properties = Properties::new();
 
 	properties.insert("tokenSymbol".into(), token_symbol.into());
 	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 18.into());
+	properties.insert("ss58Format".into(), ss58_format.into());
 
 	properties
 }

@@ -25,49 +25,40 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
 use dc_primitives::*;
-use pangolin_runtime::{AuraId, EvmConfig, PangolinPrecompiles, Runtime};
+use pangolin_runtime::*;
 // frontier
 use fp_evm::GenesisAccount;
 // substrate
+use sc_chain_spec::Properties;
 use sc_service::ChainType;
 use sp_core::H160;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<pangolin_runtime::GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
-/// Generate the session keys from individual elements.
-///
-/// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn session_keys(keys: AuraId) -> pangolin_runtime::SessionKeys {
-	pangolin_runtime::SessionKeys { aura: keys }
+fn properties() -> Properties {
+	super::properties("PRING", 42)
+}
+
+// Generate the session keys from individual elements.
+//
+// The input must be a tuple of individual keys (a single arg for now since we have just one key).
+fn session_keys(keys: AuraId) -> SessionKeys {
+	SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "PRING".into());
-	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 42.into());
-
 	ChainSpec::from_genesis(
-		// Name
 		"Pangolin2 Development",
-		// ID
-		"pangolin-dev",
+		"pangolin2-development",
 		ChainType::Development,
 		move || {
 			testnet_genesis(
-				// initial collators.
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
 						array_bytes::hex_n_into_unchecked(ALITH),
 						get_collator_keys_from_seed("Alice"),
-					),
-					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked(BALTATHAR),
-						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				vec![
@@ -83,9 +74,9 @@ pub fn development_config() -> ChainSpec {
 		},
 		Vec::new(),
 		None,
+		Some(PROTOCOL_ID),
 		None,
-		None,
-		Some(properties),
+		Some(properties()),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2105,
@@ -93,22 +84,13 @@ pub fn development_config() -> ChainSpec {
 	)
 }
 
-pub fn local_testnet_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "PRING".into());
-	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 42.into());
-
+pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		// Name
-		"Pangolin2 Local Testnet",
-		// ID
-		"pangolin_local_testnet",
+		"Pangolin2 Local",
+		"pangolin2-local",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				// initial collators.
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
@@ -119,6 +101,11 @@ pub fn local_testnet_config() -> ChainSpec {
 					(
 						array_bytes::hex_n_into_unchecked(BALTATHAR),
 						get_collator_keys_from_seed("Bob"),
+					),
+					// Bind the `Charlie` to `CHARLETH` to make `--charlie` available for testnet.
+					(
+						array_bytes::hex_n_into_unchecked(CHARLETH),
+						get_collator_keys_from_seed("Charlie"),
 					),
 				],
 				vec![
@@ -132,17 +119,11 @@ pub fn local_testnet_config() -> ChainSpec {
 				2105.into(),
 			)
 		},
-		// Bootnodes
 		Vec::new(),
-		// Telemetry
 		None,
-		// Protocol ID
-		Some("crab"),
-		// Fork ID
+		Some(PROTOCOL_ID),
 		None,
-		// Properties
-		Some(properties),
-		// Extensions
+		Some(properties()),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2105,
@@ -150,30 +131,20 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-pub fn config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "PRING".into());
-	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 42.into());
-
+pub fn genesis_config() -> ChainSpec {
 	// TODO: update this before final release
 	ChainSpec::from_genesis(
 		// Name
 		"Pangolin2",
 		// ID
-		"pangolin",
+		"pangolin2",
 		ChainType::Live,
 		move || {
-			pangolin_runtime::GenesisConfig {
+			GenesisConfig {
 				// System stuff.
-				system: pangolin_runtime::SystemConfig {
-					code: pangolin_runtime::WASM_BINARY
-						.expect("WASM binary was not build, please build it!")
-						.to_vec(),
-				},
+				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
 				parachain_system: Default::default(),
-				parachain_info: pangolin_runtime::ParachainInfoConfig { parachain_id: 2105.into() },
+				parachain_info: ParachainInfoConfig { parachain_id: 2105.into() },
 
 				// Monetary stuff.
 				balances: Default::default(),
@@ -182,11 +153,11 @@ pub fn config() -> ChainSpec {
 				account_migration: Default::default(),
 
 				// Consensus stuff.
-				collator_selection: pangolin_runtime::CollatorSelectionConfig {
+				collator_selection: CollatorSelectionConfig {
 					invulnerables: vec![array_bytes::hex_n_into_unchecked(ALITH)],
 					..Default::default()
 				},
-				session: pangolin_runtime::SessionConfig {
+				session: SessionConfig {
 					keys: vec![(
 						array_bytes::hex_n_into_unchecked(ALITH),
 						array_bytes::hex_n_into_unchecked(ALITH),
@@ -211,9 +182,7 @@ pub fn config() -> ChainSpec {
 				vesting: Default::default(),
 
 				// XCM stuff.
-				polkadot_xcm: pangolin_runtime::PolkadotXcmConfig {
-					safe_xcm_version: Some(SAFE_XCM_VERSION),
-				},
+				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
 
 				// EVM stuff.
 				ethereum: Default::default(),
@@ -221,17 +190,11 @@ pub fn config() -> ChainSpec {
 				base_fee: Default::default(),
 			}
 		},
-		// Bootnodes
 		Vec::new(),
-		// Telemetry
 		None,
-		// Protocol ID
-		Some("pangolin"),
-		// Fork ID
+		Some(PROTOCOL_ID),
 		None,
-		// Properties
-		Some(properties),
-		// Extensions
+		Some(properties()),
 		Extensions {
 			relay_chain: "rococo".into(), // You MUST set this to the correct network!
 			para_id: 2105,
@@ -239,21 +202,23 @@ pub fn config() -> ChainSpec {
 	)
 }
 
+pub fn config() -> ChainSpec {
+	unimplemented!("TODO")
+}
+
 fn testnet_genesis(
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
-) -> pangolin_runtime::GenesisConfig {
-	pangolin_runtime::GenesisConfig {
+) -> GenesisConfig {
+	GenesisConfig {
 		// System stuff.
-		system: pangolin_runtime::SystemConfig {
-			code: pangolin_runtime::WASM_BINARY.unwrap().to_vec(),
-		},
+		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
 		parachain_system: Default::default(),
-		parachain_info: pangolin_runtime::ParachainInfoConfig { parachain_id: id },
+		parachain_info: ParachainInfoConfig { parachain_id: id },
 
 		// Monetary stuff.
-		balances: pangolin_runtime::BalancesConfig {
+		balances: BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
 		},
 		transaction_payment: Default::default(),
@@ -261,12 +226,12 @@ fn testnet_genesis(
 		account_migration: Default::default(),
 
 		// Consensus stuff.
-		collator_selection: pangolin_runtime::CollatorSelectionConfig {
+		collator_selection: CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: UNIT,
 			..Default::default()
 		},
-		session: pangolin_runtime::SessionConfig {
+		session: SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -278,8 +243,6 @@ fn testnet_genesis(
 				})
 				.collect(),
 		},
-		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-		// of this.
 		aura: Default::default(),
 		aura_ext: Default::default(),
 
@@ -296,9 +259,7 @@ fn testnet_genesis(
 		vesting: Default::default(),
 
 		// XCM stuff.
-		polkadot_xcm: pangolin_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
 
 		// EVM stuff.
 		ethereum: Default::default(),
@@ -346,8 +307,4 @@ fn testnet_genesis(
 		},
 		base_fee: Default::default(),
 	}
-}
-
-pub fn genesis_config() -> ChainSpec {
-	unimplemented!("TODO")
 }

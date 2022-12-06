@@ -41,10 +41,9 @@ use sp_core::H160;
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 fn properties() -> Properties {
-	super::properties("RING")
+	super::properties("RING", 18)
 }
 
-// TODO: maybe a more general one
 // Generate the session keys from individual elements.
 //
 // The input must be a tuple of individual keys (a single arg for now since we have just one key).
@@ -54,29 +53,16 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		// Name
 		"Darwinia2 Development",
-		// ID
 		"darwinia2-development",
 		ChainType::Development,
 		move || {
 			testnet_genesis(
-				// Initial collators.
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
 						array_bytes::hex_n_into_unchecked(ALITH),
 						get_collator_keys_from_seed("Alice"),
-					),
-					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked(BALTATHAR),
-						get_collator_keys_from_seed("Bob"),
-					),
-					// Bind the `Charlie` to `CHARLETH` to make `--charlie` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked(CHARLETH),
-						get_collator_keys_from_seed("Charlie"),
 					),
 				],
 				vec![
@@ -92,7 +78,7 @@ pub fn development_config() -> ChainSpec {
 		},
 		Vec::new(),
 		None,
-		None,
+		Some(PROTOCOL_ID),
 		None,
 		Some(properties()),
 		Extensions {
@@ -104,14 +90,11 @@ pub fn development_config() -> ChainSpec {
 
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		// Name
 		"Darwinia2 Local",
-		// ID
 		"darwinia2-local",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				// Initial collators.
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
@@ -142,7 +125,7 @@ pub fn local_config() -> ChainSpec {
 		},
 		Vec::new(),
 		None,
-		None,
+		Some(PROTOCOL_ID),
 		None,
 		Some(properties()),
 		Extensions {
@@ -163,11 +146,7 @@ pub fn genesis_config() -> ChainSpec {
 		move || {
 			GenesisConfig {
 				// System stuff.
-				system: SystemConfig {
-					code: WASM_BINARY
-						.expect("WASM binary was not build, please build it!")
-						.to_vec(),
-				},
+				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
 				parachain_system: Default::default(),
 				parachain_info: ParachainInfoConfig { parachain_id: 2046.into() },
 
@@ -214,23 +193,17 @@ pub fn genesis_config() -> ChainSpec {
 				evm: Default::default(),
 				base_fee: Default::default(),
 
-				// S2S stuff
+				// S2S stuff.
 				bridge_crab_grandpa: Default::default(),
 				bridge_crab_messages: Default::default(),
 				crab_fee_market: Default::default(),
 			}
 		},
-		// Bootnodes
 		Vec::new(),
-		// Telemetry
 		None,
-		// Protocol ID
-		Some("darwinia"),
-		// Fork ID
+		Some(PROTOCOL_ID),
 		None,
-		// Properties
 		Some(properties()),
-		// Extensions
 		Extensions {
 			relay_chain: "polkadot".into(), // You MUST set this to the correct network!
 			para_id: 2046,
@@ -344,7 +317,7 @@ fn testnet_genesis(
 		},
 		base_fee: Default::default(),
 
-		// S2S stuff
+		// S2S stuff.
 		bridge_crab_grandpa: Default::default(),
 		bridge_crab_messages: Default::default(),
 		crab_fee_market: Default::default(),

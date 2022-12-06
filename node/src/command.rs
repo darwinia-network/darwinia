@@ -607,11 +607,11 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"crab" => Box::new(crab_chain_spec::config()),
 		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
 		"crab-dev" => Box::new(crab_chain_spec::development_config()),
-		"crab-local" => Box::new(crab_chain_spec::local_testnet_config()),
+		"crab-local" => Box::new(crab_chain_spec::local_config()),
 		"pangolin" => Box::new(pangolin_chain_spec::config()),
 		"pangolin-genesis" => Box::new(pangolin_chain_spec::genesis_config()),
 		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
-		"pangolin-local" => Box::new(pangolin_chain_spec::local_testnet_config()),
+		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);
 			let chain_spec =

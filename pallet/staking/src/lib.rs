@@ -294,10 +294,10 @@ pub mod pallet {
 	pub type RewardPoints<T: Config> =
 		StorageValue<_, (RewardPoint, BTreeMap<T::AccountId, RewardPoint>), ValueQuery>;
 
-	/// Active session's started timestamp.
+	/// Active session's start-time.
 	#[pallet::storage]
-	#[pallet::getter(fn session_started_time)]
-	pub type SessionStartedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
+	#[pallet::getter(fn session_start_time)]
+	pub type SessionStartTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
 	/// Elapsed time.
 	#[pallet::storage]
@@ -324,7 +324,7 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
-			<SessionStartedTime<T>>::put(self.now);
+			<SessionStartTime<T>>::put(self.now);
 			<ElapsedTime<T>>::put(self.elapsed_time);
 			<CollatorCount<T>>::put(self.collator_count);
 
@@ -895,14 +895,14 @@ where
 
 	fn end_session(_: u32) {
 		let now = T::UnixTime::now().as_millis();
-		let session_duration = now - <SessionStartedTime<T>>::get();
+		let session_duration = now - <SessionStartTime<T>>::get();
 		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
 			*t += session_duration;
 
 			*t
 		});
 
-		<SessionStartedTime<T>>::put(now);
+		<SessionStartTime<T>>::put(now);
 
 		Self::payout(session_duration, elapsed_time);
 		Self::clean_old_session();

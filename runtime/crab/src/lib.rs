@@ -316,7 +316,7 @@ frame_support::construct_runtime! {
 		BaseFee: pallet_base_fee = 33,
 		MessageTransact: darwinia_message_transact = 39,
 
-		// S2S stuff
+		// S2S stuff.
 		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1> = 35,
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 36,
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 37,
