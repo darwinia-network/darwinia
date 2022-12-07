@@ -40,6 +40,7 @@ mod balances;
 mod transaction_payment;
 
 mod assets;
+pub use assets::*;
 
 mod deposit;
 

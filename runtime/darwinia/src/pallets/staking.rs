@@ -48,11 +48,21 @@ impl darwinia_staking::Stake for KtonStaking {
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(RuntimeOrigin::signed(*who), 0, darwinia_staking::account_id(), item)
+		Assets::transfer(
+			RuntimeOrigin::signed(*who),
+			AssetIds::Kton as AssetId,
+			darwinia_staking::account_id(),
+			item,
+		)
 	}
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(RuntimeOrigin::signed(darwinia_staking::account_id()), 0, *who, item)
+		Assets::transfer(
+			RuntimeOrigin::signed(darwinia_staking::account_id()),
+			AssetIds::Kton as AssetId,
+			*who,
+			item,
+		)
 	}
 }
 

@@ -19,6 +19,11 @@
 // darwinia
 use crate::*;
 
+/// List of the assets existed in this runtime.
+pub enum AssetIds {
+	Kton = 1026,
+}
+
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ConstU128<0>;
 	type AssetAccountDeposit = ConstU128<0>;
