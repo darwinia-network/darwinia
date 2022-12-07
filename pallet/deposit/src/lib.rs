@@ -214,7 +214,7 @@ pub mod pallet {
 			let now = T::UnixTime::now().as_millis();
 			let mut claimed = 0;
 			let _ = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
-				let Some(ds) = maybe_ds else { return Err(()); };
+				let ds = maybe_ds.as_mut().ok_or(())?;
 
 				ds.retain(|d| {
 					if d.expired_time <= now && !d.in_use {
@@ -232,7 +232,7 @@ pub mod pallet {
 					*maybe_ds = None;
 				}
 
-				Ok(())
+				<Result<(), ()>>::Ok(())
 			});
 
 			T::Ring::transfer(&Self::account_id(), &who, claimed, AllowDeath)?;
@@ -265,10 +265,8 @@ where
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
 		<Deposits<T>>::try_mutate(who, |ds| {
-			let Some(ds) = ds else { return Err(<Error<T>>::DepositNotFound)?; };
-			let Some(d) = ds.iter_mut().find(|d| d.id == item) else {
-			    return Err(<Error<T>>::DepositNotFound)?;
-			};
+			let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
+			let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
 
 			if d.in_use {
 				Err(<Error<T>>::DepositInUse)?
@@ -282,10 +280,8 @@ where
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
 		<Deposits<T>>::try_mutate(who, |ds| {
-			let Some(ds) = ds else { return Err(<Error<T>>::DepositNotFound)?; };
-			let Some(d) = ds.iter_mut().find(|d| d.id == item) else {
-			    return Err(<Error<T>>::DepositNotFound)?;
-			};
+			let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
+			let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
 
 			if d.in_use {
 				d.in_use = false;

@@ -18,6 +18,8 @@
 
 //! # Darwinia parachain staking pallet
 //!
+//! ## Overview
+//!
 //! This is a completely specialized stake pallet designed only for Darwinia parachain.
 //! So, this pallet will eliminate the generic parameters as much as possible.
 //!
@@ -415,9 +417,7 @@ pub mod pallet {
 			}
 
 			<Ledgers<T>>::try_mutate(&who, |l| {
-				let Some(l) = l else {
-					return Err(<Error<T>>::NotStaker)?;
-				};
+				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 
 				if ring_amount != 0 {
 					Self::unstake_ring(l, ring_amount)?;
@@ -513,21 +513,13 @@ pub mod pallet {
 			P: frame_support::StorageValue<Balance, Query = Balance>,
 		{
 			P::try_mutate(|p| {
-				let p_new = if increase {
-					let Some(p_new) = p.checked_add(amount) else {
-						return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-					};
-
-					p_new
+				*p = if increase {
+					p.checked_add(amount)
+						.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?
 				} else {
-					let Some(p_new) = p.checked_sub(amount) else {
-						return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-					};
-
-					p_new
+					p.checked_sub(amount)
+						.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?
 				};
-
-				*p = p_new;
 
 				Ok(())
 			})
@@ -536,11 +528,10 @@ pub mod pallet {
 		fn stake_ring(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
 			T::Ring::stake(&ledger.account, amount)?;
 
-			ledger.staked_ring = if let Some(r) = ledger.staked_ring.checked_add(amount) {
-				r
-			} else {
-				return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-			};
+			ledger.staked_ring = ledger
+				.staked_ring
+				.checked_add(amount)
+				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
 
 			Self::update_pool::<RingPool<T>>(true, amount)?;
 
@@ -550,11 +541,10 @@ pub mod pallet {
 		fn stake_kton(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
 			T::Kton::stake(&ledger.account, amount)?;
 
-			ledger.staked_kton = if let Some(k) = ledger.staked_kton.checked_add(amount) {
-				k
-			} else {
-				return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-			};
+			ledger.staked_kton = ledger
+				.staked_kton
+				.checked_add(amount)
+				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
 
 			Self::update_pool::<KtonPool<T>>(true, amount)?;
 
@@ -572,9 +562,10 @@ pub mod pallet {
 		}
 
 		fn unstake_ring(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
-			let Some(nr) = ledger.staked_ring.checked_sub(amount) else {
-				return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-			};
+			let nr = ledger
+				.staked_ring
+				.checked_sub(amount)
+				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
 
 			ledger.staked_ring = nr;
 			ledger
@@ -591,9 +582,10 @@ pub mod pallet {
 		}
 
 		fn unstake_kton(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
-			let Some(nk) = ledger.staked_kton.checked_sub(amount) else {
-				return Err("[pallet::staking] `u128` must not be overflowed; qed")?;
-			};
+			let nk = ledger
+				.staked_kton
+				.checked_sub(amount)
+				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
 
 			ledger.staked_kton = nk;
 			ledger
@@ -610,9 +602,9 @@ pub mod pallet {
 		}
 
 		fn unstake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
-			let Some(i) = ledger.staked_deposits.iter().position(|d| d == &deposit) else {
-				return Err("[pallet::staking] deposit id must be existed, due to previous unstake OP; qed")?;
-			};
+			let i = ledger.staked_deposits.iter().position(|d| d == &deposit).ok_or(
+				"[pallet::staking] deposit id must be existed, due to previous unstake OP; qed",
+			)?;
 
 			ledger
 				.unstaking_deposits
@@ -629,9 +621,7 @@ pub mod pallet {
 
 		fn claim_unstakings(who: &T::AccountId) -> DispatchResult {
 			<Ledgers<T>>::try_mutate(who, |l| {
-				let Some(l) = l else {
-					return Err(<Error<T>>::NotStaker)?;
-				};
+				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 				let now = <frame_system::Pallet<T>>::block_number();
 				let claim = |u: &mut BoundedVec<_, _>, c: &mut Balance| {
 					u.retain(|(a, t)| {
@@ -676,7 +666,7 @@ pub mod pallet {
 
 		fn try_clean_ledger_of(who: &T::AccountId) {
 			let _ = <Ledgers<T>>::try_mutate(who, |maybe_l| {
-				let Some(l) = maybe_l else { return Err(()); };
+				let l = maybe_l.as_mut().ok_or(())?;
 
 				if l.is_empty() {
 					*maybe_l = None;
@@ -752,6 +742,8 @@ pub mod pallet {
 				session_duration,
 				elapsed_time,
 			) else {
+				log::error!("[pallet::staking] failed to calculate the inflation");
+
 				return;
 			};
 			let payout = T::PayoutFraction::get() * inflation;
