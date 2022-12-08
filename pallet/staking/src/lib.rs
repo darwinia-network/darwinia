@@ -43,7 +43,7 @@ use core::fmt::Debug;
 use codec::FullCodec;
 // darwinia
 use dc_inflation::TOTAL_SUPPLY;
-use dc_types::{Balance, Moment};
+use dc_types::{Balance, Moment, UNIT};
 // substrate
 use frame_support::{
 	log,
@@ -736,6 +736,15 @@ pub mod pallet {
 
 				return;
 			};
+
+			// TODO: add some tests in the core inflation,
+			// and get a more precise value/worst case.
+			if inflation > 1_000_000 * UNIT {
+				log::error!("[pallet::staking] it's impossible to mint over 1 million RING within a session according to current reward curve");
+
+				return;
+			}
+
 			let payout = T::PayoutFraction::get() * inflation;
 			let (total_points, reward_map) = <RewardPoints<T>>::get();
 			// Due to the `payout * percent` there might be some losses.

@@ -182,12 +182,12 @@ where
 	Ok(D::decode(&mut &*v)?)
 }
 
-twox128(pallet) + twox128(item) + blake2_256_concat(item_key)
+// twox128(pallet) + twox128(item) + blake2_256_concat(item_key) -> blake2_256_concat(item_key)
 fn get_blake2_128_concat_suffix(full_key: &str, item_key: &str) -> String {
 	full_key.trim_start_matches(item_key).into()
 }
 
-twox128(pallet) + twox128(item) + last 64 bytes
+// twox128(pallet) + twox128(item) + blake2_256_concat(account_id_32) -> account_id_32
 #[allow(unused)]
 fn get_concat_suffix(full_key: &str, _: &str) -> String {
 	format!("0x{}", &full_key[full_key.len() - 64..])

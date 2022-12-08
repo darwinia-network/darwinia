@@ -23,24 +23,27 @@ use sp_keyring::sr25519::Keyring;
 
 #[test]
 fn sr25519_signable_message_should_work() {
-	[b"Darwinia2".as_slice(), b"Crab2", b"Pangolin2"]
+	[(46_u64, b"Darwinia2".as_slice()), (44, b"Crab2"), (43, b"Pangolin2")]
 		.iter()
 		.zip([
 			[
-				81, 88, 182, 48, 229, 179, 23, 224, 117, 134, 146, 124, 106, 211, 130, 135, 68,
-				191, 187, 224, 116, 219, 61, 45, 126, 38, 77, 144, 214, 132, 173, 77,
+				75, 134, 66, 181, 153, 10, 7, 244, 225, 154, 100, 68, 239, 19, 129, 51, 181, 78,
+				66, 254, 167, 54, 211, 20, 171, 68, 160, 46, 216, 98, 9, 44,
 			],
 			[
-				253, 68, 12, 181, 246, 68, 61, 64, 106, 115, 48, 108, 235, 106, 2, 40, 115, 99, 84,
-				46, 106, 132, 116, 241, 65, 214, 128, 8, 88, 85, 137, 86,
+				171, 8, 180, 157, 214, 41, 236, 80, 127, 218, 216, 136, 239, 56, 153, 31, 128, 168,
+				154, 112, 70, 245, 19, 68, 53, 29, 49, 95, 238, 209, 238, 129,
 			],
 			[
-				227, 102, 33, 150, 94, 161, 161, 187, 83, 242, 232, 50, 184, 187, 169, 235, 148,
-				146, 90, 88, 85, 45, 61, 24, 224, 10, 33, 182, 177, 57, 219, 61,
+				251, 70, 107, 65, 22, 164, 1, 85, 114, 150, 161, 208, 235, 131, 15, 111, 154, 207,
+				193, 216, 110, 54, 58, 177, 15, 99, 104, 179, 13, 30, 55, 205,
 			],
 		])
-		.for_each(|(spec_name, message)| {
-			assert_eq!(sr25519_signable_message(spec_name, &Default::default()), message);
+		.for_each(|((chain_id, spec_name), message)| {
+			assert_eq!(
+				sr25519_signable_message(*chain_id, spec_name, &Default::default()),
+				message
+			);
 		});
 }
 
@@ -48,7 +51,7 @@ fn sr25519_signable_message_should_work() {
 fn verify_sr25519_signature_should_work() {
 	Keyring::iter().enumerate().for_each(|(i, from)| {
 		let to = [i as _; 20];
-		let message = sr25519_signable_message(b"Darwinia2", &to.into());
+		let message = sr25519_signable_message(46, b"Darwinia2", &to.into());
 		let signature = from.sign(&message);
 
 		assert!(verify_sr25519_signature(&from.public().0.into(), &message, &signature));

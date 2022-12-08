@@ -263,7 +263,7 @@ fn testnet_genesis(
 		treasury: Default::default(),
 
 		// Utility stuff.
-		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(SUDO)) },
+		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
 		vesting: Default::default(),
 
 		// XCM stuff.

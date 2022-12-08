@@ -163,8 +163,6 @@ pub fn genesis_config() -> ChainSpec {
 						session_keys(get_collator_keys_from_seed("Alice")),
 					)],
 				},
-				// no need to pass anything to aura, in fact it will panic if we do. Session will
-				// take care of this.
 				aura: Default::default(),
 				aura_ext: Default::default(),
 
@@ -258,7 +256,7 @@ fn testnet_genesis(
 		treasury: Default::default(),
 
 		// Utility stuff.
-		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(SUDO)) },
+		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
 		vesting: Default::default(),
 
 		// XCM stuff.

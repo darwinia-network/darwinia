@@ -20,5 +20,6 @@
 use crate::*;
 
 impl darwinia_account_migration::Config for Runtime {
+	type ChainId = <Runtime as pallet_evm::Config>::ChainId;
 	type RuntimeEvent = RuntimeEvent;
 }

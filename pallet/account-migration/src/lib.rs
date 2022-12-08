@@ -77,6 +77,9 @@ pub mod pallet {
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		/// Chain's ID, which is used for constructing the message. (follow EIP-712 SPEC)
+		#[pallet::constant]
+		type ChainId: Get<u64>;
 	}
 
 	#[allow(missing_docs)]
@@ -143,7 +146,11 @@ pub mod pallet {
 				return InvalidTransaction::Custom(E_ACCOUNT_ALREADY_EXISTED).into();
 			}
 
-			let message = sr25519_signable_message(T::Version::get().spec_name.as_ref(), to);
+			let message = sr25519_signable_message(
+				T::ChainId::get(),
+				T::Version::get().spec_name.as_ref(),
+				to,
+			);
 
 			if verify_sr25519_signature(from, &message, signature) {
 				ValidTransaction::with_tag_prefix("account-migration")
@@ -160,8 +167,20 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Message {
-	hashing::blake2_256(&[spec_name, b"::account-migration", &account_id_20.0].concat())
+fn sr25519_signable_message(
+	chain_id: u64,
+	spec_name: &[u8],
+	account_id_20: &AccountId20,
+) -> Message {
+	hashing::blake2_256(
+		&[
+			&hashing::blake2_256(
+				&[&chain_id.to_le_bytes(), spec_name, b"::account-migration"].concat(),
+			),
+			account_id_20.0.as_slice(),
+		]
+		.concat(),
+	)
 }
 
 fn verify_sr25519_signature(

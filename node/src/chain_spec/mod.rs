@@ -48,7 +48,7 @@ const ETHAN: &str = "0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
 const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
 
-/// The default XCM version to set in genesis config.
+// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 const PROTOCOL_ID: &str = "dar";
