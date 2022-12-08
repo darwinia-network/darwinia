@@ -1356,10 +1356,14 @@ dependencies = [
  "cumulus-primitives-utility",
  "darwinia-account-migration",
  "darwinia-common-runtime",
+ "darwinia-deposit",
  "darwinia-message-transact",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
+ "darwinia-precompile-deposit",
+ "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
+ "darwinia-staking",
  "dc-primitives",
  "fp-rpc",
  "fp-self-contained",
@@ -1378,7 +1382,6 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
- "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
@@ -6553,26 +6556,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-collator-selection"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.30#7b1fc0ed107fe42bb7e6a5dfefb586f4c3ae4328"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-authorship",
- "pallet-session",
- "parity-scale-codec",
- "rand 0.8.5",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-staking",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-collective"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.30#a3ed0119c45cdd0d571ad34e5b3ee7518c8cef8d"
@@ -7395,10 +7378,14 @@ dependencies = [
  "cumulus-primitives-utility",
  "darwinia-account-migration",
  "darwinia-common-runtime",
+ "darwinia-deposit",
  "darwinia-message-transact",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
+ "darwinia-precompile-deposit",
+ "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
+ "darwinia-staking",
  "dc-primitives",
  "fp-rpc",
  "fp-self-contained",
@@ -7417,7 +7404,6 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
- "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",

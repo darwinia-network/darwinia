@@ -40,7 +40,6 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 // darwinia
 use dc_primitives::*;
 // polkadot
-use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 // substrate
 use frame_support::{
@@ -50,7 +49,6 @@ use frame_support::{
 		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
-	PalletId,
 };
 use frame_system::EnsureRoot;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
@@ -276,11 +274,12 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances = 5,
 		TransactionPayment: pallet_transaction_payment = 6,
 		Assets: pallet_assets = 34,
-		AccountMigration: darwinia_account_migration = 40,
+		Deposit: darwinia_deposit = 40,
+		AccountMigration: darwinia_account_migration = 41,
 
 		// Consensus stuff.
 		Authorship: pallet_authorship = 7,
-		CollatorSelection: pallet_collator_selection = 8,
+		Staking: darwinia_staking = 8,
 		Session: pallet_session = 9,
 		Aura: pallet_aura = 10,
 		AuraExt: cumulus_pallet_aura_ext = 11,

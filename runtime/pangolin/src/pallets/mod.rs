@@ -25,8 +25,6 @@ mod shared_imports {
 pub use shared_imports::*;
 
 // System stuffs.
-mod assets;
-
 mod system;
 pub use system::*;
 
@@ -41,12 +39,17 @@ mod balances;
 
 mod transaction_payment;
 
+mod assets;
+pub use assets::*;
+
+mod deposit;
+
 mod migrate;
 
 // Consensus stuff.
 mod authorship;
 
-mod collator_selection;
+mod staking;
 
 mod session;
 pub use session::*;

@@ -35,6 +35,5 @@ pub use rocksdb_weights::constants::RocksDbWeight;
 pub mod cumulus_pallet_xcmp_queue;
 pub mod frame_system;
 pub mod pallet_balances;
-pub mod pallet_collator_selection;
 pub mod pallet_session;
 pub mod pallet_timestamp;

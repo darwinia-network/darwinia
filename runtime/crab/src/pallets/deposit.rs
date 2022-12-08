@@ -16,24 +16,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Expose the auto generated weight files.
+// darwinia
+use crate::*;
 
-#![allow(clippy::unnecessary_cast)]
+pub enum CKtonMinting {}
+impl darwinia_deposit::Minting for CKtonMinting {
+	type AccountId = AccountId;
 
-pub mod block_weights;
-pub use block_weights::constants::BlockExecutionWeight;
+	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		Assets::mint(RuntimeOrigin::root(), AssetIds::CKton as AssetId, *beneficiary, amount)
+	}
+}
 
-pub mod extrinsic_weights;
-pub use extrinsic_weights::constants::ExtrinsicBaseWeight;
-
-pub mod paritydb_weights;
-pub use paritydb_weights::constants::ParityDbWeight;
-
-pub mod rocksdb_weights;
-pub use rocksdb_weights::constants::RocksDbWeight;
-
-pub mod cumulus_pallet_xcmp_queue;
-pub mod frame_system;
-pub mod pallet_balances;
-pub mod pallet_session;
-pub mod pallet_timestamp;
+impl darwinia_deposit::Config for Runtime {
+	type Kton = CKtonMinting;
+	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
+	type Ring = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type UnixTime = Timestamp;
+}
