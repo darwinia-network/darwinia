@@ -2413,6 +2413,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-precompile-deposit"
+version = "6.0.0"
+dependencies = [
+ "darwinia-deposit",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "darwinia-precompile-staking"
+version = "6.0.0"
+dependencies = [
+ "darwinia-deposit",
+ "darwinia-staking",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "darwinia-precompile-state-storage"
 version = "6.0.0"
 dependencies = [
@@ -2456,6 +2497,8 @@ dependencies = [
  "darwinia-message-transact",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
+ "darwinia-precompile-deposit",
+ "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
  "dc-primitives",

@@ -90,7 +90,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 13] {
+	pub fn used_addresses() -> [H160; 15] {
 		[
 			addr(1),
 			addr(2),
@@ -104,6 +104,8 @@ where
 			addr(1024),
 			addr(1025),
 			addr(1026), // For KTON asset
+			addr(1536),
+			addr(1537),
 			addr(2048),
 		]
 	}
@@ -151,6 +153,10 @@ where
 					handle,
 				)),
 			// [1536, 2048) reserved for other stable precompiles.
+			a if a == addr(1536) =>
+				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
+			a if a == addr(1537) =>
+				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
 			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) =>
 				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),

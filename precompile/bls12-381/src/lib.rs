@@ -18,7 +18,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// std
+// core
 use core::marker::PhantomData;
 // crates.io
 use milagro_bls::{AggregatePublicKey, AggregateSignature, PublicKey, Signature};
@@ -28,7 +28,6 @@ use precompile_utils::prelude::*;
 use sp_std::vec::Vec;
 
 pub(crate) const VERIFY_ESTIMATED_COST: u64 = 100_000;
-
 pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]

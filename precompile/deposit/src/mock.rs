@@ -18,27 +18,22 @@
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
-// frontier
-use fp_evm::{Precompile, PrecompileSet};
-// parity
-use frame_support::pallet_prelude::Weight;
-use sp_core::{H160, H256, U256};
-use sp_std::{marker::PhantomData, prelude::*};
 // darwinia
 use crate::*;
+// frontier
+use fp_evm::{Precompile, PrecompileSet};
+// substrate
+use frame_support::pallet_prelude::Weight;
+use sp_core::{ConstU32, H160, H256, U256};
 
-pub type Balance = u128;
-pub type AssetId = u64;
-pub type InternalCall = ERC20AssetsCall<TestRuntime, AssetIdConverter>;
-pub type AccountId = H160;
-
-pub const TEST_ID: AssetId = 1026;
+pub(crate) type Balance = u128;
+pub(crate) type AccountId = H160;
+pub(crate) type PCall = DepositCall<TestRuntime>;
 
 #[derive(Clone, Encode, Decode, Debug, MaxEncodedLen, scale_info::TypeInfo)]
 pub enum Account {
 	Alice,
 	Bob,
-	Charlie,
 	Precompile,
 }
 
@@ -47,16 +42,8 @@ impl Into<H160> for Account {
 		match self {
 			Account::Alice => H160::repeat_byte(0xAA),
 			Account::Bob => H160::repeat_byte(0xBB),
-			Account::Charlie => H160::repeat_byte(0xCC),
-			Account::Precompile => H160::from_low_u64_be(TEST_ID),
+			Account::Precompile => H160::from_low_u64_be(1),
 		}
-	}
-}
-
-impl From<Account> for H256 {
-	fn from(x: Account) -> H256 {
-		let x: H160 = x.into();
-		x.into()
 	}
 }
 
@@ -74,7 +61,7 @@ impl frame_system::Config for TestRuntime {
 	type Header = sp_runtime::testing::Header;
 	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type MaxConsumers = ConstU32<16>;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -101,10 +88,29 @@ impl pallet_balances::Config for TestRuntime {
 
 impl pallet_timestamp::Config for TestRuntime {
 	type MinimumPeriod = ();
-	type Moment = u64;
+	type Moment = u128;
 	type OnTimestampSet = ();
 	type WeightInfo = ();
 }
+
+pub enum KtonMinting {}
+impl darwinia_deposit::Minting for KtonMinting {
+	type AccountId = AccountId;
+
+	fn mint(_beneficiary: &Self::AccountId, _amount: Balance) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+}
+
+impl darwinia_deposit::Config for TestRuntime {
+	type Kton = KtonMinting;
+	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MinLockingAmount = frame_support::traits::ConstU128<100>;
+	type Ring = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type UnixTime = Timestamp;
+}
+
 pub struct TestPrecompiles<R>(PhantomData<R>);
 impl<R> TestPrecompiles<R>
 where
@@ -115,18 +121,17 @@ where
 	}
 
 	pub fn used_addresses() -> [H160; 1] {
-		[addr(TEST_ID)]
+		[addr(1)]
 	}
 }
-
 impl<R> PrecompileSet for TestPrecompiles<R>
 where
+	crate::Deposit<R>: Precompile,
 	R: pallet_evm::Config,
-	ERC20Assets<R, AssetIdConverter>: Precompile,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<EvmResult<PrecompileOutput>> {
 		match handle.code_address() {
-			a if a == addr(TEST_ID) => Some(<ERC20Assets<R, AssetIdConverter>>::execute(handle)),
+			a if a == addr(1) => Some(crate::Deposit::<R>::execute(handle)),
 			_ => None,
 		}
 	}
@@ -137,14 +142,6 @@ where
 }
 fn addr(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
-}
-
-pub struct AssetIdConverter;
-impl AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
-	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: H160 = account_id.into();
-		addr.to_low_u64_be()
-	}
 }
 
 frame_support::parameter_types! {
@@ -172,35 +169,22 @@ impl pallet_evm::Config for TestRuntime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-impl pallet_assets::Config for TestRuntime {
-	type ApprovalDeposit = ();
-	type AssetAccountDeposit = ();
-	type AssetDeposit = ();
-	type AssetId = AssetId;
-	type Balance = Balance;
-	type Currency = Balances;
-	type Extra = ();
-	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
-	type Freezer = ();
-	type MetadataDepositBase = ();
-	type MetadataDepositPerByte = ();
-	type RuntimeEvent = RuntimeEvent;
-	type StringLimit = frame_support::traits::ConstU32<50>;
-	type WeightInfo = ();
-}
-
-frame_support::construct_runtime! {
+frame_support::construct_runtime!(
 	pub enum TestRuntime where
-	Block = frame_system::mocking::MockBlock<TestRuntime>,
-	NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
-	UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>,
+		Block = frame_system::mocking::MockBlock<TestRuntime>,
+		NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
+		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>,
 	{
 		System: frame_system,
-		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
+		Timestamp: pallet_timestamp,
+		Deposit: darwinia_deposit,
 		EVM: pallet_evm,
-		Assets: pallet_assets
 	}
+);
+
+pub fn efflux(milli_secs: u128) {
+	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
 }
 
 #[derive(Default)]

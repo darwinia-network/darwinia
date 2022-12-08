@@ -1,0 +1,61 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "State storage precompiles for EVM pallet."
+edition     = "2021"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "darwinia-precompile-deposit"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia"
+version     = "6.0.0"
+
+[dependencies]
+# frontier
+fp-evm     = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+
+# darwinia
+darwinia-deposit = { default-features = false, path = "../../pallet/deposit"}
+
+# moonbeam
+precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam.git", branch = "polkadot-v0.9.30" }
+
+# substrate
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[dev-dependencies]
+# crates.io
+codec      = { package = "parity-scale-codec", version = "3.2" }
+scale-info = { version = "2.3", features = ["derive"] }
+
+# moonbeam
+precompile-utils = { git = "https://github.com/darwinia-network/moonbeam.git", branch = "polkadot-v0.9.30", features = ["testing"] }
+
+# substrate
+pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-runtime       = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+std = [
+	# frontier
+	"fp-evm/std",
+	"pallet-evm/std",
+
+	# darwinia
+	"darwinia-deposit/std",
+
+	# moonbeam
+	"precompile-utils/std",
+
+	# substrate
+	"frame-support/std",
+	"frame-system/std",
+	"sp-core/std",
+	"sp-std/std",
+]

@@ -1,0 +1,155 @@
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2022 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+// std
+use core::marker::PhantomData;
+// darwinia
+use darwinia_deposit::DepositId;
+use darwinia_staking::Stake;
+// moonbeam
+use precompile_utils::prelude::*;
+// substrate
+use frame_support::{
+	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
+	traits::OriginTrait,
+};
+use sp_core::{H160, U256};
+use sp_runtime::Perbill;
+use sp_std::vec::Vec;
+
+/// AccountId of the runtime.
+type AccountIdOf<R> = <R as frame_system::pallet::Config>::AccountId;
+
+/// DepositId of the runtime.
+type DepositIdOf<R> = <<R as darwinia_staking::Config>::Deposit as Stake>::Item;
+
+pub struct Staking<Runtime>(PhantomData<Runtime>);
+
+#[precompile_utils::precompile]
+impl<Runtime> Staking<Runtime>
+where
+	Runtime: darwinia_staking::Config + pallet_evm::Config,
+	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
+	Runtime::RuntimeCall: From<darwinia_staking::Call<Runtime>>,
+	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
+	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
+	AccountIdOf<Runtime>: From<H160>,
+	DepositIdOf<Runtime>: From<u8>,
+{
+	#[precompile::public("stake(uint256,uint256,uint8[])")]
+	fn stake(
+		handle: &mut impl PrecompileHandle,
+		ring_amount: U256,
+		kton_amount: U256,
+		deposits: Vec<DepositId>,
+	) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let deposits: Vec<DepositIdOf<Runtime>> = deposits.into_iter().map(|i| i.into()).collect();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::stake {
+				ring_amount: ring_amount.as_u128(),
+				kton_amount: kton_amount.as_u128(),
+				deposits,
+			},
+		)?;
+		Ok(true)
+	}
+
+	#[precompile::public("unstake(uint256,uint256,uint8[])")]
+	fn unstake(
+		handle: &mut impl PrecompileHandle,
+		ring_amount: U256,
+		kton_amount: U256,
+		deposits: Vec<DepositId>,
+	) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let deposits: Vec<DepositIdOf<Runtime>> = deposits.into_iter().map(|i| i.into()).collect();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::unstake {
+				ring_amount: ring_amount.as_u128(),
+				kton_amount: kton_amount.as_u128(),
+				deposits,
+			},
+		)?;
+		Ok(true)
+	}
+
+	#[precompile::public("claim()")]
+	fn claim(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::claim {},
+		)?;
+		Ok(true)
+	}
+
+	#[precompile::public("collect(uint32)")]
+	fn collect(handle: &mut impl PrecompileHandle, commission: u32) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::collect {
+				commission: Perbill::from_percent(commission),
+			},
+		)?;
+		Ok(true)
+	}
+
+	#[precompile::public("nominate(address)")]
+	fn nominate(handle: &mut impl PrecompileHandle, target: Address) -> EvmResult<bool> {
+		let target: H160 = target.into();
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::nominate { target: target.into() },
+		)?;
+		Ok(true)
+	}
+
+	#[precompile::public("chill()")]
+	fn chill(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::chill {},
+		)?;
+		Ok(true)
+	}
+}
