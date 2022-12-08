@@ -148,10 +148,8 @@ where
 pub struct Exposure<AccountId> {
 	/// The total power backing this collator.
 	pub total: Power,
-	/// Collator's self stake power.
-	pub own: Power,
 	/// Nominators' stake power.
-	pub others: Vec<IndividualExposure<AccountId>>,
+	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the staker's state.
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
@@ -459,7 +457,6 @@ pub mod pallet {
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			Self::ensure_staker(&who)?;
 			<Collators<T>>::mutate(&who, |c| *c = Some(commission));
 
 			// TODO: event?
@@ -474,8 +471,9 @@ pub mod pallet {
 		pub fn nominate(origin: OriginFor<T>, target: T::AccountId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			Self::ensure_staker(&who)?;
-
+			if !<Ledgers<T>>::contains_key(&who) {
+				Err(<Error<T>>::NotStaker)?
+			}
 			if !<Collators<T>>::contains_key(&target) {
 				Err(<Error<T>>::TargetNotCollator)?;
 			}
@@ -680,14 +678,6 @@ pub mod pallet {
 			});
 		}
 
-		fn ensure_staker(who: &T::AccountId) -> DispatchResult {
-			if <Ledgers<T>>::contains_key(who) {
-				Ok(())
-			} else {
-				Err(<Error<T>>::NotStaker)?
-			}
-		}
-
 		/// Add reward points to collators using their account id.
 		pub fn reward_by_ids(collators: &[(T::AccountId, RewardPoint)]) {
 			<RewardPoints<T>>::mutate(|(total, reward_map)| {
@@ -765,16 +755,17 @@ pub mod pallet {
 
 					continue;
 				};
-				let c_payout = c_commission_payout
-					+ Perbill::from_rational(c_exposure.own, c_exposure.total) * n_payout;
 
-				if let Ok(_i) = T::RingCurrency::deposit_into_existing(&c, c_payout) {
-					actual_payout += c_payout;
+				if let Ok(_i) = T::RingCurrency::deposit_into_existing(&c, c_commission_payout) {
+					actual_payout += c_commission_payout;
 
-					Self::deposit_event(Event::<T>::Payout { staker: c, ring_amount: c_payout });
+					Self::deposit_event(Event::<T>::Payout {
+						staker: c,
+						ring_amount: c_commission_payout,
+					});
 				}
 
-				for n_exposure in c_exposure.others {
+				for n_exposure in c_exposure.nominators {
 					let n_payout =
 						Perbill::from_rational(n_exposure.value, c_exposure.total) * n_payout;
 
@@ -807,8 +798,7 @@ pub mod pallet {
 		pub fn elect() -> Vec<T::AccountId> {
 			let mut collators = <Collators<T>>::iter_keys()
 				.map(|c| {
-					let c_power = Self::power_of(&c);
-					let mut t_power = c_power;
+					let mut t_power = 0;
 					let i_exposures = <Nominators<T>>::iter()
 						.filter_map(|(n, c_)| {
 							if c_ == c {
@@ -823,7 +813,7 @@ pub mod pallet {
 						})
 						.collect();
 
-					((c, Exposure { total: t_power, own: c_power, others: i_exposures }), t_power)
+					((c, Exposure { total: t_power, nominators: i_exposures }), t_power)
 				})
 				.collect::<Vec<_>>();
 

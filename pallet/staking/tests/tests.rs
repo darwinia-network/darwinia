@@ -393,6 +393,7 @@ fn elect_should_work() {
 				Vec::new()
 			));
 			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Default::default()));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
 		});
 		(6..=10).for_each(|i| {
 			assert_ok!(Staking::stake(
@@ -441,6 +442,7 @@ fn payout_should_work() {
 				Vec::new()
 			));
 			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
 		});
 		(6..=10).for_each(|i| {
 			assert_ok!(Staking::stake(
