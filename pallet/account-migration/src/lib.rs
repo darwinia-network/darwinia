@@ -16,174 +16,166 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+//! # Darwinia account migration pallet
+//!
+//! ## Overview
+//!
+//! Darwinia2 uses ECDSA as its signature algorithm instead of SR25519.
+//! These two algorithm are not compatible.
+//! Thus, an account migration is required.
+//!
+//! ## Technical detail
+//!
+//! Users must send an extrinsic themselves to migrate their account(s).
+//! This extrinsic should be unsigned, the reason is the same as `pallet-claims`.
+//! This extrinsic's payload must contain a signature to the new ECDSA address, signed by their
+//! origin SR25519 key.
+//!
+//! This pallet will store all the account data from Darwinia1 and Darwinia Parachain.
+//! This pallet's genesis will be write into the chain spec JSON directly.
+//! The data will be processed off-chain(ly).
+//! After the verification, simply perform a take & put operation.
+//!
+//! ```nocompile
+//! user -> send extrinsic -> verify -> put(storages, ECDSA, take(storages, SR25519))
+//! ```
+
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
+
+// TODO: update weight
 
 #[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod test;
-
-/// Type alias for currency AccountId.
-type AccountIdOf<R> = <R as frame_system::pallet::Config>::AccountId;
-/// Type alias for currency balance.
-type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+mod tests;
 
 // darwinia
-use dc_primitives::Balance;
+use dc_primitives::{AccountId as AccountId20, Balance, Index};
 // substrate
-use frame_support::traits::Currency;
-#[cfg(feature = "std")]
-use frame_support::traits::GenesisBuild;
-use sp_core::{
-	crypto::ByteArray,
-	sr25519::{Public, Signature},
-	H160,
-};
-use sp_io::hashing::blake2_256;
+use frame_support::{log, pallet_prelude::*};
+use frame_system::{pallet_prelude::*, AccountInfo};
+use pallet_balances::AccountData;
+use sp_core::sr25519::{Public, Signature};
+use sp_io::hashing;
 use sp_runtime::{traits::Verify, AccountId32};
-use sp_std::vec::Vec;
 
-pub use pallet::*;
+type Message = [u8; 32];
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_evm::Config {
-		/// The overarching event type.
+	pub trait Config:
+		frame_system::Config<
+		AccountId = AccountId20,
+		Index = Index,
+		AccountData = AccountData<Balance>,
+	>
+	{
+		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// Currency type for the runtime.
-		type Currency: Currency<Self::AccountId>;
 	}
 
-	// Store the migrated balance snapshot for the darwinia-1.0 chain state.
-	#[pallet::storage]
-	#[pallet::getter(fn balance_of)]
-	pub(super) type Balances<T> = StorageMap<_, Blake2_128Concat, AccountId32, Balance>;
-
-	#[pallet::error]
-	pub enum Error<T> {
-		/// This account does not exist in the darwinia 1.0 chain state.
-		AccountNotExist,
-	}
-
+	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event {
-		/// Claim to the new account id.
-		Claim { old_pub_key: AccountId32, new_pub_key: H160, amount: Balance },
+		/// An account has been migrated.
+		Migrated { from: AccountId32, to: AccountId20 },
 	}
 
-	#[pallet::genesis_config]
-	#[cfg_attr(feature = "std", derive(Default))]
-	pub struct GenesisConfig {
-		pub migrated_accounts: Vec<(AccountId32, Balance)>,
-	}
+	/// [`frame_system::Account`] data.
+	#[pallet::storage]
+	#[pallet::getter(fn account_of)]
+	pub type Accounts<T: Config> =
+		StorageMap<_, Identity, AccountId32, AccountInfo<Index, AccountData<Balance>>>;
 
-	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig {
-		fn build(&self) {
-			self.migrated_accounts.iter().for_each(|(account, amount)| {
-				Balances::<T>::insert(account, amount);
-			});
-		}
-	}
+	// TODO: identity storages
+	// TODO: proxy storages
+	// TODO: staking storages
+	// TODO: vesting storages
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T>
-	where
-		AccountIdOf<T>: From<H160>,
-		BalanceOf<T>: From<Balance>,
-	{
-		// since signature and chain_id verification is done in `validate_unsigned`
-		// we can skip doing it here again.
-		// TODO: update weight
+	impl<T: Config> Pallet<T> {
+		/// Migrate all the account data under the `from` to `to`.
 		#[pallet::weight(0)]
-		pub fn claim_to(
+		pub fn migrate(
 			origin: OriginFor<T>,
-			_chain_id: u64,
-			old_pub_key: AccountId32,
-			new_pub_key: H160,
-			_sig: Signature,
+			from: AccountId32,
+			to: AccountId20,
+			_signature: Signature,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			let Some(amount) = Balances::<T>::take(&old_pub_key) else  {
-				return Err(Error::<T>::AccountNotExist.into());
-			};
+			let account = <Accounts<T>>::take(&from)
+				.ok_or("[pallet::account-migration] already checked in `pre_dispatch`; qed")?;
 
-			<T as pallet::Config>::Currency::deposit_creating(&new_pub_key.into(), amount.into());
-			Self::deposit_event(Event::Claim { old_pub_key, new_pub_key, amount });
+			<frame_system::Account<T>>::insert(to, account);
+
+			Self::deposit_event(Event::Migrated { from, to });
 
 			Ok(())
 		}
 	}
 	#[pallet::validate_unsigned]
-	impl<T: Config> ValidateUnsigned for Pallet<T>
-	where
-		AccountIdOf<T>: From<H160>,
-		BalanceOf<T>: From<Balance>,
-	{
+	impl<T: Config> ValidateUnsigned for Pallet<T> {
 		type Call = Call<T>;
 
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			let Call::claim_to { chain_id, old_pub_key, new_pub_key, sig } = call else {
+			// The migration destination was already taken by someone.
+			const E_ACCOUNT_ALREADY_EXISTED: u8 = 0;
+			// The migration source was not exist.
+			const E_ACCOUNT_NOT_FOUND: u8 = 1;
+			// Invalid signature.
+			const E_INVALID_SIGNATURE: u8 = 2;
+
+			let Call::migrate { from, to, signature } = call else {
 				return InvalidTransaction::Call.into();
 			};
 
-			if *chain_id != <T as pallet_evm::Config>::ChainId::get() {
-				return InvalidTransaction::BadProof.into();
+			if !<Accounts<T>>::contains_key(from) {
+				return InvalidTransaction::Custom(E_ACCOUNT_NOT_FOUND).into();
 			}
-			if !Balances::<T>::contains_key(old_pub_key) {
-				return InvalidTransaction::BadSigner.into();
+			if <frame_system::Account<T>>::contains_key(to) {
+				return InvalidTransaction::Custom(E_ACCOUNT_ALREADY_EXISTED).into();
 			}
 
-			let message = ClaimMessage::new(
-				<T as pallet_evm::Config>::ChainId::get(),
-				old_pub_key,
-				new_pub_key,
-			);
-			if let Ok(signer) = Public::from_slice(old_pub_key.as_ref()) {
-				let is_valid = sig.verify(&blake2_256(&message.raw_bytes())[..], &signer);
+			let message = sr25519_signable_message(T::Version::get().spec_name.as_ref(), to);
 
-				if is_valid {
-					return ValidTransaction::with_tag_prefix("MigrateClaim")
-						.priority(TransactionPriority::max_value())
-						.propagate(true)
-						.build();
-				}
+			if verify_sr25519_signature(from, &message, signature) {
+				ValidTransaction::with_tag_prefix("account-migration")
+					.and_provides(from)
+					.priority(100)
+					.longevity(TransactionLongevity::max_value())
+					.propagate(true)
+					.build()
+			} else {
+				InvalidTransaction::Custom(E_INVALID_SIGNATURE).into()
 			}
-			InvalidTransaction::BadSigner.into()
 		}
 	}
 }
+pub use pallet::*;
 
-/// ClaimMessage is the metadata that needs to be signed when the user invokes claim dispatch.
-///
-/// It consists of three parts, namely the chain_id, the AccountId32 account for darwinia 1.0, and
-/// the H160 account for darwinia 2.0.
-pub struct ClaimMessage<'m> {
-	pub chain_id: u64,
-	pub old_pub_key: &'m AccountId32,
-	pub new_pub_key: &'m H160,
+fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Message {
+	hashing::blake2_256(&[spec_name, b"::account-migration", &account_id_20.0].concat())
 }
 
-impl<'m> ClaimMessage<'m> {
-	fn new(chain_id: u64, old_pub_key: &'m AccountId32, new_pub_key: &'m H160) -> Self {
-		Self { chain_id, old_pub_key, new_pub_key }
-	}
+fn verify_sr25519_signature(
+	public_key: &AccountId32,
+	message: &Message,
+	signature: &Signature,
+) -> bool {
+	// Actually, `&[u8]` is `[u8; 32]` here.
+	// But for better safety.
+	let Ok(public_key) = &Public::try_from(public_key.as_ref()) else {
+		log::error!("[pallet::account-migration] `public_key` must be valid; qed");
 
-	fn raw_bytes(&self) -> Vec<u8> {
-		let mut result = Vec::new();
-		result.extend_from_slice(&self.chain_id.to_be_bytes());
-		result.extend_from_slice(self.old_pub_key.as_slice());
-		result.extend_from_slice(self.new_pub_key.as_bytes());
-		result
-	}
+		return false;
+	};
+
+	signature.verify(message.as_slice(), public_key)
 }

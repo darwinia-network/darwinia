@@ -18,6 +18,8 @@
 
 //! # Darwinia deposit pallet
 //!
+//! ## Overview
+//!
 //! This is a completely specialized deposit pallet designed only for Darwinia parachain.
 //! So, this pallet will eliminate the generic parameters as much as possible.
 

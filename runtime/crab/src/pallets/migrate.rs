@@ -20,6 +20,5 @@
 use crate::*;
 
 impl darwinia_account_migration::Config for Runtime {
-	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 }
