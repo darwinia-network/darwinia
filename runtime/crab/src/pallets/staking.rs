@@ -19,6 +19,8 @@
 // darwinia
 use crate::*;
 
+fast_runtime_or_not!(MinStakingDuration, ConstU32<MINUTES>, ConstU32<{ 14 * DAYS }>);
+
 pub enum CrabStaking {}
 impl darwinia_staking::Stake for CrabStaking {
 	type AccountId = AccountId;
@@ -75,7 +77,7 @@ impl darwinia_staking::Config for Runtime {
 	type Kton = CKtonStaking;
 	type MaxDeposits = ConstU32<16>;
 	type MaxUnstakings = ConstU32<16>;
-	type MinStakingDuration = ConstU32<{ 14 * DAYS }>;
+	type MinStakingDuration = MinStakingDuration;
 	type PayoutFraction = PayoutFraction;
 	type RewardRemainder = Treasury;
 	type Ring = CrabStaking;

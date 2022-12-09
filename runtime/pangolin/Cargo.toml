@@ -128,7 +128,6 @@ frame-try-runtime         = { optional = true, default-features = false, git = "
 
 [features]
 default = ["std"]
-production = []
 std = [
 	# crates.io
 	"codec/std",
@@ -295,6 +294,8 @@ runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 ]
+
+fast-runtime = []
 
 try-runtime = [
 	# cumulus

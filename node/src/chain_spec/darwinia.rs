@@ -230,7 +230,11 @@ fn testnet_genesis(
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
 		},
 		transaction_payment: Default::default(),
-		assets: Default::default(),
+		assets: AssetsConfig {
+			assets: vec![(AssetIds::Kton as _, array_bytes::hex_n_into_unchecked(ALITH), true, 1)],
+			metadata: vec![(AssetIds::Kton as _, b"Darwinia Commitment Token".to_vec(), b"KTON".to_vec(), 18)],
+			..Default::default()
+		},
 
 		// Consensus stuff.
 		staking: StakingConfig {

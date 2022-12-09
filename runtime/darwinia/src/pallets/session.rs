@@ -25,16 +25,9 @@ sp_runtime::impl_opaque_keys! {
 	}
 }
 
-#[cfg(feature = "production")]
-frame_support::parameter_types! {
-	pub const Period: u32 = 6 * HOURS;
-	pub const Offset: u32 = 0;
-}
-#[cfg(not(feature = "production"))]
-frame_support::parameter_types! {
-	pub const Period: u32 = 2 * MINUTES;
-	pub const Offset: u32 = 0;
-}
+fast_runtime_or_not!(Period, ConstU32<{ 2 * MINUTES }>, ConstU32<{ 6 * HOURS }>);
+
+type Offset = ConstU32<0>;
 
 impl pallet_session::Config for Runtime {
 	type Keys = SessionKeys;

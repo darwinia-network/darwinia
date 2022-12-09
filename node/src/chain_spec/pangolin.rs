@@ -153,7 +153,11 @@ pub fn genesis_config() -> ChainSpec {
 				// Monetary stuff.
 				balances: Default::default(),
 				transaction_payment: Default::default(),
-				assets: Default::default(),
+				assets: AssetsConfig {
+					assets: vec![(AssetIds::PKton as _, array_bytes::hex_n_into_unchecked(ALITH), true, 1)],
+					metadata: vec![(AssetIds::PKton as _, b"Pangolin Commitment Token".to_vec(), b"PKTON".to_vec(), 18)],
+					..Default::default()
+				},
 
 				// Consensus stuff.
 				staking: StakingConfig {

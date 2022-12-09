@@ -328,10 +328,13 @@ pub mod pallet {
 			<ElapsedTime<T>>::put(self.elapsed_time);
 			<CollatorCount<T>>::put(self.collator_count);
 
-			self.collators.iter().cloned().for_each(|(who, stake)| {
-				<Pallet<T>>::stake(RawOrigin::Signed(who.clone()).into(), stake, 0, Vec::new())
-					.unwrap();
-				<Pallet<T>>::collect(RawOrigin::Signed(who).into(), Default::default()).unwrap();
+			self.collators.iter().for_each(|(who, stake)| {
+				<Pallet<T>>::stake(RawOrigin::Signed(who.to_owned()).into(), *stake, 0, Vec::new())
+					.expect("[pallet::staking] 0, genesis must be built; qed");
+				<Pallet<T>>::collect(RawOrigin::Signed(who.to_owned()).into(), Default::default())
+					.expect("[pallet::staking] 1, genesis must be built; qed");
+				<Pallet<T>>::nominate(RawOrigin::Signed(who.to_owned()).into(), who.to_owned())
+					.expect("[pallet::staking] 2, genesis must be built; qed");
 			});
 		}
 	}

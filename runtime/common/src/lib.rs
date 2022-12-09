@@ -26,3 +26,13 @@ pub mod xcm_configs;
 pub use bp_darwinia_core as bp_crab;
 pub use bp_darwinia_core as bp_darwinia;
 pub use bp_darwinia_core as bp_pangolin;
+
+#[macro_export]
+macro_rules! fast_runtime_or_not {
+	($name:ident, $development_type:ty, $production_type:ty) => {
+		#[cfg(feature = "fast-runtime")]
+		type $name = $development_type;
+		#[cfg(not(feature = "fast-runtime"))]
+		type $name = $production_type;
+	};
+}
