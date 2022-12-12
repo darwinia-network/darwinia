@@ -25,6 +25,7 @@ use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
+use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,
@@ -149,9 +150,12 @@ impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::Accoun
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_crab::AccountId>), Self::Error> {
-		source::verify_messages_delivery_proof::<WithCrabMessageBridge, Runtime, WithCrabGrandpa>(
-			proof,
-		)
+		source::verify_messages_delivery_proof_from_parachain::<
+			WithCrabMessageBridge,
+			bp_crab::Header,
+			Runtime,
+			WithKusamaParachainsInstance,
+		>(ParaId(2105), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
@@ -162,9 +166,11 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
 		proof: Self::MessagesProof,
 		messages_count: u32,
 	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
-		target::verify_messages_proof::<WithCrabMessageBridge, Runtime, WithCrabGrandpa>(
-			proof,
-			messages_count,
-		)
+		target::verify_messages_proof_from_parachain::<
+			WithCrabMessageBridge,
+			bp_crab::Header,
+			Runtime,
+			WithKusamaParachainsInstance,
+		>(ParaId(2105), proof, messages_count)
 	}
 }

@@ -16,14 +16,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use pallet_bridge_grandpa::Instance1 as WithCrabGrandpa;
+pub use pallet_bridge_grandpa::Instance1 as WithKusamaGrandpa;
 
 // darwinia
 use crate::*;
 
-impl pallet_bridge_grandpa::Config<WithCrabGrandpa> for Runtime {
+pub type KusamaHeadersToKeep = ConstU32<500>;
+
+impl pallet_bridge_grandpa::Config<WithKusamaGrandpa> for Runtime {
 	type BridgedChain = bp_crab::DarwiniaLike;
-	type HeadersToKeep = ConstU32<500>;
+	type HeadersToKeep = KusamaHeadersToKeep;
 	type MaxBridgedAuthorities = ();
 	type MaxBridgedHeaderSize = ();
 	type MaxRequests = ConstU32<50>;

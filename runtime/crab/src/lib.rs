@@ -316,7 +316,8 @@ frame_support::construct_runtime! {
 		MessageTransact: darwinia_message_transact = 39,
 
 		// S2S stuff.
-		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1> = 35,
+		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 35,
+		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 42,
 		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 36,
 		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 37,
 		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 38

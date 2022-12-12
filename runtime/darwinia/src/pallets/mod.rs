@@ -117,5 +117,8 @@ pub use bridge_grandpa::*;
 mod bridge_messages;
 pub use bridge_messages::*;
 
+mod bridge_parachains;
+pub use bridge_parachains::*;
+
 mod fee_market;
 pub use fee_market::*;

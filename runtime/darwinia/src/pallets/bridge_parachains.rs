@@ -16,18 +16,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use pallet_bridge_grandpa::Instance1 as WithPolkadotGrandpa;
+pub use pallet_bridge_parachains::Instance1 as WithKusamaParachainsInstance;
 
 // darwinia
 use crate::*;
 
-pub type PolkadotHeadersToKeep = ConstU32<500>;
+frame_support::parameter_types! {
+	pub const ParasPalletName: &'static str = bp_polkadot_core::parachains::PARAS_PALLET_NAME;
+}
 
-impl pallet_bridge_grandpa::Config<WithPolkadotGrandpa> for Runtime {
-	type BridgedChain = bp_darwinia::DarwiniaLike;
-	type HeadersToKeep = PolkadotHeadersToKeep;
-	type MaxBridgedAuthorities = ();
-	type MaxBridgedHeaderSize = ();
-	type MaxRequests = ConstU32<50>;
+impl pallet_bridge_parachains::Config<WithKusamaParachainsInstance> for Runtime {
+	type BridgesGrandpaPalletInstance = WithKusamaGrandpa;
+	type HeadsToKeep = KusamaHeadersToKeep;
+	type MaxParaHeadSize = ConstU32<1024>;
+	type ParasPalletName = ParasPalletName;
+	type RuntimeEvent = RuntimeEvent;
+	type TrackedParachains = frame_support::traits::Everything;
 	type WeightInfo = ();
 }

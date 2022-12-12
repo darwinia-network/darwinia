@@ -25,6 +25,7 @@ use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
+use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,
@@ -155,11 +156,12 @@ impl TargetHeaderChain<ToDarwiniaMessagePayload, <Self as ChainWithMessages>::Ac
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_darwinia::AccountId>), Self::Error> {
-		source::verify_messages_delivery_proof::<
+		source::verify_messages_delivery_proof_from_parachain::<
 			WithDarwiniaMessageBridge,
+			bp_darwinia::Header,
 			Runtime,
-			WithDarwiniaGrandpa,
-		>(proof)
+			WithPolkadotParachainsInstance,
+		>(ParaId(2046), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
@@ -170,9 +172,11 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
 		proof: Self::MessagesProof,
 		messages_count: u32,
 	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
-		target::verify_messages_proof::<WithDarwiniaMessageBridge, Runtime, WithDarwiniaGrandpa>(
-			proof,
-			messages_count,
-		)
+		target::verify_messages_proof_from_parachain::<
+			WithDarwiniaMessageBridge,
+			bp_darwinia::Header,
+			Runtime,
+			WithPolkadotParachainsInstance,
+		>(ParaId(2046), proof, messages_count)
 	}
 }
