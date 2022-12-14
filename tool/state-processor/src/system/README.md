@@ -1,0 +1,36 @@
+### Process steps
+- take solo account infos and remaining balances
+  - merge solo remaining balances
+  - adjust solo balance decimals
+- take para account infos
+- process balances
+  - take solo balances total issuances and locks
+  - prune solo balance locks
+    - prune staking, phragmen election, democracy, vesting, relay  authority, fee market locks
+    - check if there are any other locks
+  - adjust solo balances items' decimals
+  - take para balances total issuances and locks
+    - there should not be any locks on parachain
+- use all previous data to build the new accounts and calculate total issuances
+  - merge solo and para account infos
+    - how to deal with the account references? - TODO
+- set `Balances::TotalIssuance`
+  - compare the calculated one with the storage one
+  - remove para backing account - TODO
+  - check remaining sum - TODO
+  - XCM relate - TODO
+- set KTON total issuances - TODO
+  - compare the calculated one with the storage one
+  - check remaining sum - TODO
+- set accounts
+  - if is EVM address
+    - insert to `System::Account`
+  - if is Substrate address
+    - reset the nonce
+    - insert to `AccountMigration::Accounts`
+    - calculate misc frozen and fee frozen
+
+- some remaining accounts, bridge endpoint accounts - TODO
+- special accounts - TODO
+  - parachain backing account 0x8c585F9791EE5b4B23fe82888cE576DBB69607eB
+  - bridge root account 0x726f6f7400000000000000000000000000000000

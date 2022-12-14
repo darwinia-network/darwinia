@@ -1,20 +1,20 @@
 [package]
 authors = ["Xavier Lau <xavier@inv.cafe>"]
 edition = "2021"
-license = "GPL-3.0"
 name    = "state-processor"
 version = "0.0.0"
 
 [dependencies]
 # crates.io
 anyhow             = { version = "1.0" }
-array-bytes        = { version = "4.1" }
+array-bytes        = { version = "6.0" }
 fxhash             = { version = "0.2" }
 log                = { version = "0.4" }
 parity-scale-codec = { version = "3.2", features = ["derive"] }
 pretty_env_logger  = { version = "0.4" }
 serde              = { version = "1.0" }
 serde_json         = { version = "1.0" }
+
 # hack-ink
 subhasher   = { git = "https://github.com/hack-ink/subalfred" }
 subspector  = { git = "https://github.com/hack-ink/subalfred" }
