@@ -138,6 +138,14 @@ impl Processor {
 			.take_map(b"Ethereum", b"RemainingRingBalance", &mut remaining_ring, get_hashed_key)
 			.take_map(b"Ethereum", b"RemainingKtonBalance", &mut remaining_kton, get_hashed_key);
 
+		log::info!("adjust solo balance decimals");
+		account_infos.iter_mut().for_each(|(_, v)| {
+			v.data.free *= GWEI;
+			v.data.reserved *= GWEI;
+			v.data.free_kton_or_misc_frozen *= GWEI;
+			v.data.reserved_kton_or_fee_frozen *= GWEI;
+		});
+
 		log::info!("merge solo remaining balances");
 		remaining_ring.into_iter().for_each(|(k, v)| {
 			if let Some(a) = account_infos.get_mut(&k) {
@@ -158,14 +166,6 @@ impl Processor {
 					get_last_64(&k)
 				);
 			}
-		});
-
-		log::info!("adjust solo balance decimals");
-		account_infos.iter_mut().for_each(|(_, v)| {
-			v.data.free *= GWEI;
-			v.data.reserved *= GWEI;
-			v.data.free_kton_or_misc_frozen *= GWEI;
-			v.data.reserved_kton_or_fee_frozen *= GWEI;
 		});
 
 		account_infos

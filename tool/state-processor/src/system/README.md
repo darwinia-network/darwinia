@@ -1,16 +1,16 @@
 ### Process steps
 - take solo account infos and remaining balances
-  - merge solo remaining balances
   - adjust solo balance decimals
+  - merge solo remaining balances
 - take para account infos
 - process balances
   - take solo balances total issuances and locks
   - prune solo balance locks
     - prune staking, phragmen election, democracy, vesting, relay  authority, fee market locks
-    - check if there are any other locks
-  - adjust solo balances items' decimals
+    - adjust solo balances items' decimals
   - take para balances total issuances and locks
     - there should not be any locks on parachain
+  - check if there are any other locks
 - use all previous data to build the new accounts and calculate total issuances
   - merge solo and para account infos
     - how to deal with the account references? - TODO
