@@ -49,14 +49,20 @@
 mod tests;
 
 // darwinia
-use dc_primitives::{AccountId as AccountId20, Balance, Index};
+use dc_primitives::{AccountId as AccountId20, Balance, BlockNumber, Index};
 // substrate
-use frame_support::{log, pallet_prelude::*};
+use frame_support::{
+	log,
+	pallet_prelude::*,
+	traits::{LockableCurrency, WithdrawReasons},
+};
 use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
+use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_io::hashing;
 use sp_runtime::{traits::Verify, AccountId32};
+use sp_std::prelude::*;
 
 type Message = [u8; 32];
 
@@ -70,10 +76,12 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config<
-		AccountId = AccountId20,
-		Index = Index,
-		AccountData = AccountData<Balance>,
-	>
+			Index = Index,
+			BlockNumber = BlockNumber,
+			AccountId = AccountId20,
+			AccountData = AccountData<Balance>,
+		> + pallet_balances::Config<Balance = Balance>
+		+ pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -90,16 +98,32 @@ pub mod pallet {
 		Migrated { from: AccountId32, to: AccountId20 },
 	}
 
+	#[pallet::error]
+	pub enum Error<T> {
+		/// Exceed maximum vesting count.
+		ExceedMaxVestings,
+	}
+
 	/// [`frame_system::Account`] data.
+	///
+	/// <https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/system/src/lib.rs#L545>
 	#[pallet::storage]
 	#[pallet::getter(fn account_of)]
 	pub type Accounts<T: Config> =
 		StorageMap<_, Identity, AccountId32, AccountInfo<Index, AccountData<Balance>>>;
 
+	/// [`pallet_vesting::Vesting`] data.
+	///
+	/// <https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L188>
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn vesting_of)]
+	pub type Vestings<T: Config> =
+		StorageMap<_, Blake2_128Concat, AccountId32, Vec<VestingInfo<Balance, BlockNumber>>>;
+
 	// TODO: identity storages
 	// TODO: proxy storages
 	// TODO: staking storages
-	// TODO: vesting storages
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -118,10 +142,27 @@ pub mod pallet {
 
 			<frame_system::Account<T>>::insert(to, account);
 
+			if let Some(vs) = <Vestings<T>>::get(&from) {
+				let locked = vs.iter().map(|v| v.locked()).sum();
+
+				<pallet_vesting::Vesting<T>>::insert(
+					to,
+					BoundedVec::try_from(vs).map_err(|_| <Error<T>>::ExceedMaxVestings)?,
+				);
+
+				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L248
+				let reasons = WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE;
+
+				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
+				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", &to, locked, reasons);
+			}
+
 			Self::deposit_event(Event::Migrated { from, to });
 
 			Ok(())
 		}
+
+		// TODO: migrate multi-sig
 	}
 	#[pallet::validate_unsigned]
 	impl<T: Config> ValidateUnsigned for Pallet<T> {

@@ -2304,12 +2304,14 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
+ "pallet-vesting",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
  "sp-io",
  "sp-keyring",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

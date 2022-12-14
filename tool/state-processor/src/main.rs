@@ -10,6 +10,7 @@ use std::{
 	env,
 	fs::File,
 	io::{Read, Write},
+	mem,
 };
 // crates.io
 use anyhow::Result;
@@ -33,14 +34,18 @@ fn main() -> Result<()> {
 struct Processor {
 	solo_state: State,
 	para_state: State,
+	shell_state: State,
 	shell_chain_spec: ChainSpec,
 }
 impl Processor {
 	fn new() -> Result<Self> {
+		let mut shell_chain_spec = from_file::<ChainSpec>("test-data/shell.json")?;
+
 		Ok(Self {
 			solo_state: State::from_file("test-data/solo.json")?,
 			para_state: State::from_file("test-data/para.json")?,
-			shell_chain_spec: from_file("test-data/shell.json")?,
+			shell_state: State(mem::take(&mut shell_chain_spec.genesis.raw.top)),
+			shell_chain_spec,
 		})
 	}
 
@@ -51,8 +56,10 @@ impl Processor {
 		self.save()
 	}
 
-	fn save(self) -> Result<()> {
-		log::info!("save processed chain spec");
+	fn save(mut self) -> Result<()> {
+		log::info!("saving processed chain spec");
+
+		mem::swap(&mut self.shell_state.0, &mut self.shell_chain_spec.genesis.raw.top);
 
 		let mut f = File::create("test-data/processed.json")?;
 		let v = serde_json::to_vec(&self.shell_chain_spec)?;
@@ -106,6 +113,40 @@ impl State {
 				log::warn!("`{}: {prefix}` not found", String::from_utf8_lossy(pallet));
 			}
 		}
+
+		self
+	}
+
+	fn take_raw<F>(
+		&mut self,
+		prefix: &str,
+		buffer: &mut Map<String>,
+		preprocess_key: F,
+	) -> &mut Self
+	where
+		F: Fn(&str, &str) -> String,
+	{
+		self.0.retain(|k, v| {
+			if k.starts_with(prefix) {
+				buffer.insert(preprocess_key(k, prefix), v.to_owned());
+
+				false
+			} else {
+				true
+			}
+		});
+
+		self
+	}
+
+	fn insert_raw(&mut self, pairs: Map<String>) -> &mut Self {
+		pairs.into_iter().for_each(|(k, v)| {
+			if self.0.contains_key(&k) {
+				log::error!("key({k}) has already existed, overriding");
+			}
+
+			self.0.insert(k, v);
+		});
 
 		self
 	}
@@ -226,4 +267,8 @@ fn get_hashed_key(full_key: &str, item_key: &str) -> String {
 // twox128(pallet) + twox128(item) + *_concat(account_id_32) -> account_id_32
 fn get_last_64(key: &str) -> String {
 	format!("0x{}", &key[key.len() - 64..])
+}
+
+fn replace_first_match(key: &str, from: &str, to: &str) -> String {
+	key.replacen(from, to, 1)
 }
