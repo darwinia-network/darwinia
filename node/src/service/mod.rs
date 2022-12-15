@@ -21,6 +21,8 @@
 pub mod executors;
 pub use executors::*;
 
+mod instant_finalize;
+
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
@@ -65,7 +67,7 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 	}
 
 	fn is_dev(&self) -> bool {
-		self.id().ends_with("dev")
+		self.id().ends_with("development")
 	}
 }
 
@@ -113,7 +115,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 	sc_service::PartialComponents<
 		FullClient<RuntimeApi, Executor>,
 		FullBackend,
-		(),
+		sc_consensus::LongestChain<FullBackend, Block>,
 		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
@@ -187,13 +189,13 @@ where
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
 
 	Ok(sc_service::PartialComponents {
-		backend,
+		backend: backend.clone(),
 		client,
 		import_queue,
 		keystore_container,
 		task_manager,
 		transaction_pool,
-		select_chain: (),
+		select_chain: sc_consensus::LongestChain::new(backend),
 		other: (
 			frontier_backend,
 			filter_pool,
@@ -622,4 +624,223 @@ pub async fn start_parachain_node(
 		eth_rpc_config,
 	)
 	.await
+}
+
+/// Start a dev node which can seal instantly.
+/// !!! WARNING: DO NOT USE ELSEWHERE
+pub fn start_dev_node<RuntimeApi, Executor>(
+	config: sc_service::Configuration,
+	eth_rpc_config: &crate::cli::EthRpcConfig,
+) -> Result<sc_service::TaskManager, sc_service::error::Error>
+where
+	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
+		+ Send
+		+ Sync
+		+ 'static,
+	RuntimeApi::RuntimeApi:
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
+{
+	// substrate
+	use sc_client_api::HeaderBackend;
+
+	let sc_service::PartialComponents {
+		client,
+		backend,
+		mut task_manager,
+		import_queue,
+		keystore_container,
+		select_chain,
+		transaction_pool,
+		other:
+			(
+				frontier_backend,
+				filter_pool,
+				fee_history_cache,
+				fee_history_cache_limit,
+				_telemetry,
+				_telemetry_worker_handle,
+			),
+	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
+
+	let (network, system_rpc_tx, tx_handler_controller, start_network) =
+		sc_service::build_network(sc_service::BuildNetworkParams {
+			config: &config,
+			client: client.clone(),
+			transaction_pool: transaction_pool.clone(),
+			spawn_handle: task_manager.spawn_handle(),
+			import_queue,
+			block_announce_validator_builder: None,
+			warp_sync: None,
+		})?;
+
+	if config.offchain_worker.enabled {
+		let offchain_workers = Arc::new(sc_offchain::OffchainWorkers::new_with_options(
+			client.clone(),
+			sc_offchain::OffchainWorkerOptions { enable_http_requests: false },
+		));
+
+		// Start the offchain workers to have
+		task_manager.spawn_handle().spawn(
+			"offchain-notifications",
+			None,
+			sc_offchain::notification_future(
+				config.role.is_authority(),
+				client.clone(),
+				offchain_workers,
+				task_manager.spawn_handle(),
+				network.clone(),
+			),
+		);
+	}
+
+	let force_authoring = config.force_authoring;
+	let backoff_authoring_blocks: Option<()> = None;
+	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+		task_manager.spawn_handle(),
+		client.clone(),
+		transaction_pool.clone(),
+		None,
+		None,
+	);
+
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+	let client_for_cidp = client.clone();
+	if config.role.is_authority() {
+		let aura = sc_consensus_aura::start_aura::<
+			sp_consensus_aura::sr25519::AuthorityPair,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+		>(sc_consensus_aura::StartAuraParams {
+			slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+			client: client.clone(),
+			select_chain,
+			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
+			proposer_factory,
+			create_inherent_data_providers: move |block: Hash, ()| {
+				let current_para_block = client_for_cidp
+					.number(block)
+					.expect("Header lookup should succeed")
+					.expect("Header passed in as parent should be present in backend.");
+				let client_for_xcm = client_for_cidp.clone();
+
+				async move {
+					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+					let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+						*timestamp,
+						slot_duration,
+					);
+
+					let mocked_parachain =
+						cumulus_primitives_parachain_inherent::MockValidationDataInherentDataProvider {
+							current_para_block,
+							relay_offset: 1000,
+							relay_blocks_per_para_block: 2,
+							para_blocks_per_relay_epoch: 0,
+							relay_randomness_config: (),
+							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
+								&*client_for_xcm,
+								block,
+								Default::default(),
+								Default::default(),
+							),
+							raw_downward_messages: vec![],
+							raw_horizontal_messages: vec![],
+						};
+
+					Ok((slot, timestamp, mocked_parachain))
+				}
+			},
+			force_authoring,
+			backoff_authoring_blocks,
+			keystore: keystore_container.sync_keystore(),
+			sync_oracle: network.clone(),
+			justification_sync_link: network.clone(),
+			// We got around 500ms for proposing
+			block_proposal_slot_portion: cumulus_client_consensus_aura::SlotProportion::new(
+				1f32 / 24f32,
+			),
+			// And a maximum of 750ms if slots are skipped
+			max_block_proposal_slot_portion: Some(
+				cumulus_client_consensus_aura::SlotProportion::new(1f32 / 16f32),
+			),
+			telemetry: None,
+		})?;
+
+		// the AURA authoring task is considered essential, i.e. if it
+		// fails we take down the service with it.
+		task_manager.spawn_essential_handle().spawn_blocking("aura", Some("block-authoring"), aura);
+	} else {
+		log::warn!("You could add --alice or --bob to make dev chain seal instantly.");
+	}
+
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let overrides = frontier_service::overrides_handle(client.clone());
+	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
+		task_manager.spawn_handle(),
+		overrides.clone(),
+		eth_rpc_config.eth_log_block_cache,
+		eth_rpc_config.eth_statuses_cache,
+		prometheus_registry,
+	));
+
+	let rpc_extensions_builder = {
+		let client = client.clone();
+		let pool = transaction_pool.clone();
+		let network = network.clone();
+		let filter_pool = filter_pool;
+		let frontier_backend = frontier_backend;
+		let overrides = overrides;
+		let fee_history_cache = fee_history_cache;
+		let max_past_logs = eth_rpc_config.max_past_logs;
+		let collator = config.role.is_authority();
+
+		Box::new(move |deny_unsafe, subscription_task_executor| {
+			let deps = crate::rpc::FullDeps {
+				client: client.clone(),
+				pool: pool.clone(),
+				graph: pool.pool().clone(),
+				deny_unsafe,
+				is_authority: collator,
+				network: network.clone(),
+				filter_pool: filter_pool.clone(),
+				backend: frontier_backend.clone(),
+				max_past_logs,
+				fee_history_cache: fee_history_cache.clone(),
+				fee_history_cache_limit,
+				overrides: overrides.clone(),
+				block_data_cache: block_data_cache.clone(),
+			};
+
+			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
+		})
+	};
+
+	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+		rpc_builder: Box::new(rpc_extensions_builder),
+		client,
+		transaction_pool,
+		task_manager: &mut task_manager,
+		config,
+		keystore: keystore_container.sync_keystore(),
+		backend,
+		network,
+		system_rpc_tx,
+		tx_handler_controller,
+		telemetry: None,
+	})?;
+
+	start_network.start_network();
+
+	Ok(task_manager)
 }

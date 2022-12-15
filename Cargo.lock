@@ -2222,6 +2222,7 @@ name = "darwinia"
 version = "6.0.0"
 dependencies = [
  "array-bytes 6.0.0",
+ "async-trait",
  "clap",
  "crab-runtime",
  "cumulus-client-cli",
@@ -2263,10 +2264,12 @@ dependencies = [
  "sc-cli",
  "sc-client-api",
  "sc-consensus",
+ "sc-consensus-aura",
  "sc-executor",
  "sc-keystore",
  "sc-network",
  "sc-network-common",
+ "sc-offchain",
  "sc-rpc",
  "sc-rpc-api",
  "sc-service",

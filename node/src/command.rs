@@ -558,9 +558,6 @@ pub fn run() -> Result<()> {
 						.map_err(|e| format!("{:?}", e))?;
 				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 				let tokio_handle = config.tokio_handle.clone();
-				let polkadot_config =
-					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
 				log::info!("Parachain id: {:?}", id);
@@ -571,7 +568,33 @@ pub fn run() -> Result<()> {
 					if config.role.is_authority() { "yes" } else { "no" }
 				);
 
-				crate::service::start_parachain_node(
+				if chain_spec.is_dev() {
+					return if chain_spec.is_crab() {
+						service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+							config,
+							&eth_rpc_config,
+						)
+						.map_err(Into::into)
+					} else if chain_spec.is_pangolin() {
+						service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+							config,
+							&eth_rpc_config,
+						)
+						.map_err(Into::into)
+					} else {
+						service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+							config,
+							&eth_rpc_config,
+						)
+						.map_err(Into::into)
+					};
+				}
+
+				let polkadot_config =
+					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+						.map_err(|err| format!("Relay chain argument error: {}", err))?;
+
+				service::start_parachain_node(
 					config,
 					polkadot_config,
 					collator_options,

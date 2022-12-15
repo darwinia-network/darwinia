@@ -15,6 +15,7 @@ substrate-build-script-utils = { git = "https://github.com/paritytech/substrate"
 [dependencies]
 # crates.io
 array-bytes = { version = "6.0" }
+async-trait = { version = "0.1" }
 clap        = { version = "3.2", features = ["derive"] }
 codec       = { package = "parity-scale-codec", version = "3.2" }
 futures     = { version = "0.3" }
@@ -68,10 +69,12 @@ sc-chain-spec                  = { git = "https://github.com/paritytech/substrat
 sc-cli                         = { features = ["wasmtime"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-client-api                  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-consensus                   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sc-consensus-aura              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-executor                    = { features = ["wasmtime"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-keystore                    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-network                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-network-common              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sc-offchain                    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-rpc                         = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-rpc-api                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sc-service                     = { features = ["wasmtime"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
