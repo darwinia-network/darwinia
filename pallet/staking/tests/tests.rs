@@ -41,7 +41,7 @@ fn stake_should_work() {
 		assert_eq!(System::account(1).consumers, 1);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
-			Ledger { account: 1, staked_ring: UNIT, ..ZeroDefault::default() }
+			Ledger { staked_ring: UNIT, ..ZeroDefault::default() }
 		);
 		assert_eq!(Balances::free_balance(1), 999 * UNIT);
 
@@ -51,7 +51,7 @@ fn stake_should_work() {
 		assert_eq!(Assets::balance(0, 1), 999 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
-			Ledger { account: 1, staked_ring: UNIT, staked_kton: UNIT, ..ZeroDefault::default() }
+			Ledger { staked_ring: UNIT, staked_kton: UNIT, ..ZeroDefault::default() }
 		);
 
 		// Stake 1 deposit.
@@ -61,7 +61,6 @@ fn stake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: UNIT,
 				staked_kton: UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0]),
@@ -79,7 +78,6 @@ fn stake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 501 * UNIT,
 				staked_kton: 501 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
@@ -101,7 +99,6 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 2 * UNIT,
 				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
@@ -114,7 +111,6 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 1 * UNIT,
 				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
@@ -129,7 +125,6 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 1 * UNIT,
 				staked_kton: 1 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
@@ -145,7 +140,6 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 1 * UNIT,
 				staked_kton: 1 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![1, 2]),
@@ -161,7 +155,6 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 0,
 				staked_kton: 0,
 				staked_deposits: Default::default(),
@@ -197,7 +190,6 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 0,
 				staked_kton: 0,
 				staked_deposits: Default::default(),
@@ -214,7 +206,6 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 0,
 				staked_kton: 0,
 				staked_deposits: Default::default(),
@@ -232,7 +223,6 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 0,
 				staked_kton: 0,
 				staked_deposits: Default::default(),
@@ -250,7 +240,6 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				account: 1,
 				staked_ring: 0,
 				staked_kton: 0,
 				staked_deposits: Default::default(),

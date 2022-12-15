@@ -234,7 +234,6 @@ pub trait ZeroDefault {
 impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
-			account: Default::default(),
 			staked_ring: Default::default(),
 			staked_kton: Default::default(),
 			staked_deposits: Default::default(),

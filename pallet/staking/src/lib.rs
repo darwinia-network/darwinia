@@ -114,8 +114,6 @@ pub struct Ledger<T>
 where
 	T: Config,
 {
-	/// Staker.
-	pub account: T::AccountId,
 	/// Staked RING.
 	pub staked_ring: Balance,
 	/// Staked KTON.
@@ -367,7 +365,6 @@ pub mod pallet {
 					<frame_system::Pallet<T>>::inc_consumers(&who)?;
 
 					*l = Some(Ledger {
-						account: who.to_owned(),
 						staked_ring: Default::default(),
 						staked_kton: Default::default(),
 						staked_deposits: Default::default(),
@@ -380,14 +377,14 @@ pub mod pallet {
 				};
 
 				if ring_amount != 0 {
-					Self::stake_ring(l, ring_amount)?;
+					Self::stake_ring(&who, l, ring_amount)?;
 				}
 				if kton_amount != 0 {
-					Self::stake_kton(l, kton_amount)?;
+					Self::stake_kton(&who, l, kton_amount)?;
 				}
 
 				for d in deposits.clone() {
-					Self::stake_deposit(l, d)?;
+					Self::stake_deposit(&who, l, d)?;
 				}
 
 				DispatchResult::Ok(())
@@ -428,7 +425,7 @@ pub mod pallet {
 				}
 
 				for d in deposits {
-					Self::unstake_deposit(l, d)?;
+					Self::unstake_deposit(&who, l, d)?;
 				}
 
 				DispatchResult::Ok(())
@@ -526,8 +523,12 @@ pub mod pallet {
 			})
 		}
 
-		fn stake_ring(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
-			T::Ring::stake(&ledger.account, amount)?;
+		fn stake_ring(
+			who: &T::AccountId,
+			ledger: &mut Ledger<T>,
+			amount: Balance,
+		) -> DispatchResult {
+			T::Ring::stake(who, amount)?;
 
 			ledger.staked_ring = ledger
 				.staked_ring
@@ -539,8 +540,12 @@ pub mod pallet {
 			Ok(())
 		}
 
-		fn stake_kton(ledger: &mut Ledger<T>, amount: Balance) -> DispatchResult {
-			T::Kton::stake(&ledger.account, amount)?;
+		fn stake_kton(
+			who: &T::AccountId,
+			ledger: &mut Ledger<T>,
+			amount: Balance,
+		) -> DispatchResult {
+			T::Kton::stake(who, amount)?;
 
 			ledger.staked_kton = ledger
 				.staked_kton
@@ -552,12 +557,16 @@ pub mod pallet {
 			Ok(())
 		}
 
-		fn stake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
-			T::Deposit::stake(&ledger.account, deposit)?;
+		fn stake_deposit(
+			who: &T::AccountId,
+			ledger: &mut Ledger<T>,
+			deposit: DepositId<T>,
+		) -> DispatchResult {
+			T::Deposit::stake(who, deposit)?;
 
 			ledger.staked_deposits.try_push(deposit).map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
 
-			Self::update_pool::<RingPool<T>>(true, T::Deposit::amount(&ledger.account, deposit))?;
+			Self::update_pool::<RingPool<T>>(true, T::Deposit::amount(who, deposit))?;
 
 			Ok(())
 		}
@@ -602,7 +611,11 @@ pub mod pallet {
 			Ok(())
 		}
 
-		fn unstake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
+		fn unstake_deposit(
+			who: &T::AccountId,
+			ledger: &mut Ledger<T>,
+			deposit: DepositId<T>,
+		) -> DispatchResult {
 			let i = ledger.staked_deposits.iter().position(|d| d == &deposit).ok_or(
 				"[pallet::staking] deposit id must be existed, due to previous unstake OP; qed",
 			)?;
@@ -615,7 +628,7 @@ pub mod pallet {
 				))
 				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
 
-			Self::update_pool::<RingPool<T>>(false, T::Deposit::amount(&ledger.account, deposit))?;
+			Self::update_pool::<RingPool<T>>(false, T::Deposit::amount(who, deposit))?;
 
 			Ok(())
 		}
