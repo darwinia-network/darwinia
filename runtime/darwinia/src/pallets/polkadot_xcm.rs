@@ -148,7 +148,7 @@ impl pallet_xcm::Config for Runtime {
 	// ^ Disable dispatchable execute on the XCM pallet.
 	// Needs to be `Everything` for local testing.
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
-	type XcmReserveTransferFilter = frame_support::traits::Nothing;
+	type XcmReserveTransferFilter = frame_support::traits::Everything;
 	type XcmRouter = XcmRouter;
 	type XcmTeleportFilter = frame_support::traits::Nothing;
 
