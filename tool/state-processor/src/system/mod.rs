@@ -132,7 +132,7 @@ impl Processor {
 		let mut remaining_ring = <Map<u128>>::default();
 		let mut remaining_kton = <Map<u128>>::default();
 
-		log::info!("take solo account infos and remaining balances");
+		log::info!("take solo `System::Account`, `Ethereum::RemainingRingBalance` and `Ethereum::RemainingKtonBalance`");
 		self.solo_state
 			.take_map(b"System", b"Account", &mut account_infos, get_hashed_key)
 			.take_map(b"Ethereum", b"RemainingRingBalance", &mut remaining_ring, get_hashed_key)
@@ -174,7 +174,7 @@ impl Processor {
 	fn process_para_account_infos(&mut self) -> Map<AccountInfo> {
 		let mut account_infos = <Map<AccountInfo>>::default();
 
-		log::info!("take para account infos");
+		log::info!("take para `System::Account`");
 		self.para_state.take_map(b"System", b"Account", &mut account_infos, get_hashed_key);
 
 		account_infos

@@ -12,7 +12,7 @@ impl Processor {
 		let mut para_ring_locks = <Map<Locks>>::default();
 		let mut para_ring_total_issuance = u128::default();
 
-		log::info!("take solo balances total issuances and locks");
+		log::info!("take solo `Balances::TotalIssuance`, `Kton::TotalIssuance`, `Balances::Locks` and `Kton::Locks`");
 		self.solo_state
 			.take_value(b"Balances", b"TotalIssuance", &mut solo_ring_total_issuance)
 			.take_value(b"Kton", b"TotalIssuance", &mut kton_total_issuance)
@@ -30,7 +30,7 @@ impl Processor {
 		// GWEI)); solo_kton_locks.iter_mut().for_each(|(_, v)| v.iter_mut().for_each(|l| l.amount
 		// *= GWEI));
 
-		log::info!("take para balances total issuances and locks");
+		log::info!("take para `Balances::TotalIssuance` and `Balances::Locks`");
 		self.para_state
 			.take_value(b"Balances", b"TotalIssuance", &mut para_ring_total_issuance)
 			.take_map(b"Balances", b"Locks", &mut para_ring_locks, get_hashed_key);
