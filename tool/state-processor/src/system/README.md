@@ -34,3 +34,4 @@
 - special accounts - TODO
   - parachain backing account 0x8c585F9791EE5b4B23fe82888cE576DBB69607eB
   - bridge root account 0x726f6f7400000000000000000000000000000000
+  - pallet accounts

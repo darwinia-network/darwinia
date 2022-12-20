@@ -1,7 +1,11 @@
 mod balances;
 mod evm;
+mod staking;
 mod system;
 mod vesting;
+
+mod adjust;
+use adjust::*;
 
 mod type_registry;
 use type_registry::*;
@@ -12,16 +16,20 @@ use std::{
 	fs::File,
 	io::{Read, Write},
 	mem,
+	sync::RwLock,
 };
 // crates.io
 use anyhow::Result;
 use fxhash::FxHashMap;
+use once_cell::sync::Lazy;
 use parity_scale_codec::{Decode, Encode};
 use serde::de::DeserializeOwned;
 // hack-ink
 use subspector::ChainSpec;
 
 type Map<V> = FxHashMap<String, V>;
+
+static NOW: Lazy<RwLock<u32>> = Lazy::new(|| RwLock::new(0));
 
 fn main() -> Result<()> {
 	env::set_var("RUST_LOG", "state_processor");
@@ -51,7 +59,13 @@ impl Processor {
 	}
 
 	fn process(mut self) -> Result<()> {
-		self.process_system().process_vesting().process_evm();
+		self.solo_state.get_value(b"System", b"Number", "", &mut *NOW.write().unwrap());
+
+		let _guard = NOW.read().unwrap();
+
+		assert!(*_guard != 0);
+
+		self.process_system().process_vesting().process_staking().process_evm();
 
 		self.save()
 	}
@@ -76,59 +90,33 @@ impl State {
 		Ok(Self(from_file::<ChainSpec>(path)?.genesis.raw.top))
 	}
 
-	#[allow(unused)]
-	fn prune(&mut self, pallet: &[u8], items: Option<&[&[u8]]>) -> &mut Self {
-		// Prune specific storages.
-		if let Some(items) = items {
-			for item in items {
-				let k = item_key(pallet, item);
-
-				self.0.remove(&k).or_else(|| {
-					log::warn!(
-						"`{}::{}: {k}` not found",
-						String::from_utf8_lossy(pallet),
-						String::from_utf8_lossy(item)
-					);
-
-					None
-				});
-			}
-		}
-		// Prune entire pallet.
-		else {
-			let prefix = pallet_key(pallet);
-			let mut pruned = false;
-
-			self.0.retain(|full_key, _| {
-				if full_key.starts_with(&prefix) {
-					pruned = true;
-
-					false
-				} else {
-					true
-				}
-			});
-
-			if !pruned {
-				log::warn!("`{}: {prefix}` not found", String::from_utf8_lossy(pallet));
-			}
-		}
+	fn insert_raw_key_raw_value(&mut self, key: String, value: String) -> &mut Self {
+		self.0.insert(key, value);
 
 		self
 	}
 
-	fn take_raw<F>(
+	fn insert_raw_key_value<E>(&mut self, key: String, value: E) -> &mut Self
+	where
+		E: Encode,
+	{
+		self.0.insert(key, encode_value(value));
+
+		self
+	}
+
+	fn take_raw_map<F>(
 		&mut self,
 		prefix: &str,
 		buffer: &mut Map<String>,
-		preprocess_key: F,
+		process_key: F,
 	) -> &mut Self
 	where
 		F: Fn(&str, &str) -> String,
 	{
 		self.0.retain(|k, v| {
 			if k.starts_with(prefix) {
-				buffer.insert(preprocess_key(k, prefix), v.to_owned());
+				buffer.insert(process_key(k, prefix), v.to_owned());
 
 				false
 			} else {
@@ -139,7 +127,7 @@ impl State {
 		self
 	}
 
-	fn insert_raw(&mut self, pairs: Map<String>) -> &mut Self {
+	fn insert_raw_key_map(&mut self, pairs: Map<String>) -> &mut Self {
 		pairs.into_iter().for_each(|(k, v)| {
 			if self.0.contains_key(&k) {
 				log::error!("key({k}) has already existed, overriding");
@@ -151,18 +139,51 @@ impl State {
 		self
 	}
 
-	fn take_value<D>(&mut self, pallet: &[u8], item: &[u8], value: &mut D) -> &mut Self
+	fn get_value<D>(&self, pallet: &[u8], item: &[u8], hash: &str, value: &mut D) -> &Self
 	where
 		D: Decode,
 	{
-		let key = item_key(pallet, item);
+		let key = full_key(pallet, item, hash);
+
+		if let Some(v) = self.0.get(&key) {
+			match decode(v) {
+				Ok(v) => *value = v,
+				Err(e) => log::warn!(
+					"failed to decode `{}::{}::{hash}({v})`, due to `{e}`",
+					String::from_utf8_lossy(pallet),
+					String::from_utf8_lossy(item),
+				),
+			}
+		}
+
+		self
+	}
+
+	fn take_value<D>(&mut self, pallet: &[u8], item: &[u8], hash: &str, value: &mut D) -> &mut Self
+	where
+		D: Decode,
+	{
+		let key = full_key(pallet, item, hash);
 
 		if let Some(v) = self.0.remove(&key) {
 			match decode(&v) {
 				Ok(v) => *value = v,
-				Err(e) => log::warn!("failed to decode `{key}:{v}`, due to `{e}`"),
+				Err(e) => log::warn!(
+					"failed to decode `{}::{}::{hash}({v})`, due to `{e}`",
+					String::from_utf8_lossy(pallet),
+					String::from_utf8_lossy(item)
+				),
 			}
 		}
+
+		self
+	}
+
+	fn insert_value<E>(&mut self, pallet: &[u8], item: &[u8], hash: &str, value: E) -> &mut Self
+	where
+		E: Encode,
+	{
+		self.0.insert(full_key(pallet, item, hash), encode_value(value));
 
 		self
 	}
@@ -172,20 +193,20 @@ impl State {
 		pallet: &[u8],
 		item: &[u8],
 		buffer: &mut Map<D>,
-		preprocess_key: F,
+		process_key: F,
 	) -> &mut Self
 	where
 		D: Decode,
 		F: Fn(&str, &str) -> String,
 	{
 		let len = buffer.len();
-		let item_key = item_key(pallet, item);
+		let prefix = item_key(pallet, item);
 
 		self.0.retain(|full_key, v| {
-			if full_key.starts_with(&item_key) {
+			if full_key.starts_with(&prefix) {
 				match decode(v) {
 					Ok(v) => {
-						buffer.insert(preprocess_key(full_key, &item_key), v);
+						buffer.insert(process_key(full_key, &prefix), v);
 					},
 					Err(e) => log::warn!("failed to decode `{full_key}:{v}`, due to `{e}`"),
 				}
@@ -206,6 +227,22 @@ impl State {
 
 		self
 	}
+
+	fn insert_map<E, F>(&mut self, pairs: Map<E>, process_key: F) -> &mut Self
+	where
+		E: Encode,
+		F: Fn(&str) -> String,
+	{
+		pairs.into_iter().for_each(|(k, v)| {
+			self.0.insert(process_key(&k), encode_value(v));
+		});
+
+		self
+	}
+
+	// fn transfer(&mut self, from: &str, to: &str, amount: u128) {}
+
+	// fn inc_consumers(&mut self, who: &str) {}
 }
 
 fn from_file<D>(path: &str) -> Result<D>
@@ -267,10 +304,6 @@ fn get_hashed_key(full_key: &str, item_key: &str) -> String {
 // twox128(pallet) + twox128(item) + *_concat(account_id_32) -> account_id_32
 fn get_last_64(key: &str) -> String {
 	format!("0x{}", &key[key.len() - 64..])
-}
-
-fn identity(key: &str, _: &str) -> String {
-	key.into()
 }
 
 fn replace_first_match(key: &str, from: &str, to: &str) -> String {

@@ -34,6 +34,8 @@ use core::{
 	cmp::Ordering::{Equal, Greater, Less},
 	ops::ControlFlow::{Break, Continue},
 };
+// crates.io
+use codec::FullCodec;
 // darwinia
 use dc_inflation::MILLISECS_PER_YEAR;
 use dc_types::{Balance, Moment};
@@ -201,7 +203,7 @@ pub mod pallet {
 
 				DispatchResult::Ok(())
 			})?;
-			T::Ring::transfer(&who, &Self::account_id(), amount, KeepAlive)?;
+			T::Ring::transfer(&who, &account_id(), amount, KeepAlive)?;
 			T::Kton::mint(&who, dc_inflation::deposit_interest(amount, months))?;
 
 			// TODO: event?
@@ -237,7 +239,7 @@ pub mod pallet {
 				<Result<(), ()>>::Ok(())
 			});
 
-			T::Ring::transfer(&Self::account_id(), &who, claimed, AllowDeath)?;
+			T::Ring::transfer(&account_id(), &who, claimed, AllowDeath)?;
 
 			// TODO: event?
 
@@ -245,15 +247,6 @@ pub mod pallet {
 		}
 
 		// TODO: claim_with_penalty
-	}
-	impl<T> Pallet<T>
-	where
-		T: Config,
-	{
-		/// The account of the deposit pot.
-		pub fn account_id() -> T::AccountId {
-			PalletId(*b"dar/depo").into_account_truncating()
-		}
 	}
 }
 pub use pallet::*;
@@ -308,4 +301,12 @@ where
 			})
 			.unwrap_or_default()
 	}
+}
+
+/// The account of the deposit pot.
+pub fn account_id<A>() -> A
+where
+	A: FullCodec,
+{
+	PalletId(*b"dar/depo").into_account_truncating()
 }

@@ -5,8 +5,11 @@ type Locks = Vec<BalanceLock>;
 
 impl Processor {
 	pub fn process_balances(&mut self) -> (u128, u128) {
+		// Balances storage items.
+		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/balances/src/lib.rs#L486
+
 		let mut solo_ring_total_issuance = u128::default();
-		let mut kton_total_issuance = u128::default();
+		let mut solo_kton_total_issuance = u128::default();
 		let mut solo_ring_locks = <Map<Locks>>::default();
 		let mut solo_kton_locks = <Map<Locks>>::default();
 		let mut para_ring_locks = <Map<Locks>>::default();
@@ -14,8 +17,8 @@ impl Processor {
 
 		log::info!("take solo `Balances::TotalIssuance`, `Kton::TotalIssuance`, `Balances::Locks` and `Kton::Locks`");
 		self.solo_state
-			.take_value(b"Balances", b"TotalIssuance", &mut solo_ring_total_issuance)
-			.take_value(b"Kton", b"TotalIssuance", &mut kton_total_issuance)
+			.take_value(b"Balances", b"TotalIssuance", "", &mut solo_ring_total_issuance)
+			.take_value(b"Kton", b"TotalIssuance", "", &mut solo_kton_total_issuance)
 			.take_map(b"Balances", b"Locks", &mut solo_ring_locks, get_hashed_key)
 			.take_map(b"Kton", b"Locks", &mut solo_kton_locks, get_hashed_key);
 
@@ -23,16 +26,13 @@ impl Processor {
 		prune(&mut solo_ring_locks);
 		prune(&mut solo_kton_locks);
 
-		log::info!("adjust solo balances items' decimals");
-		solo_ring_total_issuance *= GWEI;
-		kton_total_issuance *= GWEI;
-		// solo_ring_locks.iter_mut().for_each(|(_, v)| v.iter_mut().for_each(|l| l.amount *=
-		// GWEI)); solo_kton_locks.iter_mut().for_each(|(_, v)| v.iter_mut().for_each(|l| l.amount
-		// *= GWEI));
+		log::info!("adjust solo total issuances decimals");
+		solo_ring_total_issuance.adjust();
+		solo_kton_total_issuance.adjust();
 
 		log::info!("take para `Balances::TotalIssuance` and `Balances::Locks`");
 		self.para_state
-			.take_value(b"Balances", b"TotalIssuance", &mut para_ring_total_issuance)
+			.take_value(b"Balances", b"TotalIssuance", "", &mut para_ring_total_issuance)
 			.take_map(b"Balances", b"Locks", &mut para_ring_locks, get_hashed_key);
 
 		log::info!("check solo ring locks, there should not be any `solo_ring_locks`");
@@ -42,7 +42,7 @@ impl Processor {
 		log::info!("check para locks, there should not be any `para_ring_locks`");
 		check_locks(para_ring_locks);
 
-		(solo_ring_total_issuance + para_ring_total_issuance, kton_total_issuance)
+		(solo_ring_total_issuance + para_ring_total_issuance, solo_kton_total_issuance)
 	}
 }
 

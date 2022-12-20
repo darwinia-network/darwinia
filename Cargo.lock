@@ -2304,6 +2304,8 @@ dependencies = [
 name = "darwinia-account-migration"
 version = "6.0.0"
 dependencies = [
+ "darwinia-deposit",
+ "darwinia-staking",
  "dc-primitives",
  "frame-support",
  "frame-system",

@@ -49,12 +49,14 @@
 mod tests;
 
 // darwinia
+use darwinia_deposit::Deposit;
+use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, Balance, BlockNumber, Index};
 // substrate
 use frame_support::{
 	log,
 	pallet_prelude::*,
-	traits::{LockableCurrency, WithdrawReasons},
+	traits::{Currency, ExistenceRequirement::KeepAlive, LockableCurrency, WithdrawReasons},
 };
 use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
@@ -82,6 +84,8 @@ pub mod pallet {
 			AccountData = AccountData<Balance>,
 		> + pallet_balances::Config<Balance = Balance>
 		+ pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
+		+ darwinia_deposit::Config
+		+ darwinia_staking::Config
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -102,6 +106,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Exceed maximum vesting count.
 		ExceedMaxVestings,
+		/// Exceed maximum deposit count.
+		ExceedMaxDeposits,
 	}
 
 	/// [`frame_system::Account`] data.
@@ -121,9 +127,26 @@ pub mod pallet {
 	pub type Vestings<T: Config> =
 		StorageMap<_, Blake2_128Concat, AccountId32, Vec<VestingInfo<Balance, BlockNumber>>>;
 
+	/// [`darwinia_deposit::Deposits`] data.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn deposit_of)]
+	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
+
+	/// [`darwinia_staking::Bonded`] data.
+	///
+	/// <https://github.dev/darwinia-network/darwinia-common/blob/6a9392cfb9fe2c99b1c2b47d0c36125d61991bb7/frame/staking/src/lib.rs#L592>
+	#[pallet::storage]
+	#[pallet::getter(fn bonded)]
+	pub type Bonded<T: Config> = StorageMap<_, Twox64Concat, AccountId32, AccountId32>;
+
+	/// [`darwinia_staking::Ledgers`] data.
+	#[pallet::storage]
+	#[pallet::getter(fn ledger_of)]
+	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
+
 	// TODO: identity storages
 	// TODO: proxy storages
-	// TODO: staking storages
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -142,12 +165,12 @@ pub mod pallet {
 
 			<frame_system::Account<T>>::insert(to, account);
 
-			if let Some(vs) = <Vestings<T>>::get(&from) {
-				let locked = vs.iter().map(|v| v.locked()).sum();
+			if let Some(v) = <Vestings<T>>::get(&from) {
+				let locked = v.iter().map(|v| v.locked()).sum();
 
 				<pallet_vesting::Vesting<T>>::insert(
 					to,
-					BoundedVec::try_from(vs).map_err(|_| <Error<T>>::ExceedMaxVestings)?,
+					BoundedVec::try_from(v).map_err(|_| <Error<T>>::ExceedMaxVestings)?,
 				);
 
 				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L248
@@ -155,6 +178,29 @@ pub mod pallet {
 
 				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
 				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", &to, locked, reasons);
+			}
+			if let Some(l) = <Bonded<T>>::get(&from).and_then(<Ledgers<T>>::get) {
+				if let Some(ds) = <Deposits<T>>::get(&from) {
+					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
+						&to,
+						&darwinia_deposit::account_id(),
+						ds.iter().map(|d| d.value).sum(),
+						KeepAlive,
+					)?;
+					<darwinia_deposit::Deposits<T>>::insert(
+						to,
+						BoundedVec::try_from(ds).map_err(|_| <Error<T>>::ExceedMaxDeposits)?,
+					);
+				}
+
+				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
+					&to,
+					&darwinia_staking::account_id(),
+					l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>(),
+					KeepAlive,
+				)?;
+				// TODO: kton transfer
+				<darwinia_staking::Ledgers<T>>::insert(to, l);
 			}
 
 			Self::deposit_event(Event::Migrated { from, to });

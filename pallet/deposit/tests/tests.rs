@@ -30,11 +30,11 @@ use frame_support::{assert_noop, assert_ok, traits::Get};
 fn lock_should_work() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(System::account(&1).consumers, 0);
-		assert_eq!(Balances::free_balance(&Deposit::account_id()), 0);
+		assert_eq!(Balances::free_balance(&darwinia_deposit::account_id()), 0);
 		assert_eq!(Balances::free_balance(&1), 1_000 * UNIT);
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 10 * UNIT, 1));
 		assert_eq!(System::account(&1).consumers, 1);
-		assert_eq!(Balances::free_balance(&Deposit::account_id()), 10 * UNIT);
+		assert_eq!(Balances::free_balance(&darwinia_deposit::account_id()), 10 * UNIT);
 		assert_eq!(Balances::free_balance(&1), 990 * UNIT);
 	});
 }

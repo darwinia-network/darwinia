@@ -11,11 +11,13 @@ version     = "6.0.0"
 
 [dependencies]
 # crates.io
-codec      = { default-features = false, package = "parity-scale-codec", version = "3.2.1", features = ["derive"] }
-scale-info = { default-features = false, version = "2.3.0", features = ["derive"] }
+codec      = { default-features = false, package = "parity-scale-codec", version = "3.2", features = ["derive"] }
+scale-info = { default-features = false, version = "2.3", features = ["derive"] }
 
 # darwinia
-dc-primitives = { default-features = false, path = "../../core/primitives" }
+darwinia-deposit = { default-features = false, path = "../deposit" }
+darwinia-staking = { default-features = false, path = "../staking" }
+dc-primitives    = { default-features = false, path = "../../core/primitives" }
 
 # substrate
 frame-support   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
@@ -38,6 +40,8 @@ std = [
 	"scale-info/std",
 
 	# darwinia
+	"darwinia-deposit/std",
+	"darwinia-staking/std",
 	"dc-primitives/std",
 
 	# paritytech
