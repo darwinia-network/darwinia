@@ -156,7 +156,7 @@ pub fn genesis_config() -> ChainSpec {
 				assets: AssetsConfig {
 					assets: vec![(
 						AssetIds::PKton as _,
-						array_bytes::hex_n_into_unchecked(ALITH),
+						ROOT,
 						true,
 						1,
 					)],

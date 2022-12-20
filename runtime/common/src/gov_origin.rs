@@ -18,6 +18,8 @@
 
 // darwinia
 use dc_primitives::AccountId;
+// moonbeam
+use account::AccountId20;
 // substrate
 use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
@@ -39,3 +41,7 @@ pub type RootOrAtLeastThreeFifth<Collective> =
 
 pub type RootOrAll<Collective> =
 	EitherOfDiverse<Root, EnsureProportionAtLeast<AccountId, Collective, 1, 1>>;
+
+/// An [`AccountId20`] generated from b"root".
+pub const ROOT: AccountId20 =
+	AccountId20([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);

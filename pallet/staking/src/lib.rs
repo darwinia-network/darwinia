@@ -270,7 +270,7 @@ pub mod pallet {
 	/// Stakers' exposure.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn exposure)]
+	#[pallet::getter(fn exposure_of)]
 	pub type Exposures<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 

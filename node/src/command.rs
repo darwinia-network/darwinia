@@ -594,7 +594,7 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				return if chain_spec.is_crab() {
+				if chain_spec.is_crab() {
 					service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 						config,
 						polkadot_config,
@@ -630,7 +630,7 @@ pub fn run() -> Result<()> {
 					.await
 					.map(|r| r.0)
 					.map_err(Into::into)
-				};
+				}
 			})
 		},
 	}

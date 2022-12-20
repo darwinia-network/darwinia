@@ -24,7 +24,7 @@ impl darwinia_deposit::Minting for PKtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		Assets::mint(RuntimeOrigin::root(), AssetIds::PKton as AssetId, *beneficiary, amount)
+		Assets::mint(RuntimeOrigin::signed(ROOT), AssetIds::PKton as AssetId, *beneficiary, amount)
 	}
 }
 

@@ -2324,6 +2324,7 @@ dependencies = [
 name = "darwinia-common-runtime"
 version = "6.0.0"
 dependencies = [
+ "account",
  "bp-darwinia-core",
  "dc-primitives",
  "frame-support",
