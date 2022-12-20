@@ -5,19 +5,20 @@ impl Processor {
 	pub fn process_vesting(&mut self) -> &mut Self {
 		// Storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/vesting/src/lib.rs#L188
-		let mut vestings = Map::default();
+		let mut vestings = <Map<VestingInfo>>::default();
 
-		// TODO: adjust decimals
-		// TODO: adjust block number
 		log::info!("take solo `Vesting::Vesting`");
-		self.solo_state.take_raw_map(
-			&item_key(b"Vesting", b"Vesting"),
-			&mut vestings,
-			|key, from| replace_first_match(key, from, &item_key(b"AccountMigration", b"Vestings")),
-		);
+		self.solo_state.take_map(b"Vesting", b"Vesting", &mut vestings, get_hashed_key);
 
-		log::info!("set `Vesting::Vesting`");
-		self.shell_state.insert_raw_key_map(vestings);
+		log::info!("adjust solo `VestingInfo`s");
+		vestings.iter_mut().for_each(|(_, v)| v.adjust());
+
+		log::info!("set `AccountMigration::Vestings`");
+		{
+			let ik = item_key(b"AccountMigration", b"Vestings");
+
+			self.shell_state.insert_map(vestings, |h| format!("{ik}{h}"));
+		}
 
 		self
 	}

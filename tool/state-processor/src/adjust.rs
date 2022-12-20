@@ -33,6 +33,16 @@ impl Adjust for BalanceLock {
 	}
 }
 
+impl Adjust for VestingInfo {
+	fn adjust(&mut self) {
+		self.locked.adjust();
+		self.per_block *= 2;
+		self.per_block.adjust();
+		self.starting_block =
+			self.starting_block.checked_sub(*NOW.read().unwrap()).unwrap_or_default();
+	}
+}
+
 impl Adjust for StakingLedger {
 	fn adjust(&mut self) {
 		self.active.adjust();

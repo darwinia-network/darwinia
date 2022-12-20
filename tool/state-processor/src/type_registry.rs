@@ -34,6 +34,13 @@ pub enum Reasons {
 }
 
 #[derive(Debug, Encode, Decode)]
+pub struct VestingInfo {
+	pub locked: u128,
+	pub per_block: u128,
+	pub starting_block: u32,
+}
+
+#[derive(Debug, Encode, Decode)]
 pub struct Deposit {
 	pub id: u8,
 	pub value: u128,
