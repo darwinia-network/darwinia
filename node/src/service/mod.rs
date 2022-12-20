@@ -524,7 +524,7 @@ where
 }
 
 /// Start a parachain node.
-pub async fn start_parachain_node(
+pub async fn start_parachain_node<RuntimeApi, Executor>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -533,15 +533,19 @@ pub async fn start_parachain_node(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(
 	sc_service::TaskManager,
-	Arc<
-		sc_service::TFullClient<
-			Block,
-			darwinia_runtime::RuntimeApi,
-			sc_executor::NativeElseWasmExecutor<DarwiniaRuntimeExecutor>,
-		>,
-	>,
-)> {
-	start_node_impl::<darwinia_runtime::RuntimeApi, DarwiniaRuntimeExecutor, _, _>(
+	Arc<sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>>,
+)>
+where
+	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
+		+ Send
+		+ Sync
+		+ 'static,
+	RuntimeApi::RuntimeApi:
+		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	Executor: 'static + sc_executor::NativeExecutionDispatch,
+{
+	start_node_impl::<RuntimeApi, Executor, _, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,

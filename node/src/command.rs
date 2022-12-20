@@ -594,17 +594,43 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				service::start_parachain_node(
-					config,
-					polkadot_config,
-					collator_options,
-					id,
-					hwbench,
-					&eth_rpc_config,
-				)
-				.await
-				.map(|r| r.0)
-				.map_err(Into::into)
+				return if chain_spec.is_crab() {
+					service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+						&eth_rpc_config,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				} else if chain_spec.is_pangolin() {
+					service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+						&eth_rpc_config,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				} else {
+					service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+						&eth_rpc_config,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				};
 			})
 		},
 	}
