@@ -1,5 +1,10 @@
+// crates.io
+use array_bytes::bytes2hex;
 // darwinia
 use crate::*;
+// parity
+use frame_support::{Blake2_128Concat, StorageHasher};
+use sp_core::H160;
 
 #[derive(Debug)]
 pub struct AccountAll {
@@ -98,6 +103,7 @@ impl Processor {
 		log::info!("set `System::Account`");
 		log::info!("set `Balances::Locks`");
 		accounts.into_iter().for_each(|(k, v)| {
+			let key = get_last_64(&k);
 			let mut a = AccountInfo {
 				nonce: v.nonce,
 				consumers: v.consumers,
@@ -111,16 +117,26 @@ impl Processor {
 				},
 			};
 
-			if is_evm_address(&k) {
-				self.shell_state.0.insert(full_key(b"System", b"Account", &k), encode_value(a));
+			match is_evm_addr(&key) {
+				(true, addr) => {
+					self.shell_state.0.insert(
+						full_key(
+							b"System",
+							b"Account",
+							&bytes2hex("", &Blake2_128Concat::hash(&addr.encode())),
+						),
+						encode_value(a),
+					);
+					// TODO: migrate kton balances.
+				},
+				(false, None) => {
+					a.nonce = 0;
 
-			// TODO: migrate kton balances.
-			} else {
-				a.nonce = 0;
-
-				self.shell_state
-					.0
-					.insert(full_key(b"AccountMigration", b"Accounts", &k), encode_value(a));
+					self.shell_state
+						.0
+						.insert(full_key(b"AccountMigration", b"Accounts", &key), encode_value(a));
+				},
+				_ => unreachable!(),
 			}
 		});
 
@@ -181,18 +197,28 @@ impl Processor {
 	}
 }
 
-fn is_evm_address(address: &str) -> bool {
-	let address = array_bytes::hex2bytes_unchecked(address);
+// Returns true if the key is an EVM account key and the associated address, otherwise, returns None
+fn is_evm_addr(key: &str) -> (bool, Option<H160>) {
+	let k = array_bytes::hex2bytes_unchecked(key);
 
-	address.starts_with(b"dvm:")
-		&& address[1..31].iter().fold(address[0], |checksum, &byte| checksum ^ byte) == address[31]
+	if k.starts_with(b"dvm:") && k[1..31].iter().fold(k[0], |checksum, &b| checksum ^ b) == k[31] {
+		return (true, Some(H160::from_slice(&k[11..31])));
+	}
+	(false, None)
 }
 
 #[test]
 fn verify_evm_address_checksum_should_work() {
+	// std
+	use std::str::FromStr;
+
 	// subalfred key 5ELRpquT7C3mWtjerpPfdmaGoSh12BL2gFCv2WczEcv6E1zL
 	// sub-seed
 	// public-key 0x64766d3a00000000000000b7de7f8c52ac75e036d05fda53a75cf12714a76973
 	// Substrate 5ELRpquT7C3mWtjerpPfdmaGoSh12BL2gFCv2WczEcv6E1zL
-	assert!(is_evm_address("0x64766d3a00000000000000b7de7f8c52ac75e036d05fda53a75cf12714a76973"));
+	assert!(is_evm_addr("0x64766d3a00000000000000b7de7f8c52ac75e036d05fda53a75cf12714a76973").0);
+	assert_eq!(
+		is_evm_addr("0x64766d3a00000000000000b7de7f8c52ac75e036d05fda53a75cf12714a76973").1,
+		H160::from_str("b7de7f8c52ac75e036d05fda53a75cf12714a769").ok(),
+	);
 }

@@ -23,11 +23,11 @@ impl Processor {
 		log::info!("take `EVM::AccountCodes` and `EVM::AccountStorages`");
 		self.solo_state
 			.take_raw(&item_key(b"EVM", b"AccountCodes"), &mut account_codes, |key, from| {
-			replace_first_match(key, from, &item_key(b"Evm", b"AccountCodes"))
-		})
+				replace_first_match(key, from, &item_key(b"Evm", b"AccountCodes"))
+			})
 			.take_raw(&item_key(b"EVM", b"AccountStorages"), &mut account_storages, |key, from| {
-			replace_first_match(key, from, &item_key(b"Evm", b"AccountStorages"))
-		});
+				replace_first_match(key, from, &item_key(b"Evm", b"AccountStorages"))
+			});
 
 		log::info!("set `Evm::AccountCodes` and `Evm::AccountStorages`");
 		self.shell_state.insert_raw(account_codes).insert_raw(account_storages);

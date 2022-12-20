@@ -110,7 +110,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn account_of)]
 	pub type Accounts<T: Config> =
-		StorageMap<_, Identity, AccountId32, AccountInfo<Index, AccountData<Balance>>>;
+		StorageMap<_, Blake2_128Concat, AccountId32, AccountInfo<Index, AccountData<Balance>>>;
 
 	/// [`pallet_vesting::Vesting`] data.
 	///
