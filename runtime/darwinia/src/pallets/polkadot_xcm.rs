@@ -47,6 +47,8 @@ pub type LocationToAccountId = (
 	xcm_builder::SiblingParachainConvertsVia<polkadot_parachain::primitives::Sibling, AccountId>,
 	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
 	xcm_builder::AccountKey20Aliases<RelayNetwork, AccountId>,
+	// The rest of locations are converted via hashing it.
+	darwinia_common_runtime::xcm_configs::Account20Hash<AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can

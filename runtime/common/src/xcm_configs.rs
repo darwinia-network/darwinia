@@ -18,13 +18,17 @@
 
 // core
 use core::marker::PhantomData;
+// crates.io
+use codec::Encode;
 // darwinia
 use dc_primitives::GWEI;
 // polkadot
 use xcm::latest::{prelude::*, Weight as XCMWeight};
-use xcm_executor::traits::ShouldExecute;
+use xcm_executor::traits::{Convert, ShouldExecute};
 // substrate
 use frame_support::{log, traits::ConstU128};
+use sp_io::hashing::blake2_256;
+use sp_std::borrow::Borrow;
 
 /// Base balance required for the XCM unit weight.
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
@@ -102,5 +106,23 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 		}
 		// Permit everything else
 		Ok(())
+	}
+}
+
+/// Struct that converts a given MultiLocation into a 20 bytes account id by hashing
+/// with blake2_256 and taking the first 20 bytes
+pub struct Account20Hash<AccountId>(PhantomData<AccountId>);
+impl<AccountId: From<[u8; 20]> + Into<[u8; 20]> + Clone> Convert<MultiLocation, AccountId>
+	for Account20Hash<AccountId>
+{
+	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+		let hash: [u8; 32] = ("multiloc", location.borrow()).borrow().using_encoded(blake2_256);
+		let mut account_id = [0u8; 20];
+		account_id.copy_from_slice(&hash[0..20]);
+		Ok(account_id.into())
+	}
+
+	fn reverse_ref(_: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
+		Err(())
 	}
 }
