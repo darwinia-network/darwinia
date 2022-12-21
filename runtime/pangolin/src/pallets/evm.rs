@@ -121,15 +121,15 @@ where
 		// darwinia
 		use darwinia_precompile_assets::AccountToAssetId;
 
-		let (code_address, caller) = (handle.code_address(), handle.context().caller);
+		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
 		// Filter known precompile addresses except Ethereum officials
-		if self.is_precompile(code_address) && code_address > addr(9) && code_address != caller {
+		if self.is_precompile(code_addr) && code_addr > addr(9) && code_addr != context_addr {
 			return Some(Err(precompile_utils::revert(
 				"cannot be called with DELEGATECALL or CALLCODE",
 			)));
 		};
 
-		match code_address {
+		match code_addr {
 			// Ethereum precompiles:
 			a if a == addr(1) => Some(pallet_evm_precompile_simple::ECRecover::execute(handle)),
 			a if a == addr(2) => Some(pallet_evm_precompile_simple::Sha256::execute(handle)),
