@@ -308,8 +308,8 @@ fn transfer_not_enough_founds() {
 				InternalCall::transfer { to: Address(Charlie.into()), value: 50.into() },
 			)
 			.execute_reverts(|output| {
-				from_utf8(&output).unwrap().contains("Dispatched call failed with error: ")
-					&& from_utf8(&output).unwrap().contains("BalanceLow")
+				from_utf8(output).unwrap().contains("Dispatched call failed with error: ")
+					&& from_utf8(output).unwrap().contains("BalanceLow")
 			});
 	});
 }
@@ -665,8 +665,8 @@ fn freeze() {
 					InternalCall::transfer { to: Address(Alice.into()), value: 400.into() },
 				)
 				.execute_reverts(|output| {
-					from_utf8(&output).unwrap().contains("Dispatched call failed with error: ")
-						&& from_utf8(&output).unwrap().contains("Frozen")
+					from_utf8(output).unwrap().contains("Dispatched call failed with error: ")
+						&& from_utf8(output).unwrap().contains("Frozen")
 				});
 		});
 }
@@ -753,8 +753,8 @@ fn transfer_ownership() {
 					InternalCall::transfer_ownership { owner: Address(Bob.into()) },
 				)
 				.execute_reverts(|output| {
-					from_utf8(&output).unwrap().contains("Dispatched call failed with error: ")
-						&& from_utf8(&output).unwrap().contains("NoPermission")
+					from_utf8(output).unwrap().contains("Dispatched call failed with error: ")
+						&& from_utf8(output).unwrap().contains("NoPermission")
 				});
 
 			precompiles()

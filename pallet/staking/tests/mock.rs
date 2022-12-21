@@ -154,7 +154,7 @@ impl pallet_session::SessionHandler<u32> for TestSessionHandler {
 		&[sp_runtime::testing::UintAuthorityId::ID];
 
 	fn on_genesis_session<Ks: sp_runtime::traits::OpaqueKeys>(keys: &[(u32, Ks)]) {
-		SessionHandlerCollators::set(keys.into_iter().map(|(a, _)| *a).collect::<Vec<_>>())
+		SessionHandlerCollators::set(keys.iter().map(|(a, _)| *a).collect::<Vec<_>>())
 	}
 
 	fn on_new_session<Ks: sp_runtime::traits::OpaqueKeys>(
@@ -163,7 +163,7 @@ impl pallet_session::SessionHandler<u32> for TestSessionHandler {
 		_: &[(u32, Ks)],
 	) {
 		SessionChangeBlock::set(System::block_number());
-		SessionHandlerCollators::set(keys.into_iter().map(|(a, _)| *a).collect::<Vec<_>>())
+		SessionHandlerCollators::set(keys.iter().map(|(a, _)| *a).collect::<Vec<_>>())
 	}
 
 	fn on_before_session_ending() {}

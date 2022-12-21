@@ -253,13 +253,13 @@ fn claim_should_work() {
 		assert!(Deposit::deposit_of(&1).is_none());
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert!(!Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(&1).is_some());
 
 		efflux(MILLISECS_PER_MONTH - 1);
 		assert_eq!(System::account(&1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
 		assert_eq!(System::account(&1).consumers, 1);
-		assert!(!Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(&1).is_some());
 
 		efflux(MILLISECS_PER_MONTH);
 		assert_eq!(System::account(&1).consumers, 1);
@@ -273,7 +273,7 @@ fn claim_should_work() {
 		assert_eq!(System::account(&1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
 		assert_eq!(System::account(&1).consumers, 1);
-		assert!(!Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(&1).is_some());
 
 		assert_ok!(Deposit::unstake(&1, 0));
 		assert_eq!(System::account(&1).consumers, 1);

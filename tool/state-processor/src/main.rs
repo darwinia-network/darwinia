@@ -259,12 +259,6 @@ where
 	Ok(serde_json::from_slice(&v)?)
 }
 
-fn pallet_key(pallet: &[u8]) -> String {
-	let prefix = subhasher::twox128(pallet);
-
-	array_bytes::bytes2hex("0x", prefix)
-}
-
 fn item_key(pallet: &[u8], item: &[u8]) -> String {
 	let k = substorager::storage_key(pallet, item);
 

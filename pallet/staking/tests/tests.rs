@@ -111,7 +111,7 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 1 * UNIT,
+				staked_ring: UNIT,
 				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
@@ -125,8 +125,8 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 1 * UNIT,
-				staked_kton: 1 * UNIT,
+				staked_ring: UNIT,
+				staked_kton: UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),
@@ -140,8 +140,8 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 1 * UNIT,
-				staked_kton: 1 * UNIT,
+				staked_ring: UNIT,
+				staked_kton: UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![1, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),

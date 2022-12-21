@@ -142,8 +142,7 @@ fn addr(a: u64) -> H160 {
 pub struct AssetIdConverter;
 impl AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: H160 = account_id.into();
-		addr.to_low_u64_be()
+		account_id.to_low_u64_be()
 	}
 }
 

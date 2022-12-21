@@ -165,7 +165,7 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for MockCallValidator {
 		match call {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) => {
 				let total_payment = crate::total_payment::<TestRuntime>((&**tx).into());
-				let relayer = pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer_account).0;
+				let relayer = pallet_evm::Pallet::<TestRuntime>::account_basic(relayer_account).0;
 
 				ensure!(relayer.balance >= total_payment, "Insufficient balance");
 				Ok(())
