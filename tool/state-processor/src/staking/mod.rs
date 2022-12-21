@@ -32,7 +32,7 @@ impl Processor {
 			ledgers.into_iter().for_each(|(_, mut v)| {
 				v.adjust();
 
-				let hash_k = array_bytes::bytes2hex("", subhasher::blake2_128_concat(v.stash));
+				let hash_k = blake2_128_concat_to_string(v.stash);
 				let deposit_k = format!("{deposit_ik}{hash_k}");
 				let staking_k = format!("{staking_ik}{hash_k}");
 				let mut staked_deposits = Vec::default();
