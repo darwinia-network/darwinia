@@ -153,7 +153,16 @@ pub fn genesis_config() -> ChainSpec {
 				// Monetary stuff.
 				balances: Default::default(),
 				transaction_payment: Default::default(),
-				assets: Default::default(),
+				assets: AssetsConfig {
+					assets: vec![(AssetIds::CKton as _, ROOT, true, 1)],
+					metadata: vec![(
+						AssetIds::CKton as _,
+						b"Crab Commitment Token".to_vec(),
+						b"CKTON".to_vec(),
+						18,
+					)],
+					..Default::default()
+				},
 
 				// Consensus stuff.
 				staking: StakingConfig {
