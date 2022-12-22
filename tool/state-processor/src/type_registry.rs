@@ -47,7 +47,7 @@ pub struct VestingInfo {
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct Deposit {
-	pub id: u8,
+	pub id: u16,
 	pub value: u128,
 	pub expired_time: u128,
 	pub in_use: bool,
