@@ -91,8 +91,8 @@ pub struct Unbonding {
 pub struct Ledger {
 	pub staked_ring: u128,
 	pub staked_kton: u128,
-	pub staked_deposits: Vec<u8>,
+	pub staked_deposits: Vec<u16>,
 	pub unstaking_ring: Vec<(u128, u32)>,
 	pub unstaking_kton: Vec<(u128, u32)>,
-	pub unstaking_deposits: Vec<(u8, u32)>,
+	pub unstaking_deposits: Vec<(u16, u32)>,
 }

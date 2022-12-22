@@ -15,7 +15,9 @@ impl Processor {
 
 		log::info!("take solo `Staking::Bonded`, `Staking::Ledger`, `Staking::RingPool`, `Staking::KtonPool` and `Staking::LivingTime`");
 		self.solo_state
-			.take_raw_map(&item_key(b"Staking", b"Bonded"), &mut bonded, get_identity_key)
+			.take_raw_map(&item_key(b"Staking", b"Bonded"), &mut bonded, |key, from| {
+				replace_first_match(key, from, &item_key(b"AccountMigration", b"Bonded"))
+			})
 			.take_map(b"Staking", b"Ledger", &mut ledgers, get_identity_key)
 			.take_value(b"Staking", b"RingPool", "", &mut ring_pool_storage)
 			.take_value(b"Staking", b"KtonPool", "", &mut kton_pool_storage)
