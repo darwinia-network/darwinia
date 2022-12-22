@@ -269,6 +269,10 @@ impl State {
 		self
 	}
 
+	fn contains_key(&self, key: &str) -> bool {
+		self.0.contains_key(key)
+	}
+
 	// fn inc_consumers(&mut self, who: &str) {}
 
 	// fn transfer(&mut self, from: &str, to: &str, amount: u128) {}
