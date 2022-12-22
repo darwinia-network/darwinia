@@ -15,8 +15,7 @@ fp-evm     = { default-features = false, git = "https://github.com/paritytech/fr
 pallet-evm = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 
 # darwinia
-darwinia-staking = { default-features = false, path = "../../pallet/staking"}
-darwinia-deposit = { default-features = false, path = "../../pallet/deposit"}
+darwinia-staking = { default-features = false, path = "../../pallet/staking" }
 
 # moonbeam
 precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam.git", branch = "polkadot-v0.9.30" }
@@ -32,6 +31,9 @@ sp-std        = { default-features = false, git = "https://github.com/paritytech
 # crates.io
 codec      = { package = "parity-scale-codec", version = "3.2" }
 scale-info = { version = "2.3", features = ["derive"] }
+
+# darwinia
+darwinia-deposit = { path = "../../pallet/deposit" }
 
 # moonbeam
 precompile-utils = { git = "https://github.com/darwinia-network/moonbeam.git", branch = "polkadot-v0.9.30", features = ["testing"] }
@@ -52,7 +54,6 @@ std = [
 
 	# darwinia
 	"darwinia-staking/std",
-	"darwinia-deposit/std",
 
 	# moonbeam
 	"precompile-utils/std",

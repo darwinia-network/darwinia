@@ -23,10 +23,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// std
+// core
 use core::marker::PhantomData;
 // darwinia
-use darwinia_deposit::DepositId;
 use darwinia_staking::Stake;
 // moonbeam
 use precompile_utils::prelude::*;
@@ -39,34 +38,29 @@ use sp_core::{H160, U256};
 use sp_runtime::Perbill;
 use sp_std::vec::Vec;
 
-/// AccountId of the runtime.
-type AccountIdOf<R> = <R as frame_system::pallet::Config>::AccountId;
-
-/// DepositId of the runtime.
-type DepositIdOf<R> = <<R as darwinia_staking::Config>::Deposit as Stake>::Item;
-
 pub struct Staking<Runtime>(PhantomData<Runtime>);
 
 #[precompile_utils::precompile]
 impl<Runtime> Staking<Runtime>
 where
 	Runtime: darwinia_staking::Config + pallet_evm::Config,
-	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-	Runtime::RuntimeCall: From<darwinia_staking::Call<Runtime>>,
-	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
+	Runtime::RuntimeCall: GetDispatchInfo
+		+ Dispatchable<PostInfo = PostDispatchInfo>
+		+ From<darwinia_staking::Call<Runtime>>,
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
-	AccountIdOf<Runtime>: From<H160>,
-	DepositIdOf<Runtime>: From<u8>,
+	<Runtime as frame_system::Config>::AccountId: From<H160>,
+	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
+	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
 	#[precompile::public("stake(uint256,uint256,uint8[])")]
 	fn stake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
 		kton_amount: U256,
-		deposits: Vec<DepositId>,
+		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
-		let deposits: Vec<DepositIdOf<Runtime>> = deposits.into_iter().map(|i| i.into()).collect();
+		let origin = handle.context().caller.into();
+		let deposits = deposits.into_iter().map(|i| i.into()).collect();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
@@ -85,10 +79,10 @@ where
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
 		kton_amount: U256,
-		deposits: Vec<DepositId>,
+		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
-		let deposits: Vec<DepositIdOf<Runtime>> = deposits.into_iter().map(|i| i.into()).collect();
+		let origin = handle.context().caller.into();
+		let deposits = deposits.into_iter().map(|i| i.into()).collect();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
@@ -104,7 +98,7 @@ where
 
 	#[precompile::public("claim()")]
 	fn claim(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let origin = handle.context().caller.into();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
@@ -116,7 +110,7 @@ where
 
 	#[precompile::public("collect(uint32)")]
 	fn collect(handle: &mut impl PrecompileHandle, commission: u32) -> EvmResult<bool> {
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let origin = handle.context().caller.into();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
@@ -131,7 +125,7 @@ where
 	#[precompile::public("nominate(address)")]
 	fn nominate(handle: &mut impl PrecompileHandle, target: Address) -> EvmResult<bool> {
 		let target: H160 = target.into();
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let origin = handle.context().caller.into();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
@@ -143,7 +137,7 @@ where
 
 	#[precompile::public("chill()")]
 	fn chill(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
-		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		let origin = handle.context().caller.into();
 
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,

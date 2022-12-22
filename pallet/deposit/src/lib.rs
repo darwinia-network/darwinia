@@ -52,12 +52,6 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::AccountIdConversion;
 
-/// Deposit identifier.
-///
-/// It's not a global-unique identifier.
-/// It's only used for distinguishing the deposits under a specific account.
-pub type DepositId = u8;
-
 /// Milliseconds per month.
 pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
 
@@ -69,6 +63,14 @@ pub trait Minting {
 	/// Mint API.
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> DispatchResult;
 }
+
+/// Deposit identifier.
+///
+/// It's not a global-unique identifier.
+/// It's only used for distinguishing the deposits under a specific account.
+// https://github.com/polkadot-js/apps/issues/8591
+// pub type DepositId = u8;
+pub type DepositId = u16;
 
 /// Deposit.
 #[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
