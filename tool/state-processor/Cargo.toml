@@ -13,6 +13,7 @@ log                = { version = "0.4" }
 once_cell          = { version = "1.16" }
 parity-scale-codec = { version = "3.2", features = ["derive"] }
 pretty_env_logger  = { version = "0.4" }
+primitive-types    = { version = "0.12.1", features = ["codec"] }
 serde              = { version = "1.0" }
 serde_json         = { version = "1.0" }
 

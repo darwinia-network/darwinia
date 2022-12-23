@@ -1,5 +1,6 @@
 // darwinia
 use crate::*;
+use subhasher::blake2_128_concat;
 
 #[derive(Debug)]
 pub struct AccountAll {
@@ -87,14 +88,24 @@ impl Processor {
 		log::info!("set `Balances::TotalIssuance`");
 		self.shell_state.insert_value(b"Balances", b"TotalIssuance", "", ring_total_issuance);
 
-		log::info!("`kton_total_issuance({kton_total_issuance})`");
-		log::info!("`kton_total_issuance_storage({kton_total_issuance_storage})`");
+		let mut kton_details = AssetDetails {
+			owner: ROOT,
+			issuer: ROOT,
+			admin: ROOT,
+			freezer: ROOT,
+			supply: kton_total_issuance,
+			deposit: 0,
+			min_balance: 1,      // The same as the value in the runtime.
+			is_sufficient: true, // The same as the value in the runtime.
+			sufficients: 0,
+			accounts: 0,
+			approvals: 0,
+			is_frozen: false,
+		};
 
-		// TODO: set KTON total issuance
-
-		log::info!("update ring misc frozen and fee frozen");
 		log::info!("set `System::Account`");
 		log::info!("set `Balances::Locks`");
+		log::info!("set `Assets::Account` and `Assets::Approvals`");
 		accounts.into_iter().for_each(|(k, v)| {
 			let key = get_last_64(&k);
 			let mut a = AccountInfo {
@@ -122,19 +133,95 @@ impl Processor {
 					a.sufficients += 1;
 				}
 
+				if v.kton != 0 || v.kton_reserved != 0 {
+					let aa = AssetAccount {
+						balance: v.kton,
+						is_frozen: false,
+						reason: ExistenceReason::Sufficient,
+						extra: (),
+					};
+
+					a.sufficients += 1;
+					kton_details.accounts += 1;
+					kton_details.sufficients += 1;
+					// Note: this is double map structure in the pallet-assets.
+					self.shell_state.insert_value(
+						b"Assets",
+						b"Account",
+						&format!(
+							"{}{}",
+							array_bytes::bytes2hex("", blake2_128_concat(&KTON_ID.encode())),
+							array_bytes::bytes2hex("", blake2_128_concat(&k.encode())),
+						),
+						&aa,
+					);
+
+					// https://github.dev/darwinia-network/darwinia-common/blob/6a9392cfb9fe2c99b1c2b47d0c36125d61991bb7/frame/dvm/evm/precompiles/kton/src/lib.rs#L72
+					let mut approves = Map::<primitive_types::U256>::default();
+					self.solo_state.take_map(
+						b"KtonERC20",
+						b"Approves",
+						&mut approves,
+						get_hashed_key,
+					);
+					approves.iter().for_each(|(k, v)| {
+						kton_details.approvals += 1;
+						self.shell_state.insert_value(
+							b"Assets",
+							b"Approvals",
+							&k,
+							Approval { amount: v.as_u128(), deposit: 0 },
+						);
+					});
+				}
+
 				self.shell_state.insert_value(
 					b"System",
 					b"Account",
 					&blake2_128_concat_to_string(k),
 					a,
 				);
-			// TODO: migrate kton balances.
 			} else {
 				a.nonce = 0;
+
+				if v.kton != 0 || v.kton_reserved != 0 {
+					let aa = AssetAccount {
+						balance: v.kton,
+						is_frozen: false,
+						reason: ExistenceReason::Sufficient,
+						extra: (),
+					};
+
+					self.shell_state.insert_value(b"AccountMigration", b"KtonAccounts", &k, &aa);
+				}
 
 				self.shell_state.insert_value(b"AccountMigration", b"Accounts", &k, a);
 			}
 		});
+
+		log::info!("set `Assets::Asset`");
+		log::info!("kton_total_issuance({kton_total_issuance})");
+		log::info!("kton_total_issuance_storage({kton_total_issuance_storage})");
+		self.shell_state.insert_value(
+			b"Assets",
+			b"Asset",
+			&array_bytes::bytes2hex("", blake2_128_concat(&KTON_ID.encode())),
+			kton_details,
+		);
+
+		log::info!("set `Assets::Metadata`");
+		self.shell_state.insert_value(
+			b"Assets",
+			b"Metadata",
+			&array_bytes::bytes2hex("", blake2_128_concat(&KTON_ID.encode())),
+			AssetMetadata {
+				deposit: 0,
+				name: b"Darwinia Commitment Token".to_vec(),
+				symbol: b"KTON".to_vec(),
+				decimals: 18,
+				is_frozen: false,
+			},
+		);
 
 		self
 	}
