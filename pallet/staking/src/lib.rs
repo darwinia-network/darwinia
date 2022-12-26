@@ -390,7 +390,7 @@ pub mod pallet {
 				DispatchResult::Ok(())
 			})?;
 
-			Self::deposit_event(Event::<T>::Staked {
+			Self::deposit_event(Event::Staked {
 				staker: who,
 				ring_amount,
 				kton_amount,
@@ -784,7 +784,7 @@ pub mod pallet {
 				if let Ok(_i) = T::RingCurrency::deposit_into_existing(&c, c_commission_payout) {
 					actual_payout += c_commission_payout;
 
-					Self::deposit_event(Event::<T>::Payout {
+					Self::deposit_event(Event::Payout {
 						staker: c,
 						ring_amount: c_commission_payout,
 					});
@@ -799,7 +799,7 @@ pub mod pallet {
 					{
 						actual_payout += n_payout;
 
-						Self::deposit_event(Event::<T>::Payout {
+						Self::deposit_event(Event::Payout {
 							staker: n_exposure.who,
 							ring_amount: n_payout,
 						});
@@ -893,7 +893,7 @@ where
 
 		let collators = Self::elect();
 
-		Self::deposit_event(Event::<T>::Elected { collators: collators.clone() });
+		Self::deposit_event(Event::Elected { collators: collators.clone() });
 
 		Some(collators)
 	}

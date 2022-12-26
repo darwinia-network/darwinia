@@ -20,11 +20,21 @@
 use crate::*;
 
 pub enum CKtonMinting {}
-impl darwinia_deposit::Minting for CKtonMinting {
+impl darwinia_deposit::SimpleAsset for CKtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		Assets::mint(RuntimeOrigin::signed(ROOT), AssetIds::CKton as AssetId, *beneficiary, amount)
+		Assets::mint(RuntimeOrigin::signed(ROOT), AssetIds::CKton as _, *beneficiary, amount)
+	}
+
+	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		let asset_id = AssetIds::CKton as _;
+
+		if Assets::balance(asset_id, who) < amount {
+			Err(<pallet_assets::Error<Runtime>>::BalanceLow)?;
+		}
+
+		Assets::burn(RuntimeOrigin::signed(ROOT), asset_id, *who, amount)
 	}
 }
 

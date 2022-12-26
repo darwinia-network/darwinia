@@ -55,13 +55,16 @@ use sp_runtime::traits::AccountIdConversion;
 /// Milliseconds per month.
 pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
 
-/// Asset's minting API.
-pub trait Minting {
+/// Simple asset APIs.
+pub trait SimpleAsset {
 	/// Account type.
 	type AccountId;
 
 	/// Mint API.
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> DispatchResult;
+
+	/// Burn API.
+	fn burn(who: &Self::AccountId, amount: Balance) -> DispatchResult;
 }
 
 /// Deposit identifier.
@@ -79,6 +82,8 @@ pub struct Deposit {
 	pub id: DepositId,
 	/// Deposited RING.
 	pub value: Balance,
+	/// Start timestamp.
+	pub start_time: Moment,
 	/// Expired timestamp.
 	pub expired_time: Moment,
 	/// Deposit state.
@@ -102,7 +107,7 @@ pub mod pallet {
 		type Ring: Currency<Self::AccountId, Balance = Balance>;
 
 		/// KTON asset.
-		type Kton: Minting<AccountId = Self::AccountId>;
+		type Kton: SimpleAsset<AccountId = Self::AccountId>;
 
 		/// Minimum amount to lock at least.
 		#[pallet::constant]
@@ -115,10 +120,28 @@ pub mod pallet {
 		type MaxDeposits: Get<u32>;
 	}
 
+	#[allow(missing_docs)]
 	#[pallet::event]
-	// TODO: event?
-	// #[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {}
+	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	pub enum Event<T: Config> {
+		/// A new deposit has been created.
+		DepositCreated {
+			owner: T::AccountId,
+			deposit_id: DepositId,
+			value: Balance,
+			start_time: Moment,
+			expired_time: Moment,
+			kton_reward: Balance,
+		},
+		/// An expired deposit has been claimed.
+		DepositClaimed { owner: T::AccountId, deposit_id: DepositId },
+		/// An unexpired deposit has been claimed by paying the KTON penalty.
+		DepositClaimedWithPenalty {
+			owner: T::AccountId,
+			deposit_id: DepositId,
+			kton_penalty: Balance,
+		},
+	}
 
 	#[pallet::error]
 	pub enum Error<T> {
@@ -136,6 +159,8 @@ pub mod pallet {
 		DepositInUse,
 		/// Deposit is not in use.
 		DepositNotInUse,
+		/// Deposit is already expired.
+		DepositAlreadyExpired,
 	}
 
 	/// All deposits.
@@ -169,7 +194,7 @@ pub mod pallet {
 				Err(<Error<T>>::ExceedMaxDeposits)?;
 			}
 
-			<Deposits<T>>::try_mutate(&who, |ds| {
+			let (deposit_id, start_time, expired_time) = <Deposits<T>>::try_mutate(&who, |ds| {
 				let ds = if let Some(ds) = ds {
 					ds
 				} else {
@@ -190,25 +215,32 @@ pub mod pallet {
 					Continue(c) => c,
 					Break(b) => b,
 				};
+				let start_time = T::UnixTime::now().as_millis();
+				let expired_time = start_time + MILLISECS_PER_MONTH * months as Moment;
 
 				ds.try_insert(
 					id as _,
-					Deposit {
-						id,
-						value: amount,
-						expired_time: T::UnixTime::now().as_millis()
-							+ MILLISECS_PER_MONTH * months as Moment,
-						in_use: false,
-					},
+					Deposit { id, value: amount, start_time, expired_time, in_use: false },
 				)
 				.map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
 
-				DispatchResult::Ok(())
+				<Result<_, DispatchError>>::Ok((id, start_time, expired_time))
 			})?;
-			T::Ring::transfer(&who, &account_id(), amount, KeepAlive)?;
-			T::Kton::mint(&who, dc_inflation::deposit_interest(amount, months))?;
 
-			// TODO: event?
+			T::Ring::transfer(&who, &account_id(), amount, KeepAlive)?;
+
+			let kton_reward = dc_inflation::deposit_interest(amount, months);
+
+			T::Kton::mint(&who, kton_reward)?;
+
+			Self::deposit_event(Event::DepositCreated {
+				owner: who,
+				deposit_id,
+				value: amount,
+				start_time,
+				expired_time,
+				kton_reward,
+			});
 
 			Ok(())
 		}
@@ -225,6 +257,11 @@ pub mod pallet {
 				ds.retain(|d| {
 					if d.expired_time <= now && !d.in_use {
 						claimed += d.value;
+
+						Self::deposit_event(Event::DepositClaimed {
+							owner: who.clone(),
+							deposit_id: d.id,
+						});
 
 						false
 					} else {
@@ -243,12 +280,47 @@ pub mod pallet {
 
 			T::Ring::transfer(&account_id(), &who, claimed, AllowDeath)?;
 
-			// TODO: event?
-
 			Ok(())
 		}
 
-		// TODO: claim_with_penalty
+		/// Claim the unexpired-locked RING by paying the KTON penalty.
+		#[pallet::weight(0)]
+		pub fn claim_with_penalty(origin: OriginFor<T>, id: DepositId) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			let d = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
+				let ds = maybe_ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
+				let d = ds
+					.remove(ds.iter().position(|d| d.id == id).ok_or(<Error<T>>::DepositNotFound)?);
+
+				if ds.is_empty() {
+					<frame_system::Pallet<T>>::dec_consumers(&who);
+
+					*maybe_ds = None;
+				}
+
+				<Result<_, DispatchError>>::Ok(d)
+			})?;
+			let now = T::UnixTime::now().as_millis();
+
+			if d.expired_time <= now {
+				Err(<Error<T>>::DepositAlreadyExpired)?;
+			}
+
+			let promise_m = (d.expired_time - d.start_time) / MILLISECS_PER_MONTH;
+			let elapsed_m = (now - d.start_time) / MILLISECS_PER_MONTH;
+			let kton_penalty = dc_inflation::deposit_interest(d.value, promise_m as _)
+				.saturating_sub(dc_inflation::deposit_interest(d.value, elapsed_m as _))
+				.max(1) * 3;
+
+			T::Kton::burn(&who, kton_penalty)?;
+			Self::deposit_event(Event::DepositClaimedWithPenalty {
+				owner: who,
+				deposit_id: id,
+				kton_penalty,
+			});
+
+			Ok(())
+		}
 	}
 }
 pub use pallet::*;
