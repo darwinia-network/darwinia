@@ -5,4 +5,4 @@ default-target = "x86_64-unknown-linux-gnu"
 	passthrough = ["WASM_BUILD_WORKSPACE_HINT"]
 
 [target.x86_64-unknown-linux-gnu]
-image = "ubuntu-latest"
+image = "ubuntu:20.04"

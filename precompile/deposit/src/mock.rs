@@ -97,11 +97,11 @@ pub enum KtonAsset {}
 impl darwinia_deposit::SimpleAsset for KtonAsset {
 	type AccountId = AccountId;
 
-	fn mint(_beneficiary: &Self::AccountId, _amount: Balance) -> sp_runtime::DispatchResult {
+	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
 		Ok(())
 	}
 
-	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
 		Ok(())
 	}
 }

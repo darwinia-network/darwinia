@@ -1,3 +1,0 @@
-FROM ubuntu:latest
-
-RUN apt-get -y update && apt-get -y install clang gcc g++ llvm make git protobuf-compiler
