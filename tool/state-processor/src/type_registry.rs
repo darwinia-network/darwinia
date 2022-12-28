@@ -42,6 +42,62 @@ impl Default for Reasons {
 	}
 }
 
+// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L33
+#[derive(Debug, Encode, Decode)]
+pub struct AssetDetails {
+	pub owner: [u8; 20],
+	pub issuer: [u8; 20],
+	pub admin: [u8; 20],
+	pub freezer: [u8; 20],
+	pub supply: u128,
+	pub deposit: u128,
+	pub min_balance: u128,
+	pub is_sufficient: bool,
+	pub accounts: u32,
+	pub sufficients: u32,
+	pub approvals: u32,
+	pub is_frozen: bool,
+}
+
+// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
+#[derive(Debug, Encode, Decode)]
+pub struct AssetAccount {
+	pub balance: u128,
+	pub is_frozen: bool,
+	pub reason: ExistenceReason,
+	pub extra: (),
+}
+
+// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L88
+#[derive(Debug, Encode, Decode)]
+pub enum ExistenceReason {
+	#[codec(index = 0)]
+	Consumer,
+	#[codec(index = 1)]
+	Sufficient,
+	#[codec(index = 2)]
+	DepositHeld(u128),
+	#[codec(index = 3)]
+	DepositRefunded,
+}
+
+// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L73
+#[derive(Debug, Encode, Decode)]
+pub struct Approval {
+	pub amount: u128,
+	pub deposit: u128,
+}
+
+// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L127
+#[derive(Clone, Encode, Decode)]
+pub struct AssetMetadata {
+	pub deposit: u128,
+	pub name: Vec<u8>,
+	pub symbol: Vec<u8>,
+	pub decimals: u8,
+	pub is_frozen: bool,
+}
+
 #[derive(Default, Debug, Encode, Decode)]
 pub struct VestingInfo {
 	pub locked: u128,
@@ -99,60 +155,4 @@ pub struct Ledger {
 	pub unstaking_ring: Vec<(u128, u32)>,
 	pub unstaking_kton: Vec<(u128, u32)>,
 	pub unstaking_deposits: Vec<(u16, u32)>,
-}
-
-// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L33
-#[derive(Debug, Encode, Decode)]
-pub struct AssetDetails {
-	pub owner: [u8; 20],
-	pub issuer: [u8; 20],
-	pub admin: [u8; 20],
-	pub freezer: [u8; 20],
-	pub supply: u128,
-	pub deposit: u128,
-	pub min_balance: u128,
-	pub is_sufficient: bool,
-	pub accounts: u32,
-	pub sufficients: u32,
-	pub approvals: u32,
-	pub is_frozen: bool,
-}
-
-// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
-#[derive(Debug, Encode, Decode)]
-pub struct AssetAccount {
-	pub balance: u128,
-	pub is_frozen: bool,
-	pub reason: ExistenceReason,
-	pub extra: (),
-}
-
-// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L88
-#[derive(Debug, Encode, Decode)]
-pub enum ExistenceReason {
-	#[codec(index = 0)]
-	Consumer,
-	#[codec(index = 1)]
-	Sufficient,
-	#[codec(index = 2)]
-	DepositHeld(u128),
-	#[codec(index = 3)]
-	DepositRefunded,
-}
-
-// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L73
-#[derive(Debug, Encode, Decode)]
-pub struct Approval {
-	pub amount: u128,
-	pub deposit: u128,
-}
-
-// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L127
-#[derive(Clone, Encode, Decode)]
-pub struct AssetMetadata {
-	pub deposit: u128,
-	pub name: Vec<u8>,
-	pub symbol: Vec<u8>,
-	pub decimals: u8,
-	pub is_frozen: bool,
 }

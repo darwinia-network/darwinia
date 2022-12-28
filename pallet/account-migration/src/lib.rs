@@ -51,7 +51,7 @@ mod tests;
 // darwinia
 use darwinia_deposit::Deposit;
 use darwinia_staking::Ledger;
-use dc_primitives::{AccountId as AccountId20, Balance, BlockNumber, Index};
+use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Index};
 // substrate
 use frame_support::{
 	log, migration,
@@ -59,13 +59,15 @@ use frame_support::{
 	traits::{Currency, ExistenceRequirement::KeepAlive, LockableCurrency, WithdrawReasons},
 	StorageHasher,
 };
-use frame_system::{pallet_prelude::*, AccountInfo};
-use pallet_assets::AssetAccount;
+use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
 use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_io::hashing;
-use sp_runtime::{traits::Verify, AccountId32};
+use sp_runtime::{
+	traits::{IdentityLookup, Verify},
+	AccountId32,
+};
 use sp_std::prelude::*;
 
 type Message = [u8; 32];
@@ -84,7 +86,9 @@ pub mod pallet {
 			BlockNumber = BlockNumber,
 			AccountId = AccountId20,
 			AccountData = AccountData<Balance>,
-		> + pallet_balances::Config<Balance = Balance>
+			Lookup = IdentityLookup<AccountId20>,
+		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
+		+ pallet_balances::Config<Balance = Balance>
 		+ pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
 		+ darwinia_deposit::Config
 		+ darwinia_staking::Config
@@ -123,10 +127,10 @@ pub mod pallet {
 	/// [`pallet_asset::AssetAccount`] data.
 	///
 	/// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
+	// The size of `pallet_asset::AssetAccount` is 64 bytes.
 	#[pallet::storage]
 	#[pallet::getter(fn kton_account_of)]
-	pub type KtonAccounts<T: Config> =
-		StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount<u128, u128, ()>>;
+	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, [u8; 64]>;
 
 	/// [`pallet_vesting::Vesting`] data.
 	///
@@ -175,6 +179,18 @@ pub mod pallet {
 
 			<frame_system::Account<T>>::insert(to, account);
 
+			if let Some(a) = <KtonAccounts<T>>::take(&from) {
+				migration::put_storage_value(
+					b"Assets",
+					b"Account",
+					&[
+						Blake2_128Concat::hash(&1026_u64.encode()),
+						Blake2_128Concat::hash(&to.encode()),
+					]
+					.concat(),
+					a,
+				);
+			}
 			if let Some(v) = <Vestings<T>>::get(&from) {
 				let locked = v.iter().map(|v| v.locked()).sum();
 
@@ -203,62 +219,21 @@ pub mod pallet {
 					);
 				}
 
+				let staking_pot = darwinia_staking::account_id();
+
 				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 					&to,
-					&darwinia_staking::account_id(),
+					&staking_pot,
 					l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>(),
 					KeepAlive,
 				)?;
-				// TODO: kton transfer
+				<pallet_assets::Pallet<T>>::transfer(
+					RawOrigin::Signed(to).into(),
+					1026_u64,
+					staking_pot,
+					l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>(),
+				)?;
 				<darwinia_staking::Ledgers<T>>::insert(to, l);
-			}
-
-			if let Some(a) = KtonAccounts::<T>::take(&from) {
-				frame_system::Pallet::<T>::inc_sufficients(&to);
-
-				migration::put_storage_value(
-					b"Assets",
-					b"Account",
-					&[
-						Blake2_128Concat::hash(&1026u64.encode()),
-						Blake2_128Concat::hash(&to.encode()),
-					]
-					.concat(),
-					a.encode(),
-				);
-				// The upstream structure cannot be accessed due to permission restrictions.
-				#[derive(Debug, Encode, Decode)]
-				pub struct AssetDetails {
-					pub owner: AccountId20,
-					pub issuer: AccountId20,
-					pub admin: AccountId20,
-					pub freezer: AccountId20,
-					pub supply: u128,
-					pub deposit: u128,
-					pub min_balance: u128,
-					pub is_sufficient: bool,
-					pub accounts: u32,
-					pub sufficients: u32,
-					pub approvals: u32,
-					pub is_frozen: bool,
-				}
-
-				if let Some(mut asset_details) = migration::get_storage_value::<AssetDetails>(
-					b"Assets",
-					b"Asset",
-					&Blake2_128Concat::hash(&1026u64.encode()),
-				) {
-					asset_details.accounts += 1;
-					asset_details.sufficients += 1;
-
-					// Fresh to new details
-					migration::put_storage_value(
-						b"Assets",
-						b"Asset",
-						&Blake2_128Concat::hash(&1026u64.encode()),
-						asset_details.encode(),
-					);
-				}
 			}
 
 			Self::deposit_event(Event::Migrated { from, to });
