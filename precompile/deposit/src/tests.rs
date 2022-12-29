@@ -36,6 +36,7 @@ fn precompiles() -> TestPrecompiles<TestRuntime> {
 fn selectors() {
 	assert!(PCall::lock_selectors().contains(&0x998e4242));
 	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
+	assert!(PCall::claim_with_penalty_selectors().contains(&0xfa04a9bf));
 }
 
 #[test]
@@ -52,6 +53,24 @@ fn lock_and_claim() {
 		efflux(MILLISECS_PER_MONTH);
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::claim {})
+			.execute_returns(EvmDataWriter::new().write(true).build());
+		assert!(Deposit::deposit_of(&alice).is_none());
+	});
+}
+
+#[test]
+fn claim_with_penalty() {
+	let alice: H160 = Alice.into();
+	ExtBuilder::default().with_balances(vec![(alice, 300)]).build().execute_with(|| {
+		// lock
+		precompiles()
+			.prepare_test(alice, Precompile, PCall::lock { amount: 200.into(), months: 1 })
+			.execute_returns(EvmDataWriter::new().write(true).build());
+		assert!(Deposit::deposit_of(&alice).is_some());
+
+		// claim with penalty
+		precompiles()
+			.prepare_test(alice, Precompile, PCall::claim_with_penalty { id: 0 })
 			.execute_returns(EvmDataWriter::new().write(true).build());
 		assert!(Deposit::deposit_of(&alice).is_none());
 	});

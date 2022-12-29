@@ -105,10 +105,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 		Assets::mint(RuntimeOrigin::signed(0), 0, *beneficiary, amount)
 	}
 
-	fn burn(
-		who: &Self::AccountId,
-		amount: Balance,
-	) -> sp_runtime::DispatchResult {
+	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
 		if Assets::balance(0, who) < amount {
 			Err(<pallet_assets::Error<Runtime>>::BalanceLow)?;
 		}

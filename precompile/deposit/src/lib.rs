@@ -74,4 +74,17 @@ where
 
 		Ok(true)
 	}
+
+	#[precompile::public("claim_with_penalty(uint8)")]
+	fn claim_with_penalty(handle: &mut impl PrecompileHandle, id: u8) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_deposit::Call::<Runtime>::claim_with_penalty { id: id.into() },
+		)?;
+
+		Ok(true)
+	}
 }

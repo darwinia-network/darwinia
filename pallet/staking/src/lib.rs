@@ -390,12 +390,7 @@ pub mod pallet {
 				DispatchResult::Ok(())
 			})?;
 
-			Self::deposit_event(Event::Staked {
-				staker: who,
-				ring_amount,
-				kton_amount,
-				deposits,
-			});
+			Self::deposit_event(Event::Staked { staker: who, ring_amount, kton_amount, deposits });
 
 			Ok(())
 		}
