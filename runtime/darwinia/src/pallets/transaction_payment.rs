@@ -23,7 +23,8 @@ impl pallet_transaction_payment::Config for Runtime {
 	type FeeMultiplierUpdate = polkadot_runtime_common::SlowAdjustingFeeUpdate<Self>;
 	// Relay Chain `TransactionByteFee` / 10
 	type LengthToFee = ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
-	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction =
+		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
 	type OperationalFeeMultiplier = sp_runtime::traits::ConstU8<5>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightToFee = WeightToFee;
