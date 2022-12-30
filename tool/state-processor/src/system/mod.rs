@@ -248,7 +248,7 @@ impl Processor {
 fn try_get_evm_address(key: &str) -> Option<[u8; 20]> {
 	let k = array_bytes::hex2bytes_unchecked(key);
 
-	if k.starts_with(b"dvm:") && k[1..31].iter().fold(k[0], |checksum, &b| checksum ^ b) == k[31] {
+	if is_evm_address(&k) {
 		Some(array_bytes::slice2array_unchecked(&k[11..31]))
 	} else {
 		None

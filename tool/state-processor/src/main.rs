@@ -281,15 +281,17 @@ impl State {
 	where
 		A: AsRef<[u8]>,
 	{
-		self.mutate_value(
-			b"System",
-			b"Account",
-			&blake2_128_concat_to_string(who),
-			|a: &mut AccountInfo| {
-				a.data.free += amount;
-				a.data.reserved -= amount;
-			},
-		);
+		let who = who.as_ref();
+		let (p, i) = if is_evm_address(who) {
+			(&b"System"[..], &b"Account"[..])
+		} else {
+			(&b"AccountMigration"[..], &b"Accounts"[..])
+		};
+
+		self.mutate_value(p, i, &blake2_128_concat_to_string(who), |a: &mut AccountInfo| {
+			a.data.free += amount;
+			a.data.reserved -= amount;
+		});
 	}
 }
 
@@ -357,4 +359,9 @@ where
 	D: AsRef<[u8]>,
 {
 	array_bytes::bytes2hex("", subhasher::blake2_128_concat(data))
+}
+
+fn is_evm_address(address: &[u8]) -> bool {
+	address.starts_with(b"dvm:")
+		&& address[1..31].iter().fold(address[0], |checksum, &b| checksum ^ b) == address[31]
 }
