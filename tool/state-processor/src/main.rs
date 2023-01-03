@@ -11,6 +11,9 @@ use adjust::*;
 mod type_registry;
 use type_registry::*;
 
+#[cfg(test)]
+mod tests;
+
 // std
 use std::{
 	env,
@@ -85,7 +88,7 @@ impl Processor {
 	}
 }
 
-struct State(Map<String>);
+pub struct State(Map<String>);
 impl State {
 	fn from_file(path: &str) -> Result<Self> {
 		Ok(Self(from_file::<ChainSpec>(path)?.genesis.raw.top))
@@ -277,18 +280,18 @@ impl State {
 
 	// fn transfer(&mut self, from: &str, to: &str, amount: u128) {}
 
-	fn unreserve<A>(&mut self, who: A, amount: u128)
+	fn unreserve<A>(&mut self, account_id_32: A, amount: u128)
 	where
 		A: AsRef<[u8]>,
 	{
-		let who = who.as_ref();
-		let (p, i) = if is_evm_address(who) {
-			(&b"System"[..], &b"Account"[..])
+		let account_id_32 = account_id_32.as_ref();
+		let (p, i, h) = if is_evm_address(account_id_32) {
+			(&b"System"[..], &b"Account"[..], &account_id_32[11..31])
 		} else {
-			(&b"AccountMigration"[..], &b"Accounts"[..])
+			(&b"AccountMigration"[..], &b"Accounts"[..], account_id_32)
 		};
 
-		self.mutate_value(p, i, &blake2_128_concat_to_string(who), |a: &mut AccountInfo| {
+		self.mutate_value(p, i, &blake2_128_concat_to_string(h), |a: &mut AccountInfo| {
 			a.data.free += amount;
 			a.data.reserved -= amount;
 		});
