@@ -16,6 +16,9 @@ pretty_env_logger  = { version = "0.4" }
 primitive-types    = { version = "0.12.1", features = ["codec"] }
 serde              = { version = "1.0" }
 serde_json         = { version = "1.0" }
+tar                = { version = "0.4" }
+ureq               = { version = "2.6" }
+zstd               = { version = "0.12" }
 
 # hack-ink
 subhasher   = { git = "https://github.com/hack-ink/subalfred" }

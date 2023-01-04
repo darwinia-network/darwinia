@@ -138,9 +138,7 @@ pub fn local_config() -> ChainSpec {
 pub fn genesis_config() -> ChainSpec {
 	// TODO: update this before final release
 	ChainSpec::from_genesis(
-		// Name
 		"Darwinia2",
-		// ID
 		"darwinia2",
 		ChainType::Live,
 		move || {

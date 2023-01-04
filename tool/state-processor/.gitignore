@@ -11,5 +11,8 @@ target
 ## npm
 node_modules
 
+# Data
+data
+
 # Test data
 test-data

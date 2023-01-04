@@ -1,3 +1,5 @@
+// crates.io
+use parity_scale_codec::Encode;
 // darwinia
 use crate::*;
 
