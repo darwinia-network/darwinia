@@ -15,7 +15,10 @@ pub struct AccountAll {
 	pub kton_locks: Vec<BalanceLock>,
 }
 
-impl Processor {
+impl<S> Processor<S>
+where
+	S: Configurable,
+{
 	pub fn process_system(&mut self) -> &mut Self {
 		// System storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/system/src/lib.rs#L545
@@ -185,9 +188,8 @@ impl Processor {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			AssetMetadata {
 				deposit: 0,
-				// TODO: different runtime
-				name: b"Darwinia Commitment Token".to_vec(),
-				symbol: b"KTON".to_vec(),
+				name: S::KTON_NAME.to_vec(),
+				symbol: S::KTON_SYMBOL.to_vec(),
 				decimals: 18,
 				is_frozen: false,
 			},

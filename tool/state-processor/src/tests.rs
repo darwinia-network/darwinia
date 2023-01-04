@@ -19,9 +19,9 @@ struct Tester {
 	shell_system_accounts: Map<AccountInfo>,
 	shell_evm_codes: Map<Vec<u8>>,
 
-	solo_state: State,
-	para_state: State,
-	shell_state: State,
+	solo_state: State<Crab>,
+	para_state: State<()>,
+	shell_state: State<()>,
 }
 
 fn get_last_64(key: &str, _: &str) -> String {
@@ -358,7 +358,7 @@ fn evm_account_storage_migrate() {
 		let test_addr: [u8; 20] =
 			hex_n_into_unchecked::<_, _, 20>("0x0050f880c35c31c13bfd9cbb7d28aafaeca3abd2");
 
-		let storage_item_len = tester.solo_state.0.iter().fold(0u32, |sum, (k, _)| {
+		let storage_item_len = tester.solo_state.map.iter().fold(0u32, |sum, (k, _)| {
 			if k.starts_with(&full_key(
 				b"EVM",
 				b"AccountStorages",
@@ -388,7 +388,7 @@ fn evm_account_storage_migrate() {
 		assert_ne!(storage_value, H256::zero());
 
 		// after migrate
-		let migrated_storage_item_len = tester.shell_state.0.iter().fold(0u32, |sum, (k, _)| {
+		let migrated_storage_item_len = tester.shell_state.map.iter().fold(0u32, |sum, (k, _)| {
 			if k.starts_with(&full_key(
 				b"Evm",
 				b"AccountStorages",

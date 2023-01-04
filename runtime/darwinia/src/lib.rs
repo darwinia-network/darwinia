@@ -52,15 +52,12 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	generic,
 	traits::Block as BlockT,
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult,
+	ApplyExtrinsicResult, MultiAddress, Perbill, Permill,
 };
-pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;

@@ -4,7 +4,7 @@ use crate::*;
 // https://github.dev/paritytech/frontier/blob/polkadot-v0.9.30/primitives/storage/src/lib.rs#L23
 const PALLET_ETHEREUM_SCHEMA: &str = "0x3a657468657265756d5f736368656d61";
 
-impl Processor {
+impl<S> Processor<S> {
 	fn process_ethereum_schema(&mut self) -> &mut Self {
 		log::info!("set `PALLET_ETHEREUM_SCHEMA`");
 		self.shell_state.insert_raw_key_raw_value(PALLET_ETHEREUM_SCHEMA.into(), "0x3".into());

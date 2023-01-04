@@ -3,7 +3,7 @@ use crate::*;
 
 type Locks = Vec<BalanceLock>;
 
-impl Processor {
+impl<S> Processor<S> {
 	pub fn process_balances(&mut self) -> (u128, u128) {
 		// Balances storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/balances/src/lib.rs#L486

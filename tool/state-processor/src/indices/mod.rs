@@ -1,7 +1,7 @@
 // darwinia
 use crate::*;
 
-impl Processor {
+impl<S> Processor<S> {
 	pub fn process_indices(&mut self) -> &mut Self {
 		// Storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/indices/src/lib.rs#L291
