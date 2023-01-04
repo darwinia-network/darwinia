@@ -45,10 +45,7 @@ use xcm_executor::XcmExecutor;
 use frame_support::{
 	dispatch::DispatchClass,
 	traits::{Imbalance, OnUnbalanced},
-	weights::{
-		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
-		WeightToFeePolynomial,
-	},
+	weights::{ConstantMultiplier, Weight},
 };
 use frame_system::EnsureRoot;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
@@ -113,14 +110,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	transaction_version: 0,
 	state_version: 0,
 };
-
-/// Deposit calculator for Darwinia.
-/// 100 UNIT for the base fee, 102.4 UNIT/MB.
-pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
-	// First try.
-	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
-	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
-}
 
 // TODO: move to impl.rs
 pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
@@ -215,34 +204,6 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 				))),
 			_ => None,
 		}
-	}
-}
-
-/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
-/// node's balance type.
-///
-/// This should typically create a mapping between the following ranges:
-///   - `[0, MAXIMUM_BLOCK_WEIGHT]`
-///   - `[Balance::min, Balance::max]`
-///
-/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
-///   - Setting it to `0` will essentially disable the weight fee.
-///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
-pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
-	type Balance = Balance;
-
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-		// here, we map to 1/10 of that, or 1/10 MILLIUNIT
-		let p = MILLIUNIT / 10;
-		let q = 100 * Balance::from(weights::ExtrinsicBaseWeight::get().ref_time());
-		smallvec::smallvec![WeightToFeeCoefficient {
-			degree: 1,
-			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
-			coeff_integer: p / q,
-		}]
 	}
 }
 
