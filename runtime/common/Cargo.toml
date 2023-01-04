@@ -24,14 +24,16 @@ account = { default-features = false, git = "https://github.com/darwinia-network
 
 # polkadot
 xcm          = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
+xcm-builder  = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.30" }
 
 # substrate
-frame-support     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-frame-system      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-pallet-collective = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-io             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-std            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-support      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+pallet-collective  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-runtime         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-std             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
 [features]
 default = ["std"]
@@ -47,6 +49,7 @@ std = [
 
 	# polkadot
 	"xcm/std",
+	"xcm-builder/std",
 	"xcm-executor/std",
 
 	# substrate
@@ -54,5 +57,6 @@ std = [
 	"frame-system/std",
 	"pallet-collective/std",
 	"sp-io/std",
+	"sp-runtime/std",
 	"sp-std/std",
 ]

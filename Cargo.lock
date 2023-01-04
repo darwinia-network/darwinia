@@ -2333,8 +2333,10 @@ dependencies = [
  "pallet-collective",
  "parity-scale-codec",
  "sp-io",
+ "sp-runtime",
  "sp-std",
  "xcm",
+ "xcm-builder",
  "xcm-executor",
 ]
 

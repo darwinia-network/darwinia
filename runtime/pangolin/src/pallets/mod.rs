@@ -69,6 +69,7 @@ mod elections_phragmen;
 mod membership;
 
 mod treasury;
+pub use treasury::*;
 
 mod tips;
 
