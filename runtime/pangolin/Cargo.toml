@@ -41,6 +41,7 @@ darwinia-message-transact         = { default-features = false, path = "../../pa
 darwinia-precompile-assets        = { default-features = false, path = "../../precompile/assets" }
 darwinia-precompile-bls12-381     = { default-features = false, path = "../../precompile/bls12-381" }
 darwinia-precompile-deposit       = { default-features = false, path = "../../precompile/deposit" }
+darwinia-precompile-dispatch      = { default-features = false, path = "../../precompile/dispatch" }
 darwinia-precompile-staking       = { default-features = false, path = "../../precompile/staking" }
 darwinia-precompile-state-storage = { default-features = false, path = "../../precompile/state-storage" }
 darwinia-staking                  = { default-features = false, path = "../../pallet/staking" }
@@ -65,7 +66,6 @@ pallet-ethereum                = { default-features = false, features = ["forbid
 pallet-evm                     = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 pallet-evm-precompile-blake2   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 pallet-evm-precompile-bn128    = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm-precompile-dispatch = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 pallet-evm-precompile-modexp   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 
@@ -152,8 +152,9 @@ std = [
 	"darwinia-message-transact/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
-	"darwinia-precompile-staking/std",
 	"darwinia-precompile-deposit/std",
+	"darwinia-precompile-dispatch/std",
+	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
@@ -177,7 +178,6 @@ std = [
 	"pallet-evm/std",
 	"pallet-evm-precompile-blake2/std",
 	"pallet-evm-precompile-bn128/std",
-	"pallet-evm-precompile-dispatch/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
 

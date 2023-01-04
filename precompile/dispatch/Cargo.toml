@@ -1,10 +1,10 @@
 [package]
 authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "State storage precompile for EVM pallet."
+description = "Call dispatch precompile for EVM pallet."
 edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "darwinia-precompile-state-storage"
+name        = "darwinia-precompile-dispatch"
 readme      = "README.md"
 repository  = "https://github.com/darwinia-network/darwinia"
 version     = "6.0.0"
@@ -20,22 +20,6 @@ precompile-utils = { default-features = false, git = "https://github.com/darwini
 # substrate
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-
-[dev-dependencies]
-# crates.io
-codec      = { package = "parity-scale-codec", version = "3.2" }
-scale-info = { version = "2.3", features = ["derive"] }
-
-# moonbeam
-precompile-utils = { git = "https://github.com/darwinia-network/moonbeam.git", branch = "polkadot-v0.9.30", features = ["testing"] }
-
-# substrate
-frame-system     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-core          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-runtime       = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
 [features]
 default = ["std"]
