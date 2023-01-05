@@ -183,20 +183,6 @@ where
 			kton_details,
 		);
 
-		log::info!("set `Assets::Metadata`");
-		self.shell_state.insert_value(
-			b"Assets",
-			b"Metadata",
-			&blake2_128_concat_to_string(KTON_ID.encode()),
-			AssetMetadata {
-				deposit: 0,
-				name: S::KTON_NAME.to_vec(),
-				symbol: S::KTON_SYMBOL.to_vec(),
-				decimals: 18,
-				is_frozen: false,
-			},
-		);
-
 		self
 	}
 

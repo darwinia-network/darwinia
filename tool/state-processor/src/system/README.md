@@ -31,7 +31,6 @@
 - set KTON total issuances
   - compare the calculated one with the storage one
   - check remaining sum - TODO
-- set `Assets::Metadata`
 
 - some remaining accounts, bridge endpoint accounts - TODO
 - special accounts - TODO

@@ -74,7 +74,6 @@ where
 			.process_indices()
 			.process_vesting()
 			.process_proxy()
-			.process_sudo()
 			.process_staking()
 			.process_evm();
 
@@ -101,7 +100,7 @@ where
 }
 
 pub struct State<R> {
-	map: Map<String>,
+	pub map: Map<String>,
 	_runtime: PhantomData<R>,
 }
 impl<R> State<R> {
