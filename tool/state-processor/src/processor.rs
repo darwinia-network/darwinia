@@ -4,6 +4,7 @@ use std::{
 	io::{Read, Write},
 	marker::PhantomData,
 	mem,
+	path::Path,
 	sync::RwLock,
 };
 // darwinia
@@ -35,13 +36,18 @@ where
 {
 	pub fn new() -> Result<Self> {
 		build_spec(S::NAME)?;
-		download_specs(S::NAME)?;
 
 		let mut shell_chain_spec = from_file::<ChainSpec>(&format!("data/{}-shell.json", S::NAME))?;
+		let solo_path = format!("data/{}-solo.json", S::NAME);
+		let para_path = format!("data/{}-para.json", S::NAME);
+
+		if !Path::new(&solo_path).is_file() || !Path::new(&para_path).is_file() {
+			download_specs(S::NAME)?;
+		}
 
 		Ok(Self {
-			solo_state: State::from_file(&format!("data/{}-solo.json", S::NAME))?,
-			para_state: State::from_file(&format!("data/{}-para.json", S::NAME))?,
+			solo_state: State::from_file(&solo_path)?,
+			para_state: State::from_file(&para_path)?,
 			shell_state: State {
 				map: mem::take(&mut shell_chain_spec.genesis.raw.top),
 				_runtime: Default::default(),
