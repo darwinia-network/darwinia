@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 
 	// <Processor<Darwinia>>::new()?.process()?;
 	// <Processor<Crab>>::new()?.process()?;
-	<Processor<Pangolin>>::new()?.process()?;
+	<Processor<Pangolin>>::new()?.test().process()?;
 
 	Ok(())
 }

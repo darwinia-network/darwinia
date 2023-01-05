@@ -14,6 +14,7 @@ use fxhash::FxHashMap;
 use once_cell::sync::Lazy;
 use parity_scale_codec::{Decode, Encode};
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 // hack-ink
 use subspector::ChainSpec;
 
@@ -26,6 +27,7 @@ pub struct Processor<S> {
 	pub para_state: State<()>,
 	pub shell_state: State<()>,
 	pub shell_chain_spec: ChainSpec,
+	pub test: bool,
 }
 impl<S> Processor<S>
 where
@@ -45,7 +47,14 @@ where
 				_runtime: Default::default(),
 			},
 			shell_chain_spec,
+			test: false,
 		})
+	}
+
+	pub fn test(mut self) -> Self {
+		self.test = true;
+
+		self
 	}
 
 	pub fn process(mut self) -> Result<()> {
@@ -70,6 +79,10 @@ where
 		log::info!("saving processed chain spec");
 
 		mem::swap(&mut self.shell_state.map, &mut self.shell_chain_spec.genesis.raw.top);
+
+		if self.test {
+			self.shell_chain_spec.extensions["relay_chain"] = Value::String("rococo-local".into());
+		}
 
 		let mut f = File::create(format!("data/{}-processed.json", S::NAME))?;
 		let v = serde_json::to_vec(&self.shell_chain_spec)?;

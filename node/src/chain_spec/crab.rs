@@ -149,7 +149,9 @@ pub fn genesis_config() -> ChainSpec {
 				parachain_info: ParachainInfoConfig { parachain_id: 2105.into() },
 
 				// Monetary stuff.
-				balances: Default::default(),
+				balances: BalancesConfig {
+					balances: vec![(array_bytes::hex_n_into_unchecked(ALITH), UNIT)],
+				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
 					assets: vec![(AssetIds::CKton as _, ROOT, true, 1)],
@@ -167,7 +169,7 @@ pub fn genesis_config() -> ChainSpec {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 					elapsed_time: 0,
 					collator_count: 3,
-					collators: Vec::new(),
+					collators: vec![(array_bytes::hex_n_into_unchecked(ALITH), UNIT)],
 				},
 				session: SessionConfig {
 					keys: vec![(
