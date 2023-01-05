@@ -18,6 +18,7 @@ mod evm;
 mod indices;
 mod proxy;
 mod staking;
+mod sudo;
 mod system;
 mod vesting;
 

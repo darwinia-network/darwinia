@@ -188,7 +188,7 @@ pub fn genesis_config() -> ChainSpec {
 				treasury: Default::default(),
 
 				// Utility stuff.
-				sudo: Default::default(),
+				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
 				vesting: Default::default(),
 
 				// XCM stuff.
