@@ -81,6 +81,7 @@ where
 		mem::swap(&mut self.shell_state.map, &mut self.shell_chain_spec.genesis.raw.top);
 
 		if self.test {
+			self.shell_chain_spec.chain_type = "Local".into();
 			self.shell_chain_spec.extensions["relay_chain"] = Value::String("rococo-local".into());
 		}
 

@@ -136,7 +136,7 @@ pub fn local_config() -> ChainSpec {
 }
 
 pub fn genesis_config() -> ChainSpec {
-	// TODO: update this before final release
+	// TODO: update this before the final release
 	ChainSpec::from_genesis(
 		"Darwinia2",
 		"darwinia2",
@@ -150,7 +150,7 @@ pub fn genesis_config() -> ChainSpec {
 
 				// Monetary stuff.
 				balances: BalancesConfig {
-					balances: vec![(array_bytes::hex_n_into_unchecked(ALITH), UNIT)],
+					balances: vec![(array_bytes::hex_n_into_unchecked(ALITH), 100_000_000 * UNIT)],
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
