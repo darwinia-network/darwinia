@@ -314,7 +314,10 @@ pub mod pallet {
 		pub collators: Vec<(T::AccountId, Balance)>,
 	}
 	#[cfg(feature = "std")]
-	impl<T: Config> Default for GenesisConfig<T> {
+	impl<T> Default for GenesisConfig<T>
+	where
+		T: Config,
+	{
 		fn default() -> Self {
 			GenesisConfig { now: 0, elapsed_time: 0, collator_count: 0, collators: Vec::new() }
 		}

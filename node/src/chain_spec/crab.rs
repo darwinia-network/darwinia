@@ -180,6 +180,8 @@ pub fn genesis_config() -> ChainSpec {
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
+				message_gadget: Default::default(),
+				ecdsa_authority: Default::default(),
 
 				// Governance stuff.
 				democracy: Default::default(),
@@ -272,6 +274,8 @@ fn testnet_genesis(
 		},
 		aura: Default::default(),
 		aura_ext: Default::default(),
+		message_gadget: Default::default(),
+		ecdsa_authority: Default::default(),
 
 		// Governance stuff.
 		democracy: Default::default(),

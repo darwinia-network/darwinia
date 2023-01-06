@@ -1,0 +1,53 @@
+[package]
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Relayer Authorities Protocal Implementation"
+edition     = "2021"
+homepage    = "https://darwinia.network"
+license     = "GPL-3.0"
+name        = "darwinia-ecdsa-authority"
+readme      = "README.md"
+repository  = "https://github.com/darwinia-network/darwinia-common"
+version     = "2.10.1"
+
+[dependencies]
+# crates.io
+codec      = { package = "parity-scale-codec", version = "3.2", default-features = false, features = ["derive"] }
+ethabi     = { version = "17.0", default-features = false }
+scale-info = { version = "2.3", default-features = false }
+
+# darwinia
+dc-primitives = { default-features = false, path = "../../core/primitives" }
+
+# substrate
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[dev-dependencies]
+array-bytes  = { version = "6.0" }
+libsecp256k1 = { version = "0.7" }
+sp-version   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+
+std = [
+	# crates.io
+	"codec/std",
+	"ethabi/std",
+	"scale-info/std",
+
+	# darwinia
+	"dc-primitives/std",
+
+	# substrate
+	"frame-support/std",
+	"frame-system/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"sp-io/std",
+]

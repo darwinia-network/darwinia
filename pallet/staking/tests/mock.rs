@@ -17,8 +17,11 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
+use darwinia_staking::*;
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
+use frame_support::traits::{GenesisBuild, OnInitialize};
+use sp_io::TestExternalities;
 use sp_runtime::RuntimeAppPublic;
 
 impl frame_system::Config for Runtime {
@@ -239,7 +242,7 @@ frame_support::construct_runtime!(
 pub trait ZeroDefault {
 	fn default() -> Self;
 }
-impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
+impl ZeroDefault for Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
 			staked_ring: Default::default(),
@@ -268,7 +271,7 @@ impl Efflux {
 fn initialize_block(number: u64) {
 	System::set_block_number(number);
 	Efflux::time(1);
-	<AllPalletsWithSystem as frame_support::traits::OnInitialize<u64>>::on_initialize(number);
+	<AllPalletsWithSystem as OnInitialize<u64>>::on_initialize(number);
 }
 
 #[derive(Default)]
@@ -282,10 +285,7 @@ impl ExtBuilder {
 		self
 	}
 
-	pub fn build(self) -> sp_io::TestExternalities {
-		// substrate
-		use frame_support::traits::GenesisBuild;
-
+	pub fn build(self) -> TestExternalities {
 		let _ = pretty_env_logger::try_init();
 		let mut storage =
 			frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
@@ -309,7 +309,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut storage)
 		.unwrap();
 
-		let mut ext = sp_io::TestExternalities::from(storage);
+		let mut ext = TestExternalities::from(storage);
 
 		ext.execute_with(|| initialize_block(1));
 

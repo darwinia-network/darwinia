@@ -23,7 +23,6 @@ use codec::{Decode, Encode};
 use sha3::{Digest, Keccak256};
 // frontier
 use pallet_ethereum::IntermediateStateRoot;
-use pallet_evm::IdentityAddressMapping;
 // substrate
 use frame_support::{
 	dispatch::RawOrigin,
@@ -118,7 +117,7 @@ impl FeeCalculator for FixedGasPrice {
 }
 
 impl pallet_evm::Config for TestRuntime {
-	type AddressMapping = IdentityAddressMapping;
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;

@@ -18,6 +18,9 @@
 
 // darwinia
 use dc_types::{AssetId, Balance, Moment, UNIT};
+// substrate
+use frame_support::traits::GenesisBuild;
+use sp_io::TestExternalities;
 
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
@@ -125,10 +128,7 @@ pub fn efflux(milli_secs: Moment) {
 	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
 }
 
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	// substrate
-	use frame_support::traits::GenesisBuild;
-
+pub fn new_test_ext() -> TestExternalities {
 	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 
 	pallet_balances::GenesisConfig::<Runtime> {

@@ -241,6 +241,8 @@ frame_support::construct_runtime! {
 		Session: pallet_session = 9,
 		Aura: pallet_aura = 10,
 		AuraExt: cumulus_pallet_aura_ext = 11,
+		MessageGadget: darwinia_message_gadget = 43,
+		EcdsaAuthority: darwinia_ecdsa_authority = 44,
 
 		// Governance stuff.
 		Democracy: pallet_democracy = 12,

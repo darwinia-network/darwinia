@@ -37,6 +37,8 @@ cumulus-pallet-session-benchmarking = { optional = true, default-features = fals
 darwinia-account-migration        = { default-features = false, path = "../../pallet/account-migration" }
 darwinia-common-runtime           = { default-features = false, path = "../common" }
 darwinia-deposit                  = { default-features = false, path = "../../pallet/deposit" }
+darwinia-ecdsa-authority          = { default-features = false, path = "../../pallet/ecdsa-authority" }
+darwinia-message-gadget           = { default-features = false, path = "../../pallet/message-gadget" }
 darwinia-message-transact         = { default-features = false, path = "../../pallet/message-transact" }
 darwinia-precompile-assets        = { default-features = false, path = "../../precompile/assets" }
 darwinia-precompile-bls12-381     = { default-features = false, path = "../../precompile/bls12-381" }
@@ -60,15 +62,15 @@ pallet-bridge-parachains = { default-features = false, git = "https://github.com
 pallet-fee-market        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.30" }
 
 # frontier
-fp-rpc                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-fp-self-contained              = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-base-fee                = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-ethereum                = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm                     = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm-precompile-blake2   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm-precompile-bn128    = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm-precompile-modexp   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
-pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-rpc                       = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-self-contained            = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-base-fee              = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-ethereum              = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm                   = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-blake2 = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-bn128  = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
 
 # moonbeam
 precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
@@ -150,6 +152,8 @@ std = [
 	"darwinia-account-migration/std",
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
+	"darwinia-ecdsa-authority/std",
+	"darwinia-message-gadget/std",
 	"darwinia-message-transact/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
