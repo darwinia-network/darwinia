@@ -22,10 +22,11 @@ use mock::*;
 // core
 use core::time::Duration;
 // darwinia
+use darwinia_deposit::Error as DepositError;
 use darwinia_staking::*;
 use dc_types::{Balance, UNIT};
 // substrate
-use frame_support::{assert_ok, BoundedVec};
+use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, Perbill};
 
 #[test]
@@ -52,6 +53,12 @@ fn stake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger { staked_ring: UNIT, staked_kton: UNIT, ..ZeroDefault::default() }
+		);
+
+		// Stake invalid deposit.
+		assert_noop!(
+			Staking::stake(RuntimeOrigin::signed(1), 0, 0, vec![0]),
+			<DepositError<Runtime>>::DepositNotFound
 		);
 
 		// Stake 1 deposit.
@@ -93,14 +100,14 @@ fn unstake_should_work() {
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 2 * UNIT, 2 * UNIT, vec![0, 1, 2]));
-		assert_eq!(Balances::free_balance(1), 995 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 3 * UNIT, 3 * UNIT, vec![0, 1, 2]));
+		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_eq!(Assets::balance(0, 1), 997 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 2 * UNIT,
-				staked_kton: 2 * UNIT,
+				staked_ring: 3 * UNIT,
+				staked_kton: 3 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
 				..ZeroDefault::default()
 			}
@@ -111,8 +118,8 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: UNIT,
-				staked_kton: 2 * UNIT,
+				staked_ring: 2 * UNIT,
+				staked_kton: 3 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
 				..ZeroDefault::default()
@@ -125,8 +132,8 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: UNIT,
-				staked_kton: UNIT,
+				staked_ring: 2 * UNIT,
+				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),
@@ -134,39 +141,134 @@ fn unstake_should_work() {
 			}
 		);
 
+		// Unstake invalid deposit.
+		assert_noop!(
+			Staking::unstake(RuntimeOrigin::signed(1), 0, 0, vec![3]),
+			<Error<Runtime>>::DepositNotFound
+		);
+
 		// Unstake 1 deposit.
 		Efflux::block(1);
-		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, 0, vec![0]));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, 0, vec![1]));
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: UNIT,
-				staked_kton: UNIT,
-				staked_deposits: BoundedVec::truncate_from(vec![1, 2]),
+				staked_ring: 2 * UNIT,
+				staked_kton: 2 * UNIT,
+				staked_deposits: BoundedVec::truncate_from(vec![0, 2]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6)])
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 6)])
 			}
 		);
 
-		// Unstake 1 RING, 1 KTON and 2 deposits.
+		// Unstake 2 RING, 2 KTON and 2 deposits.
 		Efflux::block(1);
-		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, vec![1, 2]));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 2 * UNIT, 2 * UNIT, vec![0, 2]));
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 0,
-				staked_kton: 0,
-				staked_deposits: Default::default(),
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)])
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (2 * UNIT, 7)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (2 * UNIT, 7)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 6), (0, 7), (2, 7)]),
+				..ZeroDefault::default()
 			}
 		);
 
 		// Keep the stakes for at least `MinStakingDuration`.
-		assert_eq!(Balances::free_balance(1), 995 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
+		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_eq!(Assets::balance(0, 1), 997 * UNIT + 22_842_639_593_907);
+	});
+}
+
+#[test]
+fn restake_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 3 * UNIT, 3 * UNIT, vec![0, 1, 2]));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, vec![0, 1, 2]));
+		Efflux::block(1);
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, Vec::new()));
+		Efflux::block(1);
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, Vec::new()));
+		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_eq!(Assets::balance(0, 1), 997 * UNIT + 22_842_639_593_907);
+		assert_eq!(
+			Staking::ledger_of(1).unwrap(),
+			Ledger {
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				..ZeroDefault::default()
+			}
+		);
+
+		// Restake 1.5 RING.
+		assert_ok!(Staking::restake(RuntimeOrigin::signed(1), 3 * UNIT / 2, 0, Vec::new()));
+		assert_eq!(
+			Staking::ledger_of(1).unwrap(),
+			Ledger {
+				staked_ring: 3 * UNIT / 2,
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				..ZeroDefault::default()
+			}
+		);
+
+		// Restake 1.5 KTON.
+		assert_ok!(Staking::restake(RuntimeOrigin::signed(1), 0, 3 * UNIT / 2, Vec::new()));
+		assert_eq!(
+			Staking::ledger_of(1).unwrap(),
+			Ledger {
+				staked_ring: 3 * UNIT / 2,
+				staked_kton: 3 * UNIT / 2,
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				..ZeroDefault::default()
+			}
+		);
+
+		// Restake invalid deposit.
+		assert_noop!(
+			Staking::unstake(RuntimeOrigin::signed(1), 0, 0, vec![3]),
+			<Error<Runtime>>::DepositNotFound
+		);
+
+		// Restake 1 deposit.
+		assert_ok!(Staking::restake(RuntimeOrigin::signed(1), 0, 0, vec![1]));
+		assert_eq!(
+			Staking::ledger_of(1).unwrap(),
+			Ledger {
+				staked_ring: 3 * UNIT / 2,
+				staked_kton: 3 * UNIT / 2,
+				staked_deposits: BoundedVec::truncate_from(vec![1]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (2, 4)]),
+			}
+		);
+
+		// Restake 1.5 RING, 1.5 KTON and 2 deposits.
+		Efflux::block(1);
+		assert_ok!(Staking::restake(
+			RuntimeOrigin::signed(1),
+			3 * UNIT / 2,
+			3 * UNIT / 2,
+			vec![0, 2]
+		));
+		assert_eq!(
+			Staking::ledger_of(1).unwrap(),
+			Ledger {
+				staked_ring: 3 * UNIT,
+				staked_kton: 3 * UNIT,
+				staked_deposits: BoundedVec::truncate_from(vec![1, 0, 2]),
+				..ZeroDefault::default()
+			}
+		);
 	});
 }
 
@@ -190,12 +292,10 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 0,
-				staked_kton: 0,
-				staked_deposits: Default::default(),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 7)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)])
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				..ZeroDefault::default()
 			}
 		);
 
@@ -206,12 +306,10 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 0,
-				staked_kton: 0,
-				staked_deposits: Default::default(),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)])
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				..ZeroDefault::default()
 			}
 		);
 
@@ -223,12 +321,10 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 0,
-				staked_kton: 0,
-				staked_deposits: Default::default(),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)])
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				..ZeroDefault::default()
 			}
 		);
 
@@ -240,12 +336,10 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				staked_ring: 0,
-				staked_kton: 0,
-				staked_deposits: Default::default(),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
 				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 7), (2, 7)])
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 7), (2, 7)]),
+				..ZeroDefault::default()
 			}
 		);
 

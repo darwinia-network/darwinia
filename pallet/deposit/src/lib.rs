@@ -368,12 +368,12 @@ where
 {
 	type Amount = Balance;
 
-	fn amount(who: &Self::AccountId, item: Self::Item) -> Self::Amount {
-		<Deposits<T>>::get(who)
+	fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError> {
+		Ok(<Deposits<T>>::get(who)
 			.and_then(|ds| {
 				ds.into_iter().find_map(|d| if d.id == item { Some(d.value) } else { None })
 			})
-			.unwrap_or_default()
+			.ok_or(<Error<T>>::DepositNotFound)?)
 	}
 }
 
