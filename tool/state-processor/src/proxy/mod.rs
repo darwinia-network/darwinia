@@ -5,9 +5,14 @@ impl<S> Processor<S> {
 	pub fn process_proxy(&mut self) -> &mut Self {
 		// Storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/proxy/src/lib.rs#L599
-		// Skip the `Announcements`.
-		// Need to make sure the storage is empty.
-		//
+		let announcements_key = item_key(b"Proxy", b"Announcements");
+		if self.solo_state.starts_with(&announcements_key) {
+			log::error!("The solo chain `Proxy::Announcements` not empty");
+		}
+		if self.para_state.starts_with(&announcements_key) {
+			log::error!("The para chain `Proxy::Announcements` not empty");
+		}
+
 		// The size of encoded `pallet_proxy::ProxyDefinition` is 37 bytes.
 		let mut proxies = <Map<(Vec<[u8; 37]>, u128)>>::default();
 
@@ -21,8 +26,10 @@ impl<S> Processor<S> {
 			self.shell_state.unreserve(array_bytes::hex2bytes_unchecked(get_last_64(&a)), v);
 		});
 
-		// Skip the parachain part.
-		// Need to make sure the storage is empty.
+		// Make sure the Proxy::Proxies storage of para chain is empty.
+		if self.para_state.starts_with(&item_key(b"Proxy", b"Proxies")) {
+			log::error!("The para chain `Proxy::Proxies` not empty");
+		}
 
 		self
 	}

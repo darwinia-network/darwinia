@@ -299,6 +299,10 @@ impl<R> State<R> {
 		self.map.contains_key(key)
 	}
 
+	pub fn starts_with(&self, key: &str) -> bool {
+		self.map.keys().into_iter().any(|k| k.starts_with(key))
+	}
+
 	// pub fn inc_consumers(&mut self, who: &str) {}
 
 	// pub fn transfer(&mut self, from: &str, to: &str, amount: u128) {}

@@ -648,3 +648,24 @@ fn indices_adjust_substrate_account() {
 		assert_eq!(migrated_account.data.reserved, (solo_account.data.reserved - index.1) * GWEI);
 	});
 }
+
+// --- Proxy ---
+
+#[test]
+fn proxy_reserved_adjust() {
+	run_test(|tester| {
+		// https://crab.subscan.io/account/5EU6EEhZRbh1NQS7HRMwAogoBHWtT2eLFQWei2UZHUHJosHt
+		let test_addr = "0x6a4e6bef70a768785050414fcdf4d869debe5cb6336f8eeebe01f458ddbce409";
+
+		let solo_account = tester.solo_accounts.get(test_addr).unwrap();
+		assert_ne!(solo_account.data.reserved, 0);
+
+		// after migrated
+		let migrated_account = tester.migration_accounts.get(test_addr).unwrap();
+		assert_eq!(
+			migrated_account.data.free,
+			(solo_account.data.free + solo_account.data.reserved) * GWEI
+		);
+		assert_eq!(migrated_account.data.reserved, 0);
+	});
+}
