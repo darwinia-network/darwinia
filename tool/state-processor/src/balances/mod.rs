@@ -12,7 +12,6 @@ impl<S> Processor<S> {
 		let mut solo_kton_total_issuance = u128::default();
 		let mut solo_ring_locks = <Map<Locks>>::default();
 		let mut solo_kton_locks = <Map<Locks>>::default();
-		let mut para_ring_locks = <Map<Locks>>::default();
 		let mut para_ring_total_issuance = u128::default();
 
 		log::info!("take solo `Balances::TotalIssuance`, `Kton::TotalIssuance`, `Balances::Locks` and `Kton::Locks`");
@@ -31,16 +30,16 @@ impl<S> Processor<S> {
 		solo_kton_total_issuance.adjust();
 
 		log::info!("take para `Balances::TotalIssuance` and `Balances::Locks`");
-		self.para_state
-			.take_value(b"Balances", b"TotalIssuance", "", &mut para_ring_total_issuance)
-			.take_map(b"Balances", b"Locks", &mut para_ring_locks, get_hashed_key);
+		self.para_state.take_value(
+			b"Balances",
+			b"TotalIssuance",
+			"",
+			&mut para_ring_total_issuance,
+		);
 
-		log::info!("check solo ring locks, there should not be any `solo_ring_locks`");
-		check_locks(solo_ring_locks);
-		log::info!("check solo kton locks, there should not be any `solo_kton_locks`");
-		check_locks(solo_kton_locks);
-		log::info!("check para locks, there should not be any `para_ring_locks`");
-		check_locks(para_ring_locks);
+		if self.para_state.exists(b"Balances", b"Locks") {
+			log::error!("check para `Balances::Locks`, it isn't empty");
+		}
 
 		(solo_ring_total_issuance + para_ring_total_issuance, solo_kton_total_issuance)
 	}
@@ -80,10 +79,4 @@ fn prune(locks: &mut Map<Locks>) {
 
 		!v.is_empty()
 	});
-}
-
-fn check_locks(locks: Map<Locks>) {
-	locks
-		.into_iter()
-		.for_each(|(k, _)| log::error!("found unexpected locks of account({})", get_last_64(&k)));
 }
