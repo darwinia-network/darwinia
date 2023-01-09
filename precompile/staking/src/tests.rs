@@ -35,6 +35,7 @@ fn precompiles() -> TestPrecompiles<TestRuntime> {
 fn selectors() {
 	assert!(PCall::stake_selectors().contains(&0x757f9b3b));
 	assert!(PCall::unstake_selectors().contains(&0xef20fcb3));
+	assert!(PCall::restake_selectors().contains(&0x17092fcb));
 	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));
@@ -42,7 +43,7 @@ fn selectors() {
 }
 
 #[test]
-fn stake_and_unstake() {
+fn stake_unstake_restake() {
 	let alice: H160 = Alice.into();
 	ExtBuilder::default().with_balances(vec![(alice, 300)]).build().execute_with(|| {
 		// stake
@@ -72,6 +73,22 @@ fn stake_and_unstake() {
 			)
 			.execute_returns(EvmDataWriter::new().write(true).build());
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 0);
+		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 1);
+
+		// restake
+		precompiles()
+			.prepare_test(
+				alice,
+				Precompile,
+				PCall::restake {
+					ring_amount: 200.into(),
+					kton_amount: U256::zero(),
+					deposits: vec![],
+				},
+			)
+			.execute_returns(EvmDataWriter::new().write(true).build());
+		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
+		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 0);
 	});
 }
 
