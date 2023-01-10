@@ -69,6 +69,8 @@ pub fn is_evm_address(address: &[u8]) -> bool {
 }
 
 pub fn build_spec(chain: &str) -> Result<()> {
+	log::info!("build {chain} spec");
+
 	let mut path = "../../target/release/darwinia";
 
 	if !Path::new(path).is_file() {
@@ -90,6 +92,8 @@ pub fn build_spec(chain: &str) -> Result<()> {
 }
 
 pub fn download_specs(chain: &str) -> Result<()> {
+	log::info!("download {chain} spec");
+
 	let decoder = Decoder::new(
 		ureq::get(&format!(
 			"https://github.com/darwinia-network/darwinia-2.0/releases/download/{chain}2/{chain}-state.tar.zst"

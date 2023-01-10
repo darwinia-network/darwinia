@@ -104,17 +104,17 @@ pub struct Commitment {
 #[test]
 fn eth_signable_message() {
 	assert_eq!(
-		array_bytes::bytes2hex("0x", &Sign::eth_signable_message(46, b"Darwinia", &[0; 32])),
+		array_bytes::bytes2hex("0x", Sign::eth_signable_message(46, b"Darwinia", &[0; 32])),
 		"0xb492857010088b0dff298645e9105549d088aab7bcb20cf5a3d0bc17dce91045"
 	);
 	assert_eq!(
-		array_bytes::bytes2hex("0x", &Sign::hash(b"46Darwinia::ecdsa-authority")),
+		array_bytes::bytes2hex("0x", Sign::hash(b"46Darwinia::ecdsa-authority")),
 		"0xf8a76f5ceeff36d74ff99c4efc0077bcc334721f17d1d5f17cfca78455967e1e"
 	);
 
 	let data = array_bytes::hex2bytes_unchecked("0x30a82982a8d5050d1c83bbea574aea301a4d317840a8c4734a308ffaa6a63bc8cb76085b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000100000000000000000000000068898db1012808808c903f390909c52d9f7067490000000000000000000000004cdc1dbbd754ea539f1ffaea91f1b6c4b8dd14bd");
 	assert_eq!(
-		array_bytes::bytes2hex("0x", &Sign::eth_signable_message(45, b"Pangoro", &data)),
+		array_bytes::bytes2hex("0x", Sign::eth_signable_message(45, b"Pangoro", &data)),
 		"0x4bddffe492f1091c1902d1952fc4673b12915f4b22822c6c84eacad574f11f2e"
 	);
 
@@ -134,7 +134,7 @@ fn eth_signable_message() {
 		ethabi::Token::Uint(0.into()),
 	]);
 	assert_eq!(
-		array_bytes::bytes2hex("0x", &Sign::eth_signable_message(45, b"Pangoro", &encoded)),
+		array_bytes::bytes2hex("0x", Sign::eth_signable_message(45, b"Pangoro", &encoded)),
 		"0xe328aa10278425238407d49104ac5a55fd68e7f378b327c902d4d5035cfcfedf"
 	);
 }

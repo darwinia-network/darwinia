@@ -25,7 +25,7 @@ sp_runtime::impl_opaque_keys! {
 	}
 }
 
-fast_runtime_or_not!(Period, ConstU32<{ 2 * MINUTES }>, ConstU32<{ 6 * HOURS }>);
+fast_runtime_or_not!(Period, ConstU32<{ 5 * MINUTES }>, ConstU32<{ 6 * HOURS }>);
 
 type Offset = ConstU32<0>;
 

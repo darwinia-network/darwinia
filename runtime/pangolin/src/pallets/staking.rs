@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-fast_runtime_or_not!(MinStakingDuration, ConstU32<MINUTES>, ConstU32<{ 14 * DAYS }>);
+fast_runtime_or_not!(MinStakingDuration, ConstU32<{ 5 * MINUTES }>, ConstU32<{ 14 * DAYS }>);
 
 pub enum PRingStaking {}
 impl darwinia_staking::Stake for PRingStaking {
