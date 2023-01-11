@@ -61,19 +61,17 @@ use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
 use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
-use sp_io::hashing;
 use sp_runtime::{
 	traits::{IdentityLookup, Verify},
 	AccountId32,
 };
 use sp_std::prelude::*;
 
-type Message = [u8; 32];
-const KTON_ID: u64 = 1026;
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+
+	const KTON_ID: u64 = 1026;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -94,9 +92,6 @@ pub mod pallet {
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// Chain's ID, which is used for constructing the message. (follow EIP-712 SPEC)
-		#[pallet::constant]
-		type ChainId: Get<u64>;
 	}
 
 	#[allow(missing_docs)]
@@ -263,11 +258,7 @@ pub mod pallet {
 				return InvalidTransaction::Custom(E_ACCOUNT_ALREADY_EXISTED).into();
 			}
 
-			let message = sr25519_signable_message(
-				T::ChainId::get(),
-				T::Version::get().spec_name.as_ref(),
-				to,
-			);
+			let message = sr25519_signable_message(T::Version::get().spec_name.as_ref(), to);
 
 			if verify_sr25519_signature(from, &message, signature) {
 				ValidTransaction::with_tag_prefix("account-migration")
@@ -284,25 +275,22 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-fn sr25519_signable_message(
-	chain_id: u64,
-	spec_name: &[u8],
-	account_id_20: &AccountId20,
-) -> Message {
-	hashing::blake2_256(
-		&[
-			&hashing::blake2_256(
-				&[&chain_id.to_le_bytes(), spec_name, b"::account-migration"].concat(),
-			),
-			account_id_20.0.as_slice(),
-		]
-		.concat(),
-	)
+fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
+	[
+		b"I authorize the migration to ",
+		account_id_20.0.as_slice(),
+		b", an unused address on ",
+		spec_name,
+		b". Sign this message to authorize using the Substrate key associated with the account on ",
+		&spec_name[..spec_name.len() - 1],
+		b" that you wish to migrate.",
+	]
+	.concat()
 }
 
 fn verify_sr25519_signature(
 	public_key: &AccountId32,
-	message: &Message,
+	message: &[u8],
 	signature: &Signature,
 ) -> bool {
 	// Actually, `&[u8]` is `[u8; 32]` here.
@@ -313,5 +301,5 @@ fn verify_sr25519_signature(
 		return false;
 	};
 
-	signature.verify(message.as_slice(), public_key)
+	signature.verify(message, public_key)
 }
