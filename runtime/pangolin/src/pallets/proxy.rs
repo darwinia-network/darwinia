@@ -37,8 +37,10 @@ pub enum ProxyType {
 	Any,
 	NonTransfer,
 	Governance,
+	Staking,
 	IdentityJudgement,
-	EthereumBridge,
+	CancelProxy,
+	EcdsaBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -46,14 +48,46 @@ impl Default for ProxyType {
 	}
 }
 impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
-	// TODO: configure filter
-	fn filter(&self, _c: &RuntimeCall) -> bool {
+	fn filter(&self, c: &RuntimeCall) -> bool {
 		match self {
 			ProxyType::Any => true,
-			ProxyType::NonTransfer => true,
-			ProxyType::Governance => true,
-			ProxyType::IdentityJudgement => true,
-			ProxyType::EthereumBridge => true,
+			ProxyType::NonTransfer => !matches!(
+				c,
+				RuntimeCall::Balances(..)
+					| RuntimeCall::Assets(..)
+					| RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer { .. })
+					| RuntimeCall::Deposit(..)
+					| RuntimeCall::Staking(..)
+					// Might contains transfer {
+					| RuntimeCall::Utility(..)
+					| RuntimeCall::Proxy(..)
+					| RuntimeCall::Multisig(..)
+					| RuntimeCall::PolkadotXcm(..)
+					| RuntimeCall::Ethereum(..) // }
+			),
+			ProxyType::Governance => matches!(
+				c,
+				RuntimeCall::Democracy(..)
+					| RuntimeCall::Council(..)
+					| RuntimeCall::TechnicalCommittee(..)
+					| RuntimeCall::PhragmenElection(..)
+					| RuntimeCall::Treasury(..)
+					| RuntimeCall::Tips(..)
+			),
+			ProxyType::Staking => {
+				matches!(
+					c,
+					RuntimeCall::Session(..) | RuntimeCall::Deposit(..) | RuntimeCall::Staking(..)
+				)
+			},
+			ProxyType::IdentityJudgement =>
+				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. })),
+			ProxyType::CancelProxy => {
+				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
+			},
+			ProxyType::EcdsaBridge => {
+				matches!(c, RuntimeCall::EcdsaAuthority(..))
+			},
 		}
 	}
 

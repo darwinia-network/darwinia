@@ -42,6 +42,8 @@ mod transaction_payment;
 mod assets;
 pub use assets::*;
 
+mod vesting;
+
 mod deposit;
 
 mod account_migration;
@@ -78,8 +80,6 @@ mod tips;
 
 // Utility stuff.
 mod sudo;
-
-mod vesting;
 
 mod utility;
 
