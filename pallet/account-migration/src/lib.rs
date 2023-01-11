@@ -69,6 +69,7 @@ use sp_runtime::{
 use sp_std::prelude::*;
 
 type Message = [u8; 32];
+const KTON_ID: u64 = 1026;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -174,7 +175,7 @@ pub mod pallet {
 					b"Assets",
 					b"Account",
 					&[
-						Blake2_128Concat::hash(&1026_u64.encode()),
+						Blake2_128Concat::hash(&KTON_ID.encode()),
 						Blake2_128Concat::hash(&to.encode()),
 					]
 					.concat(),
@@ -210,19 +211,25 @@ pub mod pallet {
 				}
 
 				let staking_pot = darwinia_staking::account_id();
-
 				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 					&to,
 					&staking_pot,
 					l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>(),
 					KeepAlive,
 				)?;
-				<pallet_assets::Pallet<T>>::transfer(
-					RawOrigin::Signed(to).into(),
-					1026_u64,
-					staking_pot,
-					l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>(),
-				)?;
+
+				let sum = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+				if let Some(amount) = <pallet_assets::Pallet<T>>::maybe_balance(KTON_ID, to) {
+					if amount >= sum {
+						<pallet_assets::Pallet<T>>::transfer(
+							RawOrigin::Signed(to).into(),
+							KTON_ID,
+							staking_pot,
+							sum,
+						)?;
+					}
+				}
+
 				<darwinia_staking::Ledgers<T>>::insert(to, l);
 			}
 
