@@ -95,25 +95,15 @@ jobs:
   features-checks:
     name: Task check features
     if: github.event_name == 'push' || !github.event.pull_request.draft
+    strategy:
+      matrix:
+        runtime: [runtime/darwinia, runtime/crab, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
-      - name: Install Rust ${{ env.RUST_TOOLCHAIN }} toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Check ${{ matrix.runtime }}
+        uses: hack-ink/subalfred-check-features-action@v0.1.5
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          default: true
-      - name: Install Subalfred
-        run: |
-          curl -L ${{ env.SUBALFRED_LINK }} | zstd -o subalfred -d
-          chmod u+x subalfred
-          sudo mv subalfred /usr/bin
-          sudo chmod u+x /usr/bin/subalfred
-      - name: Fetch latest code
-        uses: actions/checkout@v3
-      - name: Check
-        run: |
-          unset RUSTC_WRAPPER
-          subalfred check features runtime/darwinia
+          path: ${{ matrix.runtime }}
 
   runtime-checks:
     name: Task check runtime
