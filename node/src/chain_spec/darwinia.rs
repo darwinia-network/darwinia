@@ -29,7 +29,6 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
 use darwinia_runtime::*;
-use dc_primitives::*;
 // frontier
 use fp_evm::GenesisAccount;
 // substrate

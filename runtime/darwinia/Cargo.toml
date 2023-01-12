@@ -128,6 +128,12 @@ frame-benchmarking        = { optional = true, default-features = false, git = "
 frame-system-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 frame-try-runtime         = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
+[dev-dependencies]
+# darwinia
+darwinia-common-runtime = { features = ["test"], path = "../common" }
+# substrate
+sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+
 [features]
 default = ["std"]
 std = [

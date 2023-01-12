@@ -30,12 +30,11 @@ pub use pallets::*;
 mod weights;
 
 pub use darwinia_common_runtime::*;
+pub use dc_primitives::*;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
 // cumulus
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-// darwinia
-use dc_primitives::*;
 // polkadot
 use xcm_executor::XcmExecutor;
 // substrate

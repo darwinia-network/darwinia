@@ -28,7 +28,6 @@ use std::{
 use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
-use dc_primitives::*;
 use pangolin_runtime::*;
 // frontier
 use fp_evm::GenesisAccount;

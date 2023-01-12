@@ -275,7 +275,8 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
+/// Build a Darwinia account migration message.
+pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
 		b"I authorize the migration to ",
 		account_id_20.0.as_slice(),
