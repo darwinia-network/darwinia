@@ -875,29 +875,24 @@ pub mod pallet {
 					continue;
 				};
 				let c_total_payout = Perbill::from_rational(p, total_points) * payout;
-				let c_commission_payout = commission * c_total_payout;
-				let n_payout = c_total_payout - c_commission_payout;
+				let mut c_payout = commission * c_total_payout;
+				let n_payout = c_total_payout - c_payout;
 				let Some(c_exposure) = <Exposures<T>>::get(&c) else {
 					log::error!("[pallet::staking] exposure({c:?}) must be found; qed");
 
 					continue;
 				};
 
-				if let Ok(_i) = T::RingCurrency::deposit_into_existing(&c, c_commission_payout) {
-					actual_payout += c_commission_payout;
-
-					Self::deposit_event(Event::Payout {
-						staker: c,
-						ring_amount: c_commission_payout,
-					});
-				}
-
 				for n_exposure in c_exposure.nominators {
 					let n_payout =
 						Perbill::from_rational(n_exposure.value, c_exposure.total) * n_payout;
 
-					if let Ok(_i) =
-						T::RingCurrency::deposit_into_existing(&n_exposure.who, n_payout)
+					if c == n_exposure.who {
+						// If the collator nominated themselves.
+
+						c_payout += n_payout;
+					} else if T::RingCurrency::deposit_into_existing(&n_exposure.who, n_payout)
+						.is_ok()
 					{
 						actual_payout += n_payout;
 
@@ -906,6 +901,12 @@ pub mod pallet {
 							ring_amount: n_payout,
 						});
 					}
+				}
+
+				if T::RingCurrency::deposit_into_existing(&c, c_payout).is_ok() {
+					actual_payout += c_payout;
+
+					Self::deposit_event(Event::Payout { staker: c, ring_amount: c_payout });
 				}
 			}
 
