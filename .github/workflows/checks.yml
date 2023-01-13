@@ -23,15 +23,12 @@ on:
 env:
   GITHUB_CACHE_VERSION: 0
 
-  RUST_TOOLCHAIN: nightly
   RUST_BACKTRACE: full
   RUSTC_WRAPPER: sccache
 
   SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
   SCCACHE_VERSION: v0.3.0
   SCCACHE_DIR: /home/runner/.cache/sccache
-
-  SUBALFRED_LINK: https://github.com/hack-ink/subalfred/releases/latest/download/subalfred-x86_64-unknown-linux-gnu.zst
 
 jobs:
   basic-checks:
@@ -41,15 +38,9 @@ jobs:
     strategy:
       matrix:
         action: [build, test]
-
     steps:
       - name: Setup build environment
         run: sudo apt install -y protobuf-compiler
-      - name: Install Rust ${{ env.RUST_TOOLCHAIN }} toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          default: true
       - name: Install Sccache
         run: |
           export SCCACHE_FILE=sccache-${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl
@@ -78,17 +69,15 @@ jobs:
         with:
           command: ${{ matrix.action }}
           args: --release --locked --features all-native
-      - name: Compress
+      - name: Change path
         if: matrix.action != 'test'
-        run: |
-          mv target/release/darwinia .
-          tar cf darwinia.tar.zst darwinia -I pzstd
+        run: mv target/release/darwinia .
       - name: Upload
         if: matrix.action != 'test'
         uses: actions/upload-artifact@v2
         with:
           name: darwinia
-          path: darwinia.tar.zst
+          path: darwinia
       - name: Shrink cache
         run: .github/shrink-cache.sh
 
@@ -106,75 +95,25 @@ jobs:
           path: ${{ matrix.runtime }}
 
   runtime-checks:
-    name: Task check runtime
+    name: Task check runtimes
     if: github.event_name == 'push' || !github.event.pull_request.draft
+    strategy:
+      matrix:
+        target:
+          [
+            { chain: darwinia-dev, compare-with: "https://rpc.polkadot.io" },
+            { chain: crab-dev, compare-with: "https://rpc.polkadot.io" },
+            { chain: pangolin-dev, compare-with: "https://rpc.polkadot.io" },
+          ]
     needs: [basic-checks]
     runs-on: ubuntu-latest
     steps:
-      - name: Install Subalfred
-        run: |
-          curl -L ${{ env.SUBALFRED_LINK }} | zstd -o subalfred -d
-          chmod u+x subalfred
-          sudo mv subalfred /usr/bin
-          sudo chmod u+x /usr/bin/subalfred
-      - name: Download darwinia
-        uses: actions/download-artifact@v2
+      - name: Check ${{ matrix.target.chain }}
+        uses: hack-ink/subalfred-check-runtime-action@v0.1.8
         with:
-          name: darwinia
-      - name: Install darwinia
-        run: |
-          tar xf darwinia.tar.zst -I pzstd
-          sudo mv darwinia /usr/bin
-      - id: check-crab-runtime-version
-        name: Check Crab runtime version
-        run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-dev --live https://rpc.polkadot.io --property version)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-crab-runtime-version::$OUTPUT"
-      - id: check-crab-runtime-storage
-        name: Check Crab runtime storage
-        run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain crab-dev --live https://rpc.polkadot.io --property storage)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-crab-runtime-storage::$OUTPUT"
-      - id: check-darwinia-runtime-version
-        name: Check Darwinia runtime version
-        run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-dev --live https://rpc.polkadot.io --property version)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-darwinia-runtime-version::$OUTPUT"
-      - id: check-darwinia-runtime-storage
-        name: Check Darwinia runtime storage
-        run: |
-          OUTPUT=$(subalfred check runtime --executable darwinia --chain darwinia-dev --live https://rpc.polkadot.io --property storage)
-          OUTPUT="${OUTPUT//'%'/'%25'}​"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "::set-output name=check-darwinia-runtime-storage::$OUTPUT"
-      - if: github.ref != 'refs/heads/master'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          append: true
-          message: |
-            <details>
-            <summary>Commit ${{ github.event.pull_request.head.sha }}</summary>
-
-            **Darwinia**
-            > Check Runtime Version
-            ```diff
-            ${{ steps.check-darwinia-runtime-version.outputs.check-darwinia-runtime-version }}
-            ```
-            > Check Storage Prefix
-            ```diff
-            ${{ steps.check-darwinia-runtime-storage.outputs.check-darwinia-runtime-storage }}
-            ```
-            </details>
+          uploaded-artifact: darwinia
+          chain: ${{ matrix.target.chain }}
+          compare-with: ${{ matrix.target.compare-with }}
 
   checks-cleaning:
     name: Task checks cleaning
