@@ -199,7 +199,23 @@ pub fn genesis_config() -> ChainSpec {
 
 				// EVM stuff.
 				ethereum: Default::default(),
-				evm: Default::default(),
+				evm: EvmConfig {
+					accounts: {
+						BTreeMap::from_iter(
+							CrabPrecompiles::<Runtime>::used_addresses().iter().map(|p| {
+								(
+									p.to_owned(),
+									GenesisAccount {
+										nonce: Default::default(),
+										balance: Default::default(),
+										storage: Default::default(),
+										code: REVERT_BYTECODE.to_vec(),
+									},
+								)
+							}),
+						)
+					},
+				},
 				base_fee: Default::default(),
 
 				// S2S stuff.
@@ -310,17 +326,6 @@ fn testnet_genesis(
 							)
 						})
 						.chain([
-							// Testing account.
-							(
-								H160::from_str("0x6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-									.unwrap(),
-								GenesisAccount {
-									balance: (10_000_000 * UNIT).into(),
-									code: Default::default(),
-									nonce: Default::default(),
-									storage: Default::default(),
-								},
-							),
 							// Benchmarking account.
 							(
 								H160::from_str("1000000000000000000000000000000000000001").unwrap(),

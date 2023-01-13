@@ -339,7 +339,21 @@ fn evm_code_migrate() {
 		}
 
 		{
-			assert_eq!(tester.solo_evm_codes, tester.shell_evm_codes);
+			tester.solo_evm_codes.iter().for_each(|(k, v)| {
+				assert_eq!(tester.shell_evm_codes.get(k), Some(v));
+			});
+		}
+	});
+}
+
+#[test]
+fn precompiles_code_should_work() {
+	run_test(|tester| {
+		let addrs = ["001", "009", "400", "402", "600", "601"];
+
+		for i in addrs {
+			let addr = format!("{}{i}", "0x0000000000000000000000000000000000000");
+			assert_eq!(tester.shell_evm_codes.get(&addr), Some(&[96, 0, 96, 0, 253].to_vec()));
 		}
 	});
 }

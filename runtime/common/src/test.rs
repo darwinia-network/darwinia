@@ -205,10 +205,7 @@ macro_rules! impl_account_migration_tests {
 
 					assert_ok!(migrate(from, to));
 					assert_eq!(AccountMigration::kton_account_of(from_pk), None);
-					assert_eq!(
-						Assets::maybe_balance(KTON_ID, to).unwrap(),
-						KTON_AMOUNT
-					);
+					assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), KTON_AMOUNT);
 				});
 			}
 
