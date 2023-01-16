@@ -24,6 +24,7 @@ frame-support   = { default-features = false, git = "https://github.com/parityte
 frame-system    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 pallet-assets   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
+pallet-identity = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 pallet-vesting  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 sp-core         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 sp-runtime      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
@@ -49,6 +50,7 @@ std = [
 	"frame-system/std",
 	"pallet-assets/std",
 	"pallet-balances/std",
+	"pallet-identity/std",
 	"pallet-vesting/std",
 	"sp-core/std",
 	"sp-runtime/std",

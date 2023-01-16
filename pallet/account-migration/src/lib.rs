@@ -53,12 +53,14 @@ use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Ind
 // substrate
 use frame_support::{
 	log, migration,
+	migration::put_storage_value,
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement::KeepAlive, LockableCurrency, WithdrawReasons},
 	StorageHasher,
 };
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
+use pallet_identity::{RegistrarInfo, Registration};
 use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_runtime::{
@@ -87,6 +89,7 @@ pub mod pallet {
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
 		+ pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
+		+ pallet_identity::Config<Currency = pallet_balances::Pallet<Self>>
 		+ darwinia_deposit::Config
 		+ darwinia_staking::Config
 	{
@@ -146,7 +149,26 @@ pub mod pallet {
 	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
 
-	// TODO: identity storages
+	/// [`pallet_identity::IdentityOf`] data.
+	///
+	/// <https://github.com/paritytech/substrate/blob/polkadot-v0.9.30/frame/identity/src/lib.rs#L163>
+	#[pallet::storage]
+	#[pallet::getter(fn identity_of)]
+	pub type IdentityOf<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		AccountId32,
+		Registration<Balance, ConstU32<100>, ConstU32<100>>,
+	>;
+
+	/// [`pallet_identity::Registrars`] data.
+	///
+	/// <https://github.com/paritytech/substrate/blob/polkadot-v0.9.30/frame/identity/src/lib.rs#L199>
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn registrars)]
+	pub type Registrars<T: Config> =
+		StorageValue<_, Vec<Option<RegistrarInfo<Balance, AccountId32>>>, ValueQuery>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -227,6 +249,30 @@ pub mod pallet {
 
 				<darwinia_staking::Ledgers<T>>::insert(to, l);
 			}
+
+			if let Some(identity) = IdentityOf::<T>::take(from.clone()) {
+				put_storage_value(
+					b"Identity",
+					b"IdentityOf",
+					&Twox64Concat::hash(&to.encode()),
+					identity,
+				);
+			}
+			let mut chain_rs = <pallet_identity::Pallet<T>>::registrars().into_inner();
+			for (i, rs) in Self::registrars().iter().enumerate() {
+				if let Some(rs) = rs {
+					if rs.account == from {
+						chain_rs.push(Some(RegistrarInfo {
+							account: to,
+							fee: rs.fee,
+							fields: rs.fields,
+						}));
+
+						Registrars::<T>::mutate(|rs| rs.remove(i));
+					}
+				}
+			}
+			put_storage_value(b"Identity", b"Registrars", &[], chain_rs);
 
 			Self::deposit_event(Event::Migrated { from, to });
 

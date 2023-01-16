@@ -47,6 +47,11 @@ pub fn get_hashed_key(full_key: &str, item_key: &str) -> String {
 	full_key.trim_start_matches(item_key).into()
 }
 
+// twox128(pallet) + twox128(item) + *(item_key) -> account_id_32
+pub fn get_last_64_key(key: &str, _: &str) -> String {
+	get_last_64(key)
+}
+
 // twox128(pallet) + twox128(item) + *_concat(account_id_32) -> account_id_32
 pub fn get_last_64(key: &str) -> String {
 	format!("0x{}", &key[key.len() - 64..])

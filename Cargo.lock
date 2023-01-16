@@ -2289,6 +2289,7 @@ dependencies = [
  "frame-system",
  "pallet-assets",
  "pallet-balances",
+ "pallet-identity",
  "pallet-vesting",
  "parity-scale-codec",
  "scale-info",

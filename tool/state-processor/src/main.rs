@@ -15,6 +15,7 @@ use type_registry::*;
 // Runtime pallets.
 mod balances;
 mod evm;
+mod identity;
 mod indices;
 mod proxy;
 mod staking;

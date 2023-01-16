@@ -13,6 +13,9 @@ macro_rules! impl_account_migration_tests {
 			use frame_system::AccountInfo;
 			use pallet_assets::ExistenceReason;
 			use pallet_balances::AccountData;
+			use pallet_identity::{
+				Data, IdentityFields, IdentityInfo, RegistrarInfo, Registration,
+			};
 			use sp_core::{sr25519::Pair, Encode, Pair as PairT, H160};
 			use sp_keyring::sr25519::Keyring;
 			use sp_runtime::{
@@ -301,6 +304,66 @@ macro_rules! impl_account_migration_tests {
 						assert_eq!(Staking::ledger_of(to).unwrap().staked_ring, 20);
 						assert_eq!(Staking::ledger_of(to).unwrap().staked_kton, 20);
 					});
+			}
+
+			#[test]
+			fn identities_should_work() {
+				let (from, from_pk) = alice();
+				let to = H160::from_low_u64_be(255).into();
+
+				ExtBuilder::default().build().execute_with(|| {
+					preset_state_of(&from);
+
+					let info = IdentityInfo {
+						additional: Default::default(),
+						display: Data::Sha256([1u8; 32]),
+						legal: Data::None,
+						web: Data::None,
+						riot: Data::None,
+						email: Data::None,
+						pgp_fingerprint: None,
+						image: Data::None,
+						twitter: Data::None,
+					};
+					<darwinia_account_migration::IdentityOf<Runtime>>::insert(
+						from_pk,
+						Registration {
+							judgements: Default::default(),
+							deposit: RING_AMOUNT,
+							info: info.clone(),
+						},
+					);
+
+					assert_ok!(migrate(from, to,));
+					assert_eq!(Identity::identity(to).unwrap().info, info);
+					assert_eq!(Identity::identity(to).unwrap().deposit, RING_AMOUNT);
+					assert_eq!(Identity::identity(to).unwrap().judgements.len(), 0);
+				});
+			}
+
+			#[test]
+			fn registrars_should_work() {
+				let (from, from_pk) = alice();
+				let to = H160::from_low_u64_be(255).into();
+
+				ExtBuilder::default().build().execute_with(|| {
+					preset_state_of(&from);
+
+					let info = RegistrarInfo {
+						account: from_pk,
+						fee: RING_AMOUNT,
+						fields: IdentityFields::default(),
+					};
+					<darwinia_account_migration::Registrars<Runtime>>::put(vec![
+						Some(info.clone()),
+						None,
+					]);
+
+					assert_ok!(migrate(from, to,));
+					assert!(!AccountMigration::registrars().contains(&Some(info.clone())));
+					assert_eq!(Identity::registrars()[0].clone().unwrap().account, to);
+					assert_eq!(Identity::registrars()[0].clone().unwrap().fee, info.fee);
+				});
 			}
 		}
 	};

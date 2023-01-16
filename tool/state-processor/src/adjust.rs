@@ -69,3 +69,17 @@ impl Adjust for Unbonding {
 		self.until.adjust();
 	}
 }
+
+impl Adjust for Registration {
+	fn adjust(&mut self) {
+		// Reset the judgements
+		self.judgements.clear();
+		self.deposit.adjust();
+	}
+}
+
+impl Adjust for RegistrarInfo {
+	fn adjust(&mut self) {
+		self.fee.adjust();
+	}
+}
