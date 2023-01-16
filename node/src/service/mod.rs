@@ -45,6 +45,8 @@ use sp_runtime::app_crypto::AppKey;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+type ParachainBlockImport<RuntimeApi, Executor> =
+	cumulus_client_consensus_common::ParachainBlockImport<Arc<FullClient<RuntimeApi, Executor>>>;
 
 /// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
 pub trait IdentifyVariant {
@@ -123,6 +125,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 			Option<fc_rpc_core::types::FilterPool>,
 			fc_rpc_core::types::FeeHistoryCache,
 			fc_rpc_core::types::FeeHistoryCacheLimit,
+			ParachainBlockImport<RuntimeApi, Executor>,
 			Option<sc_telemetry::Telemetry>,
 			Option<sc_telemetry::TelemetryWorkerHandle>,
 		),
@@ -172,8 +175,12 @@ where
 		task_manager.spawn_essential_handle(),
 		client.clone(),
 	);
+
+	let block_import = ParachainBlockImport::new(client.clone());
+
 	let import_queue = parachain_build_import_queue(
 		client.clone(),
+		block_import.clone(),
 		config,
 		telemetry.as_ref().map(|telemetry| telemetry.handle()),
 		&task_manager,
@@ -201,6 +208,7 @@ where
 			filter_pool,
 			fee_history_cache,
 			fee_history_cache_limit,
+			block_import,
 			telemetry,
 			telemetry_worker_handle,
 		),
@@ -219,18 +227,13 @@ async fn build_relay_chain_interface(
 	Option<polkadot_service::CollatorPair>,
 )> {
 	match collator_options.relay_chain_rpc_url {
-		Some(relay_chain_url) => {
-			let client = cumulus_relay_chain_rpc_interface::create_client_and_start_worker(
-				relay_chain_url,
+		Some(relay_chain_url) =>
+			cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+				polkadot_config,
 				task_manager,
+				relay_chain_url,
 			)
-			.await?;
-			Ok((
-				Arc::new(cumulus_relay_chain_rpc_interface::RelayChainRpcInterface::new(client))
-					as Arc<_>,
-				None,
-			))
-		},
+			.await,
 		None => cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
 			polkadot_config,
 			parachain_config,
@@ -250,7 +253,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
-	id: cumulus_primitives_core::ParaId,
+	para_id: cumulus_primitives_core::ParaId,
 	_rpc_ext_builder: RB,
 	build_consensus: BIC,
 	hwbench: Option<sc_sysinfo::HwBench>,
@@ -264,13 +267,12 @@ where
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	sc_client_api::StateBackendFor<FullBackend, Block>: sp_api::StateBackend<Hashing>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
-	RB: 'static
-		+ Send
-		+ Fn(
-			Arc<sc_service::TFullClient<Block, RuntimeApi, Executor>>,
-		) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
+	RB: Fn(
+		Arc<sc_service::TFullClient<Block, RuntimeApi, Executor>>,
+	) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
 	BIC: FnOnce(
 		Arc<FullClient<RuntimeApi, Executor>>,
+		ParachainBlockImport<RuntimeApi, Executor>,
 		Option<&substrate_prometheus_endpoint::Registry>,
 		Option<sc_telemetry::TelemetryHandle>,
 		&sc_service::TaskManager,
@@ -299,6 +301,7 @@ where
 				filter_pool,
 				fee_history_cache,
 				fee_history_cache_limit,
+				block_import,
 				mut telemetry,
 				telemetry_worker_handle,
 			),
@@ -321,7 +324,7 @@ where
 	})?;
 
 	let block_announce_validator =
-		cumulus_client_network::BlockAnnounceValidator::new(relay_chain_interface.clone(), id);
+		cumulus_client_network::BlockAnnounceValidator::new(relay_chain_interface.clone(), para_id);
 
 	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
@@ -428,6 +431,7 @@ where
 	if validator {
 		let parachain_consensus = build_consensus(
 			client.clone(),
+			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
 			&task_manager,
@@ -439,9 +443,8 @@ where
 		)?;
 
 		let spawner = task_manager.spawn_handle();
-
 		let params = cumulus_client_service::StartCollatorParams {
-			para_id: id,
+			para_id,
 			block_status: client.clone(),
 			announce_block,
 			client: client.clone(),
@@ -460,11 +463,10 @@ where
 			client: client.clone(),
 			announce_block,
 			task_manager: &mut task_manager,
-			para_id: id,
+			para_id,
 			relay_chain_interface,
 			relay_chain_slot_duration,
 			import_queue,
-			collator_options,
 		};
 
 		cumulus_client_service::start_full_node(params)?;
@@ -478,6 +480,7 @@ where
 /// Build the import queue for the parachain runtime.
 pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 	client: Arc<FullClient<RuntimeApi, Executor>>,
+	block_import: ParachainBlockImport<RuntimeApi, Executor>,
 	config: &sc_service::Configuration,
 	telemetry: Option<sc_telemetry::TelemetryHandle>,
 	task_manager: &sc_service::TaskManager,
@@ -503,7 +506,7 @@ where
 		_,
 		_,
 	>(cumulus_client_consensus_aura::ImportQueueParams {
-		block_import: client.clone(),
+		block_import,
 		client,
 		create_inherent_data_providers: move |_, _| async move {
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -528,7 +531,7 @@ pub async fn start_parachain_node<RuntimeApi, Executor>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
-	id: cumulus_primitives_core::ParaId,
+	para_id: cumulus_primitives_core::ParaId,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(
@@ -549,9 +552,10 @@ where
 		parachain_config,
 		polkadot_config,
 		collator_options,
-		id,
+		para_id,
 		|_| Ok(jsonrpsee::RpcModule::new(())),
 		|client,
+		 block_import,
 		 prometheus_registry,
 		 telemetry,
 		 task_manager,
@@ -588,7 +592,7 @@ where
 								relay_parent,
 								&relay_chain_interface,
 								&validation_data,
-								id,
+								para_id,
 							).await;
 						let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
@@ -606,7 +610,7 @@ where
 						Ok((slot, timestamp, parachain_inherent))
 					}
 				},
-				block_import: client.clone(),
+				block_import,
 				para_client: client,
 				backoff_authoring_blocks: Option::<()>::None,
 				sync_oracle,
@@ -663,6 +667,7 @@ where
 				filter_pool,
 				fee_history_cache,
 				fee_history_cache_limit,
+				_block_import,
 				_telemetry,
 				_telemetry_worker_handle,
 			),
@@ -779,6 +784,7 @@ where
 				cumulus_client_consensus_aura::SlotProportion::new(1f32 / 16f32),
 			),
 			telemetry: None,
+			compatibility_mode: Default::default(),
 		})?;
 
 		// the AURA authoring task is considered essential, i.e. if it

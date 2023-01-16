@@ -23,8 +23,7 @@ impl pallet_preimage::Config for Runtime {
 	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
 	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
 	type Currency = Balances;
-	type ManagerOrigin = Root;
-	type MaxSize = ConstU32<{ 4096 * 1024 }>;
+	type ManagerOrigin = EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }

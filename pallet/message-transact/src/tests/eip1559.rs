@@ -111,11 +111,12 @@ fn test_dispatch_eip1559_transaction_weight_mismatch() {
 			);
 
 			assert!(!result.dispatch_result);
+
 			System::assert_has_event(RuntimeEvent::Dispatch(
 				pallet_bridge_dispatch::Event::MessageWeightMismatch(
 					SOURCE_CHAIN_ID,
 					mock_message_id,
-					Weight::from_ref_time(1249913722000),
+					Weight::from_ref_time(1249901046000),
 					Weight::from_ref_time(1000000000000),
 				),
 			));

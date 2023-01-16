@@ -40,7 +40,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	DatabaseSource, PartialComponents, TaskManager,
+	DatabaseSource, PartialComponents,
 };
 use sp_core::{crypto::Ss58AddressFormatRegistry, hexdisplay::HexDisplay};
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
@@ -496,35 +496,35 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
+		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			if cfg!(feature = "try-runtime") {
-				let runner = cli.create_runner(cmd)?;
-				let chain_spec = &runner.config().chain_spec;
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
-				set_default_ss58_version(chain_spec);
-				// grab the task manager.
-				let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-				let task_manager =
-					TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-						.map_err(|e| format!("Error: {:?}", e))?;
+			set_default_ss58_version(chain_spec);
+			// grab the task manager.
+			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
+			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
+				.map_err(|e| format!("Error: {:?}", e))?;
 
-				if chain_spec.is_crab() {
-					runner.async_run(|config| {
-						Ok((cmd.run::<Block, CrabRuntimeExecutor>(config), task_manager))
-					})
-				} else if chain_spec.is_pangolin() {
-					runner.async_run(|config| {
-						Ok((cmd.run::<Block, PangolinRuntimeExecutor>(config), task_manager))
-					})
-				} else {
-					runner.async_run(|config| {
-						Ok((cmd.run::<Block, DarwiniaRuntimeExecutor>(config), task_manager))
-					})
-				}
+			if chain_spec.is_crab() {
+				runner.async_run(|config| {
+					Ok((cmd.run::<Block, CrabRuntimeExecutor>(config), task_manager))
+				})
+			} else if chain_spec.is_pangolin() {
+				runner.async_run(|config| {
+					Ok((cmd.run::<Block, PangolinRuntimeExecutor>(config), task_manager))
+				})
 			} else {
-				Err("Try-runtime must be enabled by `--features try-runtime`.".into())
+				runner.async_run(|config| {
+					Ok((cmd.run::<Block, DarwiniaRuntimeExecutor>(config), task_manager))
+				})
 			}
 		},
+		#[cfg(not(feature = "try-runtime"))]
+		Some(Subcommand::TryRuntime) => Err("Try-runtime was not enabled when building the node. \
+			You can enable it with `--features try-runtime`."
+			.into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
@@ -567,6 +567,10 @@ pub fn run() -> Result<()> {
 					"Is collating: {}",
 					if config.role.is_authority() { "yes" } else { "no" }
 				);
+
+				if collator_options.relay_chain_rpc_url.is_some() && cli.relay_chain_args.len() > 0 {
+					log::warn!("Detected relay chain node arguments together with --relay-chain-rpc-url. This command starts a minimal Polkadot node that only uses a network-related subset of all relay chain CLI options.");
+				}
 
 				if chain_spec.is_dev() {
 					return if chain_spec.is_crab() {

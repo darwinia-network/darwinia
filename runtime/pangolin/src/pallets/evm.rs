@@ -146,7 +146,7 @@ where
 				darwinia_precompile_state_storage::EthereumStorageFilter,
 			>>::execute(handle)),
 			a if a == addr(1025) =>
-				Some(<darwinia_precompile_dispatch::Dispatch<Runtime>>::execute(handle)),
+				Some(<pallet_evm_precompile_dispatch::Dispatch<Runtime>>::execute(handle)),
 			// [1026, 1536) reserved for assets precompiles.
 			a if (1026..1536).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
 				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(

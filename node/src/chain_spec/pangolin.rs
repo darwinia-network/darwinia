@@ -216,7 +216,6 @@ pub fn genesis_config() -> ChainSpec {
 						)
 					},
 				},
-				base_fee: Default::default(),
 			}
 		},
 		Vec::new(),
@@ -334,6 +333,5 @@ fn testnet_genesis(
 				)
 			},
 		},
-		base_fee: Default::default(),
 	}
 }

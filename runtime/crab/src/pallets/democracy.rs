@@ -45,13 +45,13 @@ impl pallet_democracy::Config for Runtime {
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
 	type LaunchPeriod = ConstU32<{ 28 * DAYS }>;
+	type MaxBlacklisted = ConstU32<100>;
+	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
 	type MaxVotes = ConstU32<100>;
 	type MinimumDeposit = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
-	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
 	type PalletsOrigin = OriginCaller;
-	type PreimageByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
-	type Proposal = RuntimeCall;
+	type Preimages = Preimage;
 	type RuntimeEvent = RuntimeEvent;
 	type Scheduler = Scheduler;
 	type Slash = Treasury;

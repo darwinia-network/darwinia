@@ -107,8 +107,6 @@ mod ethereum;
 mod evm;
 pub use evm::*;
 
-mod base_fee;
-
 mod message_transact;
 
 // S2S stuff.

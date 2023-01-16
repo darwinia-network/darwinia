@@ -54,24 +54,29 @@ pub enum Subcommand {
 
 	/// Sub-commands concerned with benchmarking.
 	/// The pallet benchmarking moved to the `pallet` sub-command.
-	#[clap(subcommand)]
+	#[command(subcommand)]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
 	/// Try some testing command against a specified runtime state.
+	#[cfg(feature = "try-runtime")]
 	TryRuntime(try_runtime_cli::TryRuntimeCmd),
+
+	/// Errors since the binary was not build with `--features try-runtime`.
+	#[cfg(not(feature = "try-runtime"))]
+	TryRuntime,
 }
 
 #[derive(Debug, clap::Parser)]
-#[clap(
+#[command(
 	propagate_version = true,
 	args_conflicts_with_subcommands = true,
 	subcommand_negates_reqs = true
 )]
 pub struct Cli {
-	#[clap(subcommand)]
+	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
 
-	#[clap(flatten)]
+	#[command(flatten)]
 	pub run: cumulus_client_cli::RunCmd,
 
 	/// Disable automatic hardware benchmarks.
@@ -81,14 +86,14 @@ pub struct Cli {
 	///
 	/// The results are then printed out in the logs, and also sent as part of
 	/// telemetry, if telemetry is enabled.
-	#[clap(long)]
+	#[arg(long)]
 	pub no_hardware_benchmarks: bool,
 
 	/// Relay chain arguments
-	#[clap(raw = true)]
+	#[arg(raw = true)]
 	pub relay_chain_args: Vec<String>,
 
-	#[clap(flatten)]
+	#[command(flatten)]
 	pub eth_args: EthArgs,
 }
 
@@ -119,19 +124,19 @@ impl RelayChainCli {
 #[derive(Debug, clap::Parser)]
 pub struct EthArgs {
 	/// Size in bytes of the LRU cache for block data.
-	#[clap(long, default_value = "300000000")]
+	#[arg(long, default_value = "300000000")]
 	pub eth_log_block_cache: usize,
 
 	/// Size of the LRU cache for block data and their transaction statuses.
-	#[clap(long, default_value = "300000000")]
+	#[arg(long, default_value = "300000000")]
 	pub eth_statuses_cache: usize,
 
 	/// Maximum number of logs in a query.
-	#[clap(long, default_value = "10000")]
+	#[arg(long, default_value = "10000")]
 	pub max_past_logs: u32,
 
 	/// Maximum fee history cache size.
-	#[clap(long, default_value = "2048")]
+	#[arg(long, default_value = "2048")]
 	pub fee_history_limit: u64,
 }
 impl EthArgs {

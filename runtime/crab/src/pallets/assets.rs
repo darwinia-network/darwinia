@@ -24,16 +24,19 @@ pub enum AssetIds {
 	CKton = 1026,
 }
 
+frame_support::parameter_types! {
+	pub Creators: Vec<AccountId> = vec![ROOT];
+}
+
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ConstU128<0>;
 	type AssetAccountDeposit = ConstU128<0>;
 	type AssetDeposit = ConstU128<0>;
 	type AssetId = AssetId;
 	type Balance = Balance;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSignedBy<IsInVec<Creators>, AccountId>>;
 	type Currency = Balances;
 	type Extra = ();
-	// TODO: Restrict the create asset origin. https://github.com/paritytech/substrate/pull/12586
-	// type CreateOrigin = EnsureRoot<AccountId>;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type Freezer = ();
 	type MetadataDepositBase = ConstU128<0>;
