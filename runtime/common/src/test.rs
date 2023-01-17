@@ -325,7 +325,7 @@ macro_rules! impl_account_migration_tests {
 						image: Data::None,
 						twitter: Data::None,
 					};
-					<darwinia_account_migration::IdentityOf<Runtime>>::insert(
+					<darwinia_account_migration::Identities<Runtime>>::insert(
 						from_pk,
 						Registration {
 							judgements: Default::default(),
@@ -344,25 +344,32 @@ macro_rules! impl_account_migration_tests {
 			#[test]
 			fn registrars_should_work() {
 				let (from, from_pk) = alice();
+				let mut truncated_from = [0_u8; 20];
+
+				truncated_from.copy_from_slice(&<AccountId32 as AsRef<[u8; 32]>>::as_ref(&from_pk)[..20]);
+
 				let to = H160::from_low_u64_be(255).into();
 
 				ExtBuilder::default().build().execute_with(|| {
 					preset_state_of(&from);
 
-					let info = RegistrarInfo {
-						account: from_pk,
+					let info = RegistrarInfo::<Balance, AccountId> {
+						account: truncated_from.into(),
 						fee: RING_AMOUNT,
 						fields: IdentityFields::default(),
 					};
-					<darwinia_account_migration::Registrars<Runtime>>::put(vec![
-						Some(info.clone()),
-						None,
-					]);
 
-					assert_ok!(migrate(from, to,));
-					assert!(!AccountMigration::registrars().contains(&Some(info.clone())));
-					assert_eq!(Identity::registrars()[0].clone().unwrap().account, to);
-					assert_eq!(Identity::registrars()[0].clone().unwrap().fee, info.fee);
+					migration::put_storage_value(
+						b"Identity",
+						b"Registrars",
+						&[],
+						vec![Some(info.clone()), None],
+					);
+
+					assert_ok!(migrate(from, to));
+					assert_eq!(Identity::registrars()[0].as_ref().unwrap().account, to);
+					assert_eq!(Identity::registrars()[0].as_ref().unwrap().fee, info.fee);
+					assert!(Identity::registrars()[1].is_none());
 				});
 			}
 		}

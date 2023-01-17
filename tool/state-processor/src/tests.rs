@@ -736,28 +736,23 @@ fn identities_adjust() {
 }
 
 #[test]
-fn registrars_adust() {
+fn registrars_adjust() {
 	run_test(|tester| {
-		let mut registrars: Vec<Option<RegistrarInfo>> = Vec::new();
-		tester.solo_state.get_value(b"Identity", b"Registrars", "", &mut registrars);
-		assert!(registrars.len() > 0);
+		let mut rs: Vec<Option<RegistrarInfo<[u8; 32]>>> = Vec::new();
+		tester.solo_state.get_value(b"Identity", b"Registrars", "", &mut rs);
+		assert!(!rs.is_empty());
 
 		// after migrated
-		let mut migrated_registrars: Vec<Option<RegistrarInfo>> = Vec::new();
-		tester.solo_state.get_value(
-			b"AccountMigration",
-			b"Registrars",
-			"",
-			&mut migrated_registrars,
-		);
+		let mut migrated_rs: Vec<Option<RegistrarInfo<[u8; 20]>>> = Vec::new();
+		tester.shell_state.get_value(b"Identity", b"Registrars", "", &mut migrated_rs);
 
-		registrars.iter().zip(migrated_registrars.iter()).for_each(|(a, b)| match (a, b) {
-			(Some(a), Some(b)) => {
-				assert_eq!(a.account, b.account);
-				assert_eq!(a.fee * GWEI, b.fee);
-				assert_eq!(a.fields, b.fields);
+		rs.iter().zip(migrated_rs.iter()).for_each(|(r, m_r)| match (r, m_r) {
+			(Some(r), Some(m_r)) => {
+				assert_eq!(r.account, m_r.account[..20]);
+				assert_eq!(r.fee * GWEI, m_r.fee);
+				assert_eq!(r.fields, m_r.fields);
 			},
-			(None, None) => {},
+			(None, None) => (),
 			_ => panic!("this should never happen!"),
 		});
 	});

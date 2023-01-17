@@ -285,8 +285,8 @@ impl<'a, T: Input> Input for AppendZerosInput<'a, T> {
 }
 
 #[derive(Debug, Encode, Decode, PartialEq, Eq)]
-pub struct RegistrarInfo {
-	pub account: [u8; 32],
+pub struct RegistrarInfo<A> {
+	pub account: A,
 	pub fee: u128,
 	pub fields: IdentityFields,
 }
