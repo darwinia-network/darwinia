@@ -14,11 +14,12 @@
 - use all previous data to build the new accounts and calculate total issuances
   - merge solo and para account infos
     - how to deal with the account references? - TODO
+  - burn parachain backing ring
 - set `Balances::TotalIssuance`
   - compare the calculated one with the storage one
-  - remove para backing account - TODO
-  - check remaining sum - TODO
-  - XCM relate - TODO
+  - remove para backing account
+  - check remaining sum
+  - XCM related things
 - create KTON asset details
 - set accounts
   - if is EVM address
@@ -30,7 +31,6 @@
     - insert to `AccountMigration::Accounts`
 - set KTON total issuances
   - compare the calculated one with the storage one
-  - check remaining sum - TODO
 
 - some remaining accounts, bridge endpoint accounts - TODO
 - special accounts - TODO
