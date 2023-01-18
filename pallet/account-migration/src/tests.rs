@@ -28,7 +28,7 @@ fn sr25519_signable_message_should_work() {
 			sr25519_signable_message(s.as_bytes(), &Default::default()),
 			format!(
 				"I authorize the migration to {}, an unused address on {}. Sign this message to authorize using the Substrate key associated with the account on {} that you wish to migrate.",
-				"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+				"0x0000000000000000000000000000000000000000",
 				s,
 				&s[..s.len() - 1],
 			).as_bytes()

@@ -16,8 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates
-use array_bytes::hex2bytes;
 // darwinia
 use crate::{mock::*, tests::*};
 // frontier
@@ -35,7 +33,7 @@ pub fn eip1559_erc20_creation_unsigned_transaction() -> EIP1559UnsignedTransacti
 		gas_limit: U256::from(1_000_000),
 		action: ethereum::TransactionAction::Create,
 		value: U256::zero(),
-		input: hex2bytes(ERC20_CONTRACT_BYTECODE).unwrap(),
+		input: array_bytes::hex2bytes_unchecked(ERC20_CONTRACT_BYTECODE),
 	}
 }
 

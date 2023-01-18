@@ -2282,6 +2282,7 @@ dependencies = [
 name = "darwinia-account-migration"
 version = "6.0.0"
 dependencies = [
+ "array-bytes 6.0.0",
  "darwinia-deposit",
  "darwinia-staking",
  "dc-primitives",
@@ -2380,7 +2381,7 @@ dependencies = [
 name = "darwinia-message-transact"
 version = "6.0.0"
 dependencies = [
- "array-bytes 4.2.0",
+ "array-bytes 6.0.0",
  "bp-message-dispatch",
  "bp-runtime",
  "ethereum",
