@@ -64,7 +64,7 @@ use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_runtime::{
 	traits::{IdentityLookup, Verify},
-	AccountId32,
+	AccountId32, RuntimeDebug,
 };
 use sp_std::prelude::*;
 
@@ -126,7 +126,7 @@ pub mod pallet {
 	// The size of encoded `pallet_asset::AssetAccount` is 18 bytes.
 	#[pallet::storage]
 	#[pallet::getter(fn kton_account_of)]
-	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, [u8; 18]>;
+	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount>;
 
 	/// [`pallet_vesting::Vesting`] data.
 	///
@@ -307,6 +307,29 @@ pub mod pallet {
 	}
 }
 pub use pallet::*;
+
+// Copy from <https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115>.
+// Due to its visibility.
+#[allow(missing_docs)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct AssetAccount {
+	balance: Balance,
+	is_frozen: bool,
+	reason: ExistenceReason,
+	extra: (),
+}
+#[allow(missing_docs)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub enum ExistenceReason {
+	#[codec(index = 0)]
+	Consumer,
+	#[codec(index = 1)]
+	Sufficient,
+	#[codec(index = 2)]
+	DepositHeld(Balance),
+	#[codec(index = 3)]
+	DepositRefunded,
+}
 
 /// Build a Darwinia account migration message.
 pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
