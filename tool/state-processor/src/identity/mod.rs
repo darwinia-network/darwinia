@@ -25,9 +25,9 @@ impl<S> Processor<S> {
 		log::info!("adjust identities' deposit and judgement decimal");
 		identities.iter_mut().for_each(|(_, v)| v.adjust());
 
-		log::info!("set `AccountMigration::IdentityOf`");
+		log::info!("set `AccountMigration::Identities`");
 		{
-			let ik = item_key(b"AccountMigration", b"IdentityOf");
+			let ik = item_key(b"AccountMigration", b"Identities");
 
 			self.shell_state.insert_map(identities, |h| format!("{ik}{h}"));
 		}

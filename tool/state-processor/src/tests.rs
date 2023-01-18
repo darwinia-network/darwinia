@@ -702,9 +702,9 @@ fn proxy_reserved_adjust() {
 #[test]
 fn identities_adjust() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5CcRAW3d6vi4Vq2BX9EeynS1rj7bqoZ5EPwPiLiJ422FsEbC
+		// https://crab.subscan.io/account/5Ct3V8cbYgJiUoQQhYMyyWChL5YwJnZ4yak7MKegNkpPptAP
 		let test_addr: [u8; 32] = hex_n_into_unchecked::<_, _, 32>(
-			"0x182fa92d7f04c79c541d5f117223fcb9f83f2e830c3c187f2622176ed68c3c1a",
+			"0x241a9c2aa8a83e1c5f02fc2b7112bd1873249a8e55a4f919c7d42cf1164be35c",
 		);
 
 		let mut registration = Registration::default();
@@ -715,20 +715,25 @@ fn identities_adjust() {
 			&mut registration,
 		);
 		assert_ne!(registration.deposit, 0);
-		assert_eq!(registration.info.display, Data::Raw(b"COLD STORAGE CAPITAL".to_vec()));
-		assert_eq!(registration.info.email, Data::Raw(b"rbarraza@coldstoragecapital.com".to_vec()));
-		assert_eq!(registration.info.twitter, Data::Raw(b"@coldstoragecap".to_vec()));
+		assert_eq!(registration.info.display, Data::Raw(b"iskulbukolPH".to_vec()));
+		assert_eq!(registration.info.email, Data::Raw(b"pjdamondamon@gmail.com".to_vec()));
+		assert_eq!(registration.info.twitter, Data::Raw(b"@DPedroJuan".to_vec()));
 
 		// after migrated
 		let mut migrated_registration = Registration::default();
 		tester.shell_state.get_value(
 			b"AccountMigration",
-			b"IdentityOf",
+			b"Identities",
 			&two_x64_concat_to_string(test_addr.encode()),
 			&mut migrated_registration,
 		);
 		assert_eq!(migrated_registration.deposit, registration.deposit * GWEI);
-		assert_eq!(migrated_registration.judgements.len(), 0);
+		registration.judgements.iter().zip(migrated_registration.judgements.iter()).for_each(
+			|((_, r), (_, m_r))| match (r, m_r) {
+				(Judgement::FeePaid(a), Judgement::FeePaid(m_a)) => assert_eq!(a * GWEI, *m_a),
+				_ => assert_eq!(*r, *m_r),
+			},
+		);
 		assert_eq!(migrated_registration.info.display, registration.info.display);
 		assert_eq!(migrated_registration.info.email, registration.info.email);
 		assert_eq!(migrated_registration.info.twitter, registration.info.twitter);
@@ -748,7 +753,7 @@ fn registrars_adjust() {
 
 		rs.iter().zip(migrated_rs.iter()).for_each(|(r, m_r)| match (r, m_r) {
 			(Some(r), Some(m_r)) => {
-				assert_eq!(r.account, m_r.account[..20]);
+				assert_eq!(r.account[..20], m_r.account);
 				assert_eq!(r.fee * GWEI, m_r.fee);
 				assert_eq!(r.fields, m_r.fields);
 			},
