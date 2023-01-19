@@ -112,6 +112,7 @@ pub struct VestingInfo {
 pub struct Deposit {
 	pub id: u16,
 	pub value: u128,
+	pub start_time: u128,
 	pub expired_time: u128,
 	pub in_use: bool,
 }
