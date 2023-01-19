@@ -230,55 +230,55 @@ frame_support::construct_runtime! {
 		// To keep balances consistent with the existing XCM configurations.
 		Balances: pallet_balances = 5,
 		TransactionPayment: pallet_transaction_payment = 6,
-		Assets: pallet_assets = 34,
-		Vesting: pallet_vesting = 20,
-		Deposit: darwinia_deposit = 40,
-		AccountMigration: darwinia_account_migration = 41,
+		Assets: pallet_assets = 7,
+		Vesting: pallet_vesting = 8,
+		Deposit: darwinia_deposit = 9,
+		AccountMigration: darwinia_account_migration = 10,
 
 		// Consensus stuff.
-		Authorship: pallet_authorship = 7,
-		Staking: darwinia_staking = 8,
-		Session: pallet_session = 9,
-		Aura: pallet_aura = 10,
-		AuraExt: cumulus_pallet_aura_ext = 11,
-		MessageGadget: darwinia_message_gadget = 43,
-		EcdsaAuthority: darwinia_ecdsa_authority = 44,
+		Authorship: pallet_authorship = 11,
+		Staking: darwinia_staking = 12,
+		Session: pallet_session = 13,
+		Aura: pallet_aura = 14,
+		AuraExt: cumulus_pallet_aura_ext = 15,
+		MessageGadget: darwinia_message_gadget = 16,
+		EcdsaAuthority: darwinia_ecdsa_authority = 17,
 
 		// Governance stuff.
-		Democracy: pallet_democracy = 12,
-		Council: pallet_collective::<Instance1> = 13,
-		TechnicalCommittee: pallet_collective::<Instance2> = 14,
-		PhragmenElection: pallet_elections_phragmen = 15,
-		TechnicalMembership: pallet_membership::<Instance1> = 16,
-		Treasury: pallet_treasury = 17,
-		Tips: pallet_tips = 18,
+		Democracy: pallet_democracy = 18,
+		Council: pallet_collective::<Instance1> = 19,
+		TechnicalCommittee: pallet_collective::<Instance2> = 20,
+		PhragmenElection: pallet_elections_phragmen = 21,
+		TechnicalMembership: pallet_membership::<Instance1> = 22,
+		Treasury: pallet_treasury = 23,
+		Tips: pallet_tips = 24,
 
 		// Utility stuff.
-		Sudo: pallet_sudo = 19,
-		Utility: pallet_utility = 21,
-		Identity: pallet_identity = 22,
-		Scheduler: pallet_scheduler = 23,
-		Preimage: pallet_preimage = 24,
-		Proxy: pallet_proxy = 25,
-		Multisig: pallet_multisig = 26,
+		Sudo: pallet_sudo = 25,
+		Utility: pallet_utility = 26,
+		Identity: pallet_identity = 27,
+		Scheduler: pallet_scheduler = 28,
+		Preimage: pallet_preimage = 29,
+		Proxy: pallet_proxy = 30,
+		Multisig: pallet_multisig = 31,
 
 		// XCM stuff.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 27,
-		PolkadotXcm: pallet_xcm = 28,
-		CumulusXcm: cumulus_pallet_xcm = 29,
-		DmpQueue: cumulus_pallet_dmp_queue = 30,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
+		PolkadotXcm: pallet_xcm = 33,
+		CumulusXcm: cumulus_pallet_xcm = 34,
+		DmpQueue: cumulus_pallet_dmp_queue = 35,
 
 		// EVM stuff.
-		Ethereum: pallet_ethereum = 31,
-		Evm: pallet_evm = 32,
-		MessageTransact: darwinia_message_transact = 39,
+		Ethereum: pallet_ethereum = 36,
+		Evm: pallet_evm = 37,
+		MessageTransact: darwinia_message_transact = 38,
 
 		// S2S stuff.
-		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 35,
-		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 42,
-		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 36,
-		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 37,
-		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 38
+		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
+		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 40,
+		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 41,
+		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 42,
+		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 

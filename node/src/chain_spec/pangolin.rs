@@ -34,7 +34,7 @@ use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
-use sp_core::H160;
+use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -135,7 +135,6 @@ pub fn local_config() -> ChainSpec {
 }
 
 pub fn genesis_config() -> ChainSpec {
-	// TODO: update this before the final release
 	ChainSpec::from_genesis(
 		"Pangolin2",
 		"pangolin2",
@@ -149,7 +148,11 @@ pub fn genesis_config() -> ChainSpec {
 
 				// Monetary stuff.
 				balances: BalancesConfig {
-					balances: vec![(array_bytes::hex_n_into_unchecked(ALITH), 100_000_000 * UNIT)],
+					balances: vec![
+						(array_bytes::hex_n_into_unchecked(C1), 10_000 * UNIT),
+						(array_bytes::hex_n_into_unchecked(C2), 10_000 * UNIT),
+						(array_bytes::hex_n_into_unchecked(C3), 10_000 * UNIT),
+					],
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
@@ -167,16 +170,38 @@ pub fn genesis_config() -> ChainSpec {
 				// Consensus stuff.
 				staking: StakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-					elapsed_time: 0,
+					elapsed_time: 11_516_352_020,
 					collator_count: 3,
-					collators: vec![(array_bytes::hex_n_into_unchecked(ALITH), UNIT)],
+					collators: vec![
+						(array_bytes::hex_n_into_unchecked(C1), UNIT),
+						(array_bytes::hex_n_into_unchecked(C2), UNIT),
+						(array_bytes::hex_n_into_unchecked(C3), UNIT),
+					],
 				},
 				session: SessionConfig {
-					keys: vec![(
-						array_bytes::hex_n_into_unchecked(ALITH),
-						array_bytes::hex_n_into_unchecked(ALITH),
-						session_keys(get_collator_keys_from_seed("Alice")),
-					)],
+					keys: vec![
+						(
+							array_bytes::hex_n_into_unchecked(C1),
+							array_bytes::hex_n_into_unchecked(C1),
+							session_keys(
+								array_bytes::hex2array_unchecked(C1_AURA).unchecked_into(),
+							),
+						),
+						(
+							array_bytes::hex_n_into_unchecked(C2),
+							array_bytes::hex_n_into_unchecked(C2),
+							session_keys(
+								array_bytes::hex2array_unchecked(C2_AURA).unchecked_into(),
+							),
+						),
+						(
+							array_bytes::hex_n_into_unchecked(C3),
+							array_bytes::hex_n_into_unchecked(C3),
+							session_keys(
+								array_bytes::hex2array_unchecked(C3_AURA).unchecked_into(),
+							),
+						),
+					],
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
@@ -192,7 +217,7 @@ pub fn genesis_config() -> ChainSpec {
 				treasury: Default::default(),
 
 				// Utility stuff.
-				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
+				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(SUDO)) },
 
 				// XCM stuff.
 				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },

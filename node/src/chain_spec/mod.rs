@@ -39,13 +39,20 @@ use sp_core::{Pair, Public};
 // contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
 const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
-// These are are testnet-only keys.
+// These are devnet-only keys.
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
 const CHARLETH: &str = "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
 const DOROTHY: &str = "0x773539d4Ac0e786233D90A233654ccEE26a613D9";
 const ETHAN: &str = "0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
 const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
+// These are testnet-only keys.
+const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
+const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
+const C2: &str = "0xa858cde8f6cf178786578a3b0becf5c27d18300c";
+const C2_AURA: &str = "0x28273ae24cc6048c515e6bcaefe98cbfaa50c69290d70cf8eca1de3329015c2f";
+const C3: &str = "0x986b41d07776aa48f6d7a80caad49485f9a71714";
+const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
 const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
 
 // The default XCM version to set in genesis config.
