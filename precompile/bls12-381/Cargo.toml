@@ -21,7 +21,6 @@ pallet-evm = { default-features = false, git = "https://github.com/darwinia-netw
 precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.33" }
 
 # substrate
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 
 [dev-dependencies]
@@ -51,6 +50,5 @@ std = [
 	"precompile-utils/std",
 
 	# substrate
-	"frame-support/std",
 	"sp-std/std",
 ]

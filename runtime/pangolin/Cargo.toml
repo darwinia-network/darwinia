@@ -57,6 +57,7 @@ bridge-runtime-common  = { default-features = false, git = "https://github.com/d
 pallet-bridge-dispatch = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
 pallet-bridge-grandpa  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
 pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
+pallet-bridge-parachains = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
 pallet-fee-market      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
 
 # frontier
@@ -176,6 +177,7 @@ std = [
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
+	"pallet-bridge-parachains/std",
 	"pallet-fee-market/std",
 
 	# frontier
@@ -261,6 +263,7 @@ runtime-benchmarks = [
 	"bridge-runtime-common/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",
 	"pallet-bridge-messages/runtime-benchmarks",
+	"pallet-bridge-parachains/runtime-benchmarks",
 	"pallet-fee-market/runtime-benchmarks",
 
 	# frontier
@@ -325,6 +328,7 @@ try-runtime = [
 	"pallet-bridge-dispatch/try-runtime",
 	"pallet-bridge-grandpa/try-runtime",
 	"pallet-bridge-messages/try-runtime",
+	"pallet-bridge-parachains/try-runtime",
 	"pallet-fee-market/try-runtime",
 
 	# frontier

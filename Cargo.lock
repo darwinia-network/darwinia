@@ -2203,7 +2203,6 @@ dependencies = [
  "clap",
  "crab-runtime",
  "cumulus-client-cli",
- "cumulus-client-collator",
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
  "cumulus-client-network",
@@ -2213,11 +2212,9 @@ dependencies = [
  "cumulus-relay-chain-inprocess-interface",
  "cumulus-relay-chain-interface",
  "cumulus-relay-chain-minimal-node",
- "cumulus-relay-chain-rpc-interface",
  "darwinia-runtime",
  "dc-primitives",
  "fc-cli",
- "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -2234,7 +2231,6 @@ dependencies = [
  "pangolin-runtime",
  "parity-scale-codec",
  "polkadot-cli",
- "polkadot-parachain",
  "polkadot-primitives",
  "polkadot-service",
  "sc-basic-authorship",
@@ -2244,12 +2240,10 @@ dependencies = [
  "sc-consensus",
  "sc-consensus-aura",
  "sc-executor",
- "sc-keystore",
  "sc-network",
  "sc-network-common",
  "sc-offchain",
  "sc-rpc",
- "sc-rpc-api",
  "sc-service",
  "sc-sysinfo",
  "sc-telemetry",
@@ -2263,8 +2257,6 @@ dependencies = [
  "sp-consensus",
  "sp-consensus-aura",
  "sp-core",
- "sp-inherents",
- "sp-io",
  "sp-keystore",
  "sp-offchain",
  "sp-runtime",
@@ -2433,7 +2425,6 @@ name = "darwinia-precompile-bls12-381"
 version = "6.0.0"
 dependencies = [
  "fp-evm",
- "frame-support",
  "frame-system",
  "milagro_bls",
  "pallet-balances",
@@ -3271,25 +3262,6 @@ dependencies = [
  "sp-api",
  "sp-blockchain",
  "sp-runtime",
-]
-
-[[package]]
-name = "fc-consensus"
-version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.33#05ee2dbf537bf5bbcbc5b4785be62088034bdd58"
-dependencies = [
- "async-trait",
- "fc-db",
- "fp-consensus",
- "fp-rpc",
- "sc-client-api",
- "sc-consensus",
- "sp-api",
- "sp-block-builder",
- "sp-blockchain",
- "sp-consensus",
- "sp-runtime",
- "thiserror",
 ]
 
 [[package]]
@@ -7425,6 +7397,7 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
+ "pallet-bridge-parachains",
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
