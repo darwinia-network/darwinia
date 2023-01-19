@@ -24,12 +24,30 @@ where
 	pub fn process_system(&mut self) -> &mut Self {
 		// System storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/system/src/lib.rs#L545
-		let solo_account_infos = self.process_solo_account_infos();
-		let para_account_infos = self.process_para_account_infos();
+		let mut solo_account_infos = self.process_solo_account_infos();
+		let mut para_account_infos = self.process_para_account_infos();
 		let (ring_total_issuance_storage, kton_total_issuance_storage) = self.process_balances();
+		let (solo_validators, para_collators) = self.process_session();
 		let mut accounts = Map::default();
 		let mut ring_total_issuance = u128::default();
 		let mut kton_total_issuance = u128::default();
+
+		// Skip for testnets, due to https://github.com/paritytech/substrate/issues/13172.
+		// log::info!("decrease solo pallet-session account references");
+		// solo_validators.into_iter().for_each(|k| {
+		// 	if let Some(a) = solo_account_infos.get_mut(&k) {
+		// 		a.consumers -= 1;
+		// 	}
+		// });
+
+		// Skip, due to https://github.com/paritytech/substrate/issues/13172.
+		// log::info!("decrease para pallet-session account references");
+		// para_collators.into_iter().for_each(|k| {
+		// 	if let Some(a) = para_account_infos.get_mut(&k) {
+		// 		dbg!(get_last_64(&k));
+		// 		a.consumers -= 1;
+		// 	}
+		// });
 
 		log::info!("build accounts");
 		log::info!("calculate total issuance");

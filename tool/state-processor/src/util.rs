@@ -47,7 +47,7 @@ pub fn get_hashed_key(full_key: &str, item_key: &str) -> String {
 	full_key.trim_start_matches(item_key).into()
 }
 
-// twox128(pallet) + twox128(item) + *(item_key) -> account_id_32
+// twox128(pallet) + twox128(item) + *_concat(account_id_32) -> account_id_32
 pub fn get_last_64_key(key: &str, _: &str) -> String {
 	get_last_64(key)
 }
@@ -71,6 +71,10 @@ where
 pub fn is_evm_address(address: &[u8]) -> bool {
 	address.starts_with(b"dvm:")
 		&& address[1..31].iter().fold(address[0], |checksum, &b| checksum ^ b) == address[31]
+}
+
+pub fn key_to_account32(key: &str) -> [u8; 32] {
+	array_bytes::hex2array_unchecked(get_last_64(key))
 }
 
 pub fn build_spec(chain: &str) -> Result<()> {

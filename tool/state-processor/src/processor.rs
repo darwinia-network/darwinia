@@ -11,7 +11,7 @@ use std::{
 use crate::*;
 // crates.io
 use anyhow::Result;
-use fxhash::FxHashMap;
+use fxhash::{FxHashMap, FxHashSet};
 use once_cell::sync::Lazy;
 use parity_scale_codec::{Decode, Encode};
 use serde::de::DeserializeOwned;
@@ -19,6 +19,7 @@ use serde_json::Value;
 // hack-ink
 use subspector::ChainSpec;
 
+pub type Set = FxHashSet<String>;
 pub type Map<V> = FxHashMap<String, V>;
 
 pub static NOW: Lazy<RwLock<u32>> = Lazy::new(|| RwLock::new(0));
@@ -112,6 +113,32 @@ impl<R> State<R> {
 		})
 	}
 
+	pub fn get_value<D>(&self, pallet: &[u8], item: &[u8], hash: &str, value: &mut D) -> &Self
+	where
+		D: Decode,
+	{
+		let key = full_key(pallet, item, hash);
+
+		if let Some(v) = self.map.get(&key) {
+			match decode(v) {
+				Ok(v) => *value = v,
+				Err(e) => log::error!(
+					"failed to decode `{}::{}::{hash}({v})`, due to `{e}`",
+					String::from_utf8_lossy(pallet),
+					String::from_utf8_lossy(item),
+				),
+			}
+		} else {
+			log::error!(
+				"key not found `{}::{}::{hash}`",
+				String::from_utf8_lossy(pallet),
+				String::from_utf8_lossy(item),
+			);
+		}
+
+		self
+	}
+
 	pub fn insert_raw_key_raw_value(&mut self, key: String, value: String) -> &mut Self {
 		self.map.insert(key, value);
 
@@ -125,6 +152,64 @@ impl<R> State<R> {
 		self.map.insert(key, encode_value(value));
 
 		self
+	}
+
+	pub fn insert_raw_key_map(&mut self, pairs: Map<String>) -> &mut Self {
+		pairs.into_iter().for_each(|(k, v)| {
+			if self.map.contains_key(&k) {
+				log::error!("key({k}) has already existed, overriding");
+			}
+
+			self.map.insert(k, v);
+		});
+
+		self
+	}
+
+	pub fn insert_value<E>(&mut self, pallet: &[u8], item: &[u8], hash: &str, value: E) -> &mut Self
+	where
+		E: Encode,
+	{
+		self.map.insert(full_key(pallet, item, hash), encode_value(value));
+
+		self
+	}
+
+	pub fn insert_map<E, F>(&mut self, pairs: Map<E>, process_key: F) -> &mut Self
+	where
+		E: Encode,
+		F: Fn(&str) -> String,
+	{
+		pairs.into_iter().for_each(|(k, v)| {
+			self.map.insert(process_key(&k), encode_value(v));
+		});
+
+		self
+	}
+
+	pub fn contains_key(&self, key: &str) -> bool {
+		self.map.contains_key(key)
+	}
+
+	pub fn exists(&self, pallet: &[u8], item: &[u8]) -> bool {
+		self.map.keys().into_iter().any(|k| k.starts_with(&item_key(pallet, item)))
+	}
+
+	pub fn unreserve<A>(&mut self, account_id_32: A, amount: u128)
+	where
+		A: AsRef<[u8]>,
+	{
+		let account_id_32 = account_id_32.as_ref();
+		let (p, i, h) = if is_evm_address(account_id_32) {
+			(&b"System"[..], &b"Account"[..], &account_id_32[11..31])
+		} else {
+			(&b"AccountMigration"[..], &b"Accounts"[..], account_id_32)
+		};
+
+		self.mutate_value(p, i, &blake2_128_concat_to_string(h), |a: &mut AccountInfo| {
+			a.data.free += amount;
+			a.data.reserved -= amount;
+		});
 	}
 
 	pub fn take_raw_map<F>(
@@ -149,40 +234,19 @@ impl<R> State<R> {
 		self
 	}
 
-	pub fn insert_raw_key_map(&mut self, pairs: Map<String>) -> &mut Self {
-		pairs.into_iter().for_each(|(k, v)| {
-			if self.map.contains_key(&k) {
-				log::error!("key({k}) has already existed, overriding");
-			}
-
-			self.map.insert(k, v);
-		});
-
-		self
-	}
-
-	pub fn get_value<D>(&self, pallet: &[u8], item: &[u8], hash: &str, value: &mut D) -> &Self
+	pub fn take_keys<F>(&mut self, prefix: &str, keys: &mut Set, process_key: F) -> &mut Self
 	where
-		D: Decode,
+		F: Fn(&str, &str) -> String,
 	{
-		let key = full_key(pallet, item, hash);
+		self.map.retain(|k, _| {
+			if k.starts_with(prefix) {
+				keys.insert(process_key(k, prefix));
 
-		if let Some(v) = self.map.get(&key) {
-			match decode(v) {
-				Ok(v) => *value = v,
-				Err(e) => log::error!(
-					"failed to decode `{}::{}::{hash}({v})`, due to `{e}`",
-					String::from_utf8_lossy(pallet),
-					String::from_utf8_lossy(item),
-				),
+				false
+			} else {
+				true
 			}
-		} else {
-			log::error!(
-				"key not found `{}::{}::{hash}`",
-				String::from_utf8_lossy(pallet),
-				String::from_utf8_lossy(item),
-			);
-		}
+		});
 
 		self
 	}
@@ -215,31 +279,6 @@ impl<R> State<R> {
 				String::from_utf8_lossy(item),
 			);
 		}
-
-		self
-	}
-
-	pub fn insert_value<E>(&mut self, pallet: &[u8], item: &[u8], hash: &str, value: E) -> &mut Self
-	where
-		E: Encode,
-	{
-		self.map.insert(full_key(pallet, item, hash), encode_value(value));
-
-		self
-	}
-
-	pub fn mutate_value<D, F>(&mut self, pallet: &[u8], item: &[u8], hash: &str, f: F) -> &mut Self
-	where
-		D: Default + Encode + Decode,
-		F: FnOnce(&mut D),
-	{
-		let mut v = D::default();
-
-		self.get_value(pallet, item, hash, &mut v);
-
-		f(&mut v);
-
-		self.insert_value(pallet, item, hash, v);
 
 		self
 	}
@@ -284,41 +323,20 @@ impl<R> State<R> {
 		self
 	}
 
-	pub fn insert_map<E, F>(&mut self, pairs: Map<E>, process_key: F) -> &mut Self
+	pub fn mutate_value<D, F>(&mut self, pallet: &[u8], item: &[u8], hash: &str, f: F) -> &mut Self
 	where
-		E: Encode,
-		F: Fn(&str) -> String,
+		D: Default + Encode + Decode,
+		F: FnOnce(&mut D),
 	{
-		pairs.into_iter().for_each(|(k, v)| {
-			self.map.insert(process_key(&k), encode_value(v));
-		});
+		let mut v = D::default();
+
+		self.get_value(pallet, item, hash, &mut v);
+
+		f(&mut v);
+
+		self.insert_value(pallet, item, hash, v);
 
 		self
-	}
-
-	pub fn contains_key(&self, key: &str) -> bool {
-		self.map.contains_key(key)
-	}
-
-	pub fn exists(&self, pallet: &[u8], item: &[u8]) -> bool {
-		self.map.keys().into_iter().any(|k| k.starts_with(&item_key(pallet, item)))
-	}
-
-	pub fn unreserve<A>(&mut self, account_id_32: A, amount: u128)
-	where
-		A: AsRef<[u8]>,
-	{
-		let account_id_32 = account_id_32.as_ref();
-		let (p, i, h) = if is_evm_address(account_id_32) {
-			(&b"System"[..], &b"Account"[..], &account_id_32[11..31])
-		} else {
-			(&b"AccountMigration"[..], &b"Accounts"[..], account_id_32)
-		};
-
-		self.mutate_value(p, i, &blake2_128_concat_to_string(h), |a: &mut AccountInfo| {
-			a.data.free += amount;
-			a.data.reserved -= amount;
-		});
 	}
 }
 

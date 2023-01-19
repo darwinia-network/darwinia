@@ -11,6 +11,7 @@
   - take para `Balances::TotalIssuance` and `Balances::Locks`
     - there should not be any locks on parachain
   - check if there are any other locks
+- decrease pallet-session account references
 - use all previous data to build the new accounts and calculate total issuances
   - merge solo and para account infos
     - how to deal with the account references? - TODO
