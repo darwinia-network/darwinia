@@ -346,7 +346,8 @@ macro_rules! impl_account_migration_tests {
 				let (from, from_pk) = alice();
 				let mut truncated_from = [0_u8; 20];
 
-				truncated_from.copy_from_slice(&<AccountId32 as AsRef<[u8; 32]>>::as_ref(&from_pk)[..20]);
+				truncated_from
+					.copy_from_slice(&<AccountId32 as AsRef<[u8; 32]>>::as_ref(&from_pk)[..20]);
 
 				let to = H160::from_low_u64_be(255).into();
 

@@ -117,7 +117,9 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
+	"crab-runtime/try-runtime",
 	"darwinia-runtime/try-runtime",
+	"pangolin-runtime/try-runtime",
 
 	# substrate
 	"try-runtime-cli/try-runtime",
