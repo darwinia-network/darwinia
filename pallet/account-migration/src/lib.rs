@@ -334,13 +334,13 @@ pub enum ExistenceReason {
 /// Build a Darwinia account migration message.
 pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
-		b"I authorize the migration to ",
+		b"<Bytes>I authorize the migration to ",
 		array_bytes::bytes2hex("0x", account_id_20.0).as_bytes(),
 		b", an unused address on ",
 		spec_name,
 		b". Sign this message to authorize using the Substrate key associated with the account on ",
 		&spec_name[..spec_name.len() - 1],
-		b" that you wish to migrate.",
+		b" that you wish to migrate.</Bytes>",
 	]
 	.concat()
 }
