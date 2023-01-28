@@ -6,10 +6,10 @@ impl<S> Processor<S> {
 		// Storage items.
 		// https://github.dev/darwinia-network/darwinia-common/blob/darwinia-v0.12.5/frame/staking/src/lib.rs#L560
 		let mut ledgers = <Map<StakingLedger>>::default();
-		let mut ring_pool_storage = u128::default();
-		let mut kton_pool_storage = u128::default();
-		let mut ring_pool = u128::default();
-		let mut kton_pool = u128::default();
+		let mut ring_pool_storage = Balance::default();
+		let mut kton_pool_storage = Balance::default();
+		let mut ring_pool = Balance::default();
+		let mut kton_pool = Balance::default();
 		let mut elapsed_time = u64::default();
 
 		log::info!("take solo `Staking::Ledger`, `Staking::RingPool`, `Staking::KtonPool` and `Staking::LivingTime`");
@@ -33,7 +33,7 @@ impl<S> Processor<S> {
 				let mut staked_deposits = Vec::default();
 
 				if !v.deposit_items.is_empty() {
-					let mut deposit_ring = u128::default();
+					let mut deposit_ring = Balance::default();
 
 					self.shell_state.insert_raw_key_value(
 						deposit_k,
@@ -102,7 +102,7 @@ impl<S> Processor<S> {
 		);
 
 		log::info!("set `Staking::ElapsedTime`");
-		self.shell_state.insert_value(b"Staking", b"ElapsedTime", "", elapsed_time as u128);
+		self.shell_state.insert_value(b"Staking", b"ElapsedTime", "", elapsed_time as Moment);
 
 		self
 	}

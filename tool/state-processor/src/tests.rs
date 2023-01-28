@@ -8,8 +8,8 @@ use crate::*;
 struct Tester {
 	// solo chain
 	solo_accounts: Map<AccountInfo>,
-	solo_remaining_ring: Map<u128>,
-	solo_remaining_kton: Map<u128>,
+	solo_remaining_ring: Map<Balance>,
+	solo_remaining_kton: Map<Balance>,
 	solo_evm_codes: Map<Vec<u8>>,
 	// para chain
 	para_accounts: Map<AccountInfo>,
@@ -467,6 +467,7 @@ fn deposit_items_migrate() {
 		assert_eq!(migrated_deposits.len(), ledger.deposit_items.len());
 		ledger.deposit_items.iter().zip(migrated_deposits.iter()).for_each(|(old, new)| {
 			assert_eq!(new.value, old.value * GWEI);
+			assert_eq!(new.start_time, old.start_time as u128);
 			assert_eq!(new.expired_time, old.expire_time as u128);
 			assert!(new.in_use);
 		});

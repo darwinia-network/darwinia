@@ -6,14 +6,14 @@ use crate::*;
 #[derive(Debug)]
 pub struct AccountAll {
 	pub nonce: u32,
-	pub consumers: u32,
-	pub providers: u32,
-	pub sufficients: u32,
-	pub ring: u128,
-	pub ring_reserved: u128,
+	pub consumers: RefCount,
+	pub providers: RefCount,
+	pub sufficients: RefCount,
+	pub ring: Balance,
+	pub ring_reserved: Balance,
 	pub ring_locks: Vec<BalanceLock>,
-	pub kton: u128,
-	pub kton_reserved: u128,
+	pub kton: Balance,
+	pub kton_reserved: Balance,
 	pub kton_locks: Vec<BalanceLock>,
 }
 
@@ -29,8 +29,8 @@ where
 		let (ring_total_issuance_storage, kton_total_issuance_storage) = self.process_balances();
 		let (solo_validators, para_collators) = self.process_session();
 		let mut accounts = Map::default();
-		let mut ring_total_issuance = u128::default();
-		let mut kton_total_issuance = u128::default();
+		let mut ring_total_issuance = Balance::default();
+		let mut kton_total_issuance = Balance::default();
 
 		// Skip for testnets, due to https://github.com/paritytech/substrate/issues/13172.
 		// log::info!("decrease solo pallet-session account references");
@@ -269,7 +269,7 @@ where
 	}
 }
 
-fn try_get_evm_address(key: &str) -> Option<[u8; 20]> {
+fn try_get_evm_address(key: &str) -> Option<AccountId20> {
 	let k = array_bytes::hex2bytes_unchecked(key);
 
 	if is_evm_address(&k) {
@@ -282,7 +282,7 @@ fn try_get_evm_address(key: &str) -> Option<[u8; 20]> {
 fn new_kton_account(
 	account_info: &mut AccountInfo,
 	asset_details: &mut AssetDetails,
-	balance: u128,
+	balance: Balance,
 ) -> AssetAccount {
 	account_info.sufficients += 1;
 	asset_details.accounts += 1;

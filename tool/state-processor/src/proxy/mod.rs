@@ -13,7 +13,7 @@ impl<S> Processor<S> {
 		}
 
 		// The size of encoded `pallet_proxy::ProxyDefinition` is 37 bytes.
-		let mut proxies = <Map<(Vec<[u8; 37]>, u128)>>::default();
+		let mut proxies = <Map<(Vec<[u8; 37]>, Balance)>>::default();
 
 		log::info!("take solo `Proxy::Proxies`");
 		self.solo_state.take_map(b"Proxy", b"Proxies", &mut proxies, get_identity_key);

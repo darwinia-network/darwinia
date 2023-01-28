@@ -4,26 +4,34 @@ use std::iter::once;
 use enumflags2::{bitflags, BitFlags};
 use parity_scale_codec::{Decode, Encode, EncodeLike, Error, Input};
 
+pub type Balance = u128;
+pub type AccountId20 = [u8; 20];
+pub type AccountId32 = [u8; 32];
+pub type BlockNumber = u32;
+pub type RefCount = u32;
+pub type Moment = u128;
+pub type DepositId = u16;
+
 #[derive(Default, Debug, PartialEq, Eq, Encode, Decode)]
 pub struct AccountInfo {
 	pub nonce: u32,
-	pub consumers: u32,
-	pub providers: u32,
-	pub sufficients: u32,
+	pub consumers: RefCount,
+	pub providers: RefCount,
+	pub sufficients: RefCount,
 	pub data: AccountData,
 }
 #[derive(Default, Debug, PartialEq, Eq, Encode, Decode)]
 pub struct AccountData {
-	pub free: u128,
-	pub reserved: u128,
-	pub free_kton_or_misc_frozen: u128,
-	pub reserved_kton_or_fee_frozen: u128,
+	pub free: Balance,
+	pub reserved: Balance,
+	pub free_kton_or_misc_frozen: Balance,
+	pub reserved_kton_or_fee_frozen: Balance,
 }
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct BalanceLock {
 	pub id: [u8; 8],
-	pub amount: u128,
+	pub amount: Balance,
 	pub reasons: Reasons,
 }
 
@@ -43,13 +51,13 @@ impl Default for Reasons {
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L33
 #[derive(Default, Debug, Encode, Decode)]
 pub struct AssetDetails {
-	pub owner: [u8; 20],
-	pub issuer: [u8; 20],
-	pub admin: [u8; 20],
-	pub freezer: [u8; 20],
-	pub supply: u128,
-	pub deposit: u128,
-	pub min_balance: u128,
+	pub owner: AccountId20,
+	pub issuer: AccountId20,
+	pub admin: AccountId20,
+	pub freezer: AccountId20,
+	pub supply: Balance,
+	pub deposit: Balance,
+	pub min_balance: Balance,
 	pub is_sufficient: bool,
 	pub accounts: u32,
 	pub sufficients: u32,
@@ -60,7 +68,7 @@ pub struct AssetDetails {
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
 #[derive(Default, Debug, Encode, Decode)]
 pub struct AssetAccount {
-	pub balance: u128,
+	pub balance: Balance,
 	pub is_frozen: bool,
 	pub reason: ExistenceReason,
 	pub extra: (),
@@ -74,7 +82,7 @@ pub enum ExistenceReason {
 	#[codec(index = 1)]
 	Sufficient,
 	#[codec(index = 2)]
-	DepositHeld(u128),
+	DepositHeld(Balance),
 	#[codec(index = 3)]
 	DepositRefunded,
 }
@@ -87,14 +95,14 @@ impl Default for ExistenceReason {
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L73
 #[derive(Debug, Encode, Decode)]
 pub struct Approval {
-	pub amount: u128,
-	pub deposit: u128,
+	pub amount: Balance,
+	pub deposit: Balance,
 }
 
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L127
 #[derive(Clone, Default, Encode, Decode)]
 pub struct AssetMetadata {
-	pub deposit: u128,
+	pub deposit: Balance,
 	pub name: Vec<u8>,
 	pub symbol: Vec<u8>,
 	pub decimals: u8,
@@ -103,29 +111,29 @@ pub struct AssetMetadata {
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct VestingInfo {
-	pub locked: u128,
-	pub per_block: u128,
-	pub starting_block: u32,
+	pub locked: Balance,
+	pub per_block: Balance,
+	pub starting_block: BlockNumber,
 }
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct Deposit {
-	pub id: u16,
-	pub value: u128,
-	pub start_time: u128,
-	pub expired_time: u128,
+	pub id: DepositId,
+	pub value: Balance,
+	pub start_time: Moment,
+	pub expired_time: Moment,
 	pub in_use: bool,
 }
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct StakingLedger {
-	pub stash: [u8; 32],
+	pub stash: AccountId32,
 	#[codec(compact)]
-	pub active: u128,
+	pub active: Balance,
 	#[codec(compact)]
-	pub active_deposit_ring: u128,
+	pub active_deposit_ring: Balance,
 	#[codec(compact)]
-	pub active_kton: u128,
+	pub active_kton: Balance,
 	pub deposit_items: Vec<TimeDepositItem>,
 	pub ring_staking_lock: StakingLock,
 	pub kton_staking_lock: StakingLock,
@@ -134,7 +142,7 @@ pub struct StakingLedger {
 #[derive(Default, Debug, Encode, Decode)]
 pub struct TimeDepositItem {
 	#[codec(compact)]
-	pub value: u128,
+	pub value: Balance,
 	#[codec(compact)]
 	pub start_time: u64,
 	#[codec(compact)]
@@ -142,29 +150,29 @@ pub struct TimeDepositItem {
 }
 #[derive(Default, Debug, Encode, Decode)]
 pub struct StakingLock {
-	pub staking_amount: u128,
+	pub staking_amount: Balance,
 	pub unbondings: Vec<Unbonding>,
 }
 #[derive(Default, Debug, Encode, Decode)]
 pub struct Unbonding {
-	pub amount: u128,
-	pub until: u32,
+	pub amount: Balance,
+	pub until: BlockNumber,
 }
 
 #[derive(Default, Debug, Encode, Decode)]
 pub struct Ledger {
-	pub staked_ring: u128,
-	pub staked_kton: u128,
-	pub staked_deposits: Vec<u16>,
-	pub unstaking_ring: Vec<(u128, u32)>,
-	pub unstaking_kton: Vec<(u128, u32)>,
-	pub unstaking_deposits: Vec<(u16, u32)>,
+	pub staked_ring: Balance,
+	pub staked_kton: Balance,
+	pub staked_deposits: Vec<DepositId>,
+	pub unstaking_ring: Vec<(Balance, BlockNumber)>,
+	pub unstaking_kton: Vec<(Balance, BlockNumber)>,
+	pub unstaking_deposits: Vec<(DepositId, BlockNumber)>,
 }
 
 #[derive(Default, Debug, Encode)]
 pub struct Registration {
 	pub judgements: Vec<(u32, Judgement)>,
-	pub deposit: u128,
+	pub deposit: Balance,
 	pub info: IdentityInfo,
 }
 impl Decode for Registration {
@@ -176,7 +184,7 @@ impl Decode for Registration {
 #[derive(Debug, PartialEq, Eq, Encode, Decode)]
 pub enum Judgement {
 	Unknown,
-	FeePaid(u128),
+	FeePaid(Balance),
 	Reasonable,
 	KnownGood,
 	OutOfDate,
@@ -288,7 +296,7 @@ impl<'a, T: Input> Input for AppendZerosInput<'a, T> {
 #[derive(Debug, Encode, Decode, PartialEq, Eq)]
 pub struct RegistrarInfo<A> {
 	pub account: A,
-	pub fee: u128,
+	pub fee: Balance,
 	pub fields: IdentityFields,
 }
 #[derive(Debug, PartialEq, Eq)]

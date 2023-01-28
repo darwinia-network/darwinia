@@ -33,7 +33,7 @@ fn main() -> Result<()> {
 	std::env::set_var("RUST_LOG", "state_processor");
 	pretty_env_logger::init();
 
-	// <Processor<Pangolin>>::new()?.process()?;
+	// <Processor<Pangoro>>::new()?.process()?;
 	<Processor<Pangolin>>::new()?.test().process()?;
 	// <Processor<Darwinia>>::new()?.process()?;
 	// <Processor<Crab>>::new()?.process()?;
