@@ -334,7 +334,11 @@ pub enum ExistenceReason {
 /// Build a Darwinia account migration message.
 pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
+		// https://github.com/polkadot-js/common/issues/1710
 		b"<Bytes>I authorize the migration to ",
+		// Ignore the EIP-55 here.
+		//
+		// Must call the `to_lowercase` on front end.
 		array_bytes::bytes2hex("0x", account_id_20.0).as_bytes(),
 		b", an unused address on ",
 		spec_name,
