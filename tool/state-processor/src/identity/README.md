@@ -1,5 +1,5 @@
 ### Process steps
-1. take `Identity::IdentityOf`, `Identity::Registrars`, `Identity::SuperOf` and `Identity::SuperOf`
+1. take `Identity::IdentityOf`, `Identity::Registrars`, `Identity::SubsOf`
 2. free super_id's reservation
 3. adjust identities' deposit and judgement decimal
 4. set `AccountMigration::Identities`

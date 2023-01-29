@@ -8,7 +8,7 @@ impl<S> Processor<S> {
 		let mut registrars = Vec::<Option<RegistrarInfo<AccountId32>>>::default();
 		let mut subs_of = Map::<(Balance, Vec<AccountId32>)>::default();
 
-		log::info!("take `Identity::IdentityOf`, `Identity::Registrars`, `Identity::SuperOf` and `Identity::SuperOf`");
+		log::info!("take `Identity::IdentityOf`, `Identity::Registrars`, `Identity::SubsOf`");
 		self.solo_state
 			.take_map(b"Identity", b"IdentityOf", &mut identities, get_hashed_key)
 			.take_value(b"Identity", b"Registrars", "", &mut registrars)
