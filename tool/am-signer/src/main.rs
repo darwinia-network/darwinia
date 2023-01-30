@@ -38,7 +38,7 @@ fn main() {
 	let network = network.as_bytes();
 	let msg = [
 		b"<Bytes>I authorize the migration to ",
-		to.as_bytes(),
+		to.to_lowercase().as_bytes(),
 		b", an unused address on ",
 		network,
 		b". Sign this message to authorize using the Substrate key associated with the account on ",
