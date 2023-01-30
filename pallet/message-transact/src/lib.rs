@@ -107,6 +107,7 @@ pub mod pallet {
 	{
 		/// This call can only be called by the lcmp message layer and is not available to normal
 		/// users.
+		#[pallet::call_index(0)]
 		#[pallet::weight({
 			let without_base_extrinsic_weight = true;
 			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight({

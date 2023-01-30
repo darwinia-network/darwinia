@@ -350,6 +350,7 @@ pub mod pallet {
 		/// Add stakes to the staking pool.
 		///
 		/// This will transfer the stakes to a pallet/contact account.
+		#[pallet::call_index(0)]
 		#[pallet::weight(0)]
 		pub fn stake(
 			origin: OriginFor<T>,
@@ -409,6 +410,7 @@ pub mod pallet {
 		}
 
 		/// Withdraw stakes from the staking pool.
+		#[pallet::call_index(1)]
 		#[pallet::weight(0)]
 		pub fn unstake(
 			origin: OriginFor<T>,
@@ -455,6 +457,7 @@ pub mod pallet {
 		/// Cancel the `unstake` operation.
 		///
 		/// Re-stake the unstaking assets immediately.
+		#[pallet::call_index(2)]
 		#[pallet::weight(0)]
 		pub fn restake(
 			origin: OriginFor<T>,
@@ -499,6 +502,7 @@ pub mod pallet {
 		}
 
 		/// Claim the stakes from the pallet/contract account.
+		#[pallet::call_index(3)]
 		#[pallet::weight(0)]
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -515,6 +519,7 @@ pub mod pallet {
 		/// Declare the desire to collect.
 		///
 		/// Effects will be felt at the beginning of the next session.
+		#[pallet::call_index(4)]
 		#[pallet::weight(0)]
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -529,6 +534,7 @@ pub mod pallet {
 		/// Declare the desire to nominate a collator.
 		///
 		/// Effects will be felt at the beginning of the next session.
+		#[pallet::call_index(5)]
 		#[pallet::weight(0)]
 		pub fn nominate(origin: OriginFor<T>, target: T::AccountId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -552,6 +558,7 @@ pub mod pallet {
 		/// Effects will be felt at the beginning of the next era.
 		///
 		/// If the target is a collator, its nominators need to re-nominate.
+		#[pallet::call_index(6)]
 		#[pallet::weight(0)]
 		pub fn chill(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;

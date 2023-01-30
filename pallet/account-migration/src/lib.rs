@@ -163,6 +163,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Migrate all the account data under the `from` to `to`.
+		#[pallet::call_index(0)]
 		#[pallet::weight(0)]
 		pub fn migrate(
 			origin: OriginFor<T>,
