@@ -100,7 +100,7 @@ pub struct Approval {
 }
 
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L127
-#[derive(Clone, Default, Encode, Decode)]
+#[derive(Default, Encode, Decode)]
 pub struct AssetMetadata {
 	pub deposit: Balance,
 	pub name: Vec<u8>,

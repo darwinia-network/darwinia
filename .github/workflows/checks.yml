@@ -65,10 +65,7 @@ jobs:
           key: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
       - name: Action ${{ matrix.action }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: ${{ matrix.action }}
-          args: --release --locked --features all-native
+        run: cargo ${{ matrix.action }} --release --locked --features all-native
       - name: Change path
         if: matrix.action != 'test'
         run: mv target/release/darwinia .
@@ -115,10 +112,38 @@ jobs:
           chain: ${{ matrix.target.chain }}
           compare-with: ${{ matrix.target.compare-with }}
 
+  state-checks:
+    name: Task check state
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [basic-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Download darwinia
+        uses: actions/download-artifact@v2
+        with:
+          name: darwinia
+      - name: Setup test environment
+        run: |
+          mkdir -p target/release
+          chmod u+x darwinia
+          mv darwinia target/release/darwinia
+          cd tool/state-processor
+          mkdir -p data
+          cd data
+          curl -L https://github.com/darwinia-network/darwinia-2.0/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
+          cd ..
+      - name: Check state
+        run: |
+          cd tool/state-processor
+          unset RUSTC_WRAPPER
+          cargo test --release --locked
+
   checks-cleaning:
     name: Task checks cleaning
     if: always()
-    needs: [features-checks, runtime-checks]
+    needs: [features-checks, runtime-checks, state-checks]
     steps:
       - name: Clean artifacts
         uses: geekyeggo/delete-artifact@v1

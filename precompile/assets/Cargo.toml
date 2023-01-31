@@ -26,7 +26,7 @@ sp-std        = { default-features = false, git = "https://github.com/paritytech
 sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
 [dev-dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.2" }
+codec      = { package = "parity-scale-codec", version = "3.3" }
 scale-info = { version = "2.3", features = ["derive"] }
 sha3       = { version = "0.8" }
 

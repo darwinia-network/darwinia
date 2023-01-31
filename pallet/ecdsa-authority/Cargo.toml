@@ -11,7 +11,7 @@ version     = "2.10.1"
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.2", default-features = false, features = ["derive"] }
+codec      = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
 ethabi     = { version = "17.0", default-features = false }
 scale-info = { version = "2.3", default-features = false }
 
