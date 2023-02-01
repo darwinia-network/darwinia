@@ -178,6 +178,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "dc-types"
+version = "6.0.0"
+
+[[package]]
 name = "digest"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -708,6 +712,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "array-bytes",
+ "dc-types",
  "enumflags2",
  "fxhash",
  "log",

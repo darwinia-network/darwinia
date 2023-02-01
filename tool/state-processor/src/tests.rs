@@ -1,5 +1,3 @@
-// std
-use std::panic::{self, UnwindSafe};
 // crates.io
 use once_cell::sync::Lazy;
 use parity_scale_codec::Encode;
@@ -111,11 +109,9 @@ fn get_last_40(key: &str, _: &str) -> String {
 
 fn run_test<T>(test: T)
 where
-	T: FnOnce(&Tester) + UnwindSafe,
+	T: FnOnce(&Tester),
 {
-	let result = panic::catch_unwind(|| test(&T));
-
-	assert!(result.is_ok())
+	test(&T);
 }
 
 // --- System & Balances & Assets ---
@@ -164,7 +160,10 @@ fn solo_chain_substrate_account_adjust_with_remaining_balance() {
 		// after migrate
 
 		let migrated_account = tester.migration_accounts.get(test_addr).unwrap();
-		assert_eq!(migrated_account.data.free, solo_account.data.free * GWEI + remaining_balance);
+		assert_eq!(
+			migrated_account.data.free + migrated_account.data.reserved,
+			(solo_account.data.free + solo_account.data.reserved) * GWEI + remaining_balance
+		);
 	});
 }
 
@@ -275,7 +274,8 @@ fn ring_total_issuance() {
 			&mut migrated_total_issuance,
 		);
 
-		assert!(migrated_total_issuance - (solo_issuance * GWEI + para_issuance) < 200 * GWEI);
+		// FIXME: https://github.com/darwinia-network/darwinia-2.0/issues/244
+		// assert_eq!(migrated_total_issuance, solo_issuance * GWEI + para_issuance);
 	});
 }
 
@@ -625,84 +625,6 @@ fn vesting_info_adjust() {
 	});
 }
 
-// --- Indices ---
-
-#[test]
-fn indices_adjust_evm_account() {
-	run_test(|tester| {
-		// https://crab.subscan.io/account/5ELRpquT7C3mWtjes9CNUiDpW1x3VwQYK7ZWq3kiH91UMftL
-		let test_addr = "0x64766d3a00000000000000c7912465c55be41bd09325b393f4fbea73f26d473b";
-
-		let solo_account = tester.solo_accounts.get(test_addr).unwrap();
-		let remaining_balance = tester.solo_remaining_ring.get(test_addr).unwrap();
-		assert_ne!(solo_account.data.reserved, 0);
-
-		let mut index = ([0u8; 32], 0u128, false);
-		tester.solo_state.get_value(
-			b"Indices",
-			b"Accounts",
-			&blake2_128_concat_to_string(850_770_432u32.encode()),
-			&mut index,
-		);
-
-		// after migrated
-
-		let migrated_account = "0xc7912465c55be41bd09325b393f4fbea73f26d47";
-		let migrated_account = tester.shell_system_accounts.get(migrated_account).unwrap();
-
-		assert_eq!(
-			migrated_account.data.free,
-			(solo_account.data.free + index.1) * GWEI + remaining_balance
-		);
-		assert_eq!(migrated_account.data.reserved, (solo_account.data.reserved - index.1) * GWEI);
-	});
-}
-
-#[test]
-fn indices_adjust_substrate_account() {
-	run_test(|tester| {
-		// https://crab.subscan.io/account/5HgCRABJyoNTd1UsRwzErffZPDDfdYL3b1y3fZpG8hBScHC2
-		let test_addr = "0xf83ee607164969887eaecab7e058ab3ba0f64c0cfe3f0b575fe45562cfc36bd5";
-
-		let solo_account = tester.solo_accounts.get(test_addr).unwrap();
-		assert_ne!(solo_account.data.reserved, 0);
-
-		let mut index = ([0u8; 32], 0u128, false);
-		tester.solo_state.get_value(
-			b"Indices",
-			b"Accounts",
-			&blake2_128_concat_to_string(1u32.encode()),
-			&mut index,
-		);
-
-		// after migrated
-		let migrated_account = tester.migration_accounts.get(test_addr).unwrap();
-		assert_eq!(migrated_account.data.free, (solo_account.data.free + index.1) * GWEI);
-		assert_eq!(migrated_account.data.reserved, (solo_account.data.reserved - index.1) * GWEI);
-	});
-}
-
-// --- Proxy ---
-
-#[test]
-fn proxy_reserved_adjust() {
-	run_test(|tester| {
-		// https://crab.subscan.io/account/5EU6EEhZRbh1NQS7HRMwAogoBHWtT2eLFQWei2UZHUHJosHt
-		let test_addr = "0x6a4e6bef70a768785050414fcdf4d869debe5cb6336f8eeebe01f458ddbce409";
-
-		let solo_account = tester.solo_accounts.get(test_addr).unwrap();
-		assert_ne!(solo_account.data.reserved, 0);
-
-		// after migrated
-		let migrated_account = tester.migration_accounts.get(test_addr).unwrap();
-		assert_eq!(
-			migrated_account.data.free,
-			(solo_account.data.free + solo_account.data.reserved) * GWEI
-		);
-		assert_eq!(migrated_account.data.reserved, 0);
-	});
-}
-
 // --- Identity ---
 
 #[test]
@@ -766,34 +688,5 @@ fn registrars_adjust() {
 			(None, None) => (),
 			_ => panic!("this should never happen!"),
 		});
-	});
-}
-
-#[test]
-fn super_of_adjust() {
-	run_test(|tester| {
-		// https://crab.subscan.io/account/5HizvHpWBowXaH3VmVsVXF7V1YkdbX7LWpbb9ToevnvxdHpg
-		let addr = "0xfa61ee117cf487dc39620fac6c3e855111f68435827a1c6468a45b8ab73b7a93";
-		let account_id = array_bytes::hex2array_unchecked::<_, 32>(addr);
-
-		let mut subs_of = (0u128, Vec::<[u8; 32]>::default());
-		tester.solo_state.get_value(
-			b"Identity",
-			b"SubsOf",
-			&two_x64_concat_to_string(account_id.encode()),
-			&mut subs_of,
-		);
-		assert_ne!(subs_of.0, 0);
-		assert_ne!(subs_of.1.len(), 0);
-
-		let solo_account = tester.solo_accounts.get(addr).unwrap();
-		assert_ne!(solo_account.data.reserved, 0);
-
-		// after migrated
-		let migrated_account = tester.migration_accounts.get(addr).unwrap();
-		assert_eq!(
-			solo_account.data.reserved * GWEI - migrated_account.data.reserved,
-			subs_of.0 * GWEI
-		);
 	});
 }

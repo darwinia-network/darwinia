@@ -75,13 +75,7 @@ where
 
 		assert!(*_guard != 0);
 
-		self.process_system()
-			.process_indices()
-			.process_identity()
-			.process_vesting()
-			.process_proxy()
-			.process_staking()
-			.process_evm();
+		self.process_system().process_identity().process_vesting().process_staking().process_evm();
 
 		self
 	}
@@ -199,8 +193,7 @@ impl<R> State<R> {
 		self.map.keys().into_iter().any(|k| k.starts_with(&item_key(pallet, item)))
 	}
 
-	// Remove this after: https://github.com/darwinia-network/darwinia-2.0/issues/240
-	pub fn unreserve<A>(&mut self, account_id_32: A, amount: u128)
+	pub fn reserve<A>(&mut self, account_id_32: A, amount: u128)
 	where
 		A: AsRef<[u8]>,
 	{
@@ -212,18 +205,8 @@ impl<R> State<R> {
 		};
 
 		self.mutate_value(p, i, &blake2_128_concat_to_string(h), |a: &mut AccountInfo| {
-			a.data.free += amount;
-
-			if let Some(r) = a.data.reserved.checked_sub(amount) {
-				a.data.reserved = r;
-			} else {
-				log::error!(
-					"insufficient reservation of account({})",
-					array_bytes::bytes2hex("0x", account_id_32)
-				);
-
-				a.data.reserved = 0;
-			}
+			a.data.free -= amount;
+			a.data.reserved += amount;
 		});
 	}
 

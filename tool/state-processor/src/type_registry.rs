@@ -1,15 +1,15 @@
+pub use dc_types::*;
+
 // std
-use std::iter::once;
+use std::iter;
 // crates.io
 use enumflags2::{bitflags, BitFlags};
 use parity_scale_codec::{Decode, Encode, EncodeLike, Error, Input};
 
-pub type Balance = u128;
 pub type AccountId20 = [u8; 20];
 pub type AccountId32 = [u8; 32];
 pub type BlockNumber = u32;
 pub type RefCount = u32;
-pub type Moment = u128;
 pub type DepositId = u16;
 
 #[derive(Default, Debug, PartialEq, Eq, Encode, Decode)]
@@ -224,13 +224,13 @@ impl Encode for Data {
 			Data::Raw(ref x) => {
 				let l = x.len().min(32);
 				let mut r = vec![l as u8 + 1; l + 1];
-				r[1..].copy_from_slice(&x[..l as usize]);
+				r[1..].copy_from_slice(&x[..l]);
 				r
 			},
-			Data::BlakeTwo256(ref h) => once(34u8).chain(h.iter().cloned()).collect(),
-			Data::Sha256(ref h) => once(35u8).chain(h.iter().cloned()).collect(),
-			Data::Keccak256(ref h) => once(36u8).chain(h.iter().cloned()).collect(),
-			Data::ShaThree256(ref h) => once(37u8).chain(h.iter().cloned()).collect(),
+			Data::BlakeTwo256(ref h) => iter::once(34u8).chain(h.iter().cloned()).collect(),
+			Data::Sha256(ref h) => iter::once(35u8).chain(h.iter().cloned()).collect(),
+			Data::Keccak256(ref h) => iter::once(36u8).chain(h.iter().cloned()).collect(),
+			Data::ShaThree256(ref h) => iter::once(37u8).chain(h.iter().cloned()).collect(),
 		}
 	}
 }
@@ -309,7 +309,7 @@ impl Encode for IdentityFields {
 impl Decode for IdentityFields {
 	fn decode<I: Input>(input: &mut I) -> Result<Self, Error> {
 		let field = u64::decode(input)?;
-		Ok(Self(<BitFlags<IdentityField>>::from_bits(field as u64).map_err(|_| "invalid value")?))
+		Ok(Self(<BitFlags<IdentityField>>::from_bits(field).map_err(|_| "invalid value")?))
 	}
 }
 #[bitflags]

@@ -14,7 +14,7 @@ use crate::*;
 pub fn item_key(pallet: &[u8], item: &[u8]) -> String {
 	let k = substorager::storage_key(pallet, item);
 
-	array_bytes::bytes2hex("0x", &k.0)
+	array_bytes::bytes2hex("0x", k.0)
 }
 
 pub fn full_key(pallet: &[u8], item: &[u8], hash: &str) -> String {
@@ -25,7 +25,7 @@ pub fn encode_value<V>(v: V) -> String
 where
 	V: Encode,
 {
-	array_bytes::bytes2hex("0x", &v.encode())
+	array_bytes::bytes2hex("0x", v.encode())
 }
 
 pub fn decode<D>(hex: &str) -> Result<D>

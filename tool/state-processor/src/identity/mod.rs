@@ -1,36 +1,46 @@
 // darwinia
 use crate::*;
 
-impl<S> Processor<S> {
+impl<S> Processor<S>
+where
+	S: Configurable,
+{
 	/// Only care about the solo chain, since parachains don't have identity now.
 	pub fn process_identity(&mut self) -> &mut Self {
 		let mut identities = <Map<Registration>>::default();
 		let mut registrars = Vec::<Option<RegistrarInfo<AccountId32>>>::default();
-		let mut subs_of = Map::<(Balance, Vec<AccountId32>)>::default();
 
 		log::info!("take `Identity::IdentityOf`, `Identity::Registrars`, `Identity::SubsOf`");
 		self.solo_state
 			.take_map(b"Identity", b"IdentityOf", &mut identities, get_hashed_key)
-			.take_value(b"Identity", b"Registrars", "", &mut registrars)
-			.take_map(b"Identity", b"SubsOf", &mut subs_of, get_last_64_key);
+			.take_value(b"Identity", b"Registrars", "", &mut registrars);
 
-		log::info!("free super_id's reservation");
-		subs_of.into_iter().for_each(|(super_id, (mut subs_deposit, _))| {
-			subs_deposit.adjust();
+		log::info!("adjust registrations and set `AccountMigration::Identities`");
+		identities.into_iter().for_each(|(k, mut v)| {
+			v.adjust();
 
-			self.shell_state
-				.unreserve(array_bytes::hex2array_unchecked::<_, 32>(super_id), subs_deposit);
+			let a = get_last_64(&k);
+			// Calculate the identity reservation.
+			//
+			// https://github.com/paritytech/substrate/blob/129fee774a6d185d117a57fd1e81b3d0d05ad747/frame/identity/src/lib.rs#L364
+			let r = S::basic_deposit() + v.info.additional.len() as Balance * S::field_deposit();
+			// Calculate the judgement reservation.
+			//
+			// https://github.com/paritytech/substrate/blob/129fee774a6d185d117a57fd1e81b3d0d05ad747/frame/identity/src/lib.rs#L564
+			let rj = v.judgements.iter().fold(0, |acc, (i, _)| {
+				registrars
+					.get(*i as usize)
+					.and_then(|r| r.as_ref().map(|r| acc + r.fee))
+					.unwrap_or_else(|| {
+						log::error!("failed to find a registrar for `Account({a})`");
+
+						acc
+					})
+			});
+
+			self.shell_state.reserve(a, r + rj);
+			self.shell_state.insert_value(b"AccountMigration", b"Identities", &k, v);
 		});
-
-		log::info!("adjust identities' deposit and judgement decimal");
-		identities.iter_mut().for_each(|(_, v)| v.adjust());
-
-		log::info!("set `AccountMigration::Identities`");
-		{
-			let ik = item_key(b"AccountMigration", b"Identities");
-
-			self.shell_state.insert_map(identities, |h| format!("{ik}{h}"));
-		}
 
 		log::info!("truncate registrar account id and adjust registrars fee decimal");
 		let registrars = registrars
