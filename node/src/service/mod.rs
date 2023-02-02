@@ -808,10 +808,10 @@ where
 		let client = client.clone();
 		let pool = transaction_pool.clone();
 		let network = network.clone();
-		let filter_pool = filter_pool;
-		let frontier_backend = frontier_backend;
-		let overrides = overrides;
-		let fee_history_cache = fee_history_cache;
+		let filter_pool = filter_pool.clone();
+		let frontier_backend = frontier_backend.clone();
+		let overrides = overrides.clone();
+		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
 
@@ -838,17 +838,28 @@ where
 
 	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
 		rpc_builder: Box::new(rpc_extensions_builder),
-		client,
+		client: client.clone(),
 		transaction_pool,
 		task_manager: &mut task_manager,
 		config,
 		keystore: keystore_container.sync_keystore(),
-		backend,
+		backend: backend.clone(),
 		network,
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: None,
 	})?;
+
+	frontier_service::spawn_frontier_tasks(
+		&task_manager,
+		client,
+		backend,
+		frontier_backend,
+		filter_pool,
+		overrides,
+		fee_history_cache,
+		fee_history_cache_limit,
+	);
 
 	start_network.start_network();
 
