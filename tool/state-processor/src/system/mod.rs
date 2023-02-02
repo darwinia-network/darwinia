@@ -6,9 +6,6 @@ use crate::*;
 #[derive(Debug)]
 pub struct AccountAll {
 	pub nonce: u32,
-	pub consumers: RefCount,
-	pub providers: RefCount,
-	pub sufficients: RefCount,
 	pub ring: Balance,
 	pub ring_locks: Vec<BalanceLock>,
 	pub kton: Balance,
@@ -22,30 +19,12 @@ where
 	pub fn process_system(&mut self) -> &mut Self {
 		// System storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/system/src/lib.rs#L545
-		let mut solo_account_infos = self.process_solo_account_infos();
-		let mut para_account_infos = self.process_para_account_infos();
+		let solo_account_infos = self.process_solo_account_infos();
+		let para_account_infos = self.process_para_account_infos();
 		let (ring_total_issuance_storage, kton_total_issuance_storage) = self.process_balances();
-		let (solo_validators, para_collators) = self.process_session();
 		let mut accounts = Map::default();
 		let mut ring_total_issuance = Balance::default();
 		let mut kton_total_issuance = Balance::default();
-
-		// Skip for testnets, due to https://github.com/paritytech/substrate/issues/13172.
-		// log::info!("decrease solo pallet-session account references");
-		// solo_validators.into_iter().for_each(|k| {
-		// 	if let Some(a) = solo_account_infos.get_mut(&k) {
-		// 		a.consumers -= 1;
-		// 	}
-		// });
-
-		// Skip, due to https://github.com/paritytech/substrate/issues/13172.
-		// log::info!("decrease para pallet-session account references");
-		// para_collators.into_iter().for_each(|k| {
-		// 	if let Some(a) = para_account_infos.get_mut(&k) {
-		// 		dbg!(get_last_64(&k));
-		// 		a.consumers -= 1;
-		// 	}
-		// });
 
 		log::info!("build accounts");
 		log::info!("calculate total issuance");
@@ -57,12 +36,6 @@ where
 				k,
 				AccountAll {
 					nonce: v.nonce,
-					// ---
-					// TODO: check if we could ignore para's.
-					consumers: v.consumers,
-					providers: v.providers,
-					sufficients: v.sufficients,
-					// ---
 					ring,
 					ring_locks: Default::default(),
 					kton,
@@ -84,9 +57,6 @@ where
 				})
 				.or_insert(AccountAll {
 					nonce: v.nonce,
-					consumers: v.consumers,
-					providers: v.providers,
-					sufficients: v.sufficients,
 					ring,
 					ring_locks: Default::default(),
 					kton: Default::default(),
@@ -128,14 +98,15 @@ where
 			is_frozen: false,
 		};
 
-		log::info!("fix `EVM::AccountCodes`'s `sufficients` and set `Assets::Account`, `System::Account`, `AccountMigration::KtonAccounts` and `AccountMigration::Accounts`");
+		log::info!("increase `EVM::AccountCodes`'s `sufficients` and set `Assets::Account`, `System::Account`, `AccountMigration::KtonAccounts` and `AccountMigration::Accounts`");
 		accounts.into_iter().for_each(|(k, v)| {
 			let key = get_last_64(&k);
 			let mut a = AccountInfo {
 				nonce: v.nonce,
-				consumers: v.consumers,
-				providers: v.providers,
-				sufficients: v.sufficients,
+				consumers: Default::default(),
+				// https://github.com/paritytech/substrate/blob/3bc3742d5c0c5269353d7809d9f8f91104a93273/frame/system/src/lib.rs#L1708
+				providers: 1,
+				sufficients: Default::default(),
 				data: AccountData {
 					free: v.ring,
 					reserved: Default::default(),
@@ -145,14 +116,12 @@ where
 			};
 
 			if let Some(k) = try_get_evm_address(&key) {
-				// If the evm account is a contract contract with sufficients, then we should
-				// increase the sufficients by one.
+				// https://github.dev/paritytech/frontier/blob/ab0f4a47e42ad17e4d8551fb9b3c3a6b4c5df2db/frame/evm/src/lib.rs#L705
 				if self.solo_state.contains_key(&full_key(
 					b"EVM",
 					b"AccountCodes",
 					&blake2_128_concat_to_string(k),
-				)) && a.sufficients == 0
-				{
+				)) {
 					a.sufficients += 1;
 				}
 
@@ -276,6 +245,7 @@ fn new_kton_account(
 	asset_details: &mut AssetDetails,
 	balance: Balance,
 ) -> AssetAccount {
+	// https://github.com/paritytech/substrate/blob/3bc3742d5c0c5269353d7809d9f8f91104a93273/frame/assets/src/functions.rs#L75
 	account_info.sufficients += 1;
 	asset_details.accounts += 1;
 	asset_details.sufficients += 1;

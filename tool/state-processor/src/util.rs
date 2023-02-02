@@ -73,10 +73,6 @@ pub fn is_evm_address(address: &[u8]) -> bool {
 		&& address[1..31].iter().fold(address[0], |checksum, &b| checksum ^ b) == address[31]
 }
 
-pub fn key_to_account32(key: &str) -> [u8; 32] {
-	array_bytes::hex2array_unchecked(get_last_64(key))
-}
-
 pub fn build_spec(chain: &str) -> Result<()> {
 	log::info!("build {chain} spec");
 

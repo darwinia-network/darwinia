@@ -38,7 +38,7 @@ where
 					})
 			});
 
-			self.shell_state.reserve(a, r + rj);
+			self.shell_state.reserve(&a, r + rj);
 			self.shell_state.insert_value(b"AccountMigration", b"Identities", &k, v);
 		});
 

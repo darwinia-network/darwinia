@@ -116,6 +116,7 @@ where
 
 // --- System & Balances & Assets ---
 
+// TODO: more testcases about the account references and reservations
 #[test]
 fn solo_chain_substrate_account_adjust() {
 	run_test(|tester| {
@@ -132,7 +133,7 @@ fn solo_chain_substrate_account_adjust() {
 		// after migrate
 
 		let migrated_account = tester.migration_accounts.get(test_addr).unwrap();
-		assert_eq!(solo_account.consumers, migrated_account.consumers);
+		assert_eq!(migrated_account.consumers, 2);
 		assert_eq!(solo_account.providers, migrated_account.providers);
 		assert_eq!(solo_account.sufficients + 1, migrated_account.sufficients);
 		// nonce reset

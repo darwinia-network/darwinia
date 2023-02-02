@@ -11,11 +11,11 @@
   - take para `Balances::TotalIssuance` and `Balances::Locks`
     - there should not be any locks on parachain
   - check if there are any other locks
-- decrease pallet-session account references
-- use all previous data to build the new accounts and calculate total issuances
+- burn parachain backing ring
+- build the new accounts and calculate total issuances
   - merge solo and para account infos
-    - how to deal with the account references? - TODO
-  - burn parachain backing ring
+  - reset account reference counters
+  - increase `EVM::AccountCodes`'s `sufficients`
 - set `Balances::TotalIssuance`
   - compare the calculated one with the storage one
   - remove para backing account
