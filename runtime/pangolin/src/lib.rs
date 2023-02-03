@@ -141,8 +141,6 @@ where
 	}
 }
 
-impl_self_contained_call!();
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -221,6 +219,8 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_collator_selection, CollatorSelection]
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 }
+
+impl_self_contained_call!();
 
 sp_api::impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {

@@ -75,6 +75,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	BridgeRejectObsoleteHeadersAndMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -150,8 +151,6 @@ pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
-impl_self_contained_call!();
-
 // Create the runtime by composing the FRAME pallets that were previously configured.
 frame_support::construct_runtime! {
 	pub enum Runtime where
@@ -213,7 +212,7 @@ frame_support::construct_runtime! {
 		Evm: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
 
-		// S2S stuff.
+		// Darwinia <> Crab
 		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
 		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1> = 40,
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1> = 41,
@@ -230,6 +229,18 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_timestamp, Timestamp]
 	[pallet_collator_selection, CollatorSelection]
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
+}
+
+impl_self_contained_call!();
+
+bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages! {
+	RuntimeCall, AccountId,
+	// Grandpa
+	BridgeKusamaGrandpa,
+	// Messages
+	BridgeCrabMessages,
+	// Parachain
+	BridgeKusamaParachain
 }
 
 sp_api::impl_runtime_apis! {
