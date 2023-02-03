@@ -139,6 +139,14 @@ pub struct StakingLedger {
 	pub kton_staking_lock: StakingLock,
 	pub claimed_rewards: Vec<u32>,
 }
+impl StakingLedger {
+	pub fn is_empty(&self) -> bool {
+		self.active == 0
+			&& self.active_deposit_ring == 0
+			&& self.active_kton == 0
+			&& self.deposit_items.is_empty()
+	}
+}
 #[derive(Default, Debug, Encode, Decode)]
 pub struct TimeDepositItem {
 	#[codec(compact)]

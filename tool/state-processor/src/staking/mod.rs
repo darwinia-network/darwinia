@@ -24,7 +24,16 @@ impl<S> Processor<S> {
 			let staking_ik = item_key(b"AccountMigration", b"Ledgers");
 			let deposit_ik = item_key(b"AccountMigration", b"Deposits");
 
-			ledgers.into_iter().for_each(|(_, mut v)| {
+			for (_, mut v) in ledgers {
+				if v.is_empty() {
+					log::info!(
+						"clean empty ledger for Account({})",
+						array_bytes::bytes2hex("0x", v.stash)
+					);
+
+					continue;
+				}
+
 				v.adjust();
 
 				let hash_k = blake2_128_concat_to_string(v.stash);
@@ -64,9 +73,6 @@ impl<S> Processor<S> {
 				ring_pool += v.active;
 				kton_pool += v.active_kton;
 
-				// Some accounts were killed.
-				// But their staking data didn't get deleted.
-				// TODO: https://github.com/darwinia-network/darwinia-2.0/issues/6
 				self.shell_state.inc_consumers_by(&array_bytes::bytes2hex("", v.stash), consumers);
 				self.shell_state.insert_raw_key_value(
 					staking_k,
@@ -89,7 +95,7 @@ impl<S> Processor<S> {
 						unstaking_deposits: Default::default(),
 					},
 				);
-			});
+			}
 		}
 
 		ring_pool_storage.adjust();
