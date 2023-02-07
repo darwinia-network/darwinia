@@ -13,7 +13,7 @@ pub trait Configurable {
 
 	// Make sure these account doesn't exist in the old chains.
 	// To prevent their data get overridden.
-	fn genesis_collator() -> Vec<AccountId20> {
+	fn genesis_collators() -> Vec<AccountId20> {
 		vec![
 			array_bytes::hex2array_unchecked("0x0eef9fabb6eb6fed2ab24a842931f8950426070a"),
 			array_bytes::hex2array_unchecked("0xa858cde8f6cf178786578a3b0becf5c27d18300c"),

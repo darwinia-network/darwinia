@@ -1,5 +1,6 @@
 // crates.io
 use parity_scale_codec::Encode;
+use subalfred_core::key::{PalletId, ParaId, SiblId};
 // darwinia
 use crate::*;
 
@@ -114,8 +115,60 @@ where
 					reserved_kton_or_fee_frozen: Default::default(),
 				},
 			};
+			let mut is_special_account = false;
 
-			if let Some(k) = try_get_evm_address(&key) {
+			if key.ends_with("000000000000") {
+				if let Some(s) = try_get_sub_seed(&key) {
+					log::info!("migrate special Account(`{s}`)");
+
+					is_special_account = true;
+				} else if key
+					== "0x0000000000000000000000000000000000000000000000000000000000000000"
+				{
+					log::info!("migrate special Account(0x0000000000000000000000000000000000000000000000000000000000000000)");
+
+					is_special_account = true;
+				} else {
+					log::info!(
+						"found zeros-ending Account(`{key}`), it might be a special account"
+					);
+				};
+			}
+
+			if is_special_account {
+				// Truncate the special accounts to 20 bytes length.
+				//
+				// Put the truncated account into `System` and `Assets` pallets directly.
+
+				a.nonce = 0;
+
+				// "0x".len() + 20 * 2 = 42
+				let k = array_bytes::hex2array_unchecked::<_, 20>(&key[..42]);
+
+				if v.kton != 0 {
+					self.shell_state.insert_value(
+						b"Assets",
+						b"Account",
+						&format!(
+							"{}{}",
+							blake2_128_concat_to_string(KTON_ID.encode()),
+							blake2_128_concat_to_string(k.encode()),
+						),
+						new_kton_account(&mut a, &mut kton_details, v.kton),
+					);
+				}
+
+				self.shell_state.insert_value(
+					b"System",
+					b"Account",
+					&blake2_128_concat_to_string(k),
+					a,
+				);
+			} else if let Some(k) = try_get_evm_address(&key) {
+				// Recover the EVM accounts from Substrate accounts.
+				//
+				// Put the recovered accounts into `System` and `Assets` pallets directly.
+
 				// https://github.dev/paritytech/frontier/blob/ab0f4a47e42ad17e4d8551fb9b3c3a6b4c5df2db/frame/evm/src/lib.rs#L705
 				if self.solo_state.contains_key(&full_key(
 					b"EVM",
@@ -145,6 +198,8 @@ where
 					a,
 				);
 			} else {
+				// Put the normal Substrate accounts into `AccountMigration` pallet.
+
 				a.nonce = 0;
 
 				if v.kton != 0 {
@@ -238,6 +293,18 @@ fn try_get_evm_address(key: &str) -> Option<AccountId20> {
 	} else {
 		None
 	}
+}
+
+// https://github.com/hack-ink/subalfred/blob/008d042dc7984f13ae3fa76483dafa12fafbc93d/bin/subalfred/src/command/key.rs#L100
+fn try_get_sub_seed(key: &str) -> Option<String> {
+	let k = array_bytes::hex2bytes_unchecked(key);
+	let k = k.as_slice();
+
+	PalletId::try_from(k)
+		.map(|k| k.to_string())
+		.or_else(|_| ParaId::try_from(k).map(|k| ToString::to_string(&k)))
+		.or_else(|_| SiblId::try_from(k).map(|k| ToString::to_string(&k)))
+		.ok()
 }
 
 fn new_kton_account(

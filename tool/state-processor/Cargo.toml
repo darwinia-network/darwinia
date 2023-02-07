@@ -25,9 +25,10 @@ zstd               = { version = "0.12" }
 dc-types = { path = "../../core/types" }
 
 # hack-ink
-subhasher   = { git = "https://github.com/hack-ink/subalfred" }
-subspector  = { git = "https://github.com/hack-ink/subalfred" }
-substorager = { git = "https://github.com/hack-ink/subalfred" }
+subalfred-core = { git = "https://github.com/hack-ink/subalfred" }
+subhasher      = { git = "https://github.com/hack-ink/subalfred" }
+subspector     = { git = "https://github.com/hack-ink/subalfred" }
+substorager    = { git = "https://github.com/hack-ink/subalfred" }
 
 [workspace]
 exclude = []
