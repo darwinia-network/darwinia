@@ -252,7 +252,7 @@ pub mod pallet {
 					if amount >= sum {
 						<pallet_assets::Pallet<T>>::transfer(
 							RawOrigin::Signed(to).into(),
-							KTON_ID,
+							KTON_ID.into(),
 							staking_pot,
 							sum,
 						)?;

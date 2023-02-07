@@ -24,7 +24,12 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		Assets::mint(RuntimeOrigin::signed(ROOT), AssetIds::Kton as _, *beneficiary, amount)
+		Assets::mint(
+			RuntimeOrigin::signed(ROOT),
+			(AssetIds::Kton as AssetId).into(),
+			*beneficiary,
+			amount,
+		)
 	}
 
 	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -34,7 +39,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 			Err(<pallet_assets::Error<Runtime>>::BalanceLow)?;
 		}
 
-		Assets::burn(RuntimeOrigin::signed(ROOT), asset_id, *who, amount)
+		Assets::burn(RuntimeOrigin::signed(ROOT), asset_id.into(), *who, amount)
 	}
 }
 

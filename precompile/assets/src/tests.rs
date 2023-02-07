@@ -20,13 +20,8 @@
 use sha3::{Digest, Keccak256};
 // darwinia
 use crate::{
-	log3,
-	mock::{
-		Account::{Alice, Bob, Charlie, Precompile},
-		Assets, ExtBuilder, InternalCall, PrecompilesValue, RuntimeOrigin, TestPrecompiles,
-		TestRuntime, TEST_ID,
-	},
-	SELECTOR_LOG_APPROVAL, SELECTOR_LOG_TRANSFER,
+	mock::{Account::*, *},
+	*,
 };
 // moonbeam
 use precompile_utils::{
@@ -75,7 +70,13 @@ fn selectors() {
 #[test]
 fn selector_less_than_four_bytes() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
 		// This selector is only three bytes long when four are required.
 		precompiles()
 			.prepare_test(Alice, Precompile, vec![1u8, 2u8, 3u8])
@@ -86,7 +87,13 @@ fn selector_less_than_four_bytes() {
 #[test]
 fn no_selector_exists_but_length_is_right() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
 
 		precompiles()
 			.prepare_test(Alice, Precompile, vec![1u8, 2u8, 3u8, 4u8])
@@ -97,7 +104,13 @@ fn no_selector_exists_but_length_is_right() {
 #[test]
 fn modifiers() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
 		let mut tester = PrecompilesModifierTester::new(precompiles(), Alice, Precompile);
 
 		tester.test_view_modifier(InternalCall::balance_of_selectors());
@@ -124,10 +137,16 @@ fn get_total_supply() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::mint(
 				RuntimeOrigin::signed(Alice.into()),
-				TEST_ID,
+				TEST_ID.into(),
 				Alice.into(),
 				1000
 			));
@@ -142,8 +161,19 @@ fn get_total_supply() {
 #[test]
 fn get_balances_known_user() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -159,8 +189,19 @@ fn get_balances_known_user() {
 #[test]
 fn get_balances_unknown_user() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(Alice, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
@@ -172,8 +213,19 @@ fn get_balances_unknown_user() {
 #[test]
 fn approve() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -195,8 +247,19 @@ fn approve() {
 #[test]
 fn approve_overflow() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -211,8 +274,19 @@ fn approve_overflow() {
 #[test]
 fn check_allowance_existing() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -240,7 +314,13 @@ fn check_allowance_existing() {
 #[test]
 fn check_allowance_not_existing() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
 
 		precompiles()
 			.prepare_test(
@@ -260,8 +340,19 @@ fn check_allowance_not_existing() {
 #[test]
 fn transfer() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -298,8 +389,19 @@ fn transfer() {
 #[test]
 fn transfer_not_enough_founds() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1
+		));
 
 		precompiles()
 			.prepare_test(
@@ -317,8 +419,19 @@ fn transfer_not_enough_founds() {
 #[test]
 fn transfer_from() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -389,8 +502,8 @@ fn transfer_from() {
 #[test]
 fn transfer_from_non_incremental_approval() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID.into(), Alice.into(), true, 1));
+		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID.into(), Alice.into(), 1000));
 
 		// We first approve 500
 		precompiles()
@@ -448,8 +561,19 @@ fn transfer_from_non_incremental_approval() {
 #[test]
 fn transfer_from_above_allowance() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -480,8 +604,19 @@ fn transfer_from_above_allowance() {
 #[test]
 fn transfer_from_self() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -526,10 +661,16 @@ fn get_metadata() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::force_set_metadata(
 				RuntimeOrigin::root(),
-				TEST_ID,
+				TEST_ID.into(),
 				b"TestToken".to_vec(),
 				b"Test".to_vec(),
 				12,
@@ -566,7 +707,13 @@ fn mint() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 
 			precompiles()
 				.prepare_test(
@@ -601,10 +748,16 @@ fn burn() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::mint(
 				RuntimeOrigin::signed(Alice.into()),
-				TEST_ID,
+				TEST_ID.into(),
 				Alice.into(),
 				1000
 			));
@@ -641,10 +794,16 @@ fn freeze() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::mint(
 				RuntimeOrigin::signed(Alice.into()),
-				TEST_ID,
+				TEST_ID.into(),
 				Bob.into(),
 				1000
 			));
@@ -677,10 +836,16 @@ fn thaw() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::mint(
 				RuntimeOrigin::signed(Alice.into()),
-				TEST_ID,
+				TEST_ID.into(),
 				Bob.into(),
 				1000
 			));
@@ -726,10 +891,16 @@ fn transfer_ownership() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::force_set_metadata(
 				RuntimeOrigin::root(),
-				TEST_ID,
+				TEST_ID.into(),
 				b"TestToken".to_vec(),
 				b"Test".to_vec(),
 				12,
@@ -771,8 +942,19 @@ fn transfer_ownership() {
 #[test]
 fn transfer_amount_overflow() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -810,7 +992,13 @@ fn mint_overflow() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 
 			precompiles()
 				.prepare_test(
@@ -829,8 +1017,19 @@ fn mint_overflow() {
 #[test]
 fn transfer_from_overflow() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
-		assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
-		assert_ok!(Assets::mint(RuntimeOrigin::signed(Alice.into()), TEST_ID, Alice.into(), 1000));
+		assert_ok!(Assets::force_create(
+			RuntimeOrigin::root(),
+			TEST_ID.into(),
+			Alice.into(),
+			true,
+			1
+		));
+		assert_ok!(Assets::mint(
+			RuntimeOrigin::signed(Alice.into()),
+			TEST_ID.into(),
+			Alice.into(),
+			1000
+		));
 
 		precompiles()
 			.prepare_test(
@@ -861,10 +1060,16 @@ fn burn_overflow() {
 		.with_balances(vec![(Alice.into(), 1000), (Bob.into(), 2500)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Assets::force_create(RuntimeOrigin::root(), TEST_ID, Alice.into(), true, 1));
+			assert_ok!(Assets::force_create(
+				RuntimeOrigin::root(),
+				TEST_ID.into(),
+				Alice.into(),
+				true,
+				1
+			));
 			assert_ok!(Assets::mint(
 				RuntimeOrigin::signed(Alice.into()),
-				TEST_ID,
+				TEST_ID.into(),
 				Alice.into(),
 				1000
 			));

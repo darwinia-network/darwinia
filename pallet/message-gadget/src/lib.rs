@@ -57,6 +57,7 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		#[pallet::call_index(0)]
 		#[pallet::weight(0)]
 		pub fn set_commitment_contract(
 			origin: OriginFor<T>,

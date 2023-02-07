@@ -16,16 +16,16 @@ ethereum   = { version = "0.14", default-features = false, features = ["with-cod
 scale-info = { version = "2.3", default-features = false, features = ["derive"] }
 
 # frontier
-fp-ethereum = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.33" }
-fp-evm      = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.33" }
-pallet-evm  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.33" }
+fp-ethereum = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
+fp-evm      = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
+pallet-evm  = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
 
 # substrate
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [dev-dependencies]
 array-bytes  = { version = "6.0" }
@@ -34,21 +34,21 @@ rlp          = { version = "0.5" }
 sha3         = { version = "0.9" }
 
 # darwinia
-bp-message-dispatch    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
-bp-runtime             = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
-pallet-bridge-dispatch = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.33" }
+bp-message-dispatch    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.36" }
+bp-runtime             = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.36" }
+pallet-bridge-dispatch = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.36" }
 
 # frontier
-fp-self-contained = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.33" }
-pallet-ethereum   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.33" }
+fp-self-contained = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
+pallet-ethereum   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
 
 # moonbeam
-precompile-utils = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.33", features = ["testing"] }
+precompile-utils = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.36", features = ["testing"] }
 
 # substrate
-pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
+pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [features]
 default = ["std"]

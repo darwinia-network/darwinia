@@ -38,6 +38,7 @@ use crate::frontier_service;
 use darwinia_runtime::AuraId;
 use dc_primitives::*;
 // substrate
+use sc_consensus::ImportQueue;
 use sc_network_common::service::NetworkBlock;
 use sp_core::Pair;
 use sp_runtime::app_crypto::AppKey;
@@ -46,7 +47,11 @@ type FullBackend = sc_service::TFullBackend<Block>;
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
 type ParachainBlockImport<RuntimeApi, Executor> =
-	cumulus_client_consensus_common::ParachainBlockImport<Arc<FullClient<RuntimeApi, Executor>>>;
+	cumulus_client_consensus_common::ParachainBlockImport<
+		Block,
+		Arc<FullClient<RuntimeApi, Executor>>,
+		FullBackend,
+	>;
 
 /// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
 pub trait IdentifyVariant {
@@ -176,7 +181,7 @@ where
 		client.clone(),
 	);
 
-	let block_import = ParachainBlockImport::new(client.clone());
+	let block_import = ParachainBlockImport::new(client.clone(), backend.clone());
 
 	let import_queue = parachain_build_import_queue(
 		client.clone(),
@@ -213,35 +218,6 @@ where
 			telemetry_worker_handle,
 		),
 	})
-}
-
-async fn build_relay_chain_interface(
-	polkadot_config: sc_service::Configuration,
-	parachain_config: &sc_service::Configuration,
-	telemetry_worker_handle: Option<sc_telemetry::TelemetryWorkerHandle>,
-	task_manager: &mut sc_service::TaskManager,
-	collator_options: cumulus_client_cli::CollatorOptions,
-	hwbench: Option<sc_sysinfo::HwBench>,
-) -> cumulus_relay_chain_interface::RelayChainResult<(
-	Arc<(dyn 'static + cumulus_relay_chain_interface::RelayChainInterface)>,
-	Option<polkadot_service::CollatorPair>,
-)> {
-	match collator_options.relay_chain_rpc_url {
-		Some(relay_chain_url) =>
-			cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
-				polkadot_config,
-				task_manager,
-				relay_chain_url,
-			)
-			.await,
-		None => cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
-			polkadot_config,
-			parachain_config,
-			telemetry_worker_handle,
-			task_manager,
-			hwbench,
-		),
-	}
 }
 
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
@@ -307,21 +283,22 @@ where
 			),
 	} = new_partial::<RuntimeApi, Executor>(&parachain_config, eth_rpc_config)?;
 
-	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
-		polkadot_config,
-		&parachain_config,
-		telemetry_worker_handle,
-		&mut task_manager,
-		collator_options.clone(),
-		hwbench.clone(),
-	)
-	.await
-	.map_err(|e| match e {
-		cumulus_relay_chain_interface::RelayChainError::ServiceError(
-			polkadot_service::Error::Sub(x),
-		) => x,
-		s => s.to_string().into(),
-	})?;
+	let (relay_chain_interface, collator_key) =
+		cumulus_client_service::build_relay_chain_interface(
+			polkadot_config,
+			&parachain_config,
+			telemetry_worker_handle,
+			&mut task_manager,
+			collator_options.clone(),
+			hwbench.clone(),
+		)
+		.await
+		.map_err(|e| match e {
+			cumulus_relay_chain_interface::RelayChainError::ServiceError(
+				polkadot_service::Error::Sub(x),
+			) => x,
+			s => s.to_string().into(),
+		})?;
 
 	let block_announce_validator =
 		cumulus_client_network::BlockAnnounceValidator::new(relay_chain_interface.clone(), para_id);
@@ -329,7 +306,7 @@ where
 	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
-	let import_queue = cumulus_client_service::SharedImportQueue::new(import_queue);
+	let import_queue_service = import_queue.service();
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
@@ -337,12 +314,22 @@ where
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
-			import_queue: import_queue.clone(),
+			import_queue,
 			block_announce_validator_builder: Some(Box::new(|_| {
 				Box::new(block_announce_validator)
 			})),
 			warp_sync: None,
 		})?;
+
+	if parachain_config.offchain_worker.enabled {
+		sc_service::build_offchain_workers(
+			&parachain_config,
+			task_manager.spawn_handle(),
+			client.clone(),
+			network.clone(),
+		);
+	}
+
 	let overrides = frontier_service::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
@@ -452,7 +439,7 @@ where
 			relay_chain_interface,
 			spawner,
 			parachain_consensus,
-			import_queue,
+			import_queue: import_queue_service,
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
 		};
@@ -466,7 +453,7 @@ where
 			para_id,
 			relay_chain_interface,
 			relay_chain_slot_duration,
-			import_queue,
+			import_queue: import_queue_service,
 		};
 
 		cumulus_client_service::start_full_node(params)?;

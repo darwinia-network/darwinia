@@ -147,7 +147,7 @@ where
 					handle,
 					Some(owner.clone()).into(),
 					pallet_assets::Call::<Runtime>::cancel_approval {
-						id: asset_id,
+						id: asset_id.into(),
 						delegate: Runtime::Lookup::unlookup(spender.clone()),
 					},
 				)?;
@@ -156,7 +156,7 @@ where
 				handle,
 				Some(owner).into(),
 				pallet_assets::Call::<Runtime>::approve_transfer {
-					id: asset_id,
+					id: asset_id.into(),
 					delegate: Runtime::Lookup::unlookup(spender),
 					amount,
 				},
@@ -190,7 +190,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::transfer {
-					id: asset_id,
+					id: asset_id.into(),
 					target: Runtime::Lookup::unlookup(to),
 					amount: value,
 				},
@@ -233,7 +233,7 @@ where
 					handle,
 					Some(caller).into(),
 					pallet_assets::Call::<Runtime>::transfer_approved {
-						id: asset_id,
+						id: asset_id.into(),
 						owner: Runtime::Lookup::unlookup(from),
 						destination: Runtime::Lookup::unlookup(to),
 						amount: value,
@@ -244,7 +244,7 @@ where
 					handle,
 					Some(from).into(),
 					pallet_assets::Call::<Runtime>::transfer {
-						id: asset_id,
+						id: asset_id.into(),
 						target: Runtime::Lookup::unlookup(to),
 						amount: value,
 					},
@@ -306,7 +306,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::mint {
-					id: asset_id,
+					id: asset_id.into(),
 					beneficiary: Runtime::Lookup::unlookup(to),
 					amount: value,
 				},
@@ -340,7 +340,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::burn {
-					id: asset_id,
+					id: asset_id.into(),
 					who: Runtime::Lookup::unlookup(from),
 					amount: value,
 				},
@@ -372,7 +372,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::transfer_ownership {
-					id: asset_id,
+					id: asset_id.into(),
 					owner: Runtime::Lookup::unlookup(owner),
 				},
 			)?;
@@ -394,7 +394,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::freeze {
-					id: asset_id,
+					id: asset_id.into(),
 					who: Runtime::Lookup::unlookup(account),
 				},
 			)?;
@@ -416,7 +416,7 @@ where
 				handle,
 				Some(origin).into(),
 				pallet_assets::Call::<Runtime>::thaw {
-					id: asset_id,
+					id: asset_id.into(),
 					who: Runtime::Lookup::unlookup(account),
 				},
 			)?;

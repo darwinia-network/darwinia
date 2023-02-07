@@ -21,18 +21,18 @@ darwinia-staking = { default-features = false, path = "../staking" }
 dc-primitives    = { default-features = false, path = "../../core/primitives" }
 
 # substrate
-frame-support   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-frame-system    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-pallet-assets   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-pallet-identity = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-pallet-vesting  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-core         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-runtime      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
-sp-std          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
+frame-support   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-system    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-assets   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-identity = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-vesting  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-core         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-runtime      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-std          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [dev-dependencies]
-sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33" }
+sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [features]
 default = ["std"]
