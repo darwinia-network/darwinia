@@ -1,0 +1,91 @@
+name: Staging
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+
+jobs:
+  build-package:
+    name: Build package [linux]
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:18.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y \
+            ca-certificates curl git python3-pip \
+            clang make gcc g++ protobuf-compiler
+          pip3 install --upgrade pip
+          pip3 install cmake --upgrade
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --locked
+
+      - name: Collect shared
+        run: |
+          mkdir -p shared
+          tar cjSf \
+            shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
+            -C \
+            target/release \
+            darwinia
+      - name: Upload shared
+        uses: actions/upload-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+
+  build-docker-image:
+    name: Build image
+    runs-on: ubuntu-latest
+    needs: [build-package]
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+
+      - uses: benjlevesque/short-sha@v1.2
+
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.DOCKER_REGISTRY }}
+
+      - name: Download shared
+        uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - name: Extract shared
+        run: |
+          mkdir -p dist
+          tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
+
+      - name: Publish docker image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: .
+          file: .maintain/docker/Dockerfile
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
+
+
