@@ -359,10 +359,15 @@ fn asset_creation() {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			&mut details,
 		);
-		assert!(details.accounts > 0);
+		assert_eq!(details.owner, ROOT);
 		assert!(details.supply != 0);
+		assert_eq!(details.deposit, 0);
 		assert_eq!(details.min_balance, 1);
+		assert_eq!(details.is_sufficient, true);
 		assert_eq!(details.sufficients, details.accounts);
+		assert!(details.accounts > 0);
+		assert_eq!(details.approvals, 0);
+		assert_eq!(details.status, AssetStatus::Live);
 	});
 }
 

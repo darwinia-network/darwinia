@@ -96,7 +96,7 @@ where
 			sufficients: Default::default(),
 			accounts: Default::default(),
 			approvals: Default::default(),
-			is_frozen: false,
+			status: Default::default(),
 		};
 
 		log::info!("increase `EVM::AccountCodes`'s `sufficients` and set `Assets::Account`, `System::Account`, `AccountMigration::KtonAccounts` and `AccountMigration::Accounts`");

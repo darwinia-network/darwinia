@@ -62,7 +62,20 @@ pub struct AssetDetails {
 	pub accounts: u32,
 	pub sufficients: u32,
 	pub approvals: u32,
-	pub is_frozen: bool,
+	pub status: AssetStatus,
+}
+
+// https://github.com/paritytech/substrate/blob/polkadot-v0.9.36/frame/assets/src/types.rs#L35
+#[derive(Debug, Encode, Decode, PartialEq)]
+pub enum AssetStatus {
+	Live,
+	Frozen,
+	Destroying,
+}
+impl Default for AssetStatus {
+	fn default() -> Self {
+		AssetStatus::Live
+	}
 }
 
 // https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
