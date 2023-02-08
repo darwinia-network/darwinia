@@ -21,7 +21,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 // frontier
 use fp_evm::{Precompile, PrecompileSet};
 // substrate
-use frame_support::{pallet_prelude::Weight, StorageHasher, Twox128};
+use frame_support::{StorageHasher, Twox128};
 use sp_core::{H160, H256, U256};
 use sp_std::{marker::PhantomData, prelude::*};
 // darwinia
@@ -134,7 +134,7 @@ fn addr(a: u64) -> H160 {
 
 frame_support::parameter_types! {
 	pub const BlockGasLimit: U256 = U256::MAX;
-	pub const WeightPerGas: Weight = Weight::from_ref_time(20_000);
+	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(20_000);
 	pub PrecompilesValue: TestPrecompiles<TestRuntime> = TestPrecompiles::<_>::new();
 }
 

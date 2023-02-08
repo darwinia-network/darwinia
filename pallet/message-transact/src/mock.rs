@@ -27,10 +27,8 @@ use pallet_ethereum::IntermediateStateRoot;
 use frame_support::{
 	dispatch::RawOrigin,
 	ensure,
-	pallet_prelude::Weight,
 	traits::{ConstU32, Everything},
 };
-use sp_core::{H256, U256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, DispatchInfoOf, IdentifyAccount, IdentityLookup, Verify},
@@ -43,7 +41,7 @@ use bp_message_dispatch::{CallValidate, IntoDispatchOrigin as IntoDispatchOrigin
 
 pub type Block = frame_system::mocking::MockBlock<TestRuntime>;
 pub type Balance = u64;
-pub type AccountId = H160;
+pub type AccountId = sp_core::H160;
 pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
 
 frame_support::parameter_types! {
@@ -58,7 +56,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = ();
-	type Hash = H256;
+	type Hash = sp_core::H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
 	type Index = u64;
@@ -105,14 +103,14 @@ impl pallet_timestamp::Config for TestRuntime {
 frame_support::parameter_types! {
 	pub const TransactionByteFee: u64 = 1;
 	pub const ChainId: u64 = 42;
-	pub const BlockGasLimit: U256 = U256::MAX;
-	pub const WeightPerGas: Weight = Weight::from_ref_time(20_000);
+	pub const BlockGasLimit: sp_core::U256 = sp_core::U256::MAX;
+	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(20_000);
 }
 
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (U256, Weight) {
-		(U256::from(5), Weight::zero())
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		(sp_core::U256::from(5), frame_support::weights::Weight::zero())
 	}
 }
 
@@ -141,8 +139,8 @@ impl pallet_ethereum::Config for TestRuntime {
 }
 
 pub struct MockAccountIdConverter;
-impl sp_runtime::traits::Convert<H256, AccountId> for MockAccountIdConverter {
-	fn convert(hash: H256) -> AccountId {
+impl sp_runtime::traits::Convert<sp_core::H256, AccountId> for MockAccountIdConverter {
+	fn convert(hash: sp_core::H256) -> AccountId {
 		hash.into()
 	}
 }
@@ -266,7 +264,7 @@ frame_support::construct_runtime! {
 }
 
 impl fp_self_contained::SelfContainedCall for RuntimeCall {
-	type SignedInfo = H160;
+	type SignedInfo = sp_core::H160;
 
 	fn is_self_contained(&self) -> bool {
 		match self {
@@ -323,8 +321,8 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 }
 
 pub(crate) struct AccountInfo {
-	pub address: H160,
-	pub private_key: H256,
+	pub address: sp_core::H160,
+	pub private_key: sp_core::H256,
 }
 
 pub(crate) fn address_build(seed: u8) -> AccountInfo {

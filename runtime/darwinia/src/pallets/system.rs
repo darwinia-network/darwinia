@@ -21,17 +21,18 @@ use crate::*;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.
-const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
+const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(5);
 
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
 /// `Operational` extrinsics.
-pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-	frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
-	cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
-);
+pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
+	frame_support::weights::Weight::from_parts(
+		frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+		cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
+	);
 
 frame_support::parameter_types! {
 	pub const Version: sp_version::RuntimeVersion = VERSION;
@@ -39,13 +40,13 @@ frame_support::parameter_types! {
 		frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub RuntimeBlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights::builder()
 		.base_block(weights::BlockExecutionWeight::get())
-		.for_class(DispatchClass::all(), |weights| {
+		.for_class(frame_support::dispatch::DispatchClass::all(), |weights| {
 			weights.base_extrinsic = weights::ExtrinsicBaseWeight::get();
 		})
-		.for_class(DispatchClass::Normal, |weights| {
+		.for_class(frame_support::dispatch::DispatchClass::Normal, |weights| {
 			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
 		})
-		.for_class(DispatchClass::Operational, |weights| {
+		.for_class(frame_support::dispatch::DispatchClass::Operational, |weights| {
 			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
 			// Operational transactions have some extra reserved space, so that they
 			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
@@ -79,7 +80,7 @@ impl frame_system::Config for Runtime {
 	/// The hashing algorithm used.
 	type Hashing = Hashing;
 	/// The header type.
-	type Header = generic::Header<BlockNumber, Self::Hashing>;
+	type Header = sp_runtime::generic::Header<BlockNumber, Self::Hashing>;
 	/// The index type for storing how many extrinsics an account has signed.
 	type Index = Index;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.

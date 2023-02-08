@@ -36,34 +36,14 @@ pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
-// cumulus
-use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-// polkadot
-use xcm_executor::XcmExecutor;
 // substrate
-use frame_support::{
-	dispatch::DispatchClass,
-	traits::{AsEnsureOriginWithArg, Imbalance, IsInVec, OnUnbalanced, WithdrawReasons},
-	weights::{ConstantMultiplier, Weight},
-};
-use frame_system::{EnsureRoot, EnsureSignedBy};
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
-use sp_runtime::{
-	generic,
-	traits::Block as BlockT,
-	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, Perbill, Permill,
-};
 use sp_std::prelude::*;
-#[cfg(feature = "std")]
-use sp_version::NativeVersion;
-use sp_version::RuntimeVersion;
 
 /// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
 
 /// A Block signed with a Justification
-pub type SignedBlock = generic::SignedBlock<Block>;
+pub type SignedBlock = sp_runtime::generic::SignedBlock<Block>;
 
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
@@ -84,7 +64,7 @@ pub type UncheckedExtrinsic =
 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic =
-	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
+	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, sp_core::H160>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -100,7 +80,7 @@ pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5000 * UNIT;
 
 /// Runtime version.
 #[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
+pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
@@ -118,37 +98,48 @@ impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R
 where
 	R: pallet_balances::Config,
 	R: pallet_balances::Config + pallet_treasury::Config,
-	pallet_treasury::Pallet<R>: OnUnbalanced<pallet_balances::NegativeImbalance<R>>,
+	pallet_treasury::Pallet<R>:
+		frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>,
 {
 	// this seems to be called for substrate-based transactions
 	fn on_unbalanceds<B>(
 		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
 	) {
 		if let Some(fees) = fees_then_tips.next() {
+			// substrate
+			use frame_support::traits::Imbalance;
+
 			// for fees, 80% are burned, 20% to the treasury
 			let (_, to_treasury) = fees.ration(80, 20);
 
 			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 			// total_supply accordingly
-			<pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+			<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
+				to_treasury,
+			);
 		}
 	}
 
 	// this is called from pallet_evm for Ethereum-based transactions
 	// (technically, it calls on_unbalanced, which calls this when non-zero)
 	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
+		// substrate
+		use frame_support::traits::Imbalance;
+
 		// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 		// total_supply accordingly
 		let (_, to_treasury) = amount.ration(80, 20);
 
-		<pallet_treasury::Pallet<R> as OnUnbalanced<_>>::on_unbalanced(to_treasury);
+		<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
+			to_treasury,
+		);
 	}
 }
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
-pub fn native_version() -> NativeVersion {
-	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
+pub fn native_version() -> sp_version::NativeVersion {
+	sp_version::NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -255,7 +246,7 @@ sp_api::impl_runtime_apis! {
 	}
 
 	impl sp_api::Core<Block> for Runtime {
-		fn version() -> RuntimeVersion {
+		fn version() -> sp_version::RuntimeVersion {
 			VERSION
 		}
 
@@ -263,27 +254,27 @@ sp_api::impl_runtime_apis! {
 			Executive::execute_block(block)
 		}
 
-		fn initialize_block(header: &<Block as BlockT>::Header) {
+		fn initialize_block(header: &<Block as sp_runtime::traits::Block>::Header) {
 			Executive::initialize_block(header)
 		}
 	}
 
 	impl sp_api::Metadata<Block> for Runtime {
-		fn metadata() -> OpaqueMetadata {
-			OpaqueMetadata::new(Runtime::metadata().into())
+		fn metadata() -> sp_core::OpaqueMetadata {
+			sp_core::OpaqueMetadata::new(Runtime::metadata().into())
 		}
 	}
 
 	impl sp_block_builder::BlockBuilder<Block> for Runtime {
-		fn apply_extrinsic(extrinsic: <Block as BlockT>::Extrinsic) -> ApplyExtrinsicResult {
+		fn apply_extrinsic(extrinsic: <Block as sp_runtime::traits::Block>::Extrinsic) -> sp_runtime::ApplyExtrinsicResult {
 			Executive::apply_extrinsic(extrinsic)
 		}
 
-		fn finalize_block() -> <Block as BlockT>::Header {
+		fn finalize_block() -> <Block as sp_runtime::traits::Block>::Header {
 			Executive::finalize_block()
 		}
 
-		fn inherent_extrinsics(data: sp_inherents::InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
+		fn inherent_extrinsics(data: sp_inherents::InherentData) -> Vec<<Block as sp_runtime::traits::Block>::Extrinsic> {
 			data.create_extrinsics()
 		}
 
@@ -297,16 +288,16 @@ sp_api::impl_runtime_apis! {
 
 	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
 		fn validate_transaction(
-			source: TransactionSource,
-			tx: <Block as BlockT>::Extrinsic,
-			block_hash: <Block as BlockT>::Hash,
-		) -> TransactionValidity {
+			source: sp_runtime::transaction_validity::TransactionSource,
+			tx: <Block as sp_runtime::traits::Block>::Extrinsic,
+			block_hash: <Block as sp_runtime::traits::Block>::Hash,
+		) -> sp_runtime::transaction_validity::TransactionValidity {
 			Executive::validate_transaction(source, tx, block_hash)
 		}
 	}
 
 	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
-		fn offchain_worker(header: &<Block as BlockT>::Header) {
+		fn offchain_worker(header: &<Block as sp_runtime::traits::Block>::Header) {
 			Executive::offchain_worker(header)
 		}
 	}
@@ -318,7 +309,7 @@ sp_api::impl_runtime_apis! {
 
 		fn decode_session_keys(
 			encoded: Vec<u8>,
-		) -> Option<Vec<(Vec<u8>, KeyTypeId)>> {
+		) -> Option<Vec<(Vec<u8>, sp_runtime::KeyTypeId)>> {
 			SessionKeys::decode_into_raw_public_keys(&encoded)
 		}
 	}
@@ -331,13 +322,13 @@ sp_api::impl_runtime_apis! {
 
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
 		fn query_info(
-			uxt: <Block as BlockT>::Extrinsic,
+			uxt: <Block as sp_runtime::traits::Block>::Extrinsic,
 			len: u32,
 		) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
 			TransactionPayment::query_info(uxt, len)
 		}
 		fn query_fee_details(
-			uxt: <Block as BlockT>::Extrinsic,
+			uxt: <Block as sp_runtime::traits::Block>::Extrinsic,
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
@@ -362,7 +353,7 @@ sp_api::impl_runtime_apis! {
 	}
 
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
-		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
+		fn collect_collation_info(header: &<Block as sp_runtime::traits::Block>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
 		}
 	}
@@ -372,13 +363,13 @@ sp_api::impl_runtime_apis! {
 			<<Runtime as pallet_evm::Config>::ChainId as frame_support::traits::Get<u64>>::get()
 		}
 
-		fn account_basic(address: H160) -> pallet_evm::Account {
+		fn account_basic(address: sp_core::H160) -> pallet_evm::Account {
 			let (account, _) = Evm::account_basic(&address);
 
 			account
 		}
 
-		fn gas_price() -> U256 {
+		fn gas_price() -> sp_core::U256 {
 			// frontier
 			use pallet_evm::FeeCalculator;
 
@@ -387,33 +378,33 @@ sp_api::impl_runtime_apis! {
 			gas_price
 		}
 
-		fn account_code_at(address: H160) -> Vec<u8> {
+		fn account_code_at(address: sp_core::H160) -> Vec<u8> {
 			Evm::account_codes(address)
 		}
 
-		fn author() -> H160 {
+		fn author() -> sp_core::H160 {
 			<pallet_evm::Pallet<Runtime>>::find_author()
 		}
 
-		fn storage_at(address: H160, index: U256) -> H256 {
+		fn storage_at(address: sp_core::H160, index: sp_core::U256) -> sp_core::H256 {
 			let mut tmp = [0u8; 32];
 
 			index.to_big_endian(&mut tmp);
 
-			Evm::account_storages(address, H256::from_slice(&tmp[..]))
+			Evm::account_storages(address, sp_core::H256::from_slice(&tmp[..]))
 		}
 
 		fn call(
-			from: H160,
-			to: H160,
+			from: sp_core::H160,
+			to: sp_core::H160,
 			data: Vec<u8>,
-			value: U256,
-			gas_limit: U256,
-			max_fee_per_gas: Option<U256>,
-			max_priority_fee_per_gas: Option<U256>,
-			nonce: Option<U256>,
+			value: sp_core::U256,
+			gas_limit: sp_core::U256,
+			max_fee_per_gas: Option<sp_core::U256>,
+			max_priority_fee_per_gas: Option<sp_core::U256>,
+			nonce: Option<sp_core::U256>,
 			estimate: bool,
-			access_list: Option<Vec<(H160, Vec<H256>)>>,
+			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
 			// frontier
 			use pallet_evm::Runner;
@@ -449,15 +440,15 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn create(
-			from: H160,
+			from: sp_core::H160,
 			data: Vec<u8>,
-			value: U256,
-			gas_limit: U256,
-			max_fee_per_gas: Option<U256>,
-			max_priority_fee_per_gas: Option<U256>,
-			nonce: Option<U256>,
+			value: sp_core::U256,
+			gas_limit: sp_core::U256,
+			max_fee_per_gas: Option<sp_core::U256>,
+			max_priority_fee_per_gas: Option<sp_core::U256>,
+			nonce: Option<sp_core::U256>,
 			estimate: bool,
-			access_list: Option<Vec<(H160, Vec<H256>)>>,
+			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
 			// frontier
 			use pallet_evm::Runner;
@@ -516,7 +507,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn extrinsic_filter(
-			xts: Vec<<Block as BlockT>::Extrinsic>,
+			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
 		) -> Vec<pallet_ethereum::Transaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
 				RuntimeCall::Ethereum(
@@ -526,7 +517,7 @@ sp_api::impl_runtime_apis! {
 			}).collect::<Vec<pallet_ethereum::Transaction>>()
 		}
 
-		fn elasticity() -> Option<Permill> {
+		fn elasticity() -> Option<sp_runtime::Permill> {
 			None
 		}
 
@@ -537,7 +528,7 @@ sp_api::impl_runtime_apis! {
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
 		fn convert_transaction(
 			transaction: pallet_ethereum::Transaction
-		) -> <Block as BlockT>::Extrinsic {
+		) -> <Block as sp_runtime::traits::Block>::Extrinsic {
 			UncheckedExtrinsic::new_unsigned(
 				pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
 			)
@@ -603,7 +594,7 @@ sp_api::impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade(checks: bool) -> (Weight, Weight) {
+		fn on_runtime_upgrade(checks: bool) -> (Weight, frame_support::weights::Weight) {
 			// substrate
 			use frame_support::log;
 
@@ -657,15 +648,13 @@ cumulus_pallet_parachain_system::register_validate_block! {
 #[cfg(test)]
 mod tests {
 	// darwinia
-	use super::{Runtime, WeightPerGas};
-	// substrate
-	use frame_support::dispatch::DispatchClass;
+	use super::*;
 
 	#[test]
 	fn configured_base_extrinsic_weight_is_evm_compatible() {
 		let min_ethereum_transaction_weight = WeightPerGas::get() * 21_000;
 		let base_extrinsic = <Runtime as frame_system::Config>::BlockWeights::get()
-			.get(DispatchClass::Normal)
+			.get(frame_support::dispatch::DispatchClass::Normal)
 			.base_extrinsic;
 
 		assert!(base_extrinsic.ref_time() <= min_ethereum_transaction_weight.ref_time());

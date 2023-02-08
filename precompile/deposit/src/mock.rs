@@ -23,7 +23,6 @@ use crate::*;
 // frontier
 use fp_evm::{Precompile, PrecompileSet};
 // substrate
-use frame_support::pallet_prelude::Weight;
 use sp_core::{ConstU32, H160, H256, U256};
 
 pub(crate) type Balance = u128;
@@ -150,7 +149,7 @@ fn addr(a: u64) -> H160 {
 
 frame_support::parameter_types! {
 	pub const BlockGasLimit: U256 = U256::MAX;
-	pub const WeightPerGas: Weight = Weight::from_ref_time(20_000);
+	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(20_000);
 	pub PrecompilesValue: TestPrecompiles<TestRuntime> = TestPrecompiles::<_>::new();
 }
 

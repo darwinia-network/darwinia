@@ -37,10 +37,12 @@ impl pallet_assets::Config for Runtime {
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = ();
-	type CreateOrigin = AsEnsureOriginWithArg<EnsureSignedBy<IsInVec<Creators>, AccountId>>;
+	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
+		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<Creators>, AccountId>,
+	>;
 	type Currency = Balances;
 	type Extra = ();
-	type ForceOrigin = EnsureRoot<AccountId>;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type Freezer = ();
 	type MetadataDepositBase = ConstU128<0>;
 	type MetadataDepositPerByte = ConstU128<0>;

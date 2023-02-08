@@ -20,7 +20,7 @@
 use crate::*;
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
+	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }

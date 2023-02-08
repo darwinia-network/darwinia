@@ -32,14 +32,13 @@ use crate::mock::*;
 use bp_message_dispatch::{CallOrigin, MessageDispatch, MessagePayload, SpecVersion};
 use bp_runtime::messages::DispatchFeePayment;
 // substrate
-use frame_support::pallet_prelude::Weight;
 use sp_core::{H256, U256};
 
 pub(crate) const TEST_SPEC_VERSION: SpecVersion = 0;
 pub(crate) type SubChainId = [u8; 4];
 pub(crate) const SOURCE_CHAIN_ID: SubChainId = *b"srce";
 pub(crate) const TARGET_CHAIN_ID: SubChainId = *b"trgt";
-pub(crate) const TEST_WEIGHT: Weight = Weight::from_ref_time(1_000_000_000_000);
+pub(crate) const TEST_WEIGHT: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(1_000_000_000_000);
 
 // This ERC-20 contract mints the maximum amount of tokens to the contract creator.
 // pragma solidity ^0.5.0;

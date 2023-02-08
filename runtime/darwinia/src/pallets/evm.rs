@@ -24,16 +24,16 @@ use pallet_evm::Precompile;
 const WEIGHT_PER_GAS: u64 = 40_000;
 
 frame_support::parameter_types! {
-	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
+	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
 	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
+	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(WEIGHT_PER_GAS);
 }
 
 pub struct FindAuthorTruncated<F>(sp_std::marker::PhantomData<F>);
-impl<F: frame_support::traits::FindAuthor<u32>> frame_support::traits::FindAuthor<H160>
+impl<F: frame_support::traits::FindAuthor<u32>> frame_support::traits::FindAuthor<sp_core::H160>
 	for FindAuthorTruncated<F>
 {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
+	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
 	where
 		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
@@ -45,7 +45,7 @@ impl<F: frame_support::traits::FindAuthor<u32>> frame_support::traits::FindAutho
 				let raw = id.to_raw_vec();
 
 				if raw.len() >= 24 {
-					Some(H160::from_slice(&raw[4..24]))
+					Some(sp_core::H160::from_slice(&raw[4..24]))
 				} else {
 					None
 				}
@@ -56,8 +56,8 @@ impl<F: frame_support::traits::FindAuthor<u32>> frame_support::traits::FindAutho
 
 pub struct FixedGasPrice;
 impl pallet_evm::FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (U256, Weight) {
-		(U256::from(GWEI), Weight::zero())
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
 	}
 }
 
@@ -65,9 +65,9 @@ impl pallet_evm::FeeCalculator for FixedGasPrice {
 pub struct FromH160;
 impl<T> pallet_evm::AddressMapping<T> for FromH160
 where
-	T: From<H160>,
+	T: From<sp_core::H160>,
 {
-	fn into_account_id(address: H160) -> T {
+	fn into_account_id(address: sp_core::H160) -> T {
 		address.into()
 	}
 }
@@ -75,7 +75,7 @@ where
 pub struct AssetIdConverter;
 impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: H160 = account_id.into();
+		let addr: sp_core::H160 = account_id.into();
 		addr.to_low_u64_be()
 	}
 }
@@ -90,7 +90,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 15] {
+	pub fn used_addresses() -> [sp_core::H160; 15] {
 		[
 			addr(1),
 			addr(2),
@@ -164,7 +164,7 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: H160) -> bool {
+	fn is_precompile(&self, address: sp_core::H160) -> bool {
 		Self::used_addresses().contains(&address)
 	}
 }
@@ -188,6 +188,6 @@ impl pallet_evm::Config for Runtime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-fn addr(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
+fn addr(a: u64) -> sp_core::H160 {
+	sp_core::H160::from_low_u64_be(a)
 }

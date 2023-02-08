@@ -91,7 +91,7 @@ pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
 macro_rules! impl_self_contained_call {
 	() => {
 		impl fp_self_contained::SelfContainedCall for RuntimeCall {
-			type SignedInfo = H160;
+			type SignedInfo = sp_core::H160;
 
 			fn is_self_contained(&self) -> bool {
 				match self {
@@ -119,7 +119,7 @@ macro_rules! impl_self_contained_call {
 				info: &Self::SignedInfo,
 				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
 				len: usize,
-			) -> Option<TransactionValidity> {
+			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
 				match self {
 					RuntimeCall::Ethereum(call) =>
 						call.validate_self_contained(info, dispatch_info, len),
