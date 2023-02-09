@@ -2,7 +2,7 @@ name: Staging
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -32,10 +32,7 @@ jobs:
           toolchain: nightly
 
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --locked
+        run: cargo build --release --locked --features all-natives
 
       - name: Collect shared
         run: |
@@ -50,7 +47,6 @@ jobs:
         with:
           name: darwinia-artifact
           path: shared
-
 
   build-docker-image:
     name: Build image
@@ -87,5 +83,3 @@ jobs:
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
-
-

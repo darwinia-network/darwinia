@@ -20,7 +20,9 @@
 use sc_executor::{NativeExecutionDispatch, NativeVersion};
 
 /// Darwinia native executor instance.
+#[cfg(feature = "darwinia-native")]
 pub struct DarwiniaRuntimeExecutor;
+#[cfg(feature = "darwinia-native")]
 impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -37,7 +39,9 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 }
 
 /// Crab native executor instance.
+#[cfg(feature = "crab-native")]
 pub struct CrabRuntimeExecutor;
+#[cfg(feature = "crab-native")]
 impl NativeExecutionDispatch for CrabRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -54,7 +58,9 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 }
 
 /// Pangolin native executor instance.
+#[cfg(feature = "pangolin-native")]
 pub struct PangolinRuntimeExecutor;
+#[cfg(feature = "pangolin-native")]
 impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;

@@ -18,14 +18,39 @@
 
 #![allow(clippy::derive_partial_eq_without_eq)]
 
+#[cfg(feature = "darwinia-native")]
 pub mod darwinia;
+#[cfg(feature = "darwinia-native")]
 pub use darwinia::{self as darwinia_chain_spec, ChainSpec as DarwiniaChainSpec};
+#[cfg(not(feature = "darwinia-native"))]
+pub type DarwiniaChainSpec = DummyChainSpec;
 
+#[cfg(feature = "crab-native")]
 pub mod crab;
+#[cfg(feature = "crab-native")]
 pub use crab::{self as crab_chain_spec, ChainSpec as CrabChainSpec};
+#[cfg(not(feature = "crab-native"))]
+pub type CrabChainSpec = DummyChainSpec;
 
+#[cfg(feature = "pangolin-native")]
 pub mod pangolin;
+#[cfg(feature = "pangolin-native")]
 pub use pangolin::{self as pangolin_chain_spec, ChainSpec as PangolinChainSpec};
+#[cfg(not(feature = "pangolin-native"))]
+pub type PangolinChainSpec = DummyChainSpec;
+
+#[cfg(feature = "pangolin-native")]
+mod testnet_keys {
+	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
+	pub const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
+	pub const C2: &str = "0xa858cde8f6cf178786578a3b0becf5c27d18300c";
+	pub const C2_AURA: &str = "0x28273ae24cc6048c515e6bcaefe98cbfaa50c69290d70cf8eca1de3329015c2f";
+	pub const C3: &str = "0x986b41d07776aa48f6d7a80caad49485f9a71714";
+	pub const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
+	pub const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
+}
+#[cfg(feature = "pangolin-native")]
+use testnet_keys::*;
 
 // crates.io
 use serde::{Deserialize, Serialize};
@@ -34,26 +59,21 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
 
-// This is the simplest bytecode to revert without returning any data.
-// We will pre-deploy it under all of our precompiles to ensure they can be called from within
-// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
-const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+// Dummy chain spec, in case when we don't have the native runtime.
+#[allow(unused)]
+pub type DummyChainSpec = sc_service::GenericChainSpec<(), Extensions>;
 
-// These are devnet-only keys.
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
 const CHARLETH: &str = "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
 const DOROTHY: &str = "0x773539d4Ac0e786233D90A233654ccEE26a613D9";
 const ETHAN: &str = "0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
 const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
-// These are testnet-only keys.
-const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
-const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
-const C2: &str = "0xa858cde8f6cf178786578a3b0becf5c27d18300c";
-const C2_AURA: &str = "0x28273ae24cc6048c515e6bcaefe98cbfaa50c69290d70cf8eca1de3329015c2f";
-const C3: &str = "0x986b41d07776aa48f6d7a80caad49485f9a71714";
-const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
-const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
+
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from within
+// contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
+const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 // The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;

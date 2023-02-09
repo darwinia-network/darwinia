@@ -31,7 +31,6 @@ mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
-pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 
 // substrate
 use sp_std::prelude::*;
@@ -215,12 +214,12 @@ frame_benchmarking::define_benchmarks! {
 impl_self_contained_call!();
 
 sp_api::impl_runtime_apis! {
-	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
+	impl sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
 			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
 		}
 
-		fn authorities() -> Vec<AuraId> {
+		fn authorities() -> Vec<sp_consensus_aura::sr25519::AuthorityId> {
 			Aura::authorities().into_inner()
 		}
 	}

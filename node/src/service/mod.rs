@@ -23,8 +23,11 @@ pub use executors::*;
 
 mod instant_finalize;
 
+#[cfg(feature = "crab-native")]
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
+#[cfg(feature = "darwinia-native")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
+#[cfg(feature = "pangolin-native")]
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
 
 // std
@@ -35,8 +38,8 @@ use std::{
 };
 // darwinia
 use crate::frontier_service;
-use darwinia_runtime::AuraId;
 use dc_primitives::*;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
 use sc_consensus::ImportQueue;
 use sc_network_common::service::NetworkBlock;
@@ -58,6 +61,9 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Crab` network.
 	fn is_crab(&self) -> bool;
 
+	/// Returns if this is a configuration for the `Darwinia` network.
+	fn is_darwinia(&self) -> bool;
+
 	/// Returns if this is a configuration for the `Pangolin` network.
 	fn is_pangolin(&self) -> bool;
 
@@ -67,6 +73,10 @@ pub trait IdentifyVariant {
 impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 	fn is_crab(&self) -> bool {
 		self.id().starts_with("crab")
+	}
+
+	fn is_darwinia(&self) -> bool {
+		self.id().starts_with("darwinia")
 	}
 
 	fn is_pangolin(&self) -> bool {

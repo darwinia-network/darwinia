@@ -81,13 +81,22 @@ impl SubstrateCli for Cli {
 	}
 
 	fn native_runtime_version(spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+		#[cfg(feature = "crab-native")]
 		if spec.is_crab() {
-			&crab_runtime::VERSION
-		} else if spec.is_pangolin() {
-			&pangolin_runtime::VERSION
-		} else {
-			&darwinia_runtime::VERSION
+			return &crab_runtime::VERSION;
 		}
+
+		#[cfg(feature = "pangolin-native")]
+		if spec.is_pangolin() {
+			return &pangolin_runtime::VERSION;
+		}
+
+		#[cfg(feature = "darwinia-native")]
+		if spec.is_darwinia() {
+			return &darwinia_runtime::VERSION;
+		}
+
+		panic!("No runtime feature (crab, darwinia, pangolin) is enabled");
 	}
 }
 
@@ -267,27 +276,39 @@ impl CliConfiguration<Self> for RelayChainCli {
 pub fn run() -> Result<()> {
 	/// Creates partial components for the runtimes that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
-		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {
+		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
+			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
 				let $partials = new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
-				$code
-			} else if $config.chain_spec.is_pangolin() {
+
+				return $code;
+			}
+
+			#[cfg(feature = "pangolin-native")]
+			if $config.chain_spec.is_pangolin() {
 				let $partials = new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
-				$code
-			} else {
+
+				return $code;
+			}
+
+			#[cfg(feature = "darwinia-native")]
+			if $config.chain_spec.is_darwinia() {
 				let $partials = new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
-				$code
+
+				return $code;
 			}
-		};
+
+			panic!("No runtime feature (polkadot, kusama, westend, rococo) is enabled");
+		}};
 	}
 
 	macro_rules! construct_async_run {
@@ -297,8 +318,9 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(chain_spec);
 
+			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
-				runner.async_run(|$config| {
+				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
 						CrabRuntimeApi,
 						CrabRuntimeExecutor,
@@ -307,10 +329,14 @@ pub fn run() -> Result<()> {
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
 					let task_manager = $components.task_manager;
+
 					{ $( $code )* }.map(|v| (v, task_manager))
-				})
-			} else if chain_spec.is_pangolin() {
-				runner.async_run(|$config| {
+				});
+			}
+
+			#[cfg(feature = "pangolin-native")]
+			if chain_spec.is_pangolin() {
+				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
 						PangolinRuntimeApi,
 						PangolinRuntimeExecutor,
@@ -319,10 +345,14 @@ pub fn run() -> Result<()> {
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
 					let task_manager = $components.task_manager;
+
 					{ $( $code )* }.map(|v| (v, task_manager))
-				})
-			} else {
-				runner.async_run(|$config| {
+				});
+			}
+
+			#[cfg(feature = "darwinia-native")]
+			if chain_spec.is_darwinia() {
+				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
 						DarwiniaRuntimeApi,
 						DarwiniaRuntimeExecutor,
@@ -331,9 +361,12 @@ pub fn run() -> Result<()> {
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
 					let task_manager = $components.task_manager;
+
 					{ $( $code )* }.map(|v| (v, task_manager))
-				})
+				});
 			}
+
+			panic!("No runtime feature (crab, darwinia, pangolin) is enabled");
 		}}
 	}
 
@@ -425,28 +458,40 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
+				#[cfg(feature = "crab-native")]
 				if config.chain_spec.is_crab() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
-					cmd.run::<_, dc_primitives::Block>(client, frontier_backend)
-				} else if config.chain_spec.is_pangolin() {
+
+					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
+				}
+
+				#[cfg(feature = "pangolin-native")]
+				if config.chain_spec.is_pangolin() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
-					cmd.run::<_, dc_primitives::Block>(client, frontier_backend)
-				} else {
+
+					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
+				}
+
+				#[cfg(feature = "darwinia-native")]
+				if config.chain_spec.is_darwinia() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
-					cmd.run::<_, dc_primitives::Block>(client, frontier_backend)
+
+					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
+
+				panic!("No runtime feature (polkadot, kusama, westend, rococo) is enabled");
 			})
 		},
 		Some(Subcommand::Benchmark(cmd)) => {
@@ -457,13 +502,24 @@ pub fn run() -> Result<()> {
 				BenchmarkCmd::Pallet(cmd) =>
 					if cfg!(feature = "runtime-benchmarks") {
 						runner.sync_run(|config| {
+							#[cfg(feature = "crab-native")]
 							if config.chain_spec.is_crab() {
-								cmd.run::<Block, CrabRuntimeExecutor>(config)
-							} else if config.chain_spec.is_pangolin() {
-								cmd.run::<Block, PangolinRuntimeExecutor>(config)
-							} else {
-								cmd.run::<Block, DarwiniaRuntimeExecutor>(config)
+								return cmd.run::<Block, CrabRuntimeExecutor>(config);
 							}
+
+							#[cfg(feature = "pangolin-native")]
+							if config.chain_spec.is_pangolin() {
+								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
+							}
+
+							#[cfg(feature = "darwinia-native")]
+							if config.chain_spec.is_darwinia() {
+								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
+							}
+
+							panic!(
+								"No runtime feature (polkadot, kusama, westend, rococo) is enabled"
+							);
 						})
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
@@ -492,7 +548,6 @@ pub fn run() -> Result<()> {
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
 				// NOTE: this allows the Client to leniently implement
 				// new benchmark commands without requiring a companion MR.
-				#[allow(unreachable_patterns)]
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
@@ -582,33 +637,41 @@ pub fn run() -> Result<()> {
 				}
 
 				if chain_spec.is_dev() {
-					return if chain_spec.is_crab() {
-						service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					#[cfg(feature = "crab-native")]
+					if chain_spec.is_crab() {
+						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+							config,
+							&eth_rpc_config,
+						)
+						.map_err(Into::into);
+					}
+
+					#[cfg(feature = "pangolin-native")]
+					if chain_spec.is_pangolin() {
+						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							config,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
-					} else if chain_spec.is_pangolin() {
-						service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+					}
+
+					#[cfg(feature = "darwinia-native")]
+					{
+						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 							config,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
-					} else {
-						service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
-							config,
-							&eth_rpc_config,
-						)
-						.map_err(Into::into)
-					};
+					}
 				}
 
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
+				#[cfg(feature = "crab-native")]
 				if chain_spec.is_crab() {
-					service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -618,32 +681,40 @@ pub fn run() -> Result<()> {
 					)
 					.await
 					.map(|r| r.0)
-					.map_err(Into::into)
-				} else if chain_spec.is_pangolin() {
-					service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
-						config,
-						polkadot_config,
-						collator_options,
-						id,
-						hwbench,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
-				} else {
-					service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
-						config,
-						polkadot_config,
-						collator_options,
-						id,
-						hwbench,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
+					.map_err(Into::into);
 				}
+
+				#[cfg(feature = "pangolin-native")]
+				if chain_spec.is_pangolin() {
+					return service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+						&eth_rpc_config,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into);
+				}
+
+				#[cfg(feature = "darwinia-native")]
+				if chain_spec.is_darwinia() {
+					return service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+						&eth_rpc_config,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into);
+				}
+
+				panic!("No runtime feature (crab, darwinia, pangolin) is enabled");
 			})
 		},
 	}
@@ -661,18 +732,30 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		id
 	};
 
-	Ok(match id.to_lowercase().as_ref() {
+	Ok(match id.to_lowercase().as_str() {
+		#[cfg(feature = "darwinia-native")]
 		"darwinia" => Box::new(darwinia_chain_spec::config()),
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
+		#[cfg(feature = "crab-native")]
 		"crab" => Box::new(crab_chain_spec::config()),
+		#[cfg(feature = "crab-native")]
 		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
+		#[cfg(feature = "crab-native")]
 		"crab-dev" => Box::new(crab_chain_spec::development_config()),
+		#[cfg(feature = "crab-native")]
 		"crab-local" => Box::new(crab_chain_spec::local_config()),
+		#[cfg(feature = "pangolin-native")]
 		"pangolin" => Box::new(pangolin_chain_spec::config()),
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-genesis" => Box::new(pangolin_chain_spec::genesis_config()),
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);

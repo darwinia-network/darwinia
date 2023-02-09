@@ -119,7 +119,7 @@ where
 
 			if key.ends_with("000000000000") {
 				if let Some(s) = try_get_sub_seed(&key) {
-					log::info!("migrate special Account(`{s}`): {key}");
+					log::info!("migrate special Account(`{s} {key}`)");
 
 					is_special_account = true;
 				} else if key

@@ -24,21 +24,21 @@ log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
 
 # cumulus
-cumulus-client-cli                      = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-client-collator                 = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-client-consensus-aura           = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-client-consensus-common         = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-client-network                  = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-client-service                  = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-primitives-core                 = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-primitives-parachain-inherent   = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
-cumulus-relay-chain-interface           = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-cli                    = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-collator               = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-consensus-aura         = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-consensus-common       = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-network                = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-client-service                = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-primitives-core               = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
+cumulus-relay-chain-interface         = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.36" }
 
 # darwinia
-crab-runtime     = { path = "../runtime/crab" }
-darwinia-runtime = { path = "../runtime/darwinia" }
+crab-runtime     = { optional = true, path = "../runtime/crab" }
+darwinia-runtime = { optional = true, path = "../runtime/darwinia" }
 dc-primitives    = { path = "../core/primitives" }
-pangolin-runtime = { path = "../runtime/pangolin" }
+pangolin-runtime = { optional = true, path = "../runtime/pangolin" }
 
 # frontier
 fc-cli          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
@@ -97,16 +97,26 @@ sp-timestamp                   = { git = "https://github.com/paritytech/substrat
 sp-transaction-pool            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 substrate-frame-rpc-system     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 substrate-prometheus-endpoint  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-try-runtime-cli                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36", optional = true}
+try-runtime-cli                = { optional = true, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [features]
-default = []
+default = [
+	"crab-native",
+	"darwinia-native",
+]
 
-fast-runtime = []
+fast-runtime = [
+	# darwinia
+	"crab-runtime?/fast-runtime",
+	"darwinia-runtime?/fast-runtime",
+	"pangolin-runtime?/fast-runtime",
+]
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-runtime/runtime-benchmarks",
+	"crab-runtime?/runtime-benchmarks",
+	"darwinia-runtime?/runtime-benchmarks",
+	"pangolin-runtime?/runtime-benchmarks",
 
 	# polkadot
 	"polkadot-cli/runtime-benchmarks",
@@ -114,24 +124,38 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
-	"crab-runtime/try-runtime",
-	"darwinia-runtime/try-runtime",
-	"pangolin-runtime/try-runtime",
+	"crab-runtime?/try-runtime",
+	"darwinia-runtime?/try-runtime",
+	"pangolin-runtime?/try-runtime",
 
 	# substrate
 	"try-runtime-cli/try-runtime",
 ]
 
-all-native = [
+all-natives = [
 	# darwinia
-	"kusama-native",
-	"rococo-native",
+	"crab-native",
+	"darwinia-native",
+	"pangolin-native",
 ]
-kusama-native = [
+crab-native = [
+	# darwinia
+	"crab-runtime",
+
 	# polkadot
 	"polkadot-cli/kusama-native",
 ]
-rococo-native = [
+darwinia-native = [
+	# darwinia
+	"darwinia-runtime",
+
+	# polkadot
+	"polkadot-cli/polkadot-native",
+]
+pangolin-native = [
+	# darwinia
+	"pangolin-runtime",
+
 	# polkadot
 	"polkadot-cli/rococo-native",
 ]
