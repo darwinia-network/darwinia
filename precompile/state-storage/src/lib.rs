@@ -63,9 +63,9 @@ where
 	}
 }
 
-pub struct EthereumStorageFilter;
-impl StorageFilterT for EthereumStorageFilter {
+pub struct StateStorageFilter;
+impl StorageFilterT for StateStorageFilter {
 	fn allow(prefix: &[u8]) -> bool {
-		prefix != Twox128::hash(b"EVM") && prefix != Twox128::hash(b"Ethereum")
+		prefix != Twox128::hash(b"Evm")
 	}
 }

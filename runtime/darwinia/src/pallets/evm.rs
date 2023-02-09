@@ -143,7 +143,7 @@ where
 			// Darwinia precompiles: [1024, 2048) for stable precompiles.
 			a if a == addr(1024) => Some(<darwinia_precompile_state_storage::StateStorage<
 				Runtime,
-				darwinia_precompile_state_storage::EthereumStorageFilter,
+				darwinia_precompile_state_storage::StateStorageFilter,
 			>>::execute(handle)),
 			a if a == addr(1025) =>
 				Some(<pallet_evm_precompile_dispatch::Dispatch<Runtime>>::execute(handle)),

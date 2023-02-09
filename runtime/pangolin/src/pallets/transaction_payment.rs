@@ -22,7 +22,8 @@ use crate::*;
 impl pallet_transaction_payment::Config for Runtime {
 	type FeeMultiplierUpdate = polkadot_runtime_common::SlowAdjustingFeeUpdate<Self>;
 	// Relay Chain `TransactionByteFee` / 10
-	type LengthToFee = frame_support::weights::ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
+	type LengthToFee =
+		frame_support::weights::ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
 	type OnChargeTransaction =
 		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
 	type OperationalFeeMultiplier = sp_runtime::traits::ConstU8<5>;

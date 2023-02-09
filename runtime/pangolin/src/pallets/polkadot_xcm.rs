@@ -135,7 +135,10 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
 	type SubscriptionService = PolkadotXcm;
 	type Trader = xcm_configs::LocalAssetTrader<
-		frame_support::weights::ConstantMultiplier<Balance, darwinia_common_runtime::xcm_configs::XcmBaseWeightFee>,
+		frame_support::weights::ConstantMultiplier<
+			Balance,
+			darwinia_common_runtime::xcm_configs::XcmBaseWeightFee,
+		>,
 		AnchoringSelfReserve,
 		AccountId,
 		Balances,

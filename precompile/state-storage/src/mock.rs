@@ -166,7 +166,7 @@ frame_support::construct_runtime! {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
-		EVM: pallet_evm,
+		Evm: pallet_evm,
 	}
 }
 

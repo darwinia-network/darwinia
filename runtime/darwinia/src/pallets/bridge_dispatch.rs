@@ -34,7 +34,8 @@ impl bp_message_dispatch::CallValidate<AccountId, RuntimeOrigin, RuntimeCall> fo
 				let total_payment =
 					darwinia_message_transact::total_payment::<Runtime>((&**tx).into());
 				let relayer =
-					pallet_evm::Pallet::<Runtime>::account_basic(&sp_core::H160(relayer_account.0)).0;
+					pallet_evm::Pallet::<Runtime>::account_basic(&sp_core::H160(relayer_account.0))
+						.0;
 
 				frame_support::ensure!(relayer.balance >= total_payment, "Insufficient balance");
 				Ok(())
@@ -87,7 +88,8 @@ impl bp_message_dispatch::IntoDispatchOrigin<AccountId, RuntimeCall, RuntimeOrig
 		match call {
 			RuntimeCall::MessageTransact(darwinia_message_transact::Call::message_transact {
 				..
-			}) => darwinia_message_transact::LcmpEthOrigin::MessageTransact(sp_core::H160(id.0)).into(),
+			}) => darwinia_message_transact::LcmpEthOrigin::MessageTransact(sp_core::H160(id.0))
+				.into(),
 			_ => frame_system::RawOrigin::Signed(*id).into(),
 		}
 	}
