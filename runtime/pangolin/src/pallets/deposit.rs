@@ -45,8 +45,8 @@ impl darwinia_deposit::SimpleAsset for PKtonMinting {
 
 impl darwinia_deposit::Config for Runtime {
 	type Kton = PKtonMinting;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
-	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
+	type MaxDeposits = ConstU32<16>;
+	type MinLockingAmount = ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Timestamp;
