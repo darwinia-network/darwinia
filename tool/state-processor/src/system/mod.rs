@@ -20,7 +20,8 @@ where
 	pub fn process_system(&mut self) -> &mut Self {
 		// System storage items.
 		// https://github.dev/darwinia-network/substrate/blob/darwinia-v0.12.5/frame/system/src/lib.rs#L545
-		let solo_account_infos = self.process_solo_account_infos();
+		let (solo_account_infos, ring_remaining, kton_remaining) =
+			self.process_solo_account_infos();
 		let para_account_infos = self.process_para_account_infos();
 		let (ring_total_issuance_storage, kton_total_issuance_storage) = self.process_balances();
 		let mut accounts = Map::default();
@@ -77,12 +78,14 @@ where
 
 		log::info!("`ring_total_issuance({ring_total_issuance})`");
 		log::info!("`ring_total_issuance_storage({ring_total_issuance_storage})`");
+		assert_eq!(ring_total_issuance - ring_remaining, ring_total_issuance_storage);
 
 		log::info!("set `Balances::TotalIssuance`");
 		self.shell_state.insert_value(b"Balances", b"TotalIssuance", "", ring_total_issuance);
 
 		log::info!("`kton_total_issuance({kton_total_issuance})`");
 		log::info!("`kton_total_issuance_storage({kton_total_issuance_storage})`");
+		assert_eq!(kton_total_issuance - kton_remaining, kton_total_issuance_storage);
 
 		let mut kton_details = AssetDetails {
 			owner: ROOT,
@@ -228,7 +231,7 @@ where
 		self
 	}
 
-	fn process_solo_account_infos(&mut self) -> Map<AccountInfo> {
+	fn process_solo_account_infos(&mut self) -> (Map<AccountInfo>, Balance, Balance) {
 		let mut account_infos = <Map<AccountInfo>>::default();
 		let mut remaining_ring = <Map<u128>>::default();
 		let mut remaining_kton = <Map<u128>>::default();
@@ -257,6 +260,8 @@ where
 				);
 			}
 		});
+		log::info!("total_remaining_ring({total_remaining_ring})");
+
 		remaining_kton.into_iter().for_each(|(k, v)| {
 			if let Some(a) = account_infos.get_mut(&k) {
 				total_remaining_kton += v;
@@ -268,11 +273,9 @@ where
 				);
 			}
 		});
-
-		log::info!("total_remaining_ring({total_remaining_ring})");
 		log::info!("total_remaining_kton({total_remaining_kton})");
 
-		account_infos
+		(account_infos, total_remaining_ring, total_remaining_kton)
 	}
 
 	fn process_para_account_infos(&mut self) -> Map<AccountInfo> {

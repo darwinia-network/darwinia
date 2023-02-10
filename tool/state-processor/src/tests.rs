@@ -318,8 +318,10 @@ fn ring_total_issuance() {
 			&mut migrated_total_issuance,
 		);
 
-		// FIXME: https://github.com/darwinia-network/darwinia-2.0/issues/244
-		// assert_eq!(migrated_total_issuance, solo_issuance * GWEI + para_issuance);
+		assert_eq!(
+			migrated_total_issuance - 155_223_151_710_u128,
+			solo_issuance * GWEI + para_issuance
+		);
 	});
 }
 
@@ -347,7 +349,8 @@ fn kton_total_issuance() {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			&mut details,
 		);
-		assert!(details.supply - total_issuance * GWEI < 200 * GWEI);
+
+		assert_eq!(details.supply - 4_999_999_999_u128, total_issuance * GWEI);
 	});
 }
 
