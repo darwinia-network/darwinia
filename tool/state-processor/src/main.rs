@@ -16,6 +16,7 @@ use type_registry::*;
 mod balances;
 mod evm;
 mod identity;
+mod parachain_system;
 mod staking;
 mod system;
 mod vesting;

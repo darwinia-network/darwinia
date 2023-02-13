@@ -74,7 +74,12 @@ where
 
 		assert!(*_guard != 0);
 
-		self.process_system().process_identity().process_vesting().process_staking().process_evm();
+		self.process_parachain_system()
+			.process_system()
+			.process_identity()
+			.process_vesting()
+			.process_staking()
+			.process_evm();
 
 		self
 	}
@@ -192,6 +197,16 @@ impl<R> State<R> {
 		self.map.keys().into_iter().any(|k| k.starts_with(&item_key(pallet, item)))
 	}
 
+	pub fn take_raw_value(&mut self, key: &str, value: &mut String) -> &mut Self {
+		if let Some(v) = self.map.remove(key) {
+			*value = v;
+		} else {
+			log::error!("`key({key})` not found");
+		}
+
+		self
+	}
+
 	pub fn take_raw_map<F>(
 		&mut self,
 		prefix: &str,
@@ -237,7 +252,7 @@ impl<R> State<R> {
 			}
 		} else {
 			log::error!(
-				"key not found `{}::{}::{hash}`",
+				"`key({}::{}::{hash})` not found",
 				String::from_utf8_lossy(pallet),
 				String::from_utf8_lossy(item),
 			);
