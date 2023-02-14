@@ -1,44 +1,41 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "State storage precompiles for EVM pallet."
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
 name        = "darwinia-precompile-deposit"
+description = "Deposit precompile for EVM pallet."
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # frontier
-fp-evm     = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
-pallet-evm = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.36" }
+fp-evm     = { workspace = true }
+pallet-evm = { workspace = true }
 
 # darwinia
-darwinia-deposit = { default-features = false, path = "../../pallet/deposit"}
+darwinia-deposit = { workspace = true }
 
 # moonbeam
-precompile-utils = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.36" }
+precompile-utils = { workspace = true }
 
 # substrate
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-support = { workspace = true }
+frame-system  = { workspace = true }
+sp-core       = { workspace = true }
+sp-std        = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.3" }
-scale-info = { version = "2.3", features = ["derive"] }
+codec      = { package = "parity-scale-codec", workspace = true }
+scale-info = { workspace = true }
 
 # moonbeam
-precompile-utils = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.36", features = ["testing"] }
+precompile-utils = { workspace = true, features = ["testing"] }
 
 # substrate
-pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-runtime       = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-balances  = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-io            = { workspace = true }
+sp-runtime       = { workspace = true }
 
 [features]
 default = ["std"]

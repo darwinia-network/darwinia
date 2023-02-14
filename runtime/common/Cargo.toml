@@ -1,40 +1,37 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia Common Runtime"
-edition     = "2021"
-homepage    = "https://darwinia.network/"
-license     = "GPL-3.0"
 name        = "darwinia-common-runtime"
+description = "Darwinia Common Runtime"
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # crates.io
-codec    = { package = "parity-scale-codec", version = "3.3", default-features = false }
+codec    = { package = "parity-scale-codec", workspace = true }
 smallvec = { version = "1.10" }
 
 # darwinia
-dc-primitives = { default-features = false, path = "../../core/primitives" }
+dc-primitives = { workspace = true }
 
 # darwinia-messages-substrate
-bp-darwinia-core = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.36" }
+bp-darwinia-core = { workspace = true }
 
 # moonbeam
-account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.36" }
+account = { workspace = true }
 
 # polkadot
-xcm          = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
-xcm-builder  = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
-xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
+xcm          = { workspace = true }
+xcm-builder  = { workspace = true }
+xcm-executor = { workspace = true }
 
 # substrate
-frame-support     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-frame-system      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-collective = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-io             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-runtime        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-std            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-support     = { workspace = true }
+frame-system      = { workspace = true }
+pallet-collective = { workspace = true }
+sp-io             = { workspace = true }
+sp-runtime        = { workspace = true }
+sp-std            = { workspace = true }
 
 [features]
 default = ["std"]

@@ -1,26 +1,23 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia economic inflation mechanism implementation."
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
 name        = "dc-inflation"
+description = "Darwinia economic inflation mechanism implementation."
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # crates.io
 primitive-types = { version = "0.12", default-features = false }
 
 # darwinia
-dc-types = { path = "../types" }
+dc-types = { workspace = true }
 
 # github
 substrate-fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed" }
 
 [dev-dependencies]
-sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-arithmetic = { workspace = true }
 
 [features]
 default = ["std"]

@@ -1,24 +1,21 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia chain core primitives."
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
 name        = "dc-primitives"
+description = "Darwinia chain core primitives."
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # darwinia
-dc-types = { path = "../types" }
+dc-types = { workspace = true }
 
 # moonbeam
-account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.36" }
+account = { workspace = true }
 
 # substrate
-sp-core    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-core    = { workspace = true }
+sp-runtime = { workspace = true }
 
 [features]
 default = ["std"]

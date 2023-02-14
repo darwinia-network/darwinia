@@ -1,40 +1,37 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia SR25519 to ECDSA account migration."
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
 name        = "darwinia-account-migration"
+description = "Darwinia SR25519 to ECDSA account migration."
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # crates.io
-array-bytes = { version = "6.0" }
-codec       = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
-scale-info  = { version = "2.3", default-features = false, features = ["derive"] }
+array-bytes = { workspace = true }
+codec       = { package = "parity-scale-codec", workspace = true }
+scale-info  = { workspace = true }
 
 # darwinia
-darwinia-deposit = { default-features = false, path = "../deposit" }
-darwinia-staking = { default-features = false, path = "../staking" }
-dc-primitives    = { default-features = false, path = "../../core/primitives" }
+darwinia-deposit = { workspace = true }
+darwinia-staking = { workspace = true }
+dc-primitives    = { workspace = true }
 
 # substrate
-frame-support   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-frame-system    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-assets   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-identity = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-vesting  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-core         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-io           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-runtime      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-std          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-support   = { workspace = true }
+frame-system    = { workspace = true }
+pallet-assets   = { workspace = true }
+pallet-balances = { workspace = true }
+pallet-identity = { workspace = true }
+pallet-vesting  = { workspace = true }
+sp-core         = { workspace = true }
+sp-io           = { workspace = true }
+sp-runtime      = { workspace = true }
+sp-std          = { workspace = true }
 
 [dev-dependencies]
-sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-version = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+sp-keyring = { workspace = true }
+sp-version = { workspace = true }
 
 [features]
 default = ["std"]

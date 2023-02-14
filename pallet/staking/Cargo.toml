@@ -1,45 +1,42 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia parachain staking."
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
 name        = "darwinia-staking"
+description = "Darwinia parachain staking."
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "6.0.0"
+authors     = { workspace = true }
+edition     = { workspace = true }
+version     = { workspace = true }
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
-scale-info = { version = "2.3", default-features = false }
+codec      = { package = "parity-scale-codec", workspace = true }
+scale-info = { workspace = true }
 
 # darwinia
-dc-inflation = { default-features = false, path = "../../core/inflation" }
-dc-types     = { path = "../../core/types" }
+dc-inflation = { workspace = true }
+dc-types     = { workspace = true }
 
 # subtrate
-frame-support     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-frame-system      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-authorship = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-session    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-core           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-runtime        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-std            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-support     = { workspace = true }
+frame-system      = { workspace = true }
+pallet-authorship = { workspace = true }
+pallet-session    = { workspace = true }
+sp-core           = { workspace = true }
+sp-runtime        = { workspace = true }
+sp-std            = { workspace = true }
 
 [dev-dependencies]
 # crates.io
 pretty_env_logger = { version = "0.4" }
 
 # darwinia
-darwinia-deposit = { path = "../deposit" }
+darwinia-deposit = { workspace = true }
 
 # substrate
-pallet-assets    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-balances  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-session   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-io            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-assets    = { workspace = true, features = ["std"] }
+pallet-balances  = { workspace = true, features = ["std"] }
+pallet-session   = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-io            = { workspace = true }
 
 [features]
 default = ["std"]
