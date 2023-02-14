@@ -301,8 +301,8 @@ macro_rules! impl_account_migration_tests {
 							.unwrap(),
 							20
 						);
-						assert_eq!(Staking::ledger_of(to).unwrap().staked_ring, 20);
-						assert_eq!(Staking::ledger_of(to).unwrap().staked_kton, 20);
+						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
+						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_kton, 20);
 					});
 			}
 

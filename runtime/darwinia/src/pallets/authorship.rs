@@ -20,7 +20,7 @@
 use crate::*;
 
 impl pallet_authorship::Config for Runtime {
-	type EventHandler = (Staking,);
+	type EventHandler = (DarwiniaStaking,);
 	type FilterUncle = ();
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
 	type UncleGenerations = ConstU32<0>;

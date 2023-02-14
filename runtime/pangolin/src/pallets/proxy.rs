@@ -57,7 +57,7 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 					| RuntimeCall::Assets(..)
 					| RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer { .. })
 					| RuntimeCall::Deposit(..)
-					| RuntimeCall::Staking(..)
+					| RuntimeCall::DarwiniaStaking(..)
 					// Might contains transfer {
 					| RuntimeCall::Utility(..)
 					| RuntimeCall::Proxy(..)
@@ -77,7 +77,7 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::Staking => {
 				matches!(
 					c,
-					RuntimeCall::Session(..) | RuntimeCall::Deposit(..) | RuntimeCall::Staking(..)
+					RuntimeCall::Session(..) | RuntimeCall::Deposit(..) | RuntimeCall::DarwiniaStaking(..)
 				)
 			},
 			ProxyType::IdentityJudgement =>

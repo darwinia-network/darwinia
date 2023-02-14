@@ -165,7 +165,7 @@ pub fn genesis_config() -> ChainSpec {
 				vesting: Default::default(),
 
 				// Consensus stuff.
-				staking: StakingConfig {
+				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 					elapsed_time: 0,
 					collator_count: 3,
@@ -269,7 +269,7 @@ fn testnet_genesis(
 		vesting: Default::default(),
 
 		// Consensus stuff.
-		staking: StakingConfig {
+		darwinia_staking: DarwiniaStakingConfig {
 			now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 			elapsed_time: 0,
 			collator_count: collators.len() as _,

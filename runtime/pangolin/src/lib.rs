@@ -27,6 +27,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod pallets;
 pub use pallets::*;
 
+mod migration;
 mod weights;
 
 pub use darwinia_common_runtime::*;
@@ -68,7 +69,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	pallet_assets::migration::v1::MigrateToV1<Runtime>,
+	migration::CustomOnRuntimeUpgrade,
 >;
 
 /// Darwinia proposal base fee.
@@ -163,7 +164,7 @@ frame_support::construct_runtime! {
 
 		// Consensus stuff.
 		Authorship: pallet_authorship = 11,
-		Staking: darwinia_staking = 12,
+		DarwiniaStaking: darwinia_staking = 12,
 		Session: pallet_session = 13,
 		Aura: pallet_aura = 14,
 		AuraExt: cumulus_pallet_aura_ext = 15,

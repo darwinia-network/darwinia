@@ -166,7 +166,7 @@ frame_support::construct_runtime! {
 
 		// Consensus stuff.
 		Authorship: pallet_authorship = 11,
-		Staking: darwinia_staking = 12,
+		DarwiniaStaking: darwinia_staking = 12,
 		Session: pallet_session = 13,
 		Aura: pallet_aura = 14,
 		AuraExt: cumulus_pallet_aura_ext = 15,
