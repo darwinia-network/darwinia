@@ -1,10 +1,10 @@
 [package]
-name        = "dc-inflation"
-description = "Darwinia economic inflation mechanism implementation."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia economic inflation mechanism implementation."
+edition.workspace = true
+name              = "dc-inflation"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io

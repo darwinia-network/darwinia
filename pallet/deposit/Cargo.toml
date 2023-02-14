@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-deposit"
-description = "Darwinia deposit mechanism implementation."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia deposit mechanism implementation."
+edition.workspace = true
+name              = "darwinia-deposit"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io
@@ -26,7 +26,7 @@ sp-std        = { workspace = true }
 [dev-dependencies]
 # substrate
 pallet-assets    = { workspace = true, features = ["std"] }
-pallet-balances  = { workspace = true, features = ["std"]  }
+pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true }
 

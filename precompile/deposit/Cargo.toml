@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-precompile-deposit"
-description = "Deposit precompile for EVM pallet."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Deposit precompile for EVM pallet."
+edition.workspace = true
+name              = "darwinia-precompile-deposit"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # frontier

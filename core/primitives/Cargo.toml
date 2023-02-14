@@ -1,10 +1,10 @@
 [package]
-name        = "dc-primitives"
-description = "Darwinia chain core primitives."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia chain core primitives."
+edition.workspace = true
+name              = "dc-primitives"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # darwinia
@@ -22,6 +22,7 @@ default = ["std"]
 std = [
 	# moonbeam
 	"account/std",
+
 	# substrate
 	"sp-core/std",
 	"sp-runtime/std",

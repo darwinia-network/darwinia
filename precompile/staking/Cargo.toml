@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-precompile-staking"
-description = "Staking precompile for EVM pallet."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Staking precompile for EVM pallet."
+edition.workspace = true
+name              = "darwinia-precompile-staking"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # frontier

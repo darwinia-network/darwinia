@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-message-transact"
-description = "LCMP evm message execution."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "LCMP evm message execution."
+edition.workspace = true
+name              = "darwinia-message-transact"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io

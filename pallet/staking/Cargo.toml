@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-staking"
-description = "Darwinia parachain staking."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia parachain staking."
+edition.workspace = true
+name              = "darwinia-staking"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io

@@ -1,10 +1,10 @@
 [package]
-name        = "pangolin-runtime"
-description = "Pangolin runtime."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Pangolin runtime."
+edition.workspace = true
+name              = "pangolin-runtime"
+readme            = "README.md"
+version.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }

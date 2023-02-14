@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-runtime"
-description = "Darwinia runtime."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia runtime."
+edition.workspace = true
+name              = "darwinia-runtime"
+readme            = "README.md"
+version.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -73,12 +73,12 @@ precompile-utils = { workspace = true }
 xcm-primitives   = { workspace = true }
 
 # polkadot
-pallet-xcm              = { workspace = true}
-polkadot-parachain      = { workspace = true}
-polkadot-runtime-common = { workspace = true}
-xcm                     = { workspace = true}
-xcm-builder             = { workspace = true}
-xcm-executor            = { workspace = true}
+pallet-xcm              = { workspace = true }
+polkadot-parachain      = { workspace = true }
+polkadot-runtime-common = { workspace = true }
+xcm                     = { workspace = true }
+xcm-builder             = { workspace = true }
+xcm-executor            = { workspace = true }
 
 # substrate
 frame-executive                            = { workspace = true }

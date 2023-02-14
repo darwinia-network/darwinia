@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-precompile-state-storage"
-description = "State storage precompile for EVM pallet."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "State storage precompile for EVM pallet."
+edition.workspace = true
+name              = "darwinia-precompile-state-storage"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # frontier

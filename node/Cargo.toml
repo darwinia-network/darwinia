@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia"
-description = "Darwinia node."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia node."
+edition.workspace = true
+name              = "darwinia"
+readme            = "README.md"
+version.workspace = true
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }

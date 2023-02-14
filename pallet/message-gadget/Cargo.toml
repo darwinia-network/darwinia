@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-message-gadget"
-description = "Darwinia messages gadget."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia messages gadget."
+edition.workspace = true
+name              = "darwinia-message-gadget"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io

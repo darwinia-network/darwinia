@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-account-migration"
-description = "Darwinia SR25519 to ECDSA account migration."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Darwinia SR25519 to ECDSA account migration."
+edition.workspace = true
+name              = "darwinia-account-migration"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io

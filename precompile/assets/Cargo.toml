@@ -1,10 +1,10 @@
 [package]
-name        = "darwinia-precompile-assets"
-description = "Assets precompile for EVM pallet."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Assets precompile for EVM pallet."
+edition.workspace = true
+name              = "darwinia-precompile-assets"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # frontier
@@ -12,7 +12,7 @@ fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
 
 # moonbeam
-precompile-utils = { workspace = true}
+precompile-utils = { workspace = true }
 
 # paritytech
 frame-support = { workspace = true }

@@ -1,10 +1,10 @@
 [package]
-name        = "crab-runtime"
-description = "Crab runtime."
-readme      = "README.md"
-authors     = { workspace = true }
-edition     = { workspace = true }
-version     = { workspace = true }
+authors.workspace = true
+description       = "Crab runtime."
+edition.workspace = true
+name              = "crab-runtime"
+readme            = "README.md"
+version.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -242,7 +242,7 @@ std = [
 	# substrate optional
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
-	"frame-try-runtime?/std"
+	"frame-try-runtime?/std",
 ]
 
 fast-runtime = []
