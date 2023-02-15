@@ -100,7 +100,7 @@ jobs:
           [
             { chain: darwinia-dev, compare-with: "https://rpc.polkadot.io" },
             { chain: crab-dev, compare-with: "https://rpc.polkadot.io" },
-            { chain: pangolin-dev, compare-with: "https://rpc.polkadot.io" },
+            { chain: pangolin-dev, compare-with: "https://pangolin-rpc.darwinia.netowrk" },
           ]
     needs: [basic-checks]
     runs-on: ubuntu-latest
