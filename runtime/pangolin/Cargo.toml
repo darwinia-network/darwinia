@@ -45,7 +45,6 @@ darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-primitives                     = { workspace = true }
 
-
 # darwinia-messages-substrate
 bp-message-dispatch      = { workspace = true }
 bp-messages              = { workspace = true }

@@ -40,7 +40,7 @@ use sp_core::{crypto::UncheckedInto, H160};
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 fn properties() -> Properties {
-	super::properties("PRING", 42)
+	super::properties("PRING")
 }
 
 // Generate the session keys from individual elements.

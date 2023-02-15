@@ -29,6 +29,8 @@ pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
 #[cfg(feature = "pangolin-native")]
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
+#[cfg(feature = "pangoro-native")]
+pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 
 // std
 use std::{
@@ -56,7 +58,7 @@ type ParachainBlockImport<RuntimeApi, Executor> =
 		FullBackend,
 	>;
 
-/// Can be called for a `Configuration` to check if it is a configuration for the `Crab` network.
+/// Can be called for a `Configuration` to check if it is the specific network.
 pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Crab` network.
 	fn is_crab(&self) -> bool;
@@ -66,6 +68,9 @@ pub trait IdentifyVariant {
 
 	/// Returns if this is a configuration for the `Pangolin` network.
 	fn is_pangolin(&self) -> bool;
+
+	/// Returns if this is a configuration for the `Pangoro` network.
+	fn is_pangoro(&self) -> bool;
 
 	/// Returns true if this configuration is for a development network.
 	fn is_dev(&self) -> bool;
@@ -81,6 +86,10 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 
 	fn is_pangolin(&self) -> bool {
 		self.id().starts_with("pangolin")
+	}
+
+	fn is_pangoro(&self) -> bool {
+		self.id().starts_with("pangoro")
 	}
 
 	fn is_dev(&self) -> bool {

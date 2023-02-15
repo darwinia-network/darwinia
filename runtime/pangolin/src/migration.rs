@@ -1,4 +1,5 @@
 // darwinia
+#[allow(unused_imports)]
 use crate::*;
 
 pub struct CustomOnRuntimeUpgrade;

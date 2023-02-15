@@ -66,6 +66,7 @@ members = [
 	dc-primitives                     = { default-features = false, path = "core/primitives" }
 	dc-types                          = { path = "core/types" }
 	pangolin-runtime                  = { path = "runtime/pangolin" }
+	pangoro-runtime                   = { path = "runtime/pangoro" }
 
 	# darwinia-messages-substrate
 	bp-darwinia-core         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.36" }
