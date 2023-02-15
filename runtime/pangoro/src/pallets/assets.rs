@@ -36,7 +36,8 @@ impl pallet_assets::Config for Runtime {
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = ();
+	type BenchmarkHelper = AssetsBenchmarkHelper;
+	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<Creators>, AccountId>,
 	>;

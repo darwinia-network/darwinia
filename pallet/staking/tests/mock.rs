@@ -77,6 +77,7 @@ impl pallet_assets::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
+	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, u32>,
 	>;

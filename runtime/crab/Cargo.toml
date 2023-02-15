@@ -257,6 +257,9 @@ runtime-benchmarks = [
 	# cumulus optional
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 
+	# darwinia
+	"darwinia-common-runtime/runtime-benchmarks",
+
 	# darwinia-messages-substrate
 	"bridge-runtime-common/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",

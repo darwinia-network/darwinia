@@ -43,7 +43,7 @@ fc-cli          = { workspace = true }
 fc-consensus    = { workspace = true }
 fc-db           = { workspace = true }
 fc-mapping-sync = { workspace = true }
-fc-rpc          = { features = ["rpc_binary_search_estimate"], workspace = true }
+fc-rpc          = { features = ["rpc-binary-search-estimate"], workspace = true }
 fc-rpc-core     = { workspace = true }
 fp-evm          = { workspace = true }
 fp-rpc          = { workspace = true }

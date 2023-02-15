@@ -25,7 +25,7 @@ use milagro_bls::{AggregatePublicKey, AggregateSignature, PublicKey, Signature};
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
 pub(crate) const VERIFY_ESTIMATED_COST: u64 = 100_000;
 pub struct BLS12381<T>(PhantomData<T>);

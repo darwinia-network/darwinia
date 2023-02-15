@@ -27,7 +27,7 @@ use frame_support::{log, pallet_prelude::*, traits::Get};
 use frame_system::pallet_prelude::*;
 use sp_core::{H160, H256};
 use sp_io::hashing;
-use sp_std::vec;
+use sp_std::prelude::*;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -88,7 +88,7 @@ where
 			None,
 			None,
 			None,
-			vec![],
+			Vec::new(),
 			false,
 			false,
 			<T as pallet_evm::Config>::config(),

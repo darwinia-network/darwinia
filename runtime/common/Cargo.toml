@@ -28,6 +28,7 @@ xcm-executor = { workspace = true }
 # substrate
 frame-support     = { workspace = true }
 frame-system      = { workspace = true }
+pallet-assets     = { workspace = true }
 pallet-balances   = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-treasury   = { workspace = true }
@@ -58,6 +59,7 @@ std = [
 	# substrate
 	"frame-support/std",
 	"frame-system/std",
+	"pallet-assets/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-treasury/std",
@@ -67,3 +69,7 @@ std = [
 ]
 
 test = []
+
+runtime-benchmarks = [
+	"pallet-assets/runtime-benchmarks"
+]

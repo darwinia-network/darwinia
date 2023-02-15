@@ -36,7 +36,7 @@ use frame_support::{
 };
 use sp_core::{H160, U256};
 use sp_runtime::Perbill;
-use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
 pub struct Staking<Runtime>(PhantomData<Runtime>);
 

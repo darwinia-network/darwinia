@@ -77,7 +77,9 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::Staking => {
 				matches!(
 					c,
-					RuntimeCall::Session(..) | RuntimeCall::Deposit(..) | RuntimeCall::DarwiniaStaking(..)
+					RuntimeCall::Session(..)
+						| RuntimeCall::Deposit(..)
+						| RuntimeCall::DarwiniaStaking(..)
 				)
 			},
 			ProxyType::IdentityJudgement =>

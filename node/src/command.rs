@@ -614,24 +614,28 @@ pub fn run() -> Result<()> {
 			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
 				.map_err(|e| format!("Error: {:?}", e))?;
 
+			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>>(), task_manager))
 				});
 			}
 
+			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<DarwiniaRuntimeExecutor>>(), task_manager))
 				});
 			}
 
+			#[cfg(feature = "pangolin-native")]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>>(), task_manager))
 				});
 			}
 
+			#[cfg(feature = "pangoro-native")]
 			if chain_spec.is_pangoro() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<PangoroRuntimeExecutor>>(), task_manager))

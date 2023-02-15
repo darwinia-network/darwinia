@@ -23,8 +23,8 @@ use crate::*;
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
-	fn pre_upgrade() -> Result<(), &'static str> {
-		Ok(())
+	fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]

@@ -162,6 +162,7 @@ impl pallet_evm::Config for TestRuntime {
 	type FindAuthor = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
+	type OnCreate = ();
 	type PrecompilesType = TestPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -177,6 +178,7 @@ impl pallet_assets::Config for TestRuntime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
+	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, AccountId>,
 	>;
