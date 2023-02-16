@@ -223,7 +223,7 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(20);
+	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 }
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;

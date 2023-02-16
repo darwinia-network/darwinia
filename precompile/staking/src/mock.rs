@@ -178,7 +178,7 @@ impl pallet_evm::Config for TestRuntime {
 }
 
 frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(20);
+	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 }
 
 pub enum RingStaking {}
