@@ -28,39 +28,6 @@ frame_support::parameter_types! {
 	pub PrecompilesValue: PangoroPrecompiles<Runtime> = PangoroPrecompiles::<_>::new();
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(WEIGHT_PER_GAS);
 }
-
-pub struct FindAuthorTruncated<F>(sp_std::marker::PhantomData<F>);
-impl<F: frame_support::traits::FindAuthor<u32>> frame_support::traits::FindAuthor<sp_core::H160>
-	for FindAuthorTruncated<F>
-{
-	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
-	{
-		// substrate
-		use sp_core::crypto::ByteArray;
-
-		F::find_author(digests).and_then(|i| {
-			Aura::authorities().get(i as usize).and_then(|id| {
-				let raw = id.to_raw_vec();
-
-				if raw.len() >= 24 {
-					Some(sp_core::H160::from_slice(&raw[4..24]))
-				} else {
-					None
-				}
-			})
-		})
-	}
-}
-
-pub struct FixedGasPrice;
-impl pallet_evm::FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
-		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
-	}
-}
-
 // TODO: Integrate to the upstream repo
 pub struct FromH160;
 impl<T> pallet_evm::AddressMapping<T> for FromH160
@@ -71,15 +38,6 @@ where
 		address.into()
 	}
 }
-
-pub struct AssetIdConverter;
-impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
-	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: sp_core::H160 = account_id.into();
-		addr.to_low_u64_be()
-	}
-}
-
 pub struct PangoroPrecompiles<R>(sp_std::marker::PhantomData<R>);
 impl<R> PangoroPrecompiles<R>
 where
@@ -178,7 +136,7 @@ impl pallet_evm::Config for Runtime {
 	type ChainId = ConstU64<45>;
 	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
-	type FindAuthor = FindAuthorTruncated<Aura>;
+	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();

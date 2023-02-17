@@ -205,6 +205,33 @@ macro_rules! impl_self_contained_call {
 	};
 }
 
+pub struct DarwiniaFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
+impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for DarwiniaFindAuthor<Inner>
+where
+	Inner: frame_support::traits::FindAuthor<AccountId>,
+{
+	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	{
+		Inner::find_author(digests).map(Into::into)
+	}
+}
+
+pub struct FixedGasPrice;
+impl pallet_evm::FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
+	}
+}
+
+pub struct AssetIdConverter;
+impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
+	fn account_to_asset_id(account_id: AccountId) -> AssetId {
+		let addr: sp_core::H160 = account_id.into();
+		addr.to_low_u64_be()
+	}
+}
 /// Helper for pallet-assets benchmarking.
 #[cfg(feature = "runtime-benchmarks")]
 pub struct AssetsBenchmarkHelper;

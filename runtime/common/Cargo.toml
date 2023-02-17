@@ -12,10 +12,14 @@ codec    = { package = "parity-scale-codec", workspace = true }
 smallvec = { version = "1.10" }
 
 # darwinia
-dc-primitives = { workspace = true }
+darwinia-precompile-assets = { workspace = true }
+dc-primitives              = { workspace = true }
 
 # darwinia-messages-substrate
 bp-darwinia-core = { workspace = true }
+
+# frontier
+pallet-evm = { workspace = true }
 
 # moonbeam
 account = { workspace = true }
@@ -32,6 +36,7 @@ pallet-assets     = { workspace = true }
 pallet-balances   = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-treasury   = { workspace = true }
+sp-core           = { workspace = true }
 sp-io             = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
@@ -43,10 +48,14 @@ std = [
 	"codec/std",
 
 	# darwinia
+	"darwinia-precompile-assets/std",
 	"dc-primitives/std",
 
 	# darwinia-messages-substrate
 	"bp-darwinia-core/std",
+
+	# frontier
+	"pallet-evm/std",
 
 	# moonbeam
 	"account/std",
@@ -63,6 +72,7 @@ std = [
 	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-treasury/std",
+	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
