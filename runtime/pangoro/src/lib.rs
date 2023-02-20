@@ -27,6 +27,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod pallets;
 pub use pallets::*;
 
+mod bridges_message;
+pub use bridges_message::*;
+
 mod migration;
 mod weights;
 
@@ -52,6 +55,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	BridgeRejectObsoleteHeadersAndMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -154,6 +158,13 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 36,
 		Evm: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
+
+		// Pangoro <> Pangolin
+		BridgeRococoGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
+		BridgeRococoParachain: pallet_bridge_parachains::<Instance1> = 40,
+		BridgePangolinMessages: pallet_bridge_messages::<Instance1> = 41,
+		BridgePangolinDispatch: pallet_bridge_dispatch::<Instance1> = 42,
+		PangolinFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
@@ -167,6 +178,16 @@ frame_benchmarking::define_benchmarks! {
 }
 
 impl_self_contained_call!();
+
+bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages! {
+	RuntimeCall, AccountId,
+	// Grandpa
+	BridgeRococoGrandpa,
+	// Messages
+	BridgePangolinMessages,
+	// Parachain
+	BridgeRococoParachain
+}
 
 sp_api::impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId> for Runtime {

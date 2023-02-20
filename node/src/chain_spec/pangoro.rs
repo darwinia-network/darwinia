@@ -241,6 +241,12 @@ pub fn genesis_config() -> ChainSpec {
 						)
 					},
 				},
+
+				// S2S stuff.
+				bridge_rococo_grandpa: Default::default(),
+				bridge_rococo_parachain: Default::default(),
+				bridge_pangolin_messages: Default::default(),
+				pangolin_fee_market: Default::default(),
 			}
 		},
 		Vec::new(),
@@ -358,5 +364,11 @@ fn testnet_genesis(
 				)
 			},
 		},
+
+		// S2S stuff.
+		bridge_rococo_grandpa: Default::default(),
+		bridge_rococo_parachain: Default::default(),
+		bridge_pangolin_messages: Default::default(),
+		pangolin_fee_market: Default::default(),
 	}
 }
