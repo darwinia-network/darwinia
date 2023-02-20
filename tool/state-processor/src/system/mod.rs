@@ -219,8 +219,6 @@ where
 		});
 
 		log::info!("set `Assets::Asset`");
-		log::info!("kton_total_issuance({kton_total_issuance})");
-		log::info!("kton_total_issuance_storage({kton_total_issuance_storage})");
 		self.shell_state.insert_value(
 			b"Assets",
 			b"Asset",

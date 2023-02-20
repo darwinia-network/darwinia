@@ -783,7 +783,7 @@ pub fn run() -> Result<()> {
 				}
 
 				#[cfg(feature = "pangoro-native")]
-				if chain_spec.is_darwinia() {
+				if chain_spec.is_pangoro() {
 					return service::start_parachain_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 						config,
 						polkadot_config,

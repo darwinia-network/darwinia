@@ -3,6 +3,10 @@ use crate::*;
 
 impl<S> Processor<S> {
 	pub fn process_parachain_system(&mut self) -> &mut Self {
+		if self.test {
+			return self;
+		}
+
 		// Storage items.
 		// https://github.com/darwinia-network/darwinia-2.0/issues/275#issuecomment-1427725708
 		// https://github.com/paritytech/cumulus/blob/09418fc04c2608b123f36ca80f16df3d2096753b/pallets/parachain-system/src/lib.rs#L582-L595
@@ -16,7 +20,8 @@ impl<S> Processor<S> {
 		log::info!(
 			"take para `ParachainSystem::LastDmqMqcHead` and `ParachainSystem::LastHrmpMqcHeads`"
 		);
-		self.solo_state
+
+		self.para_state
 			.take_raw_value(last_dmq_mqc_head_key, &mut last_dmq_mqc_head)
 			.take_raw_value(last_hrmp_mqc_heads_key, &mut last_hrmp_mqc_heads);
 

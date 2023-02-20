@@ -84,3 +84,18 @@ impl Configurable for Pangolin {
 		66 * 100 * MICROUNIT
 	}
 }
+
+pub struct Pangoro;
+impl Configurable for Pangoro {
+	const NAME: &'static str = "pangoro";
+	const PARACHAIN_BACKING: &'static str =
+		"0x64766d3a000000000000008c585f9791ee5b4b23fe82888ce576dbb69607ebe9";
+
+	fn basic_deposit() -> Balance {
+		100 * UNIT + 258 * 100 * MICROUNIT
+	}
+
+	fn field_deposit() -> Balance {
+		66 * 100 * MICROUNIT
+	}
+}
