@@ -17,22 +17,18 @@ impl<S> Processor<S> {
 
 		// Storage items.
 		// https://github.dev/darwinia-network/frontier/blob/darwinia-v0.12.5/frame/evm/src/lib.rs#L407
-		let mut account_codes = Map::default();
-		let mut account_storages = Map::default();
+		let mut codes = Map::default();
+		let mut storages = Map::default();
 
 		log::info!("take `EVM::AccountCodes` and `EVM::AccountStorages`");
 		self.solo_state
-			.take_raw_map(&item_key(b"EVM", b"AccountCodes"), &mut account_codes, |key, from| {
-				replace_first_match(key, from, &item_key(b"Evm", b"AccountCodes"))
-			})
-			.take_raw_map(
-				&item_key(b"EVM", b"AccountStorages"),
-				&mut account_storages,
-				|key, from| replace_first_match(key, from, &item_key(b"Evm", b"AccountStorages")),
-			);
+			.take_raw_map(&item_key(b"EVM", b"AccountCodes"), &mut codes, |k, _| k.to_owned())
+			.take_raw_map(&item_key(b"EVM", b"AccountStorages"), &mut storages, |k, _| {
+				k.to_owned()
+			});
 
-		log::info!("set `Evm::AccountCodes` and `Evm::AccountStorages`");
-		self.shell_state.insert_raw_key_map(account_codes).insert_raw_key_map(account_storages);
+		log::info!("set `EVM::AccountCodes` and `EVM::AccountStorages`");
+		self.shell_state.insert_raw_key_map(codes).insert_raw_key_map(storages);
 
 		self
 	}

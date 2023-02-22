@@ -40,7 +40,6 @@ where
 	}
 }
 
-
 pub struct DarwiniaPrecompiles<R>(sp_std::marker::PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where

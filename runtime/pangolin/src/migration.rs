@@ -21,8 +21,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	<pallet_assets::migration::v1::MigrateToV1<Runtime> as frame_support::traits::OnRuntimeUpgrade>::on_runtime_upgrade();
-	frame_support::migration::move_pallet(b"Staking", b"DarwiniaStaking");
+	frame_support::migration::move_pallet(b"Evm", b"EVM");
 
 	// frame_support::weights::Weight::zero()
 	RuntimeBlockWeights::get().max_block

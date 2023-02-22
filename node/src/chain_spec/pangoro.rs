@@ -224,7 +224,7 @@ pub fn genesis_config() -> ChainSpec {
 
 				// EVM stuff.
 				ethereum: Default::default(),
-				evm: EvmConfig {
+				evm: EVMConfig {
 					accounts: {
 						BTreeMap::from_iter(
 							PangoroPrecompiles::<Runtime>::used_addresses().iter().map(|p| {
@@ -333,7 +333,7 @@ fn testnet_genesis(
 
 		// EVM stuff.
 		ethereum: Default::default(),
-		evm: EvmConfig {
+		evm: EVMConfig {
 			accounts: {
 				BTreeMap::from_iter(
 					PangoroPrecompiles::<Runtime>::used_addresses()

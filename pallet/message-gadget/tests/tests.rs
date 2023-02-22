@@ -96,7 +96,7 @@ frame_support::construct_runtime! {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
-		Evm: pallet_evm,
+		EVM: pallet_evm,
 		MessageGadget: darwinia_message_gadget,
 	}
 }

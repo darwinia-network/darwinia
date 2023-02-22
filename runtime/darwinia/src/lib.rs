@@ -154,7 +154,7 @@ frame_support::construct_runtime! {
 
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
-		Evm: pallet_evm = 37,
+		EVM: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
 
 		// Darwinia <> Crab
@@ -317,7 +317,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_basic(address: sp_core::H160) -> pallet_evm::Account {
-			let (account, _) = Evm::account_basic(&address);
+			let (account, _) = EVM::account_basic(&address);
 
 			account
 		}
@@ -332,7 +332,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn account_code_at(address: sp_core::H160) -> Vec<u8> {
-			Evm::account_codes(address)
+			EVM::account_codes(address)
 		}
 
 		fn author() -> sp_core::H160 {
@@ -344,7 +344,7 @@ sp_api::impl_runtime_apis! {
 
 			index.to_big_endian(&mut tmp);
 
-			Evm::account_storages(address, sp_core::H256::from_slice(&tmp[..]))
+			EVM::account_storages(address, sp_core::H256::from_slice(&tmp[..]))
 		}
 
 		fn call(

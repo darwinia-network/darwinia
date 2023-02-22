@@ -96,7 +96,7 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Evm validation errors.
+		/// EVM validation errors.
 		MessageTransactError(EvmTxErrorWrapper),
 	}
 
@@ -192,9 +192,9 @@ impl From<InvalidEvmTransactionError> for EvmTxErrorWrapper {
 	}
 }
 
-/// Calculates the fee for a relayer to submit an LCMP Evm transaction.
+/// Calculates the fee for a relayer to submit an LCMP EVM transaction.
 ///
-/// The gas_price of an LCMP Evm transaction is always the min_gas_price(), which is a fixed value.
+/// The gas_price of an LCMP EVM transaction is always the min_gas_price(), which is a fixed value.
 /// Therefore, only the gas_limit and value of the transaction should be considered in the
 /// calculation of the fee, and the gas_price of the transaction itself can be ignored.
 pub fn total_payment<T: pallet_evm::Config>(tx_data: TransactionData) -> U256 {

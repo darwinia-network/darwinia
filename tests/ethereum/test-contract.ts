@@ -31,7 +31,7 @@ describe("Test contract", () => {
 	}).timeout(60000);
 
 	step("Get contract code", async function () {
-		expect(await web3.eth.getCode(inc.options.address), incrementerInfo.bytecode);
+		expect(await web3.eth.getCode(inc.options.address)).not.to.be.null;
 	});
 
 	step("Get default number", async function () {

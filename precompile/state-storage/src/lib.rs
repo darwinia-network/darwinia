@@ -66,6 +66,6 @@ where
 pub struct StateStorageFilter;
 impl StorageFilterT for StateStorageFilter {
 	fn allow(prefix: &[u8]) -> bool {
-		prefix != Twox128::hash(b"Evm")
+		prefix != Twox128::hash(b"EVM")
 	}
 }

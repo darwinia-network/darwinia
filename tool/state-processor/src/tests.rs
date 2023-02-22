@@ -74,7 +74,7 @@ impl Tester {
 				get_last_64_key,
 			)
 			.take_map(b"AccountMigration", b"Accounts", &mut migration_accounts, get_last_64_key)
-			.take_map(b"Evm", b"AccountCodes", &mut shell_evm_codes, get_last_40);
+			.take_map(b"EVM", b"AccountCodes", &mut shell_evm_codes, get_last_40);
 
 		Self {
 			solo_accounts,
@@ -621,7 +621,7 @@ fn evm_contract_account_storage() {
 
 		let migrated_storage_item_len = tester.shell_state.map.iter().fold(0u32, |sum, (k, _)| {
 			if k.starts_with(&full_key(
-				b"Evm",
+				b"EVM",
 				b"AccountStorages",
 				&blake2_128_concat_to_string(addr.encode()),
 			)) {
@@ -634,7 +634,7 @@ fn evm_contract_account_storage() {
 
 		let mut migrated_storage_value = H256::zero();
 		tester.shell_state.get_value(
-			b"Evm",
+			b"EVM",
 			b"AccountStorages",
 			&format!(
 				"{}{}",

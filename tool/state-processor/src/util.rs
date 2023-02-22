@@ -57,10 +57,6 @@ pub fn get_last_64(key: &str) -> String {
 	format!("0x{}", &key[key.len() - 64..])
 }
 
-pub fn replace_first_match(key: &str, from: &str, to: &str) -> String {
-	key.replacen(from, to, 1)
-}
-
 pub fn blake2_128_concat_to_string<D>(data: D) -> String
 where
 	D: AsRef<[u8]>,
