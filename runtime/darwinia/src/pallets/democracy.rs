@@ -60,5 +60,5 @@ impl pallet_democracy::Config for Runtime {
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
 	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
 	type VotingPeriod = ConstU32<{ 28 * DAYS }>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }

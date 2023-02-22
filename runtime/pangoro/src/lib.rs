@@ -170,11 +170,30 @@ frame_support::construct_runtime! {
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
+	// Substrate
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[frame_system, SystemBench::<Runtime>]
+	[pallet_assets, Assets]
 	[pallet_balances, Balances]
+	[pallet_collective, Council]
+	[pallet_collective, TechnicalCommittee]
+	[pallet_democracy, Democracy]
+	[pallet_elections_phragmen, PhragmenElection]
+	[pallet_identity, Identity]
+	[pallet_membership, TechnicalMembership]
+	[pallet_multisig, Multisig]
+	[pallet_preimage, Preimage]
+	[pallet_proxy, Proxy]
+	[pallet_scheduler, Scheduler]
+	[pallet_tips, Tips]
+	[pallet_treasury, Treasury]
+	[pallet_utility, Utility]
+	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
+	// Bridge
+	[pallet_bridge_grandpa, BridgeRococoGrandpa]
+	[pallet_fee_market, PangolinFeeMarket]
 }
 
 impl_self_contained_call!();

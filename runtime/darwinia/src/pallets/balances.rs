@@ -19,11 +19,21 @@
 // darwinia
 use crate::*;
 
+// https://github.com/paritytech/substrate/blob/polkadot-v0.9.37/frame/balances/src/benchmarking.rs#L39
+#[cfg(feature = "runtime-benchmarks")]
+frame_support::parameter_types! {
+	pub const ExistentialDeposit:Balance = 1;
+}
+#[cfg(not(feature = "runtime-benchmarks"))]
+frame_support::parameter_types! {
+	pub const ExistentialDeposit:Balance = 0;
+}
+
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = ConstU128<0>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = [u8; 8];

@@ -28,5 +28,5 @@ impl pallet_multisig::Config for Runtime {
 	type MaxSignatories = ConstU32<100>;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_multisig::WeightInfo<Self>;
 }

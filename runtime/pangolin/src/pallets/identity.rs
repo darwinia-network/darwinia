@@ -35,5 +35,5 @@ impl pallet_identity::Config for Runtime {
 	type Slashed = Treasury;
 	// 53 bytes on-chain.
 	type SubAccountDeposit = ConstU128<{ darwinia_deposit(1, 53) }>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_identity::WeightInfo<Self>;
 }

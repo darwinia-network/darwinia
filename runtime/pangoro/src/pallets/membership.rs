@@ -29,5 +29,5 @@ impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
 	type ResetOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type RuntimeEvent = RuntimeEvent;
 	type SwapOrigin = RootOrMoreThanHalf<CouncilCollective>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_membership::WeightInfo<Self>;
 }

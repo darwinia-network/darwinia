@@ -50,5 +50,5 @@ impl pallet_assets::Config for Runtime {
 	type RemoveItemsLimit = ConstU32<1000>;
 	type RuntimeEvent = RuntimeEvent;
 	type StringLimit = ConstU32<50>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_assets::WeightInfo<Self>;
 }

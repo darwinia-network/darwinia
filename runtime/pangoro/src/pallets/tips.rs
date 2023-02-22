@@ -31,5 +31,5 @@ impl pallet_tips::Config for Runtime {
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = ConstU128<{ 100 * UNIT }>;
 	type Tippers = PhragmenElection;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_tips::WeightInfo<Self>;
 }

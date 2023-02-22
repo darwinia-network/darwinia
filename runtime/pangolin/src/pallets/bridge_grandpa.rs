@@ -29,5 +29,5 @@ impl pallet_bridge_grandpa::Config<WithMoonbaseGrandpa> for Runtime {
 	type MaxBridgedAuthorities = ConstU32<100_000>;
 	type MaxBridgedHeaderSize = ConstU32<65536>;
 	type MaxRequests = ConstU32<50>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_bridge_grandpa::WeightInfo<Self>;
 }

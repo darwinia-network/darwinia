@@ -45,5 +45,5 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type VotingBondBase = ConstU128<{ darwinia_deposit(1, 64) }>;
 	// Additional data per vote is 32 bytes (account id).
 	type VotingBondFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Self>;
 }

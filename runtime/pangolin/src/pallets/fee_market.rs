@@ -70,5 +70,5 @@ impl pallet_fee_market::Config<WithPangoroFeeMarket> for Runtime {
 	type Slasher = FeeMarketSlasher;
 	type Slot = ConstU32<600>;
 	type TreasuryPalletId = TreasuryPalletId;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_fee_market::WeightInfo<Self>;
 }

@@ -32,7 +32,7 @@ impl pallet_vesting::Config for Runtime {
 	type MinVestedTransfer = ConstU128<UNIT>;
 	type RuntimeEvent = RuntimeEvent;
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_vesting::WeightInfo<Self>;
 
 	// `VestingInfo` encode length is 36bytes. 28 schedules gets encoded as 1009 bytes, which is the
 	// highest number of schedules that encodes less than 2^10.
