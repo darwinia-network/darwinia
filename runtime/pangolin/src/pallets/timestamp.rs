@@ -23,6 +23,9 @@ impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type OnTimestampSet = Aura;
+	#[cfg(feature = "runtime-benchmarks")]
+	type OnTimestampSet = ();
 	type WeightInfo = weights::pallet_timestamp::WeightInfo<Self>;
 }

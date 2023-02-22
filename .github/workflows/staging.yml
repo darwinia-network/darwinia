@@ -32,7 +32,7 @@ jobs:
           toolchain: nightly
 
       - name: Build
-        run: cargo build --release --locked --features all-natives
+        run: cargo build --release --locked -p darwinia --features all-natives
 
       - name: Collect shared
         run: |

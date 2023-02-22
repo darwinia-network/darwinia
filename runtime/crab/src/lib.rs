@@ -168,7 +168,12 @@ frame_support::construct_runtime! {
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
-	// Substrate
+	// darwinia
+	[darwinia_deposit, Deposit]
+	// darwinia-messages-substrate
+	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
+	[pallet_fee_market, DarwiniaFeeMarket]
+	// substrate
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
@@ -189,9 +194,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
-	// Bridge
-	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
-	[pallet_fee_market, DarwiniaFeeMarket]
 }
 
 impl_self_contained_call!();

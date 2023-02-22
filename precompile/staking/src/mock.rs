@@ -113,7 +113,7 @@ impl darwinia_deposit::Config for TestRuntime {
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
+	type WeightInfo = ();
 }
 
 pub struct TestPrecompiles<R>(PhantomData<R>);
@@ -233,7 +233,7 @@ impl darwinia_staking::Config for TestRuntime {
 	type UnixTime = Timestamp;
 }
 
-frame_support::construct_runtime!(
+frame_support::construct_runtime! {
 	pub enum TestRuntime where
 		Block = frame_system::mocking::MockBlock<TestRuntime>,
 		NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
@@ -246,7 +246,7 @@ frame_support::construct_runtime!(
 		EVM: pallet_evm,
 		Staking: darwinia_staking,
 	}
-);
+}
 
 #[derive(Default)]
 pub(crate) struct ExtBuilder {

@@ -26,6 +26,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 mod weights;
 pub use weights::WeightInfo;
 
@@ -54,6 +62,9 @@ use sp_runtime::traits::AccountIdConversion;
 
 /// Milliseconds per month.
 pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
+
+/// The maximum locking period for a deposit.
+pub const MAX_LOCKING_MONTHS: u8 = 36;
 
 /// Simple asset APIs.
 pub trait SimpleAsset {
@@ -96,12 +107,12 @@ pub mod pallet {
 	use crate::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + pallet_timestamp::Config {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-		/// Unix time getter.
-		type UnixTime: UnixTime;
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
 
 		/// RING asset.
 		type Ring: Currency<Self::AccountId, Balance = Balance>;
@@ -188,7 +199,7 @@ pub mod pallet {
 			if months == 0 {
 				Err(<Error<T>>::LockAtLeastOneMonth)?;
 			}
-			if months > 36 {
+			if months > MAX_LOCKING_MONTHS {
 				Err(<Error<T>>::LockAtMostThirtySixMonths)?;
 			}
 			if <Deposits<T>>::decode_len(&who).unwrap_or_default() as u32 >= T::MaxDeposits::get() {
@@ -216,7 +227,7 @@ pub mod pallet {
 					Continue(c) => c,
 					Break(b) => b,
 				};
-				let start_time = T::UnixTime::now().as_millis();
+				let start_time = Self::now();
 				let expired_time = start_time + MILLISECS_PER_MONTH * months as Moment;
 
 				ds.try_insert(
@@ -251,7 +262,7 @@ pub mod pallet {
 		#[pallet::weight(0)]
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let now = T::UnixTime::now().as_millis();
+			let now = Self::now();
 			let mut claimed = 0;
 			let _ = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
 				let ds = maybe_ds.as_mut().ok_or(())?;
@@ -303,7 +314,7 @@ pub mod pallet {
 
 				<Result<_, DispatchError>>::Ok(d)
 			})?;
-			let now = T::UnixTime::now().as_millis();
+			let now = Self::now();
 
 			if d.expired_time <= now {
 				Err(<Error<T>>::DepositAlreadyExpired)?;
@@ -328,6 +339,14 @@ pub mod pallet {
 }
 pub use pallet::*;
 
+impl<T> Pallet<T>
+where
+	T: Config,
+{
+	fn now() -> Moment {
+		<pallet_timestamp::Pallet<T> as UnixTime>::now().as_millis()
+	}
+}
 impl<T> darwinia_staking::Stake for Pallet<T>
 where
 	T: Config,

@@ -92,6 +92,13 @@ impl frame_system::Config for Runtime {
 	type Version = Version;
 }
 
+impl pallet_timestamp::Config for Runtime {
+	type MinimumPeriod = ();
+	type Moment = Moment;
+	type OnTimestampSet = ();
+	type WeightInfo = ();
+}
+
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
@@ -149,7 +156,7 @@ impl darwinia_deposit::Config for Runtime {
 	type MinLockingAmount = ();
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Dummy;
+	type WeightInfo = ();
 }
 
 impl darwinia_staking::Config for Runtime {
@@ -185,13 +192,14 @@ impl darwinia_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 }
 
-frame_support::construct_runtime!(
+frame_support::construct_runtime! {
 	pub enum Runtime where
 		Block = frame_system::mocking::MockBlock<Runtime>,
 		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
 		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>,
 	{
 		System: frame_system,
+		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
 		Vesting: pallet_vesting,
@@ -200,7 +208,7 @@ frame_support::construct_runtime!(
 		Identity: pallet_identity,
 		AccountMigration: darwinia_account_migration,
 	}
-);
+}
 
 pub fn new_test_ext() -> TestExternalities {
 	frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap().into()

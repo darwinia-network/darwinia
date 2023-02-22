@@ -33,6 +33,7 @@ pub mod rocksdb_weights;
 pub use rocksdb_weights::constants::RocksDbWeight;
 
 pub mod cumulus_pallet_xcmp_queue;
+pub mod darwinia_deposit;
 pub mod frame_system;
 pub mod pallet_assets;
 pub mod pallet_balances;

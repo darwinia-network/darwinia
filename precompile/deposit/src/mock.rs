@@ -111,7 +111,7 @@ impl darwinia_deposit::Config for TestRuntime {
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
+	type WeightInfo = ();
 }
 
 pub struct TestPrecompiles<R>(PhantomData<R>);
@@ -173,7 +173,7 @@ impl pallet_evm::Config for TestRuntime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-frame_support::construct_runtime!(
+frame_support::construct_runtime! {
 	pub enum TestRuntime where
 		Block = frame_system::mocking::MockBlock<TestRuntime>,
 		NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
@@ -185,7 +185,7 @@ frame_support::construct_runtime!(
 		Deposit: darwinia_deposit,
 		EVM: pallet_evm,
 	}
-);
+}
 
 pub fn efflux(milli_secs: u128) {
 	Timestamp::set_timestamp(Timestamp::now() + milli_secs);

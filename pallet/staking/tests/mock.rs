@@ -128,7 +128,7 @@ impl darwinia_deposit::Config for Runtime {
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Time;
+	type WeightInfo = ();
 }
 
 pub enum RingStaking {}
@@ -239,7 +239,7 @@ impl darwinia_staking::Config for Runtime {
 	type UnixTime = Time;
 }
 
-frame_support::construct_runtime!(
+frame_support::construct_runtime! {
 	pub enum Runtime where
 		Block = frame_system::mocking::MockBlock<Runtime>,
 		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
@@ -253,7 +253,7 @@ frame_support::construct_runtime!(
 		Session: pallet_session,
 		Staking: darwinia_staking,
 	}
-);
+}
 
 pub trait ZeroDefault {
 	fn default() -> Self;

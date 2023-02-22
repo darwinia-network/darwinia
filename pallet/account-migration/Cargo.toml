@@ -30,8 +30,9 @@ sp-runtime      = { workspace = true }
 sp-std          = { workspace = true }
 
 [dev-dependencies]
-sp-keyring = { workspace = true }
-sp-version = { workspace = true }
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-keyring       = { workspace = true }
+sp-version       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

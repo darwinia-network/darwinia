@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-mod mock;
-use mock::{Deposit, *};
-
 // darwinia
-use darwinia_deposit::{Deposit as DepositS, *};
+use crate::{
+	mock::{Deposit, *},
+	Deposit as DepositS, *,
+};
 use darwinia_staking::Stake;
-use dc_types::{Moment, UNIT};
 // substrate
 use frame_support::{assert_noop, assert_ok, traits::Get};
 
@@ -47,7 +46,7 @@ fn deposit_interest_should_work() {
 		assert_eq!(Assets::balance(0, 1), 7_614_213_197_969);
 
 		assert_eq!(Assets::balance(0, 2), 0);
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(2), 1000 * UNIT, 36));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(2), 1000 * UNIT, MAX_LOCKING_MONTHS));
 		assert_eq!(Assets::balance(0, 2), 364_467_005_076_142_131);
 	});
 }

@@ -16,8 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// darwinia
-use dc_types::{AssetId, Balance, Moment, UNIT};
+pub use crate as darwinia_deposit;
+pub use dc_types::{AssetId, Balance, Moment, UNIT};
+
 // substrate
 use frame_support::traits::GenesisBuild;
 use sp_io::TestExternalities;
@@ -113,10 +114,10 @@ impl darwinia_deposit::Config for Runtime {
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
+	type WeightInfo = ();
 }
 
-frame_support::construct_runtime!(
+frame_support::construct_runtime! {
 	pub enum Runtime where
 		Block = frame_system::mocking::MockBlock<Runtime>,
 		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
@@ -128,7 +129,7 @@ frame_support::construct_runtime!(
 		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
 	}
-);
+}
 
 pub fn efflux(milli_secs: Moment) {
 	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
