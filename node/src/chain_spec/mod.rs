@@ -59,16 +59,20 @@ mod testnet_keys {
 #[cfg(any(feature = "pangolin-native", feature = "pangoro-native"))]
 use testnet_keys::*;
 
+// std
+use std::{env, thread};
 // crates.io
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use tokio::runtime::Runtime as TokioRuntime;
+use trauma::{download::Download, downloader::DownloaderBuilder};
 // substrate
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, Properties};
+use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, GenericChainSpec, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
 
 // Dummy chain spec, in case when we don't have the native runtime.
 #[allow(unused)]
-pub type DummyChainSpec = sc_service::GenericChainSpec<(), Extensions>;
+pub type DummyChainSpec = sc_chain_spec::GenericChainSpec<(), Extensions>;
 
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
@@ -119,4 +123,35 @@ fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public
 	TPublic::Pair::from_string(&format!("//{}", seed), None)
 		.expect("static values are valid; qed")
 		.public()
+}
+
+fn load_config<G, E>(name: &'static str) -> GenericChainSpec<G, E>
+where
+	E: DeserializeOwned,
+{
+	let d = env::current_exe().unwrap().parent().unwrap().to_path_buf();
+	let p = d.join(name);
+
+	if !p.is_file() {
+		println!("Downloading `{name}` to `{}`", d.display());
+
+		thread::spawn(move || {
+			TokioRuntime::new().unwrap().block_on(
+				DownloaderBuilder::new().directory(d).build().download(&[Download::try_from(
+					format!(
+						"https://github.com/darwinia-network/darwinia-2.0/releases/download/{}/{name}",
+						name.strip_suffix(".json").unwrap()
+					)
+					.as_str(),
+				)
+				.unwrap()]),
+			);
+		})
+		.join()
+		.unwrap();
+	}
+
+	println!("Loading genesis from `{}`", p.display());
+
+	GenericChainSpec::from_json_file(p).unwrap()
 }

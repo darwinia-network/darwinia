@@ -19,6 +19,8 @@ futures     = { version = "0.3" }
 jsonrpsee   = { version = "0.16", features = ["server"] }
 log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
+tokio       = { version = "1.25" }
+trauma      = { version = "2.2" }
 
 # cumulus
 cumulus-client-cli                    = { workspace = true }
