@@ -7202,6 +7202,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-ethereum-xcm"
+version = "1.0.0-dev"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.37#3e272b5e0fad227e09880cd5a7c1c709a69f0a92"
+dependencies = [
+ "ethereum",
+ "ethereum-types 0.14.1",
+ "fp-ethereum",
+ "fp-evm",
+ "fp-rpc",
+ "fp-self-contained",
+ "frame-support",
+ "frame-system",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "rlp",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm-primitives",
+]
+
+[[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
@@ -7949,6 +7973,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-xcm-transactor"
+version = "0.2.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.37#3e272b5e0fad227e09880cd5a7c1c709a69f0a92"
+dependencies = [
+ "cumulus-primitives-core",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+ "xcm-builder",
+ "xcm-executor",
+ "xcm-primitives",
+]
+
+[[package]]
 name = "pangolin-runtime"
 version = "6.0.0"
 dependencies = [
@@ -8105,6 +8150,7 @@ dependencies = [
  "pallet-democracy",
  "pallet-elections-phragmen",
  "pallet-ethereum",
+ "pallet-ethereum-xcm",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
@@ -8127,6 +8173,7 @@ dependencies = [
  "pallet-utility",
  "pallet-vesting",
  "pallet-xcm",
+ "pallet-xcm-transactor",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",

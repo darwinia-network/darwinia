@@ -215,3 +215,32 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }
+
+impl pallet_ethereum_xcm::Config for Runtime {
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
+	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type EnsureProxy = EthereumXcmEnsureProxy;
+	type ControllerOrigin = EnsureRoot<AccountId>;
+}
+
+impl pallet_xcm_transactor::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type Transactor = Transactors;
+	type DerivativeAddressRegistrationOrigin = EnsureRoot<AccountId>;
+	type SovereignAccountDispatcherOrigin = EnsureRoot<AccountId>;
+	type CurrencyId = CurrencyId;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation<AccountId>;
+	type CurrencyIdToMultiLocation =
+		CurrencyIdtoMultiLocation<AsAssetType<AssetId, AssetType, AssetManager>>;
+	type XcmSender = XcmRouter;
+	type SelfLocation = SelfLocation;
+	type Weigher = XcmWeigher;
+	type LocationInverter = LocationInverter<Ancestry>;
+	type BaseXcmWeight = BaseXcmWeight;
+	type AssetTransactor = AssetTransactors;
+	type ReserveProvider = AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
+	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
+}
