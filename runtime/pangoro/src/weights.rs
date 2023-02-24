@@ -45,7 +45,6 @@ pub mod pallet_elections_phragmen;
 pub mod pallet_fee_market;
 pub mod pallet_identity;
 pub mod pallet_membership;
-pub mod pallet_multisig;
 pub mod pallet_preimage;
 pub mod pallet_proxy;
 pub mod pallet_scheduler;

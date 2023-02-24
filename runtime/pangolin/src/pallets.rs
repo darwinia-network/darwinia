@@ -92,8 +92,6 @@ mod preimage;
 
 mod proxy;
 
-mod multisig;
-
 // XCM stuff.
 mod xcmp_queue;
 

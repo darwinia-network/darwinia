@@ -94,7 +94,6 @@ pallet-democracy                           = { workspace = true }
 pallet-elections-phragmen                  = { workspace = true }
 pallet-identity                            = { workspace = true }
 pallet-membership                          = { workspace = true }
-pallet-multisig                            = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
 pallet-scheduler                           = { workspace = true }
@@ -214,7 +213,6 @@ std = [
 	"pallet-elections-phragmen/std",
 	"pallet-membership/std",
 	"pallet-identity/std",
-	"pallet-multisig/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
 	"pallet-scheduler/std",
@@ -290,7 +288,6 @@ runtime-benchmarks = [
 	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-membership/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
-	"pallet-multisig/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
@@ -353,7 +350,6 @@ try-runtime = [
 	"pallet-elections-phragmen/try-runtime",
 	"pallet-membership/try-runtime",
 	"pallet-identity/try-runtime",
-	"pallet-multisig/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-scheduler/try-runtime",

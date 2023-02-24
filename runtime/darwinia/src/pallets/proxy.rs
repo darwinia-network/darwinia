@@ -62,7 +62,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 					// Might contains transfer {
 					| RuntimeCall::Utility(..)
 					| RuntimeCall::Proxy(..)
-					| RuntimeCall::Multisig(..)
 					| RuntimeCall::PolkadotXcm(..)
 					| RuntimeCall::Ethereum(..) // }
 			),

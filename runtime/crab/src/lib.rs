@@ -144,7 +144,6 @@ frame_support::construct_runtime! {
 		Scheduler: pallet_scheduler = 28,
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
-		Multisig: pallet_multisig = 31,
 
 		// XCM stuff.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
@@ -184,7 +183,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_elections_phragmen, PhragmenElection]
 	[pallet_identity, Identity]
 	[pallet_membership, TechnicalMembership]
-	[pallet_multisig, Multisig]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_scheduler, Scheduler]

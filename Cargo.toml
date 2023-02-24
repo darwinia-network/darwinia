@@ -135,7 +135,6 @@ pallet-democracy                           = { default-features = false, git = "
 pallet-elections-phragmen                  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-identity                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-membership                          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-pallet-multisig                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-preimage                            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-proxy                               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-scheduler                           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
@@ -235,7 +234,6 @@ pallet-im-online                              = { git = "https://github.com/darw
 pallet-indices                                = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 pallet-membership                             = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 pallet-mmr                                    = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
-pallet-multisig                               = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 pallet-nis                                    = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 pallet-nomination-pools                       = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 pallet-nomination-pools-benchmarking          = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }

@@ -1398,7 +1398,6 @@ dependencies = [
  "pallet-fee-market",
  "pallet-identity",
  "pallet-membership",
- "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
  "pallet-scheduler",
@@ -2673,7 +2672,6 @@ dependencies = [
  "pallet-fee-market",
  "pallet-identity",
  "pallet-membership",
- "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
  "pallet-scheduler",
@@ -7389,7 +7387,7 @@ dependencies = [
 [[package]]
 name = "pallet-multisig"
 version = "4.0.0-dev"
-source = "git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37#3f1259a3e4e896a39733564a77f24116ebc370cc"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.37#f38bd6671d460293c93062cc1e4fe9e9e490cb29"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7972,7 +7970,6 @@ dependencies = [
  "pallet-fee-market",
  "pallet-identity",
  "pallet-membership",
- "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
  "pallet-scheduler",
@@ -8075,7 +8072,6 @@ dependencies = [
  "pallet-fee-market",
  "pallet-identity",
  "pallet-membership",
- "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
  "pallet-scheduler",
