@@ -216,13 +216,30 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }
 
+pub struct EthereumXcmEnsureProxy;
+impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
+	fn ensure_ok(delegator: AccountId, delegatee: AccountId) -> Result<(), &'static str> {
+		// The EVM implicitely contains an Any proxy, so we only allow for "Any" proxies
+		let def: pallet_proxy::ProxyDefinition<AccountId, ProxyType, BlockNumber> =
+			pallet_proxy::Pallet::<Runtime>::find_proxy(
+				&delegator,
+				&delegatee,
+				Some(ProxyType::Any),
+			)
+			.map_err(|_| "proxy error: expected `ProxyType::Any`")?;
+		// We only allow to use it for delay zero proxies, as the call will immediatly be executed
+		ensure!(def.delay.is_zero(), "proxy delay is Non-zero`");
+		Ok(())
+	}
+}
+
 impl pallet_ethereum_xcm::Config for Runtime {
 	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
-	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type ReservedXcmpWeight = parachain_system::ReservedXcmpWeight;
 	type EnsureProxy = EthereumXcmEnsureProxy;
-	type ControllerOrigin = EnsureRoot<AccountId>;
+	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
 impl pallet_xcm_transactor::Config for Runtime {

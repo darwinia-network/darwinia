@@ -192,6 +192,8 @@ std = [
 	"pallet-evm-precompile-simple/std",
 
 	# moonbeam
+	"pallet-ethereum-xcm/std",
+	"pallet-xcm-transactor/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
