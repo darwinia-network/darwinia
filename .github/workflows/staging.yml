@@ -22,7 +22,7 @@ jobs:
           apt update -y
           apt install --no-install-recommends -y \
             ca-certificates curl git python3-pip \
-            clang make gcc g++ protobuf-compiler
+            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
           pip3 install --upgrade pip
           pip3 install cmake --upgrade
 

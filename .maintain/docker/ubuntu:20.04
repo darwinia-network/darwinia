@@ -1,3 +1,5 @@
 FROM ubuntu:20.04
 
-RUN apt-get -y update && apt-get -y install clang gcc g++ llvm libssl-dev libudev-dev make git protobuf-compiler
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+RUN apt-get -y update && apt-get -y install clang gcc g++ llvm libssl-dev libudev-dev make git pkg-config protobuf-compiler
