@@ -6,7 +6,7 @@ import {
 	HOST_HTTP_URL,
 	FAITH,
 	FAITH_P,
-	EXTRINSIC_GAS_LIMIT,
+	BLOCK_GAS_LIMIT,
 	customRequest,
 	DEFAULT_GAS,
 } from "../config";
@@ -43,12 +43,12 @@ describe("Test transaction gas limit", () => {
 		expect(await inc.methods.increment(3).estimateGas()).to.equal(28340);
 	}).timeout(60000);
 
-	it("Test transaction gas limit < `EXTRINSIC_GAS_LIMIT`", async () => {
+	it("Test transaction gas limit < `BLOCK_GAS_LIMIT`", async () => {
 		let tx = await web3.eth.accounts.signTransaction(
 			{
 				from: FAITH,
 				data: data.encodeABI(),
-				gas: EXTRINSIC_GAS_LIMIT - 1,
+				gas: BLOCK_GAS_LIMIT - 1,
 			},
 			FAITH_P
 		);
@@ -57,12 +57,12 @@ describe("Test transaction gas limit", () => {
 		expect((receipt as any).transactionHash).to.be.not.null;
 	}).timeout(60000);
 
-	it("Test transaction gas limit = `EXTRINSIC_GAS_LIMIT`", async () => {
+	it("Test transaction gas limit = `BLOCK_GAS_LIMIT`", async () => {
 		let tx = await web3.eth.accounts.signTransaction(
 			{
 				from: FAITH,
 				data: data.encodeABI(),
-				gas: EXTRINSIC_GAS_LIMIT,
+				gas: BLOCK_GAS_LIMIT,
 			},
 			FAITH_P
 		);
@@ -71,12 +71,12 @@ describe("Test transaction gas limit", () => {
 		expect((receipt as any).transactionHash).to.be.not.null;
 	}).timeout(60000);
 
-	it("Test transaction gas limit > `EXTRINSIC_GAS_LIMIT`", async () => {
+	it("Test transaction gas limit > `BLOCK_GAS_LIMIT`", async () => {
 		let tx = await web3.eth.accounts.signTransaction(
 			{
 				from: FAITH,
 				data: data.encodeABI(),
-				gas: EXTRINSIC_GAS_LIMIT + 1,
+				gas: BLOCK_GAS_LIMIT + 1,
 			},
 			FAITH_P
 		);

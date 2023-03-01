@@ -21,12 +21,11 @@ use crate::*;
 // frontier
 use pallet_evm::Precompile;
 
-const WEIGHT_PER_GAS: u64 = 40_000;
-
+const BLOCK_GAS_LIMIT: u64 = 10_000_000;
 frame_support::parameter_types! {
-	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
+	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
 	pub PrecompilesValue: CrabPrecompiles<Runtime> = CrabPrecompiles::<_>::new();
-	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(WEIGHT_PER_GAS);
+	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
 }
 
 // TODO: Integrate to the upstream repo

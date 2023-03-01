@@ -58,6 +58,7 @@ pallet-bridge-parachains = { workspace = true }
 pallet-fee-market        = { workspace = true }
 
 # frontier
+fp-evm                         = { workspace = true }
 fp-rpc                         = { workspace = true }
 fp-self-contained              = { workspace = true }
 pallet-ethereum                = { workspace = true, features = ["forbid-evm-reentrancy"] }
@@ -177,6 +178,7 @@ std = [
 	"pallet-fee-market/std",
 
 	# frontier
+	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
 	"pallet-ethereum/std",

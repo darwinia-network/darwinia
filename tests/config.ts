@@ -4,11 +4,8 @@ import { JsonRpcResponse } from "web3-core-helpers";
 export const CHAIN_ID = 43;
 export const HOST_HTTP_URL = "http://127.0.0.1:9933";
 export const HOST_WS_URL = "ws://127.0.0.1:9944";
-// TODO: https://github.com/darwinia-network/darwinia-2.0/issues/248
-export const BLOCK_GAS_LIMIT = 9375000;
+export const BLOCK_GAS_LIMIT = 10000000;
 export const DEFAULT_GAS = 4000000;
-// EXTRINSIC_GAS_LIMIT = [BLOCK_GAS_LIMIT - BLOCK_GAS_LIMIT * (NORMAL_DISPATCH_RATIO - AVERAGE_ON_INITIALIZE_RATIO) - EXTRINSIC_BASE_Weight] / WEIGHT_PER_GAS  = (1_000_000_000_000 * 2 * (0.75-0.025) - 125_000_000) / 40_000
-export const EXTRINSIC_GAS_LIMIT = 9059375;
 
 // Accounts builtin
 export const ALITH = "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac";

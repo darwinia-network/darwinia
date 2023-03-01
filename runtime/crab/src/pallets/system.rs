@@ -28,9 +28,10 @@ const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::fr
 pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
+pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 	frame_support::weights::Weight::from_parts(
-		frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+		frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS * WEIGHT_MILLISECS_PER_BLOCK,
 		cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
 	);
 
