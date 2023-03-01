@@ -17,15 +17,14 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // crates.io
-use codec::{Encode, Decode};
+use codec::{Decode, Encode};
 // darwinia
 use crate::*;
 // polkadot
 use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
-use sp_runtime::traits::Zero;
-use sp_runtime::traits::Hash;
+use sp_runtime::traits::{Hash, Zero};
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -245,12 +244,13 @@ impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
 }
 
 impl pallet_ethereum_xcm::Config for Runtime {
+	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
+	type EnsureProxy = EthereumXcmEnsureProxy;
 	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ReservedXcmpWeight =
+		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
-	type ReservedXcmpWeight = <Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
-	type EnsureProxy = EthereumXcmEnsureProxy;
-	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
 // For now we only allow to transact in the relay, although this might change in the future
@@ -271,6 +271,7 @@ impl Default for Transactors {
 
 impl TryFrom<u8> for Transactors {
 	type Error = ();
+
 	fn try_from(value: u8) -> Result<Self, Self::Error> {
 		match value {
 			0u8 => Ok(Transactors::Relay),
@@ -283,9 +284,8 @@ impl xcm_primitives::UtilityEncodeCall for Transactors {
 	fn encode_call(self, call: xcm_primitives::UtilityAvailableCalls) -> Vec<u8> {
 		match self {
 			// The encoder should be polkadot
-			Transactors::Relay => {
-				moonbeam_relay_encoder::polkadot::PolkadotEncoder.encode_call(call)
-			}
+			Transactors::Relay =>
+				moonbeam_relay_encoder::polkadot::PolkadotEncoder.encode_call(call),
 		}
 	}
 }
@@ -330,10 +330,11 @@ impl From<AssetType> for crate::AssetId {
 		match asset {
 			AssetType::Xcm(id) => {
 				let mut result: [u8; 8] = [0u8; 8];
-				let hash: sp_core::H256 = id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
+				let hash: sp_core::H256 =
+					id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
 				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 				u64::from_le_bytes(result)
-			}
+			},
 		}
 	}
 }
@@ -380,14 +381,13 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<xcm::opaque::latest::MultiLo
 			CurrencyId::SelfReserve => {
 				let multi: MultiLocation = AnchoringSelfReserve::get();
 				Some(multi)
-			}
-			// CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
-			// // No transactor matches this yet, so even if we have this enum variant the transfer will fail
-			// CurrencyId::LocalAssetReserve(asset) => {
-			// 	let mut location = LocalAssetsPalletLocation::get();
-			// 	location.push_interior(xcm::opaque::latest::Junction::GeneralIndex(asset.into())).ok();
-			// 	Some(location)
-			// }
+			}, /* CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
+			    * // No transactor matches this yet, so even if we have this enum variant the
+			    * transfer will fail CurrencyId::LocalAssetReserve(asset) => {
+			    * 	let mut location = LocalAssetsPalletLocation::get();
+			    * 	location.push_interior(xcm::opaque::latest::Junction::GeneralIndex(asset.
+			    * into())).ok(); 	Some(location)
+			    * } */
 		}
 	}
 }
@@ -399,25 +399,23 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<xcm::opaque::latest::MultiLo
 // Local assets, both pre and post 0.9.16
 // We can remove the Old reanchor once
 // we import https://github.com/open-web3-stack/open-runtime-module-library/pull/708
-pub type AssetTransactors = (
-	LocalAssetTransactor,
-);
+pub type AssetTransactors = (LocalAssetTransactor,);
 
 impl pallet_xcm_transactor::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type Transactor = Transactors;
-	type DerivativeAddressRegistrationOrigin = frame_system::EnsureRoot<AccountId>;
-	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
-	type CurrencyId = CurrencyId;
 	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
-	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
-	type XcmSender = XcmRouter;
-	type SelfLocation = SelfLocation;
-	type Weigher = XcmWeigher;
-	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
-	type BaseXcmWeight = BaseXcmWeight;
 	type AssetTransactor = AssetTransactors;
+	type Balance = Balance;
+	type BaseXcmWeight = BaseXcmWeight;
+	type CurrencyId = CurrencyId;
+	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
+	type DerivativeAddressRegistrationOrigin = frame_system::EnsureRoot<AccountId>;
+	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
 	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<Ancestry>;
+	type RuntimeEvent = RuntimeEvent;
+	type SelfLocation = SelfLocation;
+	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
+	type Transactor = Transactors;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
+	type XcmSender = XcmRouter;
 }
