@@ -25,6 +25,7 @@ use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
 use sp_runtime::traits::Zero;
+use sp_runtime::traits::Hash;
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -341,9 +342,9 @@ impl From<AssetType> for crate::AssetId {
 #[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
 pub enum CurrencyId {
 	SelfReserve,
-	ForeignAsset(crate::AssetId),
-	// Our local assets
-	LocalAssetReserve(crate::AssetId),
+	// ForeignAsset(crate::AssetId),
+	// // Our local assets
+	// LocalAssetReserve(crate::AssetId),
 }
 
 impl xcm_primitives::AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
@@ -353,25 +354,26 @@ impl xcm_primitives::AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
 			// the self-reserve currency is identified by the pallet-balances address
 			a if a == sp_core::H160::from_low_u64_be(2050).into() => Some(CurrencyId::SelfReserve),
 			// the rest of the currencies, by their corresponding erc20 address
-			_ => Runtime::account_to_asset_id(account).map(|(prefix, asset_id)| {
-				CurrencyId::LocalAssetReserve(asset_id)
-				// We don't have ForeignAsset
-				// if prefix == FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX.to_vec() {
-				// 	CurrencyId::ForeignAsset(asset_id)
-				// } else {
-				// 	CurrencyId::LocalAssetReserve(asset_id)
-				// }
-			}),
+			_ => {
+				unimplemented!("todo");
+			}
+			// _ => Runtime::account_to_asset_id(account).map(|(prefix, asset_id)| {
+			// 	CurrencyId::LocalAssetReserve(asset_id)
+			// 	// We don't have ForeignAsset
+			// 	if prefix == FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX.to_vec() {
+			// 		CurrencyId::ForeignAsset(asset_id)
+			// 	} else {
+			// 		CurrencyId::LocalAssetReserve(asset_id)
+			// 	}
+			// }),
 		}
 	}
 }
 
 // How to convert from CurrencyId to MultiLocation
-pub struct CurrencyIdtoMultiLocation<AssetXConverter>(sp_std::marker::PhantomData<AssetXConverter>);
-impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>>
-	for CurrencyIdtoMultiLocation<AssetXConverter>
-where
-	AssetXConverter: xcm_executor::traits::Convert<MultiLocation, crate::AssetId>,
+pub struct CurrencyIdtoMultiLocation;
+impl sp_runtime::traits::Convert<CurrencyId, Option<xcm::opaque::latest::MultiLocation>>
+	for CurrencyIdtoMultiLocation
 {
 	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
 		match currency {
@@ -379,13 +381,13 @@ where
 				let multi: MultiLocation = AnchoringSelfReserve::get();
 				Some(multi)
 			}
-			CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
-			// No transactor matches this yet, so even if we have this enum variant the transfer will fail
-			CurrencyId::LocalAssetReserve(asset) => {
-				let mut location = LocalAssetsPalletLocation::get();
-				location.push_interior(Junction::GeneralIndex(asset.into())).ok();
-				Some(location)
-			}
+			// CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
+			// // No transactor matches this yet, so even if we have this enum variant the transfer will fail
+			// CurrencyId::LocalAssetReserve(asset) => {
+			// 	let mut location = LocalAssetsPalletLocation::get();
+			// 	location.push_interior(xcm::opaque::latest::Junction::GeneralIndex(asset.into())).ok();
+			// 	Some(location)
+			// }
 		}
 	}
 }
@@ -409,8 +411,7 @@ impl pallet_xcm_transactor::Config for Runtime {
 	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
 	type CurrencyId = CurrencyId;
 	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
-	type CurrencyIdToMultiLocation =
-		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<crate::AssetId, AssetType, AssetManager>>;
+	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
 	type XcmSender = XcmRouter;
 	type SelfLocation = SelfLocation;
 	type Weigher = XcmWeigher;
