@@ -114,11 +114,7 @@ frame_support::parameter_types! {
 pub struct ToTreasury;
 impl xcm_builder::TakeRevenue for ToTreasury {
 	fn take_revenue(revenue: MultiAsset) {
-		if let MultiAsset {
-			id: Concrete(_location),
-			fun: Fungible(amount),
-		} = revenue
-		{
+		if let MultiAsset { id: Concrete(_location), fun: Fungible(amount) } = revenue {
 			let treasury_account = Treasury::account_id();
 			let _ = Balances::deposit_creating(&treasury_account, amount);
 

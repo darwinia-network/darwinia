@@ -37,8 +37,8 @@ use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
 use frame_support::{traits::EnsureOrigin, PalletError, RuntimeDebug};
 use sp_core::{H160, U256};
-use sp_std::boxed::Box;
 use sp_runtime::traits::BadOrigin;
+use sp_std::boxed::Box;
 
 pub use pallet::*;
 
@@ -75,7 +75,7 @@ impl<O: Into<Result<LcmpEthOrigin, O>> + From<LcmpEthOrigin>> EnsureOrigin<O>
 
 	#[cfg(feature = "runtime-benchmarks")]
 	fn try_successful_origin() -> Result<O, ()> {
-		 Ok(O::from(LcmpEthOrigin::MessageTransact(Default::default())))
+		Ok(O::from(LcmpEthOrigin::MessageTransact(Default::default())))
 	}
 }
 

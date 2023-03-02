@@ -116,11 +116,7 @@ frame_support::parameter_types! {
 pub struct ToTreasury;
 impl xcm_builder::TakeRevenue for ToTreasury {
 	fn take_revenue(revenue: MultiAsset) {
-		if let MultiAsset {
-			id: Concrete(_location),
-			fun: Fungible(amount),
-		} = revenue
-		{
+		if let MultiAsset { id: Concrete(_location), fun: Fungible(amount) } = revenue {
 			let treasury_account = Treasury::account_id();
 			let _ = Balances::deposit_creating(&treasury_account, amount);
 
@@ -135,17 +131,23 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
+	type AssetExchanger = ();
+	type AssetLocker = ();
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
+	type CallDispatcher = RuntimeCall;
+	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
-	// Teleporting is disabled.
-	type UniversalLocation = UniversalLocation;
+	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
+	type MessageExporter = ();
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
+	type PalletInstancesInfo = AllPalletsWithSystem;
 	type ResponseHandler = PolkadotXcm;
 	type RuntimeCall = RuntimeCall;
+	type SafeCallFilter = frame_support::traits::Everything;
 	type SubscriptionService = PolkadotXcm;
 	type Trader = xcm_configs::LocalAssetTrader<
 		frame_support::weights::ConstantMultiplier<
@@ -158,17 +160,11 @@ impl xcm_executor::Config for XcmExecutorConfig {
 		DealWithFees<Runtime>,
 		ToTreasury,
 	>;
+	type UniversalAliases = frame_support::traits::Nothing;
+	// Teleporting is disabled.
+	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
-	type PalletInstancesInfo = AllPalletsWithSystem;
-	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
-	type AssetLocker = ();
-	type AssetExchanger = ();
-	type FeeManager = ();
-	type MessageExporter = ();
-	type UniversalAliases = frame_support::traits::Nothing;
-	type CallDispatcher = RuntimeCall;
-	type SafeCallFilter = frame_support::traits::Everything;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
@@ -191,13 +187,21 @@ frame_support::parameter_types! {
 impl pallet_xcm::Config for Runtime {
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
+	type Currency = Balances;
+	type CurrencyMatcher = ();
 	type ExecuteXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type UniversalLocation = UniversalLocation;
+	type MaxLockers = ConstU32<8>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type ReachableDest = ReachableDest;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SendXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+	type SovereignAccountOf = LocationToAccountId;
+	type TrustedLockers = ();
+	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 	type XcmReserveTransferFilter = frame_support::traits::Everything;
@@ -205,14 +209,6 @@ impl pallet_xcm::Config for Runtime {
 	type XcmTeleportFilter = frame_support::traits::Nothing;
 
 	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
-	type Currency = Balances;
-	type CurrencyMatcher = ();
-	type TrustedLockers = ();
-	type SovereignAccountOf = LocationToAccountId;
-	type MaxLockers = ConstU32<8>;
-	type WeightInfo = pallet_xcm::TestWeightInfo;
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
