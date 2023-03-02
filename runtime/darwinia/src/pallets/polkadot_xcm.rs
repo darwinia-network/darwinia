@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // polkadot
-use use xcm::latest::prelude::*;
+use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
 

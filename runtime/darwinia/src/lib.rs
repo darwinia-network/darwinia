@@ -328,7 +328,7 @@ sp_api::impl_runtime_apis! {
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_call_fee_details(call, len)
 		}
-		fn query_weight_to_fee(weight: Weight) -> Balance {
+		fn query_weight_to_fee(weight: frame_support::weights::Weight) -> Balance {
 			TransactionPayment::weight_to_fee(weight)
 		}
 		fn query_length_to_fee(length: u32) -> Balance {
