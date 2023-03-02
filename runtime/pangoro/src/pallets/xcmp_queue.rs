@@ -28,4 +28,5 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type VersionWrapper = ();
 	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+	type PriceForSiblingDelivery = ();
 }
