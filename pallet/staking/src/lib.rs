@@ -979,14 +979,6 @@ where
 	fn note_author(author: T::AccountId) {
 		Self::reward_by_ids(&[(author, 20)])
 	}
-
-	fn note_uncle(uncle_author: T::AccountId, _age: T::BlockNumber) {
-		if let Some(block_author) = <pallet_authorship::Pallet<T>>::author() {
-			Self::reward_by_ids(&[(block_author, 2), (uncle_author, 1)])
-		} else {
-			log::error!("[pallet::staking] block author not set, this should never happen; qed");
-		}
-	}
 }
 
 // Play the role of the session manager.
