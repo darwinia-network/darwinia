@@ -96,7 +96,6 @@ impl MessageBridge for WithPangolinMessageBridge {
 	const BRIDGED_CHAIN_ID: bp_runtime::ChainId = PANGOLIN_CHAIN_ID;
 	const BRIDGED_MESSAGES_PALLET_NAME: &'static str =
 		bridge_runtime_common::pallets::WITH_PANGORO_MESSAGES_PALLET_NAME;
-	const RELAYER_FEE_PERCENT: u32 = 10;
 	const THIS_CHAIN_ID: bp_runtime::ChainId = PANGORO_CHAIN_ID;
 }
 

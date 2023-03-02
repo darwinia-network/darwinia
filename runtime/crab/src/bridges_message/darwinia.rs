@@ -96,7 +96,6 @@ impl MessageBridge for WithDarwiniaMessageBridge {
 	const BRIDGED_CHAIN_ID: bp_runtime::ChainId = DARWINIA_CHAIN_ID;
 	const BRIDGED_MESSAGES_PALLET_NAME: &'static str =
 		bridge_runtime_common::pallets::WITH_CRAB_MESSAGES_PALLET_NAME;
-	const RELAYER_FEE_PERCENT: u32 = 10;
 	const THIS_CHAIN_ID: bp_runtime::ChainId = CRAB_CHAIN_ID;
 }
 
