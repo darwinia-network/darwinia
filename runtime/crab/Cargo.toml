@@ -260,6 +260,7 @@ runtime-benchmarks = [
 	# darwinia
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
+	"darwinia-message-transact/runtime-benchmarks",
 
 	# darwinia-messages-substrate
 	"bridge-runtime-common/runtime-benchmarks",

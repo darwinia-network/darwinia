@@ -49,6 +49,9 @@ sp-io            = { workspace = true }
 
 [features]
 default = ["std"]
+
+runtime-benchmarks = []
+
 std = [
 	# crates.io
 	"codec/std",

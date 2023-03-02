@@ -184,7 +184,7 @@ pub type XcmRouter = (
 );
 
 #[cfg(feature = "runtime-benchmarks")]
-parameter_types! {
+frame_support::parameter_types! {
 	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
 }
 
