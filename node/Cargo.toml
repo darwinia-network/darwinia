@@ -13,7 +13,7 @@ substrate-build-script-utils = { workspace = true }
 # crates.io
 array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
-clap        = { version = "4.0", features = ["derive"] }
+clap        = { version = "4.1", features = ["derive"] }
 codec       = { package = "parity-scale-codec", workspace = true }
 futures     = { version = "0.3" }
 jsonrpsee   = { version = "0.16", features = ["server"] }
