@@ -147,7 +147,7 @@ pub struct LocalAssetTrader<
 	OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
 	R: TakeRevenue,
 >(
-	XcmWeight,
+	Weight,
 	Currency::Balance,
 	PhantomData<(WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R)>,
 );
@@ -161,12 +161,12 @@ impl<
 	> WeightTrader for LocalAssetTrader<WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R>
 {
 	fn new() -> Self {
-		Self(0, Zero::zero(), PhantomData)
+		Self(Weight::zero(), Zero::zero(), PhantomData)
 	}
 
 	fn buy_weight(&mut self, weight: XcmWeight, payment: Assets) -> Result<Assets, XcmError> {
 		log::trace!(target: "xcm::weight", "LocalAssetTrader::buy_weight weight: {:?}, payment: {:?}", weight, payment);
-		let amount = WeightToFee::weight_to_fee(&Weight::from_ref_time(weight));
+		let amount = WeightToFee::weight_to_fee(&weight);
 		let u128_amount: u128 = amount.try_into().map_err(|_| XcmError::Overflow)?;
 		let required: MultiAsset = (Concrete(AssetId::get()), u128_amount).into();
 		let unused = payment.checked_sub(required.clone()).map_err(|_| XcmError::TooExpensive)?;
@@ -179,7 +179,7 @@ impl<
 	fn refund_weight(&mut self, weight: XcmWeight) -> Option<MultiAsset> {
 		log::trace!(target: "xcm::weight", "LocalAssetTrader::refund_weight weight: {:?}", weight);
 		let weight = weight.min(self.0);
-		let amount = WeightToFee::weight_to_fee(&Weight::from_ref_time(weight));
+		let amount = WeightToFee::weight_to_fee(&weight);
 		self.0 -= weight;
 		self.1 = self.1.saturating_sub(amount);
 		let amount: u128 = amount.saturated_into();
