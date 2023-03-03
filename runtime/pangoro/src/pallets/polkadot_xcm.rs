@@ -429,3 +429,36 @@ impl pallet_xcm_transactor::Config for Runtime {
 	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
 	type XcmSender = XcmRouter;
 }
+
+pub struct DarwiniaCall;
+impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
+	fn dispatch(
+		call: RuntimeCall,
+		origin: RuntimeOrigin,
+	) -> Result<
+		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
+	> {
+		if let Ok(raw_origin) =
+			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
+		{
+			match (call.clone(), raw_origin) {
+				(
+					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. })
+					| RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact_through_proxy {
+						..
+					}),
+					frame_system::RawOrigin::Signed(account_id),
+				) => {
+					return RuntimeCall::dispatch(
+						call,
+						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
+							.into(),
+					);
+				},
+				_ => {},
+			}
+		}
+		RuntimeCall::dispatch(call, origin)
+	}
+}
