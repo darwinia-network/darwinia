@@ -147,7 +147,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = RuntimeCall;
+	type CallDispatcher = DarwiniaCall;
 	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
@@ -225,6 +225,8 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }
+
+// === XCM <> EVM ===
 
 pub struct EthereumXcmEnsureProxy;
 impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
@@ -414,16 +416,16 @@ impl pallet_xcm_transactor::Config for Runtime {
 	type CurrencyId = CurrencyId;
 	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
 	type DerivativeAddressRegistrationOrigin = frame_system::EnsureRoot<AccountId>;
-	type UniversalLocation = UniversalLocation;
+	type HrmpEncoder = moonbeam_relay_encoder::westend::WestendEncoder;
+	type HrmpManipulatorOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxHrmpFee = xcm_builder::Case<MaxHrmpRelayFee>;
 	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<UniversalLocation>;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfLocation = SelfLocation;
 	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
 	type Transactor = Transactors;
+	type UniversalLocation = UniversalLocation;
 	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
 	type XcmSender = XcmRouter;
-	type HrmpManipulatorOrigin = frame_system::EnsureRoot<AccountId>;
-	type MaxHrmpFee = xcm_builder::Case<MaxHrmpRelayFee>;
-	type HrmpEncoder = moonbeam_relay_encoder::westend::WestendEncoder;
 }
