@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "blake2-rfc",
  "hex",
@@ -1414,7 +1414,7 @@ dependencies = [
  "pallet-xcm",
  "parachain-info",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-runtime-common",
  "precompile-utils",
  "scale-info",
@@ -1792,7 +1792,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "polkadot-node-primitives",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "sc-client-api",
  "sp-blockchain",
@@ -1902,7 +1902,7 @@ dependencies = [
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "scale-info",
  "sp-core",
  "sp-externalities",
@@ -1984,8 +1984,8 @@ version = "0.1.0"
 source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
 dependencies = [
  "parity-scale-codec",
- "polkadot-core-primitives",
- "polkadot-parachain",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "sp-api",
  "sp-runtime",
@@ -2105,7 +2105,7 @@ dependencies = [
  "cumulus-relay-chain-rpc-interface",
  "futures",
  "lru 0.9.0",
- "polkadot-core-primitives",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-network-bridge",
  "polkadot-node-network-protocol",
  "polkadot-node-subsystem-util",
@@ -2332,7 +2332,7 @@ dependencies = [
  "pangoro-runtime",
  "parity-scale-codec",
  "polkadot-cli",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "polkadot-service",
  "sc-basic-authorship",
@@ -2695,7 +2695,7 @@ dependencies = [
  "pallet-xcm",
  "parachain-info",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-runtime-common",
  "precompile-utils",
  "scale-info",
@@ -6108,7 +6108,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "cumulus-primitives-core",
  "frame-system",
@@ -7222,7 +7222,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -7308,7 +7308,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "cumulus-primitives-core",
  "fp-evm",
@@ -7977,7 +7977,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8016,7 +8016,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.2.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -8114,7 +8114,7 @@ dependencies = [
  "pallet-xcm",
  "parachain-info",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-runtime-common",
  "precompile-utils",
  "scale-info",
@@ -8220,7 +8220,7 @@ dependencies = [
  "pallet-xcm-transactor",
  "parachain-info",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-runtime-common",
  "precompile-utils",
  "scale-info",
@@ -8658,7 +8658,7 @@ dependencies = [
  "kusama-runtime",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
- "polkadot-core-primitives",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-node-core-parachains-inherent",
  "polkadot-primitives",
  "polkadot-runtime",
@@ -8708,6 +8708,18 @@ dependencies = [
  "sp-runtime",
  "thiserror",
  "tracing-gum",
+]
+
+[[package]]
+name = "polkadot-core-primitives"
+version = "0.9.38"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -8919,7 +8931,7 @@ dependencies = [
  "polkadot-node-metrics",
  "polkadot-node-primitives",
  "polkadot-node-subsystem",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "sp-maybe-compressed-blob",
  "tracing-gum",
@@ -9023,9 +9035,9 @@ dependencies = [
  "futures-timer",
  "parity-scale-codec",
  "pin-project",
- "polkadot-core-primitives",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-node-metrics",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "rand 0.8.5",
  "rayon",
  "sc-executor",
@@ -9142,7 +9154,7 @@ dependencies = [
  "bounded-vec",
  "futures",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "schnorrkel",
  "serde",
@@ -9248,12 +9260,28 @@ dependencies = [
 [[package]]
 name = "polkadot-parachain"
 version = "0.9.38"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
+dependencies = [
+ "derive_more",
+ "frame-support",
+ "parity-scale-codec",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug)",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "polkadot-parachain"
+version = "0.9.38"
 source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "derive_more",
  "frame-support",
  "parity-scale-codec",
- "polkadot-core-primitives",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "scale-info",
  "serde",
  "sp-core",
@@ -9284,8 +9312,8 @@ dependencies = [
  "bitvec",
  "hex-literal",
  "parity-scale-codec",
- "polkadot-core-primitives",
- "polkadot-parachain",
+ "polkadot-core-primitives 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "scale-info",
  "serde",
  "sp-api",
@@ -9593,7 +9621,7 @@ dependencies = [
  "polkadot-node-subsystem-types",
  "polkadot-node-subsystem-util",
  "polkadot-overseer",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "polkadot-rpc",
  "polkadot-runtime",
@@ -9745,7 +9773,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "affix",
  "derive_more",
@@ -9776,7 +9804,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "case",
  "num_enum",
@@ -10561,7 +10589,7 @@ dependencies = [
  "pallet-xcm",
  "pallet-xcm-benchmarks",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "polkadot-runtime-common",
  "polkadot-runtime-parachains",
@@ -14972,7 +15000,7 @@ dependencies = [
  "pallet-xcm",
  "pallet-xcm-benchmarks",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.38)",
  "polkadot-primitives",
  "polkadot-runtime-common",
  "polkadot-runtime-parachains",
@@ -15314,7 +15342,7 @@ dependencies = [
 [[package]]
 name = "xcm"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
 dependencies = [
  "derivative",
  "impl-trait-for-tuples",
@@ -15330,7 +15358,7 @@ dependencies = [
 [[package]]
 name = "xcm-builder"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -15338,7 +15366,7 @@ dependencies = [
  "log",
  "pallet-transaction-payment",
  "parity-scale-codec",
- "polkadot-parachain",
+ "polkadot-parachain 0.9.38 (git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug)",
  "scale-info",
  "sp-arithmetic",
  "sp-io",
@@ -15351,7 +15379,7 @@ dependencies = [
 [[package]]
 name = "xcm-executor"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
 dependencies = [
  "environmental",
  "frame-benchmarking",
@@ -15371,7 +15399,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#4d3e6da84703caae99cd511ea7a7bc1fd6f92097"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
@@ -15397,7 +15425,7 @@ dependencies = [
 [[package]]
 name = "xcm-procedural"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
+source = "git+https://github.com/jiguantong/polkadot?branch=evm-xcm-debug#05645be235be29fc1f8ab10f9df5f136d84865c0"
 dependencies = [
  "Inflector",
  "proc-macro2",

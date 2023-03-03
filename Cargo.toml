@@ -201,3 +201,9 @@ pallet-ethereum-xcm    = { git = "https://github.com/jiguantong/moonbeam", branc
 pallet-xcm-transactor  = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
+
+[patch."https://github.com/paritytech/polkadot"]
+pallet-xcm              = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+xcm                     = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+xcm-builder             = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+xcm-executor            = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }

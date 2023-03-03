@@ -439,6 +439,7 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
 		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
 		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
 	> {
+		use frame_support::log;
 		if let Ok(raw_origin) =
 			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
 		{
@@ -450,6 +451,7 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
 					}),
 					frame_system::RawOrigin::Signed(account_id),
 				) => {
+					log::info!("\n### EthereumXcm Call\n");
 					return RuntimeCall::dispatch(
 						call,
 						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
@@ -459,6 +461,7 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
 				_ => {},
 			}
 		}
+		log::info!("\n### Other Call\n");
 		RuntimeCall::dispatch(call, origin)
 	}
 }
