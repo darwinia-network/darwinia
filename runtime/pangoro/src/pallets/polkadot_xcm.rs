@@ -136,7 +136,7 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 	}
 }
 
-pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
@@ -401,16 +401,21 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<xcm::opaque::latest::MultiLo
 // we import https://github.com/open-web3-stack/open-runtime-module-library/pull/708
 pub type AssetTransactors = (LocalAssetTransactor,);
 
+// 1 ROC/WND should be enough
+frame_support::parameter_types! {
+	pub MaxHrmpRelayFee: MultiAsset = (MultiLocation::parent(), 1_000_000_000_000u128).into();
+}
+
 impl pallet_xcm_transactor::Config for Runtime {
 	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
 	type AssetTransactor = AssetTransactors;
 	type Balance = Balance;
-	type BaseXcmWeight = BaseXcmWeight;
+	type BaseXcmWeight = UnitWeightCost;
 	type CurrencyId = CurrencyId;
 	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
 	type DerivativeAddressRegistrationOrigin = frame_system::EnsureRoot<AccountId>;
-	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
-	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<Ancestry>;
+	type UniversalLocation = UniversalLocation;
+	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<UniversalLocation>;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfLocation = SelfLocation;
 	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
@@ -418,4 +423,7 @@ impl pallet_xcm_transactor::Config for Runtime {
 	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
 	type XcmSender = XcmRouter;
+	type HrmpManipulatorOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxHrmpFee = xcm_builder::Case<MaxHrmpRelayFee>;
+	type HrmpEncoder = moonbeam_relay_encoder::westend::WestendEncoder;
 }

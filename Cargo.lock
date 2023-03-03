@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "blake2-rfc",
  "hex",
@@ -6108,7 +6108,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "cumulus-primitives-core",
  "frame-system",
@@ -6737,7 +6737,7 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#0a64a0b761f0a33e8953eccdac55dedb1e9ef580"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#c58f03ef459ab3e84a7224cd384195c4165aa707"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -6756,7 +6756,7 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#0a64a0b761f0a33e8953eccdac55dedb1e9ef580"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#c58f03ef459ab3e84a7224cd384195c4165aa707"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -7222,7 +7222,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -7308,7 +7308,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "cumulus-primitives-core",
  "fp-evm",
@@ -8016,7 +8016,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.2.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -9745,7 +9745,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "affix",
  "derive_more",
@@ -9776,7 +9776,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "case",
  "num_enum",
@@ -15371,7 +15371,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
