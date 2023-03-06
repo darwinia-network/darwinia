@@ -60,7 +60,7 @@ fn migrate() -> Weight {
                                   888      888
                                   888      888
 
-         Crab1 and Crab Parachain1 are merged into Crab2.
+    Darwinia1 and Darwinia Parachain1 are merged into Darwinia2.
         Check: https://github.com/darwinia-network/darwinia
 "#
 	);
