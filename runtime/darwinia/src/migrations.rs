@@ -9,15 +9,11 @@ pub struct CustomOnRuntimeUpgrade;
 impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<(), &'static str> {
-		Scheduler::pre_migrate_to_v3()?;
-
 		Ok(())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade() -> Result<(), &'static str> {
-		Scheduler::post_migrate_to_v3()?;
-
 		Ok(())
 	}
 
@@ -27,30 +23,48 @@ impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> Weight {
-	Scheduler::migrate_v2_to_v3();
+	panic!(
+		r#"
+  .//.       .//.
+ ////////   ////////                                  ///////////////////////
+ ////////   ////////    ///////                /////////// ///        ///
+  *////.     .////,    /////////           ////////        ///        ///
+   *//*        ///      ///////          ////   ///        ///        ///
+   *//*        ///        ///        //////     ///        ///        ///
+   *//*        ///        ///     /////////     ///        ///        ///
+   *//*        ///        ///    &/////////(    ///        ///        ///
+   *//*        ///        ///     ////////*     ///        ///        ///
+   *//*        ///        ///     ////          ///        ///        ///
+   *//*        ///        ///  /////          ///////.     ///        ///
+   *//*        ///        ///////            /////////    //////     //////
+/////////////////////////////                  /////(   /////////  .////////
+//////////////////,.                                     ///////.   ///////*
 
-	for precompile in DarwiniaPrecompiles::<Runtime>::used_addresses() {
-		EVM::create_account(&precompile, vec![0x60, 0x00, 0x60, 0x00, 0xFD]);
-	}
+ 8888888b.                                 d8b          d8b           d888
+ 888  "Y88b                                Y8P          Y8P          d8888
+ 888    888                                                            888
+ 888    888  8888b.  888d888 888  888  888 888 88888b.  888  8888b.    888
+ 888    888     "88b 888P"   888  888  888 888 888 "88b 888     "88b   888
+ 888    888 .d888888 888     888  888  888 888 888  888 888 .d888888   888
+ 888  .d88P 888  888 888     Y88b 888 d88P 888 888  888 888 888  888   888
+ 8888888P"  "Y888888 888      "Y8888888P"  888 888  888 888 "Y888888 8888888
+         .d8888b.  888                                            888
+        d88P  Y88b 888                                            888
+        Y88b.      888                                            888
+         "Y888b.   888888 .d88b.  88888b.  88888b.   .d88b.   .d88888
+            "Y88b. 888   d88""88b 888 "88b 888 "88b d8P  Y8b d88" 888
+              "888 888   888  888 888  888 888  888 88888888 888  888
+        Y88b  d88P Y88b. Y88..88P 888 d88P 888 d88P Y8b.     Y88b 888
+         "Y8888P"   "Y888 "Y88P"  88888P"  88888P"   "Y8888   "Y88888
+                                  888      888
+                                  888      888
+                                  888      888
 
-	let removed_items: &[(&[u8], &[&[u8]])] = &[
-		(
-			b"ToCrabBacking",
-			&[
-				b"SecureLimitedPeriod",
-				b"SecureLimitedRingAmount",
-				b"TransactionInfos",
-				b"RemoteMappingTokenFactoryAccount",
-			],
-		),
-		(b"KtonTreasury", &[b"ProposalCount", b"Proposals", b"Approvals"]),
-	];
-	let hash = &[];
-
-	removed_items.iter().for_each(|(module, items)| {
-		items.iter().for_each(|item| migration::remove_storage_prefix(module, item, hash));
-	});
+         Crab1 and Crab Parachain1 are merged into Crab2.
+        Check: https://github.com/darwinia-network/darwinia
+"#
+	);
 
 	// 0
-	RuntimeBlockWeights::get().max_block
+	// RuntimeBlockWeights::get().max_block
 }
