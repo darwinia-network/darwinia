@@ -1140,7 +1140,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "bp-crab",
  "bp-crab-parachain",
@@ -1521,7 +1521,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "darwinia-cli",
 ]
@@ -1541,7 +1541,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-cli"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "darwinia-node-service",
  "darwinia-primitives",
@@ -1558,7 +1558,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "darwinia-balances",
  "darwinia-primitives",
@@ -1777,7 +1777,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-node-service"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "array-bytes 4.1.0",
  "crab-runtime",
@@ -1835,7 +1835,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-primitives"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "darwinia-support",
  "sp-core",
@@ -1844,7 +1844,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-rpc"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "darwinia-primitives",
  "fc-db",
@@ -1880,7 +1880,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "1.0.0"
+version = "0.12.5"
 dependencies = [
  "array-bytes 4.1.0",
  "bp-crab",
