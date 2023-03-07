@@ -202,28 +202,197 @@ pallet-xcm-transactor  = { git = "https://github.com/jiguantong/moonbeam", branc
 precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 
-[patch."https://github.com/paritytech/polkadot"]
-pallet-xcm              = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
-xcm                     = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
-xcm-builder             = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
-xcm-executor            = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+# [patch."https://github.com/paritytech/polkadot"]
+# pallet-xcm              = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+# xcm                     = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+# xcm-builder             = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
+# xcm-executor            = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
 
-[patch."https://github.com/darwinia-network/frontier"]
-fc-cli                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-consensus                   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-db                          = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-mapping-sync                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-rpc-core                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-ethereum                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-evm                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-self-contained              = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-ethereum                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-blake2   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-bn128    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-dispatch = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-modexp   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-simple   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# [patch."https://github.com/darwinia-network/frontier"]
+# fc-cli                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-consensus                   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-db                          = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-mapping-sync                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-rpc-core                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-ethereum                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-evm                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-self-contained              = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-ethereum                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-blake2   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-bn128    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-dispatch = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-modexp   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-simple   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+
+[patch."https://github.com/paritytech/substrate"]
+beefy-gadget                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+beefy-gadget-rpc                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+beefy-merkle-tree                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-benchmarking                            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-benchmarking-cli                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-election-provider-solution-type         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-election-provider-support               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-executive                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-support                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-support-procedural                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-support-procedural-tools                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-support-procedural-tools-derive         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-system                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-system-benchmarking                     = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-system-rpc-runtime-api                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+frame-try-runtime                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+mmr-gadget                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+mmr-rpc                                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-assets                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-aura                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-authority-discovery                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-authorship                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-babe                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-bags-list                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-balances                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-beefy                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-beefy-mmr                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-bounties                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-child-bounties                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-collective                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-conviction-voting                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-democracy                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-election-provider-multi-phase          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-election-provider-support-benchmarking = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-elections-phragmen                     = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-fast-unstake                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-grandpa                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-identity                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-im-online                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-indices                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-membership                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-mmr                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-multisig                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-nis                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-nomination-pools                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-nomination-pools-benchmarking          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-nomination-pools-runtime-api           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-offences                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-offences-benchmarking                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-preimage                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-proxy                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-ranked-collective                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-recovery                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-referenda                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-scheduler                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-session                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-session-benchmarking                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-society                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-staking                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-staking-reward-curve                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-staking-reward-fn                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-state-trie-migration                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-sudo                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-timestamp                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-tips                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-transaction-payment                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-transaction-payment-rpc                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-transaction-payment-rpc-runtime-api    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-treasury                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-utility                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-vesting                                = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+pallet-whitelist                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-allocator                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-authority-discovery                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-basic-authorship                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-block-builder                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-chain-spec                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-chain-spec-derive                          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-cli                                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-client-api                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-client-db                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus-aura                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus-babe                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus-babe-rpc                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus-epochs                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-consensus-slots                            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-executor                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-executor-common                            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-executor-wasmi                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-executor-wasmtime                          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-finality-grandpa                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-finality-grandpa-rpc                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-informant                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-keystore                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-network                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-network-common                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-network-gossip                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-offchain                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-peerset                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-proposer-metrics                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-rpc                                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-rpc-api                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-rpc-server                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-service                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-state-db                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-storage-monitor                            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-sync-state-rpc                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-sysinfo                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-telemetry                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-tracing                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-tracing-proc-macro                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-transaction-pool                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-transaction-pool-api                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sc-utils                                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-api                                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-api-proc-macro                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-application-crypto                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-arithmetic                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-authority-discovery                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-beefy                                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-block-builder                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-blockchain                                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-consensus                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-consensus-aura                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-consensus-babe                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-consensus-slots                            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-consensus-vrf                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-core                                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-database                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-debug-derive                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-externalities                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-finality-grandpa                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-inherents                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-io                                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-keyring                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-keystore                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-maybe-compressed-blob                      = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-mmr-primitives                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-npos-elections                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-offchain                                   = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-panic-handler                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-rpc                                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-runtime                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-runtime-interface                          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-runtime-interface-proc-macro               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-session                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-staking                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-state-machine                              = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-std                                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-storage                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-timestamp                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-tracing                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-transaction-pool                           = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-transaction-storage-proof                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-trie                                       = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-version                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-version-proc-macro                         = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-wasm-interface                             = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+sp-weights                                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-build-script-utils                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-frame-rpc-system                    = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-prometheus-endpoint                 = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-rpc-client                          = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-state-trie-migration-rpc            = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+substrate-wasm-builder                        = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
+try-runtime-cli                               = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
