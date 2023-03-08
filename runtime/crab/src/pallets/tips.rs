@@ -25,7 +25,7 @@ frame_support::parameter_types! {
 
 impl pallet_tips::Config for Runtime {
 	type DataDepositPerByte = ConstU128<{ darwinia_deposit(0, 1) }>;
-	type MaximumReasonLength = ConstU32<16384>;
+	type MaximumReasonLength = ConstU32<16_384>;
 	type RuntimeEvent = RuntimeEvent;
 	type TipCountdown = ConstU32<DAYS>;
 	type TipFindersFee = TipFindersFee;
