@@ -141,7 +141,7 @@ pub fn genesis_config() -> ChainSpec {
 			"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
 		),
 		(
-			"0x57017A6FD04ECdc9Ea68Dcfc1cbCFe598dCE4E56",
+			"0x4D3D5958B948e8d749FaB0236b179fCC55d9aAc0",
 			"0xf8f82edfc6899552e5a32aa381e53723d2c39594638cb8f7e2572fef74b05255",
 		),
 		(
@@ -153,7 +153,7 @@ pub fn genesis_config() -> ChainSpec {
 			"0xdcff1219121687391353b17e798b10e87f6e578b2a01e032375f2f14a0712b57",
 		),
 		(
-			"0x1397bb71E99D2E688Ee78a8483d280f48027BE2b",
+			"0x0a1287977578F888bdc1c7627781AF1cc000e6ab",
 			"0x28a8af71db9703e6b8960d1dcb742deca13c574f81f781be5dbde84ec8d66d45",
 		),
 		(
