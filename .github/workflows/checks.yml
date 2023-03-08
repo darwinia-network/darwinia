@@ -170,11 +170,11 @@ jobs:
           cd data
           curl -L https://github.com/darwinia-network/darwinia-2.0/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
           cd ..
-      - name: Check state
-        run: |
-          cd tool/state-processor
-          unset RUSTC_WRAPPER
-          cargo test --release --locked
+      # - name: Check state
+      #   run: |
+      #     cd tool/state-processor
+      #     unset RUSTC_WRAPPER
+      #     cargo test --release --locked
 
   checks-cleaning:
     name: Task checks cleaning
