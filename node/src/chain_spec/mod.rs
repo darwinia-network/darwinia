@@ -139,7 +139,7 @@ where
 			TokioRuntime::new().unwrap().block_on(
 				DownloaderBuilder::new().directory(d).build().download(&[Download::try_from(
 					format!(
-						"https://github.com/darwinia-network/darwinia-2.0/releases/download/{}/{name}",
+						"https://github.com/darwinia-network/darwinia/releases/download/{}/{name}",
 						name.strip_suffix(".json").unwrap()
 					)
 					.as_str(),

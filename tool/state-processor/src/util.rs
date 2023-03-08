@@ -135,7 +135,7 @@ pub fn download_specs(chain: &str) -> Result<()> {
 
 	let decoder = Decoder::new(
 		ureq::get(&format!(
-			"https://github.com/darwinia-network/darwinia-2.0/releases/download/{chain}2/{chain}-state.tar.zst"
+			"https://github.com/darwinia-network/darwinia/releases/download/{chain}2/{chain}-state.tar.zst"
 		))
 		.call()?
 		.into_reader(),
