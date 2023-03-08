@@ -61,7 +61,7 @@ jobs:
       - uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
-          repo: darwinia-network/darwinia-2.0
+          repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
@@ -149,7 +149,7 @@ jobs:
       - uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
-          repo: darwinia-network/darwinia-2.0
+          repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
@@ -192,7 +192,6 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
 
-      # todo: merge to above
       - name: Publish docker image with tag
         uses: docker/build-push-action@v3
         if: startsWith(github.ref, 'refs/tags/v')
