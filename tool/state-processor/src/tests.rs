@@ -33,7 +33,7 @@ impl Tester {
 
 		let mut solo_state = State::from_file("data/crab-solo.json").unwrap();
 		let mut para_state = State::from_file("data/crab-para.json").unwrap();
-		let mut shell_state = State::from_file("data/crab-processed.json").unwrap();
+		let mut shell_state = State::from_file("data/crab-processed-test.json").unwrap();
 
 		// solo chain
 		let mut solo_accounts = <Map<AccountInfo>>::default();
