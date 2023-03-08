@@ -42,6 +42,6 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-	type SpendPeriod = ConstU32<{ 24 * DAYS }>;
+	type SpendPeriod = ConstU32<{ 6 * DAYS }>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }
