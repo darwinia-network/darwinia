@@ -31,12 +31,6 @@ jobs:
         with:
           toolchain: nightly
 
-      - name: Cache target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Build
         run: cargo build --release --locked -p darwinia --features all-natives
 
