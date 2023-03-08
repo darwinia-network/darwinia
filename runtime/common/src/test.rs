@@ -432,7 +432,7 @@ macro_rules! impl_evm_tests {
 	() => {
 		mod evm {
 			// darwinia
-			use crate::mock::{Runtime, WeightPerGas};
+			use $crate::mock::{Runtime, WeightPerGas};
 
 			#[test]
 			fn configured_base_extrinsic_weight_is_evm_compatible() {
