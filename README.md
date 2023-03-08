@@ -21,80 +21,24 @@
 
 Implementation of a **https://darwinia.network** node in **Rust** based on the **Substrate** framework.
 
-<!-- TODO: ADD pangolin and pangoro info -->
-This repository contains runtimes for the **[Darwinia](https://darwinia.network)** and **[Crab](https://crab.network)** production networks and "Pangoro".
+This repo contains the following networks:
+ 
+1. the **Darwinia main network**, the parachain on the Polkadot, and its test network **Pangoro**.
+2. the **Crab main network**, the parachain on the Kusama, and its test network **Pangolin**.
 
-## Resources
-
-### Ecosystem
+## Ecosystem
 
 | Project | Introduction | Code | Activity |
 | :-----: | :----------: | :--: | :------: |
-| [Darwinia Bridge Sol](https://github.com/darwinia-network/darwinia-bridge-sol) | Darwinia bridge solidity smart contracts | [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-bridge-sol)](https://github.com/darwinia-network/darwinia-bridge-sol) | [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-bridge-sol?color=red&style=plastic)](https://github.com/darwinia-network/darwinia-bridge-sol) |
-| [Bridger](https://github.com/darwinia-network/bridger) | Client for header relayers and message relayers in Darwinia's bridge network | [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger)](https://github.com/darwinia-network/bridger) | [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger?color=red&style=plastic)](https://github.com/darwinia-network/bridger) |
+| [darwinia-messages-substrate](https://github.com/darwinia-network/darwinia-messages-substrate) | Darwinia LCMP integration SDK for substrate chains | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-messages-substrate) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-messages-substrate) |
+| [darwinia-messages-sol](https://github.com/darwinia-network/darwinia-messages-sol) | Darwinia cross-chain messages SDK for solidity developers | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-messages-sol) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-messages-sol) |
+| [darwinia-bridger](https://github.com/darwinia-network/bridger) | Client for header and message relayers in Darwinia cross-chain messaging network. | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger) |
 
-### Documents
+## Documents
+[Darwinia Network Docs](https://docs.darwinia.network)
 
-- [Darwinia Network Docs](https://docs.darwinia.network/)
-
-### Technical Support
-- Telegram
-	- [Official Technical Group](https://t.me/DarwiniaDev)
-- Matrix
-	- [Official Technical Room](https://matrix.to/#/#darwinia:matrix.org)
-
-## Installation
-- Downloading pre-built binary from **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
-- Using the docker image on **[releases](https://github.com/darwinia-network/darwinia/releases)** page.
-- Building from source follow this **[guide](#build-from-source)**.
-
-## Building
-> Make sure that you have all the required dependencies.
->
-> Follow [substrate-getting-started](https://substrate.dev/docs/en/knowledgebase/getting-started).
-
-### Installing via Cargo
-```sh
-cargo install --git https://github.com/darwinia-network/darwinia --tag <version> --locked
-```
-
-### Building from Source
-```sh
-# with github-cli
-gh repo clone darwinia-network/darwinia
-# with git
-git clone https://github.com/darwinia-network/darwinia.git
-git checkout <version>
-cargo build --release --locked
-```
-
-## Networks
-This repository supports runtimes for Darwinia and Crab.
-
-### Connecting to Darwinia Mainnet
-Connecting to the global Darwinia network by running:
-```sh
-./darwinia --chain darwinia
-```
-You can see your node on [telemetry](https://telemetry.polkadot.io/#list/0x729cb8f2cf428adcf81fe69610edda32c5711b2ff17de747e8604a3587021db8) (set a custom name with --name "my custom name").
-
-### Connecting to Crab Canary Network
-Connecting to the global Crab Canary Network by running:
-```sh
-./darwinia --chain crab
-```
-You can see your node on [telemetry](https://telemetry.polkadot.io/#list/0x34f61bfda344b3fad3c3e38832a91448b3c613b199eb23e5110a635d71c13c65) (set a custom name with --name "my custom name").
-
-## Contributing
-
-### Roadmap
+## Roadmap
 [Roadmap](https://itering.notion.site/9617e154ec884b07a7cee9a056374e42?v=0c3e4d9f257646c486a32a0425ee3a93)
 
-### Contributing Guidelines
-[Contributing Guidelines](docs/CONTRIBUTING.adoc)
-
-### Contributor Code of Conduct
-[Code of Conduct](docs/CODE_OF_CONDUCT.md)
-
-### Security
+## Security
 [Security](docs/SECURITY.md)
