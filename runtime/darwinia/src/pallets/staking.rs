@@ -1,56 +1,87 @@
-// --- paritytech ---
-use frame_support::PalletId;
-use sp_npos_elections::NposSolution;
-use sp_runtime::Perbill;
-use sp_staking::{EraIndex, SessionIndex};
-// --- darwinia-network ---
-use crate::*;
-use darwinia_staking::{Config, UseNominatorsMap};
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-frame_support::parameter_types! {
-	pub const StakingPalletId: PalletId = PalletId(*b"da/staki");
-	pub const SessionsPerEra: SessionIndex = DARWINIA_SESSIONS_PER_ERA;
-	pub const BondingDurationInEra: EraIndex = BondingDurationInBlockNumber::get()
-		/ (DARWINIA_SESSIONS_PER_ERA as BlockNumber * DARWINIA_BLOCKS_PER_SESSION);
-	pub const BondingDurationInBlockNumber: BlockNumber = 14 * DAYS;
-	// slightly less than 14 days.
-	pub const SlashDeferDuration: EraIndex = BondingDurationInEra::get() - 1;
-	// last 15 minutes of the last session will be for election.
-	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
-	pub const Cap: Balance = RING_HARD_CAP;
-	pub const TotalPower: Power = TOTAL_POWER;
+// darwinia
+use crate::*;
+
+fast_runtime_or_not!(MinStakingDuration, ConstU32<{ 5 * MINUTES }>, ConstU32<{ 14 * DAYS }>);
+
+pub enum RingStaking {}
+impl darwinia_staking::Stake for RingStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		<Balances as frame_support::traits::Currency<_>>::transfer(
+			who,
+			&darwinia_staking::account_id(),
+			item,
+			frame_support::traits::ExistenceRequirement::KeepAlive,
+		)
+	}
+
+	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		<Balances as frame_support::traits::Currency<_>>::transfer(
+			&darwinia_staking::account_id(),
+			who,
+			item,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
+		)
+	}
+}
+pub enum KtonStaking {}
+impl darwinia_staking::Stake for KtonStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		Assets::transfer(
+			RuntimeOrigin::signed(*who),
+			(AssetIds::Kton as AssetId).into(),
+			darwinia_staking::account_id(),
+			item,
+		)
+	}
+
+	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		Assets::transfer(
+			RuntimeOrigin::signed(darwinia_staking::account_id()),
+			(AssetIds::Kton as AssetId).into(),
+			*who,
+			item,
+		)
+	}
 }
 
-impl Config for Runtime {
-	type BondingDurationInBlockNumber = BondingDurationInBlockNumber;
-	type BondingDurationInEra = BondingDurationInEra;
-	type Cap = Cap;
-	type ElectionProvider = ElectionProviderMultiPhase;
-	type Event = Event;
-	type GenesisElectionProvider = GenesisElectionOf<Self>;
-	type KtonCurrency = Kton;
-	type KtonReward = ();
-	type KtonSlash = ();
-	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-	type NextNewSession = Session;
-	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
-	type PalletId = StakingPalletId;
-	type RingCurrency = Ring;
-	type RingReward = ();
-	type RingRewardRemainder = Treasury;
-	type RingSlash = Treasury;
-	type SessionInterface = Self;
-	type SessionsPerEra = SessionsPerEra;
-	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = RootOrAtLeastHalf<CouncilCollective>;
-	type SlashDeferDuration = SlashDeferDuration;
-	// Use the nominator map to iter voter AND no-ops for all SortedListProvider hooks. The
-	// migration to bags-list is a no-op, but the storage version will be updated.
-	type SortedListProvider = UseNominatorsMap<Self>;
-	type TotalPower = TotalPower;
-	type UnixTime = Timestamp;
-	type WeightInfo = ();
+frame_support::parameter_types! {
+	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+}
 
-	const MAX_NOMINATIONS: u32 = <NposCompactSolution16 as NposSolution>::LIMIT as u32;
+impl darwinia_staking::Config for Runtime {
+	type Deposit = Deposit;
+	type Kton = KtonStaking;
+	type MaxDeposits = ConstU32<16>;
+	type MaxUnstakings = ConstU32<16>;
+	type MinStakingDuration = MinStakingDuration;
+	type PayoutFraction = PayoutFraction;
+	type RewardRemainder = Treasury;
+	type Ring = RingStaking;
+	type RingCurrency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type UnixTime = Timestamp;
 }

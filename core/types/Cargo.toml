@@ -1,0 +1,7 @@
+[package]
+authors.workspace = true
+description       = "Darwinia core types."
+edition.workspace = true
+name              = "dc-types"
+readme            = "README.md"
+version.workspace = true

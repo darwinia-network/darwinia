@@ -1,0 +1,30 @@
+[package]
+authors.workspace = true
+description       = "Darwinia economic inflation mechanism implementation."
+edition.workspace = true
+name              = "dc-inflation"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# crates.io
+primitive-types = { version = "0.12", default-features = false }
+
+# darwinia
+dc-types = { workspace = true }
+
+# github
+substrate-fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed" }
+
+[dev-dependencies]
+sp-arithmetic = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	# crates.io
+	"primitive-types/std",
+
+	# github
+	"substrate-fixed/std",
+]

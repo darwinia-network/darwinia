@@ -1,0 +1,41 @@
+### Process steps
+- take solo `System::Account`, `Ethereum::RemainingRingBalance` and `Ethereum::RemainingKtonBalance`
+  - adjust solo balance decimals
+  - merge solo remaining balances
+- take para `System::Account`
+- process balances
+  - take solo `System::Account`, `Ethereum::RemainingRingBalance` and `Ethereum::RemainingKtonBalance`
+  - prune solo balance locks
+    - prune staking, phragmen election, democracy, vesting, relay  authority, fee market locks
+    - adjust solo balances items' decimals
+  - take para `Balances::TotalIssuance` and `Balances::Locks`
+    - there should not be any locks on parachain
+  - check if there are any other locks
+- burn parachain backing ring
+- build the new accounts and calculate total issuances
+  - merge solo and para account infos
+  - reset account reference counters
+  - increase `EVM::AccountCodes`'s `sufficients`
+- set `Balances::TotalIssuance`
+  - compare the calculated one with the storage one
+  - remove para backing account
+  - check remaining sum
+  - XCM related things
+- create KTON asset details
+- set accounts
+  - if is EVM address
+    - insert to `Assets::Account` (update kton asset details)
+    - insert to `System::Account`
+  - if is Substrate address
+    - reset the nonce
+    - insert to `AccountMigration::KtonAccounts`
+    - insert to `AccountMigration::Accounts`
+- set KTON total issuances
+  - compare the calculated one with the storage one
+
+- some remaining accounts, bridge endpoint accounts - TODO
+- special accounts
+  - parachain backing account DONE
+  - bridge root account 0x726f6f7400000000000000000000000000000000 DONE
+  - pallet accounts DONE
+  - para accounts DONE

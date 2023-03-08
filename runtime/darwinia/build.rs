@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2022 Darwinia Network
+// Copyright (C) 2018-2023 Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- paritytech ---
+// crates.io
 use substrate_wasm_builder::WasmBuilder;
 
 fn main() {
-	WasmBuilder::new().with_current_project().import_memory().export_heap_base().build()
+	WasmBuilder::new().with_current_project().export_heap_base().import_memory().build()
 }

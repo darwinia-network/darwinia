@@ -1,0 +1,188 @@
+name: Checks
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.rs"
+      - "**.toml"
+      - "**lock"
+      - "**.json"
+      - "**.yml"
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    branches:
+      - main
+    paths:
+      - "**.rs"
+      - "**.ts"
+      - "**.toml"
+      - "**lock"
+      - "**.json"
+      - "**.yml"
+
+env:
+  GITHUB_CACHE_VERSION: 1
+
+  RUST_BACKTRACE: full
+  RUSTC_WRAPPER: sccache
+
+  SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
+  SCCACHE_VERSION: v0.3.0
+  SCCACHE_DIR: /home/runner/.cache/sccache
+
+jobs:
+  basic-checks:
+    name: Task ${{ matrix.action }} darwinia
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        action: [build, test]
+    steps:
+      - name: Setup build environment
+        run: sudo apt install -y protobuf-compiler
+      - name: Install Sccache
+        run: |
+          export SCCACHE_FILE=sccache-${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl
+          curl -L ${{ env.SCCACHE_LINK }}/${{ env.SCCACHE_VERSION }}/$SCCACHE_FILE.tar.gz | tar xz
+          chmod u+x $SCCACHE_FILE/sccache
+          sudo mv $SCCACHE_FILE/sccache /usr/bin
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
+      - name: Cache sccache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.SCCACHE_DIR}}
+          key: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
+      - name: Action ${{ matrix.action }}
+        if: matrix.action != 'test'
+        run: cargo ${{ matrix.action }} --release --locked -p darwinia --all-features
+      - name: Action ${{ matrix.action }}
+        if: matrix.action == 'test'
+        run: SKIP_WASM_BUILD=1 cargo ${{ matrix.action }} --release --locked --features all-natives
+      - name: Change path
+        if: matrix.action != 'test'
+        run: mv target/release/darwinia .
+      - name: Upload
+        if: matrix.action != 'test'
+        uses: actions/upload-artifact@v2
+        with:
+          name: darwinia
+          path: darwinia
+      - name: Shrink cache
+        run: .github/shrink-cache.sh
+
+  features-checks:
+    name: Task check features
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    strategy:
+      matrix:
+        runtime: [runtime/darwinia, runtime/crab, runtime/pangolin]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check ${{ matrix.runtime }}
+        uses: hack-ink/subalfred-check-features-action@v0.1.5
+        with:
+          path: ${{ matrix.runtime }}
+
+  runtime-checks:
+    name: Task check runtimes
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    strategy:
+      matrix:
+        target:
+          [
+            { chain: darwinia-dev, compare-with: "https://rpc.polkadot.io" },
+            { chain: crab-dev, compare-with: "https://rpc.polkadot.io" },
+            {
+              chain: pangolin-dev,
+              compare-with: "https://pangolin-rpc.darwinia.network",
+            },
+          ]
+    needs: [basic-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check ${{ matrix.target.chain }}
+        uses: hack-ink/subalfred-check-runtime-action@v0.1.8
+        with:
+          uploaded-artifact: darwinia
+          chain: ${{ matrix.target.chain }}
+          compare-with: ${{ matrix.target.compare-with }}
+
+  evm-checks:
+    name: Task check EVM
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [basic-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download darwinia
+        uses: actions/download-artifact@v2
+        with:
+          name: darwinia
+      - name: Install darwinia
+        run: |
+          chmod u+x darwinia
+          sudo mv darwinia /usr/bin
+      - name: Launch darwinia
+        run: darwinia --chain pangolin-dev --tmp --alice &
+      - name: Install Node 19
+        uses: actions/setup-node@v2
+        with:
+          node-version: 19
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Action test
+        run: |
+          cd tests
+          npm install
+          npm run test
+
+  state-checks:
+    name: Task check state
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [basic-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Download darwinia
+        uses: actions/download-artifact@v2
+        with:
+          name: darwinia
+      - name: Setup test environment
+        run: |
+          mkdir -p target/release
+          chmod u+x darwinia
+          mv darwinia target/release/darwinia
+          cd tool/state-processor
+          mkdir -p data
+          cd data
+          curl -L https://github.com/darwinia-network/darwinia-2.0/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
+          cd ..
+      - name: Check state
+        run: |
+          cd tool/state-processor
+          unset RUSTC_WRAPPER
+          cargo test --release --locked
+
+  checks-cleaning:
+    name: Task checks cleaning
+    if: always()
+    needs: [features-checks, runtime-checks, state-checks]
+    steps:
+      - name: Clean artifacts
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: darwinia
+    runs-on: ubuntu-latest

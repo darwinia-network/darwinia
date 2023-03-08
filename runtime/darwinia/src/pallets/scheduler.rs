@@ -1,23 +1,36 @@
-// --- core ---
-use core::cmp::Ordering;
-// --- paritytech ---
-use frame_support::{traits::PrivilegeCmp, weights::Weight};
-use pallet_scheduler::Config;
-use sp_runtime::Perbill;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
 /// Used the compare the privilege of an origin inside the scheduler.
 pub struct OriginPrivilegeCmp;
-impl PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
-	fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<Ordering> {
+impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
+	fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<core::cmp::Ordering> {
 		if left == right {
-			return Some(Ordering::Equal);
+			return Some(core::cmp::Ordering::Equal);
 		}
 
 		match (left, right) {
 			// Root is greater than anything.
-			(OriginCaller::system(frame_system::RawOrigin::Root), _) => Some(Ordering::Greater),
+			(OriginCaller::system(frame_system::RawOrigin::Root), _) =>
+				Some(core::cmp::Ordering::Greater),
 			// Check which one has more yes votes.
 			(
 				OriginCaller::Council(pallet_collective::RawOrigin::Members(l_yes_votes, l_count)),
@@ -30,23 +43,21 @@ impl PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
 }
 
 frame_support::parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80)
+	pub MaximumSchedulerWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(80)
 		* RuntimeBlockWeights::get().max_block;
-	pub const MaxScheduledPerBlock: u32 = 50;
 	// Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
 	pub const NoPreimagePostponement: Option<u32> = Some(10);
 }
 
-impl Config for Runtime {
-	type Call = Call;
-	type Event = Event;
-	type MaxScheduledPerBlock = MaxScheduledPerBlock;
+impl pallet_scheduler::Config for Runtime {
+	type MaxScheduledPerBlock = ConstU32<50>;
 	type MaximumWeight = MaximumSchedulerWeight;
-	type NoPreimagePostponement = NoPreimagePostponement;
-	type Origin = Origin;
 	type OriginPrivilegeCmp = OriginPrivilegeCmp;
 	type PalletsOrigin = OriginCaller;
-	type PreimageProvider = Preimage;
+	type Preimages = Preimage;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type ScheduleOrigin = Root;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_scheduler::WeightInfo<Self>;
 }

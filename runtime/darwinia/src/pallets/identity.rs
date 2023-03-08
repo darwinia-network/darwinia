@@ -1,29 +1,39 @@
-// --- paritytech ---
-use pallet_identity::Config;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
-frame_support::parameter_types! {
-	// Minimum 100 bytes/CRAB deposited (1 MILLI/byte)
-	pub const BasicDeposit: Balance = darwinia_deposit(1, 258);
-	pub const FieldDeposit: Balance = darwinia_deposit(0, 66);
-	pub const SubAccountDeposit: Balance = darwinia_deposit(1, 53);
-	pub const MaxSubAccounts: u32 = 100;
-	pub const MaxAdditionalFields: u32 = 100;
-	pub const MaxRegistrars: u32 = 20;
-}
-
-impl Config for Runtime {
-	type BasicDeposit = BasicDeposit;
-	type Currency = Ring;
-	type Event = Event;
-	type FieldDeposit = FieldDeposit;
+impl pallet_identity::Config for Runtime {
+	// Minimum 100 bytes/UNIT deposited (1 MILLIUNIT/byte).
+	// 258 bytes on-chain.
+	type BasicDeposit = ConstU128<{ darwinia_deposit(1, 258) }>;
+	type Currency = Balances;
+	// 66 bytes on-chain.
+	type FieldDeposit = ConstU128<{ darwinia_deposit(0, 66) }>;
 	type ForceOrigin = RootOrMoreThanHalf<CouncilCollective>;
-	type MaxAdditionalFields = MaxAdditionalFields;
-	type MaxRegistrars = MaxRegistrars;
-	type MaxSubAccounts = MaxSubAccounts;
+	type MaxAdditionalFields = ConstU32<100>;
+	type MaxRegistrars = ConstU32<20>;
+	type MaxSubAccounts = ConstU32<100>;
 	type RegistrarOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type RuntimeEvent = RuntimeEvent;
 	type Slashed = Treasury;
-	type SubAccountDeposit = SubAccountDeposit;
-	type WeightInfo = ();
+	// 53 bytes on-chain.
+	type SubAccountDeposit = ConstU128<{ darwinia_deposit(1, 53) }>;
+	type WeightInfo = weights::pallet_identity::WeightInfo<Self>;
 }

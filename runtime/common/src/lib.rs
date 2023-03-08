@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2022 Darwinia Network
+// Copyright (C) 2018-2023 Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -16,123 +16,229 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Common runtime code for Darwinia and Crab.
-
 #![cfg_attr(not(feature = "std"), no_std)]
+// TODO:
+// #![deny(missing_docs)]
 
 pub mod gov_origin;
-pub use gov_origin::*;
+pub mod xcm_configs;
 
-/// Implementations of some helper traits passed into runtime modules as associated types.
-pub mod impls;
-pub use impls::*;
+pub use bp_darwinia_core as bp_crab;
+pub use bp_darwinia_core as bp_darwinia;
+pub use bp_darwinia_core as bp_pangolin;
+pub use bp_darwinia_core as bp_pangoro;
 
-pub use frame_support::weights::constants::{ExtrinsicBaseWeight, RocksDbWeight};
+#[cfg(feature = "test")]
+pub mod test;
 
-pub use darwinia_balances::{Instance1 as RingInstance, Instance2 as KtonInstance};
-
-// --- crates.io ---
-use static_assertions::const_assert;
-// --- paritytech ---
-use frame_election_provider_support::onchain::OnChainSequentialPhragmen;
+// darwinia
+use dc_primitives::*;
+// substrate
 use frame_support::{
-	traits::Currency,
+	sp_runtime::Perbill,
 	weights::{
-		constants::{BlockExecutionWeight, WEIGHT_PER_SECOND},
-		DispatchClass, Weight,
+		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		WeightToFeePolynomial,
 	},
 };
-use frame_system::limits::{BlockLength, BlockWeights};
-use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
-use sp_runtime::{FixedPointNumber, Perbill, Perquintill};
-// --- darwinia-network ---
-use darwinia_primitives::BlockNumber;
 
-pub type NegativeImbalance<T> = <darwinia_balances::Pallet<T, RingInstance> as Currency<
-	<T as frame_system::Config>::AccountId,
->>::NegativeImbalance;
-
-/// The accuracy type used for genesis election provider;
-pub type OnOnChainAccuracy = Perbill;
-
-/// The election provider of the genesis
-pub type GenesisElectionOf<T> = OnChainSequentialPhragmen<T>;
-
-/// Parameterized slow adjusting fee updated based on
-/// https://w3f-research.readthedocs.io/en/latest/polkadot/Token%20Economics.html#-2.-slow-adjusting-mechanism
-pub type SlowAdjustingFeeUpdate<R> =
-	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
-
-/// We assume that an on-initialize consumes 2.5% of the weight on average, hence a single extrinsic
-/// will not be allowed to consume more than `AvailableBlockRatio - 2.5%`.
-pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
-/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used
-/// by  Operational  extrinsics.
-pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 2 seconds of compute with a 6 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
-const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
-
-/// Maximum number of iterations for balancing that will be executed in the embedded miner of
-/// pallet-election-provider-multi-phase.
-pub const MINER_MAX_ITERATIONS: u32 = 10;
-
-// According to the EVM gas benchmark, 1 gas ~= 40_000 weight.
-pub const WEIGHT_PER_GAS: u64 = 40_000;
-
-frame_support::parameter_types! {
-	pub const BlockHashCountForCrab: BlockNumber = 256;
-	pub const BlockHashCountForDarwinia: BlockNumber = 2400;
-	/// The portion of the `NORMAL_DISPATCH_RATIO` that we adjust the fees with. Blocks filled less
-	/// than this will decrease the weight and more will increase.
-	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
-	/// The adjustment variable of the runtime. Higher values will cause `TargetBlockFullness` to
-	/// change the fees more rapidly.
-	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(3, 100_000);
-	/// Minimum amount of the multiplier. This value cannot be too low. A test case should ensure
-	/// that combined with `AdjustmentVariable`, we can recover from the minimum.
-	/// See `multiplier_can_grow_from_zero`.
-	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
-	/// Maximum length of block. Up to 5MB.
-	pub RuntimeBlockLength: BlockLength =
-		BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-	/// Block weights base values and limits.
-	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
-		.base_block(BlockExecutionWeight::get())
-		.for_class(DispatchClass::all(), |weights| {
-			weights.base_extrinsic = ExtrinsicBaseWeight::get();
-		})
-		.for_class(DispatchClass::Normal, |weights| {
-			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
-		})
-		.for_class(DispatchClass::Operational, |weights| {
-			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
-			// Operational transactions have some extra reserved space, so that they
-			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
-			weights.reserved = Some(
-				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
-			);
-		})
-		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
-		.build_or_panic();
+#[macro_export]
+macro_rules! fast_runtime_or_not {
+	($name:ident, $development_type:ty, $production_type:ty) => {
+		#[cfg(feature = "fast-runtime")]
+		type $name = $development_type;
+		#[cfg(not(feature = "fast-runtime"))]
+		type $name = $production_type;
+	};
 }
 
-frame_support::parameter_types! {
-	/// A limit for off-chain phragmen unsigned solution submission.
-	///
-	/// We want to keep it as high as possible, but can't risk having it reject,
-	/// so we always subtract the base block execution weight.
-	pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
-		.get(DispatchClass::Normal)
-		.max_extrinsic
-		.expect("Normal extrinsics have weight limit configured by default; qed")
-		.saturating_sub(BlockExecutionWeight::get());
+/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
+/// node's balance type.
+///
+/// This should typically create a mapping between the following ranges:
+///   - `[0, MAXIMUM_BLOCK_WEIGHT]`
+///   - `[Balance::min, Balance::max]`
+///
+/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
+///   - Setting it to `0` will essentially disable the weight fee.
+///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
+pub struct WeightToFee;
+impl WeightToFeePolynomial for WeightToFee {
+	type Balance = Balance;
 
-	/// A limit for off-chain phragmen unsigned solution length.
-	///
-	/// We allow up to 90% of the block's size to be consumed by the solution.
-	pub OffchainSolutionLengthLimit: u32 = Perbill::from_rational(90_u32, 100) *
-		*RuntimeBlockLength::get()
-		.max
-		.get(DispatchClass::Normal);
+	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
+		// here, we map to 1/10 of that, or 1/10 MILLIUNIT
+		let p = MILLIUNIT / 10;
+		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		smallvec::smallvec![WeightToFeeCoefficient {
+			degree: 1,
+			negative: false,
+			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_integer: p / q,
+		}]
+	}
+}
+
+pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
+impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
+	for DealWithFees<R>
+where
+	R: pallet_balances::Config,
+	R: pallet_balances::Config + pallet_treasury::Config,
+	pallet_treasury::Pallet<R>:
+		frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>,
+{
+	// this seems to be called for substrate-based transactions
+	fn on_unbalanceds<B>(
+		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
+	) {
+		if let Some(fees) = fees_then_tips.next() {
+			// substrate
+			use frame_support::traits::Imbalance;
+
+			// for fees, 80% are burned, 20% to the treasury
+			let (_, to_treasury) = fees.ration(80, 20);
+
+			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
+			// total_supply accordingly
+			<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
+				to_treasury,
+			);
+		}
+	}
+
+	// this is called from pallet_evm for Ethereum-based transactions
+	// (technically, it calls on_unbalanced, which calls this when non-zero)
+	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
+		// substrate
+		use frame_support::traits::Imbalance;
+
+		// Balances pallet automatically burns dropped Negative Imbalances by decreasing
+		// total_supply accordingly
+		let (_, to_treasury) = amount.ration(80, 20);
+
+		<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
+			to_treasury,
+		);
+	}
+}
+
+/// Deposit calculator for Darwinia.
+/// 100 UNIT for the base fee, 102.4 UNIT/MB.
+pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+	// First try.
+	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
+	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
+}
+
+#[macro_export]
+macro_rules! impl_self_contained_call {
+	() => {
+		impl fp_self_contained::SelfContainedCall for RuntimeCall {
+			type SignedInfo = sp_core::H160;
+
+			fn is_self_contained(&self) -> bool {
+				match self {
+					RuntimeCall::Ethereum(call) => call.is_self_contained(),
+					_ => false,
+				}
+			}
+
+			fn check_self_contained(
+				&self,
+			) -> Option<
+				Result<
+					Self::SignedInfo,
+					sp_runtime::transaction_validity::TransactionValidityError,
+				>,
+			> {
+				match self {
+					RuntimeCall::Ethereum(call) => call.check_self_contained(),
+					_ => None,
+				}
+			}
+
+			fn validate_self_contained(
+				&self,
+				info: &Self::SignedInfo,
+				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
+				len: usize,
+			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
+				match self {
+					RuntimeCall::Ethereum(call) =>
+						call.validate_self_contained(info, dispatch_info, len),
+					_ => None,
+				}
+			}
+
+			fn pre_dispatch_self_contained(
+				&self,
+				info: &Self::SignedInfo,
+				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
+				len: usize,
+			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
+				match self {
+					RuntimeCall::Ethereum(call) =>
+						call.pre_dispatch_self_contained(info, dispatch_info, len),
+					_ => None,
+				}
+			}
+
+			fn apply_self_contained(
+				self,
+				info: Self::SignedInfo,
+			) -> Option<
+				sp_runtime::DispatchResultWithInfo<sp_runtime::traits::PostDispatchInfoOf<Self>>,
+			> {
+				// substrate
+				use sp_runtime::traits::Dispatchable;
+
+				match self {
+					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+						Some(call.dispatch(RuntimeOrigin::from(
+							pallet_ethereum::RawOrigin::EthereumTransaction(info),
+						))),
+					_ => None,
+				}
+			}
+		}
+	};
+}
+
+pub struct DarwiniaFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
+impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for DarwiniaFindAuthor<Inner>
+where
+	Inner: frame_support::traits::FindAuthor<AccountId>,
+{
+	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	{
+		Inner::find_author(digests).map(Into::into)
+	}
+}
+
+pub struct FixedGasPrice;
+impl pallet_evm::FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
+	}
+}
+
+pub struct AssetIdConverter;
+impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
+	fn account_to_asset_id(account_id: AccountId) -> AssetId {
+		let addr: sp_core::H160 = account_id.into();
+		addr.to_low_u64_be()
+	}
+}
+/// Helper for pallet-assets benchmarking.
+#[cfg(feature = "runtime-benchmarks")]
+pub struct AssetsBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
+		u64::from(id).into()
+	}
 }
