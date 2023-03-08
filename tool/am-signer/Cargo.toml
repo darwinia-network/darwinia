@@ -1,0 +1,16 @@
+[package]
+authors = ["Xavier Lau <xavier@inv.cafe>"]
+edition = "2021"
+name    = "am-signer"
+version = "0.0.0"
+
+[dependencies]
+# crates.io
+array-bytes = { version = "6.0" }
+clap        = { version = "4.1", features = ["derive"] }
+
+# substrate
+sp-core = { git = "https://github.com/paritytech/substrate" }
+
+[workspace]
+exclude = []

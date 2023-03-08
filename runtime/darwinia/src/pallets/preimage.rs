@@ -1,20 +1,29 @@
-// --- paritytech ---
-use pallet_preimage::Config;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
-frame_support::parameter_types! {
-	pub const PreimageMaxSize: u32 = 4096 * 1024;
-	pub const PreimageBaseDeposit: Balance = 100 * COIN;
-	pub const PreimageByteDeposit: Balance = darwinia_deposit(0, 1);
-}
-
-impl Config for Runtime {
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
+impl pallet_preimage::Config for Runtime {
+	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
+	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
 	type Currency = Balances;
-	type Event = Event;
-	type ManagerOrigin = Root;
-	type MaxSize = PreimageMaxSize;
-	type WeightInfo = ();
+	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
 }

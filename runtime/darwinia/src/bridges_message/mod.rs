@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2022 Darwinia Network
+// Copyright (C) 2018-2023 Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -18,6 +18,3 @@
 
 pub mod crab;
 pub use crab as bm_crab;
-
-pub mod darwinia_parachain;
-pub use darwinia_parachain as bm_darwinia_parachain;

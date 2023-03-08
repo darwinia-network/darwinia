@@ -1,250 +1,370 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-build       = "build.rs"
-description = "Darwinia node runtime for Darwinia network"
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
-name        = "darwinia-runtime"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "1.0.0"
+authors.workspace = true
+description       = "Darwinia runtime."
+edition.workspace = true
+name              = "darwinia-runtime"
+readme            = "README.md"
+version.workspace = true
+
+[build-dependencies]
+substrate-wasm-builder = { workspace = true }
 
 [dependencies]
 # crates.io
-array-bytes       = { version = "4.1" }
-codec             = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
-scale-info        = { version = "1.0", default-features = false }
-serde             = { version = "1.0", optional = true }
-serde_json        = { version = "1.0", optional = true }
-smallvec          = { version = "1.7" }
-static_assertions = { version = "1.1" }
-# darwinia-messages-substrate
-bp-crab                  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-darwinia              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-darwinia-parachain    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-message-dispatch      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-messages              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-polkadot              = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bp-runtime               = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-bridge-runtime-common    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-pallet-bridge-dispatch   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-pallet-bridge-grandpa    = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-pallet-bridge-messages   = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-pallet-bridge-parachains = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-pallet-fee-market        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "darwinia-v0.12.5" }
-# darwinia-network frame
-darwinia-balances        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-ecdsa-authority = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-header-mmr      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-message-gadget  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-staking         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-support         = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-to-tron-backing          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-# darwinia-network evm
-darwinia-ethereum                     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-evm                          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-evm-precompile-bls12-381     = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-evm-precompile-dispatch      = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-evm-precompile-kton          = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-evm-precompile-state-storage = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-dp-evm-tracer                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-fp-evm                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-fp-rpc                                = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-fp-self-contained                     = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-moonbeam-rpc-primitives-debug         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "darwinia-v0.12.5" }
-pallet-base-fee                       = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-pallet-evm-precompile-blake2          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-pallet-evm-precompile-bn128           = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-pallet-evm-precompile-modexp          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-pallet-evm-precompile-simple          = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.12.5" }
-# darwinia-network primitives
-darwinia-primitives = { default-features = false, path = "../../primitives" }
-# darwinia-network runtime
-darwinia-common-runtime = { default-features = false, path = "../common" }
-# paritytech frame
-frame-benchmarking                         = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-election-provider-support            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-executive                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-support                              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-system                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-system-benchmarking                  = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-system-rpc-runtime-api               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-try-runtime                          = { default-features = false, optional = true, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-authority-discovery                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-authorship                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-babe                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-bounties                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-collective                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-democracy                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-election-provider-multi-phase       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-elections-phragmen                  = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-grandpa                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-identity                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-im-online                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-membership                          = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-multisig                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-offences                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-preimage                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-proxy                               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-recovery                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-scheduler                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-session                             = { default-features = false, features = ["historical"], git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-society                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-sudo                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-timestamp                           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-tips                                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-transaction-payment                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-treasury                            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-utility                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-vesting                             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-# paritytech primitives
-sp-api                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-authority-discovery = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-block-builder       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-consensus-babe      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-core                = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-inherents           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-npos-elections      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-offchain            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-session             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-staking             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-std                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-transaction-pool    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-version             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+codec             = { workspace = true, package = "parity-scale-codec" }
+scale-info        = { workspace = true }
+static_assertions = { workspace = true }
+# crates.io optional
+array-bytes = { optional = true, workspace = true }
 
-[build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+# cumulus
+cumulus-pallet-aura-ext         = { workspace = true }
+cumulus-pallet-dmp-queue        = { workspace = true }
+cumulus-pallet-parachain-system = { workspace = true }
+cumulus-pallet-xcm              = { workspace = true }
+cumulus-pallet-xcmp-queue       = { workspace = true }
+cumulus-primitives-core         = { workspace = true }
+cumulus-primitives-timestamp    = { workspace = true }
+cumulus-primitives-utility      = { workspace = true }
+parachain-info                  = { workspace = true }
+# cumulus optional
+cumulus-pallet-session-benchmarking = { optional = true, workspace = true }
+
+# darwinia
+darwinia-account-migration        = { workspace = true }
+darwinia-common-runtime           = { workspace = true }
+darwinia-deposit                  = { workspace = true }
+darwinia-ecdsa-authority          = { workspace = true }
+darwinia-message-gadget           = { workspace = true }
+darwinia-message-transact         = { workspace = true }
+darwinia-precompile-assets        = { workspace = true }
+darwinia-precompile-bls12-381     = { workspace = true }
+darwinia-precompile-deposit       = { workspace = true }
+darwinia-precompile-staking       = { workspace = true }
+darwinia-precompile-state-storage = { workspace = true }
+darwinia-staking                  = { workspace = true }
+dc-primitives                     = { workspace = true }
+
+# darwinia-messages-substrate
+bp-message-dispatch      = { workspace = true }
+bp-messages              = { workspace = true }
+bp-polkadot-core         = { workspace = true }
+bp-runtime               = { workspace = true }
+bridge-runtime-common    = { workspace = true }
+pallet-bridge-dispatch   = { workspace = true }
+pallet-bridge-grandpa    = { workspace = true }
+pallet-bridge-messages   = { workspace = true }
+pallet-bridge-parachains = { workspace = true }
+pallet-fee-market        = { workspace = true }
+
+# frontier
+fp-evm                         = { workspace = true }
+fp-rpc                         = { workspace = true }
+fp-self-contained              = { workspace = true }
+pallet-ethereum                = { features = ["forbid-evm-reentrancy"], workspace = true }
+pallet-evm                     = { features = ["forbid-evm-reentrancy"], workspace = true }
+pallet-evm-precompile-blake2   = { workspace = true }
+pallet-evm-precompile-bn128    = { workspace = true }
+pallet-evm-precompile-dispatch = { workspace = true }
+pallet-evm-precompile-modexp   = { workspace = true }
+pallet-evm-precompile-simple   = { workspace = true }
+
+# moonbeam
+precompile-utils = { workspace = true }
+xcm-primitives   = { workspace = true }
+
+# polkadot
+pallet-xcm              = { workspace = true }
+polkadot-parachain      = { workspace = true }
+polkadot-runtime-common = { workspace = true }
+xcm                     = { workspace = true }
+xcm-builder             = { workspace = true }
+xcm-executor            = { workspace = true }
+
+# substrate
+frame-executive                            = { workspace = true }
+frame-support                              = { workspace = true }
+frame-system                               = { workspace = true }
+frame-system-rpc-runtime-api               = { workspace = true }
+pallet-assets                              = { workspace = true }
+pallet-aura                                = { workspace = true }
+pallet-authorship                          = { workspace = true }
+pallet-balances                            = { workspace = true }
+pallet-collective                          = { workspace = true }
+pallet-democracy                           = { workspace = true }
+pallet-elections-phragmen                  = { workspace = true }
+pallet-identity                            = { workspace = true }
+pallet-membership                          = { workspace = true }
+pallet-preimage                            = { workspace = true }
+pallet-proxy                               = { workspace = true }
+pallet-scheduler                           = { workspace = true }
+pallet-session                             = { workspace = true }
+pallet-sudo                                = { workspace = true }
+pallet-timestamp                           = { workspace = true }
+pallet-tips                                = { workspace = true }
+pallet-transaction-payment                 = { workspace = true }
+pallet-transaction-payment-rpc-runtime-api = { workspace = true }
+pallet-treasury                            = { workspace = true }
+pallet-utility                             = { workspace = true }
+pallet-vesting                             = { workspace = true }
+sp-api                                     = { workspace = true }
+sp-block-builder                           = { workspace = true }
+sp-consensus-aura                          = { workspace = true }
+sp-core                                    = { workspace = true }
+sp-inherents                               = { workspace = true }
+sp-io                                      = { workspace = true }
+sp-offchain                                = { workspace = true }
+sp-runtime                                 = { workspace = true }
+sp-session                                 = { workspace = true }
+sp-std                                     = { workspace = true }
+sp-transaction-pool                        = { workspace = true }
+sp-version                                 = { workspace = true }
+# substrate optional
+frame-benchmarking        = { optional = true, workspace = true }
+frame-system-benchmarking = { optional = true, workspace = true }
+frame-try-runtime         = { optional = true, workspace = true }
+
+[dev-dependencies]
+# darwinia
+darwinia-common-runtime = { features = ["test"], workspace = true }
+# substrate
+sp-keyring = { workspace = true }
 
 [features]
 default = ["std"]
-
 std = [
 	# crates.io
 	"codec/std",
-	"serde",
-	"serde_json",
 	"scale-info/std",
-	# darwinia-bridges-susbtrate
-	"bp-crab/std",
-	"bp-darwinia/std",
-	"bp-darwinia-parachain/std",
+
+	# cumulus
+	"cumulus-pallet-aura-ext/std",
+	"cumulus-pallet-dmp-queue/std",
+	"cumulus-pallet-parachain-system/std",
+	"cumulus-pallet-xcm/std",
+	"cumulus-pallet-xcmp-queue/std",
+	"cumulus-primitives-core/std",
+	"cumulus-primitives-timestamp/std",
+	"cumulus-primitives-utility/std",
+	"parachain-info/std",
+	# cumulus optional
+	"cumulus-pallet-session-benchmarking?/std",
+
+	# darwinia
+	"darwinia-account-migration/std",
+	"darwinia-common-runtime/std",
+	"darwinia-deposit/std",
+	"darwinia-ecdsa-authority/std",
+	"darwinia-message-gadget/std",
+	"darwinia-message-transact/std",
+	"darwinia-precompile-assets/std",
+	"darwinia-precompile-bls12-381/std",
+	"darwinia-precompile-staking/std",
+	"darwinia-precompile-deposit/std",
+	"darwinia-precompile-state-storage/std",
+	"darwinia-staking/std",
+	"dc-primitives/std",
+
+	# darwinia-messages-substrate
 	"bp-message-dispatch/std",
 	"bp-messages/std",
-	"bp-polkadot/std",
 	"bp-runtime/std",
+	"bp-polkadot-core/std",
 	"bridge-runtime-common/std",
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
 	"pallet-bridge-parachains/std",
 	"pallet-fee-market/std",
-	# darwinia-network frame
-	"darwinia-balances/std",
-	"darwinia-ecdsa-authority/std",
-	"darwinia-header-mmr/std",
-	"darwinia-message-gadget/std",
-	"darwinia-staking/std",
-	"darwinia-support/std",
-	"to-tron-backing/std",
-	# darwinia-network evm
-	"darwinia-ethereum/std",
-	"darwinia-evm/std",
-	"darwinia-evm-precompile-bls12-381/std",
-	"darwinia-evm-precompile-dispatch/std",
-	"darwinia-evm-precompile-kton/std",
-	"darwinia-evm-precompile-state-storage/std",
-	"dp-evm-tracer/std",
+
+	# frontier
 	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
-	"pallet-base-fee/std",
-	"pallet-evm-precompile-simple/std",
+	"pallet-ethereum/std",
+	"pallet-evm/std",
 	"pallet-evm-precompile-blake2/std",
 	"pallet-evm-precompile-bn128/std",
+	"pallet-evm-precompile-dispatch/std",
 	"pallet-evm-precompile-modexp/std",
-	"moonbeam-rpc-primitives-debug/std",
-	# darwinia-network primitives
-	"darwinia-primitives/std",
-	# darwinia-network runtime
-	"darwinia-common-runtime/std",
-	# paritytech frame
-	"frame-benchmarking/std",
-	"frame-election-provider-support/std",
+	"pallet-evm-precompile-simple/std",
+
+	# moonbeam
+	"precompile-utils/std",
+	"xcm-primitives/std",
+
+	# polkadot
+	"pallet-xcm/std",
+	"polkadot-parachain/std",
+	"polkadot-runtime-common/std",
+	"xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
+
+	# substrate
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
 	"frame-system-rpc-runtime-api/std",
-	"frame-try-runtime/std",
+	"pallet-assets/std",
+	"pallet-aura/std",
 	"pallet-authorship/std",
-	"pallet-authority-discovery/std",
-	"pallet-babe/std",
-	"pallet-bounties/std",
+	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-democracy/std",
-	"pallet-election-provider-multi-phase/std",
 	"pallet-elections-phragmen/std",
-	"pallet-grandpa/std",
-	"pallet-im-online/std",
-	"pallet-identity/std",
 	"pallet-membership/std",
-	"pallet-multisig/std",
-	"pallet-offences/std",
+	"pallet-identity/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
-	"pallet-recovery/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
-	"pallet-society/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
 	"pallet-tips/std",
-	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
+	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
 	"pallet-utility/std",
 	"pallet-vesting/std",
-	# paritytech primitives
 	"sp-api/std",
-	"sp-authority-discovery/std",
 	"sp-block-builder/std",
-	"sp-consensus-babe/std",
+	"sp-consensus-aura/std",
 	"sp-core/std",
 	"sp-inherents/std",
-	"sp-npos-elections/std",
+	"sp-io/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
 	"sp-session/std",
-	"sp-staking/std",
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	# substrate optional
+	"frame-benchmarking?/std",
+	"frame-system-benchmarking?/std",
+	"frame-try-runtime?/std",
+
 ]
 
-fast-runtime = ["darwinia-primitives/fast-runtime"]
-
-evm-tracing = [
-	"dp-evm-tracer",
-]
+fast-runtime = []
 
 runtime-benchmarks = [
-	"frame-benchmarking",
-	"frame-system-benchmarking",
+	# crates.io
+	"array-bytes",
+
+	# cumulus
+	"cumulus-pallet-parachain-system/runtime-benchmarks",
+	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	# cumulus optional
+	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
+
+	# darwinia
+	"darwinia-common-runtime/runtime-benchmarks",
+	"darwinia-deposit/runtime-benchmarks",
+
+	# darwinia-messages-substrate
+	"bridge-runtime-common/runtime-benchmarks",
+	"pallet-bridge-grandpa/runtime-benchmarks",
+	"pallet-bridge-messages/runtime-benchmarks",
+	"pallet-bridge-parachains/runtime-benchmarks",
+	"pallet-fee-market/runtime-benchmarks",
+
+	# frontier
+	"pallet-ethereum/runtime-benchmarks",
+	"pallet-evm/runtime-benchmarks",
+
+	# moonbeam
+	"xcm-primitives/runtime-benchmarks",
+
+	# polkadot
+	"pallet-xcm/runtime-benchmarks",
+	"polkadot-parachain/runtime-benchmarks",
+	"polkadot-runtime-common/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
+
+	# substrate
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
+	"pallet-balances/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
-	"pallet-society/runtime-benchmarks",
+	"pallet-democracy/runtime-benchmarks",
+	"pallet-elections-phragmen/runtime-benchmarks",
+	"pallet-membership/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
+	"pallet-proxy/runtime-benchmarks",
+	"pallet-scheduler/runtime-benchmarks",
+	"pallet-timestamp/runtime-benchmarks",
+	"pallet-tips/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
+	"pallet-vesting/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	# substrate optional
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-system-benchmarking/runtime-benchmarks",
 ]
 
 try-runtime = [
-	"frame-executive/try-runtime",
-	"frame-try-runtime",
-]
+	# cumulus
+	"cumulus-pallet-aura-ext/try-runtime",
+	"cumulus-pallet-dmp-queue/try-runtime",
+	"cumulus-pallet-parachain-system/try-runtime",
+	"cumulus-pallet-xcm/try-runtime",
+	"cumulus-pallet-xcmp-queue/try-runtime",
+	"parachain-info/try-runtime",
 
-# A feature that should be enabled when the runtime should be build for on-chain
-# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
-# to make it smaller like logging for example.
-on-chain-release-build = [
-	"sp-api/disable-logging",
+	# darwinia
+	"darwinia-account-migration/try-runtime",
+	"darwinia-deposit/try-runtime",
+	"darwinia-ecdsa-authority/try-runtime",
+	"darwinia-message-gadget/try-runtime",
+	"darwinia-message-transact/try-runtime",
+	"darwinia-staking/try-runtime",
+
+	# darwinia-messages-substrate
+	"pallet-bridge-dispatch/try-runtime",
+	"pallet-bridge-grandpa/try-runtime",
+	"pallet-bridge-messages/try-runtime",
+	"pallet-bridge-parachains/try-runtime",
+	"pallet-fee-market/try-runtime",
+
+	# frontier
+	"fp-self-contained/try-runtime",
+	"pallet-ethereum/try-runtime",
+	"pallet-evm/try-runtime",
+
+	# polkadot
+	"pallet-xcm/try-runtime",
+	"polkadot-runtime-common/try-runtime",
+
+	# substrate
+	"frame-executive/try-runtime",
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-assets/try-runtime",
+	"pallet-aura/try-runtime",
+	"pallet-authorship/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-democracy/try-runtime",
+	"pallet-elections-phragmen/try-runtime",
+	"pallet-membership/try-runtime",
+	"pallet-identity/try-runtime",
+	"pallet-preimage/try-runtime",
+	"pallet-proxy/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"pallet-tips/try-runtime",
+	"pallet-transaction-payment/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-utility/try-runtime",
+	"pallet-vesting/try-runtime",
+	"sp-runtime/try-runtime",
+	# substrate optional
+	"frame-try-runtime/try-runtime",
 ]

@@ -1,37 +1,49 @@
-// --- paritytech ---
-use frame_support::traits::{LockIdentifier, U128CurrencyToVote};
-use pallet_elections_phragmen::Config;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
+const MAX_CANDIDATES: u32 = 30;
+
 frame_support::parameter_types! {
-	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
-	pub const CandidacyBond: Balance = 100 * MILLI;
-	// 1 storage item created, key size is 32 bytes, value size is 16+16.
-	// TODO:check if this change need a migration
-	pub const VotingBondBase: Balance = darwinia_deposit(1, 64);
-	// additional data per vote is 32 bytes (account id).
-	pub const VotingBondFactor: Balance = darwinia_deposit(0, 32);
-	/// Daily council elections.
-	pub const TermDuration: BlockNumber = 7 * DAYS;
-	pub const DesiredMembers: u32 = 7;
-	pub const DesiredRunnersUp: u32 = 7;
+	pub const PhragmenElectionPalletId: frame_support::traits::LockIdentifier = *b"phrelect";
 }
 
-impl Config for Runtime {
-	type CandidacyBond = CandidacyBond;
+impl pallet_elections_phragmen::Config for Runtime {
+	type CandidacyBond = ConstU128<{ 100 * MILLIUNIT }>;
 	type ChangeMembers = Council;
-	type Currency = Ring;
-	type CurrencyToVote = U128CurrencyToVote;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type Event = Event;
+	type Currency = Balances;
+	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+	type DesiredMembers = ConstU32<COLLECTIVE_DESIRED_MEMBERS>;
+	type DesiredRunnersUp = ConstU32<7>;
 	type InitializeMembers = Council;
 	type KickedMember = Treasury;
 	type LoserCandidate = Treasury;
+	type MaxCandidates = ConstU32<MAX_CANDIDATES>;
+	type MaxVoters = ConstU32<{ 10 * MAX_CANDIDATES }>;
 	type PalletId = PhragmenElectionPalletId;
-	type TermDuration = TermDuration;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type WeightInfo = ();
+	type RuntimeEvent = RuntimeEvent;
+	// Daily council elections.
+	type TermDuration = ConstU32<{ 7 * DAYS }>;
+	// 1 storage item created, key size is 32 bytes, value size is 16+16.
+	type VotingBondBase = ConstU128<{ darwinia_deposit(1, 64) }>;
+	// Additional data per vote is 32 bytes (account id).
+	type VotingBondFactor = ConstU128<{ darwinia_deposit(0, 32) }>;
+	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Self>;
 }

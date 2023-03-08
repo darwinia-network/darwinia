@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2022 Darwinia Network
+// Copyright (C) 2018-2023 Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -16,80 +16,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! The Crab runtime. This can be compiled with `#[no_std]`, ready for Wasm.
+//! Crab runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-pub mod pallets;
+#[cfg(feature = "std")]
+include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+
+mod pallets;
 pub use pallets::*;
 
-pub mod bridges_message;
+mod bridges_message;
 pub use bridges_message::*;
 
-pub mod wasm {
-	//! Make the WASM binary available.
+mod weights;
 
-	include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+pub use darwinia_common_runtime::*;
+pub use dc_primitives::*;
 
-	#[cfg(feature = "std")]
-	/// Wasm binary unwrapped. If built with `BUILD_DUMMY_WASM_BINARY`, the function panics.
-	pub fn wasm_binary_unwrap() -> &'static [u8] {
-		WASM_BINARY.expect(
-			"Development wasm binary is not available. This means the client is \
-						built with `BUILD_DUMMY_WASM_BINARY` flag and it is only usable for \
-						production chains. Please rebuild with the flag disabled.",
-		)
-	}
-}
-pub use wasm::*;
-
-// TODO: Benchmark
-// /// Weights for pallets used in the runtime.
-// mod weights;
-
-mod migrations;
-use migrations::*;
-
-pub use darwinia_primitives::*;
-#[cfg(feature = "std")]
-pub use darwinia_staking::{Forcing, StakerStatus};
-
-// --- crates.io ---
-use codec::Encode;
-// --- paritytech ---
-use fp_evm::FeeCalculator;
-use fp_rpc::TransactionStatus;
-use frame_support::{log, traits::KeyOwnerProofSystem, weights::GetDispatchInfo};
-use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
-use pallet_transaction_payment::FeeDetails;
-use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo as TransactionPaymentRuntimeDispatchInfo;
-use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-use sp_consensus_babe::{AllowedSlots, BabeEpochConfiguration};
-use sp_core::{OpaqueMetadata, H160, H256, U256};
-use sp_runtime::{
-	generic,
-	traits::{
-		Block as BlockT, Dispatchable, Extrinsic as ExtrinsicT, NumberFor, PostDispatchInfoOf,
-		SaturatedConversion, StaticLookup, Verify,
-	},
-	ApplyExtrinsicResult,
-};
+// substrate
 use sp_std::prelude::*;
-#[cfg(any(feature = "std", test))]
-use sp_version::NativeVersion;
-use sp_version::RuntimeVersion;
-// --- darwinia-network ---
-use darwinia_common_runtime::*;
-use darwinia_evm::{Account as EVMAccount, Runner};
 
 /// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
+
 /// A Block signed with a Justification
-pub type SignedBlock = generic::SignedBlock<Block>;
-/// BlockId type as expected by this runtime.
-pub type BlockId = generic::BlockId<Block>;
+pub type SignedBlock = sp_runtime::generic::SignedBlock<Block>;
+
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
 	frame_system::CheckNonZeroSender<Runtime>,
@@ -100,12 +54,17 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	BridgeRejectObsoleteHeadersAndMessages,
 );
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
+pub type CheckedExtrinsic =
+	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, sp_core::H160>;
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -113,194 +72,181 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	CustomOnRuntimeUpgrade,
 >;
-/// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 
-type Ring = Balances;
-
-/// The BABE epoch configuration at genesis.
-pub const BABE_GENESIS_EPOCH_CONFIG: BabeEpochConfiguration = BabeEpochConfiguration {
-	c: PRIMARY_PROBABILITY,
-	allowed_slots: AllowedSlots::PrimaryAndSecondaryVRFSlots,
-};
+/// Darwinia proposal base fee.
+pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5000 * UNIT;
 
 /// Runtime version.
-#[allow(clippy::inconsistent_digit_grouping)]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: sp_runtime::create_runtime_str!("Crab"),
-	impl_name: sp_runtime::create_runtime_str!("Darwinia Crab"),
+#[sp_version::runtime_version]
+pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
+	spec_name: sp_runtime::create_runtime_str!("Crab2"),
+	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 1_00_0_0,
+	spec_version: 6_0_0_0,
 	impl_version: 0,
-	#[cfg(not(feature = "disable-runtime-api"))]
 	apis: RUNTIME_API_VERSIONS,
-	#[cfg(feature = "disable-runtime-api")]
-	apis: sp_version::create_apis_vec![[]],
 	transaction_version: 0,
 	state_version: 0,
 };
 
-/// Native version.
-#[cfg(any(feature = "std", test))]
-pub fn native_version() -> NativeVersion {
-	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
+/// The version information used to identify this runtime when compiled natively.
+#[cfg(feature = "std")]
+pub fn native_version() -> sp_version::NativeVersion {
+	sp_version::NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
+// Create the runtime by composing the FRAME pallets that were previously configured.
 frame_support::construct_runtime! {
-	pub enum Runtime
-	where
+	pub enum Runtime where
 		Block = Block,
-		NodeBlock = OpaqueBlock,
-		UncheckedExtrinsic = UncheckedExtrinsic
+		NodeBlock = dc_primitives::Block,
+		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
+		// System stuff.
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		Timestamp: pallet_timestamp = 2,
+		ParachainInfo: parachain_info = 3,
 
-		// Must be before session.
-		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 2,
+		// Monetary stuff.
+		// Leave 4 here.
+		// To keep balances consistent with the existing XCM configurations.
+		Balances: pallet_balances = 5,
+		TransactionPayment: pallet_transaction_payment = 6,
+		Assets: pallet_assets = 7,
+		Vesting: pallet_vesting = 8,
+		Deposit: darwinia_deposit = 9,
+		AccountMigration: darwinia_account_migration = 10,
 
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
-		Balances: darwinia_balances::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 23,
-		Kton: darwinia_balances::<Instance2>::{Pallet, Call, Storage, Config<T>, Event<T>} = 24,
-		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 5,
+		// Consensus stuff.
+		Authorship: pallet_authorship = 11,
+		DarwiniaStaking: darwinia_staking = 12,
+		Session: pallet_session = 13,
+		Aura: pallet_aura = 14,
+		AuraExt: cumulus_pallet_aura_ext = 15,
+		MessageGadget: darwinia_message_gadget = 16,
+		EcdsaAuthority: darwinia_ecdsa_authority = 17,
 
-		// Consensus things.
-		Authorship: pallet_authorship::{Pallet, Call, Storage} = 6,
-		ElectionProviderMultiPhase: pallet_election_provider_multi_phase::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 38,
-		Staking: darwinia_staking::{Pallet, Call, Storage, Config<T>, Event<T>} = 25,
-		Offences: pallet_offences::{Pallet, Storage, Event} = 7,
-		Historical: pallet_session_historical::{Pallet} = 8,
-		Session: pallet_session::{Pallet, Call, Storage, Config<T>, Event} = 9,
-		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 11,
-		ImOnline: pallet_im_online::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 12,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 13,
-		DarwiniaHeaderMmr: darwinia_header_mmr::{Pallet, Storage} = 31,
+		// Governance stuff.
+		Democracy: pallet_democracy = 18,
+		Council: pallet_collective::<Instance1> = 19,
+		TechnicalCommittee: pallet_collective::<Instance2> = 20,
+		PhragmenElection: pallet_elections_phragmen = 21,
+		TechnicalMembership: pallet_membership::<Instance1> = 22,
+		Treasury: pallet_treasury = 23,
+		Tips: pallet_tips = 24,
 
-		// Governance things.
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
-		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 14,
-		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Config<T>, Event<T>} = 15,
-		PhragmenElection: pallet_elections_phragmen::{Pallet, Call, Storage, Config<T>, Event<T>} = 26,
-		TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
-		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 32,
-		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 44,
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 45,
+		// Utility stuff.
+		Sudo: pallet_sudo = 25,
+		Utility: pallet_utility = 26,
+		Identity: pallet_identity = 27,
+		Scheduler: pallet_scheduler = 28,
+		Preimage: pallet_preimage = 29,
+		Proxy: pallet_proxy = 30,
 
-		// Utility things.
-		Utility: pallet_utility::{Pallet, Call, Event} = 17,
-		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 18,
-		Society: pallet_society::{Pallet, Call, Storage, Event<T>} = 19,
-		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 20,
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 21,
-		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 58,
-		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 41,
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 33,
-		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 34,
+		// XCM stuff.
+		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
+		PolkadotXcm: pallet_xcm = 33,
+		CumulusXcm: cumulus_pallet_xcm = 34,
+		DmpQueue: cumulus_pallet_dmp_queue = 35,
 
-		// Evm things.
-		EVM: darwinia_evm::{Pallet, Call, Storage, Config, Event<T>} = 39,
-		Ethereum: darwinia_ethereum::{Pallet, Call, Storage, Config, Event<T>, Origin} = 40,
-		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 51,
+		// EVM stuff.
+		Ethereum: pallet_ethereum = 36,
+		EVM: pallet_evm = 37,
+		MessageTransact: darwinia_message_transact = 38,
 
-		// Crab <> Darwinia.
-		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1>::{Pallet, Event<T>} = 46,
-		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1>::{Pallet, Call, Storage, Event<T>} = 48,
-		BridgeDarwiniaGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Storage} = 47,
-		// Crab <> Crab Parachain.
-		BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Storage} = 52,
-		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1>::{Pallet, Call, Storage} = 53,
-		BridgeCrabParachainMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>} = 56,
-		BridgeCrabParachainDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>} = 54,
-		// Fee market things.
-		DarwiniaFeeMarket: pallet_fee_market::<Instance1>::{Pallet, Call, Storage, Event<T>} = 49,
-		CrabParachainFeeMarket: pallet_fee_market::<Instance2>::{Pallet, Call, Storage, Event<T>} = 55,
+		// Crab <> Darwinia
+		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
+		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 40,
+		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 41,
+		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 42,
+		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
-impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
-where
-	Call: From<LocalCall>,
-{
-	fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
-		call: Call,
-		public: <Signature as Verify>::Signer,
-		account: AccountId,
-		nonce: <Runtime as frame_system::Config>::Index,
-	) -> Option<(Call, <UncheckedExtrinsic as ExtrinsicT>::SignaturePayload)> {
-		let period =
-			BlockHashCountForCrab::get().checked_next_power_of_two().map(|c| c / 2).unwrap_or(2)
-				as u64;
-
-		let current_block = System::block_number().saturated_into::<u64>().saturating_sub(1);
-		let tip = 0;
-		let extra: SignedExtra = (
-			frame_system::CheckNonZeroSender::<Runtime>::new(),
-			frame_system::CheckSpecVersion::<Runtime>::new(),
-			frame_system::CheckTxVersion::<Runtime>::new(),
-			frame_system::CheckGenesis::<Runtime>::new(),
-			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
-			frame_system::CheckNonce::<Runtime>::from(nonce),
-			frame_system::CheckWeight::<Runtime>::new(),
-			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-		);
-		let raw_payload = SignedPayload::new(call, extra)
-			.map_err(|e| log::warn!("Unable to create signed payload: {:?}", e))
-			.ok()?;
-		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
-		let (call, extra, _) = raw_payload.deconstruct();
-		let address = <Runtime as frame_system::Config>::Lookup::unlookup(account);
-		Some((call, (address, signature, extra)))
-	}
-}
-impl frame_system::offchain::SigningTypes for Runtime {
-	type Public = <Signature as Verify>::Signer;
-	type Signature = Signature;
-}
-impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
-where
-	Call: From<C>,
-{
-	type Extrinsic = UncheckedExtrinsic;
-	type OverarchingCall = Call;
+#[cfg(feature = "runtime-benchmarks")]
+frame_benchmarking::define_benchmarks! {
+	// darwinia
+	[darwinia_deposit, Deposit]
+	// darwinia-messages-substrate
+	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
+	[pallet_fee_market, DarwiniaFeeMarket]
+	// substrate
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
+	[frame_system, SystemBench::<Runtime>]
+	[pallet_assets, Assets]
+	[pallet_balances, Balances]
+	[pallet_collective, Council]
+	[pallet_collective, TechnicalCommittee]
+	[pallet_democracy, Democracy]
+	[pallet_elections_phragmen, PhragmenElection]
+	[pallet_identity, Identity]
+	[pallet_membership, TechnicalMembership]
+	[pallet_preimage, Preimage]
+	[pallet_proxy, Proxy]
+	[pallet_scheduler, Scheduler]
+	[pallet_tips, Tips]
+	[pallet_treasury, Treasury]
+	[pallet_utility, Utility]
+	[pallet_vesting, Vesting]
+	[pallet_session, SessionBench::<Runtime>]
+	[pallet_timestamp, Timestamp]
 }
 
-darwinia_common_runtime::impl_self_contained_call!();
+impl_self_contained_call!();
+
+bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages! {
+	RuntimeCall, AccountId,
+	// Grandpa
+	BridgePolkadotGrandpa,
+	// Messages
+	BridgeDarwiniaMessages,
+	// Parachain
+	BridgePolkadotParachain
+}
 
 sp_api::impl_runtime_apis! {
+	impl sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId> for Runtime {
+		fn slot_duration() -> sp_consensus_aura::SlotDuration {
+			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+		}
+
+		fn authorities() -> Vec<sp_consensus_aura::sr25519::AuthorityId> {
+			Aura::authorities().into_inner()
+		}
+	}
+
 	impl sp_api::Core<Block> for Runtime {
-		fn version() -> RuntimeVersion {
+		fn version() -> sp_version::RuntimeVersion {
 			VERSION
 		}
 
 		fn execute_block(block: Block) {
-			Executive::execute_block(block);
+			Executive::execute_block(block)
 		}
 
-		fn initialize_block(header: &<Block as BlockT>::Header) {
+		fn initialize_block(header: &<Block as sp_runtime::traits::Block>::Header) {
 			Executive::initialize_block(header)
 		}
 	}
 
 	impl sp_api::Metadata<Block> for Runtime {
-		fn metadata() -> OpaqueMetadata {
-			OpaqueMetadata::new(Runtime::metadata().into())
+		fn metadata() -> sp_core::OpaqueMetadata {
+			sp_core::OpaqueMetadata::new(Runtime::metadata().into())
 		}
 	}
 
 	impl sp_block_builder::BlockBuilder<Block> for Runtime {
-		fn apply_extrinsic(extrinsic: <Block as BlockT>::Extrinsic) -> ApplyExtrinsicResult {
+		fn apply_extrinsic(extrinsic: <Block as sp_runtime::traits::Block>::Extrinsic) -> sp_runtime::ApplyExtrinsicResult {
 			Executive::apply_extrinsic(extrinsic)
 		}
 
-		fn finalize_block() -> <Block as BlockT>::Header {
+		fn finalize_block() -> <Block as sp_runtime::traits::Block>::Header {
 			Executive::finalize_block()
 		}
 
-		fn inherent_extrinsics(
-			data: sp_inherents::InherentData
-		) -> Vec<<Block as BlockT>::Extrinsic> {
+		fn inherent_extrinsics(data: sp_inherents::InherentData) -> Vec<<Block as sp_runtime::traits::Block>::Extrinsic> {
 			data.create_extrinsics()
 		}
 
@@ -312,116 +258,19 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
-		fn account_nonce(account: AccountId) -> Nonce {
-			System::account_nonce(account)
-		}
-	}
-
 	impl sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block> for Runtime {
 		fn validate_transaction(
 			source: sp_runtime::transaction_validity::TransactionSource,
-			tx: <Block as BlockT>::Extrinsic,
-			block_hash: <Block as BlockT>::Hash,
+			tx: <Block as sp_runtime::traits::Block>::Extrinsic,
+			block_hash: <Block as sp_runtime::traits::Block>::Hash,
 		) -> sp_runtime::transaction_validity::TransactionValidity {
 			Executive::validate_transaction(source, tx, block_hash)
 		}
 	}
 
 	impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
-		fn offchain_worker(header: &<Block as BlockT>::Header) {
+		fn offchain_worker(header: &<Block as sp_runtime::traits::Block>::Header) {
 			Executive::offchain_worker(header)
-		}
-	}
-
-	impl sp_consensus_babe::BabeApi<Block> for Runtime {
-		fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
-			// The choice of `c` parameter (where `1 - c` represents the
-			// probability of a slot being empty), is done in accordance to the
-			// slot duration and expected target block time, for safely
-			// resisting network delays of maximum two seconds.
-			// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
-			sp_consensus_babe::BabeGenesisConfiguration {
-				slot_duration: Babe::slot_duration(),
-				epoch_length: EpochDuration::get(),
-				c: BABE_GENESIS_EPOCH_CONFIG.c,
-				genesis_authorities: Babe::authorities().to_vec(),
-				randomness: Babe::randomness(),
-				allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
-			}
-		}
-
-		fn current_epoch_start() -> sp_consensus_babe::Slot {
-			Babe::current_epoch_start()
-		}
-
-		fn current_epoch() -> sp_consensus_babe::Epoch {
-			Babe::current_epoch()
-		}
-
-		fn next_epoch() -> sp_consensus_babe::Epoch {
-			Babe::next_epoch()
-		}
-
-		fn generate_key_ownership_proof(
-			_slot: sp_consensus_babe::Slot,
-			authority_id: sp_consensus_babe::AuthorityId,
-		) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
-			Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
-				.map(|p| p.encode())
-				.map(sp_consensus_babe::OpaqueKeyOwnershipProof::new)
-		}
-
-		fn submit_report_equivocation_unsigned_extrinsic(
-			equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
-			key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
-		) -> Option<()> {
-			let key_owner_proof = key_owner_proof.decode()?;
-
-			Babe::submit_unsigned_equivocation_report(
-				equivocation_proof,
-				key_owner_proof,
-			)
-		}
-	}
-
-	impl fg_primitives::GrandpaApi<Block> for Runtime {
-		fn grandpa_authorities() -> GrandpaAuthorityList {
-			Grandpa::grandpa_authorities()
-		}
-
-		fn current_set_id() -> fg_primitives::SetId {
-			Grandpa::current_set_id()
-		}
-
-		fn submit_report_equivocation_unsigned_extrinsic(
-			equivocation_proof: fg_primitives::EquivocationProof<
-				<Block as BlockT>::Hash,
-				NumberFor<Block>,
-			>,
-			key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
-		) -> Option<()> {
-			let key_owner_proof = key_owner_proof.decode()?;
-
-			Grandpa::submit_unsigned_equivocation_report(
-				equivocation_proof,
-				key_owner_proof,
-			)
-		}
-
-		fn generate_key_ownership_proof(
-			_set_id: fg_primitives::SetId,
-			authority_id: GrandpaId,
-		) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
-			Historical::prove((fg_primitives::KEY_TYPE, authority_id))
-				.map(|p| p.encode())
-				.map(fg_primitives::OpaqueKeyOwnershipProof::new)
-		}
-	}
-
-	impl sp_authority_discovery::AuthorityDiscoveryApi<Block> for Runtime {
-		fn authorities() -> Vec<AuthorityDiscoveryId> {
-			AuthorityDiscovery::authorities()
 		}
 	}
 
@@ -432,139 +281,195 @@ sp_api::impl_runtime_apis! {
 
 		fn decode_session_keys(
 			encoded: Vec<u8>,
-		) -> Option<Vec<(Vec<u8>, sp_core::crypto::KeyTypeId)>> {
+		) -> Option<Vec<(Vec<u8>, sp_runtime::KeyTypeId)>> {
 			SessionKeys::decode_into_raw_public_keys(&encoded)
 		}
 	}
 
-	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<
-		Block,
-		Balance,
-	> for Runtime {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
+		fn account_nonce(account: AccountId) -> Nonce {
+			System::account_nonce(account)
+		}
+	}
+
+	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
 		fn query_info(
-			uxt: <Block as BlockT>::Extrinsic, len: u32
-		) -> TransactionPaymentRuntimeDispatchInfo<Balance> {
+			uxt: <Block as sp_runtime::traits::Block>::Extrinsic,
+			len: u32,
+		) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
 			TransactionPayment::query_info(uxt, len)
 		}
-		fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
+		fn query_fee_details(
+			uxt: <Block as sp_runtime::traits::Block>::Extrinsic,
+			len: u32,
+		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
+		}
+	}
+
+	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi<Block, Balance, RuntimeCall>
+		for Runtime
+	{
+		fn query_call_info(
+			call: RuntimeCall,
+			len: u32,
+		) -> pallet_transaction_payment::RuntimeDispatchInfo<Balance> {
+			TransactionPayment::query_call_info(call, len)
+		}
+		fn query_call_fee_details(
+			call: RuntimeCall,
+			len: u32,
+		) -> pallet_transaction_payment::FeeDetails<Balance> {
+			TransactionPayment::query_call_fee_details(call, len)
+		}
+	}
+
+	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
+		fn collect_collation_info(header: &<Block as sp_runtime::traits::Block>::Header) -> cumulus_primitives_core::CollationInfo {
+			ParachainSystem::collect_collation_info(header)
 		}
 	}
 
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
-			<Runtime as darwinia_evm::Config>::ChainId::get()
+			<<Runtime as pallet_evm::Config>::ChainId as frame_support::traits::Get<u64>>::get()
 		}
 
-		fn gas_price() -> U256 {
-			<Runtime as darwinia_evm::Config>::FeeCalculator::min_gas_price()
+		fn account_basic(address: sp_core::H160) -> pallet_evm::Account {
+			let (account, _) = EVM::account_basic(&address);
+
+			account
 		}
 
-		fn account_basic(address: H160) -> EVMAccount {
-			EVM::account_basic(&address)
+		fn gas_price() -> sp_core::U256 {
+			// frontier
+			use pallet_evm::FeeCalculator;
+
+			let (gas_price, _) = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+
+			gas_price
 		}
 
-		fn account_code_at(address: H160) -> Vec<u8> {
-			darwinia_evm::Pallet::<Runtime>::account_codes(address)
+		fn account_code_at(address: sp_core::H160) -> Vec<u8> {
+			EVM::account_codes(address)
 		}
 
-		fn author() -> H160 {
-			<darwinia_evm::Pallet<Runtime>>::find_author()
+		fn author() -> sp_core::H160 {
+			<pallet_evm::Pallet<Runtime>>::find_author()
 		}
 
-		fn storage_at(address: H160, index: U256) -> H256 {
+		fn storage_at(address: sp_core::H160, index: sp_core::U256) -> sp_core::H256 {
 			let mut tmp = [0u8; 32];
+
 			index.to_big_endian(&mut tmp);
-			darwinia_evm::Pallet::<Runtime>::account_storages(address, H256::from_slice(&tmp[..]))
+
+			EVM::account_storages(address, sp_core::H256::from_slice(&tmp[..]))
 		}
 
 		fn call(
-			from: H160,
-			to: H160,
+			from: sp_core::H160,
+			to: sp_core::H160,
 			data: Vec<u8>,
-			value: U256,
-			gas_limit: U256,
-			max_fee_per_gas: Option<U256>,
-			max_priority_fee_per_gas: Option<U256>,
-			nonce: Option<U256>,
+			value: sp_core::U256,
+			gas_limit: sp_core::U256,
+			max_fee_per_gas: Option<sp_core::U256>,
+			max_priority_fee_per_gas: Option<sp_core::U256>,
+			nonce: Option<sp_core::U256>,
 			estimate: bool,
-			access_list: Option<Vec<(H160, Vec<H256>)>>,
-		) -> Result<darwinia_evm::CallInfo, sp_runtime::DispatchError> {
+			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
+		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
+			// frontier
+			use pallet_evm::Runner;
+			// substrate
+			use sp_runtime::traits::UniqueSaturatedInto;
+
 			let config = if estimate {
-				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				let mut config = <Runtime as pallet_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
-			let is_transactional = false;
 
-			<Runtime as darwinia_evm::Config>::Runner::call(
+			let is_transactional = false;
+			let validate = true;
+			#[allow(clippy::or_fun_call)]
+			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
+			<Runtime as pallet_evm::Config>::Runner::call(
 				from,
 				to,
 				data,
 				value,
-				gas_limit.low_u64(),
+				gas_limit.unique_saturated_into(),
 				max_fee_per_gas,
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
 				is_transactional,
-				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			).map_err(Into::into)
+				validate,
+				evm_config,
+			).map_err(|err| err.error.into())
 		}
 
 		fn create(
-			from: H160,
+			from: sp_core::H160,
 			data: Vec<u8>,
-			value: U256,
-			gas_limit: U256,
-			max_fee_per_gas: Option<U256>,
-			max_priority_fee_per_gas: Option<U256>,
-			nonce: Option<U256>,
+			value: sp_core::U256,
+			gas_limit: sp_core::U256,
+			max_fee_per_gas: Option<sp_core::U256>,
+			max_priority_fee_per_gas: Option<sp_core::U256>,
+			nonce: Option<sp_core::U256>,
 			estimate: bool,
-			access_list: Option<Vec<(H160, Vec<H256>)>>,
-		) -> Result<darwinia_evm::CreateInfo, sp_runtime::DispatchError> {
+			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
+		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
+			// frontier
+			use pallet_evm::Runner;
+			// substrate
+			use sp_runtime::traits::UniqueSaturatedInto;
+
 			let config = if estimate {
-				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
+				let mut config = <Runtime as pallet_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
-			let is_transactional = false;
 
-			<Runtime as darwinia_evm::Config>::Runner::create(
+			let is_transactional = false;
+			let validate = true;
+			#[allow(clippy::or_fun_call)]
+			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
+			<Runtime as pallet_evm::Config>::Runner::create(
 				from,
 				data,
 				value,
-				gas_limit.low_u64(),
+				gas_limit.unique_saturated_into(),
 				max_fee_per_gas,
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
 				is_transactional,
-				config.as_ref().unwrap_or(<Runtime as darwinia_evm::Config>::config()),
-			).map_err(Into::into)
+				validate,
+				evm_config,
+			).map_err(|err| err.error.into())
 		}
 
-
-		fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
+		fn current_transaction_statuses() -> Option<Vec<fp_rpc::TransactionStatus>> {
 			Ethereum::current_transaction_statuses()
 		}
 
-		fn current_block() -> Option<darwinia_ethereum::Block> {
+		fn current_block() -> Option<pallet_ethereum::Block> {
 			Ethereum::current_block()
 		}
 
-		fn current_receipts() -> Option<Vec<darwinia_ethereum::Receipt>> {
+		fn current_receipts() -> Option<Vec<pallet_ethereum::Receipt>> {
 			Ethereum::current_receipts()
 		}
 
 		fn current_all() -> (
-			Option<darwinia_ethereum::Block>,
-			Option<Vec<darwinia_ethereum::Receipt>>,
-			Option<Vec<TransactionStatus>>
+			Option<pallet_ethereum::Block>,
+			Option<Vec<pallet_ethereum::Receipt>>,
+			Option<Vec<fp_rpc::TransactionStatus>>
 		) {
 			(
 				Ethereum::current_block(),
@@ -574,122 +479,85 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn extrinsic_filter(
-			xts: Vec<<Block as BlockT>::Extrinsic>,
-		) -> Vec<darwinia_ethereum::Transaction> {
+			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+		) -> Vec<pallet_ethereum::Transaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				Call::Ethereum(darwinia_ethereum::Call::transact { transaction }) => Some(transaction),
+				RuntimeCall::Ethereum(
+					pallet_ethereum::Call::<Runtime>::transact { transaction }
+				) => Some(transaction),
 				_ => None
-			}).collect()
+			}).collect::<Vec<pallet_ethereum::Transaction>>()
 		}
 
-		fn elasticity() -> Option<Permill> {
-			Some(BaseFee::elasticity())
+		fn elasticity() -> Option<sp_runtime::Permill> {
+			None
 		}
+
+		fn gas_limit_multiplier_support() {}
 	}
 
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
-		fn convert_transaction(transaction: darwinia_ethereum::Transaction) -> <Block as BlockT>::Extrinsic {
+		fn convert_transaction(
+			transaction: pallet_ethereum::Transaction
+		) -> <Block as sp_runtime::traits::Block>::Extrinsic {
 			UncheckedExtrinsic::new_unsigned(
-				darwinia_ethereum::Call::<Runtime>::transact { transaction }.into(),
+				pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
 			)
-		}
-	}
-
-	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
-		fn trace_transaction(
-			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_traced_transaction: &darwinia_ethereum::Transaction,
-		) -> Result<
-			(),
-			sp_runtime::DispatchError,
-		> {
-			#[cfg(feature = "evm-tracing")]
-			{
-				use dp_evm_tracer::tracer::EvmTracer;
-				use darwinia_ethereum::Call::transact;
-				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
-				// transactions that preceded the requested transaction.
-				for ext in _extrinsics.into_iter() {
-					let _ = match &ext.0.function {
-						Call::Ethereum(transact { transaction }) => {
-							if transaction == _traced_transaction {
-								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
-								return Ok(());
-							} else {
-								Executive::apply_extrinsic(ext)
-							}
-						}
-						_ => Executive::apply_extrinsic(ext),
-					};
-				}
-
-				Err(sp_runtime::DispatchError::Other(
-					"Failed to find Ethereum transaction among the extrinsics.",
-				))
-			}
-			#[cfg(not(feature = "evm-tracing"))]
-			Err(sp_runtime::DispatchError::Other(
-				"Missing `evm-tracing` compile time feature flag.",
-			))
-		}
-		fn trace_block(
-			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_known_transactions: Vec<H256>,
-		) -> Result<
-			(),
-			sp_runtime::DispatchError,
-		> {
-			#[cfg(feature = "evm-tracing")]
-			{
-				use dp_evm_tracer::tracer::EvmTracer;
-				use darwinia_ethereum::Call::transact;
-
-				let mut config = <Runtime as darwinia_evm::Config>::config().clone();
-				config.estimate = true;
-
-				// Apply all extrinsics. Ethereum extrinsics are traced.
-				for ext in _extrinsics.into_iter() {
-					match &ext.0.function {
-						Call::Ethereum(transact { transaction }) => {
-							if _known_transactions.contains(&transaction.hash()) {
-								// Each known extrinsic is a new call stack.
-								EvmTracer::emit_new();
-								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
-							} else {
-								let _ = Executive::apply_extrinsic(ext);
-							}
-						}
-						_ => {
-							let _ = Executive::apply_extrinsic(ext);
-						}
-					};
-				}
-
-				Ok(())
-			}
-			#[cfg(not(feature = "evm-tracing"))]
-			Err(sp_runtime::DispatchError::Other(
-				"Missing `evm-tracing` compile time feature flag.",
-			))
 		}
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
+		fn benchmark_metadata(extra: bool) -> (
+			Vec<frame_benchmarking::BenchmarkList>,
+			Vec<frame_support::traits::StorageInfo>,
+		) {
+			// substrate
+			use frame_benchmarking::*;
+			use frame_support::traits::StorageInfoTrait;
+			use frame_system_benchmarking::Pallet as SystemBench;
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+
+			let mut list = Vec::<BenchmarkList>::new();
+
+			list_benchmarks!(list, extra);
+
+			let storage_info = AllPalletsWithSystem::storage_info();
+
+			(list, storage_info)
+		}
+
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
+			// substrate
+			use frame_benchmarking::*;
+
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}
 
-			let whitelist: Vec<TrackedStorageKey> = vec![];
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+
+			let whitelist: Vec<TrackedStorageKey> = vec![
+				// Block Number
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"),
+				// Total Issuance
+				array_bytes::hex_into_unchecked("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80"),
+				// Execution Phase
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a"),
+				// Event Count
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850"),
+				// System Events
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
+			];
 
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
+			add_benchmarks!(params, batches);
 
-			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
+			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 
 			Ok(batches)
 		}
@@ -697,17 +565,53 @@ sp_api::impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade() -> (frame_support::weights::Weight, frame_support::weights::Weight) {
-			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
-			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
-			// right here and right now.
-			let weight = Executive::try_runtime_upgrade().unwrap();
+		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (frame_support::weights::Weight, frame_support::weights::Weight) {
+			// substrate
+			use frame_support::log;
+
+			log::info!("try-runtime::on_runtime_upgrade");
+
+			let weight = Executive::try_runtime_upgrade(checks).unwrap();
 
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
-		fn execute_block_no_check(block: Block) -> frame_support::weights::Weight {
-			Executive::execute_block_no_check(block)
+		fn execute_block(
+			block: Block,
+			state_root_check: bool,
+			signature_check: bool,
+			select: frame_try_runtime::TryStateSelect,
+		) -> frame_support::weights::Weight {
+			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
+			// have a backtrace here.
+			Executive::try_execute_block(block, state_root_check, signature_check, select).unwrap()
 		}
 	}
+}
+
+struct CheckInherents;
+impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
+	fn check_inherents(
+		block: &Block,
+		relay_state_proof: &cumulus_pallet_parachain_system::RelayChainStateProof,
+	) -> sp_inherents::CheckInherentsResult {
+		let relay_chain_slot = relay_state_proof
+			.read_slot()
+			.expect("Could not read the relay chain slot from the proof");
+
+		let inherent_data =
+			cumulus_primitives_timestamp::InherentDataProvider::from_relay_chain_slot_and_duration(
+				relay_chain_slot,
+				sp_std::time::Duration::from_secs(6),
+			)
+			.create_inherent_data()
+			.expect("Could not create the timestamp inherent data");
+
+		inherent_data.check_extrinsics(block)
+	}
+}
+cumulus_pallet_parachain_system::register_validate_block! {
+	Runtime = Runtime,
+	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
+	CheckInherents = CheckInherents,
 }

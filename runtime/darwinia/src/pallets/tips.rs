@@ -1,24 +1,35 @@
-// --- paritytech ---
-use sp_runtime::Percent;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
-use pallet_tips::Config;
 
 frame_support::parameter_types! {
-	pub const DataDepositPerByte: Balance = darwinia_deposit(0, 1);
-	pub const MaximumReasonLength: u32 = 16384;
-	pub const TipCountdown: BlockNumber = DAYS;
-	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 100 * COIN;
+	pub const TipFindersFee: sp_runtime::Percent = sp_runtime::Percent::from_percent(20);
 }
 
-impl Config for Runtime {
-	type DataDepositPerByte = DataDepositPerByte;
-	type Event = Event;
-	type MaximumReasonLength = MaximumReasonLength;
-	type TipCountdown = TipCountdown;
+impl pallet_tips::Config for Runtime {
+	type DataDepositPerByte = ConstU128<{ darwinia_deposit(0, 1) }>;
+	type MaximumReasonLength = ConstU32<16384>;
+	type RuntimeEvent = RuntimeEvent;
+	type TipCountdown = ConstU32<DAYS>;
 	type TipFindersFee = TipFindersFee;
-	type TipReportDepositBase = TipReportDepositBase;
+	type TipReportDepositBase = ConstU128<{ 100 * UNIT }>;
 	type Tippers = PhragmenElection;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_tips::WeightInfo<Self>;
 }

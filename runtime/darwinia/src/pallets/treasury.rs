@@ -1,35 +1,47 @@
-// --- paritytech ---
-use frame_support::PalletId;
-use sp_runtime::Permill;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
-use pallet_treasury::Config;
 
 frame_support::parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = DARWINIA_PROPOSAL_REQUIREMENT;
-	pub const SpendPeriod: BlockNumber = 24 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(1);
-	pub const MaxApprovals: u32 = 100;
+	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
+	pub const ProposalBond: sp_runtime::Permill = sp_runtime::Permill::from_percent(5);
+	pub const Burn: sp_runtime::Permill = sp_runtime::Permill::from_percent(1);
 }
 
 // In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
 // `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
-impl Config for Runtime {
+impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
 	type Burn = Burn;
-	type BurnDestination = Society;
-	type Currency = Ring;
-	type Event = Event;
-	type MaxApprovals = MaxApprovals;
+	type BurnDestination = ();
+	type Currency = Balances;
+	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
 	type PalletId = TreasuryPalletId;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
 	type RejectOrigin = RootOrMoreThanHalf<CouncilCollective>;
-	type SpendFunds = Bounties;
-	type SpendPeriod = SpendPeriod;
-	type WeightInfo = ();
+	type RuntimeEvent = RuntimeEvent;
+	type SpendFunds = ();
+	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+	type SpendPeriod = ConstU32<{ 24 * DAYS }>;
+	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

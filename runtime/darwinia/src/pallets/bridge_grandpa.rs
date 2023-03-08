@@ -1,28 +1,33 @@
-pub use pallet_bridge_grandpa::{Instance1 as WithCrabGrandpa, Instance2 as WithPolkadotGrandpa};
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- darwinia-network ---
+pub use pallet_bridge_grandpa::Instance1 as WithKusamaGrandpa;
+
+// darwinia
 use crate::*;
-use pallet_bridge_grandpa::Config;
 
-frame_support::parameter_types! {
-	// This is a pretty unscientific cap.
-	//
-	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
-	// call per block.
-	pub const MaxRequests: u32 = 50;
-	pub const CrabHeadersToKeep: u32 = 6_000;
-	pub const PolkadotHeadersToKeep: u32 = 500;
-}
+pub type KusamaHeadersToKeep = ConstU32<500>;
 
-impl Config<WithCrabGrandpa> for Runtime {
-	type BridgedChain = bp_crab::Crab;
-	type HeadersToKeep = CrabHeadersToKeep;
-	type MaxRequests = MaxRequests;
-	type WeightInfo = ();
-}
-impl Config<WithPolkadotGrandpa> for Runtime {
-	type BridgedChain = bp_polkadot::Polkadot;
-	type HeadersToKeep = PolkadotHeadersToKeep;
-	type MaxRequests = MaxRequests;
-	type WeightInfo = ();
+impl pallet_bridge_grandpa::Config<WithKusamaGrandpa> for Runtime {
+	type BridgedChain = bp_crab::DarwiniaLike;
+	type HeadersToKeep = KusamaHeadersToKeep;
+	type MaxBridgedAuthorities = ConstU32<100_000>;
+	type MaxBridgedHeaderSize = ConstU32<65536>;
+	type MaxRequests = ConstU32<50>;
+	type WeightInfo = weights::pallet_bridge_grandpa::WeightInfo<Self>;
 }

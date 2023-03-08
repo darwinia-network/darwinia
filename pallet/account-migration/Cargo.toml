@@ -1,0 +1,62 @@
+[package]
+authors.workspace = true
+description       = "Darwinia SR25519 to ECDSA account migration."
+edition.workspace = true
+name              = "darwinia-account-migration"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# crates.io
+array-bytes = { workspace = true }
+codec       = { package = "parity-scale-codec", workspace = true }
+scale-info  = { workspace = true }
+
+# darwinia
+darwinia-deposit = { workspace = true }
+darwinia-staking = { workspace = true }
+dc-primitives    = { workspace = true }
+
+# substrate
+frame-support   = { workspace = true }
+frame-system    = { workspace = true }
+pallet-assets   = { workspace = true }
+pallet-balances = { workspace = true }
+pallet-identity = { workspace = true }
+pallet-vesting  = { workspace = true }
+sp-core         = { workspace = true }
+sp-io           = { workspace = true }
+sp-runtime      = { workspace = true }
+sp-std          = { workspace = true }
+
+[dev-dependencies]
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-keyring       = { workspace = true }
+sp-version       = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	# crates.io
+	"codec/std",
+	"scale-info/std",
+
+	# darwinia
+	"darwinia-deposit/std",
+	"darwinia-staking/std",
+	"dc-primitives/std",
+
+	# paritytech
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-assets/std",
+	"pallet-balances/std",
+	"pallet-identity/std",
+	"pallet-vesting/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
+]
+
+try-runtime = ["frame-support/try-runtime"]

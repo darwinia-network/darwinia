@@ -1,28 +1,33 @@
-pub use pallet_bridge_grandpa::{Instance1 as WithDarwiniaGrandpa, Instance2 as WithKusamaGrandpa};
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- darwinia-network ---
+pub use pallet_bridge_grandpa::Instance1 as WithPolkadotGrandpa;
+
+// darwinia
 use crate::*;
-use pallet_bridge_grandpa::Config;
 
-frame_support::parameter_types! {
-	// This is a pretty unscientific cap.
-	//
-	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
-	// call per block.
-	pub const MaxRequests: u32 = 50;
-	pub const DarwiniaHeadersToKeep: u32 = 3_000;
-	pub const KusamaHeadersToKeep: u32 = 500;
-}
+pub type PolkadotHeadersToKeep = ConstU32<500>;
 
-impl Config<WithDarwiniaGrandpa> for Runtime {
-	type BridgedChain = bp_darwinia::Darwinia;
-	type HeadersToKeep = DarwiniaHeadersToKeep;
-	type MaxRequests = MaxRequests;
-	type WeightInfo = ();
-}
-impl Config<WithKusamaGrandpa> for Runtime {
-	type BridgedChain = bp_kusama::Kusama;
-	type HeadersToKeep = KusamaHeadersToKeep;
-	type MaxRequests = MaxRequests;
-	type WeightInfo = ();
+impl pallet_bridge_grandpa::Config<WithPolkadotGrandpa> for Runtime {
+	type BridgedChain = bp_darwinia::DarwiniaLike;
+	type HeadersToKeep = PolkadotHeadersToKeep;
+	type MaxBridgedAuthorities = ConstU32<100_000>;
+	type MaxBridgedHeaderSize = ConstU32<65536>;
+	type MaxRequests = ConstU32<50>;
+	type WeightInfo = weights::pallet_bridge_grandpa::WeightInfo<Self>;
 }

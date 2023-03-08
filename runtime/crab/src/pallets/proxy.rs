@@ -1,11 +1,22 @@
-// --- crates.io ---
-use codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::TypeInfo;
-// --- paritytech ---
-use frame_support::traits::InstanceFilter;
-use pallet_proxy::Config;
-use sp_runtime::RuntimeDebug;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
 /// The type used to represent the kinds of proxying allowed.
@@ -16,11 +27,11 @@ use crate::*;
 	PartialEq,
 	Ord,
 	PartialOrd,
-	Encode,
-	Decode,
-	RuntimeDebug,
-	MaxEncodedLen,
-	TypeInfo,
+	codec::Encode,
+	codec::Decode,
+	codec::MaxEncodedLen,
+	scale_info::TypeInfo,
+	sp_runtime::RuntimeDebug,
 )]
 pub enum ProxyType {
 	Any,
@@ -28,70 +39,67 @@ pub enum ProxyType {
 	Governance,
 	Staking,
 	IdentityJudgement,
-	EthereumBridge,
+	CancelProxy,
+	EcdsaBridge,
+	SubstrateBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
 		Self::Any
 	}
 }
-impl InstanceFilter<Call> for ProxyType {
-	fn filter(&self, c: &Call) -> bool {
+impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
+	fn filter(&self, c: &RuntimeCall) -> bool {
 		match self {
 			ProxyType::Any => true,
-			ProxyType::NonTransfer => matches!(
+			ProxyType::NonTransfer => !matches!(
 				c,
-				Call::System{ .. } |
-				Call::Babe{ .. } |
-				Call::Timestamp{ .. } |
-				Call::Indices(pallet_indices::Call::claim{ .. }) |
-				Call::Indices(pallet_indices::Call::free{ .. }) |
-				Call::Indices(pallet_indices::Call::freeze{ .. }) |
-				// Specifically omitting Indices `transfer`, `force_transfer`
-				// Specifically omitting the entire Balances pallet
-				Call::Authorship{ .. } |
-				Call::Democracy{ .. } |
-				Call::Staking{ .. } |
-				Call::Session{ .. } |
-				Call::Grandpa{ .. } |
-				Call::ImOnline{ .. } |
-				Call::Council{ .. } |
-				Call::TechnicalCommittee{ .. } |
-				Call::PhragmenElection{ .. } |
-				Call::TechnicalMembership{ .. } |
-				Call::Treasury{ .. } |
-				Call::Tips{ .. } |
-				Call::Bounties{ .. } |
-				Call::Utility{ .. } |
-				Call::Identity{ .. } |
-				Call::Society{ .. } |
-				Call::Recovery(pallet_recovery::Call::as_recovered{ .. }) |
-				Call::Recovery(pallet_recovery::Call::vouch_recovery{ .. }) |
-				Call::Recovery(pallet_recovery::Call::claim_recovery{ .. }) |
-				Call::Recovery(pallet_recovery::Call::close_recovery{ .. }) |
-				Call::Recovery(pallet_recovery::Call::remove_recovery{ .. }) |
-				Call::Recovery(pallet_recovery::Call::cancel_recovered{ .. }) |
-				Call::Scheduler{ .. } |
-				Call::Proxy{ .. } |
-				Call::Multisig{ .. } // Specifically omitting the entire CrabIssuing pallet
+				RuntimeCall::Balances(..)
+					| RuntimeCall::Assets(..)
+					| RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer { .. })
+					| RuntimeCall::Deposit(..)
+					| RuntimeCall::DarwiniaStaking(..)
+					// Might contains transfer {
+					| RuntimeCall::Utility(..)
+					| RuntimeCall::Proxy(..)
+					| RuntimeCall::PolkadotXcm(..)
+					| RuntimeCall::Ethereum(..) // }
 			),
-			ProxyType::Governance => {
+			ProxyType::Governance => matches!(
+				c,
+				RuntimeCall::Democracy(..)
+					| RuntimeCall::Council(..)
+					| RuntimeCall::TechnicalCommittee(..)
+					| RuntimeCall::PhragmenElection(..)
+					| RuntimeCall::Treasury(..)
+					| RuntimeCall::Tips(..)
+			),
+			ProxyType::Staking => {
 				matches!(
 					c,
-					Call::Democracy { .. }
-						| Call::Council { .. } | Call::TechnicalCommittee { .. }
-						| Call::PhragmenElection { .. }
-						| Call::Treasury { .. } | Call::Tips { .. }
-						| Call::Bounties { .. } | Call::Utility { .. }
+					RuntimeCall::Session(..)
+						| RuntimeCall::Deposit(..)
+						| RuntimeCall::DarwiniaStaking(..)
 				)
 			},
-			ProxyType::Staking => matches!(c, Call::Staking { .. } | Call::Utility { .. }),
-			ProxyType::IdentityJudgement => matches!(
-				c,
-				Call::Identity(pallet_identity::Call::provide_judgement { .. })
-					| Call::Utility(pallet_utility::Call::batch { .. })
-			),
-			ProxyType::EthereumBridge => false,
+			ProxyType::IdentityJudgement =>
+				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. })),
+			ProxyType::CancelProxy => {
+				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
+			},
+			ProxyType::EcdsaBridge => {
+				matches!(c, RuntimeCall::EcdsaAuthority(..))
+			},
+			ProxyType::SubstrateBridge => {
+				matches!(
+					c,
+					RuntimeCall::BridgePolkadotGrandpa(..)
+						| RuntimeCall::BridgePolkadotParachain(..)
+						| RuntimeCall::BridgeDarwiniaMessages(..)
+						| RuntimeCall::BridgeDarwiniaDispatch(..)
+						| RuntimeCall::DarwiniaFeeMarket(..)
+				)
+			},
 		}
 	}
 
@@ -106,28 +114,19 @@ impl InstanceFilter<Call> for ProxyType {
 	}
 }
 
-frame_support::parameter_types! {
-	// One storage item; key size 32, value size 8; .
-	pub const ProxyDepositBase: Balance = old_crab_deposit(1, 8);
-	// Additional storage item size of 33 bytes.
-	pub const ProxyDepositFactor: Balance = old_crab_deposit(0, 33);
-	pub const MaxProxies: u16 = 32;
-	pub const AnnouncementDepositBase: Balance = old_crab_deposit(1, 8);
-	pub const AnnouncementDepositFactor: Balance = old_crab_deposit(0, 66);
-	pub const MaxPending: u16 = 32;
-}
-
-impl Config for Runtime {
-	type AnnouncementDepositBase = AnnouncementDepositBase;
-	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type Call = Call;
+impl pallet_proxy::Config for Runtime {
+	type AnnouncementDepositBase = ConstU128<{ darwinia_deposit(1, 8) }>;
+	type AnnouncementDepositFactor = ConstU128<{ darwinia_deposit(0, 66) }>;
 	type CallHasher = Hashing;
-	type Currency = Ring;
-	type Event = Event;
-	type MaxPending = MaxPending;
-	type MaxProxies = MaxProxies;
-	type ProxyDepositBase = ProxyDepositBase;
-	type ProxyDepositFactor = ProxyDepositFactor;
+	type Currency = Balances;
+	type MaxPending = ConstU32<32>;
+	type MaxProxies = ConstU32<32>;
+	// One storage item; key size 32, value size 8; .
+	type ProxyDepositBase = ConstU128<{ darwinia_deposit(1, 8) }>;
+	// Additional storage item size of 33 bytes.
+	type ProxyDepositFactor = ConstU128<{ darwinia_deposit(0, 33) }>;
 	type ProxyType = ProxyType;
-	type WeightInfo = ();
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Self>;
 }

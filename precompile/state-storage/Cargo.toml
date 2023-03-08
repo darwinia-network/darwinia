@@ -1,0 +1,50 @@
+[package]
+authors.workspace = true
+description       = "State storage precompile for EVM pallet."
+edition.workspace = true
+name              = "darwinia-precompile-state-storage"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# frontier
+fp-evm     = { workspace = true }
+pallet-evm = { workspace = true }
+
+# moonbeam
+precompile-utils = { workspace = true }
+
+# substrate
+frame-support = { workspace = true }
+sp-std        = { workspace = true }
+
+[dev-dependencies]
+# crates.io
+codec      = { package = "parity-scale-codec", workspace = true }
+scale-info = { workspace = true }
+
+# moonbeam
+precompile-utils = { workspace = true, features = ["testing"] }
+
+# substrate
+frame-system     = { workspace = true }
+pallet-balances  = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-core          = { workspace = true }
+sp-io            = { workspace = true }
+sp-runtime       = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	# frontier
+	"fp-evm/std",
+	"pallet-evm/std",
+
+	# moonbeam
+	"precompile-utils/std",
+
+	# substrate
+	"frame-support/std",
+	"sp-std/std",
+]

@@ -1,63 +1,85 @@
 [package]
-authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Darwinia node common runtime"
-edition     = "2021"
-homepage    = "https://darwinia.network"
-license     = "GPL-3.0"
-name        = "darwinia-common-runtime"
-repository  = "https://github.com/darwinia-network/darwinia"
-version     = "1.0.0"
+authors.workspace = true
+description       = "Darwinia Common Runtime"
+edition.workspace = true
+name              = "darwinia-common-runtime"
+readme            = "README.md"
+version.workspace = true
 
 [dependencies]
 # crates.io
-codec             = { package = "parity-scale-codec", version = "2.3", default-features = false }
-scale-info        = { version = "1.0", default-features = false }
-static_assertions = { version = "1.1" }
-# darwinia-network frame
-darwinia-balances = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-darwinia-support  = { default-features = false, git = "https://github.com/darwinia-network/darwinia-common", branch = "darwinia-v0.12.5" }
-# darwinia-network primitives
-darwinia-primitives = { default-features = false, path = "../../primitives" }
-# paritytech frame
-frame-election-provider-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-support                   = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-frame-system                    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-authorship               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-collective               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-transaction-payment      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-pallet-treasury                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-# paritytech primitives
-sp-core           = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-io             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-npos-elections = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-runtime        = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-std            = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+codec    = { package = "parity-scale-codec", workspace = true }
+smallvec = { version = "1.10" }
+
+# darwinia
+darwinia-precompile-assets = { workspace = true }
+dc-primitives              = { workspace = true }
+
+# darwinia-messages-substrate
+bp-darwinia-core = { workspace = true }
+
+# frontier
+pallet-evm = { workspace = true }
+
+# moonbeam
+account = { workspace = true }
+
+# polkadot
+xcm          = { workspace = true }
+xcm-builder  = { workspace = true }
+xcm-executor = { workspace = true }
+
+# substrate
+frame-support     = { workspace = true }
+frame-system      = { workspace = true }
+pallet-assets     = { workspace = true }
+pallet-balances   = { workspace = true }
+pallet-collective = { workspace = true }
+pallet-treasury   = { workspace = true }
+sp-core           = { workspace = true }
+sp-io             = { workspace = true }
+sp-runtime        = { workspace = true }
+sp-std            = { workspace = true }
 
 [features]
 default = ["std"]
-
-no_std = []
 std = [
 	# crates.io
 	"codec/std",
-	"scale-info/std",
-	# darwinia-network frame
-	"darwinia-balances/std",
-	"darwinia-support/std",
-	# darwinia-network primitives
-	"darwinia-primitives/std",
-	# paritytech frame
-	"frame-election-provider-support/std",
+
+	# darwinia
+	"darwinia-precompile-assets/std",
+	"dc-primitives/std",
+
+	# darwinia-messages-substrate
+	"bp-darwinia-core/std",
+
+	# frontier
+	"pallet-evm/std",
+
+	# moonbeam
+	"account/std",
+
+	# polkadot
+	"xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
+
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-authorship/std",
+	"pallet-assets/std",
+	"pallet-balances/std",
 	"pallet-collective/std",
-	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
-	# paritytech primitives
 	"sp-core/std",
 	"sp-io/std",
-	"sp-npos-elections/std",
 	"sp-runtime/std",
 	"sp-std/std",
+]
+
+test = []
+
+runtime-benchmarks = [
+	"pallet-assets/runtime-benchmarks"
 ]

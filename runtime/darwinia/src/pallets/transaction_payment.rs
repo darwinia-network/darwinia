@@ -1,52 +1,32 @@
-// --- crates.io ---
-use smallvec::smallvec;
-// --- paritytech ---
-use frame_support::weights::{
-	WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
-};
-use pallet_transaction_payment::{Config, CurrencyAdapter};
-use sp_runtime::Perbill;
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
 
-/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
-/// node's balance type.
-///
-/// This should typically create a mapping between the following ranges:
-///   - [0, MAXIMUM_BLOCK_WEIGHT]
-///   - [Balance::min, Balance::max]
-///
-/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
-///   - Setting it to `0` will essentially disable the weight fee.
-///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
-pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
-	type Balance = Balance;
-
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Darwinia, extrinsic base weight (smallest non-zero weight) is mapped to 100 MILLI:
-		let p = 100 * MILLI;
-		let q = Balance::from(ExtrinsicBaseWeight::get());
-		smallvec![WeightToFeeCoefficient {
-			degree: 1,
-			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
-			coeff_integer: p / q,
-		}]
-	}
-}
-
-frame_support::parameter_types! {
-	pub const TransactionByteFee: Balance = 100 * MICRO;
-	/// This value increases the priority of `Operational` transactions by adding
-	/// a "virtual tip" that's equal to the `OperationalFeeMultiplier * final_fee`.
-	pub const OperationalFeeMultiplier: u8 = 5;
-}
-
-impl Config for Runtime {
-	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-	type OnChargeTransaction = CurrencyAdapter<Ring, DealWithFees<Self>>;
-	type OperationalFeeMultiplier = OperationalFeeMultiplier;
-	type TransactionByteFee = TransactionByteFee;
+impl pallet_transaction_payment::Config for Runtime {
+	type FeeMultiplierUpdate = polkadot_runtime_common::SlowAdjustingFeeUpdate<Self>;
+	// Relay Chain `TransactionByteFee` / 10
+	type LengthToFee =
+		frame_support::weights::ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
+	type OnChargeTransaction =
+		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
+	type OperationalFeeMultiplier = sp_runtime::traits::ConstU8<5>;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightToFee = WeightToFee;
 }

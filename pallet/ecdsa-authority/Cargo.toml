@@ -1,0 +1,52 @@
+[package]
+authors.workspace = true
+description       = "Relayer Authorities Protocal Implementation"
+edition.workspace = true
+name              = "darwinia-ecdsa-authority"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# crates.io
+codec      = { package = "parity-scale-codec", workspace = true }
+ethabi     = { version = "17.0", default-features = false }
+scale-info = { workspace = true }
+
+# darwinia
+dc-primitives = { workspace = true }
+
+# substrate
+frame-support = { workspace = true }
+frame-system  = { workspace = true }
+sp-core       = { workspace = true }
+sp-io         = { workspace = true }
+sp-runtime    = { workspace = true }
+sp-std        = { workspace = true }
+
+[dev-dependencies]
+array-bytes  = { workspace = true }
+libsecp256k1 = { workspace = true }
+sp-version   = { workspace = true }
+
+[features]
+default = ["std"]
+
+std = [
+	# crates.io
+	"codec/std",
+	"ethabi/std",
+	"scale-info/std",
+
+	# darwinia
+	"dc-primitives/std",
+
+	# substrate
+	"frame-support/std",
+	"frame-system/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"sp-io/std",
+]
+
+try-runtime = ["frame-support/try-runtime"]

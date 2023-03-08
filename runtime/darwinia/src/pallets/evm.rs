@@ -1,77 +1,55 @@
-// --- core ---
-use core::marker::PhantomData;
-// --- paritytech ---
-use fp_evm::{Context, ExitRevert, Precompile, PrecompileFailure, PrecompileResult, PrecompileSet};
-use frame_support::{
-	pallet_prelude::Weight, traits::FindAuthor, ConsensusEngineId, StorageHasher, Twox128,
-};
-use pallet_evm_precompile_blake2::Blake2F;
-use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
-use pallet_evm_precompile_modexp::Modexp;
-use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
-use pallet_session::FindAccountFromAuthorIndex;
-use sp_core::{crypto::ByteArray, H160, U256};
-// --- darwinia-network ---
+// This file is part of Darwinia.
+//
+// Copyright (C) 2018-2023 Darwinia Network
+// SPDX-License-Identifier: GPL-3.0
+//
+// Darwinia is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Darwinia is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+// darwinia
 use crate::*;
-use darwinia_ethereum::{
-	adapter::{CurrencyAdapter, KtonRemainBalance, RingRemainBalance},
-	EthereumBlockHashMapping,
-};
-use darwinia_evm::{
-	runner::stack::Runner, Config, EVMCurrencyAdapter, EnsureAddressTruncated, GasWeightMapping,
-};
-use darwinia_evm_precompile_bls12_381::BLS12381;
-use darwinia_evm_precompile_dispatch::Dispatch;
-use darwinia_evm_precompile_kton::{Erc20Metadata, KtonERC20};
-use darwinia_evm_precompile_state_storage::{StateStorage, StorageFilterT};
-use darwinia_support::evm::ConcatConverter;
+// frontier
+use pallet_evm::Precompile;
 
-pub struct EthereumFindAuthor<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F> {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
-	where
-		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-	{
-		F::find_author(digests).map(|author_index| {
-			let authority_id = Babe::authorities()[author_index as usize].clone();
+const BLOCK_GAS_LIMIT: u64 = 10_000_000;
+frame_support::parameter_types! {
+	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
+	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
+	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
+}
 
-			H160::from_slice(&authority_id.0.to_raw_vec()[4..24])
-		})
+// TODO: Integrate to the upstream repo
+pub struct FromH160;
+impl<T> pallet_evm::AddressMapping<T> for FromH160
+where
+	T: From<sp_core::H160>,
+{
+	fn into_account_id(address: sp_core::H160) -> T {
+		address.into()
 	}
 }
 
-pub struct StorageFilter;
-impl StorageFilterT for StorageFilter {
-	fn allow(prefix: &[u8]) -> bool {
-		prefix != Twox128::hash(b"EVM") && prefix != Twox128::hash(b"Ethereum")
-	}
-}
-
-struct KtonERC20MetaData;
-impl Erc20Metadata for KtonERC20MetaData {
-	fn name() -> &'static str {
-		"KTON ERC20"
-	}
-
-	fn symbol() -> &'static str {
-		"KTON"
-	}
-
-	fn decimals() -> u8 {
-		18
-	}
-}
-
-pub struct DarwiniaPrecompiles<R>(PhantomData<R>);
+pub struct DarwiniaPrecompiles<R>(sp_std::marker::PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where
-	R: darwinia_ethereum::Config,
+	R: pallet_evm::Config,
 {
+	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 13] {
+	pub fn used_addresses() -> [sp_core::H160; 15] {
 		[
 			addr(1),
 			addr(2),
@@ -84,109 +62,93 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
+			// For KTON asset.
 			addr(1026),
+			addr(1536),
+			addr(1537),
 			addr(2048),
 		]
 	}
 }
-
-impl<R> PrecompileSet for DarwiniaPrecompiles<R>
+impl<R> pallet_evm::PrecompileSet for DarwiniaPrecompiles<R>
 where
-	Dispatch<R>: Precompile,
-	R: darwinia_ethereum::Config,
-	StateStorage<R, StorageFilter>: Precompile,
+	R: pallet_evm::Config,
 {
 	fn execute(
 		&self,
-		address: H160,
-		input: &[u8],
-		target_gas: Option<u64>,
-		context: &Context,
-		is_static: bool,
-	) -> Option<PrecompileResult> {
+		handle: &mut impl pallet_evm::PrecompileHandle,
+	) -> Option<pallet_evm::PrecompileResult> {
+		// darwinia
+		use darwinia_precompile_assets::AccountToAssetId;
+
+		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
 		// Filter known precompile addresses except Ethereum officials
-		if self.is_precompile(address) && address > addr(9) && address != context.address {
-			return Some(Err(PrecompileFailure::Revert {
-				exit_status: ExitRevert::Reverted,
-				output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
-				cost: 0,
-			}));
+		if self.is_precompile(code_addr) && code_addr > addr(9) && code_addr != context_addr {
+			return Some(Err(precompile_utils::revert(
+				"cannot be called with DELEGATECALL or CALLCODE",
+			)));
 		};
 
-		match address {
+		match code_addr {
 			// Ethereum precompiles:
-			a if a == addr(1) => Some(ECRecover::execute(input, target_gas, context, is_static)),
-			a if a == addr(2) => Some(Sha256::execute(input, target_gas, context, is_static)),
-			a if a == addr(3) => Some(Ripemd160::execute(input, target_gas, context, is_static)),
-			a if a == addr(4) => Some(Identity::execute(input, target_gas, context, is_static)),
-			a if a == addr(5) => Some(Modexp::execute(input, target_gas, context, is_static)),
-			a if a == addr(6) => Some(Bn128Add::execute(input, target_gas, context, is_static)),
-			a if a == addr(7) => Some(Bn128Mul::execute(input, target_gas, context, is_static)),
-			a if a == addr(8) => Some(Bn128Pairing::execute(input, target_gas, context, is_static)),
-			a if a == addr(9) => Some(Blake2F::execute(input, target_gas, context, is_static)),
-			// Darwinia precompiles: 1024+ for stable precompiles.
-			a if a == addr(1024) => Some(<StateStorage<R, StorageFilter>>::execute(
-				input, target_gas, context, is_static,
-			)),
+			a if a == addr(1) => Some(pallet_evm_precompile_simple::ECRecover::execute(handle)),
+			a if a == addr(2) => Some(pallet_evm_precompile_simple::Sha256::execute(handle)),
+			a if a == addr(3) => Some(pallet_evm_precompile_simple::Ripemd160::execute(handle)),
+			a if a == addr(4) => Some(pallet_evm_precompile_simple::Identity::execute(handle)),
+			a if a == addr(5) => Some(pallet_evm_precompile_modexp::Modexp::execute(handle)),
+			a if a == addr(6) => Some(pallet_evm_precompile_bn128::Bn128Add::execute(handle)),
+			a if a == addr(7) => Some(pallet_evm_precompile_bn128::Bn128Mul::execute(handle)),
+			a if a == addr(8) => Some(pallet_evm_precompile_bn128::Bn128Pairing::execute(handle)),
+			a if a == addr(9) => Some(pallet_evm_precompile_blake2::Blake2F::execute(handle)),
+			// Darwinia precompiles: [1024, 2048) for stable precompiles.
+			a if a == addr(1024) => Some(<darwinia_precompile_state_storage::StateStorage<
+				Runtime,
+				darwinia_precompile_state_storage::StateStorageFilter,
+			>>::execute(handle)),
 			a if a == addr(1025) =>
-				Some(<Dispatch<R>>::execute(input, target_gas, context, is_static)),
-			a if a == addr(1026) => Some(<KtonERC20<R, KtonERC20MetaData>>::execute(
-				input, target_gas, context, is_static,
-			)),
-			// Darwinia precompiles: 2048+ for experimental precompiles.
+				Some(<pallet_evm_precompile_dispatch::Dispatch<Runtime>>::execute(handle)),
+			// [1026, 1536) reserved for assets precompiles.
+			a if (1026..1536).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
+				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
+					handle,
+				)),
+			// [1536, 2048) reserved for other stable precompiles.
+			a if a == addr(1536) =>
+				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
+			a if a == addr(1537) =>
+				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
+			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) =>
-				Some(<BLS12381<R>>::execute(input, target_gas, context, is_static)),
+				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
 			_ => None,
 		}
 	}
 
-	fn is_precompile(&self, address: H160) -> bool {
+	fn is_precompile(&self, address: sp_core::H160) -> bool {
 		Self::used_addresses().contains(&address)
 	}
 }
 
-pub struct FixedGasPrice;
-impl FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> U256 {
-		U256::from(GWEI)
-	}
-}
-
-pub struct FixedGasWeightMapping;
-impl GasWeightMapping for FixedGasWeightMapping {
-	fn gas_to_weight(gas: u64) -> Weight {
-		gas.saturating_mul(WEIGHT_PER_GAS)
-	}
-
-	fn weight_to_gas(weight: Weight) -> u64 {
-		weight.wrapping_div(WEIGHT_PER_GAS)
-	}
-}
-
-fn addr(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
-}
-
-frame_support::parameter_types! {
-	pub const ChainId: u64 = 46;
-	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS);
-	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
-}
-
-impl Config for Runtime {
+impl pallet_evm::Config for Runtime {
+	type AddressMapping = FromH160;
 	type BlockGasLimit = BlockGasLimit;
-	type BlockHashMapping = EthereumBlockHashMapping<Self>;
-	type CallOrigin = EnsureAddressTruncated<Self::AccountId>;
-	type ChainId = ChainId;
-	type Event = Event;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
+	type ChainId = ConstU64<46>;
+	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
-	type FindAuthor = EthereumFindAuthor<Babe>;
-	type GasWeightMapping = FixedGasWeightMapping;
-	type IntoAccountId = ConcatConverter<Self::AccountId>;
-	type KtonBalanceAdapter = CurrencyAdapter<Self, Kton, KtonRemainBalance>;
-	type OnChargeTransaction = EVMCurrencyAdapter<FindAccountFromAuthorIndex<Self, Babe>>;
+	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type OnChargeTransaction = ();
+	type OnCreate = ();
 	type PrecompilesType = DarwiniaPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
-	type RingBalanceAdapter = CurrencyAdapter<Self, Ring, RingRemainBalance>;
-	type Runner = Runner<Self>;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightPerGas = WeightPerGas;
+	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
+}
+
+fn addr(a: u64) -> sp_core::H160 {
+	sp_core::H160::from_low_u64_be(a)
 }
