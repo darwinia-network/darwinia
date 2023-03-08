@@ -88,7 +88,11 @@ pub fn is_evm_address(address: &[u8]) -> bool {
 		&& address[1..31].iter().fold(address[0], |checksum, &b| checksum ^ b) == address[31]
 }
 
-pub fn build_double_map<T>(map: Map<T>, k1_range: Range<usize>, k2_range: Range<usize>) -> Map<Map<T>>
+pub fn build_double_map<T>(
+	map: Map<T>,
+	k1_range: Range<usize>,
+	k2_range: Range<usize>,
+) -> Map<Map<T>>
 where
 	T: Clone,
 {

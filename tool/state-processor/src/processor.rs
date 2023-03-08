@@ -94,7 +94,12 @@ where
 			self.shell_chain_spec.extensions["relay_chain"] = Value::String("rococo-local".into());
 		}
 
-		let mut f = File::create(format!("data/{}-processed.json", S::NAME))?;
+		let f = if self.test {
+			format!("data/{}-processed-test.json", S::NAME)
+		} else {
+			format!("data/{}-processed.json", S::NAME)
+		};
+		let mut f = File::create(f)?;
 		let v = serde_json::to_vec(&self.shell_chain_spec)?;
 
 		f.write_all(&v)?;
