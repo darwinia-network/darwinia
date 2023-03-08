@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-const ENACTMENT_PERIOD: u32 = 28 * DAYS;
+const ENACTMENT_PERIOD: u32 = 8 * DAYS;
 
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = Root;
@@ -44,7 +44,7 @@ impl pallet_democracy::Config for Runtime {
 	type FastTrackVotingPeriod = ConstU32<{ 3 * HOURS }>;
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
-	type LaunchPeriod = ConstU32<{ 28 * DAYS }>;
+	type LaunchPeriod = ConstU32<{ 7 * DAYS }>;
 	type MaxBlacklisted = ConstU32<100>;
 	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
@@ -59,6 +59,6 @@ impl pallet_democracy::Config for Runtime {
 	// only do it once and it lasts only for the cool-off period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
 	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
-	type VotingPeriod = ConstU32<{ 28 * DAYS }>;
+	type VotingPeriod = ConstU32<{ 7 * DAYS }>;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }
