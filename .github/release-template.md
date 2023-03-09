@@ -1,4 +1,4 @@
-Darwinia
+Runtimes
 ===
 
 | Network  |         Native Runtime         | Upgrade Priority |
@@ -13,8 +13,8 @@ Darwinia
 ### Pre-built Binary
 |  OS   |  Arch  | Glibc | LLVM  |                                                       Download                                                        |
 | :---: | :----: | :---: | :---: | :-------------------------------------------------------------------------------------------------------------------: |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia-x86_64-linux-gnu.tar.zst) |
-| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia-x86_64-linux-gnu.tar.bz2) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.zst](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia2-x86_64-linux-gnu.tar.zst) |
+| Linux | x86_64 | 2.23  |  4.0  | [tar.bz2](https://github.com/darwinia-network/darwinia/releases/download/{{ tag }}/darwinia2-x86_64-linux-gnu.tar.bz2) |
 
 ### Docker
 
@@ -38,5 +38,11 @@ docker pull ghcr.io/darwinia-network/darwinia:sha-{{ sha }}
 | Pangoro  | `{{ pangoro_proposal_compressed }}`  | `{{ pangoro_runtime_version }}`  |
 
 ## Changelog
-[Darwinia 2.0](https://github.com/darwinia-network/darwinia/pull/969)
-
+- #983
+- #984
+- #985
+- #990
+- #991
+- #992
+- #994
+- #996
