@@ -237,7 +237,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	unimplemented!("TODO")
+	load_config("darwinia2.json")
 }
 
 fn testnet_genesis(
