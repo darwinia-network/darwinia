@@ -38,6 +38,7 @@ darwinia-ecdsa-authority          = { workspace = true }
 darwinia-message-gadget           = { workspace = true }
 darwinia-message-transact         = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
+darwinia-precompile-ark-bls12-381 = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
