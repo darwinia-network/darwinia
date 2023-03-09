@@ -30,6 +30,7 @@ pub use pallets::*;
 mod bridges_message;
 pub use bridges_message::*;
 
+mod migration;
 mod weights;
 
 pub use darwinia_common_runtime::*;
@@ -72,6 +73,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	migration::CustomOnRuntimeUpgrade,
 >;
 
 /// Darwinia proposal base fee.
