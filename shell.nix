@@ -17,6 +17,10 @@ with nixpkgs; pkgs.mkShell {
   buildInputs = [
     clang
     rocksdb
+    pkg-config
+    openssl.dev
+  ] ++ lib.optionals stdenv.isDarwin [
+    darwin.apple_sdk.frameworks.Security
   ];
 
   RUST_SRC_PATH = "${rust-nightly}/lib/rustlib/src/rust/src";
