@@ -171,7 +171,7 @@ pub fn genesis_config() -> ChainSpec {
 				// Consensus stuff.
 				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-					elapsed_time: 11_516_352_020,
+					elapsed_time: 0,
 					collator_count: 3,
 					collators: vec![
 						(array_bytes::hex_n_into_unchecked(C1), UNIT),

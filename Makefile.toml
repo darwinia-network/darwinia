@@ -106,10 +106,18 @@ extend  = "common-run"
 command = "cargo"
 env     = { "FEATURES" = "all-natives,runtime-benchmarks" }
 extend  = "common-build"
+[tasks.cbuild-bench]
+command = "cross"
+env     = { "FEATURES" = "all-natives,runtime-benchmarks" }
+extend  = "common-build"
 
 # Build for try runtime.
 [tasks.build-trt]
 command = "cargo"
+env     = { "FEATURES" = "all-natives,try-runtime" }
+extend  = "common-build"
+[tasks.cbuild-trt]
+command = "cross"
 env     = { "FEATURES" = "all-natives,try-runtime" }
 extend  = "common-build"
 
@@ -118,10 +126,18 @@ extend  = "common-build"
 command = "cargo"
 env     = { "FEATURES" = "all-natives" }
 extend  = "common-build"
+[tasks.cbuild-ar]
+command = "cross"
+env     = { "FEATURES" = "all-natives" }
+extend  = "common-build"
 
 # Build for testnets.
 [tasks.build-tns]
 command = "cargo"
+env     = { "FEATURES" = "pangolin-native,pangoro-native" }
+extend  = "common-build"
+[tasks.cbuild-tns]
+command = "cross"
 env     = { "FEATURES" = "pangolin-native,pangoro-native" }
 extend  = "common-build"
 
@@ -130,7 +146,14 @@ extend  = "common-build"
 command = "cargo"
 env     = { "FEATURES" = "crab-native,darwinia-native" }
 extend  = "common-build"
+[tasks.cbuild-mns]
+command = "cross"
+env     = { "FEATURES" = "crab-native,darwinia-native" }
+extend  = "common-build"
 
 [tasks.build-all]
 args    = ["build", "--locked", "--release", "--all-features"]
 command = "cargo"
+[tasks.cbuild-all]
+args    = ["build", "--locked", "--release", "--all-features"]
+command = "cross"

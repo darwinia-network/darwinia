@@ -789,7 +789,7 @@ fn stake_ring_pool() {
 
 		// after migrate
 		let mut m_ring_pool = u128::default();
-		tester.shell_state.get_value(b"Staking", b"RingPool", "", &mut m_ring_pool);
+		tester.shell_state.get_value(b"DarwiniaStaking", b"RingPool", "", &mut m_ring_pool);
 		assert_eq!(m_ring_pool, ring_pool * GWEI);
 	});
 }
@@ -804,7 +804,7 @@ fn stake_kton_pool() {
 		// after migrate
 
 		let mut m_kton_pool = u128::default();
-		tester.shell_state.get_value(b"Staking", b"KtonPool", "", &mut m_kton_pool);
+		tester.shell_state.get_value(b"DarwiniaStaking", b"KtonPool", "", &mut m_kton_pool);
 		assert_eq!(m_kton_pool, kton_pool * GWEI);
 	});
 }
@@ -819,7 +819,7 @@ fn stake_elapsed_time() {
 		// after migrate
 
 		let mut m_elapsed_time = u128::default();
-		tester.shell_state.get_value(b"Staking", b"ElapsedTime", "", &mut m_elapsed_time);
+		tester.shell_state.get_value(b"DarwiniaStaking", b"ElapsedTime", "", &mut m_elapsed_time);
 		assert_eq!(m_elapsed_time, elapsed_time as u128);
 	});
 }
