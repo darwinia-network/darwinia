@@ -361,8 +361,11 @@ pub mod pallet {
 		}
 
 		fn migrate_inner(from: AccountId32, to: AccountId20) -> DispatchResult {
-			let account = <Accounts<T>>::take(&from)
+			let mut account = <Accounts<T>>::take(&from)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
+
+			account.data.free += account.data.reserved;
+			account.data.reserved = 0;
 
 			<frame_system::Account<T>>::insert(to, account);
 
