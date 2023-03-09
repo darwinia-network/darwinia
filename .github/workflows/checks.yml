@@ -179,7 +179,7 @@ jobs:
           cd tool/state-processor
           mkdir -p data
           cd data
-          curl -L https://github.com/darwinia-network/darwinia-2.0/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
+          curl -L https://github.com/darwinia-network/darwinia/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
           cd ..
       - name: Check state
         run: |
