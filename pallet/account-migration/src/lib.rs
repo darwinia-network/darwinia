@@ -414,7 +414,9 @@ pub mod pallet {
 				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
 				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", &to, locked, reasons);
 			}
-			if let Some(i) = <Identities<T>>::take(&from) {
+			if let Some(mut i) = <Identities<T>>::take(&from) {
+				i.deposit = 0;
+
 				migration::put_storage_value(
 					b"Identity",
 					b"IdentityOf",

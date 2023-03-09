@@ -386,7 +386,7 @@ macro_rules! impl_account_migration_tests {
 
 					assert_ok!(migrate(from, to));
 					assert_eq!(Identity::identity(to).unwrap().info, info);
-					assert_eq!(Identity::identity(to).unwrap().deposit, RING_AMOUNT);
+					assert_eq!(Identity::identity(to).unwrap().deposit, 0);
 					assert_eq!(Identity::identity(to).unwrap().judgements.len(), 0);
 				});
 			}
