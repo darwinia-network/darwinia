@@ -38,5 +38,11 @@ docker pull ghcr.io/darwinia-network/darwinia:sha-{{ sha }}
 | Pangoro  | `{{ pangoro_proposal_compressed }}`  | `{{ pangoro_runtime_version }}`  |
 
 ## Changelog
-[Darwinia 2.0](https://github.com/darwinia-network/darwinia/pull/969)
-
+- #983
+- #984
+- #985
+- #990
+- #991
+- #992
+- #994
+- #996
