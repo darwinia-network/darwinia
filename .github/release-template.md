@@ -1,4 +1,4 @@
-Darwinia
+Runtimes
 ===
 
 | Network  |         Native Runtime         | Upgrade Priority |
