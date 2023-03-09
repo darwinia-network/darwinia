@@ -88,7 +88,8 @@ jobs:
     if: github.event_name == 'push' || !github.event.pull_request.draft
     strategy:
       matrix:
-        runtime: [runtime/darwinia, runtime/crab, runtime/pangolin]
+        runtime:
+          [runtime/darwinia, runtime/crab, runtime/pangoro, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
       - name: Check ${{ matrix.runtime }}
@@ -103,8 +104,18 @@ jobs:
       matrix:
         target:
           [
-            { chain: darwinia-dev, compare-with: "https://rpc.polkadot.io" },
-            { chain: crab-dev, compare-with: "https://rpc.polkadot.io" },
+            {
+              chain: darwinia-dev,
+              compare-with: "https://rpc.darwinia-network",
+            },
+            {
+              chain: crab-dev,
+              compare-with: "https://crab-rpc.darwinia-network",
+            },
+            {
+              chain: pangoro-dev,
+              compare-with: "https://pangoro-rpc.darwinia.network",
+            },
             {
               chain: pangolin-dev,
               compare-with: "https://pangolin-rpc.darwinia.network",

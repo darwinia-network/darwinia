@@ -34,6 +34,7 @@ use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
+use sc_telemetry::TelemetryEndpoints;
 use sp_core::H160;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -225,7 +226,7 @@ pub fn genesis_config() -> ChainSpec {
 			}
 		},
 		Vec::new(),
-		None,
+		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		Some(PROTOCOL_ID),
 		None,
 		Some(properties()),
@@ -237,7 +238,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	unimplemented!("TODO")
+	load_config("darwinia2.json")
 }
 
 fn testnet_genesis(

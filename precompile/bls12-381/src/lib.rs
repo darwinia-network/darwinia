@@ -37,6 +37,6 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 		_message: UnboundedBytes,
 		_signature: UnboundedBytes,
 	) -> EvmResult<bool> {
-		return Err(revert("Unavailable now"));
+		Err(revert("Unavailable now"))
 	}
 }
