@@ -30,10 +30,10 @@ use precompile_utils::prelude::*;
 use sp_std::prelude::*;
 
 pub(crate) const BLS_ESTIMATED_COST: u64 = 100_000;
-pub struct ARKBLS12381<T>(PhantomData<T>);
+pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
-impl<Runtime: pallet_evm::Config> ARKBLS12381<Runtime> {
+impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 	#[precompile::public("fast_aggregate_verify(bytes[],bytes,bytes)")]
 	#[precompile::view]
 	fn fast_aggregate_verify(

@@ -20,6 +20,10 @@
 
 // core
 use core::{borrow::Borrow, ops::Neg};
+
+// substrate
+use sp_std::prelude::Vec;
+
 // crates.io
 use ark_bls12_381::{
 	g2::Config as G2Config, Bls12_381, G1Affine, G1Projective, G2Affine, G2Projective,
@@ -35,7 +39,6 @@ use ark_ec::{
 };
 use ark_ff::{field_hashers::DefaultFieldHasher, Zero};
 use ark_serialize::*;
-use ark_std::vec::Vec;
 use sha2::Sha256;
 
 /// Domain Separation Tag for signatures on G2
