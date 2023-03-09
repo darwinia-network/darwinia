@@ -37,8 +37,8 @@ darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }
 darwinia-message-gadget           = { workspace = true }
 darwinia-message-transact         = { workspace = true }
-darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-ark-bls12-381 = { workspace = true }
+darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
@@ -158,6 +158,7 @@ std = [
 	"darwinia-ecdsa-authority/std",
 	"darwinia-message-gadget/std",
 	"darwinia-message-transact/std",
+	"darwinia-precompile-ark-bls12-381/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-staking/std",
