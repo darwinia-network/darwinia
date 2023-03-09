@@ -2625,23 +2625,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-precompile-ark-bls12-381"
-version = "6.0.0"
-dependencies = [
- "ark-bls12-381",
- "ark-ec",
- "ark-ff",
- "ark-serialize",
- "ark-std",
- "fp-evm",
- "pallet-evm",
- "precompile-utils",
- "rand 0.8.5",
- "sha2 0.10.6",
- "sp-std",
-]
-
-[[package]]
 name = "darwinia-precompile-assets"
 version = "6.0.0"
 dependencies = [
@@ -2666,17 +2649,16 @@ dependencies = [
 name = "darwinia-precompile-bls12-381"
 version = "6.0.0"
 dependencies = [
+ "ark-bls12-381",
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
  "fp-evm",
- "frame-system",
- "pallet-balances",
  "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
  "precompile-utils",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "rand 0.8.5",
+ "sha2 0.10.6",
  "sp-std",
 ]
 
@@ -2765,7 +2747,6 @@ dependencies = [
  "darwinia-ecdsa-authority",
  "darwinia-message-gadget",
  "darwinia-message-transact",
- "darwinia-precompile-ark-bls12-381",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",

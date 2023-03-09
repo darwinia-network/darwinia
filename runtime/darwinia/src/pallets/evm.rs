@@ -66,8 +66,6 @@ where
 			addr(1026),
 			addr(1536),
 			addr(1537),
-			// Test only
-			addr(2047),
 			addr(2048),
 		]
 	}
@@ -119,9 +117,6 @@ where
 				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
 			a if a == addr(1537) =>
 				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
-			a if a == addr(2047) =>
-				Some(<darwinia_precompile_ark_bls12_381::ARKBLS12381<Runtime>>::execute(handle)),
-			_ => None,
 			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) =>
 				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),

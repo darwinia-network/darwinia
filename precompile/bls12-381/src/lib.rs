@@ -18,25 +18,42 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod bls;
+
 // core
 use core::marker::PhantomData;
+// bls
+use bls::{hash_to_curve_g2, PublicKey, Signature};
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
 use sp_std::prelude::*;
 
-pub struct BLS12381<T>(PhantomData<T>);
+pub(crate) const BLS_ESTIMATED_COST: u64 = 100_000;
+pub struct ARKBLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
-impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
+impl<Runtime: pallet_evm::Config> ARKBLS12381<Runtime> {
 	#[precompile::public("fast_aggregate_verify(bytes[],bytes,bytes)")]
 	#[precompile::view]
-	fn state_storage_at(
-		_handle: &mut impl PrecompileHandle,
-		_pubkeys: Vec<UnboundedBytes>,
-		_message: UnboundedBytes,
-		_signature: UnboundedBytes,
+	fn fast_aggregate_verify(
+		handle: &mut impl PrecompileHandle,
+		pubkeys: Vec<UnboundedBytes>,
+		message: UnboundedBytes,
+		signature: UnboundedBytes,
 	) -> EvmResult<bool> {
-		return Err(revert("Unavailable now"));
+		handle.record_cost(BLS_ESTIMATED_COST)?;
+
+		let asig =
+			Signature::from_bytes(signature.as_bytes()).map_err(|_| revert("Invalid signature"))?;
+		let public_keys: Result<Vec<PublicKey>, _> =
+			pubkeys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
+		let Ok(pks) = public_keys else {
+            return Err(revert("Invalid pubkeys"));
+        };
+
+		let apk = PublicKey::aggregate(pks);
+		let msg = hash_to_curve_g2(message.as_bytes()).map_err(|_| revert("Invalid message"))?;
+		Ok(apk.verify(&asig, &msg))
 	}
 }
