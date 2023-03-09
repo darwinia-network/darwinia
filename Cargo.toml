@@ -26,9 +26,9 @@ version    = "6.0.0"
 # arkworks
 ark-bls12-381 = { default-features = false, version = "0.4.0", features = ["curve"] }
 ark-serialize = { default-features = false, version = "0.4.1", features = ["derive"]}
-ark-std       = { default-features = false, version  = "0.4.0" }
-ark-ec        = { default-features = false, version  = "0.4.1" }
-ark-ff        = { default-features = false, version  = "0.4.1" }
+ark-std       = { default-features = false, version = "0.4.0" }
+ark-ec        = { default-features = false, version = "0.4.1" }
+ark-ff        = { default-features = false, version = "0.4.1" }
 
 # crates.io
 array-bytes       = { version = "6.0" }
