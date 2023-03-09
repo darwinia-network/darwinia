@@ -154,16 +154,21 @@ impl<S> Processor<S> {
 		log::info!("`total_deposit({total_deposit})`");
 		log::info!("` total_staked({total_staked})`");
 
-		log::info!("set `Staking::RingPool` and `Staking::KtonPool`");
-		self.shell_state.insert_value(b"Staking", b"RingPool", "", ring_pool).insert_value(
-			b"Staking",
+		log::info!("set `DarwiniaStaking::RingPool` and `DarwiniaStaking::KtonPool`");
+		self.shell_state.insert_value(b"DarwiniaStaking", b"RingPool", "", ring_pool).insert_value(
+			b"DarwiniaStaking",
 			b"KtonPool",
 			"",
 			kton_pool,
 		);
 
-		log::info!("set `Staking::ElapsedTime`");
-		self.shell_state.insert_value(b"Staking", b"ElapsedTime", "", elapsed_time as Moment);
+		log::info!("set `DarwiniaStaking::ElapsedTime`");
+		self.shell_state.insert_value(
+			b"DarwiniaStaking",
+			b"ElapsedTime",
+			"",
+			elapsed_time as Moment,
+		);
 
 		log::info!("make payout");
 
