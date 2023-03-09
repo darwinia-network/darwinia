@@ -33,7 +33,7 @@ impl Tester {
 
 		let mut solo_state = State::from_file("data/crab-solo.json").unwrap();
 		let mut para_state = State::from_file("data/crab-para.json").unwrap();
-		let mut shell_state = State::from_file("data/crab-processed.json").unwrap();
+		let mut shell_state = State::from_file("data/crab-processed-test.json").unwrap();
 
 		// solo chain
 		let mut solo_accounts = <Map<AccountInfo>>::default();
@@ -181,7 +181,8 @@ fn solo_chain_substrate_account() {
 			assert_eq!(m_account.consumers, 2);
 			assert_eq!(m_account.providers, 1);
 			assert_eq!(m_account.sufficients, 1);
-			assert_eq!(m_account.data.free, solo_account.data.free * GWEI);
+			// 30_976_316_716_418_406_400 is the unclaimed staking reward
+			assert_eq!(m_account.data.free, solo_account.data.free * GWEI + 30_976_316_716_418_406_400);
 			assert_eq!(m_account.data.free_kton_or_misc_frozen, 0);
 			//  the kton part moved to the asset pallet
 			let asset_account = tester.migration_kton_accounts.get(addr).unwrap();
@@ -319,7 +320,7 @@ fn ring_total_issuance() {
 		);
 
 		assert_eq!(
-			migrated_total_issuance - 155_223_151_710_u128,
+			migrated_total_issuance - 161_223_151_710_u128,
 			solo_issuance * GWEI + para_issuance
 		);
 	});
@@ -349,8 +350,7 @@ fn kton_total_issuance() {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			&mut details,
 		);
-
-		assert_eq!(details.supply - 4_999_999_999_u128, total_issuance * GWEI);
+		assert_eq!(details.supply - 5_999_999_999_u128, total_issuance * GWEI);
 	});
 }
 
@@ -730,7 +730,17 @@ fn stake_ledgers_values() {
 			&blake2_128_concat_to_string(addr.encode()),
 			&mut m_ledger,
 		);
-		assert_eq!(m_ledger.staked_ring, ledger.active * GWEI);
+
+		let mut m_deposits: Vec<Deposit> = Vec::new();
+		tester.shell_state.get_value(
+			b"AccountMigration",
+			b"Deposits",
+			&blake2_128_concat_to_string(addr.encode()),
+			&mut m_deposits,
+		);
+
+		assert_eq!(ledger.active * GWEI, m_deposits.iter().map(|d| d.value).sum());
+		assert_eq!(m_ledger.staked_ring, 0);
 		assert_eq!(m_ledger.staked_kton, ledger.active_kton * GWEI);
 	});
 }
