@@ -17,7 +17,6 @@ ark-std       = { default-features = false, version = "0.4.0" }
 ark-ec        = { default-features = false, version = "0.4.1" }
 ark-ff        = { default-features = false, version = "0.4.1" }
 
-
 # frontier
 pallet-evm = { workspace = true }
 fp-evm     = { workspace = true }
