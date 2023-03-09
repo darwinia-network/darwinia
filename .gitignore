@@ -13,3 +13,6 @@ node_modules
 
 # Test data
 test-data
+
+# Nix
+shell.nix
