@@ -104,7 +104,7 @@ where
 }
 
 fn get_last_40(key: &str, _: &str) -> String {
-	format!("0x{}", &key[key.len() - 40..])
+	get_last_n(key, 40)
 }
 
 fn run_test<T>(test: T)
@@ -373,6 +373,21 @@ fn asset_creation() {
 		assert!(details.accounts > 0);
 		assert_eq!(details.approvals, 0);
 		assert_eq!(details.status, AssetStatus::Live);
+
+		let total_kton_accounts = tester
+			.solo_accounts
+			.iter()
+			.filter(|(k, a)| {
+				a.data.free_kton_or_misc_frozen != 0
+					|| a.data.reserved_kton_or_fee_frozen != 0
+					|| tester.solo_remaining_kton.get(k.as_str()).map(|i| *i).unwrap_or_default()
+						!= 0
+			})
+			.count();
+		assert_eq!(
+			total_kton_accounts as u32,
+			details.sufficients + tester.migration_kton_accounts.len() as u32
+		);
 	});
 }
 

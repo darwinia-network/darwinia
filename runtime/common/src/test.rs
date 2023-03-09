@@ -16,7 +16,7 @@ macro_rules! impl_account_migration_tests {
 			use pallet_identity::{
 				Data, IdentityFields, IdentityInfo, RegistrarInfo, Registration,
 			};
-			use sp_core::{sr25519::Pair, Encode, Pair as PairT, H160};
+			use sp_core::{sr25519::Pair, Decode, Encode, Pair as PairT, H160};
 			use sp_keyring::sr25519::Keyring;
 			use sp_runtime::{
 				traits::ValidateUnsigned,
@@ -46,12 +46,35 @@ macro_rules! impl_account_migration_tests {
 			}
 
 			// This struct is private in `pallet-assets`.
-			#[derive(Encode)]
+			#[derive(Encode, Decode)]
 			struct AssetAccount {
 				balance: u128,
 				is_frozen: bool,
 				reason: ExistenceReason<u128>,
 				extra: (),
+			}
+			// This struct is private in `pallet-assets`.
+			#[derive(PartialEq, Eq, Encode, Decode)]
+			struct AssetDetails {
+				owner: AccountId,
+				issuer: AccountId,
+				admin: AccountId,
+				freezer: AccountId,
+				supply: Balance,
+				deposit: Balance,
+				min_balance: Balance,
+				is_sufficient: bool,
+				accounts: u32,
+				sufficients: u32,
+				approvals: u32,
+				status: AssetStatus,
+			}
+			// This struct is private in `pallet-assets`.
+			#[derive(PartialEq, Eq, Encode, Decode)]
+			enum AssetStatus {
+				Live,
+				Frozen,
+				Destroying,
 			}
 
 			// This struct is private in `pallet-vesting`.
@@ -203,12 +226,39 @@ macro_rules! impl_account_migration_tests {
 				let (from, from_pk) = alice();
 				let to = H160::from_low_u64_be(255).into();
 
+				let asset_details = || {
+					migration::get_storage_value::<AssetDetails>(
+						b"Assets",
+						b"Asset",
+						&Blake2_128Concat::hash(&KTON_ID.encode()),
+					)
+					.unwrap()
+				};
+
 				ExtBuilder::default().build().execute_with(|| {
 					preset_state_of(&from);
+					let pre_asset_details = asset_details();
 
 					assert_ok!(migrate(from, to));
+					let asset_details = asset_details();
 					assert_eq!(AccountMigration::kton_account_of(from_pk), None);
 					assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), KTON_AMOUNT);
+					assert_eq!(pre_asset_details.accounts + 1, asset_details.accounts);
+					assert_eq!(pre_asset_details.sufficients + 1, asset_details.sufficients);
+					assert_eq!(pre_asset_details.owner, asset_details.owner);
+					assert_eq!(pre_asset_details.supply, asset_details.supply);
+
+					let actual_accounts = migration::storage_key_iter_with_suffix::<
+						AccountId,
+						AssetAccount,
+						Blake2_128Concat,
+					>(
+						b"Assets",
+						b"Account",
+						&Blake2_128Concat::hash(&(KTON_ID as u64).encode()),
+					)
+					.count();
+					assert_eq!(actual_accounts as u32, asset_details.accounts);
 				});
 			}
 

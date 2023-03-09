@@ -4,6 +4,9 @@ default_to_workspace = false
 [env]
 WASM_BUILD_WORKSPACE_HINT = "${CARGO_MAKE_WORKING_DIRECTORY}"
 
+[env.inc]
+CARGO_INCREMENTAL = 1
+
 [tasks.fmt]
 args          = ["fmt"]
 command       = "cargo"
@@ -98,14 +101,34 @@ command = "target/release/darwinia"
 env     = { "FLAGS" = "--chain pangolin-dev" }
 extend  = "common-run"
 
+# Build for runtime benchmarks.
 [tasks.build-bench]
 command = "cargo"
-env     = { "FEATURES" = "all-natives runtime-benchmarks" }
+env     = { "FEATURES" = "all-natives,runtime-benchmarks" }
 extend  = "common-build"
 
+# Build for try runtime.
 [tasks.build-trt]
 command = "cargo"
-env     = { "FEATURES" = "all-natives try-runtime" }
+env     = { "FEATURES" = "all-natives,try-runtime" }
+extend  = "common-build"
+
+# Build for all runtimes.
+[tasks.build-ar]
+command = "cargo"
+env     = { "FEATURES" = "all-natives" }
+extend  = "common-build"
+
+# Build for testnets.
+[tasks.build-tns]
+command = "cargo"
+env     = { "FEATURES" = "pangolin-native,pangoro-native" }
+extend  = "common-build"
+
+# Build for mainnets.
+[tasks.build-mns]
+command = "cargo"
+env     = { "FEATURES" = "crab-native,darwinia-native" }
 extend  = "common-build"
 
 [tasks.build-all]

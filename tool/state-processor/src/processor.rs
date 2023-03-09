@@ -94,7 +94,12 @@ where
 			self.shell_chain_spec.extensions["relay_chain"] = Value::String("rococo-local".into());
 		}
 
-		let mut f = File::create(format!("data/{}-processed.json", S::NAME))?;
+		let f = if self.test {
+			format!("data/{}-processed-test.json", S::NAME)
+		} else {
+			format!("data/{}-processed.json", S::NAME)
+		};
+		let mut f = File::create(f)?;
 		let v = serde_json::to_vec(&self.shell_chain_spec)?;
 
 		f.write_all(&v)?;
@@ -119,9 +124,9 @@ impl<R> State<R> {
 	where
 		D: Decode,
 	{
-		let key = full_key(pallet, item, hash);
+		let k = full_key(pallet, item, hash);
 
-		if let Some(v) = self.map.get(&key) {
+		if let Some(v) = self.map.get(&k) {
 			match decode(v) {
 				Ok(v) => *value = v,
 				Err(e) => log::error!(
@@ -159,7 +164,7 @@ impl<R> State<R> {
 	pub fn insert_raw_key_map(&mut self, pairs: Map<String>) -> &mut Self {
 		pairs.into_iter().for_each(|(k, v)| {
 			if self.map.contains_key(&k) {
-				log::error!("key({k}) has already existed, overriding");
+				log::error!("`key({k})` has already existed, overriding");
 			}
 
 			self.map.insert(k, v);
@@ -207,7 +212,7 @@ impl<R> State<R> {
 		self
 	}
 
-	pub fn take_raw_map<F>(
+	pub fn take_prefix_raw<F>(
 		&mut self,
 		prefix: &str,
 		buffer: &mut Map<String>,
@@ -229,6 +234,34 @@ impl<R> State<R> {
 		self
 	}
 
+	pub fn take_prefix<D, F>(
+		&mut self,
+		prefix: &str,
+		buffer: &mut Map<D>,
+		process_key: F,
+	) -> &mut Self
+	where
+		D: Decode,
+		F: Fn(&str, &str) -> String,
+	{
+		self.map.retain(|k, v| {
+			if k.starts_with(prefix) {
+				match decode(v) {
+					Ok(v) => {
+						buffer.insert(process_key(k, prefix), v);
+					},
+					Err(e) => log::error!("failed to decode `{k}:{v}`, due to `{e}`"),
+				}
+
+				false
+			} else {
+				true
+			}
+		});
+
+		self
+	}
+
 	pub fn take_value<D>(
 		&mut self,
 		pallet: &[u8],
@@ -239,9 +272,9 @@ impl<R> State<R> {
 	where
 		D: Decode,
 	{
-		let key = full_key(pallet, item, hash);
+		let k = full_key(pallet, item, hash);
 
-		if let Some(v) = self.map.remove(&key) {
+		if let Some(v) = self.map.remove(&k) {
 			match decode(&v) {
 				Ok(v) => *value = v,
 				Err(e) => log::error!(
@@ -275,13 +308,13 @@ impl<R> State<R> {
 		let len = buffer.len();
 		let prefix = item_key(pallet, item);
 
-		self.map.retain(|full_key, v| {
-			if full_key.starts_with(&prefix) {
+		self.map.retain(|k, v| {
+			if k.starts_with(&prefix) {
 				match decode(v) {
 					Ok(v) => {
-						buffer.insert(process_key(full_key, &prefix), v);
+						buffer.insert(process_key(k, &prefix), v);
 					},
-					Err(e) => log::error!("failed to decode `{full_key}:{v}`, due to `{e}`"),
+					Err(e) => log::error!("failed to decode `{k}:{v}`, due to `{e}`"),
 				}
 
 				false
@@ -317,30 +350,50 @@ impl<R> State<R> {
 		self
 	}
 
-	fn mutate_account<F>(&mut self, account_id_32: &str, f: F)
+	fn mutate_account<F>(&mut self, who: &str, f: F)
 	where
 		F: FnOnce(&mut AccountInfo),
 	{
-		let account_id_32 = array_bytes::hex2array_unchecked::<_, 32>(account_id_32);
-		let (p, i, h) = if is_evm_address(&account_id_32) {
-			(&b"System"[..], &b"Account"[..], &account_id_32[11..31])
+		if let Ok(who) = array_bytes::hex2array::<_, 32>(who) {
+			let (p, i, h) = if is_evm_address(&who) {
+				(&b"System"[..], &b"Account"[..], &who[11..31])
+			} else {
+				(&b"AccountMigration"[..], &b"Accounts"[..], &who[..])
+			};
+
+			self.mutate_value(p, i, &blake2_128_concat_to_string(h), f);
+		} else if let Ok(who) = array_bytes::hex2array::<_, 20>(who) {
+			self.mutate_value(b"System", b"Account", &blake2_128_concat_to_string(who), f);
 		} else {
-			(&b"AccountMigration"[..], &b"Accounts"[..], &account_id_32[..])
-		};
-
-		self.mutate_value(p, i, &blake2_128_concat_to_string(h), f);
+			panic!("invalid `address({who})`");
+		}
 	}
 
-	pub fn inc_consumers_by(&mut self, account_id_32: &str, x: RefCount) {
-		self.mutate_account(account_id_32, |a| a.consumers += x);
+	pub fn inc_consumers_by(&mut self, who: &str, x: RefCount) {
+		self.mutate_account(who, |a| a.consumers += x);
 	}
 
-	pub fn reserve(&mut self, account_id_32: &str, amount: u128) {
-		self.mutate_account(account_id_32, |a| {
+	pub fn transfer(&mut self, from: &str, to: &str, amount: u128) {
+		let mut ok = false;
+
+		self.mutate_account(from, |a| {
 			if a.data.free < amount {
-				log::warn!(
-					"`Account({account_id_32})` can't afford the latest runtime reservation amount"
-				);
+				log::warn!("`Account({from})` doesn't have enough free balance for transferring");
+			} else {
+				ok = true;
+				a.data.free -= amount;
+			}
+		});
+
+		if ok {
+			self.mutate_account(to, |a| a.data.free += amount);
+		}
+	}
+
+	pub fn reserve(&mut self, who: &str, amount: u128) {
+		self.mutate_account(who, |a| {
+			if a.data.free < amount {
+				log::warn!("`Account({who})` can't afford the latest runtime reservation amount");
 
 				a.data.reserved += a.data.free;
 				a.data.free = 0;

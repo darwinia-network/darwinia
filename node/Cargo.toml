@@ -168,5 +168,5 @@ pangoro-native = [
 	"pangoro-runtime",
 
 	# polkadot
-	"polkadot-cli/rococo-native",
+	"polkadot-cli/westend-native",
 ]

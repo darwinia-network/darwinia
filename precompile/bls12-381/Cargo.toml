@@ -7,9 +7,6 @@ readme            = "README.md"
 version.workspace = true
 
 [dependencies]
-# crates.io
-milagro_bls = { default-features = false, git = "https://github.com/darwinia-network/milagro_bls" }
-
 # frontier
 fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }

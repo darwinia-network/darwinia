@@ -68,7 +68,7 @@ fn prune(locks: &mut Map<Locks>) {
 			| FEE_MARKET_1 | FEE_MARKET_2 => false,
 			id => {
 				log::error!(
-					"pruned unknown lock id({}) of account({})",
+					"pruned unknown lock `id({})` of `address({})`",
 					String::from_utf8_lossy(&id),
 					get_last_64(k)
 				);

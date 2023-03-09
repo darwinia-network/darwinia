@@ -22,8 +22,8 @@ impl<S> Processor<S> {
 
 		log::info!("take `EVM::AccountCodes` and `EVM::AccountStorages`");
 		self.solo_state
-			.take_raw_map(&item_key(b"EVM", b"AccountCodes"), &mut codes, |k, _| k.to_owned())
-			.take_raw_map(&item_key(b"EVM", b"AccountStorages"), &mut storages, |k, _| {
+			.take_prefix_raw(&item_key(b"EVM", b"AccountCodes"), &mut codes, |k, _| k.to_owned())
+			.take_prefix_raw(&item_key(b"EVM", b"AccountStorages"), &mut storages, |k, _| {
 				k.to_owned()
 			});
 

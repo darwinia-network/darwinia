@@ -28,17 +28,20 @@ pub type StdResult<T, E> = std::result::Result<T, E>;
 pub type Result<T> = anyhow::Result<T>;
 
 fn main() -> Result<()> {
-	std::env::set_var("RUST_LOG", "state_processor");
+	std::env::set_var(
+		"RUST_LOG",
+		std::env::var("RUST_LOG").unwrap_or_else(|_| "state_processor=info".into()),
+	);
 	pretty_env_logger::init();
 
-	// <Processor<Pangolin>>::new()?.process().save()?;
 	// <Processor<Pangolin>>::new()?.test().process().save()?;
-	<Processor<Pangoro>>::new()?.process().save()?;
+	// <Processor<Pangolin>>::new()?.process().save()?;
 	// <Processor<Pangoro>>::new()?.test().process().save()?;
-	// <Processor<Crab>>::new()?.process().save()?;
-	// <Processor<Crab>>::new()?.test().process().save()?;
-	// <Processor<Darwinia>>::new()?.process().save()?;
+	// <Processor<Pangoro>>::new()?.process().save()?;
+	<Processor<Crab>>::new()?.test().process().save()?;
+	<Processor<Crab>>::new()?.process().save()?;
 	// <Processor<Darwinia>>::new()?.test().process().save()?;
+	// <Processor<Darwinia>>::new()?.process().save()?;
 
 	Ok(())
 }

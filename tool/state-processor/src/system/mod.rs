@@ -157,7 +157,7 @@ where
 							blake2_128_concat_to_string(KTON_ID.encode()),
 							blake2_128_concat_to_string(k.encode()),
 						),
-						new_kton_account(&mut a, &mut kton_details, v.kton),
+						new_kton_account(&mut a, &mut kton_details, v.kton, true),
 					);
 				}
 
@@ -190,7 +190,7 @@ where
 							blake2_128_concat_to_string(KTON_ID.encode()),
 							blake2_128_concat_to_string(k.encode()),
 						),
-						new_kton_account(&mut a, &mut kton_details, v.kton),
+						new_kton_account(&mut a, &mut kton_details, v.kton, true),
 					);
 				}
 
@@ -210,7 +210,7 @@ where
 						b"AccountMigration",
 						b"KtonAccounts",
 						&k,
-						new_kton_account(&mut a, &mut kton_details, v.kton),
+						new_kton_account(&mut a, &mut kton_details, v.kton, false),
 					);
 				}
 
@@ -312,11 +312,15 @@ fn new_kton_account(
 	account_info: &mut AccountInfo,
 	asset_details: &mut AssetDetails,
 	balance: Balance,
+	update_ref_counter: bool,
 ) -> AssetAccount {
 	// https://github.com/paritytech/substrate/blob/3bc3742d5c0c5269353d7809d9f8f91104a93273/frame/assets/src/functions.rs#L75
 	account_info.sufficients += 1;
-	asset_details.accounts += 1;
-	asset_details.sufficients += 1;
+
+	if update_ref_counter {
+		asset_details.accounts += 1;
+		asset_details.sufficients += 1;
+	}
 
 	AssetAccount { balance, is_frozen: false, reason: ExistenceReason::Sufficient, extra: () }
 }

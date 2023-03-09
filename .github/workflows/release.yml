@@ -1,0 +1,288 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+
+
+jobs:
+  ##
+  # Build the Rust package
+  ##
+  build-package:
+    name: Build package [linux]
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:18.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y \
+            ca-certificates curl git python3-pip zstd \
+            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
+          pip3 install --upgrade pip
+          pip3 install cmake --upgrade
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Build
+        run: cargo build --release --locked -p darwinia --features all-natives
+
+      - name: Collect shared
+        run: |
+          mkdir -p shared
+          tar cjSf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C target/release darwinia
+          tar cf shared/darwinia2-x86_64-linux-gnu.tar.zst -C target/release darwinia -I zstd
+      - name: Upload shared
+        uses: actions/upload-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - uses: vishnudxb/cancel-workflow@v1.2
+        if: failure()
+        with:
+          repo: darwinia-network/darwinia
+          workflow_id: ${{ github.run_id }}
+          access_token: ${{ github.token }}
+
+
+  ##
+  # Generate subwasm info
+  ##
+  build-subwasm:
+    name: Generate subwasm info
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+    strategy:
+      matrix:
+        runtime:
+          - darwinia
+          - crab
+          - pangolin
+          - pangoro
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y \
+            ca-certificates curl git python3-pip \
+            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
+          pip3 install --upgrade pip
+          pip3 install cmake --upgrade
+
+      - name: Install subwasm
+        env:
+          # Currently, Same with srtool version v0.9.25
+          # https://github.com/paritytech/srtool/blob/v0.9.25/Dockerfile#L27
+          SUBWASM_VERSION: 0.18.0
+        run: |
+          curl -L https://github.com/chevdor/subwasm/releases/download/v${SUBWASM_VERSION}/subwasm_linux_amd64_v${SUBWASM_VERSION}.deb \
+            --output subwasm.deb && \
+            dpkg -i subwasm.deb && \
+            subwasm --version
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+
+      - name: Build runtime
+        run: |
+          set -xe
+          RUNTIME_DIR=runtime/${{ matrix.runtime }}
+          cargo build \
+            --manifest-path runtime/${{ matrix.runtime }}/Cargo.toml \
+            --release \
+            # --features on-chain-release-build # not have this feature currently
+
+      - name: Collect shared
+        run: |
+          mkdir -p shared/${{ matrix.runtime }}-runtime
+          mv target/release/wbuild/${{ matrix.runtime }}-runtime/*.wasm \
+            shared/${{ matrix.runtime }}-runtime
+      - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
+        run: |
+          set -xe
+          Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
+          echo '${{ matrix.runtime }}-runtime compressed compact subwasm info'
+          subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}-runtime/${{ matrix.runtime }}-runtime.compact.compressed.json
+
+      - name: Upload shared
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - uses: vishnudxb/cancel-workflow@v1.2
+        if: failure()
+        with:
+          repo: darwinia-network/darwinia
+          workflow_id: ${{ github.run_id }}
+          access_token: ${{ github.token }}
+
+
+  ##
+  # Build and publish the Docker image
+  ##
+  build-docker-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: [build-package]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - uses: olegtarasov/get-tag@v2.1
+      - uses: benjlevesque/short-sha@v1.2
+
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.DOCKER_REGISTRY }}
+
+      - name: Extract shared
+        run: |
+          mkdir -p dist
+          tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
+
+      - name: Publish docker image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: .
+          file: .maintain/docker/Dockerfile
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
+
+      - name: Publish docker image with tag
+        uses: docker/build-push-action@v3
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          push: true
+          context: .
+          file: .maintain/docker/Dockerfile
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ env.GIT_TAG_NAME }}
+
+
+  ##
+  # Publish the release
+  ##
+  publish-release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: [build-package, build-subwasm, build-docker-image]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: darwinia-artifact
+          path: shared
+
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p deploy
+          mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
+          mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
+          mv shared/*-runtime/*.compact.compressed.* deploy/
+
+      - name: Hash file
+        run: |
+          (cd deploy && sha256sum * | tee sha256sums.txt)
+
+      - uses: olegtarasov/get-tag@v2.1
+      - uses: benjlevesque/short-sha@v1.2
+
+      - name: Generate template data
+        run: |
+          FILE_CRAB=deploy/crab-runtime.compact.compressed.json
+          FILE_DARWINIA=deploy/darwinia-runtime.compact.compressed.json
+          FILE_PANGOLIN=deploy/pangolin-runtime.compact.compressed.json
+          FILE_PANGORO=deploy/pangoro-runtime.compact.compressed.json
+
+          PROPOSAL_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .proposal_hash)
+          RUNTIME_VERSION_CRAB=$(cat ${FILE_CRAB} | jq .core_version.specVersion)
+
+          PROPOSAL_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .proposal_hash)
+          RUNTIME_VERSION_DARWINIA=$(cat ${FILE_DARWINIA} | jq .core_version.specVersion)
+
+          PROPOSAL_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .proposal_hash)
+          RUNTIME_VERSION_PANGOLIN=$(cat ${FILE_PANGOLIN} | jq .core_version.specVersion)
+
+          PROPOSAL_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .proposal_hash)
+          RUNTIME_VERSION_PANGORO=$(cat ${FILE_PANGORO} | jq .core_version.specVersion)
+
+          echo 'Template data:'
+          jq -n \
+            --arg crab_proposal_compressed "$PROPOSAL_CRAB_COMPRESSED" \
+            --arg crab_runtime_version "$RUNTIME_VERSION_CRAB" \
+            --arg darwinia_proposal_compressed "$PROPOSAL_DARWINIA_COMPRESSED" \
+            --arg darwinia_runtime_version "$RUNTIME_VERSION_DARWINIA" \
+            --arg pangolin_proposal_compressed "$PROPOSAL_PANGOLIN_COMPRESSED" \
+            --arg pangolin_runtime_version "$RUNTIME_VERSION_PANGOLIN" \
+            --arg pangoro_proposal_compressed "$PROPOSAL_PANGORO_COMPRESSED" \
+            --arg pangoro_runtime_version "$RUNTIME_VERSION_PANGORO" \
+            --arg tag "$GIT_TAG_NAME" \
+            --arg sha "$SHA" \
+            '{
+              crab_proposal_compressed: $crab_proposal_compressed,
+              crab_runtime_version: $crab_runtime_version,
+              darwinia_proposal_compressed: $darwinia_proposal_compressed,
+              darwinia_runtime_version: $darwinia_runtime_version,
+              pangolin_proposal_compressed: $pangolin_proposal_compressed,
+              pangolin_runtime_version: $pangolin_runtime_version,
+              pangoro_proposal_compressed: $pangoro_proposal_compressed,
+              pangoro_runtime_version: $pangoro_runtime_version,
+              tag: $tag,
+              sha: $sha
+            }' | tee shared/template_data.json
+
+      - name: Render release page
+        uses: jayamanikharyono/jinja-action@v0.1
+        with:
+          datafile: shared/template_data.json
+          path: .github/release-template.md
+
+      # - name: Verify
+      #   run: |
+      #     set -xe
+      #     cat .github/release-template.md
+      #     ls -la deploy/
+
+      - name: Publish github release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            deploy/*
+          body_path: ".github/release-template.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  clean-artifacts:
+    name: Clean artifacts
+    runs-on: ubuntu-latest
+    needs: [publish-release]
+    if: always()
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: darwinia-artifact

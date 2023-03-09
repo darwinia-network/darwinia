@@ -12,7 +12,7 @@ enumflags2         = { version = "0.7" }
 fxhash             = { version = "0.2" }
 log                = { version = "0.4" }
 once_cell          = { version = "1.17" }
-parity-scale-codec = { version = "3.3", features = ["derive"] }
+parity-scale-codec = { version = "3.4", features = ["derive"] }
 pretty_env_logger  = { version = "0.4" }
 primitive-types    = { version = "0.12", features = ["codec"] }
 serde              = { version = "1.0" }
