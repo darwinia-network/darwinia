@@ -56,7 +56,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
-use pallet_identity::Registration;
+use pallet_identity::{Judgement, Registration};
 use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_io::hashing;
@@ -416,6 +416,11 @@ pub mod pallet {
 			}
 			if let Some(mut i) = <Identities<T>>::take(&from) {
 				i.deposit = 0;
+				i.judgements.iter_mut().for_each(|(_, j)| {
+					if let Judgement::FeePaid(f) = j {
+						*f = 0;
+					};
+				});
 
 				migration::put_storage_value(
 					b"Identity",
