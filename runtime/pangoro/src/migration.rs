@@ -70,8 +70,10 @@ fn migrate() -> frame_support::weights::Weight {
 		if let Some(o) = migration::take_storage_value::<Moment>(O_STAKING, O_ELAPSED_TIME, &[]) {
 			log::info!("current     `elapsed_time({v})`");
 			log::info!("un-migrated `elapsed_time({o})`");
+			log::info!("genesis     `elapsed_time(11_516_352_020)`");
 
 			*v += o;
+			*v -= 11_516_352_020;
 
 			log::info!("fixed       `elapsed_time({v})`");
 		}
