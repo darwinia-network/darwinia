@@ -18,6 +18,9 @@
 //
 // Inspired from https://github.com/w3f/apk-proofs/blob/main/bw6/src/bls/mod.rs
 
+// core
+use core::{borrow::Borrow, ops::Neg};
+// crates.io
 use ark_bls12_381::{
 	g2::Config as G2Config, Bls12_381, G1Affine, G1Projective, G2Affine, G2Projective,
 };
@@ -33,9 +36,7 @@ use ark_ec::{
 use ark_ff::{field_hashers::DefaultFieldHasher, Zero};
 use ark_serialize::*;
 use ark_std::vec::Vec;
-use core::ops::Neg;
 use sha2::Sha256;
-use sp_std::borrow::Borrow;
 
 /// Domain Separation Tag for signatures on G2
 pub const DST_G2: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
