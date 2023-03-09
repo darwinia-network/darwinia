@@ -56,7 +56,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
-use pallet_identity::Registration;
+use pallet_identity::{Judgement, Registration};
 use pallet_vesting::VestingInfo;
 use sp_core::sr25519::{Public, Signature};
 use sp_io::hashing;
@@ -361,8 +361,11 @@ pub mod pallet {
 		}
 
 		fn migrate_inner(from: AccountId32, to: AccountId20) -> DispatchResult {
-			let account = <Accounts<T>>::take(&from)
+			let mut account = <Accounts<T>>::take(&from)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
+
+			account.data.free += account.data.reserved;
+			account.data.reserved = 0;
 
 			<frame_system::Account<T>>::insert(to, account);
 
@@ -411,7 +414,14 @@ pub mod pallet {
 				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
 				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", &to, locked, reasons);
 			}
-			if let Some(i) = <Identities<T>>::take(&from) {
+			if let Some(mut i) = <Identities<T>>::take(&from) {
+				i.deposit = 0;
+				i.judgements.iter_mut().for_each(|(_, j)| {
+					if let Judgement::FeePaid(f) = j {
+						*f = 0;
+					};
+				});
+
 				migration::put_storage_value(
 					b"Identity",
 					b"IdentityOf",
