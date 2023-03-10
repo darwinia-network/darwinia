@@ -117,6 +117,9 @@ jobs:
           mv target/release/wbuild/${{ matrix.runtime }}-runtime/*.wasm \
             shared/${{ matrix.runtime }}-runtime
       - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
+        env:
+          # https://github.com/darwinia-network/darwinia/issues/1004
+          AUTHORIZE_UPGRADE_PREFIX: 2
         run: |
           set -xe
           Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
@@ -206,7 +209,8 @@ jobs:
           mkdir -p deploy
           mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
           mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
-          mv shared/*-runtime/*.compact.compressed.* deploy/
+          mv shared/darwinia-runtime/darwinia_runtime.compact.compressed.* deploy/
+          mv shared/crab-runtime/crab_runtime.compact.compressed.* deploy/
 
       - name: Hash file
         run: |
@@ -219,42 +223,32 @@ jobs:
         run: |
           FILE_CRAB=deploy/crab-runtime.compact.compressed.json
           FILE_DARWINIA=deploy/darwinia-runtime.compact.compressed.json
-          FILE_PANGOLIN=deploy/pangolin-runtime.compact.compressed.json
-          FILE_PANGORO=deploy/pangoro-runtime.compact.compressed.json
 
           PROPOSAL_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .proposal_hash)
+          BLAKE2_256_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .blake2_256)
           RUNTIME_VERSION_CRAB=$(cat ${FILE_CRAB} | jq .core_version.specVersion)
 
           PROPOSAL_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .proposal_hash)
+          BLAKE2_256_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .blake2_256)
           RUNTIME_VERSION_DARWINIA=$(cat ${FILE_DARWINIA} | jq .core_version.specVersion)
-
-          PROPOSAL_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .proposal_hash)
-          RUNTIME_VERSION_PANGOLIN=$(cat ${FILE_PANGOLIN} | jq .core_version.specVersion)
-
-          PROPOSAL_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .proposal_hash)
-          RUNTIME_VERSION_PANGORO=$(cat ${FILE_PANGORO} | jq .core_version.specVersion)
 
           echo 'Template data:'
           jq -n \
             --arg crab_proposal_compressed "$PROPOSAL_CRAB_COMPRESSED" \
+            --arg crab_blake2_256_compressed "$BLAKE2_256_CRAB_COMPRESSED" \
             --arg crab_runtime_version "$RUNTIME_VERSION_CRAB" \
             --arg darwinia_proposal_compressed "$PROPOSAL_DARWINIA_COMPRESSED" \
+            --arg darwinia_blake2_256_compressed "$BLAKE2_256_DARWINIA_COMPRESSED" \
             --arg darwinia_runtime_version "$RUNTIME_VERSION_DARWINIA" \
-            --arg pangolin_proposal_compressed "$PROPOSAL_PANGOLIN_COMPRESSED" \
-            --arg pangolin_runtime_version "$RUNTIME_VERSION_PANGOLIN" \
-            --arg pangoro_proposal_compressed "$PROPOSAL_PANGORO_COMPRESSED" \
-            --arg pangoro_runtime_version "$RUNTIME_VERSION_PANGORO" \
             --arg tag "$GIT_TAG_NAME" \
             --arg sha "$SHA" \
             '{
               crab_proposal_compressed: $crab_proposal_compressed,
+              crab_blake2_256_compressed: $crab_blake2_256_compressed,
               crab_runtime_version: $crab_runtime_version,
               darwinia_proposal_compressed: $darwinia_proposal_compressed,
+              darwinia_blake2_256_compressed: $darwinia_blake2_256_compressed,
               darwinia_runtime_version: $darwinia_runtime_version,
-              pangolin_proposal_compressed: $pangolin_proposal_compressed,
-              pangolin_runtime_version: $pangolin_runtime_version,
-              pangoro_proposal_compressed: $pangoro_proposal_compressed,
-              pangoro_runtime_version: $pangoro_runtime_version,
               tag: $tag,
               sha: $sha
             }' | tee shared/template_data.json
@@ -263,12 +257,12 @@ jobs:
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
-          path: .github/release-template.md
+          path: .github/release-template-prd.md
 
       # - name: Verify
       #   run: |
       #     set -xe
-      #     cat .github/release-template.md
+      #     cat .github/release-template-prd.md
       #     ls -la deploy/
 
       - name: Publish github release
@@ -276,7 +270,7 @@ jobs:
         with:
           files: |
             deploy/*
-          body_path: ".github/release-template.md"
+          body_path: ".github/release-template-prd.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
 
@@ -295,6 +289,75 @@ jobs:
         with:
           name: darwinia-artifact
           path: shared
+
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p deploy
+          mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
+          mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
+          mv shared/pangolin-runtime/pangolin.compact.compressed.* deploy/
+          mv shared/pangoro-runtime/pangoro.compact.compressed.* deploy/
+
+      - name: Hash file
+        run: |
+          (cd deploy && sha256sum * | tee sha256sums.txt)
+
+      - uses: olegtarasov/get-tag@v2.1
+      - uses: benjlevesque/short-sha@v1.2
+
+      - name: Generate template data
+        run: |
+          FILE_PANGOLIN=deploy/pangolin-runtime.compact.compressed.json
+          FILE_PANGORO=deploy/pangoro-runtime.compact.compressed.json
+
+          PROPOSAL_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .proposal_hash)
+          BLAKE2_256_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .blake2_256)
+          RUNTIME_VERSION_PANGOLIN=$(cat ${FILE_PANGOLIN} | jq .core_version.specVersion)
+
+          PROPOSAL_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .proposal_hash)
+          BLAKE2_256_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .blake2_256)
+          RUNTIME_VERSION_PANGORO=$(cat ${FILE_PANGORO} | jq .core_version.specVersion)
+
+          echo 'Template data:'
+          jq -n \
+            --arg pangolin_proposal_compressed "$PROPOSAL_PANGOLIN_COMPRESSED" \
+            --arg pangolin_blake2_256_compressed "$BLAKE2_256_PANGOLIN_COMPRESSED" \
+            --arg pangolin_runtime_version "$RUNTIME_VERSION_PANGOLIN" \
+            --arg pangoro_proposal_compressed "$PROPOSAL_PANGORO_COMPRESSED" \
+            --arg pangoro_blake2_256_compressed "$BLAKE2_256_PANGORO_COMPRESSED" \
+            --arg pangoro_runtime_version "$RUNTIME_VERSION_PANGORO" \
+            --arg tag "$GIT_TAG_NAME" \
+            --arg sha "$SHA" \
+            '{
+              pangolin_proposal_compressed: $pangolin_proposal_compressed,
+              pangolin_blake2_256_compressed: $pangolin_blake2_256_compressed,
+              pangolin_runtime_version: $pangolin_runtime_version,
+              pangoro_proposal_compressed: $pangoro_proposal_compressed,
+              pangoro_blake2_256_compressed: $pangoro_blake2_256_compressed,
+              pangoro_runtime_version: $pangoro_runtime_version,
+              tag: $tag,
+              sha: $sha
+            }' | tee shared/template_data.json
+
+      - name: Render release page
+        uses: jayamanikharyono/jinja-action@v0.1
+        with:
+          datafile: shared/template_data.json
+          path: .github/release-template-dev.md
+
+      # - name: Verify
+      #   run: |
+      #     set -xe
+      #     cat .github/release-template-dev.md
+      #     ls -la deploy/
+
+      - name: Publish github release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            deploy/*
+          body_path: ".github/release-template-dev.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
   clean-artifacts:
