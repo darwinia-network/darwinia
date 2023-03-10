@@ -1,5 +1,8 @@
 FROM debian:stable-slim
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY dist/ /usr/local/bin
 
 EXPOSE 9933 9944
