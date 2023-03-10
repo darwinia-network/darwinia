@@ -20,10 +20,6 @@
 
 // core
 use core::{borrow::Borrow, ops::Neg};
-
-// substrate
-use sp_std::prelude::Vec;
-
 // crates.io
 use ark_bls12_381::{
 	g2::Config as G2Config, Bls12_381, G1Affine, G1Projective, G2Affine, G2Projective,
@@ -40,25 +36,24 @@ use ark_ec::{
 use ark_ff::{field_hashers::DefaultFieldHasher, Zero};
 use ark_serialize::*;
 use sha2::Sha256;
+// substrate
+use sp_std::prelude::Vec;
 
 /// Domain Separation Tag for signatures on G2
 pub const DST_G2: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
 #[derive(Clone, Debug)]
 pub struct Signature(G2Projective);
-
 impl From<G2Projective> for Signature {
 	fn from(sig: G2Projective) -> Signature {
 		Signature(sig)
 	}
 }
-
 impl AsRef<G2Projective> for Signature {
 	fn as_ref(&self) -> &G2Projective {
 		&self.0
 	}
 }
-
 impl Signature {
 	pub fn from_bytes(bytes: &[u8]) -> Result<Signature, SerializationError> {
 		let p = G2Affine::deserialize_compressed(bytes)?;
@@ -73,13 +68,11 @@ impl Signature {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, CanonicalSerialize, CanonicalDeserialize)]
 pub struct PublicKey(pub G1Projective);
-
 impl From<G1Projective> for PublicKey {
 	fn from(pk: G1Projective) -> PublicKey {
 		PublicKey(pk)
 	}
 }
-
 impl PublicKey {
 	pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, SerializationError> {
 		let p = G1Affine::deserialize_compressed(bytes)?;
@@ -110,14 +103,14 @@ pub fn hash_to_curve_g2(message: &[u8]) -> Result<G2Projective, HashToCurveError
 
 #[cfg(test)]
 mod tests {
-	use ark_std::test_rng;
+	// crates.io
 	use rand::Rng;
-
-	use super::*;
-
+	use ark_std::test_rng;
 	use ark_bls12_381::Fr;
 	use ark_ec::Group;
 	use ark_ff::UniformRand;
+	// darwinia
+	use super::*;
 
 	#[derive(Clone, Debug, CanonicalSerialize, CanonicalDeserialize)]
 	pub struct SecretKey(Fr);

@@ -26,19 +26,17 @@ sp-std = { workspace = true }
 
 [dev-dependencies]
 rand    = { version = "0.8.5" }
-ark-std = { version = "0.4.0", default-features = false }
+ark-std = { version = "0.4.0" }
 
 [features]
 default = ["std"]
 std = [
 	# crates.io
-	"sha2/std",
-
-	# arkworks
 	"ark-bls12-381/std",
 	"ark-serialize/std",
 	"ark-ec/std",
 	"ark-ff/std",
+	"sha2/std",
 
 	# frontier
 	"pallet-evm/std",
