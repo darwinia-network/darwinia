@@ -442,7 +442,7 @@ pub mod pallet {
 
 				migration::put_storage_value(b"Identity", b"Registrars", &[], rs);
 			}
-			if let Some(l) = <Ledgers<T>>::take(&from) {
+			if let Some(mut l) = <Ledgers<T>>::take(&from) {
 				if let Some(ds) = <Deposits<T>>::take(&from) {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 						&to,
@@ -456,7 +456,13 @@ pub mod pallet {
 					);
 				}
 
+				let now = <frame_system::Pallet<T>>::block_number();
+
+				l.unstaking_ring.retain(|(_, t)| t > &now);
+				l.unstaking_kton.retain(|(_, t)| t > &now);
+
 				let staking_pot = darwinia_staking::account_id();
+
 				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 					&to,
 					&staking_pot,
@@ -465,6 +471,7 @@ pub mod pallet {
 				)?;
 
 				let sum = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+
 				if let Some(amount) = <pallet_assets::Pallet<T>>::maybe_balance(KTON_ID, to) {
 					if amount >= sum {
 						<pallet_assets::Pallet<T>>::transfer(
