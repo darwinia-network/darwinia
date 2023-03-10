@@ -234,6 +234,124 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
+name = "ark-bls12-381"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c775f0d12169cba7aae4caeb547bb6a50781c7449a8aa53793827c9ec4abf488"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
+]
+
+[[package]]
+name = "ark-ec"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c60370a92f8e1a5f053cad73a862e1b99bc642333cd676fa11c0c39f80f4ac2"
+dependencies = [
+ "ark-ff",
+ "ark-poly",
+ "ark-serialize",
+ "ark-std",
+ "derivative",
+ "hashbrown 0.13.2",
+ "itertools",
+ "num-traits",
+ "zeroize",
+]
+
+[[package]]
+name = "ark-ff"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c2d42532524bee1da5a4f6f733eb4907301baa480829557adcff5dfaeee1d9a"
+dependencies = [
+ "ark-ff-asm",
+ "ark-ff-macros",
+ "ark-serialize",
+ "ark-std",
+ "derivative",
+ "digest 0.10.6",
+ "itertools",
+ "num-bigint",
+ "num-traits",
+ "paste",
+ "rustc_version",
+ "zeroize",
+]
+
+[[package]]
+name = "ark-ff-asm"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d6873aaba7959593d89babed381d33e2329453368f1bf3c67e07686a1c1056f"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ark-ff-macros"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3c2e7d0f2d67cc7fc925355c74d36e7eda19073639be4a0a233d4611b8c959d"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ark-poly"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f6ec811462cabe265cfe1b102fcfe3df79d7d2929c2425673648ee9abfd0272"
+dependencies = [
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
+ "derivative",
+ "hashbrown 0.13.2",
+]
+
+[[package]]
+name = "ark-serialize"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7e735959bc173ea4baf13327b19c22d452b8e9e8e8f7b7fc34e6bf0e316c33e"
+dependencies = [
+ "ark-serialize-derive",
+ "ark-std",
+ "digest 0.10.6",
+ "num-bigint",
+]
+
+[[package]]
+name = "ark-serialize-derive"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd34f0920d995d2c932f38861c416f70de89a6de9875876b012557079603e6cc"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ark-std"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94893f1e0c6eeab764ade8dc4c0db24caf4fe7cbbaafc0eba0a9030f447b5185"
+dependencies = [
+ "num-traits",
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "array-bytes"
 version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1333,7 +1451,7 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 
 [[package]]
 name = "crab-runtime"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2285,7 +2403,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "async-trait",
@@ -2369,7 +2487,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "darwinia-deposit",
@@ -2394,7 +2512,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "account",
  "bp-darwinia-core",
@@ -2420,7 +2538,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "darwinia-staking",
  "dc-inflation",
@@ -2441,7 +2559,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ecdsa-authority"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "dc-primitives",
@@ -2460,7 +2578,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-gadget"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "frame-support",
@@ -2478,7 +2596,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-transact"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2508,7 +2626,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2529,25 +2647,24 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
+ "ark-bls12-381",
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
  "fp-evm",
- "frame-system",
- "pallet-balances",
  "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
  "precompile-utils",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "rand 0.8.5",
+ "sha2 0.10.6",
  "sp-std",
 ]
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -2567,7 +2684,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -2588,7 +2705,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2607,7 +2724,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2710,7 +2827,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "darwinia-deposit",
  "dc-inflation",
@@ -2772,7 +2889,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "dc-types",
  "primitive-types 0.12.1",
@@ -2782,7 +2899,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "account",
  "dc-types",
@@ -2792,7 +2909,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.0.0"
+version = "6.0.0-1"
 
 [[package]]
 name = "der"
@@ -4424,6 +4541,9 @@ name = "hashbrown"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
+dependencies = [
+ "ahash 0.8.3",
+]
 
 [[package]]
 name = "heck"
@@ -7897,7 +8017,7 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -8000,7 +8120,7 @@ dependencies = [
 
 [[package]]
 name = "pangoro-runtime"
-version = "6.0.0"
+version = "6.0.0-1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",

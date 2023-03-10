@@ -8,6 +8,8 @@
 # Package Manager
 ## cargo
 target
+# nix
+shell.nix
 ## npm
 node_modules
 
