@@ -19,11 +19,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod bls;
+use bls::{hash_to_curve_g2, PublicKey, Signature};
 
 // core
 use core::marker::PhantomData;
-// bls
-use bls::{hash_to_curve_g2, PublicKey, Signature};
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
