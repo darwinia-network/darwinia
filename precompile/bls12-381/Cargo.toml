@@ -1,12 +1,19 @@
 [package]
 authors.workspace = true
-description       = "BLS12-381 implementation for EVM pallet."
+description       = "Arkworks BLS12-381 based precompile for EVM pallet."
 edition.workspace = true
 name              = "darwinia-precompile-bls12-381"
 readme            = "README.md"
 version.workspace = true
 
 [dependencies]
+# crates.io
+ark-bls12-381 = { version = "0.4.0", default-features = false, features = ["curve"] }
+ark-ec        = { version = "0.4.1", default-features = false }
+ark-ff        = { version = "0.4.1", default-features = false }
+ark-serialize = { version = "0.4.1", default-features = false, features = ["derive"] }
+sha2          = { version = "0.10.6", default-features = false }
+
 # frontier
 fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
@@ -18,27 +25,22 @@ precompile-utils = { workspace = true }
 sp-std = { workspace = true }
 
 [dev-dependencies]
-# crates.io
-codec      = { package = "parity-scale-codec", workspace = true }
-scale-info = { workspace = true }
-
-# moonbeam
-precompile-utils = { workspace = true, features = ["testing"] }
-
-# substrate
-frame-system     = { workspace = true }
-pallet-balances  = { workspace = true, features = ["std"] }
-pallet-timestamp = { workspace = true, features = ["std"] }
-sp-core          = { workspace = true }
-sp-io            = { workspace = true }
-sp-runtime       = { workspace = true }
+rand    = { version = "0.8.5" }
+ark-std = { version = "0.4.0" }
 
 [features]
 default = ["std"]
 std = [
+	# crates.io
+	"ark-bls12-381/std",
+	"ark-serialize/std",
+	"ark-ec/std",
+	"ark-ff/std",
+	"sha2/std",
+
 	# frontier
-	"fp-evm/std",
 	"pallet-evm/std",
+	"fp-evm/std",
 
 	# moonbeam
 	"precompile-utils/std",
