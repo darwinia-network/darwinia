@@ -60,7 +60,7 @@ mod testnet_keys {
 use testnet_keys::*;
 
 // std
-use std::{env, thread};
+use std::{env, fs, thread};
 // crates.io
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::runtime::Runtime as TokioRuntime;
@@ -127,7 +127,7 @@ fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public
 		.public()
 }
 
-fn load_config<G, E>(name: &'static str) -> GenericChainSpec<G, E>
+fn load_config<G, E>(name: &'static str, mut retries: u8) -> GenericChainSpec<G, E>
 where
 	E: DeserializeOwned,
 {
@@ -155,5 +155,24 @@ where
 
 	println!("Loading genesis from `{}`", p.display());
 
-	GenericChainSpec::from_json_file(p).unwrap()
+	let f_name = p.display().to_string();
+
+	if let Ok(c) = GenericChainSpec::from_json_file(p) {
+		c
+	} else {
+		retries += 1;
+
+		println!("Failed to load genesis from `{f_name}`, starting the `{retries}` retries");
+
+		// Try removing the invalid file.
+		//
+		// Sometimes, it might not exist.
+		let _ = fs::remove_file(f_name);
+
+		if retries == 5 {
+			panic!("Exit after {retries} retries");
+		}
+
+		load_config(name, retries)
+	}
 }
