@@ -162,9 +162,9 @@ where
 	} else {
 		println!("Failed to load genesis from `{f_name}`, starting the `{retries}` retries");
 
-		// Try remove the invalid file.
+		// Try removing the invalid file.
 		//
-		// Maybe it doesn't exist.
+		// Sometimes, it might not exist.
 		let _ = fs::remove_file(f_name);
 
 		if retries > 5 {
