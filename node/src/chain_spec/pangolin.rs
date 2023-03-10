@@ -265,7 +265,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	load_config("pangolin2.json")
+	load_config("pangolin2.json", 0)
 }
 
 fn testnet_genesis(
