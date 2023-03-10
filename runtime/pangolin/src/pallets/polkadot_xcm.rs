@@ -16,12 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// crates.io
+use codec::{Decode, Encode};
 // darwinia
 use crate::*;
 // polkadot
 use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
+use sp_runtime::traits::{Hash, Zero};
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -111,6 +114,11 @@ frame_support::parameter_types! {
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
 	pub UnitWeightCost: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 64 * 1024);
+	pub LocalAssetsPalletLocation: MultiLocation = MultiLocation::new(
+		0,
+		X1(PalletInstance(<Assets as frame_support::traits::PalletInfoAccess>::index() as u8))
+	);
+	pub SelfLocation: MultiLocation = MultiLocation::here();
 }
 
 pub struct ToTreasury;
@@ -128,6 +136,8 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 	}
 }
 
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
@@ -137,7 +147,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = RuntimeCall;
+	type CallDispatcher = DarwiniaCall;
 	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
@@ -163,7 +173,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type XcmSender = XcmRouter;
 }
 
@@ -200,7 +210,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
@@ -214,4 +224,244 @@ impl pallet_xcm::Config for Runtime {
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+}
+
+// === XCM <> EVM ===
+
+pub struct EthereumXcmEnsureProxy;
+impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
+	fn ensure_ok(delegator: AccountId, delegatee: AccountId) -> Result<(), &'static str> {
+		// The EVM implicitely contains an Any proxy, so we only allow for "Any" proxies
+		let def: pallet_proxy::ProxyDefinition<AccountId, pallets::proxy::ProxyType, BlockNumber> =
+			pallet_proxy::Pallet::<Runtime>::find_proxy(
+				&delegator,
+				&delegatee,
+				Some(pallets::proxy::ProxyType::Any),
+			)
+			.map_err(|_| "proxy error: expected `ProxyType::Any`")?;
+		// We only allow to use it for delay zero proxies, as the call will immediatly be executed
+		frame_support::ensure!(def.delay.is_zero(), "proxy delay is Non-zero`");
+		Ok(())
+	}
+}
+
+impl pallet_ethereum_xcm::Config for Runtime {
+	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
+	type EnsureProxy = EthereumXcmEnsureProxy;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ReservedXcmpWeight =
+		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
+}
+
+// For now we only allow to transact in the relay, although this might change in the future
+// Transactors just defines the chains in which we allow transactions to be issued through
+// xcm
+#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
+pub enum Transactors {
+	Relay,
+}
+
+// Default for benchmarking
+#[cfg(feature = "runtime-benchmarks")]
+impl Default for Transactors {
+	fn default() -> Self {
+		Transactors::Relay
+	}
+}
+
+impl TryFrom<u8> for Transactors {
+	type Error = ();
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		match value {
+			0u8 => Ok(Transactors::Relay),
+			_ => Err(()),
+		}
+	}
+}
+
+impl xcm_primitives::UtilityEncodeCall for Transactors {
+	fn encode_call(self, call: xcm_primitives::UtilityAvailableCalls) -> Vec<u8> {
+		match self {
+			// The encoder should be polkadot
+			Transactors::Relay =>
+				moonbeam_relay_encoder::polkadot::PolkadotEncoder.encode_call(call),
+		}
+	}
+}
+
+impl xcm_primitives::XcmTransact for Transactors {
+	fn destination(self) -> MultiLocation {
+		match self {
+			Transactors::Relay => MultiLocation::parent(),
+		}
+	}
+}
+
+// Our AssetType. For now we only handle Xcm Assets
+#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
+pub enum AssetType {
+	Xcm(MultiLocation),
+}
+impl Default for AssetType {
+	fn default() -> Self {
+		Self::Xcm(MultiLocation::here())
+	}
+}
+
+impl From<MultiLocation> for AssetType {
+	fn from(location: MultiLocation) -> Self {
+		Self::Xcm(location)
+	}
+}
+
+impl Into<Option<MultiLocation>> for AssetType {
+	fn into(self) -> Option<MultiLocation> {
+		match self {
+			Self::Xcm(location) => Some(location),
+		}
+	}
+}
+
+// Implementation on how to retrieve the AssetId from an AssetType
+// We take it
+impl From<AssetType> for crate::AssetId {
+	fn from(asset: AssetType) -> crate::AssetId {
+		match asset {
+			AssetType::Xcm(id) => {
+				let mut result: [u8; 8] = [0u8; 8];
+				let hash: sp_core::H256 =
+					id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
+				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+				u64::from_le_bytes(result)
+			},
+		}
+	}
+}
+
+// Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.
+#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
+pub enum CurrencyId {
+	SelfReserve,
+	// ForeignAsset(crate::AssetId),
+	// // Our local assets
+	// LocalAssetReserve(crate::AssetId),
+}
+
+impl xcm_primitives::AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
+	fn account_to_currency_id(account: AccountId) -> Option<CurrencyId> {
+		match account {
+			// TODO this should be our BalancesPrecompile address
+			// the self-reserve currency is identified by the pallet-balances address
+			a if a == sp_core::H160::from_low_u64_be(2050).into() => Some(CurrencyId::SelfReserve),
+			// the rest of the currencies, by their corresponding erc20 address
+			_ => {
+				unimplemented!("todo");
+			}
+			// _ => Runtime::account_to_asset_id(account).map(|(prefix, asset_id)| {
+			// 	CurrencyId::LocalAssetReserve(asset_id)
+			// 	// We don't have ForeignAsset
+			// 	if prefix == FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX.to_vec() {
+			// 		CurrencyId::ForeignAsset(asset_id)
+			// 	} else {
+			// 		CurrencyId::LocalAssetReserve(asset_id)
+			// 	}
+			// }),
+		}
+	}
+}
+
+// How to convert from CurrencyId to MultiLocation
+pub struct CurrencyIdtoMultiLocation;
+impl sp_runtime::traits::Convert<CurrencyId, Option<xcm::opaque::latest::MultiLocation>>
+	for CurrencyIdtoMultiLocation
+{
+	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
+		match currency {
+			CurrencyId::SelfReserve => {
+				let multi: MultiLocation = AnchoringSelfReserve::get();
+				Some(multi)
+			}, /* CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
+			    * // No transactor matches this yet, so even if we have this enum variant the
+			    * transfer will fail CurrencyId::LocalAssetReserve(asset) => {
+			    * 	let mut location = LocalAssetsPalletLocation::get();
+			    * 	location.push_interior(xcm::opaque::latest::Junction::GeneralIndex(asset.
+			    * into())).ok(); 	Some(location)
+			    * } */
+		}
+	}
+}
+
+// We use all transactors
+// These correspond to
+// SelfReserve asset, both pre and post 0.9.16
+// Foreign assets
+// Local assets, both pre and post 0.9.16
+// We can remove the Old reanchor once
+// we import https://github.com/open-web3-stack/open-runtime-module-library/pull/708
+pub type AssetTransactors = (LocalAssetTransactor,);
+
+// 1 ROC/WND should be enough
+frame_support::parameter_types! {
+	pub MaxHrmpRelayFee: MultiAsset = (MultiLocation::parent(), 1_000_000_000_000u128).into();
+}
+
+impl pallet_xcm_transactor::Config for Runtime {
+	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
+	type AssetTransactor = AssetTransactors;
+	type Balance = Balance;
+	type BaseXcmWeight = UnitWeightCost;
+	type CurrencyId = CurrencyId;
+	type CurrencyIdToMultiLocation = CurrencyIdtoMultiLocation;
+	type DerivativeAddressRegistrationOrigin = frame_system::EnsureRoot<AccountId>;
+	type HrmpEncoder = moonbeam_relay_encoder::westend::WestendEncoder;
+	type HrmpManipulatorOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxHrmpFee = xcm_builder::Case<MaxHrmpRelayFee>;
+	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<UniversalLocation>;
+	type RuntimeEvent = RuntimeEvent;
+	type SelfLocation = SelfLocation;
+	type SovereignAccountDispatcherOrigin = frame_system::EnsureRoot<AccountId>;
+	type Transactor = Transactors;
+	type UniversalLocation = UniversalLocation;
+	type Weigher = XcmWeigher;
+	type WeightInfo = pallet_xcm_transactor::weights::SubstrateWeight<Runtime>;
+	type XcmSender = XcmRouter;
+}
+
+pub struct DarwiniaCall;
+impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
+	fn dispatch(
+		call: RuntimeCall,
+		origin: RuntimeOrigin,
+	) -> Result<
+		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
+	> {
+		use frame_support::log;
+		if let Ok(raw_origin) =
+			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
+		{
+			match (call.clone(), raw_origin) {
+				(
+					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. })
+					| RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact_through_proxy {
+						..
+					}),
+					frame_system::RawOrigin::Signed(account_id),
+				) => {
+					log::info!("\n### EthereumXcm Call\n");
+					return RuntimeCall::dispatch(
+						call,
+						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
+							.into(),
+					);
+				},
+				_ => {},
+			}
+		}
+		log::info!("\n### Other Call\n");
+		RuntimeCall::dispatch(call, origin)
+	}
 }

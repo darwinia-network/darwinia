@@ -163,7 +163,11 @@ frame_support::construct_runtime! {
 		BridgeMoonbaseParachain: pallet_bridge_parachains::<Instance1> = 40,
 		BridgePangoroMessages: pallet_bridge_messages::<Instance1> = 41,
 		BridgePangoroDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		PangoroFeeMarket: pallet_fee_market::<Instance1> = 43
+		PangoroFeeMarket: pallet_fee_market::<Instance1> = 43,
+
+		// Ethereum XCM
+		EthereumXcm: pallet_ethereum_xcm = 44,
+		XcmTransactor: pallet_xcm_transactor = 45
 	}
 }
 

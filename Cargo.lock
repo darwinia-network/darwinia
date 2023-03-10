@@ -195,11 +195,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbf688625d06217d5b1bb0ea9d9c44a1635fd0ee3534466388d18203174f4d11"
 
 [[package]]
-name = "amcl"
-version = "0.3.0"
-source = "git+https://github.com/darwinia-network/milagro_bls#076d5fb697b304534b26cb8b7fe488b9a7e70a99"
-
-[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2544,7 +2539,6 @@ version = "6.0.0"
 dependencies = [
  "fp-evm",
  "frame-system",
- "milagro_bls",
  "pallet-balances",
  "pallet-evm",
  "pallet-timestamp",
@@ -5991,16 +5985,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "milagro_bls"
-version = "1.5.0"
-source = "git+https://github.com/darwinia-network/milagro_bls#076d5fb697b304534b26cb8b7fe488b9a7e70a99"
-dependencies = [
- "amcl",
- "rand 0.8.5",
- "zeroize",
-]
-
-[[package]]
 name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8078,6 +8062,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "moonbeam-relay-encoder",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -8090,6 +8075,7 @@ dependencies = [
  "pallet-democracy",
  "pallet-elections-phragmen",
  "pallet-ethereum",
+ "pallet-ethereum-xcm",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
@@ -8112,6 +8098,7 @@ dependencies = [
  "pallet-utility",
  "pallet-vesting",
  "pallet-xcm",
+ "pallet-xcm-transactor",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",
@@ -8686,6 +8673,7 @@ dependencies = [
  "sp-storage",
  "sp-timestamp",
  "sp-transaction-pool",
+ "westend-runtime",
 ]
 
 [[package]]
@@ -9649,6 +9637,7 @@ dependencies = [
  "thiserror",
  "tracing-gum",
  "westend-runtime",
+ "westend-runtime-constants",
 ]
 
 [[package]]
