@@ -295,8 +295,8 @@ jobs:
           mkdir -p deploy
           mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
           mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
-          mv shared/pangolin-runtime/pangolin.compact.compressed.* deploy/
-          mv shared/pangoro-runtime/pangoro.compact.compressed.* deploy/
+          mv shared/pangolin-runtime/pangolin_runtime.compact.compressed.* deploy/
+          mv shared/pangoro-runtime/pangoro_runtime.compact.compressed.* deploy/
 
       - name: Hash file
         run: |
