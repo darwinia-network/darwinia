@@ -127,7 +127,7 @@ fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public
 		.public()
 }
 
-fn load_config<G, E>(name: &'static str, retries: u8) -> GenericChainSpec<G, E>
+fn load_config<G, E>(name: &'static str, mut retries: u8) -> GenericChainSpec<G, E>
 where
 	E: DeserializeOwned,
 {
@@ -160,6 +160,8 @@ where
 	if let Ok(c) = GenericChainSpec::from_json_file(p) {
 		c
 	} else {
+		retries += 1;
+
 		println!("Failed to load genesis from `{f_name}`, starting the `{retries}` retries");
 
 		// Try removing the invalid file.
@@ -167,10 +169,10 @@ where
 		// Sometimes, it might not exist.
 		let _ = fs::remove_file(f_name);
 
-		if retries > 5 {
-			panic!("Exit after 5 retries");
+		if retries == 5 {
+			panic!("Exit after {retries} retries");
 		}
 
-		load_config(name, retries + 1)
+		load_config(name, retries)
 	}
 }
