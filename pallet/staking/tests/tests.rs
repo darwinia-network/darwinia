@@ -27,7 +27,7 @@ use darwinia_staking::*;
 use dc_types::{Balance, UNIT};
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};
-use sp_runtime::{assert_eq_error_rate, Perbill};
+use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
 
 #[test]
 fn stake_should_work() {
@@ -400,6 +400,21 @@ fn chill_should_work() {
 		});
 		assert!(Staking::collator_of(1).is_none());
 		(2..=10).for_each(|n| assert!(Staking::nominator_of(n).is_none()));
+	});
+}
+
+#[test]
+fn set_collator_count_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_noop!(
+			Staking::set_collator_count(RuntimeOrigin::signed(1), 1),
+			DispatchError::BadOrigin
+		);
+		assert_noop!(
+			Staking::set_collator_count(RuntimeOrigin::root(), 0),
+			<Error<Runtime>>::ZeroCollatorCount
+		);
+		assert_ok!(Staking::set_collator_count(RuntimeOrigin::root(), 1));
 	});
 }
 
