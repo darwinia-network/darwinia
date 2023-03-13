@@ -119,7 +119,7 @@ jobs:
       - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
         env:
           # https://github.com/darwinia-network/darwinia/issues/1004
-          AUTHORIZE_UPGRADE_PREFIX: 2
+          AUTHORIZE_UPGRADE_PREFIX: 0x02
         run: |
           set -xe
           Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
