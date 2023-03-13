@@ -75,7 +75,7 @@ impl From<G1Projective> for PublicKey {
 }
 impl PublicKey {
 	pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey, SerializationError> {
-		let p = G1Affine::deserialize_compressed(bytes)?;
+		let p = G1Affine::deserialize_compressed_unchecked(bytes)?;
 		Ok(Self(p.into()))
 	}
 
@@ -104,11 +104,11 @@ pub fn hash_to_curve_g2(message: &[u8]) -> Result<G2Projective, HashToCurveError
 #[cfg(test)]
 mod tests {
 	// crates.io
-	use rand::Rng;
-	use ark_std::test_rng;
 	use ark_bls12_381::Fr;
 	use ark_ec::Group;
 	use ark_ff::UniformRand;
+	use ark_std::test_rng;
+	use rand::Rng;
 	// darwinia
 	use super::*;
 
