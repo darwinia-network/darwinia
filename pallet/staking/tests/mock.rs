@@ -290,7 +290,6 @@ fn initialize_block(number: u64) {
 	<AllPalletsWithSystem as OnInitialize<u64>>::on_initialize(number);
 }
 
-#[derive(Default)]
 pub struct ExtBuilder {
 	collator_count: u32,
 }
@@ -330,5 +329,10 @@ impl ExtBuilder {
 		ext.execute_with(|| initialize_block(1));
 
 		ext
+	}
+}
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self { collator_count: 1 }
 	}
 }

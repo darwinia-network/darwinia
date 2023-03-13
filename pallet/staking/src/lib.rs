@@ -245,6 +245,8 @@ pub mod pallet {
 		NotStaker,
 		/// Target is not a collator.
 		TargetNotCollator,
+		/// Collator count mustn't be zero.
+		ZeroCollatorCount,
 	}
 
 	/// All staking ledgers.
@@ -327,6 +329,10 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
+			if self.collator_count == 0 {
+				panic!("[pallet::staking] collator count mustn't be 0");
+			}
+
 			<SessionStartTime<T>>::put(self.now);
 			<ElapsedTime<T>>::put(self.elapsed_time);
 			<CollatorCount<T>>::put(self.collator_count);
@@ -567,6 +573,25 @@ pub mod pallet {
 			<Nominators<T>>::remove(&who);
 
 			// TODO: event?
+
+			Ok(())
+		}
+
+		/// Set collator count.
+		///
+		/// This will apply to the incoming session.
+		///
+		/// Require root origin.
+		#[pallet::call_index(7)]
+		#[pallet::weight(0)]
+		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
+			ensure_root(origin)?;
+
+			if count == 0 {
+				return Err(<Error<T>>::ZeroCollatorCount)?;
+			}
+
+			<CollatorCount<T>>::put(count);
 
 			Ok(())
 		}
