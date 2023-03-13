@@ -430,7 +430,7 @@ fn submit_new_message_root_signature() {
 		// Case 3.
 		let s_3 = sign(&k_3, &message.0);
 		assert_noop!(
-			EcdsaAuthority::submit_new_message_root_signature(RuntimeOrigin::signed(a_3), s_3,),
+			EcdsaAuthority::submit_new_message_root_signature(RuntimeOrigin::signed(a_3), s_3),
 			<Error<Runtime>>::NotAuthority
 		);
 
