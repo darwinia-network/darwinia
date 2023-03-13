@@ -12,10 +12,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/* \
-    && chown -R $USERNAME:$USERNAME /home/$USERNAME/darwinia-nodes \
+    && chown -R $USERNAME:$USERNAME /home/$USERNAME \
     && ln -s /home/$USERNAME/darwinia-nodes/darwinia /usr/local/bin/darwinia
 
 USER $USERNAME
+WORKDIR /home/$USERNAME/darwinia-nodes
 
 EXPOSE 9933 9944
 

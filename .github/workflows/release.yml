@@ -180,7 +180,7 @@ jobs:
 
       - name: Publish docker image with tag
         uses: docker/build-push-action@v3
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango')
         with:
           push: true
           context: .
