@@ -238,7 +238,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	load_config("darwinia2.json")
+	load_config("darwinia2.json", 0)
 }
 
 fn testnet_genesis(

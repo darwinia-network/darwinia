@@ -307,7 +307,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.0.0"
+version = "6.0.0-1"
 
 [[package]]
 name = "derive_more"

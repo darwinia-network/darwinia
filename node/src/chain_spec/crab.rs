@@ -281,7 +281,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	load_config("crab2.json")
+	load_config("crab2.json", 0)
 }
 
 fn testnet_genesis(
