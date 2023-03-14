@@ -253,12 +253,12 @@ jobs:
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
-          path: .github/release-template-prd.md
+          path: .github/release-mainnets.md
 
       # - name: Verify
       #   run: |
       #     set -xe
-      #     cat .github/release-template-prd.md
+      #     cat .github/release-mainnets.md
       #     ls -la deploy/
 
       - name: Publish github release
@@ -266,7 +266,7 @@ jobs:
         with:
           files: |
             deploy/*
-          body_path: ".github/release-template-prd.md"
+          body_path: ".github/release-mainnets.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
   ##
@@ -338,12 +338,12 @@ jobs:
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
-          path: .github/release-template-dev.md
+          path: .github/release-testnets.md
 
       # - name: Verify
       #   run: |
       #     set -xe
-      #     cat .github/release-template-dev.md
+      #     cat .github/release-testnets.md
       #     ls -la deploy/
 
       - name: Publish github release
@@ -351,7 +351,7 @@ jobs:
         with:
           files: |
             deploy/*
-          body_path: ".github/release-template-dev.md"
+          body_path: ".github/release-testnets.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
   clean-artifacts:
