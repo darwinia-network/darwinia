@@ -208,25 +208,25 @@ xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branc
 # xcm-builder             = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
 # xcm-executor            = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
 
-[patch."https://github.com/darwinia-network/frontier"]
-fc-cli                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-consensus                   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-db                          = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-mapping-sync                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fc-rpc-core                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-ethereum                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-evm                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-self-contained              = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-fp-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-ethereum                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-blake2   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-bn128    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-dispatch = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-modexp   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-pallet-evm-precompile-simple   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# [patch."https://github.com/darwinia-network/frontier"]
+# fc-cli                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-consensus                   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-db                          = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-mapping-sync                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-rpc-core                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-ethereum                    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-evm                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-self-contained              = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fp-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-ethereum                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-blake2   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-bn128    = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-dispatch = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-modexp   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# pallet-evm-precompile-simple   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 
 [patch."https://github.com/paritytech/substrate"]
 beefy-gadget                                  = { git = "https://github.com/jiguantong/substrate", branch = "evm-xcm-debug" }
