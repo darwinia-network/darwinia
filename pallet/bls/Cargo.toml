@@ -18,6 +18,8 @@ array-bytes       = { version = "6.0" }
 frame-benchmarking = { workspace = true, optional = true }
 pallet-timestamp   = { workspace = true }
 
+milagro_bls = { default-features = false, git = "https://github.com/darwinia-network/milagro_bls" }
+
 ark-bls12-381 = { version = "0.4.0", default-features = false, features = ["curve"] }
 ark-ec        = { version = "0.4.1", default-features = false }
 ark-ff        = { version = "0.4.1", default-features = false }

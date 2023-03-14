@@ -51,7 +51,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(0)]
-		pub fn fast_aggregate_verify(
+		pub fn fast_aggregate_verify_latest(
 			_origin: OriginFor<T>,
 			message: Vec<u8>,
 			pubkeys: Vec<Vec<u8>>,
@@ -67,6 +67,31 @@ pub mod pallet {
 			let apk = PublicKey::aggregate(pks);
 			let msg = hash_to_curve_g2(&message).map_err(|_| Error::<T>::C)?;
 			let result = apk.verify(&asig, &msg);
+			Ok(())
+		}
+
+		#[pallet::call_index(1)]
+		#[pallet::weight(0)]
+		pub fn fast_aggregate_verify_before(
+			_origin: OriginFor<T>,
+			message: Vec<u8>,
+			pubkeys: Vec<Vec<u8>>,
+			signature: Vec<u8>,
+		) -> DispatchResult {
+			use milagro_bls::{AggregatePublicKey, AggregateSignature, PublicKey, Signature};
+
+			let sig = Signature::from_bytes(&signature).map_err(|_| Error::<T>::A)?;
+			let agg_sig = AggregateSignature::from_signature(&sig);
+
+			let public_keys: Result<Vec<PublicKey>, _> =
+				pubkeys.into_iter().map(|k| PublicKey::from_bytes(&k)).collect();
+			let Ok(keys) = public_keys else {
+            	return Err(Error::<T>::B.into());
+        	};
+
+			let agg_pub_key =
+				AggregatePublicKey::into_aggregate(&keys).map_err(|_| Error::<T>::C)?;
+			let result = agg_sig.fast_aggregate_verify_pre_aggregated(&message, &agg_pub_key);
 			Ok(())
 		}
 	}
