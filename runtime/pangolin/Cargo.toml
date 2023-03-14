@@ -37,6 +37,7 @@ darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }
 darwinia-message-gadget           = { workspace = true }
 darwinia-message-transact         = { workspace = true }
+darwinia-bls                      = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
@@ -164,6 +165,7 @@ std = [
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
+	"darwinia-bls/std",
 
 	# darwinia-messages-substrate
 	"bp-message-dispatch/std",
@@ -265,6 +267,7 @@ runtime-benchmarks = [
 	"pallet-bridge-messages/runtime-benchmarks",
 	"pallet-bridge-parachains/runtime-benchmarks",
 	"pallet-fee-market/runtime-benchmarks",
+	"darwinia-bls/runtime-benchmarks",
 
 	# frontier
 	"pallet-ethereum/runtime-benchmarks",

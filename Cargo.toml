@@ -57,6 +57,7 @@ darwinia-account-migration        = { default-features = false, path = "pallet/a
 darwinia-common-runtime           = { default-features = false, path = "runtime/common" }
 darwinia-deposit                  = { default-features = false, path = "pallet/deposit" }
 darwinia-ecdsa-authority          = { default-features = false, path = "pallet/ecdsa-authority" }
+darwinia-bls                      = { default-features = false, path = "pallet/bls" }
 darwinia-message-gadget           = { default-features = false, path = "pallet/message-gadget" }
 darwinia-message-transact         = { default-features = false, path = "pallet/message-transact" }
 darwinia-precompile-assets        = { default-features = false, path = "precompile/assets" }

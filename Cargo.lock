@@ -2511,6 +2511,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-bls"
+version = "6.0.0-1"
+dependencies = [
+ "ark-bls12-381",
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "array-bytes 6.0.0",
+ "ethereum",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sha2 0.10.6",
+ "sp-std",
+]
+
+[[package]]
 name = "darwinia-common-runtime"
 version = "6.0.0-1"
 dependencies = [
@@ -8035,6 +8055,7 @@ dependencies = [
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
  "darwinia-account-migration",
+ "darwinia-bls",
  "darwinia-common-runtime",
  "darwinia-deposit",
  "darwinia-ecdsa-authority",
