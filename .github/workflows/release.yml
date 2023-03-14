@@ -37,7 +37,12 @@ jobs:
           toolchain: nightly
 
       - name: Build
-        run: cargo build --release --locked -p darwinia --features all-natives
+        if: startsWith(github.ref, 'refs/tags/pango')
+        run: cargo build --release --locked -p darwinia --features pangoro-native,pangolin-native
+
+      - name: Build
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cargo build --release --locked -p darwinia --features darwinia-native,crab-native
 
       - name: Collect shared
         run: |
