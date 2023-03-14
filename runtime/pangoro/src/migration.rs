@@ -23,11 +23,6 @@ use crate::*;
 #[allow(unused_imports)]
 use frame_support::{log, migration};
 
-const O_STAKING: &[u8] = b"Staking";
-const O_RING_POOL: &[u8] = b"RingPool";
-const O_KTON_POOL: &[u8] = b"KtonPool";
-const O_ELAPSED_TIME: &[u8] = b"ElapsedTime";
-
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
