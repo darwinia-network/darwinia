@@ -1,10 +1,26 @@
-Darwinia
-===
+## Darwinia {{ darwinia_runtime_version }}
+<h3 align="right">Upgrade Priority LOW 🚨</h3>
 
-| Network  |         Native Runtime         | Upgrade Priority |
-|:--------:|:------------------------------:|:----------------:|
-| Darwinia | {{ darwinia_runtime_version }} |       LOW        |
-|   Crab   |   {{ crab_runtime_version }}   |       LOW        |
+- Proposal Hash
+  ```
+  {{ darwinia_proposal_compressed }}
+  ```
+- Blake2 256 Hash
+  ```
+  {{ darwinia_blake2_256_compressed }}
+  ```
+
+## Crab {{ crab_runtime_version }}
+<h3 align="right">Upgrade Priority LOW 🚨</h3>
+
+- Proposal Hash
+  ```
+  {{ crab_proposal_compressed }}
+  ```
+- Blake2 256 Hash
+  ```
+  {{ crab_blake2_256_compressed }}
+  ```
 
 ## Resources
 
@@ -25,15 +41,6 @@ docker pull ghcr.io/darwinia-network/darwinia:{{ tag }}
 ```docker
 docker pull ghcr.io/darwinia-network/darwinia:sha-{{ sha }}
 ```
-
-## Proposal Hashes
-
-|        -        |                Darwinia                |                Crab                |
-|:---------------:|:--------------------------------------:|:----------------------------------:|
-|  Proposal Hash  |  `{{ darwinia_proposal_compressed }}`  |  `{{ crab_proposal_compressed }}`  |
-| Blake2 256 Hash | `{{ darwinia_blake2_256_compressed }}` | `{{ crab_blake2_256_compressed }}` |
-|  Spec Version   |    `{{ darwinia_runtime_version }}`    |    `{{ crab_runtime_version }}`    |
-
 
 ## Changelog
 [Darwinia 2.0](https://github.com/darwinia-network/darwinia/pull/969)

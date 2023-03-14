@@ -1,10 +1,26 @@
-Darwinia
-===
+## Pangolin {{ pangolin_runtime_version }}
+<h3 align="right">Upgrade Priority LOW 🚨</h3>
 
-| Network  |         Native Runtime         | Upgrade Priority |
-|:--------:|:------------------------------:|:----------------:|
-| Pangolin | {{ pangolin_runtime_version }} |       LOW        |
-| Pangoro  | {{ pangoro_runtime_version }}  |       LOW        |
+- Proposal Hash
+  ```
+  {{ pangolin_proposal_compressed }}
+  ```
+- Blake2 256 Hash
+  ```
+  {{ pangolin_blake2_256_compressed }}
+  ```
+
+## Pangoro {{ pangoro_runtime_version }}
+<h3 align="right">Upgrade Priority LOW 🚨</h3>
+
+- Proposal Hash
+  ```
+  {{ pangoro_proposal_compressed }}
+  ```
+- Blake2 256 Hash
+  ```
+  {{ pangoro_blake2_256_compressed }}
+  ```
 
 ## Resources
 
@@ -25,15 +41,6 @@ docker pull ghcr.io/darwinia-network/darwinia:{{ tag }}
 ```docker
 docker pull ghcr.io/darwinia-network/darwinia:sha-{{ sha }}
 ```
-
-## Proposal Hashes
-
-|        -        |                Pangolin                |                Pangoro                |
-|:---------------:|:--------------------------------------:|:-------------------------------------:|
-|  Proposal Hash  |  `{{ pangolin_proposal_compressed }}`  |  `{{ pangoro_proposal_compressed }}`  |
-| Blake2 256 Hash | `{{ pangolin_blake2_256_compressed }}` | `{{ pangoro_blake2_256_compressed }}` |
-|  Spec Version   |    `{{ pangolin_runtime_version }}`    |    `{{ pangoro_runtime_version }}`    |
-
 
 ## Changelog
 [Darwinia 2.0](https://github.com/darwinia-network/darwinia/pull/969)
