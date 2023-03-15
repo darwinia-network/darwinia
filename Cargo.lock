@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "blake2-rfc",
  "hex",
@@ -6209,7 +6209,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "cumulus-primitives-core",
  "frame-system",
@@ -6838,7 +6838,7 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#6df51b333c9f7e5c13fc020dc01826c8dbdc045f"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#8301b6c2871ce4e0279c78b3714e8e3a40a749ea"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -6857,7 +6857,7 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#6df51b333c9f7e5c13fc020dc01826c8dbdc045f"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#8301b6c2871ce4e0279c78b3714e8e3a40a749ea"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -7323,7 +7323,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -7409,7 +7409,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-relay-encoder"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "cumulus-primitives-core",
  "fp-evm",
@@ -8117,7 +8117,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.2.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -9851,7 +9851,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "affix",
  "derive_more",
@@ -9882,7 +9882,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "case",
  "num_enum",
@@ -15477,7 +15477,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#56c0b394543a4b036eb1431872c3f38557f84ae9"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
