@@ -40,6 +40,8 @@ use sp_runtime::{
 	Perbill,
 };
 use sp_std::prelude::*;
+// TODO @jiguantong Debug, remove before merging
+use frame_support::log;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -547,6 +549,16 @@ pub mod pallet {
 				message_root,
 				nonce: <Nonce<T>>::get(),
 			};
+
+			// todo @jiguantong Debug, remove before merging
+			log::info!("\n\n ####################  chainId: {:?}, spec_name: {:?}, encode: {:?} \n\n", T::ChainId::get(),
+			T::Version::get().spec_name.as_ref(), &ethabi::encode(&[
+				Token::FixedBytes(COMMIT_TYPE_HASH.into()),
+				Token::Uint(commitment.block_number.into()),
+				Token::FixedBytes(commitment.message_root.as_ref().into()),
+				Token::Uint(commitment.nonce.into()),
+			]));
+
 			let message = Sign::eth_signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
