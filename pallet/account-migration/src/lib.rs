@@ -49,7 +49,7 @@ use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Index};
 // substrate
 use frame_support::{
-	log, migration,
+	migration,
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement::KeepAlive, LockableCurrency, WithdrawReasons},
 	StorageHasher,
@@ -58,7 +58,10 @@ use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
 use pallet_identity::{Judgement, Registration};
 use pallet_vesting::VestingInfo;
-use sp_core::sr25519::{Public, Signature};
+use sp_core::{
+	ed25519::{Public as Ep, Signature as Es},
+	sr25519::{Public as Sp, Signature as Ss},
+};
 use sp_io::hashing;
 use sp_runtime::{
 	traits::{IdentityLookup, TrailingZeroInput, Verify},
@@ -346,9 +349,9 @@ pub mod pallet {
 			to: &AccountId20,
 			signature: &Signature,
 		) -> TransactionValidity {
-			let message = sr25519_signable_message(T::Version::get().spec_name.as_ref(), to);
+			let message = signable_message(T::Version::get().spec_name.as_ref(), to);
 
-			if verify_sr25519_signature(from, &message, signature) {
+			if verify_curve_25519_signature(from, &message, signature) {
 				ValidTransaction::with_tag_prefix("account-migration")
 					.and_provides(from)
 					.priority(100)
@@ -494,6 +497,9 @@ pub mod pallet {
 }
 pub use pallet::*;
 
+/// Raw signature.
+pub type Signature = [u8; 64];
+
 // Copy from <https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115>.
 // Due to its visibility.
 #[allow(missing_docs)]
@@ -549,7 +555,7 @@ pub struct Multisig {
 }
 
 /// Build a Darwinia account migration message.
-pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
+pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
 		// https://github.com/polkadot-js/common/issues/1710
 		b"<Bytes>I authorize the migration to ",
@@ -566,21 +572,14 @@ pub fn sr25519_signable_message(spec_name: &[u8], account_id_20: &AccountId20) -
 	.concat()
 }
 
-/// Verify the Sr25519 signature.
-pub fn verify_sr25519_signature(
+/// Verify the curve 25519 signatures.
+pub fn verify_curve_25519_signature(
 	public_key: &AccountId32,
 	message: &[u8],
 	signature: &Signature,
 ) -> bool {
-	// Actually, `&[u8]` is `[u8; 32]` here.
-	// But for better safety.
-	let Ok(public_key) = &Public::try_from(public_key.as_ref()) else {
-		log::error!("[pallet::account-migration] `public_key` must be valid; qed");
-
-		return false;
-	};
-
-	signature.verify(message, public_key)
+	Ss(signature.to_owned()).verify(message, &Sp(public_key.to_owned().into()))
+		|| Es(signature.to_owned()).verify(message, &Ep(public_key.to_owned().into()))
 }
 
 /// Calculate the multisig account.

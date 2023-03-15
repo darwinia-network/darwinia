@@ -11,11 +11,10 @@ substrate-wasm-builder = { workspace = true }
 
 [dependencies]
 # crates.io
+array-bytes       = { workspace = true }
 codec             = { package = "parity-scale-codec", workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { workspace = true }
-# crates.io optional
-array-bytes = { optional = true, workspace = true }
 
 # cumulus
 cumulus-pallet-aura-ext         = { workspace = true }
@@ -248,9 +247,6 @@ std = [
 fast-runtime = []
 
 runtime-benchmarks = [
-	# crates.io
-	"array-bytes",
-
 	# cumulus
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
