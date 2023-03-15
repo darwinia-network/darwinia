@@ -75,10 +75,17 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	#[derive(codec::Encode, codec::Decode, sp_runtime::RuntimeDebug)]
+	struct VestingInfo {
+		locked: Balance,
+		per_block: Balance,
+		starting_block: BlockNumber,
+	}
+
 	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[0]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
-		if unhashed::get::<pallet_vesting::VestingInfo<Balance, BlockNumber>>(&k).is_some() {
+		if unhashed::get::<VestingInfo>(&k).is_some() {
 			log::info!("purge `storage({})`", BROKE_STORAGES[0]);
 			unhashed::kill(&k);
 		}
@@ -86,9 +93,10 @@ fn migrate() -> frame_support::weights::Weight {
 	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[1]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
-		if unhashed::get::<pallet_vesting::VestingInfo<Balance, BlockNumber>>(&k).is_some() {
-			let v = vec![pallet_vesting::VestingInfo::<Balance, BlockNumber> {
-				locked: (100_000_000_000 - (CRAB_LAST_FINALIZE_HEIGHT - 8_421_033) * 1)
+		if unhashed::get::<VestingInfo>(&k).is_some() {
+			let v = vec![VestingInfo {
+				locked: (100_000_000_000_u128
+					- (CRAB_LAST_FINALIZE_HEIGHT - 8_421_033) as Balance * 1_u128)
 					* DECIMAL_OFFSET,
 				// Crab2's block time is twice longer than Crab.
 				per_block: 1 * DECIMAL_OFFSET * 2,
@@ -96,13 +104,13 @@ fn migrate() -> frame_support::weights::Weight {
 			}];
 
 			log::info!("correct `storage({})` to `{v:?}`", BROKE_STORAGES[1]);
-			unhashed::put::<Vec<pallet_vesting::VestingInfo<Balance, BlockNumber>>>(&k, &v);
+			unhashed::put::<Vec<VestingInfo>>(&k, &v);
 		}
 	}
 	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[2]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
-		if unhashed::get::<pallet_vesting::VestingInfo<Balance, BlockNumber>>(&k).is_some() {
+		if unhashed::get::<VestingInfo>(&k).is_some() {
 			log::info!("purge `storage({})`", BROKE_STORAGES[2]);
 			unhashed::kill(&k);
 		}

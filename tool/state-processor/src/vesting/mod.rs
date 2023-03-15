@@ -25,7 +25,7 @@ impl<S> Processor<S> {
 							Some(v)
 						}
 					})
-					.collect::<Vec<_>>();
+					.collect::<Vec<VestingInfo>>();
 
 				if v.is_empty() {
 					None
