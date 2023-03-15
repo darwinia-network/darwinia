@@ -10,8 +10,30 @@ impl<S> Processor<S> {
 		log::info!("take solo `Vesting::Vesting`");
 		self.solo_state.take_map(b"Vesting", b"Vesting", &mut vestings, get_hashed_key);
 
-		log::info!("adjust solo `VestingInfo`s");
-		vestings.iter_mut().for_each(|(_, v)| v.iter_mut().for_each(|v| v.adjust()));
+		log::info!("adjust and remove expired solo `VestingInfo`s");
+		let vestings = vestings
+			.into_iter()
+			.filter_map(|(k, v)| {
+				let v = v
+					.into_iter()
+					.filter_map(|mut v| {
+						v.adjust();
+
+						if v.locked == 0 {
+							None
+						} else {
+							Some(v)
+						}
+					})
+					.collect::<Vec<_>>();
+
+				if v.is_empty() {
+					None
+				} else {
+					Some((k, v))
+				}
+			})
+			.collect::<Map<Vec<VestingInfo>>>();
 
 		log::info!("set `AccountMigration::Vestings`");
 		{
