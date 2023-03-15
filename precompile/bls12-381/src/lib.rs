@@ -35,7 +35,7 @@ use sp_std::prelude::*;
 /// block weight according to our benchmark test. Tested verifying of 512 public keys signature on
 /// the `AMD Ryzen 7 5700G`,  this precompile consumed at least 117_954_459_000 weight. So we give
 /// them more than that to ensure there is enough time for other machine types.
-pub(crate) const BLS_BENCHMARKED_WEIGHT: u64 = 150_000_000_000;
+const BLS_WEIGHT: u64 = 150_000_000_000;
 pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
@@ -49,7 +49,7 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 		signature: UnboundedBytes,
 	) -> EvmResult<bool> {
 		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			Weight::from_ref_time(BLS_BENCHMARKED_WEIGHT),
+			Weight::from_ref_time(BLS_WEIGHT),
 		))?;
 
 		ensure!(pub_keys.len() <= 512, revert("Too many pub keys"));
@@ -64,7 +64,6 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 
 		let apk = PublicKey::aggregate(pks);
 		let msg = hash_to_curve_g2(message.as_bytes()).map_err(|_| revert("Invalid message"))?;
-		let result = apk.verify(&asig, &msg);
-		Ok(result)
+		Ok(apk.verify(&asig, &msg))
 	}
 }

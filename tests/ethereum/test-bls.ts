@@ -1,8 +1,7 @@
 import Web3 from "web3";
 import { describe } from "mocha";
-import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, DEFAULT_GAS, BLOCK_GAS_LIMIT } from "../config";
+import { HOST_HTTP_URL, FAITH, FAITH_P, BLOCK_GAS_LIMIT } from "../config";
 import { AbiItem, hexToBytes } from "web3-utils";
 import { blsInfo } from "./contracts/contracts_info";
 
