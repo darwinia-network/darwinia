@@ -2655,6 +2655,7 @@ dependencies = [
  "ark-serialize",
  "ark-std",
  "fp-evm",
+ "frame-support",
  "pallet-evm",
  "precompile-utils",
  "rand 0.8.5",

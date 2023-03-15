@@ -365,3 +365,37 @@ export const eventInfo = {
 		},
 	],
 };
+
+export const blsInfo = {
+	abi: [
+		{
+			"inputs": [
+				{
+					"internalType": "bytes[]",
+					"name": "pubkeys",
+					"type": "bytes[]"
+				},
+				{
+					"internalType": "bytes",
+					"name": "message",
+					"type": "bytes"
+				},
+				{
+					"internalType": "bytes",
+					"name": "sig",
+					"type": "bytes"
+				}
+			],
+			"name": "fast_aggregate_verify",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+};
