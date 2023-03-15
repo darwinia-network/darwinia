@@ -5,14 +5,14 @@ pub trait Adjust {
 	fn adjust(&mut self);
 }
 
-impl Adjust for u32 {
+impl Adjust for BlockNumber {
 	fn adjust(&mut self) {
 		// https://github.com/darwinia-network/darwinia-2.0/issues/78
 		*self = self.checked_sub(*NOW.read().unwrap()).unwrap_or_default() / 2;
 	}
 }
 
-impl Adjust for u128 {
+impl Adjust for Balance {
 	fn adjust(&mut self) {
 		*self *= GWEI;
 	}
@@ -35,11 +35,21 @@ impl Adjust for BalanceLock {
 
 impl Adjust for VestingInfo {
 	fn adjust(&mut self) {
+		let now = *NOW.read().unwrap();
+		let released = (now - self.starting_block) as Balance * self.per_block;
+
+		if self.locked <= released {
+			self.locked = 0;
+
+			return;
+		} else {
+			self.locked -= released;
+		}
+
 		self.locked.adjust();
-		self.per_block *= 2;
 		self.per_block.adjust();
-		self.starting_block =
-			self.starting_block.checked_sub(*NOW.read().unwrap()).unwrap_or_default();
+		self.per_block *= 2;
+		self.starting_block = 0;
 	}
 }
 
@@ -81,7 +91,7 @@ impl Adjust for Registration {
 	}
 }
 
-impl Adjust for RegistrarInfo<[u8; 32]> {
+impl Adjust for RegistrarInfo<AccountId32> {
 	fn adjust(&mut self) {
 		self.fee.adjust();
 	}
