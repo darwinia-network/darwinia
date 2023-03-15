@@ -49,7 +49,7 @@ use frame_support::{log, migration, storage::unhashed};
 // 	perBlock: 1,000,000,000
 // 	startingBlock: 6,829,787
 // }
-const BROKE_STORAGES: &[&str] = &[
+const BROKEN_STORAGES: &[&str] = &[
 	"0x1fb3231abc71c5a12c573bc57e9d12d1c5b10e12d951c676432baac73459815c3f2770dc0c68232d160e98225bc421c9608c62275934b164899ca6270c4b89c5d84b2390d4316fda980cd1b3acfad525",
 	"0x1fb3231abc71c5a12c573bc57e9d12d1c5b10e12d951c676432baac73459815cc06c2bc8f107407659c073c78f8a3b94360a95cd317b649c62ea53444ca50e9403031cec3fb9ac3650d4b72b88260f0c",
 	"0x1fb3231abc71c5a12c573bc57e9d12d1c5b10e12d951c676432baac73459815cd52763ae3a2afb1c9c77d6426427422f72f9aa4c12882beefc97bba96617ed811690f68bb917e4b77d2dcc6d717a4422",
@@ -82,15 +82,15 @@ fn migrate() -> frame_support::weights::Weight {
 		starting_block: BlockNumber,
 	}
 
-	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[0]) {
+	if let Ok(k) = array_bytes::hex2bytes(BROKEN_STORAGES[0]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
 		if unhashed::get::<VestingInfo>(&k).is_some() {
-			log::info!("purge `storage({})`", BROKE_STORAGES[0]);
+			log::info!("purge `storage({})`", BROKEN_STORAGES[0]);
 			unhashed::kill(&k);
 		}
 	}
-	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[1]) {
+	if let Ok(k) = array_bytes::hex2bytes(BROKEN_STORAGES[1]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
 		if unhashed::get::<VestingInfo>(&k).is_some() {
@@ -103,15 +103,15 @@ fn migrate() -> frame_support::weights::Weight {
 				starting_block: 0,
 			}];
 
-			log::info!("correct `storage({})` to `{v:?}`", BROKE_STORAGES[1]);
+			log::info!("correct `storage({})` to `{v:?}`", BROKEN_STORAGES[1]);
 			unhashed::put::<Vec<VestingInfo>>(&k, &v);
 		}
 	}
-	if let Ok(k) = array_bytes::hex2bytes(BROKE_STORAGES[2]) {
+	if let Ok(k) = array_bytes::hex2bytes(BROKEN_STORAGES[2]) {
 		// If `is_some` which means it hasn't been migrated yet.
 		// But actually, without this correction, the account migration will fail.
 		if unhashed::get::<VestingInfo>(&k).is_some() {
-			log::info!("purge `storage({})`", BROKE_STORAGES[2]);
+			log::info!("purge `storage({})`", BROKEN_STORAGES[2]);
 			unhashed::kill(&k);
 		}
 	}
