@@ -28,13 +28,13 @@ use pallet_evm::GasWeightMapping;
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
-use frame_support::weights::Weight;
+use frame_support::{ensure, weights::Weight};
 use sp_std::prelude::*;
 
 /// The BLS verification is a computationally intensive process. Normally, it consumes a lot of
-/// block weight according to our benchmark test. Tested on the `AMD Ryzen 7 5700G`,  this
-/// precompile consumed at least 117_954_459_000 weight. So we give them more than that to ensure
-/// there is enough time for other machine types.
+/// block weight according to our benchmark test. Tested verifying of 512 public keys signature on
+/// the `AMD Ryzen 7 5700G`,  this precompile consumed at least 117_954_459_000 weight. So we give
+/// them more than that to ensure there is enough time for other machine types.
 pub(crate) const BLS_BENCHMARKED_WEIGHT: u64 = 150_000_000_000;
 pub struct BLS12381<T>(PhantomData<T>);
 
@@ -44,7 +44,7 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 	#[precompile::view]
 	fn fast_aggregate_verify(
 		handle: &mut impl PrecompileHandle,
-		pubkeys: Vec<UnboundedBytes>,
+		pub_keys: Vec<UnboundedBytes>,
 		message: UnboundedBytes,
 		signature: UnboundedBytes,
 	) -> EvmResult<bool> {
@@ -52,12 +52,14 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 			Weight::from_ref_time(BLS_BENCHMARKED_WEIGHT),
 		))?;
 
+		ensure!(pub_keys.len() <= 512, revert("Too many pub keys"));
+
 		let asig =
 			Signature::from_bytes(signature.as_bytes()).map_err(|_| revert("Invalid signature"))?;
 		let public_keys: Result<Vec<PublicKey>, _> =
-			pubkeys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
+			pub_keys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
 		let Ok(pks) = public_keys else {
-            return Err(revert("Invalid pubkeys"));
+            return Err(revert("Invalid pub keys"));
         };
 
 		let apk = PublicKey::aggregate(pks);

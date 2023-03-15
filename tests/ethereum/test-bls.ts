@@ -534,7 +534,7 @@ bls.options.from = FAITH;
 bls.options.gas = 10_000_000;
 web3.eth.accounts.wallet.add(FAITH_P);
 
-describe("Test BLS precompile", () => {
+describe("Test Bls precompile", () => {
 	it("Basic bls should works", async function () {
 		let result = await bls.methods
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
@@ -547,14 +547,13 @@ describe("Test BLS precompile", () => {
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
 			.send();
 		expect(receipt.transactionHash).to.not.be.null;
-		console.log(receipt);
 		expect(receipt.gasUsed).to.be.equals(8597448);
 
 		// Reserve enough space for the pre-contract operations
 		expect(BLOCK_GAS_LIMIT - receipt.gasUsed).to.be.gt(10_000_000);
 	}).timeout(60000);
 
-	it("Only once in each block", async () => {
+	it("One bls operation each block", async () => {
 		let receipt1 = await bls.methods
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
 			.send();
