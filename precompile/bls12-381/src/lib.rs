@@ -31,8 +31,11 @@ use precompile_utils::prelude::*;
 use frame_support::weights::Weight;
 use sp_std::prelude::*;
 
-// pub(crate) const BLS_BENCHMARKED_WEIGHT: u64 = 117_954_459_000;
-pub(crate) const BLS_ESTIMATED_COST: u64 = 100_000;
+/// The BLS verification is a computationally intensive process. Normally, it consumes a lot of
+/// block weight according to our benchmark test. Tested on the `AMD Ryzen 7 5700G`,  this
+/// precompile consumed at least 117_954_459_000 weight. So we give them more than that to ensure
+/// there is enough time for other machine types.
+pub(crate) const BLS_BENCHMARKED_WEIGHT: u64 = 150_000_000_000;
 pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
@@ -45,28 +48,21 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 		message: UnboundedBytes,
 		signature: UnboundedBytes,
 	) -> EvmResult<bool> {
-		frame_support::log::info!("bear: --- here in the precompile");
-		// handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-		// 	Weight::from_ref_time(BLS_BENCHMARKED_WEIGHT),
-		// ))?;
-		handle.record_cost(BLS_ESTIMATED_COST)?;
+		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			Weight::from_ref_time(BLS_BENCHMARKED_WEIGHT),
+		))?;
 
 		let asig =
 			Signature::from_bytes(signature.as_bytes()).map_err(|_| revert("Invalid signature"))?;
-		frame_support::log::info!("bear: --- flag 1");
 		let public_keys: Result<Vec<PublicKey>, _> =
 			pubkeys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
-			frame_support::log::info!("bear: --- flag 2");
 		let Ok(pks) = public_keys else {
             return Err(revert("Invalid pubkeys"));
         };
-		frame_support::log::info!("bear: --- flag 3");
 
 		let apk = PublicKey::aggregate(pks);
 		let msg = hash_to_curve_g2(message.as_bytes()).map_err(|_| revert("Invalid message"))?;
-		frame_support::log::info!("bear: --- flag 4");
 		let result = apk.verify(&asig, &msg);
-		frame_support::log::info!("bear: --- flag 5, {:?}", result);
 		Ok(result)
 	}
 }

@@ -2,16 +2,11 @@ import Web3 from "web3";
 import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, DEFAULT_GAS } from "../config";
+import { HOST_HTTP_URL, FAITH, FAITH_P, DEFAULT_GAS, BLOCK_GAS_LIMIT } from "../config";
 import { AbiItem, hexToBytes } from "web3-utils";
 import { blsInfo } from "./contracts/contracts_info";
 
 const web3 = new Web3(HOST_HTTP_URL);
-const contract = new web3.eth.Contract(
-	blsInfo.abi as AbiItem[],
-	"0x0000000000000000000000000000000000000800"
-);
-
 const pub_keys = [
 	"0xb4bf4717ad2d3fce3a11a84dee1b38469be9e783b298b200cc533be97e474bf94d6c7c591d3102992f908820bc63ac72",
 	"0x969b4bcd84cabd5ba5f31705de51e2c4096402f832fdf543d88eb41ebb55f03a8715c1ceea92335d24febbea17a3bdd7",
@@ -531,34 +526,44 @@ const message = "0x6943c268e56be6110509bae768705152c24382ae8d15a2c5e20677efdb40b
 const signature =
 	"0xa45ded60fac188920c0691ded62fdde57755c9da591061fc15acf8b4b4af1eebefdcf741aab41ba99281d284917a61231251db63f479246d8e7cdaec3d316bf9c603a5d8c53b75f17ec4c30fb64e4eced018b532e635b3f214c666e425832052";
 
+const bls = new web3.eth.Contract(
+	blsInfo.abi as AbiItem[],
+	"0x0000000000000000000000000000000000000800"
+);
+bls.options.from = FAITH;
+bls.options.gas = 10_000_000;
+web3.eth.accounts.wallet.add(FAITH_P);
+
 describe("Test BLS precompile", () => {
 	it("Basic bls should works", async function () {
-		// Ensure no other tests in the same block.
-		this.timeout(120000);
-		let result = await contract.methods
+		let result = await bls.methods
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
 			.call();
-        expect(result).to.be.true;
+		expect(result).to.be.true;
 	}).timeout(60000);
 
-	it.skip("Basic bls should works", async () => {
-		// Ensure no other tests in the same block.
-		// this.timeout(12000);
-		// let tx = await web3.eth.accounts.signTransaction(
-		// 	{
-		// 		from: FAITH,
-		// 		data: contract.methods
-		// 			.fast_aggregate_verify(
-		// 				pub_keys,
-		// 				encoder.encode(message),
-		// 				encoder.encode(signature)
-		// 			)
-		// 			.send(),
-		// 		gas: DEFAULT_GAS,
-		// 	},
-		// 	FAITH_P
-		// );
-		// let receipt = await web3.eth.sendSignedTransaction(tx.rawTransaction);
-		// expect(receipt.transactionHash).to.not.be.null;
+	it("Bls gas used should not be too large", async () => {
+		let receipt = await bls.methods
+			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
+			.send();
+		expect(receipt.transactionHash).to.not.be.null;
+		console.log(receipt);
+		expect(receipt.gasUsed).to.be.equals(8597448);
+
+		// Reserve enough space for the pre-contract operations
+		expect(BLOCK_GAS_LIMIT - receipt.gasUsed).to.be.gt(10_000_000);
+	}).timeout(60000);
+
+	it("Only once in each block", async () => {
+		let receipt1 = await bls.methods
+			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
+			.send();
+		expect(receipt1.transactionHash).to.not.be.null;
+		let receipt2 = await bls.methods
+			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
+			.send();
+		expect(receipt2.transactionHash).to.not.be.null;
+
+		expect(receipt1.blockNumber).not.equal(receipt2.blockNumber);
 	}).timeout(60000);
 });
