@@ -103,13 +103,22 @@ pub struct Commitment {
 
 #[test]
 fn eth_signable_message() {
+	fn domain_separator(chain_id: u64, spec_name: &[u8]) -> Hash {
+		Hash(Sign::hash(&[&chain_id.to_le_bytes(), spec_name, b"::ecdsa-authority"].concat()))
+	}
+
 	assert_eq!(
 		array_bytes::bytes2hex("0x", Sign::eth_signable_message(46, b"Darwinia", &[0; 32])),
 		"0xb492857010088b0dff298645e9105549d088aab7bcb20cf5a3d0bc17dce91045"
 	);
 	assert_eq!(
-		array_bytes::bytes2hex("0x", Sign::hash(b"46Darwinia::ecdsa-authority")),
-		"0xf8a76f5ceeff36d74ff99c4efc0077bcc334721f17d1d5f17cfca78455967e1e"
+		array_bytes::bytes2hex("0x", domain_separator(46, b"Darwinia").as_ref()),
+		"0x10a34b1710e54ef9027b50d2de2fccbb9691478bed6faa2488bf1cf221a00509"
+	);
+
+	assert_eq!(
+		array_bytes::bytes2hex("0x", domain_separator(43, b"Pangolin2").as_ref()),
+		"0x3ff39d86ddb79bcc3a96c6e5b963f70e0e9f5849135e47584ce3fcae3ebbfac4"
 	);
 
 	let data = array_bytes::hex2bytes_unchecked("0x30a82982a8d5050d1c83bbea574aea301a4d317840a8c4734a308ffaa6a63bc8cb76085b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000100000000000000000000000068898db1012808808c903f390909c52d9f7067490000000000000000000000004cdc1dbbd754ea539f1ffaea91f1b6c4b8dd14bd");
