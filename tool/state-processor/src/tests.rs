@@ -857,9 +857,7 @@ fn vesting_info() {
 			&mut m_vesting_info,
 		);
 
-		assert_eq!(m_vesting_info.locked, vesting_info.locked * GWEI);
-		assert_eq!(m_vesting_info.per_block, vesting_info.per_block * GWEI * 2);
-		assert!(m_vesting_info.starting_block < vesting_info.starting_block);
+		assert_eq!(m_vesting_info, Default::default());
 	});
 }
 
