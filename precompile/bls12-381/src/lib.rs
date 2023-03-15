@@ -56,9 +56,9 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 
 		let asig =
 			Signature::from_bytes(signature.as_bytes()).map_err(|_| revert("Invalid signature"))?;
-		let public_keys: Result<Vec<PublicKey>, _> =
+		let pub_keys: Result<Vec<PublicKey>, _> =
 			pub_keys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
-		let Ok(pks) = public_keys else {
+		let Ok(pks) = pub_keys else {
             return Err(revert("Invalid pub keys"));
         };
 
