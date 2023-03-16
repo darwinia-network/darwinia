@@ -106,10 +106,7 @@ jobs:
         run: |
           set -xe
           RUNTIME_DIR=runtime/${{ matrix.runtime }}
-          cargo build \
-            --manifest-path runtime/${{ matrix.runtime }}/Cargo.toml \
-            --release \
-            # --features on-chain-release-build # not have this feature currently
+          cargo build --release --locked -p ${{ matrix.runtime }}-runtime --features on-chain-release-build
 
       - name: Collect shared
         run: |
