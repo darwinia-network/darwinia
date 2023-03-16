@@ -245,6 +245,13 @@ std = [
 	"frame-try-runtime?/std",
 ]
 
+fast-runtime = []
+
+# A feature that should be enabled when the runtime should be build for on-chain
+# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
+# to make it smaller like logging for example.
+on-chain-release-build = ["sp-api/disable-logging"]
+
 runtime-benchmarks = [
 	# crates.io
 	"array-bytes",
@@ -303,8 +310,6 @@ runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 ]
-
-fast-runtime = []
 
 try-runtime = [
 	# crates.io
