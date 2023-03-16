@@ -25,17 +25,17 @@ use darwinia_account_migration::*;
 use frame_support::{assert_noop, assert_ok};
 use frame_system::AccountInfo;
 use pallet_balances::AccountData;
-use sp_keyring::sr25519::Keyring;
+use sp_keyring::{ed25519::Keyring as Ek, sr25519::Keyring as Sk};
 use sp_runtime::{
 	traits::ValidateUnsigned,
 	transaction_validity::{InvalidTransaction, TransactionValidityError},
 };
 
 #[test]
-fn sr25519_signable_message_should_work() {
+fn signable_message_should_work() {
 	["Darwinia2", "Crab2", "Pangolin2"].iter().for_each(|s| {
 		assert_eq!(
-			sr25519_signable_message(s.as_bytes(), &Default::default()),
+			signable_message(s.as_bytes(), &Default::default()),
 			format!(
 				"<Bytes>I authorize the migration to {}, an unused address on {}. Sign this message to authorize using the Substrate key associated with the account on {} that you wish to migrate.</Bytes>",
 				"0x0000000000000000000000000000000000000000",
@@ -47,13 +47,20 @@ fn sr25519_signable_message_should_work() {
 }
 
 #[test]
-fn verify_sr25519_signature_should_work() {
-	Keyring::iter().enumerate().for_each(|(i, from)| {
+fn verify_curve_25519_signature_should_work() {
+	Sk::iter().enumerate().for_each(|(i, from)| {
 		let to = [i as _; 20];
-		let message = sr25519_signable_message(b"Darwinia2", &to.into());
+		let message = signable_message(b"Darwinia2", &to.into());
 		let signature = from.sign(&message);
 
-		assert!(verify_sr25519_signature(&from.public().0.into(), &message, &signature));
+		assert!(verify_curve_25519_signature(&from.public().0.into(), &message, &signature.0));
+	});
+	Ek::iter().enumerate().for_each(|(i, from)| {
+		let to = [i as _; 20];
+		let message = signable_message(b"Darwinia2", &to.into());
+		let signature = from.sign(&message);
+
+		assert!(verify_curve_25519_signature(&from.public().0.into(), &message, &signature.0));
 	});
 }
 
@@ -88,14 +95,14 @@ fn multisig_of_should_work() {
 
 #[test]
 fn migrate_multisig_should_work() {
-	let a = Keyring::Alice;
-	let b = Keyring::Bob;
-	let c = Keyring::Charlie;
-	let d = Keyring::Dave;
+	let a = Sk::Alice;
+	let b = Sk::Bob;
+	let c = Ek::Charlie;
+	let d = Ek::Dave;
 	let (_, multisig) =
 		multisig_of(a.public().0.into(), vec![b.public().0.into(), c.public().0.into()], 2);
 	let to = Default::default();
-	let message = sr25519_signable_message(b"Darwinia2", &to);
+	let message = signable_message(b"Darwinia2", &to);
 
 	new_test_ext().execute_with(|| {
 		<Accounts<Runtime>>::insert(
@@ -114,7 +121,7 @@ fn migrate_multisig_should_work() {
 			others: vec![b.public().0.into(), c.public().0.into()],
 			threshold: 2,
 			to: to.clone(),
-			signature: signature.clone()
+			signature: signature.0.clone()
 		}));
 		assert_ok!(AccountMigration::migrate_multisig(
 			RuntimeOrigin::none(),
@@ -122,7 +129,7 @@ fn migrate_multisig_should_work() {
 			vec![b.public().0.into(), c.public().0.into()],
 			2,
 			to,
-			signature,
+			signature.0,
 		));
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_some());
@@ -135,7 +142,7 @@ fn migrate_multisig_should_work() {
 			AccountMigration::pre_dispatch(&Call::complete_multisig_migration {
 				multisig: multisig.clone(),
 				submitter: d.public().0.into(),
-				signature
+				signature: signature.0
 			}),
 			TransactionValidityError::Invalid(InvalidTransaction::Custom(E_NOT_MULTISIG_MEMBER))
 		);
@@ -146,13 +153,13 @@ fn migrate_multisig_should_work() {
 		assert_ok!(AccountMigration::pre_dispatch(&Call::complete_multisig_migration {
 			multisig: multisig.clone(),
 			submitter: c.public().0.into(),
-			signature: signature.clone()
+			signature: signature.0.clone()
 		}));
 		assert_ok!(AccountMigration::complete_multisig_migration(
 			RuntimeOrigin::none(),
 			multisig.clone(),
 			c.public().0.into(),
-			signature
+			signature.0
 		));
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_none());

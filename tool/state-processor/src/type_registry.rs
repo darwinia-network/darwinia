@@ -159,6 +159,8 @@ impl StakingLedger {
 			&& self.active_deposit_ring == 0
 			&& self.active_kton == 0
 			&& self.deposit_items.is_empty()
+			&& self.ring_staking_lock.unbondings.is_empty()
+			&& self.kton_staking_lock.unbondings.is_empty()
 	}
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq, Encode, Decode)]

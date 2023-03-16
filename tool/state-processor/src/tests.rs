@@ -182,7 +182,10 @@ fn solo_chain_substrate_account() {
 			assert_eq!(m_account.providers, 1);
 			assert_eq!(m_account.sufficients, 1);
 			// 30_976_316_716_418_406_400 is the unclaimed staking reward
-			assert_eq!(m_account.data.free, solo_account.data.free * GWEI + 30_976_316_716_418_406_400);
+			assert_eq!(
+				m_account.data.free,
+				solo_account.data.free * GWEI + 30_976_316_716_418_406_400
+			);
 			assert_eq!(m_account.data.free_kton_or_misc_frozen, 0);
 			//  the kton part moved to the asset pallet
 			let asset_account = tester.migration_kton_accounts.get(addr).unwrap();
@@ -854,9 +857,7 @@ fn vesting_info() {
 			&mut m_vesting_info,
 		);
 
-		assert_eq!(m_vesting_info.locked, vesting_info.locked * GWEI);
-		assert_eq!(m_vesting_info.per_block, vesting_info.per_block * GWEI * 2);
-		assert!(m_vesting_info.starting_block < vesting_info.starting_block);
+		assert_eq!(m_vesting_info, Default::default());
 	});
 }
 
