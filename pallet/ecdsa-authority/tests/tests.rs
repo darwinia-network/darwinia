@@ -52,7 +52,7 @@ fn add_authority() {
 		assert_eq!(EcdsaAuthority::next_authorities(), vec![a_0]);
 		assert_eq!(EcdsaAuthority::nonce(), 0);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x5c883184c9c53c59857253454df1b4813e8b3fb28648beb85555d58d1e801e14",
+			"0x5dcc31dcd194f2ccb42e13ed80001e37492f796d6d62514525fcf66de6f955c8",
 		);
 		assert_eq!(
 			EcdsaAuthority::authorities_change_to_sign(),
@@ -123,7 +123,7 @@ fn remove_authority() {
 		assert_eq!(EcdsaAuthority::next_authorities(), vec![a_2]);
 		assert_eq!(EcdsaAuthority::nonce(), 0);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x76139aa9d1c7b35fc744b10444898ee5703e3f77406b926f903006436b7930c7",
+			"0xb59076c5054bc451c964b47af005b7b807b3501c36ef4d4375cb39637baea13b",
 		);
 		assert_eq!(
 			EcdsaAuthority::authorities_change_to_sign(),
@@ -182,7 +182,7 @@ fn swap_authority() {
 		assert_eq!(EcdsaAuthority::next_authorities(), vec![a_2]);
 		assert_eq!(EcdsaAuthority::nonce(), 0);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x30effc17a3fcf9b3079168c2c2be54b6d9fbdfd7077c9d844ec241dd70dd0507",
+			"0x0f9863685b4ef59a98fc26a063dad4713698af2d10af5f2ea921fed3f39fac71",
 		);
 		assert_eq!(
 			EcdsaAuthority::authorities_change_to_sign(),
@@ -231,7 +231,7 @@ fn sync_interval_and_max_pending_period() {
 		});
 		run_to_block(<Runtime as Config>::SyncInterval::get());
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x742776a31e49b3f5a2a15a6781eb99f96e8116bfc67aae652a08b9b1235146d2",
+			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
 		assert_eq!(
 			EcdsaAuthority::new_message_root_to_sign(),
@@ -268,7 +268,7 @@ fn sync_interval_and_max_pending_period() {
 		);
 		run_to_block(offset + <<Runtime as Config>::MaxPendingPeriod as Get<u64>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
-			"0xafd9fc3dc135079be23746b4beb27255e5d3b4c5f3d05db766af751c0ed97920",
+			"0x3e5c445233cc9d281c4fde6ffc5d1c57701d932afba5e6cea07f9b1e88d41fc6",
 		);
 		assert_eq!(
 			EcdsaAuthority::new_message_root_to_sign(),
@@ -318,7 +318,7 @@ fn submit_authorities_change_signature() {
 		assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), a_3));
 		let operation = Operation::AddMember { new: a_3 };
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x3ad89c7824d6e83c180482c888a0af99baa95ce17a39285d6f943df5d95e7759",
+			"0x7c2560e894619daa9e7369148a97b05d16e1c439c2467b08f64af578aba9cb4a",
 		);
 		assert_eq!(
 			EcdsaAuthority::authorities_change_to_sign(),
@@ -373,7 +373,7 @@ fn submit_authorities_change_signature() {
 				},
 				Event::CollectingNewMessageRootSignatures {
 					message: array_bytes::hex_n_into_unchecked(
-						"0xe7bded73843f446f46b42ee0e0cc435f4f66fbcedf36c635c437a4d63bb44696"
+						"0x1a8ed5724cc495c64b46b43c079e82e299aaac24f79deae23bbfea88e2e1abdc"
 					)
 				}
 			]
@@ -399,7 +399,7 @@ fn submit_new_message_root_signature() {
 
 		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x742776a31e49b3f5a2a15a6781eb99f96e8116bfc67aae652a08b9b1235146d2",
+			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
 		assert_eq!(
 			EcdsaAuthority::new_message_root_to_sign(),
@@ -485,7 +485,7 @@ fn tx_fee() {
 		(2..<Runtime as Config>::SyncInterval::get()).for_each(|n| run_to_block(n as _));
 		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x742776a31e49b3f5a2a15a6781eb99f96e8116bfc67aae652a08b9b1235146d2",
+			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
 
 		// Free for first-correct signature.
@@ -508,7 +508,7 @@ fn tx_fee() {
 
 		assert_ok!(EcdsaAuthority::remove_authority(RuntimeOrigin::root(), a_1));
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x24956af4b0842e1caec63782602c5a94089ba7c8ab8bd12d4243bb1a893b8af0",
+			"0x9c9af6df8ad32bce1fe3e8e4a1c638843786b2cc7f7932ff4d3f2de7b29b2632",
 		);
 
 		// Free for first-correct signature.
