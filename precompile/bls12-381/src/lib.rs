@@ -36,6 +36,7 @@ use sp_std::prelude::*;
 /// the `AMD Ryzen 7 5700G`,  this precompile consumed at least 117_954_459_000 weight. So we give
 /// them more than that to ensure there is enough time for other machine types.
 const BLS_WEIGHT: u64 = 150_000_000_000;
+
 pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
