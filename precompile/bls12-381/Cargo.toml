@@ -22,7 +22,8 @@ pallet-evm = { workspace = true }
 precompile-utils = { workspace = true }
 
 # substrate
-sp-std = { workspace = true }
+frame-support = { workspace = true }
+sp-std        = { workspace = true }
 
 [dev-dependencies]
 rand    = { version = "0.8.5" }
@@ -46,5 +47,6 @@ std = [
 	"precompile-utils/std",
 
 	# substrate
+	"frame-support/std",
 	"sp-std/std",
 ]

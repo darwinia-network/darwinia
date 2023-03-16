@@ -21,7 +21,7 @@ use crate::*;
 // frontier
 use pallet_evm::Precompile;
 
-const BLOCK_GAS_LIMIT: u64 = 10_000_000;
+const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
 	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
 	pub PrecompilesValue: PangolinPrecompiles<Runtime> = PangolinPrecompiles::<_>::new();
