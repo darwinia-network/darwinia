@@ -4,7 +4,7 @@ import { JsonRpcResponse } from "web3-core-helpers";
 export const CHAIN_ID = 43;
 export const HOST_HTTP_URL = "http://127.0.0.1:9933";
 export const HOST_WS_URL = "ws://127.0.0.1:9944";
-export const BLOCK_GAS_LIMIT = 10000000;
+export const BLOCK_GAS_LIMIT = 20000000;
 export const DEFAULT_GAS = 4000000;
 
 // Accounts builtin
