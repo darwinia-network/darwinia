@@ -40,6 +40,9 @@ pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
 impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
+	/// pub_keys should be trusted the origin of the serialization
+	/// precompile do not check the keys is valid
+	/// see more: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
 	#[precompile::public("fast_aggregate_verify(bytes[],bytes,bytes)")]
 	#[precompile::view]
 	fn fast_aggregate_verify(
