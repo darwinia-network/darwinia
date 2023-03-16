@@ -135,7 +135,7 @@ mod benchmarks {
 
 		// The worst case:
 		//
-		// Need to migrate all kinds of data.
+		// Migrate all kinds of data.
 		preset_data::<T>(&from);
 
 		#[extrinsic_call]
