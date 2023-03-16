@@ -469,7 +469,7 @@ pub mod pallet {
 					),
 				}
 			};
-			let message = Sign::eth_signable_message(
+			let message = Sign::signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[
@@ -547,7 +547,7 @@ pub mod pallet {
 				message_root,
 				nonce: <Nonce<T>>::get(),
 			};
-			let message = Sign::eth_signable_message(
+			let message = Sign::signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[

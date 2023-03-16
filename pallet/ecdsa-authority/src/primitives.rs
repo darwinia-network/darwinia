@@ -47,12 +47,16 @@ impl Sign {
 		hashing::keccak_256(data)
 	}
 
-	pub(crate) fn eth_signable_message(chain_id: u64, spec_name: &[u8], data: &[u8]) -> Hash {
-		// \x19\x01 + keccack256(ChainIDSpecName::ecdsa-authority) + struct_hash
+	pub fn domain_separator(chain_id: u64, spec_name: &[u8]) -> [u8; 32] {
+		Self::hash(&[&chain_id.to_be_bytes(), spec_name, b"::ecdsa-authority"].concat())
+	}
+
+	// \x19\x01 + keccack256(ChainIDSpecName::ecdsa-authority) + struct_hash
+	pub(crate) fn signable_message(chain_id: u64, spec_name: &[u8], data: &[u8]) -> Hash {
 		Hash(Self::hash(
 			&[
 				b"\x19\x01".as_slice(),
-				&Self::hash(&[&chain_id.to_le_bytes(), spec_name, b"::ecdsa-authority"].concat()),
+				&Self::domain_separator(chain_id, spec_name),
 				&Self::hash(data),
 			]
 			.concat(),
@@ -102,20 +106,23 @@ pub struct Commitment {
 }
 
 #[test]
-fn eth_signable_message() {
+fn signable_message() {
 	assert_eq!(
-		array_bytes::bytes2hex("0x", Sign::eth_signable_message(46, b"Darwinia", &[0; 32])),
-		"0xb492857010088b0dff298645e9105549d088aab7bcb20cf5a3d0bc17dce91045"
+		array_bytes::bytes2hex("0x", Sign::domain_separator(46, b"Darwinia").as_ref()),
+		"0xc494742e979bd6ab2dca4950fddd8809e1502ab8ef7b8d749364ec32cb6e1b3e"
 	);
 	assert_eq!(
-		array_bytes::bytes2hex("0x", Sign::hash(b"46Darwinia::ecdsa-authority")),
-		"0xf8a76f5ceeff36d74ff99c4efc0077bcc334721f17d1d5f17cfca78455967e1e"
+		array_bytes::bytes2hex("0x", Sign::domain_separator(43, b"Pangolin2").as_ref()),
+		"0xe97c73e46305f3bca2279f002665725cd29e465c6624e83a135f7b2e6b1a8134"
 	);
 
-	let data = array_bytes::hex2bytes_unchecked("0x30a82982a8d5050d1c83bbea574aea301a4d317840a8c4734a308ffaa6a63bc8cb76085b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000100000000000000000000000068898db1012808808c903f390909c52d9f7067490000000000000000000000004cdc1dbbd754ea539f1ffaea91f1b6c4b8dd14bd");
 	assert_eq!(
-		array_bytes::bytes2hex("0x", Sign::eth_signable_message(45, b"Pangoro", &data)),
-		"0x4bddffe492f1091c1902d1952fc4673b12915f4b22822c6c84eacad574f11f2e"
+		array_bytes::bytes2hex("0x", Sign::signable_message(46, b"Darwinia", &[0; 32])),
+		"0xe52c7ebc7e478b623a16cc38469eca4aa1255bed6cd2599e529080d27ecaed32"
+	);
+	assert_eq!(
+		array_bytes::bytes2hex("0x", Sign::signable_message(45, b"Pangoro", &array_bytes::hex2bytes_unchecked("0x30a82982a8d5050d1c83bbea574aea301a4d317840a8c4734a308ffaa6a63bc8cb76085b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000100000000000000000000000068898db1012808808c903f390909c52d9f7067490000000000000000000000004cdc1dbbd754ea539f1ffaea91f1b6c4b8dd14bd"))),
+		"0x9688cfb794c97094994409ed1c7c7caad076ae53ec13af8a370b55654f7bcb36"
 	);
 
 	let operation = Operation::SwapMembers {
@@ -134,7 +141,7 @@ fn eth_signable_message() {
 		ethabi::Token::Uint(0.into()),
 	]);
 	assert_eq!(
-		array_bytes::bytes2hex("0x", Sign::eth_signable_message(45, b"Pangoro", &encoded)),
-		"0xe328aa10278425238407d49104ac5a55fd68e7f378b327c902d4d5035cfcfedf"
+		array_bytes::bytes2hex("0x", Sign::signable_message(45, b"Pangoro", &encoded)),
+		"0x2ca922116daa8c7fec2b58362b58764e83f3b24e906fb50f58e3e1a2e208fb77"
 	);
 }
