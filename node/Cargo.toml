@@ -72,7 +72,6 @@ sc-network                     = { workspace = true }
 sc-network-common              = { workspace = true }
 sc-offchain                    = { workspace = true }
 sc-rpc                         = { workspace = true }
-sc-rpc-api                     = { workspace = true }
 sc-service                     = { workspace = true }
 sc-sysinfo                     = { workspace = true }
 sc-telemetry                   = { workspace = true }

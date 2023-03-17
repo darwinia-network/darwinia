@@ -126,6 +126,7 @@ frame-try-runtime         = { optional = true, workspace = true }
 # darwinia
 darwinia-common-runtime = { features = ["test"], workspace = true }
 # substrate
+sp-io      = { workspace = true }
 sp-keyring = { workspace = true }
 
 [features]

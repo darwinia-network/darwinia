@@ -1535,6 +1535,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keyring",
  "sp-offchain",
  "sp-runtime",
@@ -2253,7 +2254,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-service",
  "sc-client-api",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.37)",
  "serde",
  "serde_json",
  "sp-api",
@@ -2450,7 +2451,6 @@ dependencies = [
  "sc-network-common",
  "sc-offchain",
  "sc-rpc",
- "sc-rpc-api",
  "sc-service",
  "sc-sysinfo",
  "sc-telemetry",
@@ -2805,6 +2805,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keyring",
  "sp-offchain",
  "sp-runtime",
@@ -8077,6 +8078,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keyring",
  "sp-offchain",
  "sp-runtime",
@@ -8179,6 +8181,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keyring",
  "sp-offchain",
  "sp-runtime",
@@ -11052,7 +11055,7 @@ dependencies = [
  "jsonrpsee",
  "sc-consensus-babe",
  "sc-consensus-epochs",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37)",
  "serde",
  "sp-api",
  "sp-application-crypto",
@@ -11500,7 +11503,7 @@ dependencies = [
  "sc-block-builder",
  "sc-chain-spec",
  "sc-client-api",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37)",
  "sc-tracing",
  "sc-transaction-pool-api",
  "sc-utils",
@@ -11520,6 +11523,25 @@ dependencies = [
 name = "sc-rpc-api"
 version = "0.10.0-dev"
 source = "git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37#3f1259a3e4e896a39733564a77f24116ebc370cc"
+dependencies = [
+ "jsonrpsee",
+ "parity-scale-codec",
+ "sc-chain-spec",
+ "sc-transaction-pool-api",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-version",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.37#f38bd6671d460293c93062cc1e4fe9e9e490cb29"
 dependencies = [
  "jsonrpsee",
  "parity-scale-codec",
@@ -13197,7 +13219,7 @@ dependencies = [
  "jsonrpsee",
  "log",
  "parity-scale-codec",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37)",
  "sc-transaction-pool-api",
  "sp-api",
  "sp-block-builder",
@@ -13226,7 +13248,7 @@ dependencies = [
  "async-trait",
  "jsonrpsee",
  "log",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37)",
  "serde",
  "sp-runtime",
 ]
@@ -13240,7 +13262,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-client-api",
- "sc-rpc-api",
+ "sc-rpc-api 0.10.0-dev (git+https://github.com/darwinia-network/substrate?branch=polkadot-v0.9.37)",
  "scale-info",
  "serde",
  "sp-core",
