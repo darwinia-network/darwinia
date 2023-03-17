@@ -36,5 +36,3 @@ docker pull ghcr.io/darwinia-network/darwinia:{{ tag }}
 ```docker
 docker pull ghcr.io/darwinia-network/darwinia:sha-{{ sha }}
 ```
-
-## Changelog
