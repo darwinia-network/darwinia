@@ -479,25 +479,32 @@ pub mod pallet {
 				l.unstaking_kton.retain(|(_, t)| t > &now);
 
 				let staking_pot = darwinia_staking::account_id();
+				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
 
-				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-					&to,
-					&staking_pot,
-					l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>(),
-					KeepAlive,
-				)?;
+				// To calculated the worst case in benchmark.
+				debug_assert!(r > 0);
 
-				let sum = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+				if r > 0 {
+					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
+						&to,
+						&staking_pot,
+						r,
+						KeepAlive,
+					)?;
+				}
 
-				if let Some(amount) = <pallet_assets::Pallet<T>>::maybe_balance(KTON_ID, to) {
-					if amount != 0 && amount >= sum {
-						<pallet_assets::Pallet<T>>::transfer(
-							RawOrigin::Signed(to).into(),
-							KTON_ID.into(),
-							staking_pot,
-							sum,
-						)?;
-					}
+				let k = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+
+				// To calculated the worst case in benchmark.
+				debug_assert!(k > 0);
+
+				if k != 0 {
+					<pallet_assets::Pallet<T>>::transfer(
+						RawOrigin::Signed(to).into(),
+						KTON_ID.into(),
+						staking_pot,
+						k,
+					)?;
 				}
 
 				<darwinia_staking::Ledgers<T>>::insert(to, l);

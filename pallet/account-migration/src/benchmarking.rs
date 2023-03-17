@@ -34,14 +34,13 @@ mod benchmarks {
 		T: Config,
 	{
 		let encoded_kton_id = KTON_ID.encode();
-		let kton = 1;
 
 		if let Some(mut asset_details) = migration::take_storage_value::<AssetDetails>(
 			b"Assets",
 			b"Asset",
 			&Blake2_128Concat::hash(&encoded_kton_id),
 		) {
-			asset_details.supply += kton;
+			asset_details.supply = 100;
 
 			migration::put_storage_value(
 				b"Assets",
@@ -51,11 +50,17 @@ mod benchmarks {
 			);
 		}
 
-		<Accounts<T>>::insert(&from, AccountInfo::default());
+		<Accounts<T>>::insert(
+			&from,
+			AccountInfo {
+				data: AccountData { free: 100, ..Default::default() },
+				..Default::default()
+			},
+		);
 		<KtonAccounts<T>>::insert(
 			&from,
 			AssetAccount {
-				balance: kton,
+				balance: 100,
 				is_frozen: Default::default(),
 				reason: ExistenceReason::Sufficient,
 				extra: Default::default(),
@@ -64,7 +69,7 @@ mod benchmarks {
 		<Vestings<T>>::insert(
 			&from,
 			vec![
-				VestingInfo::new(Default::default(), Default::default(), Default::default());
+				VestingInfo::new(1, Default::default(), Default::default());
 				<T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES as usize
 			],
 		);
@@ -97,11 +102,24 @@ mod benchmarks {
 				},
 			},
 		);
+		<Deposits<T>>::insert(
+			&from,
+			vec![
+				Deposit {
+					id: Default::default(),
+					value: 1,
+					start_time: Default::default(),
+					expired_time: Default::default(),
+					in_use: Default::default(),
+				};
+				<T as darwinia_deposit::Config>::MaxDeposits::get() as usize
+			],
+		);
 		<Ledgers<T>>::insert(
 			&from,
 			Ledger {
-				staked_ring: Default::default(),
-				staked_kton: kton,
+				staked_ring: 1,
+				staked_kton: 1,
 				staked_deposits: BoundedVec::truncate_from(vec![
 					Default::default();
 					<T as darwinia_deposit::Config>::MaxDeposits::get()
