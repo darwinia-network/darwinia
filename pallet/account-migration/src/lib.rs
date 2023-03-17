@@ -569,7 +569,7 @@ pub struct Multisig {
 }
 
 /// Build a Darwinia account migration message.
-pub(crate) fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
+pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
 		// https://github.com/polkadot-js/common/issues/1710
 		b"<Bytes>I authorize the migration to ",
