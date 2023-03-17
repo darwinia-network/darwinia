@@ -2410,7 +2410,6 @@ dependencies = [
  "clap",
  "crab-runtime",
  "cumulus-client-cli",
- "cumulus-client-collator",
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
  "cumulus-client-network",
@@ -2421,7 +2420,6 @@ dependencies = [
  "darwinia-runtime",
  "dc-primitives",
  "fc-cli",
- "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -3596,25 +3594,6 @@ dependencies = [
  "sp-api",
  "sp-blockchain",
  "sp-runtime",
-]
-
-[[package]]
-name = "fc-consensus"
-version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.37#3aaad52672ea4977ad39cf315c022085c23ddfd4"
-dependencies = [
- "async-trait",
- "fc-db",
- "fp-consensus",
- "fp-rpc",
- "sc-client-api",
- "sc-consensus",
- "sp-api",
- "sp-block-builder",
- "sp-blockchain",
- "sp-consensus",
- "sp-runtime",
- "thiserror",
 ]
 
 [[package]]

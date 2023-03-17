@@ -19,6 +19,7 @@
 //! Darwinia core types.
 
 #![no_std]
+#![deny(unused_crate_dependencies)]
 #![deny(missing_docs)]
 
 /// Balance type.

@@ -24,7 +24,6 @@ trauma      = { version = "2.2" }
 
 # cumulus
 cumulus-client-cli                    = { workspace = true }
-cumulus-client-collator               = { workspace = true }
 cumulus-client-consensus-aura         = { workspace = true }
 cumulus-client-consensus-common       = { workspace = true }
 cumulus-client-network                = { workspace = true }
@@ -42,7 +41,6 @@ pangoro-runtime  = { optional = true, workspace = true }
 
 # frontier
 fc-cli          = { workspace = true }
-fc-consensus    = { workspace = true }
 fc-db           = { workspace = true }
 fc-mapping-sync = { workspace = true }
 fc-rpc          = { features = ["rpc-binary-search-estimate"], workspace = true }
