@@ -21,7 +21,6 @@ pallet-evm  = { workspace = true }
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
-sp-runtime    = { workspace = true }
 sp-std        = { workspace = true }
 
 [dev-dependencies]
@@ -46,6 +45,7 @@ precompile-utils = { workspace = true, features = ["testing"] }
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true }
+sp-runtime       = { workspace = true }
 
 [features]
 default = ["std"]
@@ -64,7 +64,6 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",
-	"sp-runtime/std",
 	"sp-std/std",
 ]
 

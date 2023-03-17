@@ -17,6 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(unused_crate_dependencies)]
 
 // core
 use core::marker::PhantomData;

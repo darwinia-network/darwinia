@@ -20,6 +20,7 @@
 //! Works with https://github.com/darwinia-network/darwinia-messages-sol/pull/217
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(unused_crate_dependencies)]
 #![allow(clippy::type_complexity)]
 
 pub mod primitives;

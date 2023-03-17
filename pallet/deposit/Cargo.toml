@@ -21,7 +21,6 @@ frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
 pallet-timestamp   = { workspace = true }
-sp-core            = { workspace = true }
 sp-runtime         = { workspace = true }
 sp-std             = { workspace = true }
 
@@ -29,7 +28,8 @@ sp-std             = { workspace = true }
 # substrate
 pallet-assets   = { workspace = true, features = ["std"] }
 pallet-balances = { workspace = true, features = ["std"] }
-sp-io           = { workspace = true, features = ["std"] }
+sp-io           = { workspace = true }
+sp-core         = { workspace = true }
 
 [features]
 default = ["std"]
@@ -46,7 +46,6 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-timestamp/std",
-	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	# substrate optional
