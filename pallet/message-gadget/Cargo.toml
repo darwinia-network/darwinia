@@ -28,6 +28,7 @@ array-bytes = { workspace = true }
 # substrate
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
+sp-runtime       = { workspace = true }
 
 [features]
 default = ["std"]
