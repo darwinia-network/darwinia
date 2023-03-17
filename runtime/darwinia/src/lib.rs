@@ -19,6 +19,7 @@
 //! Darwinia runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(unused_crate_dependencies)]
 #![recursion_limit = "256"]
 
 #[cfg(feature = "std")]
