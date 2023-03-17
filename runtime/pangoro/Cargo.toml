@@ -251,7 +251,10 @@ fast-runtime = []
 # A feature that should be enabled when the runtime should be build for on-chain
 # deployment. This will disable stuff that shouldn't be part of the on-chain wasm
 # to make it smaller like logging for example.
-on-chain-release-build = ["sp-api/disable-logging"]
+on-chain-release-build = [
+	# substrate
+	"sp-api/disable-logging",
+]
 
 runtime-benchmarks = [
 	# crates.io
@@ -264,8 +267,10 @@ runtime-benchmarks = [
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 
 	# darwinia
+	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
+	"darwinia-staking/runtime-benchmarks",
 
 	# darwinia-messages-substrate
 	"bridge-runtime-common/runtime-benchmarks",

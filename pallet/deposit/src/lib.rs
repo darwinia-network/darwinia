@@ -87,7 +87,7 @@ pub trait SimpleAsset {
 pub type DepositId = u16;
 
 /// Deposit.
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Deposit {
 	/// Deposit ID.
 	pub id: DepositId,

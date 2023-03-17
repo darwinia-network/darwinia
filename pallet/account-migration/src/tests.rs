@@ -16,11 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-mod mock;
-use mock::*;
-
 // darwinia
-use darwinia_account_migration::*;
+use crate::{mock::*, *};
 // substrate
 use frame_support::{assert_noop, assert_ok};
 use frame_system::AccountInfo;
