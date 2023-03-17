@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
+#![cfg_attr(feature = "runtime-benchmarks", deny(unused_crate_dependencies))]
 // TODO:
 // #![deny(missing_docs)]
 

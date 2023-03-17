@@ -315,9 +315,6 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
-	# crates.io
-	"array-bytes",
-
 	# cumulus
 	"cumulus-pallet-aura-ext/try-runtime",
 	"cumulus-pallet-dmp-queue/try-runtime",
