@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_staking;
 // darwinia
-use crate::Ledger;
+use darwinia_staking::*;
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};

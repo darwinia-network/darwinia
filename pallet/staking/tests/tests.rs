@@ -16,11 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{mock::*, *};
+mod mock;
+use mock::*;
+
 // core
 use core::time::Duration;
 // darwinia
 use darwinia_deposit::Error as DepositError;
+use darwinia_staking::*;
 use dc_types::{Balance, UNIT};
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};

@@ -16,11 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-mod mock;
-use mock::*;
-
 // darwinia
-use darwinia_ecdsa_authority::{primitives::*, *};
+use crate::{mock::*, primitives::*, *};
 // substrate
 use frame_support::{
 	assert_noop, assert_ok,
@@ -85,7 +82,7 @@ fn add_authority() {
 		);
 
 		// Case 4.
-		(1..<Runtime as Config>::MaxAuthorities::get()).for_each(|i| {
+		(1..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get()).for_each(|i| {
 			assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), account_id_of(i as _)));
 			presume_authority_change_succeed();
 			assert_eq!(EcdsaAuthority::nonce(), 1 + i);
@@ -101,7 +98,7 @@ fn add_authority() {
 		// Check order.
 		assert_eq!(
 			EcdsaAuthority::authorities(),
-			(0..<Runtime as Config>::MaxAuthorities::get())
+			(0..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get())
 				.rev()
 				.map(|i| account_id_of(i as _))
 				.collect::<Vec<_>>()
@@ -225,11 +222,11 @@ fn swap_authority() {
 fn sync_interval_and_max_pending_period() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Check new message root while reaching the sync interval checkpoint.
-		(2..<Runtime as Config>::SyncInterval::get()).for_each(|i| {
+		(2..<<Runtime as Config>::SyncInterval as Get<u64>>::get()).for_each(|i| {
 			run_to_block(i as _);
 			assert!(EcdsaAuthority::new_message_root_to_sign().is_none());
 		});
-		run_to_block(<Runtime as Config>::SyncInterval::get());
+		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
@@ -482,7 +479,8 @@ fn tx_fee() {
 	let (_, a_2) = gen_pair(2);
 
 	ExtBuilder::default().authorities(vec![a_1, a_2]).build().execute_with(|| {
-		(2..<Runtime as Config>::SyncInterval::get()).for_each(|n| run_to_block(n as _));
+		(2..<<Runtime as Config>::SyncInterval as Get<u64>>::get())
+			.for_each(|n| run_to_block(n as _));
 		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",

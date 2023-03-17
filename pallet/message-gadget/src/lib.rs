@@ -30,6 +30,9 @@ use sp_core::{H160, H256};
 use sp_io::hashing;
 use sp_std::prelude::*;
 
+#[cfg(test)]
+mod tests;
+
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia

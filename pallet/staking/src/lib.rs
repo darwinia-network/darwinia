@@ -32,13 +32,8 @@
 // TODO: nomination upper limit
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
+#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![deny(missing_docs)]
-
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
 
 mod weights;
 pub use weights::WeightInfo;

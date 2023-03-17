@@ -16,12 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+use crate as darwinia_ecdsa_authority;
 // std
 use std::iter;
 // crates.io
 use libsecp256k1::{Message, PublicKey, SecretKey};
 // darwinia
-use darwinia_ecdsa_authority::{primitives::*, *};
+use crate::{primitives::*, *};
 use dc_primitives::AccountId;
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};

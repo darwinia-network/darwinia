@@ -16,8 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+use crate as darwinia_message_gadget;
 // darwinia
-use darwinia_message_gadget::*;
+use crate::*;
 
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<u128>;

@@ -23,6 +23,11 @@
 #![deny(unused_crate_dependencies)]
 #![allow(clippy::type_complexity)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 pub mod primitives;
 use primitives::*;
 
@@ -34,7 +39,7 @@ use ethabi::Token;
 // darwinia
 use dc_primitives::AccountId;
 // substrate
-use frame_support::{pallet_prelude::*, traits::Get};
+use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 use sp_runtime::{
 	traits::{SaturatedConversion, Saturating, Zero},
