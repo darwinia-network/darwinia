@@ -23,6 +23,7 @@ on:
 
 env:
   CARGO_INCREMENTAL: 1
+  CARGO_TERM_COLOR: always
 
   GITHUB_CACHE_VERSION: 2
 
