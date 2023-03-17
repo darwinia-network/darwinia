@@ -2509,6 +2509,7 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
  "dc-primitives",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-assets",

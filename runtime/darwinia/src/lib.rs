@@ -168,6 +168,7 @@ frame_support::construct_runtime! {
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
 	// darwinia
+	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgeKusamaGrandpa]

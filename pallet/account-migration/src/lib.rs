@@ -43,6 +43,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+mod weights;
+pub use weights::WeightInfo;
+
 // darwinia
 use darwinia_deposit::Deposit;
 use darwinia_staking::Ledger;
@@ -73,18 +84,18 @@ use sp_std::prelude::*;
 pub mod pallet {
 	use super::*;
 
-	const KTON_ID: u64 = 1026;
+	pub(crate) const KTON_ID: u64 = 1026;
 
 	/// The migration destination was already taken by someone.
-	pub const E_ACCOUNT_ALREADY_EXISTED: u8 = 0;
+	pub(crate) const E_ACCOUNT_ALREADY_EXISTED: u8 = 0;
 	/// The migration source was not exist.
-	pub const E_ACCOUNT_NOT_FOUND: u8 = 1;
+	pub(crate) const E_ACCOUNT_NOT_FOUND: u8 = 1;
 	/// Invalid signature.
-	pub const E_INVALID_SIGNATURE: u8 = 2;
+	pub(crate) const E_INVALID_SIGNATURE: u8 = 2;
 	/// Duplicative submission.
-	pub const E_DUPLICATIVE_SUBMISSION: u8 = 3;
+	pub(crate) const E_DUPLICATIVE_SUBMISSION: u8 = 3;
 	/// The account is not a member of the multisig.
-	pub const E_NOT_MULTISIG_MEMBER: u8 = 4;
+	pub(crate) const E_NOT_MULTISIG_MEMBER: u8 = 4;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -106,6 +117,9 @@ pub mod pallet {
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[allow(missing_docs)]
@@ -183,7 +197,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Migrate all the account data under the `from` to `to`.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate())]
 		pub fn migrate(
 			origin: OriginFor<T>,
 			from: AccountId32,
@@ -201,7 +215,7 @@ pub mod pallet {
 		///
 		/// The `_signature` should be provided by `who`.
 		#[pallet::call_index(1)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(others.len() as u32, *threshold as u32))]
 		pub fn migrate_multisig(
 			origin: OriginFor<T>,
 			submitter: AccountId32,
@@ -238,7 +252,7 @@ pub mod pallet {
 		///
 		/// The `_signature` should be provided by `submitter`.
 		#[pallet::call_index(2)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::complete_multisig_migration().saturating_add(<T as Config>::WeightInfo::migrate()))]
 		pub fn complete_multisig_migration(
 			origin: OriginFor<T>,
 			multisig: AccountId32,
@@ -465,25 +479,32 @@ pub mod pallet {
 				l.unstaking_kton.retain(|(_, t)| t > &now);
 
 				let staking_pot = darwinia_staking::account_id();
+				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
 
-				<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-					&to,
-					&staking_pot,
-					l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>(),
-					KeepAlive,
-				)?;
+				// To calculated the worst case in benchmark.
+				debug_assert!(r > 0);
 
-				let sum = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+				if r > 0 {
+					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
+						&to,
+						&staking_pot,
+						r,
+						KeepAlive,
+					)?;
+				}
 
-				if let Some(amount) = <pallet_assets::Pallet<T>>::maybe_balance(KTON_ID, to) {
-					if amount >= sum {
-						<pallet_assets::Pallet<T>>::transfer(
-							RawOrigin::Signed(to).into(),
-							KTON_ID.into(),
-							staking_pot,
-							sum,
-						)?;
-					}
+				let k = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
+
+				// To calculated the worst case in benchmark.
+				debug_assert!(k > 0);
+
+				if k != 0 {
+					<pallet_assets::Pallet<T>>::transfer(
+						RawOrigin::Signed(to).into(),
+						KTON_ID.into(),
+						staking_pot,
+						k,
+					)?;
 				}
 
 				<darwinia_staking::Ledgers<T>>::insert(to, l);
@@ -498,7 +519,7 @@ pub mod pallet {
 pub use pallet::*;
 
 /// Raw signature.
-pub type Signature = [u8; 64];
+pub(crate) type Signature = [u8; 64];
 
 // Copy from <https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115>.
 // Due to its visibility.
@@ -512,7 +533,7 @@ pub struct AssetAccount {
 }
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub enum ExistenceReason {
+pub(crate) enum ExistenceReason {
 	#[codec(index = 0)]
 	Consumer,
 	#[codec(index = 1)]
@@ -524,7 +545,7 @@ pub enum ExistenceReason {
 }
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct AssetDetails {
+pub(crate) struct AssetDetails {
 	owner: AccountId20,
 	issuer: AccountId20,
 	admin: AccountId20,
@@ -540,7 +561,7 @@ pub struct AssetDetails {
 }
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub enum AssetStatus {
+pub(crate) enum AssetStatus {
 	Live,
 	Frozen,
 	Destroying,
@@ -549,9 +570,9 @@ pub enum AssetStatus {
 #[allow(missing_docs)]
 #[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
 pub struct Multisig {
-	pub migrate_to: AccountId20,
-	pub members: Vec<(AccountId32, bool)>,
-	pub threshold: u16,
+	migrate_to: AccountId20,
+	members: Vec<(AccountId32, bool)>,
+	threshold: u16,
 }
 
 /// Build a Darwinia account migration message.
@@ -573,7 +594,7 @@ pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8
 }
 
 /// Verify the curve 25519 signatures.
-pub fn verify_curve_25519_signature(
+pub(crate) fn verify_curve_25519_signature(
 	public_key: &AccountId32,
 	message: &[u8],
 	signature: &Signature,
@@ -583,7 +604,7 @@ pub fn verify_curve_25519_signature(
 }
 
 /// Calculate the multisig account.
-pub fn multisig_of(
+pub(crate) fn multisig_of(
 	who: AccountId32,
 	others: Vec<AccountId32>,
 	threshold: u16,
