@@ -21,6 +21,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unused_crate_dependencies)]
 #![deny(missing_docs)]
+
 #[cfg(test)]
 mod test;
 
