@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{test_utils::*, *};
+use crate::*;
 // substrate
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -79,7 +79,9 @@ mod benchmarks {
 
 	#[benchmark]
 	fn submit_authorities_change_signature() {
-		let (sk, pk) = gen_pair(1);
+		// https://github.com/paritytech/libsecp256k1/issues/134
+		// let (sk, pk) = gen_pair(1);
+		let pk = frame_benchmarking::account("", 777, 777);
 		let a = frame_benchmarking::account("", 0, 0);
 		let data = (
 			Operation::AddMember { new: a },
@@ -87,7 +89,8 @@ mod benchmarks {
 			Hash::default(),
 			<BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>>::default(),
 		);
-		let sig = sign(&sk, &data.2 .0);
+		// let sig = sign(&sk, &data.2 .0);
+		let sig = Default::default();
 
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), pk).unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();
@@ -103,7 +106,9 @@ mod benchmarks {
 
 	#[benchmark]
 	fn submit_new_message_root_signature() {
-		let (sk, pk) = gen_pair(1);
+		// https://github.com/paritytech/libsecp256k1/issues/134
+		// let (sk, pk) = gen_pair(1);
+		let pk = frame_benchmarking::account("", 777, 777);
 		let data = (
 			Commitment {
 				block_number: Default::default(),
@@ -113,7 +118,8 @@ mod benchmarks {
 			Hash::default(),
 			<BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>>::default(),
 		);
-		let sig = sign(&sk, &data.1 .0);
+		// let sig = sign(&sk, &data.1 .0);
+		let sig = Default::default();
 
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), pk).unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();

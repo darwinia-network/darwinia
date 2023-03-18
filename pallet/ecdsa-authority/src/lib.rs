@@ -19,8 +19,8 @@
 //! # Relay Authorities Module
 //! Works with https://github.com/darwinia-network/darwinia-messages-sol/pull/217
 
-#![allow(clippy::type_complexity)]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::type_complexity)]
 #![deny(missing_docs)]
 
 #[cfg(test)]
@@ -240,7 +240,7 @@ pub mod pallet {
 		/// Not allow to call while authorities is changing.
 		/// This will insert new authority into the index 0 of authorities.
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::add_authority())]
 		pub fn add_authority(origin: OriginFor<T>, new: T::AccountId) -> DispatchResult {
 			ensure_root(origin)?;
 
@@ -265,7 +265,7 @@ pub mod pallet {
 		///
 		/// Not allow to call while authorities is changing.
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::remove_authority())]
 		pub fn remove_authority(origin: OriginFor<T>, old: T::AccountId) -> DispatchResult {
 			ensure_root(origin)?;
 
@@ -296,7 +296,7 @@ pub mod pallet {
 		///
 		/// Not allow to call while authorities is changing.
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::swap_authority())]
 		pub fn swap_authority(
 			origin: OriginFor<T>,
 			old: T::AccountId,
@@ -330,7 +330,7 @@ pub mod pallet {
 		///
 		/// Free to submit the first-correct signature.
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::submit_authorities_change_signature())]
 		pub fn submit_authorities_change_signature(
 			origin: OriginFor<T>,
 			signature: Signature,
@@ -379,7 +379,7 @@ pub mod pallet {
 		///
 		/// Free to submit the first-correct signature.
 		#[pallet::call_index(4)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::submit_new_message_root_signature())]
 		pub fn submit_new_message_root_signature(
 			origin: OriginFor<T>,
 			signature: Signature,

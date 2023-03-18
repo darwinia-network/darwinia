@@ -13,7 +13,8 @@ ethabi     = { version = "17.0", default-features = false }
 scale-info = { workspace = true }
 # crates.io optional
 array-bytes  = { workspace = true, optional = true }
-libsecp256k1 = { workspace = true, optional = true, default-features = false }
+# https://github.com/paritytech/libsecp256k1/issues/134
+# libsecp256k1 = { workspace = true, optional = true, default-features = false }
 
 # darwinia
 dc-primitives = { workspace = true }
@@ -33,18 +34,18 @@ frame-benchmarking = { workspace = true, optional = true }
 array-bytes  = { workspace = true }
 libsecp256k1 = { workspace = true }
 # substrate
-sp-version = { workspace = true }
+sp-version = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
-
 std = [
 	# crates.io
 	"codec/std",
 	"ethabi/std",
 	"scale-info/std",
 	# crates.io optional
-	"libsecp256k1?/std",
+	# https://github.com/paritytech/libsecp256k1/issues/134
+	# "libsecp256k1?/std",
 
 	# darwinia
 	"dc-primitives/std",
@@ -63,10 +64,14 @@ std = [
 runtime-benchmarks = [
 	# crates.io
 	"array-bytes",
-	"libsecp256k1",
+	# https://github.com/paritytech/libsecp256k1/issues/134
+	# "libsecp256k1",
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
 ]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]
