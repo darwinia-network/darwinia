@@ -100,9 +100,9 @@ impl<A> Operation<A> {
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Commitment {
-	pub block_number: u32,
-	pub message_root: Hash,
-	pub nonce: u32,
+	pub(crate) block_number: u32,
+	pub(crate) message_root: Hash,
+	pub(crate) nonce: u32,
 }
 
 #[test]

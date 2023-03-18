@@ -213,7 +213,7 @@ frame_support::construct_runtime! {
 	}
 }
 
-pub fn new_test_ext() -> TestExternalities {
+pub(crate) fn new_test_ext() -> TestExternalities {
 	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {

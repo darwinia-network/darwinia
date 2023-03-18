@@ -19,10 +19,22 @@
 //! # Relay Authorities Module
 //! Works with https://github.com/darwinia-network/darwinia-messages-sol/pull/217
 
-#![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::type_complexity)]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
-pub mod primitives;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+#[cfg(any(test, feature = "runtime-benchmarks"))]
+mod test_utils;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+mod primitives;
 use primitives::*;
 
 mod weights;
@@ -85,6 +97,7 @@ pub mod pallet {
 		type MessageRoot: Get<Option<Hash>>;
 	}
 
+	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -184,6 +197,7 @@ pub mod pallet {
 	where
 		T: Config,
 	{
+		/// The genesis authorities.
 		pub authorities: Vec<T::AccountId>,
 	}
 	#[cfg(feature = "std")]
@@ -429,7 +443,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn calculate_threshold(x: u32) -> u32 {
+		pub(crate) fn calculate_threshold(x: u32) -> u32 {
 			T::SignThreshold::get().mul_ceil(x)
 		}
 
@@ -494,7 +508,7 @@ pub mod pallet {
 			Perbill::from_rational(p, q) >= T::SignThreshold::get()
 		}
 
-		pub fn apply_next_authorities() {
+		pub(crate) fn apply_next_authorities() {
 			<AuthoritiesChangeToSign<T>>::kill();
 			<Authorities<T>>::put(<NextAuthorities<T>>::get());
 			<Nonce<T>>::mutate(|nonce| *nonce += 1);
