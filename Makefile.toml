@@ -2,10 +2,11 @@
 default_to_workspace = false
 
 [env]
+CARGO_INCREMENTAL = 1
 WASM_BUILD_WORKSPACE_HINT = "${CARGO_MAKE_WORKING_DIRECTORY}"
 
-[env.inc]
-CARGO_INCREMENTAL = 1
+[env.release]
+CARGO_INCREMENTAL = 0
 
 [tasks.fmt]
 args          = ["fmt"]

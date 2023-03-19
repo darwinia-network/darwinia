@@ -51,14 +51,14 @@ mod benchmarks {
 		}
 
 		<Accounts<T>>::insert(
-			&from,
+			from,
 			AccountInfo {
 				data: AccountData { free: 100, ..Default::default() },
 				..Default::default()
 			},
 		);
 		<KtonAccounts<T>>::insert(
-			&from,
+			from,
 			AssetAccount {
 				balance: 100,
 				is_frozen: Default::default(),
@@ -67,14 +67,14 @@ mod benchmarks {
 			},
 		);
 		<Vestings<T>>::insert(
-			&from,
+			from,
 			vec![
 				VestingInfo::new(1, Default::default(), Default::default());
 				<T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES as usize
 			],
 		);
 		<Identities<T>>::insert(
-			&from,
+			from,
 			Registration {
 				judgements: BoundedVec::truncate_from(vec![
 					(Default::default(), Judgement::Unknown);
@@ -103,7 +103,7 @@ mod benchmarks {
 			},
 		);
 		<Deposits<T>>::insert(
-			&from,
+			from,
 			vec![
 				Deposit {
 					id: Default::default(),
@@ -116,7 +116,7 @@ mod benchmarks {
 			],
 		);
 		<Ledgers<T>>::insert(
-			&from,
+			from,
 			Ledger {
 				staked_ring: 1,
 				staked_kton: 1,

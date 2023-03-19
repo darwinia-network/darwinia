@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, primitives::*, *};
+use crate::{mock::*, test_utils::*, *};
 // substrate
 use frame_support::{
 	assert_noop, assert_ok,
@@ -65,7 +65,7 @@ fn add_authority() {
 			EcdsaAuthority::add_authority(RuntimeOrigin::root(), a_0),
 			<Error<Runtime>>::OnAuthoritiesChange
 		);
-		presume_authority_change_succeed();
+		EcdsaAuthority::presume_authority_change_succeed();
 		assert_eq!(EcdsaAuthority::authorities(), vec![a_0]);
 		assert_eq!(EcdsaAuthority::nonce(), 1);
 
@@ -84,7 +84,7 @@ fn add_authority() {
 		// Case 4.
 		(1..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get()).for_each(|i| {
 			assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), account_id_of(i as _)));
-			presume_authority_change_succeed();
+			EcdsaAuthority::presume_authority_change_succeed();
 			assert_eq!(EcdsaAuthority::nonce(), 1 + i);
 		});
 		assert_noop!(
@@ -141,7 +141,7 @@ fn remove_authority() {
 			EcdsaAuthority::add_authority(RuntimeOrigin::root(), a_1),
 			<Error<Runtime>>::OnAuthoritiesChange
 		);
-		presume_authority_change_succeed();
+		EcdsaAuthority::presume_authority_change_succeed();
 		assert_eq!(EcdsaAuthority::authorities(), vec![a_2]);
 		assert_eq!(EcdsaAuthority::nonce(), 1);
 
@@ -200,7 +200,7 @@ fn swap_authority() {
 			EcdsaAuthority::swap_authority(RuntimeOrigin::root(), a_2, a_1),
 			<Error<Runtime>>::OnAuthoritiesChange
 		);
-		presume_authority_change_succeed();
+		EcdsaAuthority::presume_authority_change_succeed();
 		assert_eq!(EcdsaAuthority::authorities(), vec![a_2]);
 		assert_eq!(EcdsaAuthority::nonce(), 1);
 
@@ -327,6 +327,8 @@ fn submit_authorities_change_signature() {
 		);
 
 		// Case 2.
+		// https://github.com/paritytech/libsecp256k1/issues/134
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		assert_noop!(
 			EcdsaAuthority::submit_authorities_change_signature(
 				RuntimeOrigin::signed(a_1),
@@ -416,6 +418,8 @@ fn submit_new_message_root_signature() {
 		);
 
 		// Case 2.
+		// https://github.com/paritytech/libsecp256k1/issues/134
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		assert_noop!(
 			EcdsaAuthority::submit_new_message_root_signature(
 				RuntimeOrigin::signed(a_1),

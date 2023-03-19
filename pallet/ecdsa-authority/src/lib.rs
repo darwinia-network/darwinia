@@ -22,13 +22,20 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unused_crate_dependencies)]
 #![allow(clippy::type_complexity)]
+#![deny(missing_docs)]
 
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
 
-pub mod primitives;
+#[cfg(any(test, feature = "runtime-benchmarks"))]
+mod test_utils;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+mod primitives;
 use primitives::*;
 
 mod weights;
@@ -91,6 +98,7 @@ pub mod pallet {
 		type MessageRoot: Get<Option<Hash>>;
 	}
 
+	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -190,6 +198,7 @@ pub mod pallet {
 	where
 		T: Config,
 	{
+		/// The genesis authorities.
 		pub authorities: Vec<T::AccountId>,
 	}
 	#[cfg(feature = "std")]
@@ -232,7 +241,7 @@ pub mod pallet {
 		/// Not allow to call while authorities is changing.
 		/// This will insert new authority into the index 0 of authorities.
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::add_authority())]
 		pub fn add_authority(origin: OriginFor<T>, new: T::AccountId) -> DispatchResult {
 			ensure_root(origin)?;
 
@@ -257,7 +266,7 @@ pub mod pallet {
 		///
 		/// Not allow to call while authorities is changing.
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::remove_authority())]
 		pub fn remove_authority(origin: OriginFor<T>, old: T::AccountId) -> DispatchResult {
 			ensure_root(origin)?;
 
@@ -288,7 +297,7 @@ pub mod pallet {
 		///
 		/// Not allow to call while authorities is changing.
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::swap_authority())]
 		pub fn swap_authority(
 			origin: OriginFor<T>,
 			old: T::AccountId,
@@ -322,7 +331,7 @@ pub mod pallet {
 		///
 		/// Free to submit the first-correct signature.
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::submit_authorities_change_signature())]
 		pub fn submit_authorities_change_signature(
 			origin: OriginFor<T>,
 			signature: Signature,
@@ -371,7 +380,7 @@ pub mod pallet {
 		///
 		/// Free to submit the first-correct signature.
 		#[pallet::call_index(4)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::submit_new_message_root_signature())]
 		pub fn submit_new_message_root_signature(
 			origin: OriginFor<T>,
 			signature: Signature,
@@ -435,7 +444,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn calculate_threshold(x: u32) -> u32 {
+		pub(crate) fn calculate_threshold(x: u32) -> u32 {
 			T::SignThreshold::get().mul_ceil(x)
 		}
 
@@ -500,7 +509,7 @@ pub mod pallet {
 			Perbill::from_rational(p, q) >= T::SignThreshold::get()
 		}
 
-		pub fn apply_next_authorities() {
+		pub(crate) fn apply_next_authorities() {
 			<AuthoritiesChangeToSign<T>>::kill();
 			<Authorities<T>>::put(<NextAuthorities<T>>::get());
 			<Nonce<T>>::mutate(|nonce| *nonce += 1);

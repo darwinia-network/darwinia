@@ -16,17 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-use crate as darwinia_ecdsa_authority;
-// std
-use std::iter;
-// crates.io
-use libsecp256k1::{Message, PublicKey, SecretKey};
+pub use crate::{self as darwinia_ecdsa_authority};
+
 // darwinia
 use crate::{primitives::*, *};
 use dc_primitives::AccountId;
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};
-use sp_io::{hashing, TestExternalities};
+use sp_io::TestExternalities;
 
 frame_support::parameter_types! {
 	pub Version: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
@@ -89,17 +86,17 @@ frame_support::construct_runtime! {
 }
 
 #[derive(Default)]
-pub struct ExtBuilder {
+pub(crate) struct ExtBuilder {
 	authorities: Vec<AccountId>,
 }
 impl ExtBuilder {
-	pub fn authorities(mut self, authorities: Vec<AccountId>) -> Self {
+	pub(crate) fn authorities(mut self, authorities: Vec<AccountId>) -> Self {
 		self.authorities = authorities;
 
 		self
 	}
 
-	pub fn build(self) -> TestExternalities {
+	pub(crate) fn build(self) -> TestExternalities {
 		let Self { authorities } = self;
 		let mut storage =
 			frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
@@ -119,50 +116,26 @@ impl ExtBuilder {
 	}
 }
 
-pub fn account_id_of(id: u8) -> AccountId {
+pub(crate) fn account_id_of(id: u8) -> AccountId {
 	Address::repeat_byte(id).0.into()
 }
 
-pub fn gen_pair(byte: u8) -> (SecretKey, AccountId) {
-	let seed = iter::repeat(byte).take(32).collect::<Vec<_>>();
-	let secret_key = SecretKey::parse_slice(&seed).unwrap();
-	let public_key = PublicKey::from_secret_key(&secret_key).serialize();
-	let address =
-		array_bytes::slice_n_into_unchecked(&hashing::keccak_256(&public_key[1..65])[12..]);
-
-	(secret_key, address)
-}
-
-pub fn sign(secret_key: &SecretKey, message: &[u8; 32]) -> Signature {
-	let (sig, recovery_id) = libsecp256k1::sign(&Message::parse(message), secret_key);
-	let mut signature = [0u8; 65];
-
-	signature[0..64].copy_from_slice(&sig.serialize()[..]);
-	signature[64] = recovery_id.serialize();
-
-	Signature(signature)
-}
-
-pub fn presume_authority_change_succeed() {
-	EcdsaAuthority::apply_next_authorities();
-}
-
-pub fn message_root_of(byte: u8) -> Hash {
+pub(crate) fn message_root_of(byte: u8) -> Hash {
 	Hash::repeat_byte(byte)
 }
 
-pub fn new_message_root(byte: u8) {
+pub(crate) fn new_message_root(byte: u8) {
 	MESSAGE_ROOT.with(|v| *v.borrow_mut() = Some(message_root_of(byte)));
 }
 
-pub fn run_to_block(n: u64) {
+pub(crate) fn run_to_block(n: u64) {
 	for b in System::block_number() + 1..=n {
 		System::set_block_number(b);
 		<EcdsaAuthority as OnInitialize<_>>::on_initialize(b);
 	}
 }
 
-pub fn ecdsa_authority_events() -> Vec<Event<Runtime>> {
+pub(crate) fn ecdsa_authority_events() -> Vec<Event<Runtime>> {
 	fn events() -> Vec<RuntimeEvent> {
 		let events = System::events().into_iter().map(|evt| evt.event).collect::<Vec<_>>();
 

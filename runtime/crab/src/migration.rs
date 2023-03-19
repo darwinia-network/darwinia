@@ -74,6 +74,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	}
 }
 
+#[allow(clippy::identity_op)]
 fn migrate() -> frame_support::weights::Weight {
 	#[derive(codec::Encode, codec::Decode, sp_runtime::RuntimeDebug)]
 	struct VestingInfo {
