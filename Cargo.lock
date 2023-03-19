@@ -1474,7 +1474,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2418,7 +2418,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "async-trait",
@@ -2502,7 +2502,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "darwinia-deposit",
@@ -2528,7 +2528,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "account",
  "bp-darwinia-core",
@@ -2554,7 +2554,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "darwinia-staking",
  "dc-inflation",
@@ -2575,7 +2575,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ecdsa-authority"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "dc-primitives",
@@ -2595,7 +2595,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-gadget"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "frame-support",
@@ -2613,7 +2613,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-transact"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2643,7 +2643,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2664,7 +2664,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -2682,7 +2682,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -2702,7 +2702,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -2723,7 +2723,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2742,7 +2742,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2845,7 +2845,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "darwinia-deposit",
  "dc-inflation",
@@ -2907,7 +2907,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "dc-types",
  "primitive-types 0.12.1",
@@ -2917,7 +2917,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "account",
  "dc-types",
@@ -2927,7 +2927,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.0.0-1"
+version = "6.0.1"
 
 [[package]]
 name = "der"
@@ -8109,7 +8109,7 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -8212,7 +8212,7 @@ dependencies = [
 
 [[package]]
 name = "pangoro-runtime"
-version = "6.0.0-1"
+version = "6.0.1"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
