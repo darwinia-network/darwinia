@@ -8,7 +8,7 @@ version.workspace = true
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", workspace = true }
+codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
 # darwinia
@@ -29,14 +29,14 @@ sp-std            = { workspace = true }
 pretty_env_logger = { version = "0.4" }
 
 # darwinia
-darwinia-deposit = { workspace = true }
+darwinia-deposit = { workspace = true, features = ["std"] }
 
 # substrate
 pallet-assets    = { workspace = true, features = ["std"] }
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-session   = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
-sp-io            = { workspace = true }
+sp-io            = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

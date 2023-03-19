@@ -8,7 +8,7 @@ version.workspace = true
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", workspace = true }
+codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
 # frontier
@@ -28,7 +28,7 @@ array-bytes = { workspace = true }
 # substrate
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
-sp-runtime       = { workspace = true }
+sp-runtime       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

@@ -40,14 +40,14 @@ pub enum Account {
 	Charlie,
 	Precompile,
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<H160> for Account {
 	fn into(self) -> H160 {
 		match self {
 			Account::Alice => H160::repeat_byte(0xAA),
 			Account::Bob => H160::repeat_byte(0xBB),
 			Account::Charlie => H160::repeat_byte(0xCC),
-			Account::Precompile => H160::from_low_u64_be(TEST_ID),
+			Account::Precompile => addr(TEST_ID),
 		}
 	}
 }
@@ -109,6 +109,7 @@ impl<R> TestPrecompiles<R>
 where
 	R: pallet_evm::Config,
 {
+	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self(Default::default())
 	}

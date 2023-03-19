@@ -8,7 +8,7 @@ version.workspace = true
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", workspace = true }
+codec      = { workspace = true, package = "parity-scale-codec" }
 ethabi     = { version = "17.0", default-features = false }
 scale-info = { workspace = true }
 # crates.io optional
@@ -31,8 +31,8 @@ frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 # crates.io
-array-bytes  = { workspace = true }
-libsecp256k1 = { workspace = true }
+array-bytes  = { workspace = true}
+libsecp256k1 = { workspace = true, features = ["std"] }
 # substrate
 sp-version = { workspace = true, features = ["std"] }
 

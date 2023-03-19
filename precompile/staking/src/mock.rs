@@ -34,7 +34,7 @@ pub enum Account {
 	Bob,
 	Precompile,
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<H160> for Account {
 	fn into(self) -> H160 {
 		match self {
@@ -121,6 +121,7 @@ impl<R> TestPrecompiles<R>
 where
 	R: pallet_evm::Config,
 {
+	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self(Default::default())
 	}

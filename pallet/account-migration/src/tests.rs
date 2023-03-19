@@ -108,7 +108,7 @@ fn migrate_multisig_should_work() {
 		);
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_none());
-		assert_eq!(<frame_system::Account<Runtime>>::get(&to).consumers, 0);
+		assert_eq!(<frame_system::Account<Runtime>>::get(to).consumers, 0);
 
 		// Alice starts the migration.
 		let signature = a.sign(&message);
@@ -117,8 +117,8 @@ fn migrate_multisig_should_work() {
 			submitter: a.public().0.into(),
 			others: vec![b.public().0.into(), c.public().0.into()],
 			threshold: 2,
-			to: to.clone(),
-			signature: signature.0.clone()
+			to,
+			signature: signature.0
 		}));
 		assert_ok!(AccountMigration::migrate_multisig(
 			RuntimeOrigin::none(),
@@ -130,7 +130,7 @@ fn migrate_multisig_should_work() {
 		));
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_some());
-		assert_eq!(<frame_system::Account<Runtime>>::get(&to).consumers, 0);
+		assert_eq!(<frame_system::Account<Runtime>>::get(to).consumers, 0);
 
 		// Dave tries to hack the multisig.
 		let signature = d.sign(&message);
@@ -150,7 +150,7 @@ fn migrate_multisig_should_work() {
 		assert_ok!(AccountMigration::pre_dispatch(&Call::complete_multisig_migration {
 			multisig: multisig.clone(),
 			submitter: c.public().0.into(),
-			signature: signature.0.clone()
+			signature: signature.0
 		}));
 		assert_ok!(AccountMigration::complete_multisig_migration(
 			RuntimeOrigin::none(),
@@ -160,6 +160,6 @@ fn migrate_multisig_should_work() {
 		));
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_none());
-		assert_eq!(<frame_system::Account<Runtime>>::get(&to).consumers, 1);
+		assert_eq!(<frame_system::Account<Runtime>>::get(to).consumers, 1);
 	});
 }
