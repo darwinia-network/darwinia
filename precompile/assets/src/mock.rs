@@ -172,14 +172,6 @@ impl pallet_evm::Config for TestRuntime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub struct AssetsBenchmarkHelper;
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
-		u64::from(id).into()
-	}
-}
 impl pallet_assets::Config for TestRuntime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -187,8 +179,6 @@ impl pallet_assets::Config for TestRuntime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = AssetsBenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, AccountId>,
