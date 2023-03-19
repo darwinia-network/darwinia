@@ -259,9 +259,11 @@ jobs:
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: ".github/release-testnets.md"
           files: |
             deploy/*
-          body_path: ".github/release-mainnets.md"
+          generate_release_notes: true
+          prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   release-testnets:
