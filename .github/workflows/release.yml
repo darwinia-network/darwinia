@@ -259,7 +259,6 @@ jobs:
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
-          append_body: true
           body_path: ".github/release-testnets.md"
           files: |
             deploy/*
@@ -344,7 +343,6 @@ jobs:
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
-          append_body: true
           body_path: ".github/release-testnets.md"
           files: |
             deploy/*
