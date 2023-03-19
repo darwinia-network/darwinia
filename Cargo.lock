@@ -25,7 +25,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -821,7 +821,6 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
 dependencies = [
- "block-padding 0.2.1",
  "generic-array 0.14.6",
 ]
 
@@ -2635,7 +2634,7 @@ dependencies = [
  "precompile-utils",
  "rlp",
  "scale-info",
- "sha3 0.9.1",
+ "sha3",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -2656,7 +2655,7 @@ dependencies = [
  "parity-scale-codec",
  "precompile-utils",
  "scale-info",
- "sha3 0.9.1",
+ "sha3",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -3376,7 +3375,7 @@ checksum = "e4966fba78396ff92db3b817ee71143eccd98acf0f876b8d600e585a670c5d1b"
 dependencies = [
  "ethereum-types 0.13.1",
  "hex",
- "sha3 0.10.6",
+ "sha3",
  "thiserror",
  "uint",
 ]
@@ -3421,7 +3420,7 @@ dependencies = [
  "rlp",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3",
  "triehash",
 ]
 
@@ -3477,7 +3476,7 @@ dependencies = [
  "rlp",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3",
 ]
 
 [[package]]
@@ -3514,7 +3513,7 @@ dependencies = [
  "environmental",
  "evm-core",
  "primitive-types 0.12.1",
- "sha3 0.10.6",
+ "sha3",
 ]
 
 [[package]]
@@ -6322,7 +6321,7 @@ dependencies = [
  "digest 0.10.6",
  "multihash-derive",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3",
  "unsigned-varint",
 ]
 
@@ -9835,7 +9834,7 @@ dependencies = [
  "precompile-utils-macro",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3",
  "similar-asserts",
  "sp-core",
  "sp-io",
@@ -9853,7 +9852,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "sha3 0.10.6",
+ "sha3",
  "syn",
 ]
 
@@ -12233,18 +12232,6 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f81199417d4e5de3f04b1e871023acea7389672c4135918f05aa9cbf2f2fa809"
-dependencies = [
- "block-buffer 0.9.0",
- "digest 0.9.0",
- "keccak",
- "opaque-debug 0.3.0",
-]
-
-[[package]]
-name = "sha3"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bdf0c33fae925bdc080598b84bc15c55e7b9a4a43b3c704da051f977469691c9"
@@ -12681,7 +12668,7 @@ dependencies = [
  "byteorder",
  "digest 0.10.6",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3",
  "sp-std",
  "twox-hash",
 ]
@@ -15468,7 +15455,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3",
  "sp-io",
  "sp-runtime",
  "sp-std",

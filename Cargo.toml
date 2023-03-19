@@ -24,7 +24,7 @@ array-bytes       = { version = "6.0" }
 codec             = { package = "parity-scale-codec", version = "3.4", default-features = false }
 libsecp256k1      = { version = "0.7" }
 scale-info        = { version = "2.3", default-features = false }
-sha3              = { version = "0.9" }
+sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
 
 # cumulus
