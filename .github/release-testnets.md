@@ -1,5 +1,6 @@
 ## Pangolin {{ pangolin_runtime_version }}
-<h3 align="right">Upgrade Priority LOW :green_circle:</h3>
+<h4 align="right">Upgrade Priority LOW :green_circle:</h4>
+
 - Proposal Hash
   ```
   {{ pangolin_proposal_compressed }}
@@ -10,7 +11,8 @@
   ```
 
 ## Pangoro {{ pangoro_runtime_version }}
-<h3 align="right">Upgrade Priority LOW :green_circle:</h3>
+<h4 align="right">Upgrade Priority LOW :green_circle:</h4>
+
 - Proposal Hash
   ```
   {{ pangoro_proposal_compressed }}

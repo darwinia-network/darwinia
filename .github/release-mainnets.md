@@ -1,5 +1,6 @@
 ## Darwinia {{ darwinia_runtime_version }}
-<h3 align="right">Upgrade Priority LOW :green_circle:</h3>
+<h4 align="right">Upgrade Priority LOW :green_circle:</h4>
+
 - Proposal Hash
   ```
   {{ darwinia_proposal_compressed }}
@@ -10,7 +11,8 @@
   ```
 
 ## Crab {{ crab_runtime_version }}
-<h3 align="right">Upgrade Priority LOW :green_circle:</h3>
+<h4 align="right">Upgrade Priority LOW :green_circle:</h4>
+
 - Proposal Hash
   ```
   {{ crab_proposal_compressed }}
