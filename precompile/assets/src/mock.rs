@@ -40,14 +40,14 @@ pub enum Account {
 	Charlie,
 	Precompile,
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<H160> for Account {
 	fn into(self) -> H160 {
 		match self {
 			Account::Alice => H160::repeat_byte(0xAA),
 			Account::Bob => H160::repeat_byte(0xBB),
 			Account::Charlie => H160::repeat_byte(0xCC),
-			Account::Precompile => H160::from_low_u64_be(TEST_ID),
+			Account::Precompile => addr(TEST_ID),
 		}
 	}
 }
@@ -109,6 +109,7 @@ impl<R> TestPrecompiles<R>
 where
 	R: pallet_evm::Config,
 {
+	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
@@ -171,6 +172,14 @@ impl pallet_evm::Config for TestRuntime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+pub struct AssetsBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
+		u64::from(id).into()
+	}
+}
 impl pallet_assets::Config for TestRuntime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -178,6 +187,8 @@ impl pallet_assets::Config for TestRuntime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = AssetsBenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, AccountId>,
