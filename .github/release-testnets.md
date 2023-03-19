@@ -1,23 +1,23 @@
-## Darwinia {{ darwinia_runtime_version }}
+## Pangolin {{ pangolin_runtime_version }}
 <h3 align="right">Upgrade Priority LOW :green_circle:</h3>
 - Proposal Hash
   ```
-  {{ darwinia_proposal_compressed }}
+  {{ pangolin_proposal_compressed }}
   ```
 - Blake2 256 Hash
   ```
-  {{ darwinia_blake2_256_compressed }}
+  {{ pangolin_blake2_256_compressed }}
   ```
 
-## Crab {{ crab_runtime_version }}
+## Pangoro {{ pangoro_runtime_version }}
 <h3 align="right">Upgrade Priority LOW :green_circle:</h3>
 - Proposal Hash
   ```
-  {{ crab_proposal_compressed }}
+  {{ pangoro_proposal_compressed }}
   ```
 - Blake2 256 Hash
   ```
-  {{ crab_blake2_256_compressed }}
+  {{ pangoro_blake2_256_compressed }}
   ```
 
 ## Resources
