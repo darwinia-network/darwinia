@@ -36,12 +36,12 @@ jobs:
               pangoro_runtime_version: $pangoro_runtime_version,
               tag: $tag,
               sha: $sha
-            }' | tee shared/template_data.json
+            }' | tee template_data.json
 
       - name: Render release page
         uses: jayamanikharyono/jinja-action@v0.1
         with:
-          datafile: shared/template_data.json
+          datafile: template_data.json
           path: .github/release-testnets.md
 
       - name: Publish github release
@@ -49,8 +49,6 @@ jobs:
         with:
           append_body: true
           body_path: ".github/release-testnets.md"
-          files: |
-            deploy/*
           generate_release_notes: true
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
