@@ -18,7 +18,6 @@ darwinia-staking = { workspace = true }
 dc-primitives    = { workspace = true }
 
 # substrate
-frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
 pallet-assets      = { workspace = true }
@@ -29,6 +28,8 @@ sp-core            = { workspace = true }
 sp-io              = { workspace = true }
 sp-runtime         = { workspace = true }
 sp-std             = { workspace = true }
+# substrate optional
+frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 pallet-timestamp = { workspace = true, features = ["std"] }

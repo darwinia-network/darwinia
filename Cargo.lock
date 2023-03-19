@@ -2581,6 +2581,7 @@ dependencies = [
  "array-bytes 6.0.0",
  "dc-primitives",
  "ethabi",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "libsecp256k1",

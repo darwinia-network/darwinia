@@ -71,7 +71,11 @@ impl Sign {
 		if let Ok(public_key) = crypto::secp256k1_ecdsa_recover(signature, message) {
 			&Self::hash(&public_key)[12..] == address
 		} else {
-			false
+			// https://github.com/paritytech/libsecp256k1/issues/134
+			#[cfg(feature = "runtime-benchmarks")]
+			return true;
+			#[cfg(not(feature = "runtime-benchmarks"))]
+			return false;
 		}
 	}
 }
@@ -100,9 +104,9 @@ impl<A> Operation<A> {
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Commitment {
-	pub block_number: u32,
-	pub message_root: Hash,
-	pub nonce: u32,
+	pub(crate) block_number: u32,
+	pub(crate) message_root: Hash,
+	pub(crate) nonce: u32,
 }
 
 #[test]

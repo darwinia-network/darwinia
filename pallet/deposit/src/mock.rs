@@ -131,11 +131,11 @@ frame_support::construct_runtime! {
 	}
 }
 
-pub fn efflux(milli_secs: Moment) {
+pub(crate) fn efflux(milli_secs: Moment) {
 	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
 }
 
-pub fn new_test_ext() -> TestExternalities {
+pub(crate) fn new_test_ext() -> TestExternalities {
 	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 
 	pallet_balances::GenesisConfig::<Runtime> {

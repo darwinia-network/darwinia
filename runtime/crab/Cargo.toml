@@ -265,6 +265,7 @@ runtime-benchmarks = [
 	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
+	"darwinia-ecdsa-authority/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# darwinia-messages-substrate
