@@ -9,8 +9,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-  DOCKER_REGISTRY: ghcr.io
-
 jobs:
   release-testnets:
     name: Release testnets
@@ -56,13 +54,3 @@ jobs:
           generate_release_notes: true
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  clean-artifacts:
-    name: Clean artifacts
-    runs-on: ubuntu-latest
-    needs: [release-mainnets, release-testnets]
-    if: always()
-    steps:
-      - uses: geekyeggo/delete-artifact@v1
-        with:
-          name: darwinia-artifact
