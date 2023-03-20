@@ -9,7 +9,6 @@ members = [
 	"precompile/*",
 	"runtime/*",
 ]
-# resolver = "2"
 
 [workspace.package]
 authors    = ["Darwinia Network <hello@darwinia.network>"]
