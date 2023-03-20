@@ -64,6 +64,7 @@ std = [
 runtime-benchmarks = [
 	# crates.io
 	# https://github.com/paritytech/libsecp256k1/issues/134
+	# "array-bytes"
 	# "libsecp256k1",
 
 	# substrate
