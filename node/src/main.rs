@@ -18,11 +18,8 @@
 
 //! Darwinia node CLI.
 
-#![cfg_attr(
-	any(features = "runtime-benchmarks", features = "try-runtime"),
-	deny(unused_crate_dependencies)
-)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 mod chain_spec;
 mod cli;
