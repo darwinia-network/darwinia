@@ -51,7 +51,6 @@ fp-storage      = { workspace = true }
 
 # polkadot
 polkadot-cli        = { workspace = true }
-# polkadot-parachain  = { workspace = true }
 polkadot-primitives = { workspace = true }
 polkadot-service    = { workspace = true }
 xcm                 = { workspace = true }
@@ -84,7 +83,6 @@ sp-blockchain                  = { workspace = true }
 sp-consensus                   = { workspace = true }
 sp-consensus-aura              = { workspace = true }
 sp-core                        = { workspace = true }
-# sp-inherents                   = { workspace = true }
 sp-io                          = { workspace = true, optional = true }
 sp-keystore                    = { workspace = true }
 sp-offchain                    = { workspace = true }
