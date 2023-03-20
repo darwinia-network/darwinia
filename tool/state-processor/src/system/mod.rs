@@ -104,7 +104,7 @@ where
 
 		log::info!("increase `EVM::AccountCodes`'s `sufficients` and set `Assets::Account`, `System::Account`, `AccountMigration::KtonAccounts` and `AccountMigration::Accounts`");
 		accounts.into_iter().for_each(|(k, v)| {
-			let key = get_last_64(&k);
+			let k_64 = get_last_64(&k);
 			let mut a = AccountInfo {
 				nonce: v.nonce,
 				consumers: Default::default(),
@@ -118,35 +118,36 @@ where
 					reserved_kton_or_fee_frozen: Default::default(),
 				},
 			};
-			let mut is_special_account = false;
+			let mut special_account = None;
 
-			if key.ends_with("000000000000") {
-				if let Some(s) = try_get_sub_seed(&key) {
-					log::info!("migrate special Account(`{s} {key}`)");
+			if k_64.ends_with("000000000000") {
+				// "0x".len() + 20 * 2 = 42
+				let k_migrated = array_bytes::hex2array_unchecked::<_, 20>(&k_64[..42]);
 
-					is_special_account = true;
-				} else if key
+				if let Some(s) = try_get_sub_seed(&k_64) {
+					log::info!("migrate special account `{s}` from `{k_64}` to `{}`", array_bytes::bytes2hex("0x", k_migrated));
+
+					special_account = Some(k_migrated);
+				} else if k_64
 					== "0x0000000000000000000000000000000000000000000000000000000000000000"
 				{
-					log::info!("migrate special Account(0x0000000000000000000000000000000000000000000000000000000000000000)");
+					log::info!("migrate special account `0x0000000000000000000000000000000000000000000000000000000000000000`");
 
-					is_special_account = true;
+					special_account = Some(k_migrated);
 				} else {
 					log::info!(
-						"found zeros-ending Account(`{key}`), it might be a special account"
+						"found zeros-ending Account(`{k_64}`), it might be a special account"
 					);
 				};
+
 			}
 
-			if is_special_account {
+			if let Some(k) = special_account {
 				// Truncate the special accounts to 20 bytes length.
 				//
 				// Put the truncated account into `System` and `Assets` pallets directly.
 
 				a.nonce = 0;
-
-				// "0x".len() + 20 * 2 = 42
-				let k = array_bytes::hex2array_unchecked::<_, 20>(&key[..42]);
 
 				if v.kton != 0 {
 					self.shell_state.insert_value(
@@ -167,7 +168,7 @@ where
 					&blake2_128_concat_to_string(k),
 					a,
 				);
-			} else if let Some(k) = try_get_evm_address(&key) {
+			} else if let Some(k) = try_get_evm_address(&k) {
 				// Recover the EVM accounts from Substrate accounts.
 				//
 				// Put the recovered accounts into `System` and `Assets` pallets directly.
