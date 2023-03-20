@@ -2630,7 +2630,6 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
  "rlp",
  "scale-info",
  "sha3",
