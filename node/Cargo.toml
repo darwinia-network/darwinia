@@ -24,7 +24,6 @@ trauma      = { version = "2.2" }
 
 # cumulus
 cumulus-client-cli                    = { workspace = true }
-cumulus-client-collator               = { workspace = true }
 cumulus-client-consensus-aura         = { workspace = true }
 cumulus-client-consensus-common       = { workspace = true }
 cumulus-client-network                = { workspace = true }
@@ -42,7 +41,6 @@ pangoro-runtime  = { workspace = true, optional = true }
 
 # frontier
 fc-cli          = { workspace = true }
-fc-consensus    = { workspace = true }
 fc-db           = { workspace = true }
 fc-mapping-sync = { workspace = true }
 fc-rpc          = { features = ["rpc-binary-search-estimate"], workspace = true }
@@ -53,14 +51,13 @@ fp-storage      = { workspace = true }
 
 # polkadot
 polkadot-cli        = { workspace = true }
-polkadot-parachain  = { workspace = true }
 polkadot-primitives = { workspace = true }
 polkadot-service    = { workspace = true }
 xcm                 = { workspace = true }
 
 # substrate
-frame-benchmarking             = { workspace = true }
-frame-benchmarking-cli         = { workspace = true }
+frame-benchmarking             = { workspace = true, optional = true }
+frame-benchmarking-cli         = { workspace = true, optional = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship            = { workspace = true }
 sc-chain-spec                  = { workspace = true }
@@ -69,12 +66,10 @@ sc-client-api                  = { workspace = true }
 sc-consensus                   = { workspace = true }
 sc-consensus-aura              = { workspace = true }
 sc-executor                    = { workspace = true }
-sc-keystore                    = { workspace = true }
 sc-network                     = { workspace = true }
 sc-network-common              = { workspace = true }
 sc-offchain                    = { workspace = true }
 sc-rpc                         = { workspace = true }
-sc-rpc-api                     = { workspace = true }
 sc-service                     = { workspace = true }
 sc-sysinfo                     = { workspace = true }
 sc-telemetry                   = { workspace = true }
@@ -87,8 +82,7 @@ sp-blockchain                  = { workspace = true }
 sp-consensus                   = { workspace = true }
 sp-consensus-aura              = { workspace = true }
 sp-core                        = { workspace = true }
-sp-inherents                   = { workspace = true }
-sp-io                          = { workspace = true }
+sp-io                          = { workspace = true, optional = true }
 sp-keystore                    = { workspace = true }
 sp-offchain                    = { workspace = true }
 sp-runtime                     = { workspace = true }
@@ -122,6 +116,10 @@ runtime-benchmarks = [
 
 	# polkadot
 	"polkadot-cli/runtime-benchmarks",
+
+	# substrate
+	"frame-benchmarking",
+	"frame-benchmarking-cli",
 ]
 
 try-runtime = [
@@ -132,6 +130,7 @@ try-runtime = [
 	"pangoro-runtime?/try-runtime",
 
 	# substrate
+	"sp-io",
 	"try-runtime-cli/try-runtime",
 ]
 

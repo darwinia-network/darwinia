@@ -22,6 +22,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::type_complexity)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 #[cfg(test)]
 mod mock;
@@ -45,7 +46,7 @@ use ethabi::Token;
 // darwinia
 use dc_primitives::AccountId;
 // substrate
-use frame_support::{pallet_prelude::*, traits::Get};
+use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 use sp_runtime::{
 	traits::{SaturatedConversion, Saturating, Zero},
