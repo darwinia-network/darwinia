@@ -96,8 +96,6 @@ pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
 		>,
 		// Expected responses are OK.
 		xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
-		// Subscriptions for version tracking are OK.
-		xcm_builder::AllowSubscriptionsFrom<darwinia_common_runtime::xcm_configs::ParentOrSiblings>,
 	),
 >;
 
