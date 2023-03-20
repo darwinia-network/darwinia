@@ -540,6 +540,7 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
+			// substrate
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
 			let runner = cli.create_runner(&**cmd)?;

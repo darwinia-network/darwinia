@@ -12,8 +12,8 @@ codec      = { workspace = true, package = "parity-scale-codec" }
 ethabi     = { version = "17.0", default-features = false }
 scale-info = { workspace = true }
 # crates.io optional
-array-bytes  = { workspace = true, optional = true }
 # https://github.com/paritytech/libsecp256k1/issues/134
+# array-bytes  = { workspace = true, optional = true }
 # libsecp256k1 = { workspace = true, optional = true, default-features = false }
 
 # darwinia

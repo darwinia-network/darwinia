@@ -75,6 +75,8 @@ std = [
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	# substrate optional
+	"pallet-assets?/std",
 ]
 
 test = []

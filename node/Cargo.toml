@@ -115,9 +115,11 @@ runtime-benchmarks = [
 	"pangoro-runtime?/runtime-benchmarks",
 
 	# polkadot
+	"polkadot-cli/runtime-benchmarks",
+
+	# substrate
 	"frame-benchmarking",
 	"frame-benchmarking-cli",
-	"polkadot-cli/runtime-benchmarks",
 ]
 
 try-runtime = [

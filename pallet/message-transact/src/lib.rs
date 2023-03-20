@@ -17,6 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// TODO: address the unused crates in test.
 #![cfg_attr(not(test), deny(unused_crate_dependencies))]
 
 #[cfg(test)]
