@@ -19,8 +19,8 @@
 //! Darwinia economic inflation mechanism implementation.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 #[cfg(test)]
 mod test;

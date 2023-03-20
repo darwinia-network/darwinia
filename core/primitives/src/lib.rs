@@ -25,8 +25,8 @@
 //! to even the core data structures.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 pub use dc_types::*;
 

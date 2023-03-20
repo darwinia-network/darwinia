@@ -19,7 +19,7 @@
 pub use crate::{self as darwinia_ecdsa_authority};
 
 // darwinia
-use crate::{primitives::*, *};
+use darwinia_ecdsa_authority::{primitives::*, *};
 use dc_primitives::AccountId;
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};

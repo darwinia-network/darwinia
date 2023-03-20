@@ -45,6 +45,7 @@ precompile-utils = { workspace = true, features = ["std", "testing"] }
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true, features = ["std"] }
+sp-runtime       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

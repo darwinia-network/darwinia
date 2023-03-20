@@ -31,7 +31,7 @@ frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 # crates.io
-array-bytes  = { workspace = true}
+array-bytes  = { workspace = true }
 libsecp256k1 = { workspace = true, features = ["std"] }
 # substrate
 sp-version = { workspace = true, features = ["std"] }
@@ -63,7 +63,6 @@ std = [
 
 runtime-benchmarks = [
 	# crates.io
-	"array-bytes",
 	# https://github.com/paritytech/libsecp256k1/issues/134
 	# "libsecp256k1",
 
