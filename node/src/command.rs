@@ -33,7 +33,6 @@ use dc_primitives::Block;
 // frontier
 use fc_db::frontier_database_dir;
 // substrate
-use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
 	Result, RuntimeVersion, SharedParams, SubstrateCli,
@@ -281,6 +280,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 
 /// Parse command line arguments into service configuration.
 pub fn run() -> Result<()> {
+	#[cfg(feature = "runtime-benchmarks")]
 	/// Creates partial components for the runtimes that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
@@ -538,14 +538,16 @@ pub fn run() -> Result<()> {
 				panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
 			})
 		},
+		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
-			let runner = cli.create_runner(&**cmd)?;
+			// substrate
+			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
+			let runner = cli.create_runner(&**cmd)?;
 			// Switch on the concrete benchmark sub-command-
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| {
+					runner.sync_run(|config| {
 							#[cfg(feature = "crab-native")]
 							if config.chain_spec.is_crab() {
 								return cmd.run::<Block, CrabRuntimeExecutor>(config);
@@ -567,18 +569,10 @@ pub fn run() -> Result<()> {
 							}
 
 							panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
-						})
-					} else {
-						Err("Benchmarking wasn't enabled when building the node. You can enable it with `--features runtime-benchmarks`.".into())
-					},
+						}),
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| cmd.run(partials.client))
 				}),
-				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
-					"Compile with --features=runtime-benchmarks to enable storage benchmarks.".into(),
-				)),
-				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
@@ -594,6 +588,10 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
+		#[cfg(not(feature = "runtime-benchmarks"))]
+		Some(Subcommand::Benchmark) => Err(
+			"Benchmarking was not enabled when building the node. You can enable it with `--features runtime-benchmarks`.".into()
+		),
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			use sc_service::TaskManager;

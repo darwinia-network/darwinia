@@ -54,12 +54,17 @@ pub enum Subcommand {
 
 	/// Sub-commands concerned with benchmarking.
 	/// The pallet benchmarking moved to the `pallet` sub-command.
+	#[cfg(feature = "runtime-benchmarks")]
 	#[command(subcommand)]
 	Benchmark(Box<frame_benchmarking_cli::BenchmarkCmd>),
 
 	/// Try some testing command against a specified runtime state.
 	#[cfg(feature = "try-runtime")]
 	TryRuntime(try_runtime_cli::TryRuntimeCmd),
+
+	/// Errors since the binary was not build with `--features runtime-benchmarks`.
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	Benchmark,
 
 	/// Errors since the binary was not build with `--features try-runtime`.
 	#[cfg(not(feature = "try-runtime"))]

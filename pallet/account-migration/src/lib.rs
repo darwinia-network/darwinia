@@ -42,6 +42,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 #[cfg(test)]
 mod mock;

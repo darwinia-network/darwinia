@@ -32,7 +32,7 @@ xcm-executor = { workspace = true }
 # substrate
 frame-support     = { workspace = true }
 frame-system      = { workspace = true }
-pallet-assets     = { workspace = true }
+pallet-assets     = { workspace = true, optional = true }
 pallet-balances   = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-treasury   = { workspace = true }
@@ -68,7 +68,6 @@ std = [
 	# substrate
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-assets/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-treasury/std",
@@ -76,6 +75,8 @@ std = [
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	# substrate optional
+	"pallet-assets?/std",
 ]
 
 test = []

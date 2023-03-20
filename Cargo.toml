@@ -83,7 +83,6 @@ pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia
 
 # frontier
 fc-cli                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.37" }
-fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.37" }
 fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.37" }
 fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.37" }
 fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.37" }
@@ -160,7 +159,6 @@ sc-network                                 = { git = "https://github.com/parityt
 sc-network-common                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 sc-offchain                                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 sc-rpc                                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sc-rpc-api                                 = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 sc-service                                 = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 sc-sysinfo                                 = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 sc-telemetry                               = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
@@ -293,7 +291,6 @@ sc-offchain                                   = { git = "https://github.com/darw
 sc-peerset                                    = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 sc-proposer-metrics                           = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 sc-rpc                                        = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
-sc-rpc-api                                    = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 sc-rpc-server                                 = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 sc-service                                    = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
 sc-state-db                                   = { git = "https://github.com/darwinia-network/substrate", branch = "polkadot-v0.9.37" }
@@ -360,7 +357,6 @@ try-runtime-cli                               = { git = "https://github.com/darw
 
 [patch."https://github.com/paritytech/cumulus"]
 cumulus-client-cli                    = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.37" }
-cumulus-client-collator               = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.37" }
 cumulus-client-consensus-aura         = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.37" }
 cumulus-client-consensus-common       = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.37" }
 cumulus-client-network                = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.37" }

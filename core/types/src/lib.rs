@@ -20,6 +20,7 @@
 
 #![no_std]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 /// Balance type.
 pub type Balance = u128;

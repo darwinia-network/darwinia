@@ -17,6 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(unused_crate_dependencies)]
 
 // core
 use core::marker::PhantomData;
@@ -28,6 +29,9 @@ use frame_system::pallet_prelude::*;
 use sp_core::{H160, H256};
 use sp_io::hashing;
 use sp_std::prelude::*;
+
+#[cfg(test)]
+mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
