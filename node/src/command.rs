@@ -589,7 +589,7 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(not(feature = "runtime-benchmarks"))]
 		Some(Subcommand::Benchmark) => Err(
-			"Runtime-benchmarks was not enabled when building the node. You can enable it with `--features runtime-benchmarks`.".into()
+			"Benchmarking was not enabled when building the node. You can enable it with `--features runtime-benchmarks`.".into()
 		),
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
