@@ -263,7 +263,6 @@ jobs:
           files: |
             deploy/*
           generate_release_notes: true
-          prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   release-testnets:
