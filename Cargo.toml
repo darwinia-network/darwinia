@@ -105,7 +105,6 @@ pallet-evm-precompile-simple   = { default-features = false, git = "https://gith
 account                = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 moonbeam-relay-encoder = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 pallet-ethereum-xcm    = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
-pallet-xcm-transactor  = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 precompile-utils       = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 xcm-primitives         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 
@@ -198,7 +197,6 @@ try-runtime-cli                            = { git = "https://github.com/parityt
 account                = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 moonbeam-relay-encoder = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 pallet-ethereum-xcm    = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
-pallet-xcm-transactor  = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 

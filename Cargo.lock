@@ -6846,7 +6846,6 @@ dependencies = [
  "orml-utilities",
  "parity-scale-codec",
  "scale-info",
- "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -6862,7 +6861,6 @@ dependencies = [
  "frame-support",
  "parity-scale-codec",
  "scale-info",
- "serde",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -8115,29 +8113,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-xcm-transactor"
-version = "0.2.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
-dependencies = [
- "cumulus-primitives-core",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "orml-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "xcm",
- "xcm-builder",
- "xcm-executor",
- "xcm-primitives",
-]
-
-[[package]]
 name = "pangolin-runtime"
 version = "6.0.0"
 dependencies = [
@@ -8320,7 +8295,6 @@ dependencies = [
  "pallet-utility",
  "pallet-vesting",
  "pallet-xcm",
- "pallet-xcm-transactor",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",

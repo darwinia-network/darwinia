@@ -167,7 +167,6 @@ frame_support::construct_runtime! {
 
 		// Ethereum XCM
 		EthereumXcm: pallet_ethereum_xcm = 44,
-		XcmTransactor: pallet_xcm_transactor = 45
 	}
 }
 
