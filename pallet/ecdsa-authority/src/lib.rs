@@ -403,6 +403,7 @@ pub mod pallet {
 
 			if Self::check_threshold(collected.len() as _, authorities.len() as _) {
 				<NewMessageRootToSign<T>>::kill();
+				<PreviousMessageRoot<T>>::kill();
 
 				let (commitment, message, collected) = new_message_root_to_sign;
 
