@@ -168,7 +168,7 @@ where
 					&blake2_128_concat_to_string(k),
 					a,
 				);
-			} else if let Some(k) = try_get_evm_address(&k) {
+			} else if let Some(k) = try_get_evm_address(&k_64) {
 				// Recover the EVM accounts from Substrate accounts.
 				//
 				// Put the recovered accounts into `System` and `Assets` pallets directly.
