@@ -72,7 +72,6 @@ pallet-evm-precompile-simple   = { workspace = true }
 # moonbeam
 moonbeam-relay-encoder = { workspace = true }
 pallet-ethereum-xcm    = { workspace = true }
-pallet-xcm-transactor  = { workspace = true }
 precompile-utils       = { workspace = true }
 xcm-primitives         = { workspace = true }
 
@@ -194,7 +193,6 @@ std = [
 
 	# moonbeam
 	"pallet-ethereum-xcm/std",
-	"pallet-xcm-transactor/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
