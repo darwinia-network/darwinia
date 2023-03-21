@@ -474,6 +474,8 @@ fn submit_new_message_root_signature() {
 				signatures: vec![(a_1, s_1), (a_2, s_2)]
 			}]
 		);
+		assert!(EcdsaAuthority::new_message_root_to_sign().is_none());
+		assert!(EcdsaAuthority::previous_message_root().is_none());
 	});
 }
 
