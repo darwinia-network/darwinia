@@ -29,6 +29,21 @@ mod benchmarks {
 	use super::*;
 
 	#[benchmark]
+	fn on_initialize() {
+		assert!(<NewMessageRootToSign<T>>::get().is_none());
+
+		// The worst case:
+		//
+		// Trigger new message root.
+		#[block]
+		{
+			<Pallet<T>>::on_initialize(Default::default());
+		}
+
+		assert!(<NewMessageRootToSign<T>>::get().is_some());
+	}
+
+	#[benchmark]
 	fn add_authority() {
 		// The worst case:
 		//

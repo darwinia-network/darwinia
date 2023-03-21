@@ -228,10 +228,11 @@ pub mod pallet {
 				if let Some(message_root) = Self::try_update_message_root(now, false) {
 					Self::on_new_message_root(now, message_root);
 				}
-			}
 
-			// TODO: weight
-			Default::default()
+				T::WeightInfo::on_initialize()
+			} else {
+				Default::default()
+			}
 		}
 	}
 	#[pallet::call]
@@ -522,7 +523,10 @@ pub mod pallet {
 				return None;
 			}
 
+			#[cfg(not(feature = "runtime-benchmarks"))]
 			let message_root = T::MessageRoot::get()?;
+			#[cfg(feature = "runtime-benchmarks")]
+			let message_root = Default::default();
 
 			<PreviousMessageRoot<T>>::try_mutate(|maybe_previous_message_root| {
 				if force {
