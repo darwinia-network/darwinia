@@ -19,8 +19,14 @@
 // TODO: move to mock later.
 use crate as darwinia_message_gadget;
 
+// std
+use std::str::FromStr;
 // darwinia
 use crate::*;
+// frontier
+use pallet_evm::{FeeCalculator, Runner};
+// substrate
+use sp_core::U256;
 
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<u128>;
@@ -110,13 +116,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 #[test]
 fn message_root_getter_should_work() {
-	// std
-	use std::str::FromStr;
-	// darwinia
-	use crate::*;
-	// frontier
-	use pallet_evm::{FeeCalculator, Runner};
-
 	new_test_ext().execute_with(|| assert_eq!(<MessageRootGetter<Runtime>>::get(), None));
 	new_test_ext().execute_with(|| {
 		// pragma solidity ^0.8.0;
