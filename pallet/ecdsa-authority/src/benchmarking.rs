@@ -30,7 +30,7 @@ mod benchmarks {
 
 	#[benchmark]
 	fn on_initialize() {
-		assert!(<NewMessageRootToSign<T>>::get().is_none());
+		assert!(<MessageRootToSign<T>>::get().is_none());
 
 		// The worst case:
 		//
@@ -40,7 +40,7 @@ mod benchmarks {
 			<Pallet<T>>::on_initialize(Default::default());
 		}
 
-		assert!(<NewMessageRootToSign<T>>::get().is_some());
+		assert!(<MessageRootToSign<T>>::get().is_some());
 	}
 
 	#[benchmark]

@@ -68,21 +68,19 @@ pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:0)
 	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority PreviousMessageRoot (r:1 w:1)
-	/// Proof Skipped: EcdsaAuthority PreviousMessageRoot (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:1 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority Nonce (r:1 w:0)
 	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority NewMessageRootToSign (r:0 w:1)
-	/// Proof Skipped: EcdsaAuthority NewMessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	fn on_initialize() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `894`
-		//  Estimated: `5061`
-		// Minimum execution time: 22_531 nanoseconds.
-		Weight::from_ref_time(22_531_000)
-			.saturating_add(Weight::from_proof_size(5061))
+		//  Estimated: `4167`
+		// Minimum execution time: 23_399 nanoseconds.
+		Weight::from_ref_time(23_399_000)
+			.saturating_add(Weight::from_proof_size(4167))
 			.saturating_add(T::DbWeight::get().reads(3_u64))
-			.saturating_add(T::DbWeight::get().writes(2_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
@@ -94,8 +92,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `1071`
 		//  Estimated: `4698`
-		// Minimum execution time: 33_702 nanoseconds.
-		Weight::from_ref_time(33_702_000)
+		// Minimum execution time: 34_089 nanoseconds.
+		Weight::from_ref_time(34_089_000)
 			.saturating_add(Weight::from_proof_size(4698))
 			.saturating_add(T::DbWeight::get().reads(3_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
@@ -110,8 +108,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `1182`
 		//  Estimated: `5031`
-		// Minimum execution time: 24_080 nanoseconds.
-		Weight::from_ref_time(24_080_000)
+		// Minimum execution time: 40_182 nanoseconds.
+		Weight::from_ref_time(40_182_000)
 			.saturating_add(Weight::from_proof_size(5031))
 			.saturating_add(T::DbWeight::get().reads(3_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
@@ -126,8 +124,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `1202`
 		//  Estimated: `5091`
-		// Minimum execution time: 26_923 nanoseconds.
-		Weight::from_ref_time(26_923_000)
+		// Minimum execution time: 25_077 nanoseconds.
+		Weight::from_ref_time(25_077_000)
 			.saturating_add(Weight::from_proof_size(5091))
 			.saturating_add(T::DbWeight::get().reads(3_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
@@ -140,18 +138,16 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof Skipped: EcdsaAuthority NextAuthorities (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority Nonce (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority PreviousMessageRoot (r:1 w:1)
-	/// Proof Skipped: EcdsaAuthority PreviousMessageRoot (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority NewMessageRootToSign (r:0 w:1)
-	/// Proof Skipped: EcdsaAuthority NewMessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:0 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	fn submit_authorities_change_signature() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `2184`
-		//  Estimated: `18481`
-		// Minimum execution time: 93_111 nanoseconds.
-		Weight::from_ref_time(93_111_000)
-			.saturating_add(Weight::from_proof_size(18481))
-			.saturating_add(T::DbWeight::get().reads(7_u64))
+		//  Measured:  `1299`
+		//  Estimated: `8475`
+		// Minimum execution time: 33_450 nanoseconds.
+		Weight::from_ref_time(33_450_000)
+			.saturating_add(Weight::from_proof_size(8475))
+			.saturating_add(T::DbWeight::get().reads(4_u64))
 			.saturating_add(T::DbWeight::get().writes(4_u64))
 	}
 	/// Storage: EcdsaAuthority Authorities (r:1 w:0)
@@ -162,11 +158,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `1260`
 		//  Estimated: `3510`
-		// Minimum execution time: 24_385 nanoseconds.
-		Weight::from_ref_time(24_385_000)
+		// Minimum execution time: 27_202 nanoseconds.
+		Weight::from_ref_time(27_202_000)
 			.saturating_add(Weight::from_proof_size(3510))
 			.saturating_add(T::DbWeight::get().reads(2_u64))
-			.saturating_add(T::DbWeight::get().writes(2_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 }
 
@@ -174,21 +170,19 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 impl WeightInfo for () {
 	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:0)
 	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority PreviousMessageRoot (r:1 w:1)
-	/// Proof Skipped: EcdsaAuthority PreviousMessageRoot (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:1 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority Nonce (r:1 w:0)
 	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority NewMessageRootToSign (r:0 w:1)
-	/// Proof Skipped: EcdsaAuthority NewMessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	fn on_initialize() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `894`
-		//  Estimated: `5061`
-		// Minimum execution time: 22_531 nanoseconds.
-		Weight::from_ref_time(22_531_000)
-			.saturating_add(Weight::from_proof_size(5061))
+		//  Estimated: `4167`
+		// Minimum execution time: 23_399 nanoseconds.
+		Weight::from_ref_time(23_399_000)
+			.saturating_add(Weight::from_proof_size(4167))
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
-			.saturating_add(RocksDbWeight::get().writes(2_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
@@ -200,8 +194,8 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `1071`
 		//  Estimated: `4698`
-		// Minimum execution time: 33_702 nanoseconds.
-		Weight::from_ref_time(33_702_000)
+		// Minimum execution time: 34_089 nanoseconds.
+		Weight::from_ref_time(34_089_000)
 			.saturating_add(Weight::from_proof_size(4698))
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
@@ -216,8 +210,8 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `1182`
 		//  Estimated: `5031`
-		// Minimum execution time: 24_080 nanoseconds.
-		Weight::from_ref_time(24_080_000)
+		// Minimum execution time: 40_182 nanoseconds.
+		Weight::from_ref_time(40_182_000)
 			.saturating_add(Weight::from_proof_size(5031))
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
@@ -232,8 +226,8 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `1202`
 		//  Estimated: `5091`
-		// Minimum execution time: 26_923 nanoseconds.
-		Weight::from_ref_time(26_923_000)
+		// Minimum execution time: 25_077 nanoseconds.
+		Weight::from_ref_time(25_077_000)
 			.saturating_add(Weight::from_proof_size(5091))
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
@@ -246,18 +240,16 @@ impl WeightInfo for () {
 	/// Proof Skipped: EcdsaAuthority NextAuthorities (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority Nonce (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority PreviousMessageRoot (r:1 w:1)
-	/// Proof Skipped: EcdsaAuthority PreviousMessageRoot (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: EcdsaAuthority NewMessageRootToSign (r:0 w:1)
-	/// Proof Skipped: EcdsaAuthority NewMessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:0 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	fn submit_authorities_change_signature() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `2184`
-		//  Estimated: `18481`
-		// Minimum execution time: 93_111 nanoseconds.
-		Weight::from_ref_time(93_111_000)
-			.saturating_add(Weight::from_proof_size(18481))
-			.saturating_add(RocksDbWeight::get().reads(7_u64))
+		//  Measured:  `1299`
+		//  Estimated: `8475`
+		// Minimum execution time: 33_450 nanoseconds.
+		Weight::from_ref_time(33_450_000)
+			.saturating_add(Weight::from_proof_size(8475))
+			.saturating_add(RocksDbWeight::get().reads(4_u64))
 			.saturating_add(RocksDbWeight::get().writes(4_u64))
 	}
 	/// Storage: EcdsaAuthority Authorities (r:1 w:0)
@@ -268,10 +260,10 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `1260`
 		//  Estimated: `3510`
-		// Minimum execution time: 24_385 nanoseconds.
-		Weight::from_ref_time(24_385_000)
+		// Minimum execution time: 27_202 nanoseconds.
+		Weight::from_ref_time(27_202_000)
 			.saturating_add(Weight::from_proof_size(3510))
 			.saturating_add(RocksDbWeight::get().reads(2_u64))
-			.saturating_add(RocksDbWeight::get().writes(2_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 }
