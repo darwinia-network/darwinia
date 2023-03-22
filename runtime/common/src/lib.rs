@@ -70,7 +70,7 @@ impl WeightToFeePolynomial for WeightToFee {
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
 		// here, we map to 1/10 of that, or 1/10 MILLIUNIT
-		let p = MILLIUNIT / 10;
+		let p = MILLIUNIT;
 		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
@@ -80,6 +80,8 @@ impl WeightToFeePolynomial for WeightToFee {
 		}]
 	}
 }
+
+// (1_000_000_000_000_00 % (99_840_000 * 100) / 1_000_000_000 + (1_000_000_000_000_00 / (99_840_000 * 100))) * 18750
 
 pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
 impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>

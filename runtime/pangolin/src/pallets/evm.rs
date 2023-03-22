@@ -18,6 +18,7 @@
 
 // darwinia
 use crate::*;
+use frame_support::weights::WeightToFee;
 // frontier
 use pallet_evm::Precompile;
 
@@ -129,6 +130,56 @@ where
 	}
 }
 
+pub struct DynamicGasPrice;
+impl pallet_evm::FeeCalculator for DynamicGasPrice {
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		use sp_runtime::FixedPointNumber;
+		let next_multiplier = TransactionPayment::next_fee_multiplier();
+		let weight_per_gas = WeightPerGas::get();
+		let weight_to_fee =
+			<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
+				&WeightPerGas::get(),
+			);
+		frame_support::log::info!(
+			"bear: ----, next_multiplier: {:?}, weight_per_gas: {:?}, weight_to_fee: {:?}",
+			next_multiplier,
+			weight_per_gas,
+			weight_to_fee
+		);
+
+		(
+			TransactionPayment::next_fee_multiplier()
+				.saturating_mul_int::<u128>(
+					<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
+						&WeightPerGas::get(),
+					),
+				)
+				.into(),
+			frame_support::weights::Weight::zero(),
+		)
+	}
+}
+
+
+// weight_to_fee = function (weight)
+// WeightToFeeCoefficient { 
+//     degree: 1,
+//         nagative: false,
+//         coeff_frac: Perbill:: from_rational(1_000_000_000_000_00 % (1_000 * 99_840 * 100), 9984000000),  // 0.256
+//         coeff_integer: 10016.02564102564
+// }
+// 1. let w = 18750 ^ 1;
+// 2. let frac = 0.256 * 18750;
+// 3. let interger = 10016 * 18750
+// acc = 0 + 
+// 187804800.0
+// 187800481
+// 187805280.76923075
+// 1_878_004_808
+// 1,000,000,000
+// 1_878_004_810
+// (1_000_000_000_000_00 % (99_840_000 * 100) / 1_000_000_000 + (1_000_000_000_000_00 / (99_840_000 * 100))) * 18750
+
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = FromH160;
 	type BlockGasLimit = BlockGasLimit;
@@ -136,7 +187,7 @@ impl pallet_evm::Config for Runtime {
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
 	type ChainId = ConstU64<43>;
 	type Currency = Balances;
-	type FeeCalculator = FixedGasPrice;
+	type FeeCalculator = DynamicGasPrice;
 	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
