@@ -486,7 +486,7 @@ pub mod pallet {
 					),
 				}
 			};
-			let message = Sign::signable_message(
+			let message = Sign::eth_signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[
@@ -552,9 +552,12 @@ pub mod pallet {
 		}
 
 		fn on_new_message_root(at: T::BlockNumber, message_root: Hash) {
-			let commitment =
-				Commitment { block_number: at, message_root, nonce: <Nonce<T>>::get() };
-			let message = Sign::signable_message(
+			let commitment = Commitment {
+				block_number: at.saturated_into::<u32>(),
+				message_root,
+				nonce: <Nonce<T>>::get(),
+			};
+			let message = Sign::eth_signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[
