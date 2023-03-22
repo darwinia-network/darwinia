@@ -112,11 +112,10 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 fn message_root_getter_should_work() {
 	// std
 	use std::str::FromStr;
+	// darwinia
+	use crate::*;
 	// frontier
 	use pallet_evm::{FeeCalculator, Runner};
-	// substrate
-	use frame_support::traits::Get;
-	use sp_core::{H160, H256, U256};
 
 	new_test_ext().execute_with(|| assert_eq!(<MessageRootGetter<Runtime>>::get(), None));
 	new_test_ext().execute_with(|| {

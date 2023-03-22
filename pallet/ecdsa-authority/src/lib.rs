@@ -35,7 +35,7 @@ mod test_utils;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-mod primitives;
+pub mod primitives;
 use primitives::*;
 
 mod weights;
@@ -44,14 +44,11 @@ pub use weights::WeightInfo;
 // crates.io
 use ethabi::Token;
 // darwinia
-use dc_primitives::AccountId;
+use dc_primitives::{AccountId, BlockNumber};
 // substrate
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
-use sp_runtime::{
-	traits::{SaturatedConversion, Saturating, Zero},
-	Perbill,
-};
+use sp_runtime::{traits::Zero, Perbill};
 use sp_std::prelude::*;
 // TODO @jiguantong Debug, remove before merging
 use frame_support::log;
@@ -62,7 +59,9 @@ pub mod pallet {
 	use crate::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config<AccountId = AccountId> {
+	pub trait Config:
+		frame_system::Config<AccountId = AccountId, BlockNumber = BlockNumber>
+	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -109,7 +108,7 @@ pub mod pallet {
 		/// Collected enough authorities change signatures.
 		CollectedEnoughAuthoritiesChangeSignatures {
 			operation: Operation<T::AccountId>,
-			new_threshold: Option<u32>,
+			threshold: Option<u32>,
 			message: Hash,
 			signatures: Vec<(T::AccountId, Signature)>,
 		},
@@ -165,35 +164,26 @@ pub mod pallet {
 	/// The authorities change waiting for signing.
 	#[pallet::storage]
 	#[pallet::getter(fn authorities_change_to_sign)]
-	pub type AuthoritiesChangeToSign<T: Config> = StorageValue<
-		_,
-		// TODO: use struct
-		(
-			Operation<T::AccountId>,
-			Option<u32>,
-			Hash,
-			BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>,
-		),
-		OptionQuery,
-	>;
+	pub type AuthoritiesChangeToSign<T: Config> =
+		StorageValue<_, AuthoritiesChangeSigned<T::MaxAuthorities>, OptionQuery>;
 
-	/// The new message root waiting for signing.
+	/// The incoming message root waiting for signing.
+	#[pallet::storage]
+	#[pallet::getter(fn message_root_to_sign)]
+	pub type MessageRootToSign<T: Config> =
+		StorageValue<_, MessageRootSigned<T::MaxAuthorities>, OptionQuery>;
+
+	// TODO: Remove these in the next version.
+	/// The incoming message root waiting for signing.
 	#[pallet::storage]
 	#[pallet::getter(fn new_message_root_to_sign)]
-	pub type NewMessageRootToSign<T: Config> = StorageValue<
-		_,
-		// TODO: use struct
-		(Commitment, Hash, BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>),
-		OptionQuery,
-	>;
-
+	pub type NewMessageRootToSign<T: Config> = StorageValue<_, (), OptionQuery>;
 	/// Record the previous message root.
 	///
 	/// Use for checking if the message root getter get the same message root as the previous one.
 	/// And if this is empty, it means the message root is require to be relayed.
 	#[pallet::storage]
-	#[pallet::getter(fn previous_message_root)]
-	pub type PreviousMessageRoot<T: Config> = StorageValue<_, (T::BlockNumber, Hash), OptionQuery>;
+	pub type PreviousMessageRoot<T: Config> = StorageValue<_, (), OptionQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T>
@@ -234,6 +224,13 @@ pub mod pallet {
 
 			// TODO: weight
 			Default::default()
+		}
+
+		fn on_runtime_upgrade() -> Weight {
+			<NewMessageRootToSign<T>>::kill();
+			<PreviousMessageRoot<T>>::kill();
+
+			T::DbWeight::get().reads_writes(0, 2)
 		}
 	}
 	#[pallet::call]
@@ -341,29 +338,31 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			let authorities = Self::ensure_authority(&who)?;
-			let mut authorities_change_to_sign =
+			let mut authorities_change_signed =
 				<AuthoritiesChangeToSign<T>>::get().ok_or(<Error<T>>::NoAuthoritiesChange)?;
-			let (_, _, message, collected) = &mut authorities_change_to_sign;
 
-			Self::ensure_not_submitted(&who, collected)?;
+			Self::ensure_not_submitted(&who, &authorities_change_signed.signatures)?;
 
 			ensure!(
-				Sign::verify_signature(&signature.0, &message.0, &who.0),
+				Sign::verify_signature(&signature.0, &authorities_change_signed.message.0, &who.0),
 				<Error<T>>::BadSignature
 			);
 
-			collected.try_push((who, signature)).map_err(|_| <Error<T>>::TooManyAuthorities)?;
+			authorities_change_signed
+				.signatures
+				.try_push((who, signature))
+				.map_err(|_| <Error<T>>::TooManyAuthorities)?;
 
-			if Self::check_threshold(collected.len() as _, authorities.len() as _) {
+			if Self::check_threshold(
+				authorities_change_signed.signatures.len() as _,
+				authorities.len() as _,
+			) {
 				Self::apply_next_authorities();
-
-				let (operation, new_threshold, message, collected) = authorities_change_to_sign;
-
 				Self::deposit_event(Event::<T>::CollectedEnoughAuthoritiesChangeSignatures {
-					operation,
-					new_threshold,
-					message,
-					signatures: collected.to_vec(),
+					operation: authorities_change_signed.operation,
+					threshold: authorities_change_signed.threshold,
+					message: authorities_change_signed.message,
+					signatures: authorities_change_signed.signatures.to_vec(),
 				});
 
 				let now = <frame_system::Pallet<T>>::block_number();
@@ -372,7 +371,7 @@ pub mod pallet {
 					Self::on_new_message_root(now, message_root);
 				}
 			} else {
-				<AuthoritiesChangeToSign<T>>::put(authorities_change_to_sign);
+				<AuthoritiesChangeToSign<T>>::put(authorities_change_signed);
 			}
 
 			Ok(Pays::No.into())
@@ -390,33 +389,35 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			let authorities = Self::ensure_authority(&who)?;
-			let mut new_message_root_to_sign =
-				<NewMessageRootToSign<T>>::get().ok_or(<Error<T>>::NoNewMessageRoot)?;
-			let (_, message, collected) = &mut new_message_root_to_sign;
+			let mut message_root_signed =
+				<MessageRootToSign<T>>::get().ok_or(<Error<T>>::NoNewMessageRoot)?;
 
-			Self::ensure_not_submitted(&who, collected)?;
+			Self::ensure_not_submitted(&who, &message_root_signed.signatures)?;
 
 			ensure!(
-				Sign::verify_signature(&signature.0, &message.0, &who.0),
+				Sign::verify_signature(&signature.0, &message_root_signed.message.0, &who.0),
 				<Error<T>>::BadSignature
 			);
 
-			collected.try_push((who, signature)).map_err(|_| <Error<T>>::TooManyAuthorities)?;
+			message_root_signed
+				.signatures
+				.try_push((who, signature))
+				.map_err(|_| <Error<T>>::TooManyAuthorities)?;
 
-			if Self::check_threshold(collected.len() as _, authorities.len() as _) {
-				<NewMessageRootToSign<T>>::kill();
-				<PreviousMessageRoot<T>>::kill();
-
-				let (commitment, message, collected) = new_message_root_to_sign;
+			if Self::check_threshold(
+				message_root_signed.signatures.len() as _,
+				authorities.len() as _,
+			) {
+				message_root_signed.authorized = true;
 
 				Self::deposit_event(Event::<T>::CollectedEnoughNewMessageRootSignatures {
-					commitment,
-					message,
-					signatures: collected.to_vec(),
+					commitment: message_root_signed.commitment.clone(),
+					message: message_root_signed.message,
+					signatures: message_root_signed.signatures.to_vec(),
 				});
-			} else {
-				<NewMessageRootToSign<T>>::put(new_message_root_to_sign);
 			}
+
+			<MessageRootToSign<T>>::put(message_root_signed);
 
 			Ok(Pays::No.into())
 		}
@@ -498,12 +499,12 @@ pub mod pallet {
 				]),
 			);
 
-			<AuthoritiesChangeToSign<T>>::put((
+			<AuthoritiesChangeToSign<T>>::put(AuthoritiesChangeSigned {
 				operation,
-				new_threshold,
+				threshold: new_threshold,
 				message,
-				BoundedVec::default(),
-			));
+				signatures: Default::default(),
+			});
 
 			Self::deposit_event(Event::<T>::CollectingAuthoritiesChangeSignatures { message });
 		}
@@ -524,47 +525,37 @@ pub mod pallet {
 				return None;
 			}
 
-			let message_root = T::MessageRoot::get()?;
+			let new_message_root = T::MessageRoot::get()?;
 
-			<PreviousMessageRoot<T>>::try_mutate(|maybe_previous_message_root| {
-				if force {
-					*maybe_previous_message_root = Some((at, message_root));
+			if force {
+				return Some(new_message_root);
+			}
 
-					return Ok(message_root);
-				}
-
-				// Only if the chain is still collecting signatures will enter this condition.
-				if let Some((recorded_at, previous_message_root)) = maybe_previous_message_root {
-					// If this is a new root.
-					if &message_root != previous_message_root {
-						// Update the root with a new one if exceed the max pending period.
-						// Also update the recorded time.
-						if at.saturating_sub(*recorded_at) > T::MaxPendingPeriod::get() {
-							*recorded_at = at;
-							*previous_message_root = message_root;
-
-							return Ok(message_root);
-						}
+			if let Some(message_root_signed) = <MessageRootToSign<T>>::get() {
+				// If there is a new root.
+				if new_message_root != message_root_signed.commitment.message_root
+			// If the previous root is still under signing process.
+			&& !message_root_signed.authorized
+				{
+					// Update the root with a new one if exceed the max pending period.
+					// Also update the recorded time.
+					if at.saturating_sub(message_root_signed.commitment.block_number)
+						> T::MaxPendingPeriod::get()
+					{
+						return Some(new_message_root);
 					}
-				} else {
-					// If no previous message root is recorded, starting to relay the incoming
-					// messages.
-					*maybe_previous_message_root = Some((at, message_root));
-
-					return Ok(message_root);
 				}
 
-				Err(())
-			})
-			.ok()
+				// If the chain is still collecting signatures there must be `Some`.
+				None
+			} else {
+				Some(new_message_root)
+			}
 		}
 
 		fn on_new_message_root(at: T::BlockNumber, message_root: Hash) {
-			let commitment = Commitment {
-				block_number: at.saturated_into::<u32>(),
-				message_root,
-				nonce: <Nonce<T>>::get(),
-			};
+			let commitment =
+				Commitment { block_number: at, message_root, nonce: <Nonce<T>>::get() };
 			let message = Sign::signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
@@ -576,7 +567,12 @@ pub mod pallet {
 				]),
 			);
 
-			<NewMessageRootToSign<T>>::put((commitment, message, BoundedVec::default()));
+			<MessageRootToSign<T>>::put(MessageRootSigned {
+				commitment,
+				message,
+				signatures: Default::default(),
+				authorized: false,
+			});
 
 			Self::deposit_event(Event::<T>::CollectingNewMessageRootSignatures { message });
 		}

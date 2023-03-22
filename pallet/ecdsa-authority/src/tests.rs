@@ -22,8 +22,6 @@ use crate::{mock::*, test_utils::*, *};
 use frame_support::{
 	assert_noop, assert_ok,
 	dispatch::{Pays, PostDispatchInfo},
-	traits::Get,
-	BoundedVec,
 };
 use sp_runtime::DispatchError;
 
@@ -52,8 +50,13 @@ fn add_authority() {
 			"0x5dcc31dcd194f2ccb42e13ed80001e37492f796d6d62514525fcf66de6f955c8",
 		);
 		assert_eq!(
-			EcdsaAuthority::authorities_change_to_sign(),
-			Some((Operation::AddMember { new: a_0 }, Some(1), message, Default::default()))
+			EcdsaAuthority::authorities_change_to_sign().unwrap(),
+			AuthoritiesChangeSigned {
+				operation: Operation::AddMember { new: a_0 },
+				threshold: Some(1),
+				message,
+				signatures: Default::default()
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -82,7 +85,7 @@ fn add_authority() {
 		);
 
 		// Case 4.
-		(1..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get()).for_each(|i| {
+		(1..<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get()).for_each(|i| {
 			assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), account_id_of(i as _)));
 			EcdsaAuthority::presume_authority_change_succeed();
 			assert_eq!(EcdsaAuthority::nonce(), 1 + i);
@@ -90,7 +93,7 @@ fn add_authority() {
 		assert_noop!(
 			EcdsaAuthority::add_authority(
 				RuntimeOrigin::root(),
-				account_id_of(<<Runtime as Config>::MaxAuthorities as Get<u32>>::get() as _)
+				account_id_of(<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get() as _)
 			),
 			<Error<Runtime>>::TooManyAuthorities
 		);
@@ -98,7 +101,7 @@ fn add_authority() {
 		// Check order.
 		assert_eq!(
 			EcdsaAuthority::authorities(),
-			(0..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get())
+			(0..<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get())
 				.rev()
 				.map(|i| account_id_of(i as _))
 				.collect::<Vec<_>>()
@@ -123,13 +126,13 @@ fn remove_authority() {
 			"0xb59076c5054bc451c964b47af005b7b807b3501c36ef4d4375cb39637baea13b",
 		);
 		assert_eq!(
-			EcdsaAuthority::authorities_change_to_sign(),
-			Some((
-				Operation::RemoveMember { pre: AUTHORITY_SENTINEL.into(), old: a_1 },
-				Some(1),
+			EcdsaAuthority::authorities_change_to_sign().unwrap(),
+			AuthoritiesChangeSigned {
+				operation: Operation::RemoveMember { pre: AUTHORITY_SENTINEL.into(), old: a_1 },
+				threshold: Some(1),
 				message,
-				Default::default()
-			))
+				signatures: Default::default()
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -182,13 +185,17 @@ fn swap_authority() {
 			"0x0f9863685b4ef59a98fc26a063dad4713698af2d10af5f2ea921fed3f39fac71",
 		);
 		assert_eq!(
-			EcdsaAuthority::authorities_change_to_sign(),
-			Some((
-				Operation::SwapMembers { pre: AUTHORITY_SENTINEL.into(), old: a_1, new: a_2 },
-				None,
+			EcdsaAuthority::authorities_change_to_sign().unwrap(),
+			AuthoritiesChangeSigned {
+				operation: Operation::SwapMembers {
+					pre: AUTHORITY_SENTINEL.into(),
+					old: a_1,
+					new: a_2
+				},
+				threshold: None,
 				message,
-				Default::default()
-			))
+				signatures: Default::default()
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -221,26 +228,29 @@ fn swap_authority() {
 #[test]
 fn sync_interval_and_max_pending_period() {
 	ExtBuilder::default().build().execute_with(|| {
+		let sync_interval = <<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get();
+
 		// Check new message root while reaching the sync interval checkpoint.
-		(2..<<Runtime as Config>::SyncInterval as Get<u64>>::get()).for_each(|i| {
-			run_to_block(i as _);
-			assert!(EcdsaAuthority::new_message_root_to_sign().is_none());
+		(2..sync_interval).for_each(|i| {
+			run_to_block(i);
+			assert!(EcdsaAuthority::message_root_to_sign().is_none());
 		});
-		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
+		run_to_block(sync_interval);
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
 		assert_eq!(
-			EcdsaAuthority::new_message_root_to_sign(),
-			Some((
-				Commitment {
-					block_number: System::block_number() as _,
+			EcdsaAuthority::message_root_to_sign().unwrap(),
+			MessageRootSigned {
+				commitment: Commitment {
+					block_number: System::block_number(),
 					message_root: Default::default(),
 					nonce: 0
 				},
 				message,
-				Default::default()
-			))
+				signatures: Default::default(),
+				authorized: false,
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -250,49 +260,62 @@ fn sync_interval_and_max_pending_period() {
 		// Use a new message root while exceeding the max pending period.
 		new_message_root(1);
 		let offset = System::block_number() + 1;
-		(offset..offset + <<Runtime as Config>::MaxPendingPeriod as Get<u64>>::get()).for_each(
-			|i| {
+		(offset..offset + <<Runtime as Config>::MaxPendingPeriod as Get<BlockNumber>>::get())
+			.for_each(|i| {
 				run_to_block(i);
 				assert_eq!(
-					EcdsaAuthority::new_message_root_to_sign(),
-					Some((
-						Commitment { block_number: 3, message_root: Default::default(), nonce: 0 },
+					EcdsaAuthority::message_root_to_sign().unwrap(),
+					MessageRootSigned {
+						commitment: Commitment {
+							block_number: 3,
+							message_root: Default::default(),
+							nonce: 0
+						},
 						message,
-						Default::default()
-					))
+						signatures: Default::default(),
+						authorized: false,
+					}
 				);
-			},
-		);
-		run_to_block(offset + <<Runtime as Config>::MaxPendingPeriod as Get<u64>>::get());
+			});
+		run_to_block(offset + <<Runtime as Config>::MaxPendingPeriod as Get<BlockNumber>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x3e5c445233cc9d281c4fde6ffc5d1c57701d932afba5e6cea07f9b1e88d41fc6",
 		);
 		assert_eq!(
-			EcdsaAuthority::new_message_root_to_sign(),
-			Some((
-				Commitment { block_number: 9, message_root: message_root_of(1), nonce: 0 },
+			EcdsaAuthority::message_root_to_sign().unwrap(),
+			MessageRootSigned {
+				commitment: Commitment {
+					block_number: 9,
+					message_root: message_root_of(1),
+					nonce: 0
+				},
 				message,
-				Default::default()
-			))
+				signatures: Default::default(),
+				authorized: false
+			}
 		);
 
 		// Not allow to update the message root while authorities changing.
 		assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), Default::default()));
 		new_message_root(2);
 		let offset = System::block_number() + 1;
-		(offset..=offset + <<Runtime as Config>::MaxPendingPeriod as Get<u64>>::get()).for_each(
-			|i| {
+		(offset..=offset + <<Runtime as Config>::MaxPendingPeriod as Get<BlockNumber>>::get())
+			.for_each(|i| {
 				run_to_block(i);
 				assert_eq!(
-					EcdsaAuthority::new_message_root_to_sign(),
-					Some((
-						Commitment { block_number: 9, message_root: message_root_of(1), nonce: 0 },
+					EcdsaAuthority::message_root_to_sign().unwrap(),
+					MessageRootSigned {
+						commitment: Commitment {
+							block_number: 9,
+							message_root: message_root_of(1),
+							nonce: 0
+						},
 						message,
-						Default::default()
-					))
+						signatures: Default::default(),
+						authorized: false
+					}
 				);
-			},
-		);
+			});
 	});
 }
 
@@ -318,8 +341,13 @@ fn submit_authorities_change_signature() {
 			"0x7c2560e894619daa9e7369148a97b05d16e1c439c2467b08f64af578aba9cb4a",
 		);
 		assert_eq!(
-			EcdsaAuthority::authorities_change_to_sign(),
-			Some((operation.clone(), Some(2), message, Default::default()))
+			EcdsaAuthority::authorities_change_to_sign().unwrap(),
+			AuthoritiesChangeSigned {
+				operation: operation.clone(),
+				threshold: Some(2),
+				message,
+				signatures: Default::default()
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -345,13 +373,13 @@ fn submit_authorities_change_signature() {
 			s_1.clone(),
 		));
 		assert_eq!(
-			EcdsaAuthority::authorities_change_to_sign(),
-			Some((
-				operation.clone(),
-				Some(2),
+			EcdsaAuthority::authorities_change_to_sign().unwrap(),
+			AuthoritiesChangeSigned {
+				operation: operation.clone(),
+				threshold: Some(2),
 				message,
-				BoundedVec::try_from(vec![(a_1, s_1.clone())]).unwrap()
-			))
+				signatures: BoundedVec::try_from(vec![(a_1, s_1.clone())]).unwrap()
+			}
 		);
 
 		let s_2 = sign(&k_2, &message.0);
@@ -366,7 +394,7 @@ fn submit_authorities_change_signature() {
 			vec![
 				Event::CollectedEnoughAuthoritiesChangeSignatures {
 					operation,
-					new_threshold: Some(2),
+					threshold: Some(2),
 					message,
 					signatures: vec![(a_1, s_1), (a_2, s_2)]
 				},
@@ -396,21 +424,22 @@ fn submit_new_message_root_signature() {
 			<Error<Runtime>>::NoNewMessageRoot
 		);
 
-		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
+		run_to_block(<<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
 		assert_eq!(
-			EcdsaAuthority::new_message_root_to_sign(),
-			Some((
-				Commitment {
-					block_number: System::block_number() as _,
+			EcdsaAuthority::message_root_to_sign().unwrap(),
+			MessageRootSigned {
+				commitment: Commitment {
+					block_number: System::block_number(),
 					message_root: Default::default(),
 					nonce: 0
 				},
 				message,
-				Default::default()
-			))
+				signatures: Default::default(),
+				authorized: false
+			}
 		);
 		assert_eq!(
 			ecdsa_authority_events(),
@@ -443,16 +472,17 @@ fn submit_new_message_root_signature() {
 			s_1.clone(),
 		));
 		assert_eq!(
-			EcdsaAuthority::new_message_root_to_sign(),
-			Some((
-				Commitment {
-					block_number: System::block_number() as _,
+			EcdsaAuthority::message_root_to_sign().unwrap(),
+			MessageRootSigned {
+				commitment: Commitment {
+					block_number: System::block_number(),
 					message_root: Default::default(),
 					nonce: 0
 				},
 				message,
-				BoundedVec::try_from(vec![(a_1, s_1.clone())]).unwrap()
-			))
+				signatures: BoundedVec::try_from(vec![(a_1, s_1.clone())]).unwrap(),
+				authorized: false
+			}
 		);
 
 		let s_2 = sign(&k_2, &message.0);
@@ -461,12 +491,11 @@ fn submit_new_message_root_signature() {
 			s_2.clone(),
 		));
 		assert_eq!(EcdsaAuthority::nonce(), nonce);
-		assert!(EcdsaAuthority::new_message_root_to_sign().is_none());
 		assert_eq!(
 			ecdsa_authority_events(),
 			vec![Event::CollectedEnoughNewMessageRootSignatures {
 				commitment: Commitment {
-					block_number: System::block_number() as _,
+					block_number: System::block_number(),
 					message_root: Default::default(),
 					nonce: EcdsaAuthority::nonce()
 				},
@@ -474,8 +503,6 @@ fn submit_new_message_root_signature() {
 				signatures: vec![(a_1, s_1), (a_2, s_2)]
 			}]
 		);
-		assert!(EcdsaAuthority::new_message_root_to_sign().is_none());
-		assert!(EcdsaAuthority::previous_message_root().is_none());
 	});
 }
 
@@ -485,9 +512,9 @@ fn tx_fee() {
 	let (_, a_2) = gen_pair(2);
 
 	ExtBuilder::default().authorities(vec![a_1, a_2]).build().execute_with(|| {
-		(2..<<Runtime as Config>::SyncInterval as Get<u64>>::get())
-			.for_each(|n| run_to_block(n as _));
-		run_to_block(<<Runtime as Config>::SyncInterval as Get<u64>>::get());
+		(2..<<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get())
+			.for_each(|n| run_to_block(n));
+		run_to_block(<<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
 			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
 		);
