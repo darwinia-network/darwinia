@@ -48,7 +48,7 @@ use dc_primitives::{AccountId, BlockNumber};
 // substrate
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
-use sp_runtime::{traits::Zero, Perbill};
+use sp_runtime::{traits::Zero, Perbill, SaturatedConversion};
 use sp_std::prelude::*;
 
 #[frame_support::pallet]
