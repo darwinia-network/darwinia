@@ -15627,8 +15627,3 @@ dependencies = [
  "libc",
  "pkg-config",
 ]
-
-[[patch.unused]]
-name = "moonbeam-relay-encoder"
-version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"

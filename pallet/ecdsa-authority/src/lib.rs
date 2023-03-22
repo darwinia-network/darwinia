@@ -50,8 +50,6 @@ use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 use sp_runtime::{traits::Zero, Perbill};
 use sp_std::prelude::*;
-// TODO @jiguantong Debug, remove before merging
-use frame_support::log;
 
 #[frame_support::pallet]
 pub mod pallet {
