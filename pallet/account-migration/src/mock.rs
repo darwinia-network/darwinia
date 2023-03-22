@@ -16,9 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
 // substrate
+use frame_support::traits::GenesisBuild;
 use sp_io::TestExternalities;
 
 pub struct Dummy;
@@ -129,7 +131,7 @@ impl pallet_assets::Config for Runtime {
 	type MetadataDepositPerByte = ();
 	type RemoveItemsLimit = ();
 	type RuntimeEvent = RuntimeEvent;
-	type StringLimit = ();
+	type StringLimit = frame_support::traits::ConstU32<4>;
 	type WeightInfo = ();
 }
 
@@ -190,6 +192,7 @@ impl pallet_identity::Config for Runtime {
 
 impl darwinia_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
 }
 
 frame_support::construct_runtime! {
@@ -210,6 +213,21 @@ frame_support::construct_runtime! {
 	}
 }
 
-pub fn new_test_ext() -> TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap().into()
+pub(crate) fn new_test_ext() -> TestExternalities {
+	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+
+	pallet_assets::GenesisConfig::<Runtime> {
+		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],
+		metadata: vec![(
+			darwinia_account_migration::KTON_ID,
+			b"KTON".to_vec(),
+			b"KTON".to_vec(),
+			18,
+		)],
+		..Default::default()
+	}
+	.assimilate_storage(&mut storage)
+	.unwrap();
+
+	storage.into()
 }

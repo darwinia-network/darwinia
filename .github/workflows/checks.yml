@@ -22,19 +22,18 @@ on:
       - "**.yml"
 
 env:
-  GITHUB_CACHE_VERSION: 1
+  CARGO_INCREMENTAL: 1
+  CARGO_TERM_COLOR: always
+
+  GITHUB_CACHE_VERSION: 3
 
   RUST_BACKTRACE: full
-  RUSTC_WRAPPER: sccache
-
-  SCCACHE_LINK: https://github.com/mozilla/sccache/releases/download
-  SCCACHE_VERSION: v0.3.0
-  SCCACHE_DIR: /home/runner/.cache/sccache
 
 jobs:
   basic-checks:
     name: Task ${{ matrix.action }} darwinia
     if: github.event_name == 'push' || !github.event.pull_request.draft
+    needs: [features-checks]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -42,12 +41,6 @@ jobs:
     steps:
       - name: Setup build environment
         run: sudo apt install -y protobuf-compiler
-      - name: Install Sccache
-        run: |
-          export SCCACHE_FILE=sccache-${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl
-          curl -L ${{ env.SCCACHE_LINK }}/${{ env.SCCACHE_VERSION }}/$SCCACHE_FILE.tar.gz | tar xz
-          chmod u+x $SCCACHE_FILE/sccache
-          sudo mv $SCCACHE_FILE/sccache /usr/bin
       - name: Fetch latest code
         uses: actions/checkout@v3
       - name: Cache cargo
@@ -59,12 +52,6 @@ jobs:
             target
           key: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
-      - name: Cache sccache
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.SCCACHE_DIR}}
-          key: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: sccache-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
       - name: Action ${{ matrix.action }}
         if: matrix.action != 'test'
         run: cargo ${{ matrix.action }} --release --locked -p darwinia --all-features
@@ -88,7 +75,8 @@ jobs:
     if: github.event_name == 'push' || !github.event.pull_request.draft
     strategy:
       matrix:
-        runtime: [runtime/darwinia, runtime/crab, runtime/pangolin]
+        runtime:
+          [runtime/darwinia, runtime/crab, runtime/pangoro, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
       - name: Check ${{ matrix.runtime }}
@@ -103,8 +91,18 @@ jobs:
       matrix:
         target:
           [
-            { chain: darwinia-dev, compare-with: "https://rpc.polkadot.io" },
-            { chain: crab-dev, compare-with: "https://rpc.polkadot.io" },
+            {
+              chain: darwinia-dev,
+              compare-with: "https://rpc.darwinia-network",
+            },
+            {
+              chain: crab-dev,
+              compare-with: "https://crab-rpc.darwinia-network",
+            },
+            {
+              chain: pangoro-dev,
+              compare-with: "https://pangoro-rpc.darwinia.network",
+            },
             {
               chain: pangolin-dev,
               compare-with: "https://pangolin-rpc.darwinia.network",
@@ -168,12 +166,11 @@ jobs:
           cd tool/state-processor
           mkdir -p data
           cd data
-          curl -L https://github.com/darwinia-network/darwinia-2.0/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
+          curl -L https://github.com/darwinia-network/darwinia/releases/download/crab2/crab-state.tar.zst | tar x -I pzstd
           cd ..
       - name: Check state
         run: |
           cd tool/state-processor
-          unset RUSTC_WRAPPER
           cargo test --release --locked
 
   checks-cleaning:

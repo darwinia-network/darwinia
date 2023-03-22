@@ -17,7 +17,7 @@ dc-types = { workspace = true }
 substrate-fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed" }
 
 [dev-dependencies]
-sp-arithmetic = { workspace = true }
+sp-arithmetic = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

@@ -281,7 +281,7 @@ where
 		sc_service::Error,
 	>,
 {
-	let parachain_config = cumulus_client_service::prepare_node_config(parachain_config);
+	let mut parachain_config = cumulus_client_service::prepare_node_config(parachain_config);
 	let sc_service::PartialComponents {
 		backend,
 		client,
@@ -357,6 +357,8 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
 	));
+	// for ethereum-compatibility rpc.
+	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let rpc_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
@@ -653,7 +655,7 @@ where
 /// Start a dev node which can seal instantly.
 /// !!! WARNING: DO NOT USE ELSEWHERE
 pub fn start_dev_node<RuntimeApi, Executor>(
-	config: sc_service::Configuration,
+	mut config: sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
@@ -819,7 +821,8 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry,
 	));
-
+	// for ethereum-compatibility rpc.
+	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();

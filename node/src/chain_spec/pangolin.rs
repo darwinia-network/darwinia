@@ -34,6 +34,7 @@ use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
+use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -170,7 +171,7 @@ pub fn genesis_config() -> ChainSpec {
 				// Consensus stuff.
 				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-					elapsed_time: 11_516_352_020,
+					elapsed_time: 0,
 					collator_count: 3,
 					collators: vec![
 						(array_bytes::hex_n_into_unchecked(C1), UNIT),
@@ -249,8 +250,10 @@ pub fn genesis_config() -> ChainSpec {
 				pangoro_fee_market: Default::default(),
 			}
 		},
-		Vec::new(),
-		None,
+		vec![
+			"/dns/g1.pangolin2.darwinia.network/tcp/30333/p2p/12D3KooWLjJE7oNzQrEM26vUZ1uKuNYhvqjYrEATt1RdoAMTnvL9".parse().unwrap()
+		],
+		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		Some(PROTOCOL_ID),
 		None,
 		Some(properties()),
@@ -262,7 +265,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	load_config("pangolin2.json")
+	load_config("pangolin2.json", 0)
 }
 
 fn testnet_genesis(

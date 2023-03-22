@@ -1,7 +1,7 @@
 // crates.io
 use clap::{Parser, ValueEnum};
 // substrate
-use sp_core::{sr25519::Pair, Pair as _};
+use sp_core::{ed25519::Pair as Ep, sr25519::Pair as Sp, Pair as _};
 
 #[derive(Parser)]
 #[command(rename_all = "kebab")]
@@ -10,8 +10,23 @@ struct Cli {
 	from: String,
 	#[arg(value_name = "ADDRESS")]
 	to: String,
+	#[arg(
+		required = true,
+		value_enum,
+		long,
+		short,
+		value_name = "SCHEME",
+		default_value = "sr25519"
+	)]
+	scheme: Scheme,
 	#[arg(required = true, value_enum, long, short, value_name = "NETWORK")]
 	network: Network,
+}
+#[allow(non_camel_case_types)]
+#[derive(Clone, ValueEnum)]
+enum Scheme {
+	sr25519,
+	ed25519,
 }
 #[derive(Clone, ValueEnum)]
 enum Network {
@@ -31,10 +46,26 @@ impl Network {
 	}
 }
 
+enum Pair {
+	S(Box<Sp>),
+	E(Box<Ep>),
+}
+impl Pair {
+	fn sign(&self, msg: &[u8]) -> [u8; 64] {
+		match self {
+			Self::S(p) => p.sign(msg).0,
+			Self::E(p) => p.sign(msg).0,
+		}
+	}
+}
+
 fn main() {
-	let Cli { from, to, network } = Cli::parse();
+	let Cli { from, to, scheme, network } = Cli::parse();
 	let from = array_bytes::hex2array(from).expect("invalid private key");
-	let from = Pair::from_seed(&from);
+	let from = match scheme {
+		Scheme::sr25519 => Pair::S(Box::new(Sp::from_seed(&from))),
+		Scheme::ed25519 => Pair::E(Box::new(Ep::from_seed(&from))),
+	};
 	let network = network.as_bytes();
 	let msg = [
 		b"<Bytes>I authorize the migration to ",

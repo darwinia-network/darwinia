@@ -25,6 +25,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
 
 #[cfg(test)]
 mod mock;
@@ -87,7 +88,7 @@ pub trait SimpleAsset {
 pub type DepositId = u16;
 
 /// Deposit.
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Deposit {
 	/// Deposit ID.
 	pub id: DepositId,
@@ -189,7 +190,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Lock the RING for some KTON profit/interest.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::lock())]
 		pub fn lock(origin: OriginFor<T>, amount: Balance, months: u8) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -259,7 +260,7 @@ pub mod pallet {
 
 		/// Claim the expired-locked RING.
 		#[pallet::call_index(1)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::claim())]
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let now = Self::now();
@@ -298,7 +299,7 @@ pub mod pallet {
 
 		/// Claim the unexpired-locked RING by paying the KTON penalty.
 		#[pallet::call_index(2)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::claim_with_penalty())]
 		pub fn claim_with_penalty(origin: OriginFor<T>, id: DepositId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let d = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
