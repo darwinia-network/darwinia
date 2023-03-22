@@ -57,7 +57,7 @@ xcm                 = { workspace = true }
 
 # substrate
 frame-benchmarking             = { workspace = true, optional = true }
-frame-benchmarking-cli         = { workspace = true, optional = true }
+frame-benchmarking-cli         = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship            = { workspace = true }
 sc-chain-spec                  = { workspace = true }
@@ -119,7 +119,6 @@ runtime-benchmarks = [
 
 	# substrate
 	"frame-benchmarking",
-	"frame-benchmarking-cli",
 ]
 
 try-runtime = [

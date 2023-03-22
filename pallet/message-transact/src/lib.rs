@@ -38,7 +38,7 @@ use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
 use frame_support::{traits::EnsureOrigin, PalletError, RuntimeDebug};
 use sp_core::{H160, U256};
-use sp_runtime::traits::BadOrigin;
+use frame_support::sp_runtime::traits::BadOrigin;
 use sp_std::boxed::Box;
 
 pub use pallet::*;
