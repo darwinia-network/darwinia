@@ -195,7 +195,6 @@ try-runtime-cli                            = { git = "https://github.com/parityt
 
 [patch."https://github.com/darwinia-network/moonbeam"]
 account                = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
-moonbeam-relay-encoder = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 pallet-ethereum-xcm    = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }

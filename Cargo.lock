@@ -6264,22 +6264,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moonbeam-relay-encoder"
-version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
-dependencies = [
- "cumulus-primitives-core",
- "frame-system",
- "pallet-evm-precompile-relay-encoder",
- "pallet-staking",
- "parity-scale-codec",
- "sp-runtime",
- "sp-std",
- "xcm",
- "xcm-primitives",
-]
-
-[[package]]
 name = "multiaddr"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7484,28 +7468,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-precompile-relay-encoder"
-version = "0.1.0"
-source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"
-dependencies = [
- "cumulus-primitives-core",
- "fp-evm",
- "frame-support",
- "frame-system",
- "log",
- "num_enum",
- "pallet-evm",
- "pallet-staking",
- "parity-scale-codec",
- "precompile-utils",
- "rustc-hex",
- "sp-core",
- "sp-runtime",
- "sp-std",
- "xcm-primitives",
-]
-
-[[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
@@ -8233,7 +8195,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "moonbeam-relay-encoder",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -8338,7 +8299,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "moonbeam-relay-encoder",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -15667,3 +15627,8 @@ dependencies = [
  "libc",
  "pkg-config",
 ]
+
+[[patch.unused]]
+name = "moonbeam-relay-encoder"
+version = "0.1.0"
+source = "git+https://github.com/jiguantong/moonbeam?branch=evm-xcm-debug#bd427bc96e062d65d646e322392c0b74c9833204"

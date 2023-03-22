@@ -70,7 +70,6 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-moonbeam-relay-encoder = { workspace = true }
 pallet-ethereum-xcm    = { workspace = true }
 precompile-utils       = { workspace = true }
 xcm-primitives         = { workspace = true }
