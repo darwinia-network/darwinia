@@ -31,7 +31,7 @@ use crate::*;
 	codec::Decode,
 	codec::MaxEncodedLen,
 	scale_info::TypeInfo,
-	sp_runtime::RuntimeDebug,
+	frame_support::RuntimeDebug,
 )]
 pub enum ProxyType {
 	Any,

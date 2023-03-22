@@ -8,7 +8,7 @@ macro_rules! impl_account_migration_tests {
 			use darwinia_staking::Ledger;
 			// substrate
 			use frame_support::{
-				assert_err, assert_ok, migration, traits::Get, Blake2_128Concat, StorageHasher,
+				assert_err, assert_ok, migration, Blake2_128Concat, StorageHasher,
 			};
 			use frame_system::AccountInfo;
 			use pallet_assets::ExistenceReason;
@@ -16,7 +16,7 @@ macro_rules! impl_account_migration_tests {
 			use pallet_identity::{
 				Data, IdentityFields, IdentityInfo, RegistrarInfo, Registration,
 			};
-			use sp_core::{sr25519::Pair, Decode, Encode, Pair as PairT, H160};
+			use sp_core::{sr25519::Pair, Decode, Encode, Get, Pair as PairT, H160};
 			use sp_keyring::sr25519::Keyring;
 			use sp_runtime::{
 				traits::ValidateUnsigned,

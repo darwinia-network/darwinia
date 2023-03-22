@@ -20,7 +20,6 @@ pub use crate::{self as darwinia_ecdsa_authority};
 
 // darwinia
 use darwinia_ecdsa_authority::{primitives::*, *};
-use dc_primitives::AccountId;
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};
 use sp_io::TestExternalities;
@@ -37,12 +36,12 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::testing::Header;
+	type Header = sp_runtime::generic::Header<BlockNumber, Self::Hashing>;
 	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
@@ -65,11 +64,11 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type ChainId = frame_support::traits::ConstU64<46>;
 	type MaxAuthorities = frame_support::traits::ConstU32<3>;
-	type MaxPendingPeriod = frame_support::traits::ConstU64<5>;
+	type MaxPendingPeriod = frame_support::traits::ConstU32<5>;
 	type MessageRoot = MessageRoot;
 	type RuntimeEvent = RuntimeEvent;
 	type SignThreshold = SignThreshold;
-	type SyncInterval = frame_support::traits::ConstU64<3>;
+	type SyncInterval = frame_support::traits::ConstU32<3>;
 	type WeightInfo = ();
 }
 
@@ -128,7 +127,7 @@ pub(crate) fn new_message_root(byte: u8) {
 	MESSAGE_ROOT.with(|v| *v.borrow_mut() = Some(message_root_of(byte)));
 }
 
-pub(crate) fn run_to_block(n: u64) {
+pub(crate) fn run_to_block(n: BlockNumber) {
 	for b in System::block_number() + 1..=n {
 		System::set_block_number(b);
 		<EcdsaAuthority as OnInitialize<_>>::on_initialize(b);
