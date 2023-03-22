@@ -17,15 +17,22 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(unused_crate_dependencies)]
+
+mod bls;
+use bls::{hash_to_curve_g2, PublicKey, Signature};
 
 mod bls;
 use bls::{hash_to_curve_g2, PublicKey, Signature};
 
 // core
 use core::marker::PhantomData;
+// frontier
+use pallet_evm::GasWeightMapping;
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
+use frame_support::{ensure, weights::Weight};
 use sp_std::prelude::*;
 
 pub(crate) const BLS_ESTIMATED_COST: u64 = 100_000;
@@ -33,6 +40,12 @@ pub struct BLS12381<T>(PhantomData<T>);
 
 #[precompile_utils::precompile]
 impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
+	/// FastAggregateVerify
+	///
+	/// Verifies an aggregate_signature against a list of pub_keys.
+	/// pub_keys must be trusted the origin of the serialization
+	/// precompile do not check the keys is valid
+	/// see more: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
 	#[precompile::public("fast_aggregate_verify(bytes[],bytes,bytes)")]
 	#[precompile::view]
 	fn fast_aggregate_verify(

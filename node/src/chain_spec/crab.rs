@@ -34,6 +34,7 @@ use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
+use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -265,8 +266,10 @@ pub fn genesis_config() -> ChainSpec {
 				darwinia_fee_market: Default::default(),
 			}
 		},
-		Vec::new(),
-		None,
+		vec![
+			"/dns/g1.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap()
+		],
+		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		Some(PROTOCOL_ID),
 		None,
 		Some(properties()),
@@ -278,7 +281,7 @@ pub fn genesis_config() -> ChainSpec {
 }
 
 pub fn config() -> ChainSpec {
-	unimplemented!("TODO")
+	load_config("crab2.json", 0)
 }
 
 fn testnet_genesis(

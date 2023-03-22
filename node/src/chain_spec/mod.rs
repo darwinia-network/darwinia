@@ -60,7 +60,7 @@ mod testnet_keys {
 use testnet_keys::*;
 
 // std
-use std::{env, thread};
+use std::{env, fs, thread};
 // crates.io
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::runtime::Runtime as TokioRuntime;
@@ -73,6 +73,8 @@ use sp_core::{Pair, Public};
 // Dummy chain spec, in case when we don't have the native runtime.
 #[allow(unused)]
 pub type DummyChainSpec = sc_chain_spec::GenericChainSpec<(), Extensions>;
+
+const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit";
 
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
@@ -125,7 +127,7 @@ fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public
 		.public()
 }
 
-fn load_config<G, E>(name: &'static str) -> GenericChainSpec<G, E>
+fn load_config<G, E>(name: &'static str, mut retries: u8) -> GenericChainSpec<G, E>
 where
 	E: DeserializeOwned,
 {
@@ -153,5 +155,24 @@ where
 
 	println!("Loading genesis from `{}`", p.display());
 
-	GenericChainSpec::from_json_file(p).unwrap()
+	let f_name = p.display().to_string();
+
+	if let Ok(c) = GenericChainSpec::from_json_file(p) {
+		c
+	} else {
+		retries += 1;
+
+		println!("Failed to load genesis from `{f_name}`, starting the `{retries}` retries");
+
+		// Try removing the invalid file.
+		//
+		// Sometimes, it might not exist.
+		let _ = fs::remove_file(f_name);
+
+		if retries == 5 {
+			panic!("Exit after {retries} retries");
+		}
+
+		load_config(name, retries)
+	}
 }

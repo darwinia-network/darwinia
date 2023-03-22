@@ -26,20 +26,20 @@ sp-std        = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", workspace = true }
-scale-info = { workspace = true }
+codec      = { workspace = true, package = "parity-scale-codec", features = ["std"] }
+scale-info = { workspace = true, features = ["std"] }
 
 # darwinia
-darwinia-deposit = { workspace = true }
+darwinia-deposit = { workspace = true, features = ["std"] }
 
 # moonbeam
-precompile-utils = { workspace = true, features = ["testing"] }
+precompile-utils = { workspace = true, features = ["std", "testing"] }
 
 # substrate
-frame-system     = { workspace = true }
+frame-system     = { workspace = true, features = ["std"] }
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
-sp-io            = { workspace = true }
+sp-io            = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

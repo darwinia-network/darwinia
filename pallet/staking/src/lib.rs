@@ -32,6 +32,8 @@
 // TODO: nomination upper limit
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// TODO: address the unused crates in test.
+#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![deny(missing_docs)]
 
 mod weights;
@@ -75,7 +77,13 @@ pub trait Stake {
 	/// Stake item type.
 	///
 	/// Basically, it's just a num type.
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type Item: Clone + Copy + Debug + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
+	/// Stake item type.
+	///
+	/// Basically, it's just a num type.
+	#[cfg(feature = "runtime-benchmarks")]
+	type Item: Clone + Copy + Debug + Default + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
 
 	/// Add stakes to the staking pool.
 	///

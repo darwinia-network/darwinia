@@ -129,7 +129,7 @@ macro_rules! impl_account_migration_tests {
 			}
 
 			fn migrate(from: Pair, to: AccountId) -> Result<(), E> {
-				let message = darwinia_account_migration::sr25519_signable_message(
+				let message = darwinia_account_migration::signable_message(
 					<<Runtime as frame_system::Config>::Version as Get<RuntimeVersion>>::get()
 						.spec_name
 						.as_bytes(),
@@ -141,9 +141,9 @@ macro_rules! impl_account_migration_tests {
 				AccountMigration::pre_dispatch(&darwinia_account_migration::Call::migrate {
 					from: from_pk.clone(),
 					to,
-					signature: sig.clone(),
+					signature: sig.0.clone(),
 				})?;
-				AccountMigration::migrate(RuntimeOrigin::none(), from_pk, to, sig)?;
+				AccountMigration::migrate(RuntimeOrigin::none(), from_pk, to, sig.0)?;
 
 				Ok(())
 			}
@@ -178,7 +178,7 @@ macro_rules! impl_account_migration_tests {
 			fn validate_invalid_sig() {
 				let (from, from_pk) = alice();
 				let to = H160::from_low_u64_be(33).into();
-				let message = darwinia_account_migration::sr25519_signable_message(b"?", &to);
+				let message = darwinia_account_migration::signable_message(b"?", &to);
 				let sig = from.sign(&message);
 
 				ExtBuilder::default().build().execute_with(|| {
@@ -187,9 +187,9 @@ macro_rules! impl_account_migration_tests {
 					assert_err!(
 						AccountMigration::pre_dispatch(
 							&darwinia_account_migration::Call::migrate {
-								from: from_pk.clone(),
+								from: from_pk,
 								to,
-								signature: sig.clone(),
+								signature: sig.0,
 							}
 						)
 						.map_err(E::from),
@@ -384,9 +384,9 @@ macro_rules! impl_account_migration_tests {
 						},
 					);
 
-					assert_ok!(migrate(from, to,));
+					assert_ok!(migrate(from, to));
 					assert_eq!(Identity::identity(to).unwrap().info, info);
-					assert_eq!(Identity::identity(to).unwrap().deposit, RING_AMOUNT);
+					assert_eq!(Identity::identity(to).unwrap().deposit, 0);
 					assert_eq!(Identity::identity(to).unwrap().judgements.len(), 0);
 				});
 			}
@@ -432,7 +432,7 @@ macro_rules! impl_evm_tests {
 	() => {
 		mod evm {
 			// darwinia
-			use crate::mock::{Runtime, WeightPerGas};
+			use super::mock::*;
 
 			#[test]
 			fn configured_base_extrinsic_weight_is_evm_compatible() {

@@ -16,15 +16,15 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.0.0"
+version    = "6.0.1"
 
 [workspace.dependencies]
 # crates.io
 array-bytes       = { version = "6.0" }
-codec             = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
+codec             = { package = "parity-scale-codec", version = "3.4", default-features = false }
 libsecp256k1      = { version = "0.7" }
-scale-info        = { version = "2.3", default-features = false, features = ["derive"] }
-sha3              = { version = "0.9" }
+scale-info        = { version = "2.3", default-features = false }
+sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
 
 # cumulus
@@ -49,21 +49,21 @@ parachain-info                        = { default-features = false, git = "https
 
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
-darwinia-account-migration        = { default-features = false, path = "pallet/account-migration" }
-darwinia-common-runtime           = { default-features = false, path = "runtime/common" }
-darwinia-deposit                  = { default-features = false, path = "pallet/deposit" }
-darwinia-ecdsa-authority          = { default-features = false, path = "pallet/ecdsa-authority" }
-darwinia-message-gadget           = { default-features = false, path = "pallet/message-gadget" }
-darwinia-message-transact         = { default-features = false, path = "pallet/message-transact" }
-darwinia-precompile-assets        = { default-features = false, path = "precompile/assets" }
-darwinia-precompile-bls12-381     = { default-features = false, path = "precompile/bls12-381" }
-darwinia-precompile-deposit       = { default-features = false, path = "precompile/deposit" }
-darwinia-precompile-staking       = { default-features = false, path = "precompile/staking" }
-darwinia-precompile-state-storage = { default-features = false, path = "precompile/state-storage" }
+darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
+darwinia-common-runtime           = { path = "runtime/common", default-features = false }
+darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
+darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }
+darwinia-message-gadget           = { path = "pallet/message-gadget", default-features = false }
+darwinia-message-transact         = { path = "pallet/message-transact", default-features = false }
+darwinia-precompile-assets        = { path = "precompile/assets", default-features = false }
+darwinia-precompile-bls12-381     = { path = "precompile/bls12-381", default-features = false }
+darwinia-precompile-deposit       = { path = "precompile/deposit", default-features = false }
+darwinia-precompile-staking       = { path = "precompile/staking", default-features = false }
+darwinia-precompile-state-storage = { path = "precompile/state-storage", default-features = false }
 darwinia-runtime                  = { path = "runtime/darwinia" }
-darwinia-staking                  = { default-features = false, path = "pallet/staking" }
-dc-inflation                      = { default-features = false, path = "core/inflation" }
-dc-primitives                     = { default-features = false, path = "core/primitives" }
+darwinia-staking                  = { path = "pallet/staking", default-features = false }
+dc-inflation                      = { path = "core/inflation", default-features = false }
+dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
 pangolin-runtime                  = { path = "runtime/pangolin" }
 pangoro-runtime                   = { path = "runtime/pangoro" }
