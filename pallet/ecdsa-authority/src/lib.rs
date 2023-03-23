@@ -531,20 +531,23 @@ pub mod pallet {
 
 			if let Some(message_root_signed) = <MessageRootToSign<T>>::get() {
 				// If there is a new root.
-				if new_message_root != message_root_signed.commitment.message_root
-			// If the previous root is still under signing process.
-			&& !message_root_signed.authorized
-				{
+				if new_message_root != message_root_signed.commitment.message_root {
+					// If the root is already authorized, then we'll consider updating it.
+					if message_root_signed.authorized {
+						return Some(new_message_root);
+					}
+
+					// Else the previous root is still under signing process.
+					//
 					// Update the root with a new one if exceed the max pending period.
 					// Also update the recorded time.
 					if at.saturating_sub(message_root_signed.commitment.block_number)
-						> T::MaxPendingPeriod::get()
+						>= T::MaxPendingPeriod::get()
 					{
 						return Some(new_message_root);
 					}
 				}
 
-				// If the chain is still collecting signatures there must be `Some`.
 				None
 			} else {
 				Some(new_message_root)

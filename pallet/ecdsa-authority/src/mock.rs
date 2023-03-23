@@ -64,11 +64,11 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type ChainId = frame_support::traits::ConstU64<46>;
 	type MaxAuthorities = frame_support::traits::ConstU32<3>;
-	type MaxPendingPeriod = frame_support::traits::ConstU32<5>;
+	type MaxPendingPeriod = frame_support::traits::ConstU32<20>;
 	type MessageRoot = MessageRoot;
 	type RuntimeEvent = RuntimeEvent;
 	type SignThreshold = SignThreshold;
-	type SyncInterval = frame_support::traits::ConstU32<3>;
+	type SyncInterval = frame_support::traits::ConstU32<10>;
 	type WeightInfo = ();
 }
 
@@ -122,16 +122,27 @@ pub(crate) fn account_id_of(id: u8) -> AccountId {
 pub(crate) fn message_root_of(byte: u8) -> Hash {
 	Hash::repeat_byte(byte)
 }
+pub(crate) fn new_message_root(byte: u8) -> Hash {
+	let message_root = message_root_of(byte);
 
-pub(crate) fn new_message_root(byte: u8) {
-	MESSAGE_ROOT.with(|v| *v.borrow_mut() = Some(message_root_of(byte)));
+	MESSAGE_ROOT.with(|v| *v.borrow_mut() = Some(message_root));
+
+	message_root
 }
 
-pub(crate) fn run_to_block(n: BlockNumber) {
-	for b in System::block_number() + 1..=n {
+pub(crate) fn run_to_block_with<F>(n: BlockNumber, f: F)
+where
+	F: Fn(),
+{
+	(System::block_number() + 1..=n).for_each(|b| {
 		System::set_block_number(b);
 		<EcdsaAuthority as OnInitialize<_>>::on_initialize(b);
-	}
+
+		f();
+	});
+}
+pub(crate) fn run_to_block(n: BlockNumber) {
+	run_to_block_with(n, || {});
 }
 
 pub(crate) fn ecdsa_authority_events() -> Vec<Event<Runtime>> {
