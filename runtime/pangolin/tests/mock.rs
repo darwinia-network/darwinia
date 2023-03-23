@@ -20,7 +20,6 @@ pub use pangolin_runtime::*;
 
 // substrate
 use frame_support::traits::GenesisBuild;
-use pallet_transaction_payment::Multiplier;
 use sp_io::TestExternalities;
 
 pub const KTON_ID: u64 = AssetIds::PKton as _;
@@ -59,7 +58,6 @@ impl ExtBuilder {
 
 		let mut ext = TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));
-
 		ext
 	}
 }
