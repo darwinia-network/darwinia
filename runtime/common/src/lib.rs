@@ -78,6 +78,7 @@ impl WeightToFeePolynomial for WeightToFee {
 		}]
 	}
 }
+
 pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
 impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
 	for DealWithFees<R>
