@@ -456,13 +456,13 @@ macro_rules! impl_fee_tests {
 			// frontier
 			use fp_evm::FeeCalculator;
 			// substrate
-			use polkadot_runtime_common::{
-				MinimumMultiplier, SlowAdjustingFeeUpdate, TargetBlockFullness,
-			};
 			use frame_support::{
 				dispatch::DispatchClass, pallet_prelude::Weight, traits::OnFinalize,
 			};
 			use pallet_transaction_payment::Multiplier;
+			use polkadot_runtime_common::{
+				MinimumMultiplier, SlowAdjustingFeeUpdate, TargetBlockFullness,
+			};
 			use sp_core::U256;
 			use sp_runtime::{traits::Convert, Perbill};
 

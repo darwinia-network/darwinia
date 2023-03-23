@@ -18,8 +18,6 @@
 
 // darwinia
 use crate::*;
-use frame_support::weights::WeightToFee;
-use sp_runtime::FixedPointNumber;
 // frontier
 use pallet_evm::Precompile;
 
@@ -134,6 +132,8 @@ where
 pub struct TransactionPaymentGasPrice;
 impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		use frame_support::weights::WeightToFee;
+		use sp_runtime::FixedPointNumber;
 		(
 			TransactionPayment::next_fee_multiplier()
 				.saturating_mul_int::<Balance>(
