@@ -16,8 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+pub use crate as darwinia_staking;
+
 // darwinia
-use darwinia_staking::*;
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};
@@ -258,7 +259,7 @@ frame_support::construct_runtime! {
 pub trait ZeroDefault {
 	fn default() -> Self;
 }
-impl ZeroDefault for Ledger<Runtime> {
+impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
 			staked_ring: Default::default(),

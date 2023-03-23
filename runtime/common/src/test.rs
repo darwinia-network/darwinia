@@ -452,6 +452,7 @@ macro_rules! impl_fee_tests {
 	() => {
 		mod transaction_fee_tests {
 			// darwinia
+			#[allow(clippy::crate_in_macro_def)]
 			use crate::mock::*;
 			// frontier
 			use fp_evm::FeeCalculator;

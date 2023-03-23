@@ -21,7 +21,7 @@ use crate::{
 	mock::{Deposit, *},
 	Deposit as DepositS, *,
 };
-use darwinia_staking::Stake;
+use darwinia_staking_traits::Stake;
 // substrate
 use frame_support::{assert_noop, assert_ok};
 

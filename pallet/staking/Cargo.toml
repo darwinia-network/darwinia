@@ -12,8 +12,9 @@ codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
 # darwinia
-dc-inflation = { workspace = true }
-dc-types     = { workspace = true }
+darwinia-staking-traits = { workspace = true }
+dc-inflation            = { workspace = true }
+dc-types                = { workspace = true }
 
 # subtrate
 frame-support     = { workspace = true }
@@ -58,6 +59,12 @@ std = [
 	"sp-std/std",
 ]
 
-runtime-benchmarks = []
+runtime-benchmarks = [
+	# darwinia
+	"darwinia-staking-traits/runtime-benchmarks",
+]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]

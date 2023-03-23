@@ -28,19 +28,25 @@
 //! - KTON: Darwinia's commitment token
 //! - Deposit: Locking RINGs' ticket
 
-// TODO: weight
 // TODO: nomination upper limit
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// TODO: address the unused crates in test.
-#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 mod weights;
 pub use weights::WeightInfo;
 
-// core
-use core::fmt::Debug;
+pub use darwinia_staking_traits::*;
+
 // crates.io
 use codec::FullCodec;
 // darwinia
@@ -69,42 +75,6 @@ type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 type NegativeImbalance<T> = <<T as Config>::RingCurrency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
-
-/// Stake trait that stake items must be implemented.
-pub trait Stake {
-	/// Account type.
-	type AccountId;
-	/// Stake item type.
-	///
-	/// Basically, it's just a num type.
-	#[cfg(not(feature = "runtime-benchmarks"))]
-	type Item: Clone + Copy + Debug + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
-	/// Stake item type.
-	///
-	/// Basically, it's just a num type.
-	#[cfg(feature = "runtime-benchmarks")]
-	type Item: Clone + Copy + Debug + Default + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
-
-	/// Add stakes to the staking pool.
-	///
-	/// This will transfer the stakes to a pallet/contact account.
-	fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult;
-
-	/// Withdraw stakes from the staking pool.
-	///
-	/// This will transfer the stakes back to the staker's account.
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult;
-}
-/// Extended stake trait.
-///
-/// Provide a way to access the deposit RING amount.
-pub trait StakeExt: Stake {
-	/// Amount type.
-	type Amount;
-
-	/// Get the staked amount.
-	fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError>;
-}
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
 /// just identity.
