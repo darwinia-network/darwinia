@@ -2,19 +2,18 @@ import Web3 from "web3";
 import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, ALITH } from "../config";
+import { HOST_HTTP_URL, FAITH, FAITH_P, ETHAN, DEFAULT_GAS } from "../config";
 
 const web3 = new Web3(HOST_HTTP_URL);
 describe("Test balances", () => {
 	const VALUE = "0x200";
-	const GAS_PRICE = "0x3B9ACA00"; // 1000000000
+	const GAS_PRICE = "0x77359400"; // 2000000000
 
 	let init_from;
 	let init_to;
 	step("Account has correct balance", async function () {
 		init_from = await web3.eth.getBalance(FAITH);
-		init_to = await web3.eth.getBalance(ALITH);
-
+		init_to = await web3.eth.getBalance(ETHAN);
 		expect(Number(init_from)).to.be.greaterThan(Number(VALUE));
 	});
 
@@ -22,7 +21,7 @@ describe("Test balances", () => {
 		let tx = await web3.eth.accounts.signTransaction(
 			{
 				from: FAITH,
-				to: ALITH,
+				to: ETHAN,
 				value: VALUE,
 				gasPrice: GAS_PRICE,
 				gas: "0x100000",
@@ -33,14 +32,11 @@ describe("Test balances", () => {
 	}).timeout(60000);
 
 	step("Balance should be updated after transfer", async function () {
-		const expectedFromBalance = (
-			BigInt(init_from) -
-			BigInt(21000) * BigInt(GAS_PRICE) -
-			BigInt(VALUE)
-		).toString();
-		const expectedToBalance = (BigInt(init_to) + BigInt(VALUE)).toString();
+		const expectedFromBalance =
+			BigInt(init_from) - BigInt(21000) * BigInt(GAS_PRICE) - BigInt(VALUE);
+		expect(await web3.eth.getBalance(FAITH)).to.equal(expectedFromBalance.toString());
 
-		expect(await web3.eth.getBalance(FAITH)).to.equal(expectedFromBalance);
-		expect(await web3.eth.getBalance(ALITH)).to.equal(expectedToBalance);
+		const expectedToBalance = (BigInt(init_to) + BigInt(VALUE)).toString();
+		expect(await web3.eth.getBalance(ETHAN)).to.equal(expectedToBalance);
 	});
 });
