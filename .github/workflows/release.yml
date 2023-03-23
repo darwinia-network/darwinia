@@ -18,9 +18,7 @@ jobs:
     container:
       image: ubuntu:18.04
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install dependencies
+      - name: Setup build environment
         run: |
           apt update -y
           apt install --no-install-recommends -y \
@@ -28,20 +26,18 @@ jobs:
             clang make gcc g++ libssl-dev pkg-config protobuf-compiler
           pip3 install --upgrade pip
           pip3 install cmake --upgrade
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-
+      - name: Fetch latest code
+        uses: actions/checkout@v3
       - name: Build
         if: startsWith(github.ref, 'refs/tags/pango')
         run: cargo build --release --locked -p darwinia --features pangoro-native,pangolin-native
-
       - name: Build
         if: startsWith(github.ref, 'refs/tags/v')
         run: cargo build --release --locked -p darwinia --features darwinia-native,crab-native
-
       - name: Collect shared
         run: |
           mkdir -p shared
@@ -52,17 +48,14 @@ jobs:
         with:
           name: darwinia-artifact
           path: shared
-
-      - uses: vishnudxb/cancel-workflow@v1.2
+      - name: Fail fast
+        uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
           repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
-  ##
-  # Generate subwasm info
-  ##
   build-subwasm:
     name: Generate subwasm info
     runs-on: ubuntu-latest
@@ -76,9 +69,7 @@ jobs:
           - pangolin
           - pangoro
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install dependencies
+      - name: Setup build environment
         run: |
           apt update -y
           apt install --no-install-recommends -y \
@@ -86,7 +77,6 @@ jobs:
             clang make gcc g++ libssl-dev pkg-config protobuf-compiler
           pip3 install --upgrade pip
           pip3 install cmake --upgrade
-
       - name: Install subwasm
         env:
           # Currently, Same with srtool version v0.9.25
@@ -97,19 +87,18 @@ jobs:
             --output subwasm.deb && \
             dpkg -i subwasm.deb && \
             subwasm --version
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           target: wasm32-unknown-unknown
-
+      - name: Fetch latest code
+        uses: actions/checkout@v3
       - name: Build runtime
         run: |
           set -xe
           RUNTIME_DIR=runtime/${{ matrix.runtime }}
           cargo build --release --locked -p ${{ matrix.runtime }}-runtime --features on-chain-release-build
-
       - name: Collect shared
         run: |
           mkdir -p shared/${{ matrix.runtime }}-runtime
@@ -124,14 +113,13 @@ jobs:
           Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
           echo '${{ matrix.runtime }}-runtime compressed compact subwasm info'
           subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}-runtime/${{ matrix.runtime }}-runtime.compact.compressed.json
-
       - name: Upload shared
         uses: actions/upload-artifact@v2.2.4
         with:
           name: darwinia-artifact
           path: shared
-
-      - uses: vishnudxb/cancel-workflow@v1.2
+      - name: Fast fail
+        uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
           repo: darwinia-network/darwinia
@@ -143,28 +131,27 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-package]
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/download-artifact@v2
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Download shared
+        uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
           path: shared
-
-      - uses: olegtarasov/get-tag@v2.1
-      - uses: benjlevesque/short-sha@v1.2
-
+      - name: Tag
+        uses: olegtarasov/get-tag@v2.1
+      - name: Sha
+        uses: benjlevesque/short-sha@v1.2
       - name: Docker login
         uses: docker/login-action@v1
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-
       - name: Extract shared
         run: |
           mkdir -p dist
           tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
-
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:
@@ -172,7 +159,6 @@ jobs:
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
-
       - name: Publish docker image with tag
         uses: docker/build-push-action@v3
         if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango')
@@ -188,13 +174,13 @@ jobs:
     needs: [build-package, build-subwasm, build-docker-image]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/download-artifact@v2
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Download shared
+        uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
           path: shared
-
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy
@@ -202,14 +188,12 @@ jobs:
           mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
           mv shared/darwinia-runtime/*.compact.compressed.* deploy/
           mv shared/crab-runtime/*.compact.compressed.* deploy/
-
       - name: Hash file
-        run: |
-          (cd deploy && sha256sum * | tee sha256sums.txt)
-
-      - uses: olegtarasov/get-tag@v2.1
-      - uses: benjlevesque/short-sha@v1.2
-
+        run: wcd deploy && sha256sum * | tee sha256sums.txt
+      - name: Tag
+        uses: olegtarasov/get-tag@v2.1
+      - name: Sha
+        uses: benjlevesque/short-sha@v1.2
       - name: Generate template data
         run: |
           FILE_CRAB=deploy/crab-runtime.compact.compressed.json
@@ -243,19 +227,16 @@ jobs:
               tag: $tag,
               sha: $sha
             }' | tee shared/template_data.json
-
       - name: Render release page
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
           path: .github/release-mainnets.md
-
       # - name: Verify
       #   run: |
       #     set -xe
       #     cat .github/release-mainnets.md
       #     ls -la deploy/
-
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
@@ -271,13 +252,13 @@ jobs:
     needs: [build-package, build-subwasm, build-docker-image]
     if: startsWith(github.ref, 'refs/tags/pango')
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/download-artifact@v2
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Download shared
+        uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
           path: shared
-
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy
@@ -285,14 +266,13 @@ jobs:
           mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
           mv shared/pangolin-runtime/*.compact.compressed.* deploy/
           mv shared/pangoro-runtime/*.compact.compressed.* deploy/
-
       - name: Hash file
         run: |
           (cd deploy && sha256sum * | tee sha256sums.txt)
-
-      - uses: olegtarasov/get-tag@v2.1
-      - uses: benjlevesque/short-sha@v1.2
-
+      - name: Tag
+        uses: olegtarasov/get-tag@v2.1
+      - name: Sha
+        uses: benjlevesque/short-sha@v1.2
       - name: Generate template data
         run: |
           FILE_PANGOLIN=deploy/pangolin-runtime.compact.compressed.json
@@ -326,19 +306,16 @@ jobs:
               tag: $tag,
               sha: $sha
             }' | tee shared/template_data.json
-
       - name: Render release page
         uses: jayamanikharyono/jinja-action@v0.1
         with:
           datafile: shared/template_data.json
           path: .github/release-testnets.md
-
       # - name: Verify
       #   run: |
       #     set -xe
       #     cat .github/release-testnets.md
       #     ls -la deploy/
-
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
