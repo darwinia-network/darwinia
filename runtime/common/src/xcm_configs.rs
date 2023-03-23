@@ -32,11 +32,10 @@ use xcm_executor::{
 // substrate
 use frame_support::{
 	log,
-	traits::{
-		tokens::currency::Currency as CurrencyT, ConstU128, Get, OnUnbalanced as OnUnbalancedT,
-	},
+	traits::{tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT},
 	weights::{Weight, WeightToFee as WeightToFeeT},
 };
+use sp_core::Get;
 use sp_io::hashing::blake2_256;
 use sp_runtime::traits::{SaturatedConversion, Saturating, Zero};
 use sp_std::{borrow::Borrow, result::Result};
