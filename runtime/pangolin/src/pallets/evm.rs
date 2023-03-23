@@ -160,25 +160,25 @@ impl pallet_evm::FeeCalculator for DynamicGasPrice {
 	}
 }
 
-
 // weight_to_fee = function (weight)
-// WeightToFeeCoefficient { 
+// WeightToFeeCoefficient {
 //     degree: 1,
 //         nagative: false,
-//         coeff_frac: Perbill:: from_rational(1_000_000_000_000_00 % (1_000 * 99_840 * 100), 9984000000),  // 0.256
-//         coeff_integer: 10016.02564102564
+//         coeff_frac: Perbill:: from_rational(1_000_000_000_000_00 % (1_000 * 99_840 * 100),
+// 9984000000),  // 0.256         coeff_integer: 10016.02564102564
 // }
 // 1. let w = 18750 ^ 1;
 // 2. let frac = 0.256 * 18750;
 // 3. let interger = 10016 * 18750
-// acc = 0 + 
+// acc = 0 +
 // 187804800.0
 // 187800481
 // 187805280.76923075
 // 1_878_004_808
 // 1,000,000,000
 // 1_878_004_810
-// (1_000_000_000_000_00 % (99_840_000 * 100) / 1_000_000_000 + (1_000_000_000_000_00 / (99_840_000 * 100))) * 18750
+// (1_000_000_000_000_00 % (99_840_000 * 100) / 1_000_000_000 + (1_000_000_000_000_00 / (99_840_000
+// * 100))) * 18750
 
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = FromH160;
