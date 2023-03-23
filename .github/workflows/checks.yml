@@ -70,6 +70,22 @@ jobs:
       - name: Shrink cache
         run: .github/shrink-cache.sh
 
+  format-checks:
+    name: Task check format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Check format
+        run: cargo fmt --all -- --check
+      - name: Fast fail
+        uses: vishnudxb/cancel-workflow@v1.2
+        if: failure()
+        with:
+          repo: darwinia-network/darwinia
+          workflow_id: ${{ github.run_id }}
+          access_token: ${{ github.token }}
+
   features-checks:
     name: Task check features
     if: github.event_name == 'push' || !github.event.pull_request.draft
