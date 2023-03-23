@@ -189,7 +189,7 @@ jobs:
           mv shared/darwinia-runtime/*.compact.compressed.* deploy/
           mv shared/crab-runtime/*.compact.compressed.* deploy/
       - name: Hash file
-        run: wcd deploy && sha256sum * | tee sha256sums.txt
+        run: cd deploy && sha256sum * | tee sha256sums.txt
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -267,8 +267,7 @@ jobs:
           mv shared/pangolin-runtime/*.compact.compressed.* deploy/
           mv shared/pangoro-runtime/*.compact.compressed.* deploy/
       - name: Hash file
-        run: |
-          (cd deploy && sha256sum * | tee sha256sums.txt)
+        run: cd deploy && sha256sum * | tee sha256sums.txt
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
