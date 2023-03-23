@@ -23,7 +23,7 @@ use crate::{
 };
 use darwinia_staking::Stake;
 // substrate
-use frame_support::{assert_noop, assert_ok, traits::Get};
+use frame_support::{assert_noop, assert_ok};
 
 #[test]
 fn lock_should_work() {

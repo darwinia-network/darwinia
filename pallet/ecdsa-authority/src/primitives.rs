@@ -16,17 +16,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+//! Primitives of the darwinia-ecdsa-authority.
+
 pub use sp_core::{ecdsa::Signature, H160 as Address, H256 as Hash};
 
 // crates.io
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
+// darwinia
+use dc_primitives::AccountId;
 // substrate
+use frame_support::{BoundedVec, EqNoBound, PartialEqNoBound, RuntimeDebug, RuntimeDebugNoBound};
+use sp_core::Get;
 use sp_io::{crypto, hashing};
-use sp_runtime::RuntimeDebug;
 
 // address(0x1)
-pub const AUTHORITY_SENTINEL: [u8; 20] =
+pub(crate) const AUTHORITY_SENTINEL: [u8; 20] =
 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 // keccak256("ChangeRelayer(bytes4 sig,bytes params,uint256 nonce)");
 // 0x30a82982a8d5050d1c83bbea574aea301a4d317840a8c4734a308ffaa6a63bc8
@@ -80,11 +85,36 @@ impl Sign {
 	}
 }
 
+/// Operation types of authority changing.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum Operation<A> {
-	AddMember { new: A },
-	RemoveMember { pre: A, old: A },
-	SwapMembers { pre: A, old: A, new: A },
+	/// Add a new member.
+	AddMember {
+		/// The new member's account id.
+		new: A,
+	},
+	/// Remove a member.
+	///
+	/// The previous member is required, because the authorities is a linked map stored on the
+	/// Ethereum side.
+	RemoveMember {
+		/// The old member's previous member's account id.
+		pre: A,
+		/// The old member's account id.
+		old: A,
+	},
+	/// Swap `old` member with `new` member.
+	///
+	/// The previous member is required, because the authorities is a linked map stored on the
+	/// Ethereum side.
+	SwapMembers {
+		/// The old member's previous member's account id.
+		pre: A,
+		/// The old member's account id.
+		old: A,
+		/// The new member's account id.
+		new: A,
+	},
 }
 impl<A> Operation<A> {
 	pub(crate) fn id(&self) -> [u8; 4] {
@@ -102,11 +132,44 @@ impl<A> Operation<A> {
 	}
 }
 
+/// The darwinia-ecdsa-authority commitment.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Commitment {
 	pub(crate) block_number: u32,
 	pub(crate) message_root: Hash,
 	pub(crate) nonce: u32,
+}
+
+/// The signing state of an authority change request.
+///
+/// The struct holds the necessary information to verify that the requested change in authority is
+/// authentic and contains enough valid signatures to execute the requested operation.
+#[derive(PartialEqNoBound, EqNoBound, Decode, Encode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(MaxAuthorities))]
+pub struct AuthoritiesChangeSigned<MaxAuthorities>
+where
+	MaxAuthorities: Get<u32>,
+{
+	pub(crate) operation: Operation<AccountId>,
+	pub(crate) threshold: Option<u32>,
+	pub(crate) message: Hash,
+	pub(crate) signatures: BoundedVec<(AccountId, Signature), MaxAuthorities>,
+}
+
+/// The signing state of a new message root.
+///
+/// The struct holds the necessary information to verify that the message is authorized by the
+/// on-chain authorities.
+#[derive(PartialEqNoBound, EqNoBound, Decode, Encode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(MaxAuthorities))]
+pub struct MessageRootSigned<MaxAuthorities>
+where
+	MaxAuthorities: Get<u32>,
+{
+	pub(crate) commitment: Commitment,
+	pub(crate) message: Hash,
+	pub(crate) signatures: BoundedVec<(AccountId, Signature), MaxAuthorities>,
+	pub(crate) authorized: bool,
 }
 
 #[test]
