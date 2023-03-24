@@ -85,6 +85,9 @@ pub mod pallet {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
+
 		/// Unix time getter.
 		type UnixTime: UnixTime;
 
@@ -278,7 +281,7 @@ pub mod pallet {
 		///
 		/// This will transfer the stakes to a pallet/contact account.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::stake(deposits.len() as _))]
 		pub fn stake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -338,7 +341,7 @@ pub mod pallet {
 
 		/// Withdraw stakes from the staking pool.
 		#[pallet::call_index(1)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::unstake(deposits.len() as _))]
 		pub fn unstake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -385,7 +388,7 @@ pub mod pallet {
 		///
 		/// Re-stake the unstaking assets immediately.
 		#[pallet::call_index(2)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::restake(deposits.len() as _))]
 		pub fn restake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -430,7 +433,7 @@ pub mod pallet {
 
 		/// Claim the stakes from the pallet/contract account.
 		#[pallet::call_index(3)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::claim())]
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -447,7 +450,7 @@ pub mod pallet {
 		///
 		/// Effects will be felt at the beginning of the next session.
 		#[pallet::call_index(4)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::collect())]
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -462,7 +465,7 @@ pub mod pallet {
 		///
 		/// Effects will be felt at the beginning of the next session.
 		#[pallet::call_index(5)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::nominate())]
 		pub fn nominate(origin: OriginFor<T>, target: T::AccountId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -486,7 +489,7 @@ pub mod pallet {
 		///
 		/// If the target is a collator, its nominators need to re-nominate.
 		#[pallet::call_index(6)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::chill())]
 		pub fn chill(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -504,7 +507,7 @@ pub mod pallet {
 		///
 		/// Require root origin.
 		#[pallet::call_index(7)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::set_collator_count())]
 		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
 			ensure_root(origin)?;
 

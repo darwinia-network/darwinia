@@ -86,4 +86,5 @@ impl darwinia_staking::Config for Runtime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Timestamp;
+	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }

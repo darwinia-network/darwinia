@@ -216,7 +216,7 @@ pub mod pallet {
 		///
 		/// The `_signature` should be provided by `who`.
 		#[pallet::call_index(1)]
-		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(others.len() as u32, *threshold as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(others.len() as _, *threshold as _))]
 		pub fn migrate_multisig(
 			origin: OriginFor<T>,
 			submitter: AccountId32,
