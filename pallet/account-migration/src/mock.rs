@@ -173,7 +173,10 @@ impl darwinia_staking::Config for Runtime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Dummy;
+	type WeightInfo = ();
 }
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl darwinia_staking::DepositConfig for Runtime {}
 
 impl pallet_identity::Config for Runtime {
 	type BasicDeposit = ();

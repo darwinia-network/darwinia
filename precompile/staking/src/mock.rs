@@ -232,7 +232,9 @@ impl darwinia_staking::Config for TestRuntime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Timestamp;
+	type WeightInfo = ();
 }
+impl darwinia_staking::DepositConfig for TestRuntime {}
 
 frame_support::construct_runtime! {
 	pub enum TestRuntime where

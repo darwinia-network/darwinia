@@ -240,7 +240,10 @@ impl darwinia_staking::Config for Runtime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Time;
+	type WeightInfo = ();
 }
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl darwinia_staking::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime where
