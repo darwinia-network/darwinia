@@ -57,9 +57,7 @@ impl ExtBuilder {
 		.unwrap();
 
 		let mut ext = TestExternalities::new(t);
-
 		ext.execute_with(|| System::set_block_number(1));
-
 		ext
 	}
 }

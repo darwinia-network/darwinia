@@ -129,6 +129,24 @@ where
 	}
 }
 
+pub struct TransactionPaymentGasPrice;
+impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
+	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		use frame_support::weights::WeightToFee;
+		use sp_runtime::FixedPointNumber;
+		(
+			TransactionPayment::next_fee_multiplier()
+				.saturating_mul_int::<Balance>(
+					<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
+						&WeightPerGas::get(),
+					),
+				)
+				.into(),
+			frame_support::weights::Weight::zero(),
+		)
+	}
+}
+
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = FromH160;
 	type BlockGasLimit = BlockGasLimit;
@@ -136,7 +154,7 @@ impl pallet_evm::Config for Runtime {
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
 	type ChainId = ConstU64<43>;
 	type Currency = Balances;
-	type FeeCalculator = FixedGasPrice;
+	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();

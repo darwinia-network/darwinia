@@ -77,7 +77,7 @@ use sp_core::{
 use sp_io::hashing;
 use sp_runtime::{
 	traits::{IdentityLookup, TrailingZeroInput, Verify},
-	AccountId32, RuntimeDebug,
+	AccountId32,
 };
 use sp_std::prelude::*;
 
@@ -525,7 +525,7 @@ pub(crate) type Signature = [u8; 64];
 // Copy from <https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115>.
 // Due to its visibility.
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 pub struct AssetAccount {
 	balance: Balance,
 	is_frozen: bool,
@@ -533,7 +533,7 @@ pub struct AssetAccount {
 	extra: (),
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 pub(crate) enum ExistenceReason {
 	#[codec(index = 0)]
 	Consumer,
@@ -545,7 +545,7 @@ pub(crate) enum ExistenceReason {
 	DepositRefunded,
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 pub(crate) struct AssetDetails {
 	owner: AccountId20,
 	issuer: AccountId20,
@@ -561,7 +561,7 @@ pub(crate) struct AssetDetails {
 	status: AssetStatus,
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 pub(crate) enum AssetStatus {
 	Live,
 	Frozen,
@@ -569,7 +569,7 @@ pub(crate) enum AssetStatus {
 }
 
 #[allow(missing_docs)]
-#[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Multisig {
 	migrate_to: AccountId20,
 	members: Vec<(AccountId32, bool)>,

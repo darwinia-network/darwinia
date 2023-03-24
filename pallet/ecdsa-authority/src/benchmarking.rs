@@ -29,6 +29,21 @@ mod benchmarks {
 	use super::*;
 
 	#[benchmark]
+	fn on_initialize() {
+		assert!(<MessageRootToSign<T>>::get().is_none());
+
+		// The worst case:
+		//
+		// Trigger new message root.
+		#[block]
+		{
+			<Pallet<T>>::on_initialize(Default::default());
+		}
+
+		assert!(<MessageRootToSign<T>>::get().is_some());
+	}
+
+	#[benchmark]
 	fn add_authority() {
 		// The worst case:
 		//
@@ -83,12 +98,12 @@ mod benchmarks {
 		// let (sk, pk) = gen_pair(1);
 		let pk = frame_benchmarking::account("", 777, 777);
 		let a = frame_benchmarking::account("", 0, 0);
-		let data = (
-			Operation::AddMember { new: a },
-			<Option<u32>>::default(),
-			Hash::default(),
-			<BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>>::default(),
-		);
+		let data = AuthoritiesChangeSigned {
+			operation: Operation::AddMember { new: a },
+			threshold: Default::default(),
+			message: Default::default(),
+			signatures: Default::default(),
+		};
 		// let sig = sign(&sk, &data.2 .0);
 		let sig = Default::default();
 
@@ -109,21 +124,22 @@ mod benchmarks {
 		// https://github.com/paritytech/libsecp256k1/issues/134
 		// let (sk, pk) = gen_pair(1);
 		let pk = frame_benchmarking::account("", 777, 777);
-		let data = (
-			Commitment {
+		let data = MessageRootSigned {
+			commitment: Commitment {
 				block_number: Default::default(),
 				message_root: Default::default(),
 				nonce: Default::default(),
 			},
-			Hash::default(),
-			<BoundedVec<(T::AccountId, Signature), T::MaxAuthorities>>::default(),
-		);
+			message: Default::default(),
+			signatures: Default::default(),
+			authorized: Default::default(),
+		};
 		// let sig = sign(&sk, &data.1 .0);
 		let sig = Default::default();
 
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), pk).unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();
-		<NewMessageRootToSign<T>>::put(data);
+		<MessageRootToSign<T>>::put(data);
 
 		// The worst case:
 		//
