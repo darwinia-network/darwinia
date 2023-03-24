@@ -142,7 +142,7 @@ impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 					),
 				)
 				.into(),
-			frame_support::weights::Weight::zero(),
+			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
 		)
 	}
 }

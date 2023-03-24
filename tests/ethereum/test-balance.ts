@@ -7,7 +7,7 @@ import { HOST_HTTP_URL, FAITH, FAITH_P, ETHAN, DEFAULT_GAS } from "../config";
 const web3 = new Web3(HOST_HTTP_URL);
 describe("Test balances", () => {
 	const VALUE = "0x200";
-	const GAS_PRICE = "0x77359400"; // 2000000000
+	const GAS_PRICE = "0x12309ce54000"; // 20_000_000_000_000
 
 	let init_from;
 	let init_to;
