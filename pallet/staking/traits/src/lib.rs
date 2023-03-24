@@ -25,7 +25,15 @@ pub trait Stake {
 	///
 	/// Basically, it's just a num type.
 	#[cfg(feature = "runtime-benchmarks")]
-	type Item: Clone + Copy + Debug + Default + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
+	type Item: Clone
+		+ Copy
+		+ Debug
+		+ Default
+		+ From<u8>
+		+ PartialEq
+		+ FullCodec
+		+ MaxEncodedLen
+		+ TypeInfo;
 
 	/// Add stakes to the staking pool.
 	///

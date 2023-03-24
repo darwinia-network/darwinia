@@ -63,7 +63,7 @@ use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Ind
 use frame_support::{
 	migration,
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement::KeepAlive, LockableCurrency, WithdrawReasons},
+	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, WithdrawReasons},
 	StorageHasher,
 };
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
@@ -466,7 +466,7 @@ pub mod pallet {
 						&to,
 						&darwinia_deposit::account_id(),
 						ds.iter().map(|d| d.value).sum(),
-						KeepAlive,
+						AllowDeath,
 					)?;
 					<darwinia_deposit::Deposits<T>>::insert(
 						to,
@@ -490,7 +490,7 @@ pub mod pallet {
 						&to,
 						&staking_pot,
 						r,
-						KeepAlive,
+						AllowDeath,
 					)?;
 				}
 

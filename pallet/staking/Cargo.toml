@@ -15,6 +15,8 @@ scale-info = { workspace = true }
 darwinia-staking-traits = { workspace = true }
 dc-inflation            = { workspace = true }
 dc-types                = { workspace = true }
+# darwinia optional
+darwinia-deposit = { workspace = true, optional = true }
 
 # subtrate
 frame-support     = { workspace = true }
@@ -23,6 +25,8 @@ pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
+# substrate optional
+frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 # crates.io
@@ -48,6 +52,8 @@ std = [
 
 	# darwinia
 	"dc-inflation/std",
+	# darwinia optional
+	"darwinia-deposit?/std",
 
 	# subtrate
 	"frame-support/std",
@@ -57,11 +63,18 @@ std = [
 	"pallet-session/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	# substrate optional
+	"frame-benchmarking?/std",
 ]
 
 runtime-benchmarks = [
 	# darwinia
+	"darwinia-deposit",
 	"darwinia-staking-traits/runtime-benchmarks",
+
+	# substrate
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 ]
 
 try-runtime = [

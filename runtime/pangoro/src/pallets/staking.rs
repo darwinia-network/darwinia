@@ -31,7 +31,7 @@ impl darwinia_staking::Stake for RingStaking {
 			who,
 			&darwinia_staking::account_id(),
 			item,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 
@@ -75,6 +75,8 @@ frame_support::parameter_types! {
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type Kton = KtonStaking;
+	#[cfg(feature = "runtime-benchmarks")]
+	type KtonHelper = KtonMinting;
 	type MaxDeposits = ConstU32<16>;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;

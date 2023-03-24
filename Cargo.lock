@@ -2848,6 +2848,7 @@ dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-assets",

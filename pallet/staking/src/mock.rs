@@ -107,8 +107,8 @@ impl frame_support::traits::UnixTime for Time {
 		Time::get()
 	}
 }
-pub enum KtonAsset {}
-impl darwinia_deposit::SimpleAsset for KtonAsset {
+pub enum KtonMinting {}
+impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = u32;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -124,7 +124,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 	}
 }
 impl darwinia_deposit::Config for Runtime {
-	type Kton = KtonAsset;
+	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
@@ -142,7 +142,7 @@ impl darwinia_staking::Stake for RingStaking {
 			who,
 			&darwinia_staking::account_id(),
 			item,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 
@@ -229,6 +229,8 @@ frame_support::parameter_types! {
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type Kton = KtonStaking;
+	#[cfg(feature = "runtime-benchmarks")]
+	type KtonHelper = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
