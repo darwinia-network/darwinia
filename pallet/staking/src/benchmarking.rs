@@ -115,8 +115,7 @@ mod benchmarks {
 
 		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
 			.unwrap();
-		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits)
-			.unwrap();
+		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits).unwrap();
 
 		<frame_system::Pallet<T>>::set_block_number(
 			<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
