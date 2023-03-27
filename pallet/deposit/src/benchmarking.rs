@@ -37,7 +37,7 @@ mod benchmarks {
 
 		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT);
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Calculate the last deposit's id.
 		(0..max_deposits - 1).for_each(|_| {
@@ -61,7 +61,7 @@ mod benchmarks {
 				.unwrap()
 		});
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Let all locks be expired.
 		<pallet_timestamp::Pallet<T>>::set_timestamp(
@@ -90,7 +90,7 @@ mod benchmarks {
 				.unwrap()
 		});
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Remove the head item from a 'full-size' bounded vector.
 		{

@@ -32,7 +32,7 @@ mod benchmarks {
 	fn on_initialize() {
 		assert!(<MessageRootToSign<T>>::get().is_none());
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Trigger new message root.
 		#[block]
@@ -45,7 +45,7 @@ mod benchmarks {
 
 	#[benchmark]
 	fn add_authority() {
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Add the authority successfully.
 		#[extrinsic_call]
@@ -62,7 +62,7 @@ mod benchmarks {
 			.unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Remove the authority successfully.
 		#[extrinsic_call]
@@ -85,7 +85,7 @@ mod benchmarks {
 		let old = frame_benchmarking::account("", x - 1, x - 1);
 		let new = frame_benchmarking::account("", x, x);
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Swap the last authority successfully.
 		#[extrinsic_call]
@@ -112,7 +112,7 @@ mod benchmarks {
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), a).unwrap();
 		<AuthoritiesChangeToSign<T>>::put(data);
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Submit the signature and pass the threshold checking successfully.
 		#[extrinsic_call]
@@ -141,7 +141,7 @@ mod benchmarks {
 		<Pallet<T>>::presume_authority_change_succeed();
 		<MessageRootToSign<T>>::put(data);
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Submit the signature and pass the threshold checking successfully.
 		#[extrinsic_call]

@@ -94,8 +94,8 @@ impl pallet_timestamp::Config for TestRuntime {
 	type WeightInfo = ();
 }
 
-pub enum KtonAsset {}
-impl darwinia_deposit::SimpleAsset for KtonAsset {
+pub enum KtonMinting {}
+impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
@@ -108,7 +108,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 }
 
 impl darwinia_deposit::Config for TestRuntime {
-	type Kton = KtonAsset;
+	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
@@ -192,7 +192,7 @@ impl darwinia_staking::Stake for RingStaking {
 			who,
 			&darwinia_staking::account_id(),
 			item,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 
@@ -232,7 +232,9 @@ impl darwinia_staking::Config for TestRuntime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Timestamp;
+	type WeightInfo = ();
 }
+impl darwinia_staking::DepositConfig for TestRuntime {}
 
 frame_support::construct_runtime! {
 	pub enum TestRuntime where

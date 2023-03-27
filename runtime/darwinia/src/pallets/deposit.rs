@@ -19,8 +19,8 @@
 // darwinia
 use crate::*;
 
-pub enum KtonAsset {}
-impl darwinia_deposit::SimpleAsset for KtonAsset {
+pub enum KtonMinting {}
+impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -44,7 +44,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 }
 
 impl darwinia_deposit::Config for Runtime {
-	type Kton = KtonAsset;
+	type Kton = KtonMinting;
 	type MaxDeposits = ConstU32<16>;
 	type MinLockingAmount = ConstU128<UNIT>;
 	type Ring = Balances;

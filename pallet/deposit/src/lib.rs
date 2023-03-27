@@ -51,56 +51,11 @@ use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
 	pallet_prelude::*,
-	traits::{
-		Currency,
-		ExistenceRequirement::{AllowDeath, KeepAlive},
-		UnixTime,
-	},
+	traits::{Currency, ExistenceRequirement::AllowDeath, UnixTime},
 	PalletId,
 };
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::AccountIdConversion;
-
-/// Milliseconds per month.
-pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
-
-/// The maximum locking period for a deposit.
-pub const MAX_LOCKING_MONTHS: u8 = 36;
-
-/// Simple asset APIs.
-pub trait SimpleAsset {
-	/// Account type.
-	type AccountId;
-
-	/// Mint API.
-	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> DispatchResult;
-
-	/// Burn API.
-	fn burn(who: &Self::AccountId, amount: Balance) -> DispatchResult;
-}
-
-/// Deposit identifier.
-///
-/// It's not a global-unique identifier.
-/// It's only used for distinguishing the deposits under a specific account.
-// https://github.com/polkadot-js/apps/issues/8591
-// pub type DepositId = u8;
-pub type DepositId = u16;
-
-/// Deposit.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct Deposit {
-	/// Deposit ID.
-	pub id: DepositId,
-	/// Deposited RING.
-	pub value: Balance,
-	/// Start timestamp.
-	pub start_time: Moment,
-	/// Expired timestamp.
-	pub expired_time: Moment,
-	/// Deposit state.
-	pub in_use: bool,
-}
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -240,7 +195,7 @@ pub mod pallet {
 				<Result<_, DispatchError>>::Ok((id, start_time, expired_time))
 			})?;
 
-			T::Ring::transfer(&who, &account_id(), amount, KeepAlive)?;
+			T::Ring::transfer(&who, &account_id(), amount, AllowDeath)?;
 
 			let kton_reward = dc_inflation::deposit_interest(amount, months);
 
@@ -340,6 +295,47 @@ pub mod pallet {
 }
 pub use pallet::*;
 
+/// Milliseconds per month.
+pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
+
+/// The maximum locking period for a deposit.
+pub const MAX_LOCKING_MONTHS: u8 = 36;
+
+/// Simple asset APIs.
+pub trait SimpleAsset {
+	/// Account type.
+	type AccountId;
+
+	/// Mint API.
+	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> DispatchResult;
+
+	/// Burn API.
+	fn burn(who: &Self::AccountId, amount: Balance) -> DispatchResult;
+}
+
+/// Deposit identifier.
+///
+/// It's not a global-unique identifier.
+/// It's only used for distinguishing the deposits under a specific account.
+// https://github.com/polkadot-js/apps/issues/8591
+// pub type DepositId = u8;
+pub type DepositId = u16;
+
+/// Deposit.
+#[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct Deposit {
+	/// Deposit ID.
+	pub id: DepositId,
+	/// Deposited RING.
+	pub value: Balance,
+	/// Start timestamp.
+	pub start_time: Moment,
+	/// Expired timestamp.
+	pub expired_time: Moment,
+	/// Deposit state.
+	pub in_use: bool,
+}
+
 impl<T> Pallet<T>
 where
 	T: Config,
@@ -348,7 +344,7 @@ where
 		<pallet_timestamp::Pallet<T> as UnixTime>::now().as_millis()
 	}
 }
-impl<T> darwinia_staking::Stake for Pallet<T>
+impl<T> darwinia_staking_traits::Stake for Pallet<T>
 where
 	T: Config,
 {
@@ -385,7 +381,7 @@ where
 		})
 	}
 }
-impl<T> darwinia_staking::StakeExt for Pallet<T>
+impl<T> darwinia_staking_traits::StakeExt for Pallet<T>
 where
 	T: Config,
 {

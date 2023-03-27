@@ -28,19 +28,25 @@
 //! - KTON: Darwinia's commitment token
 //! - Deposit: Locking RINGs' ticket
 
-// TODO: weight
 // TODO: nomination upper limit
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// TODO: address the unused crates in test.
-#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![deny(missing_docs)]
+#![deny(unused_crate_dependencies)]
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 mod weights;
 pub use weights::WeightInfo;
 
-// core
-use core::fmt::Debug;
+pub use darwinia_staking_traits::*;
+
 // crates.io
 use codec::FullCodec;
 // darwinia
@@ -62,119 +68,25 @@ use sp_runtime::{
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-type RewardPoint = u32;
-type Power = u32;
-
-type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
-type NegativeImbalance<T> = <<T as Config>::RingCurrency as Currency<
-	<T as frame_system::Config>::AccountId,
->>::NegativeImbalance;
-
-/// Stake trait that stake items must be implemented.
-pub trait Stake {
-	/// Account type.
-	type AccountId;
-	/// Stake item type.
-	///
-	/// Basically, it's just a num type.
-	#[cfg(not(feature = "runtime-benchmarks"))]
-	type Item: Clone + Copy + Debug + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
-	/// Stake item type.
-	///
-	/// Basically, it's just a num type.
-	#[cfg(feature = "runtime-benchmarks")]
-	type Item: Clone + Copy + Debug + Default + PartialEq + FullCodec + MaxEncodedLen + TypeInfo;
-
-	/// Add stakes to the staking pool.
-	///
-	/// This will transfer the stakes to a pallet/contact account.
-	fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult;
-
-	/// Withdraw stakes from the staking pool.
-	///
-	/// This will transfer the stakes back to the staker's account.
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult;
-}
-/// Extended stake trait.
-///
-/// Provide a way to access the deposit RING amount.
-pub trait StakeExt: Stake {
-	/// Amount type.
-	type Amount;
-
-	/// Get the staked amount.
-	fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError>;
-}
-
-/// A convertor from collators id. Since this pallet does not have stash/controller, this is
-/// just identity.
-pub struct IdentityCollator;
-impl<T> Convert<T, Option<T>> for IdentityCollator {
-	fn convert(t: T) -> Option<T> {
-		Some(t)
-	}
-}
-
-/// Staking ledger.
-#[derive(PartialEqNoBound, EqNoBound, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-#[scale_info(skip_type_params(T))]
-pub struct Ledger<T>
-where
-	T: Config,
-{
-	/// Staked RING.
-	pub staked_ring: Balance,
-	/// Staked KTON.
-	pub staked_kton: Balance,
-	/// Staked deposits.
-	pub staked_deposits: BoundedVec<DepositId<T>, T::MaxDeposits>,
-	/// The RING in unstaking process.
-	pub unstaking_ring: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
-	/// The KTON in unstaking process.
-	pub unstaking_kton: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
-	/// The deposit in unstaking process.
-	pub unstaking_deposits: BoundedVec<(DepositId<T>, T::BlockNumber), T::MaxUnstakings>,
-}
-impl<T> Ledger<T>
-where
-	T: Config,
-{
-	fn is_empty(&self) -> bool {
-		self.staked_ring == 0
-			&& self.staked_kton == 0
-			&& self.staked_deposits.is_empty()
-			&& self.unstaking_ring.is_empty()
-			&& self.unstaking_kton.is_empty()
-			&& self.unstaking_deposits.is_empty()
-	}
-}
-
-/// A snapshot of the stake backing a single collator in the system.
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct Exposure<AccountId> {
-	/// The total power backing this collator.
-	pub total: Power,
-	/// Nominators' stake power.
-	pub nominators: Vec<IndividualExposure<AccountId>>,
-}
-/// A snapshot of the staker's state.
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct IndividualExposure<AccountId> {
-	/// Nominator.
-	pub who: AccountId,
-	/// Nominator's stake power.
-	pub value: Power,
-}
-
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
 	use crate::*;
 
+	// Deposit helper for runtime benchmark.
+	#[cfg(feature = "runtime-benchmarks")]
+	use darwinia_deposit::Config as DepositConfig;
+	/// Empty trait acts as a place holder to satisfy the `#[pallet::config]` macro.
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	pub trait DepositConfig {}
+
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
 
 		/// Unix time getter.
 		type UnixTime: UnixTime;
@@ -365,7 +277,7 @@ pub mod pallet {
 		///
 		/// This will transfer the stakes to a pallet/contact account.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::stake(deposits.len() as _))]
 		pub fn stake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -397,14 +309,14 @@ pub mod pallet {
 				};
 
 				if ring_amount != 0 {
-					Self::stake_token::<T::Ring, RingPool<T>>(
+					Self::stake_token::<<T as Config>::Ring, RingPool<T>>(
 						&who,
 						&mut l.staked_ring,
 						ring_amount,
 					)?;
 				}
 				if kton_amount != 0 {
-					Self::stake_token::<T::Kton, KtonPool<T>>(
+					Self::stake_token::<<T as Config>::Kton, KtonPool<T>>(
 						&who,
 						&mut l.staked_kton,
 						kton_amount,
@@ -425,7 +337,7 @@ pub mod pallet {
 
 		/// Withdraw stakes from the staking pool.
 		#[pallet::call_index(1)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::unstake(deposits.len() as _))]
 		pub fn unstake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -472,7 +384,7 @@ pub mod pallet {
 		///
 		/// Re-stake the unstaking assets immediately.
 		#[pallet::call_index(2)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::restake(deposits.len() as _))]
 		pub fn restake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
@@ -517,7 +429,7 @@ pub mod pallet {
 
 		/// Claim the stakes from the pallet/contract account.
 		#[pallet::call_index(3)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::claim())]
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -534,7 +446,7 @@ pub mod pallet {
 		///
 		/// Effects will be felt at the beginning of the next session.
 		#[pallet::call_index(4)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::collect())]
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -549,7 +461,7 @@ pub mod pallet {
 		///
 		/// Effects will be felt at the beginning of the next session.
 		#[pallet::call_index(5)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::nominate())]
 		pub fn nominate(origin: OriginFor<T>, target: T::AccountId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -573,7 +485,7 @@ pub mod pallet {
 		///
 		/// If the target is a collator, its nominators need to re-nominate.
 		#[pallet::call_index(6)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::chill())]
 		pub fn chill(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -591,7 +503,7 @@ pub mod pallet {
 		///
 		/// Require root origin.
 		#[pallet::call_index(7)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_collator_count())]
 		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
 			ensure_root(origin)?;
 
@@ -791,12 +703,12 @@ pub mod pallet {
 				let mut r_claimed = 0;
 
 				claim(&mut l.unstaking_ring, &mut r_claimed);
-				T::Ring::unstake(who, r_claimed)?;
+				<T as Config>::Ring::unstake(who, r_claimed)?;
 
 				let mut k_claimed = 0;
 
 				claim(&mut l.unstaking_kton, &mut k_claimed);
-				T::Kton::unstake(who, k_claimed)?;
+				<T as Config>::Kton::unstake(who, k_claimed)?;
 
 				let mut d_claimed = Vec::new();
 
@@ -1000,6 +912,74 @@ pub mod pallet {
 	}
 }
 pub use pallet::*;
+
+type RewardPoint = u32;
+type Power = u32;
+
+type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
+type NegativeImbalance<T> = <<T as Config>::RingCurrency as Currency<
+	<T as frame_system::Config>::AccountId,
+>>::NegativeImbalance;
+
+/// A convertor from collators id. Since this pallet does not have stash/controller, this is
+/// just identity.
+pub struct IdentityCollator;
+impl<T> Convert<T, Option<T>> for IdentityCollator {
+	fn convert(t: T) -> Option<T> {
+		Some(t)
+	}
+}
+
+/// Staking ledger.
+#[derive(DebugNoBound, PartialEqNoBound, EqNoBound, Encode, Decode, MaxEncodedLen, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+pub struct Ledger<T>
+where
+	T: Config,
+{
+	/// Staked RING.
+	pub staked_ring: Balance,
+	/// Staked KTON.
+	pub staked_kton: Balance,
+	/// Staked deposits.
+	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
+	/// The RING in unstaking process.
+	pub unstaking_ring: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+	/// The KTON in unstaking process.
+	pub unstaking_kton: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+	/// The deposit in unstaking process.
+	pub unstaking_deposits: BoundedVec<(DepositId<T>, T::BlockNumber), T::MaxUnstakings>,
+}
+impl<T> Ledger<T>
+where
+	T: Config,
+{
+	fn is_empty(&self) -> bool {
+		self.staked_ring == 0
+			&& self.staked_kton == 0
+			&& self.staked_deposits.is_empty()
+			&& self.unstaking_ring.is_empty()
+			&& self.unstaking_kton.is_empty()
+			&& self.unstaking_deposits.is_empty()
+	}
+}
+
+/// A snapshot of the stake backing a single collator in the system.
+#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct Exposure<AccountId> {
+	/// The total power backing this collator.
+	pub total: Power,
+	/// Nominators' stake power.
+	pub nominators: Vec<IndividualExposure<AccountId>>,
+}
+/// A snapshot of the staker's state.
+#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct IndividualExposure<AccountId> {
+	/// Nominator.
+	pub who: AccountId,
+	/// Nominator's stake power.
+	pub value: Power,
+}
 
 // Add reward points to block authors:
 // - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
