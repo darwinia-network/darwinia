@@ -53,7 +53,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
-		T::KtonHelper::mint(&a, UNIT).unwrap();
+		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -69,7 +69,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
-		T::KtonHelper::mint(&a, UNIT).unwrap();
+		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -88,7 +88,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
-		T::KtonHelper::mint(&a, UNIT).unwrap();
+		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -109,7 +109,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
-		T::KtonHelper::mint(&a, UNIT).unwrap();
+		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, <T as Config>::MaxDeposits::get());
 

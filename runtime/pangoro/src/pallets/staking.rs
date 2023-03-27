@@ -75,8 +75,6 @@ frame_support::parameter_types! {
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type Kton = KtonStaking;
-	#[cfg(feature = "runtime-benchmarks")]
-	type KtonHelper = KtonMinting;
 	type MaxDeposits = ConstU32<16>;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;

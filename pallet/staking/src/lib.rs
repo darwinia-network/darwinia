@@ -107,10 +107,6 @@ pub mod pallet {
 		/// KTON [`Stake`] interface.
 		type Kton: Stake<AccountId = Self::AccountId, Item = Balance>;
 
-		/// KTON helper for runtime benchmark.
-		#[cfg(feature = "runtime-benchmarks")]
-		type KtonHelper: darwinia_deposit::SimpleAsset<AccountId = Self::AccountId>;
-
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
