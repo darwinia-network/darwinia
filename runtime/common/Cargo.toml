@@ -14,11 +14,11 @@ smallvec = { version = "1.10" }
 # darwinia
 darwinia-precompile-assets = { workspace = true }
 dc-primitives              = { workspace = true }
-dc-types              = { workspace = true }
+dc-types                   = { workspace = true }
 
 # darwinia-messages-substrate
-bp-runtime = { workspace = true }
 bp-messages = { workspace = true }
+bp-runtime  = { workspace = true }
 
 # frontier
 pallet-evm = { workspace = true }
@@ -27,10 +27,10 @@ pallet-evm = { workspace = true }
 account = { workspace = true }
 
 # polkadot
-xcm          = { workspace = true }
-xcm-builder  = { workspace = true }
-xcm-executor = { workspace = true }
 cumulus-primitives-core = { workspace = true }
+xcm                     = { workspace = true }
+xcm-builder             = { workspace = true }
+xcm-executor            = { workspace = true }
 
 # substrate
 frame-support     = { workspace = true }
@@ -55,8 +55,8 @@ std = [
 	"dc-primitives/std",
 
 	# darwinia-messages-substrate
-	"bp-runtime/std",
 	"bp-messages/std",
+	"bp-runtime/std",
 
 	# frontier
 	"pallet-evm/std",
@@ -65,10 +65,10 @@ std = [
 	"account/std",
 
 	# polkadot
+	"cumulus-primitives-core/std",
 	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
-	"cumulus-primitives-core/std",
 
 	# substrate
 	"frame-support/std",
