@@ -52,7 +52,6 @@ fp-storage      = { workspace = true }
 # polkadot
 polkadot-cli        = { workspace = true }
 polkadot-primitives = { workspace = true }
-polkadot-service    = { workspace = true }
 xcm                 = { workspace = true }
 
 # substrate
