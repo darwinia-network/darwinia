@@ -29,12 +29,12 @@ sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
 
 # cumulus
-cumulus-client-cli                    = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
-cumulus-client-collator               = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
-cumulus-client-consensus-aura         = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
-cumulus-client-consensus-common       = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
-cumulus-client-network                = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
-cumulus-client-service                = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
+cumulus-client-cli                    = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
+cumulus-client-collator               = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
+cumulus-client-consensus-aura         = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
+cumulus-client-consensus-common       = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
+cumulus-client-network                = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
+cumulus-client-service                = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-pallet-aura-ext               = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-pallet-dmp-queue              = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-pallet-parachain-system       = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
@@ -42,10 +42,10 @@ cumulus-pallet-session-benchmarking   = { default-features = false, git = "https
 cumulus-pallet-xcm                    = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-pallet-xcmp-queue             = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-primitives-core               = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
-cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
+cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-primitives-timestamp          = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 cumulus-primitives-utility            = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
-cumulus-relay-chain-interface         = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.38" }
+cumulus-relay-chain-interface         = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 parachain-info                        = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.38" }
 
 # darwinia
