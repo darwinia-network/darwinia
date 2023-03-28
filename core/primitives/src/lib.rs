@@ -33,9 +33,12 @@ pub use dc_types::*;
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = account::EthereumSignature;
 
+/// TODO: ADD DOCS
+pub type AccountPublic = <Signature as sp_runtime::traits::Verify>::Signer;
+
 /// Some way of identifying an account on the chain.
 /// We intentionally make it equivalent to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as sp_runtime::traits::Verify>::Signer as sp_runtime::traits::IdentifyAccount>::AccountId;
+pub type AccountId = <AccountPublic as sp_runtime::traits::IdentifyAccount>::AccountId;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;

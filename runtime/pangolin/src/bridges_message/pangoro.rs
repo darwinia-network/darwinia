@@ -34,9 +34,10 @@ use bridge_runtime_common::{
 use darwinia_common_runtime::*;
 
 /// Message delivery proof for Pangolin -> Pangoro messages.
-pub type ToPangoroMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<bp_pangoro::Hash>;
+pub type ToPangoroMessagesDeliveryProof =
+	FromBridgedChainMessagesDeliveryProof<dc_primitives::Hash>;
 /// Message proof for Pangoro -> Pangolin messages.
-pub type FromPangoroMessagesProof = FromBridgedChainMessagesProof<bp_pangoro::Hash>;
+pub type FromPangoroMessagesProof = FromBridgedChainMessagesProof<dc_primitives::Hash>;
 
 /// Message payload for Pangolin -> Pangoro messages.
 pub type ToPangoroMessagePayload = FromThisChainMessagePayload<WithPangoroMessageBridge>;
@@ -102,11 +103,11 @@ impl MessageBridge for WithPangoroMessageBridge {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Pangolin;
 impl ChainWithMessages for Pangolin {
-	type AccountId = bp_pangolin::AccountId;
-	type Balance = bp_pangolin::Balance;
-	type Hash = bp_pangolin::Hash;
-	type Signature = bp_pangolin::Signature;
-	type Signer = bp_pangolin::AccountPublic;
+	type AccountId = dc_primitives::AccountId;
+	type Balance = dc_primitives::Balance;
+	type Hash = dc_primitives::Hash;
+	type Signature = dc_primitives::Signature;
+	type Signer = dc_primitives::AccountPublic;
 }
 impl ThisChainWithMessages for Pangolin {
 	type RuntimeCall = RuntimeCall;
@@ -124,20 +125,20 @@ impl ThisChainWithMessages for Pangolin {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Pangoro;
 impl ChainWithMessages for Pangoro {
-	type AccountId = bp_pangoro::AccountId;
-	type Balance = bp_pangoro::Balance;
-	type Hash = bp_pangoro::Hash;
-	type Signature = bp_pangoro::Signature;
-	type Signer = bp_pangoro::AccountPublic;
+	type AccountId = dc_primitives::AccountId;
+	type Balance = dc_primitives::Balance;
+	type Hash = dc_primitives::Hash;
+	type Signature = dc_primitives::Signature;
+	type Signer = dc_primitives::AccountPublic;
 }
 impl BridgedChainWithMessages for Pangoro {
 	fn maximal_extrinsic_size() -> u32 {
-		bp_pangoro::DarwiniaLike::max_extrinsic_size()
+		darwinia_common_runtime::DarwiniaLike::max_extrinsic_size()
 	}
 
 	fn verify_dispatch_weight(_message_payload: &[u8], payload_weight: &Weight) -> bool {
 		let upper_limit = target::maximal_incoming_message_dispatch_weight(
-			bp_pangoro::DarwiniaLike::max_extrinsic_weight(),
+			darwinia_common_runtime::DarwiniaLike::max_extrinsic_weight(),
 		);
 		payload_weight.all_lte(upper_limit)
 	}
@@ -154,10 +155,10 @@ impl TargetHeaderChain<ToPangoroMessagePayload, <Self as ChainWithMessages>::Acc
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<bp_pangoro::AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<dc_primitives::AccountId>), Self::Error> {
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithPangoroMessageBridge,
-			bp_pangoro::Header,
+			dc_primitives::Header,
 			Runtime,
 			WithMoonbaseParachainsInstance,
 		>(ParaId(2105), proof)
@@ -173,7 +174,7 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
 	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
 		target::verify_messages_proof_from_parachain::<
 			WithPangoroMessageBridge,
-			bp_pangoro::Header,
+			dc_primitives::Header,
 			Runtime,
 			WithMoonbaseParachainsInstance,
 		>(ParaId(2105), proof, messages_count)

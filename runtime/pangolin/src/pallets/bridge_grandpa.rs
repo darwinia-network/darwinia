@@ -24,7 +24,7 @@ use crate::*;
 pub type MoonbaseHeadersToKeep = ConstU32<500>;
 
 impl pallet_bridge_grandpa::Config<WithMoonbaseGrandpa> for Runtime {
-	type BridgedChain = bp_pangoro::DarwiniaLike;
+	type BridgedChain = darwinia_common_runtime::DarwiniaLike;
 	type HeadersToKeep = MoonbaseHeadersToKeep;
 	type MaxBridgedAuthorities = ConstU32<100_000>;
 	type MaxBridgedHeaderSize = ConstU32<65536>;

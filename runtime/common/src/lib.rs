@@ -22,26 +22,31 @@
 // #![deny(missing_docs)]
 
 pub mod gov_origin;
+pub mod system;
 pub mod xcm_configs;
 
 pub use bp_darwinia_core as bp_crab;
 pub use bp_darwinia_core as bp_darwinia;
-pub use bp_darwinia_core as bp_pangolin;
-pub use bp_darwinia_core as bp_pangoro;
+// pub use bp_darwinia_core as bp_pangolin;
+// pub use bp_darwinia_core as bp_pangoro;
 
 #[cfg(feature = "test")]
 pub mod test;
 
 // darwinia
+use crate::system::*;
+use bp_runtime::Chain;
 use dc_primitives::*;
 // substrate
 use frame_support::{
-	sp_runtime::Perbill,
+	dispatch::DispatchClass,
+	sp_runtime::{traits::Convert, Perbill, RuntimeDebug},
 	weights::{
-		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		constants::ExtrinsicBaseWeight, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
 };
+use sp_core::{H160, H256};
 
 #[macro_export]
 macro_rules! fast_runtime_or_not {
@@ -241,4 +246,41 @@ impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelp
 	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
 		u64::from(id).into()
 	}
+}
+
+/// Convert a 256-bit hash into an AccountId.
+pub struct AccountIdConverter;
+impl Convert<H256, AccountId> for AccountIdConverter {
+	fn convert(hash: H256) -> AccountId {
+		// This way keep compatible with darwinia 1.0 substrate to evm account rule.
+		let evm_address = H160::from_slice(&hash.as_bytes()[0..20]);
+		evm_address.into()
+	}
+}
+
+/// Darwinia-like chain.
+#[derive(RuntimeDebug)]
+pub struct DarwiniaLike;
+impl Chain for DarwiniaLike {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type BlockNumber = BlockNumber;
+	type Hash = Hash;
+	type Hasher = Hashing;
+	type Header = Header;
+	type Index = Nonce;
+	type Signature = Signature;
+
+	fn max_extrinsic_size() -> u32 {
+		*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
+	}
+
+	fn max_extrinsic_weight() -> Weight {
+		RuntimeBlockWeights::get().get(DispatchClass::Normal).max_extrinsic.unwrap_or(Weight::MAX)
+	}
+}
+
+frame_support::parameter_types! {
+	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce = 128;
+	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce = 8192;
 }

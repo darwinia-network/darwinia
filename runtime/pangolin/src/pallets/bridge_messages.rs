@@ -33,19 +33,19 @@ impl bp_messages::source_chain::SenderOrigin<AccountId> for RuntimeOrigin {
 
 frame_support::parameter_types! {
 	pub const BridgedChainId: bp_runtime::ChainId = bp_runtime::PANGORO_CHAIN_ID;
-	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
-		bp_pangoro::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
-		bp_pangoro::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	// pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
+	// darwinia_common_runtime::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
+	// pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
+	// darwinia_common_runtime::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
 impl pallet_bridge_messages::Config<WithPangoroMessages> for Runtime {
-	type AccountIdConverter = bp_pangolin::AccountIdConverter;
+	type AccountIdConverter = darwinia_common_runtime::AccountIdConverter;
 	type BridgedChainId = BridgedChainId;
-	type InboundMessageFee = bp_pangoro::Balance;
+	type InboundMessageFee = dc_primitives::Balance;
 	type InboundPayload = bm_pangoro::FromPangoroMessagePayload;
-	type InboundRelayer = bp_pangoro::AccountId;
+	type InboundRelayer = dc_primitives::AccountId;
 	type LaneMessageVerifier = bm_pangoro::ToPangoroMessageVerifier<Self>;
 	type MaxMessagesToPruneAtOnce = ConstU64<8>;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
@@ -58,7 +58,7 @@ impl pallet_bridge_messages::Config<WithPangoroMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageConfirmedHandler<Self, WithPangoroFeeMarket>;
 	type OnMessageAccepted =
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithPangoroFeeMarket>;
-	type OutboundMessageFee = bp_pangolin::Balance;
+	type OutboundMessageFee = dc_primitives::Balance;
 	type OutboundPayload = bm_pangoro::ToPangoroMessagePayload;
 	type Parameter = bm_pangoro::PangolinToPangoroParameter;
 	type RuntimeEvent = RuntimeEvent;

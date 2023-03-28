@@ -96,14 +96,14 @@ impl bp_message_dispatch::IntoDispatchOrigin<AccountId, RuntimeCall, RuntimeOrig
 }
 
 impl pallet_bridge_dispatch::Config<WithPangoroDispatch> for Runtime {
-	type AccountIdConverter = bp_pangolin::AccountIdConverter;
+	type AccountIdConverter = darwinia_common_runtime::AccountIdConverter;
 	type BridgeMessageId = (bp_messages::LaneId, bp_messages::MessageNonce);
 	type CallValidator = CallValidator;
 	type EncodedCall = bm_pangoro::FromPangoroEncodedCall;
 	type IntoDispatchOrigin = IntoDispatchOrigin;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type SourceChainAccountId = bp_pangoro::AccountId;
-	type TargetChainAccountPublic = bp_pangolin::AccountPublic;
-	type TargetChainSignature = bp_pangolin::Signature;
+	type SourceChainAccountId = dc_primitives::AccountId;
+	type TargetChainAccountPublic = dc_primitives::AccountPublic;
+	type TargetChainSignature = dc_primitives::Signature;
 }

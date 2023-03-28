@@ -17,6 +17,8 @@ dc-primitives              = { workspace = true }
 
 # darwinia-messages-substrate
 bp-darwinia-core = { workspace = true }
+bp-runtime = { workspace = true }
+bp-messages = { workspace = true }
 
 # frontier
 pallet-evm = { workspace = true }
@@ -28,6 +30,7 @@ account = { workspace = true }
 xcm          = { workspace = true }
 xcm-builder  = { workspace = true }
 xcm-executor = { workspace = true }
+cumulus-primitives-core = { workspace = true }
 
 # substrate
 frame-support     = { workspace = true }
@@ -53,6 +56,8 @@ std = [
 
 	# darwinia-messages-substrate
 	"bp-darwinia-core/std",
+	"bp-runtime/std",
+	"bp-messages/std",
 
 	# frontier
 	"pallet-evm/std",
@@ -64,6 +69,7 @@ std = [
 	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"cumulus-primitives-core/std",
 
 	# substrate
 	"frame-support/std",

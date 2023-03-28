@@ -2535,6 +2535,9 @@ version = "6.0.1"
 dependencies = [
  "account",
  "bp-darwinia-core",
+ "bp-messages",
+ "bp-runtime",
+ "cumulus-primitives-core",
  "darwinia-precompile-assets",
  "dc-primitives",
  "frame-support",
