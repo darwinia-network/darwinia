@@ -18,10 +18,12 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unused_crate_dependencies)]
-// TODO:
+// TODO: FIX ME
 // #![deny(missing_docs)]
 
+pub mod evm;
 pub mod gov_origin;
+pub mod messages;
 pub mod system;
 pub mod xcm_configs;
 
@@ -32,21 +34,6 @@ pub use bp_darwinia_core as bp_darwinia;
 
 #[cfg(feature = "test")]
 pub mod test;
-
-// darwinia
-use crate::system::*;
-use bp_runtime::Chain;
-use dc_primitives::*;
-// substrate
-use frame_support::{
-	dispatch::DispatchClass,
-	sp_runtime::{traits::Convert, Perbill, RuntimeDebug},
-	weights::{
-		constants::ExtrinsicBaseWeight, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
-		WeightToFeePolynomial,
-	},
-};
-use sp_core::{H160, H256};
 
 #[macro_export]
 macro_rules! fast_runtime_or_not {
@@ -69,17 +56,20 @@ macro_rules! fast_runtime_or_not {
 ///   - Setting it to `0` will essentially disable the weight fee.
 ///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
 pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
-	type Balance = Balance;
+impl frame_support::weights::WeightToFeePolynomial for WeightToFee {
+	type Balance = dc_primitives::Balance;
 
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		let p = UNIT;
-		let q = 10 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
+		let p = dc_primitives::UNIT;
+		let q = 10
+			* dc_primitives::Balance::from(
+				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
+			);
 
-		smallvec::smallvec![WeightToFeeCoefficient {
+		smallvec::smallvec![frame_support::weights::WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_frac: sp_runtime::Perbill::from_rational(p % q, q),
 			coeff_integer: p / q,
 		}]
 	}
@@ -131,113 +121,13 @@ where
 
 /// Deposit calculator for Darwinia.
 /// 100 UNIT for the base fee, 102.4 UNIT/MB.
-pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+pub const fn darwinia_deposit(items: u32, bytes: u32) -> dc_primitives::Balance {
 	// First try.
-	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
+	items as dc_primitives::Balance * 100 * dc_types::UNIT
+		+ (bytes as dc_primitives::Balance) * 100 * dc_types::MICROUNIT
 	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
 }
 
-#[macro_export]
-macro_rules! impl_self_contained_call {
-	() => {
-		impl fp_self_contained::SelfContainedCall for RuntimeCall {
-			type SignedInfo = sp_core::H160;
-
-			fn is_self_contained(&self) -> bool {
-				match self {
-					RuntimeCall::Ethereum(call) => call.is_self_contained(),
-					_ => false,
-				}
-			}
-
-			fn check_self_contained(
-				&self,
-			) -> Option<
-				Result<
-					Self::SignedInfo,
-					sp_runtime::transaction_validity::TransactionValidityError,
-				>,
-			> {
-				match self {
-					RuntimeCall::Ethereum(call) => call.check_self_contained(),
-					_ => None,
-				}
-			}
-
-			fn validate_self_contained(
-				&self,
-				info: &Self::SignedInfo,
-				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
-				len: usize,
-			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
-				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.validate_self_contained(info, dispatch_info, len),
-					_ => None,
-				}
-			}
-
-			fn pre_dispatch_self_contained(
-				&self,
-				info: &Self::SignedInfo,
-				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
-				len: usize,
-			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
-				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.pre_dispatch_self_contained(info, dispatch_info, len),
-					_ => None,
-				}
-			}
-
-			fn apply_self_contained(
-				self,
-				info: Self::SignedInfo,
-			) -> Option<
-				sp_runtime::DispatchResultWithInfo<sp_runtime::traits::PostDispatchInfoOf<Self>>,
-			> {
-				// substrate
-				use sp_runtime::traits::Dispatchable;
-
-				match self {
-					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
-						Some(call.dispatch(RuntimeOrigin::from(
-							pallet_ethereum::RawOrigin::EthereumTransaction(info),
-						))),
-					_ => None,
-				}
-			}
-		}
-	};
-}
-
-pub struct DarwiniaFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
-impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for DarwiniaFindAuthor<Inner>
-where
-	Inner: frame_support::traits::FindAuthor<AccountId>,
-{
-	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
-	{
-		Inner::find_author(digests).map(Into::into)
-	}
-}
-
-pub struct FixedGasPrice;
-impl pallet_evm::FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
-		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
-	}
-}
-
-pub struct AssetIdConverter;
-impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
-	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: sp_core::H160 = account_id.into();
-		addr.to_low_u64_be()
-	}
-}
 /// Helper for pallet-assets benchmarking.
 #[cfg(feature = "runtime-benchmarks")]
 pub struct AssetsBenchmarkHelper;
@@ -246,41 +136,4 @@ impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelp
 	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
 		u64::from(id).into()
 	}
-}
-
-/// Convert a 256-bit hash into an AccountId.
-pub struct AccountIdConverter;
-impl Convert<H256, AccountId> for AccountIdConverter {
-	fn convert(hash: H256) -> AccountId {
-		// This way keep compatible with darwinia 1.0 substrate to evm account rule.
-		let evm_address = H160::from_slice(&hash.as_bytes()[0..20]);
-		evm_address.into()
-	}
-}
-
-/// Darwinia-like chain.
-#[derive(RuntimeDebug)]
-pub struct DarwiniaLike;
-impl Chain for DarwiniaLike {
-	type AccountId = AccountId;
-	type Balance = Balance;
-	type BlockNumber = BlockNumber;
-	type Hash = Hash;
-	type Hasher = Hashing;
-	type Header = Header;
-	type Index = Nonce;
-	type Signature = Signature;
-
-	fn max_extrinsic_size() -> u32 {
-		*RuntimeBlockLength::get().max.get(DispatchClass::Normal)
-	}
-
-	fn max_extrinsic_weight() -> Weight {
-		RuntimeBlockWeights::get().get(DispatchClass::Normal).max_extrinsic.unwrap_or(Weight::MAX)
-	}
-}
-
-frame_support::parameter_types! {
-	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce = 128;
-	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce = 8192;
 }

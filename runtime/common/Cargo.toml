@@ -14,6 +14,7 @@ smallvec = { version = "1.10" }
 # darwinia
 darwinia-precompile-assets = { workspace = true }
 dc-primitives              = { workspace = true }
+dc-types              = { workspace = true }
 
 # darwinia-messages-substrate
 bp-darwinia-core = { workspace = true }
