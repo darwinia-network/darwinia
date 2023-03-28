@@ -52,6 +52,7 @@ std = [
 
 	# darwinia
 	"dc-inflation/std",
+	"darwinia-staking-traits/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 
