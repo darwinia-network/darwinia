@@ -82,31 +82,30 @@ pallet-bridge-parachains = { default-features = false, git = "https://github.com
 pallet-fee-market        = { default-features = false, git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.38" }
 
 # frontier
-fc-cli                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fp-ethereum                    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fp-evm                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fp-rpc                         = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fp-self-contained              = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-fp-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-ethereum                = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm                     = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm-precompile-blake2   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm-precompile-bn128    = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm-precompile-dispatch = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm-precompile-modexp   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
-pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.38" }
+fc-cli                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-consensus                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-db                          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-mapping-sync                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-rpc                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-rpc-core                    = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fp-ethereum                    = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fp-evm                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fp-rpc                         = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fp-self-contained              = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+fc-storage                     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-ethereum                = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm                     = { default-features = false, features = ["forbid-evm-reentrancy"], git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm-precompile-blake2   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm-precompile-bn128    = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm-precompile-dispatch = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm-precompile-modexp   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
+pallet-evm-precompile-simple   = { default-features = false, git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38" }
 
 # moonbeam
-account                = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
-moonbeam-relay-encoder = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
-pallet-ethereum-xcm    = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
-precompile-utils       = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
-xcm-primitives         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
+account                = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+pallet-ethereum-xcm    = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+precompile-utils       = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+xcm-primitives         = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
 
 # polkadot
 pallet-xcm              = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }
@@ -193,11 +192,11 @@ substrate-prometheus-endpoint              = { git = "https://github.com/parityt
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 try-runtime-cli                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 
-[patch."https://github.com/darwinia-network/moonbeam"]
-account                = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
-pallet-ethereum-xcm    = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
-precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
-xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
+# [patch."https://github.com/darwinia-network/moonbeam"]
+# account                = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
+# pallet-ethereum-xcm    = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
+# precompile-utils       = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
+# xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branch = "evm-xcm-debug" }
 
 # [patch."https://github.com/paritytech/polkadot"]
 # pallet-xcm              = { git = "https://github.com/jiguantong/polkadot", branch = "evm-xcm-debug" }
@@ -216,7 +215,7 @@ xcm-primitives         = { git = "https://github.com/jiguantong/moonbeam", branc
 # fp-evm                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 # fp-rpc                         = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 # fp-self-contained              = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
-# fp-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
+# fc-storage                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 # pallet-ethereum                = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 # pallet-evm                     = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }
 # pallet-evm-precompile-blake2   = { git = "https://github.com/jiguantong/frontier", branch = "evm-xcm-debug" }

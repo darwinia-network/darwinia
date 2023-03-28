@@ -47,7 +47,7 @@ fc-rpc          = { features = ["rpc-binary-search-estimate"], workspace = true 
 fc-rpc-core     = { workspace = true }
 fp-evm          = { workspace = true }
 fp-rpc          = { workspace = true }
-fp-storage      = { workspace = true }
+fc-storage      = { workspace = true }
 
 # polkadot
 polkadot-cli        = { workspace = true }
