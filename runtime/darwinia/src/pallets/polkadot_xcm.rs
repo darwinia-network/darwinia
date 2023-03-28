@@ -22,6 +22,7 @@ use crate::*;
 use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
+use sp_runtime::traits::Zero;
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -109,6 +110,11 @@ frame_support::parameter_types! {
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
 	pub UnitWeightCost: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 64 * 1024);
+	pub LocalAssetsPalletLocation: MultiLocation = MultiLocation::new(
+		0,
+		X1(PalletInstance(<Assets as frame_support::traits::PalletInfoAccess>::index() as u8))
+	);
+	pub SelfLocation: MultiLocation = MultiLocation::here();
 }
 
 pub struct ToTreasury;
@@ -126,6 +132,8 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 	}
 }
 
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
@@ -135,7 +143,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = RuntimeCall;
+	type CallDispatcher = DarwiniaCall;
 	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
@@ -161,7 +169,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type XcmSender = XcmRouter;
 }
 
@@ -198,7 +206,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
@@ -212,4 +220,64 @@ impl pallet_xcm::Config for Runtime {
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+}
+
+pub struct EthereumXcmEnsureProxy;
+impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
+	fn ensure_ok(delegator: AccountId, delegatee: AccountId) -> Result<(), &'static str> {
+		// The EVM implicitely contains an Any proxy, so we only allow for "Any" proxies
+		let def: pallet_proxy::ProxyDefinition<AccountId, pallets::proxy::ProxyType, BlockNumber> =
+			pallet_proxy::Pallet::<Runtime>::find_proxy(
+				&delegator,
+				&delegatee,
+				Some(pallets::proxy::ProxyType::Any),
+			)
+			.map_err(|_| "proxy error: expected `ProxyType::Any`")?;
+		// We only allow to use it for delay zero proxies, as the call will immediatly be executed
+		frame_support::ensure!(def.delay.is_zero(), "proxy delay is Non-zero`");
+		Ok(())
+	}
+}
+
+impl pallet_ethereum_xcm::Config for Runtime {
+	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
+	type EnsureProxy = EthereumXcmEnsureProxy;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ReservedXcmpWeight =
+		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
+}
+
+pub struct DarwiniaCall;
+impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
+	fn dispatch(
+		call: RuntimeCall,
+		origin: RuntimeOrigin,
+	) -> Result<
+		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
+	> {
+		if let Ok(raw_origin) =
+			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
+		{
+			match (call.clone(), raw_origin) {
+				(
+					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. })
+					| RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact_through_proxy {
+						..
+					}),
+					frame_system::RawOrigin::Signed(account_id),
+				) => {
+					return RuntimeCall::dispatch(
+						call,
+						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
+							.into(),
+					);
+				},
+				_ => {},
+			}
+		}
+		RuntimeCall::dispatch(call, origin)
+	}
 }
