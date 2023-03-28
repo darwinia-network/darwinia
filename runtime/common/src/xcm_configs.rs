@@ -69,9 +69,9 @@ where
 {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-		message: &mut Xcm<RuntimeCall>,
-		max_weight: XcmWeight,
-		weight_credit: &mut XcmWeight,
+		message: &mut [Instruction<RuntimeCall>],
+		max_weight: Weight,
+		weight_credit: &mut Weight,
 	) -> Result<(), ()> {
 		Deny::should_execute(origin, message, max_weight, weight_credit)?;
 		Allow::should_execute(origin, message, max_weight, weight_credit)
@@ -83,12 +83,11 @@ pub struct DenyReserveTransferToRelayChain;
 impl ShouldExecute for DenyReserveTransferToRelayChain {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-
-		message: &mut Xcm<RuntimeCall>,
-		_max_weight: XcmWeight,
-		_weight_credit: &mut XcmWeight,
+		message: &mut [Instruction<RuntimeCall>],
+		_max_weight: Weight,
+		_weight_credit: &mut Weight,
 	) -> Result<(), ()> {
-		if message.0.iter().any(|inst| {
+		if message.iter().any(|inst| {
 			matches!(
 				inst,
 				InitiateReserveWithdraw {
@@ -107,7 +106,7 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 		// An unexpected reserve transfer has arrived from the Relay Chain. Generally, `IsReserve`
 		// should not allow this, but we just log it here.
 		if matches!(origin, MultiLocation { parents: 1, interior: Here })
-			&& message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
+			&& message.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
 		{
 			log::warn!(
 				target: "xcm::barriers",
@@ -147,7 +146,7 @@ pub struct LocalAssetTrader<
 	OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
 	R: TakeRevenue,
 >(
-	XcmWeight,
+	Weight,
 	Currency::Balance,
 	PhantomData<(WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R)>,
 );
@@ -161,12 +160,12 @@ impl<
 	> WeightTrader for LocalAssetTrader<WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R>
 {
 	fn new() -> Self {
-		Self(0, Zero::zero(), PhantomData)
+		Self(Weight::zero(), Zero::zero(), PhantomData)
 	}
 
 	fn buy_weight(&mut self, weight: XcmWeight, payment: Assets) -> Result<Assets, XcmError> {
 		log::trace!(target: "xcm::weight", "LocalAssetTrader::buy_weight weight: {:?}, payment: {:?}", weight, payment);
-		let amount = WeightToFee::weight_to_fee(&Weight::from_ref_time(weight));
+		let amount = WeightToFee::weight_to_fee(&weight);
 		let u128_amount: u128 = amount.try_into().map_err(|_| XcmError::Overflow)?;
 		let required: MultiAsset = (Concrete(AssetId::get()), u128_amount).into();
 		let unused = payment.checked_sub(required.clone()).map_err(|_| XcmError::TooExpensive)?;
@@ -179,7 +178,7 @@ impl<
 	fn refund_weight(&mut self, weight: XcmWeight) -> Option<MultiAsset> {
 		log::trace!(target: "xcm::weight", "LocalAssetTrader::refund_weight weight: {:?}", weight);
 		let weight = weight.min(self.0);
-		let amount = WeightToFee::weight_to_fee(&Weight::from_ref_time(weight));
+		let amount = WeightToFee::weight_to_fee(&weight);
 		self.0 -= weight;
 		self.1 = self.1.saturating_sub(amount);
 		let amount: u128 = amount.saturated_into();

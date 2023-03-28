@@ -24,6 +24,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
+	type PriceForSiblingDelivery = ();
 	type RuntimeEvent = RuntimeEvent;
 	type VersionWrapper = ();
 	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;

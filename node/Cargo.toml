@@ -13,7 +13,7 @@ substrate-build-script-utils = { workspace = true }
 # crates.io
 array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
-clap        = { version = "4.0", features = ["derive"] }
+clap        = { version = "4.1", features = ["derive"] }
 codec       = { workspace = true, package = "parity-scale-codec" }
 futures     = { version = "0.3" }
 jsonrpsee   = { version = "0.16", features = ["server"] }
@@ -52,12 +52,11 @@ fp-storage      = { workspace = true }
 # polkadot
 polkadot-cli        = { workspace = true }
 polkadot-primitives = { workspace = true }
-polkadot-service    = { workspace = true }
 xcm                 = { workspace = true }
 
 # substrate
 frame-benchmarking             = { workspace = true, optional = true }
-frame-benchmarking-cli         = { workspace = true, optional = true }
+frame-benchmarking-cli         = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship            = { workspace = true }
 sc-chain-spec                  = { workspace = true }
@@ -119,7 +118,6 @@ runtime-benchmarks = [
 
 	# substrate
 	"frame-benchmarking",
-	"frame-benchmarking-cli",
 ]
 
 try-runtime = [

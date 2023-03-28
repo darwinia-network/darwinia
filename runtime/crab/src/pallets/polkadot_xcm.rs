@@ -18,6 +18,8 @@
 
 // darwinia
 use crate::*;
+// polkadot
+use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
 
@@ -36,7 +38,7 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 >;
 
 frame_support::parameter_types! {
-	pub const RelayNetwork: xcm::latest::prelude::NetworkId = xcm::latest::prelude::NetworkId::Kusama;
+	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 }
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -77,37 +79,42 @@ pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
 	darwinia_common_runtime::xcm_configs::DenyReserveTransferToRelayChain,
 	(
 		xcm_builder::TakeWeightCredit,
-		xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-		// Parent and its exec plurality get free execution
-		xcm_builder::AllowUnpaidExecutionFrom<
-			darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+		xcm_builder::WithComputedOrigin<
+			(
+				xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+				// Parent and its exec plurality get free execution
+				xcm_builder::AllowUnpaidExecutionFrom<
+					darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+				>,
+				// Subscriptions for version tracking are OK.
+				xcm_builder::AllowSubscriptionsFrom<
+					darwinia_common_runtime::xcm_configs::ParentOrSiblings,
+				>,
+			),
+			UniversalLocation,
+			ConstU32<8>,
 		>,
 		// Expected responses are OK.
 		xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
-		// Subscriptions for version tracking are OK.
-		xcm_builder::AllowSubscriptionsFrom<darwinia_common_runtime::xcm_configs::ParentOrSiblings>,
 	),
 >;
 
 frame_support::parameter_types! {
+	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub const MaxInstructions: u32 = 100;
-	pub AnchoringSelfReserve: xcm::latest::prelude::MultiLocation = xcm::latest::prelude::MultiLocation::new(
+	pub AnchoringSelfReserve: MultiLocation = MultiLocation::new(
 		0,
-		xcm::latest::prelude::X1(xcm::latest::prelude::PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
+		X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
 	);
+	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	pub Ancestry: xcm::latest::prelude::MultiLocation = xcm::latest::prelude::Parachain(ParachainInfo::parachain_id().into()).into();
-	pub UnitWeightCost: u64 = 1_000_000_000;
+	pub UnitWeightCost: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 64 * 1024);
 }
 
 pub struct ToTreasury;
 impl xcm_builder::TakeRevenue for ToTreasury {
-	fn take_revenue(revenue: xcm::latest::prelude::MultiAsset) {
-		if let xcm::latest::prelude::MultiAsset {
-			id: xcm::latest::prelude::Concrete(_location),
-			fun: xcm::latest::prelude::Fungible(amount),
-		} = revenue
-		{
+	fn take_revenue(revenue: MultiAsset) {
+		if let MultiAsset { id: Concrete(_location), fun: Fungible(amount) } = revenue {
 			let treasury_account = Treasury::account_id();
 			let _ = Balances::deposit_creating(&treasury_account, amount);
 
@@ -122,17 +129,23 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
+	type AssetExchanger = ();
+	type AssetLocker = ();
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
+	type CallDispatcher = RuntimeCall;
+	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
-	// Teleporting is disabled.
-	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
+	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
+	type MessageExporter = ();
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
+	type PalletInstancesInfo = AllPalletsWithSystem;
 	type ResponseHandler = PolkadotXcm;
 	type RuntimeCall = RuntimeCall;
+	type SafeCallFilter = frame_support::traits::Everything;
 	type SubscriptionService = PolkadotXcm;
 	type Trader = xcm_configs::LocalAssetTrader<
 		frame_support::weights::ConstantMultiplier<
@@ -145,6 +158,9 @@ impl xcm_executor::Config for XcmExecutorConfig {
 		DealWithFees<Runtime>,
 		ToTreasury,
 	>;
+	type UniversalAliases = frame_support::traits::Nothing;
+	// Teleporting is disabled.
+	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
@@ -156,21 +172,34 @@ pub type LocalOriginToLocation =
 /// queues.
 pub type XcmRouter = (
 	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm>,
+	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
 );
 
+#[cfg(feature = "runtime-benchmarks")]
+frame_support::parameter_types! {
+	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
+}
+
 impl pallet_xcm::Config for Runtime {
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
+	type Currency = Balances;
+	type CurrencyMatcher = ();
 	type ExecuteXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type LocationInverter = xcm_builder::LocationInverter<Ancestry>;
+	type MaxLockers = ConstU32<8>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type ReachableDest = ReachableDest;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SendXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+	type SovereignAccountOf = LocationToAccountId;
+	type TrustedLockers = ();
+	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 	type XcmReserveTransferFilter = frame_support::traits::Everything;

@@ -36,7 +36,9 @@ use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, InvalidEvmTransactionError};
 use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
-use frame_support::{traits::EnsureOrigin, PalletError, RuntimeDebug};
+use frame_support::{
+	sp_runtime::traits::BadOrigin, traits::EnsureOrigin, PalletError, RuntimeDebug,
+};
 use sp_core::{H160, U256};
 use sp_std::boxed::Box;
 
@@ -63,6 +65,10 @@ impl<O: Into<Result<LcmpEthOrigin, O>> + From<LcmpEthOrigin>> EnsureOrigin<O>
 {
 	type Success = H160;
 
+	fn ensure_origin(o: O) -> Result<Self::Success, BadOrigin> {
+		Self::try_origin(o).map_err(|_| BadOrigin)
+	}
+
 	fn try_origin(o: O) -> Result<Self::Success, O> {
 		o.into().map(|o| match o {
 			LcmpEthOrigin::MessageTransact(id) => id,
@@ -70,8 +76,8 @@ impl<O: Into<Result<LcmpEthOrigin, O>> + From<LcmpEthOrigin>> EnsureOrigin<O>
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
-	fn successful_origin() -> O {
-		O::from(LcmpEthOrigin::MessageTransact(Default::default()))
+	fn try_successful_origin() -> Result<O, ()> {
+		Ok(O::from(LcmpEthOrigin::MessageTransact(Default::default())))
 	}
 }
 

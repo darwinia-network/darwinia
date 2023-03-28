@@ -652,14 +652,11 @@ pub fn run() -> Result<()> {
 
 			runner.run_node_until_exit(|config| async move {
 				let chain_spec = &config.chain_spec;
-				let hwbench = if !cli.no_hardware_benchmarks {
+				let hwbench = (!cli.no_hardware_benchmarks).then_some(
 					config.database.path().map(|database_path| {
 						let _ = std::fs::create_dir_all(database_path);
 						sc_sysinfo::gather_hwbench(Some(database_path))
-					})
-				} else {
-					None
-				};
+					})).flatten();
 
 				set_default_ss58_version(chain_spec);
 
@@ -672,7 +669,7 @@ pub fn run() -> Result<()> {
 				);
 				let id = ParaId::from(para_id);
 				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::v2::AccountId>::into_account_truncating(&id);
+					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
 				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
 				let block: Block =
 					cumulus_client_cli::generate_genesis_block(&*config.chain_spec, state_version)

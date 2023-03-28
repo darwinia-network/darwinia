@@ -32,7 +32,7 @@ pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 	frame_support::weights::Weight::from_parts(
 		frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS * WEIGHT_MILLISECS_PER_BLOCK,
-		cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
+		cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 	);
 
 frame_support::parameter_types! {
