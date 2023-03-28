@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-// https://github.com/paritytech/substrate/blob/polkadot-v0.9.37/frame/balances/src/benchmarking.rs#L39
+// TODO: https://github.com/paritytech/substrate/pull/13655
 #[cfg(feature = "runtime-benchmarks")]
 frame_support::parameter_types! {
 	pub const ExistentialDeposit:Balance = 1;

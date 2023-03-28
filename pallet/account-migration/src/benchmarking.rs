@@ -151,7 +151,7 @@ mod benchmarks {
 		let from = [0; 32].into();
 		let to = [0; 20].into();
 
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// Migrate all kinds of data.
 		preset_data::<T>(&from);
@@ -167,7 +167,7 @@ mod benchmarks {
 	#[benchmark]
 	fn migrate_multisig(x: Linear<0, 99>, y: Linear<0, 99>) {
 		let from = AccountId32::from([0; 32]);
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// 100 size multisig.
 		let other_members = other_multisig_members(x);
@@ -183,7 +183,7 @@ mod benchmarks {
 	#[benchmark]
 	fn complete_multisig_migration() {
 		let from = AccountId32::from([0; 32]);
-		// The worst case:
+		// Worst-case scenario:
 		//
 		// 100 size multisig.
 		let other_members = other_multisig_members(99);

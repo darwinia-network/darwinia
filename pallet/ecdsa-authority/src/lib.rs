@@ -226,6 +226,8 @@ pub mod pallet {
 		}
 
 		fn on_runtime_upgrade() -> Weight {
+			frame_support::log::info!("Hook from darwinia_ecdsa_authority::on_runtime_upgrade");
+
 			<NewMessageRootToSign<T>>::kill();
 			<PreviousMessageRoot<T>>::kill();
 

@@ -2559,7 +2559,7 @@ dependencies = [
 name = "darwinia-deposit"
 version = "6.0.1"
 dependencies = [
- "darwinia-staking",
+ "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
  "frame-benchmarking",
@@ -2849,8 +2849,10 @@ name = "darwinia-staking"
 version = "6.0.1"
 dependencies = [
  "darwinia-deposit",
+ "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-assets",
@@ -2865,6 +2867,15 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "darwinia-staking-traits"
+version = "6.0.1"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
 ]
 
 [[package]]

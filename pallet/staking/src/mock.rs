@@ -16,8 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+pub use crate as darwinia_staking;
+
 // darwinia
-use darwinia_staking::*;
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
 use frame_support::traits::{GenesisBuild, OnInitialize};
@@ -106,8 +107,8 @@ impl frame_support::traits::UnixTime for Time {
 		Time::get()
 	}
 }
-pub enum KtonAsset {}
-impl darwinia_deposit::SimpleAsset for KtonAsset {
+pub enum KtonMinting {}
+impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = u32;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -123,7 +124,7 @@ impl darwinia_deposit::SimpleAsset for KtonAsset {
 	}
 }
 impl darwinia_deposit::Config for Runtime {
-	type Kton = KtonAsset;
+	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
@@ -141,7 +142,7 @@ impl darwinia_staking::Stake for RingStaking {
 			who,
 			&darwinia_staking::account_id(),
 			item,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 
@@ -237,7 +238,10 @@ impl darwinia_staking::Config for Runtime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Time;
+	type WeightInfo = ();
 }
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl darwinia_staking::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime where
@@ -258,7 +262,7 @@ frame_support::construct_runtime! {
 pub trait ZeroDefault {
 	fn default() -> Self;
 }
-impl ZeroDefault for Ledger<Runtime> {
+impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
 			staked_ring: Default::default(),

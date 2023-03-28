@@ -45,6 +45,8 @@ pub use assets::*;
 mod vesting;
 
 mod deposit;
+#[cfg(feature = "runtime-benchmarks")]
+pub use deposit::*;
 
 mod account_migration;
 

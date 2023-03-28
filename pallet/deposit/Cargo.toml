@@ -12,9 +12,9 @@ codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-staking = { workspace = true }
-dc-inflation     = { workspace = true }
-dc-types         = { workspace = true }
+darwinia-staking-traits = { workspace = true }
+dc-inflation            = { workspace = true }
+dc-types                = { workspace = true }
 
 # subtrate
 frame-support    = { workspace = true }
@@ -29,8 +29,8 @@ frame-benchmarking = { workspace = true, optional = true }
 # substrate
 pallet-assets   = { workspace = true, features = ["std"] }
 pallet-balances = { workspace = true, features = ["std"] }
-sp-io           = { workspace = true, features = ["std"] }
 sp-core         = { workspace = true, features = ["std"] }
+sp-io           = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -40,7 +40,7 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-staking/std",
+	"darwinia-staking-traits/std",
 	"dc-inflation/std",
 
 	# subtrate
