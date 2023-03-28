@@ -16,12 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 // paritytech
 use frame_support::{weights::Weight, RuntimeDebug};
-use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
@@ -31,7 +27,6 @@ use bridge_runtime_common::{
 	lanes::*,
 	messages::{source::*, target::*, *},
 };
-use darwinia_common_runtime::*;
 
 /// Message delivery proof for Pangolin -> Pangoro messages.
 pub type ToPangoroMessagesDeliveryProof =
@@ -58,29 +53,6 @@ pub type FromPangoroMessageDispatch = FromBridgedChainMessageDispatch<
 	Balances,
 	WithPangoroDispatch,
 >;
-
-pub const INITIAL_PANGORO_TO_PANGOLIN_CONVERSION_RATE: FixedU128 =
-	FixedU128::from_inner(FixedU128::DIV);
-
-frame_support::parameter_types! {
-	/// Pangolin to Pangoro conversion rate. Initially we treate both tokens as equal.
-	pub storage PangoroToPangolinConversionRate: FixedU128 = INITIAL_PANGORO_TO_PANGOLIN_CONVERSION_RATE;
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum PangolinToPangoroParameter {
-	/// The conversion formula we use is: `PangoroTokens = PangolinTokens *
-	/// conversion_rate`.
-	PangoroToPangolinConversionRate(FixedU128),
-}
-impl Parameter for PangolinToPangoroParameter {
-	fn save(&self) {
-		match *self {
-			PangolinToPangoroParameter::PangoroToPangolinConversionRate(ref conversion_rate) =>
-				PangoroToPangolinConversionRate::set(conversion_rate),
-		}
-	}
-}
 
 pub type ToPangoroMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<

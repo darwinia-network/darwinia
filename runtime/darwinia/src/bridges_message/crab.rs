@@ -16,12 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 // paritytech
 use frame_support::{weights::Weight, RuntimeDebug};
-use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
@@ -31,12 +27,11 @@ use bridge_runtime_common::{
 	lanes::*,
 	messages::{source::*, target::*, *},
 };
-use darwinia_common_runtime::*;
 
 /// Message delivery proof for Darwinia -> Crab messages.
-pub type ToCrabMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<bp_crab::Hash>;
+pub type ToCrabMessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<dc_primitives::Hash>;
 /// Message proof for Crab -> Darwinia messages.
-pub type FromCrabMessagesProof = FromBridgedChainMessagesProof<bp_crab::Hash>;
+pub type FromCrabMessagesProof = FromBridgedChainMessagesProof<dc_primitives::Hash>;
 
 /// Message payload for Darwinia -> Crab messages.
 pub type ToCrabMessagePayload = FromThisChainMessagePayload<WithCrabMessageBridge>;
@@ -53,29 +48,6 @@ pub type FromCrabEncodedCall = FromBridgedChainEncodedMessageCall<RuntimeCall>;
 /// Call-dispatch based message dispatch for Crab -> Darwinia messages.
 pub type FromCrabMessageDispatch =
 	FromBridgedChainMessageDispatch<WithCrabMessageBridge, Runtime, Balances, WithCrabDispatch>;
-
-pub const INITIAL_CRAB_TO_DARWINIA_CONVERSION_RATE: FixedU128 =
-	FixedU128::from_inner(FixedU128::DIV);
-
-frame_support::parameter_types! {
-	/// Darwinia to Crab conversion rate. Initially we treate both tokens as equal.
-	pub storage CrabToDarwiniaConversionRate: FixedU128 = INITIAL_CRAB_TO_DARWINIA_CONVERSION_RATE;
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum DarwiniaToCrabParameter {
-	/// The conversion formula we use is: `CrabTokens = DarwiniaTokens *
-	/// conversion_rate`.
-	CrabToDarwiniaConversionRate(FixedU128),
-}
-impl Parameter for DarwiniaToCrabParameter {
-	fn save(&self) {
-		match *self {
-			DarwiniaToCrabParameter::CrabToDarwiniaConversionRate(ref conversion_rate) =>
-				CrabToDarwiniaConversionRate::set(conversion_rate),
-		}
-	}
-}
 
 pub type ToCrabMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
@@ -98,11 +70,11 @@ impl MessageBridge for WithCrabMessageBridge {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Darwinia;
 impl ChainWithMessages for Darwinia {
-	type AccountId = bp_darwinia::AccountId;
-	type Balance = bp_darwinia::Balance;
-	type Hash = bp_darwinia::Hash;
-	type Signature = bp_darwinia::Signature;
-	type Signer = bp_darwinia::AccountPublic;
+	type AccountId = dc_primitives::AccountId;
+	type Balance = dc_primitives::Balance;
+	type Hash = dc_primitives::Hash;
+	type Signature = dc_primitives::Signature;
+	type Signer = dc_primitives::AccountPublic;
 }
 impl ThisChainWithMessages for Darwinia {
 	type RuntimeCall = RuntimeCall;
@@ -120,20 +92,20 @@ impl ThisChainWithMessages for Darwinia {
 #[derive(Clone, Copy, RuntimeDebug)]
 pub struct Crab;
 impl ChainWithMessages for Crab {
-	type AccountId = bp_crab::AccountId;
-	type Balance = bp_crab::Balance;
-	type Hash = bp_crab::Hash;
-	type Signature = bp_crab::Signature;
-	type Signer = bp_crab::AccountPublic;
+	type AccountId = dc_primitives::AccountId;
+	type Balance = dc_primitives::Balance;
+	type Hash = dc_primitives::Hash;
+	type Signature = dc_primitives::Signature;
+	type Signer = dc_primitives::AccountPublic;
 }
 impl BridgedChainWithMessages for Crab {
 	fn maximal_extrinsic_size() -> u32 {
-		bp_crab::DarwiniaLike::max_extrinsic_size()
+		darwinia_common_runtime::DarwiniaLike::max_extrinsic_size()
 	}
 
 	fn verify_dispatch_weight(_message_payload: &[u8], payload_weight: &Weight) -> bool {
 		let upper_limit = target::maximal_incoming_message_dispatch_weight(
-			bp_crab::DarwiniaLike::max_extrinsic_weight(),
+			darwinia_common_runtime::DarwiniaLike::max_extrinsic_weight(),
 		);
 		payload_weight.all_lte(upper_limit)
 	}
@@ -148,10 +120,10 @@ impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::Accoun
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<bp_crab::AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<dc_primitives::AccountId>), Self::Error> {
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithCrabMessageBridge,
-			bp_crab::Header,
+			dc_primitives::Header,
 			Runtime,
 			WithKusamaParachainsInstance,
 		>(ParaId(2105), proof)
@@ -167,7 +139,7 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
 	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
 		target::verify_messages_proof_from_parachain::<
 			WithCrabMessageBridge,
-			bp_crab::Header,
+			dc_primitives::Header,
 			Runtime,
 			WithKusamaParachainsInstance,
 		>(ParaId(2105), proof, messages_count)

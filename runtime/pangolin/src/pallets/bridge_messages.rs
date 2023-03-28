@@ -33,10 +33,6 @@ impl bp_messages::source_chain::SenderOrigin<AccountId> for RuntimeOrigin {
 
 frame_support::parameter_types! {
 	pub const BridgedChainId: bp_runtime::ChainId = bp_runtime::PANGORO_CHAIN_ID;
-	// pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
-	// darwinia_common_runtime::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	// pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
-	// darwinia_common_runtime::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
@@ -60,7 +56,7 @@ impl pallet_bridge_messages::Config<WithPangoroMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithPangoroFeeMarket>;
 	type OutboundMessageFee = dc_primitives::Balance;
 	type OutboundPayload = bm_pangoro::ToPangoroMessagePayload;
-	type Parameter = bm_pangoro::PangolinToPangoroParameter;
+	type Parameter = ();
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_pangoro::Pangoro;
 	type TargetHeaderChain = bm_pangoro::Pangoro;

@@ -17,7 +17,6 @@ dc-primitives              = { workspace = true }
 dc-types              = { workspace = true }
 
 # darwinia-messages-substrate
-bp-darwinia-core = { workspace = true }
 bp-runtime = { workspace = true }
 bp-messages = { workspace = true }
 
@@ -56,7 +55,6 @@ std = [
 	"dc-primitives/std",
 
 	# darwinia-messages-substrate
-	"bp-darwinia-core/std",
 	"bp-runtime/std",
 	"bp-messages/std",
 

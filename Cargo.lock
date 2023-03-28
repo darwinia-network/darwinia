@@ -874,23 +874,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-darwinia-core"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
-dependencies = [
- "account",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "bp-header-chain"
 version = "0.1.0"
 source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
@@ -2534,7 +2517,6 @@ name = "darwinia-common-runtime"
 version = "6.0.1"
 dependencies = [
  "account",
- "bp-darwinia-core",
  "bp-messages",
  "bp-runtime",
  "cumulus-primitives-core",

@@ -33,19 +33,15 @@ impl bp_messages::source_chain::SenderOrigin<AccountId> for RuntimeOrigin {
 
 frame_support::parameter_types! {
 	pub const BridgedChainId: bp_runtime::ChainId = bp_runtime::CRAB_CHAIN_ID;
-	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
-		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
-		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
 impl pallet_bridge_messages::Config<WithCrabMessages> for Runtime {
-	type AccountIdConverter = bp_darwinia::AccountIdConverter;
+	type AccountIdConverter = darwinia_common_runtime::AccountIdConverter;
 	type BridgedChainId = BridgedChainId;
-	type InboundMessageFee = bp_crab::Balance;
+	type InboundMessageFee = dc_primitives::Balance;
 	type InboundPayload = bm_crab::FromCrabMessagePayload;
-	type InboundRelayer = bp_crab::AccountId;
+	type InboundRelayer = dc_primitives::AccountId;
 	type LaneMessageVerifier = bm_crab::ToCrabMessageVerifier<Self>;
 	type MaxMessagesToPruneAtOnce = ConstU64<8>;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
@@ -58,9 +54,9 @@ impl pallet_bridge_messages::Config<WithCrabMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageConfirmedHandler<Self, WithCrabFeeMarket>;
 	type OnMessageAccepted =
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithCrabFeeMarket>;
-	type OutboundMessageFee = bp_darwinia::Balance;
+	type OutboundMessageFee = dc_primitives::Balance;
 	type OutboundPayload = bm_crab::ToCrabMessagePayload;
-	type Parameter = bm_crab::DarwiniaToCrabParameter;
+	type Parameter = ();
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_crab::Crab;
 	type TargetHeaderChain = bm_crab::Crab;
