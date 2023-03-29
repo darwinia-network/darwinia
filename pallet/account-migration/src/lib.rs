@@ -243,7 +243,7 @@ pub mod pallet {
 				.expect("[pallet::account-migration] `who` must be existed; qed")
 				.1 = true;
 
-			let detail = MultisigMigrationDetail { to: to, members, threshold };
+			let detail = MultisigMigrationDetail { to, members, threshold };
 
 			if threshold < 2 {
 				Self::migrate_inner(&from, &to)?;
