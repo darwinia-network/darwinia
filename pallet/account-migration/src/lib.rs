@@ -130,7 +130,7 @@ pub mod pallet {
 		/// An account has been migrated.
 		Migrated { from: AccountId32, to: AccountId20 },
 		/// An multisig account has been migrated.
-		MultisigMigrated { from: AccountId32, detail: MultisigDetail },
+		MultisigMigrated { from: AccountId32, detail: MultisigMigrationDetail },
 	}
 
 	#[pallet::error]
@@ -194,7 +194,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn multisig_of)]
-	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigDetail>;
+	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigMigrationDetail>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -243,7 +243,7 @@ pub mod pallet {
 				.expect("[pallet::account-migration] `who` must be existed; qed")
 				.1 = true;
 
-			let detail = MultisigDetail { migrate_to: to, members, threshold };
+			let detail = MultisigMigrationDetail { to: to, members, threshold };
 
 			if threshold < 2 {
 				Self::migrate_inner(&from, &to)?;
@@ -273,10 +273,10 @@ pub mod pallet {
 			let mut detail = <Multisigs<T>>::take(&from)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
 
-			// Kill the storage, if the `migrate_to` was created during the migration.
+			// Kill the storage, if the `to` was created during the migration.
 			//
 			// Require to redo the `migrate_multisig` operation.
-			if <frame_system::Account<T>>::contains_key(detail.migrate_to) {
+			if <frame_system::Account<T>>::contains_key(detail.to) {
 				Err(<Error<T>>::AccountAlreadyExisted)?;
 			}
 
@@ -293,7 +293,7 @@ pub mod pallet {
 			if detail.members.iter().fold(0, |acc, (_, ok)| if *ok { acc + 1 } else { acc })
 				>= detail.threshold
 			{
-				Self::migrate_inner(&from, &detail.migrate_to)?;
+				Self::migrate_inner(&from, &detail.to)?;
 
 				Self::deposit_event(Event::MultisigMigrated { from, detail });
 			} else {
@@ -345,7 +345,7 @@ pub mod pallet {
 						return InvalidTransaction::Custom(E_NOT_MULTISIG_MEMBER).into();
 					}
 
-					Self::pre_check_signature(submitter, &multisig_info.migrate_to, signature)
+					Self::pre_check_signature(submitter, &multisig_info.to, signature)
 				},
 				_ => InvalidTransaction::Call.into(),
 			}
@@ -578,8 +578,8 @@ pub(crate) enum AssetStatus {
 
 #[allow(missing_docs)]
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct MultisigDetail {
-	migrate_to: AccountId20,
+pub struct MultisigMigrationDetail {
+	to: AccountId20,
 	members: Vec<(AccountId32, bool)>,
 	threshold: u16,
 }
