@@ -17,8 +17,6 @@ jobs:
     container:
       image: ubuntu:18.04
     steps:
-      - uses: actions/checkout@v3
-
       - name: Install dependencies
         run: |
           apt update -y
@@ -27,21 +25,19 @@ jobs:
             clang make gcc g++ libssl-dev pkg-config protobuf-compiler
           pip3 install --upgrade pip
           pip3 install cmake --upgrade
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-
+      - name: Fetch latest code
+        uses: actions/checkout@v3
       - name: Cache target
         uses: actions/cache@v2
         with:
           path: target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Build
         run: cargo build --release --locked -p darwinia --features all-natives
-
       - name: Collect shared
         run: |
           mkdir -p shared
@@ -50,10 +46,8 @@ jobs:
             -C \
             target/release \
             darwinia
-
       - name: Optimize cache
         run: .github/shrink-cache.sh || exit 0
-
       - name: Upload shared
         uses: actions/upload-artifact@v2
         with:
@@ -67,27 +61,23 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-
-      - uses: benjlevesque/short-sha@v1.2
-
+      - name: Sha
+        uses: benjlevesque/short-sha@v1.2
       - name: Docker login
         uses: docker/login-action@v1
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-
       - name: Download shared
         uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
           path: shared
-
       - name: Extract shared
         run: |
           mkdir -p dist
           tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
-
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:

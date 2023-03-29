@@ -87,7 +87,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Pangoro2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_0_0_9,
+	spec_version: 6_0_1_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -178,6 +178,7 @@ frame_benchmarking::define_benchmarks! {
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_ecdsa_authority, EcdsaAuthority]
+	[darwinia_staking, DarwiniaStaking]
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgeRococoGrandpa]
 	[pallet_fee_market, PangolinFeeMarket]

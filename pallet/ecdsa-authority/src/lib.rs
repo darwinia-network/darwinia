@@ -48,7 +48,7 @@ use dc_primitives::{AccountId, BlockNumber};
 // substrate
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
-use sp_runtime::{traits::Zero, Perbill, SaturatedConversion};
+use sp_runtime::{traits::Zero, Perbill};
 use sp_std::prelude::*;
 
 #[frame_support::pallet]
@@ -218,10 +218,20 @@ pub mod pallet {
 				if let Some(message_root) = Self::try_update_message_root(now, false) {
 					Self::on_new_message_root(now, message_root);
 				}
-			}
 
-			// TODO: weight
-			Default::default()
+				T::WeightInfo::on_initialize()
+			} else {
+				Default::default()
+			}
+		}
+
+		fn on_runtime_upgrade() -> Weight {
+			frame_support::log::info!("Hook from darwinia_ecdsa_authority::on_runtime_upgrade");
+
+			<NewMessageRootToSign<T>>::kill();
+			<PreviousMessageRoot<T>>::kill();
+
+			T::DbWeight::get().reads_writes(0, 2)
 		}
 
 		fn on_runtime_upgrade() -> Weight {
@@ -523,7 +533,10 @@ pub mod pallet {
 				return None;
 			}
 
+			#[cfg(not(feature = "runtime-benchmarks"))]
 			let new_message_root = T::MessageRoot::get()?;
+			#[cfg(feature = "runtime-benchmarks")]
+			let new_message_root = Default::default();
 
 			if force {
 				return Some(new_message_root);
@@ -555,12 +568,9 @@ pub mod pallet {
 		}
 
 		fn on_new_message_root(at: T::BlockNumber, message_root: Hash) {
-			let commitment = Commitment {
-				block_number: at.saturated_into::<u32>(),
-				message_root,
-				nonce: <Nonce<T>>::get(),
-			};
-			let message = Sign::eth_signable_message(
+			let commitment =
+				Commitment { block_number: at, message_root, nonce: <Nonce<T>>::get() };
+			let message = Sign::signable_message(
 				T::ChainId::get(),
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[

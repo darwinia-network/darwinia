@@ -31,7 +31,7 @@ impl darwinia_staking::Stake for RingStaking {
 			who,
 			&darwinia_staking::account_id(),
 			item,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 
@@ -84,4 +84,7 @@ impl darwinia_staking::Config for Runtime {
 	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type UnixTime = Timestamp;
+	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl darwinia_staking::DepositConfig for Runtime {}

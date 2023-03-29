@@ -21,7 +21,7 @@ use crate::{
 	mock::{Deposit, *},
 	Deposit as DepositS, *,
 };
-use darwinia_staking::Stake;
+use darwinia_staking_traits::Stake;
 // substrate
 use frame_support::{assert_noop, assert_ok};
 
@@ -317,7 +317,7 @@ fn claim_with_penalty_should_work() {
 			<pallet_assets::Error<Runtime>>::BalanceLow
 		);
 
-		assert_ok!(KtonAsset::mint(&1, UNIT));
+		assert_ok!(KtonMinting::mint(&1, UNIT));
 		assert_ok!(Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0));
 		assert_eq!(Assets::balance(0, 1), 999_984_771_573_604_062);
 		assert!(Deposit::deposit_of(&1).is_none());

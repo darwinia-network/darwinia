@@ -53,6 +53,21 @@ use sp_std::marker::PhantomData;
 /// Weight functions for `darwinia_ecdsa_authority`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInfo<T> {
+	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:0)
+	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:1 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: EcdsaAuthority Nonce (r:1 w:0)
+	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
+	fn on_initialize() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `926`
+		//  Estimated: `4263`
+		// Minimum execution time: 21_242 nanoseconds.
+		Weight::from_parts(21_242_000, 4263)
+			.saturating_add(T::DbWeight::get().reads(3))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
 	/// Storage: EcdsaAuthority AuthoritiesChangeToSign (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority AuthoritiesChangeToSign (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority NextAuthorities (r:1 w:1)
@@ -63,8 +78,8 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		// Proof Size summary in bytes:
 		//  Measured:  `1103`
 		//  Estimated: `4794`
-		// Minimum execution time: 39_171 nanoseconds.
-		Weight::from_parts(39_171_000, 4794)
+		// Minimum execution time: 44_529 nanoseconds.
+		Weight::from_parts(44_529_000, 4794)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -78,8 +93,8 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		// Proof Size summary in bytes:
 		//  Measured:  `1214`
 		//  Estimated: `5127`
-		// Minimum execution time: 24_106 nanoseconds.
-		Weight::from_parts(24_106_000, 5127)
+		// Minimum execution time: 26_809 nanoseconds.
+		Weight::from_parts(26_809_000, 5127)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -93,8 +108,8 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		// Proof Size summary in bytes:
 		//  Measured:  `1234`
 		//  Estimated: `5187`
-		// Minimum execution time: 23_658 nanoseconds.
-		Weight::from_parts(23_658_000, 5187)
+		// Minimum execution time: 24_939 nanoseconds.
+		Weight::from_parts(24_939_000, 5187)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -106,19 +121,15 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 	/// Proof Skipped: EcdsaAuthority NextAuthorities (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: EcdsaAuthority Nonce (r:1 w:1)
 	/// Proof Skipped: EcdsaAuthority Nonce (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: MessageGadget CommitmentContract (r:1 w:0)
-	/// Proof: MessageGadget CommitmentContract (max_values: Some(1), max_size: Some(20), added: 515, mode: MaxEncodedLen)
-	/// Storage: EVM AccountCodes (r:1 w:0)
-	/// Proof Skipped: EVM AccountCodes (max_values: None, max_size: None, mode: Measured)
-	/// Storage: System Account (r:1 w:1)
-	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
+	/// Storage: EcdsaAuthority MessageRootToSign (r:0 w:1)
+	/// Proof Skipped: EcdsaAuthority MessageRootToSign (max_values: Some(1), max_size: None, mode: Measured)
 	fn submit_authorities_change_signature() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `2254`
-		//  Estimated: `18831`
-		// Minimum execution time: 62_099 nanoseconds.
-		Weight::from_parts(62_099_000, 18831)
-			.saturating_add(T::DbWeight::get().reads(7))
+		//  Measured:  `1331`
+		//  Estimated: `8635`
+		// Minimum execution time: 31_985 nanoseconds.
+		Weight::from_parts(31_985_000, 8635)
+			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
 	/// Storage: EcdsaAuthority Authorities (r:1 w:0)
@@ -129,8 +140,8 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		// Proof Size summary in bytes:
 		//  Measured:  `1292`
 		//  Estimated: `3574`
-		// Minimum execution time: 24_637 nanoseconds.
-		Weight::from_parts(24_637_000, 3574)
+		// Minimum execution time: 27_175 nanoseconds.
+		Weight::from_parts(27_175_000, 3574)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

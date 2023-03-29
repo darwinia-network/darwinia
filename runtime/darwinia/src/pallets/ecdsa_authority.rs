@@ -35,5 +35,5 @@ impl darwinia_ecdsa_authority::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SignThreshold = SignThreshold;
 	type SyncInterval = ConstU32<SYNC_INTERVAL>;
-	type WeightInfo = ();
+	type WeightInfo = weights::darwinia_ecdsa_authority::WeightInfo<Self>;
 }

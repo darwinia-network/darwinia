@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38#abca6696c3731dd781d7badfb7cd797e36e39bf5"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
 dependencies = [
  "blake2-rfc",
  "hex",
@@ -876,7 +876,7 @@ dependencies = [
 [[package]]
 name = "bp-darwinia-core"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "account",
  "bp-messages",
@@ -893,7 +893,7 @@ dependencies = [
 [[package]]
 name = "bp-header-chain"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-runtime",
  "finality-grandpa",
@@ -910,7 +910,7 @@ dependencies = [
 [[package]]
 name = "bp-message-dispatch"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-runtime",
  "frame-support",
@@ -923,7 +923,7 @@ dependencies = [
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bitvec",
  "bp-runtime",
@@ -940,7 +940,7 @@ dependencies = [
 [[package]]
 name = "bp-parachains"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-polkadot-core",
  "bp-runtime",
@@ -953,7 +953,7 @@ dependencies = [
 [[package]]
 name = "bp-polkadot-core"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -972,7 +972,7 @@ dependencies = [
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-header-chain",
  "ed25519-dalek",
@@ -1008,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "bridge-runtime-common"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-header-chain",
  "bp-message-dispatch",
@@ -1825,7 +1825,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-cli"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "clap",
  "parity-scale-codec",
@@ -1840,7 +1840,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-collator"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-client-consensus-common",
  "cumulus-client-network",
@@ -1863,7 +1863,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-consensus-aura"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-client-consensus-common",
@@ -1892,7 +1892,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-consensus-common"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-client-pov-recovery",
@@ -1915,7 +1915,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-network"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-relay-chain-interface",
@@ -1938,7 +1938,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-pov-recovery"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "cumulus-relay-chain-interface",
@@ -1961,7 +1961,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-service"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-client-cli",
  "cumulus-client-collator",
@@ -1989,7 +1989,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-aura-ext"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2005,7 +2005,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-dmp-queue"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2022,7 +2022,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-parachain-system"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "bytes",
  "cumulus-pallet-parachain-system-proc-macro",
@@ -2051,7 +2051,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-parachain-system-proc-macro"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2062,7 +2062,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-session-benchmarking"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -2076,7 +2076,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-xcm"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2092,7 +2092,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-xcmp-queue"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -2113,7 +2113,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-core"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#6d1ac27a0a4b47fc6e4cf6fc5e6ed500ec26cd15"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "parity-scale-codec",
  "polkadot-core-primitives",
@@ -2129,7 +2129,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-parachain-inherent"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2152,7 +2152,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-timestamp"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "futures",
@@ -2165,7 +2165,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-utility"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2183,7 +2183,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-inprocess-interface"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2208,7 +2208,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-interface"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2216,7 +2216,6 @@ dependencies = [
  "jsonrpsee-core",
  "parity-scale-codec",
  "polkadot-overseer",
- "polkadot-service",
  "sc-client-api",
  "sp-api",
  "sp-blockchain",
@@ -2228,7 +2227,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-minimal-node"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "array-bytes 6.0.0",
  "async-trait",
@@ -2268,7 +2267,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-rpc-interface"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2297,7 +2296,7 @@ dependencies = [
 [[package]]
 name = "cumulus-test-relay-sproof-builder"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "parity-scale-codec",
@@ -2463,7 +2462,6 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
- "polkadot-service",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-cli",
@@ -2560,7 +2558,7 @@ dependencies = [
 name = "darwinia-deposit"
 version = "6.0.1"
 dependencies = [
- "darwinia-staking",
+ "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
  "frame-benchmarking",
@@ -2851,8 +2849,10 @@ name = "darwinia-staking"
 version = "6.0.1"
 dependencies = [
  "darwinia-deposit",
+ "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-assets",
@@ -2867,6 +2867,15 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "darwinia-staking-traits"
+version = "6.0.1"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -3602,7 +3611,7 @@ dependencies = [
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "clap",
  "ethereum-types 0.14.1",
@@ -3620,7 +3629,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-storage",
  "kvdb-rocksdb",
@@ -3639,7 +3648,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -3657,7 +3666,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -3699,7 +3708,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -3881,7 +3890,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -3893,7 +3902,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -3907,7 +3916,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "evm",
  "frame-support",
@@ -3921,7 +3930,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -3937,7 +3946,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -3949,7 +3958,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -6921,7 +6930,7 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#8301b6c2871ce4e0279c78b3714e8e3a40a749ea"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#0a64a0b761f0a33e8953eccdac55dedb1e9ef580"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -6939,7 +6948,7 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#8301b6c2871ce4e0279c78b3714e8e3a40a749ea"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.38#0a64a0b761f0a33e8953eccdac55dedb1e9ef580"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -7173,7 +7182,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-dispatch"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-message-dispatch",
  "bp-runtime",
@@ -7189,7 +7198,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -7211,7 +7220,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-messages"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bitvec",
  "bp-message-dispatch",
@@ -7232,7 +7241,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-parachains"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-parachains",
  "bp-polkadot-core",
@@ -7378,7 +7387,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -7429,7 +7438,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "environmental",
  "evm",
@@ -7453,7 +7462,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-evm",
 ]
@@ -7461,7 +7470,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -7471,7 +7480,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -7481,7 +7490,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-evm",
  "num",
@@ -7490,7 +7499,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.38#5644279da588baab7caa9f3a4eb69363e1606461"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v0.9.38#28c1f8a80152cabdf98afe58dc37fa963682d978"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -7518,7 +7527,7 @@ dependencies = [
 [[package]]
 name = "pallet-fee-market"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#c93f45cda37abe7c6c3144d1895f43bed199584f"
+source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v0.9.38#b5bf1f59cc9ff8e38f9d1baa65b2dfca68980f0a"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -8137,7 +8146,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8384,7 +8393,7 @@ dependencies = [
 [[package]]
 name = "parachain-info"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus.git?branch=polkadot-v0.9.38#3275e271e8937c06dca44331e98f31ef020a71e6"
+source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -8851,7 +8860,7 @@ dependencies = [
 [[package]]
 name = "polkadot-core-primitives"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9386,7 +9395,7 @@ dependencies = [
 [[package]]
 name = "polkadot-parachain"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "derive_more",
  "frame-support",
@@ -9417,7 +9426,7 @@ dependencies = [
 [[package]]
 name = "polkadot-primitives"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "bitvec",
  "hex-literal",
@@ -9887,7 +9896,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38#abca6696c3731dd781d7badfb7cd797e36e39bf5"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
 dependencies = [
  "affix",
  "derive_more",
@@ -9918,7 +9927,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38#abca6696c3731dd781d7badfb7cd797e36e39bf5"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
 dependencies = [
  "case",
  "num_enum",
@@ -15483,7 +15492,7 @@ dependencies = [
 [[package]]
 name = "xcm"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "derivative",
  "impl-trait-for-tuples",
@@ -15499,7 +15508,7 @@ dependencies = [
 [[package]]
 name = "xcm-builder"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -15520,7 +15529,7 @@ dependencies = [
 [[package]]
 name = "xcm-executor"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "environmental",
  "frame-benchmarking",
@@ -15540,7 +15549,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38#abca6696c3731dd781d7badfb7cd797e36e39bf5"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#6b21c49d9c3def2b0cd799f67c1feb136831e749"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
@@ -15567,7 +15576,7 @@ dependencies = [
 [[package]]
 name = "xcm-procedural"
 version = "0.9.38"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#72309a2b2e68413305a56dce1097041309bd29c6"
 dependencies = [
  "Inflector",
  "proc-macro2",
