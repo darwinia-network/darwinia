@@ -233,13 +233,6 @@ pub mod pallet {
 
 			T::DbWeight::get().reads_writes(0, 2)
 		}
-
-		fn on_runtime_upgrade() -> Weight {
-			<NewMessageRootToSign<T>>::kill();
-			<PreviousMessageRoot<T>>::kill();
-
-			T::DbWeight::get().reads_writes(0, 2)
-		}
 	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {

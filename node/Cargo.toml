@@ -45,7 +45,7 @@ fc-db           = { workspace = true }
 fc-mapping-sync = { workspace = true }
 fc-rpc          = { features = ["rpc-binary-search-estimate"], workspace = true }
 fc-rpc-core     = { workspace = true }
-fc-storage      = { workspace = true, features = ["std"] }
+fc-storage      = { workspace = true }
 fp-evm          = { workspace = true, features = ["std"] }
 fp-rpc          = { workspace = true, features = ["std"] }
 

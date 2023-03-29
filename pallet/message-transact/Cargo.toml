@@ -47,8 +47,6 @@ sp-runtime       = { workspace = true, features = ["std"] }
 [features]
 default = ["std"]
 
-runtime-benchmarks = []
-
 std = [
 	# crates.io
 	"codec/std",
