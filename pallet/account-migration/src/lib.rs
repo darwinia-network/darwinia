@@ -129,6 +129,8 @@ pub mod pallet {
 	pub enum Event {
 		/// An account has been migrated.
 		Migrated { from: AccountId32, to: AccountId20 },
+		/// An multisig account has been migrated.
+		MultisigMigrated { from: AccountId32, detail: MultisigMigrationDetail },
 	}
 
 	#[pallet::error]
@@ -192,7 +194,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn multisig_of)]
-	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, Multisig>;
+	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigMigrationDetail>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -207,7 +209,9 @@ pub mod pallet {
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			Self::migrate_inner(from, to)?;
+			Self::migrate_inner(&from, &to)?;
+
+			Self::deposit_event(Event::Migrated { from, to });
 
 			Ok(())
 		}
@@ -227,23 +231,26 @@ pub mod pallet {
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			let (members, multisig) = multisig_of(submitter.clone(), others, threshold);
+			let (members, from) = multisig_of(submitter.clone(), others, threshold);
+			let mut members = members.into_iter().map(|m| (m, false)).collect::<Vec<_>>();
+
+			// Set the status to `true`.
+			//
+			// Because the `_signature` was already been verified in `pre_dispatch`.
+			members
+				.iter_mut()
+				.find(|(who, _)| who == &submitter)
+				.expect("[pallet::account-migration] `who` must be existed; qed")
+				.1 = true;
+
+			let detail = MultisigMigrationDetail { to, members, threshold };
 
 			if threshold < 2 {
-				Self::migrate_inner(multisig, to)?;
+				Self::migrate_inner(&from, &to)?;
+
+				Self::deposit_event(Event::MultisigMigrated { from, detail });
 			} else {
-				let mut members = members.into_iter().map(|m| (m, false)).collect::<Vec<_>>();
-
-				// Set the status to `true`.
-				//
-				// Because the `_signature` was already been verified in `pre_dispatch`.
-				members
-					.iter_mut()
-					.find(|(who, _)| who == &submitter)
-					.expect("[pallet::account-migration] `who` must be existed; qed")
-					.1 = true;
-
-				<Multisigs<T>>::insert(multisig, Multisig { migrate_to: to, members, threshold });
+				<Multisigs<T>>::insert(from, detail);
 			}
 
 			Ok(())
@@ -262,32 +269,35 @@ pub mod pallet {
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			let mut multisig_info = <Multisigs<T>>::take(&multisig)
+			let from = multisig;
+			let mut detail = <Multisigs<T>>::take(&from)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
 
-			// Kill the storage, if the `migrate_to` was created during the migration.
+			// Kill the storage, if the `to` was created during the migration.
 			//
 			// Require to redo the `migrate_multisig` operation.
-			if <frame_system::Account<T>>::contains_key(multisig_info.migrate_to) {
+			if <frame_system::Account<T>>::contains_key(detail.to) {
 				Err(<Error<T>>::AccountAlreadyExisted)?;
 			}
 
 			// Set the status to `true`.
 			//
 			// Because the `_signature` was already been verified in `pre_dispatch`.
-			multisig_info
+			detail
 				.members
 				.iter_mut()
 				.find(|(who, _)| who == &submitter)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed")
 				.1 = true;
 
-			if multisig_info.members.iter().fold(0, |acc, (_, ok)| if *ok { acc + 1 } else { acc })
-				>= multisig_info.threshold
+			if detail.members.iter().fold(0, |acc, (_, ok)| if *ok { acc + 1 } else { acc })
+				>= detail.threshold
 			{
-				Self::migrate_inner(multisig, multisig_info.migrate_to)?;
+				Self::migrate_inner(&from, &detail.to)?;
+
+				Self::deposit_event(Event::MultisigMigrated { from, detail });
 			} else {
-				<Multisigs<T>>::insert(multisig, multisig_info);
+				<Multisigs<T>>::insert(from, detail);
 			}
 
 			Ok(())
@@ -335,7 +345,7 @@ pub mod pallet {
 						return InvalidTransaction::Custom(E_NOT_MULTISIG_MEMBER).into();
 					}
 
-					Self::pre_check_signature(submitter, &multisig_info.migrate_to, signature)
+					Self::pre_check_signature(submitter, &multisig_info.to, signature)
 				},
 				_ => InvalidTransaction::Call.into(),
 			}
@@ -378,8 +388,8 @@ pub mod pallet {
 			}
 		}
 
-		fn migrate_inner(from: AccountId32, to: AccountId20) -> DispatchResult {
-			let mut account = <Accounts<T>>::take(&from)
+		fn migrate_inner(from: &AccountId32, to: &AccountId20) -> DispatchResult {
+			let mut account = <Accounts<T>>::take(from)
 				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
 
 			account.data.free += account.data.reserved;
@@ -387,7 +397,7 @@ pub mod pallet {
 
 			<frame_system::Account<T>>::insert(to, account);
 
-			if let Some(a) = <KtonAccounts<T>>::take(&from) {
+			if let Some(a) = <KtonAccounts<T>>::take(from) {
 				let encoded_kton_id = KTON_ID.encode();
 
 				migration::put_storage_value(
@@ -418,7 +428,7 @@ pub mod pallet {
 					);
 				}
 			}
-			if let Some(v) = <Vestings<T>>::take(&from) {
+			if let Some(v) = <Vestings<T>>::take(from) {
 				let locked = v.iter().map(|v| v.locked()).sum();
 
 				<pallet_vesting::Vesting<T>>::insert(
@@ -430,9 +440,9 @@ pub mod pallet {
 				let reasons = WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE;
 
 				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
-				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", &to, locked, reasons);
+				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", to, locked, reasons);
 			}
-			if let Some(mut i) = <Identities<T>>::take(&from) {
+			if let Some(mut i) = <Identities<T>>::take(from) {
 				i.deposit = 0;
 				i.judgements.iter_mut().for_each(|(_, j)| {
 					if let Judgement::FeePaid(f) = j {
@@ -451,8 +461,8 @@ pub mod pallet {
 				let mut rs = <pallet_identity::Pallet<T>>::registrars();
 
 				for r in rs.iter_mut().flatten() {
-					if r.account.0 == <AccountId32 as AsRef<[u8; 32]>>::as_ref(&from)[..20] {
-						r.account = to;
+					if r.account.0 == <AccountId32 as AsRef<[u8; 32]>>::as_ref(from)[..20] {
+						r.account = *to;
 
 						break;
 					}
@@ -460,10 +470,10 @@ pub mod pallet {
 
 				migration::put_storage_value(b"Identity", b"Registrars", &[], rs);
 			}
-			if let Some(mut l) = <Ledgers<T>>::take(&from) {
-				if let Some(ds) = <Deposits<T>>::take(&from) {
+			if let Some(mut l) = <Ledgers<T>>::take(from) {
+				if let Some(ds) = <Deposits<T>>::take(from) {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-						&to,
+						to,
 						&darwinia_deposit::account_id(),
 						ds.iter().map(|d| d.value).sum(),
 						AllowDeath,
@@ -487,7 +497,7 @@ pub mod pallet {
 
 				if r > 0 {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-						&to,
+						to,
 						&staking_pot,
 						r,
 						AllowDeath,
@@ -501,7 +511,7 @@ pub mod pallet {
 
 				if k != 0 {
 					<pallet_assets::Pallet<T>>::transfer(
-						RawOrigin::Signed(to).into(),
+						RawOrigin::Signed(*to).into(),
 						KTON_ID.into(),
 						staking_pot,
 						k,
@@ -510,8 +520,6 @@ pub mod pallet {
 
 				<darwinia_staking::Ledgers<T>>::insert(to, l);
 			}
-
-			Self::deposit_event(Event::Migrated { from, to });
 
 			Ok(())
 		}
@@ -569,9 +577,9 @@ pub(crate) enum AssetStatus {
 }
 
 #[allow(missing_docs)]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct Multisig {
-	migrate_to: AccountId20,
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+pub struct MultisigMigrationDetail {
+	to: AccountId20,
 	members: Vec<(AccountId32, bool)>,
 	threshold: u16,
 }
