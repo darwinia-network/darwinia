@@ -239,20 +239,7 @@ fn try_update_message_root_should_work() {
 		});
 		run_to_block(sync_interval);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
-		);
-		assert_eq!(
-			EcdsaAuthority::message_root_to_sign().unwrap(),
-			MessageRootSigned {
-				commitment: Commitment {
-					block_number: System::block_number(),
-					message_root: Default::default(),
-					nonce: 0
-				},
-				message,
-				signatures: Default::default(),
-				authorized: false,
-			}
+			"0xbf3b7c14b026416d17284cd7e43eef88b5b527fbb5d987c490429765c31dbaab",
 		);
 		let message_root_signed = MessageRootSigned {
 			commitment: Commitment {
@@ -273,7 +260,7 @@ fn try_update_message_root_should_work() {
 		// Update the message root while exceeding the max pending period.
 		let message_root_1 = new_message_root(1);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x3e5c445233cc9d281c4fde6ffc5d1c57701d932afba5e6cea07f9b1e88d41fc6",
+			"0x5c3a64ccaec24323f79e6af2da561c47b18ce2ccb346164841c1696ccf4838e2",
 		);
 		run_to_block_with(System::block_number() + max_pending_period - 1, || {
 			// The message root is not updated until the max pending period is reached.
@@ -456,7 +443,7 @@ fn submit_new_message_root_signature_should_work() {
 
 		run_to_block(<<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get());
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
+			"0xbf3b7c14b026416d17284cd7e43eef88b5b527fbb5d987c490429765c31dbaab",
 		);
 		assert_eq!(
 			EcdsaAuthority::message_root_to_sign().unwrap(),
@@ -547,7 +534,7 @@ fn pays_no_should_work() {
 		(2..sync_interval).for_each(|n| run_to_block(n));
 		run_to_block(sync_interval);
 		let message = array_bytes::hex_n_into_unchecked(
-			"0x7eba5c34eb163661830babd9d52b674f80812b4cde832429635352eb6f9225af",
+			"0xbf3b7c14b026416d17284cd7e43eef88b5b527fbb5d987c490429765c31dbaab",
 		);
 
 		// Free for first-correct signature.

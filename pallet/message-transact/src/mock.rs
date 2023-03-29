@@ -134,7 +134,12 @@ impl pallet_evm::Config for TestRuntime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
+frame_support::parameter_types! {
+	pub const PostBlockAndTxnHashes: pallet_ethereum::PostLogContent = pallet_ethereum::PostLogContent::BlockAndTxnHashes;
+}
+
 impl pallet_ethereum::Config for TestRuntime {
+	type PostLogContent = PostBlockAndTxnHashes;
 	type RuntimeEvent = RuntimeEvent;
 	type StateRoot = IntermediateStateRoot<Self>;
 }
