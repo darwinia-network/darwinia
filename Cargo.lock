@@ -7422,6 +7422,7 @@ dependencies = [
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-evm",
