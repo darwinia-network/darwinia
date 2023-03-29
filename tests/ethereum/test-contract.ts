@@ -69,8 +69,8 @@ describe("Test contract", () => {
 		expect(await inc.methods.number().call()).to.be.equal("0");
 	}).timeout(60000);
 
-	step("Test revert reason", async function () {
-		let val = await inc.methods
+	step("Get correct revert reason", async function () {
+		await inc.methods
 			.increment(2)
 			.call()
 			.catch((err) => {
