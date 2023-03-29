@@ -31,13 +31,13 @@ parachain-info                  = { workspace = true }
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
-darwinia-account-migration        = { workspace = true }
-darwinia-common-runtime           = { workspace = true }
-darwinia-deposit                  = { workspace = true }
-darwinia-ecdsa-authority          = { workspace = true }
-darwinia-message-gadget           = { workspace = true }
-darwinia-message-transact         = { workspace = true }
-darwinia-precompile-assets        = { workspace = true }
+darwinia-account-migration = { workspace = true }
+darwinia-common-runtime    = { workspace = true }
+darwinia-deposit           = { workspace = true }
+darwinia-ecdsa-authority   = { workspace = true }
+darwinia-message-gadget    = { workspace = true }
+darwinia-message-transact  = { workspace = true }
+darwinia-precompile-assets = { workspace = true }
 # darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
