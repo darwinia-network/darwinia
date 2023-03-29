@@ -190,7 +190,7 @@ pub mod pallet {
 	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
 
-	/// MultisigDetail migration caches.
+	/// Multisig migration caches.
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn multisig_of)]
