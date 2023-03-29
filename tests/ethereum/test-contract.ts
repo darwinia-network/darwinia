@@ -62,38 +62,21 @@ describe("Test contract", () => {
 		}
 	});
 
-	step("Test revert reason 1", async function () {
-		expect(await inc.methods.number().call()).to.be.equal("8");
-		let val = await inc.methods
-			.getNumber()
-			.call()
-			.catch((err) => {
-				console.log(err.message);
-				expect(err.message).to.equal(
-					`Returned error: VM Exception while processing transaction: revert Get Number revert`
-				);
-			});
-		console.log("val: ", val);
-	}).timeout(60000);
-
-	step("Test revert reason 2", async function () {
-		expect(await inc.methods.number().call()).to.be.equal("8");
-		let val = await inc.methods
-			.increment(2)
-			.send()
-			.catch((err) => {
-				console.log(err.message);
-				expect(err.message).to.equal(
-					`Returned error: Get Number revert.`
-				);
-			});
-		console.log("val: ", val);
-	}).timeout(60000);
-
 	step("Reset number", async function () {
 		let receipt = await inc.methods.reset().send();
 
 		expect(receipt.transactionHash).to.not.be.null;
 		expect(await inc.methods.number().call()).to.be.equal("0");
-	}).timeout(60000);	
+	}).timeout(60000);
+
+	step("Test revert reason", async function () {
+		let val = await inc.methods
+			.increment(2)
+			.call()
+			.catch((err) => {
+				expect(err.message).to.equal(
+					`Returned error: VM Exception while processing transaction: revert the value must be greater than 3`
+				);
+			});
+	}).timeout(60000);
 });
