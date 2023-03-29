@@ -344,6 +344,9 @@ try-runtime = [
 	"pallet-bridge-parachains/try-runtime",
 	"pallet-fee-market/try-runtime",
 
+	# moonbeam
+	"pallet-ethereum-xcm/try-runtime",
+
 	# frontier
 	"fp-self-contained/try-runtime",
 	"pallet-ethereum/try-runtime",
