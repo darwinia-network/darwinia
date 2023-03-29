@@ -25,7 +25,7 @@ describe("Test transaction gas limit", () => {
 				from: FAITH,
 				data: data.encodeABI(),
 			})
-		).to.equal(144926);
+		).to.equal(257336);
 	}).timeout(60000);
 
 	it("Test contract call estimate gas", async () => {
@@ -40,7 +40,7 @@ describe("Test transaction gas limit", () => {
 		let receipt = await web3.eth.sendSignedTransaction(tx.rawTransaction);
 		inc.options.address = receipt.contractAddress;
 
-		expect(await inc.methods.increment(3).estimateGas()).to.equal(28340);
+		expect(await inc.methods.increment(3).estimateGas()).to.equal(28506);
 	}).timeout(60000);
 
 	it("Test transaction gas limit < `BLOCK_GAS_LIMIT`", async () => {

@@ -17,7 +17,7 @@ contract Incrementer {
         number = number + _value;
         emit Increment(msg.sender, _value);
     }
-    
+
     function reset() public {
         number = 0;
     }
