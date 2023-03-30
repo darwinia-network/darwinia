@@ -19,12 +19,19 @@
 // darwinia
 use crate::*;
 
-frame_support::parameter_types! {
-	pub const PostBlockAndTxnHashes: pallet_ethereum::PostLogContent = pallet_ethereum::PostLogContent::BlockAndTxnHashes;
+pub struct EthereumXcmEnsureProxy;
+impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
+	fn ensure_ok(_delegator: AccountId, _delegatee: AccountId) -> Result<(), &'static str> {
+		Err("Denied")
+	}
 }
 
-impl pallet_ethereum::Config for Runtime {
-	type PostLogContent = PostBlockAndTxnHashes;
-	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+impl pallet_ethereum_xcm::Config for Runtime {
+	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
+	type EnsureProxy = EthereumXcmEnsureProxy;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ReservedXcmpWeight =
+		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
 }

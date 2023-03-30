@@ -344,7 +344,7 @@ where
 		);
 	}
 
-	let overrides = frontier_service::overrides_handle(client.clone());
+	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),
@@ -808,7 +808,7 @@ where
 	}
 
 	let prometheus_registry = config.prometheus_registry().cloned();
-	let overrides = frontier_service::overrides_handle(client.clone());
+	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),

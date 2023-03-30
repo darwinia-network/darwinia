@@ -153,6 +153,7 @@ frame_support::construct_runtime! {
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
 		PolkadotXcm: pallet_xcm = 33,
 		CumulusXcm: cumulus_pallet_xcm = 34,
+		EthereumXcm: pallet_ethereum_xcm = 44,
 		DmpQueue: cumulus_pallet_dmp_queue = 35,
 
 		// EVM stuff.

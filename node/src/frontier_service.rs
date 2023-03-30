@@ -19,27 +19,20 @@
 //! Service and service factory implementation. Specialized wrapper over substrate service.
 
 // std
-use std::{collections::BTreeMap, path::PathBuf, sync::Arc, time::Duration};
+use std::{path::PathBuf, sync::Arc, time::Duration};
 // crates.io
 use futures::{future, StreamExt};
 // darwinia
 use crate::cli::Cli;
-use dc_primitives::{Block, BlockNumber, Hash, Hashing};
+use dc_primitives::{BlockNumber, Hash, Hashing};
 // frontier
 use fc_db::Backend as FrontierBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
-use fc_rpc::{
-	EthTask, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override, SchemaV2Override,
-	SchemaV3Override, StorageOverride,
-};
+use fc_rpc::{EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
-use fp_storage::EthereumStorageSchema;
 // substrate
 use sc_cli::SubstrateCli;
-use sc_client_api::backend::{AuxStore, Backend, StateBackend, StorageProvider};
 use sc_service::{BasePath, Configuration, TaskManager};
-use sp_api::ProvideRuntimeApi;
-use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_frontier_tasks<B, BE, C>(
@@ -73,6 +66,7 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 			Duration::new(6, 0),
 			client.clone(),
 			backend,
+			overrides.clone(),
 			frontier_backend,
 			3,
 			0,
@@ -109,44 +103,4 @@ pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
 			BasePath::from_project("", "", &Cli::executable_name())
 				.config_dir(config.chain_spec.id())
 		})
-}
-
-pub(crate) fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
-where
-	C: 'static
-		+ Send
-		+ Sync
-		+ ProvideRuntimeApi<Block>
-		+ StorageProvider<Block, BE>
-		+ AuxStore
-		+ HeaderBackend<Block>
-		+ HeaderMetadata<Block, Error = BlockChainError>,
-	C::Api: sp_api::ApiExt<Block>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
-	BE: 'static + Backend<Block>,
-	BE::State: StateBackend<Hashing>,
-{
-	let mut overrides_map = BTreeMap::new();
-
-	overrides_map.insert(
-		EthereumStorageSchema::V1,
-		Box::new(SchemaV1Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
-	overrides_map.insert(
-		EthereumStorageSchema::V2,
-		Box::new(SchemaV2Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
-	overrides_map.insert(
-		EthereumStorageSchema::V3,
-		Box::new(SchemaV3Override::new(client.clone()))
-			as Box<dyn StorageOverride<_> + Send + Sync>,
-	);
-
-	Arc::new(OverrideHandle {
-		schemas: overrides_map,
-		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
-	})
 }

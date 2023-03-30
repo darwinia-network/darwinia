@@ -96,8 +96,6 @@ pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
 		>,
 		// Expected responses are OK.
 		xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
-		// Subscriptions for version tracking are OK.
-		xcm_builder::AllowSubscriptionsFrom<darwinia_common_runtime::xcm_configs::ParentOrSiblings>,
 	),
 >;
 
@@ -128,6 +126,38 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 	}
 }
 
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+
+pub struct DarwiniaCall;
+impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
+	fn dispatch(
+		call: RuntimeCall,
+		origin: RuntimeOrigin,
+	) -> Result<
+		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
+	> {
+		if let Ok(raw_origin) =
+			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
+		{
+			match (call.clone(), raw_origin) {
+				(
+					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
+					frame_system::RawOrigin::Signed(account_id),
+				) => {
+					return RuntimeCall::dispatch(
+						call,
+						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
+							.into(),
+					);
+				},
+				_ => {},
+			}
+		}
+		RuntimeCall::dispatch(call, origin)
+	}
+}
+
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
@@ -137,7 +167,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = RuntimeCall;
+	type CallDispatcher = DarwiniaCall;
 	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
@@ -163,7 +193,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type XcmSender = XcmRouter;
 }
 
@@ -200,7 +230,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;

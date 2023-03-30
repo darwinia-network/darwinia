@@ -70,8 +70,9 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-precompile-utils = { workspace = true }
-xcm-primitives   = { workspace = true }
+pallet-ethereum-xcm = { workspace = true }
+precompile-utils    = { workspace = true }
+xcm-primitives      = { workspace = true }
 
 # polkadot
 pallet-xcm              = { workspace = true }
@@ -190,6 +191,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 
 	# moonbeam
+	"pallet-ethereum-xcm/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
@@ -285,6 +287,7 @@ runtime-benchmarks = [
 	"pallet-evm/runtime-benchmarks",
 
 	# moonbeam
+	"pallet-ethereum-xcm/runtime-benchmarks",
 	"xcm-primitives/runtime-benchmarks",
 
 	# polkadot
@@ -341,6 +344,9 @@ try-runtime = [
 	"pallet-bridge-messages/try-runtime",
 	"pallet-bridge-parachains/try-runtime",
 	"pallet-fee-market/try-runtime",
+
+	# moonbeam
+	"pallet-ethereum-xcm/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",

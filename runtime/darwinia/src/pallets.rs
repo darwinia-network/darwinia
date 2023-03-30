@@ -99,6 +99,8 @@ mod xcmp_queue;
 mod polkadot_xcm;
 pub use polkadot_xcm::*;
 
+mod ethereum_xcm;
+
 mod dmp_queue;
 
 // EVM stuff.
