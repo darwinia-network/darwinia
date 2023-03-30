@@ -255,6 +255,9 @@ on-chain-release-build = [
 ]
 
 runtime-benchmarks = [
+	# crates.io
+	"array-bytes",
+
 	# cumulus
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
