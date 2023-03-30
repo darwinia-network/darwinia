@@ -118,7 +118,8 @@ fn migrate_multisig_should_work() {
 			others: vec![b.public().0.into(), c.public().0.into()],
 			threshold: 2,
 			to,
-			signature: signature.0
+			signature: signature.0,
+			new_multisig_params: None
 		}));
 		assert_ok!(AccountMigration::migrate_multisig(
 			RuntimeOrigin::none(),
@@ -127,7 +128,19 @@ fn migrate_multisig_should_work() {
 			2,
 			to,
 			signature.0,
+			None
 		));
+		assert_noop!(
+			AccountMigration::pre_dispatch(&Call::migrate_multisig {
+				submitter: a.public().0.into(),
+				others: vec![b.public().0.into(), c.public().0.into()],
+				threshold: 2,
+				to,
+				signature: signature.0,
+				new_multisig_params: None
+			}),
+			TransactionValidityError::Invalid(InvalidTransaction::Custom(E_DUPLICATIVE_SUBMISSION))
+		);
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_some());
 		assert_eq!(<frame_system::Account<Runtime>>::get(to).consumers, 0);

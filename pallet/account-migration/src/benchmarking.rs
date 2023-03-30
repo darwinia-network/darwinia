@@ -160,12 +160,15 @@ mod benchmarks {
 		_(RawOrigin::None, from, to, [0; 64]);
 	}
 
-	fn other_multisig_members(count: u32) -> Vec<AccountId32> {
-		(0..count).map(|i| [i as u8; 32].into()).collect()
+	fn other_multisig_members<const N: usize, A>(count: u32) -> Vec<A>
+	where
+		A: From<[u8; N]>,
+	{
+		(0..count).map(|i| [i as u8; N].into()).collect()
 	}
 
 	#[benchmark]
-	fn migrate_multisig(x: Linear<0, 99>, y: Linear<0, 99>) {
+	fn migrate_multisig(x: Linear<0, 99>, y: Linear<0, 99>, z: Linear<0, 99>) {
 		let from = AccountId32::from([0; 32]);
 		// Worst-case scenario:
 		//
@@ -173,11 +176,20 @@ mod benchmarks {
 		let other_members = other_multisig_members(x);
 		let (_, multisig) = multisig_of(from.clone(), other_members.clone(), y as _);
 		let to = [0; 20].into();
+		let new_multisig_params = if z == 0 {
+			None
+		} else {
+			Some(MultisigParams {
+				address: [0; 20].into(),
+				members: other_multisig_members(z),
+				threshold: Default::default(),
+			})
+		};
 
 		preset_data::<T>(&multisig);
 
 		#[extrinsic_call]
-		_(RawOrigin::None, from, other_members, y as _, to, [0; 64]);
+		_(RawOrigin::None, from, other_members, y as _, to, [0; 64], new_multisig_params);
 	}
 
 	#[benchmark]
@@ -197,6 +209,7 @@ mod benchmarks {
 			100,
 			to,
 			[0; 64],
+			None,
 		)
 		.unwrap();
 
