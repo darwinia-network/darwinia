@@ -564,4 +564,14 @@ describe("Test Bls precompile", () => {
 
 		expect(receipt1.blockNumber).not.equal(receipt2.blockNumber);
 	}).timeout(60000);
+
+	it("Return OutOfGas if insufficient gas", async () => {
+		bls.options.gas = 100_000;
+		await bls.methods
+			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
+			.call()
+			.catch((err) => {
+				expect(err.message).to.equal(`Returned error: out of gas`);
+			});
+	}).timeout(60000);
 });

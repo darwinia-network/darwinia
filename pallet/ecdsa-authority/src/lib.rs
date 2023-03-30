@@ -171,18 +171,6 @@ pub mod pallet {
 	pub type MessageRootToSign<T: Config> =
 		StorageValue<_, MessageRootSigned<T::MaxAuthorities>, OptionQuery>;
 
-	// TODO: Remove these in the next version.
-	/// The incoming message root waiting for signing.
-	#[pallet::storage]
-	#[pallet::getter(fn new_message_root_to_sign)]
-	pub type NewMessageRootToSign<T: Config> = StorageValue<_, (), OptionQuery>;
-	/// Record the previous message root.
-	///
-	/// Use for checking if the message root getter get the same message root as the previous one.
-	/// And if this is empty, it means the message root is require to be relayed.
-	#[pallet::storage]
-	pub type PreviousMessageRoot<T: Config> = StorageValue<_, (), OptionQuery>;
-
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T>
 	where
@@ -223,15 +211,6 @@ pub mod pallet {
 			} else {
 				Default::default()
 			}
-		}
-
-		fn on_runtime_upgrade() -> Weight {
-			frame_support::log::info!("Hook from darwinia_ecdsa_authority::on_runtime_upgrade");
-
-			<NewMessageRootToSign<T>>::kill();
-			<PreviousMessageRoot<T>>::kill();
-
-			T::DbWeight::get().reads_writes(0, 2)
 		}
 	}
 	#[pallet::call]
