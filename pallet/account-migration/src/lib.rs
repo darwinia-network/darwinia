@@ -129,7 +129,9 @@ pub mod pallet {
 	pub enum Event {
 		/// An account has been migrated.
 		Migrated { from: AccountId32, to: AccountId20 },
-		/// An multisig account has been migrated.
+		/// A new multisig account params was noted/recorded on-chain.
+		NewMultisigParamsNoted { from: AccountId32, to: MultisigParams },
+		/// A multisig account has been migrated.
 		MultisigMigrated { from: AccountId32, detail: MultisigMigrationDetail },
 	}
 
@@ -220,7 +222,11 @@ pub mod pallet {
 		///
 		/// The `_signature` should be provided by `who`.
 		#[pallet::call_index(1)]
-		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(others.len() as _, *threshold as _))]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(
+			others.len() as _,
+			*threshold as _,
+			new_multisig_params.as_ref().map(|p| p.members.len()).unwrap_or_default() as _
+		))]
 		pub fn migrate_multisig(
 			origin: OriginFor<T>,
 			submitter: AccountId32,
@@ -228,6 +234,7 @@ pub mod pallet {
 			threshold: u16,
 			to: AccountId20,
 			_signature: Signature,
+			new_multisig_params: Option<MultisigParams>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
@@ -248,9 +255,13 @@ pub mod pallet {
 			if threshold < 2 {
 				Self::migrate_inner(&from, &to)?;
 
-				Self::deposit_event(Event::MultisigMigrated { from, detail });
+				Self::deposit_event(Event::MultisigMigrated { from: from.clone(), detail });
 			} else {
-				<Multisigs<T>>::insert(from, detail);
+				<Multisigs<T>>::insert(&from, detail);
+			}
+
+			if let Some(to) = new_multisig_params {
+				Self::deposit_event(Event::NewMultisigParamsNoted { from, to });
 			}
 
 			Ok(())
@@ -314,11 +325,12 @@ pub mod pallet {
 
 					Self::pre_check_signature(from, to, signature)
 				},
-				Call::migrate_multisig { submitter, others, threshold, to, signature } => {
+				Call::migrate_multisig { submitter, others, threshold, to, signature, .. } => {
 					let (_, multisig) =
 						multisig_of(submitter.to_owned(), others.to_owned(), *threshold);
 
 					Self::pre_check_existing(&multisig, to)?;
+					Self::pre_check_duplicative(&multisig)?;
 
 					Self::pre_check_signature(submitter, to, signature)
 				},
@@ -367,6 +379,14 @@ pub mod pallet {
 			}
 
 			Ok(())
+		}
+
+		fn pre_check_duplicative(multisig: &AccountId32) -> Result<(), TransactionValidityError> {
+			if <Multisigs<T>>::contains_key(multisig) {
+				Err(InvalidTransaction::Custom(E_DUPLICATIVE_SUBMISSION))?
+			} else {
+				Ok(())
+			}
 		}
 
 		fn pre_check_signature(
@@ -574,6 +594,14 @@ pub(crate) enum AssetStatus {
 	Live,
 	Frozen,
 	Destroying,
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+pub struct MultisigParams {
+	address: AccountId20,
+	members: Vec<AccountId20>,
+	threshold: u16,
 }
 
 #[allow(missing_docs)]
