@@ -97,6 +97,8 @@ mod proxy;
 // XCM stuff.
 mod xcmp_queue;
 
+mod ethereum_xcm;
+
 mod polkadot_xcm;
 pub use polkadot_xcm::*;
 

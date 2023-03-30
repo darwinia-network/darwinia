@@ -109,11 +109,6 @@ frame_support::parameter_types! {
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
 	pub UnitWeightCost: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 64 * 1024);
-	pub LocalAssetsPalletLocation: MultiLocation = MultiLocation::new(
-		0,
-		X1(PalletInstance(<Assets as frame_support::traits::PalletInfoAccess>::index() as u8))
-	);
-	pub SelfLocation: MultiLocation = MultiLocation::here();
 }
 
 pub struct ToTreasury;
@@ -219,23 +214,6 @@ impl pallet_xcm::Config for Runtime {
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
-}
-
-pub struct EthereumXcmEnsureProxy;
-impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
-	fn ensure_ok(_delegator: AccountId, _delegatee: AccountId) -> Result<(), &'static str> {
-		Err("Denied")
-	}
-}
-
-impl pallet_ethereum_xcm::Config for Runtime {
-	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
-	type EnsureProxy = EthereumXcmEnsureProxy;
-	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
-	type ReservedXcmpWeight =
-		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
-	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
-	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
 }
 
 pub struct DarwiniaCall;
