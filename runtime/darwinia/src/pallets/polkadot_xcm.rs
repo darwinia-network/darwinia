@@ -22,7 +22,6 @@ use crate::*;
 use xcm::latest::prelude::*;
 // substrate
 use frame_support::traits::Currency;
-use sp_runtime::traits::Zero;
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -224,18 +223,8 @@ impl cumulus_pallet_xcm::Config for Runtime {
 
 pub struct EthereumXcmEnsureProxy;
 impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
-	fn ensure_ok(delegator: AccountId, delegatee: AccountId) -> Result<(), &'static str> {
-		// The EVM implicitely contains an Any proxy, so we only allow for "Any" proxies
-		let def: pallet_proxy::ProxyDefinition<AccountId, pallets::proxy::ProxyType, BlockNumber> =
-			pallet_proxy::Pallet::<Runtime>::find_proxy(
-				&delegator,
-				&delegatee,
-				Some(pallets::proxy::ProxyType::Any),
-			)
-			.map_err(|_| "proxy error: expected `ProxyType::Any`")?;
-		// We only allow to use it for delay zero proxies, as the call will immediatly be executed
-		frame_support::ensure!(def.delay.is_zero(), "proxy delay is Non-zero`");
-		Ok(())
+	fn ensure_ok(_delegator: AccountId, _delegatee: AccountId) -> Result<(), &'static str> {
+		Err("Denied")
 	}
 }
 
@@ -263,10 +252,7 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
 		{
 			match (call.clone(), raw_origin) {
 				(
-					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. })
-					| RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact_through_proxy {
-						..
-					}),
+					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
 					frame_system::RawOrigin::Signed(account_id),
 				) => {
 					return RuntimeCall::dispatch(
