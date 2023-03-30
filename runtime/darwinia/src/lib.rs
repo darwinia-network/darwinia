@@ -155,6 +155,7 @@ frame_support::construct_runtime! {
 
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
+		EthereumXcm: pallet_ethereum_xcm = 44,
 		EVM: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
 
@@ -163,10 +164,7 @@ frame_support::construct_runtime! {
 		BridgeKusamaParachain: pallet_bridge_parachains::<Instance1> = 40,
 		BridgeCrabMessages: pallet_bridge_messages::<Instance1> = 41,
 		BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		CrabFeeMarket: pallet_fee_market::<Instance1> = 43,
-
-		// Ethereum XCM
-		EthereumXcm: pallet_ethereum_xcm = 44
+		CrabFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
