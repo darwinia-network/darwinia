@@ -68,4 +68,15 @@ describe("Test contract", () => {
 		expect(receipt.transactionHash).to.not.be.null;
 		expect(await inc.methods.number().call()).to.be.equal("0");
 	}).timeout(60000);
+
+	step("Get correct revert reason", async function () {
+		await inc.methods
+			.increment(2)
+			.call()
+			.catch((err) => {
+				expect(err.message).to.equal(
+					`Returned error: VM Exception while processing transaction: revert the value must be greater than 3`
+				);
+			});
+	}).timeout(60000);
 });
