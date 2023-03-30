@@ -19,6 +19,13 @@
 // darwinia
 use crate::*;
 
+pub struct EthereumXcmEnsureProxy;
+impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
+	fn ensure_ok(_delegator: AccountId, _delegatee: AccountId) -> Result<(), &'static str> {
+		Err("Denied")
+	}
+}
+
 impl pallet_ethereum_xcm::Config for Runtime {
 	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
 	type EnsureProxy = EthereumXcmEnsureProxy;
@@ -27,11 +34,4 @@ impl pallet_ethereum_xcm::Config for Runtime {
 		<Runtime as cumulus_pallet_parachain_system::Config>::ReservedXcmpWeight;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 	type XcmEthereumOrigin = pallet_ethereum_xcm::EnsureXcmEthereumTransaction;
-}
-
-pub struct EthereumXcmEnsureProxy;
-impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
-	fn ensure_ok(_delegator: AccountId, _delegatee: AccountId) -> Result<(), &'static str> {
-		Err("Denied")
-	}
 }
