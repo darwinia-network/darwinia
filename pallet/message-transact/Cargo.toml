@@ -46,7 +46,6 @@ sp-runtime       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
-
 std = [
 	# crates.io
 	"codec/std",
