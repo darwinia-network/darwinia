@@ -19,6 +19,9 @@
 // darwinia
 #[allow(unused_imports)]
 use crate::*;
+// substrate
+#[allow(unused_imports)]
+use frame_support::{log, migration, storage::unhashed};
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
