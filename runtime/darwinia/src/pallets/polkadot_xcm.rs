@@ -128,8 +128,8 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 
 pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 
-pub struct DarwiniaCall;
-impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
+pub struct XcmCallDispatcher;
+impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
 	fn dispatch(
 		call: RuntimeCall,
 		origin: RuntimeOrigin,
@@ -140,20 +140,18 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for DarwiniaCall {
 		if let Ok(raw_origin) =
 			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
 		{
-			match (call.clone(), raw_origin) {
-				(
-					RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
-					frame_system::RawOrigin::Signed(account_id),
-				) => {
-					return RuntimeCall::dispatch(
-						call,
-						pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
-							.into(),
-					);
-				},
-				_ => {},
+			if let (
+				RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
+				frame_system::RawOrigin::Signed(account_id),
+			) = (call.clone(), raw_origin)
+			{
+				return RuntimeCall::dispatch(
+					call,
+					pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into()).into(),
+				);
 			}
 		}
+
 		RuntimeCall::dispatch(call, origin)
 	}
 }
@@ -167,7 +165,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = DarwiniaCall;
+	type CallDispatcher = XcmCallDispatcher;
 	type FeeManager = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
