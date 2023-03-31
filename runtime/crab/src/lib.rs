@@ -19,8 +19,6 @@
 //! Crab runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// TODO: address the unused crates in test.
-#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![recursion_limit = "256"]
 
 #[cfg(feature = "std")]

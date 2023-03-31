@@ -19,8 +19,6 @@
 //! Pangoro runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// TODO: address the unused crates in test.
-#![cfg_attr(not(test), deny(unused_crate_dependencies))]
 #![recursion_limit = "256"]
 
 #[cfg(feature = "std")]
@@ -87,7 +85,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Pangoro2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_0_2_0,
+	spec_version: 6_0_2_1,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
