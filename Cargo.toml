@@ -213,16 +213,3 @@ cumulus-primitives-timestamp          = { git = "https://github.com/darwinia-net
 cumulus-primitives-utility            = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
 cumulus-relay-chain-interface         = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
 parachain-info                        = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-
-[patch."https://github.com/darwinia-network/darwinia-messages-substrate"]
-bp-darwinia-core         = { path = "/home/bear/coding/darwinia-messages-substrate/primitives/darwinia-core"}
-bp-message-dispatch      = { path = "/home/bear/coding/darwinia-messages-substrate/primitives/message-dispatch"}
-bp-messages              = { path = "/home/bear/coding/darwinia-messages-substrate/primitives/messages"}
-bp-polkadot-core         = { path = "/home/bear/coding/darwinia-messages-substrate/primitives/polkadot-core"}
-bp-runtime               = { path = "/home/bear/coding/darwinia-messages-substrate/primitives/runtime"}
-bridge-runtime-common    = { path = "/home/bear/coding/darwinia-messages-substrate/runtime-common"}
-pallet-bridge-dispatch   = { path = "/home/bear/coding/darwinia-messages-substrate/modules/dispatch"}
-pallet-bridge-grandpa    = { path = "/home/bear/coding/darwinia-messages-substrate/modules/grandpa"}
-pallet-bridge-messages   = { path = "/home/bear/coding/darwinia-messages-substrate/modules/messages"}
-pallet-bridge-parachains = { path = "/home/bear/coding/darwinia-messages-substrate/modules/parachains"}
-pallet-fee-market        = { path = "/home/bear/coding/darwinia-messages-substrate/modules/fee-market"}
