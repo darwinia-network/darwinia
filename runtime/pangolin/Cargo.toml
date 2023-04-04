@@ -131,9 +131,9 @@ darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
 sp-io      = { workspace = true, features = ["std"] }
 sp-keyring = { workspace = true }
 
-bp-darwinia-core = { workspace = true }
+bp-darwinia-core = { workspace = true, features = ["std"] }
 static_assertions = "1.1.0"
-polkadot-primitives = { workspace = true }
+polkadot-primitives = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

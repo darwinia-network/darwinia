@@ -67,15 +67,15 @@ mod messsages_tests {
 		assert_type_eq_all!(bp_polkadot_core::Header, polkadot_primitives::Header);
 	}
 
-	// #[test]
-	// fn block_execution_and_extrinsic_base_weight_should_match() {
-	// 	assert_eq!(
-	// 		weights::BlockExecutionWeight::get(),
-	// 		frame_support::weights::constants::BlockExecutionWeight::get(),
-	// 	);
-	// 	assert_eq!(
-	// 		weights::ExtrinsicBaseWeight::get(),
-	// 		frame_support::weights::constants::ExtrinsicBaseWeight::get(),
-	// 	);
-	// }
+	#[test]
+	fn block_execution_and_extrinsic_base_weight_should_match() {
+		assert_eq!(
+			weights::BlockExecutionWeight::get(),
+			frame_support::weights::constants::BlockExecutionWeight::get(),
+		);
+		assert_eq!(
+			weights::ExtrinsicBaseWeight::get(),
+			frame_support::weights::constants::ExtrinsicBaseWeight::get(),
+		);
+	}
 }

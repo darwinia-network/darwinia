@@ -32,8 +32,7 @@ pub use bridges_message::*;
 
 mod migration;
 
-mod weights;
-// pub mod weights;
+pub mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;

@@ -15,27 +15,6 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38#638ca51581b267629ee3ae9e2f0187d1fb2ee8bb"
-dependencies = [
- "blake2-rfc",
- "hex",
- "impl-serde 0.3.2",
- "libsecp256k1",
- "log",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sha3",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-runtime-interface",
- "sp-std",
-]
-
-[[package]]
-name = "account"
-version = "0.1.1"
 source = "git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38#abca6696c3731dd781d7badfb7cd797e36e39bf5"
 dependencies = [
  "blake2-rfc",
@@ -898,7 +877,7 @@ dependencies = [
 name = "bp-darwinia-core"
 version = "0.1.0"
 dependencies = [
- "account 0.1.1 (git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.38)",
+ "account",
  "bp-messages",
  "bp-runtime",
  "frame-support",
@@ -2545,7 +2524,7 @@ dependencies = [
 name = "darwinia-common-runtime"
 version = "6.0.2"
 dependencies = [
- "account 0.1.1 (git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38)",
+ "account",
  "bp-darwinia-core",
  "darwinia-precompile-assets",
  "dc-primitives",
@@ -2944,7 +2923,7 @@ dependencies = [
 name = "dc-primitives"
 version = "6.0.2"
 dependencies = [
- "account 0.1.1 (git+https://github.com/darwinia-network/moonbeam?branch=update-0.9.38)",
+ "account",
  "dc-types",
  "sp-core",
  "sp-runtime",
