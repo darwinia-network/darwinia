@@ -8272,6 +8272,7 @@ dependencies = [
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",
+ "polkadot-primitives",
  "polkadot-runtime-common",
  "precompile-utils",
  "scale-info",

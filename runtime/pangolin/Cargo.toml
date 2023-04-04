@@ -133,6 +133,7 @@ sp-keyring = { workspace = true }
 
 bp-darwinia-core = { workspace = true }
 static_assertions = "1.1.0"
+polkadot-primitives = { workspace = true }
 
 [features]
 default = ["std"]
