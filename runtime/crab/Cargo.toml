@@ -126,6 +126,10 @@ frame-try-runtime         = { workspace = true, optional = true }
 [dev-dependencies]
 # darwinia
 darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
+# darwinia-messages-substrate
+bp-darwinia-core = { workspace = true, features = ["std"] }
+# polkadot
+polkadot-primitives = { workspace = true, features = ["std"] }
 # substrate
 sp-io      = { workspace = true, features = ["std"] }
 sp-keyring = { workspace = true }
