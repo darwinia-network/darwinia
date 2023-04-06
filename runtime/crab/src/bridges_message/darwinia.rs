@@ -16,12 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 // paritytech
 use frame_support::{weights::Weight, RuntimeDebug};
-use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
@@ -58,29 +54,7 @@ pub type FromDarwiniaMessageDispatch = FromBridgedChainMessageDispatch<
 	WithDarwiniaDispatch,
 >;
 
-pub const INITIAL_DARWINIA_TO_CRAB_CONVERSION_RATE: FixedU128 =
-	FixedU128::from_inner(FixedU128::DIV);
-
-frame_support::parameter_types! {
-	/// Crab to Darwinia conversion rate. Initially we treate both tokens as equal.
-	pub storage DarwiniaToCrabConversionRate: FixedU128 = INITIAL_DARWINIA_TO_CRAB_CONVERSION_RATE;
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum CrabToDarwiniaParameter {
-	/// The conversion formula we use is: `DarwiniaTokens = CrabTokens *
-	/// conversion_rate`.
-	DarwiniaToCrabConversionRate(FixedU128),
-}
-impl Parameter for CrabToDarwiniaParameter {
-	fn save(&self) {
-		match *self {
-			CrabToDarwiniaParameter::DarwiniaToCrabConversionRate(ref conversion_rate) =>
-				DarwiniaToCrabConversionRate::set(conversion_rate),
-		}
-	}
-}
-
+/// Maximal size of message payload to Darwinia chain.
 pub type ToDarwiniaMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
 		WithDarwiniaMessageBridge,

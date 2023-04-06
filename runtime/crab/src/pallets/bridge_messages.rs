@@ -37,7 +37,6 @@ frame_support::parameter_types! {
 		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
-	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
 impl pallet_bridge_messages::Config<WithDarwiniaMessages> for Runtime {
@@ -60,7 +59,7 @@ impl pallet_bridge_messages::Config<WithDarwiniaMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithDarwiniaFeeMarket>;
 	type OutboundMessageFee = bp_crab::Balance;
 	type OutboundPayload = bm_darwinia::ToDarwiniaMessagePayload;
-	type Parameter = bm_darwinia::CrabToDarwiniaParameter;
+	type Parameter = ();
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_darwinia::Darwinia;
 	type TargetHeaderChain = bm_darwinia::Darwinia;
