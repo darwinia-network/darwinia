@@ -37,7 +37,6 @@ frame_support::parameter_types! {
 		bp_pangoro::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
 		bp_pangoro::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
-	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
 impl pallet_bridge_messages::Config<WithPangolinMessages> for Runtime {

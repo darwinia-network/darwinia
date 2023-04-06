@@ -54,6 +54,7 @@ pub type FromPangoroMessageDispatch = FromBridgedChainMessageDispatch<
 	WithPangoroDispatch,
 >;
 
+/// Maximal size of message payload to Pangoro chain.
 pub type ToPangoroMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
 		WithPangoroMessageBridge,

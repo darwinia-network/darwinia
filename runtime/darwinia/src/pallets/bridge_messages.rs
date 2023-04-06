@@ -37,7 +37,6 @@ frame_support::parameter_types! {
 		bp_darwinia::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
 		bp_darwinia::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
-	pub RootAccountForPayments: Option<AccountId> = None;
 }
 
 impl pallet_bridge_messages::Config<WithCrabMessages> for Runtime {

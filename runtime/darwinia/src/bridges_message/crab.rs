@@ -50,6 +50,7 @@ pub type FromCrabEncodedCall = FromBridgedChainEncodedMessageCall<RuntimeCall>;
 pub type FromCrabMessageDispatch =
 	FromBridgedChainMessageDispatch<WithCrabMessageBridge, Runtime, Balances, WithCrabDispatch>;
 
+/// Maximal size of message payload to Crab chain.
 pub type ToCrabMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
 		WithCrabMessageBridge,

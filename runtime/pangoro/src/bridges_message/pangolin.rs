@@ -54,6 +54,7 @@ pub type FromPangolinMessageDispatch = FromBridgedChainMessageDispatch<
 	WithPangolinDispatch,
 >;
 
+/// Maximal size of message payload to Pangolin chain.
 pub type ToPangolinMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
 		WithPangolinMessageBridge,

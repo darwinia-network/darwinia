@@ -54,6 +54,7 @@ pub type FromDarwiniaMessageDispatch = FromBridgedChainMessageDispatch<
 	WithDarwiniaDispatch,
 >;
 
+/// Maximal size of message payload to Darwinia chain.
 pub type ToDarwiniaMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
 		WithDarwiniaMessageBridge,
