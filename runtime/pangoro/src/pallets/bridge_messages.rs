@@ -60,7 +60,7 @@ impl pallet_bridge_messages::Config<WithPangolinMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithPangolinFeeMarket>;
 	type OutboundMessageFee = bp_pangoro::Balance;
 	type OutboundPayload = bm_pangolin::ToPangolinMessagePayload;
-	type Parameter = bm_pangolin::PangoroToPangolinParameter;
+	type Parameter = ();
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_pangolin::Pangolin;
 	type TargetHeaderChain = bm_pangolin::Pangolin;

@@ -16,12 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 // paritytech
 use frame_support::{weights::Weight, RuntimeDebug};
-use sp_runtime::{FixedPointNumber, FixedU128};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
@@ -57,29 +53,6 @@ pub type FromPangolinMessageDispatch = FromBridgedChainMessageDispatch<
 	Balances,
 	WithPangolinDispatch,
 >;
-
-pub const INITIAL_PANGOLIN_TO_PANGORO_CONVERSION_RATE: FixedU128 =
-	FixedU128::from_inner(FixedU128::DIV);
-
-frame_support::parameter_types! {
-	/// Pangoro to Pangolin conversion rate. Initially we treate both tokens as equal.
-	pub storage PangolinToPangoroConversionRate: FixedU128 = INITIAL_PANGOLIN_TO_PANGORO_CONVERSION_RATE;
-}
-
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum PangoroToPangolinParameter {
-	/// The conversion formula we use is: `PangolinTokens = PangoroTokens *
-	/// conversion_rate`.
-	PangolinToPangoroConversionRate(FixedU128),
-}
-impl Parameter for PangoroToPangolinParameter {
-	fn save(&self) {
-		match *self {
-			PangoroToPangolinParameter::PangolinToPangoroConversionRate(ref conversion_rate) =>
-				PangolinToPangoroConversionRate::set(conversion_rate),
-		}
-	}
-}
 
 pub type ToPangolinMaximalOutboundPayloadSize =
 	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<

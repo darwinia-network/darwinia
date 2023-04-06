@@ -60,7 +60,7 @@ impl pallet_bridge_messages::Config<WithCrabMessages> for Runtime {
 		pallet_fee_market::s2s::FeeMarketMessageAcceptedHandler<Self, WithCrabFeeMarket>;
 	type OutboundMessageFee = bp_darwinia::Balance;
 	type OutboundPayload = bm_crab::ToCrabMessagePayload;
-	type Parameter = bm_crab::DarwiniaToCrabParameter;
+	type Parameter = ();
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_crab::Crab;
 	type TargetHeaderChain = bm_crab::Crab;
