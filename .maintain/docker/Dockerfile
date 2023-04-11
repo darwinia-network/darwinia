@@ -12,7 +12,9 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /data \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME \
+    && chown -R $USERNAME:$USERNAME /data \
     && ln -s /home/$USERNAME/darwinia-nodes/darwinia /usr/local/bin/darwinia
 
 USER $USERNAME
