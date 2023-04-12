@@ -433,6 +433,10 @@ macro_rules! impl_evm_tests {
 		mod evm {
 			// darwinia
 			use super::mock::*;
+			// substrate
+			use frame_support::assert_err;
+			use sp_core::{H160, U256};
+			use sp_runtime::{DispatchError, ModuleError};
 
 			#[test]
 			fn configured_base_extrinsic_weight_is_evm_compatible() {
@@ -442,6 +446,50 @@ macro_rules! impl_evm_tests {
 					.base_extrinsic;
 
 				assert!(base_extrinsic.ref_time() <= min_ethereum_transaction_weight.ref_time());
+			}
+
+			#[test]
+			fn pallet_evm_calls_only_callable_by_root() {
+				ExtBuilder::default().build().execute_with(|| {
+					// https://github.com/darwinia-network/darwinia/blob/5923b2e0526b67fe05cee6e4e592ceca80e8f2ff/runtime/darwinia/src/pallets/evm.rs#L136
+					assert_err!(
+						EVM::call(
+							RuntimeOrigin::signed(H160::default().into()),
+							H160::default(),
+							H160::default(),
+							vec![],
+							U256::default(),
+							1000000,
+							U256::from(1_000_000),
+							None,
+							None,
+							vec![],
+						),
+						DispatchError::BadOrigin
+					);
+
+					if let Err(dispatch_info_with_err) = EVM::call(
+						RuntimeOrigin::root(),
+						H160::default(),
+						H160::default(),
+						vec![],
+						U256::default(),
+						1000000,
+						U256::from(1_000_000),
+						None,
+						None,
+						vec![],
+					) {
+						assert_eq!(
+							dispatch_info_with_err.error,
+							DispatchError::Module(ModuleError {
+								index: 37,
+								error: [4, 0, 0, 0],
+								message: Some("GasPriceTooLow")
+							})
+						);
+					}
+				});
 			}
 		}
 	};
