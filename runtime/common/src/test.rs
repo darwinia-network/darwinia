@@ -451,6 +451,7 @@ macro_rules! impl_evm_tests {
 			#[test]
 			fn pallet_evm_calls_only_callable_by_root() {
 				ExtBuilder::default().build().execute_with(|| {
+					// https://github.com/darwinia-network/darwinia/blob/5923b2e0526b67fe05cee6e4e592ceca80e8f2ff/runtime/darwinia/src/pallets/evm.rs#L136
 					assert_err!(
 						EVM::call(
 							RuntimeOrigin::signed(H160::default().into()),
