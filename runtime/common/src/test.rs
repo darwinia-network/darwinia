@@ -449,6 +449,12 @@ macro_rules! impl_evm_tests {
 			}
 
 			#[test]
+			fn evm_constants_are_correctly() {
+				assert_eq!(BlockGasLimit::get(), U256::from(20_000_000));
+				assert_eq!(WeightPerGas::get().ref_time(), 18750);
+			}
+
+			#[test]
 			fn pallet_evm_calls_only_callable_by_root() {
 				ExtBuilder::default().build().execute_with(|| {
 					// https://github.com/darwinia-network/darwinia/blob/5923b2e0526b67fe05cee6e4e592ceca80e8f2ff/runtime/darwinia/src/pallets/evm.rs#L136
