@@ -130,6 +130,7 @@ where
 pub struct TransactionPaymentGasPrice;
 impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+		// substrate
 		use frame_support::weights::WeightToFee;
 		use sp_runtime::FixedPointNumber;
 		(
