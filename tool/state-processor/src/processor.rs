@@ -393,7 +393,9 @@ impl<R> State<R> {
 	pub fn reserve(&mut self, who: &str, amount: u128) {
 		self.mutate_account(who, |a| {
 			if a.data.free < amount {
-				log::warn!("`Account({who})` can't afford the latest runtime reservation amount");
+				// No longer needed, since we release all reservations.
+				// log::warn!("`Account({who})` can't afford the latest runtime reservation
+				// amount");
 
 				a.data.reserved += a.data.free;
 				a.data.free = 0;

@@ -69,16 +69,26 @@ where
 		});
 
 		log::info!("burn parachain backing ring");
-		if let Some(a) = accounts.get_mut(&blake2_128_concat_to_string(
-			array_bytes::hex2array_unchecked::<_, 32>(S::PARACHAIN_BACKING),
-		)) {
+		let parachain_backing_ring = if let Some(a) =
+			accounts.get_mut(&blake2_128_concat_to_string(
+				array_bytes::hex2array_unchecked::<_, 32>(S::PARACHAIN_BACKING),
+			)) {
+			let r = a.ring;
+
 			ring_total_issuance -= a.ring;
 			a.ring = 0;
-		}
+
+			r
+		} else {
+			Default::default()
+		};
 
 		log::info!("`ring_total_issuance({ring_total_issuance})`");
 		log::info!("`ring_total_issuance_storage({ring_total_issuance_storage})`");
-		assert_eq!(ring_total_issuance - ring_remaining, ring_total_issuance_storage);
+		assert_eq!(
+			ring_total_issuance - ring_remaining,
+			ring_total_issuance_storage - parachain_backing_ring
+		);
 
 		log::info!("set `Balances::TotalIssuance`");
 		self.shell_state.insert_value(b"Balances", b"TotalIssuance", "", ring_total_issuance);
