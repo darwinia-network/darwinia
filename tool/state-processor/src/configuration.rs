@@ -10,6 +10,7 @@ pub trait Configurable {
 	// This account's balance will be burned.
 	// Please make sure no one transfer balance to this account.
 	const PARACHAIN_BACKING: &'static str;
+	// const TREASURY: &'static str = "0x6d6f646c64612f74727372790000000000000000";
 
 	// Make sure these account doesn't exist in the old chains.
 	// To prevent their data get overridden.
