@@ -68,14 +68,13 @@ where
 			ring_total_issuance += ring;
 		});
 
-		// Already transferred to zero address.
-		// log::info!("burn parachain backing ring");
-		// if let Some(a) = accounts.get_mut(&blake2_128_concat_to_string(
-		// 	array_bytes::hex2array_unchecked::<_, 32>(S::PARACHAIN_BACKING),
-		// )) {
-		// 	ring_total_issuance -= a.ring;
-		// 	a.ring = 0;
-		// }
+		log::info!("burn parachain backing ring");
+		if let Some(a) = accounts.get_mut(&blake2_128_concat_to_string(
+			array_bytes::hex2array_unchecked::<_, 32>(S::PARACHAIN_BACKING),
+		)) {
+			ring_total_issuance -= a.ring;
+			a.ring = 0;
+		}
 
 		log::info!("`ring_total_issuance({ring_total_issuance})`");
 		log::info!("`ring_total_issuance_storage({ring_total_issuance_storage})`");
