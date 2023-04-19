@@ -389,11 +389,10 @@ fn asset_metadata() {
 }
 
 #[test]
-#[ignore]
 fn identities_reservation() {
 	run_test(|tester| {
 		{
-			let addr = "0x74c7e5cb41599ddf5ca944f56f59627e121870156b53daa525f8f1d5ab8aed69";
+			let addr = "0x14302cfce8171d1f072ae28e2ef5e35fd5630aca76ed4c082db7a229a53d2218";
 
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_eq!(solo_account.data.reserved, 20025800);
@@ -406,23 +405,22 @@ fn identities_reservation() {
 			assert_eq!(m_account.data.reserved + m_account.data.free, total);
 		}
 
-		// // can not afford the latest reservation amount
-		// {
-		// 	// https://crab.subscan.io/account/5HTysESF4MCRABBJ2Pmm8Sx3JrJToQgz1nwiBctGXGUKZLeP
-		// 	let addr = "0xeeedb4805e781b16db87edc6fc2bb0982bf70a435e6a5acac37ede09131d8b8b";
+		// can not afford the latest reservation amount
+		{
+			let addr = "0x58359015d645b41e7ed555d4ae8b03edd271ceb4bf6f6adb8f576cf01a756766";
 
-		// 	let solo_account = tester.solo_accounts.get(addr).unwrap();
-		// 	assert_ne!(solo_account.data.free, 0);
-		// 	assert_eq!(solo_account.data.reserved, 10000000000);
-		// 	let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
+			let solo_account = tester.solo_accounts.get(addr).unwrap();
+			assert_ne!(solo_account.data.free, 0);
+			assert_eq!(solo_account.data.reserved, 20025800);
+			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
 
-		// 	// after migrate
+			// after migrate
 
-		// 	let m_account = tester.migration_accounts.get(addr).unwrap();
-		// 	assert_eq!(m_account.data.free, 0);
-		// 	assert_eq!(m_account.data.reserved, 10800000000000000000);
-		// 	assert_eq!(m_account.data.reserved + m_account.data.free, total);
-		// }
+			let m_account = tester.migration_accounts.get(addr).unwrap();
+			assert_eq!(m_account.data.free, 0);
+			assert_eq!(m_account.data.reserved, 4769125743000000000);
+			assert_eq!(m_account.data.reserved + m_account.data.free, total);
+		}
 	});
 }
 
