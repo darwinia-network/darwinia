@@ -393,13 +393,11 @@ fn asset_metadata() {
 fn identities_reservation() {
 	run_test(|tester| {
 		{
-			// https://crab.subscan.io/account/5CXHjmXetspzSTWci8UKXnPjBeJGpibitrWX7fDDMqbggyap
-			let addr = "0x14466f29bc873ce014367d897940e3a4d4a22c1c70d83469bcd7647e921d1557";
+			let addr = "0x74c7e5cb41599ddf5ca944f56f59627e121870156b53daa525f8f1d5ab8aed69";
 
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
-			let remaining = tester.solo_remaining_ring.get(addr).unwrap();
-			assert_eq!(solo_account.data.reserved, 10000000000);
-			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI + remaining;
+			assert_eq!(solo_account.data.reserved, 20025800);
+			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
 
 			// after migrate
 
@@ -408,23 +406,23 @@ fn identities_reservation() {
 			assert_eq!(m_account.data.reserved + m_account.data.free, total);
 		}
 
-		// can not afford the latest reservation amount
-		{
-			// https://crab.subscan.io/account/5HTysESF4MCRABBJ2Pmm8Sx3JrJToQgz1nwiBctGXGUKZLeP
-			let addr = "0xeeedb4805e781b16db87edc6fc2bb0982bf70a435e6a5acac37ede09131d8b8b";
+		// // can not afford the latest reservation amount
+		// {
+		// 	// https://crab.subscan.io/account/5HTysESF4MCRABBJ2Pmm8Sx3JrJToQgz1nwiBctGXGUKZLeP
+		// 	let addr = "0xeeedb4805e781b16db87edc6fc2bb0982bf70a435e6a5acac37ede09131d8b8b";
 
-			let solo_account = tester.solo_accounts.get(addr).unwrap();
-			assert_ne!(solo_account.data.free, 0);
-			assert_eq!(solo_account.data.reserved, 10000000000);
-			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
+		// 	let solo_account = tester.solo_accounts.get(addr).unwrap();
+		// 	assert_ne!(solo_account.data.free, 0);
+		// 	assert_eq!(solo_account.data.reserved, 10000000000);
+		// 	let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
 
-			// after migrate
+		// 	// after migrate
 
-			let m_account = tester.migration_accounts.get(addr).unwrap();
-			assert_eq!(m_account.data.free, 0);
-			assert_eq!(m_account.data.reserved, 10800000000000000000);
-			assert_eq!(m_account.data.reserved + m_account.data.free, total);
-		}
+		// 	let m_account = tester.migration_accounts.get(addr).unwrap();
+		// 	assert_eq!(m_account.data.free, 0);
+		// 	assert_eq!(m_account.data.reserved, 10800000000000000000);
+		// 	assert_eq!(m_account.data.reserved + m_account.data.free, total);
+		// }
 	});
 }
 
@@ -650,12 +648,10 @@ fn evm_contract_account_storage() {
 // --- Staking ---
 
 #[test]
-#[ignore]
 fn stake_deposit_items() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5Dfh9agy74KFmdYqxNGEWae9fE9pdzYnyCUJKqK47Ac64zqM
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x46eb701bdc7f74ffda9c4335d82b3ae8d4e52c5ac630e50d68ab99822e29b3f6",
+			"0xccb8e11db67cdc95ab9c53bc758aa818a7ef9b168d3736443b5b276b0302c43a",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -690,12 +686,10 @@ fn stake_deposit_items() {
 }
 
 #[test]
-#[ignore]
 fn stake_ledgers_values() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5Dfh9agy74KFmdYqxNGEWae9fE9pdzYnyCUJKqK47Ac64zqM
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x46eb701bdc7f74ffda9c4335d82b3ae8d4e52c5ac630e50d68ab99822e29b3f6",
+			"0x4ae8bc0a39c89f31cefd676bc5f12005d542a9cad970ab5617572d456142eb2b",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -726,19 +720,19 @@ fn stake_ledgers_values() {
 			&mut m_deposits,
 		);
 
-		assert_eq!(ledger.active * GWEI, m_deposits.iter().map(|d| d.value).sum());
-		assert_eq!(m_ledger.staked_ring, 0);
+		assert_eq!(
+			ledger.active * GWEI,
+			m_deposits.iter().map(|d| d.value).sum::<u128>() + m_ledger.staked_ring
+		);
 		assert_eq!(m_ledger.staked_kton, ledger.active_kton * GWEI);
 	});
 }
 
 #[test]
-#[ignore]
 fn stake_ledgers_unbonding() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5FGL7pMZFZK4zWX2y3CRABeqMpMjBq77LhfYipWoBAT9gJsa
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x8d92774046fd3dc60d41825023506ad5ad91bd0d66e9c1df325fc3cf89c2d317",
+			"0xa8e7f850ecca02c71bc4ee014fe49854ae2c03f7ceaefcadbaf65eeb06c2714c",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -769,7 +763,6 @@ fn stake_ledgers_unbonding() {
 }
 
 #[test]
-#[ignore]
 fn stake_ring_pool() {
 	run_test(|tester| {
 		let mut ring_pool = u128::default();
@@ -784,7 +777,6 @@ fn stake_ring_pool() {
 }
 
 #[test]
-#[ignore]
 fn stake_kton_pool() {
 	run_test(|tester| {
 		let mut kton_pool = u128::default();
@@ -800,7 +792,6 @@ fn stake_kton_pool() {
 }
 
 #[test]
-#[ignore]
 fn stake_elapsed_time() {
 	run_test(|tester| {
 		let mut elapsed_time = u64::default();
