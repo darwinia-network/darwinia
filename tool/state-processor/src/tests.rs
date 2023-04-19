@@ -191,10 +191,9 @@ fn solo_chain_substrate_account() {
 }
 
 #[test]
-#[ignore]
 fn solo_chain_substrate_account_with_remaining_balance() {
 	run_test(|tester| {
-		let addr = "0xfe129f56cc498227acacc4231f70ae15a2f4e8f9ccfa51f4de268c75516fa350";
+		let addr = "0x8ce13e933713de2ec1e5f6c820b822eecec96e7ae86eaa5b722e2c184d311b18";
 
 		let solo_account = tester.solo_accounts.get(addr).unwrap();
 		let remaining_balance = tester.solo_remaining_ring.get(addr).unwrap();
@@ -211,14 +210,12 @@ fn solo_chain_substrate_account_with_remaining_balance() {
 }
 
 #[test]
-#[ignore]
 fn combine_solo_and_para_account() {
 	run_test(|tester| {
-		let addr = "0x2a997fbf3423723ab73fae76567b320de6979664cb3287c0e6ce24099d0eff68";
+		let addr = "0x4094423ec0f4f93048de5a9eba62f27f0ce2d262d8be9a38b07398664eea734f";
 
 		// solo
 		let solo_account = tester.solo_accounts.get(addr).unwrap();
-		let remaining_balance = tester.solo_remaining_ring.get(addr).unwrap();
 		assert_ne!(solo_account.nonce, 0);
 		// para
 		let para_account = tester.para_accounts.get(addr).unwrap();
@@ -227,10 +224,7 @@ fn combine_solo_and_para_account() {
 		// after migrate
 
 		let m_account = tester.migration_accounts.get(addr).unwrap();
-		assert_eq!(
-			m_account.data.free,
-			solo_account.data.free * GWEI + remaining_balance + para_account.data.free
-		);
+		assert_eq!(m_account.data.free, solo_account.data.free * GWEI + para_account.data.free);
 		// reset the nonce
 		assert_eq!(m_account.nonce, 0);
 	});
