@@ -427,88 +427,48 @@ fn identities_reservation() {
 }
 
 #[test]
-#[ignore]
 fn special_accounts() {
 	run_test(|tester| {
 		{
-			// sibling:2023
-			// https://crab-parachain.subscan.io/account/5Eg2fntNdR73Xc3d8jr1954TYnT173qFgSZmDhMTn2K4ewsT
-			let addr_1 = "0x7369626ce7070000000000000000000000000000000000000000000000000000";
-			let para_account_1 = tester.para_accounts.get(addr_1).unwrap();
-			assert_ne!(para_account_1.data.free, 0);
-
-			// sibling:2000
-			// https://crab-parachain.subscan.io/account/5Eg2fntJ27qsari4FGrGhrMqKFDRnkNSR6UshkZYBGXmSuC8
-			let addr_2 = "0x7369626cd0070000000000000000000000000000000000000000000000000000";
-			let para_account_2 = tester.para_accounts.get(addr_2).unwrap();
-			assert_ne!(para_account_2.data.free, 0);
-
 			// sibling:2004
-			// https://crab-parachain.subscan.io/account/5Eg2fntJpc4bfLRHXnmBUav7hms6NC6vowNAEBDnYSfeMPCw
-			let addr_3 = "0x7369626cd4070000000000000000000000000000000000000000000000000000";
-			let para_account_3 = tester.para_accounts.get(addr_3).unwrap();
-			assert_ne!(para_account_3.data.free, 0);
+			let addr = "0x7369626cd4070000000000000000000000000000000000000000000000000000";
+			let para_account = tester.para_accounts.get(addr).unwrap();
+			assert_ne!(para_account.data.free, 0);
 
 			// after migrate
 
-			let m_account_1 = tester.shell_system_accounts.get(&addr_1[..42]).unwrap();
-			assert_eq!(m_account_1.data.free, para_account_1.data.free);
-			let m_account_2 = tester.shell_system_accounts.get(&addr_2[..42]).unwrap();
-			assert_eq!(m_account_2.data.free, para_account_2.data.free);
-			let m_account_3 = tester.shell_system_accounts.get(&addr_3[..42]).unwrap();
-			assert_eq!(m_account_3.data.free, para_account_3.data.free);
+			let m_account = tester.shell_system_accounts.get(&addr[..42]).unwrap();
+			assert_eq!(m_account.data.free, para_account.data.free);
 		}
 
 		{
-			// PalletId(da/paais)
-			let addr_1 = "0x6d6f646c64612f70616169730000000000000000000000000000000000000000";
-			let para_account_1 = tester.para_accounts.get(addr_1).unwrap();
-			assert!(para_account_1.providers > 1);
-
 			// PalletId(PotStake)
-			let addr_2 = "0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
-			let para_account_2 = tester.para_accounts.get(addr_2).unwrap();
-			assert_eq!(para_account_2.data.free, 1);
+			let addr_1 = "0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
+			let account_1 = tester.para_accounts.get(addr_1).unwrap();
+			assert_eq!(account_1.data.free, 1);
 
-			// PalletId(da/ethrl)
-			let addr_3 = "0x6d6f646c64612f657468726c0000000000000000000000000000000000000000";
-			let solo_account_3 = tester.solo_accounts.get(addr_3).unwrap();
-			assert_ne!(solo_account_3.data.free, 0);
+			// PalletId(da/socie)
+			let addr_2 = "0x6d6f646c64612f736f6369650000000000000000000000000000000000000000";
+			let account_2 = tester.solo_accounts.get(addr_2).unwrap();
+			assert_ne!(account_2.data.free, 0);
 
 			// PalletId(da/trsry)
-			let addr_4 = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
-			let solo_account_4 = tester.solo_accounts.get(addr_4).unwrap();
-			let para_account_4 = tester.para_accounts.get(addr_4).unwrap();
-			assert_ne!(solo_account_4.data.free, 0);
-			assert_ne!(para_account_4.data.free, 0);
-
-			// PalletId(py/trsry)
-			let addr_5 = "0x6d6f646c70792f74727372790000000000000000000000000000000000000000";
-			let solo_account_5 = tester.solo_accounts.get(addr_5).unwrap();
-			assert_ne!(solo_account_5.data.free, 0);
-			assert_ne!(solo_account_5.data.free_kton_or_misc_frozen, 0);
+			let addr_3 = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
+			let account_3 = tester.solo_accounts.get(addr_3).unwrap();
+			assert_ne!(account_3.data.free, 0);
 
 			// after migrate
 
 			let m_account_1 = tester.shell_system_accounts.get(&addr_1[..42]).unwrap();
-			assert_eq!(m_account_1.providers, 1);
+			assert_eq!(m_account_1.data.free, account_1.data.free);
 
 			let m_account_2 = tester.shell_system_accounts.get(&addr_2[..42]).unwrap();
-			assert_eq!(m_account_2.data.free, para_account_2.data.free);
+			assert_eq!(m_account_2.data.free, account_2.data.free * GWEI);
 
 			let m_account_3 = tester.shell_system_accounts.get(&addr_3[..42]).unwrap();
-			assert_eq!(m_account_3.data.free, solo_account_3.data.free * GWEI);
-
-			let m_account_4 = tester.shell_system_accounts.get(&addr_4[..42]).unwrap();
-			assert_eq!(
-				m_account_4.data.free,
-				solo_account_4.data.free * GWEI + para_account_4.data.free
-			);
-
-			let m_account_5 = tester.shell_system_accounts.get(&addr_5[..42]).unwrap();
-			assert_eq!(m_account_5.data.free, solo_account_5.data.free * GWEI);
-			assert_eq!(m_account_5.data.free_kton_or_misc_frozen, 0);
-			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(&addr_5[..42]);
+			assert_eq!(m_account_3.data.free, account_3.data.free * GWEI);
+			assert_eq!(m_account_3.data.free_kton_or_misc_frozen, 0);
+			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(&addr_3[..42]);
 			let mut asset_account = AssetAccount::default();
 			tester.shell_state.get_value(
 				b"Assets",
@@ -520,7 +480,7 @@ fn special_accounts() {
 				),
 				&mut asset_account,
 			);
-			assert_eq!(asset_account.balance, solo_account_5.data.free_kton_or_misc_frozen * GWEI);
+			assert_eq!(asset_account.balance, account_3.data.free_kton_or_misc_frozen * GWEI);
 		}
 
 		{
