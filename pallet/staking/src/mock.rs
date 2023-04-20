@@ -229,7 +229,7 @@ frame_support::parameter_types! {
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type Kton = KtonStaking;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MaxDeposits = <Deposit as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
 	type PayoutFraction = PayoutFraction;
