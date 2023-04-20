@@ -1036,5 +1036,5 @@ pub fn account_id<A>() -> A
 where
 	A: FullCodec,
 {
-	PalletId(*b"dar/stak").into_account_truncating()
+	PalletId(*b"da/staki").into_account_truncating()
 }
