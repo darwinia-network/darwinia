@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 	// <Processor<Crab>>::new()?.test().process().save()?;
 	// <Processor<Crab>>::new()?.process().save()?;
 	<Processor<Darwinia>>::new()?.test().process().save()?;
-	// <Processor<Darwinia>>::new()?.process().save()?;
+	<Processor<Darwinia>>::new()?.process().save()?;
 
 	Ok(())
 }
