@@ -427,46 +427,68 @@ fn identities_reservation() {
 #[test]
 fn special_accounts() {
 	run_test(|tester| {
+		// parachain accounts
 		{
-			// sibling:2004
-			let addr = "0x7369626cd4070000000000000000000000000000000000000000000000000000";
-			let para_account = tester.para_accounts.get(addr).unwrap();
-			assert_ne!(para_account.data.free, 0);
+			let addresses = [
+				// sibling:2004
+				"0x7369626cd4070000000000000000000000000000000000000000000000000000",
+				// SiblId(2006)
+				"0x7369626cd6070000000000000000000000000000000000000000000000000000",
+			];
+			addresses
+				.clone()
+				.into_iter()
+				.for_each(|a| assert_ne!(tester.para_accounts.get(a).unwrap().data.free, 0));
 
 			// after migrate
 
-			let m_account = tester.shell_system_accounts.get(&addr[..42]).unwrap();
-			assert_eq!(m_account.data.free, para_account.data.free);
+			addresses.into_iter().for_each(|a| {
+				let m_account = tester.shell_system_accounts.get(&a[..42]).unwrap();
+				assert_eq!(m_account.data.free, tester.para_accounts.get(a).unwrap().data.free);
+			})
 		}
 
+		// transfer to the treasury
 		{
+			let mut total_transfer = 0;
 			// PalletId(PotStake)
-			let addr_1 = "0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
-			let account_1 = tester.para_accounts.get(addr_1).unwrap();
-			assert_eq!(account_1.data.free, 1);
+			let parachain_address =
+				"0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
+			assert_ne!(tester.para_accounts.get(parachain_address).unwrap().data.free, 0);
+			total_transfer += tester.para_accounts.get(parachain_address).unwrap().data.free;
 
-			// PalletId(da/socie)
-			let addr_2 = "0x6d6f646c64612f736f6369650000000000000000000000000000000000000000";
-			let account_2 = tester.solo_accounts.get(addr_2).unwrap();
-			assert_ne!(account_2.data.free, 0);
+			let solo_addresses = [
+				// PalletId(da/socie)
+				"0x6d6f646c64612f736f6369650000000000000000000000000000000000000000",
+				// PalletId(da/ethfe)
+				"0x6d6f646c64612f65746866650000000000000000000000000000000000000000",
+			];
+			solo_addresses.clone().into_iter().for_each(|a| {
+				assert_ne!(tester.solo_accounts.get(a).unwrap().data.free, 0);
+				assert_eq!(tester.solo_accounts.get(a).unwrap().data.free_kton_or_misc_frozen, 0);
+			});
+			total_transfer += solo_addresses
+				.into_iter()
+				.map(|a| tester.solo_accounts.get(a).unwrap().data.free * GWEI)
+				.sum::<u128>();
+			assert_ne!(total_transfer, 0);
 
 			// PalletId(da/trsry)
-			let addr_3 = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
-			let account_3 = tester.solo_accounts.get(addr_3).unwrap();
-			assert_ne!(account_3.data.free, 0);
+			let treasury = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
+			assert_ne!(tester.solo_accounts.get(treasury).unwrap().data.free, 0);
+			assert_ne!(
+				tester.solo_accounts.get(treasury).unwrap().data.free_kton_or_misc_frozen,
+				0
+			);
 
 			// after migrate
-
-			let m_account_1 = tester.shell_system_accounts.get(&addr_1[..42]).unwrap();
-			assert_eq!(m_account_1.data.free, account_1.data.free);
-
-			let m_account_2 = tester.shell_system_accounts.get(&addr_2[..42]).unwrap();
-			assert_eq!(m_account_2.data.free, account_2.data.free * GWEI);
-
-			let m_account_3 = tester.shell_system_accounts.get(&addr_3[..42]).unwrap();
-			assert_eq!(m_account_3.data.free, account_3.data.free * GWEI);
-			assert_eq!(m_account_3.data.free_kton_or_misc_frozen, 0);
-			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(&addr_3[..42]);
+			assert_eq!(
+				tester.shell_system_accounts.get(&treasury[..42]).unwrap().data.free,
+				tester.solo_accounts.get(treasury).unwrap().data.free * GWEI + total_transfer
+			);
+			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(
+				"0x6d6f646c64612f74727372790000000000000000",
+			);
 			let mut asset_account = AssetAccount::default();
 			tester.shell_state.get_value(
 				b"Assets",
@@ -478,7 +500,41 @@ fn special_accounts() {
 				),
 				&mut asset_account,
 			);
-			assert_eq!(asset_account.balance, account_3.data.free_kton_or_misc_frozen * GWEI);
+			assert_eq!(
+				asset_account.balance,
+				tester.solo_accounts.get(treasury).unwrap().data.free_kton_or_misc_frozen * GWEI,
+			);
+		}
+
+		// untouched accounts
+		{
+			let addr = "0x6d6f646c64612f74726f626b0000000000000000000000000000000000000000";
+			assert_ne!(tester.solo_accounts.get(addr).unwrap().data.free, 0);
+			assert_ne!(tester.solo_accounts.get(addr).unwrap().data.free_kton_or_misc_frozen, 0);
+
+			// after migrate
+			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(
+				"0x6d6f646c64612f74726f626b0000000000000000",
+			);
+			assert_eq!(
+				tester.shell_system_accounts.get(&addr[..42]).unwrap().data.free,
+				tester.solo_accounts.get(addr).unwrap().data.free * GWEI
+			);
+			let mut asset_account = AssetAccount::default();
+			tester.shell_state.get_value(
+				b"Assets",
+				b"Account",
+				&format!(
+					"{}{}",
+					blake2_128_concat_to_string(KTON_ID.encode()),
+					blake2_128_concat_to_string(m_addr.encode()),
+				),
+				&mut asset_account,
+			);
+			assert_eq!(
+				asset_account.balance,
+				tester.solo_accounts.get(addr).unwrap().data.free_kton_or_misc_frozen * GWEI,
+			);
 		}
 
 		{
