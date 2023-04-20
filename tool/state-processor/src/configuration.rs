@@ -50,8 +50,6 @@ impl Configurable for Darwinia {
 	const SPECIAL_ACCOUNTS: &'static [&'static str] = &[
 		// PalletId(PotStake)
 		"0x6d6f646c506f745374616b650000000000000000",
-		// PalletId(da/staki)
-		"0x6d6f646c64612f7374616b690000000000000000",
 		// PalletId(da/socie)
 		"0x6d6f646c64612f736f6369650000000000000000",
 		// PalletId(da/ethfe)
