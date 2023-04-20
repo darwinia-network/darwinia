@@ -57,8 +57,11 @@ impl<S> Processor<S> {
 		{
 			let staking_ik = item_key(b"AccountMigration", b"Ledgers");
 			let deposit_ik = item_key(b"AccountMigration", b"Deposits");
+			let mut max_deposits = 0;
 
 			for (_, mut v) in ledgers.clone() {
+				max_deposits = max_deposits.max(v.deposit_items.len());
+
 				if v.is_empty() {
 					log::trace!(
 						"clean empty ledger for Account({})",
@@ -142,6 +145,8 @@ impl<S> Processor<S> {
 					},
 				);
 			}
+
+			log::info!("`max_deposits({max_deposits})`");
 		}
 
 		ring_pool_storage.adjust();

@@ -82,7 +82,7 @@ pub mod pallet {
 
 		/// Maximum deposit count.
 		///
-		/// In currently design, this should not be greater than `u8::MAX`.
+		/// In currently design, this should not be greater than `u16::MAX`.
 		#[pallet::constant]
 		type MaxDeposits: Get<u32>;
 	}
@@ -314,12 +314,12 @@ pub trait SimpleAsset {
 }
 
 /// Deposit identifier.
-///
-/// It's not a global-unique identifier.
-/// It's only used for distinguishing the deposits under a specific account.
-// https://github.com/polkadot-js/apps/issues/8591
-// pub type DepositId = u8;
 pub type DepositId = u16;
+// https://github.com/polkadot-js/apps/issues/8591
+// Max deposits in Darwinia is 322.
+// Max deposits in Crab is 220.
+// Maybe we will use `WeakBoundedVec` later.
+// pub type DepositId = u8;
 
 /// Deposit.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
