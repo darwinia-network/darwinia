@@ -142,10 +142,6 @@ pub fn genesis_config() -> ChainSpec {
 			"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
 		),
 		(
-			"0x4D3D5958B948e8d749FaB0236b179fCC55d9aAc0",
-			"0xf8f82edfc6899552e5a32aa381e53723d2c39594638cb8f7e2572fef74b05255",
-		),
-		(
 			"0x7aE2a0914db8bFBdad538b0eAc3Fa473A0e07843",
 			"0xdaf5c4506b82f617245150216a73c0eb4f2603848c02413db66f991846777845",
 		),
@@ -198,7 +194,7 @@ pub fn genesis_config() -> ChainSpec {
 				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 					elapsed_time: 0,
-					collator_count: 6,
+					collator_count: 5,
 					collators: collators
 						.iter()
 						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 1_000 * UNIT))
