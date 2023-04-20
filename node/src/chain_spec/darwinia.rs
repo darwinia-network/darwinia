@@ -35,7 +35,7 @@ use fp_evm::GenesisAccount;
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;
-use sp_core::H160;
+use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
