@@ -2,7 +2,10 @@
 default-target = "x86_64-unknown-linux-gnu"
 
 [build.env]
-passthrough = ["WASM_BUILD_WORKSPACE_HINT"]
+passthrough = [
+	"CARGO_INCREMENTAL",
+	"WASM_BUILD_WORKSPACE_HINT",
+]
 
 [target.x86_64-unknown-linux-gnu]
 image = "ubuntu:20.04"
