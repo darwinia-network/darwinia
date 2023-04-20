@@ -237,6 +237,11 @@ where
 			kton_details,
 		);
 
+		// Transfer RING from special accounts to the treasury account.
+		//
+		// It has been confirmed that these accounts do not have KTON.
+		S::SPECIAL_ACCOUNTS.iter().for_each(|a| self.shell_state.transfer_all(a, S::TREASURY));
+
 		self
 	}
 
