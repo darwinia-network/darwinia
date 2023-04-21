@@ -28,12 +28,12 @@ struct Tester {
 impl Tester {
 	fn new() -> Self {
 		// This test is only used to ensure the correctness of the state processor and is only
-		// applicable to Crab, Crab Parachain.
-		<Processor<Crab>>::new().unwrap().test().process().save().unwrap();
+		// applicable to Darwinia and Darwinia Parachain.
+		<Processor<Darwinia>>::new().unwrap().test().process().save().unwrap();
 
-		let mut solo_state = State::from_file("data/crab-solo.json").unwrap();
-		let mut para_state = State::from_file("data/crab-para.json").unwrap();
-		let mut shell_state = State::from_file("data/crab-processed-test.json").unwrap();
+		let mut solo_state = State::from_file("data/darwinia-solo.json").unwrap();
+		let mut para_state = State::from_file("data/darwinia-para.json").unwrap();
+		let mut shell_state = State::from_file("data/darwinia-processed-test.json").unwrap();
 
 		// solo chain
 		let mut solo_accounts = <Map<AccountInfo>>::default();
@@ -121,7 +121,7 @@ fn solo_chain_substrate_account() {
 	run_test(|tester| {
 		// the purest account
 		{
-			let addr = "0xcefc2d75238c60c67b4b02867f061a7c36f9b37f625854d4e5daac2cbf58f42d";
+			let addr = "0xd2dc09d90d2a1e7646329884cee5703043767871ea89e2359f6fd39bf5494a19";
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_eq!(solo_account.nonce, 0);
 			assert_eq!(solo_account.consumers, 0);
@@ -143,7 +143,7 @@ fn solo_chain_substrate_account() {
 
 		// account nonce reset
 		{
-			let addr = "0x82e54b190ef8dbe7864b7cdca3de6b3e8b5483e0a3e9419ba2a41a16531aaa0b";
+			let addr = "0x102bc3bb854dc095a1bf40ddd648ea1d83c85acda3f6a18c3ed7be8fef6a6723";
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_ne!(solo_account.nonce, 0);
 
@@ -155,7 +155,7 @@ fn solo_chain_substrate_account() {
 
 		// account staking without deposit items
 		{
-			let addr = "0x82e54b190ef8dbe7864b7cdca3de6b3e8b5483e0a3e9419ba2a41a16531aaa0b";
+			let addr = "0x081c979d890c0daa388213017b68c0fc3d6cdf6e4c0e0d0fc44ff4035066ad1e";
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_eq!(solo_account.consumers, 2);
 
@@ -167,7 +167,7 @@ fn solo_chain_substrate_account() {
 
 		// account has kton with ledger and deposit items
 		{
-			let addr = "0xf4171e1b64c96cc17f601f28d002cb5fcd27eab8b6585e296f4652be5bf05550";
+			let addr = "0x4ac14ac9a7e0b57b77833bdc1e22a21aee532b121c5a3d767f3717e8d175ca51";
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_eq!(solo_account.consumers, 3);
 			assert_eq!(solo_account.providers, 1);
@@ -181,11 +181,6 @@ fn solo_chain_substrate_account() {
 			assert_eq!(m_account.consumers, 2);
 			assert_eq!(m_account.providers, 1);
 			assert_eq!(m_account.sufficients, 1);
-			// 30_976_316_716_418_406_400 is the unclaimed staking reward
-			assert_eq!(
-				m_account.data.free,
-				solo_account.data.free * GWEI + 30_976_316_716_418_406_400
-			);
 			assert_eq!(m_account.data.free_kton_or_misc_frozen, 0);
 			//  the kton part moved to the asset pallet
 			let asset_account = tester.migration_kton_accounts.get(addr).unwrap();
@@ -198,7 +193,7 @@ fn solo_chain_substrate_account() {
 #[test]
 fn solo_chain_substrate_account_with_remaining_balance() {
 	run_test(|tester| {
-		let addr = "0xfe129f56cc498227acacc4231f70ae15a2f4e8f9ccfa51f4de268c75516fa350";
+		let addr = "0x8ce13e933713de2ec1e5f6c820b822eecec96e7ae86eaa5b722e2c184d311b18";
 
 		let solo_account = tester.solo_accounts.get(addr).unwrap();
 		let remaining_balance = tester.solo_remaining_ring.get(addr).unwrap();
@@ -217,11 +212,10 @@ fn solo_chain_substrate_account_with_remaining_balance() {
 #[test]
 fn combine_solo_and_para_account() {
 	run_test(|tester| {
-		let addr = "0x2a997fbf3423723ab73fae76567b320de6979664cb3287c0e6ce24099d0eff68";
+		let addr = "0x4094423ec0f4f93048de5a9eba62f27f0ce2d262d8be9a38b07398664eea734f";
 
 		// solo
 		let solo_account = tester.solo_accounts.get(addr).unwrap();
-		let remaining_balance = tester.solo_remaining_ring.get(addr).unwrap();
 		assert_ne!(solo_account.nonce, 0);
 		// para
 		let para_account = tester.para_accounts.get(addr).unwrap();
@@ -230,10 +224,7 @@ fn combine_solo_and_para_account() {
 		// after migrate
 
 		let m_account = tester.migration_accounts.get(addr).unwrap();
-		assert_eq!(
-			m_account.data.free,
-			solo_account.data.free * GWEI + remaining_balance + para_account.data.free
-		);
+		assert_eq!(m_account.data.free, solo_account.data.free * GWEI + para_account.data.free);
 		// reset the nonce
 		assert_eq!(m_account.nonce, 0);
 	});
@@ -242,18 +233,20 @@ fn combine_solo_and_para_account() {
 #[test]
 fn evm_account() {
 	run_test(|tester| {
-		let addr = "0x64766d3a00000000000000aef71b03670f1c52cd3d8efc2ced3ad68ad91e33f3";
+		let addr = "0x64766d3a00000000000000e12b73f325a264525258fb2ba877ff0a0dd21a62e9";
 
 		let solo_account = tester.solo_accounts.get(addr).unwrap();
 		assert_ne!(solo_account.nonce, 0);
 		assert_ne!(solo_account.data.free, 0);
 		assert_ne!(solo_account.data.free_kton_or_misc_frozen, 0);
+		let solo_remaining_ring = tester.solo_remaining_ring.get(addr).unwrap();
 		let solo_remaining_kton = tester.solo_remaining_kton.get(addr).unwrap();
+		assert_ne!(*solo_remaining_ring, 0);
 		assert_ne!(*solo_remaining_kton, 0);
 
 		// after migrate
 
-		let m_addr = "0xaef71b03670f1c52cd3d8efc2ced3ad68ad91e33";
+		let m_addr = "0xe12b73f325a264525258fb2ba877ff0a0dd21a62";
 		let m_account = tester.shell_system_accounts.get(m_addr).unwrap();
 		// nonce doesn't changed.
 		assert_eq!(m_account.nonce, solo_account.nonce);
@@ -261,13 +254,13 @@ fn evm_account() {
 		assert_eq!(m_account.providers, solo_account.providers);
 		// sufficient increase by one because of the asset pallet.
 		assert_eq!(m_account.sufficients, solo_account.sufficients + 1);
-		assert_eq!(m_account.data.free, solo_account.data.free * GWEI);
+		assert_eq!(m_account.data.free, solo_account.data.free * GWEI + solo_remaining_ring);
 		assert_eq!(m_account.data.free_kton_or_misc_frozen, 0);
 
 		//  the kton part moved to the asset pallet
 		let mut asset_account = AssetAccount::default();
 		let m_addr =
-			array_bytes::hex2array_unchecked::<_, 20>("0xaef71b03670f1c52cd3d8efc2ced3ad68ad91e33");
+			array_bytes::hex2array_unchecked::<_, 20>("0xe12b73f325a264525258fb2ba877ff0a0dd21a62");
 		tester.shell_state.get_value(
 			b"Assets",
 			b"Account",
@@ -283,21 +276,6 @@ fn evm_account() {
 			solo_account.data.free_kton_or_misc_frozen * GWEI + solo_remaining_kton
 		);
 		assert!(!asset_account.is_frozen);
-	});
-}
-
-#[test]
-fn evm_contract_account_sufficients() {
-	run_test(|tester| {
-		let addr = "0x64766d3a000000000000000050f880c35c31c13bfd9cbb7d28aafaeca3abd2d0";
-		let solo_account = tester.solo_accounts.get(addr).unwrap();
-		assert_eq!(solo_account.sufficients, 0);
-
-		// after migrate
-
-		let m_addr = "0x0050f880c35c31c13bfd9cbb7d28aafaeca3abd2";
-		let m_account = tester.shell_system_accounts.get(m_addr).unwrap();
-		assert_eq!(m_account.sufficients, 1);
 	});
 }
 
@@ -323,7 +301,7 @@ fn ring_total_issuance() {
 		);
 
 		assert_eq!(
-			migrated_total_issuance - 161_223_151_710_u128,
+			migrated_total_issuance + 199_999_999_999_824_000_000_000u128,
 			solo_issuance * GWEI + para_issuance
 		);
 	});
@@ -353,7 +331,7 @@ fn kton_total_issuance() {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			&mut details,
 		);
-		assert_eq!(details.supply - 5_999_999_999_u128, total_issuance * GWEI);
+		assert_eq!(details.supply - 7_000_000_000u128, total_issuance * GWEI);
 	});
 }
 
@@ -405,8 +383,8 @@ fn asset_metadata() {
 			&mut metadata,
 		);
 		assert_eq!(metadata.decimals, 18);
-		assert_eq!(metadata.symbol, b"CKTON".to_vec());
-		assert_eq!(metadata.name, b"Crab Commitment Token".to_vec());
+		assert_eq!(metadata.symbol, b"KTON".to_vec());
+		assert_eq!(metadata.name, b"Darwinia Commitment Token".to_vec());
 	});
 }
 
@@ -414,13 +392,11 @@ fn asset_metadata() {
 fn identities_reservation() {
 	run_test(|tester| {
 		{
-			// https://crab.subscan.io/account/5CXHjmXetspzSTWci8UKXnPjBeJGpibitrWX7fDDMqbggyap
-			let addr = "0x14466f29bc873ce014367d897940e3a4d4a22c1c70d83469bcd7647e921d1557";
+			let addr = "0x14302cfce8171d1f072ae28e2ef5e35fd5630aca76ed4c082db7a229a53d2218";
 
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
-			let remaining = tester.solo_remaining_ring.get(addr).unwrap();
-			assert_eq!(solo_account.data.reserved, 10000000000);
-			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI + remaining;
+			assert_eq!(solo_account.data.reserved, 20025800);
+			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
 
 			// after migrate
 
@@ -431,19 +407,18 @@ fn identities_reservation() {
 
 		// can not afford the latest reservation amount
 		{
-			// https://crab.subscan.io/account/5HTysESF4MCRABBJ2Pmm8Sx3JrJToQgz1nwiBctGXGUKZLeP
-			let addr = "0xeeedb4805e781b16db87edc6fc2bb0982bf70a435e6a5acac37ede09131d8b8b";
+			let addr = "0x58359015d645b41e7ed555d4ae8b03edd271ceb4bf6f6adb8f576cf01a756766";
 
 			let solo_account = tester.solo_accounts.get(addr).unwrap();
 			assert_ne!(solo_account.data.free, 0);
-			assert_eq!(solo_account.data.reserved, 10000000000);
+			assert_eq!(solo_account.data.reserved, 20025800);
 			let total = (solo_account.data.free + solo_account.data.reserved) * GWEI;
 
 			// after migrate
 
 			let m_account = tester.migration_accounts.get(addr).unwrap();
 			assert_eq!(m_account.data.free, 0);
-			assert_eq!(m_account.data.reserved, 10800000000000000000);
+			assert_eq!(m_account.data.reserved, 4769125743000000000);
 			assert_eq!(m_account.data.reserved + m_account.data.free, total);
 		}
 	});
@@ -452,85 +427,68 @@ fn identities_reservation() {
 #[test]
 fn special_accounts() {
 	run_test(|tester| {
+		// parachain accounts
 		{
-			// sibling:2023
-			// https://crab-parachain.subscan.io/account/5Eg2fntNdR73Xc3d8jr1954TYnT173qFgSZmDhMTn2K4ewsT
-			let addr_1 = "0x7369626ce7070000000000000000000000000000000000000000000000000000";
-			let para_account_1 = tester.para_accounts.get(addr_1).unwrap();
-			assert_ne!(para_account_1.data.free, 0);
-
-			// sibling:2000
-			// https://crab-parachain.subscan.io/account/5Eg2fntJ27qsari4FGrGhrMqKFDRnkNSR6UshkZYBGXmSuC8
-			let addr_2 = "0x7369626cd0070000000000000000000000000000000000000000000000000000";
-			let para_account_2 = tester.para_accounts.get(addr_2).unwrap();
-			assert_ne!(para_account_2.data.free, 0);
-
-			// sibling:2004
-			// https://crab-parachain.subscan.io/account/5Eg2fntJpc4bfLRHXnmBUav7hms6NC6vowNAEBDnYSfeMPCw
-			let addr_3 = "0x7369626cd4070000000000000000000000000000000000000000000000000000";
-			let para_account_3 = tester.para_accounts.get(addr_3).unwrap();
-			assert_ne!(para_account_3.data.free, 0);
+			let addresses = [
+				// sibling:2004
+				"0x7369626cd4070000000000000000000000000000000000000000000000000000",
+				// SiblId(2006)
+				"0x7369626cd6070000000000000000000000000000000000000000000000000000",
+			];
+			addresses
+				.clone()
+				.into_iter()
+				.for_each(|a| assert_ne!(tester.para_accounts.get(a).unwrap().data.free, 0));
 
 			// after migrate
 
-			let m_account_1 = tester.shell_system_accounts.get(&addr_1[..42]).unwrap();
-			assert_eq!(m_account_1.data.free, para_account_1.data.free);
-			let m_account_2 = tester.shell_system_accounts.get(&addr_2[..42]).unwrap();
-			assert_eq!(m_account_2.data.free, para_account_2.data.free);
-			let m_account_3 = tester.shell_system_accounts.get(&addr_3[..42]).unwrap();
-			assert_eq!(m_account_3.data.free, para_account_3.data.free);
+			addresses.into_iter().for_each(|a| {
+				let m_account = tester.shell_system_accounts.get(&a[..42]).unwrap();
+				assert_eq!(m_account.data.free, tester.para_accounts.get(a).unwrap().data.free);
+			})
 		}
 
+		// transfer to the treasury
 		{
-			// PalletId(da/paais)
-			let addr_1 = "0x6d6f646c64612f70616169730000000000000000000000000000000000000000";
-			let para_account_1 = tester.para_accounts.get(addr_1).unwrap();
-			assert!(para_account_1.providers > 1);
-
+			let mut total_transfer = 0;
 			// PalletId(PotStake)
-			let addr_2 = "0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
-			let para_account_2 = tester.para_accounts.get(addr_2).unwrap();
-			assert_eq!(para_account_2.data.free, 1);
+			let parachain_address =
+				"0x6d6f646c506f745374616b650000000000000000000000000000000000000000";
+			assert_ne!(tester.para_accounts.get(parachain_address).unwrap().data.free, 0);
+			total_transfer += tester.para_accounts.get(parachain_address).unwrap().data.free;
 
-			// PalletId(da/ethrl)
-			let addr_3 = "0x6d6f646c64612f657468726c0000000000000000000000000000000000000000";
-			let solo_account_3 = tester.solo_accounts.get(addr_3).unwrap();
-			assert_ne!(solo_account_3.data.free, 0);
+			let solo_addresses = [
+				// PalletId(da/socie)
+				"0x6d6f646c64612f736f6369650000000000000000000000000000000000000000",
+				// PalletId(da/ethfe)
+				"0x6d6f646c64612f65746866650000000000000000000000000000000000000000",
+			];
+			solo_addresses.clone().into_iter().for_each(|a| {
+				assert_ne!(tester.solo_accounts.get(a).unwrap().data.free, 0);
+				assert_eq!(tester.solo_accounts.get(a).unwrap().data.free_kton_or_misc_frozen, 0);
+			});
+			total_transfer += solo_addresses
+				.into_iter()
+				.map(|a| tester.solo_accounts.get(a).unwrap().data.free * GWEI)
+				.sum::<u128>();
+			assert_ne!(total_transfer, 0);
 
 			// PalletId(da/trsry)
-			let addr_4 = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
-			let solo_account_4 = tester.solo_accounts.get(addr_4).unwrap();
-			let para_account_4 = tester.para_accounts.get(addr_4).unwrap();
-			assert_ne!(solo_account_4.data.free, 0);
-			assert_ne!(para_account_4.data.free, 0);
-
-			// PalletId(py/trsry)
-			let addr_5 = "0x6d6f646c70792f74727372790000000000000000000000000000000000000000";
-			let solo_account_5 = tester.solo_accounts.get(addr_5).unwrap();
-			assert_ne!(solo_account_5.data.free, 0);
-			assert_ne!(solo_account_5.data.free_kton_or_misc_frozen, 0);
-
-			// after migrate
-
-			let m_account_1 = tester.shell_system_accounts.get(&addr_1[..42]).unwrap();
-			assert_eq!(m_account_1.providers, 1);
-
-			let m_account_2 = tester.shell_system_accounts.get(&addr_2[..42]).unwrap();
-			assert_eq!(m_account_2.data.free, para_account_2.data.free);
-
-			let m_account_3 = tester.shell_system_accounts.get(&addr_3[..42]).unwrap();
-			assert_eq!(m_account_3.data.free, solo_account_3.data.free * GWEI);
-
-			let m_account_4 = tester.shell_system_accounts.get(&addr_4[..42]).unwrap();
-			assert_eq!(
-				m_account_4.data.free,
-				solo_account_4.data.free * GWEI + para_account_4.data.free
+			let treasury = "0x6d6f646c64612f74727372790000000000000000000000000000000000000000";
+			assert_ne!(tester.solo_accounts.get(treasury).unwrap().data.free, 0);
+			assert_ne!(
+				tester.solo_accounts.get(treasury).unwrap().data.free_kton_or_misc_frozen,
+				0
 			);
 
-			let m_account_5 = tester.shell_system_accounts.get(&addr_5[..42]).unwrap();
-			assert_eq!(m_account_5.data.free, solo_account_5.data.free * GWEI);
-			assert_eq!(m_account_5.data.free_kton_or_misc_frozen, 0);
-			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(&addr_5[..42]);
+			// after migrate
+			assert_eq!(
+				tester.shell_system_accounts.get(&treasury[..42]).unwrap().data.free,
+				tester.solo_accounts.get(treasury).unwrap().data.free * GWEI + total_transfer
+			);
+			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(
+				"0x6d6f646c64612f74727372790000000000000000",
+			);
 			let mut asset_account = AssetAccount::default();
 			tester.shell_state.get_value(
 				b"Assets",
@@ -542,7 +500,41 @@ fn special_accounts() {
 				),
 				&mut asset_account,
 			);
-			assert_eq!(asset_account.balance, solo_account_5.data.free_kton_or_misc_frozen * GWEI);
+			assert_eq!(
+				asset_account.balance,
+				tester.solo_accounts.get(treasury).unwrap().data.free_kton_or_misc_frozen * GWEI,
+			);
+		}
+
+		// untouched accounts
+		{
+			let addr = "0x6d6f646c64612f74726f626b0000000000000000000000000000000000000000";
+			assert_ne!(tester.solo_accounts.get(addr).unwrap().data.free, 0);
+			assert_ne!(tester.solo_accounts.get(addr).unwrap().data.free_kton_or_misc_frozen, 0);
+
+			// after migrate
+			let m_addr = array_bytes::hex2array_unchecked::<_, 20>(
+				"0x6d6f646c64612f74726f626b0000000000000000",
+			);
+			assert_eq!(
+				tester.shell_system_accounts.get(&addr[..42]).unwrap().data.free,
+				tester.solo_accounts.get(addr).unwrap().data.free * GWEI
+			);
+			let mut asset_account = AssetAccount::default();
+			tester.shell_state.get_value(
+				b"Assets",
+				b"Account",
+				&format!(
+					"{}{}",
+					blake2_128_concat_to_string(KTON_ID.encode()),
+					blake2_128_concat_to_string(m_addr.encode()),
+				),
+				&mut asset_account,
+			);
+			assert_eq!(
+				asset_account.balance,
+				tester.solo_accounts.get(addr).unwrap().data.free_kton_or_misc_frozen * GWEI,
+			);
 		}
 
 		{
@@ -581,6 +573,9 @@ fn evm_code() {
 
 		{
 			tester.solo_evm_codes.iter().for_each(|(k, v)| {
+				let m_account = tester.shell_system_accounts.get(&get_last_40(k, "")).unwrap();
+				assert!(m_account.sufficients >= 1);
+
 				assert_eq!(tester.shell_evm_codes.get(k), Some(v));
 			});
 		}
@@ -602,9 +597,8 @@ fn precompiles_code() {
 #[test]
 fn evm_contract_account_storage() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/0x0050f880c35c31c13bfd9cbb7d28aafaeca3abd2
 		let addr =
-			array_bytes::hex2array_unchecked::<_, 20>("0x0050f880c35c31c13bfd9cbb7d28aafaeca3abd2");
+			array_bytes::hex2array_unchecked::<_, 20>("0xe9ba88c4268ef1a3a9d191b1c04a24b330d6a14c");
 
 		let storage_item_len = tester.solo_state.map.iter().fold(0u32, |sum, (k, _)| {
 			if k.starts_with(&full_key(
@@ -620,7 +614,7 @@ fn evm_contract_account_storage() {
 		assert_ne!(storage_item_len, 0);
 
 		let storage_key = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x2093bcd1218dc1519493ee712ddfee3f4ced2d74096331d39d4247147baf17e2",
+			"0x353c4d4e53bf08283e017ba6ca7c6acc28e061e7a3d747831c02ac0fed3d0c4b",
 		);
 		let mut storage_value = H256::zero();
 		tester.solo_state.get_value(
@@ -670,9 +664,8 @@ fn evm_contract_account_storage() {
 #[test]
 fn stake_deposit_items() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5Dfh9agy74KFmdYqxNGEWae9fE9pdzYnyCUJKqK47Ac64zqM
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x46eb701bdc7f74ffda9c4335d82b3ae8d4e52c5ac630e50d68ab99822e29b3f6",
+			"0xccb8e11db67cdc95ab9c53bc758aa818a7ef9b168d3736443b5b276b0302c43a",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -709,9 +702,8 @@ fn stake_deposit_items() {
 #[test]
 fn stake_ledgers_values() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5Dfh9agy74KFmdYqxNGEWae9fE9pdzYnyCUJKqK47Ac64zqM
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x46eb701bdc7f74ffda9c4335d82b3ae8d4e52c5ac630e50d68ab99822e29b3f6",
+			"0x4ae8bc0a39c89f31cefd676bc5f12005d542a9cad970ab5617572d456142eb2b",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -742,8 +734,10 @@ fn stake_ledgers_values() {
 			&mut m_deposits,
 		);
 
-		assert_eq!(ledger.active * GWEI, m_deposits.iter().map(|d| d.value).sum());
-		assert_eq!(m_ledger.staked_ring, 0);
+		assert_eq!(
+			ledger.active * GWEI,
+			m_deposits.iter().map(|d| d.value).sum::<u128>() + m_ledger.staked_ring
+		);
 		assert_eq!(m_ledger.staked_kton, ledger.active_kton * GWEI);
 	});
 }
@@ -751,9 +745,8 @@ fn stake_ledgers_values() {
 #[test]
 fn stake_ledgers_unbonding() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5FGL7pMZFZK4zWX2y3CRABeqMpMjBq77LhfYipWoBAT9gJsa
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x8d92774046fd3dc60d41825023506ad5ad91bd0d66e9c1df325fc3cf89c2d317",
+			"0xa8e7f850ecca02c71bc4ee014fe49854ae2c03f7ceaefcadbaf65eeb06c2714c",
 		);
 
 		let mut ledger = StakingLedger::default();
@@ -832,9 +825,8 @@ fn stake_elapsed_time() {
 #[test]
 fn vesting_info() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5EFJA3K6uRfkLxqjhHyrkJoQjfhmhyVyVEG5XtPPBM6yCCxM
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x608c62275934b164899ca6270c4b89c5d84b2390d4316fda980cd1b3acfad525",
+			"0x8db5c746c14cf05e182b10576a9ee765265366c3b7fd53c41d43640c97f4a8b8",
 		);
 
 		let mut vesting_info = VestingInfo::default();
@@ -845,7 +837,6 @@ fn vesting_info() {
 			&mut vesting_info,
 		);
 		assert_ne!(vesting_info.locked, 0);
-		assert_ne!(vesting_info.starting_block, 0);
 
 		// after migrate
 
@@ -857,7 +848,8 @@ fn vesting_info() {
 			&mut m_vesting_info,
 		);
 
-		assert_eq!(m_vesting_info, Default::default());
+		assert_eq!(m_vesting_info.per_block, vesting_info.per_block * GWEI * 2);
+		assert_eq!(m_vesting_info.starting_block, 0);
 	});
 }
 
@@ -866,9 +858,8 @@ fn vesting_info() {
 #[test]
 fn identities() {
 	run_test(|tester| {
-		// https://crab.subscan.io/account/5Ct3V8cbYgJiUoQQhYMyyWChL5YwJnZ4yak7MKegNkpPptAP
 		let addr = array_bytes::hex2array_unchecked::<_, 32>(
-			"0x241a9c2aa8a83e1c5f02fc2b7112bd1873249a8e55a4f919c7d42cf1164be35c",
+			"0x3608994a4fbadfffefec0951086189e0c1f9679b07c1053b6550380a66f6aa3d",
 		);
 
 		let mut registration = Registration::default();
@@ -879,9 +870,9 @@ fn identities() {
 			&mut registration,
 		);
 		assert_ne!(registration.deposit, 0);
-		assert_eq!(registration.info.display, Data::Raw(b"iskulbukolPH".to_vec()));
-		assert_eq!(registration.info.email, Data::Raw(b"pjdamondamon@gmail.com".to_vec()));
-		assert_eq!(registration.info.twitter, Data::Raw(b"@DPedroJuan".to_vec()));
+		assert_eq!(registration.info.display, Data::Raw(b"MANTRADAO".to_vec()));
+		assert_eq!(registration.info.email, Data::Raw(b"contact@mantradao.com".to_vec()));
+		assert_eq!(registration.info.twitter, Data::Raw(b"MANTRADAO".to_vec()));
 
 		// after migrate
 
