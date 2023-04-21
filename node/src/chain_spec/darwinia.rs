@@ -263,8 +263,7 @@ pub fn genesis_config() -> ChainSpec {
 			}
 		},
 		vec![
-			// TODO
-			// "/dns/g1.darwinia2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap()
+			"/dns/g1.darwinia2.darwinia.network/tcp/30333/ws/p2p/12D3KooWM2eentxcGA3W5tnw5TYwJUjRktSMSTu4zkzEaD8k6mr4".parse().unwrap()
 		],
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		Some(PROTOCOL_ID),
