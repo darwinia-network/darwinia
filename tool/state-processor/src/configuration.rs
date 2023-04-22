@@ -10,6 +10,8 @@ pub trait Configurable {
 	// This account's balance will be burned.
 	// Please make sure no one transfer balance to this account.
 	const PARACHAIN_BACKING: &'static str;
+	const TREASURY: &'static str = "0x6d6f646c64612f74727372790000000000000000";
+	const SPECIAL_ACCOUNTS: &'static [&'static str] = &[];
 
 	// Make sure these account doesn't exist in the old chains.
 	// To prevent their data get overridden.
@@ -45,6 +47,14 @@ impl Configurable for Darwinia {
 	const NAME: &'static str = "darwinia";
 	const PARACHAIN_BACKING: &'static str =
 		"0x1000000000000000000000000000000000000000000000000000000000000000";
+	const SPECIAL_ACCOUNTS: &'static [&'static str] = &[
+		// PalletId(PotStake)
+		"0x6d6f646c506f745374616b650000000000000000",
+		// PalletId(da/socie)
+		"0x6d6f646c64612f736f6369650000000000000000",
+		// PalletId(da/ethfe)
+		"0x6d6f646c64612f65746866650000000000000000",
+	];
 
 	fn basic_deposit() -> Balance {
 		100 * UNIT + 258 * 100 * MICROUNIT

@@ -57,8 +57,11 @@ impl<S> Processor<S> {
 		{
 			let staking_ik = item_key(b"AccountMigration", b"Ledgers");
 			let deposit_ik = item_key(b"AccountMigration", b"Deposits");
+			let mut max_deposits = 0;
 
 			for (_, mut v) in ledgers.clone() {
+				max_deposits = max_deposits.max(v.deposit_items.len());
+
 				if v.is_empty() {
 					log::trace!(
 						"clean empty ledger for Account({})",
@@ -142,6 +145,8 @@ impl<S> Processor<S> {
 					},
 				);
 			}
+
+			log::info!("`max_deposits({max_deposits})`");
 		}
 
 		ring_pool_storage.adjust();
@@ -194,6 +199,20 @@ impl<S> Processor<S> {
 		//
 		// Truncate to 20 bytes.
 		let staking_pallet_account = "0x6d6f646c64612f7374616b690000000000000000";
+		let staking_pallet_account_balance = {
+			let mut a = AccountInfo::default();
+
+			self.shell_state.get_value(
+				b"System",
+				b"Account",
+				&blake2_128_concat_to_string(array_bytes::hex2array_unchecked::<_, 20>(
+					staking_pallet_account,
+				)),
+				&mut a,
+			);
+
+			a.data.free
+		};
 		let mut payout = Balance::default();
 
 		for (era_raw, stakers) in eras_stakers_clipped {
@@ -267,26 +286,13 @@ impl<S> Processor<S> {
 			}
 		}
 
-		{
-			let mut a = AccountInfo::default();
+		log::info!("`staking_pallet_account_balance({staking_pallet_account_balance})`");
+		log::info!("                        `payout({payout})`");
 
-			self.shell_state.get_value(
-				b"System",
-				b"Account",
-				&blake2_128_concat_to_string(array_bytes::hex2array_unchecked::<_, 20>(
-					staking_pallet_account,
-				)),
-				&mut a,
-			);
-
-			log::info!("`staking_pallet_account_balance({})`", a.data.free);
-			log::info!("                        `payout({payout})`");
-
-			assert!(
-				a.data.free > payout,
-				"`staking_pallet_account_balance` must be greater then `payout`"
-			);
-		}
+		assert!(
+			staking_pallet_account_balance > payout,
+			"`staking_pallet_account_balance` must be greater then `payout`"
+		);
 
 		self
 	}

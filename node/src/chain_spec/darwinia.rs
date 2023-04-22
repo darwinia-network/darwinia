@@ -35,7 +35,7 @@ use fp_evm::GenesisAccount;
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;
-use sp_core::H160;
+use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
@@ -136,7 +136,29 @@ pub fn local_config() -> ChainSpec {
 }
 
 pub fn genesis_config() -> ChainSpec {
-	// TODO: update this before the final release
+	let collators = [
+		(
+			"0x196f03b77a1acd0db080006b04d2f3a991ebbe68",
+			"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
+		),
+		(
+			"0x7aE2a0914db8bFBdad538b0eAc3Fa473A0e07843",
+			"0xdaf5c4506b82f617245150216a73c0eb4f2603848c02413db66f991846777845",
+		),
+		(
+			"0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85",
+			"0xdcff1219121687391353b17e798b10e87f6e578b2a01e032375f2f14a0712b57",
+		),
+		(
+			"0x0a1287977578F888bdc1c7627781AF1cc000e6ab",
+			"0x28a8af71db9703e6b8960d1dcb742deca13c574f81f781be5dbde84ec8d66d45",
+		),
+		(
+			"0xEB7e82A67CDFA3E742e0f3315Fd4EEd7B05730CC",
+			"0xfee21e4e4865380734882253d27612da0e4413c93e5c817e38b8c5e034de7270",
+		),
+	];
+
 	ChainSpec::from_genesis(
 		"Darwinia2",
 		"darwinia2",
@@ -150,7 +172,10 @@ pub fn genesis_config() -> ChainSpec {
 
 				// Monetary stuff.
 				balances: BalancesConfig {
-					balances: vec![(array_bytes::hex_n_into_unchecked(ALITH), 100_000_000 * UNIT)],
+					balances: collators
+						.iter()
+						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 10_000 * UNIT))
+						.collect(),
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
@@ -169,15 +194,23 @@ pub fn genesis_config() -> ChainSpec {
 				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 					elapsed_time: 0,
-					collator_count: 3,
-					collators: vec![(array_bytes::hex_n_into_unchecked(ALITH), UNIT)],
+					collator_count: 5,
+					collators: collators
+						.iter()
+						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 1_000 * UNIT))
+						.collect(),
 				},
 				session: SessionConfig {
-					keys: vec![(
-						array_bytes::hex_n_into_unchecked(ALITH),
-						array_bytes::hex_n_into_unchecked(ALITH),
-						session_keys(get_collator_keys_from_seed("Alice")),
-					)],
+					keys: collators
+						.iter()
+						.map(|(k, a)| {
+							(
+								array_bytes::hex_n_into_unchecked(k),
+								array_bytes::hex_n_into_unchecked(k),
+								session_keys(array_bytes::hex2array_unchecked(a).unchecked_into()),
+							)
+						})
+						.collect(),
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
@@ -193,7 +226,11 @@ pub fn genesis_config() -> ChainSpec {
 				treasury: Default::default(),
 
 				// Utility stuff.
-				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
+				sudo: SudoConfig {
+					key: Some(array_bytes::hex_n_into_unchecked(
+						"0x3e25247cff03f99a7d83b28f207112234fee73a6",
+					)),
+				},
 
 				// XCM stuff.
 				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
@@ -225,7 +262,9 @@ pub fn genesis_config() -> ChainSpec {
 				crab_fee_market: Default::default(),
 			}
 		},
-		Vec::new(),
+		vec![
+			"/dns/g1.darwinia2.darwinia.network/tcp/30333/ws/p2p/12D3KooWM2eentxcGA3W5tnw5TYwJUjRktSMSTu4zkzEaD8k6mr4".parse().unwrap()
+		],
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		Some(PROTOCOL_ID),
 		None,

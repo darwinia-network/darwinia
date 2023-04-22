@@ -390,10 +390,19 @@ impl<R> State<R> {
 		}
 	}
 
+	pub fn transfer_all(&mut self, from: &str, to: &str) {
+		let mut all = Default::default();
+
+		self.mutate_account(from, |a| mem::swap(&mut a.data.free, &mut all));
+		self.mutate_account(to, |a| a.data.free += all);
+	}
+
 	pub fn reserve(&mut self, who: &str, amount: u128) {
 		self.mutate_account(who, |a| {
 			if a.data.free < amount {
-				log::warn!("`Account({who})` can't afford the latest runtime reservation amount");
+				// No longer needed, since we release all reservations.
+				// log::warn!("`Account({who})` can't afford the latest runtime reservation
+				// amount");
 
 				a.data.reserved += a.data.free;
 				a.data.free = 0;

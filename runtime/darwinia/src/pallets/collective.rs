@@ -32,7 +32,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
+	type MotionDuration = ConstU32<{ 7 * DAYS }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
@@ -42,7 +42,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
+	type MotionDuration = ConstU32<{ 7 * DAYS }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
