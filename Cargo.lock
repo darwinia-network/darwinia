@@ -2462,6 +2462,7 @@ dependencies = [
  "futures 0.3.27",
  "jsonrpsee",
  "log",
+ "moonbeam-primitives-ext",
  "moonbeam-rpc-debug",
  "moonbeam-rpc-primitives-debug",
  "moonbeam-rpc-trace",
