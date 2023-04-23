@@ -106,11 +106,11 @@ pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier
 # moonbeam
 account                        = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 pallet-ethereum-xcm            = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
-moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
-moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
-moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 moonbeam-evm-tracer            = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 moonbeam-primitives-ext        = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
 precompile-utils               = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 xcm-primitives                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 

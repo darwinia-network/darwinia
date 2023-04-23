@@ -39,7 +39,7 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::frontier_service;
+use crate::{cli::TracingApi, frontier_service};
 use dc_primitives::*;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
@@ -397,17 +397,15 @@ where
 				block_data_cache: block_data_cache.clone(),
 			};
 
-			if eth_rpc_config
-				.ethapi_debug_targets
-				.iter()
-				.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
+			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
 				crate::rpc::create_full(
 					deps,
 					subscription_task_executor,
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
-						trace_filter_max_count: eth_rpc_config.ethapi_trace_max_count,
+						trace_filter_max_count: eth_rpc_config.tracing_max_count,
 					}),
 				)
 				.map_err(Into::into)
@@ -878,17 +876,15 @@ where
 				block_data_cache: block_data_cache.clone(),
 			};
 
-			if eth_rpc_config
-				.ethapi_debug_targets
-				.iter()
-				.any(|cmd| matches!(cmd.as_str(), "debug" | "trace"))
+			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
 				crate::rpc::create_full(
 					deps,
 					subscription_task_executor,
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
-						trace_filter_max_count: eth_rpc_config.ethapi_trace_max_count,
+						trace_filter_max_count: eth_rpc_config.tracing_max_count,
 					}),
 				)
 				.map_err(Into::into)
