@@ -378,6 +378,7 @@ where
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
+		let eth_rpc_config = eth_rpc_config.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -839,7 +840,7 @@ where
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier_service::spawn_frontier_tasks(
 		&task_manager,
-		client,
+		client.clone(),
 		backend.clone(),
 		frontier_backend.clone(),
 		filter_pool.clone(),
@@ -858,6 +859,7 @@ where
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
+		let eth_rpc_config = eth_rpc_config.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {

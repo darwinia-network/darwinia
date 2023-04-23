@@ -176,7 +176,7 @@ where
 		)
 		.into_rpc(),
 	)?;
-	module.merge(Web3::new(client).into_rpc())?;
+	module.merge(Web3::new(client.clone()).into_rpc())?;
 
 	if let Some(tracing_config) = maybe_tracing_config {
 		if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {

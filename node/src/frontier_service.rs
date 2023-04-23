@@ -64,7 +64,9 @@ where
 		+ sc_client_api::BlockOf
 		+ sc_client_api::BlockchainEvents<B>
 		+ sc_client_api::backend::StorageProvider<B, BE>,
-	C::Api: sp_block_builder::BlockBuilder<B> + fp_rpc::EthereumRuntimeRPCApi<B>,
+	C::Api: sp_block_builder::BlockBuilder<B>
+		+ fp_rpc::EthereumRuntimeRPCApi<B>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 	B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 	B::Header: sp_api::HeaderT<Number = BlockNumber>,
 	BE: 'static + sc_client_api::backend::Backend<B>,
@@ -77,9 +79,9 @@ where
 			client.import_notification_stream(),
 			Duration::new(6, 0),
 			client.clone(),
-			backend,
+			backend.clone(),
 			overrides.clone(),
-			frontier_backend,
+			frontier_backend.clone(),
 			3,
 			0,
 			SyncStrategy::Parachain,
@@ -102,7 +104,12 @@ where
 	task_manager.spawn_essential_handle().spawn(
 		"frontier-fee-history",
 		Some("frontier"),
-		EthTask::fee_history_task(client, overrides, fee_history_cache, fee_history_cache_limit),
+		EthTask::fee_history_task(
+			client.clone(),
+			overrides.clone(),
+			fee_history_cache,
+			fee_history_cache_limit,
+		),
 	);
 
 	let permit_pool = Arc::new(Semaphore::new(eth_rpc_config.ethapi_max_permits as usize));

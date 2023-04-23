@@ -172,7 +172,7 @@ pub struct EthArgs {
 impl EthArgs {
 	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
 		EthRpcConfig {
-			ethapi_debug_targets: self.ethapi_debug_targets,
+			ethapi_debug_targets: self.ethapi_debug_targets.clone(),
 			ethapi_max_permits: self.ethapi_max_permits,
 			ethapi_trace_max_count: self.ethapi_max_permits,
 			ethapi_trace_cache_duration: self.ethapi_trace_cache_duration,
