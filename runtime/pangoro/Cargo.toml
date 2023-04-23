@@ -73,6 +73,8 @@ pallet-evm-precompile-simple   = { workspace = true }
 pallet-ethereum-xcm = { workspace = true }
 precompile-utils    = { workspace = true }
 xcm-primitives      = { workspace = true }
+moonbeam-rpc-primitives-debug = { workspace = true }
+moonbeam-evm-tracer = { workspace = true, optional = true }
 
 # polkadot
 pallet-xcm              = { workspace = true }
@@ -198,6 +200,8 @@ std = [
 	"pallet-ethereum-xcm/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
+	"moonbeam-rpc-primitives-debug/std",
+	"moonbeam-evm-tracer/std",
 
 	# polkadot
 	"pallet-xcm/std",
@@ -249,6 +253,10 @@ std = [
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime?/std",
 
+]
+
+evm-tracing = [
+	"moonbeam-evm-tracer"
 ]
 
 fast-runtime = []

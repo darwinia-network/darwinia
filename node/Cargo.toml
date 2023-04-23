@@ -52,7 +52,7 @@ fp-rpc          = { workspace = true, features = ["std"] }
 # moonbeam
 moonbeam-rpc-debug = { workspace = true }
 moonbeam-rpc-trace = { workspace = true }
-moonbeam-rpc-primitives-debug = { workspace = true }
+moonbeam-rpc-primitives-debug = { workspace = true, features = ["std"] }
 
 # polkadot
 polkadot-cli        = { workspace = true }
