@@ -70,10 +70,11 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-precompile-utils = { workspace = true }
-xcm-primitives   = { workspace = true }
+moonbeam-evm-tracer           = { workspace = true, optional = true }
 moonbeam-rpc-primitives-debug = { workspace = true }
-moonbeam-evm-tracer = { workspace = true, optional = true }
+pallet-ethereum-xcm           = { workspace = true }
+precompile-utils              = { workspace = true }
+xcm-primitives                = { workspace = true }
 
 # polkadot
 pallet-xcm              = { workspace = true }
@@ -196,10 +197,10 @@ std = [
 	"pallet-evm-precompile-simple/std",
 
 	# moonbeam
+	"moonbeam-evm-tracer/std",
+	"moonbeam-rpc-primitives-debug/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
-	"moonbeam-rpc-primitives-debug/std",
-	"moonbeam-evm-tracer/std",
 
 	# polkadot
 	"pallet-xcm/std",
@@ -253,6 +254,7 @@ std = [
 ]
 
 evm-tracing = [
+	# moonbeam
 	"moonbeam-evm-tracer"
 ]
 

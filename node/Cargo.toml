@@ -112,6 +112,14 @@ fast-runtime = [
 	"pangoro-runtime?/fast-runtime",
 ]
 
+evm-tracing = [
+	# darwinia
+	"crab-runtime?/evm-tracing",
+	"darwinia-runtime?/evm-tracing",
+	"pangolin-runtime?/evm-tracing",
+	"pangoro-runtime?/evm-tracing",
+]
+
 runtime-benchmarks = [
 	# darwinia
 	"crab-runtime?/runtime-benchmarks",
