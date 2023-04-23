@@ -34,8 +34,8 @@ use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 use sc_cli::SubstrateCli;
 use sc_service::{BasePath, Configuration, TaskManager};
 
-use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
-use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
+use moonbeam_rpc_debug::{Debug, DebugHandler, DebugRequester};
+use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask, Trace};
 use tokio::sync::Semaphore;
 
 #[derive(Clone)]
@@ -54,7 +54,9 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 	overrides: Arc<OverrideHandle<B>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
-) where
+	eth_rpc_config: crate::cli::EthRpcConfig,
+) -> RpcRequesters
+where
 	C: 'static
 		+ sp_api::ProvideRuntimeApi<B>
 		+ sp_blockchain::HeaderBackend<B>
@@ -102,6 +104,58 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 		Some("frontier"),
 		EthTask::fee_history_task(client, overrides, fee_history_cache, fee_history_cache_limit),
 	);
+
+	let permit_pool = Arc::new(Semaphore::new(eth_rpc_config.ethapi_max_permits as usize));
+	let (trace_filter_task, trace_filter_requester) =
+		if eth_rpc_config.ethapi_debug_targets.iter().any(|cmd| matches!(cmd.as_str(), "trace")) {
+			let (trace_filter_task, trace_filter_requester) = CacheTask::create(
+				Arc::clone(&client),
+				Arc::clone(&backend),
+				Duration::from_secs(eth_rpc_config.ethapi_trace_cache_duration),
+				Arc::clone(&permit_pool),
+				Arc::clone(&overrides),
+			);
+			(Some(trace_filter_task), Some(trace_filter_requester))
+		} else {
+			(None, None)
+		};
+
+	let (debug_task, debug_requester) =
+		if eth_rpc_config.ethapi_debug_targets.iter().any(|cmd| matches!(cmd.as_str(), "debug")) {
+			let (debug_task, debug_requester) = DebugHandler::task(
+				Arc::clone(&client),
+				Arc::clone(&backend),
+				Arc::clone(&frontier_backend),
+				Arc::clone(&permit_pool),
+				Arc::clone(&overrides),
+				eth_rpc_config.tracing_raw_max_memory_usage,
+			);
+			(Some(debug_task), Some(debug_requester))
+		} else {
+			(None, None)
+		};
+
+	// `trace_filter` cache task. Essential.
+	// Proxies rpc requests to it's handler.
+	if let Some(trace_filter_task) = trace_filter_task {
+		task_manager.spawn_essential_handle().spawn(
+			"trace-filter-cache",
+			Some("eth-tracing"),
+			trace_filter_task,
+		);
+	}
+
+	// `debug` task if enabled. Essential.
+	// Proxies rpc requests to it's handler.
+	if let Some(debug_task) = debug_task {
+		task_manager.spawn_essential_handle().spawn(
+			"ethapi-debug",
+			Some("eth-tracing"),
+			debug_task,
+		);
+	}
+
+	RpcRequesters { debug: debug_requester, trace: trace_filter_requester }
 }
 
 pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {

@@ -28,6 +28,9 @@ use std::sync::Arc;
 // darwinia
 use dc_primitives::*;
 
+use moonbeam_rpc_debug::{Debug, DebugServer};
+use moonbeam_rpc_trace::{Trace, TraceServer};
+
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
 

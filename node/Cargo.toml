@@ -49,6 +49,11 @@ fc-storage      = { workspace = true }
 fp-evm          = { workspace = true, features = ["std"] }
 fp-rpc          = { workspace = true, features = ["std"] }
 
+# moonbeam
+moonbeam-rpc-debug = { workspace = true }
+moonbeam-rpc-trace = { workspace = true }
+moonbeam-rpc-primitives-debug = { workspace = true }
+
 # polkadot
 polkadot-cli        = { workspace = true }
 polkadot-primitives = { workspace = true, features = ["std"] }

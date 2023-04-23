@@ -104,6 +104,9 @@ pallet-evm-precompile-modexp   = { git = "https://github.com/paritytech/frontier
 pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38", default-features = false }
 
 # moonbeam
+moonbeam-rpc-debug       = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+moonbeam-rpc-trace       = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+
 account             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 pallet-ethereum-xcm = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 precompile-utils    = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
