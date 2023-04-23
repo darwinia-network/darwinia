@@ -27,7 +27,7 @@ pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use std::sync::Arc;
 // darwinia
 use dc_primitives::*;
-
+// moonbeam
 use moonbeam_rpc_debug::{Debug, DebugServer};
 use moonbeam_rpc_trace::{Trace, TraceServer};
 
@@ -64,6 +64,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
 }
 
+/// EVM tracing rpc server config
 pub struct TracingConfig {
 	pub tracing_requesters: crate::frontier_service::RpcRequesters,
 	pub trace_filter_max_count: u32,

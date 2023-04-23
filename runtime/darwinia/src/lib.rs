@@ -36,7 +36,7 @@ pub mod weights;
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 // frontier
-use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
+use pallet_ethereum::Transaction as EthereumTransaction;
 // substrate
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
@@ -529,8 +529,8 @@ sp_api::impl_runtime_apis! {
 
 	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
-			extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			traced_transaction: &EthereumTransaction,
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_traced_transaction: &EthereumTransaction,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -538,12 +538,14 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use moonbeam_evm_tracer::tracer::EvmTracer;
+				use pallet_ethereum::Call::transact;
+
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
-				for ext in extrinsics.into_iter() {
+				for ext in _extrinsics.into_iter() {
 					let _ = match &ext.0.function {
 						RuntimeCall::Ethereum(transact { transaction }) => {
-							if transaction == traced_transaction {
+							if transaction == _traced_transaction {
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
 								return Ok(());
 							} else {
@@ -564,8 +566,8 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn trace_block(
-			extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			known_transactions: Vec<H256>,
+			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+			_known_transactions: Vec<H256>,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -573,14 +575,16 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use moonbeam_evm_tracer::tracer::EvmTracer;
+				use pallet_ethereum::Call::transact;
+
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
 				config.estimate = true;
 
 				// Apply all extrinsics. Ethereum extrinsics are traced.
-				for ext in extrinsics.into_iter() {
+				for ext in _extrinsics.into_iter() {
 					match &ext.0.function {
 						RuntimeCall::Ethereum(transact { transaction }) => {
-							if known_transactions.contains(&transaction.hash()) {
+							if _known_transactions.contains(&transaction.hash()) {
 								// Each known extrinsic is a new call stack.
 								EvmTracer::emit_new();
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));

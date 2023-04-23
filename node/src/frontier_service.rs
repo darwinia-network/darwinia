@@ -24,7 +24,7 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 use futures::{future, StreamExt};
 use tokio::sync::Semaphore;
 // darwinia
-use crate::cli::{Cli, TracingApi};
+use crate::cli::{Cli, EthRpcConfig, TracingApi};
 use dc_primitives::{BlockNumber, Hash, Hashing};
 // frontier
 use fc_db::Backend as FrontierBackend;
@@ -54,7 +54,7 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 	overrides: Arc<OverrideHandle<B>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
-	eth_rpc_config: crate::cli::EthRpcConfig,
+	eth_rpc_config: EthRpcConfig,
 ) -> RpcRequesters
 where
 	C: 'static
