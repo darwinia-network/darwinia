@@ -61,10 +61,16 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
 }
 
+pub struct TracingConfig {
+	pub tracing_requesters: crate::frontier_service::RpcRequesters,
+	pub trace_filter_max_count: u32,
+}
+
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
+	maybe_tracing_config: Option<TracingConfig>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
 	BE: 'static + sc_client_api::backend::Backend<Block>,
@@ -168,6 +174,19 @@ where
 		.into_rpc(),
 	)?;
 	module.merge(Web3::new(client).into_rpc())?;
+
+	if let Some(tracing_config) = maybe_tracing_config {
+		if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {
+			module.merge(
+				Trace::new(client, trace_filter_requester, tracing_config.trace_filter_max_count)
+					.into_rpc(),
+			)?;
+		}
+
+		if let Some(debug_requester) = tracing_config.tracing_requesters.debug {
+			module.merge(Debug::new(debug_requester).into_rpc())?;
+		}
+	}
 
 	Ok(module)
 }

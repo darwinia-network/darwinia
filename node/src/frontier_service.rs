@@ -34,6 +34,16 @@ use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 use sc_cli::SubstrateCli;
 use sc_service::{BasePath, Configuration, TaskManager};
 
+use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
+use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
+use tokio::sync::Semaphore;
+
+#[derive(Clone)]
+pub struct RpcRequesters {
+	pub debug: Option<DebugRequester>,
+	pub trace: Option<TraceFilterCacheRequester>,
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_frontier_tasks<B, BE, C>(
 	task_manager: &TaskManager,

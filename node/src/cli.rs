@@ -128,6 +128,30 @@ impl RelayChainCli {
 
 #[derive(Debug, clap::Parser)]
 pub struct EthArgs {
+	/// TODO: update the comment
+	#[clap(long, require_delimiter = true)]
+	pub ethapi_debug_targets: Vec<String>,
+
+	/// Number of concurrent tracing tasks. Meant to be shared by both "debug" and "trace" modules.
+	#[clap(long, default_value = "10")]
+	pub ethapi_max_permits: u32,
+
+	/// Maximum number of trace entries a single request of `trace_filter` is allowed to return.
+	/// A request asking for more or an unbounded one going over this limit will both return an
+	/// error.
+	#[clap(long, default_value = "500")]
+	pub ethapi_trace_max_count: u32,
+
+	// Duration (in seconds) after which the cache of `trace_filter` for a given block will be
+	/// discarded.
+	#[clap(long, default_value = "300")]
+	pub ethapi_trace_cache_duration: u64,
+
+	/// Size in bytes of data a raw tracing request is allowed to use.
+	/// Bound the size of memory, stack and storage data.
+	#[clap(long, default_value = "20000000")]
+	pub tracing_raw_max_memory_usage: usize,
+
 	/// Size in bytes of the LRU cache for block data.
 	#[arg(long, default_value = "300000000")]
 	pub eth_log_block_cache: usize,
@@ -147,6 +171,11 @@ pub struct EthArgs {
 impl EthArgs {
 	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
 		EthRpcConfig {
+			ethapi_debug_targets: self.ethapi_debug_targets,
+			ethapi_max_permits: self.ethapi_max_permits,
+			ethapi_trace_max_count: self.ethapi_max_permits,
+			ethapi_trace_cache_duration: self.ethapi_trace_cache_duration,
+			tracing_raw_max_memory_usage: self.tracing_raw_max_memory_usage,
 			eth_statuses_cache: self.eth_statuses_cache,
 			eth_log_block_cache: self.eth_log_block_cache,
 			max_past_logs: self.max_past_logs,
@@ -156,15 +185,13 @@ impl EthArgs {
 }
 
 pub struct EthRpcConfig {
-	/// Size in bytes of the LRU cache for block data.
+	pub ethapi_debug_targets: Vec<String>,
+	pub ethapi_max_permits: u32,
+	pub ethapi_trace_max_count: u32,
+	pub ethapi_trace_cache_duration: u64,
+	pub tracing_raw_max_memory_usage: usize,
 	pub eth_log_block_cache: usize,
-
-	/// Size in bytes of the LRU cache for transactions statuses data.
 	pub eth_statuses_cache: usize,
-
-	/// Maximum fee history cache size.
 	pub fee_history_limit: u64,
-
-	/// Maximum fee history cache size.
 	pub max_past_logs: u32,
 }

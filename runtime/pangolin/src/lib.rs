@@ -38,8 +38,7 @@ pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
 // frontier
-use pallet_ethereum::Transaction as EthereumTransaction;
-use pallet_ethereum::Call::transact;
+use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 // substrate
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
