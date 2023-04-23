@@ -108,6 +108,9 @@ account             = { git = "https://github.com/darwinia-network/moonbeam", br
 pallet-ethereum-xcm = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 precompile-utils    = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 xcm-primitives      = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-evm-tracer  = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+
 
 # polkadot
 pallet-xcm              = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38", default-features = false }
