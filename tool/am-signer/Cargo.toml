@@ -6,8 +6,10 @@ version = "0.0.0"
 
 [dependencies]
 # crates.io
-array-bytes = { version = "6.0" }
-clap        = { version = "4.1", features = ["derive"] }
+array-bytes = { version = "6.1" }
+clap        = { version = "4.2", features = ["derive"] }
+serde       = { version = "1.0", features = ["derive"] }
+serde_json  = { version = "1.0" }
 
 # substrate
 sp-core = { git = "https://github.com/paritytech/substrate" }
