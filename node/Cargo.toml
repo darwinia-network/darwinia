@@ -189,3 +189,11 @@ pangoro-native = [
 	# polkadot
 	"polkadot-cli/westend-native",
 ]
+
+pangolin-native-evm-tracing = [
+	# darwinia
+	"pangolin-runtime/evm-tracing",
+
+	# polkadot
+	"polkadot-cli/rococo-native",
+]

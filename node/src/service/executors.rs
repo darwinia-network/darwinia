@@ -58,9 +58,9 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 }
 
 /// Pangolin native executor instance.
-#[cfg(feature = "pangolin-native")]
+#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 pub struct PangolinRuntimeExecutor;
-#[cfg(feature = "pangolin-native")]
+#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;

@@ -32,11 +32,11 @@ pub use crab::{self as crab_chain_spec, ChainSpec as CrabChainSpec};
 #[cfg(not(feature = "crab-native"))]
 pub type CrabChainSpec = DummyChainSpec;
 
-#[cfg(feature = "pangolin-native")]
+#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 pub mod pangolin;
-#[cfg(feature = "pangolin-native")]
+#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 pub use pangolin::{self as pangolin_chain_spec, ChainSpec as PangolinChainSpec};
-#[cfg(not(feature = "pangolin-native"))]
+#[cfg(not(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing")))]
 pub type PangolinChainSpec = DummyChainSpec;
 
 #[cfg(feature = "pangoro-native")]
@@ -46,7 +46,11 @@ pub use pangoro::{self as pangoro_chain_spec, ChainSpec as PangoroChainSpec};
 #[cfg(not(feature = "pangoro-native"))]
 pub type PangoroChainSpec = DummyChainSpec;
 
-#[cfg(any(feature = "pangolin-native", feature = "pangoro-native"))]
+#[cfg(any(
+	feature = "pangolin-native",
+	feature = "pangolin-native-evm-tracing",
+	feature = "pangoro-native"
+))]
 mod testnet_keys {
 	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
 	pub const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
@@ -56,7 +60,11 @@ mod testnet_keys {
 	pub const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
 	pub const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
 }
-#[cfg(any(feature = "pangolin-native", feature = "pangoro-native"))]
+#[cfg(any(
+	feature = "pangolin-native",
+	feature = "pangolin-native-evm-tracing",
+	feature = "pangoro-native"
+))]
 use testnet_keys::*;
 
 // std

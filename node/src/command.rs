@@ -90,7 +90,7 @@ impl SubstrateCli for Cli {
 			return &darwinia_runtime::VERSION;
 		}
 
-		#[cfg(feature = "pangolin-native")]
+		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 		if spec.is_pangolin() {
 			return &pangolin_runtime::VERSION;
 		}
@@ -304,7 +304,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "pangolin-native")]
+			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 			if $config.chain_spec.is_pangolin() {
 				let $partials = new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 					&$config,
@@ -367,7 +367,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "pangolin-native")]
+			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
@@ -513,7 +513,7 @@ pub fn run() -> Result<()> {
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
 
-				#[cfg(feature = "pangolin-native")]
+				#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 				if config.chain_spec.is_pangolin() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
@@ -558,7 +558,7 @@ pub fn run() -> Result<()> {
 								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
 							}
 
-							#[cfg(feature = "pangolin-native")]
+							#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 							if config.chain_spec.is_pangolin() {
 								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
 							}
@@ -626,7 +626,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "pangolin-native")]
+			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>>(), task_manager))
@@ -709,7 +709,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into)
 					}
 
-					#[cfg(feature = "pangolin-native")]
+					#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 					if chain_spec.is_pangolin() {
 						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							config,
@@ -827,13 +827,13 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
 		#[cfg(feature = "darwinia-native")]
 		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
-		#[cfg(feature = "pangolin-native")]
+		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 		"pangolin" => Box::new(pangolin_chain_spec::config()),
-		#[cfg(feature = "pangolin-native")]
+		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 		"pangolin-genesis" => Box::new(pangolin_chain_spec::genesis_config()),
-		#[cfg(feature = "pangolin-native")]
+		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
-		#[cfg(feature = "pangolin-native")]
+		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
 		#[cfg(feature = "pangoro-native")]
 		"pangoro" => Box::new(pangoro_chain_spec::config()),

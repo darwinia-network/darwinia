@@ -27,7 +27,7 @@ mod instant_finalize;
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-native")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
-#[cfg(feature = "pangolin-native")]
+#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
 #[cfg(feature = "pangoro-native")]
 pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
