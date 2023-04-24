@@ -3,9 +3,10 @@ use crate::*;
 
 impl<S> Processor<S> {
 	pub fn process_parachain_system(&mut self) -> &mut Self {
-		if self.test {
-			return self;
-		}
+		// Since we removed the assertions in the `ParachainSystem` pallet.
+		// if self.test {
+		// 	return self;
+		// }
 
 		// Storage items.
 		// https://github.com/darwinia-network/darwinia-2.0/issues/275#issuecomment-1427725708

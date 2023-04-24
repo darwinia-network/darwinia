@@ -232,7 +232,13 @@ impl<S> Processor<S> {
 			};
 
 			for (stash, exposure) in stakers {
-				let controller = array_bytes::bytes2hex("0x", bonded.get(&stash).unwrap());
+				let controller = if let Some(c) = bonded.get(&stash) {
+					array_bytes::bytes2hex("0x", c)
+				} else {
+					log::warn!("ignore reward for `stash({stash})` of `era({era})`");
+
+					continue;
+				};
 				let ledger = ledgers.get(&controller).unwrap();
 
 				if ledger.claimed_rewards.contains(&era) {
