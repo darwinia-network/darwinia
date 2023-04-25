@@ -112,14 +112,6 @@ fast-runtime = [
 	"pangoro-runtime?/fast-runtime",
 ]
 
-evm-tracing = [
-	# darwinia
-	"crab-runtime?/evm-tracing",
-	"darwinia-runtime?/evm-tracing",
-	"pangolin-runtime?/evm-tracing",
-	"pangoro-runtime?/evm-tracing",
-]
-
 runtime-benchmarks = [
 	# darwinia
 	"crab-runtime?/runtime-benchmarks",
@@ -190,10 +182,38 @@ pangoro-native = [
 	"polkadot-cli/westend-native",
 ]
 
+evm-tracing = [
+	# darwinia
+	"crab-native-evm-tracing",
+	"darwinia-native-evm-tracing",
+	"pangolin-native-evm-tracing",
+	"pangoro-native-evm-tracing",
+]
+crab-native-evm-tracing = [
+	# darwinia
+	"crab-runtime/evm-tracing",
+
+	# polkadot
+	"polkadot-cli/kusama-native",
+]
+darwinia-native-evm-tracing = [
+	# darwinia
+	"darwinia-runtime/evm-tracing",
+
+	# polkadot
+	"polkadot-cli/polkadot-native",
+]
 pangolin-native-evm-tracing = [
 	# darwinia
 	"pangolin-runtime/evm-tracing",
 
 	# polkadot
 	"polkadot-cli/rococo-native",
+]
+pangoro-native-evm-tracing = [
+	# darwinia
+	"pangoro-runtime/evm-tracing",
+
+	# polkadot
+	"polkadot-cli/westend-native",
 ]

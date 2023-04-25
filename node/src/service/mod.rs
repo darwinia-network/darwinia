@@ -23,13 +23,13 @@ pub use executors::*;
 
 mod instant_finalize;
 
-#[cfg(feature = "crab-native")]
+#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
-#[cfg(feature = "darwinia-native")]
+#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
 #[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
-#[cfg(feature = "pangoro-native")]
+#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
 pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 
 // std

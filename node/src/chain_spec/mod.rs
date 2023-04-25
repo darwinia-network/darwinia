@@ -18,18 +18,18 @@
 
 #![allow(clippy::derive_partial_eq_without_eq)]
 
-#[cfg(feature = "darwinia-native")]
+#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
 pub mod darwinia;
-#[cfg(feature = "darwinia-native")]
+#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
 pub use darwinia::{self as darwinia_chain_spec, ChainSpec as DarwiniaChainSpec};
-#[cfg(not(feature = "darwinia-native"))]
+#[cfg(not(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing")))]
 pub type DarwiniaChainSpec = DummyChainSpec;
 
-#[cfg(feature = "crab-native")]
+#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 pub mod crab;
-#[cfg(feature = "crab-native")]
+#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 pub use crab::{self as crab_chain_spec, ChainSpec as CrabChainSpec};
-#[cfg(not(feature = "crab-native"))]
+#[cfg(not(any(feature = "crab-native", feature = "crab-native-evm-tracing")))]
 pub type CrabChainSpec = DummyChainSpec;
 
 #[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
@@ -39,11 +39,11 @@ pub use pangolin::{self as pangolin_chain_spec, ChainSpec as PangolinChainSpec};
 #[cfg(not(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing")))]
 pub type PangolinChainSpec = DummyChainSpec;
 
-#[cfg(feature = "pangoro-native")]
+#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
 pub mod pangoro;
-#[cfg(feature = "pangoro-native")]
+#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
 pub use pangoro::{self as pangoro_chain_spec, ChainSpec as PangoroChainSpec};
-#[cfg(not(feature = "pangoro-native"))]
+#[cfg(not(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing")))]
 pub type PangoroChainSpec = DummyChainSpec;
 
 #[cfg(any(

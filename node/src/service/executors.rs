@@ -20,9 +20,9 @@
 use sc_executor::{NativeExecutionDispatch, NativeVersion};
 
 /// Darwinia native executor instance.
-#[cfg(feature = "darwinia-native")]
+#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
 pub struct DarwiniaRuntimeExecutor;
-#[cfg(feature = "darwinia-native")]
+#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
 impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -39,9 +39,9 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 }
 
 /// Crab native executor instance.
-#[cfg(feature = "crab-native")]
+#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 pub struct CrabRuntimeExecutor;
-#[cfg(feature = "crab-native")]
+#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 impl NativeExecutionDispatch for CrabRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -77,9 +77,9 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 }
 
 /// Pangoro native executor instance.
-#[cfg(feature = "pangoro-native")]
+#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
 pub struct PangoroRuntimeExecutor;
-#[cfg(feature = "pangoro-native")]
+#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
 impl NativeExecutionDispatch for PangoroRuntimeExecutor {
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
