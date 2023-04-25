@@ -1480,7 +1480,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-darwinia-core",
@@ -1831,7 +1831,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-cli"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "clap",
  "parity-scale-codec",
@@ -1846,7 +1846,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-collator"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-client-consensus-common",
  "cumulus-client-network",
@@ -1869,7 +1869,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-consensus-aura"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-client-consensus-common",
@@ -1898,7 +1898,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-consensus-common"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-client-pov-recovery",
@@ -1921,7 +1921,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-network"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-relay-chain-interface",
@@ -1944,7 +1944,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-pov-recovery"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "cumulus-relay-chain-interface",
@@ -1967,7 +1967,7 @@ dependencies = [
 [[package]]
 name = "cumulus-client-service"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-client-cli",
  "cumulus-client-collator",
@@ -1995,7 +1995,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-aura-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2011,7 +2011,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-dmp-queue"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2028,7 +2028,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-parachain-system"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "bytes",
  "cumulus-pallet-parachain-system-proc-macro",
@@ -2037,7 +2037,6 @@ dependencies = [
  "environmental",
  "frame-support",
  "frame-system",
- "hex",
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
@@ -2058,7 +2057,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-parachain-system-proc-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2069,7 +2068,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-session-benchmarking"
 version = "3.0.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -2083,7 +2082,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-xcm"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2099,7 +2098,7 @@ dependencies = [
 [[package]]
 name = "cumulus-pallet-xcmp-queue"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -2120,7 +2119,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-core"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "parity-scale-codec",
  "polkadot-core-primitives",
@@ -2136,7 +2135,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-parachain-inherent"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2159,7 +2158,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-timestamp"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "futures 0.3.27",
@@ -2172,7 +2171,7 @@ dependencies = [
 [[package]]
 name = "cumulus-primitives-utility"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -2190,7 +2189,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-inprocess-interface"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2215,7 +2214,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-interface"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2234,7 +2233,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-minimal-node"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "array-bytes 6.0.0",
  "async-trait",
@@ -2274,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "cumulus-relay-chain-rpc-interface"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "async-trait",
  "cumulus-primitives-core",
@@ -2303,7 +2302,7 @@ dependencies = [
 [[package]]
 name = "cumulus-test-relay-sproof-builder"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "parity-scale-codec",
@@ -2434,7 +2433,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "async-trait",
@@ -2515,7 +2514,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "darwinia-deposit",
@@ -2541,7 +2540,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "account",
  "bp-darwinia-core",
@@ -2567,7 +2566,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
@@ -2588,7 +2587,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ecdsa-authority"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "dc-primitives",
@@ -2608,7 +2607,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-gadget"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "frame-support",
@@ -2626,7 +2625,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-transact"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-message-dispatch",
@@ -2655,7 +2654,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2676,7 +2675,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -2694,7 +2693,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -2714,7 +2713,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -2735,7 +2734,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2754,7 +2753,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-darwinia-core",
@@ -2862,7 +2861,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking-traits",
@@ -2887,7 +2886,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-traits"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -2935,7 +2934,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "dc-types",
  "primitive-types 0.12.1",
@@ -2945,7 +2944,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "account",
  "dc-types",
@@ -2955,7 +2954,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.0.2"
+version = "6.1.0"
 
 [[package]]
 name = "der"
@@ -8413,7 +8412,7 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-darwinia-core",
@@ -8521,7 +8520,7 @@ dependencies = [
 
 [[package]]
 name = "pangoro-runtime"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "array-bytes 6.0.0",
  "bp-darwinia-core",
@@ -8630,7 +8629,7 @@ dependencies = [
 [[package]]
 name = "parachain-info"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/cumulus?branch=remove-assertion-v0.9.38#fb975bb81664c4bf8cac02e593e377478a510f40"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.38#9b4e0247137f158d1a35118197d34adfa58858b7"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",

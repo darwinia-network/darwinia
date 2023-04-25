@@ -301,7 +301,7 @@ fn ring_total_issuance() {
 		);
 
 		assert_eq!(
-			migrated_total_issuance + 199_999_999_999_824_000_000_000u128,
+			migrated_total_issuance + 199_999_999_999_820_000_000_000u128,
 			solo_issuance * GWEI + para_issuance
 		);
 	});
@@ -331,7 +331,7 @@ fn kton_total_issuance() {
 			&blake2_128_concat_to_string(KTON_ID.encode()),
 			&mut details,
 		);
-		assert_eq!(details.supply - 7_000_000_000u128, total_issuance * GWEI);
+		assert_eq!(details.supply - 6_000_000_000u128, total_issuance * GWEI);
 	});
 }
 
