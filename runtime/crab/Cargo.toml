@@ -72,7 +72,6 @@ pallet-evm-precompile-simple   = { workspace = true }
 # moonbeam
 moonbeam-evm-tracer           = { workspace = true, optional = true }
 moonbeam-rpc-primitives-debug = { workspace = true }
-pallet-ethereum-xcm           = { workspace = true }
 precompile-utils              = { workspace = true }
 xcm-primitives                = { workspace = true }
 
