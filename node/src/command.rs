@@ -80,22 +80,22 @@ impl SubstrateCli for Cli {
 	}
 
 	fn native_runtime_version(spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+		#[cfg(feature = "crab-native")]
 		if spec.is_crab() {
 			return &crab_runtime::VERSION;
 		}
 
-		#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+		#[cfg(feature = "darwinia-native")]
 		if spec.is_darwinia() {
 			return &darwinia_runtime::VERSION;
 		}
 
-		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+		#[cfg(feature = "pangolin-native")]
 		if spec.is_pangolin() {
 			return &pangolin_runtime::VERSION;
 		}
 
-		#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+		#[cfg(feature = "pangoro-native")]
 		if spec.is_pangoro() {
 			return &pangoro_runtime::VERSION;
 		}
@@ -284,7 +284,7 @@ pub fn run() -> Result<()> {
 	/// Creates partial components for the runtimes that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
-			#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
 				let $partials = new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
 					&$config,
@@ -294,7 +294,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+			#[cfg(feature = "darwinia-native")]
 			if $config.chain_spec.is_darwinia() {
 				let $partials = new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 					&$config,
@@ -304,7 +304,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+			#[cfg(feature = "pangolin-native")]
 			if $config.chain_spec.is_pangolin() {
 				let $partials = new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 					&$config,
@@ -314,7 +314,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+			#[cfg(feature = "pangoro-native")]
 			if $config.chain_spec.is_pangoro() {
 				let $partials = new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 					&$config,
@@ -335,7 +335,7 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(chain_spec);
 
-			#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
@@ -351,7 +351,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
@@ -367,7 +367,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+			#[cfg(feature = "pangolin-native")]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
@@ -383,7 +383,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+			#[cfg(feature = "pangoro-native")]
 			if chain_spec.is_pangoro() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<
@@ -491,7 +491,7 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
-				#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+				#[cfg(feature = "crab-native")]
 				if config.chain_spec.is_crab() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
@@ -502,7 +502,7 @@ pub fn run() -> Result<()> {
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
 
-				#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+				#[cfg(feature = "darwinia-native")]
 				if config.chain_spec.is_darwinia() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
@@ -513,7 +513,7 @@ pub fn run() -> Result<()> {
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
 
-				#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+				#[cfg(feature = "pangolin-native")]
 				if config.chain_spec.is_pangolin() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
@@ -524,7 +524,7 @@ pub fn run() -> Result<()> {
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
 
-				#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+				#[cfg(feature = "pangoro-native")]
 				if config.chain_spec.is_pangoro() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
@@ -548,22 +548,22 @@ pub fn run() -> Result<()> {
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| {
-						#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+						#[cfg(feature = "crab-native")]
 							if config.chain_spec.is_crab() {
 								return cmd.run::<Block, CrabRuntimeExecutor>(config);
 							}
 
-							#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+							#[cfg(feature = "darwinia-native")]
 							if config.chain_spec.is_darwinia() {
 								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
 							}
 
-							#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+							#[cfg(feature = "pangolin-native")]
 							if config.chain_spec.is_pangolin() {
 								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
 							}
 
-							#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+							#[cfg(feature = "pangoro-native")]
 							if config.chain_spec.is_pangoro() {
 								return cmd.run::<Block, PangoroRuntimeExecutor>(config);
 							}
@@ -612,28 +612,28 @@ pub fn run() -> Result<()> {
 			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
 				.map_err(|e| format!("Error: {:?}", e))?;
 
-			#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>>(), task_manager))
 				});
 			}
 
-			#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<DarwiniaRuntimeExecutor>>(), task_manager))
 				});
 			}
 
-			#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+			#[cfg(feature = "pangolin-native")]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>>(), task_manager))
 				});
 			}
 
-			#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+			#[cfg(feature = "pangoro-native")]
 			if chain_spec.is_pangoro() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<PangoroRuntimeExecutor>>(), task_manager))
@@ -691,7 +691,7 @@ pub fn run() -> Result<()> {
 				}
 
 				if chain_spec.is_dev() {
-					#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+					#[cfg(feature = "crab-native")]
 					if chain_spec.is_crab() {
 						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 							config,
@@ -700,7 +700,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into);
 					}
 
-					#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+					#[cfg(feature = "darwinia-native")]
 					if chain_spec.is_darwinia() {
 						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 							config,
@@ -709,7 +709,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into)
 					}
 
-					#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+					#[cfg(feature = "pangolin-native")]
 					if chain_spec.is_pangolin() {
 						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							config,
@@ -718,7 +718,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into)
 					}
 
-					#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+					#[cfg(feature = "pangoro-native")]
 					if chain_spec.is_pangoro() {
 						return service::start_dev_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 							config,
@@ -732,7 +732,7 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+				#[cfg(feature = "crab-native")]
 				if chain_spec.is_crab() {
 					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 						config,
@@ -747,7 +747,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+				#[cfg(feature = "darwinia-native")]
 				if chain_spec.is_darwinia() {
 					return service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 						config,
@@ -762,7 +762,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+				#[cfg(feature = "pangolin-native")]
 				if chain_spec.is_pangolin() {
 					return service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 						config,
@@ -777,7 +777,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+				#[cfg(feature = "pangoro-native")]
 				if chain_spec.is_pangoro() {
 					return service::start_parachain_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 						config,
@@ -811,37 +811,37 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	};
 
 	Ok(match id.to_lowercase().as_str() {
-		#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+		#[cfg(feature = "crab-native")]
 		"crab" => Box::new(crab_chain_spec::config()),
-		#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+		#[cfg(feature = "crab-native")]
 		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
-		#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+		#[cfg(feature = "crab-native")]
 		"crab-dev" => Box::new(crab_chain_spec::development_config()),
-		#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+		#[cfg(feature = "crab-native")]
 		"crab-local" => Box::new(crab_chain_spec::local_config()),
-		#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+		#[cfg(feature = "darwinia-native")]
 		"darwinia" => Box::new(darwinia_chain_spec::config()),
-		#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
-		#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
-		#[cfg(any(feature = "darwinia-native", feature = "darwinia-native-evm-tracing"))]
+		#[cfg(feature = "darwinia-native")]
 		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
-		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+		#[cfg(feature = "pangolin-native")]
 		"pangolin" => Box::new(pangolin_chain_spec::config()),
-		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-genesis" => Box::new(pangolin_chain_spec::genesis_config()),
-		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
-		#[cfg(any(feature = "pangolin-native", feature = "pangolin-native-evm-tracing"))]
+		#[cfg(feature = "pangolin-native")]
 		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
-		#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+		#[cfg(feature = "pangoro-native")]
 		"pangoro" => Box::new(pangoro_chain_spec::config()),
-		#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+		#[cfg(feature = "pangoro-native")]
 		"pangoro-genesis" => Box::new(pangoro_chain_spec::genesis_config()),
-		#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+		#[cfg(feature = "pangoro-native")]
 		"pangoro-dev" => Box::new(pangoro_chain_spec::development_config()),
-		#[cfg(any(feature = "pangoro-native", feature = "pangoro-native-evm-tracing"))]
+		#[cfg(feature = "pangoro-native")]
 		"pangoro-local" => Box::new(pangoro_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);
