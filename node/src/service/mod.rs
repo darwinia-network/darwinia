@@ -100,6 +100,10 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
 	cumulus_primitives_core::CollectCollationInfo<Block>
+	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+	+ fp_rpc::EthereumRuntimeRPCApi<Block>
+	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
 	+ sp_block_builder::BlockBuilder<Block>
@@ -107,15 +111,15 @@ pub trait RuntimeApiCollection:
 	+ sp_offchain::OffchainWorkerApi<Block>
 	+ sp_session::SessionKeys<Block>
 	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-	+ fp_rpc::EthereumRuntimeRPCApi<Block>
-	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
-	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 {
 }
 impl<Api> RuntimeApiCollection for Api where
 	Api: cumulus_primitives_core::CollectCollationInfo<Block>
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>
 		+ sp_block_builder::BlockBuilder<Block>
@@ -123,10 +127,6 @@ impl<Api> RuntimeApiCollection for Api where
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 {
 }
@@ -367,7 +367,6 @@ where
 		fee_history_cache_limit,
 		eth_rpc_config.clone(),
 	);
-
 	let rpc_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
