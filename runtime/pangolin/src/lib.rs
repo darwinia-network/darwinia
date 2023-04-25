@@ -37,11 +37,7 @@ pub mod weights;
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
-// frontier
-use pallet_ethereum::Transaction as EthereumTransaction;
 // substrate
-use sp_core::H256;
-use sp_runtime::traits::Block as BlockT;
 use sp_std::prelude::*;
 
 /// Block type as expected by this runtime.
@@ -532,8 +528,8 @@ sp_api::impl_runtime_apis! {
 
 	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
-			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_traced_transaction: &EthereumTransaction,
+			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+			_traced_transaction: &pallet_ethereum::Transaction,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -569,8 +565,8 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn trace_block(
-			_extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-			_known_transactions: Vec<H256>,
+			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+			_known_transactions: Vec<sp_core::H256>,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
