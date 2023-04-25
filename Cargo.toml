@@ -193,23 +193,3 @@ substrate-frame-rpc-system                 = { git = "https://github.com/parityt
 substrate-prometheus-endpoint              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 try-runtime-cli                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
-
-[patch."https://github.com/paritytech/cumulus"]
-cumulus-client-cli                    = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-client-collator               = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-client-consensus-aura         = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-client-consensus-common       = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-client-network                = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-client-service                = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-aura-ext               = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-dmp-queue              = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-parachain-system       = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-session-benchmarking   = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-xcm                    = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-pallet-xcmp-queue             = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-primitives-core               = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-primitives-parachain-inherent = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-primitives-timestamp          = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-primitives-utility            = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-cumulus-relay-chain-interface         = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
-parachain-info                        = { git = "https://github.com/darwinia-network/cumulus", branch = "remove-assertion-v0.9.38" }
