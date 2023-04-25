@@ -46,12 +46,7 @@ pub use pangoro::{self as pangoro_chain_spec, ChainSpec as PangoroChainSpec};
 #[cfg(not(feature = "pangoro-native"))]
 pub type PangoroChainSpec = DummyChainSpec;
 
-#[cfg(any(
-	feature = "pangolin-native",
-	feature = "pangolin-native-evm-tracing",
-	feature = "pangoro-native",
-	feature = "pangoro-native-evm-tracing",
-))]
+#[cfg(any(feature = "pangolin-native", feature = "pangoro-native"))]
 mod testnet_keys {
 	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
 	pub const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
@@ -61,12 +56,7 @@ mod testnet_keys {
 	pub const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
 	pub const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
 }
-#[cfg(any(
-	feature = "pangolin-native",
-	feature = "pangolin-native-evm-tracing",
-	feature = "pangoro-native",
-	feature = "pangoro-native-evm-tracing",
-))]
+#[cfg(any(feature = "pangolin-native", feature = "pangoro-native"))]
 use testnet_keys::*;
 
 // std

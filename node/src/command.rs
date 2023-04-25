@@ -548,7 +548,7 @@ pub fn run() -> Result<()> {
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| {
-						#[cfg(feature = "crab-native")]
+							#[cfg(feature = "crab-native")]
 							if config.chain_spec.is_crab() {
 								return cmd.run::<Block, CrabRuntimeExecutor>(config);
 							}
