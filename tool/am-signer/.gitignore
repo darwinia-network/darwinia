@@ -13,3 +13,5 @@ node_modules
 
 # Test data
 test-data
+accounts
+am-signer.json
