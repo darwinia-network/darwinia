@@ -50,7 +50,7 @@ fp-evm          = { workspace = true, features = ["std"] }
 fp-rpc          = { workspace = true, features = ["std"] }
 
 # moonbeam
-moonbeam-primitives-ext       = { workspace = true, features = ["std"] }
+moonbeam-primitives-ext       = { workspace = true, features = ["std"], optional = true }
 moonbeam-rpc-debug            = { workspace = true }
 moonbeam-rpc-primitives-debug = { workspace = true, features = ["std"] }
 moonbeam-rpc-trace            = { workspace = true }
@@ -192,6 +192,7 @@ all-natives-evm-tracing = [
 crab-native-evm-tracing = [
 	# darwinia
 	"crab-runtime/evm-tracing",
+	"moonbeam-primitives-ext",
 
 	# polkadot
 	"polkadot-cli/kusama-native",
@@ -199,6 +200,7 @@ crab-native-evm-tracing = [
 darwinia-native-evm-tracing = [
 	# darwinia
 	"darwinia-runtime/evm-tracing",
+	"moonbeam-primitives-ext",
 
 	# polkadot
 	"polkadot-cli/polkadot-native",
@@ -206,6 +208,7 @@ darwinia-native-evm-tracing = [
 pangolin-native-evm-tracing = [
 	# darwinia
 	"pangolin-runtime/evm-tracing",
+	"moonbeam-primitives-ext",
 
 	# polkadot
 	"polkadot-cli/rococo-native",
@@ -213,6 +216,7 @@ pangolin-native-evm-tracing = [
 pangoro-native-evm-tracing = [
 	# darwinia
 	"pangoro-runtime/evm-tracing",
+	"moonbeam-primitives-ext",
 
 	# polkadot
 	"polkadot-cli/westend-native",

@@ -28,7 +28,7 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 	#[cfg(feature = "darwinia-native-evm-tracing")]
 	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
-	#[cfg(not(any(feature = "runtime-benchmarks", feature = "darwinia-native-evm-tracing")))]
+	#[cfg(not(any(feature = "darwinia-native-evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -49,7 +49,7 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 	#[cfg(feature = "crab-native-evm-tracing")]
 	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
-	#[cfg(not(any(feature = "runtime-benchmarks", feature = "crab-native-evm-tracing")))]
+	#[cfg(not(any(feature = "crab-native-evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -70,7 +70,7 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 	#[cfg(feature = "pangolin-native-evm-tracing")]
 	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
-	#[cfg(not(any(feature = "runtime-benchmarks", feature = "pangolin-native-evm-tracing")))]
+	#[cfg(not(any(feature = "pangolin-native-evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -91,7 +91,7 @@ impl NativeExecutionDispatch for PangoroRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 	#[cfg(feature = "pangoro-native-evm-tracing")]
 	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
-	#[cfg(not(any(feature = "runtime-benchmarks", feature = "pangoro-native-evm-tracing")))]
+	#[cfg(not(any(feature = "pangoro-native-evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
