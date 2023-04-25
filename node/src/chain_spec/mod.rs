@@ -49,7 +49,8 @@ pub type PangoroChainSpec = DummyChainSpec;
 #[cfg(any(
 	feature = "pangolin-native",
 	feature = "pangolin-native-evm-tracing",
-	feature = "pangoro-native"
+	feature = "pangoro-native",
+	feature = "pangoro-native-evm-tracing",
 ))]
 mod testnet_keys {
 	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
@@ -63,7 +64,8 @@ mod testnet_keys {
 #[cfg(any(
 	feature = "pangolin-native",
 	feature = "pangolin-native-evm-tracing",
-	feature = "pangoro-native"
+	feature = "pangoro-native",
+	feature = "pangoro-native-evm-tracing",
 ))]
 use testnet_keys::*;
 

@@ -182,7 +182,7 @@ pangoro-native = [
 	"polkadot-cli/westend-native",
 ]
 
-evm-tracing = [
+all-native-evm-tracing = [
 	# darwinia
 	"crab-native-evm-tracing",
 	"darwinia-native-evm-tracing",

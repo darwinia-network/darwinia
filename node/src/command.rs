@@ -612,7 +612,7 @@ pub fn run() -> Result<()> {
 			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
 				.map_err(|e| format!("Error: {:?}", e))?;
 
-				#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+			#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 			if chain_spec.is_crab() {
 				return runner.async_run(|_| {
 					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>>(), task_manager))
@@ -732,7 +732,7 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-						#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
+				#[cfg(any(feature = "crab-native", feature = "crab-native-evm-tracing"))]
 				if chain_spec.is_crab() {
 					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 						config,
