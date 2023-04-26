@@ -67,7 +67,7 @@ impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = frame_support::traits::Everything;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-	type BlockHashCount = ConstU32<2400>;
+	type BlockHashCount = ConstU32<256>;
 	/// The maximum length of a block (in bytes).
 	type BlockLength = RuntimeBlockLength;
 	/// The index type for blocks.
