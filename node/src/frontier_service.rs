@@ -164,6 +164,7 @@ where
 				debug_task,
 			);
 		}
+
 		RpcRequesters { debug: debug_requester, trace: trace_filter_requester }
 	} else {
 		RpcRequesters { debug: None, trace: None }

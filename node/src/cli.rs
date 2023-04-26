@@ -168,25 +168,6 @@ pub struct EthArgs {
 	#[arg(long, default_value = "2048")]
 	pub fee_history_limit: u64,
 }
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum TracingApi {
-	Debug,
-	Trace,
-}
-
-impl FromStr for TracingApi {
-	type Err = String;
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		Ok(match s {
-			"debug" => Self::Debug,
-			"trace" => Self::Trace,
-			_ => return Err(format!("`{}` is not recognized as a supported Ethereum Api", s)),
-		})
-	}
-}
-
 impl EthArgs {
 	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
 		EthRpcConfig {
@@ -200,6 +181,23 @@ impl EthArgs {
 			max_past_logs: self.max_past_logs,
 			fee_history_limit: self.fee_history_limit,
 		}
+	}
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TracingApi {
+	Debug,
+	Trace,
+}
+impl FromStr for TracingApi {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(match s {
+			"debug" => Self::Debug,
+			"trace" => Self::Trace,
+			_ => return Err(format!("`{}` is not recognized as a supported Ethereum Api", s)),
+		})
 	}
 }
 
