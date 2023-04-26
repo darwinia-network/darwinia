@@ -182,6 +182,10 @@ fn signable_message() {
 		array_bytes::bytes2hex("0x", Sign::domain_separator(43, b"Pangolin2").as_ref()),
 		"0xe97c73e46305f3bca2279f002665725cd29e465c6624e83a135f7b2e6b1a8134"
 	);
+	assert_eq!(
+		array_bytes::bytes2hex("0x", Sign::domain_separator(46, b"Darwinia2").as_ref()),
+		"0x8cd92680eceac15cdb15004d4a8e42e7ac6e0b506a9664b4aa1bbe35df32c218"
+	);
 
 	assert_eq!(
 		array_bytes::bytes2hex("0x", Sign::signable_message(46, b"Darwinia", &[0; 32])),
