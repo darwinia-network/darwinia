@@ -29,7 +29,7 @@ static_assertions::const_assert!(MAX_PENDING_PERIOD > SYNC_INTERVAL);
 
 impl darwinia_ecdsa_authority::Config for Runtime {
 	type ChainId = <Self as pallet_evm::Config>::ChainId;
-	type MaxAuthorities = ConstU32<3>;
+	type MaxAuthorities = ConstU32<7>;
 	type MaxPendingPeriod = ConstU32<MAX_PENDING_PERIOD>;
 	type MessageRoot = darwinia_message_gadget::MessageRootGetter<Self>;
 	type RuntimeEvent = RuntimeEvent;
