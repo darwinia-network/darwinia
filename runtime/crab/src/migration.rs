@@ -42,24 +42,35 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 fn migrate() -> frame_support::weights::Weight {
 	// substrate
-	use frame_support::PalletId;
-	use pallet_assets::WeightInfo as _;
-	use pallet_balances::WeightInfo as _;
-	use sp_runtime::traits::AccountIdConversion;
+	use codec::Encode;
+	use frame_support::{StorageHasher, Twox64Concat};
+	use sp_core::U256;
 
-	let staking: AccountId = PalletId(*b"da/staki").into_account_truncating();
-	let deprecate_staking: AccountId = PalletId(*b"dar/stak").into_account_truncating();
+	let number = System::block_number();
+	let old_block_hash_count = 2400;
+	let new_block_hash_count = 256;
+	let old_to_remove = number.saturating_sub(old_block_hash_count).saturating_sub(1);
+	let new_to_remove_before_finalize =
+		number.saturating_sub(new_block_hash_count).saturating_sub(1).saturating_sub(1);
 
-	let _ = Balances::transfer_all(RuntimeOrigin::signed(deprecate_staking), staking, false);
-	{
-		let a = Assets::balance(1026_u64, &deprecate_staking);
-		let _ =
-			Assets::transfer(RuntimeOrigin::signed(deprecate_staking), 1026_u64.into(), staking, a);
+	// keep genesis hash
+	if old_to_remove != 0 {
+		for to_remove in old_to_remove..=new_to_remove_before_finalize {
+			<frame_system::BlockHash<Runtime>>::remove(to_remove);
+
+			// StorageItem link: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
+			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate it manually. There https://github.com/paritytech/frontier/pull/1034 change the visibility of this item to public.
+			// But I think this is not a complicated one to review, so let's do it.
+			let _ = migration::clear_storage_prefix(
+				b"Ethereum",
+				b"BlockHash",
+				&Twox64Concat::hash(&U256::from(to_remove).encode()),
+				None,
+				None,
+			);
+		}
 	}
 
-	// frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
-	<Runtime as pallet_balances::Config>::WeightInfo::transfer_all()
-		+ <Runtime as pallet_assets::Config>::WeightInfo::transfer()
-		+ <Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 0)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
+		* 2 * (new_to_remove_before_finalize - old_to_remove + 1) as u64
 }
