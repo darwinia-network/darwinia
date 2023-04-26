@@ -24,9 +24,16 @@ use sc_executor::{NativeExecutionDispatch, NativeVersion};
 pub struct DarwiniaRuntimeExecutor;
 #[cfg(feature = "darwinia-native")]
 impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
-	#[cfg(feature = "runtime-benchmarks")]
+	#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	);
+	#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-	#[cfg(not(feature = "runtime-benchmarks"))]
+	#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+	#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -43,9 +50,16 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 pub struct CrabRuntimeExecutor;
 #[cfg(feature = "crab-native")]
 impl NativeExecutionDispatch for CrabRuntimeExecutor {
-	#[cfg(feature = "runtime-benchmarks")]
+	#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	);
+	#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-	#[cfg(not(feature = "runtime-benchmarks"))]
+	#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+	#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -62,9 +76,16 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 pub struct PangolinRuntimeExecutor;
 #[cfg(feature = "pangolin-native")]
 impl NativeExecutionDispatch for PangolinRuntimeExecutor {
-	#[cfg(feature = "runtime-benchmarks")]
+	#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	);
+	#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-	#[cfg(not(feature = "runtime-benchmarks"))]
+	#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+	#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -81,9 +102,16 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 pub struct PangoroRuntimeExecutor;
 #[cfg(feature = "pangoro-native")]
 impl NativeExecutionDispatch for PangoroRuntimeExecutor {
-	#[cfg(feature = "runtime-benchmarks")]
+	#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	);
+	#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-	#[cfg(not(feature = "runtime-benchmarks"))]
+	#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+	#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {

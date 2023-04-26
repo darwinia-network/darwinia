@@ -523,6 +523,86 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
+	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
+		fn trace_transaction(
+			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+			_traced_transaction: &pallet_ethereum::Transaction,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use moonbeam_evm_tracer::tracer::EvmTracer;
+				use pallet_ethereum::Call::transact;
+
+				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
+				// transactions that preceded the requested transaction.
+				for ext in _extrinsics.into_iter() {
+					let _ = match &ext.0.function {
+						RuntimeCall::Ethereum(transact { transaction }) => {
+							if transaction == _traced_transaction {
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+								return Ok(());
+							} else {
+								Executive::apply_extrinsic(ext)
+							}
+						}
+						_ => Executive::apply_extrinsic(ext),
+					};
+				}
+				Err(sp_runtime::DispatchError::Other(
+					"Failed to find Ethereum transaction among the extrinsics.",
+				))
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
+		}
+
+		fn trace_block(
+			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+			_known_transactions: Vec<sp_core::H256>,
+		) -> Result<
+			(),
+			sp_runtime::DispatchError,
+		> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use moonbeam_evm_tracer::tracer::EvmTracer;
+				use pallet_ethereum::Call::transact;
+
+				let mut config = <Runtime as pallet_evm::Config>::config().clone();
+				config.estimate = true;
+
+				// Apply all extrinsics. Ethereum extrinsics are traced.
+				for ext in _extrinsics.into_iter() {
+					match &ext.0.function {
+						RuntimeCall::Ethereum(transact { transaction }) => {
+							if _known_transactions.contains(&transaction.hash()) {
+								// Each known extrinsic is a new call stack.
+								EvmTracer::emit_new();
+								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
+							} else {
+								let _ = Executive::apply_extrinsic(ext);
+							}
+						}
+						_ => {
+							let _ = Executive::apply_extrinsic(ext);
+						}
+					};
+				}
+
+				Ok(())
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
+		}
+	}
+
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
 		fn benchmark_metadata(extra: bool) -> (
