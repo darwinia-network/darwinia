@@ -59,8 +59,8 @@ fn migrate() -> frame_support::weights::Weight {
 			<frame_system::BlockHash<Runtime>>::remove(to_remove);
 
 			// StorageItem link: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
-			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate it manually. There https://github.com/paritytech/frontier/pull/1034 change the visibility of this item to public.
-			// But I think this is not a complicated one to review, so let's do it.
+			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate it manually. https://github.com/paritytech/frontier/pull/1034 change the visibility of this item to public.
+			// This is not a complicated one to review, so let's do it.
 			let _ = migration::clear_storage_prefix(
 				b"Ethereum",
 				b"BlockHash",
