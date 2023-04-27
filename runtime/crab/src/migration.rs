@@ -23,6 +23,9 @@ use crate::*;
 #[allow(unused_imports)]
 use frame_support::{log, migration, storage::unhashed};
 
+const OLD_BLOCK_HASH_COUNT: BlockNumber = 2400;
+const NEW_BLOCK_HASH_COUNT: BlockNumber = 256;
+
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -32,6 +35,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+		assert_eq!(<frame_system::BlockHash<Runtime>>::iter().count() as BlockNumber, NEW_BLOCK_HASH_COUNT);
+		assert_eq!(
+			migration::storage_key_iter(b"Ethereum", b"BlockHash").count() as BlockNumber,
+			NEW_BLOCK_HASH_COUNT
+		);
+
 		Ok(())
 	}
 
@@ -41,36 +50,38 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// substrate
+	// crates.io
 	use codec::Encode;
+	// substrate
 	use frame_support::{StorageHasher, Twox64Concat};
 	use sp_core::U256;
 
-	let number = System::block_number();
-	let old_block_hash_count = 2400;
-	let new_block_hash_count = 256;
-	let old_to_remove = number.saturating_sub(old_block_hash_count).saturating_sub(1);
-	let new_to_remove_before_finalize =
-		number.saturating_sub(new_block_hash_count).saturating_sub(1).saturating_sub(1);
+	let now = System::block_number();
+	// now - 2400, now - 2399, .. now
+	// ->
+	// now - 256, now - 255, .. now
+	// =
+	// purge(now - 2400 ..= now - 255)
+	let start = now.saturating_sub(OLD_BLOCK_HASH_COUNT).saturating_sub(1);
+	let end = now.saturating_sub(NEW_BLOCK_HASH_COUNT).saturating_sub(1);
 
 	// keep genesis hash
-	if old_to_remove != 0 {
-		for to_remove in old_to_remove..=new_to_remove_before_finalize {
-			<frame_system::BlockHash<Runtime>>::remove(to_remove);
+	if start != 0 {
+		for n in start..end {
+			<frame_system::BlockHash<Runtime>>::remove(n);
 
-			// StorageItem link: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
-			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate it manually. https://github.com/paritytech/frontier/pull/1034 change the visibility of this item to public.
+			// Storage item: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
+			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate
+			// it manually. https://github.com/paritytech/frontier/pull/1034 changes the visibility of this item to public.
 			// This is not a complicated one to review, so let's do it.
-			let _ = migration::clear_storage_prefix(
+			let _ = migration::take_storage_value::<()>(
 				b"Ethereum",
 				b"BlockHash",
-				&Twox64Concat::hash(&U256::from(to_remove).encode()),
-				None,
-				None,
+				&Twox64Concat::hash(&U256::from(n).encode()),
 			);
 		}
 	}
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
-		* 2 * (new_to_remove_before_finalize - old_to_remove + 1) as u64
+	<Runtime as frame_system::Config>::DbWeight::get()
+		.reads_writes(0, (2 * end.saturating_sub(start)) as _)
 }
