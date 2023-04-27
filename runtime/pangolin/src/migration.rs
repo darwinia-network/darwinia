@@ -37,7 +37,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
 		assert_eq!(<frame_system::BlockHash<Runtime>>::iter().count() as BlockNumber, NEW_BLOCK_HASH_COUNT);
 		assert_eq!(
-			migration::storage_key_iter(b"Ethereum", b"BlockHash").count() as BlockNumber,
+			migration::storage_iter::<()>(b"Ethereum", b"BlockHash").count() as BlockNumber,
 			NEW_BLOCK_HASH_COUNT
 		);
 
@@ -62,8 +62,8 @@ fn migrate() -> frame_support::weights::Weight {
 	// now - 256, now - 255, .. now
 	// =
 	// purge(now - 2400 ..= now - 255)
-	let start = now.saturating_sub(OLD_BLOCK_HASH_COUNT).saturating_sub(1);
-	let end = now.saturating_sub(NEW_BLOCK_HASH_COUNT).saturating_sub(1);
+	let start = now.saturating_sub(OLD_BLOCK_HASH_COUNT);
+	let end = now.saturating_sub(NEW_BLOCK_HASH_COUNT);
 
 	// keep genesis hash
 	if start != 0 {
