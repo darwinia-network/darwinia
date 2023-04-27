@@ -17,7 +17,7 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.2.0"
+version    = "6.2.1"
 
 [workspace.dependencies]
 # crates.io
@@ -104,10 +104,15 @@ pallet-evm-precompile-modexp   = { git = "https://github.com/paritytech/frontier
 pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.38", default-features = false }
 
 # moonbeam
-account             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
-pallet-ethereum-xcm = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
-precompile-utils    = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
-xcm-primitives      = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+account                        = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+pallet-ethereum-xcm            = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-evm-tracer            = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-primitives-ext        = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+precompile-utils               = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
+xcm-primitives                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38", default-features = false }
 
 # polkadot
 pallet-xcm              = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38", default-features = false }

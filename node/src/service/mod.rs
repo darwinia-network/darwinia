@@ -39,7 +39,7 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::frontier_service;
+use crate::{cli::TracingApi, frontier_service};
 use dc_primitives::*;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
@@ -100,6 +100,10 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
 	cumulus_primitives_core::CollectCollationInfo<Block>
+	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+	+ fp_rpc::EthereumRuntimeRPCApi<Block>
+	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
 	+ sp_block_builder::BlockBuilder<Block>
@@ -107,14 +111,15 @@ pub trait RuntimeApiCollection:
 	+ sp_offchain::OffchainWorkerApi<Block>
 	+ sp_session::SessionKeys<Block>
 	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-	+ fp_rpc::EthereumRuntimeRPCApi<Block>
-	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 {
 }
 impl<Api> RuntimeApiCollection for Api where
 	Api: cumulus_primitives_core::CollectCollationInfo<Block>
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>
 		+ sp_block_builder::BlockBuilder<Block>
@@ -122,9 +127,6 @@ impl<Api> RuntimeApiCollection for Api where
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
-		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 {
 }
@@ -354,6 +356,17 @@ where
 	));
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+		&task_manager,
+		client.clone(),
+		backend.clone(),
+		frontier_backend.clone(),
+		filter_pool.clone(),
+		overrides.clone(),
+		fee_history_cache.clone(),
+		fee_history_cache_limit,
+		eth_rpc_config.clone(),
+	);
 	let rpc_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
@@ -364,6 +377,7 @@ where
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
+		let eth_rpc_config = eth_rpc_config.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -382,7 +396,21 @@ where
 				block_data_cache: block_data_cache.clone(),
 			};
 
-			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
+			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			{
+				crate::rpc::create_full(
+					deps,
+					subscription_task_executor,
+					Some(crate::rpc::TracingConfig {
+						tracing_requesters: tracing_requesters.clone(),
+						trace_filter_max_count: eth_rpc_config.tracing_max_count,
+					}),
+				)
+				.map_err(Into::into)
+			} else {
+				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+			}
 		})
 	};
 
@@ -399,17 +427,6 @@ where
 		tx_handler_controller,
 		telemetry: telemetry.as_mut(),
 	})?;
-
-	frontier_service::spawn_frontier_tasks(
-		&task_manager,
-		client.clone(),
-		backend,
-		frontier_backend,
-		filter_pool,
-		overrides,
-		fee_history_cache,
-		fee_history_cache_limit,
-	);
 
 	if let Some(hwbench) = hwbench {
 		sc_sysinfo::print_hwbench(&hwbench);
@@ -818,6 +835,17 @@ where
 	));
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+		&task_manager,
+		client.clone(),
+		backend.clone(),
+		frontier_backend.clone(),
+		filter_pool.clone(),
+		overrides.clone(),
+		fee_history_cache.clone(),
+		fee_history_cache_limit,
+		eth_rpc_config.clone(),
+	);
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
@@ -828,6 +856,7 @@ where
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
+		let eth_rpc_config = eth_rpc_config.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -846,7 +875,21 @@ where
 				block_data_cache: block_data_cache.clone(),
 			};
 
-			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
+			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			{
+				crate::rpc::create_full(
+					deps,
+					subscription_task_executor,
+					Some(crate::rpc::TracingConfig {
+						tracing_requesters: tracing_requesters.clone(),
+						trace_filter_max_count: eth_rpc_config.tracing_max_count,
+					}),
+				)
+				.map_err(Into::into)
+			} else {
+				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+			}
 		})
 	};
 
@@ -863,17 +906,6 @@ where
 		tx_handler_controller,
 		telemetry: None,
 	})?;
-
-	frontier_service::spawn_frontier_tasks(
-		&task_manager,
-		client,
-		backend,
-		frontier_backend,
-		filter_pool,
-		overrides,
-		fee_history_cache,
-		fee_history_cache_limit,
-	);
 
 	start_network.start_network();
 

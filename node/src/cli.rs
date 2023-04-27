@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // std
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
@@ -128,6 +128,30 @@ impl RelayChainCli {
 
 #[derive(Debug, clap::Parser)]
 pub struct EthArgs {
+	/// Enable EVM tracing functionalities.
+	#[arg(long, value_delimiter = ',')]
+	pub tracing_api: Vec<TracingApi>,
+
+	/// Number of concurrent tracing tasks. Meant to be shared by both "debug" and "trace" modules.
+	#[arg(long, default_value = "10")]
+	pub tracing_max_permits: u32,
+
+	/// Maximum number of trace entries a single request of `trace_filter` is allowed to return.
+	/// A request asking for more or an unbounded one going over this limit will both return an
+	/// error.
+	#[arg(long, default_value = "500")]
+	pub tracing_max_count: u32,
+
+	// Duration (in seconds) after which the cache of `trace_filter` for a given block will be
+	/// discarded.
+	#[arg(long, default_value = "300")]
+	pub tracing_cache_duration: u64,
+
+	/// Size in bytes of data a raw tracing request is allowed to use.
+	/// Bound the size of memory, stack and storage data.
+	#[arg(long, default_value = "20000000")]
+	pub tracing_raw_max_memory_usage: usize,
+
 	/// Size in bytes of the LRU cache for block data.
 	#[arg(long, default_value = "300000000")]
 	pub eth_log_block_cache: usize,
@@ -147,6 +171,11 @@ pub struct EthArgs {
 impl EthArgs {
 	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
 		EthRpcConfig {
+			tracing_api: self.tracing_api.clone(),
+			tracing_max_permits: self.tracing_max_permits,
+			tracing_max_count: self.tracing_max_permits,
+			tracing_cache_duration: self.tracing_cache_duration,
+			tracing_raw_max_memory_usage: self.tracing_raw_max_memory_usage,
 			eth_statuses_cache: self.eth_statuses_cache,
 			eth_log_block_cache: self.eth_log_block_cache,
 			max_past_logs: self.max_past_logs,
@@ -155,16 +184,32 @@ impl EthArgs {
 	}
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum TracingApi {
+	Debug,
+	Trace,
+}
+impl FromStr for TracingApi {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(match s {
+			"debug" => Self::Debug,
+			"trace" => Self::Trace,
+			_ => return Err(format!("`{}` is not recognized as a supported Ethereum Api", s)),
+		})
+	}
+}
+
+#[derive(Clone, Debug)]
 pub struct EthRpcConfig {
-	/// Size in bytes of the LRU cache for block data.
+	pub tracing_api: Vec<TracingApi>,
+	pub tracing_max_permits: u32,
+	pub tracing_max_count: u32,
+	pub tracing_cache_duration: u64,
+	pub tracing_raw_max_memory_usage: usize,
 	pub eth_log_block_cache: usize,
-
-	/// Size in bytes of the LRU cache for transactions statuses data.
 	pub eth_statuses_cache: usize,
-
-	/// Maximum fee history cache size.
 	pub fee_history_limit: u64,
-
-	/// Maximum fee history cache size.
 	pub max_past_logs: u32,
 }
