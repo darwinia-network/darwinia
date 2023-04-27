@@ -23,6 +23,9 @@ use crate::*;
 #[allow(unused_imports)]
 use frame_support::{log, migration, storage::unhashed};
 
+const OLD_BLOCK_HASH_COUNT: BlockNumber = 2400;
+const NEW_BLOCK_HASH_COUNT: BlockNumber = 256;
+
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -32,6 +35,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+		assert_eq!(<frame_system::BlockHash<Runtime>>::iter().count() as BlockNumber, NEW_BLOCK_HASH_COUNT);
+		assert_eq!(
+			migration::storage_iter::<()>(b"Ethereum", b"BlockHash").count() as BlockNumber,
+			NEW_BLOCK_HASH_COUNT
+		);
+
 		Ok(())
 	}
 
@@ -41,7 +50,38 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 0)
+	// crates.io
+	use codec::Encode;
+	// substrate
+	use frame_support::{StorageHasher, Twox64Concat};
+	use sp_core::U256;
+
+	let now = System::block_number();
+	// now - 2400, now - 2399, .. now
+	// ->
+	// now - 256, now - 255, .. now
+	// =
+	// purge(now - 2400 ..= now - 255)
+	let start = now.saturating_sub(OLD_BLOCK_HASH_COUNT);
+	let end = now.saturating_sub(NEW_BLOCK_HASH_COUNT);
+
+	// keep genesis hash
+	if start != 0 {
+		for n in start..end {
+			<frame_system::BlockHash<Runtime>>::remove(n);
+
+			// Storage item: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
+			// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate
+			// it manually. https://github.com/paritytech/frontier/pull/1034 changes the visibility of this item to public.
+			// This is not a complicated one to review, so let's do it.
+			let _ = migration::take_storage_value::<()>(
+				b"Ethereum",
+				b"BlockHash",
+				&Twox64Concat::hash(&U256::from(n).encode()),
+			);
+		}
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get()
+		.reads_writes(0, (2 * end.saturating_sub(start)) as _)
 }
