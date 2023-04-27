@@ -41,25 +41,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// substrate
-	use frame_support::PalletId;
-	use pallet_assets::WeightInfo as _;
-	use pallet_balances::WeightInfo as _;
-	use sp_runtime::traits::AccountIdConversion;
-
-	let staking: AccountId = PalletId(*b"da/staki").into_account_truncating();
-	let deprecate_staking: AccountId = PalletId(*b"dar/stak").into_account_truncating();
-
-	let _ = Balances::transfer_all(RuntimeOrigin::signed(deprecate_staking), staking, false);
-	{
-		let a = Assets::balance(1026_u64, &deprecate_staking);
-		let _ =
-			Assets::transfer(RuntimeOrigin::signed(deprecate_staking), 1026_u64.into(), staking, a);
-	}
-
-	// frame_support::weights::Weight::zero()
+	frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
-	<Runtime as pallet_balances::Config>::WeightInfo::transfer_all()
-		+ <Runtime as pallet_assets::Config>::WeightInfo::transfer()
-		+ <Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 0)
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 0)
 }
