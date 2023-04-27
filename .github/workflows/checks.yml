@@ -159,6 +159,7 @@ jobs:
       - name: Action test
         run: |
           cd tests/ethereum
+          npm install
           npm run test
 
   state-checks:
