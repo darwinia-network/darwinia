@@ -61,8 +61,8 @@ pallet-fee-market        = { workspace = true }
 fp-evm                         = { workspace = true }
 fp-rpc                         = { workspace = true }
 fp-self-contained              = { workspace = true }
-pallet-ethereum                = { features = ["forbid-evm-reentrancy"], workspace = true }
-pallet-evm                     = { features = ["forbid-evm-reentrancy"], workspace = true }
+pallet-ethereum                = { workspace = true }
+pallet-evm                     = { workspace = true }
 pallet-evm-precompile-blake2   = { workspace = true }
 pallet-evm-precompile-bn128    = { workspace = true }
 pallet-evm-precompile-dispatch = { workspace = true }
