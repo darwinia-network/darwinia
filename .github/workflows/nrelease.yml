@@ -1,0 +1,56 @@
+name: NRelease
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "pango*"
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  DOCKER_REGISTRY: ghcr.io
+
+jobs:
+  build-package:
+    name: Build package [linux]
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:18.04
+    strategy:
+      matrix:
+        node:
+          - mode: mainnets
+            features: darwinia-native,crab-native
+          - mode: mainnets
+            features: darwinia-native,crab-native,evm-tracing
+          - mode: testnets
+            features: pangoro-native,pangolin-native
+          - mode: testnets
+            features: pangoro-native,pangolin-native,evm-tracing
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+
+      - uses: actions/checkout@v2
+        with:
+          repository: fewensa/actions
+          path: .github/actions
+#          persist-credentials: false
+#          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
+
+#      - uses: ./.github/actions/fast-substrate
+#        name: Build mainnets
+#        id: build-mainnets
+#        with:
+#          package: darwinia
+#          features: pangoro-native,pangolin-native
+
+
+      - name: Check matrix
+        run: |
+          echo '[${{ matrix.node.mode }}] ${{ matrix.node.features }}'
+
+
