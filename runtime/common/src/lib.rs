@@ -97,13 +97,10 @@ where
 			// substrate
 			use frame_support::traits::Imbalance;
 
-			// for fees, 80% are burned, 20% to the treasury
-			let (_, to_treasury) = fees.ration(80, 20);
-
 			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 			// total_supply accordingly
 			<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
-				to_treasury,
+				fees,
 			);
 		}
 	}
