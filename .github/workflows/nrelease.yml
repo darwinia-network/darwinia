@@ -50,7 +50,7 @@ jobs:
 
 
       - name: Check matrix
-        if: startsWith(github.ref, 'refs/tags/pango') && ${{ matrix.node.mode == 'testnets' }}
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.mode == 'testnets') }}
         run: |
           echo '[${{ matrix.node.mode }}] ${{ matrix.node.features }}'
 
