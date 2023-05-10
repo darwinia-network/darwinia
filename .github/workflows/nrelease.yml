@@ -41,16 +41,12 @@ jobs:
 #          persist-credentials: false
 #          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
 
-#      - uses: ./.github/actions/fast-substrate
-#        name: Build mainnets
-#        id: build-mainnets
-#        with:
-#          package: darwinia
-#          features: pangoro-native,pangolin-native
-
-
-      - name: Check matrix
-        run: |
-          echo '[${{ matrix.node.mode }}] ${{ matrix.node.features }}'
+      - uses: ./.github/actions/fast-substrate
+        name: Build mainnets
+        id: build-mainnets
+        if: matrix.node.mode == 'testnets'
+        with:
+          package: darwinia
+          features: pangoro-native,pangolin-native
 
 
