@@ -3,11 +3,13 @@ name: Staging
 on:
   push:
     branches: [main]
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
-
   DOCKER_REGISTRY: ghcr.io
 
 jobs:

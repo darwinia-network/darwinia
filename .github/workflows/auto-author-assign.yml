@@ -1,15 +1,15 @@
-name: "Auto author assign"
-
-on:
-  pull_request_target:
-    types: [opened, reopened]
-
-permissions:
-  pull-requests: write
-
-jobs:
-  assign-author:
-    name: Author assign
-    runs-on: ubuntu-latest
-    steps:
-      - uses: toshimaru/auto-author-assign@v1.4.0
+#name: "Auto author assign"
+#
+#on:
+#  pull_request_target:
+#    types: [opened, reopened]
+#
+#permissions:
+#  pull-requests: write
+#
+#jobs:
+#  assign-author:
+#    name: Author assign
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: toshimaru/auto-author-assign@v1.4.0
