@@ -41,14 +41,11 @@ jobs:
         with:
           repository: fewensa/actions
           path: .github/actions
-#          persist-credentials: false
-#          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
 
       - uses: ./.github/actions/fast-substrate
         name: Build testnets
         id: build-testnets
         if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'testnets') }}
-#        if: ${{ matrix.chain.mode == 'testnets' }} # only test
         with:
           package: darwinia
           rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
@@ -59,7 +56,6 @@ jobs:
         name: Build mainnets
         id: build-mainnets
         if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.chain.mode == 'mainnets') }}
-#        if: ${{ matrix.chain.mode == 'mainnets' }} # only test
         with:
           package: darwinia
           features: ${{ matrix.chain.features }}
@@ -95,15 +91,6 @@ jobs:
           curl -L -o ${BIN_PATH}/gomplate \
             https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
           chmod +x ${BIN_PATH}/gomplate
-
-#      - name: Cache target dir
-#        uses: actions/cache@v3
-#        with:
-#          path: "${{ github.workspace }}/runtime/${{ matrix.runtime }}/target"
-#          key: srtool-target-${{ matrix.runtime }}-${{ github.sha }}
-#          restore-keys: |
-#            srtool-target-${{ matrix.runtime }}-
-#            srtool-target-
 
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
@@ -212,6 +199,7 @@ jobs:
           mv build/darwinia-general.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
           mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
           rm -rf build/darwinia-tracing.tar.bz2
+          rm -rf build/darwinia
 
       - name: Prepare release template
         run: |
@@ -257,12 +245,12 @@ jobs:
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-#  clean-artifacts:
-#    name: Clean artifacts
-#    runs-on: ubuntu-latest
-#    needs: [release]
-#    if: always()
-#    steps:
-#      - uses: geekyeggo/delete-artifact@v1
-#        with:
-#          name: darwinia-artifact
+  clean-artifacts:
+    name: Clean artifacts
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: always()
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: darwinia-artifact
