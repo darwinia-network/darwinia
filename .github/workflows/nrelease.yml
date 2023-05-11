@@ -87,6 +87,10 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v3
 
+      - uses: jason-dour/action-setup-gomplate@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cache target dir
         uses: actions/cache@v3
         with:
@@ -104,7 +108,8 @@ jobs:
           AUTHORIZE_UPGRADE_PREFIX: "0x02"
           RUSTC_VERSION: ${{ env.RUST_TOOLCHAIN }}
         with:
-          image: paritytech/srtool
+          image: ghcr.io/fewensa/docker-image/srtool
+          tag: nightly-2022-11-15
           chain: ${{ matrix.runtime }}
 
       - name: Prepare artifact
@@ -112,7 +117,8 @@ jobs:
           mkdir -p build
           echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${{ matrix.runtime }}_srtool_output.json
           mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
-          echo '${{ steps.srtool_build.outputs.json }}'
+          echo '${{ steps.srtool_build.outputs.json }}
+
 
       - name: Upload ${{ matrix.runtime }} wasm
         uses: actions/upload-artifact@v3
