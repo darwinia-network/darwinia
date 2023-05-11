@@ -211,6 +211,7 @@ jobs:
           mv build/darwinia-general.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
           mv build/darwinia-general.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
           mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
+          rm -rf build/darwinia-tracing.tar.bz2
 
       - name: Prepare release template
         run: |
@@ -222,6 +223,8 @@ jobs:
       - name: Fill mainnets release
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
+          mv build/darwinia* deploy/
+          mv build/crab* deploy/
           cat build/release-template-darwinia.md >> template-release.md
           cat build/release-template-crab.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
@@ -229,6 +232,8 @@ jobs:
       - name: Fill testnets release
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
+          mv build/pangolin* deploy/
+          mv build/pangoro* deploy/
           cat build/release-template-pangolin.md >> template-release.md
           cat build/release-template-pangoro.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
