@@ -94,6 +94,7 @@ jobs:
           # gomplate
           curl -L -o ${BIN_PATH}/gomplate \
             https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
+          chmod +x ${BIN_PATH}/gomplate
 
 #      - name: Cache target dir
 #        uses: actions/cache@v3
@@ -197,6 +198,7 @@ jobs:
           # gomplate
           curl -L -o ${BIN_PATH}/gomplate \
             https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
+          chmod +x ${BIN_PATH}/gomplate
 
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
