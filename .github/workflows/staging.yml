@@ -3,13 +3,11 @@ name: Staging
 on:
   push:
     branches: [main]
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
+
   DOCKER_REGISTRY: ghcr.io
 
 jobs:
@@ -43,8 +41,11 @@ jobs:
       - name: Collect shared
         run: |
           mkdir -p shared
-          tar cjSf shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
-            -C target/release darwinia
+          tar cjSf \
+            shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
+            -C \
+            target/release \
+            darwinia
       - name: Optimize cache
         run: .github/shrink-cache.sh || exit 0
       - name: Upload shared
