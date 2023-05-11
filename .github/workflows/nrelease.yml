@@ -5,9 +5,9 @@ on:
     tags:
       - "v*"
       - "pango*"
-  pull_request:
-    branches:
-      - main
+#  pull_request:
+#    branches:
+#      - main
 
 env:
   CARGO_TERM_COLOR: always
@@ -30,12 +30,12 @@ jobs:
           - mode: mainnets
             features: darwinia-native,crab-native,evm-tracing
             suffix: tracing
-#          - mode: testnets
-#            features: pangoro-native,pangolin-native
-#            suffix: general
-#          - mode: testnets
-#            features: pangoro-native,pangolin-native,evm-tracing
-#            suffix: tracing
+          - mode: testnets
+            features: pangoro-native,pangolin-native
+            suffix: general
+          - mode: testnets
+            features: pangoro-native,pangolin-native,evm-tracing
+            suffix: tracing
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -50,8 +50,8 @@ jobs:
       - uses: ./.github/actions/fast-substrate
         name: Build testnets
         id: build-testnets
-        # if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'testnets') }}
-        if: ${{ matrix.chain.mode == 'testnets' }} # only test
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'testnets') }}
+#        if: ${{ matrix.chain.mode == 'testnets' }} # only test
         with:
           package: darwinia
           rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
@@ -61,8 +61,8 @@ jobs:
       - uses: ./.github/actions/fast-substrate
         name: Build mainnets
         id: build-mainnets
-        # if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'mainnets') }}
-        if: ${{ matrix.chain.mode == 'mainnets' }} # only test
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'mainnets') }}
+#        if: ${{ matrix.chain.mode == 'mainnets' }} # only test
         with:
           package: darwinia
           features: ${{ matrix.chain.features }}
@@ -92,14 +92,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache target dir
-        uses: actions/cache@v3
-        with:
-          path: "${{ github.workspace }}/runtime/${{ matrix.runtime }}/target"
-          key: srtool-target-${{ matrix.runtime }}-${{ github.sha }}
-          restore-keys: |
-            srtool-target-${{ matrix.runtime }}-
-            srtool-target-
+#      - name: Cache target dir
+#        uses: actions/cache@v3
+#        with:
+#          path: "${{ github.workspace }}/runtime/${{ matrix.runtime }}/target"
+#          key: srtool-target-${{ matrix.runtime }}-${{ github.sha }}
+#          restore-keys: |
+#            srtool-target-${{ matrix.runtime }}-
+#            srtool-target-
 
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
@@ -195,6 +195,13 @@ jobs:
       - name: Sha
         uses: benjlevesque/short-sha@v1.2
 
+      - name: Prepare artifact
+        run: |
+          mkdir -p deploy
+          mv build/darwinia-normal.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
+          mv build/darwinia-normal.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
+          mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
+
       - name: Prepare release template
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
@@ -217,23 +224,20 @@ jobs:
           cat template-release.tmp.md >> template-release.md
 
       - name: Hash file
-        run: |
-          cd build
-          # rm -rf *.md
-          sha256sum * | tee sha256sums.txt
+        run: cd deploy && sha256sum * | tee sha256sums.txt
 
-      - name: Verify
-        run: |
-          set -xe
-          cat template-release.md
-          ls -la build/
-          cat build/*.md
+#      - name: Verify
+#        run: |
+#          set -xe
+#          cat template-release.md
+#          ls -la deploy/
+#          cat build/*.md
 
-#      - name: Publish github release
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          body_path: "template-release.md"
-#          files: |
-#            build/*
-#          generate_release_notes: true
-#          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish github release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: "template-release.md"
+          files: |
+            deploy/*
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
