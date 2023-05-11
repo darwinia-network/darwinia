@@ -191,11 +191,18 @@ pub mod pallet {
 	#[pallet::getter(fn collator_of)]
 	pub type Collators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Perbill>;
 
-	/// Stakers' exposure.
+	/// Current stakers' exposure.
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn exposure_of)]
 	pub type Exposures<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
+
+	/// Next stakers' exposure.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn next_exposure_of)]
+	pub type NextExposures<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 
 	/// The ideal number of active collators.
@@ -271,6 +278,20 @@ pub mod pallet {
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(PhantomData<T>);
+	#[pallet::hooks]
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
+		fn on_runtime_upgrade() -> Weight {
+			let mut count = 0;
+
+			<Exposures<T>>::iter().for_each(|(k, v)| {
+				<NextExposures<T>>::insert(k, v);
+
+				count += 1;
+			});
+
+			T::DbWeight::get().reads_writes(count, count)
+		}
+	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Add stakes to the staking pool.
@@ -822,6 +843,8 @@ pub mod pallet {
 
 			for (c, p) in reward_map {
 				let Some(commission) = <Collators<T>>::get(&c) else {
+					#[cfg(test)]
+					panic!("[pallet::staking] collator({c:?}) must be found; qed");
 					log::error!("[pallet::staking] collator({c:?}) must be found; qed");
 
 					continue;
@@ -830,6 +853,8 @@ pub mod pallet {
 				let mut c_payout = commission * c_total_payout;
 				let n_payout = c_total_payout - c_payout;
 				let Some(c_exposure) = <Exposures<T>>::get(&c) else {
+					#[cfg(test)]
+					panic!("[pallet::staking] exposure({c:?}) must be found; qed");
 					log::error!("[pallet::staking] exposure({c:?}) must be found; qed");
 
 					continue;
@@ -865,11 +890,14 @@ pub mod pallet {
 			T::RewardRemainder::on_unbalanced(T::RingCurrency::issue(inflation - actual_payout));
 		}
 
-		/// Clean the old session data.
-		pub fn clean_old_session() {
+		/// Prepare the session state.
+		pub fn prepare_new_session() {
 			<RewardPoints<T>>::kill();
 			#[allow(deprecated)]
 			<Exposures<T>>::remove_all(None);
+			<NextExposures<T>>::iter().drain().for_each(|(k, v)| {
+				<Exposures<T>>::insert(k, v);
+			});
 		}
 
 		/// Elect the new collators.
@@ -903,7 +931,7 @@ pub mod pallet {
 				.into_iter()
 				.take(<CollatorCount<T>>::get() as _)
 				.map(|((c, e), _)| {
-					<Exposures<T>>::insert(&c, e);
+					<NextExposures<T>>::insert(&c, e);
 
 					c
 				})
@@ -999,23 +1027,7 @@ impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
 where
 	T: Config,
 {
-	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-		log::info!(
-			"[pallet::staking] assembling new collators for new session {} at #{:?}",
-			index,
-			<frame_system::Pallet<T>>::block_number(),
-		);
-
-		let collators = Self::elect();
-
-		Self::deposit_event(Event::Elected { collators: collators.clone() });
-
-		Some(collators)
-	}
-
-	fn start_session(_: u32) {}
-
-	fn end_session(_: u32) {
+	fn end_session(index: u32) {
 		let now = T::UnixTime::now().as_millis();
 		let session_duration = now - <SessionStartTime<T>>::get();
 		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
@@ -1027,7 +1039,24 @@ where
 		<SessionStartTime<T>>::put(now);
 
 		Self::payout(session_duration, elapsed_time);
-		Self::clean_old_session();
+	}
+
+	fn start_session(_: u32) {}
+
+	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
+		Self::prepare_new_session();
+
+		log::info!(
+			"[pallet::staking] assembling new collators for new session {} at #{:?}",
+			index,
+			<frame_system::Pallet<T>>::block_number(),
+		);
+
+		let collators = Self::elect();
+
+		Self::deposit_event(Event::Elected { collators: collators.clone() });
+
+		Some(collators)
 	}
 }
 
