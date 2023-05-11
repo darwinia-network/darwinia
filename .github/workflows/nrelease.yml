@@ -85,9 +85,15 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v3
 
-      - uses: jason-dour/action-setup-gomplate@v1.0.0
+      - name: Install deps
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOMPLATE_VERSION: v3.11.4
+        run: |
+          BIN_PATH=$HOME/.local/bin
+          mkdir -p ${BIN_PATH}
+          # gomplate
+          curl -L -o ${BIN_PATH}/gomplate \
+            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
 
 #      - name: Cache target dir
 #        uses: actions/cache@v3
@@ -182,9 +188,15 @@ jobs:
           name: darwinia-artifact
           path: build
 
-      - uses: jason-dour/action-setup-gomplate@v1.0.0
+      - name: Install deps
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOMPLATE_VERSION: v3.11.4
+        run: |
+          BIN_PATH=$HOME/.local/bin
+          mkdir -p ${BIN_PATH}
+          # gomplate
+          curl -L -o ${BIN_PATH}/gomplate \
+            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
 
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
