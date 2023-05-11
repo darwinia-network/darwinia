@@ -45,18 +45,73 @@ jobs:
         name: Build testnets
         id: build-testnets
         # if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.mode == 'testnets') }}
-        if: ${{ matrix.node.mode == 'testnets' }}
+        if: ${{ matrix.node.mode == 'testnets' }} # only test
         with:
           package: darwinia
           features: ${{ matrix.node.features }}
 
-#      - uses: ./.github/actions/fast-substrate
-#        name: Build mainnets
-#        id: build-mainnets
-#        # if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.mode == 'mainnets') }}
-#        with:
-#          package: darwinia
-#          features: ${{ matrix.node.features }}
+      - uses: ./.github/actions/fast-substrate
+        name: Build mainnets
+        id: build-mainnets
+        # if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.mode == 'mainnets') }}
+        if: ${{ matrix.node.mode == 'mainnets' }} # only test
+        with:
+          package: darwinia
+          features: ${{ matrix.node.features }}
+
+      - name: Upload shared
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: darwinia-artifact
+          path: dist
+
+  build-runtimes:
+    name: Build runtimes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime:
+          - darwinia
+          - crab
+          - pangolin
+          - pangoro
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+
+      - name: Cache target dir
+        uses: actions/cache@v3
+        with:
+          path: "${{ github.workspace }}/runtime/${{ matrix.runtime }}/target"
+          key: srtool-target-${{ matrix.runtime }}-${{ github.sha }}
+          restore-keys: |
+            srtool-target-${{ matrix.runtime }}-
+            srtool-target-
+
+      - name: Build ${{ matrix.runtime }} runtime
+        id: srtool_build
+        uses: chevdor/srtool-actions@v0.7.0
+        with:
+          image: paritytech/srtool
+          chain: ${{ matrix.runtime }}
+
+      - name: Store srtool digest to disk
+        run: |
+          echo '${{ steps.srtool_build.outputs.json }}' | jq > ${{ matrix.runtime }}_srtool_output.json
+
+      - name: Upload ${{ matrix.runtime }} srtool json
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.runtime }}-srtool-json
+          path: ${{ matrix.runtime }}_srtool_output.json
+
+      - name: Upload ${{ matrix.runtime }} runtime
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.runtime }}-runtime
+          path: |
+            ${{ steps.srtool_build.outputs.wasm_compressed }}
+
 
 
 
