@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-package:
-    name: Build package [linux]
+    name: Build package
     runs-on: ubuntu-latest
     container:
       image: ubuntu:18.04
@@ -159,7 +159,7 @@ jobs:
       - name: Extract shared
         run: |
           mkdir -p dist
-          tar -xvf build/darwinia-normal.tar.bz2 -C dist/
+          tar -xvf build/darwinia-general.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:
@@ -208,8 +208,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir -p deploy
-          mv build/darwinia-normal.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
-          mv build/darwinia-normal.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
+          mv build/darwinia-general.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
+          mv build/darwinia-general.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
           mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
 
       - name: Prepare release template
