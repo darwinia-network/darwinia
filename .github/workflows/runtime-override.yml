@@ -15,11 +15,11 @@ jobs:
       - name: Runtime override
         run: |
           TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
-          curl -X POST \
-             -H "Authorization:Bearer ${{ secrets.WASM_RUNTIME_OVERRIDES }}" \
-             -H "Accept:application/vnd.github+json" \
-             "https://api.github.com/repos/darwinia-network/darwinia/dispatches" \
-             -d '{"event_type":"created","client_payload":{"release":"mainnets","ref":"'"${TAG}"'"}}'
+          curl -XPOST \
+            -H "Authorization:Bearer ${{ secrets.WASM_RUNTIME_OVERRIDES }}" \
+            -H "Accept:application/vnd.github+json" \
+            "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
+            -d '{"event_type":"create","client_payload":{"release":"mainnets","ref":"'"${TAG}"'"}}'
 
   runtime-override-testnets:
     name: Runtime override
@@ -29,8 +29,8 @@ jobs:
       - name: Runtime override
         run: |
           TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
-          curl -X POST \
-             -H "Authorization:Bearer ${{ secrets.WASM_RUNTIME_OVERRIDES }}" \
-             -H "Accept:application/vnd.github+json" \
-             "https://api.github.com/repos/darwinia-network/darwinia/dispatches" \
-             -d '{"event_type":"created","client_payload":{"release":"testnets","ref":"'"${TAG}"'"}}'
+          curl -XPOST \
+            -H "Authorization:Bearer ${{ secrets.WASM_RUNTIME_OVERRIDES }}" \
+            -H "Accept:application/vnd.github+json" \
+            "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
+            -d '{"event_type":"create","client_payload":{"release":"testnets","ref":"'"${TAG}"'"}}'
