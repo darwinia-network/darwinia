@@ -12,6 +12,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   DOCKER_REGISTRY: ghcr.io
+  # WARNING: If you upgrade this version, you need also provide a new srtool image tag same with this.
   RUST_TOOLCHAIN: nightly-2022-11-15
 
 jobs:
@@ -109,16 +110,19 @@ jobs:
           RUSTC_VERSION: ${{ env.RUST_TOOLCHAIN }}
         with:
           image: ghcr.io/fewensa/docker-image/srtool
-          tag: nightly-2022-11-15
+          tag: ${{ env.RUST_TOOLCHAIN }}
           chain: ${{ matrix.runtime }}
 
       - name: Prepare artifact
         run: |
           mkdir -p build
-          echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${{ matrix.runtime }}_srtool_output.json
-          mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
-          echo '${{ steps.srtool_build.outputs.json }}
+          echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${{ matrix.runtime }}-srtool.json
+          cp ${{ steps.srtool_build.outputs.wasm_compressed }} build/
 
+          export CHAIN=${{ matrix.runtime }}
+          cat .github/template-runtime.md \
+            | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
+            > build/release-template-${{ matrix.runtime }}.md
 
       - name: Upload ${{ matrix.runtime }} wasm
         uses: actions/upload-artifact@v3
@@ -169,11 +173,10 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ env.GIT_TAG_NAME }}
 
-  release-mainnets:
-    name: Release mainnets
+  release:
+    name: Release
     runs-on: ubuntu-latest
     needs: [build-package, build-runtimes, build-docker-image]
-    # if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -182,3 +185,55 @@ jobs:
         with:
           name: darwinia-artifact
           path: build
+
+      - uses: jason-dour/action-setup-gomplate@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag
+        uses: olegtarasov/get-tag@v2.1
+      - name: Sha
+        uses: benjlevesque/short-sha@v1.2
+
+      - name: Prepare release template
+        run: |
+          export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
+          cat .github/template-release.md \
+            | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
+            > template-release.tmp.md
+
+      - name: Fill mainnets release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cat build/release-template-darwinia.md >> template-release.md
+          cat build/release-template-crab.md >> template-release.md
+          cat template-release.tmp.md >> template-release.md
+
+      - name: Fill testnets release
+        if: startsWith(github.ref, 'refs/tags/pango')
+        run: |
+          cat build/release-template-pangolin.md >> template-release.md
+          cat build/release-template-pangoro.md >> template-release.md
+          cat template-release.tmp.md >> template-release.md
+
+      - name: Hash file
+        run: |
+          cd build
+          # rm -rf *.md
+          sha256sum * | tee sha256sums.txt
+
+      - name: Verify
+        run: |
+          set -xe
+          cat template-release.md
+          ls -la build/
+          cat build/*.md
+
+#      - name: Publish github release
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          body_path: "template-release.md"
+#          files: |
+#            build/*
+#          generate_release_notes: true
+#          token: ${{ secrets.GITHUB_TOKEN }}

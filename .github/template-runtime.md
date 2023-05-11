@@ -1,11 +1,11 @@
-## {{ chain }} {{ darwinia_runtime_version }}
+## {{ .Env.CHAIN | strings.Title }} {{ (ds "srtool").info.version }}
 <h4 align="right">Upgrade Priority LOW :green_circle:</h4>
 
 #### Proposal Hash
 ```
-{{ darwinia_proposal_compressed }}
+{{ (ds "srtool").runtimes.compressed.subwasm.proposal_hash }}
 ```
 #### Blake2 256 Hash
 ```
-{{ darwinia_blake2_256_compressed }}
+{{ (ds "srtool").runtimes.compressed.subwasm.blake2_256 }}
 ```
