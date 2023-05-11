@@ -12,6 +12,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   DOCKER_REGISTRY: ghcr.io
+  RUST_TOOLCHAIN: nightly-2022-11-15
 
 jobs:
   build-package:
@@ -52,6 +53,7 @@ jobs:
         if: ${{ matrix.chain.mode == 'testnets' }} # only test
         with:
           package: darwinia
+          rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
           features: ${{ matrix.chain.features }}
           suffix: ${{ matrix.chain.suffix }}
 
@@ -100,6 +102,7 @@ jobs:
         env:
           # https://github.com/chevdor/srtool-actions/blob/89fe4b5285f6ca2212adcbb2726a2860e8d56d12/action.yml#LL123C54-L123C54
           AUTHORIZE_UPGRADE_PREFIX: "0x02"
+          RUSTC_VERSION: ${{ env.RUST_TOOLCHAIN }}
         with:
           image: paritytech/srtool
           chain: ${{ matrix.runtime }}
