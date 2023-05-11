@@ -1,4 +1,4 @@
-name: NRelease
+name: Release
 
 on:
   push:
