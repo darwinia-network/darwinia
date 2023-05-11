@@ -36,12 +36,13 @@ pretty_env_logger = { version = "0.4" }
 darwinia-deposit = { workspace = true, features = ["std"] }
 
 # substrate
-pallet-assets    = { workspace = true, features = ["std"] }
-pallet-balances  = { workspace = true, features = ["std"] }
-pallet-session   = { workspace = true, features = ["std"] }
-pallet-timestamp = { workspace = true, features = ["std"] }
-sp-core          = { workspace = true, features = ["std"] }
-sp-io            = { workspace = true, features = ["std"] }
+pallet-assets        = { workspace = true, features = ["std"] }
+pallet-balances      = { workspace = true, features = ["std"] }
+pallet-session       = { workspace = true, features = ["std"] }
+pallet-timestamp     = { workspace = true, features = ["std"] }
+sp-core              = { workspace = true, features = ["std"] }
+sp-io                = { workspace = true, features = ["std"] }
+substrate-test-utils = { workspace = true }
 
 [features]
 default = ["std"]

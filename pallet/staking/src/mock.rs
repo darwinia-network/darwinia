@@ -25,13 +25,15 @@ use frame_support::traits::{GenesisBuild, OnInitialize};
 use sp_io::TestExternalities;
 use sp_runtime::RuntimeAppPublic;
 
+type BlockNumber = u64;
+
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = u32;
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
@@ -158,28 +160,30 @@ impl darwinia_staking::Stake for RingStaking {
 
 frame_support::parameter_types! {
 	pub static SessionHandlerCollators: Vec<u32> = Vec::new();
-	pub static SessionChangeBlock: u64 = 0;
+	pub static SessionChangeBlock: BlockNumber = 0;
 }
 sp_runtime::impl_opaque_keys! {
 	pub struct SessionKeys {
-		pub aura: sp_runtime::testing::UintAuthorityId,
+		pub uint: SessionHandler,
 	}
 }
 type Period = frame_support::traits::ConstU64<3>;
-pub struct TestSessionHandler;
-impl pallet_session::SessionHandler<u32> for TestSessionHandler {
+pub struct SessionHandler;
+impl pallet_session::SessionHandler<u32> for SessionHandler {
 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] =
 		&[sp_runtime::testing::UintAuthorityId::ID];
 
-	fn on_genesis_session<Ks: sp_runtime::traits::OpaqueKeys>(keys: &[(u32, Ks)]) {
+	fn on_genesis_session<K>(keys: &[(u32, K)])
+	where
+		K: sp_runtime::traits::OpaqueKeys,
+	{
 		SessionHandlerCollators::set(keys.iter().map(|(a, _)| *a).collect::<Vec<_>>())
 	}
 
-	fn on_new_session<Ks: sp_runtime::traits::OpaqueKeys>(
-		_: bool,
-		keys: &[(u32, Ks)],
-		_: &[(u32, Ks)],
-	) {
+	fn on_new_session<K>(_: bool, keys: &[(u32, K)], _: &[(u32, K)])
+	where
+		K: sp_runtime::traits::OpaqueKeys,
+	{
 		SessionChangeBlock::set(System::block_number());
 		SessionHandlerCollators::set(keys.iter().map(|(a, _)| *a).collect::<Vec<_>>())
 	}
@@ -188,11 +192,14 @@ impl pallet_session::SessionHandler<u32> for TestSessionHandler {
 
 	fn on_disabled(_: u32) {}
 }
+impl sp_runtime::BoundToRuntimeAppPublic for SessionHandler {
+	type Public = sp_runtime::testing::UintAuthorityId;
+}
 impl pallet_session::Config for Runtime {
 	type Keys = SessionKeys;
 	type NextSessionRotation = pallet_session::PeriodicSessions<Period, ()>;
 	type RuntimeEvent = RuntimeEvent;
-	type SessionHandler = pallet_session::TestSessionHandler;
+	type SessionHandler = SessionHandler;
 	type SessionManager = Staking;
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, ()>;
 	type ValidatorId = Self::AccountId;
@@ -281,25 +288,26 @@ impl Efflux {
 		Timestamp::set_timestamp(Timestamp::now() + milli_secs);
 	}
 
-	pub fn block(number: u64) {
+	pub fn block(number: BlockNumber) {
 		for _ in 0..number {
 			initialize_block(System::block_number() + 1)
 		}
 	}
 }
 
-fn initialize_block(number: u64) {
-	System::set_block_number(number);
-	Efflux::time(1);
-	<AllPalletsWithSystem as OnInitialize<u64>>::on_initialize(number);
-}
-
 pub struct ExtBuilder {
 	collator_count: u32,
+	genesis_collator: bool,
 }
 impl ExtBuilder {
 	pub fn collator_count(mut self, collator_count: u32) -> Self {
 		self.collator_count = collator_count;
+
+		self
+	}
+
+	pub fn genesis_collator(mut self) -> Self {
+		self.genesis_collator = true;
 
 		self
 	}
@@ -323,10 +331,24 @@ impl ExtBuilder {
 		.unwrap();
 		darwinia_staking::GenesisConfig::<Runtime> {
 			collator_count: self.collator_count,
+			collators: if self.genesis_collator {
+				(1..=self.collator_count).map(|i| (i, UNIT)).collect()
+			} else {
+				Default::default()
+			},
 			..Default::default()
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
+		if self.genesis_collator {
+			pallet_session::GenesisConfig::<Runtime> {
+				keys: (1..=self.collator_count)
+					.map(|i| (i, i, SessionKeys { uint: (i as u64).into() }))
+					.collect(),
+			}
+			.assimilate_storage(&mut storage)
+			.unwrap();
+		}
 
 		let mut ext = TestExternalities::from(storage);
 
@@ -337,6 +359,26 @@ impl ExtBuilder {
 }
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self { collator_count: 1 }
+		Self { collator_count: 1, genesis_collator: false }
 	}
+}
+
+pub fn initialize_block(number: BlockNumber) {
+	System::set_block_number(number);
+	Efflux::time(1);
+	<AllPalletsWithSystem as OnInitialize<BlockNumber>>::on_initialize(number);
+}
+
+pub fn finalize_block(number: BlockNumber) {
+	<AllPalletsWithSystem as frame_support::traits::OnFinalize<BlockNumber>>::on_finalize(number);
+}
+
+pub fn new_session() {
+	let now = System::block_number();
+	let target = now + <Period as sp_runtime::traits::Get<BlockNumber>>::get();
+
+	(now + 1..=target).for_each(|i| {
+		initialize_block(i);
+		finalize_block(i);
+	});
 }

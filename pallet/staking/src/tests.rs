@@ -25,6 +25,7 @@ use dc_types::{Balance, UNIT};
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
+use substrate_test_utils::assert_eq_uvec;
 
 #[test]
 fn stake_should_work() {
@@ -369,7 +370,7 @@ fn collect_should_work() {
 fn nominate_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Default::default()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Perbill::zero()));
 
 		(2..=10).for_each(|n| {
 			assert!(Staking::nominator_of(n).is_none());
@@ -384,7 +385,7 @@ fn nominate_should_work() {
 fn chill_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Default::default()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Perbill::zero()));
 		(2..=10).for_each(|n| {
 			assert_ok!(Staking::stake(RuntimeOrigin::signed(n), UNIT, 0, Vec::new()));
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(n), 1));
@@ -487,7 +488,7 @@ fn elect_should_work() {
 				UNIT,
 				Vec::new()
 			));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Default::default()));
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::zero()));
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
 		});
 		(6..=10).for_each(|i| {
@@ -510,7 +511,8 @@ fn elect_should_work() {
 				0,
 				Vec::new()
 			));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Default::default()));
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::zero()));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
 		});
 		(6..=10).for_each(|i| {
 			assert_ok!(Staking::stake(
@@ -548,7 +550,8 @@ fn payout_should_work() {
 			));
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
-		Staking::elect();
+		new_session();
+		new_session();
 		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
@@ -581,5 +584,48 @@ fn payout_should_work() {
 			// Error rate 0.1 RING.
 			UNIT / 10
 		);
+	});
+}
+
+#[test]
+fn on_new_session_should_work() {
+	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
+		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
+		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
+
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, 0, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(3), 3));
+		Staking::reward_by_ids(
+			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
+		);
+
+		new_session();
+		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
+		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
+
+		assert_ok!(Staking::chill(RuntimeOrigin::signed(3)));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 2 * UNIT, 0, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(4), 4));
+		Staking::reward_by_ids(
+			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
+		);
+
+		new_session();
+		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
+		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
+
+		assert_ok!(Staking::chill(RuntimeOrigin::signed(4)));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(5), 2 * UNIT, 0, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(5), 5));
+		Staking::reward_by_ids(
+			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
+		);
+
+		new_session();
+		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
+		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 5]);
 	});
 }
