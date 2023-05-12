@@ -214,7 +214,7 @@ jobs:
           mv build/darwinia-general.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
           mv build/darwinia-general.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
           mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
-          rm -rf build/darwinia-tracing.tar.bz2
+          mv build/darwinia-tracing.tar.bz2 deploy/darwinia2-tracing-x86_64-linux-gnu.tar.bz2
           rm -rf build/darwinia
 
       - name: Prepare release template
