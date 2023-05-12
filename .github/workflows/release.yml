@@ -8,46 +8,63 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-
   DOCKER_REGISTRY: ghcr.io
+  # WARNING: If you upgrade this version, you need also provide a new srtool image tag same with this.
+  RUST_TOOLCHAIN: nightly-2022-11-15
 
 jobs:
   build-package:
-    name: Build package [linux]
+    name: Build package
     runs-on: ubuntu-latest
     container:
       image: ubuntu:18.04
+    strategy:
+      matrix:
+        artifact:
+          - type: mainnets
+            features: darwinia-native,crab-native
+          - type: mainnets
+            features: darwinia-native,crab-native,evm-tracing
+            suffix: tracing
+          - type: testnets
+            features: pangoro-native,pangolin-native
+          - type: testnets
+            features: pangoro-native,pangolin-native,evm-tracing
+            suffix: tracing
     steps:
-      - name: Setup build environment
-        run: |
-          apt update -y
-          apt install --no-install-recommends -y \
-            ca-certificates curl git python3-pip zstd \
-            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
-          pip3 install --upgrade pip
-          pip3 install cmake --upgrade
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Build
-        if: startsWith(github.ref, 'refs/tags/pango')
-        run: cargo build --release --locked -p darwinia --features pangoro-native,pangolin-native
-      - name: Build
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: cargo build --release --locked -p darwinia --features darwinia-native,crab-native
-      - name: Collect shared
-        run: |
-          mkdir -p shared
-          tar cjSf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C target/release darwinia
-          tar cf shared/darwinia2-x86_64-linux-gnu.tar.zst -C target/release darwinia -I zstd
+
+      - uses: actions/checkout@v3
+        with:
+          repository: darwinia-network/devops
+          path: .github/actions
+
+      - uses: ./.github/actions/actions/fast-substrate
+        name: Build testnets
+        id: build-testnets
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
+        with:
+          package: darwinia
+          rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
+          features: ${{ matrix.artifact.features }}
+          suffix: ${{ matrix.artifact.suffix }}
+
+      - uses: ./.github/actions/fast-substrate
+        name: Build mainnets
+        id: build-mainnets
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.type == 'mainnets') }}
+        with:
+          package: darwinia
+          features: ${{ matrix.artifact.features }}
+          suffix: ${{ matrix.artifact.suffix }}
+
       - name: Upload shared
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: darwinia-artifact
-          path: shared
+          path: build
+
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -56,11 +73,9 @@ jobs:
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
-  build-subwasm:
-    name: Generate subwasm info
+  build-runtimes:
+    name: Build runtimes
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:22.04
     strategy:
       matrix:
         runtime:
@@ -69,57 +84,56 @@ jobs:
           - pangolin
           - pangoro
     steps:
-      - name: Setup build environment
-        run: |
-          apt update -y
-          apt install --no-install-recommends -y \
-            ca-certificates curl git python3-pip \
-            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
-          pip3 install --upgrade pip
-          pip3 install cmake --upgrade
-      - name: Install subwasm
-        env:
-          SUBWASM_VERSION: 0.19.1
-        run: |
-          curl -L https://github.com/chevdor/subwasm/releases/download/v${SUBWASM_VERSION}/subwasm_linux_amd64_v${SUBWASM_VERSION}.deb \
-            --output subwasm.deb && \
-            dpkg -i subwasm.deb && \
-            subwasm --version
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          target: wasm32-unknown-unknown
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Build runtime
+
+      - name: Install deps
+        env:
+          GOMPLATE_VERSION: v3.11.4
         run: |
-          set -xe
-          RUNTIME_DIR=runtime/${{ matrix.runtime }}
-          cargo build --release --locked -p ${{ matrix.runtime }}-runtime --features on-chain-release-build
-      - name: Collect shared
+          BIN_PATH=$HOME/.local/bin
+          mkdir -p ${BIN_PATH}
+          # gomplate
+          curl -L -o ${BIN_PATH}/gomplate \
+            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
+          chmod +x ${BIN_PATH}/gomplate
+
+      - name: Build ${{ matrix.runtime }} runtime
+        id: srtool_build
+        uses: chevdor/srtool-actions@v0.7.0
+        env:
+          # https://github.com/chevdor/srtool-actions/blob/89fe4b5285f6ca2212adcbb2726a2860e8d56d12/action.yml#LL123C54-L123C54
+          AUTHORIZE_UPGRADE_PREFIX: "0x02"
+        with:
+          image: ghcr.io/darwinia-network/devops/srtool
+          tag: ${{ env.RUST_TOOLCHAIN }}
+          chain: ${{ matrix.runtime }}
+
+      - name: Prepare artifact
         run: |
-          mkdir -p shared/${{ matrix.runtime }}-runtime
-          mv target/release/wbuild/${{ matrix.runtime }}-runtime/*.wasm \
-            shared/${{ matrix.runtime }}-runtime
-      - name: Generate subwasm info for ${{ matrix.runtime }}-runtime
-        run: |
-          set -xe
-          Z_WASM=shared/${{ matrix.runtime }}-runtime/*.compact.compressed.wasm
-          echo '${{ matrix.runtime }}-runtime compressed compact subwasm info'
-          subwasm -j info $Z_WASM | tee shared/${{ matrix.runtime }}-runtime/${{ matrix.runtime }}-runtime.compact.compressed.json
-      - name: Upload shared
-        uses: actions/upload-artifact@v2.2.4
+          mkdir -p build
+          echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${{ matrix.runtime }}-srtool.json
+          cp ${{ steps.srtool_build.outputs.wasm_compressed }} build/
+
+          export CHAIN=${{ matrix.runtime }}
+          cat .github/template-runtime.md \
+            | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
+            > build/release-template-${{ matrix.runtime }}.md
+
+      - name: Upload ${{ matrix.runtime }} wasm
+        uses: actions/upload-artifact@v3
         with:
           name: darwinia-artifact
-          path: shared
-      - name: Fast fail
+          path: build
+
+      - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
         with:
           repo: darwinia-network/darwinia
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
+
 
   build-docker-image:
     name: Build Docker image
@@ -128,11 +142,11 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Download shared
-        uses: actions/download-artifact@v2
+      - name: Download artifact
+        uses: actions/download-artifact@v3
         with:
           name: darwinia-artifact
-          path: shared
+          path: build
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -146,7 +160,7 @@ jobs:
       - name: Extract shared
         run: |
           mkdir -p dist
-          tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
+          tar -xvf build/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:
@@ -163,167 +177,89 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ env.GIT_TAG_NAME }}
 
-  release-mainnets:
-    name: Release mainnets
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    needs: [build-package, build-subwasm, build-docker-image]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-package, build-runtimes, build-docker-image]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Download shared
+      - name: Download artifact
         uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
-          path: shared
-      - name: Prepare deploy folder
+          path: build
+
+      - name: Install deps
+        env:
+          GOMPLATE_VERSION: v3.11.4
         run: |
-          mkdir -p deploy
-          mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
-          mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
-          mv shared/darwinia-runtime/*.compact.compressed.* deploy/
-          mv shared/crab-runtime/*.compact.compressed.* deploy/
-      - name: Hash file
-        run: cd deploy && sha256sum * | tee sha256sums.txt
+          BIN_PATH=$HOME/.local/bin
+          mkdir -p ${BIN_PATH}
+          # gomplate
+          curl -L -o ${BIN_PATH}/gomplate \
+            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
+          chmod +x ${BIN_PATH}/gomplate
+
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
         uses: benjlevesque/short-sha@v1.2
-      - name: Generate template data
-        run: |
-          FILE_CRAB=deploy/crab-runtime.compact.compressed.json
-          FILE_DARWINIA=deploy/darwinia-runtime.compact.compressed.json
 
-          PROPOSAL_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .proposal_hash)
-          BLAKE2_256_CRAB_COMPRESSED=$(cat ${FILE_CRAB} | jq -r .blake2_256)
-          RUNTIME_VERSION_CRAB=$(cat ${FILE_CRAB} | jq .core_version.specVersion)
-
-          PROPOSAL_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .proposal_hash)
-          BLAKE2_256_DARWINIA_COMPRESSED=$(cat ${FILE_DARWINIA} | jq -r .blake2_256)
-          RUNTIME_VERSION_DARWINIA=$(cat ${FILE_DARWINIA} | jq .core_version.specVersion)
-
-          echo 'Template data:'
-          jq -n \
-            --arg crab_proposal_compressed "$PROPOSAL_CRAB_COMPRESSED" \
-            --arg crab_blake2_256_compressed "$BLAKE2_256_CRAB_COMPRESSED" \
-            --arg crab_runtime_version "$RUNTIME_VERSION_CRAB" \
-            --arg darwinia_proposal_compressed "$PROPOSAL_DARWINIA_COMPRESSED" \
-            --arg darwinia_blake2_256_compressed "$BLAKE2_256_DARWINIA_COMPRESSED" \
-            --arg darwinia_runtime_version "$RUNTIME_VERSION_DARWINIA" \
-            --arg tag "$GIT_TAG_NAME" \
-            --arg sha "$SHA" \
-            '{
-              crab_proposal_compressed: $crab_proposal_compressed,
-              crab_blake2_256_compressed: $crab_blake2_256_compressed,
-              crab_runtime_version: $crab_runtime_version,
-              darwinia_proposal_compressed: $darwinia_proposal_compressed,
-              darwinia_blake2_256_compressed: $darwinia_blake2_256_compressed,
-              darwinia_runtime_version: $darwinia_runtime_version,
-              tag: $tag,
-              sha: $sha
-            }' | tee shared/template_data.json
-      - name: Render release page
-        uses: jayamanikharyono/jinja-action@v0.1
-        with:
-          datafile: shared/template_data.json
-          path: .github/release-mainnets.md
-      # - name: Verify
-      #   run: |
-      #     set -xe
-      #     cat .github/release-mainnets.md
-      #     ls -la deploy/
-      - name: Publish github release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: ".github/release-mainnets.md"
-          files: |
-            deploy/*
-          generate_release_notes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  release-testnets:
-    name: Release testnets
-    runs-on: ubuntu-latest
-    needs: [build-package, build-subwasm, build-docker-image]
-    if: startsWith(github.ref, 'refs/tags/pango')
-    steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v3
-      - name: Download shared
-        uses: actions/download-artifact@v2
-        with:
-          name: darwinia-artifact
-          path: shared
-      - name: Prepare deploy folder
+      - name: Prepare artifacts
         run: |
           mkdir -p deploy
-          mv shared/darwinia2-x86_64-linux-gnu.tar.zst deploy/
-          mv shared/darwinia2-x86_64-linux-gnu.tar.bz2 deploy/
-          mv shared/pangolin-runtime/*.compact.compressed.* deploy/
-          mv shared/pangoro-runtime/*.compact.compressed.* deploy/
+          mv build/*.tar.bz2 deploy/
+          mv build/*.tar.zst deploy/
+
+      - name: Prepare release template
+        run: |
+          export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
+          cat .github/template-release.md \
+            | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
+            > template-release.tmp.md
+
+      - name: Fill mainnets release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mv build/darwinia* deploy/
+          mv build/crab* deploy/
+          cat build/release-template-darwinia.md >> template-release.md
+          cat build/release-template-crab.md >> template-release.md
+          cat template-release.tmp.md >> template-release.md
+
+      - name: Fill testnets release
+        if: startsWith(github.ref, 'refs/tags/pango')
+        run: |
+          mv build/pangolin* deploy/
+          mv build/pangoro* deploy/
+          cat build/release-template-pangolin.md >> template-release.md
+          cat build/release-template-pangoro.md >> template-release.md
+          cat template-release.tmp.md >> template-release.md
+
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
-      - name: Tag
-        uses: olegtarasov/get-tag@v2.1
-      - name: Sha
-        uses: benjlevesque/short-sha@v1.2
-      - name: Generate template data
-        run: |
-          FILE_PANGOLIN=deploy/pangolin-runtime.compact.compressed.json
-          FILE_PANGORO=deploy/pangoro-runtime.compact.compressed.json
 
-          PROPOSAL_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .proposal_hash)
-          BLAKE2_256_PANGOLIN_COMPRESSED=$(cat ${FILE_PANGOLIN} | jq -r .blake2_256)
-          RUNTIME_VERSION_PANGOLIN=$(cat ${FILE_PANGOLIN} | jq .core_version.specVersion)
+#      - name: Verify
+#        run: |
+#          set -xe
+#          cat template-release.md
+#          ls -la deploy/
+#          cat build/*.md
 
-          PROPOSAL_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .proposal_hash)
-          BLAKE2_256_PANGORO_COMPRESSED=$(cat ${FILE_PANGORO} | jq -r .blake2_256)
-          RUNTIME_VERSION_PANGORO=$(cat ${FILE_PANGORO} | jq .core_version.specVersion)
-
-          echo 'Template data:'
-          jq -n \
-            --arg pangolin_proposal_compressed "$PROPOSAL_PANGOLIN_COMPRESSED" \
-            --arg pangolin_blake2_256_compressed "$BLAKE2_256_PANGOLIN_COMPRESSED" \
-            --arg pangolin_runtime_version "$RUNTIME_VERSION_PANGOLIN" \
-            --arg pangoro_proposal_compressed "$PROPOSAL_PANGORO_COMPRESSED" \
-            --arg pangoro_blake2_256_compressed "$BLAKE2_256_PANGORO_COMPRESSED" \
-            --arg pangoro_runtime_version "$RUNTIME_VERSION_PANGORO" \
-            --arg tag "$GIT_TAG_NAME" \
-            --arg sha "$SHA" \
-            '{
-              pangolin_proposal_compressed: $pangolin_proposal_compressed,
-              pangolin_blake2_256_compressed: $pangolin_blake2_256_compressed,
-              pangolin_runtime_version: $pangolin_runtime_version,
-              pangoro_proposal_compressed: $pangoro_proposal_compressed,
-              pangoro_blake2_256_compressed: $pangoro_blake2_256_compressed,
-              pangoro_runtime_version: $pangoro_runtime_version,
-              tag: $tag,
-              sha: $sha
-            }' | tee shared/template_data.json
-      - name: Render release page
-        uses: jayamanikharyono/jinja-action@v0.1
-        with:
-          datafile: shared/template_data.json
-          path: .github/release-testnets.md
-      # - name: Verify
-      #   run: |
-      #     set -xe
-      #     cat .github/release-testnets.md
-      #     ls -la deploy/
       - name: Publish github release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: ".github/release-testnets.md"
+          body_path: "template-release.md"
           files: |
             deploy/*
           generate_release_notes: true
-          prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   clean-artifacts:
     name: Clean artifacts
     runs-on: ubuntu-latest
-    needs: [release-mainnets, release-testnets]
+    needs: [release]
     if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1
