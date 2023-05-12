@@ -20,17 +20,15 @@ jobs:
       image: ubuntu:18.04
     strategy:
       matrix:
-        chain:
-          - mode: mainnets
+        artifact:
+          - type: mainnets
             features: darwinia-native,crab-native
-            suffix: general
-          - mode: mainnets
+          - type: mainnets
             features: darwinia-native,crab-native,evm-tracing
             suffix: tracing
-          - mode: testnets
+          - type: testnets
             features: pangoro-native,pangolin-native
-            suffix: general
-          - mode: testnets
+          - type: testnets
             features: pangoro-native,pangolin-native,evm-tracing
             suffix: tracing
     steps:
@@ -39,27 +37,27 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
-          repository: fewensa/actions
+          repository: darwinia-network/devops
           path: .github/actions
 
-      - uses: ./.github/actions/fast-substrate
+      - uses: ./.github/actions/actions/fast-substrate
         name: Build testnets
         id: build-testnets
-        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.chain.mode == 'testnets') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
         with:
           package: darwinia
           rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
-          features: ${{ matrix.chain.features }}
-          suffix: ${{ matrix.chain.suffix }}
+          features: ${{ matrix.artifact.features }}
+          suffix: ${{ matrix.artifact.suffix }}
 
       - uses: ./.github/actions/fast-substrate
         name: Build mainnets
         id: build-mainnets
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.chain.mode == 'mainnets') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.type == 'mainnets') }}
         with:
           package: darwinia
-          features: ${{ matrix.chain.features }}
-          suffix: ${{ matrix.chain.suffix }}
+          features: ${{ matrix.artifact.features }}
+          suffix: ${{ matrix.artifact.suffix }}
 
       - name: Upload shared
         uses: actions/upload-artifact@v3
@@ -107,7 +105,7 @@ jobs:
           # https://github.com/chevdor/srtool-actions/blob/89fe4b5285f6ca2212adcbb2726a2860e8d56d12/action.yml#LL123C54-L123C54
           AUTHORIZE_UPGRADE_PREFIX: "0x02"
         with:
-          image: ghcr.io/fewensa/docker-image/srtool
+          image: ghcr.io/darwinia-network/devops/srtool
           tag: ${{ env.RUST_TOOLCHAIN }}
           chain: ${{ matrix.runtime }}
 
@@ -144,7 +142,7 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Download shared
+      - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: darwinia-artifact
@@ -162,7 +160,7 @@ jobs:
       - name: Extract shared
         run: |
           mkdir -p dist
-          tar -xvf build/darwinia-general.tar.bz2 -C dist/
+          tar -xvf build/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:
@@ -186,7 +184,7 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Download shared
+      - name: Download artifact
         uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
@@ -208,14 +206,11 @@ jobs:
       - name: Sha
         uses: benjlevesque/short-sha@v1.2
 
-      - name: Prepare artifact
+      - name: Prepare artifacts
         run: |
           mkdir -p deploy
-          mv build/darwinia-general.tar.bz2 deploy/darwinia2-x86_64-linux-gnu.tar.bz2
-          mv build/darwinia-general.tar.zst deploy/darwinia2-x86_64-linux-gnu.tar.zst
-          mv build/darwinia-tracing.tar.zst deploy/darwinia2-tracing-x86_64-linux-gnu.tar.zst
-          mv build/darwinia-tracing.tar.bz2 deploy/darwinia2-tracing-x86_64-linux-gnu.tar.bz2
-          rm -rf build/darwinia
+          mv build/*.tar.bz2 deploy/
+          mv build/*.tar.zst deploy/
 
       - name: Prepare release template
         run: |

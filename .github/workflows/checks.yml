@@ -39,6 +39,14 @@ jobs:
       matrix:
         action: [build, test]
     steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: darwinia-network/devops
+          path: .github/actions
+      - name: Check actions
+        run: |
+          ls .github/actions/actions
+
       - name: Setup build environment
         run: sudo apt install -y protobuf-compiler
       - name: Fetch latest code
