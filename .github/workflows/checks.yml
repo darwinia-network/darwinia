@@ -39,14 +39,6 @@ jobs:
       matrix:
         action: [build, test]
     steps:
-      - uses: actions/checkout@v2
-        with:
-          repository: darwinia-network/devops
-          path: .github/actions
-      - name: Check actions
-        run: |
-          ls .github/actions/actions
-
       - name: Setup build environment
         run: sudo apt install -y protobuf-compiler
       - name: Fetch latest code
@@ -84,6 +76,14 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          repository: darwinia-network/devops
+          path: .github/actions
+      - name: Check actions
+        run: |
+          ls .github/actions/actions
+
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Fast fail
