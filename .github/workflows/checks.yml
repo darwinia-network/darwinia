@@ -76,14 +76,6 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - uses: actions/checkout@v3
-        with:
-          repository: darwinia-network/devops
-          path: .github/actions
-      - name: Check actions
-        run: |
-          ls .github/actions/actions
-
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Fast fail
