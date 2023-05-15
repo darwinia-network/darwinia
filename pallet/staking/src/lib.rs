@@ -291,6 +291,15 @@ pub mod pallet {
 
 			T::DbWeight::get().reads_writes(count, count)
 		}
+
+		#[cfg(feature = "try-runtime")]
+		fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+			<Exposures<T>>::iter().zip(<NextExposures<T>>::iter()).for_each(|(e1, e2)| {
+				assert_eq!(e1, e2);
+			});
+
+			Ok(())
+		}
 	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -992,7 +1001,21 @@ where
 	}
 }
 
+// TODO: remove these
 /// A snapshot of the stake backing a single collator in the system.
+#[cfg(feature = "try-runtime")]
+#[derive(PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct Exposure<AccountId>
+where
+	AccountId: PartialEq,
+{
+	/// The total power backing this collator.
+	pub total: Power,
+	/// Nominators' stake power.
+	pub nominators: Vec<IndividualExposure<AccountId>>,
+}
+/// A snapshot of the stake backing a single collator in the system.
+#[cfg(not(feature = "try-runtime"))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
 	/// The total power backing this collator.
@@ -1001,6 +1024,19 @@ pub struct Exposure<AccountId> {
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the staker's state.
+#[cfg(feature = "try-runtime")]
+#[derive(PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub struct IndividualExposure<AccountId>
+where
+	AccountId: PartialEq,
+{
+	/// Nominator.
+	pub who: AccountId,
+	/// Nominator's stake power.
+	pub value: Power,
+}
+/// A snapshot of the staker's state.
+#[cfg(not(feature = "try-runtime"))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
@@ -1027,7 +1063,7 @@ impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
 where
 	T: Config,
 {
-	fn end_session(index: u32) {
+	fn end_session(_: u32) {
 		let now = T::UnixTime::now().as_millis();
 		let session_duration = now - <SessionStartTime<T>>::get();
 		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
