@@ -24,10 +24,13 @@ use sc_executor::{NativeExecutionDispatch, NativeVersion};
 pub struct DarwiniaRuntimeExecutor;
 #[cfg(feature = "darwinia-native")]
 impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
+	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = (
 		frame_benchmarking::benchmarking::HostFunctions,
 		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
 	);
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		darwinia_runtime::api::dispatch(method, data)
@@ -43,10 +46,13 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 pub struct CrabRuntimeExecutor;
 #[cfg(feature = "crab-native")]
 impl NativeExecutionDispatch for CrabRuntimeExecutor {
+	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = (
 		frame_benchmarking::benchmarking::HostFunctions,
 		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
 	);
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		crab_runtime::api::dispatch(method, data)
@@ -62,10 +68,13 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 pub struct PangolinRuntimeExecutor;
 #[cfg(feature = "pangolin-native")]
 impl NativeExecutionDispatch for PangolinRuntimeExecutor {
+	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = (
 		frame_benchmarking::benchmarking::HostFunctions,
 		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
 	);
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		pangolin_runtime::api::dispatch(method, data)
@@ -81,10 +90,13 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 pub struct PangoroRuntimeExecutor;
 #[cfg(feature = "pangoro-native")]
 impl NativeExecutionDispatch for PangoroRuntimeExecutor {
+	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = (
 		frame_benchmarking::benchmarking::HostFunctions,
 		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
 	);
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type ExtendHostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		pangoro_runtime::api::dispatch(method, data)
