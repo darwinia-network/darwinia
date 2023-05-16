@@ -50,7 +50,7 @@ fp-evm          = { workspace = true, features = ["std"] }
 fp-rpc          = { workspace = true, features = ["std"] }
 
 # moonbeam
-moonbeam-primitives-ext       = { workspace = true, optional = true, features = ["std"] }
+moonbeam-primitives-ext       = { workspace = true, features = ["std"] }
 moonbeam-rpc-debug            = { workspace = true }
 moonbeam-rpc-primitives-debug = { workspace = true, features = ["std"] }
 moonbeam-rpc-trace            = { workspace = true }
@@ -118,9 +118,6 @@ evm-tracing = [
 	"darwinia-runtime?/evm-tracing",
 	"pangolin-runtime?/evm-tracing",
 	"pangoro-runtime?/evm-tracing",
-
-	# moonbeam
-	"moonbeam-primitives-ext",
 ]
 
 runtime-benchmarks = [
