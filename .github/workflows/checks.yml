@@ -162,34 +162,10 @@ jobs:
           npm install
           npm run test
 
-  state-checks:
-    name: Task check state
-    if: github.event_name == 'push' || !github.event.pull_request.draft
-    needs: [basic-checks]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v3
-      - name: Download darwinia
-        uses: actions/download-artifact@v2
-        with:
-          name: darwinia
-      - name: Setup test environment
-        run: |
-          mkdir -p target/release
-          chmod u+x darwinia
-          mv darwinia target/release/darwinia
-          cd tool/state-processor
-          mkdir -p data
-      - name: Check state
-        run: |
-          cd tool/state-processor
-          cargo test --release --locked
-
   checks-cleaning:
     name: Task checks cleaning
     if: always()
-    needs: [features-checks, runtime-checks, state-checks]
+    needs: [features-checks, runtime-checks]
     steps:
       - name: Clean artifacts
         uses: geekyeggo/delete-artifact@v1

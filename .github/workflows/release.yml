@@ -50,7 +50,7 @@ jobs:
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
 
-      - uses: ./.github/actions/fast-substrate
+      - uses: ./.github/actions/actions/fast-substrate
         name: Build mainnets
         id: build-mainnets
         if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.type == 'mainnets') }}
@@ -160,7 +160,7 @@ jobs:
       - name: Extract shared
         run: |
           mkdir -p dist
-          tar -xvf build/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
+          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:
