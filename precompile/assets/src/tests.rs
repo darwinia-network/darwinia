@@ -245,7 +245,7 @@ fn approve() {
 }
 
 #[test]
-fn approve_overflow() {
+fn approve_saturating() {
 	ExtBuilder::default().with_balances(vec![(Alice.into(), 1000)]).build().execute_with(|| {
 		assert_ok!(Assets::force_create(
 			RuntimeOrigin::root(),
@@ -267,7 +267,17 @@ fn approve_overflow() {
 				Precompile,
 				InternalCall::approve { spender: Address(Bob.into()), value: U256::MAX },
 			)
-			.execute_reverts(|e| e == b"value: Value is too large for balance type");
+			.execute_returns_encoded(true);
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile,
+				InternalCall::allowance {
+					owner: Address(Alice.into()),
+					spender: Address(Bob.into()),
+				},
+			)
+			.execute_returns_encoded(U256::from(u128::MAX));
 	});
 }
 
