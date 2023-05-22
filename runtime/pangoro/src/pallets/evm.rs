@@ -165,6 +165,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type Timestamp = Timestamp;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
