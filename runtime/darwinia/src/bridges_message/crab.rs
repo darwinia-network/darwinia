@@ -113,16 +113,17 @@ impl BridgedChainWithMessages for Crab {
 	}
 }
 impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::AccountId> for Crab {
-	type Error = &'static str;
 	type MessagesDeliveryProof = ToCrabMessagesDeliveryProof;
 
-	fn verify_message(payload: &ToCrabMessagePayload) -> Result<(), Self::Error> {
+	fn verify_message(
+		payload: &ToCrabMessagePayload,
+	) -> Result<(), bp_messages::VerificationError> {
 		source::verify_chain_message::<WithCrabMessageBridge>(payload)
 	}
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<bp_crab::AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<bp_crab::AccountId>), bp_messages::VerificationError> {
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithCrabMessageBridge,
 			bp_crab::Header,
@@ -138,7 +139,10 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
 	fn verify_messages_proof(
 		proof: Self::MessagesProof,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
+	) -> Result<
+		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
+		bp_messages::VerificationError,
+	> {
 		target::verify_messages_proof_from_parachain::<
 			WithCrabMessageBridge,
 			bp_crab::Header,

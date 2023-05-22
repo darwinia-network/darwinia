@@ -19,10 +19,8 @@ dc-primitives              = { workspace = true }
 bp-darwinia-core = { workspace = true }
 
 # frontier
+fp-account = { workspace = true }
 pallet-evm = { workspace = true }
-
-# moonbeam
-account = { workspace = true }
 
 # polkadot
 xcm          = { workspace = true }
@@ -55,10 +53,8 @@ std = [
 	"bp-darwinia-core/std",
 
 	# frontier
+	"fp-account/std",
 	"pallet-evm/std",
-
-	# moonbeam
-	"account/std",
 
 	# polkadot
 	"xcm/std",
@@ -82,5 +78,5 @@ std = [
 test = []
 
 runtime-benchmarks = [
-	"pallet-assets/runtime-benchmarks"
+	"pallet-assets/runtime-benchmarks",
 ]

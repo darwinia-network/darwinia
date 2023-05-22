@@ -119,16 +119,15 @@ impl BridgedChainWithMessages for Pangoro {
 impl TargetHeaderChain<ToPangoroMessagePayload, <Self as ChainWithMessages>::AccountId>
 	for Pangoro
 {
-	type Error = &'static str;
 	type MessagesDeliveryProof = ToPangoroMessagesDeliveryProof;
 
-	fn verify_message(payload: &ToPangoroMessagePayload) -> Result<(), Self::Error> {
+	fn verify_message(payload: &ToPangoroMessagePayload) -> Result<(), bp_messages::VerificationError> {
 		source::verify_chain_message::<WithPangoroMessageBridge>(payload)
 	}
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<bp_pangoro::AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<bp_pangoro::AccountId>), bp_messages::VerificationError> {
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithPangoroMessageBridge,
 			bp_pangoro::Header,
@@ -138,13 +137,12 @@ impl TargetHeaderChain<ToPangoroMessagePayload, <Self as ChainWithMessages>::Acc
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
-	type Error = &'static str;
 	type MessagesProof = FromPangoroMessagesProof;
 
 	fn verify_messages_proof(
 		proof: Self::MessagesProof,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
+	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, bp_messages::VerificationError> {
 		target::verify_messages_proof_from_parachain::<
 			WithPangoroMessageBridge,
 			bp_pangoro::Header,

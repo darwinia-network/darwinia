@@ -11,7 +11,7 @@ version.workspace = true
 dc-types = { workspace = true }
 
 # moonbeam
-account = { workspace = true }
+fp-account = { workspace = true }
 
 # substrate
 sp-core    = { workspace = true }
@@ -20,8 +20,8 @@ sp-runtime = { workspace = true }
 [features]
 default = ["std"]
 std = [
-	# moonbeam
-	"account/std",
+	# frontier
+	"fp-account/std",
 
 	# substrate
 	"sp-core/std",

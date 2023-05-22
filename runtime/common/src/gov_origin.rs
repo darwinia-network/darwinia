@@ -19,7 +19,7 @@
 // darwinia
 use dc_primitives::AccountId;
 // moonbeam
-use account::AccountId20;
+use fp_account::AccountId20;
 // substrate
 use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
