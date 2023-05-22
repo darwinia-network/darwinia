@@ -44,7 +44,7 @@ use dc_primitives::*;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
 use sc_consensus::ImportQueue;
-use sc_network_common::service::NetworkBlock;
+use sc_network::NetworkBlock;
 use sp_core::Pair;
 use sp_runtime::app_crypto::AppKey;
 

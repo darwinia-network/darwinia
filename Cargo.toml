@@ -33,7 +33,6 @@ cumulus-client-cli                    = { git = "https://github.com/paritytech/c
 cumulus-client-collator               = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40" }
 cumulus-client-consensus-aura         = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40" }
 cumulus-client-consensus-common       = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40" }
-cumulus-client-network                = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40" }
 cumulus-client-service                = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40" }
 cumulus-pallet-aura-ext               = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40", default-features = false }
 cumulus-pallet-dmp-queue              = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.40", default-features = false }
@@ -120,7 +119,6 @@ polkadot-cli            = { git = "https://github.com/paritytech/polkadot", bran
 polkadot-parachain      = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
 polkadot-primitives     = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
-polkadot-service        = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40" }
 xcm                     = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
 xcm-builder             = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
 xcm-executor            = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
@@ -164,7 +162,7 @@ sc-consensus                               = { git = "https://github.com/parityt
 sc-consensus-aura                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-executor                                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-keystore                                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
-sc-network-common                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
+sc-network                                 = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-network-sync                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-offchain                                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-rpc                                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
