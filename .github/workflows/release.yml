@@ -138,7 +138,7 @@ jobs:
   build-docker-image:
     name: Build Docker image
     runs-on: ubuntu-latest
-    needs: [ build-package ]
+    needs: [build-package]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -180,7 +180,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build-package, build-runtimes, build-docker-image ]
+    needs: [build-package, build-runtimes, build-docker-image]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -259,7 +259,7 @@ jobs:
   deploy-tracing-node:
     name: Deploy tracing node
     runs-on: ubuntu-latest
-    needs: [ release ]
+    needs: [release]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -282,7 +282,7 @@ jobs:
   clean-artifacts:
     name: Clean artifacts
     runs-on: ubuntu-latest
-    needs: [ release ]
+    needs: [release]
     if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1
