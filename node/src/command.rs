@@ -595,48 +595,51 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			use sc_service::TaskManager;
+			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
+			use try_runtime_cli::block_building_info;
 
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
 
-			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			type HostFunctionsOf<E> = ExtendedHostFunctions<
 				sp_io::SubstrateHostFunctions,
 				<E as NativeExecutionDispatch>::ExtendHostFunctions,
 			>;
 
+
 			// grab the task manager.
 			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
 			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
 				.map_err(|e| format!("Error: {:?}", e))?;
+			let info_provider = block_building_info::timestamp_with_aura_info(6000);
 
 			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>>(), task_manager))
+					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>, _>(Some(info_provider)), task_manager))
 				});
 			}
 
 			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<DarwiniaRuntimeExecutor>>(), task_manager))
+					Ok((cmd.run::<Block, HostFunctionsOf<DarwiniaRuntimeExecutor>, _>(Some(info_provider)), task_manager))
 				});
 			}
 
 			#[cfg(feature = "pangolin-native")]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>>(), task_manager))
+					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>, _>(Some(info_provider)), task_manager))
 				});
 			}
 
 			#[cfg(feature = "pangoro-native")]
 			if chain_spec.is_pangoro() {
 				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<PangoroRuntimeExecutor>>(), task_manager))
+					Ok((cmd.run::<Block, HostFunctionsOf<PangoroRuntimeExecutor>, _>(Some(info_provider)), task_manager))
 				});
 			}
 
