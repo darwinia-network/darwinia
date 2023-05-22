@@ -275,7 +275,7 @@ where
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
-		Arc<sc_network::NetworkService<Block, Hash>>,
+		Arc<sc_network_sync::SyncingService<Block, Hash>>,
 		sp_keystore::SyncCryptoStorePtr,
 		bool,
 	) -> Result<
@@ -326,7 +326,7 @@ where
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 
-	let (network, system_rpc_tx, tx_handler_controller, start_network) =
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
 			client: client.clone(),
@@ -427,6 +427,7 @@ where
 		keystore: keystore_container.sync_keystore(),
 		backend: backend.clone(),
 		network: network.clone(),
+		sync_service: sync_service.clone(),
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: telemetry.as_mut(),
@@ -456,8 +457,8 @@ where
 	}
 
 	let announce_block = {
-		let network = network.clone();
-		Arc::new(move |hash, data| network.announce_block(hash, data))
+		let sync_service = sync_service.clone();
+		Arc::new(move |hash, data| sync_service.announce_block(hash, data))
 	};
 
 	let relay_chain_slot_duration = Duration::from_secs(6);
@@ -475,7 +476,7 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			network,
+			sync_service,
 			keystore_container.sync_keystore(),
 			force_authoring,
 		)?;
@@ -713,7 +714,7 @@ where
 			),
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
 
-	let (network, system_rpc_tx, tx_handler_controller, start_network) =
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &config,
 			client: client.clone(),
@@ -913,6 +914,7 @@ where
 		keystore: keystore_container.sync_keystore(),
 		backend,
 		network,
+		sync_service,
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: None,
