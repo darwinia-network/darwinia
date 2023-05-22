@@ -458,6 +458,10 @@ where
 
 	let relay_chain_slot_duration = Duration::from_secs(6);
 
+	let overseer_handle = relay_chain_interface
+		.overseer_handle()
+		.map_err(|e| sc_service::Error::Application(Box::new(e)))?;
+
 	if validator {
 		let parachain_consensus = build_consensus(
 			client.clone(),
@@ -485,6 +489,7 @@ where
 			import_queue: import_queue_service,
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
+			recovery_handle: Box::new(overseer_handle),
 		};
 
 		cumulus_client_service::start_collator(params).await?;
@@ -497,6 +502,7 @@ where
 			relay_chain_interface,
 			relay_chain_slot_duration,
 			import_queue: import_queue_service,
+			recovery_handle: Box::new(overseer_handle),
 		};
 
 		cumulus_client_service::start_full_node(params)?;
