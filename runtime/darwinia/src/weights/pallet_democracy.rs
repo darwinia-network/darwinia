@@ -111,6 +111,7 @@ impl<T: frame_system::Config> pallet_democracy::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(6))
 			.saturating_add(T::DbWeight::get().writes(7))
 	}
+
 	// Storage: Democracy NextExternal (r:1 w:1)
 	// Storage: Democracy Blacklist (r:1 w:0)
 	fn external_propose() -> Weight {
@@ -248,5 +249,29 @@ impl<T: frame_system::Config> pallet_democracy::WeightInfo for WeightInfo<T> {
 		Weight::from_parts(30_346_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
+	}
+
+	fn set_external_metadata() -> Weight {
+		todo!()
+	}
+
+	fn clear_external_metadata() -> Weight {
+		todo!()
+	}
+
+	fn set_proposal_metadata() -> Weight {
+		todo!()
+	}
+
+	fn clear_proposal_metadata() -> Weight {
+		todo!()
+	}
+
+	fn set_referendum_metadata() -> Weight {
+		todo!()
+	}
+
+	fn clear_referendum_metadata() -> Weight {
+		todo!()
 	}
 }

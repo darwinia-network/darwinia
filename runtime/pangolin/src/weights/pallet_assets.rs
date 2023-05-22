@@ -56,6 +56,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions for `pallet_assets`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_assets::WeightInfo for WeightInfo<T> {
+
 	// Storage: Assets Asset (r:1 w:1)
 	fn create() -> Weight {
 		// Minimum execution time: 33_960 nanoseconds.
@@ -272,5 +273,9 @@ impl<T: frame_system::Config> pallet_assets::WeightInfo for WeightInfo<T> {
 		Weight::from_parts(36_469_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
+	}
+
+	fn set_min_balance() -> Weight {
+		todo!()
 	}
 }

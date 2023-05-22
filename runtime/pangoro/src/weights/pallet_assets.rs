@@ -269,4 +269,8 @@ impl<T: frame_system::Config> pallet_assets::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
+
+	fn set_min_balance() -> Weight {
+		todo!()
+	}
 }
