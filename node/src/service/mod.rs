@@ -314,10 +314,12 @@ where
 			hwbench.clone(),
 		)
 		.await
-		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
-
-	let block_announce_validator =
-		cumulus_client_network::BlockAnnounceValidator::new(relay_chain_interface.clone(), para_id);
+		.map_err(|e| match e {
+			cumulus_relay_chain_interface::RelayChainError::ServiceError(
+				polkadot_service::Error::Sub(x),
+			) => x,
+			s => s.to_string().into(),
+		})?;
 
 	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
@@ -325,17 +327,19 @@ where
 	let import_queue_service = import_queue.service();
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network) =
-		sc_service::build_network(sc_service::BuildNetworkParams {
-			config: &parachain_config,
+		sc_service::build_network(cumulus_client_service::BuildNetworkParams {
+			parachain_config: &parachain_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
+			para_id,
 			spawn_handle: task_manager.spawn_handle(),
+			relay_chain_interface: relay_chain_interface.clone(),
 			import_queue,
 			block_announce_validator_builder: Some(Box::new(|_| {
 				Box::new(block_announce_validator)
 			})),
-			warp_sync: None,
-		})?;
+		})
+		.await?;
 
 	if parachain_config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
@@ -710,15 +714,16 @@ where
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network) =
-		sc_service::build_network(sc_service::BuildNetworkParams {
-			config: &config,
+		sc_service::build_network(cumulus_client_service::BuildNetworkParams {
+			parachain_config: &config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
+			para_id,
 			spawn_handle: task_manager.spawn_handle(),
+			relay_chain_interface: relay_chain_interface.clone(),
 			import_queue,
-			block_announce_validator_builder: None,
-			warp_sync: None,
-		})?;
+		})
+		.await?;
 
 	if config.offchain_worker.enabled {
 		let offchain_workers = Arc::new(sc_offchain::OffchainWorkers::new_with_options(
