@@ -177,7 +177,6 @@ sp-api                                     = { git = "https://github.com/parityt
 sp-arithmetic                              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-block-builder                           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-blockchain                              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
-sp-consensus                               = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sp-consensus-aura                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-core                                    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-inherents                               = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
