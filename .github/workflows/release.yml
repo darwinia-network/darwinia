@@ -138,7 +138,7 @@ jobs:
   build-docker-image:
     name: Build Docker image
     runs-on: ubuntu-latest
-    needs: [build-package]
+    needs: [ build-package ]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -180,7 +180,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [build-package, build-runtimes, build-docker-image]
+    needs: [ build-package, build-runtimes, build-docker-image ]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -240,12 +240,12 @@ jobs:
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
 
-#      - name: Verify
-#        run: |
-#          set -xe
-#          cat template-release.md
-#          ls -la deploy/
-#          cat build/*.md
+      #      - name: Verify
+      #        run: |
+      #          set -xe
+      #          cat template-release.md
+      #          ls -la deploy/
+      #          cat build/*.md
 
       - name: Publish github release
         uses: softprops/action-gh-release@v1
@@ -256,10 +256,24 @@ jobs:
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  deploy-tracing-node:
+    name: Deploy tracing node
+    runs-on: ubuntu-latest
+    needs: [ release ]
+    steps:
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+
+      - name: Deploy testnets tracing node
+        if: startsWith(github.ref, 'refs/tags/pango')
+        run: |
+          gh ..
+
+
   clean-artifacts:
     name: Clean artifacts
     runs-on: ubuntu-latest
-    needs: [release]
+    needs: [ release ]
     if: always()
     steps:
       - uses: geekyeggo/delete-artifact@v1
