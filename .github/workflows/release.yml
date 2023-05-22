@@ -240,12 +240,12 @@ jobs:
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
 
-      #      - name: Verify
-      #        run: |
-      #          set -xe
-      #          cat template-release.md
-      #          ls -la deploy/
-      #          cat build/*.md
+#      - name: Verify
+#        run: |
+#          set -xe
+#          cat template-release.md
+#          ls -la deploy/
+#          cat build/*.md
 
       - name: Publish github release
         uses: softprops/action-gh-release@v1
