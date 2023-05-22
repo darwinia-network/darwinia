@@ -38,6 +38,7 @@ use frame_support::{
 	},
 };
 use sp_core::{H160, U256};
+use sp_runtime::traits::Bounded;
 use sp_std::convert::{TryFrom, TryInto};
 // moonbeam
 use precompile_utils::prelude::*;
@@ -138,7 +139,8 @@ where
 		{
 			let owner: AccountIdOf<Runtime> = handle.context().caller.into();
 			let spender: AccountIdOf<Runtime> = spender.into();
-			let amount = Self::u256_to_amount(value).in_field("value")?;
+			// Amount saturate if too high.
+			let amount = value.try_into().unwrap_or_else(|_| Bounded::max_value());
 
 			// If previous approval exists, we need to clean it
 			if pallet_assets::Pallet::<Runtime>::allowance(asset_id, &owner, &spender)
