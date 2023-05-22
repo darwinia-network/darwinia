@@ -139,6 +139,7 @@ frame_support::parameter_types! {
 }
 
 impl pallet_ethereum::Config for TestRuntime {
+	type ExtraDataLength = ();
 	type PostLogContent = PostBlockAndTxnHashes;
 	type RuntimeEvent = RuntimeEvent;
 	type StateRoot = IntermediateStateRoot<Self>;

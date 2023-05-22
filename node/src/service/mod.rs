@@ -275,7 +275,7 @@ where
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
-		Arc<sc_network_sync::SyncingService<Block, Hash>>,
+		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::SyncCryptoStorePtr,
 		bool,
 	) -> Result<
@@ -330,9 +330,6 @@ where
 			spawn_handle: task_manager.spawn_handle(),
 			relay_chain_interface: relay_chain_interface.clone(),
 			import_queue,
-			block_announce_validator_builder: Some(Box::new(|_| {
-				Box::new(block_announce_validator)
-			})),
 		})
 		.await?;
 
@@ -674,6 +671,7 @@ where
 /// !!! WARNING: DO NOT USE ELSEWHERE
 pub fn start_dev_node<RuntimeApi, Executor>(
 	mut config: sc_service::Configuration,
+	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where

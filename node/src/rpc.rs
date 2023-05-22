@@ -47,7 +47,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<sc_network_sync::SyncingService<Block, Hash>>,
+	pub network: Arc<sc_network_sync::SyncingService<Block>>,
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.

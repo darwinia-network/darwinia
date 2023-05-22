@@ -81,6 +81,7 @@ impl pallet_evm::Config for Runtime {
 	type CallOrigin = pallet_evm::EnsureAddressRoot<sp_core::H160>;
 	type ChainId = ();
 	type Currency = Balances;
+	type ExtraDataLength = ();
 	type FeeCalculator = ();
 	type FindAuthor = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
@@ -89,9 +90,9 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesType = ();
 	type PrecompilesValue = ();
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type WeightInfo = ();
 	type RuntimeEvent = RuntimeEvent;
 	type Timestamp = Timestamp;
+	type WeightInfo = ();
 	type WeightPerGas = ();
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<sp_core::H160>;
 }
