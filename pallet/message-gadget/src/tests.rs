@@ -89,6 +89,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesType = ();
 	type PrecompilesValue = ();
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type WeightInfo = ();
 	type RuntimeEvent = RuntimeEvent;
 	type Timestamp = Timestamp;
 	type WeightPerGas = ();
