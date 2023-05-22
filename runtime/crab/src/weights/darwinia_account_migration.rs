@@ -134,13 +134,13 @@ impl<T: frame_system::Config> darwinia_account_migration::WeightInfo for WeightI
 		// Minimum execution time: 25_521 nanoseconds.
 		Weight::from_parts(124_506_666, 51933)
 			// Standard Error: 281_540
-			.saturating_add(Weight::from_ref_time(226_299).saturating_mul(x.into()))
+			.saturating_add(Weight::from_parts(226_299, 0).saturating_mul(x.into()))
 			// Standard Error: 281_540
-			.saturating_add(Weight::from_ref_time(295_461).saturating_mul(z.into()))
+			.saturating_add(Weight::from_parts(295_461, 0).saturating_mul(z.into()))
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(18))
-			.saturating_add(Weight::from_proof_size(7).saturating_mul(y.into()))
-			.saturating_add(Weight::from_proof_size(3).saturating_mul(z.into()))
+			.saturating_add(Weight::from_parts(7, 0).saturating_mul(y.into()))
+			.saturating_add(Weight::from_parts(3, 0).saturating_mul(z.into()))
 	}
 	/// Storage: AccountMigration Multisigs (r:1 w:1)
 	/// Proof Skipped: AccountMigration Multisigs (max_values: None, max_size: None, mode: Measured)

@@ -59,49 +59,49 @@ impl<T: frame_system::Config> pallet_balances::WeightInfo for WeightInfo<T> {
 	// Storage: System Account (r:1 w:1)
 	fn transfer() -> Weight {
 		// Minimum execution time: 58_592 nanoseconds.
-		Weight::from_ref_time(58_592_000)
+		Weight::from_parts(58_592_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: System Account (r:1 w:1)
 	fn transfer_keep_alive() -> Weight {
 		// Minimum execution time: 50_872 nanoseconds.
-		Weight::from_ref_time(50_872_000)
+		Weight::from_parts(50_872_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: System Account (r:1 w:1)
 	fn set_balance_creating() -> Weight {
 		// Minimum execution time: 37_178 nanoseconds.
-		Weight::from_ref_time(37_178_000)
+		Weight::from_parts(37_178_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: System Account (r:1 w:1)
 	fn set_balance_killing() -> Weight {
 		// Minimum execution time: 43_815 nanoseconds.
-		Weight::from_ref_time(43_815_000)
+		Weight::from_parts(43_815_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: System Account (r:2 w:2)
 	fn force_transfer() -> Weight {
 		// Minimum execution time: 57_823 nanoseconds.
-		Weight::from_ref_time(57_823_000)
+		Weight::from_parts(57_823_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
 	// Storage: System Account (r:1 w:1)
 	fn transfer_all() -> Weight {
 		// Minimum execution time: 54_857 nanoseconds.
-		Weight::from_ref_time(54_857_000)
+		Weight::from_parts(54_857_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: System Account (r:1 w:1)
 	fn force_unreserve() -> Weight {
 		// Minimum execution time: 33_862 nanoseconds.
-		Weight::from_ref_time(33_862_000)
+		Weight::from_parts(33_862_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

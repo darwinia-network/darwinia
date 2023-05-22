@@ -104,7 +104,7 @@ frame_support::parameter_types! {
 	pub const TransactionByteFee: u64 = 1;
 	pub const ChainId: u64 = 42;
 	pub const BlockGasLimit: sp_core::U256 = sp_core::U256::MAX;
-	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(20_000);
+	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
 }
 
 pub struct FixedGasPrice;

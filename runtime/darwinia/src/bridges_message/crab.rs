@@ -133,7 +133,6 @@ impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::Accoun
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
-	type Error = &'static str;
 	type MessagesProof = FromCrabMessagesProof;
 
 	fn verify_messages_proof(

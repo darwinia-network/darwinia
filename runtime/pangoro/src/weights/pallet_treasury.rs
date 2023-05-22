@@ -58,13 +58,13 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 	fn spend() -> Weight {
 		// Minimum execution time: 4_390 nanoseconds.
-		Weight::from_ref_time(4_390_000)
+		Weight::from_parts(4_390_000, 0)
 	}
 	// Storage: Treasury ProposalCount (r:1 w:1)
 	// Storage: Treasury Proposals (r:0 w:1)
 	fn propose_spend() -> Weight {
 		// Minimum execution time: 42_256 nanoseconds.
-		Weight::from_ref_time(42_256_000)
+		Weight::from_parts(42_256_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -72,7 +72,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 	// Storage: System Account (r:2 w:2)
 	fn reject_proposal() -> Weight {
 		// Minimum execution time: 58_063 nanoseconds.
-		Weight::from_ref_time(58_063_000)
+		Weight::from_parts(58_063_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -81,14 +81,14 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[0, 99]`.
 	fn approve_proposal(_p: u32, ) -> Weight {
 		// Minimum execution time: 26_830 nanoseconds.
-		Weight::from_ref_time(42_323_000)
+		Weight::from_parts(42_323_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Treasury Approvals (r:1 w:1)
 	fn remove_approval() -> Weight {
 		// Minimum execution time: 19_005 nanoseconds.
-		Weight::from_ref_time(19_005_000)
+		Weight::from_parts(19_005_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -100,7 +100,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[0, 100]`.
 	fn on_initialize_proposals(_p: u32, ) -> Weight {
 		// Minimum execution time: 243_043 nanoseconds.
-		Weight::from_ref_time(306_404_000)
+		Weight::from_parts(306_404_000, 0)
 			.saturating_add(T::DbWeight::get().reads(104))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}

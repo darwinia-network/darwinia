@@ -59,24 +59,24 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
 	/// The range of component `c` is `[0, 1000]`.
 	fn batch(_c: u32, ) -> Weight {
 		// Minimum execution time: 38_797 nanoseconds.
-		Weight::from_ref_time(3_794_342_000)
+		Weight::from_parts(3_794_342_000, 0)
 	}
 	fn as_derivative() -> Weight {
 		// Minimum execution time: 22_134 nanoseconds.
-		Weight::from_ref_time(22_134_000)
+		Weight::from_parts(22_134_000, 0)
 	}
 	/// The range of component `c` is `[0, 1000]`.
 	fn batch_all(_c: u32, ) -> Weight {
 		// Minimum execution time: 30_681 nanoseconds.
-		Weight::from_ref_time(3_916_476_000)
+		Weight::from_parts(3_916_476_000, 0)
 	}
 	fn dispatch_as() -> Weight {
 		// Minimum execution time: 29_357 nanoseconds.
-		Weight::from_ref_time(29_357_000)
+		Weight::from_parts(29_357_000, 0)
 	}
 	/// The range of component `c` is `[0, 1000]`.
 	fn force_batch(_c: u32, ) -> Weight {
 		// Minimum execution time: 30_220 nanoseconds.
-		Weight::from_ref_time(5_327_665_000)
+		Weight::from_parts(5_327_665_000, 0)
 	}
 }

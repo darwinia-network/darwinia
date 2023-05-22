@@ -65,7 +65,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayers (r:0 w:1)
 	fn enroll_and_lock_collateral() -> Weight {
 		// Minimum execution time: 109_865 nanoseconds.
-		Weight::from_ref_time(109_865_000)
+		Weight::from_parts(109_865_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
@@ -78,7 +78,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayers (r:0 w:1)
 	fn increase_locked_collateral() -> Weight {
 		// Minimum execution time: 124_647 nanoseconds.
-		Weight::from_ref_time(124_647_000)
+		Weight::from_parts(124_647_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -91,7 +91,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayers (r:0 w:1)
 	fn decrease_locked_collateral() -> Weight {
 		// Minimum execution time: 123_810 nanoseconds.
-		Weight::from_ref_time(123_810_000)
+		Weight::from_parts(123_810_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -102,7 +102,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayers (r:0 w:1)
 	fn update_relay_fee() -> Weight {
 		// Minimum execution time: 94_641 nanoseconds.
-		Weight::from_ref_time(94_641_000)
+		Weight::from_parts(94_641_000, 0)
 			.saturating_add(T::DbWeight::get().reads(13))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -115,14 +115,14 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayersNumber (r:1 w:0)
 	fn cancel_enrollment() -> Weight {
 		// Minimum execution time: 110_458 nanoseconds.
-		Weight::from_ref_time(110_458_000)
+		Weight::from_parts(110_458_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
 	// Storage: PangoroFeeMarket CollateralSlashProtect (r:0 w:1)
 	fn set_slash_protect() -> Weight {
 		// Minimum execution time: 27_039 nanoseconds.
-		Weight::from_ref_time(27_039_000)
+		Weight::from_parts(27_039_000, 0)
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: PangoroFeeMarket Relayers (r:1 w:0)
@@ -132,7 +132,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: PangoroFeeMarket AssignedRelayersNumber (r:0 w:1)
 	fn set_assigned_relayers_number() -> Weight {
 		// Minimum execution time: 90_728 nanoseconds.
-		Weight::from_ref_time(90_728_000)
+		Weight::from_parts(90_728_000, 0)
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

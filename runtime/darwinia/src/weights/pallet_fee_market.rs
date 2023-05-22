@@ -65,7 +65,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayers (r:0 w:1)
 	fn enroll_and_lock_collateral() -> Weight {
 		// Minimum execution time: 98_604 nanoseconds.
-		Weight::from_ref_time(98_604_000)
+		Weight::from_parts(98_604_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
@@ -78,7 +78,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayers (r:0 w:1)
 	fn increase_locked_collateral() -> Weight {
 		// Minimum execution time: 98_488 nanoseconds.
-		Weight::from_ref_time(98_488_000)
+		Weight::from_parts(98_488_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -91,7 +91,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayers (r:0 w:1)
 	fn decrease_locked_collateral() -> Weight {
 		// Minimum execution time: 103_486 nanoseconds.
-		Weight::from_ref_time(103_486_000)
+		Weight::from_parts(103_486_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -102,7 +102,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayers (r:0 w:1)
 	fn update_relay_fee() -> Weight {
 		// Minimum execution time: 82_189 nanoseconds.
-		Weight::from_ref_time(82_189_000)
+		Weight::from_parts(82_189_000, 0)
 			.saturating_add(T::DbWeight::get().reads(13))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -115,14 +115,14 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayersNumber (r:1 w:0)
 	fn cancel_enrollment() -> Weight {
 		// Minimum execution time: 100_402 nanoseconds.
-		Weight::from_ref_time(100_402_000)
+		Weight::from_parts(100_402_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
 	// Storage: CrabFeeMarket CollateralSlashProtect (r:0 w:1)
 	fn set_slash_protect() -> Weight {
 		// Minimum execution time: 30_534 nanoseconds.
-		Weight::from_ref_time(30_534_000)
+		Weight::from_parts(30_534_000, 0)
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: CrabFeeMarket Relayers (r:1 w:0)
@@ -132,7 +132,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: CrabFeeMarket AssignedRelayersNumber (r:0 w:1)
 	fn set_assigned_relayers_number() -> Weight {
 		// Minimum execution time: 78_289 nanoseconds.
-		Weight::from_ref_time(78_289_000)
+		Weight::from_parts(78_289_000, 0)
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

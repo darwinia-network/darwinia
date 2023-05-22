@@ -59,14 +59,14 @@ impl<T: frame_system::Config> cumulus_pallet_xcmp_queue::WeightInfo for WeightIn
 	// Storage: XcmpQueue QueueConfig (r:1 w:1)
 	fn set_config_with_u32() -> Weight {
 		// Minimum execution time: 26_238 nanoseconds.
-		Weight::from_ref_time(26_238_000)
+		Weight::from_parts(26_238_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: XcmpQueue QueueConfig (r:1 w:1)
 	fn set_config_with_weight() -> Weight {
 		// Minimum execution time: 23_922 nanoseconds.
-		Weight::from_ref_time(23_922_000)
+		Weight::from_parts(23_922_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

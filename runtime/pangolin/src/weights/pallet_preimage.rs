@@ -61,7 +61,7 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	/// The range of component `s` is `[0, 4194304]`.
 	fn note_preimage(_s: u32, ) -> Weight {
 		// Minimum execution time: 40_707 nanoseconds.
-		Weight::from_ref_time(6_866_096_000)
+		Weight::from_parts(6_866_096_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -70,7 +70,7 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	/// The range of component `s` is `[0, 4194304]`.
 	fn note_requested_preimage(_s: u32, ) -> Weight {
 		// Minimum execution time: 33_720 nanoseconds.
-		Weight::from_ref_time(7_005_652_000)
+		Weight::from_parts(7_005_652_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -79,7 +79,7 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	/// The range of component `s` is `[0, 4194304]`.
 	fn note_no_deposit_preimage(_s: u32, ) -> Weight {
 		// Minimum execution time: 30_681 nanoseconds.
-		Weight::from_ref_time(6_763_085_000)
+		Weight::from_parts(6_763_085_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -87,7 +87,7 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	// Storage: Preimage PreimageFor (r:0 w:1)
 	fn unnote_preimage() -> Weight {
 		// Minimum execution time: 230_248 nanoseconds.
-		Weight::from_ref_time(230_248_000)
+		Weight::from_parts(230_248_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -95,35 +95,35 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	// Storage: Preimage PreimageFor (r:0 w:1)
 	fn unnote_no_deposit_preimage() -> Weight {
 		// Minimum execution time: 191_384 nanoseconds.
-		Weight::from_ref_time(191_384_000)
+		Weight::from_parts(191_384_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn request_preimage() -> Weight {
 		// Minimum execution time: 209_034 nanoseconds.
-		Weight::from_ref_time(209_034_000)
+		Weight::from_parts(209_034_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn request_no_deposit_preimage() -> Weight {
 		// Minimum execution time: 170_505 nanoseconds.
-		Weight::from_ref_time(170_505_000)
+		Weight::from_parts(170_505_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn request_unnoted_preimage() -> Weight {
 		// Minimum execution time: 33_188 nanoseconds.
-		Weight::from_ref_time(33_188_000)
+		Weight::from_parts(33_188_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn request_requested_preimage() -> Weight {
 		// Minimum execution time: 22_002 nanoseconds.
-		Weight::from_ref_time(22_002_000)
+		Weight::from_parts(22_002_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -131,21 +131,21 @@ impl<T: frame_system::Config> pallet_preimage::WeightInfo for WeightInfo<T> {
 	// Storage: Preimage PreimageFor (r:0 w:1)
 	fn unrequest_preimage() -> Weight {
 		// Minimum execution time: 198_843 nanoseconds.
-		Weight::from_ref_time(198_843_000)
+		Weight::from_parts(198_843_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn unrequest_unnoted_preimage() -> Weight {
 		// Minimum execution time: 21_397 nanoseconds.
-		Weight::from_ref_time(21_397_000)
+		Weight::from_parts(21_397_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Preimage StatusFor (r:1 w:1)
 	fn unrequest_multi_referenced_preimage() -> Weight {
 		// Minimum execution time: 22_030 nanoseconds.
-		Weight::from_ref_time(22_030_000)
+		Weight::from_parts(22_030_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

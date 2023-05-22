@@ -67,9 +67,9 @@ impl<T: frame_system::Config> pallet_bridge_grandpa::WeightInfo for WeightInfo<T
 	/// The range of component `v` is `[50, 100]`.
 	fn submit_finality_proof(p: u32, _v: u32, ) -> Weight {
 		// Minimum execution time: 1_827_347 nanoseconds.
-		Weight::from_ref_time(1_827_347_000)
+		Weight::from_parts(1_827_347_000, 0)
 			// Standard Error: 5_261_126
-			.saturating_add(Weight::from_ref_time(22_294_934).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(22_294_934, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(7))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
