@@ -314,12 +314,7 @@ where
 			hwbench.clone(),
 		)
 		.await
-		.map_err(|e| match e {
-			cumulus_relay_chain_interface::RelayChainError::ServiceError(
-				polkadot_service::Error::Sub(x),
-			) => x,
-			s => s.to_string().into(),
-		})?;
+		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
 
 	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
