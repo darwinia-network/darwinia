@@ -60,7 +60,7 @@ impl<T: frame_system::Config> pallet_session::WeightInfo for WeightInfo<T> {
 	// Storage: Session KeyOwner (r:1 w:1)
 	fn set_keys() -> Weight {
 		// Minimum execution time: 47_205 nanoseconds.
-		Weight::from_ref_time(47_205_000)
+		Weight::from_parts(47_205_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -68,7 +68,7 @@ impl<T: frame_system::Config> pallet_session::WeightInfo for WeightInfo<T> {
 	// Storage: Session KeyOwner (r:0 w:1)
 	fn purge_keys() -> Weight {
 		// Minimum execution time: 31_060 nanoseconds.
-		Weight::from_ref_time(31_060_000)
+		Weight::from_parts(31_060_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

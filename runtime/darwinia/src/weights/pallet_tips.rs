@@ -61,7 +61,7 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	/// The range of component `r` is `[0, 16384]`.
 	fn report_awesome(_r: u32, ) -> Weight {
 		// Minimum execution time: 51_239 nanoseconds.
-		Weight::from_ref_time(79_155_000)
+		Weight::from_parts(79_155_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -69,7 +69,7 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	// Storage: Tips Reasons (r:0 w:1)
 	fn retract_tip() -> Weight {
 		// Minimum execution time: 33_296 nanoseconds.
-		Weight::from_ref_time(33_296_000)
+		Weight::from_parts(33_296_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -80,11 +80,11 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	/// The range of component `t` is `[1, 7]`.
 	fn tip_new(r: u32, t: u32, ) -> Weight {
 		// Minimum execution time: 39_205 nanoseconds.
-		Weight::from_ref_time(37_279_416)
+		Weight::from_parts(37_279_416, 0)
 			// Standard Error: 427
-			.saturating_add(Weight::from_ref_time(1_209).saturating_mul(r.into()))
+			.saturating_add(Weight::from_parts(1_209, 0).saturating_mul(r.into()))
 			// Standard Error: 1_167_257
-			.saturating_add(Weight::from_ref_time(275_083).saturating_mul(t.into()))
+			.saturating_add(Weight::from_parts(275_083, 0).saturating_mul(t.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -93,7 +93,7 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	/// The range of component `t` is `[1, 7]`.
 	fn tip(_t: u32, ) -> Weight {
 		// Minimum execution time: 19_075 nanoseconds.
-		Weight::from_ref_time(21_379_000)
+		Weight::from_parts(21_379_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -104,7 +104,7 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	/// The range of component `t` is `[1, 7]`.
 	fn close_tip(_t: u32, ) -> Weight {
 		// Minimum execution time: 57_555 nanoseconds.
-		Weight::from_ref_time(62_665_000)
+		Weight::from_parts(62_665_000, 0)
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -113,7 +113,7 @@ impl<T: frame_system::Config> pallet_tips::WeightInfo for WeightInfo<T> {
 	/// The range of component `t` is `[1, 7]`.
 	fn slash_tip(_t: u32, ) -> Weight {
 		// Minimum execution time: 20_435 nanoseconds.
-		Weight::from_ref_time(24_086_000)
+		Weight::from_parts(24_086_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

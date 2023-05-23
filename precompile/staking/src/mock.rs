@@ -154,7 +154,7 @@ pub type PCall = StakingCall<TestRuntime>;
 
 frame_support::parameter_types! {
 	pub const BlockGasLimit: U256 = U256::MAX;
-	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(20_000);
+	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
 	pub PrecompilesValue: TestPrecompiles<TestRuntime> = TestPrecompiles::<_>::new();
 }
 
@@ -174,6 +174,8 @@ impl pallet_evm::Config for TestRuntime {
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type Timestamp = Timestamp;
+	type WeightInfo = ();
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }

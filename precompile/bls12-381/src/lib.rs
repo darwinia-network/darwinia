@@ -57,7 +57,7 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 		signature: UnboundedBytes,
 	) -> EvmResult<bool> {
 		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			Weight::from_ref_time(BLS_WEIGHT),
+			Weight::from_parts(BLS_WEIGHT, 0),
 		))?;
 
 		ensure!(pub_keys.len() <= 512, revert("Too many pub keys"));

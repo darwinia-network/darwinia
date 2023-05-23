@@ -119,16 +119,17 @@ impl BridgedChainWithMessages for Pangolin {
 impl TargetHeaderChain<ToPangolinMessagePayload, <Self as ChainWithMessages>::AccountId>
 	for Pangolin
 {
-	type Error = &'static str;
 	type MessagesDeliveryProof = ToPangolinMessagesDeliveryProof;
 
-	fn verify_message(payload: &ToPangolinMessagePayload) -> Result<(), Self::Error> {
+	fn verify_message(
+		payload: &ToPangolinMessagePayload,
+	) -> Result<(), bp_messages::VerificationError> {
 		source::verify_chain_message::<WithPangolinMessageBridge>(payload)
 	}
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<bp_pangolin::AccountId>), Self::Error> {
+	) -> Result<(LaneId, InboundLaneData<bp_pangolin::AccountId>), bp_messages::VerificationError> {
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithPangolinMessageBridge,
 			bp_pangolin::Header,
@@ -138,13 +139,15 @@ impl TargetHeaderChain<ToPangolinMessagePayload, <Self as ChainWithMessages>::Ac
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangolin {
-	type Error = &'static str;
 	type MessagesProof = FromPangolinMessagesProof;
 
 	fn verify_messages_proof(
 		proof: Self::MessagesProof,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>, Self::Error> {
+	) -> Result<
+		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
+		bp_messages::VerificationError,
+	> {
 		target::verify_messages_proof_from_parachain::<
 			WithPangolinMessageBridge,
 			bp_pangolin::Header,

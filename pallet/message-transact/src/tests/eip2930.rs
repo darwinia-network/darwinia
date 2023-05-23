@@ -112,8 +112,8 @@ fn test_dispatch_eip2930_transaction_weight_mismatch() {
 				pallet_bridge_dispatch::Event::MessageWeightMismatch(
 					SOURCE_CHAIN_ID,
 					mock_message_id,
-					Weight::from_ref_time(1249900180000),
-					Weight::from_ref_time(1000000000000),
+					Weight::from_parts(1249900180000, 0),
+					Weight::from_parts(1000000000000, 0),
 				),
 			));
 		});

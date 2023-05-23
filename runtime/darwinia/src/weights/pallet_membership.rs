@@ -63,7 +63,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 99]`.
 	fn add_member(_m: u32, ) -> Weight {
 		// Minimum execution time: 22_770 nanoseconds.
-		Weight::from_ref_time(25_996_000)
+		Weight::from_parts(25_996_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -75,7 +75,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[2, 100]`.
 	fn remove_member(_m: u32, ) -> Weight {
 		// Minimum execution time: 23_888 nanoseconds.
-		Weight::from_ref_time(27_661_000)
+		Weight::from_parts(27_661_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -87,7 +87,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[2, 100]`.
 	fn swap_member(_m: u32, ) -> Weight {
 		// Minimum execution time: 26_532 nanoseconds.
-		Weight::from_ref_time(31_077_000)
+		Weight::from_parts(31_077_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -99,7 +99,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn reset_member(_m: u32, ) -> Weight {
 		// Minimum execution time: 24_395 nanoseconds.
-		Weight::from_ref_time(35_919_000)
+		Weight::from_parts(35_919_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -111,7 +111,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn change_key(_m: u32, ) -> Weight {
 		// Minimum execution time: 25_245 nanoseconds.
-		Weight::from_ref_time(33_801_000)
+		Weight::from_parts(33_801_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -121,7 +121,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn set_prime(_m: u32, ) -> Weight {
 		// Minimum execution time: 9_124 nanoseconds.
-		Weight::from_ref_time(9_319_000)
+		Weight::from_parts(9_319_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -130,7 +130,7 @@ impl<T: frame_system::Config> pallet_membership::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn clear_prime(_m: u32, ) -> Weight {
 		// Minimum execution time: 5_281 nanoseconds.
-		Weight::from_ref_time(5_403_000)
+		Weight::from_parts(5_403_000, 0)
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
 }

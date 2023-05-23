@@ -26,7 +26,6 @@ trauma      = { version = "2.2" }
 cumulus-client-cli                    = { workspace = true }
 cumulus-client-consensus-aura         = { workspace = true }
 cumulus-client-consensus-common       = { workspace = true }
-cumulus-client-network                = { workspace = true }
 cumulus-client-service                = { workspace = true }
 cumulus-primitives-core               = { workspace = true, features = ["std"] }
 cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
@@ -72,7 +71,7 @@ sc-consensus                   = { workspace = true }
 sc-consensus-aura              = { workspace = true }
 sc-executor                    = { workspace = true }
 sc-network                     = { workspace = true }
-sc-network-common              = { workspace = true }
+sc-network-sync                = { workspace = true }
 sc-offchain                    = { workspace = true }
 sc-rpc                         = { workspace = true }
 sc-service                     = { workspace = true }
@@ -84,7 +83,6 @@ sc-transaction-pool-api        = { workspace = true }
 sp-api                         = { workspace = true, features = ["std"] }
 sp-block-builder               = { workspace = true, features = ["std"] }
 sp-blockchain                  = { workspace = true }
-sp-consensus                   = { workspace = true }
 sp-consensus-aura              = { workspace = true, features = ["std"] }
 sp-core                        = { workspace = true, features = ["std"] }
 sp-io                          = { workspace = true, optional = true, features = ["std"] }

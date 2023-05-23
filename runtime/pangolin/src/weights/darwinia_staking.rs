@@ -167,7 +167,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Measured:  `645`
 		//  Estimated: `0`
 		// Minimum execution time: 7_000 nanoseconds.
-		Weight::from_ref_time(7_000_000)
+		Weight::from_parts(7_000_000, 0)
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
 	/// Storage: DarwiniaStaking CollatorCount (r:0 w:1)
@@ -177,7 +177,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Measured:  `645`
 		//  Estimated: `0`
 		// Minimum execution time: 16_383 nanoseconds.
-		Weight::from_ref_time(16_383_000)
+		Weight::from_parts(16_383_000, 0)
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 }

@@ -68,11 +68,11 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[0, 100]`.
 	fn set_members(m: u32, _n: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 13_463 nanoseconds.
-		Weight::from_ref_time(13_463_000)
+		Weight::from_parts(13_463_000, 0)
 			// Standard Error: 895_060
-			.saturating_add(Weight::from_ref_time(4_307_995).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(4_307_995, 0).saturating_mul(m.into()))
 			// Standard Error: 895_060
-			.saturating_add(Weight::from_ref_time(4_273_975).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(4_273_975, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(m.into())))
 			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(p.into())))
@@ -87,9 +87,9 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn execute(_b: u32, m: u32, ) -> Weight {
 		// Minimum execution time: 18_470 nanoseconds.
-		Weight::from_ref_time(19_245_456)
+		Weight::from_parts(19_245_456, 0)
 			// Standard Error: 9_898
-			.saturating_add(Weight::from_ref_time(15_368).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(15_368, 0).saturating_mul(m.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
 	// Storage: TechnicalCommittee Members (r:1 w:0)
@@ -100,9 +100,9 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[1, 100]`.
 	fn propose_execute(b: u32, _m: u32, ) -> Weight {
 		// Minimum execution time: 21_278 nanoseconds.
-		Weight::from_ref_time(22_250_858)
+		Weight::from_parts(22_250_858, 0)
 			// Standard Error: 2_161
-			.saturating_add(Weight::from_ref_time(1_654).saturating_mul(b.into()))
+			.saturating_add(Weight::from_parts(1_654, 0).saturating_mul(b.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 	}
 	// Storage: TechnicalCommittee Members (r:1 w:0)
@@ -118,11 +118,11 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn propose_proposed(_b: u32, m: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 26_624 nanoseconds.
-		Weight::from_ref_time(32_505_921)
+		Weight::from_parts(32_505_921, 0)
 			// Standard Error: 50_356
-			.saturating_add(Weight::from_ref_time(46_724).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(46_724, 0).saturating_mul(m.into()))
 			// Standard Error: 49_848
-			.saturating_add(Weight::from_ref_time(138_267).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(138_267, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -132,7 +132,7 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `m` is `[5, 100]`.
 	fn vote(_m: u32, ) -> Weight {
 		// Minimum execution time: 32_143 nanoseconds.
-		Weight::from_ref_time(38_586_052)
+		Weight::from_parts(38_586_052, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -146,11 +146,11 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn close_early_disapproved(m: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 27_661 nanoseconds.
-		Weight::from_ref_time(26_414_753)
+		Weight::from_parts(26_414_753, 0)
 			// Standard Error: 6_439
-			.saturating_add(Weight::from_ref_time(14_572).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(14_572, 0).saturating_mul(m.into()))
 			// Standard Error: 6_244
-			.saturating_add(Weight::from_ref_time(203_454).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(203_454, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -166,11 +166,11 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn close_early_approved(b: u32, _m: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 41_390 nanoseconds.
-		Weight::from_ref_time(40_470_154)
+		Weight::from_parts(40_470_154, 0)
 			// Standard Error: 4_809
-			.saturating_add(Weight::from_ref_time(1_781).saturating_mul(b.into()))
+			.saturating_add(Weight::from_parts(1_781, 0).saturating_mul(b.into()))
 			// Standard Error: 49_650
-			.saturating_add(Weight::from_ref_time(225_335).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(225_335, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -185,11 +185,11 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn close_disapproved(m: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 31_571 nanoseconds.
-		Weight::from_ref_time(31_010_232)
+		Weight::from_parts(31_010_232, 0)
 			// Standard Error: 4_721
-			.saturating_add(Weight::from_ref_time(5_286).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(5_286, 0).saturating_mul(m.into()))
 			// Standard Error: 4_578
-			.saturating_add(Weight::from_ref_time(178_121).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(178_121, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -206,13 +206,13 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 40_552 nanoseconds.
-		Weight::from_ref_time(33_111_820)
+		Weight::from_parts(33_111_820, 0)
 			// Standard Error: 2_568
-			.saturating_add(Weight::from_ref_time(3_905).saturating_mul(b.into()))
+			.saturating_add(Weight::from_parts(3_905, 0).saturating_mul(b.into()))
 			// Standard Error: 27_340
-			.saturating_add(Weight::from_ref_time(34_500).saturating_mul(m.into()))
+			.saturating_add(Weight::from_parts(34_500, 0).saturating_mul(m.into()))
 			// Standard Error: 26_512
-			.saturating_add(Weight::from_ref_time(261_368).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(261_368, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -223,9 +223,9 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 100]`.
 	fn disapprove_proposal(p: u32, ) -> Weight {
 		// Minimum execution time: 18_178 nanoseconds.
-		Weight::from_ref_time(18_225_823)
+		Weight::from_parts(18_225_823, 0)
 			// Standard Error: 5_019
-			.saturating_add(Weight::from_ref_time(189_676).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(189_676, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}

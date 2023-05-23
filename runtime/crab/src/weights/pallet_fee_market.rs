@@ -65,7 +65,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayers (r:0 w:1)
 	fn enroll_and_lock_collateral() -> Weight {
 		// Minimum execution time: 101_642 nanoseconds.
-		Weight::from_ref_time(101_642_000)
+		Weight::from_parts(101_642_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
@@ -78,7 +78,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayers (r:0 w:1)
 	fn increase_locked_collateral() -> Weight {
 		// Minimum execution time: 99_179 nanoseconds.
-		Weight::from_ref_time(99_179_000)
+		Weight::from_parts(99_179_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -91,7 +91,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayers (r:0 w:1)
 	fn decrease_locked_collateral() -> Weight {
 		// Minimum execution time: 111_459 nanoseconds.
-		Weight::from_ref_time(111_459_000)
+		Weight::from_parts(111_459_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -102,7 +102,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayers (r:0 w:1)
 	fn update_relay_fee() -> Weight {
 		// Minimum execution time: 95_315 nanoseconds.
-		Weight::from_ref_time(95_315_000)
+		Weight::from_parts(95_315_000, 0)
 			.saturating_add(T::DbWeight::get().reads(13))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -115,14 +115,14 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayersNumber (r:1 w:0)
 	fn cancel_enrollment() -> Weight {
 		// Minimum execution time: 163_042 nanoseconds.
-		Weight::from_ref_time(163_042_000)
+		Weight::from_parts(163_042_000, 0)
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
 	// Storage: DarwiniaFeeMarket CollateralSlashProtect (r:0 w:1)
 	fn set_slash_protect() -> Weight {
 		// Minimum execution time: 31_462 nanoseconds.
-		Weight::from_ref_time(31_462_000)
+		Weight::from_parts(31_462_000, 0)
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: DarwiniaFeeMarket Relayers (r:1 w:0)
@@ -132,7 +132,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 	// Storage: DarwiniaFeeMarket AssignedRelayersNumber (r:0 w:1)
 	fn set_assigned_relayers_number() -> Weight {
 		// Minimum execution time: 77_980 nanoseconds.
-		Weight::from_ref_time(77_980_000)
+		Weight::from_parts(77_980_000, 0)
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

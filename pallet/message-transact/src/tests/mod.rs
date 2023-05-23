@@ -39,7 +39,7 @@ pub(crate) type SubChainId = [u8; 4];
 pub(crate) const SOURCE_CHAIN_ID: SubChainId = *b"srce";
 pub(crate) const TARGET_CHAIN_ID: SubChainId = *b"trgt";
 pub(crate) const TEST_WEIGHT: frame_support::weights::Weight =
-	frame_support::weights::Weight::from_ref_time(1_000_000_000_000);
+	frame_support::weights::Weight::from_parts(1_000_000_000_000, 0);
 
 // This ERC-20 contract mints the maximum amount of tokens to the contract creator.
 // pragma solidity ^0.5.0;

@@ -94,9 +94,6 @@ where
 		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
 	) {
 		if let Some(fees) = fees_then_tips.next() {
-			// substrate
-			use frame_support::traits::Imbalance;
-
 			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
 			// total_supply accordingly
 			<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(

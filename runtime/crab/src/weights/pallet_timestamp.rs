@@ -60,12 +60,12 @@ impl<T: frame_system::Config> pallet_timestamp::WeightInfo for WeightInfo<T> {
 	// Storage: Aura CurrentSlot (r:1 w:0)
 	fn set() -> Weight {
 		// Minimum execution time: 26_616 nanoseconds.
-		Weight::from_ref_time(26_616_000)
+		Weight::from_parts(26_616_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	fn on_finalize() -> Weight {
 		// Minimum execution time: 6_441 nanoseconds.
-		Weight::from_ref_time(6_441_000)
+		Weight::from_parts(6_441_000, 0)
 	}
 }

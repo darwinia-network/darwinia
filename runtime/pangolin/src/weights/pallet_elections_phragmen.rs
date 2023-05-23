@@ -64,7 +64,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `v` is `[1, 16]`.
 	fn vote_equal(_v: u32, ) -> Weight {
 		// Minimum execution time: 48_148 nanoseconds.
-		Weight::from_ref_time(51_815_000)
+		Weight::from_parts(51_815_000, 0)
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -76,7 +76,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `v` is `[2, 16]`.
 	fn vote_more(_v: u32, ) -> Weight {
 		// Minimum execution time: 55_391 nanoseconds.
-		Weight::from_ref_time(58_799_000)
+		Weight::from_parts(58_799_000, 0)
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -88,7 +88,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `v` is `[2, 16]`.
 	fn vote_less(_v: u32, ) -> Weight {
 		// Minimum execution time: 52_970 nanoseconds.
-		Weight::from_ref_time(56_003_000)
+		Weight::from_parts(56_003_000, 0)
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -96,7 +96,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	// Storage: Balances Locks (r:1 w:1)
 	fn remove_voter() -> Weight {
 		// Minimum execution time: 59_730 nanoseconds.
-		Weight::from_ref_time(59_730_000)
+		Weight::from_parts(59_730_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -106,7 +106,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `c` is `[1, 30]`.
 	fn submit_candidacy(_c: u32, ) -> Weight {
 		// Minimum execution time: 36_106 nanoseconds.
-		Weight::from_ref_time(50_997_000)
+		Weight::from_parts(50_997_000, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -114,7 +114,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `c` is `[1, 30]`.
 	fn renounce_candidacy_candidate(_c: u32, ) -> Weight {
 		// Minimum execution time: 32_717 nanoseconds.
-		Weight::from_ref_time(37_611_000)
+		Weight::from_parts(37_611_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -125,21 +125,21 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	// Storage: Council Members (r:0 w:1)
 	fn renounce_candidacy_members() -> Weight {
 		// Minimum execution time: 47_022 nanoseconds.
-		Weight::from_ref_time(47_022_000)
+		Weight::from_parts(47_022_000, 0)
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
 	// Storage: PhragmenElection RunnersUp (r:1 w:1)
 	fn renounce_candidacy_runners_up() -> Weight {
 		// Minimum execution time: 33_459 nanoseconds.
-		Weight::from_ref_time(33_459_000)
+		Weight::from_parts(33_459_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Benchmark Override (r:0 w:0)
 	fn remove_member_without_replacement() -> Weight {
 		// Minimum execution time: 500_000_000 nanoseconds.
-		Weight::from_ref_time(500_000_000_000)
+		Weight::from_parts(500_000_000_000, 0)
 	}
 	// Storage: PhragmenElection Members (r:1 w:1)
 	// Storage: System Account (r:2 w:2)
@@ -149,7 +149,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	// Storage: Council Members (r:0 w:1)
 	fn remove_member_with_replacement() -> Weight {
 		// Minimum execution time: 57_856 nanoseconds.
-		Weight::from_ref_time(57_856_000)
+		Weight::from_parts(57_856_000, 0)
 			.saturating_add(T::DbWeight::get().reads(6))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
@@ -163,11 +163,11 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `d` is `[0, 150]`.
 	fn clean_defunct_voters(v: u32, d: u32, ) -> Weight {
 		// Minimum execution time: 7_061_492 nanoseconds.
-		Weight::from_ref_time(405_137_000)
+		Weight::from_parts(405_137_000, 0)
 			// Standard Error: 675_932
-			.saturating_add(Weight::from_ref_time(43_469_089).saturating_mul(v.into()))
+			.saturating_add(Weight::from_parts(43_469_089, 0).saturating_mul(v.into()))
 			// Standard Error: 675_932
-			.saturating_add(Weight::from_ref_time(906_609).saturating_mul(d.into()))
+			.saturating_add(Weight::from_parts(906_609, 0).saturating_mul(d.into()))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().reads((3_u64).saturating_mul(v.into())))
 			.saturating_add(T::DbWeight::get().writes((3_u64).saturating_mul(v.into())))
@@ -186,13 +186,13 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 	/// The range of component `e` is `[300, 4800]`.
 	fn election_phragmen(c: u32, v: u32, e: u32, ) -> Weight {
 		// Minimum execution time: 532_432 nanoseconds.
-		Weight::from_ref_time(532_432_000)
+		Weight::from_parts(532_432_000, 0)
 			// Standard Error: 67_019_452
-			.saturating_add(Weight::from_ref_time(38_184_160).saturating_mul(c.into()))
+			.saturating_add(Weight::from_parts(38_184_160, 0).saturating_mul(c.into()))
 			// Standard Error: 6_606_785
-			.saturating_add(Weight::from_ref_time(7_621_035).saturating_mul(v.into()))
+			.saturating_add(Weight::from_parts(7_621_035, 0).saturating_mul(v.into()))
 			// Standard Error: 424_322
-			.saturating_add(Weight::from_ref_time(150_192).saturating_mul(e.into()))
+			.saturating_add(Weight::from_parts(150_192, 0).saturating_mul(e.into()))
 			.saturating_add(T::DbWeight::get().reads(35))
 			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(c.into())))
 			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(v.into())))

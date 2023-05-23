@@ -44,7 +44,7 @@ use dc_primitives::*;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
 use sc_consensus::ImportQueue;
-use sc_network_common::service::NetworkBlock;
+use sc_network::NetworkBlock;
 use sp_core::Pair;
 use sp_runtime::app_crypto::AppKey;
 
@@ -275,7 +275,7 @@ where
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
-		Arc<sc_network::NetworkService<Block, Hash>>,
+		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::SyncCryptoStorePtr,
 		bool,
 	) -> Result<
@@ -316,26 +316,22 @@ where
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
 
-	let block_announce_validator =
-		cumulus_client_network::BlockAnnounceValidator::new(relay_chain_interface.clone(), para_id);
-
 	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 
-	let (network, system_rpc_tx, tx_handler_controller, start_network) =
-		sc_service::build_network(sc_service::BuildNetworkParams {
-			config: &parachain_config,
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
+		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
+			parachain_config: &parachain_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
+			para_id,
 			spawn_handle: task_manager.spawn_handle(),
+			relay_chain_interface: relay_chain_interface.clone(),
 			import_queue,
-			block_announce_validator_builder: Some(Box::new(|_| {
-				Box::new(block_announce_validator)
-			})),
-			warp_sync: None,
-		})?;
+		})
+		.await?;
 
 	if parachain_config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
@@ -354,6 +350,10 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
 	));
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier_service::spawn_frontier_tasks(
@@ -365,6 +365,8 @@ where
 		overrides.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
 	);
 	let rpc_builder = {
@@ -378,6 +380,7 @@ where
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
+		let sync_service = sync_service.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -387,6 +390,7 @@ where
 				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
+				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				backend: frontier_backend.clone(),
 				max_past_logs,
@@ -394,14 +398,16 @@ where
 				fee_history_cache_limit,
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
+				forced_parent_hashes: None,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
-				crate::rpc::create_full(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
 					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
 						trace_filter_max_count: eth_rpc_config.tracing_max_count,
@@ -409,7 +415,13 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+					None,
+				)
+				.map_err(Into::into)
 			}
 		})
 	};
@@ -423,6 +435,7 @@ where
 		keystore: keystore_container.sync_keystore(),
 		backend: backend.clone(),
 		network: network.clone(),
+		sync_service: sync_service.clone(),
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: telemetry.as_mut(),
@@ -452,11 +465,15 @@ where
 	}
 
 	let announce_block = {
-		let network = network.clone();
-		Arc::new(move |hash, data| network.announce_block(hash, data))
+		let sync_service = sync_service.clone();
+		Arc::new(move |hash, data| sync_service.announce_block(hash, data))
 	};
 
 	let relay_chain_slot_duration = Duration::from_secs(6);
+
+	let overseer_handle = relay_chain_interface
+		.overseer_handle()
+		.map_err(|e| sc_service::Error::Application(Box::new(e)))?;
 
 	if validator {
 		let parachain_consensus = build_consensus(
@@ -467,7 +484,7 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			network,
+			sync_service,
 			keystore_container.sync_keystore(),
 			force_authoring,
 		)?;
@@ -485,6 +502,7 @@ where
 			import_queue: import_queue_service,
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
+			recovery_handle: Box::new(overseer_handle),
 		};
 
 		cumulus_client_service::start_collator(params).await?;
@@ -497,6 +515,7 @@ where
 			relay_chain_interface,
 			relay_chain_slot_duration,
 			import_queue: import_queue_service,
+			recovery_handle: Box::new(overseer_handle),
 		};
 
 		cumulus_client_service::start_full_node(params)?;
@@ -703,7 +722,7 @@ where
 			),
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
 
-	let (network, system_rpc_tx, tx_handler_controller, start_network) =
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -711,7 +730,7 @@ where
 			spawn_handle: task_manager.spawn_handle(),
 			import_queue,
 			block_announce_validator_builder: None,
-			warp_sync: None,
+			warp_sync_params: None,
 		})?;
 
 	if config.offchain_worker.enabled {
@@ -803,8 +822,8 @@ where
 			force_authoring,
 			backoff_authoring_blocks,
 			keystore: keystore_container.sync_keystore(),
-			sync_oracle: network.clone(),
-			justification_sync_link: network.clone(),
+			sync_oracle: sync_service.clone(),
+			justification_sync_link: sync_service.clone(),
 			// We got around 500ms for proposing
 			block_proposal_slot_portion: cumulus_client_consensus_aura::SlotProportion::new(
 				1f32 / 24f32,
@@ -833,6 +852,10 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry,
 	));
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier_service::spawn_frontier_tasks(
@@ -844,6 +867,8 @@ where
 		overrides.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
 	);
 	let rpc_extensions_builder = {
@@ -857,6 +882,7 @@ where
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
+		let sync_service = sync_service.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -866,6 +892,7 @@ where
 				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
+				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				backend: frontier_backend.clone(),
 				max_past_logs,
@@ -873,14 +900,16 @@ where
 				fee_history_cache_limit,
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
+				forced_parent_hashes: None,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
-				crate::rpc::create_full(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
 					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
 						trace_filter_max_count: eth_rpc_config.tracing_max_count,
@@ -888,7 +917,13 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+					None,
+				)
+				.map_err(Into::into)
 			}
 		})
 	};
@@ -902,6 +937,7 @@ where
 		keystore: keystore_container.sync_keystore(),
 		backend,
 		network,
+		sync_service,
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: None,

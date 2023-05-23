@@ -37,6 +37,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type LoserCandidate = Treasury;
 	type MaxCandidates = ConstU32<MAX_CANDIDATES>;
 	type MaxVoters = ConstU32<{ 10 * MAX_CANDIDATES }>;
+	type MaxVotesPerVoter = ConstU32<16>;
 	type PalletId = PhragmenElectionPalletId;
 	type RuntimeEvent = RuntimeEvent;
 	// Daily council elections.

@@ -90,6 +90,8 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = ();
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type Timestamp = Timestamp;
+	type WeightInfo = ();
 	type WeightPerGas = ();
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<sp_core::H160>;
 }

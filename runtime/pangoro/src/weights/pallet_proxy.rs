@@ -60,7 +60,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn proxy(_p: u32, ) -> Weight {
 		// Minimum execution time: 38_484 nanoseconds.
-		Weight::from_ref_time(39_446_000)
+		Weight::from_parts(39_446_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
 	// Storage: Proxy Proxies (r:1 w:0)
@@ -70,9 +70,9 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn proxy_announced(_a: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 56_296 nanoseconds.
-		Weight::from_ref_time(60_565_033)
+		Weight::from_parts(60_565_033, 0)
 			// Standard Error: 238_965
-			.saturating_add(Weight::from_ref_time(231_966).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(231_966, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -82,9 +82,9 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn remove_announcement(a: u32, _p: u32, ) -> Weight {
 		// Minimum execution time: 37_859 nanoseconds.
-		Weight::from_ref_time(46_053_333)
+		Weight::from_parts(46_053_333, 0)
 			// Standard Error: 196_895
-			.saturating_add(Weight::from_ref_time(335_645).saturating_mul(a.into()))
+			.saturating_add(Weight::from_parts(335_645, 0).saturating_mul(a.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -94,11 +94,11 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn reject_announcement(a: u32, p: u32, ) -> Weight {
 		// Minimum execution time: 39_266 nanoseconds.
-		Weight::from_ref_time(38_147_933)
+		Weight::from_parts(38_147_933, 0)
 			// Standard Error: 155_046
-			.saturating_add(Weight::from_ref_time(204_612).saturating_mul(a.into()))
+			.saturating_add(Weight::from_parts(204_612, 0).saturating_mul(a.into()))
 			// Standard Error: 160_214
-			.saturating_add(Weight::from_ref_time(36_066).saturating_mul(p.into()))
+			.saturating_add(Weight::from_parts(36_066, 0).saturating_mul(p.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -109,7 +109,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn announce(_a: u32, _p: u32, ) -> Weight {
 		// Minimum execution time: 54_160 nanoseconds.
-		Weight::from_ref_time(56_137_433)
+		Weight::from_parts(56_137_433, 0)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -117,7 +117,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn add_proxy(_p: u32, ) -> Weight {
 		// Minimum execution time: 41_987 nanoseconds.
-		Weight::from_ref_time(49_705_000)
+		Weight::from_parts(49_705_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -125,7 +125,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn remove_proxy(_p: u32, ) -> Weight {
 		// Minimum execution time: 38_358 nanoseconds.
-		Weight::from_ref_time(79_591_000)
+		Weight::from_parts(79_591_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -133,7 +133,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn remove_proxies(_p: u32, ) -> Weight {
 		// Minimum execution time: 37_663 nanoseconds.
-		Weight::from_ref_time(39_280_000)
+		Weight::from_parts(39_280_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -142,7 +142,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[1, 31]`.
 	fn create_pure(_p: u32, ) -> Weight {
 		// Minimum execution time: 46_212 nanoseconds.
-		Weight::from_ref_time(48_010_000)
+		Weight::from_parts(48_010_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -150,7 +150,7 @@ impl<T: frame_system::Config> pallet_proxy::WeightInfo for WeightInfo<T> {
 	/// The range of component `p` is `[0, 30]`.
 	fn kill_pure(_p: u32, ) -> Weight {
 		// Minimum execution time: 41_054 nanoseconds.
-		Weight::from_ref_time(47_315_000)
+		Weight::from_parts(47_315_000, 0)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

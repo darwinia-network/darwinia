@@ -139,7 +139,6 @@ pub mod pallet {
 		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, T::MaxDeposits>>;
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(PhantomData<T>);
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {

@@ -25,7 +25,10 @@ const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
 	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
 	pub PrecompilesValue: PangoroPrecompiles<Runtime> = PangoroPrecompiles::<_>::new();
-	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
+	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(
+		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
+		0
+	);
 }
 // TODO: Integrate to the upstream repo
 pub struct FromH160;
@@ -162,6 +165,8 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type Timestamp = Timestamp;
+	type WeightInfo = ();
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
