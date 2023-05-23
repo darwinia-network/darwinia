@@ -18,7 +18,7 @@
 
 // darwinia
 use dc_primitives::AccountId;
-// moonbeam
+// frontier
 use fp_account::AccountId20;
 // substrate
 use frame_support::traits::EitherOfDiverse;

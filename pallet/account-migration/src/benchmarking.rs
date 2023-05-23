@@ -40,7 +40,7 @@ mod benchmarks {
 			b"Asset",
 			&Blake2_128Concat::hash(&encoded_kton_id),
 		) {
-			asset_details.supply = 100;
+			asset_details.supply = 1_024;
 
 			migration::put_storage_value(
 				b"Assets",
@@ -53,14 +53,14 @@ mod benchmarks {
 		<Accounts<T>>::insert(
 			from,
 			AccountInfo {
-				data: AccountData { free: 100, ..Default::default() },
+				data: AccountData { free: 1_024, ..Default::default() },
 				..Default::default()
 			},
 		);
 		<KtonAccounts<T>>::insert(
 			from,
 			AssetAccount {
-				balance: 100,
+				balance: 1_024,
 				is_frozen: Default::default(),
 				reason: ExistenceReason::Sufficient,
 				extra: Default::default(),

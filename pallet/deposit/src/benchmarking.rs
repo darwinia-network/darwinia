@@ -35,7 +35,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 		let max_deposits = T::MaxDeposits::get();
 
-		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT + 1);
 
 		// Worst-case scenario:
 		//
@@ -54,7 +55,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 		let max_deposits = T::MaxDeposits::get();
 
-		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT + 1);
 
 		(0..max_deposits).for_each(|_| {
 			<Pallet<T>>::lock(RawOrigin::Signed(a.clone()).into(), UNIT, MAX_LOCKING_MONTHS)
@@ -82,7 +84,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 		let max_deposits = T::MaxDeposits::get();
 
-		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT + 1);
 		T::Kton::mint(&a, UNIT).unwrap();
 
 		(0..max_deposits).for_each(|_| {

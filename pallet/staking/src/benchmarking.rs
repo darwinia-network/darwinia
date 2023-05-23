@@ -34,7 +34,7 @@ mod benchmarks {
 	where
 		T: Config + darwinia_deposit::Config,
 	{
-		(0..count.min(<<T as Config>::MaxDeposits>::get()) as u8)
+		(0..count.min(<<T as Config>::MaxUnstakings>::get()) as u8)
 			.map(|x| {
 				<darwinia_deposit::Pallet<T>>::lock(
 					RawOrigin::Signed(who.to_owned()).into(),
@@ -49,26 +49,28 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn stake(x: Linear<0, 255>) {
+	fn stake(x: Linear<0, 1_023>) {
 		let a = frame_benchmarking::whitelisted_caller();
 
-		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxDeposits`.
+		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
 	}
 
 	#[benchmark]
-	fn unstake(x: Linear<0, 255>) {
+	fn unstake(x: Linear<0, 1_023>) {
 		let a = frame_benchmarking::whitelisted_caller();
 
-		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
@@ -78,16 +80,17 @@ mod benchmarks {
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxDeposits`.
+		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
 	}
 
 	#[benchmark]
-	fn restake(x: Linear<0, 255>) {
+	fn restake(x: Linear<0, 1_023>) {
 		let a = frame_benchmarking::whitelisted_caller();
 
-		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
@@ -99,7 +102,7 @@ mod benchmarks {
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxDeposits`.
+		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
 	}
@@ -108,10 +111,11 @@ mod benchmarks {
 	fn claim() {
 		let a = frame_benchmarking::whitelisted_caller();
 
-		T::RingCurrency::make_free_balance_be(&a, 256 * UNIT);
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
-		let deposits = deposit_for::<T>(&a, <T as Config>::MaxDeposits::get());
+		let deposits = deposit_for::<T>(&a, <T as Config>::MaxUnstakings::get());
 
 		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
 			.unwrap();
@@ -125,7 +129,7 @@ mod benchmarks {
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxDeposits`.
+		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		// In addition, all `RING` and `KTON` should be claimed, to make ledger get killed.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a.clone()));
@@ -149,7 +153,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
-		// TODO: https://github.com/paritytech/substrate/pull/13655
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		T::RingCurrency::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
@@ -172,7 +176,7 @@ mod benchmarks {
 	fn chill() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 
-		// TODO: https://github.com/paritytech/substrate/pull/13655
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		T::RingCurrency::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
