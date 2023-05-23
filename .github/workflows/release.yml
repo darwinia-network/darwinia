@@ -277,7 +277,7 @@ jobs:
             --ref=main \
             --repo=darwinia-network/devops \
             --raw-field=type=testnets \
-            --raw-field="version=$GIT_TAG_NAME" \
+            --raw-field="version=$GIT_TAG_NAME"
 
   clean-artifacts:
     name: Clean artifacts
