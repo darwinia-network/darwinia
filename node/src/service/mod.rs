@@ -350,6 +350,10 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
 	));
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier_service::spawn_frontier_tasks(
@@ -361,6 +365,8 @@ where
 		overrides.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
 	);
 	let rpc_builder = {
@@ -374,6 +380,7 @@ where
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
+		let sync_service = sync_service.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -383,6 +390,7 @@ where
 				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
+				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				backend: frontier_backend.clone(),
 				max_past_logs,
@@ -390,14 +398,16 @@ where
 				fee_history_cache_limit,
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
+				forced_parent_hashes: None,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
-				crate::rpc::create_full(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
 					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
 						trace_filter_max_count: eth_rpc_config.tracing_max_count,
@@ -405,7 +415,13 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+					None,
+				)
+				.map_err(Into::into)
 			}
 		})
 	};
@@ -837,6 +853,10 @@ where
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry,
 	));
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier_service::spawn_frontier_tasks(
@@ -848,6 +868,8 @@ where
 		overrides.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
 	);
 	let rpc_extensions_builder = {
@@ -861,6 +883,7 @@ where
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
+		let sync_service = sync_service.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -870,6 +893,7 @@ where
 				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
+				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				backend: frontier_backend.clone(),
 				max_past_logs,
@@ -877,14 +901,16 @@ where
 				fee_history_cache_limit,
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
+				forced_parent_hashes: None,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
 			{
-				crate::rpc::create_full(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
 					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
 					Some(crate::rpc::TracingConfig {
 						tracing_requesters: tracing_requesters.clone(),
 						trace_filter_max_count: eth_rpc_config.tracing_max_count,
@@ -892,7 +918,13 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full(deps, subscription_task_executor, None).map_err(Into::into)
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+					None,
+				)
+				.map_err(Into::into)
 			}
 		})
 	};
