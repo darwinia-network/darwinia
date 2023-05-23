@@ -81,7 +81,6 @@ impl pallet_evm::Config for Runtime {
 	type CallOrigin = pallet_evm::EnsureAddressRoot<sp_core::H160>;
 	type ChainId = ();
 	type Currency = Balances;
-	type ExtraDataLength = ();
 	type FeeCalculator = ();
 	type FindAuthor = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
