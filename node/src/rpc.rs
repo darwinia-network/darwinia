@@ -189,7 +189,7 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			sync.clone(),
+			sync,
 			subscription_task_executor,
 			overrides,
 			pubsub_notification_sinks,
