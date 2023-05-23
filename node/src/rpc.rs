@@ -76,7 +76,6 @@ pub struct TracingConfig {
 
 /// Default Ethereum RPC config
 pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
-
 impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
 where
 	C: sc_client_api::StorageProvider<Block, BE> + Sync + Send + 'static,
@@ -88,7 +87,7 @@ where
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, BE, A, EC: fc_rpc::EthConfig<Block, C>>(
+pub fn create_full<C, P, BE, A, EC>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 	pubsub_notification_sinks: Arc<
@@ -118,6 +117,7 @@ where
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
+	EC: fc_rpc::EthConfig<Block, C>,
 {
 	// frontier
 	use fc_rpc::{
