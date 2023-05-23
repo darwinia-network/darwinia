@@ -24,7 +24,7 @@
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 
 // std
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 // darwinia
 use dc_primitives::*;
 // moonbeam
@@ -47,7 +47,9 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<sc_network_sync::SyncingService<Block>>,
+	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
+	/// Chain syncing service
+	pub sync: Arc<sc_network_sync::SyncingService<Block>>,
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.
@@ -62,6 +64,8 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub overrides: Arc<fc_rpc::OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
+	/// Mandated parent hashes for a given block hash.
+	pub forced_parent_hashes: Option<BTreeMap<sp_core::H256, sp_core::H256>>,
 }
 
 /// EVM tracing rpc server config
@@ -70,10 +74,27 @@ pub struct TracingConfig {
 	pub trace_filter_max_count: u32,
 }
 
+pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
+
+impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
+where
+	C: sc_client_api::StorageProvider<Block, BE> + Sync + Send + 'static,
+	BE: sc_client_api::Backend<Block> + 'static,
+{
+	type EstimateGasAdapter = ();
+	type RuntimeStorageOverride =
+		fc_rpc::frontier_backend_client::SystemAccountId20StorageOverride<Block, C, BE>;
+}
+
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, BE, A>(
+pub fn create_full<C, P, BE, A, EC: fc_rpc::EthConfig<Block, C>>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<Block>,
+		>,
+	>,
 	maybe_tracing_config: Option<TracingConfig>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
@@ -86,6 +107,7 @@ where
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::backend::AuxStore
 		+ sp_api::ProvideRuntimeApi<Block>
+		+ sp_api::CallApiAt<Block>
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
@@ -114,6 +136,7 @@ where
 		deny_unsafe,
 		is_authority,
 		network,
+		sync,
 		filter_pool,
 		backend,
 		max_past_logs,
@@ -121,6 +144,7 @@ where
 		fee_history_cache_limit,
 		overrides,
 		block_data_cache,
+		forced_parent_hashes,
 	} = deps;
 
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
@@ -131,7 +155,7 @@ where
 			pool.clone(),
 			graph,
 			<Option<NoTransactionConverter>>::None,
-			network.clone(),
+			sync.clone(),
 			vec![],
 			overrides.clone(),
 			backend.clone(),
@@ -140,7 +164,9 @@ where
 			fee_history_cache,
 			fee_history_cache_limit,
 			10,
+			forced_parent_hashes,
 		)
+		.replace_config::<EC>()
 		.into_rpc(),
 	)?;
 
@@ -162,9 +188,10 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			network.clone(),
+			sync.clone(),
 			subscription_task_executor,
 			overrides,
+			pubsub_notification_sinks,
 		)
 		.into_rpc(),
 	)?;

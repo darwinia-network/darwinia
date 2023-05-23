@@ -36,6 +36,7 @@ use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
 use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
 // substrate
 use sc_cli::SubstrateCli;
+use sc_network_sync::SyncingService;
 use sc_service::{BasePath, Configuration, TaskManager};
 
 #[derive(Clone)]
@@ -54,6 +55,12 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 	overrides: Arc<OverrideHandle<B>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
+	sync: Arc<SyncingService<B>>,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<B>,
+		>,
+	>,
 	eth_rpc_config: EthRpcConfig,
 ) -> RpcRequesters
 where
@@ -85,6 +92,8 @@ where
 			3,
 			0,
 			SyncStrategy::Parachain,
+			sync,
+			pubsub_notification_sinks,
 		)
 		.for_each(|()| future::ready(())),
 	);
