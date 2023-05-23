@@ -687,7 +687,6 @@ where
 /// !!! WARNING: DO NOT USE ELSEWHERE
 pub fn start_dev_node<RuntimeApi, Executor>(
 	mut config: sc_service::Configuration,
-	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
