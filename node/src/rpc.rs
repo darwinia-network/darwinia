@@ -74,6 +74,7 @@ pub struct TracingConfig {
 	pub trace_filter_max_count: u32,
 }
 
+/// Default Ethereum RPC config
 pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
 
 impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
@@ -103,11 +104,11 @@ where
 	C: 'static
 		+ Send
 		+ Sync
+		+ sc_client_api::backend::AuxStore
 		+ sc_client_api::backend::StorageProvider<Block, BE>
 		+ sc_client_api::BlockchainEvents<Block>
-		+ sc_client_api::backend::AuxStore
-		+ sp_api::ProvideRuntimeApi<Block>
 		+ sp_api::CallApiAt<Block>
+		+ sp_api::ProvideRuntimeApi<Block>
 		+ sp_blockchain::HeaderBackend<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
