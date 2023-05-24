@@ -178,6 +178,7 @@ frame_benchmarking::define_benchmarks! {
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgeRococoGrandpa]
 	[pallet_bridge_parachains, ParachainsBench::<Runtime, WithRococoParachainsInstance>]
+	[pallet_bridge_messages, MessagesBench::<Runtime, WithPangolinMessages>]
 	[pallet_fee_market, PangolinFeeMarket]
 	// substrate
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
@@ -619,6 +620,7 @@ sp_api::impl_runtime_apis! {
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			// darwinia-messages-substrate
 			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
+			use pallet_bridge_messages::benchmarking::Pallet as MessagesBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 
@@ -671,6 +673,78 @@ sp_api::impl_runtime_apis! {
 					Vec<(bp_polkadot_core::parachains::ParaId, bp_polkadot_core::parachains::ParaHash)>,
 				) {
 					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithRococoParachainsInstance>(parachains, parachain_head_size, proof_size)
+				}
+			}
+
+			use pallet_bridge_messages::benchmarking::{
+				Pallet as MessagesBench,
+				Config as MessagesConfig,
+				MessageDeliveryProofParams,
+				MessageProofParams,
+			};
+			use bp_messages::MessageNonce;
+			use crate::pangolin::{ToPangolinMessagesDeliveryProof, FromPangolinMessagesProof};
+			use crate::pangolin::WithPangolinMessageBridge;
+			use pallet_bridge_messages::benchmarking::MessageParams;
+			use frame_support::pallet_prelude::Weight;
+			use frame_support::traits::Currency;
+			use bridge_runtime_common::messages_benchmarking::{
+				prepare_message_proof,
+				prepare_message_delivery_proof,
+				prepare_outbound_message,
+			};
+
+			impl MessagesConfig<WithPangolinMessages> for Runtime {
+				fn maximal_message_size() -> u32 {
+					bridge_runtime_common::messages::source::maximal_message_size::<WithPangolinMessageBridge>()
+				}
+
+				fn bridged_relayer_id() -> Self::InboundRelayer {
+					sp_core::H160::default().into()
+				}
+
+				fn account_balance(account: &Self::AccountId) -> Self::OutboundMessageFee {
+					pallet_balances::Pallet::<Runtime>::free_balance(account)
+				}
+
+				fn endow_account(account: &Self::AccountId) {
+					pallet_balances::Pallet::<Runtime>::make_free_balance_be(
+						account,
+						Balance::MAX / 100,
+					);
+				}
+
+				fn prepare_outbound_message(
+					params: MessageParams<Self::AccountId>,
+				) -> (Self::OutboundPayload, Self::OutboundMessageFee) {
+					(prepare_outbound_message::<WithPangolinMessageBridge>(params), Self::message_fee())
+				}
+
+				fn prepare_message_proof(
+					params: MessageProofParams,
+				) -> (
+					FromPangolinMessagesProof,
+					Weight,
+				) {
+					prepare_message_proof::<Runtime, (), WithRococoGrandpa, WithPangolinMessageBridge, bp_pangolin::Header, bp_pangolin::Hashing>(params)
+				}
+
+				fn prepare_message_delivery_proof(
+					params: MessageDeliveryProofParams<Self::AccountId>,
+				) -> ToPangolinMessagesDeliveryProof {
+					prepare_message_delivery_proof::<Runtime, WithRococoGrandpa, WithPangolinMessageBridge, bp_pangolin::Header, bp_pangolin::Hashing>(params)
+				}
+
+				fn is_message_dispatched(nonce: MessageNonce) -> bool {
+					frame_system::Pallet::<Runtime>::events()
+						.into_iter()
+						.map(|event_record| event_record.event)
+						.any(|event| matches!(
+							event,
+							RuntimeEvent::BridgePangolinDispatch(pallet_bridge_dispatch::Event::<Runtime, _>::MessageDispatched(
+								_, ([0, 0, 0, 0], nonce_from_event), _,
+							)) if nonce_from_event == nonce
+						))
 				}
 			}
 

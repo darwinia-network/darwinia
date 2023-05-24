@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-use pallet_bridge_messages::Instance1 as WithCrabMessages;
+pub use pallet_bridge_messages::Instance1 as WithCrabMessages;
 
 // darwinia
 use crate::*;
