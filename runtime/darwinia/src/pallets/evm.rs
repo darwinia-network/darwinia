@@ -30,18 +30,6 @@ frame_support::parameter_types! {
 		0
 	);
 }
-
-// TODO: Integrate to the upstream repo
-pub struct FromH160;
-impl<T> pallet_evm::AddressMapping<T> for FromH160
-where
-	T: From<sp_core::H160>,
-{
-	fn into_account_id(address: sp_core::H160) -> T {
-		address.into()
-	}
-}
-
 pub struct DarwiniaPrecompiles<R>(sp_std::marker::PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where
@@ -152,7 +140,7 @@ impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 }
 
 impl pallet_evm::Config for Runtime {
-	type AddressMapping = FromH160;
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
