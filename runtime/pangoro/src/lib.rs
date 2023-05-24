@@ -177,6 +177,7 @@ frame_benchmarking::define_benchmarks! {
 	[darwinia_staking, DarwiniaStaking]
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgeRococoGrandpa]
+	[pallet_bridge_parachains, ParachainsBench::<Runtime, WithRococoParachainsInstance>]
 	[pallet_fee_market, PangolinFeeMarket]
 	// substrate
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
@@ -616,6 +617,8 @@ sp_api::impl_runtime_apis! {
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			// darwinia-messages-substrate
+			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 
@@ -650,6 +653,26 @@ sp_api::impl_runtime_apis! {
 				// System Events
 				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
 			];
+
+			use pallet_bridge_parachains::benchmarking::{
+				Pallet as ParachainsBench,
+				Config as ParachainsConfig,
+			};
+
+			impl ParachainsConfig<WithRococoParachainsInstance> for Runtime {
+				fn prepare_parachain_heads_proof(
+					parachains: &[bp_polkadot_core::parachains::ParaId],
+					parachain_head_size: u32,
+					proof_size: bp_runtime::StorageProofSize,
+				) -> (
+					pallet_bridge_parachains::RelayBlockNumber,
+					pallet_bridge_parachains::RelayBlockHash,
+					bp_polkadot_core::parachains::ParaHeadsProof,
+					Vec<(bp_polkadot_core::parachains::ParaId, bp_polkadot_core::parachains::ParaHash)>,
+				) {
+					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithRococoParachainsInstance>(parachains, parachain_head_size, proof_size)
+				}
+			}
 
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);

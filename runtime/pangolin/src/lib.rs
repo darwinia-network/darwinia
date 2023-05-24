@@ -661,7 +661,7 @@ sp_api::impl_runtime_apis! {
 				Config as ParachainsConfig,
 			};
 
-			impl ParachainsConfig for Runtime {
+			impl ParachainsConfig<WithMoonbaseParachainsInstance> for Runtime {
 				fn prepare_parachain_heads_proof(
 					parachains: &[bp_polkadot_core::parachains::ParaId],
 					parachain_head_size: u32,
@@ -672,7 +672,7 @@ sp_api::impl_runtime_apis! {
 					bp_polkadot_core::parachains::ParaHeadsProof,
 					Vec<(bp_polkadot_core::parachains::ParaId, bp_polkadot_core::parachains::ParaHash)>,
 				) {
-					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof(parachains, parachain_head_size, proof_size)
+					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithMoonbaseParachainsInstance>(parachains, parachain_head_size, proof_size)
 				}
 			}
 
