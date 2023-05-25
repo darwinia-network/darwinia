@@ -32,6 +32,12 @@ pub use paritydb_weights::constants::ParityDbWeight;
 pub mod rocksdb_weights;
 pub use rocksdb_weights::constants::RocksDbWeight;
 
+pub mod pallet_bridge_messages;
+pub use self::pallet_bridge_messages::WeightInfo as MessagesWeightInfo;
+
+pub mod pallet_bridge_parachains;
+pub use self::pallet_bridge_parachains::WeightInfo as ParachainsWeightInfo;
+
 pub mod cumulus_pallet_xcmp_queue;
 pub mod darwinia_account_migration;
 pub mod darwinia_deposit;
@@ -41,8 +47,6 @@ pub mod frame_system;
 pub mod pallet_assets;
 pub mod pallet_balances;
 pub mod pallet_bridge_grandpa;
-pub mod pallet_bridge_messages;
-pub mod pallet_bridge_parachains;
 pub mod pallet_collective_council;
 pub mod pallet_collective_technical_committee;
 pub mod pallet_democracy;

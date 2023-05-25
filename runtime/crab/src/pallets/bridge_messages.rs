@@ -63,5 +63,5 @@ impl pallet_bridge_messages::Config<WithDarwiniaMessages> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_darwinia::Darwinia;
 	type TargetHeaderChain = bm_darwinia::Darwinia;
-	type WeightInfo = weights::pallet_bridge_messages::WeightInfo<Self>;
+	type WeightInfo = weights::MessagesWeightInfo<Self>;
 }

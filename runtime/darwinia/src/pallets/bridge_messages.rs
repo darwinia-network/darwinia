@@ -63,5 +63,5 @@ impl pallet_bridge_messages::Config<WithCrabMessages> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_crab::Crab;
 	type TargetHeaderChain = bm_crab::Crab;
-	type WeightInfo = weights::pallet_bridge_messages::WeightInfo<Self>;
+	type WeightInfo = weights::MessagesWeightInfo<Self>;
 }

@@ -32,5 +32,5 @@ impl pallet_bridge_parachains::Config<WithKusamaParachainsInstance> for Runtime 
 	type ParasPalletName = ParasPalletName;
 	type RuntimeEvent = RuntimeEvent;
 	type TrackedParachains = frame_support::traits::Everything;
-	type WeightInfo = weights::pallet_bridge_parachains::WeightInfo<Self>;
+	type WeightInfo = weights::ParachainsWeightInfo<Self>;
 }

@@ -170,12 +170,5 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
 	}
 }
 
-impl pallet_bridge_messages::WeightInfoExt
-	for crate::weights::pallet_bridge_messages::WeightInfo<Runtime>
-{
-}
-
-impl pallet_bridge_parachains::WeightInfoExt
-	for crate::weights::pallet_bridge_parachains::WeightInfo<Runtime>
-{
-}
+impl pallet_bridge_messages::WeightInfoExt for weights::MessagesWeightInfo<Runtime> {}
+impl pallet_bridge_parachains::WeightInfoExt for crate::weights::ParachainsWeightInfo<Runtime> {}

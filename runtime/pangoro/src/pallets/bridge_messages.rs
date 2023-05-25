@@ -63,5 +63,5 @@ impl pallet_bridge_messages::Config<WithPangolinMessages> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_pangolin::Pangolin;
 	type TargetHeaderChain = bm_pangolin::Pangolin;
-	type WeightInfo = weights::pallet_bridge_messages::WeightInfo<Self>;
+	type WeightInfo = weights::MessagesWeightInfo<Self>;
 }

@@ -63,5 +63,5 @@ impl pallet_bridge_messages::Config<WithPangoroMessages> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_pangoro::Pangoro;
 	type TargetHeaderChain = bm_pangoro::Pangoro;
-	type WeightInfo = weights::pallet_bridge_messages::WeightInfo<Self>;
+	type WeightInfo = weights::MessagesWeightInfo<Self>;
 }
