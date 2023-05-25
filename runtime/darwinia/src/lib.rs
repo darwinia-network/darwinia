@@ -105,7 +105,6 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	state_version: 0,
 };
 
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {

@@ -32,5 +32,5 @@ impl pallet_bridge_parachains::Config<WithRococoParachainsInstance> for Runtime 
 	type ParasPalletName = ParasPalletName;
 	type RuntimeEvent = RuntimeEvent;
 	type TrackedParachains = frame_support::traits::Everything;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_bridge_parachains::WeightInfo<Self>;
 }
