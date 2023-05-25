@@ -80,12 +80,25 @@ pub type Executive = frame_executive::Executive<
 pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
 
 /// Runtime version.
+#[cfg(not(feature = "runtime-benchmarks"))]
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
 	spec_version: 6_3_0_0,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 0,
+	state_version: 0,
+};
+#[cfg(feature = "runtime-benchmarks")]
+#[sp_version::runtime_version]
+pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
+	spec_name: sp_runtime::create_runtime_str!("Benchmark"),
+	impl_name: sp_runtime::create_runtime_str!("Benchmark"),
+	authoring_version: 0,
+	spec_version: 0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,

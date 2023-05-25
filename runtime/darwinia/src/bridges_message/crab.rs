@@ -124,6 +124,13 @@ impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::Accoun
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_crab::AccountId>), bp_messages::VerificationError> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return source::verify_messages_delivery_proof::<
+			WithCrabMessageBridge,
+			Runtime,
+			WithKusamaParachainsInstance,
+		>(proof);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithCrabMessageBridge,
 			bp_crab::Header,
@@ -142,6 +149,13 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {
 		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
 		bp_messages::VerificationError,
 	> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return target::verify_messages_proof::<
+			WithCrabMessageBridge,
+			Runtime,
+			WithKusamaParachainsInstance,
+		>(proof, messages_count);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		target::verify_messages_proof_from_parachain::<
 			WithCrabMessageBridge,
 			bp_crab::Header,

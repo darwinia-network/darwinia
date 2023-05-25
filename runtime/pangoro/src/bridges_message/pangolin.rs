@@ -130,6 +130,13 @@ impl TargetHeaderChain<ToPangolinMessagePayload, <Self as ChainWithMessages>::Ac
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_pangolin::AccountId>), bp_messages::VerificationError> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return source::verify_messages_delivery_proof::<
+			WithPangolinMessageBridge,
+			Runtime,
+			WithRococoParachainsInstance,
+		>(proof);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithPangolinMessageBridge,
 			bp_pangolin::Header,
@@ -148,6 +155,13 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangolin {
 		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
 		bp_messages::VerificationError,
 	> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return target::verify_messages_proof::<
+			WithPangolinMessageBridge,
+			Runtime,
+			WithRococoParachainsInstance,
+		>(proof, messages_count);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		target::verify_messages_proof_from_parachain::<
 			WithPangolinMessageBridge,
 			bp_pangolin::Header,

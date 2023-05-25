@@ -96,8 +96,8 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 #[cfg(feature = "runtime-benchmarks")]
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
-	spec_name: sp_runtime::create_runtime_str!("Pangolin2"),
-	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
+	spec_name: sp_runtime::create_runtime_str!("Benchmark"),
+	impl_name: sp_runtime::create_runtime_str!("Benchmark"),
 	authoring_version: 0,
 	spec_version: 0,
 	impl_version: 0,
