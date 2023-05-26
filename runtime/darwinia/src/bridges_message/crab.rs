@@ -21,6 +21,7 @@ use frame_support::{weights::Weight, RuntimeDebug};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
+use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,

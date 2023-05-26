@@ -647,32 +647,36 @@ sp_api::impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
+			// darwinia
+			use crate::crab::{ToCrabMessagesDeliveryProof, FromCrabMessagesProof, WithCrabMessageBridge};
+			// darwinia-messages-substrate
+			use pallet_bridge_parachains::benchmarking::{
+				Pallet as ParachainsBench,
+				Config as ParachainsConfig,
+			};
+			use pallet_bridge_messages::benchmarking::{
+				Pallet as MessagesBench,
+				Config as MessagesConfig,
+				MessageDeliveryProofParams,
+				MessageProofParams,
+				MessageParams,
+			};
+			use bridge_runtime_common::messages_benchmarking::{
+				prepare_message_proof,
+				prepare_message_delivery_proof,
+				prepare_outbound_message,
+			};
+			use bp_messages::MessageNonce;
 			// substrate
 			use frame_benchmarking::*;
+			use frame_support::pallet_prelude::Weight;
+			use frame_support::traits::Currency;
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
-
-			let whitelist: Vec<TrackedStorageKey> = vec![
-				// Block Number
-				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"),
-				// Total Issuance
-				array_bytes::hex_into_unchecked("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80"),
-				// Execution Phase
-				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a"),
-				// Event Count
-				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850"),
-				// System Events
-				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
-			];
-
-			use pallet_bridge_parachains::benchmarking::{
-				Pallet as ParachainsBench,
-				Config as ParachainsConfig,
-			};
 
 			impl ParachainsConfig<WithKusamaParachainsInstance> for Runtime {
 				fn prepare_parachain_heads_proof(
@@ -688,24 +692,6 @@ sp_api::impl_runtime_apis! {
 					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithKusamaParachainsInstance>(parachains, parachain_head_size, proof_size)
 				}
 			}
-
-			use pallet_bridge_messages::benchmarking::{
-				Pallet as MessagesBench,
-				Config as MessagesConfig,
-				MessageDeliveryProofParams,
-				MessageProofParams,
-			};
-			use bp_messages::MessageNonce;
-			use crate::crab::{ToCrabMessagesDeliveryProof, FromCrabMessagesProof};
-			use crate::crab::WithCrabMessageBridge;
-			use pallet_bridge_messages::benchmarking::MessageParams;
-			use frame_support::pallet_prelude::Weight;
-			use frame_support::traits::Currency;
-			use bridge_runtime_common::messages_benchmarking::{
-				prepare_message_proof,
-				prepare_message_delivery_proof,
-				prepare_outbound_message,
-			};
 
 			impl MessagesConfig<WithCrabMessages> for Runtime {
 				fn maximal_message_size() -> u32 {
@@ -727,24 +713,15 @@ sp_api::impl_runtime_apis! {
 					);
 				}
 
-				fn prepare_outbound_message(
-					params: MessageParams<Self::AccountId>,
-				) -> (Self::OutboundPayload, Self::OutboundMessageFee) {
+				fn prepare_outbound_message(params: MessageParams<Self::AccountId>) -> (Self::OutboundPayload, Self::OutboundMessageFee) {
 					(prepare_outbound_message::<WithCrabMessageBridge>(params), Self::message_fee())
 				}
 
-				fn prepare_message_proof(
-					params: MessageProofParams,
-				) -> (
-					FromCrabMessagesProof,
-					Weight,
-				) {
+				fn prepare_message_proof(params: MessageProofParams) -> (FromCrabMessagesProof, Weight) {
 					prepare_message_proof::<Runtime, (), WithKusamaGrandpa, WithCrabMessageBridge, bp_crab::Header, bp_crab::Hashing>(params)
 				}
 
-				fn prepare_message_delivery_proof(
-					params: MessageDeliveryProofParams<Self::AccountId>,
-				) -> ToCrabMessagesDeliveryProof {
+				fn prepare_message_delivery_proof(params: MessageDeliveryProofParams<Self::AccountId>) -> ToCrabMessagesDeliveryProof {
 					prepare_message_delivery_proof::<Runtime, WithKusamaGrandpa, WithCrabMessageBridge, bp_crab::Header, bp_crab::Hashing>(params)
 				}
 
@@ -760,6 +737,19 @@ sp_api::impl_runtime_apis! {
 						))
 				}
 			}
+
+			let whitelist: Vec<TrackedStorageKey> = vec![
+				// Block Number
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"),
+				// Total Issuance
+				array_bytes::hex_into_unchecked("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80"),
+				// Execution Phase
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a"),
+				// Event Count
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850"),
+				// System Events
+				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
+			];
 
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
