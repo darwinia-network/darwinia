@@ -18,17 +18,23 @@
 
 pragma solidity >=0.8.3;
 
-/// @dev The StateStorage precompile address
-address constant STATE_STORAGE_ADDRESS = 0x0000000000000000000000000000000000000400;
+/// @dev The BLS precompile address
+address constant BLS_ADDRESS = 0x0000000000000000000000000000000000000800;
 
-/// @dev The StateStorage contract instance
-StateStorage constant DEPOSIT_CONTRACT = StateStorage(STATE_STORAGE_ADDRESS);
+/// @dev The Bls contract instance
+BLS12381 constant BLS_CONTRACT = BLS12381(BLS_ADDRESS);
 
-/// @title StateStorage
-/// @notice The interface of the state storage precompile
-interface StateStorage {
-    /// @notice Get the storage value on a specific storage key, except EVM module.
-    /// @param storageKey, the storage key follows the substrate storage mechanism.
-    /// @return the storage value at the input key.
-    function state_storage(bytes memory storageKey) external returns (bytes memory);
+/// @title BLS12381
+/// @notice The interface of BLS12381 precompile
+interface BLS12381 {
+	/// @notice Verifies an aggregate_signature against a list of pub_keys.
+	/// @param pubKeys, trusted public keys
+	/// @param message, the message to be signed.
+	/// @param signature, the signature to ve verified.
+	/// @return returns true on success, false otherwise.
+	function fast_aggregate_verify(
+		bytes[] memory pubKeys,
+		bytes memory message,
+		bytes memory signature
+	) external returns (bool);
 }
