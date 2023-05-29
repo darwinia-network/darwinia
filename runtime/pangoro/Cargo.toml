@@ -17,6 +17,10 @@ static_assertions = { workspace = true }
 # crates.io optional
 array-bytes = { workspace = true, optional = true }
 
+# acurast
+pallet-acurast = { git = "https://github.com/Acurast/acurast-core.git", default-features = false}
+pallet-acurast-fulfillment-receiver = { git = "https://github.com/Acurast/acurast-core.git", default-features = false}
+
 # cumulus
 cumulus-pallet-aura-ext         = { workspace = true }
 cumulus-pallet-dmp-queue        = { workspace = true }
@@ -143,6 +147,10 @@ std = [
 	# crates.io
 	"codec/std",
 	"scale-info/std",
+
+	# acurast
+	"pallet-acurast/std",
+	"pallet-acurast-fulfillment-receiver/std",
 
 	# cumulus
 	"cumulus-pallet-aura-ext/std",

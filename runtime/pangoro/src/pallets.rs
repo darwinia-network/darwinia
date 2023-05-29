@@ -127,3 +127,7 @@ pub use bridge_parachains::*;
 
 mod fee_market;
 pub use fee_market::*;
+
+// Oracle stuff.
+mod acurast;
+pub use acurast::*;

@@ -164,7 +164,10 @@ frame_support::construct_runtime! {
 		BridgeRococoParachain: pallet_bridge_parachains::<Instance1> = 40,
 		BridgePangolinMessages: pallet_bridge_messages::<Instance1> = 41,
 		BridgePangolinDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		PangolinFeeMarket: pallet_fee_market::<Instance1> = 43
+		PangolinFeeMarket: pallet_fee_market::<Instance1> = 43,
+
+		// Oracle stuff.
+		Acurast: pallet_acurast = 45
 	}
 }
 
