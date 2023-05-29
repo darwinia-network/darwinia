@@ -27,7 +27,7 @@ BLS12381 constant BLS_CONTRACT = BLS12381(BLS_ADDRESS);
 /// @title BLS12381
 /// @notice The interface of BLS12381 precompile
 interface BLS12381 {
-	/// @notice Verifies an aggregate_signature against a list of pub_keys.
+	/// @dev Verifies an aggregate_signature against a list of pub_keys.
 	/// @param pubKeys, trusted public keys
 	/// @param message, the message to be signed.
 	/// @param signature, the signature to ve verified.

@@ -27,7 +27,7 @@ Staking constant STAKING_CONTRACT = Staking(STAKING_ADDRESS);
 /// @title Staking
 /// @notice The interface of the darwinia staking pallet.
 interface Staking {
-	/// @notice Add stakes to the staking pool.
+	/// @dev Add stakes to the staking pool.
 	/// @param ringAmount The amount of staking RING asset
 	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
@@ -38,7 +38,7 @@ interface Staking {
 		uint8[] memory depositIds
 	) external returns (bool);
 
-	/// @notice Withdraw stakes to the staking pool.
+	/// @dev Withdraw stakes to the staking pool.
 	/// @param ringAmount The amount of staking RING asset
 	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
@@ -49,7 +49,7 @@ interface Staking {
 		uint8[] memory depositIds
 	) external returns (bool);
 
-    /// @notice Re-stake the unstaking assets immediately.
+    /// @dev Re-stake the unstaking assets immediately.
 	/// @param ringAmount The amount of staking RING asset
 	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
@@ -60,21 +60,21 @@ interface Staking {
 		uint8[] memory depositIds
 	) external returns (bool);
 
-    /// @notice Claim the stakes from the pallet/contract account.
+    /// @dev Claim the stakes from the pallet/contract account.
 	/// @return returns true on success, false otherwise.
 	function claim() external returns (bool);
 
-    /// @notice Declare the desire to collect.
+    /// @dev Declare the desire to collect.
     /// @param commission collator commission, 0 ~ 100
 	/// @return returns true on success, false otherwise.
 	function collect(uint32 commission) external returns (bool);
 
-    /// @notice Declare the desire to nominate a collator.
+    /// @dev Declare the desire to nominate a collator.
     /// @param target The target collator address
 	/// @return returns true on success, false otherwise.
 	function nominate(address target) external returns (bool);
 
-    /// @notice Declare no desire to either collect or nominate.
+    /// @dev Declare no desire to either collect or nominate.
 	/// @return returns true on success, false otherwise.
 	function chill() external returns (bool);
 }

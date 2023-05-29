@@ -1,0 +1,58 @@
+{
+  "contracts":
+  {
+    "sol/state-storage.sol:StateStorage":
+    {
+      "abi":
+      [
+        {
+          "inputs":
+          [
+            {
+              "internalType": "bytes",
+              "name": "storageKey",
+              "type": "bytes"
+            }
+          ],
+          "name": "state_storage",
+          "outputs":
+          [
+            {
+              "internalType": "bytes",
+              "name": "",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "devdoc":
+      {
+        "kind": "dev",
+        "methods":
+        {
+          "state_storage(bytes)":
+          {
+            "details": "Get the storage value on a specific storage key, except EVM module.",
+            "params":
+            {
+              "storageKey": ", the storage key follows the substrate storage mechanism."
+            },
+            "returns":
+            {
+              "_0": "the storage value at the input key."
+            }
+          }
+        },
+        "title": "StateStorage",
+        "version": 1
+      },
+      "hashes":
+      {
+        "state_storage(bytes)": "78943fb7"
+      }
+    }
+  },
+  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+}

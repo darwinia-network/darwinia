@@ -1,0 +1,121 @@
+{
+  "contracts":
+  {
+    "sol/deposit.sol:Deposit":
+    {
+      "abi":
+      [
+        {
+          "inputs": [],
+          "name": "claim",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint8",
+              "name": "depositId",
+              "type": "uint8"
+            }
+          ],
+          "name": "claim_with_penalty",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "ringAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "months",
+              "type": "uint8"
+            }
+          ],
+          "name": "lock",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "devdoc":
+      {
+        "kind": "dev",
+        "methods":
+        {
+          "claim()":
+          {
+            "details": "Claim the expired-locked RING.",
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "claim_with_penalty(uint8)":
+          {
+            "details": "Claim the unexpired-locked RING by paying the KTON penalty.",
+            "params":
+            {
+              "depositId": "The deposit ticket wish to claim"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "lock(uint256,uint8)":
+          {
+            "details": "Lock the RING for some KTON profit/interest.",
+            "params":
+            {
+              "months": ", the lock time 1 ~ 36",
+              "ringAmount": ", the amount of the RING asset"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          }
+        },
+        "title": "Deposit",
+        "version": 1
+      },
+      "hashes":
+      {
+        "claim()": "4e71d92d",
+        "claim_with_penalty(uint8)": "fa04a9bf",
+        "lock(uint256,uint8)": "998e4242"
+      }
+    }
+  },
+  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+}

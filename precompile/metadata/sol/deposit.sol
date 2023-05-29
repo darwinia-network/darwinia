@@ -27,17 +27,17 @@ Deposit constant DEPOSIT_CONTRACT = Deposit(DEPOSIT_ADDRESS);
 /// @title Deposit
 /// @notice The interface of the darwinia deposit pallet.
 interface Deposit {
-	/// @notice Lock the RING for some KTON profit/interest.
+	/// @dev Lock the RING for some KTON profit/interest.
 	/// @param ringAmount, the amount of the RING asset
 	/// @param months, the lock time 1 ~ 36
 	/// @return returns true on success, false otherwise.
 	function lock(uint256 ringAmount, uint8 months) external returns (bool);
 
-	/// @notice Claim the expired-locked RING.
+	/// @dev Claim the expired-locked RING.
 	/// @return returns true on success, false otherwise.
 	function claim() external returns (bool);
 
-	/// @notice Claim the unexpired-locked RING by paying the KTON penalty.
+	/// @dev Claim the unexpired-locked RING by paying the KTON penalty.
 	/// @param depositId The deposit ticket wish to claim
 	/// @return returns true on success, false otherwise.
 	function claim_with_penalty(uint8 depositId) external returns (bool);

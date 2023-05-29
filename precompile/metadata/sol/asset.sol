@@ -24,6 +24,8 @@ address constant KTON_ASSET_ADDRESS = 0x0000000000000000000000000000000000000402
 /// @dev The KTON asset  contract instance
 ERC20Assets constant KTON_ASSET_CONTRACT = ERC20Assets(KTON_ASSET_ADDRESS);
 
+/// @title ERC20Assets
+/// notice The interface of ERC20Assets precompile
 interface ERC20Assets {
 	/// @dev Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero.
 	/// @param from address The address sending the tokens

@@ -27,7 +27,7 @@ StateStorage constant DEPOSIT_CONTRACT = StateStorage(STATE_STORAGE_ADDRESS);
 /// @title StateStorage
 /// @notice The interface of the state storage precompile
 interface StateStorage {
-    /// @notice Get the storage value on a specific storage key, except EVM module.
+    /// @dev Get the storage value on a specific storage key, except EVM module.
     /// @param storageKey, the storage key follows the substrate storage mechanism.
     /// @return the storage value at the input key.
     function state_storage(bytes memory storageKey) external returns (bytes memory);
