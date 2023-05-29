@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Usage: Run `bash abi-creator.sh` in the root of the metadata folder.
 
 sol_directory="sol"
