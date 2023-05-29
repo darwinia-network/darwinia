@@ -15,3 +15,30 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
+
+pragma solidity >=0.8.3;
+
+/// @dev The Deposit precompile address
+address constant DEPOSIT_ADDRESS = 0x0000000000000000000000000000000000000600;
+
+/// @dev The Desposit contract instance
+Deposit constant DEPOSIT_CONTRACT = Deposit(DEPOSIT_ADDRESS);
+
+/// @title Deposit
+/// @notice The interface of the darwinia deposit pallet.
+interface Deposit {
+	/// @notice Lock the RING for some KTON profit/interest.
+	/// @param ringAmount, the amount of the RING asset
+	/// @param months, the lock time 1 ~ 36
+	/// @return returns true on success, false otherwise.
+	function lock(uint256 ringAmount, uint8 months) external returns (bool);
+
+	/// @notice Claim the expired-locked RING.
+	/// @return returns true on success, false otherwise.
+	function claim() external returns (bool);
+
+	/// @notice Claim the unexpired-locked RING by paying the KTON penalty.
+	/// @param depositId The deposit ticket wish to claim
+	/// @return returns true on success, false otherwise.
+	function claim_with_penalty(uint8 depositId) external returns (bool);
+}

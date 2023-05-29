@@ -25,7 +25,7 @@ address constant STAKING_ADDRESS = 0x0000000000000000000000000000000000000601;
 Staking constant STAKING_CONTRACT = Staking(STAKING_ADDRESS);
 
 /// @title Staking
-/// @notice The interface of darwinia staking pallet
+/// @notice The interface of the darwinia staking pallet.
 interface Staking {
 	/// @notice Add stakes to the staking pool.
 	/// @param ringAmount The amount of staking RING asset
