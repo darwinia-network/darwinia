@@ -21,7 +21,6 @@ use frame_support::{weights::Weight, RuntimeDebug};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,
@@ -167,7 +166,7 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
 			bp_darwinia::Header,
 			Runtime,
 			WithPolkadotParachainsInstance,
-		>(ParaId(2046), proof, messages_count)
+		>(bp_polkadot_core::parachains::ParaId(2046), proof, messages_count)
 	}
 }
 
