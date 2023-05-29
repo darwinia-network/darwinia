@@ -135,7 +135,7 @@ impl TargetHeaderChain<ToCrabMessagePayload, <Self as ChainWithMessages>::Accoun
 			bp_crab::Header,
 			Runtime,
 			WithKusamaParachainsInstance,
-		>(ParaId(2105), proof)
+		>(bp_polkadot_core::parachains::ParaId(2105), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Crab {

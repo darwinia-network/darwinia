@@ -141,7 +141,7 @@ impl TargetHeaderChain<ToPangolinMessagePayload, <Self as ChainWithMessages>::Ac
 			bp_pangolin::Header,
 			Runtime,
 			WithRococoParachainsInstance,
-		>(ParaId(2105), proof)
+		>(bp_polkadot_core::parachains::ParaId(2105), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangolin {

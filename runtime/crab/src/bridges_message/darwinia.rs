@@ -141,7 +141,7 @@ impl TargetHeaderChain<ToDarwiniaMessagePayload, <Self as ChainWithMessages>::Ac
 			bp_darwinia::Header,
 			Runtime,
 			WithPolkadotParachainsInstance,
-		>(ParaId(2046), proof)
+		>(bp_polkadot_core::parachains::ParaId(2046), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {

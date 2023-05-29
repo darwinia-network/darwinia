@@ -141,7 +141,7 @@ impl TargetHeaderChain<ToPangoroMessagePayload, <Self as ChainWithMessages>::Acc
 			bp_pangoro::Header,
 			Runtime,
 			WithMoonbaseParachainsInstance,
-		>(ParaId(2105), proof);
+		>(bp_polkadot_core::parachains::ParaId(2105), proof);
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
