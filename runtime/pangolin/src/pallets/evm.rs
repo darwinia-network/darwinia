@@ -19,7 +19,8 @@
 // darwinia
 use crate::*;
 // frontier
-use pallet_evm::Precompile;
+use pallet_evm::{ExitError, Precompile};
+use pallet_evm_precompile_dispatch::DispatchValidateT;
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
@@ -97,8 +98,10 @@ where
 				Runtime,
 				darwinia_precompile_state_storage::StateStorageFilter,
 			>>::execute(handle)),
-			a if a == addr(1025) =>
-				Some(<pallet_evm_precompile_dispatch::Dispatch<Runtime>>::execute(handle)),
+			a if a == addr(1025) => Some(<pallet_evm_precompile_dispatch::Dispatch<
+				Runtime,
+				DarwiniaDispatchValidator,
+			>>::execute(handle)),
 			// [1026, 1536) reserved for assets precompiles.
 			a if (1026..1536).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
 				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
@@ -164,4 +167,32 @@ impl pallet_evm::Config for Runtime {
 
 fn addr(a: u64) -> sp_core::H160 {
 	sp_core::H160::from_low_u64_be(a)
+}
+
+/// Validation rule for dispatch precompile
+pub struct DarwiniaDispatchValidator;
+impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
+	fn validate_before_dispatch(
+		origin: &AccountId,
+		call: &RuntimeCall,
+	) -> Option<fp_evm::PrecompileFailure> {
+		if let Some(root) = pallet_sudo::Pallet::<Runtime>::key() {
+			if origin == &root {
+				// Without validation for root role
+				return None;
+			} else if matches!(
+				call,
+				RuntimeCall::Assets(..)
+					| RuntimeCall::Vesting(..)
+					| RuntimeCall::Ethereum(..)
+					| RuntimeCall::EVM(..)
+			) {
+				return Some(fp_evm::PrecompileFailure::Error {
+					exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
+				});
+			}
+		}
+
+		<() as DispatchValidateT<AccountId, RuntimeCall>>::validate_before_dispatch(origin, call)
+	}
 }

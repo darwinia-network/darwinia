@@ -55,6 +55,9 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
+		pallet_sudo::GenesisConfig::<Runtime> { key: Some(H160::from_low_u64_be(999).into()) }
+			.assimilate_storage(&mut t)
+			.unwrap();
 
 		let mut ext = TestExternalities::new(t);
 
