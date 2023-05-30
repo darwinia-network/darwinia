@@ -548,13 +548,13 @@ macro_rules! impl_evm_tests {
 
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
 						// root account
-						&H160::from_low_u64_be(999).into(),
+						&ROOT,
 						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
 					)
 					.is_none());
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
 						// root account
-						&H160::from_low_u64_be(999).into(),
+						&ROOT,
 						// forbidden call
 						&RuntimeCall::EVM(pallet_evm::Call::call {
 							source: H160::default(),

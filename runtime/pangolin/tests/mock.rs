@@ -20,7 +20,6 @@ pub use pangolin_runtime::*;
 
 // substrate
 use frame_support::traits::GenesisBuild;
-use sp_core::H160;
 use sp_io::TestExternalities;
 
 pub const KTON_ID: u64 = AssetIds::PKton as _;
@@ -56,7 +55,7 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
-		pallet_sudo::GenesisConfig::<Runtime> { key: Some(H160::from_low_u64_be(999).into()) }
+		pallet_sudo::GenesisConfig::<Runtime> { key: Some(ROOT) }
 			.assimilate_storage(&mut t)
 			.unwrap();
 
