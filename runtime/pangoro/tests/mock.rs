@@ -20,6 +20,7 @@ pub use pangoro_runtime::*;
 
 // substrate
 use frame_support::traits::GenesisBuild;
+use sp_core::H160;
 use sp_io::TestExternalities;
 
 pub const KTON_ID: u64 = AssetIds::OKton as _;

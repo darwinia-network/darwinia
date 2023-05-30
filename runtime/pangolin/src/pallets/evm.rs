@@ -186,6 +186,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 					| RuntimeCall::Vesting(..)
 					| RuntimeCall::Ethereum(..)
 					| RuntimeCall::EVM(..)
+					| RuntimeCall::MessageTransact(..)
 			) {
 				return Some(fp_evm::PrecompileFailure::Error {
 					exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
