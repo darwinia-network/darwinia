@@ -451,6 +451,8 @@ macro_rules! impl_evm_tests {
 		mod evm {
 			// darwinia
 			use super::mock::*;
+			// frontier
+			use pallet_evm_precompile_dispatch::DispatchValidateT;
 			// substrate
 			use frame_support::assert_err;
 			use sp_core::{H160, U256};
@@ -513,6 +515,60 @@ macro_rules! impl_evm_tests {
 							})
 						);
 					}
+				});
+			}
+
+			#[test]
+			fn dispatch_validator_works() {
+				ExtBuilder::default().build().execute_with(|| {
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						// normal account
+						&H160::default().into(),
+						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
+					)
+					.is_none());
+
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						// normal account
+						&H160::default().into(),
+						// forbidden call
+						&RuntimeCall::EVM(pallet_evm::Call::call {
+							source: H160::default(),
+							target: H160::default(),
+							input: vec![],
+							value: U256::default(),
+							gas_limit: 1000000,
+							max_fee_per_gas: U256::from(1_000_000),
+							max_priority_fee_per_gas: None,
+							nonce: None,
+							access_list: vec![],
+						})
+					)
+					.is_some());
+
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						// root account
+						&ROOT,
+						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
+					)
+					.is_none());
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						// root account
+						&ROOT,
+						// forbidden call
+						&RuntimeCall::EVM(pallet_evm::Call::call {
+							source: H160::default(),
+							target: H160::default(),
+							input: vec![],
+							value: U256::default(),
+							gas_limit: 1000000,
+							max_fee_per_gas: U256::from(1_000_000),
+							max_priority_fee_per_gas: None,
+							nonce: None,
+							access_list: vec![],
+						})
+					)
+					.is_none());
 				});
 			}
 		}

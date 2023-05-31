@@ -55,6 +55,9 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
+		pallet_sudo::GenesisConfig::<Runtime> { key: Some(ROOT) }
+			.assimilate_storage(&mut t)
+			.unwrap();
 
 		let mut ext = TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));
