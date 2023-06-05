@@ -30,6 +30,7 @@ use dc_primitives::*;
 // moonbeam
 use moonbeam_rpc_debug::{Debug, DebugServer};
 use moonbeam_rpc_trace::{Trace, TraceServer};
+use moonbeam_rpc_txpool::{TxPool, TxPoolServer};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
@@ -113,8 +114,8 @@ where
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
-		+ sp_block_builder::BlockBuilder<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ sp_block_builder::BlockBuilder<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
@@ -126,8 +127,6 @@ where
 		NetApiServer, Web3, Web3ApiServer,
 	};
 	use fp_rpc::NoTransactionConverter;
-	// moonbeam
-	use moonbeam_rpc_txpool::{TxPool, TxPoolServer};
 	// substrate
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
