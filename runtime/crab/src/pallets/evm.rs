@@ -77,7 +77,7 @@ where
 		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
 		// Filter known precompile addresses except Ethereum officials
 		if self.is_precompile(code_addr) && code_addr > addr(9) && code_addr != context_addr {
-			return Some(Err(precompile_utils::revert(
+			return Some(Err(precompile_utils::prelude::revert(
 				"cannot be called with DELEGATECALL or CALLCODE",
 			)));
 		};
