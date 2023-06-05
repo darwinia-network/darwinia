@@ -103,6 +103,7 @@ pub trait RuntimeApiCollection:
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+	+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
@@ -119,6 +120,7 @@ impl<Api> RuntimeApiCollection for Api where
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>

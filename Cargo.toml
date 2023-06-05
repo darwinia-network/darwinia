@@ -112,7 +112,9 @@ moonbeam-evm-tracer            = { git = "https://github.com/darwinia-network/mo
 moonbeam-primitives-ext        = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1", default-features = false }
 moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1" }
 moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1", default-features = false }
+moonbeam-rpc-primitives-txpool = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1", default-features = false }
 moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1" }
+moonbeam-rpc-txpool            = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1" }
 precompile-utils               = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1", default-features = false }
 xcm-primitives                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40-1", default-features = false }
 

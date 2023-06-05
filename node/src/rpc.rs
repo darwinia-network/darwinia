@@ -30,6 +30,7 @@ use dc_primitives::*;
 // moonbeam
 use moonbeam_rpc_debug::{Debug, DebugServer};
 use moonbeam_rpc_trace::{Trace, TraceServer};
+use moonbeam_rpc_txpool::{TxPool, TxPoolServer};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
@@ -206,6 +207,7 @@ where
 		.into_rpc(),
 	)?;
 	module.merge(Web3::new(client.clone()).into_rpc())?;
+	module.merge(TxPool::new(client.clone(), graph).into_rpc())?;
 
 	if let Some(tracing_config) = maybe_tracing_config {
 		if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {
