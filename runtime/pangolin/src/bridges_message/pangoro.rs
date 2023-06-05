@@ -21,7 +21,6 @@ use frame_support::{weights::Weight, RuntimeDebug};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,
@@ -130,12 +129,19 @@ impl TargetHeaderChain<ToPangoroMessagePayload, <Self as ChainWithMessages>::Acc
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_pangoro::AccountId>), bp_messages::VerificationError> {
-		source::verify_messages_delivery_proof_from_parachain::<
+		#[cfg(feature = "runtime-benchmarks")]
+		return source::verify_messages_delivery_proof::<
+			WithPangoroMessageBridge,
+			Runtime,
+			WithMoonbaseParachainsInstance,
+		>(proof);
+		#[cfg(not(feature = "runtime-benchmarks"))]
+		return source::verify_messages_delivery_proof_from_parachain::<
 			WithPangoroMessageBridge,
 			bp_pangoro::Header,
 			Runtime,
 			WithMoonbaseParachainsInstance,
-		>(ParaId(2105), proof)
+		>(bp_polkadot_core::parachains::ParaId(2105), proof);
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
@@ -148,11 +154,21 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Pangoro {
 		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
 		bp_messages::VerificationError,
 	> {
-		target::verify_messages_proof_from_parachain::<
+		#[cfg(feature = "runtime-benchmarks")]
+		return target::verify_messages_proof::<
+			WithPangoroMessageBridge,
+			Runtime,
+			WithMoonbaseParachainsInstance,
+		>(proof, messages_count);
+		#[cfg(not(feature = "runtime-benchmarks"))]
+		return target::verify_messages_proof_from_parachain::<
 			WithPangoroMessageBridge,
 			bp_pangoro::Header,
 			Runtime,
 			WithMoonbaseParachainsInstance,
-		>(ParaId(2105), proof, messages_count)
+		>(bp_polkadot_core::parachains::ParaId(2105), proof, messages_count);
 	}
 }
+
+impl pallet_bridge_messages::WeightInfoExt for weights::MessagesWeightInfo<Runtime> {}
+impl pallet_bridge_parachains::WeightInfoExt for crate::weights::ParachainsWeightInfo<Runtime> {}

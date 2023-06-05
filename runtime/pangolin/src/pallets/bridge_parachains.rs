@@ -32,5 +32,5 @@ impl pallet_bridge_parachains::Config<WithMoonbaseParachainsInstance> for Runtim
 	type ParasPalletName = ParasPalletName;
 	type RuntimeEvent = RuntimeEvent;
 	type TrackedParachains = frame_support::traits::Everything;
-	type WeightInfo = ();
+	type WeightInfo = weights::ParachainsWeightInfo<Self>;
 }

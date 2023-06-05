@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-use pallet_bridge_messages::Instance1 as WithPangolinMessages;
+pub use pallet_bridge_messages::Instance1 as WithPangolinMessages;
 
 // darwinia
 use crate::*;
@@ -63,5 +63,5 @@ impl pallet_bridge_messages::Config<WithPangolinMessages> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = bm_pangolin::Pangolin;
 	type TargetHeaderChain = bm_pangolin::Pangolin;
-	type WeightInfo = ();
+	type WeightInfo = weights::MessagesWeightInfo<Self>;
 }

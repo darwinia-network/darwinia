@@ -21,7 +21,6 @@ use frame_support::{weights::Weight, RuntimeDebug};
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};
-use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::*;
 use bridge_runtime_common::{
 	lanes::*,
@@ -130,12 +129,19 @@ impl TargetHeaderChain<ToDarwiniaMessagePayload, <Self as ChainWithMessages>::Ac
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_darwinia::AccountId>), bp_messages::VerificationError> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return source::verify_messages_delivery_proof::<
+			WithDarwiniaMessageBridge,
+			Runtime,
+			WithPolkadotParachainsInstance,
+		>(proof);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		source::verify_messages_delivery_proof_from_parachain::<
 			WithDarwiniaMessageBridge,
 			bp_darwinia::Header,
 			Runtime,
 			WithPolkadotParachainsInstance,
-		>(ParaId(2046), proof)
+		>(bp_polkadot_core::parachains::ParaId(2046), proof)
 	}
 }
 impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
@@ -148,11 +154,21 @@ impl SourceHeaderChain<<Self as ChainWithMessages>::Balance> for Darwinia {
 		ProvedMessages<Message<<Self as ChainWithMessages>::Balance>>,
 		bp_messages::VerificationError,
 	> {
+		#[cfg(feature = "runtime-benchmarks")]
+		return target::verify_messages_proof::<
+			WithDarwiniaMessageBridge,
+			Runtime,
+			WithPolkadotParachainsInstance,
+		>(proof, messages_count);
+		#[cfg(not(feature = "runtime-benchmarks"))]
 		target::verify_messages_proof_from_parachain::<
 			WithDarwiniaMessageBridge,
 			bp_darwinia::Header,
 			Runtime,
 			WithPolkadotParachainsInstance,
-		>(ParaId(2046), proof, messages_count)
+		>(bp_polkadot_core::parachains::ParaId(2046), proof, messages_count)
 	}
 }
+
+impl pallet_bridge_messages::WeightInfoExt for weights::MessagesWeightInfo<Runtime> {}
+impl pallet_bridge_parachains::WeightInfoExt for crate::weights::ParachainsWeightInfo<Runtime> {}
