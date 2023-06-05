@@ -1,0 +1,70 @@
+{
+  "contracts":
+  {
+    "sol/bls12-381.sol:BLS12381":
+    {
+      "abi":
+      [
+        {
+          "inputs":
+          [
+            {
+              "internalType": "bytes[]",
+              "name": "pubKeys",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "message",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            }
+          ],
+          "name": "fast_aggregate_verify",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "devdoc":
+      {
+        "kind": "dev",
+        "methods":
+        {
+          "fast_aggregate_verify(bytes[],bytes,bytes)":
+          {
+            "details": "Verifies an aggregate_signature against a list of pub_keys.",
+            "params":
+            {
+              "message": ", the message to be signed.",
+              "pubKeys": ", trusted public keys",
+              "signature": ", the signature to ve verified."
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          }
+        },
+        "title": "BLS12381",
+        "version": 1
+      },
+      "hashes":
+      {
+        "fast_aggregate_verify(bytes[],bytes,bytes)": "d63e8240"
+      }
+    }
+  },
+  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+}

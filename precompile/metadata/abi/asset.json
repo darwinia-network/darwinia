@@ -1,0 +1,375 @@
+{
+  "contracts":
+  {
+    "sol/asset.sol:ERC20Assets":
+    {
+      "abi":
+      [
+        {
+          "anonymous": false,
+          "inputs":
+          [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs":
+          [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            }
+          ],
+          "name": "allowance",
+          "outputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "approve",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "who",
+              "type": "address"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "decimals",
+          "outputs":
+          [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "name",
+          "outputs":
+          [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "symbol",
+          "outputs":
+          [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalSupply",
+          "outputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "transfer",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "transferFrom",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "devdoc":
+      {
+        "events":
+        {
+          "Approval(address,address,uint256)":
+          {
+            "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance.",
+            "params":
+            {
+              "owner": "address Owner of the tokens.",
+              "spender": "address Allowed spender.",
+              "value": "uint256 Amount of tokens approved."
+            }
+          },
+          "Transfer(address,address,uint256)":
+          {
+            "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero.",
+            "params":
+            {
+              "from": "address The address sending the tokens",
+              "to": "address The address receiving the tokens.",
+              "value": "uint256 The amount of tokens transfered."
+            }
+          }
+        },
+        "kind": "dev",
+        "methods":
+        {
+          "allowance(address,address)":
+          {
+            "details": "Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default.",
+            "params":
+            {
+              "owner": "address The address which owns the funds.",
+              "spender": "address The address which will spend the funds."
+            },
+            "returns":
+            {
+              "_0": "A uint256 specifying the amount of tokens still available for the spender."
+            }
+          },
+          "approve(address,uint256)":
+          {
+            "details": "Sets `amount` as the allowance of `spender` over the caller's tokens.",
+            "params":
+            {
+              "amount": "The amount of tokens to be spent.",
+              "spender": "The address which will spend the funds."
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "balanceOf(address)":
+          {
+            "details": "Returns the amount of tokens owned by `account`.",
+            "params":
+            {
+              "who": "The address to query the balance of."
+            },
+            "returns":
+            {
+              "_0": "An uint256 representing the amount owned by the passed address."
+            }
+          },
+          "decimals()":
+          {
+            "details": "Returns the decimals of the token."
+          },
+          "name()":
+          {
+            "details": "Returns the name of the token."
+          },
+          "symbol()":
+          {
+            "details": "Returns the symbol of the token."
+          },
+          "totalSupply()":
+          {
+            "details": "Returns the amount of tokens in existence."
+          },
+          "transfer(address,uint256)":
+          {
+            "details": "Moves `amount` tokens from the caller's account to `to`.",
+            "params":
+            {
+              "amount": "The amount to be transferred.",
+              "to": "The address to transfer to"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "transferFrom(address,address,uint256)":
+          {
+            "details": "Moves `amount` tokens from `from` to `to` using the allowance mechanism. `amount` is then deducted from the caller's allowance.",
+            "params":
+            {
+              "amount": "the amount of tokens to be transferred",
+              "from": "address The address which you want to send tokens from",
+              "to": "address The address which you want to transfer to"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          }
+        },
+        "title": "ERC20Assets notice The interface of ERC20Assets precompile",
+        "version": 1
+      },
+      "hashes":
+      {
+        "allowance(address,address)": "dd62ed3e",
+        "approve(address,uint256)": "095ea7b3",
+        "balanceOf(address)": "70a08231",
+        "decimals()": "313ce567",
+        "name()": "06fdde03",
+        "symbol()": "95d89b41",
+        "totalSupply()": "18160ddd",
+        "transfer(address,uint256)": "a9059cbb",
+        "transferFrom(address,address,uint256)": "23b872dd"
+      }
+    }
+  },
+  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+}

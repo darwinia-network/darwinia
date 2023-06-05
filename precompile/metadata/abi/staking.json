@@ -1,0 +1,276 @@
+{
+  "contracts":
+  {
+    "sol/staking.sol:Staking":
+    {
+      "abi":
+      [
+        {
+          "inputs": [],
+          "name": "chill",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "claim",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint32",
+              "name": "commission",
+              "type": "uint32"
+            }
+          ],
+          "name": "collect",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address"
+            }
+          ],
+          "name": "nominate",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "ringAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ktonAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8[]",
+              "name": "depositIds",
+              "type": "uint8[]"
+            }
+          ],
+          "name": "restake",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "ringAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ktonAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8[]",
+              "name": "depositIds",
+              "type": "uint8[]"
+            }
+          ],
+          "name": "stake",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
+              "internalType": "uint256",
+              "name": "ringAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ktonAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8[]",
+              "name": "depositIds",
+              "type": "uint8[]"
+            }
+          ],
+          "name": "unstake",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "devdoc":
+      {
+        "kind": "dev",
+        "methods":
+        {
+          "chill()":
+          {
+            "details": "Declare no desire to either collect or nominate.",
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "claim()":
+          {
+            "details": "Claim the stakes from the pallet/contract account.",
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "collect(uint32)":
+          {
+            "details": "Declare the desire to collect.",
+            "params":
+            {
+              "commission": "collator commission, 0 ~ 100"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "nominate(address)":
+          {
+            "details": "Declare the desire to nominate a collator.",
+            "params":
+            {
+              "target": "The target collator address"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "restake(uint256,uint256,uint8[])":
+          {
+            "details": "Re-stake the unstaking assets immediately.",
+            "params":
+            {
+              "depositIds": "The deposit ids list",
+              "ktonAmount": "The amount of staking KTON asset",
+              "ringAmount": "The amount of staking RING asset"
+            },
+            "returns":
+            {
+              "_0": "true on success, false otherwise."
+            }
+          },
+          "stake(uint256,uint256,uint8[])":
+          {
+            "details": "Add stakes to the staking pool.",
+            "params":
+            {
+              "depositIds": "The deposit ids list",
+              "ktonAmount": "The amount of staking KTON asset",
+              "ringAmount": "The amount of staking RING asset"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
+          "unstake(uint256,uint256,uint8[])":
+          {
+            "details": "Withdraw stakes to the staking pool.",
+            "params":
+            {
+              "depositIds": "The deposit ids list",
+              "ktonAmount": "The amount of staking KTON asset",
+              "ringAmount": "The amount of staking RING asset"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          }
+        },
+        "title": "Staking",
+        "version": 1
+      },
+      "hashes":
+      {
+        "chill()": "2b8a3ae6",
+        "claim()": "4e71d92d",
+        "collect(uint32)": "10a66536",
+        "nominate(address)": "b332180b",
+        "restake(uint256,uint256,uint8[])": "17092fcb",
+        "stake(uint256,uint256,uint8[])": "757f9b3b",
+        "unstake(uint256,uint256,uint8[])": "ef20fcb3"
+      }
+    }
+  },
+  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+}
