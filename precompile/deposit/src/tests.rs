@@ -24,7 +24,7 @@ use crate::mock::{
 };
 use darwinia_deposit::MILLISECS_PER_MONTH;
 // moonbeam
-use precompile_utils::{testing::PrecompileTesterExt, EvmDataWriter};
+use precompile_utils::testing::PrecompileTesterExt;
 // substrate
 use sp_core::H160;
 
@@ -46,14 +46,12 @@ fn lock_and_claim() {
 		// lock
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::lock { amount: 200.into(), months: 1 })
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert!(Deposit::deposit_of(&alice).is_some());
 
 		// claim
 		efflux(MILLISECS_PER_MONTH);
-		precompiles()
-			.prepare_test(alice, Precompile, PCall::claim {})
-			.execute_returns(EvmDataWriter::new().write(true).build());
+		precompiles().prepare_test(alice, Precompile, PCall::claim {}).execute_returns(true);
 		assert!(Deposit::deposit_of(&alice).is_none());
 	});
 }
@@ -65,13 +63,13 @@ fn claim_with_penalty() {
 		// lock
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::lock { amount: 200.into(), months: 1 })
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert!(Deposit::deposit_of(&alice).is_some());
 
 		// claim with penalty
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::claim_with_penalty { id: 0 })
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert!(Deposit::deposit_of(&alice).is_none());
 	});
 }

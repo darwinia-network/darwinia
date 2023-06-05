@@ -23,7 +23,7 @@ use crate::mock::{
 };
 use sp_runtime::Perbill;
 // moonbeam
-use precompile_utils::{testing::PrecompileTesterExt, EvmDataWriter};
+use precompile_utils::testing::PrecompileTesterExt;
 // substrate
 use sp_core::{H160, U256};
 
@@ -57,7 +57,7 @@ fn stake_unstake_restake() {
 					deposits: vec![],
 				},
 			)
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
 
 		// unstake
@@ -71,7 +71,7 @@ fn stake_unstake_restake() {
 					deposits: vec![],
 				},
 			)
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 0);
 		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 1);
 
@@ -86,7 +86,7 @@ fn stake_unstake_restake() {
 					deposits: vec![],
 				},
 			)
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
 		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 0);
 	});
@@ -107,7 +107,7 @@ fn claim() {
 					deposits: vec![],
 				},
 			)
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 
 		// unstake
 		precompiles()
@@ -120,13 +120,11 @@ fn claim() {
 					deposits: vec![],
 				},
 			)
-			.execute_returns(EvmDataWriter::new().write(true).build());
+			.execute_returns(true);
 
 		// You have to wait for MinStakingDuration to claim
 		System::set_block_number(5);
-		precompiles()
-			.prepare_test(alice, Precompile, PCall::claim {})
-			.execute_returns(EvmDataWriter::new().write(true).build());
+		precompiles().prepare_test(alice, Precompile, PCall::claim {}).execute_returns(true);
 		assert!(Staking::ledger_of(alice).is_none());
 	});
 }
@@ -148,12 +146,12 @@ fn nominate() {
 						deposits: vec![],
 					},
 				)
-				.execute_returns(EvmDataWriter::new().write(true).build());
+				.execute_returns(true);
 
 			// check the collator commission
 			precompiles()
 				.prepare_test(alice, Precompile, PCall::collect { commission: 30 })
-				.execute_returns(EvmDataWriter::new().write(true).build());
+				.execute_returns(true);
 			assert_eq!(Staking::collator_of(alice).unwrap(), Perbill::from_percent(30));
 
 			// bob stake as nominator
@@ -167,24 +165,20 @@ fn nominate() {
 						deposits: vec![],
 					},
 				)
-				.execute_returns(EvmDataWriter::new().write(true).build());
+				.execute_returns(true);
 
 			// check nominate result
 			precompiles()
 				.prepare_test(bob, Precompile, PCall::nominate { target: alice.into() })
-				.execute_returns(EvmDataWriter::new().write(true).build());
+				.execute_returns(true);
 			assert_eq!(Staking::nominator_of(bob).unwrap(), alice);
 
 			// check alice(collator) chill
-			precompiles()
-				.prepare_test(alice, Precompile, PCall::chill {})
-				.execute_returns(EvmDataWriter::new().write(true).build());
+			precompiles().prepare_test(alice, Precompile, PCall::chill {}).execute_returns(true);
 			assert!(Staking::collator_of(alice).is_none());
 
 			// check bob(nominator) chill
-			precompiles()
-				.prepare_test(bob, Precompile, PCall::chill {})
-				.execute_returns(EvmDataWriter::new().write(true).build());
+			precompiles().prepare_test(bob, Precompile, PCall::chill {}).execute_returns(true);
 			assert!(Staking::nominator_of(bob).is_none());
 		},
 	);
