@@ -15,7 +15,7 @@ jobs:
     name: Build package [linux]
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:18.04
+      image: ubuntu:20.04
     steps:
       - name: Install dependencies
         run: |
