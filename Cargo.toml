@@ -104,14 +104,14 @@ pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/fr
 pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v0.9.40", default-features = false }
 
 # moonbeam
-pallet-ethereum-xcm            = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
-moonbeam-evm-tracer            = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
-moonbeam-primitives-ext        = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
-moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40" }
-moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
-moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40" }
-precompile-utils               = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
-xcm-primitives                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.40", default-features = false }
+pallet-ethereum-xcm            = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
+moonbeam-evm-tracer            = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
+moonbeam-primitives-ext        = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
+moonbeam-rpc-debug             = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare" }
+moonbeam-rpc-primitives-debug  = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
+moonbeam-rpc-trace             = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare" }
+precompile-utils               = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
+xcm-primitives                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "prepare", default-features = false }
 
 # polkadot
 pallet-xcm              = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40", default-features = false }
