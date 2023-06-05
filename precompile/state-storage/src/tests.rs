@@ -25,7 +25,6 @@ use crate::mock::{
 use precompile_utils::{
 	prelude::{RuntimeHelper, UnboundedBytes},
 	testing::{PrecompileTesterExt, PrecompilesModifierTester},
-	EvmDataWriter,
 };
 // substrate
 use frame_support::{StorageHasher, Twox128};
@@ -69,9 +68,7 @@ fn test_state_storage() {
 			.prepare_test(Alice, Precompile, PCall::state_storage_at { key: key.into() })
 			.expect_cost(RuntimeHelper::<TestRuntime>::db_read_gas_cost())
 			.expect_no_logs()
-			.execute_returns(
-				EvmDataWriter::new().write(UnboundedBytes::from(&5u64.to_le_bytes())).build(),
-			);
+			.execute_returns(UnboundedBytes::from(&5u64.to_le_bytes()));
 	});
 }
 

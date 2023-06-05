@@ -27,7 +27,6 @@ use crate::{
 use precompile_utils::{
 	prelude::{Address, UnboundedBytes},
 	testing::{PrecompileTesterExt, PrecompilesModifierTester},
-	EvmDataWriter,
 };
 // substrate
 use frame_support::assert_ok;
@@ -154,7 +153,7 @@ fn get_total_supply() {
 			precompiles()
 				.prepare_test(Alice, Precompile, InternalCall::total_supply {})
 				.expect_no_logs()
-				.execute_returns_encoded(U256::from(1000u64));
+				.execute_returns(U256::from(1000u64));
 		});
 }
 
@@ -182,7 +181,7 @@ fn get_balances_known_user() {
 				InternalCall::balance_of { who: Address(Alice.into()) },
 			)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(1000u64));
+			.execute_returns(U256::from(1000u64));
 	});
 }
 
@@ -206,7 +205,7 @@ fn get_balances_unknown_user() {
 		precompiles()
 			.prepare_test(Alice, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(0u64));
+			.execute_returns(U256::from(0u64));
 	});
 }
 
@@ -238,9 +237,9 @@ fn approve() {
 				SELECTOR_LOG_APPROVAL,
 				H256::from(Alice),
 				H256::from(Bob),
-				EvmDataWriter::new().write(U256::from(500)).build(),
+				solidity::encode_event_data(U256::from(500)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 	});
 }
 
@@ -267,7 +266,7 @@ fn approve_saturating() {
 				Precompile,
 				InternalCall::approve { spender: Address(Bob.into()), value: U256::MAX },
 			)
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 		precompiles()
 			.prepare_test(
 				Alice,
@@ -277,7 +276,7 @@ fn approve_saturating() {
 					spender: Address(Bob.into()),
 				},
 			)
-			.execute_returns_encoded(U256::from(u128::MAX));
+			.execute_returns(U256::from(u128::MAX));
 	});
 }
 
@@ -317,7 +316,7 @@ fn check_allowance_existing() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(500u64));
+			.execute_returns(U256::from(500u64));
 	});
 }
 
@@ -343,7 +342,7 @@ fn check_allowance_not_existing() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(0u64));
+			.execute_returns(U256::from(0u64));
 	});
 }
 
@@ -375,14 +374,14 @@ fn transfer() {
 				SELECTOR_LOG_TRANSFER,
 				H256::from(Alice),
 				H256::from(Bob),
-				EvmDataWriter::new().write(U256::from(400)).build(),
+				solidity::encode_event_data(U256::from(400)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 
 		precompiles()
 			.prepare_test(Bob, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(400));
+			.execute_returns(U256::from(400));
 
 		precompiles()
 			.prepare_test(
@@ -392,7 +391,7 @@ fn transfer() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(600));
+			.execute_returns(U256::from(600));
 	});
 }
 
@@ -466,9 +465,9 @@ fn transfer_from() {
 				SELECTOR_LOG_TRANSFER,
 				H256::from(Alice),
 				H256::from(Charlie),
-				EvmDataWriter::new().write(U256::from(400)).build(),
+				solidity::encode_event_data(U256::from(400)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 
 		precompiles()
 			.prepare_test(
@@ -478,12 +477,12 @@ fn transfer_from() {
 			)
 			.expect_cost(0) // TODO: Test db read/write costs
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(600));
+			.execute_returns(U256::from(600));
 
 		precompiles()
 			.prepare_test(Bob, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(0));
+			.execute_returns(U256::from(0));
 
 		precompiles()
 			.prepare_test(
@@ -492,7 +491,7 @@ fn transfer_from() {
 				InternalCall::balance_of { who: Address(Charlie.into()) },
 			)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(400));
+			.execute_returns(U256::from(400));
 
 		precompiles()
 			.prepare_test(
@@ -505,7 +504,7 @@ fn transfer_from() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(100u64));
+			.execute_returns(U256::from(100u64));
 	});
 }
 
@@ -527,9 +526,9 @@ fn transfer_from_non_incremental_approval() {
 				SELECTOR_LOG_APPROVAL,
 				H256::from(Alice),
 				H256::from(Bob),
-				EvmDataWriter::new().write(U256::from(500)).build(),
+				solidity::encode_event_data(U256::from(500)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 
 		// We then approve 300. Non-incremental, so this is
 		// the approved new value
@@ -546,9 +545,9 @@ fn transfer_from_non_incremental_approval() {
 				SELECTOR_LOG_APPROVAL,
 				H256::from(Alice),
 				H256::from(Bob),
-				EvmDataWriter::new().write(U256::from(300)).build(),
+				solidity::encode_event_data(U256::from(300)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 
 		// This should fail, as now the new approved quantity is 300
 		precompiles()
@@ -643,9 +642,9 @@ fn transfer_from_self() {
 				SELECTOR_LOG_TRANSFER,
 				H256::from(Alice),
 				H256::from(Bob),
-				EvmDataWriter::new().write(U256::from(400)).build(),
+				solidity::encode_event_data(U256::from(400)),
 			))
-			.execute_returns_encoded(true);
+			.execute_returns(true);
 
 		precompiles()
 			.prepare_test(
@@ -655,13 +654,13 @@ fn transfer_from_self() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(600));
+			.execute_returns(U256::from(600));
 
 		precompiles()
 			.prepare_test(Alice, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
 			.expect_cost(0) // TODO: Test db read/write costs
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(400));
+			.execute_returns(U256::from(400));
 	});
 }
 
@@ -691,23 +690,19 @@ fn get_metadata() {
 				.prepare_test(Alice, Precompile, InternalCall::name {})
 				.expect_cost(0)
 				.expect_no_logs()
-				.execute_returns(
-					EvmDataWriter::new().write::<UnboundedBytes>("TestToken".into()).build(),
-				);
+				.execute_returns(UnboundedBytes::from("TestToken"));
 
 			precompiles()
 				.prepare_test(Alice, Precompile, InternalCall::symbol {})
 				.expect_cost(0)
 				.expect_no_logs()
-				.execute_returns(
-					EvmDataWriter::new().write::<UnboundedBytes>("Test".into()).build(),
-				);
+				.execute_returns(UnboundedBytes::from("Test"));
 
 			precompiles()
 				.prepare_test(Alice, Precompile, InternalCall::decimals {})
 				.expect_cost(0)
 				.expect_no_logs()
-				.execute_returns_encoded(12u8);
+				.execute_returns(12u8);
 		});
 }
 
@@ -736,9 +731,9 @@ fn mint() {
 					SELECTOR_LOG_TRANSFER,
 					H256::default(),
 					H256::from(Bob),
-					EvmDataWriter::new().write(U256::from(400)).build(),
+					solidity::encode_event_data(U256::from(400)),
 				))
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			precompiles()
 				.prepare_test(
@@ -748,7 +743,7 @@ fn mint() {
 				)
 				.expect_cost(0) // TODO: Test db read/write costs
 				.expect_no_logs()
-				.execute_returns_encoded(U256::from(400));
+				.execute_returns(U256::from(400));
 		});
 }
 
@@ -783,9 +778,9 @@ fn burn() {
 					SELECTOR_LOG_TRANSFER,
 					H256::from(Alice),
 					H256::default(),
-					EvmDataWriter::new().write(U256::from(400)).build(),
+					solidity::encode_event_data(U256::from(400)),
 				))
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			precompiles()
 				.prepare_test(
@@ -794,7 +789,7 @@ fn burn() {
 					InternalCall::balance_of { who: Address(Alice.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(U256::from(600));
+				.execute_returns(U256::from(600));
 		});
 }
 
@@ -825,7 +820,7 @@ fn freeze() {
 					InternalCall::freeze { account: Address(Bob.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			precompiles()
 				.prepare_test(
@@ -867,7 +862,7 @@ fn thaw() {
 					InternalCall::freeze { account: Address(Bob.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			precompiles()
 				.prepare_test(
@@ -876,7 +871,7 @@ fn thaw() {
 					InternalCall::thaw { account: Address(Bob.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			precompiles()
 				.prepare_test(
@@ -889,9 +884,9 @@ fn thaw() {
 					SELECTOR_LOG_TRANSFER,
 					H256::from(Bob),
 					H256::from(Alice),
-					EvmDataWriter::new().write(U256::from(400)).build(),
+					solidity::encode_event_data(U256::from(400)),
 				))
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 		});
 }
 
@@ -924,7 +919,7 @@ fn transfer_ownership() {
 					InternalCall::transfer_ownership { owner: Address(Bob.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 
 			// Now Bob should be able to change ownership, and not Alice
 			precompiles()
@@ -945,7 +940,7 @@ fn transfer_ownership() {
 					InternalCall::transfer_ownership { owner: Address(Alice.into()) },
 				)
 				.expect_no_logs()
-				.execute_returns_encoded(true);
+				.execute_returns(true);
 		});
 }
 
@@ -982,7 +977,7 @@ fn transfer_amount_overflow() {
 			.prepare_test(Bob, Precompile, InternalCall::balance_of { who: Address(Bob.into()) })
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(0));
+			.execute_returns(U256::from(0));
 
 		precompiles()
 			.prepare_test(
@@ -992,7 +987,7 @@ fn transfer_amount_overflow() {
 			)
 			.expect_cost(0)
 			.expect_no_logs()
-			.execute_returns_encoded(U256::from(1000));
+			.execute_returns(U256::from(1000));
 	});
 }
 
