@@ -277,29 +277,6 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
-	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		fn on_runtime_upgrade() -> Weight {
-			let mut count = 0;
-
-			<Exposures<T>>::iter().for_each(|(k, v)| {
-				<NextExposures<T>>::insert(k, v);
-
-				count += 1;
-			});
-
-			T::DbWeight::get().reads_writes(count, count)
-		}
-
-		#[cfg(feature = "try-runtime")]
-		fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-			<Exposures<T>>::iter().zip(<NextExposures<T>>::iter()).for_each(|(e1, e2)| {
-				assert_eq!(e1, e2);
-			});
-
-			Ok(())
-		}
-	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Add stakes to the staking pool.
