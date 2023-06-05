@@ -1523,6 +1523,7 @@ dependencies = [
  "frame-try-runtime",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
+ "moonbeam-rpc-primitives-txpool",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -2467,7 +2468,9 @@ dependencies = [
  "moonbeam-primitives-ext",
  "moonbeam-rpc-debug",
  "moonbeam-rpc-primitives-debug",
+ "moonbeam-rpc-primitives-txpool",
  "moonbeam-rpc-trace",
+ "moonbeam-rpc-txpool",
  "pallet-transaction-payment-rpc",
  "pangolin-runtime",
  "pangoro-runtime",
@@ -2797,6 +2800,7 @@ dependencies = [
  "frame-try-runtime",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
+ "moonbeam-rpc-primitives-txpool",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -6475,6 +6479,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "moonbeam-rpc-core-txpool"
+version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.40-1#8a49604e60078a64aac6005a79a0045cbc1792b6"
+dependencies = [
+ "ethereum",
+ "ethereum-types 0.14.1",
+ "fc-rpc-core",
+ "jsonrpsee",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
 source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.40-1#8a49604e60078a64aac6005a79a0045cbc1792b6"
@@ -6533,6 +6550,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "moonbeam-rpc-primitives-txpool"
+version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.40-1#8a49604e60078a64aac6005a79a0045cbc1792b6"
+dependencies = [
+ "ethereum",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
 source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.40-1#8a49604e60078a64aac6005a79a0045cbc1792b6"
@@ -6564,6 +6594,29 @@ dependencies = [
  "sp-transaction-pool",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "moonbeam-rpc-txpool"
+version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.40-1#8a49604e60078a64aac6005a79a0045cbc1792b6"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "fc-rpc",
+ "frame-system",
+ "jsonrpsee",
+ "moonbeam-rpc-core-txpool",
+ "moonbeam-rpc-primitives-txpool",
+ "rlp",
+ "sc-transaction-pool",
+ "sc-transaction-pool-api",
+ "serde",
+ "sha3",
+ "sp-api",
+ "sp-blockchain",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -8484,6 +8537,7 @@ dependencies = [
  "frame-try-runtime",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
+ "moonbeam-rpc-primitives-txpool",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -8592,6 +8646,7 @@ dependencies = [
  "frame-try-runtime",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
+ "moonbeam-rpc-primitives-txpool",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
