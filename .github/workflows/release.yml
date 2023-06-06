@@ -134,7 +134,6 @@ jobs:
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
-
   build-docker-image:
     name: Build Docker image
     runs-on: ubuntu-latest
@@ -240,14 +239,15 @@ jobs:
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
 
-#      - name: Verify
-#        run: |
-#          set -xe
-#          cat template-release.md
-#          ls -la deploy/
-#          cat build/*.md
+      #      - name: Verify
+      #        run: |
+      #          set -xe
+      #          cat template-release.md
+      #          ls -la deploy/
+      #          cat build/*.md
 
       - name: Publish github release
+        if: matrix.artifact.type == 'mainnets'
         uses: softprops/action-gh-release@v1
         with:
           body_path: "template-release.md"
@@ -255,6 +255,17 @@ jobs:
             deploy/*
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish github release
+        if: matrix.artifact.type == 'testnets'
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: "template-release.md"
+          files: |
+            deploy/*
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
 
   deploy-tracing-node:
     name: Deploy tracing node
