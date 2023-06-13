@@ -81,8 +81,6 @@ mod treasury;
 mod tips;
 
 // Utility stuff.
-mod sudo;
-
 mod utility;
 
 mod identity;

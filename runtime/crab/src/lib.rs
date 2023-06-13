@@ -153,7 +153,7 @@ frame_support::construct_runtime! {
 		Tips: pallet_tips = 24,
 
 		// Utility stuff.
-		Sudo: pallet_sudo = 25,
+		// Sudo: pallet_sudo = 25,
 		Utility: pallet_utility = 26,
 		Identity: pallet_identity = 27,
 		Scheduler: pallet_scheduler = 28,

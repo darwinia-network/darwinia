@@ -229,13 +229,6 @@ pub fn genesis_config() -> ChainSpec {
 				technical_membership: Default::default(),
 				treasury: Default::default(),
 
-				// Utility stuff.
-				sudo: SudoConfig {
-					key: Some(array_bytes::hex_n_into_unchecked(
-						"0x3e25247cff03f99a7d83b28f207112234fee73a6",
-					)),
-				},
-
 				// XCM stuff.
 				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
 
@@ -343,9 +336,6 @@ fn testnet_genesis(
 		phragmen_election: Default::default(),
 		technical_membership: Default::default(),
 		treasury: Default::default(),
-
-		// Utility stuff.
-		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
 
 		// XCM stuff.
 		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
