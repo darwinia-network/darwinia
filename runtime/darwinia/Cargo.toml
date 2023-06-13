@@ -103,7 +103,6 @@ pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
 pallet-scheduler                           = { workspace = true }
 pallet-session                             = { workspace = true }
-pallet-sudo                                = { workspace = true }
 pallet-timestamp                           = { workspace = true }
 pallet-tips                                = { workspace = true }
 pallet-transaction-payment                 = { workspace = true }
@@ -231,7 +230,6 @@ std = [
 	"pallet-proxy/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
-	"pallet-sudo/std",
 	"pallet-timestamp/std",
 	"pallet-tips/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
@@ -388,7 +386,6 @@ try-runtime = [
 	"pallet-proxy/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
-	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-tips/try-runtime",
 	"pallet-transaction-payment/try-runtime",

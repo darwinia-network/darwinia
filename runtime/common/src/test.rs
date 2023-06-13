@@ -545,30 +545,6 @@ macro_rules! impl_evm_tests {
 						})
 					)
 					.is_some());
-
-					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
-						// root account
-						&ROOT,
-						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
-					)
-					.is_none());
-					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
-						// root account
-						&ROOT,
-						// forbidden call
-						&RuntimeCall::EVM(pallet_evm::Call::call {
-							source: H160::default(),
-							target: H160::default(),
-							input: vec![],
-							value: U256::default(),
-							gas_limit: 1000000,
-							max_fee_per_gas: U256::from(1_000_000),
-							max_priority_fee_per_gas: None,
-							nonce: None,
-							access_list: vec![],
-						})
-					)
-					.is_none());
 				});
 			}
 		}

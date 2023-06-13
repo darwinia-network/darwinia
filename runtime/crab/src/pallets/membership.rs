@@ -20,14 +20,14 @@
 use crate::*;
 
 impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
-	type AddOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type AddOrigin = Root;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MembershipChanged = TechnicalCommittee;
 	type MembershipInitialized = TechnicalCommittee;
-	type PrimeOrigin = RootOrMoreThanHalf<CouncilCollective>;
-	type RemoveOrigin = RootOrMoreThanHalf<CouncilCollective>;
-	type ResetOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type PrimeOrigin = Root;
+	type RemoveOrigin = Root;
+	type ResetOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
-	type SwapOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type SwapOrigin = Root;
 	type WeightInfo = weights::pallet_membership::WeightInfo<Self>;
 }

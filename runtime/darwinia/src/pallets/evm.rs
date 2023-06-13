@@ -175,24 +175,21 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 		origin: &AccountId,
 		call: &RuntimeCall,
 	) -> Option<fp_evm::PrecompileFailure> {
-		if let Some(root) = pallet_sudo::Pallet::<Runtime>::key() {
-			if origin == &root {
-				// Without validation for root role
-				return None;
-			} else if matches!(
-				call,
-				RuntimeCall::Assets(..)
-					| RuntimeCall::Vesting(..)
-					| RuntimeCall::Ethereum(..)
-					| RuntimeCall::EVM(..)
-					| RuntimeCall::MessageTransact(..)
-			) {
-				return Some(fp_evm::PrecompileFailure::Error {
-					exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
-				});
-			}
+		if matches!(
+			call,
+			RuntimeCall::Assets(..)
+				| RuntimeCall::Vesting(..)
+				| RuntimeCall::Ethereum(..)
+				| RuntimeCall::EVM(..)
+				| RuntimeCall::MessageTransact(..)
+		) {
+			Some(fp_evm::PrecompileFailure::Error {
+				exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
+			})
+		} else {
+			<() as DispatchValidateT<AccountId, RuntimeCall>>::validate_before_dispatch(
+				origin, call,
+			)
 		}
-
-		<() as DispatchValidateT<AccountId, RuntimeCall>>::validate_before_dispatch(origin, call)
 	}
 }
