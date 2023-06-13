@@ -23,9 +23,6 @@ use crate::*;
 #[allow(unused_imports)]
 use frame_support::{log, migration, storage::unhashed};
 
-const OLD_BLOCK_HASH_COUNT: BlockNumber = 2400;
-const NEW_BLOCK_HASH_COUNT: BlockNumber = 256;
-
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
@@ -35,21 +32,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-		assert_eq!(
-			<frame_system::BlockHash<Runtime>>::iter().count() as BlockNumber,
-			// Never purge genesis hash.
-			// So, plus 1 here.
-			NEW_BLOCK_HASH_COUNT + 1
-		);
-		assert_eq!(
-			migration::storage_iter::<()>(b"Ethereum", b"BlockHash").count() as BlockNumber,
-			// Never purge genesis hash.
-			// So, plus 1 here.
-			//
-			// Ethereum can include current block hash, so plus 1 more here.
-			NEW_BLOCK_HASH_COUNT + 2
-		);
-
 		Ok(())
 	}
 
@@ -59,50 +41,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// crates.io
-	use codec::Encode;
-	// substrate
-	use frame_support::{StorageHasher, Twox64Concat};
-	use sp_core::U256;
-
-	let now = System::block_number();
-
-	// Impossible.
-	// if now <= NEW_BLOCK_HASH_COUNT {
-	// 	return frame_support::weights::Weight::zero();
-	// }
-
-	// Scenario:
-	// now - 2400, now - 2399, .. now
-	// ->
-	// now - 256, now - 255, .. now
-	// =
-	// purge(now - 2400 ..= now - 255)
-	//
-	// Condition:
-	// always keep `0`
-	// last is `now - 1`
-	let last = now.saturating_sub(1);
-	let start = last.saturating_sub(OLD_BLOCK_HASH_COUNT);
-	let end = last.saturating_sub(NEW_BLOCK_HASH_COUNT);
-
-	// keep genesis hash
-	for n in start..=end {
-		<frame_system::BlockHash<Runtime>>::remove(n);
-
-		// Storage item: https://github.com/paritytech/frontier/blob/polkadot-v0.9.38/frame/ethereum/src/lib.rs#L338
-		// Since this storage item is private at `polkadot-v0.9.38` branch, we have to migrate
-		// it manually. https://github.com/paritytech/frontier/pull/1034 changes the visibility of this item to public.
-		// This is not a complicated one to review, so let's do it.
-		let _ = migration::take_storage_value::<()>(
-			b"Ethereum",
-			b"BlockHash",
-			&Twox64Concat::hash(&U256::from(n).encode()),
-		);
-	}
-
-	// frame_support::weights::Weight::zero()
+	frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
-	<Runtime as frame_system::Config>::DbWeight::get()
-		.reads_writes(0, (2 * end.saturating_sub(start)) as _)
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
