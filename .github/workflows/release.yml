@@ -247,7 +247,7 @@ jobs:
       #          cat build/*.md
 
       - name: Publish github release
-        if: matrix.artifact.type == 'mainnets'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           body_path: "template-release.md"
@@ -257,7 +257,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish github release
-        if: matrix.artifact.type == 'testnets'
+        if: startsWith(github.ref, 'refs/tags/pango')
         uses: softprops/action-gh-release@v1
         with:
           body_path: "template-release.md"
