@@ -23,14 +23,18 @@ jobs:
         artifact:
           - type: mainnets
             features: darwinia-native,crab-native
+            enable_tar_bz2: true
           - type: mainnets
             features: darwinia-native,crab-native,evm-tracing
             suffix: tracing
+            enable_tar_bz2: false
           - type: testnets
             features: pangoro-native,pangolin-native
+            enable_tar_bz2: true
           - type: testnets
             features: pangoro-native,pangolin-native,evm-tracing
             suffix: tracing
+            enable_tar_bz2: false
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
@@ -49,6 +53,7 @@ jobs:
           rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
+          enable_tar_bz2: ${{ matrix.artifact.enable_tar_bz2 }}
 
       - uses: ./.github/actions/actions/fast-substrate
         name: Build mainnets
