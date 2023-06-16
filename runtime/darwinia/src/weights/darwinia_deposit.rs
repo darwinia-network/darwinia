@@ -69,7 +69,7 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 		//  Estimated: `41879`
 		// Minimum execution time: 93_095_000 picoseconds.
 		Weight::from_parts(93_095_000, 0)
-			.saturating_add(Weight::from_parts(0, 41879))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -85,7 +85,7 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 		//  Estimated: `34689`
 		// Minimum execution time: 1_666_031_000 picoseconds.
 		Weight::from_parts(1_666_031_000, 0)
-			.saturating_add(Weight::from_parts(0, 34689))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -103,7 +103,7 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 		//  Estimated: `38298`
 		// Minimum execution time: 108_737_000 picoseconds.
 		Weight::from_parts(108_737_000, 0)
-			.saturating_add(Weight::from_parts(0, 38298))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}

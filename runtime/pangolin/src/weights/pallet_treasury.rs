@@ -71,7 +71,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 		//  Estimated: `1489`
 		// Minimum execution time: 36_268_000 picoseconds.
 		Weight::from_parts(36_268_000, 0)
-			.saturating_add(Weight::from_parts(0, 1489))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -85,7 +85,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 		//  Estimated: `9721`
 		// Minimum execution time: 46_147_000 picoseconds.
 		Weight::from_parts(46_147_000, 0)
-			.saturating_add(Weight::from_parts(0, 9721))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -100,7 +100,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 		//  Estimated: `5436`
 		// Minimum execution time: 12_317_000 picoseconds.
 		Weight::from_parts(16_658_000, 0)
-			.saturating_add(Weight::from_parts(0, 5436))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -112,7 +112,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 		//  Estimated: `1887`
 		// Minimum execution time: 11_001_000 picoseconds.
 		Weight::from_parts(11_001_000, 0)
-			.saturating_add(Weight::from_parts(0, 1887))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -133,7 +133,7 @@ impl<T: frame_system::Config> pallet_treasury::WeightInfo for WeightInfo<T> {
 		//  Estimated: `265360`
 		// Minimum execution time: 36_941_000 picoseconds.
 		Weight::from_parts(231_856_000, 0)
-			.saturating_add(Weight::from_parts(0, 265360))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(104))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}

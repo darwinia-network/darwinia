@@ -65,7 +65,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `4716`
 		// Minimum execution time: 21_610_000 picoseconds.
 		Weight::from_parts(21_610_000, 0)
-			.saturating_add(Weight::from_parts(0, 4716))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -81,7 +81,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `4716`
 		// Minimum execution time: 28_545_000 picoseconds.
 		Weight::from_parts(28_545_000, 0)
-			.saturating_add(Weight::from_parts(0, 4716))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -97,7 +97,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `4953`
 		// Minimum execution time: 27_288_000 picoseconds.
 		Weight::from_parts(27_288_000, 0)
-			.saturating_add(Weight::from_parts(0, 4953))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -113,7 +113,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `5256`
 		// Minimum execution time: 24_165_000 picoseconds.
 		Weight::from_parts(24_165_000, 0)
-			.saturating_add(Weight::from_parts(0, 5256))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -133,7 +133,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `7195`
 		// Minimum execution time: 40_570_000 picoseconds.
 		Weight::from_parts(40_570_000, 0)
-			.saturating_add(Weight::from_parts(0, 7195))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -147,7 +147,7 @@ impl<T: frame_system::Config> darwinia_ecdsa_authority::WeightInfo for WeightInf
 		//  Estimated: `3460`
 		// Minimum execution time: 27_291_000 picoseconds.
 		Weight::from_parts(27_291_000, 0)
-			.saturating_add(Weight::from_parts(0, 3460))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

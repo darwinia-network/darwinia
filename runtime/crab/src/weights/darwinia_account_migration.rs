@@ -89,7 +89,7 @@ impl<T: frame_system::Config> darwinia_account_migration::WeightInfo for WeightI
 		//  Estimated: `113012`
 		// Minimum execution time: 227_195_000 picoseconds.
 		Weight::from_parts(227_195_000, 0)
-			.saturating_add(Weight::from_parts(0, 113012))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(18))
 	}
@@ -134,7 +134,7 @@ impl<T: frame_system::Config> darwinia_account_migration::WeightInfo for WeightI
 		//  Estimated: `113012`
 		// Minimum execution time: 24_473_000 picoseconds.
 		Weight::from_parts(238_247_666, 0)
-			.saturating_add(Weight::from_parts(0, 113012))
+			.saturating_add(Weight::from_parts(0, 0))
 			// Standard Error: 16_408
 			.saturating_add(Weight::from_parts(81_552, 0).saturating_mul(z.into()))
 			.saturating_add(T::DbWeight::get().reads(12))
@@ -150,7 +150,7 @@ impl<T: frame_system::Config> darwinia_account_migration::WeightInfo for WeightI
 		//  Estimated: `10545`
 		// Minimum execution time: 27_877_000 picoseconds.
 		Weight::from_parts(27_877_000, 0)
-			.saturating_add(Weight::from_parts(0, 10545))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

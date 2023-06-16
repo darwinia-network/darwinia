@@ -70,7 +70,7 @@ impl<T: frame_system::Config> pallet_bridge_parachains::WeightInfo for WeightInf
 		//  Estimated: `5268275`
 		// Minimum execution time: 76_756_000 picoseconds.
 		Weight::from_parts(39_465_487_000, 0)
-			.saturating_add(Weight::from_parts(0, 5268275))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2050))
 			.saturating_add(T::DbWeight::get().writes(3072))
 	}
@@ -90,7 +90,7 @@ impl<T: frame_system::Config> pallet_bridge_parachains::WeightInfo for WeightInf
 		//  Estimated: `77573`
 		// Minimum execution time: 84_508_000 picoseconds.
 		Weight::from_parts(84_508_000, 0)
-			.saturating_add(Weight::from_parts(0, 77573))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -110,7 +110,7 @@ impl<T: frame_system::Config> pallet_bridge_parachains::WeightInfo for WeightInf
 		//  Estimated: `77573`
 		// Minimum execution time: 162_940_000 picoseconds.
 		Weight::from_parts(162_940_000, 0)
-			.saturating_add(Weight::from_parts(0, 77573))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}

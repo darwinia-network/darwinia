@@ -76,7 +76,7 @@ impl<T: frame_system::Config> pallet_bridge_grandpa::WeightInfo for WeightInfo<T
 		// Minimum execution time: 1_661_732_000 picoseconds.
 		Weight::from_parts(125_687_999, 0)
 			// Manually set the proof size to avoid exhausting the block limit.
-			.saturating_add(Weight::from_parts(0, 2000000))
+			.saturating_add(Weight::from_parts(0, 0))
 			// Standard Error: 1_814_340
 			.saturating_add(Weight::from_parts(27_154_784, 0).saturating_mul(p.into()))
 			// Standard Error: 1_850_627

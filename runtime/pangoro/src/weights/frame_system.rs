@@ -81,7 +81,7 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
 		//  Estimated: `1485`
 		// Minimum execution time: 17_424_000 picoseconds.
 		Weight::from_parts(17_424_000, 0)
-			.saturating_add(Weight::from_parts(0, 1485))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -118,7 +118,7 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
 		//  Estimated: `69676`
 		// Minimum execution time: 17_185_000 picoseconds.
 		Weight::from_parts(825_293_000, 0)
-			.saturating_add(Weight::from_parts(0, 69676))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1000))
 			.saturating_add(T::DbWeight::get().writes(1000))
 	}
