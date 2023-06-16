@@ -41,9 +41,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	migration::clear_storage_prefix(b"Sudo", b"Key", &[], None, None);
-
-	// frame_support::weights::Weight::zero()
+	frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
