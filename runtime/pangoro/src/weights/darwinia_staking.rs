@@ -74,7 +74,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `51255`
 		// Minimum execution time: 78_195_000 picoseconds.
 		Weight::from_parts(139_793_000, 0)
-			.saturating_add(Weight::from_parts(0, 51255))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(8))
 			.saturating_add(T::DbWeight::get().writes(8))
 	}
@@ -93,7 +93,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `37915`
 		// Minimum execution time: 16_381_000 picoseconds.
 		Weight::from_parts(74_080_000, 0)
-			.saturating_add(Weight::from_parts(0, 37915))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -112,7 +112,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `37915`
 		// Minimum execution time: 13_786_000 picoseconds.
 		Weight::from_parts(53_310_000, 0)
-			.saturating_add(Weight::from_parts(0, 37915))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -132,7 +132,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `48253`
 		// Minimum execution time: 117_581_000 picoseconds.
 		Weight::from_parts(117_581_000, 0)
-			.saturating_add(Weight::from_parts(0, 48253))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(6))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
@@ -144,7 +144,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `3497`
 		// Minimum execution time: 21_736_000 picoseconds.
 		Weight::from_parts(21_736_000, 0)
-			.saturating_add(Weight::from_parts(0, 3497))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -160,7 +160,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 		//  Estimated: `12308`
 		// Minimum execution time: 14_961_000 picoseconds.
 		Weight::from_parts(14_961_000, 0)
-			.saturating_add(Weight::from_parts(0, 12308))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

@@ -73,7 +73,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `48753`
 		// Minimum execution time: 92_950_000 picoseconds.
 		Weight::from_parts(92_950_000, 0)
-			.saturating_add(Weight::from_parts(0, 48753))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
@@ -97,7 +97,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `49113`
 		// Minimum execution time: 88_969_000 picoseconds.
 		Weight::from_parts(88_969_000, 0)
-			.saturating_add(Weight::from_parts(0, 49113))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -121,7 +121,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `49113`
 		// Minimum execution time: 102_776_000 picoseconds.
 		Weight::from_parts(102_776_000, 0)
-			.saturating_add(Weight::from_parts(0, 49113))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -141,7 +141,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `38685`
 		// Minimum execution time: 74_835_000 picoseconds.
 		Weight::from_parts(74_835_000, 0)
-			.saturating_add(Weight::from_parts(0, 38685))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(13))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -165,7 +165,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `48458`
 		// Minimum execution time: 148_277_000 picoseconds.
 		Weight::from_parts(148_277_000, 0)
-			.saturating_add(Weight::from_parts(0, 48458))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(15))
 			.saturating_add(T::DbWeight::get().writes(5))
 	}
@@ -196,7 +196,7 @@ impl<T: frame_system::Config> pallet_fee_market::WeightInfo for WeightInfo<T> {
 		//  Estimated: `37200`
 		// Minimum execution time: 71_350_000 picoseconds.
 		Weight::from_parts(71_350_000, 0)
-			.saturating_add(Weight::from_parts(0, 37200))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(12))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

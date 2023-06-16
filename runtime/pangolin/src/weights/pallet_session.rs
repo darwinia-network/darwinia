@@ -63,7 +63,7 @@ impl<T: frame_system::Config> pallet_session::WeightInfo for WeightInfo<T> {
 		//  Estimated: `7566`
 		// Minimum execution time: 32_046_000 picoseconds.
 		Weight::from_parts(32_046_000, 0)
-			.saturating_add(Weight::from_parts(0, 7566))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -77,7 +77,7 @@ impl<T: frame_system::Config> pallet_session::WeightInfo for WeightInfo<T> {
 		//  Estimated: `4065`
 		// Minimum execution time: 14_039_000 picoseconds.
 		Weight::from_parts(14_039_000, 0)
-			.saturating_add(Weight::from_parts(0, 4065))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}

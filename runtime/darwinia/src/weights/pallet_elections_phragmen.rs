@@ -70,7 +70,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `17876`
 		// Minimum execution time: 36_627_000 picoseconds.
 		Weight::from_parts(40_504_000, 0)
-			.saturating_add(Weight::from_parts(0, 17876))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -91,7 +91,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `17796`
 		// Minimum execution time: 46_935_000 picoseconds.
 		Weight::from_parts(53_808_000, 0)
-			.saturating_add(Weight::from_parts(0, 17796))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -112,7 +112,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `17876`
 		// Minimum execution time: 44_965_000 picoseconds.
 		Weight::from_parts(46_375_000, 0)
-			.saturating_add(Weight::from_parts(0, 17876))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -126,7 +126,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `8952`
 		// Minimum execution time: 48_725_000 picoseconds.
 		Weight::from_parts(48_725_000, 0)
-			.saturating_add(Weight::from_parts(0, 8952))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
@@ -143,7 +143,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `11142`
 		// Minimum execution time: 27_518_000 picoseconds.
 		Weight::from_parts(30_427_000, 0)
-			.saturating_add(Weight::from_parts(0, 11142))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -156,7 +156,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `3014`
 		// Minimum execution time: 27_091_000 picoseconds.
 		Weight::from_parts(32_063_000, 0)
-			.saturating_add(Weight::from_parts(0, 3014))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -176,7 +176,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `11810`
 		// Minimum execution time: 37_916_000 picoseconds.
 		Weight::from_parts(37_916_000, 0)
-			.saturating_add(Weight::from_parts(0, 11810))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -188,7 +188,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `2185`
 		// Minimum execution time: 28_293_000 picoseconds.
 		Weight::from_parts(28_293_000, 0)
-			.saturating_add(Weight::from_parts(0, 2185))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -220,7 +220,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `18957`
 		// Minimum execution time: 55_750_000 picoseconds.
 		Weight::from_parts(55_750_000, 0)
-			.saturating_add(Weight::from_parts(0, 18957))
+			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().reads(6))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
@@ -244,13 +244,13 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `13548 + v * (11160 ±0)`
 		// Minimum execution time: 6_643_883_000 picoseconds.
 		Weight::from_parts(6_643_883_000, 0)
-			.saturating_add(Weight::from_parts(0, 13548))
+			.saturating_add(Weight::from_parts(0, 0))
 			// Standard Error: 5_553_552
 			.saturating_add(Weight::from_parts(27_037_364, 0).saturating_mul(v.into()))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().reads((3_u64).saturating_mul(v.into())))
 			.saturating_add(T::DbWeight::get().writes((3_u64).saturating_mul(v.into())))
-			.saturating_add(Weight::from_parts(0, 11160).saturating_mul(v.into()))
+			.saturating_add(Weight::from_parts(0, 0).saturating_mul(v.into()))
 	}
 	/// Storage: PhragmenElection Candidates (r:1 w:1)
 	/// Proof Skipped: PhragmenElection Candidates (max_values: Some(1), max_size: None, mode: Measured)
@@ -279,7 +279,7 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 		//  Estimated: `135622 + c * (7607 ±1_369) + v * (3400 ±135) + e * (24 ±8)`
 		// Minimum execution time: 520_779_000 picoseconds.
 		Weight::from_parts(520_779_000, 0)
-			.saturating_add(Weight::from_parts(0, 135622))
+			.saturating_add(Weight::from_parts(0, 0))
 			// Standard Error: 63_704_665
 			.saturating_add(Weight::from_parts(36_499_107, 0).saturating_mul(c.into()))
 			// Standard Error: 6_280_012
@@ -291,8 +291,8 @@ impl<T: frame_system::Config> pallet_elections_phragmen::WeightInfo for WeightIn
 			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(v.into())))
 			.saturating_add(T::DbWeight::get().writes(5))
 			.saturating_add(T::DbWeight::get().writes((1_u64).saturating_mul(c.into())))
-			.saturating_add(Weight::from_parts(0, 7607).saturating_mul(c.into()))
-			.saturating_add(Weight::from_parts(0, 3400).saturating_mul(v.into()))
-			.saturating_add(Weight::from_parts(0, 24).saturating_mul(e.into()))
+			.saturating_add(Weight::from_parts(0, 0).saturating_mul(c.into()))
+			.saturating_add(Weight::from_parts(0, 0).saturating_mul(v.into()))
+			.saturating_add(Weight::from_parts(0, 0).saturating_mul(e.into()))
 	}
 }
