@@ -23,7 +23,7 @@ impl pallet_preimage::Config for Runtime {
 	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
 	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
 	type Currency = Balances;
-	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
+	type ManagerOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
 }

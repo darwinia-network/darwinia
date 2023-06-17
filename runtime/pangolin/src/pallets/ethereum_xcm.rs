@@ -27,7 +27,7 @@ impl xcm_primitives::EnsureProxy<AccountId> for EthereumXcmEnsureProxy {
 }
 
 impl pallet_ethereum_xcm::Config for Runtime {
-	type ControllerOrigin = frame_system::EnsureRoot<AccountId>;
+	type ControllerOrigin = Root;
 	type EnsureProxy = EthereumXcmEnsureProxy;
 	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
 	type ReservedXcmpWeight =
