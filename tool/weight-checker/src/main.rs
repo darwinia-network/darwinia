@@ -27,9 +27,9 @@ fn main() {
 			proof_size = proof_size.max(proof_size_);
 		});
 
-		println!("Max `ref_time`         : {ref_time}");
-		println!("Max on-chain `ref_time`: {on_chain_ref_time}");
-		println!("Max `proof_size`         : {proof_size}");
+		println!("Max            `ref_time`: {ref_time}");
+		println!("Max on-chain   `ref_time`: {on_chain_ref_time}");
+		println!("Max          `proof_size`: {proof_size}");
 		println!("Max on-chain `proof_size`: {on_chain_proof_size}");
 
 		if ref_time >= on_chain_ref_time || proof_size >= on_chain_proof_size {
