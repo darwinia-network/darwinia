@@ -1,6 +1,6 @@
 ### Usage
 
-```shb
+```sh
 # Build
 cargo build
 # Get more detail
