@@ -26,7 +26,7 @@ pub type KusamaHeadersToKeep = ConstU32<500>;
 impl pallet_bridge_grandpa::Config<WithKusamaGrandpa> for Runtime {
 	type BridgedChain = bp_crab::DarwiniaLike;
 	type HeadersToKeep = KusamaHeadersToKeep;
-	type MaxBridgedAuthorities = ConstU32<100_000>;
+	type MaxBridgedAuthorities = ConstU32<4_096>;
 	// Kusama chain currently has 1000 validators.
 	// Double the default value `65536` here.
 	type MaxBridgedHeaderSize = ConstU32<131_072>;
