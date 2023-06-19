@@ -26,7 +26,7 @@ pub type MoonbaseHeadersToKeep = ConstU32<500>;
 impl pallet_bridge_grandpa::Config<WithMoonbaseGrandpa> for Runtime {
 	type BridgedChain = bp_pangoro::DarwiniaLike;
 	type HeadersToKeep = MoonbaseHeadersToKeep;
-	type MaxBridgedAuthorities = ConstU32<100_000>;
+	type MaxBridgedAuthorities = ConstU32<4_096>;
 	type MaxBridgedHeaderSize = ConstU32<65536>;
 	type MaxRequests = ConstU32<50>;
 	type WeightInfo = weights::pallet_bridge_grandpa::WeightInfo<Self>;
