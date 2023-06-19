@@ -14,7 +14,7 @@ fn main() {
 			panic!("invalid path");
 		}
 
-		let (on_chain_ref_time, on_chain_proof_size) = (375_000_000_000, 3_932_160);
+		let (on_chain_ref_time, on_chain_proof_size) = (349_900_160_000, 3_670_016);
 		let (mut ref_time, mut proof_size) = (0, 0);
 
 		fs::read_dir(p).unwrap().for_each(|e| {
