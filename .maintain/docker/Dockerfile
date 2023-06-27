@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM ubuntu:20.04
 
 ARG USERNAME=darwinia
 ARG USER_UID=1000
