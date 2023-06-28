@@ -40,9 +40,9 @@ frame_support::parameter_types! {
 	pub RuntimeBlockLength: frame_system::limits::BlockLength =
 		frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub RuntimeBlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights::builder()
-		.base_block(weights::BlockExecutionWeight::get())
+		.base_block(frame_support::weights::constants::BlockExecutionWeight::get())
 		.for_class(frame_support::dispatch::DispatchClass::all(), |weights| {
-			weights.base_extrinsic = weights::ExtrinsicBaseWeight::get();
+			weights.base_extrinsic = frame_support::weights::constants::ExtrinsicBaseWeight::get();
 		})
 		.for_class(frame_support::dispatch::DispatchClass::Normal, |weights| {
 			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
@@ -75,7 +75,7 @@ impl frame_system::Config for Runtime {
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = RuntimeBlockWeights;
 	/// The weight of database operations that the runtime can invoke.
-	type DbWeight = weights::RocksDbWeight;
+	type DbWeight = frame_support::weights::constants::RocksDbWeight;
 	/// The type for hashing blocks and tries.
 	type Hash = Hash;
 	/// The hashing algorithm used.

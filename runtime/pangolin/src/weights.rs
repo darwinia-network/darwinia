@@ -20,18 +20,6 @@
 
 #![allow(clippy::unnecessary_cast)]
 
-pub mod block_weights;
-pub use block_weights::constants::BlockExecutionWeight;
-
-pub mod extrinsic_weights;
-pub use extrinsic_weights::constants::ExtrinsicBaseWeight;
-
-pub mod paritydb_weights;
-pub use paritydb_weights::constants::ParityDbWeight;
-
-pub mod rocksdb_weights;
-pub use rocksdb_weights::constants::RocksDbWeight;
-
 pub mod pallet_bridge_messages;
 pub use self::pallet_bridge_messages::WeightInfo as MessagesWeightInfo;
 
