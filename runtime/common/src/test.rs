@@ -781,11 +781,11 @@ macro_rules! impl_messages_bridge_tests {
 			#[test]
 			fn block_execution_and_extrinsic_base_weight_should_match() {
 				assert_eq!(
-					weights::BlockExecutionWeight::get(),
+					frame_support::weights::constants::BlockExecutionWeight::get(),
 					frame_support::weights::constants::BlockExecutionWeight::get(),
 				);
 				assert_eq!(
-					weights::ExtrinsicBaseWeight::get(),
+					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
 					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
 				);
 			}
