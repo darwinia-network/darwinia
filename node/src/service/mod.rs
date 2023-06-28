@@ -60,40 +60,37 @@ type ParachainBlockImport<RuntimeApi, Executor> =
 
 /// Can be called for a `Configuration` to check if it is the specific network.
 pub trait IdentifyVariant {
+	/// Get spec id.
+	fn id(&self) -> &str;
+
 	/// Returns if this is a configuration for the `Crab` network.
-	fn is_crab(&self) -> bool;
-
-	/// Returns if this is a configuration for the `Darwinia` network.
-	fn is_darwinia(&self) -> bool;
-
-	/// Returns if this is a configuration for the `Pangolin` network.
-	fn is_pangolin(&self) -> bool;
-
-	/// Returns if this is a configuration for the `Pangoro` network.
-	fn is_pangoro(&self) -> bool;
-
-	/// Returns true if this configuration is for a development network.
-	fn is_dev(&self) -> bool;
-}
-impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 	fn is_crab(&self) -> bool {
 		self.id().starts_with("crab")
 	}
 
+	/// Returns if this is a configuration for the `Darwinia` network.
 	fn is_darwinia(&self) -> bool {
 		self.id().starts_with("darwinia")
 	}
 
+	/// Returns if this is a configuration for the `Pangolin` network.
 	fn is_pangolin(&self) -> bool {
 		self.id().starts_with("pangolin")
 	}
 
+	/// Returns if this is a configuration for the `Pangoro` network.
 	fn is_pangoro(&self) -> bool {
 		self.id().starts_with("pangoro")
 	}
 
+	/// Returns true if this configuration is for a development network.
 	fn is_dev(&self) -> bool {
 		self.id().ends_with("development")
+	}
+}
+impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
+	fn id(&self) -> &str {
+		sc_service::ChainSpec::id(&**self)
 	}
 }
 

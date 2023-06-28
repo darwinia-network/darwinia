@@ -41,7 +41,10 @@ use sc_service::{
 	config::{BasePath, PrometheusConfig},
 	ChainSpec, DatabaseSource, PartialComponents,
 };
-use sp_core::{crypto::Ss58AddressFormatRegistry, hexdisplay::HexDisplay};
+use sp_core::{
+	crypto::{self, Ss58AddressFormatRegistry},
+	hexdisplay::HexDisplay,
+};
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
 
 impl SubstrateCli for Cli {
@@ -408,7 +411,9 @@ pub fn run() -> Result<()> {
 	match &cli.subcommand {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		},
 		Some(Subcommand::CheckBlock(cmd)) => {
@@ -438,7 +443,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
 				// Remove Frontier DB.
 				let db_config_dir = frontier_service::db_config_dir(&config);
@@ -472,7 +479,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				let state_version = Cli::native_runtime_version(&spec).state_version();
@@ -481,7 +490,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
 
+			set_default_ss58_version(chain_spec);
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				cmd.run(&*spec)
@@ -491,8 +502,12 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
+				let chain_spec = &config.chain_spec;
+
+				set_default_ss58_version(chain_spec);
+
 				#[cfg(feature = "crab-native")]
-				if config.chain_spec.is_crab() {
+				if chain_spec.is_crab() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
 							&config,
@@ -503,7 +518,7 @@ pub fn run() -> Result<()> {
 				}
 
 				#[cfg(feature = "darwinia-native")]
-				if config.chain_spec.is_darwinia() {
+				if chain_spec.is_darwinia() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 							&config,
@@ -514,7 +529,7 @@ pub fn run() -> Result<()> {
 				}
 
 				#[cfg(feature = "pangolin-native")]
-				if config.chain_spec.is_pangolin() {
+				if chain_spec.is_pangolin() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							&config,
@@ -525,7 +540,7 @@ pub fn run() -> Result<()> {
 				}
 
 				#[cfg(feature = "pangoro-native")]
-				if config.chain_spec.is_pangoro() {
+				if chain_spec.is_pangoro() {
 					let PartialComponents { client, other: (frontier_backend, ..), .. } =
 						service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 							&config,
@@ -544,35 +559,39 @@ pub fn run() -> Result<()> {
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
 			let runner = cli.create_runner(&**cmd)?;
-			// Switch on the concrete benchmark sub-command-
+
+			set_default_ss58_version(&runner.config().chain_spec);
+
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| {
+							let chain_spec = &config.chain_spec;
+
+							ensure_dev(chain_spec)?;
+
 							#[cfg(feature = "crab-native")]
-							if config.chain_spec.is_crab() {
+							if chain_spec.is_crab() {
 								return cmd.run::<Block, CrabRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "darwinia-native")]
-							if config.chain_spec.is_darwinia() {
+							if chain_spec.is_darwinia() {
 								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "pangolin-native")]
-							if config.chain_spec.is_pangolin() {
+							if chain_spec.is_pangolin() {
 								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "pangoro-native")]
-							if config.chain_spec.is_pangoro() {
+							if chain_spec.is_pangoro() {
 								return cmd.run::<Block, PangoroRuntimeExecutor>(config);
 							}
 
 							panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
 						}),
-				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					construct_benchmark_partials!(config, cli, |partials| cmd.run(partials.client))
-				}),
+
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
@@ -581,11 +600,13 @@ pub fn run() -> Result<()> {
 						cmd.run(config, partials.client.clone(), db, storage)
 					})
 				}),
+				BenchmarkCmd::Overhead(_) => Err("Unsupported benchmarking command".into()),
+				BenchmarkCmd::Extrinsic(_) => Err("Unsupported benchmarking command".into()),
+				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+					construct_benchmark_partials!(config, cli, |partials| cmd.run(partials.client))
+				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-				// NOTE: this allows the Client to leniently implement
-				// new benchmark commands without requiring a companion MR.
-				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
 		#[cfg(not(feature = "runtime-benchmarks"))]
@@ -596,18 +617,19 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::TryRuntime(cmd)) => {
 			use sc_service::TaskManager;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
+			use sp_io::SubstrateHostFunctions;
 			use try_runtime_cli::block_building_info;
+
+			type HostFunctionsOf<E> = ExtendedHostFunctions<
+				SubstrateHostFunctions,
+				<E as NativeExecutionDispatch>::ExtendHostFunctions,
+			>;
 
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
-
-			type HostFunctionsOf<E> = ExtendedHostFunctions<
-				sp_io::SubstrateHostFunctions,
-				<E as NativeExecutionDispatch>::ExtendHostFunctions,
-			>;
-
+			ensure_dev(chain_spec)?;
 
 			// grab the task manager.
 			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
@@ -887,5 +909,13 @@ fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
 	}
 	.into();
 
-	sp_core::crypto::set_default_ss58_version(ss58_version);
+	crypto::set_default_ss58_version(ss58_version);
+}
+
+fn ensure_dev(spec: &dyn IdentifyVariant) -> Result<()> {
+	if spec.is_dev() {
+		Ok(())
+	} else {
+		Err(format!("can only use subcommand with --chain [darwinia-dev, crab-dev, pangoro-dev, pangolin-dev], got {}", spec.id()))?
+	}
 }
