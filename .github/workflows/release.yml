@@ -8,9 +8,11 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+
   DOCKER_REGISTRY: ghcr.io
+
   # WARNING: If you upgrade this version, you need also provide a new srtool image tag same with this.
-  RUST_TOOLCHAIN: nightly-2022-11-15
+  RUST_TOOLCHAIN: nightly-2023-05-22
 
 jobs:
   build-package:
