@@ -275,7 +275,7 @@ where
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
 		Arc<sc_network_sync::SyncingService<Block>>,
-		sp_keystore::SyncCryptoStorePtr,
+		sp_keystore::KeystorePtr,
 		bool,
 	) -> Result<
 		Box<dyn cumulus_client_consensus_common::ParachainConsensus<Block>>,
@@ -431,7 +431,7 @@ where
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		config: parachain_config,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		backend: backend.clone(),
 		network: network.clone(),
 		sync_service: sync_service.clone(),
@@ -484,7 +484,7 @@ where
 			relay_chain_interface.clone(),
 			transaction_pool,
 			sync_service,
-			keystore_container.sync_keystore(),
+			keystore_container.keystore(),
 			force_authoring,
 		)?;
 
@@ -820,7 +820,7 @@ where
 			},
 			force_authoring,
 			backoff_authoring_blocks,
-			keystore: keystore_container.sync_keystore(),
+			keystore: keystore_container.keystore(),
 			sync_oracle: sync_service.clone(),
 			justification_sync_link: sync_service.clone(),
 			// We got around 500ms for proposing
@@ -933,7 +933,7 @@ where
 		transaction_pool,
 		task_manager: &mut task_manager,
 		config,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		backend,
 		network,
 		sync_service,
