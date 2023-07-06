@@ -912,6 +912,7 @@ fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
 	crypto::set_default_ss58_version(ss58_version);
 }
 
+#[cfg(any(feature = "runtime-benchmarks", feature = "try-runtime"))]
 fn ensure_dev(spec: &dyn IdentifyVariant) -> Result<()> {
 	if spec.is_dev() {
 		Ok(())
