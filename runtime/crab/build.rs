@@ -17,6 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // crates.io
+#[cfg(feature = "std")]
 use substrate_wasm_builder::WasmBuilder;
 
 #[cfg(feature = "std")]
