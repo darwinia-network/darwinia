@@ -320,10 +320,12 @@ where
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			para_id,
@@ -725,10 +727,12 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
