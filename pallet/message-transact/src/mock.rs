@@ -83,6 +83,10 @@ impl pallet_balances::Config for TestRuntime {
 	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
+	type FreezeIdentifier = ();
+	type HoldIdentifier = ();
+	type MaxFreezes = ();
+	type MaxHolds = ();
 	type MaxLocks = MaxLocks;
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
