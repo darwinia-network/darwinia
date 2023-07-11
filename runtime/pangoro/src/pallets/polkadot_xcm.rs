@@ -81,8 +81,11 @@ pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
 		xcm_builder::TakeWeightCredit,
 		xcm_builder::WithComputedOrigin<
 			(
+				// If the message is one that immediately attemps to pay for execution, then allow
+				// it.
 				xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-				// Parent and its exec plurality get free execution
+				// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality get
+				// free execution.
 				xcm_builder::AllowUnpaidExecutionFrom<
 					darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
 				>,
