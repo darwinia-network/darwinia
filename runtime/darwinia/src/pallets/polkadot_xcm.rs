@@ -213,6 +213,7 @@ frame_support::parameter_types! {
 }
 
 impl pallet_xcm::Config for Runtime {
+	type AdminOrigin = Root;
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
 	type Currency = Balances;
