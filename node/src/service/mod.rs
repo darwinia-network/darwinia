@@ -39,14 +39,10 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::{cli::TracingApi, frontier_service};
 use dc_primitives::*;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
-use sp_core::Pair;
-use sp_runtime::app_crypto::AppKey;
 
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullClient<RuntimeApi, Executor> =
@@ -105,7 +101,7 @@ pub trait RuntimeApiCollection:
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
 	+ sp_block_builder::BlockBuilder<Block>
-	+ sp_consensus_aura::AuraApi<Block, <<AuraId as AppKey>::Pair as Pair>::Public>
+	+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
 	+ sp_offchain::OffchainWorkerApi<Block>
 	+ sp_session::SessionKeys<Block>
 	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
@@ -122,7 +118,7 @@ impl<Api> RuntimeApiCollection for Api where
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>
 		+ sp_block_builder::BlockBuilder<Block>
-		+ sp_consensus_aura::AuraApi<Block, <<AuraId as AppKey>::Pair as Pair>::Public>
+		+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
@@ -214,7 +210,7 @@ where
 	let frontier_backend = Arc::new(fc_db::Backend::open(
 		Arc::clone(&client),
 		&config.database,
-		&frontier_service::db_config_dir(config),
+		&crate::frontier_service::db_config_dir(config),
 	)?);
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
@@ -355,7 +351,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -400,8 +396,8 @@ where
 				forced_parent_hashes: None,
 			};
 
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
-				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
 				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
@@ -593,7 +589,8 @@ where
 		+ 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
-	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	RuntimeApi::RuntimeApi:
+		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	start_node_impl::<RuntimeApi, Executor, _, _>(
@@ -695,7 +692,8 @@ where
 		+ 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
-	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	RuntimeApi::RuntimeApi:
+		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	// substrate
@@ -857,7 +855,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -902,8 +900,8 @@ where
 				forced_parent_hashes: None,
 			};
 
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
-				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
 				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
