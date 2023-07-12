@@ -208,7 +208,6 @@ where
 		.into_rpc(),
 	)?;
 	module.merge(Web3::new(client.clone()).into_rpc())?;
-	// module.merge(TxPool::new(client.clone(), graph).into_rpc())?;
 	module.merge(tx_pool.into_rpc())?;
 
 	if let Some(tracing_config) = maybe_tracing_config {

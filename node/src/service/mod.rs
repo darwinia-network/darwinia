@@ -40,7 +40,6 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::cli::FrontierBackendType;
 use dc_primitives::*;
 // substrate
 use sc_consensus::ImportQueue;
@@ -210,12 +209,10 @@ where
 	let overrides = fc_storage::overrides_handle(client.clone());
 	let db_config_dir = crate::frontier_service::db_config_dir(config);
 	let frontier_backend = match eth_rpc_config.frontier_backend_type {
-		FrontierBackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
-			Arc::clone(&client),
-			&config.database,
-			&db_config_dir,
-		)?),
-		FrontierBackendType::Sql => {
+		crate::cli::FrontierBackendType::KeyValue => FrontierBackend::KeyValue(
+			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
+		),
+		crate::cli::FrontierBackendType::Sql => {
 			let db_path = db_config_dir.join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
 			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
@@ -415,8 +412,8 @@ where
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(b) => Arc::new(b),
-					fc_db::Backend::Sql(b) => Arc::new(b),
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
@@ -926,8 +923,8 @@ where
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
 				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(b) => Arc::new(b),
-					fc_db::Backend::Sql(b) => Arc::new(b),
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
