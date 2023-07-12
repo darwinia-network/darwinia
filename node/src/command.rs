@@ -25,7 +25,7 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{BackendType, Cli, RelayChainCli, Subcommand},
+	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	frontier_service,
 	frontier_service::db_config_dir,
 	service::{self, *},
@@ -440,7 +440,7 @@ pub fn run() -> Result<()> {
 			// 	// Remove Frontier offchain db
 			// 	let db_config_dir = db_config_dir(&config);
 			// 	match cli.eth_args.frontier_backend_type {
-			// 		BackendType::KeyValue => {
+			// 		FrontierBackendType::KeyValue => {
 			// 			let frontier_database_config = match config.database {
 			// 				DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
 			// 					path: frontier_database_dir(&db_config_dir, "db"),
@@ -459,7 +459,7 @@ pub fn run() -> Result<()> {
 			// 			};
 			// 			cmd.run(frontier_database_config)?;
 			// 		}
-			// 		BackendType::Sql => {
+			// 		FrontierBackendType::Sql => {
 			// 			let db_path = db_config_dir.join("sql");
 			// 			match std::fs::remove_dir_all(&db_path) {
 			// 				Ok(_) => {

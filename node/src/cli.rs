@@ -131,9 +131,9 @@ impl RelayChainCli {
 	}
 }
 
-/// Avalailable frontier backend types.
+/// Available frontier backend types.
 #[derive(Debug, Copy, Clone, Default, clap::ValueEnum)]
-pub enum BackendType {
+pub enum FrontierBackendType {
 	/// Either RocksDb or ParityDb as per inherited from the global backend settings.
 	#[default]
 	KeyValue,
@@ -184,8 +184,8 @@ pub struct EthArgs {
 	pub fee_history_limit: u64,
 
 	/// Sets the frontier backend type (KeyValue or Sql)
-	#[arg(long, value_enum, ignore_case = true, default_value_t = BackendType::default())]
-	pub frontier_backend_type: BackendType,
+	#[arg(long, value_enum, ignore_case = true, default_value_t = FrontierBackendType::default())]
+	pub frontier_backend_type: FrontierBackendType,
 
 	// Sets the SQL backend's pool size.
 	#[arg(long, default_value = "100")]
@@ -253,7 +253,7 @@ pub struct EthRpcConfig {
 	pub eth_statuses_cache: usize,
 	pub fee_history_limit: u64,
 	pub max_past_logs: u32,
-	pub frontier_backend_type: BackendType,
+	pub frontier_backend_type: FrontierBackendType,
 	pub frontier_sql_backend_pool_size: u32,
 	pub frontier_sql_backend_num_ops_timeout: u32,
 	pub frontier_sql_backend_thread_count: u32,

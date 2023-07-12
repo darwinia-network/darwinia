@@ -40,7 +40,7 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::cli::BackendType;
+use crate::cli::FrontierBackendType;
 use dc_primitives::*;
 // substrate
 use sc_consensus::ImportQueue;
@@ -216,12 +216,12 @@ where
 	// Frontier stuffs.
 	let overrides = fc_storage::overrides_handle(client.clone());
 	let frontier_backend = match eth_rpc_config.frontier_backend_type {
-		BackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
+		FrontierBackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
 			Arc::clone(&client),
 			&config.database,
 			&crate::frontier_service::db_config_dir(config),
 		)?),
-		BackendType::Sql => {
+		FrontierBackendType::Sql => {
 			let db_path = crate::frontier_service::db_config_dir(config).join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
 			let backend = futures::executor::block_on(fc_db::sql::Backend::new(

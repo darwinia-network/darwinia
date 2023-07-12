@@ -24,7 +24,7 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 use futures::{future, StreamExt};
 use tokio::sync::Semaphore;
 // darwinia
-use crate::cli::{BackendType, Cli, EthRpcConfig, TracingApi};
+use crate::cli::{Cli, EthRpcConfig, FrontierBackendType, TracingApi};
 use dc_primitives::{BlockNumber, Hash, Hashing};
 // frontier
 use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks, SyncStrategy};
