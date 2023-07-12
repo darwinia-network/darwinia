@@ -46,10 +46,14 @@ use dc_primitives::*;
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
 
+/// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
+/// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
+/// Full client type.
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+/// Parachain specific block import.
 type ParachainBlockImport<RuntimeApi, Executor> =
 	cumulus_client_consensus_common::ParachainBlockImport<
 		Block,
@@ -172,17 +176,6 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
-	let heap_pages =
-		config.default_heap_pages.map_or(sc_executor::DEFAULT_HEAP_ALLOC_STRATEGY, |h| {
-			sc_executor::HeapAllocStrategy::Static { extra_pages: h as _ }
-		});
-	// let executor = sc_executor::WasmExecutor::<crate::service::HostFunctions>::builder()
-	// 	.with_execution_method(config.wasm_method)
-	// 	.with_max_runtime_instances(config.max_runtime_instances)
-	// 	.with_runtime_cache_size(config.runtime_cache_size)
-	// 	.with_onchain_heap_alloc_strategy(heap_pages)
-	// 	.with_offchain_heap_alloc_strategy(heap_pages)
-	// 	.build();
 	let executor = sc_service::new_native_or_wasm_executor(config);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
