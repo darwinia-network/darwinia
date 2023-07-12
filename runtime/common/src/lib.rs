@@ -38,7 +38,7 @@ use dc_primitives::*;
 use frame_support::{
 	sp_runtime::Perbill,
 	weights::{
-		constants::ExtrinsicBaseWeight, Weight, WeightToFee as WeightToFeeT,
+		constants::ExtrinsicBaseWeight, FeePolynomial, Weight, WeightToFee as WeightToFeeT,
 		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 };

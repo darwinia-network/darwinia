@@ -143,14 +143,14 @@ where
 			let amount = value.try_into().unwrap_or_else(|_| Bounded::max_value());
 
 			// If previous approval exists, we need to clean it
-			if pallet_assets::Pallet::<Runtime>::allowance(asset_id, &owner, &spender)
+			if pallet_assets::Pallet::<Runtime>::allowance(asset_id.clone(), &owner, &spender)
 				!= 0u32.into()
 			{
 				RuntimeHelper::<Runtime>::try_dispatch(
 					handle,
 					Some(owner.clone()).into(),
 					pallet_assets::Call::<Runtime>::cancel_approval {
-						id: asset_id.into(),
+						id: asset_id.clone().into(),
 						delegate: Runtime::Lookup::unlookup(spender.clone()),
 					},
 				)?;
@@ -431,7 +431,7 @@ where
 	fn asset_id(handle: &mut impl PrecompileHandle) -> EvmResult<AssetIdOf<Runtime>> {
 		let asset_id = AssetIdConverter::account_to_asset_id(handle.code_address().into());
 
-		if pallet_assets::Pallet::<Runtime>::maybe_total_supply(asset_id).is_some() {
+		if pallet_assets::Pallet::<Runtime>::maybe_total_supply(asset_id.clone()).is_some() {
 			return Ok(asset_id);
 		}
 		Err(revert("The asset not exist!"))
