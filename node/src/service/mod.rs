@@ -47,6 +47,7 @@ use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
 
 type FullBackend = sc_service::TFullBackend<Block>;
+type FrontierBackend = fc_db::Backend<Block>;
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
 type ParachainBlockImport<RuntimeApi, Executor> =
@@ -931,7 +932,7 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: frontier_backend.clone(),
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,

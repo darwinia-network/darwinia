@@ -432,54 +432,55 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
 			// TODO: CHECK THE DATA DIR
-			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
+			// let runner = cli.create_runner(cmd)?;
+			// let chain_spec = &runner.config().chain_spec;
 
-			set_default_ss58_version(chain_spec);
-			runner.sync_run(|config| {
-				// Remove Frontier offchain db
-				let db_config_dir = db_config_dir(&config);
-				match cli.eth_args.frontier_backend_type {
-					BackendType::KeyValue => {
-						let frontier_database_config = match config.database {
-							DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-								path: frontier_database_dir(&db_config_dir, "db"),
-								cache_size: 0,
-							},
-							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-								path: frontier_database_dir(&db_config_dir, "paritydb"),
-							},
-							_ => {
-								return Err(format!(
-									"Cannot purge `{:?}` database",
-									config.database
-								)
-								.into())
-							}
-						};
-						cmd.run(frontier_database_config)?;
-					}
-					BackendType::Sql => {
-						let db_path = db_config_dir.join("sql");
-						match std::fs::remove_dir_all(&db_path) {
-							Ok(_) => {
-								println!("{:?} removed.", &db_path);
-							}
-							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
-								eprintln!("{:?} did not exist.", &db_path);
-							}
-							Err(err) => {
-								return Err(format!(
-									"Cannot purge `{:?}` database: {:?}",
-									db_path, err,
-								)
-								.into())
-							}
-						};
-					}
-				};
-				cmd.run(config.database)
-			})
+			// set_default_ss58_version(chain_spec);
+			// runner.sync_run(|config| {
+			// 	// Remove Frontier offchain db
+			// 	let db_config_dir = db_config_dir(&config);
+			// 	match cli.eth_args.frontier_backend_type {
+			// 		BackendType::KeyValue => {
+			// 			let frontier_database_config = match config.database {
+			// 				DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+			// 					path: frontier_database_dir(&db_config_dir, "db"),
+			// 					cache_size: 0,
+			// 				},
+			// 				DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+			// 					path: frontier_database_dir(&db_config_dir, "paritydb"),
+			// 				},
+			// 				_ => {
+			// 					return Err(format!(
+			// 						"Cannot purge `{:?}` database",
+			// 						config.database
+			// 					)
+			// 					.into())
+			// 				}
+			// 			};
+			// 			cmd.run(frontier_database_config)?;
+			// 		}
+			// 		BackendType::Sql => {
+			// 			let db_path = db_config_dir.join("sql");
+			// 			match std::fs::remove_dir_all(&db_path) {
+			// 				Ok(_) => {
+			// 					println!("{:?} removed.", &db_path);
+			// 				}
+			// 				Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+			// 					eprintln!("{:?} did not exist.", &db_path);
+			// 				}
+			// 				Err(err) => {
+			// 					return Err(format!(
+			// 						"Cannot purge `{:?}` database: {:?}",
+			// 						db_path, err,
+			// 					)
+			// 					.into())
+			// 				}
+			// 			};
+			// 		}
+			// 	};
+			// 	cmd.run(config.database)
+			// })
+			todo!();
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -518,6 +519,10 @@ pub fn run() -> Result<()> {
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
 
+						let frontier_backend = match frontier_backend {
+							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
+							_ => panic!("Only fc_db::Backend::KeyValue supported"),
+						};
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
 
@@ -528,6 +533,10 @@ pub fn run() -> Result<()> {
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
+						let frontier_backend = match frontier_backend {
+							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
+							_ => panic!("Only fc_db::Backend::KeyValue supported"),
+						};
 
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
@@ -539,6 +548,10 @@ pub fn run() -> Result<()> {
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
+						let frontier_backend = match frontier_backend {
+							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
+							_ => panic!("Only fc_db::Backend::KeyValue supported"),
+						};
 
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}
@@ -550,6 +563,10 @@ pub fn run() -> Result<()> {
 							&config,
 							&cli.eth_args.build_eth_rpc_config(),
 						)?;
+						let frontier_backend = match frontier_backend {
+							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
+							_ => panic!("Only fc_db::Backend::KeyValue supported"),
+						};
 
 					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
 				}

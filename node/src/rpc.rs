@@ -30,7 +30,6 @@ use dc_primitives::*;
 // moonbeam
 use moonbeam_rpc_debug::{Debug, DebugServer};
 use moonbeam_rpc_trace::{Trace, TraceServer};
-use moonbeam_rpc_txpool::{TxPool, TxPoolServer};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
@@ -124,7 +123,7 @@ where
 	// frontier
 	use fc_rpc::{
 		Eth, EthApiServer, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer, Net,
-		NetApiServer, Web3, Web3ApiServer,
+		NetApiServer, TxPool, TxPoolApiServer, Web3, Web3ApiServer,
 	};
 	use fp_rpc::NoTransactionConverter;
 	// substrate
@@ -141,7 +140,7 @@ where
 		network,
 		sync,
 		filter_pool,
-		backend,
+		frontier_backend,
 		max_past_logs,
 		fee_history_cache,
 		fee_history_cache_limit,
@@ -161,7 +160,7 @@ where
 			sync.clone(),
 			vec![],
 			overrides.clone(),
-			backend.clone(),
+			frontier_backend.clone(),
 			is_authority,
 			block_data_cache.clone(),
 			fee_history_cache,
@@ -173,11 +172,13 @@ where
 		.into_rpc(),
 	)?;
 
+	let tx_pool = TxPool::new(client.clone(), graph);
 	if let Some(filter_pool) = filter_pool {
 		module.merge(
 			EthFilter::new(
 				client.clone(),
-				backend,
+				frontier_backend,
+				tx_pool.clone(),
 				filter_pool,
 				500_usize, // max stored filters
 				max_past_logs,
@@ -208,7 +209,8 @@ where
 		.into_rpc(),
 	)?;
 	module.merge(Web3::new(client.clone()).into_rpc())?;
-	module.merge(TxPool::new(client.clone(), graph).into_rpc())?;
+	// module.merge(TxPool::new(client.clone(), graph).into_rpc())?;
+	module.merge(tx_pool.into_rpc())?;
 
 	if let Some(tracing_config) = maybe_tracing_config {
 		if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {

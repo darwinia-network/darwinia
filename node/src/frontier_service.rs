@@ -159,15 +159,17 @@ where
 
 		let (debug_task, debug_requester) =
 			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug) {
-				let (debug_task, debug_requester) = DebugHandler::task(
-					Arc::clone(&client),
-					Arc::clone(&backend),
-					Arc::clone(&frontier_backend),
-					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
-					eth_rpc_config.tracing_raw_max_memory_usage,
-				);
-				(Some(debug_task), Some(debug_requester))
+				// TODO: FIX ME
+				// let (debug_task, debug_requester) = DebugHandler::task(
+				// 	Arc::clone(&client),
+				// 	Arc::clone(&backend),
+				// 	Arc::new(frontier_backend),
+				// 	Arc::clone(&permit_pool),
+				// 	Arc::clone(&overrides),
+				// 	eth_rpc_config.tracing_raw_max_memory_usage,
+				// );
+				// (Some(debug_task), Some(debug_requester))
+				(None, None)
 			} else {
 				(None, None)
 			};
