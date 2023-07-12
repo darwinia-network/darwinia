@@ -540,7 +540,7 @@ sp_api::impl_runtime_apis! {
 
 		fn pending_block(
 			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-		) -> (Option<pallet_ethereum::Block>, Option<Vec<TransactionStatus>>) {
+		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
 			for ext in xts.into_iter() {
 				let _ = Executive::apply_extrinsic(ext);
 			}
