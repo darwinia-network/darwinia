@@ -215,14 +215,15 @@ where
 	)?;
 	// Frontier stuffs.
 	let overrides = fc_storage::overrides_handle(client.clone());
+	let db_config_dir = crate::frontier_service::db_config_dir(config);
 	let frontier_backend = match eth_rpc_config.frontier_backend_type {
 		FrontierBackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
 			Arc::clone(&client),
 			&config.database,
-			&crate::frontier_service::db_config_dir(config),
+			&db_config_dir,
 		)?),
 		FrontierBackendType::Sql => {
-			let db_path = crate::frontier_service::db_config_dir(config).join("sql");
+			let db_path = db_config_dir.join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
 			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
 				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {

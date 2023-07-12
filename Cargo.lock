@@ -2524,7 +2524,6 @@ dependencies = [
  "cumulus-relay-chain-interface",
  "darwinia-runtime",
  "dc-primitives",
- "fc-cli",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -3790,24 +3789,6 @@ dependencies = [
  "quote",
  "syn 1.0.109",
  "thiserror",
-]
-
-[[package]]
-name = "fc-cli"
-version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#adf7117f373b68d4128385ad08c28a9f7c597cd0"
-dependencies = [
- "clap",
- "ethereum-types 0.14.1",
- "fc-db",
- "fp-rpc",
- "fp-storage",
- "sc-cli",
- "serde",
- "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
 ]
 
 [[package]]

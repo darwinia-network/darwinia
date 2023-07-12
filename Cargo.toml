@@ -86,7 +86,6 @@ pallet-bridge-parachains = { git = "https://github.com/darwinia-network/darwinia
 pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v0.9.43", default-features = false }
 
 # frontier
-fc-cli                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43" }
 fc-consensus                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43" }
 fc-db                          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", features = ["sql"] }
 fc-mapping-sync                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", features = ["sql"] }

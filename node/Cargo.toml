@@ -39,7 +39,6 @@ pangolin-runtime = { workspace = true, optional = true }
 pangoro-runtime  = { workspace = true, optional = true }
 
 # frontier
-fc-cli          = { workspace = true }
 fc-db           = { workspace = true }
 fc-mapping-sync = { workspace = true }
 fc-rpc          = { workspace = true }
