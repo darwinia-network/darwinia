@@ -431,7 +431,6 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
-			// TODO: CHECK THE DATA DIR
 			// let runner = cli.create_runner(cmd)?;
 			// let chain_spec = &runner.config().chain_spec;
 
@@ -480,7 +479,7 @@ pub fn run() -> Result<()> {
 			// 	};
 			// 	cmd.run(config.database)
 			// })
-			todo!();
+			todo!()
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -501,77 +500,6 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 				cmd.run(&*spec)
-			})
-		},
-		Some(Subcommand::FrontierDb(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-
-			runner.sync_run(|config| {
-				let chain_spec = &config.chain_spec;
-
-				set_default_ss58_version(chain_spec);
-
-				#[cfg(feature = "crab-native")]
-				if chain_spec.is_crab() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-
-						let frontier_backend = match frontier_backend {
-							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
-							_ => panic!("Only fc_db::Backend::KeyValue supported"),
-						};
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "darwinia-native")]
-				if chain_spec.is_darwinia() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-						let frontier_backend = match frontier_backend {
-							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
-							_ => panic!("Only fc_db::Backend::KeyValue supported"),
-						};
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "pangolin-native")]
-				if chain_spec.is_pangolin() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-						let frontier_backend = match frontier_backend {
-							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
-							_ => panic!("Only fc_db::Backend::KeyValue supported"),
-						};
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "pangoro-native")]
-				if chain_spec.is_pangoro() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-						let frontier_backend = match frontier_backend {
-							fc_db::Backend::KeyValue(kv) => std::sync::Arc::new(kv),
-							_ => panic!("Only fc_db::Backend::KeyValue supported"),
-						};
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
 			})
 		},
 		#[cfg(feature = "runtime-benchmarks")]

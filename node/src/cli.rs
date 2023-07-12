@@ -49,9 +49,6 @@ pub enum Subcommand {
 	/// Export the genesis wasm of the parachain.
 	ExportGenesisWasm(cumulus_client_cli::ExportGenesisWasmCommand),
 
-	/// Db meta columns information.
-	FrontierDb(fc_cli::FrontierDbCmd),
-
 	/// Sub-commands concerned with benchmarking.
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[cfg(feature = "runtime-benchmarks")]
