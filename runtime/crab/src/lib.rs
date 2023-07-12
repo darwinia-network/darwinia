@@ -570,33 +570,6 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block> for Runtime {
-		fn extrinsic_filter(
-			xts_ready: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-			xts_future: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-		) -> moonbeam_rpc_primitives_txpool::TxPoolResponse {
-			// frontier
-			use pallet_ethereum::Call::transact;
-
-			moonbeam_rpc_primitives_txpool::TxPoolResponse {
-				ready: xts_ready
-					.into_iter()
-					.filter_map(|xt| match xt.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
-						_ => None,
-					})
-					.collect(),
-				future: xts_future
-					.into_iter()
-					.filter_map(|xt| match xt.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
-						_ => None,
-					})
-					.collect(),
-			}
-		}
-	}
-
 	impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,

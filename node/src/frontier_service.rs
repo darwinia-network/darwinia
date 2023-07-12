@@ -139,65 +139,66 @@ where
 		),
 	);
 
-	if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
-		|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
-	{
-		let permit_pool = Arc::new(Semaphore::new(eth_rpc_config.tracing_max_permits as usize));
-		let (trace_filter_task, trace_filter_requester) =
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Trace) {
-				let (trace_filter_task, trace_filter_requester) = CacheTask::create(
-					Arc::clone(&client),
-					Arc::clone(&backend),
-					Duration::from_secs(eth_rpc_config.tracing_cache_duration),
-					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
-				);
-				(Some(trace_filter_task), Some(trace_filter_requester))
-			} else {
-				(None, None)
-			};
+	// if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
+	// 	|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+	// {
+	// 	let permit_pool = Arc::new(Semaphore::new(eth_rpc_config.tracing_max_permits as usize));
+	// 	let (trace_filter_task, trace_filter_requester) =
+	// 		if eth_rpc_config.tracing_api.contains(&TracingApi::Trace) {
+	// 			let (trace_filter_task, trace_filter_requester) = CacheTask::create(
+	// 				Arc::clone(&client),
+	// 				Arc::clone(&backend),
+	// 				Duration::from_secs(eth_rpc_config.tracing_cache_duration),
+	// 				Arc::clone(&permit_pool),
+	// 				Arc::clone(&overrides),
+	// 			);
+	// 			(Some(trace_filter_task), Some(trace_filter_requester))
+	// 		} else {
+	// 			(None, None)
+	// 		};
 
-		let (debug_task, debug_requester) =
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug) {
-				// TODO: FIX ME
-				// let (debug_task, debug_requester) = DebugHandler::task(
-				// 	Arc::clone(&client),
-				// 	Arc::clone(&backend),
-				// 	Arc::new(frontier_backend),
-				// 	Arc::clone(&permit_pool),
-				// 	Arc::clone(&overrides),
-				// 	eth_rpc_config.tracing_raw_max_memory_usage,
-				// );
-				// (Some(debug_task), Some(debug_requester))
-				(None, None)
-			} else {
-				(None, None)
-			};
+	// 	let (debug_task, debug_requester) =
+	// 		if eth_rpc_config.tracing_api.contains(&TracingApi::Debug) {
+	// 			// TODO: FIX ME
+	// 			// let (debug_task, debug_requester) = DebugHandler::task(
+	// 			// 	Arc::clone(&client),
+	// 			// 	Arc::clone(&backend),
+	// 			// 	Arc::new(frontier_backend),
+	// 			// 	Arc::clone(&permit_pool),
+	// 			// 	Arc::clone(&overrides),
+	// 			// 	eth_rpc_config.tracing_raw_max_memory_usage,
+	// 			// );
+	// 			// (Some(debug_task), Some(debug_requester))
+	// 			(None::<DebugRequester>, None::<TraceFilterCacheRequester>)
+	// 		} else {
+	// 			(None, None)
+	// 		};
 
-		// `trace_filter` cache task. Essential.
-		// Proxies rpc requests to it's handler.
-		if let Some(trace_filter_task) = trace_filter_task {
-			task_manager.spawn_essential_handle().spawn(
-				"trace-filter-cache",
-				Some("eth-tracing"),
-				trace_filter_task,
-			);
-		}
+	// `trace_filter` cache task. Essential.
+	// Proxies rpc requests to it's handler.
+	// if let Some(trace_filter_task) = trace_filter_task {
+	// 	task_manager.spawn_essential_handle().spawn(
+	// 		"trace-filter-cache",
+	// 		Some("eth-tracing"),
+	// 		trace_filter_task,
+	// 	);
+	// }
 
-		// `debug` task if enabled. Essential.
-		// Proxies rpc requests to it's handler.
-		if let Some(debug_task) = debug_task {
-			task_manager.spawn_essential_handle().spawn(
-				"tracing_api-debug",
-				Some("eth-tracing"),
-				debug_task,
-			);
-		}
+	// // `debug` task if enabled. Essential.
+	// // Proxies rpc requests to it's handler.
+	// if let Some(debug_task) = debug_task {
+	// 	task_manager.spawn_essential_handle().spawn(
+	// 		"tracing_api-debug",
+	// 		Some("eth-tracing"),
+	// 		debug_task,
+	// 	);
+	// }
 
-		RpcRequesters { debug: debug_requester, trace: trace_filter_requester }
-	} else {
-		RpcRequesters { debug: None, trace: None }
-	}
+	// 	RpcRequesters { debug: debug_requester, trace: trace_filter_requester }
+	// } else {
+	// 	RpcRequesters { debug: None, trace: None }
+	// }
+	RpcRequesters { debug: None, trace: None }
 }
 
 // TODO: CHECK THIS

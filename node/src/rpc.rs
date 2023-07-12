@@ -112,7 +112,6 @@ where
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
