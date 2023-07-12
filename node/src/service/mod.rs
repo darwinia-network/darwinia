@@ -35,10 +35,12 @@ pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 // std
 use std::{
 	collections::BTreeMap,
+	path::Path,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
 // darwinia
+use crate::cli::BackendType;
 use dc_primitives::*;
 // substrate
 use sc_consensus::ImportQueue;
@@ -142,7 +144,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			Arc<fc_db::Backend<Block>>,
+			fc_db::Backend<Block>,
 			Option<fc_rpc_core::types::FilterPool>,
 			fc_rpc_core::types::FeeHistoryCache,
 			fc_rpc_core::types::FeeHistoryCacheLimit,
@@ -212,11 +214,35 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend = Arc::new(fc_db::Backend::open(
-		Arc::clone(&client),
-		&config.database,
-		&crate::frontier_service::db_config_dir(config),
-	)?);
+	let overrides = fc_storage::overrides_handle(client.clone());
+	let frontier_backend = match eth_rpc_config.frontier_backend_type {
+		BackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
+			Arc::clone(&client),
+			&config.database,
+			&crate::frontier_service::db_config_dir(config),
+		)?),
+		BackendType::Sql => {
+			let db_path = crate::frontier_service::db_config_dir(config).join("sql");
+			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
+			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
+				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
+					path: Path::new("sqlite:///")
+						.join(db_path)
+						.join("frontier.db3")
+						.to_str()
+						.unwrap(),
+					create_if_missing: true,
+					thread_count: eth_rpc_config.frontier_sql_backend_thread_count,
+					cache_size: eth_rpc_config.frontier_sql_backend_cache_size,
+				}),
+				eth_rpc_config.frontier_sql_backend_pool_size,
+				std::num::NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
+				overrides.clone(),
+			))
+			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
+			FrontierBackend::Sql(backend)
+		},
+	};
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -394,7 +420,10 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: match frontier_backend.clone() {
+					fc_db::Backend::KeyValue(b) => Arc::new(b),
+					fc_db::Backend::Sql(b) => Arc::new(b),
+				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,

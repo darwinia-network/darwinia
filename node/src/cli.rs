@@ -216,6 +216,11 @@ impl EthArgs {
 			eth_log_block_cache: self.eth_log_block_cache,
 			max_past_logs: self.max_past_logs,
 			fee_history_limit: self.fee_history_limit,
+			frontier_backend_type: self.frontier_backend_type,
+			frontier_sql_backend_pool_size: self.frontier_sql_backend_pool_size,
+			frontier_sql_backend_num_ops_timeout: self.frontier_sql_backend_num_ops_timeout,
+			frontier_sql_backend_thread_count: self.frontier_sql_backend_thread_count,
+			frontier_sql_backend_cache_size: self.frontier_sql_backend_cache_size,
 		}
 	}
 }
@@ -248,4 +253,9 @@ pub struct EthRpcConfig {
 	pub eth_statuses_cache: usize,
 	pub fee_history_limit: u64,
 	pub max_past_logs: u32,
+	pub frontier_backend_type: BackendType,
+	pub frontier_sql_backend_pool_size: u32,
+	pub frontier_sql_backend_num_ops_timeout: u32,
+	pub frontier_sql_backend_thread_count: u32,
+	pub frontier_sql_backend_cache_size: u64,
 }

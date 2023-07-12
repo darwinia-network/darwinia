@@ -54,7 +54,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.
-	pub backend: Arc<fc_db::Backend<Block>>,
+	pub frontier_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Fee history cache.
