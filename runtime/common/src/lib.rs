@@ -104,7 +104,7 @@ impl WeightToFeePolynomial for ProofSizeToFee {
 		let p = UNIT;
 		let q = 10_000_000;
 
-		smallvec![WeightToFeeCoefficient {
+		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
 			coeff_frac: Perbill::from_rational(p % q, q),

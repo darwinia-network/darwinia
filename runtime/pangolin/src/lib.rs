@@ -258,7 +258,7 @@ sp_api::impl_runtime_apis! {
 			sp_core::OpaqueMetadata::new(Runtime::metadata().into())
 		}
 
-		fn metadata_at_version(version: u32) -> Option<OpaqueMetadata> {
+		fn metadata_at_version(version: u32) -> Option<sp_core::OpaqueMetadata> {
 			Runtime::metadata_at_version(version)
 		}
 
