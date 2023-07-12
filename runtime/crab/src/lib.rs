@@ -447,6 +447,9 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				// TODO: FIX ME
+				None,
+				None,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
@@ -490,6 +493,9 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				// TODO: FIX ME
+				None,
+				None,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
@@ -538,6 +544,9 @@ sp_api::impl_runtime_apis! {
 		fn pending_block(
 			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
 		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
+			// substrate
+			use frame_support::traits::OnFinalize;
+
 			for ext in xts.into_iter() {
 				let _ = Executive::apply_extrinsic(ext);
 			}

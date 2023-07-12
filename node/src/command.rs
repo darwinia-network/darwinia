@@ -25,13 +25,14 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, RelayChainCli, Subcommand},
+	cli::{BackendType, Cli, RelayChainCli, Subcommand},
 	frontier_service,
+	frontier_service::db_config_dir,
 	service::{self, *},
 };
 use dc_primitives::Block;
 // frontier
-use fc_db::frontier_database_dir;
+use fc_db::kv::frontier_database_dir;
 // substrate
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
@@ -430,39 +431,54 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
+			// TODO: CHECK THE DATA DIR
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
-				// Remove Frontier DB.
-				let db_config_dir = frontier_service::db_config_dir(&config);
-				let frontier_database_config = match config.database {
-					DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-						path: frontier_database_dir(&db_config_dir, "db"),
-						cache_size: 0,
-					},
-					DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-						path: frontier_database_dir(&db_config_dir, "paritydb"),
-					},
-					_ =>
-						return Err(format!("Cannot purge `{:?}` database", config.database).into()),
+				// Remove Frontier offchain db
+				let db_config_dir = db_config_dir(&config);
+				match cli.eth_args.frontier_backend_type {
+					BackendType::KeyValue => {
+						let frontier_database_config = match config.database {
+							DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+								path: frontier_database_dir(&db_config_dir, "db"),
+								cache_size: 0,
+							},
+							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+								path: frontier_database_dir(&db_config_dir, "paritydb"),
+							},
+							_ => {
+								return Err(format!(
+									"Cannot purge `{:?}` database",
+									config.database
+								)
+								.into())
+							}
+						};
+						cmd.run(frontier_database_config)?;
+					}
+					BackendType::Sql => {
+						let db_path = db_config_dir.join("sql");
+						match std::fs::remove_dir_all(&db_path) {
+							Ok(_) => {
+								println!("{:?} removed.", &db_path);
+							}
+							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+								eprintln!("{:?} did not exist.", &db_path);
+							}
+							Err(err) => {
+								return Err(format!(
+									"Cannot purge `{:?}` database: {:?}",
+									db_path, err,
+								)
+								.into())
+							}
+						};
+					}
 				};
-
-				cmd.base.run(frontier_database_config)?;
-
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
-				let polkadot_config = SubstrateCli::create_configuration(
-					&polkadot_cli,
-					&polkadot_cli,
-					config.tokio_handle.clone(),
-				)
-				.map_err(|err| format!("Relay chain argument error: {}", err))?;
-
-				cmd.run(config, polkadot_config)
+				cmd.run(config.database)
 			})
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
