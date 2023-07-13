@@ -181,15 +181,6 @@ dependencies = [
 
 [[package]]
 name = "aho-corasick"
-version = "0.7.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc936419f96fa211c1b9166887b38e5e40b19958e5b895be7c1f93adec7071ac"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "aho-corasick"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43f6cb1bf222025340178f382c426f13757b2960e89779dfcb319c32542a5a41"
@@ -1123,9 +1114,9 @@ dependencies = [
 
 [[package]]
 name = "camino"
-version = "1.1.4"
+version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c530edf18f37068ac2d977409ed5cd50d53d73bc653c7647b48eb78976ac9ae2"
+checksum = "c59e92b5a388f549b863a7bea62612c09f24c8393560709a54558a9abdfb3b9c"
 dependencies = [
  "serde",
 ]
@@ -3655,7 +3646,7 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "environmental",
  "ethereum",
@@ -4492,7 +4483,7 @@ version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2eeb4ed9e12f43b7fa0baae3f9cdda28352770132ef2e09a23760c29cae8bd47"
 dependencies = [
- "rustix 0.38.3",
+ "rustix 0.38.4",
  "windows-sys 0.48.0",
 ]
 
@@ -4733,11 +4724,11 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "globset"
-version = "0.4.10"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "029d74589adefde59de1a0c4f4732695c32805624aec7b68d91503d4dba79afc"
+checksum = "1391ab1f92ffcc08911957149833e682aa3fe252b9f45f966d2ef972274c97df"
 dependencies = [
- "aho-corasick 0.7.20",
+ "aho-corasick",
  "bstr 1.6.0",
  "fnv",
  "log",
@@ -5302,7 +5293,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
 dependencies = [
  "hermit-abi 0.3.2",
- "rustix 0.38.3",
+ "rustix 0.38.4",
  "windows-sys 0.48.0",
 ]
 
@@ -6573,7 +6564,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "evm-tracing-events",
@@ -6588,7 +6579,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "evm",
@@ -6608,7 +6599,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "evm-tracing-events",
@@ -6621,7 +6612,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "futures 0.3.28",
@@ -6636,7 +6627,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "futures 0.3.28",
@@ -6650,7 +6641,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-txpool"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -6663,7 +6654,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "serde",
@@ -6673,7 +6664,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -6703,7 +6694,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "environmental",
  "ethereum",
@@ -6721,7 +6712,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-txpool"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -6735,7 +6726,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -6769,7 +6760,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-txpool"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum-types 0.14.1",
  "fc-rpc",
@@ -7055,9 +7046,9 @@ dependencies = [
 
 [[package]]
 name = "num"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43db66d1170d347f9a065114077f7dccb00c1b9478c89384490a3425279a4606"
+checksum = "b05180d69e3da0e530ba2a1dae5110317e49e3b7f3d41be227dc5f92e49ee7af"
 dependencies = [
  "num-bigint",
  "num-complex",
@@ -7884,7 +7875,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -10450,9 +10441,9 @@ dependencies = [
 
 [[package]]
 name = "portable-atomic"
-version = "1.3.3"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "767eb9f07d4a5ebcb39bbf2d452058a93c011373abf6832e24194a1c3f004794"
+checksum = "d220334a184db82b31b83f5ff093e3315280fb2b6bbc032022b2304a509aab7a"
 
 [[package]]
 name = "ppv-lite86"
@@ -10463,7 +10454,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "affix",
  "derive_more",
@@ -10493,7 +10484,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "case",
  "num_enum 0.5.11",
@@ -11044,9 +11035,9 @@ version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b2eae68fc220f7cf2532e4494aded17545fce192d59cd996e0fe7887f4ceb575"
 dependencies = [
- "aho-corasick 1.0.2",
+ "aho-corasick",
  "memchr",
- "regex-automata 0.3.2",
+ "regex-automata 0.3.3",
  "regex-syntax 0.7.4",
 ]
 
@@ -11061,11 +11052,11 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83d3daa6976cffb758ec878f108ba0e062a45b2d6ca3a2cca965338855476caf"
+checksum = "39354c10dd07468c2e73926b23bb9c2caca74c5501e38a35da70406f1d923310"
 dependencies = [
- "aho-corasick 1.0.2",
+ "aho-corasick",
  "memchr",
  "regex-syntax 0.7.4",
 ]
@@ -11505,9 +11496,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.3"
+version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac5ffa1efe7548069688cd7028f32591853cd7b5b756d41bcffd2353e4fc75b4"
+checksum = "0a962918ea88d644592894bc6dc55acc6c0956488adcebbfb6e273506b7fd6e5"
 dependencies = [
  "bitflags 2.3.3",
  "errno",
@@ -12967,9 +12958,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.100"
+version = "1.0.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f1e14e89be7aa4c4b78bdbdc9eb5bf8517829a600ae8eaa39a6e1d960b5185c"
+checksum = "b5062a995d481b2308b6064e9af76011f2921c35f97b0468811ed9f6cd91dfed"
 dependencies = [
  "itoa",
  "ryu",
@@ -14361,9 +14352,9 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "target-lexicon"
-version = "0.12.8"
+version = "0.12.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b1c7f239eb94671427157bd93b3694320f3668d4e1eff08c7285366fd777fac"
+checksum = "df8e77cb757a61f51b947ec4a7e3646efd825b73561db1c232a8ccb639e611a0"
 
 [[package]]
 name = "task-local-extensions"
@@ -16061,9 +16052,9 @@ dependencies = [
 
 [[package]]
 name = "wide"
-version = "0.7.10"
+version = "0.7.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40018623e2dba2602a9790faba8d33f2ebdebf4b86561b83928db735f8784728"
+checksum = "aa469ffa65ef7e0ba0f164183697b89b854253fd31aeb92358b7b6155177d62f"
 dependencies = [
  "bytemuck",
  "safe_arch",
@@ -16447,7 +16438,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#95ee3b247437510fbe24a5c7b885427e6af50063"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
