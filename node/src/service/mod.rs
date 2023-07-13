@@ -18,8 +18,8 @@
 
 //! Service and service factory implementation. Specialized wrapper over substrate service.
 
-pub mod executors;
-pub use executors::*;
+// pub mod executors;
+// pub use executors::*;
 
 mod instant_finalize;
 
@@ -44,6 +44,18 @@ use dc_primitives::*;
 // substrate
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
+
+#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+pub type HostFunctions = (
+	frame_benchmarking::benchmarking::HostFunctions,
+	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+);
+#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
+pub type HostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+pub type HostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
+pub type HostFunctions = ();
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;

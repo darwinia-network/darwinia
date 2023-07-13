@@ -275,7 +275,7 @@ pub fn run() -> Result<()> {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
 			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
-				let $partials = new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+				let $partials = new_partial::<CrabRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -285,7 +285,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "darwinia-native")]
 			if $config.chain_spec.is_darwinia() {
-				let $partials = new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+				let $partials = new_partial::<DarwiniaRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -295,7 +295,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "pangolin-native")]
 			if $config.chain_spec.is_pangolin() {
-				let $partials = new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+				let $partials = new_partial::<PangolinRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -305,7 +305,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "pangoro-native")]
 			if $config.chain_spec.is_pangoro() {
-				let $partials = new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
+				let $partials = new_partial::<PangoroRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
