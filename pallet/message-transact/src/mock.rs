@@ -127,6 +127,7 @@ impl pallet_evm::Config for TestRuntime {
 	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
 	type FindAuthor = ();
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();

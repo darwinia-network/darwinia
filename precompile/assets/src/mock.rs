@@ -19,7 +19,7 @@
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 // frontier
-use fp_evm::{Precompile, PrecompileSet};
+use fp_evm::{IsPrecompileResult, Precompile, PrecompileSet};
 // parity
 use sp_core::{H160, H256, U256};
 use sp_std::{marker::PhantomData, prelude::*};
@@ -168,6 +168,7 @@ impl pallet_evm::Config for TestRuntime {
 	type Currency = Balances;
 	type FeeCalculator = ();
 	type FindAuthor = ();
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();

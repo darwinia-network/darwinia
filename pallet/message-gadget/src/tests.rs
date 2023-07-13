@@ -87,7 +87,7 @@ impl pallet_evm::Config for Runtime {
 	type Currency = Balances;
 	type FeeCalculator = ();
 	type FindAuthor = ();
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();
@@ -148,6 +148,8 @@ fn message_root_getter_should_work() {
 			true,
 			// TODO: not sure
 			false,
+			None,
+			None,
 			<Runtime as pallet_evm::Config>::config(),
 		);
 		let contract_address = res.unwrap().value;

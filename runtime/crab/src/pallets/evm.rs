@@ -77,7 +77,6 @@ where
 		use darwinia_precompile_assets::AccountToAssetId;
 
 		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
-
 		// Filter known precompile addresses except Ethereum officials
 		if Self::used_addresses().contains(&code_addr)
 			&& code_addr > addr(9)

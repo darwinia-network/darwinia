@@ -21,7 +21,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 // darwinia
 use crate::*;
 // frontier
-use fp_evm::{Precompile, PrecompileSet};
+use fp_evm::{IsPrecompileResult, Precompile, PrecompileSet};
 // substrate
 use sp_core::{ConstU32, H160, H256, U256};
 
@@ -174,6 +174,7 @@ impl pallet_evm::Config for TestRuntime {
 	type Currency = Balances;
 	type FeeCalculator = ();
 	type FindAuthor = ();
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();
