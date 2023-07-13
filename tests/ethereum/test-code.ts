@@ -1,9 +1,9 @@
 import Web3 from "web3";
 import { describe } from "mocha";
 import { expect } from "chai";
-import { HOST_HTTP_URL } from "../config";
+import { HOST_WS_URL } from "../config";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 describe("Test contracts code", () => {
 	it("The precompiles bytes code shouldn't be empty", async () => {
 		[

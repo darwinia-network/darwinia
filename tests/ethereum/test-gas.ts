@@ -3,7 +3,7 @@ import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
 import {
-	HOST_HTTP_URL,
+	HOST_WS_URL,
 	FAITH,
 	FAITH_P,
 	BLOCK_GAS_LIMIT,
@@ -13,7 +13,7 @@ import {
 import { incrementerInfo } from "./contracts/contracts_info";
 import { AbiItem } from "web3-utils";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 describe("Test transaction gas limit", () => {
 	web3.eth.accounts.wallet.add(FAITH_P);
 	const inc = new web3.eth.Contract(incrementerInfo.abi as AbiItem[]);

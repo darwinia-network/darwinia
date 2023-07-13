@@ -200,7 +200,6 @@ where
 	}
 }
 
-// TODO: CHECK THIS
 pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
 	config.base_path.config_dir(config.chain_spec.id())
 }
